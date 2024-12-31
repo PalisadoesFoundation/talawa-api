@@ -1,7 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { eventAttachmentTypeEnum } from "~/src/drizzle/enums/eventAttachmentType";
+import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
 
@@ -38,11 +38,15 @@ export const eventAttachmentsTable = pgTable(
 				onUpdate: "cascade",
 			}),
 		/**
-		 * Type of the attachment.
+		 * Mime type of the attachment.
 		 */
-		type: text("type", {
-			enum: eventAttachmentTypeEnum.options,
+		mimeType: text("mime_type", {
+			enum: eventAttachmentMimeTypeEnum.options,
 		}).notNull(),
+		/**
+		 * Identifier name of the attachment.
+		 */
+		name: text("name", {}).notNull(),
 		/**
 		 * Date time at the time the attachment was last updated.
 		 */
@@ -60,10 +64,6 @@ export const eventAttachmentsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
-		/**
-		 * URI to the attachment.
-		 */
-		uri: text("uri", {}).notNull(),
 	},
 	(self) => [
 		index().on(self.eventId),
@@ -105,6 +105,6 @@ export const eventAttachmentsTableRelations = relations(
 export const eventAttachmentsTableInsertSchema = createInsertSchema(
 	eventAttachmentsTable,
 	{
-		uri: (schema) => schema.uri.min(1),
+		name: (schema) => schema.name.min(1),
 	},
 );

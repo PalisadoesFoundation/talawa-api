@@ -1,4 +1,7 @@
+import type { FileUpload } from "graphql-upload-minimal";
+import { ulid } from "ulidx";
 import { z } from "zod";
+import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
 import { venueAttachmentsTable } from "~/src/drizzle/tables/venueAttachments";
 import { venuesTable } from "~/src/drizzle/tables/venues";
 import { builder } from "~/src/graphql/builder";
@@ -10,7 +13,47 @@ import { Venue } from "~/src/graphql/types/Venue/Venue";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateVenueArgumentsSchema = z.object({
-	input: mutationCreateVenueInputSchema,
+	input: mutationCreateVenueInputSchema.transform(async (arg, ctx) => {
+		let attachments:
+			| (FileUpload & {
+					mimetype: z.infer<typeof venueAttachmentMimeTypeEnum>;
+			  })[]
+			| undefined;
+
+		if (arg.attachments !== undefined) {
+			const rawAttachments = await Promise.all(arg.attachments);
+			const { data, error, success } = venueAttachmentMimeTypeEnum
+				.array()
+				.safeParse(rawAttachments.map((attachment) => attachment.mimetype));
+
+			if (!success) {
+				for (const issue of error.issues) {
+					// `issue.path[0]` would correspond to the numeric index of the attachment within `arg.attachments` array which contains the invalid mime type.
+					if (typeof issue.path[0] === "number") {
+						ctx.addIssue({
+							code: "custom",
+							path: ["attachments", issue.path[0]],
+							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype}" is not allowed.`,
+						});
+					}
+				}
+			} else {
+				return {
+					...arg,
+					attachments: rawAttachments.map((attachment, index) =>
+						Object.assign(attachment, {
+							mimetype: data[index],
+						}),
+					),
+				};
+			}
+		}
+
+		return {
+			...arg,
+			attachments,
+		};
+	}),
 });
 
 builder.mutationField("createVenue", (t) =>
@@ -37,7 +80,7 @@ builder.mutationField("createVenue", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationCreateVenueArgumentsSchema.safeParse(args);
+			} = await mutationCreateVenueArgumentsSchema.safeParseAsync(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -62,7 +105,9 @@ builder.mutationField("createVenue", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
-					columns: {},
+					columns: {
+						countryCode: true,
+					},
 					with: {
 						organizationMembershipsWhereOrganization: {
 							columns: {
@@ -72,7 +117,9 @@ builder.mutationField("createVenue", (t) =>
 								operators.eq(fields.memberId, currentUserId),
 						},
 						venuesWhereOrganization: {
-							columns: {},
+							columns: {
+								updaterId: true,
+							},
 							where: (fields, operators) =>
 								operators.eq(fields.name, parsedArgs.input.name),
 						},
@@ -146,7 +193,7 @@ builder.mutationField("createVenue", (t) =>
 				});
 			}
 
-			return ctx.drizzleClient.transaction(async (tx) => {
+			return await ctx.drizzleClient.transaction(async (tx) => {
 				const [createdVenue] = await tx
 					.insert(venuesTable)
 					.values({
@@ -172,17 +219,33 @@ builder.mutationField("createVenue", (t) =>
 				}
 
 				if (parsedArgs.input.attachments !== undefined) {
+					const attachments = parsedArgs.input.attachments;
+
 					const createdVenueAttachments = await tx
 						.insert(venueAttachmentsTable)
 						.values(
-							parsedArgs.input.attachments.map((attachment) => ({
+							attachments.map((attachment) => ({
 								creatorId: currentUserId,
-								type: attachment.type,
-								uri: attachment.uri,
+								mimeType: attachment.mimetype,
+								name: ulid(),
 								venueId: createdVenue.id,
 							})),
 						)
 						.returning();
+
+					Promise.all(
+						createdVenueAttachments.map((attachment, index) =>
+							ctx.minio.client.putObject(
+								ctx.minio.bucketName,
+								attachment.name,
+								attachments[index].createReadStream(),
+								undefined,
+								{
+									"content-type": attachment.mimeType,
+								},
+							),
+						),
+					);
 
 					return Object.assign(createdVenue, {
 						attachments: createdVenueAttachments,

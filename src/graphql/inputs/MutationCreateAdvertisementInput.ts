@@ -1,11 +1,8 @@
-import type { z } from "zod";
+import type { FileUpload } from "graphql-upload-minimal";
+import { z } from "zod";
 import { advertisementsTableInsertSchema } from "~/src/drizzle/tables/advertisements";
 import { builder } from "~/src/graphql/builder";
 import { AdvertisementType } from "~/src/graphql/enums/AdvertisementType";
-import {
-	CreateAdvertisementAttachmentInput,
-	createAdvertisementAttachmentInputSchema,
-} from "./CreateAdvertisementAttachmentInput";
 
 export const mutationCreateAdvertisementInputSchema =
 	advertisementsTableInsertSchema
@@ -18,7 +15,8 @@ export const mutationCreateAdvertisementInputSchema =
 			type: true,
 		})
 		.extend({
-			attachments: createAdvertisementAttachmentInputSchema
+			attachments: z
+				.custom<Promise<FileUpload>>()
 				.array()
 				.min(1)
 				.max(20)
@@ -43,7 +41,7 @@ export const MutationCreateAdvertisementInput = builder
 		fields: (t) => ({
 			attachments: t.field({
 				description: "Attachments of the advertisement.",
-				type: t.listRef(CreateAdvertisementAttachmentInput),
+				type: t.listRef("Upload"),
 			}),
 			description: t.string({
 				description: "Custom information about the advertisement.",

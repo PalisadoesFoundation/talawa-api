@@ -71,7 +71,9 @@ builder.mutationField("createChatMembership", (t) =>
 								operators.eq(fields.memberId, parsedArgs.input.memberId),
 						},
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {

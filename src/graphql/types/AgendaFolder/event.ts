@@ -32,7 +32,9 @@ AgendaFolder.implement({
 						with: {
 							eventAttachmentsWhereEvent: true,
 							organization: {
-								columns: {},
+								columns: {
+									countryCode: true,
+								},
 								with: {
 									organizationMembershipsWhereOrganization: {
 										columns: {

@@ -62,10 +62,14 @@ builder.mutationField("deleteVenue", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.venuesTable.findFirst({
-					columns: {},
+					columns: {
+						updaterId: true,
+					},
 					with: {
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -128,23 +132,32 @@ builder.mutationField("deleteVenue", (t) =>
 				});
 			}
 
-			const [deletedVenue] = await ctx.drizzleClient
-				.delete(venuesTable)
-				.where(eq(venuesTable.id, parsedArgs.input.id))
-				.returning();
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [deletedVenue] = await tx
+					.delete(venuesTable)
+					.where(eq(venuesTable.id, parsedArgs.input.id))
+					.returning();
 
-			// Deleted venue not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
-			if (deletedVenue === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-					message: "Something went wrong. Please try again.",
+				// Deleted venue not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
+				if (deletedVenue === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+						message: "Something went wrong. Please try again.",
+					});
+				}
+
+				await ctx.minio.client.removeObjects(
+					ctx.minio.bucketName,
+					existingVenue.venueAttachmentsWhereVenue.map(
+						(attachment) => attachment.name,
+					),
+				);
+
+				return Object.assign(deletedVenue, {
+					attachments: existingVenue.venueAttachmentsWhereVenue,
 				});
-			}
-
-			return Object.assign(deletedVenue, {
-				attachments: existingVenue.venueAttachmentsWhereVenue,
 			});
 		},
 		type: Venue,

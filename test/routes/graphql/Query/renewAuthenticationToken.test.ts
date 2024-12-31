@@ -66,7 +66,7 @@ suite("Query field renewAuthenticationToken", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",

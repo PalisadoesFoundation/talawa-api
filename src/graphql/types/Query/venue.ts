@@ -62,10 +62,14 @@ builder.queryField("venue", (t) =>
 				ctx.drizzleClient.query.venuesTable.findFirst({
 					with: {
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
-									columns: {},
+									columns: {
+										role: true,
+									},
 									where: (fields, operators) =>
 										operators.eq(fields.memberId, currentUserId),
 								},

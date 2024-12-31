@@ -1,16 +1,23 @@
-import type { z } from "zod";
+import type { FileUpload } from "graphql-upload-minimal";
+import { z } from "zod";
 import { organizationsTableInsertSchema } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
 
 export const mutationCreateOrganizationInputSchema =
-	organizationsTableInsertSchema.omit({
-		createdAt: true,
-		creatorId: true,
-		id: true,
-		updatedAt: true,
-		updaterId: true,
-	});
+	organizationsTableInsertSchema
+		.pick({
+			address: true,
+			city: true,
+			countryCode: true,
+			description: true,
+			name: true,
+			postalCode: true,
+			state: true,
+		})
+		.extend({
+			avatar: z.custom<Promise<FileUpload>>().nullish(),
+		});
 
 export const MutationCreateOrganizationInput = builder
 	.inputRef<z.infer<typeof mutationCreateOrganizationInputSchema>>(
@@ -22,8 +29,9 @@ export const MutationCreateOrganizationInput = builder
 			address: t.string({
 				description: "Address of the organization.",
 			}),
-			avatarURI: t.string({
-				description: "URI to the avatar of the organization.",
+			avatar: t.field({
+				description: "Avatar of the organization.",
+				type: "Upload",
 			}),
 			city: t.string({
 				description: "Name of the city where the organization resides in.",

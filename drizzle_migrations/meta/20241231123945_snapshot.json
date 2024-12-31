@@ -1,5 +1,5 @@
 {
-  "id": "e0fa5b89-21dc-4ac2-87f0-3b7b62f49312",
+  "id": "62950bfb-fb43-4883-a2df-9dcc9aaf1687",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -485,8 +485,14 @@
           "primaryKey": false,
           "notNull": false
         },
-        "type": {
-          "name": "type",
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -502,12 +508,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "uri": {
-          "name": "uri",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
         }
       },
       "indexes": {
@@ -1583,8 +1583,14 @@
       "name": "chats",
       "schema": "",
       "columns": {
-        "avatar_uri": {
-          "name": "avatar_uri",
+        "avatar_mime_type": {
+          "name": "avatar_mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avatar_name": {
+          "name": "avatar_name",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -2084,8 +2090,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "type": {
-          "name": "type",
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -2101,12 +2113,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "uri": {
-          "name": "uri",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
         }
       },
       "indexes": {
@@ -3792,8 +3798,14 @@
           "primaryKey": false,
           "notNull": false
         },
-        "avatar_uri": {
-          "name": "avatar_uri",
+        "avatar_mime_type": {
+          "name": "avatar_mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avatar_name": {
+          "name": "avatar_name",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -3978,8 +3990,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "type": {
-          "name": "type",
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -3995,12 +4013,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "uri": {
-          "name": "uri",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
         }
       },
       "indexes": {
@@ -4953,8 +4965,14 @@
           "primaryKey": false,
           "notNull": false
         },
-        "avatar_uri": {
-          "name": "avatar_uri",
+        "avatar_mime_type": {
+          "name": "avatar_mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avatar_name": {
+          "name": "avatar_name",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -5205,8 +5223,14 @@
           "primaryKey": false,
           "notNull": false
         },
-        "type": {
-          "name": "type",
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -5222,12 +5246,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "uri": {
-          "name": "uri",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
         },
         "venue_id": {
           "name": "venue_id",

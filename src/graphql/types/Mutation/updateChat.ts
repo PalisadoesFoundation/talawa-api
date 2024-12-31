@@ -1,5 +1,8 @@
 import { eq } from "drizzle-orm";
+import type { FileUpload } from "graphql-upload-minimal";
+import { ulid } from "ulidx";
 import { z } from "zod";
+import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { chatsTable } from "~/src/drizzle/tables/chats";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -7,10 +10,45 @@ import {
 	mutationUpdateChatInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateChatInput";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
+import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationUpdateChatArgumentsSchema = z.object({
-	input: mutationUpdateChatInputSchema,
+	input: mutationUpdateChatInputSchema.transform(async (arg, ctx) => {
+		let avatar:
+			| (FileUpload & {
+					mimetype: z.infer<typeof imageMimeTypeEnum>;
+			  })
+			| null
+			| undefined;
+
+		if (isNotNullish(arg.avatar)) {
+			const rawAvatar = await arg.avatar;
+			const result = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
+
+			if (!result.success) {
+				ctx.addIssue({
+					code: "custom",
+					path: ["avatar"],
+					message: `Mime type ${rawAvatar.mimetype} not allowed for this file upload.`,
+				});
+			} else {
+				avatar = Object.assign(rawAvatar, {
+					mimetype: result.data,
+				});
+			}
+
+			return {
+				...arg,
+				avatar,
+			};
+		}
+
+		return {
+			...arg,
+			avatar: arg.avatar,
+		};
+	}),
 });
 
 builder.mutationField("updateChat", (t) =>
@@ -37,7 +75,7 @@ builder.mutationField("updateChat", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationUpdateChatArgumentsSchema.safeParse(args);
+			} = await mutationUpdateChatArgumentsSchema.safeParseAsync(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -62,7 +100,9 @@ builder.mutationField("updateChat", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.chatsTable.findFirst({
-					columns: {},
+					columns: {
+						avatarName: true,
+					},
 					with: {
 						chatMembershipsWhereChat: {
 							columns: {
@@ -72,7 +112,9 @@ builder.mutationField("updateChat", (t) =>
 								operators.eq(fields.memberId, currentUserId),
 						},
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -138,28 +180,64 @@ builder.mutationField("updateChat", (t) =>
 				});
 			}
 
-			const [updatedChat] = await ctx.drizzleClient
-				.update(chatsTable)
-				.set({
-					avatarURI: parsedArgs.input.avatarURI,
-					description: parsedArgs.input.description,
-					name: parsedArgs.input.name,
-					updaterId: currentUserId,
-				})
-				.where(eq(chatsTable.id, parsedArgs.input.id))
-				.returning();
+			let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
+			let avatarName: string;
 
-			// Updated chat not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
-			if (updatedChat === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-					message: "Something went wrong. Please try again.",
-				});
+			if (isNotNullish(parsedArgs.input.avatar)) {
+				avatarName =
+					existingChat.avatarName === null ? ulid() : existingChat.avatarName;
+				avatarMimeType = parsedArgs.input.avatar.mimetype;
 			}
 
-			return updatedChat;
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [updatedChat] = await tx
+					.update(chatsTable)
+					.set({
+						avatarMimeType: isNotNullish(parsedArgs.input.avatar)
+							? avatarMimeType
+							: null,
+						avatarName: isNotNullish(parsedArgs.input.avatar)
+							? avatarName
+							: null,
+						description: parsedArgs.input.description,
+						name: parsedArgs.input.name,
+						updaterId: currentUserId,
+					})
+					.where(eq(chatsTable.id, parsedArgs.input.id))
+					.returning();
+
+				// Updated chat not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
+				if (updatedChat === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+						message: "Something went wrong. Please try again.",
+					});
+				}
+
+				if (isNotNullish(parsedArgs.input.avatar)) {
+					await ctx.minio.client.putObject(
+						ctx.minio.bucketName,
+						avatarName,
+						parsedArgs.input.avatar.createReadStream(),
+						undefined,
+						{
+							"content-type": parsedArgs.input.avatar.mimetype,
+						},
+					);
+				} else if (
+					parsedArgs.input.avatar !== undefined &&
+					existingChat.avatarName !== null
+				) {
+					await ctx.minio.client.removeObject(
+						ctx.minio.bucketName,
+						existingChat.avatarName,
+					);
+				}
+
+				return updatedChat;
+			});
 		},
 		type: Chat,
 	}),

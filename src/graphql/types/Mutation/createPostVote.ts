@@ -63,7 +63,9 @@ builder.mutationField("createPostVote", (t) =>
 				ctx.drizzleClient.query.postsTable.findFirst({
 					with: {
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -80,7 +82,9 @@ builder.mutationField("createPostVote", (t) =>
 						operators.eq(fields.id, parsedArgs.input.postId),
 				}),
 				ctx.drizzleClient.query.postVotesTable.findFirst({
-					columns: {},
+					columns: {
+						type: true,
+					},
 					where: (fields, operators) =>
 						operators.and(
 							operators.eq(fields.creatorId, currentUserId),

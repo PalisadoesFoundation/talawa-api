@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { chatMembershipsTable } from "./chatMemberships";
 import { chatMessagesTable } from "./chatMessages";
 import { organizationsTable } from "./organizations";
@@ -14,9 +15,15 @@ export const chatsTable = pgTable(
 	"chats",
 	{
 		/**
-		 * URI to the avatar of the chat.
+		 * Mime type of the avatar of the chat.
 		 */
-		avatarURI: text("avatar_uri"),
+		avatarMimeType: text("avatar_mime_type", {
+			enum: imageMimeTypeEnum.options,
+		}),
+		/**
+		 * Primary unique identifier of the chat's avatar.
+		 */
+		avatarName: text("avatar_name"),
 		/**
 		 * Date time at the time the chat was created.
 		 */
@@ -100,7 +107,7 @@ export const chatsTableRelations = relations(chatsTable, ({ one, many }) => ({
 	 * One to many relationship from `chats` table to `chatMessages` table.
 	 */
 	chatMessagesWhereChat: many(chatMessagesTable, {
-		relationName: "chats.id:chatMessages.chat_id",
+		relationName: "chat_messages.chat_id:chats.id",
 	}),
 	/**
 	 * Many to one relationship from `chats` table to `organizations` table.
@@ -121,7 +128,7 @@ export const chatsTableRelations = relations(chatsTable, ({ one, many }) => ({
 }));
 
 export const chatsTableInsertSchema = createInsertSchema(chatsTable, {
-	avatarURI: (schema) => schema.avatarURI.min(1),
+	avatarName: (schema) => schema.avatarName.min(1),
 	description: (schema) => schema.description.min(1).max(2048),
 	name: (schema) => schema.name.min(1).max(256),
 });

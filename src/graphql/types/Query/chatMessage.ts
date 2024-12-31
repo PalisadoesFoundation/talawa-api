@@ -62,15 +62,21 @@ builder.queryField("chatMessage", (t) =>
 				ctx.drizzleClient.query.chatMessagesTable.findFirst({
 					with: {
 						chat: {
-							columns: {},
+							columns: {
+								avatarMimeType: true,
+							},
 							with: {
 								chatMembershipsWhereChat: {
-									columns: {},
+									columns: {
+										role: true,
+									},
 									where: (fields, operators) =>
 										operators.eq(fields.memberId, currentUserId),
 								},
 								organization: {
-									columns: {},
+									columns: {
+										countryCode: true,
+									},
 									with: {
 										organizationMembershipsWhereOrganization: {
 											columns: {

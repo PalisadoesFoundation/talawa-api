@@ -62,10 +62,14 @@ builder.mutationField("createAgendaFolder", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.eventsTable.findFirst({
-					columns: {},
+					columns: {
+						startAt: true,
+					},
 					with: {
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {

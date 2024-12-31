@@ -68,7 +68,9 @@ builder.mutationField("updateVenue", (t) =>
 					},
 					with: {
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {

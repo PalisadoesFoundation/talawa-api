@@ -2,6 +2,7 @@ name: ${COMPOSE_PROJECT_NAME:?error}
 # https://docs.docker.com/reference/compose-file/networks/
 networks:
   api:
+  minio:
   postgres:
 # https://docs.docker.com/reference/compose-file/services
 services:
@@ -20,6 +21,10 @@ services:
       target: production
     # https://docs.docker.com/reference/compose-file/services/#depends_on
     depends_on:
+      minio:
+        condition: service_healthy
+        # Should be set to false when a third party minio service could be used in the api service and the `minio` compose profile is disabled.
+        required: false
       postgres:
         condition: service_healthy
         # Should be set to false when a third party postgres service could be used in the api service the and the `postgres` compose profile is disabled.
@@ -29,6 +34,7 @@ services:
     environment:
       - API_ADMINISTRATOR_USER_EMAIL_ADDRESS=${API_ADMINISTRATOR_USER_EMAIL_ADDRESS:?error}
       - API_ADMINISTRATOR_USER_PASSWORD=${API_ADMINISTRATOR_USER_PASSWORD:?error}
+      - API_BASE_URL=${API_BASE_URL:?error}
       - API_HOST=${API_HOST:?error}
       - API_IS_APPLY_DRIZZLE_MIGRATIONS=${API_IS_APPLY_DRIZZLE_MIGRATIONS:?error}
       - API_IS_GRAPHIQL=${API_IS_GRAPHIQL:?error}
@@ -36,6 +42,11 @@ services:
       - API_JWT_EXPIRES_IN=${API_JWT_EXPIRES_IN:?error}
       - API_JWT_SECRET=${API_JWT_SECRET:?error}
       - API_LOG_LEVEL=${API_LOG_LEVEL:?error}
+      - API_MINIO_ACCESS_KEY=${API_MINIO_ACCESS_KEY:?error}
+      - API_MINIO_END_POINT=${API_MINIO_END_POINT:?error}
+      - API_MINIO_PORT=${API_MINIO_PORT:?error}
+      - API_MINIO_SECRET_KEY=${API_MINIO_SECRET_KEY:?error}
+      - API_MINIO_USE_SSL=${API_MINIO_USE_SSL:?error}
       - API_PORT=${API_PORT:?error}
       - API_POSTGRES_DATABASE=${API_POSTGRES_DATABASE:?error}
       - API_POSTGRES_HOST=${API_POSTGRES_HOST:?error}
@@ -64,6 +75,7 @@ services:
     # https://docs.docker.com/reference/compose-file/services/#networks
     networks:
       - api
+      - minio
       - postgres
     # https://docs.docker.com/reference/compose-file/services/#profiles
     profiles:
@@ -121,6 +133,44 @@ services:
       # - source: ./docker/admin
       #   target: /srv
       #   type: bind
+  minio:
+    # https://docs.docker.com/compose/environment-variables/
+    # https://docs.docker.com/reference/compose-file/services/#environment
+    environment:
+      - MINIO_BROWSER=${MINIO_BROWSER:?error}
+        # https://min.io/docs/minio/linux/reference/minio-server/settings/root-credentials.html#envvar.MINIO_ROOT_PASSWORD
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:?error}
+        # https://min.io/docs/minio/linux/reference/minio-server/settings/root-credentials.html#root-user
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:?error}
+    # https://docs.docker.com/reference/compose-file/services/#command
+    command: server /data --console-address ":9001"
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      # https://github.com/minio/minio/issues/18373
+      # https://min.io/docs/minio/linux/reference/minio-mc/mc-ready.html
+      test: ["CMD-SHELL", "mc ready local"]
+      timeout: 10s
+    # https://docs.docker.com/reference/compose-file/services/#image
+    # https://hub.docker.com/r/minio/minio
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    # https://docs.docker.com/reference/compose-file/services/#networks
+    networks:
+      - minio
+    # https://docs.docker.com/reference/compose-file/services/#profiles
+    profiles:
+      - minio
+    # https://docs.docker.com/reference/compose-file/services/#restart
+    restart: unless-stopped
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - source: minio_data
+        target: /data
+        type: volume
   postgres:
     # https://docs.docker.com/compose/environment-variables/
     # https://docs.docker.com/reference/compose-file/services/#environment
@@ -144,7 +194,7 @@ services:
       timeout: 10s
     # https://docs.docker.com/reference/compose-file/services/#image
     # https://hub.docker.com/_/postgres
-    image: postgres:17.0-alpine3.20
+    image: postgres:17.2-alpine3.21
     # https://docs.docker.com/reference/compose-file/services/#networks
     networks:
       - postgres
@@ -162,4 +212,5 @@ services:
 volumes:
   caddy_config:
   caddy_data:
+  minio_data:
   postgres_data:

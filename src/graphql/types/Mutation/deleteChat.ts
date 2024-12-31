@@ -62,7 +62,9 @@ builder.mutationField("deleteChat", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.chatsTable.findFirst({
-					columns: {},
+					columns: {
+						avatarName: true,
+					},
 					with: {
 						chatMembershipsWhereChat: {
 							columns: {
@@ -72,7 +74,9 @@ builder.mutationField("deleteChat", (t) =>
 								operators.eq(fields.memberId, currentUserId),
 						},
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -138,22 +142,31 @@ builder.mutationField("deleteChat", (t) =>
 				});
 			}
 
-			const [deletedChat] = await ctx.drizzleClient
-				.delete(chatsTable)
-				.where(eq(chatsTable.id, parsedArgs.input.id))
-				.returning();
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [deletedChat] = await tx
+					.delete(chatsTable)
+					.where(eq(chatsTable.id, parsedArgs.input.id))
+					.returning();
 
-			// Deleted chat not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
-			if (deletedChat === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-					message: "Something went wrong. Please try again.",
-				});
-			}
+				// Deleted chat not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
+				if (deletedChat === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+						message: "Something went wrong. Please try again.",
+					});
+				}
 
-			return deletedChat;
+				if (existingChat.avatarName !== null) {
+					await ctx.minio.client.removeObject(
+						ctx.minio.bucketName,
+						existingChat.avatarName,
+					);
+				}
+
+				return deletedChat;
+			});
 		},
 		type: Chat,
 	}),

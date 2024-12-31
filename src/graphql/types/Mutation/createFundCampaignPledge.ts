@@ -74,10 +74,14 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 									operators.eq(fields.pledgerId, parsedArgs.input.pledgerId),
 							},
 							fund: {
-								columns: {},
+								columns: {
+									isTaxDeductible: true,
+								},
 								with: {
 									organization: {
-										columns: {},
+										columns: {
+											countryCode: true,
+										},
 										with: {
 											organizationMembershipsWhereOrganization: {
 												columns: {
@@ -99,7 +103,9 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 							operators.eq(fields.id, parsedArgs.input.campaignId),
 					}),
 					ctx.drizzleClient.query.usersTable.findFirst({
-						columns: {},
+						columns: {
+							role: true,
+						},
 						where: (fields, operators) =>
 							operators.eq(fields.id, parsedArgs.input.pledgerId),
 					}),

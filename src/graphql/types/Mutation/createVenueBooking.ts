@@ -61,7 +61,9 @@ builder.mutationField("createVenueBooking", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.eventsTable.findFirst({
-					columns: {},
+					columns: {
+						startAt: true,
+					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.eventId),
 				}),
@@ -70,7 +72,9 @@ builder.mutationField("createVenueBooking", (t) =>
 						operators.eq(fields.id, parsedArgs.input.venueId),
 					with: {
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -82,7 +86,9 @@ builder.mutationField("createVenueBooking", (t) =>
 							},
 						},
 						venueBookingsWhereVenue: {
-							columns: {},
+							columns: {
+								creatorId: true,
+							},
 							where: (fields, operators) =>
 								operators.eq(fields.eventId, parsedArgs.input.eventId),
 						},

@@ -92,7 +92,7 @@ export const advertisementsTable = pgTable(
 			onUpdate: "cascade",
 		}),
 		/**
-		 * Type of the attachment.
+		 * Mime type of the attachment.
 		 */
 		type: text("type", {
 			enum: advertisementTypeEnum.options,

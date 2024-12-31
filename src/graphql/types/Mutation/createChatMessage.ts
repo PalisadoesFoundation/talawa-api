@@ -61,15 +61,21 @@ builder.mutationField("createChatMessage", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.chatsTable.findFirst({
-					columns: {},
+					columns: {
+						avatarMimeType: true,
+					},
 					with: {
 						chatMembershipsWhereChat: {
-							columns: {},
+							columns: {
+								role: true,
+							},
 							where: (fields, operators) =>
 								operators.eq(fields.memberId, currentUserId),
 						},
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -114,7 +120,9 @@ builder.mutationField("createChatMessage", (t) =>
 
 				const existingChatMessage =
 					await ctx.drizzleClient.query.chatMessagesTable.findFirst({
-						columns: {},
+						columns: {
+							updatedAt: true,
+						},
 						where: (fields, operators) =>
 							operators.and(
 								operators.eq(fields.chatId, parsedArgs.input.chatId),

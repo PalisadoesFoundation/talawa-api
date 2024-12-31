@@ -62,11 +62,15 @@ builder.mutationField("deleteAdvertisement", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.advertisementsTable.findFirst({
-					columns: {},
+					columns: {
+						type: true,
+					},
 					with: {
 						advertisementAttachmentsWhereAdvertisement: true,
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -129,24 +133,33 @@ builder.mutationField("deleteAdvertisement", (t) =>
 				});
 			}
 
-			const [deletedAdvertisement] = await ctx.drizzleClient
-				.delete(advertisementsTable)
-				.where(eq(advertisementsTable.id, parsedArgs.input.id))
-				.returning();
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [deletedAdvertisement] = await tx
+					.delete(advertisementsTable)
+					.where(eq(advertisementsTable.id, parsedArgs.input.id))
+					.returning();
 
-			// Deleted advertisement not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation.
-			if (deletedAdvertisement === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-					message: "Something went wrong. Please try again.",
+				// Deleted advertisement not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation.
+				if (deletedAdvertisement === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+						message: "Something went wrong. Please try again.",
+					});
+				}
+
+				await ctx.minio.client.removeObjects(
+					ctx.minio.bucketName,
+					existingAdvertisement.advertisementAttachmentsWhereAdvertisement.map(
+						(attachment) => attachment.name,
+					),
+				);
+
+				return Object.assign(deletedAdvertisement, {
+					attachments:
+						existingAdvertisement.advertisementAttachmentsWhereAdvertisement,
 				});
-			}
-
-			return Object.assign(deletedAdvertisement, {
-				attachments:
-					existingAdvertisement.advertisementAttachmentsWhereAdvertisement,
 			});
 		},
 		type: Advertisement,
