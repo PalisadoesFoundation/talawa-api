@@ -35,7 +35,7 @@ describe("middleware -> requestContext", () => {
     );
     expect(nextFunction).toBeCalledTimes(1);
   });
-  
+
   it("basic storing and retrieving the key value pair", () => {
     requestTracingNamespace.set(tracingIdContextKeyName, "value");
     const response = requestTracingNamespace.get(tracingIdContextKeyName);

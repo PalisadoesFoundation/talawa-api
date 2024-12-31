@@ -74,7 +74,7 @@ export const middleware = () => {
       .catch((error) => {
         next(error);
       });
-      next();
+    next();
   };
 };
 
