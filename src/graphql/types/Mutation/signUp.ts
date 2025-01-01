@@ -12,8 +12,8 @@ import {
 	mutationSignUpInputSchema,
 } from "~/src/graphql/inputs/MutationSignUpInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationSignUpArgumentsSchema = z.object({
 	input: mutationSignUpInputSchema.transform(async (arg, ctx) => {
@@ -67,7 +67,6 @@ builder.mutationField("signUp", (t) =>
 					extensions: {
 						code: "forbidden_action",
 					},
-					message: "Only unauthenticated users can perform this action.",
 				});
 			}
 
@@ -86,7 +85,6 @@ builder.mutationField("signUp", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -106,8 +104,6 @@ builder.mutationField("signUp", (t) =>
 							},
 						],
 					},
-					message:
-						"This action is forbidden on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -160,7 +156,6 @@ builder.mutationField("signUp", (t) =>
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again.",
 					});
 				}
 

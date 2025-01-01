@@ -2,12 +2,12 @@ import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
 import type { z } from "zod";
 import { chatsTable, chatsTableInsertSchema } from "~/src/drizzle/tables/chats";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Organization } from "./Organization";
 
 const chatsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -66,7 +66,6 @@ Organization.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -150,8 +149,6 @@ Organization.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 

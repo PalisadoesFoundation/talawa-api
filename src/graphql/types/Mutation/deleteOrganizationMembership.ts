@@ -7,7 +7,7 @@ import {
 	mutationDeleteOrganizationMembershipInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteOrganizationMembershipInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeleteOrganizationMembershipArgumentsSchema = z.object({
 	input: mutationDeleteOrganizationMembershipInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -106,7 +104,6 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -123,7 +120,6 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -137,7 +133,6 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -151,7 +146,6 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -168,7 +162,6 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -193,8 +186,6 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 								},
 							],
 						},
-						message:
-							"You are not authorized to perform this action on the resources associated to the provided arguments.",
 					});
 				}
 			}
@@ -221,7 +212,6 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

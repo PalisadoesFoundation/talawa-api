@@ -5,12 +5,12 @@ import {
 	chatMessagesTableInsertSchema,
 } from "~/src/drizzle/tables/chatMessages";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Chat } from "./Chat";
 
 const messagesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -65,7 +65,6 @@ Chat.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -136,8 +135,6 @@ Chat.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 

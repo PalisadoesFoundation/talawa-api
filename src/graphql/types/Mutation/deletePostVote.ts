@@ -7,7 +7,7 @@ import {
 	mutationDeletePostVoteInputSchema,
 } from "~/src/graphql/inputs/MutationDeletePostVoteInput";
 import { Post } from "~/src/graphql/types/Post/Post";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeletePostVoteArgumentsSchema = z.object({
 	input: mutationDeletePostVoteInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("deletePostVote", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("deletePostVote", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -105,7 +103,6 @@ builder.mutationField("deletePostVote", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -122,7 +119,6 @@ builder.mutationField("deletePostVote", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -136,7 +132,6 @@ builder.mutationField("deletePostVote", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -150,7 +145,6 @@ builder.mutationField("deletePostVote", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -167,7 +161,6 @@ builder.mutationField("deletePostVote", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -192,8 +185,6 @@ builder.mutationField("deletePostVote", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -216,8 +207,6 @@ builder.mutationField("deletePostVote", (t) =>
 								},
 							],
 						},
-						message:
-							"You are not authorized to perform this action on the resources associated to the provided arguments.",
 					});
 				}
 
@@ -237,8 +226,6 @@ builder.mutationField("deletePostVote", (t) =>
 								},
 							],
 						},
-						message:
-							"You are not authorized to perform this action on the resources associated to the provided arguments.",
 					});
 				}
 			}
@@ -259,7 +246,6 @@ builder.mutationField("deletePostVote", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

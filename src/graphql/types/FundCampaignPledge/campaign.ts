@@ -1,5 +1,5 @@
 import { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { FundCampaignPledge } from "./FundCampaignPledge";
 
 FundCampaignPledge.implement({
@@ -24,7 +24,6 @@ FundCampaignPledge.implement({
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again later.",
 					});
 				}
 

@@ -16,12 +16,12 @@ import {
 	agendaFoldersTableInsertSchema,
 } from "~/src/drizzle/tables/agendaFolders";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Event } from "./Event";
 
 const agendaFoldersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -80,7 +80,6 @@ Event.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -175,8 +174,6 @@ Event.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 

@@ -17,12 +17,12 @@ import {
 	postVotesTableInsertSchema,
 } from "~/src/drizzle/tables/postVotes";
 import { User } from "~/src/graphql/types/User/User";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Post } from "./Post";
 
 const downVotersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -78,7 +78,6 @@ Post.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -182,8 +181,6 @@ Post.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 

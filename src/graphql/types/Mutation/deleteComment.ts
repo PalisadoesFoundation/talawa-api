@@ -7,7 +7,7 @@ import {
 	mutationDeleteCommentInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteCommentInput";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeleteCommentArgumentsSchema = z.object({
 	input: mutationDeleteCommentInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("deleteComment", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("deleteComment", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -98,7 +96,6 @@ builder.mutationField("deleteComment", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -112,7 +109,6 @@ builder.mutationField("deleteComment", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -135,8 +131,6 @@ builder.mutationField("deleteComment", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -151,7 +145,6 @@ builder.mutationField("deleteComment", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

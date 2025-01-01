@@ -5,7 +5,7 @@ import {
 	subscriptionChatMessageCreateInputSchema,
 } from "~/src/graphql/inputs/SubscriptionChatMessageCreateInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const subscriptionChatMessageCreateArgumentsSchema = z.object({
 	input: subscriptionChatMessageCreateInputSchema,
@@ -38,7 +38,6 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -60,7 +59,6 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 

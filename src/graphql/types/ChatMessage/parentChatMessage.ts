@@ -1,4 +1,4 @@
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { ChatMessage } from "./ChatMessage";
 
 ChatMessage.implement({
@@ -28,7 +28,6 @@ ChatMessage.implement({
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again later.",
 					});
 				}
 

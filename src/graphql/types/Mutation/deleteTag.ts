@@ -7,7 +7,7 @@ import {
 	mutationDeleteTagInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteTagInput";
 import { Tag } from "~/src/graphql/types/Tag/Tag";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeleteTagArgumentsSchema = z.object({
 	input: mutationDeleteTagInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("deleteTag", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("deleteTag", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -90,7 +88,6 @@ builder.mutationField("deleteTag", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -104,7 +101,6 @@ builder.mutationField("deleteTag", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -125,8 +121,6 @@ builder.mutationField("deleteTag", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -141,7 +135,6 @@ builder.mutationField("deleteTag", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

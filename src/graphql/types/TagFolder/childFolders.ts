@@ -4,12 +4,12 @@ import {
 	tagFoldersTable,
 	tagFoldersTableInsertSchema,
 } from "~/src/drizzle/tables/tagFolders";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { TagFolder } from "./TagFolder";
 
 const childFoldersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -64,7 +64,6 @@ TagFolder.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -135,8 +134,6 @@ TagFolder.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 

@@ -5,7 +5,7 @@ import {
 	queryFundCampaignPledgeInputSchema,
 } from "~/src/graphql/inputs/QueryFundCampaignPledgeInput";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryFundCampaignPledgeArgumentsSchema = z.object({
 	input: queryFundCampaignPledgeInputSchema,
@@ -27,7 +27,6 @@ builder.queryField("fundCampaignPledge", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -46,7 +45,6 @@ builder.queryField("fundCampaignPledge", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -64,7 +62,6 @@ builder.queryField("fundCampaignPledge", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -111,7 +108,6 @@ builder.queryField("fundCampaignPledge", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -134,8 +130,6 @@ builder.queryField("fundCampaignPledge", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 

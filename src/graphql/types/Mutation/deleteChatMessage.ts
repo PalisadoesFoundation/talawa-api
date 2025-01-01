@@ -7,7 +7,7 @@ import {
 	mutationDeleteChatMessageInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteChatMessageInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeleteChatMessageArgumentsSchema = z.object({
 	input: mutationDeleteChatMessageInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("deleteChatMessage", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("deleteChatMessage", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -105,7 +103,6 @@ builder.mutationField("deleteChatMessage", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -119,7 +116,6 @@ builder.mutationField("deleteChatMessage", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -146,8 +142,6 @@ builder.mutationField("deleteChatMessage", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -162,7 +156,6 @@ builder.mutationField("deleteChatMessage", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

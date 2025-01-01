@@ -7,7 +7,7 @@ import {
 	mutationUpdateCommentInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateCommentInput";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateCommentArgumentsSchema = z.object({
 	input: mutationUpdateCommentInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("updateComment", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("updateComment", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -98,7 +96,6 @@ builder.mutationField("updateComment", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -112,7 +109,6 @@ builder.mutationField("updateComment", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -134,8 +130,6 @@ builder.mutationField("updateComment", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -154,7 +148,6 @@ builder.mutationField("updateComment", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

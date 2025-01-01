@@ -7,7 +7,7 @@ import type {
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
-} from "~/src/utilities/talawaGraphQLError";
+} from "~/src/utilities/TalawaGraphQLError";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { Mutation_signUp, Query_signIn } from "../documentNodes";

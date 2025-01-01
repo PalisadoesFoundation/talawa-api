@@ -1,6 +1,6 @@
 import { and, count, eq } from "drizzle-orm";
 import { commentVotesTable } from "~/src/drizzle/tables/commentVotes";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Comment } from "./Comment";
 
 Comment.implement({
@@ -30,7 +30,6 @@ Comment.implement({
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again.",
 					});
 				}
 

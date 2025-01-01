@@ -84,7 +84,7 @@ export type ForbiddenActionOnArgumentsAssociatedResourcesExtensions = {
  *  extensions: {
  *      code: "unauthenticated"
  *  },
- * 	message: "Only authenticated users can perform this action.",
+ *
  * })
  */
 export type UnauthenticatedExtensions = {
@@ -113,7 +113,7 @@ export type UnauthenticatedExtensions = {
  *          },
  *      ],
  *  },
- *  message: "Invalid arguments provided.",
+ *
  * })
  */
 export type InvalidArgumentsExtensions = {
@@ -213,6 +213,24 @@ export type TalawaGraphQLErrorExtensions =
 	| UnauthorizedArgumentsExtensions
 	| UnexpectedExtensions;
 
+export const defaultTalawaGraphQLErrorMessages: {
+	[Key in TalawaGraphQLErrorExtensions["code"]]: string;
+} = {
+	arguments_associated_resources_not_found:
+		"No associated resources found for the provided arguments.",
+	forbidden_action: "This action is forbidden.",
+	forbidden_action_on_arguments_associated_resources:
+		"This action is forbidden on the resources associated to the provided arguments.",
+	invalid_arguments: "You have provided invalid arguments for this action.",
+	unauthenticated: "You must be authenticated to perform this action.",
+	unauthorized_action: "You are not authorized to perform this action.",
+	unauthorized_action_on_arguments_associated_resources:
+		"You are not authorized to perform this action on the resources associated to the provided arguments.",
+	unauthorized_arguments:
+		"You are not authorized to perform this action with the provided arguments.",
+	unexpected: "Something went wrong. Please try again later.",
+};
+
 /**
  * This class extends the `GraphQLError` class and is used to create graphql error instances with strict typescript assertion on providing the error metadata within the `extensions` field. This assertion prevents talawa api contributers from returning arbitrary, undocumented errors to the talawa api graphql clients.
  *
@@ -235,7 +253,7 @@ export type TalawaGraphQLErrorExtensions =
  * 					},
  * 				],
  *			},
- * 			message: "No associated resources found for the provided arguments.",
+ *
  *      })
  *	}
  *
@@ -248,8 +266,11 @@ export class TalawaGraphQLError extends GraphQLError {
 		...options
 	}: GraphQLErrorOptions & {
 		extensions: TalawaGraphQLErrorExtensions;
-		message: string;
+		message?: string;
 	}) {
+		if (message === undefined) {
+			message = defaultTalawaGraphQLErrorMessages[options.extensions.code];
+		}
 		super(message, options);
 	}
 }

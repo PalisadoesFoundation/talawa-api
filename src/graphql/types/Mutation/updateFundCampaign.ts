@@ -7,7 +7,7 @@ import {
 	mutationUpdateFundCampaignInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateFundCampaignInput";
 import { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateFundCampaignArgumentsSchema = z.object({
 	input: mutationUpdateFundCampaignInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("updateFundCampaign", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("updateFundCampaign", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -100,7 +98,6 @@ builder.mutationField("updateFundCampaign", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -114,7 +111,6 @@ builder.mutationField("updateFundCampaign", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -133,7 +129,6 @@ builder.mutationField("updateFundCampaign", (t) =>
 							},
 						],
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -152,7 +147,6 @@ builder.mutationField("updateFundCampaign", (t) =>
 							},
 						],
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -182,8 +176,6 @@ builder.mutationField("updateFundCampaign", (t) =>
 								},
 							],
 						},
-						message:
-							"This action is forbidden on the resources associated to the provided arguments.",
 					});
 				}
 			}
@@ -206,8 +198,6 @@ builder.mutationField("updateFundCampaign", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -228,7 +218,6 @@ builder.mutationField("updateFundCampaign", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 
