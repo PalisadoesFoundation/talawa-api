@@ -68,7 +68,6 @@ export const middleware = () => {
 
         requestTracingNamespace.run(() => {
           setTracingId(tracingId);
-          next();
         });
       })
       .catch((error) => {
