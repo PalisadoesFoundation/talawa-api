@@ -45,7 +45,7 @@ Organization.implement({
 		tags: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the tags associated to the organization.",
+					"GraphQL connection to traverse through the tags belonging to the organization.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({

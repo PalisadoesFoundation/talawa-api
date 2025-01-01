@@ -45,7 +45,7 @@ Organization.implement({
 		posts: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the posts associated to the organization.",
+					"GraphQL connection to traverse through the posts belonging to the organization.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({

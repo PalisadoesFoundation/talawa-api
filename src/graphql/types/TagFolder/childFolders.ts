@@ -47,7 +47,7 @@ TagFolder.implement({
 		childFolders: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the tag folders that have the tag folder as their parent folder.",
+					"GraphQL connection to traverse through the tag folders contained within the tag folder.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,

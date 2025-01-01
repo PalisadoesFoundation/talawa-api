@@ -52,7 +52,7 @@ Event.implement({
 		venues: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the venues that are associated to the event.",
+					"GraphQL connection to traverse through the venues that are booked for the event.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({

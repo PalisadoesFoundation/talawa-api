@@ -7,7 +7,7 @@ export const EventAttachment =
 	builder.objectRef<EventAttachment>("EventAttachment");
 
 EventAttachment.implement({
-	description: "",
+	description: "Attachment of the event.",
 	fields: (t) => ({
 		mimeType: t.exposeString("mimeType", {
 			description: "Mime type of the attachment.",

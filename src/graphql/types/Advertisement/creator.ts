@@ -5,7 +5,7 @@ import { Advertisement } from "./Advertisement";
 Advertisement.implement({
 	fields: (t) => ({
 		creator: t.field({
-			description: "User who created the advertisement.",
+			description: "User who first created the advertisement.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -69,7 +69,7 @@ Advertisement.implement({
 					},
 				);
 
-				// Creator id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Creator id existing but the associated user not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingUser === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for an advertisement's creator id that isn't null.",

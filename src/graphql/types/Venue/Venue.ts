@@ -6,7 +6,8 @@ export type Venue = typeof venuesTable.$inferSelect;
 export const Venue = builder.objectRef<Venue>("Venue");
 
 Venue.implement({
-	description: "",
+	description:
+		"Venues are physical locations associated to organizations where they conduct their events.",
 	fields: (t) => ({
 		description: t.exposeString("description", {
 			description: "Custom information about the venue.",

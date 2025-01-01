@@ -48,7 +48,7 @@ Post.implement({
 		comments: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the comments associated to the post.",
+					"GraphQL connection to traverse through the comments created under the post.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({

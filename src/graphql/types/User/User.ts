@@ -12,7 +12,7 @@ export type User = typeof usersTable.$inferSelect;
 export const User = builder.objectRef<User>("User");
 
 User.implement({
-	description: "",
+	description: "Users are the recognized identities of clients using talawa.",
 	fields: (t) => ({
 		address: t.exposeString("address", {
 			description: "Address of the user.",

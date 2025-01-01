@@ -45,7 +45,7 @@ Organization.implement({
 		funds: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the funds that are associated to the organization.",
+					"GraphQL connection to traverse through the funds belonging to the organization.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,

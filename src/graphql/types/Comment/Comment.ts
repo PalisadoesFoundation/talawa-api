@@ -6,7 +6,7 @@ export type Comment = typeof commentsTable.$inferSelect;
 export const Comment = builder.objectRef<Comment>("Comment");
 
 Comment.implement({
-	description: "",
+	description: "Comments are written opinions or reactions by users on a post.",
 	fields: (t) => ({
 		body: t.exposeString("body", {
 			description: "Body of the comment.",

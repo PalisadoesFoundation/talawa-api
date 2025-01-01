@@ -4,7 +4,7 @@ import { Advertisement } from "./Advertisement";
 Advertisement.implement({
 	fields: (t) => ({
 		createdAt: t.field({
-			description: "Date time at the time the advertisement was created.",
+			description: "Date time at the time the advertisement was first created.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

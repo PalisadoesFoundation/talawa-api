@@ -6,7 +6,8 @@ export type ChatMessage = typeof chatMessagesTable.$inferSelect;
 export const ChatMessage = builder.objectRef<ChatMessage>("ChatMessage");
 
 ChatMessage.implement({
-	description: "",
+	description:
+		"Chat messages are conversations members of a chat have with each other.",
 	fields: (t) => ({
 		body: t.exposeString("body", {
 			description: "Body of the chat message.",

@@ -49,7 +49,7 @@ Organization.implement({
 		chats: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the chats that are associated to the organization.",
+					"GraphQL connection to traverse through the chats belonging to the organization.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,

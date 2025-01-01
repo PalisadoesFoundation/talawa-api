@@ -5,7 +5,7 @@ import { Tag } from "./Tag";
 Tag.implement({
 	fields: (t) => ({
 		folder: t.field({
-			description: "Tag folder the tag is associated to.",
+			description: "Tag folder the tag is contained within.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -64,7 +64,7 @@ Tag.implement({
 						where: (fields, operators) => operators.eq(fields.id, folderId),
 					});
 
-				// Folder id existing but the associated tag folder not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Folder id existing but the associated tag folder not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingFolder === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a tag's folder id that isn't null.",

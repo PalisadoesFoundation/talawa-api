@@ -5,7 +5,7 @@ import { Organization } from "./Organization";
 Organization.implement({
 	fields: (t) => ({
 		creator: t.field({
-			description: "User who created the organization.",
+			description: "User who first created the organization.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

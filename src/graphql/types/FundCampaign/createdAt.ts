@@ -4,7 +4,7 @@ import { FundCampaign } from "./FundCampaign";
 FundCampaign.implement({
 	fields: (t) => ({
 		createdAt: t.field({
-			description: "Date time at the time the fund campaign was created.",
+			description: "Date time at the time the fund campaign was first created.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -58,7 +58,7 @@ FundCampaign.implement({
 					});
 				}
 
-				// Fund id existing but the associated fund not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Fund id existing but the associated fund not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingFund === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a fund campaign's fund id that isn't null.",

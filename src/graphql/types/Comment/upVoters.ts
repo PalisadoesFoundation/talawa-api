@@ -61,7 +61,7 @@ Comment.implement({
 		upVoters: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the voters that up voted the comment.",
+					"GraphQL connection to traverse through the users that up voted the comment.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,

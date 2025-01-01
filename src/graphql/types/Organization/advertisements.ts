@@ -48,7 +48,7 @@ Organization.implement({
 		advertisements: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the advertisements associated to the organization.",
+					"GraphQL connection to traverse through the advertisements belonging to the organization.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({

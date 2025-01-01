@@ -12,7 +12,8 @@ export type Event = typeof eventsTable.$inferSelect & {
 export const Event = builder.objectRef<Event>("Event");
 
 Event.implement({
-	description: "",
+	description:
+		"Events are occurrences that take place for specific purposes at specific times.",
 	fields: (t) => ({
 		attachments: t.expose("attachments", {
 			description: "Array of attachments.",

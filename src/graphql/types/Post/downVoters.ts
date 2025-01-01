@@ -61,7 +61,7 @@ Post.implement({
 		downVoters: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the voters that down voted the post.",
+					"GraphQL connection to traverse through the users that down voted the post.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,

@@ -5,7 +5,7 @@ import { Organization } from "./Organization";
 Organization.implement({
 	fields: (t) => ({
 		postsCount: t.field({
-			description: "Total number of posts in the organization.",
+			description: "Total number of posts belonging to the organization.",
 			resolve: async (parent, _args, ctx) => {
 				const [postsCount] = await ctx.drizzleClient
 					.select({

@@ -62,7 +62,7 @@ AgendaItem.implement({
 					});
 				}
 
-				// Folder id existing but the associated agenda folder not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Folder id existing but the associated agenda folder not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingAgendaFolder === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for an agenda item's folder id that isn't null.",
@@ -107,7 +107,7 @@ AgendaItem.implement({
 					},
 				);
 
-				// Creator id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Creator id existing but the associated user not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingUser === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for an agenda item's creator id that isn't null.",

@@ -18,7 +18,7 @@ ChatMessage.implement({
 							operators.eq(fields.id, parentChatMessageId),
 					});
 
-				// Parent chat message id existing but the associated chat message not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Parent chat message id existing but the associated chat message not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingChatMessage === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a chat message's parent chat message id that isn't null.",

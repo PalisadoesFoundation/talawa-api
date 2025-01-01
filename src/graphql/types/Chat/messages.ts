@@ -48,7 +48,7 @@ Chat.implement({
 		messages: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the chat messages that are associated to the chat.",
+					"GraphQL connection to traverse through the messages created within the chat.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,

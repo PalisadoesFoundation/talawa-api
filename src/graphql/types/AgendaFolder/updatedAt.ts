@@ -57,7 +57,7 @@ AgendaFolder.implement({
 					});
 				}
 
-				// Event id existing but the associated event not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Event id existing but the associated event not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingEvent === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for an agenda folder's event id that isn't null.",

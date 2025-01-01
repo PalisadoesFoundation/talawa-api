@@ -6,7 +6,7 @@ export type Tag = typeof tagsTable.$inferSelect;
 export const Tag = builder.objectRef<Tag>("Tag");
 
 Tag.implement({
-	description: "",
+	description: "Tags are a feature to manage organization members.",
 	fields: (t) => ({
 		id: t.exposeID("id", {
 			description: "Global identifier of the tag.",

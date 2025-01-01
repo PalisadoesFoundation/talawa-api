@@ -52,7 +52,7 @@ AgendaFolder.implement({
 		items: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the agenda item associated to the agenda folder.",
+					"GraphQL connection to traverse through the agenda items contained within the agenda folder.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,

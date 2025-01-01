@@ -5,7 +5,7 @@ import { Comment } from "./Comment";
 Comment.implement({
 	fields: (t) => ({
 		post: t.field({
-			description: "Post which the post belongs to.",
+			description: "Post which the comment belongs to.",
 			resolve: async (parent, _args, ctx) => {
 				const existingPost = await ctx.drizzleClient.query.postsTable.findFirst(
 					{
@@ -17,7 +17,7 @@ Comment.implement({
 					},
 				);
 
-				// Post id existing but the associated post not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Post id existing but the associated post not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingPost === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a comment's post id that isn't null.",

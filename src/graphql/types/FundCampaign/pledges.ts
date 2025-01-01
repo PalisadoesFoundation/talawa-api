@@ -48,7 +48,7 @@ FundCampaign.implement({
 		pledges: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the pledges associated to the fund campaign.",
+					"GraphQL connection to traverse through the pledges made under the fund campaign.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,

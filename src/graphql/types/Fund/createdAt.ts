@@ -4,7 +4,7 @@ import { Fund } from "./Fund";
 Fund.implement({
 	fields: (t) => ({
 		createdAt: t.field({
-			description: "Date time at the time the fund was created.",
+			description: "Date time at the time the fund was first created.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

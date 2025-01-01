@@ -12,7 +12,8 @@ export type Post = typeof postsTable.$inferSelect & {
 export const Post = builder.objectRef<Post>("Post");
 
 Post.implement({
-	description: "",
+	description:
+		"Posts are a feature for members of organizations to share text and media within the organization.",
 	fields: (t) => ({
 		attachments: t.expose("attachments", {
 			description: "Array of attachments.",

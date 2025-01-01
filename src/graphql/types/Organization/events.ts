@@ -52,7 +52,7 @@ Organization.implement({
 		events: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the events associated to the organization.",
+					"GraphQL connection to traverse through the events belonging to the organization.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({

@@ -7,7 +7,8 @@ export type FundCampaign = typeof fundCampaignsTable.$inferSelect;
 export const FundCampaign = builder.objectRef<FundCampaign>("FundCampaign");
 
 FundCampaign.implement({
-	description: "",
+	description:
+		"Fund campaigns are specific events created for the purpose of raising organization funds.",
 	fields: (t) => ({
 		currencyCode: t.expose("currencyCode", {
 			description: "Currency code of the fund campaign.",

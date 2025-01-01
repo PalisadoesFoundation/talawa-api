@@ -4,7 +4,7 @@ import { Chat } from "./Chat";
 Chat.implement({
 	fields: (t) => ({
 		createdAt: t.field({
-			description: "Date time at the time the chat was created.",
+			description: "Date time at the time the chat was first created.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

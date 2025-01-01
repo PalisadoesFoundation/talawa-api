@@ -5,7 +5,7 @@ import { Chat } from "./Chat";
 Chat.implement({
 	fields: (t) => ({
 		organization: t.field({
-			description: "Organization which the chat is associated to.",
+			description: "Organization which the chat belongs to.",
 			resolve: async (parent, _args, ctx) => {
 				const existingOrganization =
 					await ctx.drizzleClient.query.organizationsTable.findFirst({
@@ -13,7 +13,7 @@ Chat.implement({
 							operators.eq(fields.id, parent.organizationId),
 					});
 
-				// Organziation id existing but the associated organization not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Organziation id existing but the associated organization not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingOrganization === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a chat's organization id that isn't null.",

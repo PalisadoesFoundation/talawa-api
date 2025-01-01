@@ -63,7 +63,7 @@ Event.implement({
 		agendaFolders: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the agenda folders associated to the event.",
+					"GraphQL connection to traverse through the agenda folders that contain agenda items constituting a part of the agenda for the event.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,
