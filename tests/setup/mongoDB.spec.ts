@@ -117,7 +117,8 @@ describe("Setup -> mongoDB", () => {
   });
 
   it("should return true for a successfull connection with MongoDB", async () => {
-    const url = "mongodb://localhost:27017";
+    const url =
+      "mongodb://localhost:27017/test?replicaSet=rs0&directConnection=true";
     const result = await module.checkConnection(url);
     expect(result).toEqual(true);
   });

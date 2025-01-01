@@ -74,6 +74,7 @@ async function formatDatabase(): Promise<void> {
     Post.deleteMany({}),
     AppUserProfile.deleteMany({}),
     RecurrenceRule.deleteMany({}),
+    Venue.deleteMany({}),
   ]);
   console.log("Cleared all collections\n");
 }

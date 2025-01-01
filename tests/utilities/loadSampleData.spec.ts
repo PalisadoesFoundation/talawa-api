@@ -15,7 +15,7 @@ import { execSync } from "child_process";
 
 describe("Sample Data Import Tests", () => {
   beforeAll(async () => {
-    await connect();
+    await connect("talawa-api");
   });
 
   afterAll(async () => {
