@@ -45,8 +45,8 @@ importers:
         specifier: ^0.38.3
         version: 0.38.3(postgres@3.4.5)
       drizzle-zod:
-        specifier: 0.5.1
-        version: 0.5.1(drizzle-orm@0.38.3(postgres@3.4.5))(zod@3.24.1)
+        specifier: 0.6.1
+        version: 0.6.1(drizzle-orm@0.38.3(postgres@3.4.5))(zod@3.24.1)
       env-schema:
         specifier: ^6.0.0
         version: 6.0.0
@@ -1737,11 +1737,11 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-zod@0.5.1:
-    resolution: {integrity: sha512-C/8bvzUH/zSnVfwdSibOgFjLhtDtbKYmkbPbUCq46QZyZCH6kODIMSOgZ8R7rVjoI+tCj3k06MRJMDqsIeoS4A==}
+  drizzle-zod@0.6.1:
+    resolution: {integrity: sha512-huEbUgnsuR8tupnmLiyB2F1I2H9dswI3GfM36IbIqx9i0YUeYjRsDpJVyFVeziUvI1ogT9JHRL2Q03cC4QmvxA==}
     peerDependencies:
-      drizzle-orm: '>=0.23.13'
-      zod: '*'
+      drizzle-orm: '>=0.36.0'
+      zod: '>=3.0.0'
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -4135,7 +4135,7 @@ snapshots:
     optionalDependencies:
       postgres: 3.4.5
 
-  drizzle-zod@0.5.1(drizzle-orm@0.38.3(postgres@3.4.5))(zod@3.24.1):
+  drizzle-zod@0.6.1(drizzle-orm@0.38.3(postgres@3.4.5))(zod@3.24.1):
     dependencies:
       drizzle-orm: 0.38.3(postgres@3.4.5)
       zod: 3.24.1
