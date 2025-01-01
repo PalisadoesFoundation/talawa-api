@@ -124,7 +124,7 @@ export const agendaItemsTableRelations = relations(
 export const agendaItemsTableInsertSchema = createInsertSchema(
 	agendaItemsTable,
 	{
-		description: (schema) => schema.description.min(1).max(2048),
-		name: (schema) => schema.name.min(1).max(256),
+		description: (schema) => schema.min(1).max(2048),
+		name: (schema) => schema.min(1).max(256),
 	},
 );

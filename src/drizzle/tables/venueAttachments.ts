@@ -105,6 +105,6 @@ export const venueAttachmentsTableRelations = relations(
 export const venueAttachmentsTableInsertSchema = createInsertSchema(
 	venueAttachmentsTable,
 	{
-		name: (schema) => schema.name.min(1),
+		name: (schema) => schema.min(1),
 	},
 );

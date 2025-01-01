@@ -149,6 +149,6 @@ export const fundCampaignsTableRelations = relations(
 export const fundCampaignsTableInsertSchema = createInsertSchema(
 	fundCampaignsTable,
 	{
-		name: (schema) => schema.name.min(1).max(256),
+		name: (schema) => schema.min(1).max(256),
 	},
 );

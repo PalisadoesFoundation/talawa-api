@@ -108,5 +108,5 @@ export const commentsTableRelations = relations(
 );
 
 export const commentsTableInsertSchema = createInsertSchema(commentsTable, {
-	body: (schema) => schema.body.min(1).max(2048),
+	body: (schema) => schema.min(1).max(2048),
 });

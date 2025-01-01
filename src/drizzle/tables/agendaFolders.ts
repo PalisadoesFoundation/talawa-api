@@ -149,6 +149,6 @@ export const agendaFoldersTableRelations = relations(
 export const agendaFoldersTableInsertSchema = createInsertSchema(
 	agendaFoldersTable,
 	{
-		name: (schema) => schema.name.min(1).max(256),
+		name: (schema) => schema.min(1).max(256),
 	},
 );

@@ -149,6 +149,6 @@ export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 }));
 
 export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
-	description: (schema) => schema.description.min(1).max(2048),
-	name: (schema) => schema.name.min(1).max(256),
+	description: (schema) => schema.min(1).max(2048),
+	name: (schema) => schema.min(1).max(256),
 });

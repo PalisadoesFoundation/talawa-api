@@ -130,5 +130,5 @@ export const postsTableRelations = relations(postsTable, ({ many, one }) => ({
 }));
 
 export const postsTableInsertSchema = createInsertSchema(postsTable, {
-	caption: (schema) => schema.caption.min(1).max(2048),
+	caption: (schema) => schema.min(1).max(2048),
 });

@@ -105,6 +105,6 @@ export const postAttachmentsTableRelations = relations(
 export const postAttachmentsTableInsertSchema = createInsertSchema(
 	postAttachmentsTable,
 	{
-		name: (schema) => schema.name.min(1),
+		name: (schema) => schema.min(1),
 	},
 );

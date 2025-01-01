@@ -120,6 +120,6 @@ export const chatMessagesTableRelations = relations(
 export const chatMessagesTableInsertSchema = createInsertSchema(
 	chatMessagesTable,
 	{
-		body: (schema) => schema.body.min(1).max(2048),
+		body: (schema) => schema.min(1).max(2048),
 	},
 );

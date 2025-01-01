@@ -106,6 +106,6 @@ export const advertisementAttachmentsTableRelations = relations(
 export const advertisementAttachmentsTableInsertSchema = createInsertSchema(
 	advertisementAttachmentsTable,
 	{
-		name: (schema) => schema.name.min(1),
+		name: (schema) => schema.min(1),
 	},
 );
