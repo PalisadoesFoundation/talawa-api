@@ -37,7 +37,7 @@
 		"@faker-js/faker": "^9.3.0",
 		"@swc/cli": "0.5.2",
 		"@swc/core": "^1.10.4",
-		"@types/node": "^22.10.2",
+		"@types/node": "^22.10.3",
 		"@vitest/coverage-v8": "^2.1.8",
 		"drizzle-kit": "^0.30.1",
 		"gql.tada": "^1.8.10",
