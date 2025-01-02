@@ -11,9 +11,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 512M
+          cpus: '0.5'
     ports:
-      - "127.0.0.1:27017:27017"
+      - "27017:27017"
     volumes:
       - mongo_data:/data/db
       - ./init-mongo.sh:/init-mongo.sh
@@ -25,6 +26,11 @@ services:
     image: redis/redis-stack-server:latest
     ports:
       - 6379:6379
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
     volumes:
       - redis-data:/data/redis
     networks:
@@ -39,6 +45,11 @@ services:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
     volumes:
       - minio-data:/data
     networks:
@@ -65,20 +76,31 @@ services:
       - MONGO_DB_URL=mongodb://mongo:27017/talawa-api?replicaSet=rs0&directConnection=true
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
     networks:
       - talawa-network
+
   caddy:
     image: caddy/caddy:2.2.1-alpine
     container_name: caddy-service
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "8443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - $PWD/site:/srv
       - caddy_data:/data
       - caddy_config:/config
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
     
 
 volumes:
@@ -90,4 +112,3 @@ volumes:
 
 networks:
   talawa-network:
-    driver: bridge
