@@ -67,10 +67,14 @@ builder.mutationField("updateComment", (t) =>
 					},
 					with: {
 						post: {
-							columns: {},
+							columns: {
+								pinnedAt: true,
+							},
 							with: {
 								organization: {
-									columns: {},
+									columns: {
+										countryCode: true,
+									},
 									with: {
 										organizationMembershipsWhereOrganization: {
 											columns: {

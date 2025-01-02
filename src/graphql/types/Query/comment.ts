@@ -62,13 +62,19 @@ builder.queryField("comment", (t) =>
 				ctx.drizzleClient.query.commentsTable.findFirst({
 					with: {
 						post: {
-							columns: {},
+							columns: {
+								pinnedAt: true,
+							},
 							with: {
 								organization: {
-									columns: {},
+									columns: {
+										countryCode: true,
+									},
 									with: {
 										organizationMembershipsWhereOrganization: {
-											columns: {},
+											columns: {
+												role: true,
+											},
 											where: (fields, operators) =>
 												operators.eq(fields.memberId, currentUserId),
 										},

@@ -61,10 +61,42 @@ export const drizzleEnvConfigSchema = Type.Object({
 export type DrizzleEnvConfig = Static<typeof drizzleEnvConfigSchema>;
 
 /**
+ * JSON schema of a record of minio client environment variables accessible to the talawa api at runtime.
+ */
+export const minioClientEnvConfigSchema = Type.Object({
+	/**
+	 * More information can be found at: {@link https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client}
+	 */
+	API_MINIO_ACCESS_KEY: Type.String(),
+	/**
+	 * More information can be found at: {@link https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client}
+	 */
+	API_MINIO_END_POINT: Type.String(),
+	/**
+	 * More information can be found at: {@link https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client}
+	 */
+	API_MINIO_PORT: Type.Number(),
+	/**
+	 * More information can be found at: {@link https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client}
+	 */
+	API_MINIO_SECRET_KEY: Type.String(),
+	/**
+	 * More information can be found at: {@link https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client}
+	 */
+	API_MINIO_USE_SSL: Type.Boolean(),
+});
+
+/**
+ * Type of the object containing parsed minio client configuration environment variables.
+ */
+export type MinioClientEnvConfig = Static<typeof minioClientEnvConfigSchema>;
+
+/**
  * JSON schema of a record of environment variables accessible to the talawa api at runtime.
  */
 export const envConfigSchema = Type.Composite([
 	drizzleEnvConfigSchema,
+	minioClientEnvConfigSchema,
 	Type.Object({
 		/**
 		 * Email address of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
@@ -76,6 +108,12 @@ export const envConfigSchema = Type.Composite([
 		 * Password of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
 		 */
 		API_ADMINISTRATOR_USER_PASSWORD: Type.String({
+			minLength: 1,
+		}),
+		/**
+		 * Base url that is exposed to the clients for making requests to the talawa api server at runtime.
+		 */
+		API_BASE_URL: Type.String({
 			minLength: 1,
 		}),
 		/**
@@ -95,7 +133,9 @@ export const envConfigSchema = Type.Composite([
 		/**
 		 * Used for providing the number of milli-seconds for setting the expiry time of authentication json web tokens created by talawa api.
 		 */
-		API_JWT_EXPIRES_IN: Type.Number(),
+		API_JWT_EXPIRES_IN: Type.Number({
+			minimum: 0,
+		}),
 		/**
 		 * Used for providing the secret for signing and verifying authentication json web tokens created by talawa api.
 		 */

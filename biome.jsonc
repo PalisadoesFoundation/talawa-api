@@ -12,7 +12,11 @@
 			"./pnpm-lock.yaml",
 			"./schema.graphql",
 			"./test/routes/graphql/gql.tada.d.ts",
-			"./test/routes/graphql/gql.tada-cache.d.ts"
+			"./test/routes/graphql/gql.tada-cache.d.ts",
+			"./docs/tsconfig.json",
+			"./docs/docusaurus.config.ts",
+			"./docs/src/**",
+			"./docs/sidebars.ts"
 		],
 		// https://biomejs.dev/reference/configuration/#filesignoreunknown
 		"ignoreUnknown": true

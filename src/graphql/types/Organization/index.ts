@@ -1,5 +1,6 @@
 import "./Organization";
 import "./advertisements";
+import "./avatarURL";
 import "./chats";
 import "./creator";
 import "./events";

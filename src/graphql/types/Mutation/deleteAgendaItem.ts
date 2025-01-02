@@ -62,16 +62,24 @@ builder.mutationField("deleteAgendaItem", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.agendaItemsTable.findFirst({
-					columns: {},
+					columns: {
+						type: true,
+					},
 					with: {
 						folder: {
-							columns: {},
+							columns: {
+								isAgendaItemFolder: true,
+							},
 							with: {
 								event: {
-									columns: {},
+									columns: {
+										startAt: true,
+									},
 									with: {
 										organization: {
-											columns: {},
+											columns: {
+												countryCode: true,
+											},
 											with: {
 												organizationMembershipsWhereOrganization: {
 													columns: {

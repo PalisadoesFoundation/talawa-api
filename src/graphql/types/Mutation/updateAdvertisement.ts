@@ -70,7 +70,9 @@ builder.mutationField("updateAdvertisement", (t) =>
 					with: {
 						advertisementAttachmentsWhereAdvertisement: true,
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -153,7 +155,9 @@ builder.mutationField("updateAdvertisement", (t) =>
 
 				const existingAdvertisementWithName =
 					await ctx.drizzleClient.query.advertisementsTable.findFirst({
-						columns: {},
+						columns: {
+							type: true,
+						},
 						where: (fields, operators) =>
 							operators.and(
 								operators.eq(fields.name, name),

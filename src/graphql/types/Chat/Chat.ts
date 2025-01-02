@@ -8,8 +8,8 @@ export const Chat = builder.objectRef<Chat>("Chat");
 Chat.implement({
 	description: "",
 	fields: (t) => ({
-		avatarURI: t.exposeString("avatarURI", {
-			description: "URI to the avatar of the chat.",
+		avatarMimeType: t.exposeString("avatarMimeType", {
+			description: "Mime type of the avatar of the chat.",
 		}),
 		description: t.exposeString("description", {
 			description: "Custom information about the chat.",

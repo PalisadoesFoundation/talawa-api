@@ -11,6 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import { userEducationGradeEnum } from "~/src/drizzle/enums/userEducationGrade";
 import { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStatus";
@@ -61,9 +62,15 @@ export const usersTable = pgTable(
 		 */
 		address: text("address"),
 		/**
-		 * URI to the avatar of the user.
+		 * Mime type of the avatar of the user.
 		 */
-		avatarURI: text("avatar_uri"),
+		avatarMimeType: text("avatar_mime_type", {
+			enum: imageMimeTypeEnum.options,
+		}),
+		/**
+		 * Primary unique identifier of the user's avatar.
+		 */
+		avatarName: text("avatar_name"),
 		/**
 		 * Date of birth of the user.
 		 */
@@ -637,7 +644,7 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 
 export const usersTableInsertSchema = createInsertSchema(usersTable, {
 	address: (schema) => schema.address.min(1).max(1024),
-	avatarURI: (schema) => schema.avatarURI.min(1),
+	avatarName: (schema) => schema.avatarName.min(1),
 	city: (schema) => schema.city.min(1).max(64),
 	description: (schema) => schema.description.min(1).max(2048),
 	name: (schema) => schema.name.min(1).max(256),

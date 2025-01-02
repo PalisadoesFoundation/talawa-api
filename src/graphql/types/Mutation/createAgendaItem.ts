@@ -66,10 +66,14 @@ builder.mutationField("createAgendaItem", (t) =>
 					},
 					with: {
 						event: {
-							columns: {},
+							columns: {
+								startAt: true,
+							},
 							with: {
 								organization: {
-									columns: {},
+									columns: {
+										countryCode: true,
+									},
 									with: {
 										organizationMembershipsWhereOrganization: {
 											columns: {

@@ -67,7 +67,9 @@ builder.mutationField("updateFund", (t) =>
 					},
 					with: {
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {
@@ -112,7 +114,9 @@ builder.mutationField("updateFund", (t) =>
 
 				const existingFundWithName =
 					await ctx.drizzleClient.query.fundsTable.findFirst({
-						columns: {},
+						columns: {
+							isTaxDeductible: true,
+						},
 						where: (fields, operators) =>
 							operators.and(
 								operators.eq(fields.name, name),

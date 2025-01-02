@@ -1,10 +1,7 @@
-import type { z } from "zod";
+import type { FileUpload } from "graphql-upload-minimal";
+import { z } from "zod";
 import { venuesTableInsertSchema } from "~/src/drizzle/tables/venues";
 import { builder } from "~/src/graphql/builder";
-import {
-	CreateVenueAttachmentInput,
-	createVenueAttachmentInputSchema,
-} from "./CreateVenueAttachmentInput";
 
 export const mutationCreateVenueInputSchema = venuesTableInsertSchema
 	.pick({
@@ -13,7 +10,8 @@ export const mutationCreateVenueInputSchema = venuesTableInsertSchema
 		organizationId: true,
 	})
 	.extend({
-		attachments: createVenueAttachmentInputSchema
+		attachments: z
+			.custom<Promise<FileUpload>>()
 			.array()
 			.min(1)
 			.max(20)
@@ -29,7 +27,7 @@ export const MutationCreateVenueInput = builder
 		fields: (t) => ({
 			attachments: t.field({
 				description: "Attachments of the venue.",
-				type: t.listRef(CreateVenueAttachmentInput),
+				type: t.listRef("Upload"),
 			}),
 			description: t.string({
 				description: "Custom information about the venue.",

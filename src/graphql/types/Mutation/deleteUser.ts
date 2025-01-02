@@ -52,12 +52,21 @@ builder.mutationField("deleteUser", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-				columns: {
-					role: true,
-				},
-				where: (fields, operators) => operators.eq(fields.id, currentUserId),
-			});
+			const [currentUser, existingUser] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						avatarName: true,
+					},
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.id),
+				}),
+			]);
 
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
@@ -74,6 +83,20 @@ builder.mutationField("deleteUser", (t) =>
 						code: "unauthorized_action",
 					},
 					message: "You are not authorized to perform this action.",
+				});
+			}
+
+			if (existingUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
+					},
+					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -94,27 +117,36 @@ builder.mutationField("deleteUser", (t) =>
 				});
 			}
 
-			const [deletedUser] = await ctx.drizzleClient
-				.delete(usersTable)
-				.where(eq(usersTable.id, parsedArgs.input.id))
-				.returning();
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [deletedUser] = await tx
+					.delete(usersTable)
+					.where(eq(usersTable.id, parsedArgs.input.id))
+					.returning();
 
-			// Deleted user not being returned means that either it was deleted or its `id` column was changed by an external entity before this operation.
-			if (deletedUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "id"],
-							},
-						],
-					},
-					message: "No associated resources found for the provided arguments.",
-				});
-			}
+				// Deleted user not being returned means that either it was deleted or its `id` column was changed by an external entity before this operation.
+				if (deletedUser === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [
+								{
+									argumentPath: ["input", "id"],
+								},
+							],
+						},
+						message:
+							"No associated resources found for the provided arguments.",
+					});
+				}
 
-			return deletedUser;
+				if (existingUser.avatarName !== null)
+					await ctx.minio.client.removeObject(
+						ctx.minio.bucketName,
+						existingUser.avatarName,
+					);
+
+				return deletedUser;
+			});
 		},
 		type: User,
 	}),

@@ -1,10 +1,7 @@
+import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import { postsTableInsertSchema } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
-import {
-	CreatePostAttachmentInput,
-	createPostAttachmentInputSchema,
-} from "./CreatePostAttachmentInput";
 
 export const mutationCreatePostInputSchema = postsTableInsertSchema
 	.pick({
@@ -12,7 +9,8 @@ export const mutationCreatePostInputSchema = postsTableInsertSchema
 		organizationId: true,
 	})
 	.extend({
-		attachments: createPostAttachmentInputSchema
+		attachments: z
+			.custom<Promise<FileUpload>>()
 			.array()
 			.min(1)
 			.max(20)
@@ -29,7 +27,7 @@ export const MutationCreatePostInput = builder
 		fields: (t) => ({
 			attachments: t.field({
 				description: "Attachments of the post.",
-				type: t.listRef(CreatePostAttachmentInput),
+				type: t.listRef("Upload"),
 			}),
 			caption: t.string({
 				description: "Caption about the post.",

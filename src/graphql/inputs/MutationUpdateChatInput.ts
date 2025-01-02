@@ -1,13 +1,14 @@
-import type { z } from "zod";
+import type { FileUpload } from "graphql-upload-minimal";
+import { z } from "zod";
 import { chatsTableInsertSchema } from "~/src/drizzle/tables/chats";
 import { builder } from "~/src/graphql/builder";
 
 export const mutationUpdateChatInputSchema = chatsTableInsertSchema
 	.pick({
-		avatarURI: true,
 		description: true,
 	})
 	.extend({
+		avatar: z.custom<Promise<FileUpload>>().nullish(),
 		id: chatsTableInsertSchema.shape.id.unwrap(),
 		name: chatsTableInsertSchema.shape.name.optional(),
 	})
@@ -25,8 +26,9 @@ export const MutationUpdateChatInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
-			avatarURI: t.string({
-				description: "URI to the avatar of the chat.",
+			avatar: t.field({
+				description: "Avatar of the chat.",
+				type: "Upload",
 			}),
 			description: t.string({
 				description: "Custom information about the chat.",

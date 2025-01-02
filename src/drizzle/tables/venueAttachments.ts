@@ -1,7 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { venueAttachmentTypeEnum } from "~/src/drizzle/enums/venueAttachmentType";
+import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
 import { usersTable } from "./users";
 import { venuesTable } from "./venues";
 
@@ -29,11 +29,15 @@ export const venueAttachmentsTable = pgTable(
 			onUpdate: "cascade",
 		}),
 		/**
-		 * Type of the attachment.
+		 * Mime type of the attachment.
 		 */
-		type: text("type", {
-			enum: venueAttachmentTypeEnum.options,
+		mimeType: text("mime_type", {
+			enum: venueAttachmentMimeTypeEnum.options,
 		}).notNull(),
+		/**
+		 * Identifier name of the attachment.
+		 */
+		name: text("name", {}).notNull(),
 		/**
 		 * Date time at the time the attachment was last updated.
 		 */
@@ -51,10 +55,6 @@ export const venueAttachmentsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
-		/**
-		 * URI to the attachment.
-		 */
-		uri: text("uri", {}).notNull(),
 		/**
 		 * Foreign key reference to the id of the venue that the attachment is associated to.
 		 */
@@ -81,7 +81,7 @@ export const venueAttachmentsTableRelations = relations(
 		creator: one(usersTable, {
 			fields: [venueAttachmentsTable.creatorId],
 			references: [usersTable.id],
-			relationName: "venue_attachments.creator_id:users.id",
+			relationName: "users.id:venue_attachments.creator_id",
 		}),
 		/**
 		 * Many to one relationship from `venue_attachments` table to `users` table.
@@ -89,7 +89,7 @@ export const venueAttachmentsTableRelations = relations(
 		updater: one(usersTable, {
 			fields: [venueAttachmentsTable.updaterId],
 			references: [usersTable.id],
-			relationName: "venue_attachments.updater_id:users.id",
+			relationName: "users.id:venue_attachments.updater_id",
 		}),
 		/**
 		 * Many to one relationship from `venue_attachments` table to `venues` table.
@@ -105,6 +105,6 @@ export const venueAttachmentsTableRelations = relations(
 export const venueAttachmentsTableInsertSchema = createInsertSchema(
 	venueAttachmentsTable,
 	{
-		uri: (schema) => schema.uri.min(1),
+		name: (schema) => schema.name.min(1),
 	},
 );

@@ -89,7 +89,7 @@ suite("User field updatedAt", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								emailAddress: `email${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -179,7 +179,7 @@ suite("User field updatedAt", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								emailAddress: `email${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -210,10 +210,6 @@ suite("User field updatedAt", () => {
 						},
 					},
 				);
-
-				console.log("====================");
-				console.log(userUpdatedAtResult.errors);
-				console.log("====================");
 
 				expect(userUpdatedAtResult.data.user?.updatedAt).toEqual(null);
 				expect(userUpdatedAtResult.errors).toEqual(
@@ -301,7 +297,7 @@ suite("User field updatedAt", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								emailAddress: `email${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",

@@ -63,7 +63,7 @@ suite("Mutation field deleteCurrentUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								emailAddress: `email${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -138,7 +138,7 @@ suite("Mutation field deleteCurrentUser", () => {
 			},
 			variables: {
 				input: {
-					emailAddress: `email${faker.string.nanoid()}@email.com`,
+					emailAddress: `email${faker.string.ulid()}@email.com`,
 					isEmailAddressVerified: false,
 					name: "name",
 					password: "password",

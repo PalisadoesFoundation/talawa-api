@@ -66,10 +66,14 @@ builder.mutationField("updateCommentVote", (t) =>
 					ctx.drizzleClient.query.commentsTable.findFirst({
 						with: {
 							post: {
-								columns: {},
+								columns: {
+									pinnedAt: true,
+								},
 								with: {
 									organization: {
-										columns: {},
+										columns: {
+											countryCode: true,
+										},
 										with: {
 											organizationMembershipsWhereOrganization: {
 												columns: {
@@ -87,7 +91,9 @@ builder.mutationField("updateCommentVote", (t) =>
 							operators.eq(fields.id, parsedArgs.input.commentId),
 					}),
 					ctx.drizzleClient.query.commentVotesTable.findFirst({
-						columns: {},
+						columns: {
+							type: true,
+						},
 						where: (fields, operators) =>
 							operators.and(
 								operators.eq(fields.commentId, parsedArgs.input.commentId),

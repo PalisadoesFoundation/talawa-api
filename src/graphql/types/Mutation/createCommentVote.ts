@@ -65,10 +65,14 @@ builder.mutationField("createCommentVote", (t) =>
 					ctx.drizzleClient.query.commentsTable.findFirst({
 						with: {
 							post: {
-								columns: {},
+								columns: {
+									pinnedAt: true,
+								},
 								with: {
 									organization: {
-										columns: {},
+										columns: {
+											countryCode: true,
+										},
 										with: {
 											organizationMembershipsWhereOrganization: {
 												columns: {

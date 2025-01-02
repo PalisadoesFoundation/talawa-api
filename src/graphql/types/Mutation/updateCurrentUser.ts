@@ -1,6 +1,9 @@
 import { hash } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
+import type { FileUpload } from "graphql-upload-minimal";
+import { ulid } from "ulidx";
 import { z } from "zod";
+import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -8,10 +11,43 @@ import {
 	mutationUpdateCurrentUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateCurrentUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationUpdateCurrentUserArgumentsSchema = z.object({
-	input: mutationUpdateCurrentUserInputSchema,
+	input: mutationUpdateCurrentUserInputSchema.transform(async (arg, ctx) => {
+		let avatar:
+			| (FileUpload & {
+					mimetype: z.infer<typeof imageMimeTypeEnum>;
+			  })
+			| null
+			| undefined;
+
+		if (isNotNullish(arg.avatar)) {
+			const rawAvatar = await arg.avatar;
+			const { data, success } = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
+
+			if (!success) {
+				ctx.addIssue({
+					code: "custom",
+					path: ["avatar"],
+					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
+				});
+			} else {
+				return {
+					...arg,
+					avatar: Object.assign(rawAvatar, {
+						mimetype: data,
+					}),
+				};
+			}
+		}
+
+		return {
+			...arg,
+			avatar,
+		};
+	}),
 });
 
 builder.mutationField("updateCurrentUser", (t) =>
@@ -38,7 +74,7 @@ builder.mutationField("updateCurrentUser", (t) =>
 				success,
 				data: parsedArgs,
 				error,
-			} = mutationUpdateCurrentUserArgumentsSchema.safeParse(args);
+			} = await mutationUpdateCurrentUserArgumentsSchema.safeParseAsync(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -53,9 +89,27 @@ builder.mutationField("updateCurrentUser", (t) =>
 				});
 			}
 
-			const { emailAddress, password, ...input } = parsedArgs.input;
+			const currentUserId = ctx.currentClient.user.id;
 
-			if (emailAddress !== undefined) {
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					avatarName: true,
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "Only authenticated users can perform this action.",
+				});
+			}
+
+			if (parsedArgs.input.emailAddress !== undefined) {
+				const emailAddress = parsedArgs.input.emailAddress;
+
 				const existingUserWithEmailAddress =
 					await ctx.drizzleClient.query.usersTable.findFirst({
 						columns: {
@@ -82,31 +136,82 @@ builder.mutationField("updateCurrentUser", (t) =>
 				}
 			}
 
-			const passwordHash =
-				password !== undefined ? await hash(password) : undefined;
+			let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
+			let avatarName: string;
 
-			const [updatedCurrentUser] = await ctx.drizzleClient
-				.update(usersTable)
-				.set({
-					...input,
-					emailAddress,
-					passwordHash,
-					updaterId: ctx.currentClient.user.id,
-				})
-				.where(eq(usersTable.id, ctx.currentClient.user.id))
-				.returning();
-
-			// Updated user not being returned means that either it was deleted or its `id` column was changed by an external entity before this update operation which correspondingly means that the current client is using an invalid authentication token which hasn't expired yet.
-			if (updatedCurrentUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-					message: "Only authenticated users can perform this action.",
-				});
+			if (isNotNullish(parsedArgs.input.avatar)) {
+				avatarName =
+					currentUser.avatarName === null ? ulid() : currentUser.avatarName;
+				avatarMimeType = parsedArgs.input.avatar.mimetype;
 			}
 
-			return updatedCurrentUser;
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [updatedCurrentUser] = await tx
+					.update(usersTable)
+					.set({
+						address: parsedArgs.input.address,
+						avatarMimeType: isNotNullish(parsedArgs.input.avatar)
+							? avatarMimeType
+							: null,
+						avatarName: isNotNullish(parsedArgs.input.avatar)
+							? avatarName
+							: null,
+						birthDate: parsedArgs.input.birthDate,
+						city: parsedArgs.input.city,
+						countryCode: parsedArgs.input.countryCode,
+						description: parsedArgs.input.description,
+						educationGrade: parsedArgs.input.educationGrade,
+						emailAddress: parsedArgs.input.emailAddress,
+						employmentStatus: parsedArgs.input.employmentStatus,
+						homePhoneNumber: parsedArgs.input.homePhoneNumber,
+						maritalStatus: parsedArgs.input.maritalStatus,
+						mobilePhoneNumber: parsedArgs.input.mobilePhoneNumber,
+						name: parsedArgs.input.name,
+						natalSex: parsedArgs.input.natalSex,
+						passwordHash:
+							parsedArgs.input.password !== undefined
+								? await hash(parsedArgs.input.password)
+								: undefined,
+						postalCode: parsedArgs.input.postalCode,
+						state: parsedArgs.input.state,
+						updaterId: currentUserId,
+						workPhoneNumber: parsedArgs.input.workPhoneNumber,
+					})
+					.where(eq(usersTable.id, currentUserId))
+					.returning();
+
+				// Updated user not being returned means that either it was deleted or its `id` column was changed by an external entity before this update operation which correspondingly means that the current client is using an invalid authentication token which hasn't expired yet.
+				if (updatedCurrentUser === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthenticated",
+						},
+						message: "Only authenticated users can perform this action.",
+					});
+				}
+
+				if (isNotNullish(parsedArgs.input.avatar)) {
+					await ctx.minio.client.putObject(
+						ctx.minio.bucketName,
+						avatarName,
+						parsedArgs.input.avatar.createReadStream(),
+						undefined,
+						{
+							"content-type": parsedArgs.input.avatar.mimetype,
+						},
+					);
+				} else if (
+					parsedArgs.input.avatar !== undefined &&
+					currentUser.avatarName !== null
+				) {
+					await ctx.minio.client.removeObject(
+						ctx.minio.bucketName,
+						currentUser.avatarName,
+					);
+				}
+
+				return updatedCurrentUser;
+			});
 		},
 		type: User,
 	}),

@@ -72,12 +72,16 @@ builder.queryField("fundCampaignPledge", (t) =>
 				await ctx.drizzleClient.query.fundCampaignPledgesTable.findFirst({
 					with: {
 						campaign: {
-							columns: {},
+							columns: {
+								startAt: true,
+							},
 							with: {
 								fund: {
 									with: {
 										organization: {
-											columns: {},
+											columns: {
+												countryCode: true,
+											},
 											with: {
 												organizationMembershipsWhereOrganization: {
 													columns: {

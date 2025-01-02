@@ -1,10 +1,7 @@
-import type { z } from "zod";
+import type { FileUpload } from "graphql-upload-minimal";
+import { z } from "zod";
 import { eventsTableInsertSchema } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
-import {
-	CreateEventAttachmentInput,
-	createEventAttachmentInputSchema,
-} from "./CreateEventAttachmentInput";
 
 export const mutationCreateEventInputSchema = eventsTableInsertSchema
 	.pick({
@@ -15,7 +12,8 @@ export const mutationCreateEventInputSchema = eventsTableInsertSchema
 		startAt: true,
 	})
 	.extend({
-		attachments: createEventAttachmentInputSchema
+		attachments: z
+			.custom<Promise<FileUpload>>()
 			.array()
 			.min(1)
 			.max(20)
@@ -40,7 +38,7 @@ export const MutationCreateEventInput = builder
 		fields: (t) => ({
 			attachments: t.field({
 				description: "Attachments of the event.",
-				type: t.listRef(CreateEventAttachmentInput),
+				type: t.listRef("Upload"),
 			}),
 			description: t.string({
 				description: "Custom information about the event.",

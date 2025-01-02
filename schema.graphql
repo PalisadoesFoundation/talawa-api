@@ -26,7 +26,7 @@ type Advertisement {
   """Date time at the time the advertised event starts at."""
   startAt: DateTime
 
-  """Type of the attachment."""
+  """Mime type of the attachment."""
   type: AdvertisementType
 
   """Date time at the time the advertisement was last updated."""
@@ -36,28 +36,12 @@ type Advertisement {
   updater: User
 }
 
-""""""
 type AdvertisementAttachment {
-  """Type of the attachment."""
-  type: AdvertisementAttachmentType
+  """Mime type of the attachment."""
+  mimeType: String
 
-  """URI to the attachment."""
-  uri: String
-}
-
-""""""
-input AdvertisementAttachmentInput {
-  """Type of the attachment."""
-  type: AdvertisementAttachmentType!
-
-  """URI to the attachment."""
-  uri: String!
-}
-
-""""""
-enum AdvertisementAttachmentType {
-  image
-  video
+  """URL to the attachment."""
+  url: String
 }
 
 """"""
@@ -65,6 +49,226 @@ enum AdvertisementType {
   banner
   menu
   pop_up
+}
+
+type AgendaFolder {
+  """
+  GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
+  """
+  childFolders(after: String, before: String, first: Int, last: Int): AgendaFolderChildFoldersConnection
+
+  """Date time at the time the agenda folder was last created."""
+  createdAt: DateTime
+
+  """User who created the agenda folder."""
+  creator: User
+
+  """Event associated to the agenda folder."""
+  event: Event
+
+  """Global identifier of the agenda folder."""
+  id: ID!
+
+  """
+  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
+  """
+  isAgendaItemFolder: Boolean
+
+  """
+  GraphQL connection to traverse through the agenda item associated to the agenda folder.
+  """
+  items(after: String, before: String, first: Int, last: Int): AgendaFolderItemsConnection
+
+  """Name of the agenda folder."""
+  name: String
+
+  """Agenda folder that is a parent folder to the agenda folder."""
+  parentFolder: AgendaFolder
+
+  """Date time at the time the agenda folder was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda folder."""
+  updater: User
+}
+
+""""""
+type AgendaFolderChildFoldersConnection {
+  edges: [AgendaFolderChildFoldersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type AgendaFolderChildFoldersConnectionEdge {
+  cursor: String!
+  node: AgendaFolder
+}
+
+""""""
+type AgendaFolderItemsConnection {
+  edges: [AgendaFolderItemsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type AgendaFolderItemsConnectionEdge {
+  cursor: String!
+  node: AgendaItem
+}
+
+type AgendaItem {
+  """Date time at the time the agenda item was last created."""
+  createdAt: DateTime
+
+  """User who created the agenda item."""
+  creator: User
+
+  """Custom information about the agenda item."""
+  description: String
+
+  """Duration of the agenda item."""
+  duration: String
+
+  """Agenda folder associated to the agenda item."""
+  event: AgendaFolder
+
+  """Global identifier of the agenda item."""
+  id: ID!
+
+  """
+  Key of the agenda item if it's type is "song". More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  """
+  key: String
+
+  """Name of the agenda item."""
+  name: String
+
+  """Type of the agenda item."""
+  type: AgendaItemType
+
+  """Date time at the time the agenda item was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda item."""
+  updater: User
+}
+
+""""""
+enum AgendaItemType {
+  general
+  note
+  scripture
+  song
+}
+
+type AgendaFolder {
+  """
+  GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
+  """
+  childFolders(after: String, before: String, first: Int, last: Int): AgendaFolderChildFoldersConnection
+
+  """Date time at the time the agenda folder was last created."""
+  createdAt: DateTime
+
+  """User who created the agenda folder."""
+  creator: User
+
+  """Event associated to the agenda folder."""
+  event: Event
+
+  """Global identifier of the agenda folder."""
+  id: ID!
+
+  """
+  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
+  """
+  isAgendaItemFolder: Boolean
+
+  """
+  GraphQL connection to traverse through the agenda item associated to the agenda folder.
+  """
+  items(after: String, before: String, first: Int, last: Int): AgendaFolderItemsConnection
+
+  """Name of the agenda folder."""
+  name: String
+
+  """Agenda folder that is a parent folder to the agenda folder."""
+  parentFolder: AgendaFolder
+
+  """Date time at the time the agenda folder was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda folder."""
+  updater: User
+}
+
+""""""
+type AgendaFolderChildFoldersConnection {
+  edges: [AgendaFolderChildFoldersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type AgendaFolderChildFoldersConnectionEdge {
+  cursor: String!
+  node: AgendaFolder
+}
+
+""""""
+type AgendaFolderItemsConnection {
+  edges: [AgendaFolderItemsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type AgendaFolderItemsConnectionEdge {
+  cursor: String!
+  node: AgendaItem
+}
+
+type AgendaItem {
+  """Date time at the time the agenda item was last created."""
+  createdAt: DateTime
+
+  """User who created the agenda item."""
+  creator: User
+
+  """Custom information about the agenda item."""
+  description: String
+
+  """Duration of the agenda item."""
+  duration: String
+
+  """Agenda folder associated to the agenda item."""
+  event: AgendaFolder
+
+  """Global identifier of the agenda item."""
+  id: ID!
+
+  """
+  Key of the agenda item if it's type is "song". More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  """
+  key: String
+
+  """Name of the agenda item."""
+  name: String
+
+  """Type of the agenda item."""
+  type: AgendaItemType
+
+  """Date time at the time the agenda item was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda item."""
+  updater: User
+}
+
+""""""
+enum AgendaItemType {
+  general
+  note
+  scripture
+  song
 }
 
 type AgendaFolder {
@@ -192,6 +396,101 @@ type AuthenticationPayload {
 The `BigInt` scalar type represents non-fractional signed whole numeric values.
 """
 scalar BigInt
+
+type Chat {
+  """Mime type of the avatar of the chat."""
+  avatarMimeType: String
+
+  """URL to the avatar of the chat."""
+  avatarURL: String
+
+  """Date time at the time the chat was created."""
+  createdAt: DateTime
+
+  """User who created the chat."""
+  creator: User
+
+  """Custom information about the chat."""
+  description: String
+
+  """Global identifier of the chat."""
+  id: ID!
+
+  """
+  GraphQL connection to traverse through the users that are members of the chat.
+  """
+  members(after: String, before: String, first: Int, last: Int): ChatMembersConnection
+
+  """
+  GraphQL connection to traverse through the chat messages that are associated to the chat.
+  """
+  messages(after: String, before: String, first: Int, last: Int): ChatMessagesConnection
+
+  """Name of the chat."""
+  name: String
+
+  """Organization which the chat is associated to."""
+  organization: Organization
+
+  """Date time at the time the chat was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the chat."""
+  updater: User
+}
+
+""""""
+type ChatMembersConnection {
+  edges: [ChatMembersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type ChatMembersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+""""""
+enum ChatMembershipRole {
+  administrator
+  regular
+}
+
+type ChatMessage {
+  """Body of the chat message."""
+  body: String
+
+  """Chat which the chat message belongs to."""
+  chat: Chat
+
+  """Date time at the time the chat message was created."""
+  createdAt: DateTime
+
+  """User who created the chat message."""
+  creator: User
+
+  """Global identifier of the chat message."""
+  id: ID!
+
+  """Parent chat message of the chat message."""
+  parentChatMessage: ChatMessage
+
+  """Date time at the time the chat message was last updated."""
+  updatedAt: DateTime
+}
+
+""""""
+type ChatMessagesConnection {
+  edges: [ChatMessagesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type ChatMessagesConnectionEdge {
+  cursor: String!
+  node: ChatMessage
+}
 
 type Chat {
   """URI to the avatar of the chat."""
@@ -426,28 +725,12 @@ type EventAgendaFoldersConnectionEdge {
   node: AgendaFolder
 }
 
-""""""
 type EventAttachment {
-  """Type of the attachment."""
-  type: EventAttachmentType
+  """Mime type of the attachment."""
+  mimeType: String
 
-  """URI to the attachment."""
-  uri: String
-}
-
-""""""
-input EventAttachmentInput {
-  """Type of the attachment."""
-  type: EventAttachmentType!
-
-  """URI to the attachment."""
-  uri: String!
-}
-
-""""""
-enum EventAttachmentType {
-  image
-  video
+  """URL to the attachment."""
+  url: String
 }
 
 """"""
@@ -1239,7 +1522,7 @@ type Mutation {
 """"""
 input MutationCreateAdvertisementInput {
   """Attachments of the advertisement."""
-  attachments: [AdvertisementAttachmentInput!]
+  attachments: [Upload!]
 
   """Custom information about the advertisement."""
   description: String
@@ -1306,8 +1589,8 @@ input MutationCreateAgendaItemInput {
 
 """"""
 input MutationCreateChatInput {
-  """URI to the avatar of the chat."""
-  avatarURI: String
+  """Avatar of the chat."""
+  avatar: Upload
 
   """Custom information about the chat."""
   description: String
@@ -1364,7 +1647,7 @@ input MutationCreateCommentVoteInput {
 """"""
 input MutationCreateEventInput {
   """Attachments of the event."""
-  attachments: [EventAttachmentInput!]
+  attachments: [Upload!]
 
   """Custom information about the event."""
   description: String
@@ -1435,8 +1718,8 @@ input MutationCreateOrganizationInput {
   """Address of the organization."""
   address: String
 
-  """URI to the avatar of the organization."""
-  avatarURI: String
+  """Avatar of the organization."""
+  avatar: Upload
 
   """Name of the city where the organization resides in."""
   city: String
@@ -1472,7 +1755,7 @@ input MutationCreateOrganizationMembershipInput {
 """"""
 input MutationCreatePostInput {
   """Attachments of the post."""
-  attachments: [PostAttachmentInput!]
+  attachments: [Upload!]
 
   """Caption about the post."""
   caption: String!
@@ -1524,8 +1807,8 @@ input MutationCreateUserInput {
   """Address of the user."""
   address: String
 
-  """URI to the avatar of the user."""
-  avatarURI: String
+  """Avatar of the user."""
+  avatar: Upload
 
   """Date of birth of the user."""
   birthDate: Date
@@ -1598,7 +1881,7 @@ input MutationCreateVenueBookingInput {
 """"""
 input MutationCreateVenueInput {
   """Attachments of the venue."""
-  attachments: [VenueAttachmentInput!]
+  attachments: [Upload!]
 
   """Custom information about the venue."""
   description: String
@@ -1756,8 +2039,8 @@ input MutationSignUpInput {
   """Address of the user."""
   address: String
 
-  """URI to the avatar of the user."""
-  avatarURI: String
+  """Avatar of the user."""
+  avatar: Upload
 
   """Date of birth of the user."""
   birthDate: Date
@@ -1875,8 +2158,8 @@ input MutationUpdateAgendaItemInput {
 
 """"""
 input MutationUpdateChatInput {
-  """URI to the avatar of the chat."""
-  avatarURI: String
+  """Avatar of the chat."""
+  avatar: Upload
 
   """Custom information about the chat."""
   description: String
@@ -1932,8 +2215,8 @@ input MutationUpdateCurrentUserInput {
   """Address of the user."""
   address: String
 
-  """URI to the avatar of the user."""
-  avatarURI: String
+  """Avatar of the user."""
+  avatar: Upload
 
   """Date of birth of the user."""
   birthDate: Date
@@ -2053,8 +2336,8 @@ input MutationUpdateOrganizationInput {
   """Address of the organization."""
   address: String
 
-  """URI to the avatar of the organization."""
-  avatarURI: String
+  """Avatar of the organization."""
+  avatar: Upload
 
   """Name of the city where the organization resides in."""
   city: String
@@ -2140,8 +2423,8 @@ input MutationUpdateUserInput {
   """Address of the user."""
   address: String
 
-  """URI to the avatar of the user."""
-  avatarURI: String
+  """Avatar of the user."""
+  avatar: Upload
 
   """Date of birth of the user."""
   birthDate: Date
@@ -2226,8 +2509,11 @@ type Organization {
   """
   advertisements(after: String, before: String, first: Int, last: Int): OrganizationAdvertisementsConnection
 
-  """URI to the avatar of the organization."""
-  avatarURI: String
+  """Mime type of the avatar of the organization."""
+  avatarMimeType: String
+
+  """URL to the avatar of the organization."""
+  avatarURL: String
 
   """
   GraphQL connection to traverse through the chats that are associated to the organization.
@@ -2505,28 +2791,12 @@ type Post {
   updater: User
 }
 
-""""""
 type PostAttachment {
-  """Type of the attachment."""
-  type: PostAttachmentType
+  """Mime type of the attachment."""
+  mimeType: String
 
-  """URI to the attachment."""
-  uri: String
-}
-
-""""""
-input PostAttachmentInput {
-  """Type of the attachment."""
-  type: PostAttachmentType!
-
-  """URI to the attachment."""
-  uri: String!
-}
-
-""""""
-enum PostAttachmentType {
-  image
-  video
+  """URL to the attachment."""
+  url: String
 }
 
 """"""
@@ -2842,12 +3112,18 @@ type TagFolderTagsConnectionEdge {
   node: Tag
 }
 
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
 type User {
   """Address of the user."""
   address: String
 
-  """URI to the avatar of the user."""
-  avatarURI: String
+  """Mime type of the avatar of the user."""
+  avatarMimeType: String
+
+  """URL to the avatar of the user."""
+  avatarURL: String
 
   """Date of birth of the user."""
   birthDate: Date
@@ -3018,28 +3294,12 @@ type Venue {
   updater: User
 }
 
-""""""
 type VenueAttachment {
-  """Type of the attachment."""
-  type: VenueAttachmentType
+  """Mime type of the attachment."""
+  mimeType: String
 
-  """URI to the attachment."""
-  uri: String
-}
-
-""""""
-input VenueAttachmentInput {
-  """Type of the attachment."""
-  type: VenueAttachmentType!
-
-  """URI to the attachment."""
-  uri: String!
-}
-
-""""""
-enum VenueAttachmentType {
-  image
-  video
+  """URL to the attachment."""
+  url: String
 }
 
 """"""

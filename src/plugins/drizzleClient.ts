@@ -14,9 +14,9 @@ declare module "fastify" {
  *
  * @example
  *
- * import drizzleClient from "~/src/plugins/drizzleClient";
+ * import drizzleClientPlugin from "~/src/plugins/drizzleClient";
  *
- * fastify.register(drizzleClient, {});
+ * fastify.register(drizzleClientPlugin, {});
  * const user = await fastify.drizzleClient.query.usersTable.findFirst();
  */
 export const drizzleClient = fastifyPlugin(async (fastify) => {

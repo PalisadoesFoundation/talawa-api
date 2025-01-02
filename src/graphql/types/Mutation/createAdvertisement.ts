@@ -1,4 +1,7 @@
+import type { FileUpload } from "graphql-upload-minimal";
+import { ulid } from "ulidx";
 import { z } from "zod";
+import { advertisementAttachmentMimeTypeEnum } from "~/src/drizzle/enums/advertisementAttachmentMimeType";
 import { advertisementAttachmentsTable } from "~/src/drizzle/tables/advertisementAttachments";
 import { advertisementsTable } from "~/src/drizzle/tables/advertisements";
 import { builder } from "~/src/graphql/builder";
@@ -10,7 +13,47 @@ import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateAdvertisementArgumentsSchema = z.object({
-	input: mutationCreateAdvertisementInputSchema,
+	input: mutationCreateAdvertisementInputSchema.transform(async (arg, ctx) => {
+		let attachments:
+			| (FileUpload & {
+					mimetype: z.infer<typeof advertisementAttachmentMimeTypeEnum>;
+			  })[]
+			| undefined;
+
+		if (arg.attachments !== undefined) {
+			const rawAttachments = await Promise.all(arg.attachments);
+			const { data, error, success } = advertisementAttachmentMimeTypeEnum
+				.array()
+				.safeParse(rawAttachments.map((attachment) => attachment.mimetype));
+
+			if (!success) {
+				for (const issue of error.issues) {
+					// `issue.path[0]` would correspond to the numeric index of the attachment within `arg.attachments` array which contains the invalid mime type.
+					if (typeof issue.path[0] === "number") {
+						ctx.addIssue({
+							code: "custom",
+							path: ["attachments", issue.path[0]],
+							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype}" is not allowed.`,
+						});
+					}
+				}
+			} else {
+				return {
+					...arg,
+					attachments: rawAttachments.map((attachment, index) =>
+						Object.assign(attachment, {
+							mimetype: data[index],
+						}),
+					),
+				};
+			}
+		}
+
+		return {
+			...arg,
+			attachments,
+		};
+	}),
 });
 
 builder.mutationField("createAdvertisement", (t) =>
@@ -37,7 +80,7 @@ builder.mutationField("createAdvertisement", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationCreateAdvertisementArgumentsSchema.safeParse(args);
+			} = await mutationCreateAdvertisementArgumentsSchema.safeParseAsync(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -74,7 +117,9 @@ builder.mutationField("createAdvertisement", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
-					columns: {},
+					columns: {
+						countryCode: true,
+					},
 					with: {
 						advertisementsWhereOrganization: {
 							columns: {
@@ -182,17 +227,33 @@ builder.mutationField("createAdvertisement", (t) =>
 				}
 
 				if (parsedArgs.input.attachments !== undefined) {
+					const attachments = parsedArgs.input.attachments;
+
 					const createdAdvertisementAttachments = await tx
 						.insert(advertisementAttachmentsTable)
 						.values(
-							parsedArgs.input.attachments.map((attachment) => ({
+							attachments.map((attachment) => ({
 								advertisementId: createdAdvertisement.id,
 								creatorId: currentUserId,
-								type: attachment.type,
-								uri: attachment.uri,
+								mimeType: attachment.mimetype,
+								name: ulid(),
 							})),
 						)
 						.returning();
+
+					Promise.all(
+						createdAdvertisementAttachments.map((attachment, index) =>
+							ctx.minio.client.putObject(
+								ctx.minio.bucketName,
+								attachment.name,
+								attachments[index].createReadStream(),
+								undefined,
+								{
+									"content-type": attachment.mimeType,
+								},
+							),
+						),
+					);
 
 					return Object.assign(createdAdvertisement, {
 						attachments: createdAdvertisementAttachments,

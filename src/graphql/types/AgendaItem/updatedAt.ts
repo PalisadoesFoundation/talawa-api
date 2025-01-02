@@ -23,15 +23,21 @@ AgendaItem.implement({
 							operators.eq(fields.id, currentUserId),
 					}),
 					ctx.drizzleClient.query.agendaFoldersTable.findFirst({
-						columns: {},
+						columns: {
+							isAgendaItemFolder: true,
+						},
 						where: (fields, operators) =>
 							operators.eq(fields.id, parent.folderId),
 						with: {
 							event: {
-								columns: {},
+								columns: {
+									startAt: true,
+								},
 								with: {
 									organization: {
-										columns: {},
+										columns: {
+											countryCode: true,
+										},
 										with: {
 											organizationMembershipsWhereOrganization: {
 												columns: {

@@ -71,7 +71,7 @@ suite("Mutation field updateCurrentUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								emailAddress: `email${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -157,7 +157,7 @@ suite("Mutation field updateCurrentUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -208,7 +208,6 @@ suite("Mutation field updateCurrentUser", () => {
 			});
 
 			test(`length of the value of the argument "input.address" is less than 1.
-	    length of the value of the argument "input.avatarURI" is less than 1.
 	    length of the value of the argument "input.city" is less than 1.
 	    length of the value of the argument "input.description" is less than 1.
 	    length of the value of the argument "input.name" is less than 1.
@@ -240,7 +239,7 @@ suite("Mutation field updateCurrentUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -263,7 +262,6 @@ suite("Mutation field updateCurrentUser", () => {
 						variables: {
 							input: {
 								address: "",
-								avatarURI: "",
 								city: "",
 								description: "",
 								name: "",
@@ -286,10 +284,6 @@ suite("Mutation field updateCurrentUser", () => {
 								>([
 									{
 										argumentPath: ["input", "address"],
-										message: expect.any(String),
-									},
-									{
-										argumentPath: ["input", "avatarURI"],
 										message: expect.any(String),
 									},
 									{
@@ -357,7 +351,7 @@ suite("Mutation field updateCurrentUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -465,7 +459,7 @@ suite("Mutation field updateCurrentUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -556,7 +550,7 @@ suite("Mutation field updateCurrentUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -637,13 +631,12 @@ suite("Mutation field updateCurrentUser", () => {
 				const createUserVariables: VariablesOf<typeof Mutation_createUser> = {
 					input: {
 						address: "address",
-						avatarURI: "avatarURI",
 						birthDate: "1901-01-01",
 						city: "city",
 						countryCode: "us",
 						description: "description",
 						educationGrade: "pre_kg",
-						emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+						emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 						employmentStatus: "full_time",
 						homePhoneNumber: "+11111111",
 						isEmailAddressVerified: false,
@@ -678,13 +671,12 @@ suite("Mutation field updateCurrentUser", () => {
 				> = {
 					input: {
 						address: null,
-						avatarURI: null,
 						birthDate: null,
 						city: null,
 						countryCode: null,
 						description: null,
 						educationGrade: null,
-						emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+						emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 						employmentStatus: null,
 						homePhoneNumber: null,
 						maritalStatus: null,
@@ -716,7 +708,6 @@ suite("Mutation field updateCurrentUser", () => {
 						>
 					>({
 						address: updateCurrentUserVariables.input.address,
-						avatarURI: updateCurrentUserVariables.input.avatarURI,
 						birthDate: updateCurrentUserVariables.input.birthDate,
 						city: updateCurrentUserVariables.input.city,
 						countryCode: updateCurrentUserVariables.input.countryCode,

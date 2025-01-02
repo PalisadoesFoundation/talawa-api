@@ -1,4 +1,7 @@
+import type { FileUpload } from "graphql-upload-minimal";
+import { ulid } from "ulidx";
 import { z } from "zod";
+import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { chatsTable } from "~/src/drizzle/tables/chats";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -6,10 +9,43 @@ import {
 	mutationCreateChatInputSchema,
 } from "~/src/graphql/inputs/MutationCreateChatInput";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
+import { isNotNullish } from "~/src/utilities/isNotNullish";
 import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateChatArgumentsSchema = z.object({
-	input: mutationCreateChatInputSchema,
+	input: mutationCreateChatInputSchema.transform(async (arg, ctx) => {
+		let avatar:
+			| (FileUpload & {
+					mimetype: z.infer<typeof imageMimeTypeEnum>;
+			  })
+			| null
+			| undefined;
+
+		if (isNotNullish(arg.avatar)) {
+			const rawAvatar = await arg.avatar;
+			const { data, success } = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
+
+			if (!success) {
+				ctx.addIssue({
+					code: "custom",
+					path: ["avatar"],
+					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
+				});
+			} else {
+				return {
+					...arg,
+					avatar: Object.assign(rawAvatar, {
+						mimetype: data,
+					}),
+				};
+			}
+		}
+
+		return {
+			...arg,
+			avatar,
+		};
+	}),
 });
 
 builder.mutationField("createChat", (t) =>
@@ -36,7 +72,7 @@ builder.mutationField("createChat", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationCreateChatArgumentsSchema.safeParse(args);
+			} = await mutationCreateChatArgumentsSchema.safeParseAsync(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -61,7 +97,9 @@ builder.mutationField("createChat", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
-					columns: {},
+					columns: {
+						countryCode: true,
+					},
 					with: {
 						organizationMembershipsWhereOrganization: {
 							columns: {
@@ -121,31 +159,54 @@ builder.mutationField("createChat", (t) =>
 				});
 			}
 
-			const [createdChat] = await ctx.drizzleClient
-				.insert(chatsTable)
-				.values({
-					avatarURI: parsedArgs.input.avatarURI,
-					creatorId: currentUserId,
-					description: parsedArgs.input.description,
-					name: parsedArgs.input.name,
-					organizationId: parsedArgs.input.organizationId,
-				})
-				.returning();
+			let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
+			let avatarName: string;
 
-			// Inserted chat not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-			if (createdChat === undefined) {
-				ctx.log.error(
-					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-				);
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-					message: "Something went wrong. Please try again.",
-				});
+			if (isNotNullish(parsedArgs.input.avatar)) {
+				avatarName = ulid();
+				avatarMimeType = parsedArgs.input.avatar.mimetype;
 			}
 
-			return createdChat;
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [createdChat] = await tx
+					.insert(chatsTable)
+					.values({
+						avatarMimeType,
+						avatarName,
+						creatorId: currentUserId,
+						description: parsedArgs.input.description,
+						name: parsedArgs.input.name,
+						organizationId: parsedArgs.input.organizationId,
+					})
+					.returning();
+
+				// Inserted chat not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+				if (createdChat === undefined) {
+					ctx.log.error(
+						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+					);
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+						message: "Something went wrong. Please try again.",
+					});
+				}
+
+				if (isNotNullish(parsedArgs.input.avatar)) {
+					await ctx.minio.client.putObject(
+						ctx.minio.bucketName,
+						avatarName,
+						parsedArgs.input.avatar.createReadStream(),
+						undefined,
+						{
+							"content-type": parsedArgs.input.avatar.mimetype,
+						},
+					);
+				}
+
+				return createdChat;
+			});
 		},
 		type: Chat,
 	}),

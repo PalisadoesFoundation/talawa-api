@@ -61,10 +61,14 @@ builder.mutationField("createComment", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.postsTable.findFirst({
-					columns: {},
+					columns: {
+						pinnedAt: true,
+					},
 					with: {
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
 									columns: {

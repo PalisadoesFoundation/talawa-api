@@ -67,7 +67,9 @@ builder.mutationField("deleteChatMessage", (t) =>
 					},
 					with: {
 						chat: {
-							columns: {},
+							columns: {
+								avatarMimeType: true,
+							},
 							with: {
 								chatMembershipsWhereChat: {
 									columns: {
@@ -77,7 +79,9 @@ builder.mutationField("deleteChatMessage", (t) =>
 										operators.eq(fields.memberId, currentUserId),
 								},
 								organization: {
-									columns: {},
+									columns: {
+										countryCode: true,
+									},
 									with: {
 										organizationMembershipsWhereOrganization: {
 											columns: {

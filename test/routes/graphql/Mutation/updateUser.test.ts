@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import type { ResultOf, VariablesOf } from "gql.tada";
 import { expect, suite, test } from "vitest";
 import type {
+	ArgumentsAssociatedResourcesNotFoundExtensions,
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
@@ -48,7 +49,7 @@ suite("Mutation field updateUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -111,7 +112,7 @@ suite("Mutation field updateUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								emailAddress: `email${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -198,7 +199,7 @@ suite("Mutation field updateUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -249,7 +250,6 @@ suite("Mutation field updateUser", () => {
 			});
 
 			test(`length of the value of the argument "input.address" is less than 1.
-	    		length of the value of the argument "input.avatarURI" is less than 1.
 	    		length of the value of the argument "input.city" is less than 1.
 	    		length of the value of the argument "input.description" is less than 1.
 	    		length of the value of the argument "input.name" is less than 1.
@@ -281,7 +281,7 @@ suite("Mutation field updateUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -302,7 +302,6 @@ suite("Mutation field updateUser", () => {
 						variables: {
 							input: {
 								address: "",
-								avatarURI: "",
 								city: "",
 								description: "",
 								id: createUserResult.data.createUser.user.id,
@@ -326,10 +325,6 @@ suite("Mutation field updateUser", () => {
 								>([
 									{
 										argumentPath: ["input", "address"],
-										message: expect.any(String),
-									},
-									{
-										argumentPath: ["input", "avatarURI"],
 										message: expect.any(String),
 									},
 									{
@@ -397,7 +392,7 @@ suite("Mutation field updateUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -506,7 +501,7 @@ suite("Mutation field updateUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -606,7 +601,7 @@ suite("Mutation field updateUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								emailAddress: `email${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -722,6 +717,99 @@ suite("Mutation field updateUser", () => {
 	);
 
 	suite(
+		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.deleteUser" field if`,
+		() => {
+			test(`value of the argument "input.id" doesn't correspond to an existing user.`, async () => {
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "name",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: createUserResult.data.createUser.user.id,
+						},
+					},
+				});
+
+				const updateUserResult = await mercuriusClient.mutate(
+					Mutation_updateUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								id: createUserResult.data.createUser.user.id,
+								name: "name",
+							},
+						},
+					},
+				);
+
+				expect(updateUserResult.data.updateUser).toEqual(null);
+				expect(updateUserResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions:
+								expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+									{
+										code: "arguments_associated_resources_not_found",
+										issues: expect.arrayContaining<
+											ArgumentsAssociatedResourcesNotFoundExtensions["issues"][number]
+										>([
+											{
+												argumentPath: ["input", "id"],
+											},
+										]),
+									},
+								),
+							message: expect.any(String),
+							path: ["updateUser"],
+						}),
+					]),
+				);
+			});
+		},
+	);
+
+	suite(
 		`results in "undefined" as the value of "errors" field and the expected value for the "data.updateUser" field where`,
 		() => {
 			test(`nullable user fields have the values of the corresponding nullable arguments if they are provided in the graphql operation.
@@ -746,13 +834,12 @@ suite("Mutation field updateUser", () => {
 				const createUserVariables: VariablesOf<typeof Mutation_createUser> = {
 					input: {
 						address: "address",
-						avatarURI: "avatarURI",
 						birthDate: "1901-01-01",
 						city: "city",
 						countryCode: "us",
 						description: "description",
 						educationGrade: "pre_kg",
-						emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+						emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 						employmentStatus: "full_time",
 						homePhoneNumber: "+11111111",
 						isEmailAddressVerified: false,
@@ -786,13 +873,12 @@ suite("Mutation field updateUser", () => {
 				const updateUserVariables: VariablesOf<typeof Mutation_updateUser> = {
 					input: {
 						address: null,
-						avatarURI: null,
 						birthDate: null,
 						city: null,
 						countryCode: null,
 						description: null,
 						educationGrade: null,
-						emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+						emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 						employmentStatus: null,
 						homePhoneNumber: null,
 						id: createUserResult.data.createUser.user.id,
@@ -825,7 +911,6 @@ suite("Mutation field updateUser", () => {
 						Partial<ResultOf<typeof Mutation_updateUser>["updateUser"]>
 					>({
 						address: updateUserVariables.input.address,
-						avatarURI: updateUserVariables.input.avatarURI,
 						birthDate: updateUserVariables.input.birthDate,
 						city: updateUserVariables.input.city,
 						countryCode: updateUserVariables.input.countryCode,

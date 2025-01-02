@@ -63,10 +63,14 @@ builder.queryField("advertisement", (t) =>
 					with: {
 						advertisementAttachmentsWhereAdvertisement: true,
 						organization: {
-							columns: {},
+							columns: {
+								countryCode: true,
+							},
 							with: {
 								organizationMembershipsWhereOrganization: {
-									columns: {},
+									columns: {
+										role: true,
+									},
 									where: (fields, operators) =>
 										operators.eq(fields.memberId, currentUserId),
 								},

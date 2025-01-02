@@ -17,8 +17,8 @@ User.implement({
 		address: t.exposeString("address", {
 			description: "Address of the user.",
 		}),
-		avatarURI: t.exposeString("avatarURI", {
-			description: "URI to the avatar of the user.",
+		avatarMimeType: t.exposeString("avatarMimeType", {
+			description: "Mime type of the avatar of the user.",
 		}),
 		birthDate: t.expose("birthDate", {
 			description: "Date of birth of the user.",

@@ -12,8 +12,8 @@ Organization.implement({
 		address: t.exposeString("address", {
 			description: "Address of the organization.",
 		}),
-		avatarURI: t.exposeString("avatarURI", {
-			description: "URI to the avatar of the organization.",
+		avatarMimeType: t.exposeString("avatarMimeType", {
+			description: "Mime type of the avatar of the organization.",
 		}),
 		city: t.exposeString("city", {
 			description: "Name of the city where the organization exists in.",

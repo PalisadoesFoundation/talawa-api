@@ -27,7 +27,7 @@ suite("Mutation field createUser", () => {
 					{
 						variables: {
 							input: {
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -77,7 +77,7 @@ suite("Mutation field createUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								emailAddress: `email${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -107,7 +107,7 @@ suite("Mutation field createUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								emailAddress: `email${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -137,7 +137,6 @@ suite("Mutation field createUser", () => {
 		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.createUser" field if`,
 		() => {
 			test(`length of the value of the argument "input.address" is less than 1.
-				length of the value of the argument "input.avatarURI" is less than 1.
 				length of the value of the argument "input.city" is less than 1.
 				length of the value of the argument "input.description" is less than 1.
 				length of the value of the argument "input.name" is less than 1.
@@ -170,10 +169,9 @@ suite("Mutation field createUser", () => {
 						variables: {
 							input: {
 								address: "",
-								avatarURI: "",
 								city: "",
 								description: "",
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "",
 								password: "",
@@ -196,10 +194,6 @@ suite("Mutation field createUser", () => {
 								>([
 									{
 										argumentPath: ["input", "address"],
-										message: expect.any(String),
-									},
-									{
-										argumentPath: ["input", "avatarURI"],
 										message: expect.any(String),
 									},
 									{
@@ -270,7 +264,7 @@ suite("Mutation field createUser", () => {
 								address: `address${faker.string.alpha(1025)}`,
 								city: `city${faker.string.alpha(65)}`,
 								description: `description${faker.string.alpha(2049)}`,
-								emailAddress: `emailAddress${faker.string.nanoid()}@email.com`,
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: `name${faker.string.alpha(257)}`,
 								password: `password${faker.string.alpha(65)}`,
@@ -359,7 +353,7 @@ suite("Mutation field createUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								emailAddress: `email${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -381,7 +375,7 @@ suite("Mutation field createUser", () => {
 						},
 						variables: {
 							input: {
-								emailAddress: `email${faker.string.nanoid()}@email.com`,
+								emailAddress: `email${faker.string.ulid()}@email.com`,
 								isEmailAddressVerified: false,
 								name: "name",
 								password: "password",
@@ -502,13 +496,12 @@ suite("Mutation field createUser", () => {
 				const variables: VariablesOf<typeof Mutation_createUser> = {
 					input: {
 						address: "address",
-						avatarURI: "avatarURI",
 						birthDate: "1901-01-01",
 						city: "city",
 						countryCode: "us",
 						description: "description",
 						educationGrade: "kg",
-						emailAddress: `email${faker.string.nanoid()}@email.com`,
+						emailAddress: `email${faker.string.ulid()}@email.com`,
 						employmentStatus: "part_time",
 						homePhoneNumber: "+11111111",
 						isEmailAddressVerified: false,
@@ -548,7 +541,6 @@ suite("Mutation field createUser", () => {
 							>
 						>({
 							address: variables.input.address,
-							avatarURI: variables.input.avatarURI,
 							birthDate: variables.input.birthDate,
 							city: variables.input.city,
 							countryCode: variables.input.countryCode,
@@ -594,13 +586,12 @@ suite("Mutation field createUser", () => {
 				const variables: VariablesOf<typeof Mutation_createUser> = {
 					input: {
 						address: null,
-						avatarURI: null,
 						birthDate: null,
 						city: null,
 						countryCode: null,
 						description: null,
 						educationGrade: null,
-						emailAddress: `email${faker.string.nanoid()}@email.com`,
+						emailAddress: `email${faker.string.ulid()}@email.com`,
 						employmentStatus: null,
 						homePhoneNumber: null,
 						isEmailAddressVerified: false,
@@ -640,7 +631,6 @@ suite("Mutation field createUser", () => {
 							>
 						>({
 							address: variables.input.address,
-							avatarURI: variables.input.avatarURI,
 							birthDate: variables.input.birthDate,
 							city: variables.input.city,
 							countryCode: variables.input.countryCode,
@@ -679,7 +669,7 @@ suite("Mutation field createUser", () => {
 
 				const variables: VariablesOf<typeof Mutation_createUser> = {
 					input: {
-						emailAddress: `email${faker.string.nanoid()}@email.com`,
+						emailAddress: `email${faker.string.ulid()}@email.com`,
 						isEmailAddressVerified: false,
 						name: "name",
 						password: "password",
@@ -711,7 +701,6 @@ suite("Mutation field createUser", () => {
 							>
 						>({
 							address: null,
-							avatarURI: null,
 							birthDate: null,
 							city: null,
 							countryCode: null,
