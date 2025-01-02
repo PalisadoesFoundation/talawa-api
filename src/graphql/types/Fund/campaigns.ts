@@ -75,6 +75,7 @@ Fund.implement({
 						: [asc(fundCampaignsTable.name)];
 
 					let where: SQL | undefined;
+
 					if (isInversed) {
 						if (cursor !== undefined) {
 							where = and(

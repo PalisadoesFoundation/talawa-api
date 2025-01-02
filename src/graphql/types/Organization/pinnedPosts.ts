@@ -48,10 +48,15 @@ const pinnedPostsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 		};
 	});
 
-const cursorSchema = z.object({
-	id: postsTableInsertSchema.shape.id.unwrap(),
-	pinnedAt: postsTableInsertSchema.shape.pinnedAt.unwrap().unwrap(),
-});
+const cursorSchema = z
+	.object({
+		id: postsTableInsertSchema.shape.id.unwrap(),
+		pinnedAt: z.string().datetime(),
+	})
+	.transform((arg) => ({
+		id: arg.id,
+		pinnedAt: new Date(arg.pinnedAt),
+	}));
 
 Organization.implement({
 	fields: (t) => ({
@@ -228,7 +233,8 @@ Organization.implement({
 							Buffer.from(
 								JSON.stringify({
 									id: post.id,
-									pinnedAt: post.pinnedAt,
+									// `pinnedAt` field below cannot have `null` as the value because of the sql query logic. The optional chaining operator is just to prevent type errors.
+									pinnedAt: post.pinnedAt?.toISOString(),
 								}),
 							).toString("base64url"),
 						createNode: ({ postAttachmentsWherePost, ...post }) =>

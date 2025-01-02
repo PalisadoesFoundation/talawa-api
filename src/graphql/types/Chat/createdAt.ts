@@ -49,15 +49,11 @@ Chat.implement({
 
 				const currentUserOrganizationMembership =
 					currentUser.organizationMembershipsWhereMember[0];
-				const currentUserChatMembership =
-					currentUser.chatMembershipsWhereMember[0];
 
 				if (
 					currentUser.role !== "administrator" &&
 					(currentUserOrganizationMembership === undefined ||
-						(currentUserOrganizationMembership.role !== "administrator" &&
-							(currentUserChatMembership === undefined ||
-								currentUserChatMembership.role !== "administrator")))
+						currentUserOrganizationMembership.role !== "administrator")
 				) {
 					throw new TalawaGraphQLError({
 						extensions: {

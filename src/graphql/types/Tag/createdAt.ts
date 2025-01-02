@@ -4,7 +4,7 @@ import { Tag } from "./Tag";
 Tag.implement({
 	fields: (t) => ({
 		createdAt: t.field({
-			description: "Date time at the time the tag was first created.",
+			description: "Date time at the time the tag was created.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

@@ -5,7 +5,7 @@ import { Chat } from "./Chat";
 Chat.implement({
 	fields: (t) => ({
 		creator: t.field({
-			description: "User who first created the chat.",
+			description: "User who created the chat.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -19,13 +19,6 @@ Chat.implement({
 
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 					with: {
-						chatMembershipsWhereMember: {
-							columns: {
-								role: true,
-							},
-							where: (fields, operators) =>
-								operators.eq(fields.chatId, parent.id),
-						},
 						organizationMembershipsWhereMember: {
 							columns: {
 								role: true,
@@ -47,15 +40,11 @@ Chat.implement({
 
 				const currentUserOrganizationMembership =
 					currentUser.organizationMembershipsWhereMember[0];
-				const currentUserChatMembership =
-					currentUser.chatMembershipsWhereMember[0];
 
 				if (
 					currentUser.role !== "administrator" &&
 					(currentUserOrganizationMembership === undefined ||
-						(currentUserOrganizationMembership.role !== "administrator" &&
-							(currentUserChatMembership === undefined ||
-								currentUserChatMembership.role !== "administrator")))
+						currentUserOrganizationMembership.role !== "administrator")
 				) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -85,6 +74,7 @@ Chat.implement({
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a chat's creator id that isn't null.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",

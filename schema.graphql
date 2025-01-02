@@ -2,10 +2,10 @@ type Advertisement {
   """Array of attachments."""
   attachments: [AdvertisementAttachment!]
 
-  """Date time at the time the advertisement was first created."""
+  """Date time at the time the advertisement was created."""
   createdAt: DateTime
 
-  """User who first created the advertisement."""
+  """User who created the advertisement."""
   creator: User
 
   """Custom information about the advertisement."""
@@ -57,10 +57,10 @@ type AgendaFolder {
   """
   childFolders(after: String, before: String, first: Int, last: Int): AgendaFolderChildFoldersConnection
 
-  """Date time at the time the agenda folder was first created."""
+  """Date time at the time the agenda folder was created."""
   createdAt: DateTime
 
-  """User who first created the agenda folder."""
+  """User who created the agenda folder."""
   creator: User
 
   """
@@ -131,7 +131,7 @@ type AgendaItem {
   """Duration of the agenda item."""
   duration: String
 
-  """Agenda folder associated to the agenda item."""
+  """Agenda folder within which the agenda item in contained."""
   event: AgendaFolder
 
   """Global identifier of the agenda item."""
@@ -189,7 +189,7 @@ type Chat {
   """Date time at the time the chat was first created."""
   createdAt: DateTime
 
-  """User who first created the chat."""
+  """User who created the chat."""
   creator: User
 
   """Custom information about the chat."""
@@ -255,8 +255,8 @@ type ChatMessage {
   """Global identifier of the chat message."""
   id: ID!
 
-  """Parent chat message of the chat message."""
-  parentChatMessage: ChatMessage
+  """Parent message of the chat message."""
+  parentMessage: ChatMessage
 
   """Date time at the time the chat message was last updated."""
   updatedAt: DateTime
@@ -308,9 +308,6 @@ type Comment {
 
   """Date time at the time the comment was last updated."""
   updatedAt: DateTime
-
-  """User who last updated the comment."""
-  updater: User
 }
 
 """"""
@@ -367,10 +364,10 @@ type Event {
   """Array of attachments."""
   attachments: [EventAttachment!]
 
-  """Date time at the time the event was first created."""
+  """Date time at the time the event was created."""
   createdAt: DateTime
 
-  """User who first created the event."""
+  """User who created the event."""
   creator: User
 
   """Custom information about the event."""
@@ -439,10 +436,10 @@ type Fund {
   """GraphQL connection to traverse through the campaigns for the fund."""
   campaigns(after: String, before: String, first: Int, last: Int): FundCampaignsConnection
 
-  """Date time at the time the fund was first created."""
+  """Date time at the time the fund was created."""
   createdAt: DateTime
 
-  """User who first created the fund."""
+  """User who created the fund."""
   creator: User
 
   """Global identifier of the fund."""
@@ -465,10 +462,10 @@ type Fund {
 }
 
 type FundCampaign {
-  """Date time at the time the fund campaign was first created."""
+  """Date time at the time the fund campaign was created."""
   createdAt: DateTime
 
-  """User who first created the fund campaign."""
+  """User who created the fund campaign."""
   creator: User
 
   """Currency code of the fund campaign."""
@@ -1314,8 +1311,8 @@ input MutationCreateChatMessageInput {
   """Global identifier of the associated chat."""
   chatId: ID!
 
-  """Global identifier of the associated parent chat message."""
-  parentChatMessageId: ID!
+  """Global identifier of the associated parent message."""
+  parentMessageId: ID!
 }
 
 """"""
@@ -2221,7 +2218,7 @@ type Organization {
   """Date time at the time the organization was created."""
   createdAt: DateTime
 
-  """User who first created the organization."""
+  """User who created the organization."""
   creator: User
 
   """Custom information about the organization."""
@@ -2450,7 +2447,7 @@ type Post {
   """Date time at the time the post was created."""
   createdAt: DateTime
 
-  """User who first created the post."""
+  """User who created the post."""
   creator: User
 
   """
@@ -2721,10 +2718,15 @@ input SubscriptionChatMessageCreateInput {
 }
 
 type Tag {
-  """Date time at the time the tag was first created."""
+  """
+  GraphQL connection to traverse through the users that are assignees of the tag.
+  """
+  assignees(after: String, before: String, first: Int, last: Int): TagAssigneesConnection
+
+  """Date time at the time the tag was created."""
   createdAt: DateTime
 
-  """User who first created the tag."""
+  """User who created the tag."""
   creator: User
 
   """Tag folder the tag is contained within."""
@@ -2746,6 +2748,18 @@ type Tag {
   updater: User
 }
 
+""""""
+type TagAssigneesConnection {
+  edges: [TagAssigneesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type TagAssigneesConnectionEdge {
+  cursor: String!
+  node: User
+}
+
 type TagFolder {
   """
   GraphQL connection to traverse through the tag folders contained within the tag folder.
@@ -2755,7 +2769,7 @@ type TagFolder {
   """Date time at the time the tag folder was created."""
   createdAt: DateTime
 
-  """User who first created the tag folder."""
+  """User who created the tag folder."""
   creator: User
 
   """Global identifier of the tag folder."""
@@ -2831,7 +2845,7 @@ type User {
   """Date time at the time the user was created."""
   createdAt: DateTime
 
-  """User who first created the user."""
+  """User who created the user."""
   creator: User
 
   """Custom information about the user."""
@@ -2958,10 +2972,13 @@ enum UserRole {
 }
 
 type Venue {
-  """Date time at the time the venue was first created."""
+  """Array of attachments."""
+  attachments: [VenueAttachment!]
+
+  """Date time at the time the venue was created."""
   createdAt: DateTime
 
-  """User who first created the venue."""
+  """User who created the venue."""
   creator: User
 
   """Custom information about the venue."""

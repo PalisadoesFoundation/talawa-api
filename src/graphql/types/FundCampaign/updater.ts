@@ -60,6 +60,7 @@ FundCampaign.implement({
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a fund campaign's fund id that isn't null.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",
@@ -103,6 +104,7 @@ FundCampaign.implement({
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a fund campaign's updater id that isn't null.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",

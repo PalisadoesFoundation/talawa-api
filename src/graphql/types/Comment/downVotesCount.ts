@@ -1,6 +1,5 @@
 import { and, count, eq } from "drizzle-orm";
 import { commentVotesTable } from "~/src/drizzle/tables/commentVotes";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Comment } from "./Comment";
 
 Comment.implement({
@@ -8,7 +7,7 @@ Comment.implement({
 		downVotesCount: t.field({
 			description: "Total number of down votes on the comment.",
 			resolve: async (parent, _args, ctx) => {
-				const [commentVotesCount] = await ctx.drizzleClient
+				const [commentVote] = await ctx.drizzleClient
 					.select({
 						count: count(),
 					})
@@ -20,20 +19,11 @@ Comment.implement({
 						),
 					);
 
-				// Selected postgres aggregate  not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-				if (commentVotesCount === undefined) {
-					ctx.log.error(
-						"Postgres aggregate select operation unexpectedly returned an empty array instead of throwing an error.",
-					);
-
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
+				if (commentVote === undefined) {
+					return 0;
 				}
 
-				return commentVotesCount.count;
+				return commentVote.count;
 			},
 			type: "Int",
 		}),

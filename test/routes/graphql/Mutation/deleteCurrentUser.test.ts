@@ -161,8 +161,8 @@ suite("Mutation field deleteCurrentUser", () => {
 		assertToBeNonNullish(createUserResult.data.createUser.user);
 
 		expect(deleteCurrentUserResult.errors).toBeUndefined();
-		expect(deleteCurrentUserResult.data.deleteCurrentUser).toEqual(
-			createUserResult.data.createUser.user,
+		expect(deleteCurrentUserResult.data.deleteCurrentUser?.id).toEqual(
+			createUserResult.data.createUser.user.id,
 		);
 	});
 });

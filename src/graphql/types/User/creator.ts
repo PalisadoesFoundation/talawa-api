@@ -4,7 +4,7 @@ import { User } from "./User";
 User.implement({
 	fields: (t) => ({
 		creator: t.field({
-			description: "User who first created the user.",
+			description: "User who created the user.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -60,6 +60,7 @@ User.implement({
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a user's creator id that isn't null.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",

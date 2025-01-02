@@ -9,11 +9,10 @@ export const mutationCreateChatMessageInputSchema =
 			chatId: true,
 		})
 		.extend({
-			parentChatMessageId:
-				chatMessagesTableInsertSchema.shape.parentChatMessageId
-					.unwrap()
-					.unwrap()
-					.optional(),
+			parentMessageId: chatMessagesTableInsertSchema.shape.parentMessageId
+				.unwrap()
+				.unwrap()
+				.optional(),
 		});
 
 export const MutationCreateChatMessageInput = builder
@@ -31,8 +30,8 @@ export const MutationCreateChatMessageInput = builder
 				description: "Global identifier of the associated chat.",
 				required: true,
 			}),
-			parentChatMessageId: t.id({
-				description: "Global identifier of the associated parent chat message.",
+			parentMessageId: t.id({
+				description: "Global identifier of the associated parent message.",
 				required: true,
 			}),
 		}),

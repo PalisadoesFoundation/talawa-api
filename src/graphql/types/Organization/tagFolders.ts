@@ -124,7 +124,8 @@ Organization.implement({
 
 					if (
 						currentUser.role !== "administrator" &&
-						currentUserOrganizationMembership === undefined
+						(currentUserOrganizationMembership === undefined ||
+							currentUserOrganizationMembership.role !== "administrator")
 					) {
 						throw new TalawaGraphQLError({
 							extensions: {
@@ -231,6 +232,7 @@ Organization.implement({
 						createCursor: (tag) =>
 							Buffer.from(
 								JSON.stringify({
+									id: tag.id,
 									name: tag.name,
 								}),
 							).toString("base64url"),

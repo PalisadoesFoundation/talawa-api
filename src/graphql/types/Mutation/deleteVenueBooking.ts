@@ -84,6 +84,7 @@ builder.mutationField("deleteVenueBooking", (t) =>
 								},
 							},
 						},
+						venueAttachmentsWhereVenue: true,
 						venueBookingsWhereVenue: {
 							columns: {
 								creatorId: true,
@@ -205,7 +206,9 @@ builder.mutationField("deleteVenueBooking", (t) =>
 				});
 			}
 
-			return existingVenue;
+			return Object.assign(existingVenue, {
+				attachments: existingVenue.venueAttachmentsWhereVenue,
+			});
 		},
 		type: Venue,
 	}),

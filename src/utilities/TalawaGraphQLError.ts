@@ -4,7 +4,7 @@ import {
 	type GraphQLFormattedError,
 } from "graphql";
 
-//The term action used below is used to refer to read and write operations triggered by the clients. In the context of graphql query, mutation and subscription are the three possible ways to perform these actions.
+// The term action used below is used to refer to read and write operations triggered by the clients. In the context of graphql query, mutation and subscription are the three possible ways to perform these actions.
 
 // The term resource used below is used to refer to any entity that the client can perform an action on. These can be both coarse and fine grained entities. One example for a coarse grained entity would be the account of a user and one example for a fine grained entity would be the email address of a user.
 
@@ -12,10 +12,11 @@ import {
  * When resources associated to the provided graphql arguments cannot be not found.
  *
  * @example
- *	throw new TalawaGraphQLError("No posts found for some of the provided arguments.", {
- *		code: "arguments_associated_resources_not_found"
- *		issues: [
- *			{
+ * throw new TalawaGraphQLError({
+ * 	extensions: {
+ * 		code: "arguments_associated_resources_not_found",
+ * 		issues: [
+ * 			{
  * 				argumentPath: ["input", 0, "id"],
  * 			},
  * 			{
@@ -24,8 +25,9 @@ import {
  * 			{
  * 				argumentPath: ["input", 19, "id"],
  * 			},
- *		],
- *	});
+ * 		],
+ * 	},
+ * });
  */
 export type ArgumentsAssociatedResourcesNotFoundExtensions = {
 	code: "arguments_associated_resources_not_found";
@@ -38,10 +40,13 @@ export type ArgumentsAssociatedResourcesNotFoundExtensions = {
  * When the client tries to perform an action that conflicts with real world expectations of the application.
  *
  * @example
- * throw new TalawaGraphQLError("You can only claim your yearly award once per year.",
- * {
- *  code: "forbidden_action"
- * })
+ * throw new TalawaGraphQLError(
+ * 	{
+ * 		extensions: {
+ * 			code: "forbidden_action",
+ * 		},
+ * 	},
+ * );
  */
 export type ForbiddenActionExtensions = {
 	code: "forbidden_action";
@@ -51,22 +56,21 @@ export type ForbiddenActionExtensions = {
  * When the client tries to perform actions on resources associated to arguments that conflict with real world expectations of the application. One example would be a user trying to follow their own account on a social media application.
  *
  * @example
- *	throw new TalawaGraphQLError({
- *      extensions: {
- *          code: "forbidden_action_on_arguments_associated_resources",
- *          issues: [
- *              {
- *                  argumentPath: ["input", 0, "emailAddress"],
- *                  message: "This email address is not available.",
- *              },
- *              {
- *                  argumentPath: ["input", 3, "username"],
- *                  message: "This username is not available.",
- *              },
- *          ],
- *      },
- * 		message: "This action is forbidden on the resources associated to the provided arguments."
- *	});
+ * throw new TalawaGraphQLError({
+ * 	extensions: {
+ * 		code: "forbidden_action_on_arguments_associated_resources",
+ * 		issues: [
+ * 			{
+ * 				argumentPath: ["input", 0, "emailAddress"],
+ * 				message: "This email address is not available.",
+ * 			},
+ * 			{
+ * 				argumentPath: ["input", 3, "username"],
+ * 				message: "This username is not available.",
+ * 			},
+ * 		],
+ * 	},
+ * });
  */
 export type ForbiddenActionOnArgumentsAssociatedResourcesExtensions = {
 	code: "forbidden_action_on_arguments_associated_resources";
@@ -81,11 +85,10 @@ export type ForbiddenActionOnArgumentsAssociatedResourcesExtensions = {
  *
  * @example
  * throw new TalawaGraphQLError({
- *  extensions: {
- *      code: "unauthenticated"
- *  },
- *
- * })
+ * 	extensions: {
+ * 		code: "unauthenticated",
+ * 	},
+ * });
  */
 export type UnauthenticatedExtensions = {
 	code: "unauthenticated";
@@ -96,25 +99,24 @@ export type UnauthenticatedExtensions = {
  *
  * @example
  * throw new TalawaGraphQLError({
- *  extensions: {
- *      code: "invalid_arguments",
- *      issues: [
- *          {
- *              argumentPath: ["input", "age"],
- *              message: "Must be greater than 18."
- *          },
- *          {
- *              argumentPath: ["input", "username"],
- *              message: "Must be smaller than or equal to 25 characters."
- *          },
- *          {
- *              argumentPath: ["input", "favoriteFood", 2],
- *              message: "Must be at least 1 character long."
- *          },
- *      ],
- *  },
- *
- * })
+ * 	extensions: {
+ * 		code: "invalid_arguments",
+ * 		issues: [
+ * 			{
+ * 				argumentPath: ["input", "age"],
+ * 				message: "Must be greater than 18.",
+ * 			},
+ * 			{
+ * 				argumentPath: ["input", "username"],
+ * 				message: "Must be smaller than or equal to 25 characters.",
+ * 			},
+ * 			{
+ * 				argumentPath: ["input", "favoriteFood", 2],
+ * 				message: "Must be at least 1 character long.",
+ * 			},
+ * 		],
+ * 	},
+ * });
  */
 export type InvalidArgumentsExtensions = {
 	code: "invalid_arguments";
@@ -129,11 +131,10 @@ export type InvalidArgumentsExtensions = {
  *
  * @example
  * throw new TalawaGraphQLError({
- *  extensions: {
- *      code: "unauthorized_action"
- *  },
- *  message: "You are not authorized to perform this action."
- * })
+ * 	extensions: {
+ * 		code: "unauthorized_action",
+ * 	},
+ * });
  */
 export type UnauthorizedActionExtensions = {
 	code: "unauthorized_action";
@@ -144,17 +145,15 @@ export type UnauthorizedActionExtensions = {
  *
  * @example
  * throw new TalawaGraphQLError({
- *  extensions: {
- *      code: "unauthorized_action_on_arguments_associated_resources",
- *      issues: [
- *          {
- *              argumentPath: ["input", "id"],
- *              message: "You must be an approved member of this organization to access it.",
- *          },
- *      ],
- *  },
- *  message: "You are not authorized to perform this action on the resources associated to the provided arguments."
- * })
+ * 	extensions: {
+ * 		code: "unauthorized_action_on_arguments_associated_resources",
+ * 		issues: [
+ * 			{
+ * 				argumentPath: ["input", "id"],
+ * 			},
+ * 		],
+ * 	},
+ * });
  */
 export type UnauthorizedActionOnArgumentsAssociatedResourcesExtensions = {
 	issues: {
@@ -168,17 +167,16 @@ export type UnauthorizedActionOnArgumentsAssociatedResourcesExtensions = {
  *
  * @example
  * throw new TalawaGraphQLError({
- *  extensions: {
- *      code: "unauthorized_arguments",
- *      issues: [
- *          {
- *              argumentPath: ["input", "role"],
- *              message: "You are not authorzied to change your user role.",
- *          },
- *      ],
- *  },
- *  message: "You are not authorized to perform this action with the provided arguments."
- * })
+ * 	extensions: {
+ * 		code: "unauthorized_arguments",
+ * 		issues: [
+ * 			{
+ * 				argumentPath: ["input", "role"],
+ * 				message: "You are not authorzied to change your user role.",
+ * 			},
+ * 		],
+ * 	},
+ * });
  */
 export type UnauthorizedArgumentsExtensions = {
 	issues: {
@@ -192,11 +190,10 @@ export type UnauthorizedArgumentsExtensions = {
  *
  * @example
  * throw new TalawaGraphQLError({
- *  extensions: {
- *      code: "unexpected"
- *  },
- *  message: "Something went wrong. Please try again later.",
- * })
+ * 	extensions: {
+ * 		code: "unexpected",
+ * 	},
+ * });
  */
 export type UnexpectedExtensions = {
 	code: "unexpected";

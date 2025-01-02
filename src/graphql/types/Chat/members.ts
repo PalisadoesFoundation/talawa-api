@@ -82,12 +82,10 @@ Chat.implement({
 						? [
 								asc(chatMembershipsTable.createdAt),
 								asc(chatMembershipsTable.memberId),
-								asc(chatMembershipsTable.chatId),
 							]
 						: [
 								desc(chatMembershipsTable.createdAt),
 								desc(chatMembershipsTable.memberId),
-								desc(chatMembershipsTable.chatId),
 							];
 
 					let where: SQL | undefined;
@@ -133,7 +131,6 @@ Chat.implement({
 										),
 								),
 								eq(chatMembershipsTable.chatId, parent.id),
-
 								or(
 									and(
 										eq(chatMembershipsTable.createdAt, cursor.createdAt),
@@ -178,7 +175,7 @@ Chat.implement({
 						createCursor: (chatMembership) =>
 							Buffer.from(
 								JSON.stringify({
-									createdAt: chatMembership.createdAt,
+									createdAt: chatMembership.createdAt.toISOString(),
 									memberId: chatMembership.memberId,
 								}),
 							).toString("base64url"),

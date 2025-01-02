@@ -83,6 +83,7 @@ builder.mutationField("createVenueBooking", (t) =>
 								},
 							},
 						},
+						venueAttachmentsWhereVenue: true,
 						venueBookingsWhereVenue: {
 							columns: {
 								creatorId: true,
@@ -210,7 +211,9 @@ builder.mutationField("createVenueBooking", (t) =>
 				});
 			}
 
-			return existingVenue;
+			return Object.assign(existingVenue, {
+				attachments: existingVenue.venueAttachmentsWhereVenue,
+			});
 		},
 		type: Venue,
 	}),

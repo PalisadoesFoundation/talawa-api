@@ -1,5 +1,5 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
-import type { z } from "zod";
+import { z } from "zod";
 import {
 	venueBookingsTable,
 	venueBookingsTableInsertSchema,
@@ -44,8 +44,12 @@ const cursorSchema = venueBookingsTableInsertSchema
 		venueId: true,
 	})
 	.extend({
-		createdAt: venueBookingsTableInsertSchema.shape.createdAt.unwrap(),
-	});
+		createdAt: z.string().datetime(),
+	})
+	.transform((arg) => ({
+		createdAt: new Date(arg.createdAt),
+		venueId: arg.venueId,
+	}));
 
 Event.implement({
 	fields: (t) => ({
@@ -54,14 +58,6 @@ Event.implement({
 				description:
 					"GraphQL connection to traverse through the venues that are booked for the event.",
 				resolve: async (parent, args, ctx) => {
-					if (!ctx.currentClient.isAuthenticated) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthenticated",
-							},
-						});
-					}
-
 					const {
 						data: parsedArgs,
 						error,
@@ -80,56 +76,15 @@ Event.implement({
 						});
 					}
 
-					const currentUserId = ctx.currentClient.user.id;
-
-					const currentUser =
-						await ctx.drizzleClient.query.usersTable.findFirst({
-							with: {
-								organizationMembershipsWhereMember: {
-									columns: {
-										role: true,
-									},
-									where: (fields, operators) =>
-										operators.eq(fields.organizationId, parent.organizationId),
-								},
-							},
-							where: (fields, operators) =>
-								operators.eq(fields.id, currentUserId),
-						});
-
-					if (currentUser === undefined) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthenticated",
-							},
-						});
-					}
-
-					const currentUserOrganizationMembership =
-						currentUser.organizationMembershipsWhereMember[0];
-
-					if (
-						currentUser.role !== "administrator" &&
-						currentUserOrganizationMembership === undefined
-					) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthorized_action",
-							},
-						});
-					}
-
 					const { cursor, isInversed, limit } = parsedArgs;
 
 					const orderBy = isInversed
 						? [
 								asc(venueBookingsTable.createdAt),
-								asc(venueBookingsTable.eventId),
 								asc(venueBookingsTable.venueId),
 							]
 						: [
 								desc(venueBookingsTable.createdAt),
-								desc(venueBookingsTable.eventId),
 								desc(venueBookingsTable.venueId),
 							];
 
@@ -201,7 +156,11 @@ Event.implement({
 							orderBy,
 							where,
 							with: {
-								venue: true,
+								venue: {
+									with: {
+										venueAttachmentsWhereVenue: true,
+									},
+								},
 							},
 						});
 
@@ -226,7 +185,10 @@ Event.implement({
 									venueId: booking.venueId,
 								}),
 							).toString("base64url"),
-						createNode: (booking) => booking.venue,
+						createNode: ({ venue: { venueAttachmentsWhereVenue, ...venue } }) =>
+							Object.assign(venue, {
+								attachments: venueAttachmentsWhereVenue,
+							}),
 						parsedArgs,
 						rawNodes: venueBookings,
 					});

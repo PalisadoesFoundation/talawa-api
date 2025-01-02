@@ -7,6 +7,7 @@ import {
 } from "~/src/graphql/inputs/QuerySignInInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import type { CurrentClient } from "../../context";
 
 const querySignInArgumentsSchema = z.object({
 	input: querySignInInputSchema,
@@ -82,6 +83,15 @@ builder.queryField("signIn", (t) =>
 					},
 				});
 			}
+
+			// The following code is necessary for continuing the expected graph traversal for an authenticated client because of absence of an authentication context for clients that triggered this operation. This should be removed when authentication flows are seperated from the graphql implementation.
+
+			// @ts-expect-error
+			ctx.currentClient.isAuthenticated = true;
+			// @ts-expect-error
+			ctx.currentClient.user = {
+				id: existingUser.id,
+			} as CurrentClient["user"];
 
 			return {
 				authenticationToken: ctx.jwt.sign({

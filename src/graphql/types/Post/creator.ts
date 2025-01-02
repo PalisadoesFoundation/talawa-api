@@ -5,7 +5,7 @@ import { Post } from "./Post";
 Post.implement({
 	fields: (t) => ({
 		creator: t.field({
-			description: "User who first created the post.",
+			description: "User who created the post.",
 			resolve: async (parent, _args, ctx) => {
 				if (parent.creatorId === null) {
 					return null;

@@ -125,6 +125,7 @@ Organization.implement({
 						: [asc(advertisementsTable.name)];
 
 					let where: SQL | undefined;
+
 					if (isInversed) {
 						if (cursor !== undefined) {
 							where = and(

@@ -4,7 +4,7 @@ import { FundCampaign } from "./FundCampaign";
 FundCampaign.implement({
 	fields: (t) => ({
 		createdAt: t.field({
-			description: "Date time at the time the fund campaign was first created.",
+			description: "Date time at the time the fund campaign was created.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -63,6 +63,7 @@ FundCampaign.implement({
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a fund campaign's fund id that isn't null.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",

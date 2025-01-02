@@ -51,10 +51,15 @@ const downVotersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 		};
 	});
 
-const cursorSchema = z.object({
-	createdAt: postVotesTableInsertSchema.shape.createdAt.unwrap(),
-	creatorId: postVotesTableInsertSchema.shape.creatorId.unwrap().unwrap(),
-});
+const cursorSchema = z
+	.object({
+		createdAt: z.string().datetime(),
+		creatorId: postVotesTableInsertSchema.shape.creatorId.unwrap().unwrap(),
+	})
+	.transform((arg) => ({
+		createdAt: new Date(arg.createdAt),
+		creatorId: arg.creatorId,
+	}));
 
 Post.implement({
 	fields: (t) => ({
@@ -98,6 +103,7 @@ Post.implement({
 										.from(postVotesTable)
 										.where(
 											and(
+												ne(postVotesTable.creatorId, sql`${null}`),
 												eq(postVotesTable.createdAt, cursor.createdAt),
 												eq(postVotesTable.creatorId, cursor.creatorId),
 												eq(postVotesTable.postId, parent.id),
@@ -105,6 +111,7 @@ Post.implement({
 											),
 										),
 								),
+								ne(postVotesTable.creatorId, sql`${null}`),
 								eq(postVotesTable.postId, parent.id),
 								eq(postVotesTable.type, "down_vote"),
 								or(
@@ -131,6 +138,7 @@ Post.implement({
 										.from(postVotesTable)
 										.where(
 											and(
+												ne(postVotesTable.creatorId, sql`${null}`),
 												eq(postVotesTable.createdAt, cursor.createdAt),
 												eq(postVotesTable.creatorId, cursor.creatorId),
 												eq(postVotesTable.postId, parent.id),
@@ -138,6 +146,7 @@ Post.implement({
 											),
 										),
 								),
+								ne(postVotesTable.creatorId, sql`${null}`),
 								eq(postVotesTable.postId, parent.id),
 								eq(postVotesTable.type, "down_vote"),
 								or(
@@ -188,12 +197,13 @@ Post.implement({
 						createCursor: (vote) =>
 							Buffer.from(
 								JSON.stringify({
-									createdAt: vote.createdAt,
+									createdAt: vote.createdAt.toISOString(),
 									creatorId: vote.creatorId,
 								}),
 							).toString("base64url"),
 						createNode: (vote) => vote.creator,
 						parsedArgs,
+						// None of the post votes below contain a `creator` field with `null` as the value because of the sql query logic. This filter operation is here just to prevent type errors.
 						rawNodes: postVotes.filter(
 							(
 								vote,

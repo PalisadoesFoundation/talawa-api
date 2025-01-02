@@ -1,5 +1,5 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
-import type { z } from "zod";
+import { z } from "zod";
 import {
 	venueBookingsTable,
 	venueBookingsTableInsertSchema,
@@ -44,8 +44,12 @@ const cursorSchema = venueBookingsTableInsertSchema
 		eventId: true,
 	})
 	.extend({
-		createdAt: venueBookingsTableInsertSchema.shape.createdAt.unwrap(),
-	});
+		createdAt: z.string().datetime(),
+	})
+	.transform((arg) => ({
+		createdAt: new Date(arg.createdAt),
+		eventId: arg.eventId,
+	}));
 
 Venue.implement({
 	fields: (t) => ({
@@ -129,12 +133,10 @@ Venue.implement({
 						? [
 								asc(venueBookingsTable.createdAt),
 								asc(venueBookingsTable.eventId),
-								asc(venueBookingsTable.venueId),
 							]
 						: [
 								desc(venueBookingsTable.createdAt),
 								desc(venueBookingsTable.eventId),
-								desc(venueBookingsTable.venueId),
 							];
 
 					let where: SQL | undefined;
@@ -230,7 +232,7 @@ Venue.implement({
 						createCursor: (booking) =>
 							Buffer.from(
 								JSON.stringify({
-									createdAt: booking.createdAt,
+									createdAt: booking.createdAt.toISOString(),
 									eventId: booking.eventId,
 								}),
 							).toString("base64url"),

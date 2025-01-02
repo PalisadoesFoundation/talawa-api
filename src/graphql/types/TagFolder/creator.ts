@@ -5,7 +5,7 @@ import { TagFolder } from "./TagFolder";
 TagFolder.implement({
 	fields: (t) => ({
 		creator: t.field({
-			description: "User who first created the tag folder.",
+			description: "User who created the tag folder.",
 			resolve: async (parent, _args, ctx) => {
 				if (parent.creatorId === null) {
 					return null;

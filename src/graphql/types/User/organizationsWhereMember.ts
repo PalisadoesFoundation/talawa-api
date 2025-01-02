@@ -59,6 +59,14 @@ User.implement({
 				description:
 					"GraphQL connection to traverse through the organizations the user is a member of.",
 				resolve: async (parent, args, ctx) => {
+					if (!ctx.currentClient.isAuthenticated) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+						});
+					}
+
 					const {
 						data: parsedArgs,
 						error,
@@ -77,17 +85,42 @@ User.implement({
 						});
 					}
 
+					const currentUserId = ctx.currentClient.user.id;
+
+					const currentUser =
+						await ctx.drizzleClient.query.usersTable.findFirst({
+							where: (fields, operators) =>
+								operators.eq(fields.id, currentUserId),
+						});
+
+					if (currentUser === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+						});
+					}
+
+					if (
+						currentUser.role !== "administrator" &&
+						currentUserId !== parent.id
+					) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthorized_action",
+							},
+						});
+					}
+
 					const { cursor, isInversed, limit } = parsedArgs;
 
 					const orderBy = isInversed
 						? [
 								asc(organizationMembershipsTable.createdAt),
-								asc(organizationMembershipsTable.memberId),
 								asc(organizationMembershipsTable.organizationId),
 							]
 						: [
 								desc(organizationMembershipsTable.createdAt),
-								desc(organizationMembershipsTable.memberId),
 								desc(organizationMembershipsTable.organizationId),
 							];
 
@@ -102,6 +135,10 @@ User.implement({
 										.from(organizationMembershipsTable)
 										.where(
 											and(
+												eq(
+													organizationMembershipsTable.createdAt,
+													cursor.createdAt,
+												),
 												eq(organizationMembershipsTable.memberId, parent.id),
 												eq(
 													organizationMembershipsTable.organizationId,
@@ -137,6 +174,10 @@ User.implement({
 										.from(organizationMembershipsTable)
 										.where(
 											and(
+												eq(
+													organizationMembershipsTable.createdAt,
+													cursor.createdAt,
+												),
 												eq(organizationMembershipsTable.memberId, parent.id),
 												eq(
 													organizationMembershipsTable.memberId,
@@ -198,7 +239,7 @@ User.implement({
 						createCursor: (membership) =>
 							Buffer.from(
 								JSON.stringify({
-									createdAt: membership.createdAt,
+									createdAt: membership.createdAt.toISOString(),
 									organizationId: membership.organizationId,
 								}),
 							).toString("base64url"),

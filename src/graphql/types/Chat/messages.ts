@@ -50,6 +50,14 @@ Chat.implement({
 				description:
 					"GraphQL connection to traverse through the messages created within the chat.",
 				resolve: async (parent, args, ctx) => {
+					if (!ctx.currentClient.isAuthenticated) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+						});
+					}
+
 					const {
 						data: parsedArgs,
 						error,
@@ -64,6 +72,56 @@ Chat.implement({
 									argumentPath: issue.path,
 									message: issue.message,
 								})),
+							},
+						});
+					}
+
+					const currentUserId = ctx.currentClient.user.id;
+
+					const currentUser =
+						await ctx.drizzleClient.query.usersTable.findFirst({
+							with: {
+								chatMembershipsWhereMember: {
+									columns: {
+										role: true,
+									},
+									where: (fields, operators) =>
+										operators.eq(fields.chatId, parent.id),
+								},
+								organizationMembershipsWhereMember: {
+									columns: {
+										role: true,
+									},
+									where: (fields, operators) =>
+										operators.eq(fields.organizationId, parent.organizationId),
+								},
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.id, currentUserId),
+						});
+
+					if (currentUser === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+						});
+					}
+
+					const currentUserOrganizationMembership =
+						currentUser.organizationMembershipsWhereMember[0];
+					const currentUserChatMembership =
+						currentUser.chatMembershipsWhereMember[0];
+
+					if (
+						currentUser.role !== "administrator" &&
+						(currentUserOrganizationMembership === undefined ||
+							(currentUserOrganizationMembership.role !== "administrator" &&
+								currentUserChatMembership === undefined))
+					) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthorized_action",
 							},
 						});
 					}

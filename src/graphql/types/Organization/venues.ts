@@ -109,7 +109,8 @@ Organization.implement({
 
 					if (
 						currentUser.role !== "administrator" &&
-						currentUserOrganizationMembership === undefined
+						(currentUserOrganizationMembership === undefined ||
+							currentUserOrganizationMembership.role !== "administrator")
 					) {
 						throw new TalawaGraphQLError({
 							extensions: {

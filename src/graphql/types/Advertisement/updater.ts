@@ -74,6 +74,7 @@ Advertisement.implement({
 					ctx.log.error(
 						"Postgres select operation returned an empty array for an advertisement's updater id that isn't null.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",

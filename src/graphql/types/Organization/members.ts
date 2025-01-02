@@ -58,6 +58,14 @@ Organization.implement({
 				description:
 					"GraphQL connection to traverse through the users that are members of the organization.",
 				resolve: async (parent, args, ctx) => {
+					if (!ctx.currentClient.isAuthenticated) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+						});
+					}
+
 					const {
 						data: parsedArgs,
 						error,
@@ -76,21 +84,62 @@ Organization.implement({
 						});
 					}
 
+					const currentUserId = ctx.currentClient.user.id;
+
+					const currentUser =
+						await ctx.drizzleClient.query.usersTable.findFirst({
+							columns: {
+								role: true,
+							},
+							with: {
+								organizationMembershipsWhereMember: {
+									columns: {
+										role: true,
+									},
+									where: (fields, operators) =>
+										operators.eq(fields.organizationId, parent.id),
+								},
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.id, currentUserId),
+						});
+
+					if (currentUser === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+						});
+					}
+
+					const currentUserOrganizationMembership =
+						currentUser.organizationMembershipsWhereMember[0];
+
+					if (
+						currentUser.role !== "administrator" &&
+						currentUserOrganizationMembership === undefined
+					) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthorized_action",
+							},
+						});
+					}
+
 					const { cursor, isInversed, limit } = parsedArgs;
 
 					const orderBy = isInversed
 						? [
 								asc(organizationMembershipsTable.createdAt),
 								asc(organizationMembershipsTable.memberId),
-								asc(organizationMembershipsTable.organizationId),
 							]
 						: [
 								desc(organizationMembershipsTable.createdAt),
 								desc(organizationMembershipsTable.memberId),
-								desc(organizationMembershipsTable.organizationId),
 							];
 
 					let where: SQL | undefined;
+
 					if (isInversed) {
 						if (cursor !== undefined) {
 							where = and(
@@ -100,6 +149,10 @@ Organization.implement({
 										.from(organizationMembershipsTable)
 										.where(
 											and(
+												eq(
+													organizationMembershipsTable.createdAt,
+													cursor.createdAt,
+												),
 												eq(
 													organizationMembershipsTable.memberId,
 													cursor.memberId,
@@ -138,6 +191,10 @@ Organization.implement({
 										.from(organizationMembershipsTable)
 										.where(
 											and(
+												eq(
+													organizationMembershipsTable.createdAt,
+													cursor.createdAt,
+												),
 												eq(
 													organizationMembershipsTable.memberId,
 													cursor.memberId,
@@ -203,7 +260,7 @@ Organization.implement({
 						createCursor: (organizationMembership) =>
 							Buffer.from(
 								JSON.stringify({
-									createdAt: organizationMembership.createdAt,
+									createdAt: organizationMembership.createdAt.toISOString(),
 									memberId: organizationMembership.memberId,
 								}),
 							).toString("base64url"),

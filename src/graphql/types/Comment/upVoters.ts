@@ -51,10 +51,15 @@ const upVotersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 		};
 	});
 
-const cursorSchema = z.object({
-	createdAt: commentVotesTableInsertSchema.shape.createdAt.unwrap(),
-	creatorId: commentVotesTableInsertSchema.shape.creatorId.unwrap().unwrap(),
-});
+const cursorSchema = z
+	.object({
+		createdAt: z.string().datetime(),
+		creatorId: commentVotesTableInsertSchema.shape.creatorId.unwrap().unwrap(),
+	})
+	.transform((arg) => ({
+		createdAt: new Date(arg.createdAt),
+		creatorId: arg.creatorId,
+	}));
 
 Comment.implement({
 	fields: (t) => ({
@@ -104,6 +109,7 @@ Comment.implement({
 										.from(commentVotesTable)
 										.where(
 											and(
+												ne(commentVotesTable.creatorId, sql`${null}`),
 												eq(commentVotesTable.createdAt, cursor.createdAt),
 												eq(commentVotesTable.creatorId, cursor.creatorId),
 												eq(commentVotesTable.commentId, parent.id),
@@ -111,6 +117,7 @@ Comment.implement({
 											),
 										),
 								),
+								ne(commentVotesTable.creatorId, sql`${null}`),
 								eq(commentVotesTable.commentId, parent.id),
 								eq(commentVotesTable.type, "up_vote"),
 								or(
@@ -137,6 +144,7 @@ Comment.implement({
 										.from(commentVotesTable)
 										.where(
 											and(
+												ne(commentVotesTable.creatorId, sql`${null}`),
 												eq(commentVotesTable.createdAt, cursor.createdAt),
 												eq(commentVotesTable.creatorId, cursor.creatorId),
 												eq(commentVotesTable.commentId, parent.id),
@@ -144,6 +152,7 @@ Comment.implement({
 											),
 										),
 								),
+								ne(commentVotesTable.creatorId, sql`${null}`),
 								eq(commentVotesTable.commentId, parent.id),
 								eq(commentVotesTable.type, "up_vote"),
 								or(
@@ -194,12 +203,13 @@ Comment.implement({
 						createCursor: (vote) =>
 							Buffer.from(
 								JSON.stringify({
-									createdAt: vote.createdAt,
+									createdAt: vote.createdAt.toISOString(),
 									creatorId: vote.creatorId,
 								}),
 							).toString("base64url"),
 						createNode: (vote) => vote.creator,
 						parsedArgs,
+						// None of the comment votes below contain a `creator` field with `null` as the value because of the sql query logic. This filter operation is here just to prevent type errors.
 						rawNodes: commentVotes.filter(
 							(
 								vote,

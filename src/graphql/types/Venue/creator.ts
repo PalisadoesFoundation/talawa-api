@@ -5,7 +5,7 @@ import { Venue } from "./Venue";
 Venue.implement({
 	fields: (t) => ({
 		creator: t.field({
-			description: "User who first created the venue.",
+			description: "User who created the venue.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

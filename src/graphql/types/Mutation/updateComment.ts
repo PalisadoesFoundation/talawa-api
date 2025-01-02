@@ -137,7 +137,6 @@ builder.mutationField("updateComment", (t) =>
 				.update(commentsTable)
 				.set({
 					body: parsedArgs.input.body,
-					updaterId: currentUserId,
 				})
 				.where(eq(commentsTable.id, parsedArgs.input.id))
 				.returning();

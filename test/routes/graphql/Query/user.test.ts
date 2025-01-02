@@ -155,9 +155,16 @@ suite("Query field user", () => {
 			},
 		);
 
+		assertToBeNonNullish(
+			administratorUserSignInResult.data.signIn?.authenticationToken,
+		);
+
 		assertToBeNonNullish(administratorUserSignInResult.data.signIn?.user?.id);
 
 		const userResult = await mercuriusClient.query(Query_user, {
+			headers: {
+				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+			},
 			variables: {
 				input: {
 					id: administratorUserSignInResult.data.signIn.user.id,

@@ -325,12 +325,6 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 		relationName: "comments.creator_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `comments` table.
-	 */
-	commentsWhereUpdater: many(commentsTable, {
-		relationName: "comments.updater_id:users.id",
-	}),
-	/**
 	 * One to many relationship from `users` table to `comment_votes` table.
 	 */
 	commentVotesWhereCreator: many(commentVotesTable, {

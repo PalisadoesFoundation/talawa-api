@@ -111,8 +111,8 @@ builder.mutationField("createChatMessage", (t) =>
 				});
 			}
 
-			if (parsedArgs.input.parentChatMessageId !== undefined) {
-				const parentChatMessageId = parsedArgs.input.parentChatMessageId;
+			if (parsedArgs.input.parentMessageId !== undefined) {
+				const parentMessageId = parsedArgs.input.parentMessageId;
 
 				const existingChatMessage =
 					await ctx.drizzleClient.query.chatMessagesTable.findFirst({
@@ -122,7 +122,7 @@ builder.mutationField("createChatMessage", (t) =>
 						where: (fields, operators) =>
 							operators.and(
 								operators.eq(fields.chatId, parsedArgs.input.chatId),
-								operators.eq(fields.id, parentChatMessageId),
+								operators.eq(fields.id, parentMessageId),
 							),
 					});
 
@@ -132,7 +132,7 @@ builder.mutationField("createChatMessage", (t) =>
 							code: "arguments_associated_resources_not_found",
 							issues: [
 								{
-									argumentPath: ["input", "parentChatMessageId"],
+									argumentPath: ["input", "parentMessageId"],
 								},
 							],
 						},
@@ -169,7 +169,7 @@ builder.mutationField("createChatMessage", (t) =>
 					body: parsedArgs.input.body,
 					chatId: parsedArgs.input.chatId,
 					creatorId: currentUserId,
-					parentChatMessageId: parsedArgs.input.parentChatMessageId,
+					parentMessageId: parsedArgs.input.parentMessageId,
 				})
 				.returning();
 

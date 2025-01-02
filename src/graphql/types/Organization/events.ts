@@ -1,5 +1,5 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
-import type { z } from "zod";
+import { z } from "zod";
 import {
 	eventsTable,
 	eventsTableInsertSchema,
@@ -39,13 +39,15 @@ const eventsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 		};
 	});
 
-const cursorSchema = eventsTableInsertSchema
-	.pick({
-		startAt: true,
-	})
-	.extend({
+const cursorSchema = z
+	.object({
 		id: eventsTableInsertSchema.shape.id.unwrap(),
-	});
+		startAt: z.string().datetime(),
+	})
+	.transform((arg) => ({
+		id: arg.id,
+		startAt: new Date(arg.startAt),
+	}));
 
 Organization.implement({
 	fields: (t) => ({
@@ -212,7 +214,8 @@ Organization.implement({
 						createCursor: (event) =>
 							Buffer.from(
 								JSON.stringify({
-									name: event.name,
+									id: event.id,
+									startAt: event.startAt.toISOString(),
 								}),
 							).toString("base64url"),
 						createNode: ({ eventAttachmentsWhereEvent, ...event }) =>

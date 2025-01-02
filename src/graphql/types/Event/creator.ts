@@ -5,7 +5,7 @@ import { Event } from "./Event";
 Event.implement({
 	fields: (t) => ({
 		creator: t.field({
-			description: "User who first created the event.",
+			description: "User who created the event.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
