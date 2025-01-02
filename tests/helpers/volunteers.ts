@@ -138,8 +138,6 @@ export const createVolunteerAndActions = async (): Promise<
   });
 
   const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
   const twoWeeksAgo = new Date(today);
   twoWeeksAgo.setDate(today.getDate() - 14);
   const twoMonthsAgo = new Date(today);
@@ -158,7 +156,7 @@ export const createVolunteerAndActions = async (): Promise<
     hoursHistory: [
       {
         hours: 2,
-        date: yesterday,
+        date: today,
       },
       {
         hours: 4,
@@ -186,7 +184,7 @@ export const createVolunteerAndActions = async (): Promise<
     hoursHistory: [
       {
         hours: 1,
-        date: yesterday,
+        date: today,
       },
       {
         hours: 2,

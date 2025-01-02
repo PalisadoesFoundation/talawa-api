@@ -1,5 +1,6 @@
 import { unlink } from "fs/promises";
 import path from "path";
+const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 import { EncodedVideo } from "../../models/EncodedVideo";
 
 /**
@@ -19,7 +20,7 @@ export const deletePreviousVideo = async (
   // Check if the video file exists and has only one use left
   if (videoToBeDeleted?.numberOfUses === 1) {
     // Delete the video file from the file system
-    await unlink(path.join(__dirname, "../../../" + videoToBeDeleted.fileName));
+    await unlink(path.join(dirname, "../../../" + videoToBeDeleted.fileName));
 
     // Delete the EncodedVideo document from the database
     await EncodedVideo.deleteOne({

@@ -1,5 +1,7 @@
 import type { PopulatedDoc, Document, Model, Types } from "mongoose";
-import { Schema, model, models } from "mongoose";
+import mongoose from "mongoose";
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { Schema, model, models } = mongoose;
 import type { InterfaceUser } from "./User";
 import type { InterfaceEvent } from "./Event";
 import { createLoggingMiddleware } from "../libraries/dbLogger";
