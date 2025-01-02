@@ -1,35 +1,34 @@
+# Talawa API Systemd Service Configuration
+#
+# This service file is used to manage the Talawa API service.
+#
+# README:
+# 1. Edit the paths in the `[Editable Configuration]` section to match your setup.
+# 2. Do not modify the `[Static Configuration]` section unless necessary.
+# 3. Make sure the `Talawa-api.sh` script and all necessary files are correctly configured.
+
 [Unit]
 # Description of the service
 Description=Talawa-API Service
-
-# Ensure the service starts after the network is available
 After=network.target
 
 [Service]
-# The type of service. 'simple' means the service will start immediately.
-Type=simple
+#########################################
+# [Editable Configuration]
+#########################################
 
-# The command to start the service. This points to the Talawa-api.sh script.Here you can't use any global variables as systemd will not load any variable. That's why we have to manually add it.Always use absolute path.
+# Absolute path to the Talawa-api.sh script
 ExecStart=/path/to/your/talawa-api/example/linux/systemd/Talawa-api.sh
 
-# The working directory for the service.User have to export it.
+# The working directory for the service
 WorkingDirectory=/path/to/your/talawa-api
-
-# Restart the service automatically if it stops.
-Restart=always
-
-# The delay before restarting the service.
-RestartSec=5
 
 # The user to run the service as. You can find your username by running 'whoami'.Create a user named `talawa` for better understanding and Security.First create a user and group named 'talawa' for better Security. 
 User=talawa
-
-# The group to run the service as. Usually, this is the same as the username.
 Group=talawa
 
-# Redirects the output and error to the systemd journal and console.
-StandardOutput=journal+console
-StandardError=journal+console
+# Runtime directory for storing temporary files
+RuntimeDirectory=talawa-api
 
 # Sets the maximum number of open files. Adjust this value based on application requirements.
 # The current value of 15000 was determined based on the following considerations:
@@ -39,36 +38,29 @@ StandardError=journal+console
 # Users should monitor the application and adjust this value if the demands change in the future.
 LimitNOFILE=15000
 
-# Security-related directives
+#########################################
+# [Static Configuration]
+# Do not modify unless necessary
+#########################################
 
-# Protect the system by making the root filesystem read-only for the service.
-# This prevents the service from modifying system-critical files, reducing the attack surface.Comment this because for this line the service have no permission to write in logfile.
-#ProtectSystem=strict
+# Service type and restart policy
+Type=simple
+Restart=always
+RestartSec=5
 
-# Prevent the service from accessing home directories of other users.
-# Only the necessary files in the service's user directory will be accessible.For now don't use it as our script is under the talawa user's directories so if we execute then it will give error.
-#ProtectHome=yes
+# Output and error logging
+StandardOutput=journal+console
+StandardError=journal+console
 
-# Make the service's working directory read-only.
-# This is useful for protecting important directories from being altered by the service.
-ReadOnlyPaths=/path/to/your/talawa-api
-
-# Ensures the service and its child processes cannot gain new privileges.
-# This helps to prevent privilege escalation attacks.
+# Security-related configurations
+# Uncomment the following if you want to enable stricter security but ensure paths and permissions allow writing logs
+# ProtectSystem=strict
+# ProtectHome=yes
 NoNewPrivileges=true
-
-# Isolate the service's temporary files from others by assigning it a private /tmp.
-# This prevents other services or users from accessing or interfering with the service's temporary data.
 PrivateTmp=true
-
-# Restrict the service to use only IPv4 and IPv6 address families.
-# This helps prevent the service from using other network protocols, such as Unix domain sockets, which could be a potential attack vector.
 RestrictAddressFamilies=AF_INET AF_INET6
-
-# Allows the service to bind to network ports below 1024 (e.g., HTTP on port 80), 
-# but it won't allow the service to use any other privileged capabilities.
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 
 [Install]
-# Specifies the target to which the service should be added. 'multi-user.target' means the service will start in multi-user mode.
+# Target to start the service
 WantedBy=multi-user.target
