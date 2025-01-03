@@ -5,26 +5,149 @@
  */
 
 /* You can override the default Infima variables here. */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
+
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.29);
+  --secondary-blue-900: #001c63;
+  --sidebar-bg-color: #f3f4f6;
+  --secondary-blue-500: #3970fd;
+  --primary-blue-600: #1e56e3;
+  --base-neutral-0: #ffffff;
+  --primary-neutral-800: #1f2a37;
+  --ifm-menu-color-active: #1e56e3;
+  --primary-neutral-600: #4d5761;
+  --ifm-breadcrumb-color-active: var(--primary-neutral-600);
+  --ifm-link-color: #1e56e3;
+  --ifm-button-background-color: #2e8555;
+  --ifm-button-background-color-dark: #205d3b;
+  --ifm-hover-overlay: rgba(0, 0, 0, 0.05);
+  --brand-color: black;
+  --next-prev-border-color: #e5e7eb;
+  --ifm-font-family-base: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
+  Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, "Segoe UI", Helvetica,
+  Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-background: #111927;
+  --ifm-background-surface-color: var(--ifm-background-color);
+  --ifm-menu-color: var(--ifm-color-gray-200);
+  --ifm-toc-link-color: var(--ifm-color-gray-200);
+  --ifm-code-background: #001b66;
+  --ifm-color-content: var(--ifm-color-white);
+  --ifm-navbar-search-input-background-color: #001b66;
+  --ifm-table-stripe-background: #001242;
+  --ifm-navbar-search-input-placeholder-color: var(--ifm-color-gray-200);
+  --ifm-hover-overlay: rgba(0, 0, 0, 0);
+  --ifm-color-primary: #1e56e3;
+  --secondary-blue-900: #c6d6ff;
+  --sidebar-bg-color: #161f36;
+  --primary-neutral-800: #c9c9cc;
+  --ifm-button-background-color: #25c2a0;
+  --ifm-button-background-color-dark: #2e8555;
+  --ifm-navbar-link-color: #9da4ae;
+  --ifm-navbar-border-color:#2d3956;
+  --brand-color: white;
+  --primary-neutral-600: #c4c4c4;
+  --next-prev-border-color: #293441;
+}
+
+.main-wrapper{
+  background-color: var(--ifm-background);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+}
+
+.table-of-contents {
+  font-size: 0.75rem;
+}
+
+.main__content{
+  background-color: var(--ifm-background);
+} 
+
+.menu__link,
+.menu * {
+  font-size: 0.7rem;
+  padding-left: 0.5rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.menu__list {
+  border-bottom: 1px solid var(--next-prev-border-color);
+  padding: 0 15px;
+}
+
+.navbar {
+  background-color: var(--sidebar-bg-color);
+  box-shadow: var(--ifm-navbar-shadow);
+  padding: 24px;
+  height: auto;
+  border-bottom: 1px solid var(--ifm-navbar-border-color) ;
+}
+
+.navbar__item {
+  font-size: 0.875rem;
+}
+
+.navbar__link:hover,
+.navbar__link--active {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.navbar__items--right > .navbar__item:not(:first-of-type) {
+  margin-left: 0.25px;
+}
+
+.footer--dark {
+  --ifm-footer-background-color: #111927;
+  border-top: 1px solid var(--next-prev-border-color);
+}
+
+.header-github-link:before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  display: flex;
+  background: url("/img/logos/github-dark.svg") no-repeat;
+  position: relative;
+  right: 8px;
+  top: 1.5px;
+}
+
+.header-youtube-link:before {
+  content: "";
+  width: 25px;
+  height: 30px;
+  display: flex;
+  background: url("/img/logos/youtube.svg") no-repeat;
+  position: relative;
+  right: 8px;
+  top: 4.5px;
+}
+
+html[data-theme="dark"] .header-github-link:before {
+  background: url(/img/logos/github.svg) no-repeat;
+}
+html[data-theme="dark"] .header-youtube-link:before {
+  background: url(/img/logos/youtube-light.svg) no-repeat;
+}
+
+.footer--dark li {
+  margin-bottom: 0;
+  padding: 0.5rem;
+  line-height: normal;
+}
+
+.footer__icon {
+  margin: 0;
+  color: #fff;
 }
