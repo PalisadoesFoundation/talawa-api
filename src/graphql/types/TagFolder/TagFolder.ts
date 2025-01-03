@@ -6,7 +6,8 @@ export type TagFolder = typeof tagFoldersTable.$inferSelect;
 export const TagFolder = builder.objectRef<TagFolder>("TagFolder");
 
 TagFolder.implement({
-	description: "",
+	description:
+		"Tag folders are a feature to conveniently manage tags belonging to organizations.",
 	fields: (t) => ({
 		createdAt: t.expose("createdAt", {
 			description: "Date time at the time the tag folder was created.",

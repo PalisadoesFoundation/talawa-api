@@ -7,7 +7,7 @@ export const PostAttachment =
 	builder.objectRef<PostAttachment>("PostAttachment");
 
 PostAttachment.implement({
-	description: "",
+	description: "Attachment of the post.",
 	fields: (t) => ({
 		mimeType: t.exposeString("mimeType", {
 			description: "Mime type of the attachment.",

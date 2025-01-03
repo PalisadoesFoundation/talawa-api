@@ -7,7 +7,8 @@ export const FundCampaignPledge =
 	builder.objectRef<FundCampaignPledge>("FundCampaignPledge");
 
 FundCampaignPledge.implement({
-	description: "",
+	description:
+		"Fund campaign pledges are records of monetary pledges that users make to funds of organizations under a fund campaign.",
 	fields: (t) => ({
 		amount: t.exposeInt("amount", {
 			description: "The amount of pledged money.",

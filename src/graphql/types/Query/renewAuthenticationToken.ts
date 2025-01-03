@@ -1,5 +1,5 @@
 import { builder } from "~/src/graphql/builder";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 builder.queryField("renewAuthenticationToken", (t) =>
 	t.string({
@@ -11,7 +11,6 @@ builder.queryField("renewAuthenticationToken", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -27,7 +26,6 @@ builder.queryField("renewAuthenticationToken", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 

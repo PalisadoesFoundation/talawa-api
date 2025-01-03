@@ -5,7 +5,7 @@ import {
 	queryTagInputSchema,
 } from "~/src/graphql/inputs/QueryTagInput";
 import { Tag } from "~/src/graphql/types/Tag/Tag";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryTagArgumentsSchema = z.object({
 	input: queryTagInputSchema,
@@ -27,7 +27,6 @@ builder.queryField("tag", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -46,7 +45,6 @@ builder.queryField("tag", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -63,7 +61,6 @@ builder.queryField("tag", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -98,7 +95,6 @@ builder.queryField("tag", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -118,8 +114,6 @@ builder.queryField("tag", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 

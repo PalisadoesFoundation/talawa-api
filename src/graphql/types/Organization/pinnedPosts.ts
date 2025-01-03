@@ -14,12 +14,12 @@ import {
 import { z } from "zod";
 import { postsTable, postsTableInsertSchema } from "~/src/drizzle/tables/posts";
 import { Post } from "~/src/graphql/types/Post/Post";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Organization } from "./Organization";
 
 const pinnedPostsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -48,24 +48,28 @@ const pinnedPostsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 		};
 	});
 
-const cursorSchema = z.object({
-	id: postsTableInsertSchema.shape.id.unwrap(),
-	pinnedAt: postsTableInsertSchema.shape.pinnedAt.unwrap().unwrap(),
-});
+const cursorSchema = z
+	.object({
+		id: postsTableInsertSchema.shape.id.unwrap(),
+		pinnedAt: z.string().datetime(),
+	})
+	.transform((arg) => ({
+		id: arg.id,
+		pinnedAt: new Date(arg.pinnedAt),
+	}));
 
 Organization.implement({
 	fields: (t) => ({
 		pinnedPosts: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the pinned posts associated to the organization.",
+					"GraphQL connection to traverse through the pinned posts belonging to the organization.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "unauthenticated",
 							},
-							message: "Only authenticated users can perform this action.",
 						});
 					}
 
@@ -84,7 +88,6 @@ Organization.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -113,7 +116,6 @@ Organization.implement({
 							extensions: {
 								code: "unauthenticated",
 							},
-							message: "Only authenticated users can perform this action.",
 						});
 					}
 
@@ -128,7 +130,6 @@ Organization.implement({
 							extensions: {
 								code: "unauthorized_action",
 							},
-							message: "You are not authorized to perform this action.",
 						});
 					}
 
@@ -224,8 +225,6 @@ Organization.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 
@@ -234,7 +233,8 @@ Organization.implement({
 							Buffer.from(
 								JSON.stringify({
 									id: post.id,
-									pinnedAt: post.pinnedAt,
+									// `pinnedAt` field below cannot have `null` as the value because of the sql query logic. The optional chaining operator is just to prevent type errors.
+									pinnedAt: post.pinnedAt?.toISOString(),
 								}),
 							).toString("base64url"),
 						createNode: ({ postAttachmentsWherePost, ...post }) =>

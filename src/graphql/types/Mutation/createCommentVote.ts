@@ -6,7 +6,7 @@ import {
 	mutationCreateCommentVoteInputSchema,
 } from "~/src/graphql/inputs/MutationCreateCommentVoteInput";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateCommentVoteArgumentsSchema = z.object({
 	input: mutationCreateCommentVoteInputSchema,
@@ -28,7 +28,6 @@ builder.mutationField("createCommentVote", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -47,7 +46,6 @@ builder.mutationField("createCommentVote", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -103,7 +101,6 @@ builder.mutationField("createCommentVote", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -117,7 +114,6 @@ builder.mutationField("createCommentVote", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -132,8 +128,6 @@ builder.mutationField("createCommentVote", (t) =>
 							},
 						],
 					},
-					message:
-						"This action is forbidden on the resources associated to the provided arguments.",
 				});
 			}
 			const currentUserOrganizationMembership =
@@ -153,8 +147,6 @@ builder.mutationField("createCommentVote", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -176,7 +168,6 @@ builder.mutationField("createCommentVote", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

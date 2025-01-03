@@ -17,12 +17,12 @@ import {
 	commentVotesTableInsertSchema,
 } from "~/src/drizzle/tables/commentVotes";
 import { User } from "~/src/graphql/types/User/User";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Comment } from "./Comment";
 
 const downVotersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -51,17 +51,22 @@ const downVotersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 		};
 	});
 
-const cursorSchema = z.object({
-	createdAt: commentVotesTableInsertSchema.shape.createdAt.unwrap(),
-	creatorId: commentVotesTableInsertSchema.shape.creatorId.unwrap().unwrap(),
-});
+const cursorSchema = z
+	.object({
+		createdAt: z.string().datetime(),
+		creatorId: commentVotesTableInsertSchema.shape.creatorId.unwrap().unwrap(),
+	})
+	.transform((arg) => ({
+		createdAt: new Date(arg.createdAt),
+		creatorId: arg.creatorId,
+	}));
 
 Comment.implement({
 	fields: (t) => ({
 		downVoters: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the voters that down voted the comment.",
+					"GraphQL connection to traverse through the users that down voted the comment.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,
@@ -78,7 +83,6 @@ Comment.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -105,6 +109,7 @@ Comment.implement({
 										.from(commentVotesTable)
 										.where(
 											and(
+												ne(commentVotesTable.creatorId, sql`${null}`),
 												eq(commentVotesTable.createdAt, cursor.createdAt),
 												eq(commentVotesTable.creatorId, cursor.creatorId),
 												eq(commentVotesTable.commentId, parent.id),
@@ -112,6 +117,7 @@ Comment.implement({
 											),
 										),
 								),
+								ne(commentVotesTable.creatorId, sql`${null}`),
 								eq(commentVotesTable.commentId, parent.id),
 								eq(commentVotesTable.type, "down_vote"),
 								or(
@@ -138,6 +144,7 @@ Comment.implement({
 										.from(commentVotesTable)
 										.where(
 											and(
+												ne(commentVotesTable.creatorId, sql`${null}`),
 												eq(commentVotesTable.createdAt, cursor.createdAt),
 												eq(commentVotesTable.creatorId, cursor.creatorId),
 												eq(commentVotesTable.commentId, parent.id),
@@ -145,6 +152,7 @@ Comment.implement({
 											),
 										),
 								),
+								ne(commentVotesTable.creatorId, sql`${null}`),
 								eq(commentVotesTable.commentId, parent.id),
 								eq(commentVotesTable.type, "down_vote"),
 								or(
@@ -188,8 +196,6 @@ Comment.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 
@@ -197,12 +203,13 @@ Comment.implement({
 						createCursor: (vote) =>
 							Buffer.from(
 								JSON.stringify({
-									createdAt: vote.createdAt,
+									createdAt: vote.createdAt.toISOString(),
 									creatorId: vote.creatorId,
 								}),
 							).toString("base64url"),
 						createNode: (vote) => vote.creator,
 						parsedArgs,
+						// None of the comment votes below contain a `creator` field with `null` as the value because of the sql query logic. This filter operation is here just to prevent type errors.
 						rawNodes: commentVotes.filter(
 							(
 								vote,

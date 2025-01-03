@@ -5,7 +5,7 @@ import {
 	queryAdvertisementInputSchema,
 } from "~/src/graphql/inputs/QueryAdvertisementInput";
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryAdvertisementArgumentsSchema = z.object({
 	input: queryAdvertisementInputSchema,
@@ -27,7 +27,6 @@ builder.queryField("advertisement", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -46,7 +45,6 @@ builder.queryField("advertisement", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -87,7 +85,6 @@ builder.queryField("advertisement", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -101,7 +98,6 @@ builder.queryField("advertisement", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -122,8 +118,6 @@ builder.queryField("advertisement", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 

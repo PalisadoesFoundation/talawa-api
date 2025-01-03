@@ -2,12 +2,12 @@ import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
 import type { z } from "zod";
 import { tagsTable, tagsTableInsertSchema } from "~/src/drizzle/tables/tags";
 import { Tag } from "~/src/graphql/types/Tag/Tag";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Organization } from "./Organization";
 
 const tagsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -45,14 +45,13 @@ Organization.implement({
 		tags: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the tags associated to the organization.",
+					"GraphQL connection to traverse through the tags belonging to the organization.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "unauthenticated",
 							},
-							message: "Only authenticated users can perform this action.",
 						});
 					}
 
@@ -71,7 +70,6 @@ Organization.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -100,7 +98,6 @@ Organization.implement({
 							extensions: {
 								code: "unauthenticated",
 							},
-							message: "Only authenticated users can perform this action.",
 						});
 					}
 
@@ -109,13 +106,13 @@ Organization.implement({
 
 					if (
 						currentUser.role !== "administrator" &&
-						currentUserOrganizationMembership === undefined
+						(currentUserOrganizationMembership === undefined ||
+							currentUserOrganizationMembership.role !== "administrator")
 					) {
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "unauthorized_action",
 							},
-							message: "You are not authorized to perform this action.",
 						});
 					}
 
@@ -185,8 +182,6 @@ Organization.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 

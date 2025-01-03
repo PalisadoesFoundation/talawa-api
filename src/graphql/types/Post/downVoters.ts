@@ -17,12 +17,12 @@ import {
 	postVotesTableInsertSchema,
 } from "~/src/drizzle/tables/postVotes";
 import { User } from "~/src/graphql/types/User/User";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Post } from "./Post";
 
 const downVotersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -51,17 +51,22 @@ const downVotersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 		};
 	});
 
-const cursorSchema = z.object({
-	createdAt: postVotesTableInsertSchema.shape.createdAt.unwrap(),
-	creatorId: postVotesTableInsertSchema.shape.creatorId.unwrap().unwrap(),
-});
+const cursorSchema = z
+	.object({
+		createdAt: z.string().datetime(),
+		creatorId: postVotesTableInsertSchema.shape.creatorId.unwrap().unwrap(),
+	})
+	.transform((arg) => ({
+		createdAt: new Date(arg.createdAt),
+		creatorId: arg.creatorId,
+	}));
 
 Post.implement({
 	fields: (t) => ({
 		downVoters: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the voters that down voted the post.",
+					"GraphQL connection to traverse through the users that down voted the post.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,
@@ -78,7 +83,6 @@ Post.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -99,6 +103,7 @@ Post.implement({
 										.from(postVotesTable)
 										.where(
 											and(
+												ne(postVotesTable.creatorId, sql`${null}`),
 												eq(postVotesTable.createdAt, cursor.createdAt),
 												eq(postVotesTable.creatorId, cursor.creatorId),
 												eq(postVotesTable.postId, parent.id),
@@ -106,6 +111,7 @@ Post.implement({
 											),
 										),
 								),
+								ne(postVotesTable.creatorId, sql`${null}`),
 								eq(postVotesTable.postId, parent.id),
 								eq(postVotesTable.type, "down_vote"),
 								or(
@@ -132,6 +138,7 @@ Post.implement({
 										.from(postVotesTable)
 										.where(
 											and(
+												ne(postVotesTable.creatorId, sql`${null}`),
 												eq(postVotesTable.createdAt, cursor.createdAt),
 												eq(postVotesTable.creatorId, cursor.creatorId),
 												eq(postVotesTable.postId, parent.id),
@@ -139,6 +146,7 @@ Post.implement({
 											),
 										),
 								),
+								ne(postVotesTable.creatorId, sql`${null}`),
 								eq(postVotesTable.postId, parent.id),
 								eq(postVotesTable.type, "down_vote"),
 								or(
@@ -182,8 +190,6 @@ Post.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 
@@ -191,12 +197,13 @@ Post.implement({
 						createCursor: (vote) =>
 							Buffer.from(
 								JSON.stringify({
-									createdAt: vote.createdAt,
+									createdAt: vote.createdAt.toISOString(),
 									creatorId: vote.creatorId,
 								}),
 							).toString("base64url"),
 						createNode: (vote) => vote.creator,
 						parsedArgs,
+						// None of the post votes below contain a `creator` field with `null` as the value because of the sql query logic. This filter operation is here just to prevent type errors.
 						rawNodes: postVotes.filter(
 							(
 								vote,

@@ -6,7 +6,8 @@ import {
 	querySignInInputSchema,
 } from "~/src/graphql/inputs/QuerySignInInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import type { CurrentClient } from "../../context";
 
 const querySignInArgumentsSchema = z.object({
 	input: querySignInInputSchema,
@@ -28,7 +29,6 @@ builder.queryField("signIn", (t) =>
 					extensions: {
 						code: "forbidden_action",
 					},
-					message: "Only unauthenticated users can perform this action.",
 				});
 			}
 
@@ -47,7 +47,6 @@ builder.queryField("signIn", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -66,7 +65,6 @@ builder.queryField("signIn", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -83,9 +81,17 @@ builder.queryField("signIn", (t) =>
 							},
 						],
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
+
+			// The following code is necessary for continuing the expected graph traversal for an authenticated client because of absence of an authentication context for clients that triggered this operation. This should be removed when authentication flows are seperated from the graphql implementation.
+
+			// @ts-expect-error
+			ctx.currentClient.isAuthenticated = true;
+			// @ts-expect-error
+			ctx.currentClient.user = {
+				id: existingUser.id,
+			} as CurrentClient["user"];
 
 			return {
 				authenticationToken: ctx.jwt.sign({

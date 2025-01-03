@@ -5,12 +5,12 @@ import {
 	commentsTableInsertSchema,
 } from "~/src/drizzle/tables/comments";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Post } from "./Post";
 
 const commentsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -48,14 +48,13 @@ Post.implement({
 		comments: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the comments associated to the post.",
+					"GraphQL connection to traverse through the comments created under the post.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "unauthenticated",
 							},
-							message: "Only authenticated users can perform this action.",
 						});
 					}
 
@@ -74,7 +73,6 @@ Post.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -146,8 +144,6 @@ Post.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 

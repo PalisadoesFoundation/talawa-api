@@ -1,5 +1,5 @@
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Chat } from "./Chat";
 
 Chat.implement({
@@ -12,7 +12,6 @@ Chat.implement({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 
@@ -20,13 +19,6 @@ Chat.implement({
 
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 					with: {
-						chatMembershipsWhereMember: {
-							columns: {
-								role: true,
-							},
-							where: (fields, operators) =>
-								operators.eq(fields.chatId, parent.id),
-						},
 						organizationMembershipsWhereMember: {
 							columns: {
 								role: true,
@@ -43,27 +35,21 @@ Chat.implement({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 
 				const currentUserOrganizationMembership =
 					currentUser.organizationMembershipsWhereMember[0];
-				const currentUserChatMembership =
-					currentUser.chatMembershipsWhereMember[0];
 
 				if (
 					currentUser.role !== "administrator" &&
 					(currentUserOrganizationMembership === undefined ||
-						(currentUserOrganizationMembership.role !== "administrator" &&
-							(currentUserChatMembership === undefined ||
-								currentUserChatMembership.role !== "administrator")))
+						currentUserOrganizationMembership.role !== "administrator")
 				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action",
 						},
-						message: "You are not authorized to perform this action.",
 					});
 				}
 
@@ -83,16 +69,16 @@ Chat.implement({
 					},
 				);
 
-				// Creator id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Creator id existing but the associated user not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingUser === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a chat's creator id that isn't null.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again later.",
 					});
 				}
 

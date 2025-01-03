@@ -1,17 +1,16 @@
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { AgendaFolder } from "./AgendaFolder";
 
 AgendaFolder.implement({
 	fields: (t) => ({
 		createdAt: t.field({
-			description: "Date time at the time the agenda folder was last created.",
+			description: "Date time at the time the agenda folder was created.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 
@@ -55,11 +54,10 @@ AgendaFolder.implement({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 
-				// Event id existing but the associated event not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Event id existing but the associated event not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingEvent === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for an agenda folder's event id that isn't null.",
@@ -69,7 +67,6 @@ AgendaFolder.implement({
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again later.",
 					});
 				}
 
@@ -86,7 +83,6 @@ AgendaFolder.implement({
 						extensions: {
 							code: "unauthorized_action",
 						},
-						message: "You are not authorized to perform this action.",
 					});
 				}
 

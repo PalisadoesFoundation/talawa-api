@@ -6,7 +6,8 @@ export type Chat = typeof chatsTable.$inferSelect;
 export const Chat = builder.objectRef<Chat>("Chat");
 
 Chat.implement({
-	description: "",
+	description:
+		"Chats are controlled spaces within organizations where their members can communicate with each other in realtime.",
 	fields: (t) => ({
 		avatarMimeType: t.exposeString("avatarMimeType", {
 			description: "Mime type of the avatar of the chat.",

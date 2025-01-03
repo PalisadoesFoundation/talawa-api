@@ -41,26 +41,7 @@ export const Mutation_createUser =
 export const Mutation_deleteCurrentUser =
 	gql(`mutation Mutation_deleteCurrentUser {
     deleteCurrentUser {
-        address
-        birthDate
-        city
-        countryCode
-        createdAt
-        description
-        educationGrade
-        emailAddress
-        employmentStatus
-        homePhoneNumber
-        id
-        isEmailAddressVerified
-        maritalStatus
-        mobilePhoneNumber
-        name
-        natalSex
-        postalCode
-        role
-        state
-        workPhoneNumber    
+        id  
     }
 }`);
 

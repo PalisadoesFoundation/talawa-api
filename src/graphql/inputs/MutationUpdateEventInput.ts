@@ -5,10 +5,7 @@ import { isNotNullish } from "~/src/utilities/isNotNullish";
 
 export const mutationUpdateEventInputSchema = z
 	.object({
-		description: eventsTableInsertSchema.shape.description
-			.unwrap()
-			.unwrap()
-			.optional(),
+		description: eventsTableInsertSchema.shape.description.optional(),
 		endAt: eventsTableInsertSchema.shape.endAt.optional(),
 		id: eventsTableInsertSchema.shape.id.unwrap(),
 		name: eventsTableInsertSchema.shape.name.optional(),

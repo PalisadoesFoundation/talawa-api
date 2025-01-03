@@ -9,8 +9,8 @@ import {
 	mutationCreateChatInputSchema,
 } from "~/src/graphql/inputs/MutationCreateChatInput";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateChatArgumentsSchema = z.object({
 	input: mutationCreateChatInputSchema.transform(async (arg, ctx) => {
@@ -64,7 +64,6 @@ builder.mutationField("createChat", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -83,7 +82,6 @@ builder.mutationField("createChat", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -119,7 +117,6 @@ builder.mutationField("createChat", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -133,7 +130,6 @@ builder.mutationField("createChat", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -154,8 +150,6 @@ builder.mutationField("createChat", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -189,7 +183,6 @@ builder.mutationField("createChat", (t) =>
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again.",
 					});
 				}
 

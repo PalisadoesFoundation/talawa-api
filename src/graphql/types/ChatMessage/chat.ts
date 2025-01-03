@@ -1,5 +1,5 @@
 import { Chat } from "~/src/graphql/types/Chat/Chat";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { ChatMessage } from "./ChatMessage";
 
 ChatMessage.implement({
@@ -14,7 +14,7 @@ ChatMessage.implement({
 					},
 				);
 
-				// Chat id existing but the associated chat not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Chat id existing but the associated chat not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingChat === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a chat message's chat id that isn't null.",
@@ -24,7 +24,6 @@ ChatMessage.implement({
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again later.",
 					});
 				}
 

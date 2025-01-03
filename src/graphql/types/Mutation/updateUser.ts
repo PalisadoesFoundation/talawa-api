@@ -11,8 +11,8 @@ import {
 	mutationUpdateUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationUpdateUserArgumentsSchema = z.object({
 	input: mutationUpdateUserInputSchema.transform(async (arg, ctx) => {
@@ -66,7 +66,6 @@ builder.mutationField("updateUser", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -85,7 +84,6 @@ builder.mutationField("updateUser", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -110,7 +108,6 @@ builder.mutationField("updateUser", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -119,7 +116,6 @@ builder.mutationField("updateUser", (t) =>
 					extensions: {
 						code: "unauthorized_action",
 					},
-					message: "You are not authorized to perform this action.",
 				});
 			}
 
@@ -135,8 +131,6 @@ builder.mutationField("updateUser", (t) =>
 							},
 						],
 					},
-					message:
-						"This action is forbidden on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -150,7 +144,6 @@ builder.mutationField("updateUser", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -211,8 +204,6 @@ builder.mutationField("updateUser", (t) =>
 								},
 							],
 						},
-						message:
-							"No associated resources found for the provided arguments.",
 					});
 				}
 

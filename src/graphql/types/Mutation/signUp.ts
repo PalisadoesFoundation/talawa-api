@@ -12,8 +12,9 @@ import {
 	mutationSignUpInputSchema,
 } from "~/src/graphql/inputs/MutationSignUpInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import type { CurrentClient } from "../../context";
 
 const mutationSignUpArgumentsSchema = z.object({
 	input: mutationSignUpInputSchema.transform(async (arg, ctx) => {
@@ -67,7 +68,6 @@ builder.mutationField("signUp", (t) =>
 					extensions: {
 						code: "forbidden_action",
 					},
-					message: "Only unauthenticated users can perform this action.",
 				});
 			}
 
@@ -86,7 +86,6 @@ builder.mutationField("signUp", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -106,8 +105,6 @@ builder.mutationField("signUp", (t) =>
 							},
 						],
 					},
-					message:
-						"This action is forbidden on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -160,7 +157,6 @@ builder.mutationField("signUp", (t) =>
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again.",
 					});
 				}
 
@@ -175,6 +171,13 @@ builder.mutationField("signUp", (t) =>
 						},
 					);
 				}
+
+				// The following code is necessary for continuing the expected graph traversal for an authenticated client because of absence of an authentication context for clients that triggered this operation. This should be removed when authentication flows are seperated from the graphql implementation.
+
+				ctx.currentClient.isAuthenticated = true;
+				ctx.currentClient.user = {
+					id: createdUser.id,
+				} as CurrentClient["user"];
 
 				return {
 					authenticationToken: ctx.jwt.sign({

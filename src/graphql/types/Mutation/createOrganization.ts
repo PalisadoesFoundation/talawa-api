@@ -9,8 +9,8 @@ import {
 	mutationCreateOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationCreateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateOrganizationArgumentsSchema = z.object({
 	input: mutationCreateOrganizationInputSchema.transform(async (arg, ctx) => {
@@ -64,7 +64,6 @@ builder.mutationField("createOrganization", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -83,7 +82,6 @@ builder.mutationField("createOrganization", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -101,7 +99,6 @@ builder.mutationField("createOrganization", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -110,7 +107,6 @@ builder.mutationField("createOrganization", (t) =>
 					extensions: {
 						code: "unauthorized_action",
 					},
-					message: "You are not authorized to perform this action.",
 				});
 			}
 
@@ -131,8 +127,6 @@ builder.mutationField("createOrganization", (t) =>
 							},
 						],
 					},
-					message:
-						"This action is forbidden on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -171,7 +165,6 @@ builder.mutationField("createOrganization", (t) =>
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again.",
 					});
 				}
 

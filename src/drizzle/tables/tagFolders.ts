@@ -141,5 +141,5 @@ export const tagFoldersTableRelations = relations(
 );
 
 export const tagFoldersTableInsertSchema = createInsertSchema(tagFoldersTable, {
-	name: (schema) => schema.name.min(1).max(256),
+	name: (schema) => schema.min(1).max(256),
 });

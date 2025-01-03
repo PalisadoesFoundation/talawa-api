@@ -56,7 +56,11 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
 		const userId = uuidv7();
 		const input: z.infer<typeof usersTableInsertSchema> = {
+			address: null,
+			avatarName: null,
+			city: null,
 			creatorId: userId,
+			description: null,
 			emailAddress: fastify.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 			id: userId,
 			isEmailAddressVerified: true,
@@ -64,7 +68,9 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 			passwordHash: await hash(
 				fastify.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 			),
+			postalCode: null,
 			role: "administrator",
+			state: null,
 		};
 
 		try {

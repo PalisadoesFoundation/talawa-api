@@ -8,7 +8,7 @@ export const AdvertisementAttachment =
 	builder.objectRef<AdvertisementAttachment>("AdvertisementAttachment");
 
 AdvertisementAttachment.implement({
-	description: "",
+	description: "Attachment of the advertisement.",
 	fields: (t) => ({
 		mimeType: t.exposeString("mimeType", {
 			description: "Mime type of the attachment.",

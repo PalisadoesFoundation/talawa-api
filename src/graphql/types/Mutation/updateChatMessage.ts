@@ -7,7 +7,7 @@ import {
 	mutationUpdateChatMessageInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateChatMessageInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateChatMessageArgumentsSchema = z.object({
 	input: mutationUpdateChatMessageInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("updateChatMessage", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("updateChatMessage", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -105,7 +103,6 @@ builder.mutationField("updateChatMessage", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -119,7 +116,6 @@ builder.mutationField("updateChatMessage", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -145,8 +141,6 @@ builder.mutationField("updateChatMessage", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -164,7 +158,6 @@ builder.mutationField("updateChatMessage", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

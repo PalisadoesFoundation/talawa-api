@@ -1,17 +1,16 @@
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Chat } from "./Chat";
 
 Chat.implement({
 	fields: (t) => ({
 		createdAt: t.field({
-			description: "Date time at the time the chat was created.",
+			description: "Date time at the time the chat was first created.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 
@@ -45,27 +44,21 @@ Chat.implement({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 
 				const currentUserOrganizationMembership =
 					currentUser.organizationMembershipsWhereMember[0];
-				const currentUserChatMembership =
-					currentUser.chatMembershipsWhereMember[0];
 
 				if (
 					currentUser.role !== "administrator" &&
 					(currentUserOrganizationMembership === undefined ||
-						(currentUserOrganizationMembership.role !== "administrator" &&
-							(currentUserChatMembership === undefined ||
-								currentUserChatMembership.role !== "administrator")))
+						currentUserOrganizationMembership.role !== "administrator")
 				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action",
 						},
-						message: "You are not authorized to perform this action.",
 					});
 				}
 

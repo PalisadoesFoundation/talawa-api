@@ -7,7 +7,7 @@ import {
 	mutationDeleteAgendaFolderInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteAgendaFolderInput";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeleteAgendaFolderArgumentsSchema = z.object({
 	input: mutationDeleteAgendaFolderInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -98,7 +96,6 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -112,7 +109,6 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -134,8 +130,6 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -150,7 +144,6 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

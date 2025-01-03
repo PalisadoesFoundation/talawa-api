@@ -1,4 +1,5 @@
 import "./Tag";
+import "./assignees";
 import "./createdAt";
 import "./creator";
 import "./folder";

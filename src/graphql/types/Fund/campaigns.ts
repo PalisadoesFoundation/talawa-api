@@ -5,12 +5,12 @@ import {
 	fundCampaignsTableInsertSchema,
 } from "~/src/drizzle/tables/fundCampaigns";
 import { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Fund } from "./Fund";
 
 const campaignsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -48,7 +48,7 @@ Fund.implement({
 		campaigns: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the fund campaigns that are associated to the fund.",
+					"GraphQL connection to traverse through the campaigns for the fund.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,
@@ -65,7 +65,6 @@ Fund.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -76,6 +75,7 @@ Fund.implement({
 						: [asc(fundCampaignsTable.name)];
 
 					let where: SQL | undefined;
+
 					if (isInversed) {
 						if (cursor !== undefined) {
 							where = and(
@@ -135,8 +135,6 @@ Fund.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 

@@ -6,7 +6,8 @@ export type AgendaFolder = typeof agendaFoldersTable.$inferSelect;
 export const AgendaFolder = builder.objectRef<AgendaFolder>("AgendaFolder");
 
 AgendaFolder.implement({
-	description: "",
+	description:
+		"Agenda folders are used to contain either collections of agenda items or collections of agenda folders but not both at the same time. Together with agenda items they constitute the agenda for an event.",
 	fields: (t) => ({
 		id: t.exposeID("id", {
 			description: "Global identifier of the agenda folder.",

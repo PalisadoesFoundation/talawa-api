@@ -6,7 +6,7 @@ import {
 	mutationCreateFundInputSchema,
 } from "~/src/graphql/inputs/MutationCreateFundInput";
 import { Fund } from "~/src/graphql/types/Fund/Fund";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateFundArgumentsSchema = z.object({
 	input: mutationCreateFundInputSchema,
@@ -28,7 +28,6 @@ builder.mutationField("createFund", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -47,7 +46,6 @@ builder.mutationField("createFund", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -90,7 +88,6 @@ builder.mutationField("createFund", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -104,7 +101,6 @@ builder.mutationField("createFund", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -122,8 +118,6 @@ builder.mutationField("createFund", (t) =>
 							},
 						],
 					},
-					message:
-						"This action is forbidden on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -144,8 +138,6 @@ builder.mutationField("createFund", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -168,7 +160,6 @@ builder.mutationField("createFund", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 
