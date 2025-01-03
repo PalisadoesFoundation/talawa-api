@@ -3,8 +3,11 @@
 # Description: Talawa API startup script
 
 # Don't use environment variables in this script, as when the script will run by systemd, it will not have access to the environment variables of the user. I have tried setting the environment variables in the systemd service file but it didn't work. So, directly use the absolute paths in the script.
+
 #only Editable part is Project directory path
 PROJECT_DIR="/path/to/your/talawa-api"
+
+#static part
 LOG_FILE="/var/log/talawa-api.log"
 DEV_PATH="src/index.ts"
 PROD_PATH="dist/index.js"

@@ -55,7 +55,7 @@ id talawa
 ### 3. Set Up the `Talawa-api.sh` Script
 
 - Edit the script to specify:
-  - **Project directory** (e.g., `/path/to/your/talawa-api/talawa-api`)
+  - **Project directory** (e.g., `/path/to/your/talawa-api`)
   - **Log file path** (e.g., `/var/log/talawa-api.log`)
   - Ensure that the development (`src/index.ts`) and production (`dist/index.js`) paths are correctly set
   - Make sure `Talawa-api.sh` is executable and owned by user `talawa`. Log file should also be owned by user `talawa`
