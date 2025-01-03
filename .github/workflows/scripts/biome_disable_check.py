@@ -26,7 +26,7 @@ import argparse
 import sys
 
 
-def has_biome_ignore(file_path):
+def has_biome_ignore(file_path: str) -> bool:
     """
     Check if a file contains biome-ignore statements.
 
@@ -42,7 +42,7 @@ def has_biome_ignore(file_path):
     )
 
     try:
-        with open(file_path, "r", encoding="utf-8") as file:
+        with open(file_path, encoding="utf-8") as file:
             content = file.read()
             return bool(biome_ignore_pattern.search(content))
     except FileNotFoundError:
