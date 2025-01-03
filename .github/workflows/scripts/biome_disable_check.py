@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
-"""ESLint Checker Script.
+"""Biome Checker Script.
 
 Methodology:
 
-    Recursively analyzes TypeScript files in the specified directory
-    or checks specific files directly to ensure they do not contain
-    eslint-disable statements.
+    Recursively analyzes specified files or directories to ensure they do 
+    not contain biome-ignore statements.
 
     This script enforces code quality practices in the project.
 
@@ -27,26 +26,25 @@ import argparse
 import sys
 
 
-def has_eslint_disable(file_path):
+def has_biome_ignore(file_path):
     """
-    Check if a TypeScript file contains eslint-disable statements.
+    Check if a file contains biome-ignore statements.
 
     Args:
-        file_path (str): Path to the TypeScript file.
+        file_path (str): Path to the file.
 
     Returns:
-        bool: True if eslint-disable statement is found, False otherwise.
+        bool: True if biome-ignore statement is found, False otherwise.
     """
-    eslint_disable_pattern = re.compile(
-        r"""\/\/\s*eslint-disable(?:-next-line
-        |-line)?[^\n]*|\/\*\s*eslint-disable[^\*]*\*\/""",
+    biome_ignore_pattern = re.compile(
+        r"//\s*biome-ignore[^]*",
         re.IGNORECASE,
     )
 
     try:
         with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
-            return bool(eslint_disable_pattern.search(content))
+            return bool(biome_ignore_pattern.search(content))
     except FileNotFoundError:
         print(f"File not found: {file_path}")
         return False
@@ -58,25 +56,25 @@ def has_eslint_disable(file_path):
         return False
 
 
-def check_eslint(files_or_directories):
+def check_biome(files_or_directories):
     """
-    Check TypeScript files for eslint-disable statements.
+    Check files for biome-ignore statements.
 
     Args:
         files_or_directories (list): List of files or directories to check.
 
     Returns:
-        bool: True if eslint-disable statement is found, False otherwise.
+        bool: True if biome-ignore statement is found, False otherwise.
     """
-    eslint_found = False
+    biome_found = False
 
     for item in files_or_directories:
         if os.path.isfile(item):
             # If it's a file, directly check it
             if item.endswith(".ts") :
-                if has_eslint_disable(item):
-                    print(f"File {item} contains eslint-disable statement. Please remove them and ensure the code adheres to the specified ESLint rules.")
-                    eslint_found = True
+                if has_biome_ignore(item):
+                    print(f"File {item} contains biome-ignore statement. Please remove them and ensure the code adheres to the specified Biome rules.")
+                    biome_found = True
         elif os.path.isdir(item):
             # If it's a directory, walk through it and check all
             # .ts and .tsx files
@@ -86,14 +84,14 @@ def check_eslint(files_or_directories):
                 for file_name in files:
                     if file_name.endswith(".ts") :
                         file_path = os.path.join(root, file_name)
-                        if has_eslint_disable(file_path):
+                        if has_biome_ignore(file_path):
                             print(
-                                f"""File {file_path} contains eslint-disable
+                                f"""File {file_path} contains biome-ignore
                                 statement."""
                             )
-                            eslint_found = True
+                            biome_found = True
 
-    return eslint_found
+    return biome_found
 
 
 def arg_parser_resolver():
@@ -108,7 +106,7 @@ def arg_parser_resolver():
         type=str,
         nargs="+",
         default=[],
-        help="""List of files to check for eslint disable
+        help="""List of files to check for biome-ignore
         statements (default: None).""",
     )
     parser.add_argument(
@@ -116,7 +114,7 @@ def arg_parser_resolver():
         type=str,
         nargs="+",
         default=[os.getcwd()],
-        help="""One or more directories to check for eslint disable
+        help="""One or more directories to check for biome-ignore
         statements (default: current directory).""",
     )
     return parser.parse_args()
@@ -130,9 +128,9 @@ def main():
     the following tasks:
     1. Validates and retrieves the files and directories to check from
        command line arguments.
-    2. Recursively checks TypeScript files for eslint-disable statements.
+    2. Recursively checks files for biome-ignore statements.
     3. Provides informative messages based on the analysis.
-    4. Exits with an error if eslint-disable statements are found.
+    4. Exits with an error if biome-ignore statements are found.
 
     Raises:
         SystemExit: If an error occurs during execution.
@@ -141,14 +139,14 @@ def main():
 
     # Determine whether to check files or directories based on the arguments
     files_or_directories = args.files if args.files else args.directory
-    # Check eslint in the specified files or directories
-    eslint_found = check_eslint(files_or_directories)
+    # Check biome in the specified files or directories
+    biome_found = check_biome(files_or_directories)
 
-    if eslint_found:
-        print("ESLint-disable check failed. Exiting with error.")
+    if biome_found:
+        print("Biome-ignore check failed. Exiting with error.")
         sys.exit(1)
 
-    print("ESLint-disable check completed successfully.")
+    print("Biome-ignore check completed successfully.")
 
 
 if __name__ == "__main__":

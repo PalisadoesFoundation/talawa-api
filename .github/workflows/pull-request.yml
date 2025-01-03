@@ -48,8 +48,8 @@ jobs:
           echo "Error: Close this PR and try again."          
           exit 1
 
-  check_eslint_disable:
-    name: Check for eslint-disable
+  check_biome_ignore:
+    name: Check for biome_ignore
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -66,7 +66,7 @@ jobs:
 
       - name: Run Python script
         run: |
-          python .github/workflows/scripts/eslint_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+          python .github/workflows/scripts/biome_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   check_code_coverage_disable:
     name: Check for code coverage disable
