@@ -147,6 +147,14 @@ jobs:
           docs/docusaurus.config.ts
           docs/sidebar*
           CNAME
+          CODE_OF_CONDUCT.md
+          CODE_STYLE.md
+          CONTRIBUTING.md
+          DOCUMENTATION.md
+          INSTALLATION.md
+          ISSUE_GUIDELINES.md
+          PR_GUIDELINES.md
+          README.md          
     - env:
         CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
       if: steps.changed_files.outputs.any_changed == 'true' || steps.changed_files.outputs.any_deleted == 'true'
