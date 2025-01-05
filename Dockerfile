@@ -27,6 +27,8 @@ WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app/build ./build
 COPY --from=builder /usr/src/app/package.json ./package.json
 COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/locales ./locales
+COPY --from=builder /usr/src/app/certs ./certs
 
 # Expose the application port
 EXPOSE 4000

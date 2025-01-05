@@ -1,5 +1,6 @@
 services:
   mongo:
+  # No light weight image is available for mongo
     image: mongo:latest
     container_name: mongo
     restart: unless-stopped
@@ -23,7 +24,7 @@ services:
     entrypoint: ["/bin/bash", "/init-mongo.sh"]
 
   redis-stack-server:
-    image: redis/redis-stack-server:latest
+    image: redis:8.0-M02-alpine
     ports:
       - 6379:6379
     deploy:
@@ -37,6 +38,7 @@ services:
       - talawa-network
 
   minio:
+  # No light weight image is available
     image: minio/minio
     ports:
       - "9000:9000"
@@ -55,15 +57,14 @@ services:
     networks:
       - talawa-network
 
-  talawa-api-dev:
+  talawa-api-prod:
     build:
       context: .
-      dockerfile: Dockerfile.dev
-    container_name: talawa-api-dev
+      dockerfile: Dockerfile
+    container_name: talawa-api
     ports:
       - "4000:4000"
     volumes:
-      - .:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
       mongo:
@@ -102,7 +103,6 @@ services:
           memory: 256M
           cpus: '0.25'
     
-
 volumes:
   redis-data:
   minio-data:
