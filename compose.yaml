@@ -15,7 +15,7 @@ services:
           memory: 512M
           cpus: '0.5'
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
       - ./init-mongo.sh:/init-mongo.sh
@@ -90,8 +90,8 @@ services:
     container_name: caddy-service
     restart: unless-stopped
     ports:
-      - "8080:80"
-      - "8443:443"
+      - "80:80"
+      - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - $PWD/site:/srv
