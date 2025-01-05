@@ -1,7 +1,7 @@
 # https://docs.docker.com/reference/compose-file/networks/
 networks:
   cloudbeaver:
-# https://docs.docker.com/reference/compose-file/networks/
+# https://docs.docker.com/reference/compose-file/services
 services:
   api:
     # https://docs.docker.com/reference/compose-file/build/
@@ -14,10 +14,16 @@ services:
     depends_on:
       minio:
         condition: service_healthy
-        required: true
+        required: false
+      minio-test:
+        condition: service_healthy
+        required: false
       postgres:
         condition: service_healthy
-        required: true
+        required: false
+      postgres-test:
+        condition: service_healthy
+        required: false
     # https://docs.docker.com/compose/environment-variables/
     # https://docs.docker.com/reference/compose-file/services/#environment
     environment:
@@ -39,20 +45,25 @@ services:
         target: ${API_DEBUGGER_PORT}
     # https://docs.docker.com/reference/compose-file/services/#restart
     restart: unless-stopped
+    user: talawa
     # https://docs.docker.com/reference/compose-file/services/#volumes
     volumes:
-      # - source: api_pnpm_store
-      #   target: /home/talawa/api/.pnpm-store
-      #   type: volume
-      # - target: /home/talawa/api/node_modules
-      #   type: volume
-      - bind:
-          # changes made within the container are reflected on the host and changes made on the host are reflected within the container
-          propagation: shared
-        consistency: cached
+      - consistency: cached
         source: ./
         target: /home/talawa/api
         type: bind
+        # https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
+      - source: api_bash_history
+        target: /commandhistory
+        type: volume
+        # https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_use-a-targeted-named-volume
+      - source: api_node_modules
+        target: /home/talawa/api/node_modules
+        type: volume
+        # https://code.visualstudio.com/remote/advancedcontainers/improve-performance#_use-a-targeted-named-volume
+      - source: api_pnpm_store
+        target: /home/talawa/api/.pnpm-store
+        type: volume
   caddy:
     # https://docs.docker.com/reference/compose-file/services/#depends_on
     depends_on:
@@ -116,18 +127,22 @@ services:
         name: minio_console
         published: ${MINIO_CONSOLE_MAPPED_PORT:?error}
         target: 9001
-  # https://github.com/minio/minio/issues/13025
   minio-test:
     # https://docs.docker.com/reference/compose-file/services/#ports
     ports:
-      - host_ip: ${MINIO_TEST_API_MAPPED_HOST_IP:?error}
+      - host_ip: ${MINIO_API_MAPPED_HOST_IP:?error}
         name: minio_api
         published: ${MINIO_TEST_API_MAPPED_PORT:?error}
         target: 9000
-      - host_ip: ${MINIO_TEST_CONSOLE_MAPPED_HOST_IP:?error}
+      - host_ip: ${MINIO_CONSOLE_MAPPED_HOST_IP:?error}
         name: minio_console
         published: ${MINIO_TEST_CONSOLE_MAPPED_PORT:?error}
         target: 9001
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - source: minio_test_data
+        target: /data
+        type: volume
   postgres:
     # https://docs.docker.com/reference/compose-file/services/#ports
     ports:
@@ -135,12 +150,22 @@ services:
         name: postgres
         published: ${POSTGRES_MAPPED_PORT:?error}
         target: 5432
-  postgres_test:
+  postgres-test:
     ports:
-      - host_ip: ${POSTGRES_TEST_MAPPED_HOST_IP:?error}
+      - host_ip: ${POSTGRES_MAPPED_HOST_IP:?error}
         name: postgres
         published: ${POSTGRES_TEST_MAPPED_PORT:?error}
         target: 5432
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - source: postgres_test_data
+        target: /var/lib/postgresql/data
+        type: volume
 # https://docs.docker.com/reference/compose-file/volumes/
 volumes:
+  api_bash_history:
+  api_node_modules:
+  api_pnpm_store:
   cloudbeaver_data:
+  minio_test_data:
+  postgres_test_data:
