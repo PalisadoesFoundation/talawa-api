@@ -74,7 +74,7 @@ def check_biome(files_or_directories: list[str]) -> bool:
                 if "node_modules" in root:
                     continue
                 for file_name in files:
-                    if file_name.endswith(".ts") :
+                    if file_name.endswith((".ts", ".tsx")):
                         file_path = os.path.join(root, file_name)
                         if has_biome_ignore(file_path):
                             print(
