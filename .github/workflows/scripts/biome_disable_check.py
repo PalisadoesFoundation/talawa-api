@@ -4,10 +4,8 @@
 
 Methodology:
 
-    Recursively analyzes specified files or directories to ensure they do 
-    not contain biome-ignore statements.
-
-    This script enforces code quality practices in the project.
+    Recursively analyzes specified files or directories to ensure they do
+    not contain biome-ignore statements, enforcing code quality practices.
 
 NOTE:
     This script complies with our python3 coding and documentation standards.
