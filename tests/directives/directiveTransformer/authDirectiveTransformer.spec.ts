@@ -1,28 +1,32 @@
 import { beforeAll, afterAll, it, expect } from "vitest";
-import { connect, disconnect } from "../../helpers/db";
-import type mongoose from "mongoose";
 import { ApolloServer } from "@apollo/server";
 import { gql } from "graphql-tag";
 import "dotenv/config";
 import i18n from "i18n";
 import express from "express";
-import type { TestUserType } from "../../helpers/userAndOrg";
-import { createTestUserFunc } from "../../helpers/user";
+// import type { TestUserType } from "../../helpers/userAndOrg";
+// import { createTestUserFunc } from "../../helpers/user";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import authDirectiveTransformer from "../../../src/directives/directiveTransformer/authDirectiveTransformer";
 import roleDirectiveTransformer from "../../../src/directives/directiveTransformer/roleDirectiveTransformer";
 import { appConfig } from "../../../src/config";
 import { errors } from "../../../src/libraries";
+import { BaseTest } from "../../helpers/testHelper/baseTest";
+import enLocale from "../../../locales/en.json";
+import hiLocale from "../../../locales/hi.json";
+import zhLocale from "../../../locales/zh.json";
+import spLocale from "../../../locales/sp.json";
+import frLocale from "../../../locales/fr.json";
 
 const app = express();
 i18n.configure({
   directory: `${__dirname}/locales`,
   staticCatalog: {
-    en: require("../../../locales/en.json"),
-    hi: require("../../../locales/hi.json"),
-    zh: require("../../../locales/zh.json"),
-    sp: require("../../../locales/sp.json"),
-    fr: require("../../../locales/fr.json"),
+    en: enLocale,
+    hi: hiLocale,
+    zh: zhLocale,
+    sp: spLocale,
+    fr: frLocale,
   },
   queryParameter: "lang",
   defaultLocale: appConfig.defaultLocale,
@@ -33,7 +37,7 @@ i18n.configure({
 });
 app.use(i18n.init);
 
-let testUser: TestUserType;
+// let testUser: TestUserType;
 
 const typeDefs = gql`
   directive @auth on FIELD_DEFINITION
@@ -49,16 +53,18 @@ const resolvers = {
   },
 };
 
-let MONGOOSE_INSTANCE: typeof mongoose;
-
+let testInstance: BaseTest;
+let testData: {
+  testUser: { name: string; email: string };
+  testOrg: { name: string };
+};
 beforeAll(async () => {
-  MONGOOSE_INSTANCE = await connect();
-  testUser = await createTestUserFunc();
+  testInstance = new BaseTest();
+  testData = await testInstance.beforeEach();
 });
 
 afterAll(async () => {
-  await testUser?.deleteOne();
-  await disconnect(MONGOOSE_INSTANCE);
+  await testInstance.afterEach();
 });
 
 it("throws UnauthenticatedError when context is expired", async () => {
@@ -168,6 +174,12 @@ it("checks if the resolver is supplied, and return null data, if not", async () 
 
   //@ts-expect-error-ts-ignore
   expect(result.body.singleResult.data).toEqual({ hello: null });
+});
+
+test("should use testData in a meaningful way", () => {
+  expect(testData.testUser.name).toBeDefined();
+  expect(testData.testUser.email).toMatch(/@test.com$/);
+  expect(testData.testOrg.name).toContain("org");
 });
 
 it("returns data if isAuth == true and expire == false", async () => {
