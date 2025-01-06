@@ -7,9 +7,6 @@ Methodology:
     Recursively analyzes specified files or directories to ensure they do 
     not contain biome-ignore statements.
 
-    Recursively analyzes specified files or directories to ensure they do 
-    not contain biome-ignore statements.
-
     This script enforces code quality practices in the project.
 
 NOTE:
