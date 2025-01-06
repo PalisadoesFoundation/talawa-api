@@ -7,6 +7,9 @@ Methodology:
     Recursively analyzes specified files or directories to ensure they do 
     not contain biome-ignore statements.
 
+    Recursively analyzes specified files or directories to ensure they do 
+    not contain biome-ignore statements.
+
     This script enforces code quality practices in the project.
 
 NOTE:
@@ -24,7 +27,6 @@ import os
 import re
 import argparse
 import sys
-from typing import List
 
 
 def has_biome_ignore(file_path: str) -> bool:
@@ -37,10 +39,7 @@ def has_biome_ignore(file_path: str) -> bool:
     Returns:
         bool: True if biome-ignore statement is found, False otherwise.
     """
-    biome_ignore_pattern = re.compile(
-        r"//\s*biome-ignore[^]*",
-        re.IGNORECASE,
-    )
+    biome_ignore_pattern = re.compile(r"//\s*biome-ignore.*$", re.IGNORECASE | re.MULTILINE)
 
     try:
         with open(file_path, encoding="utf-8") as file:
@@ -57,7 +56,7 @@ def has_biome_ignore(file_path: str) -> bool:
         return False
 
 
-def check_biome(files_or_directories: List[str]) -> bool:
+def check_biome(files_or_directories: list[str]) -> bool:
     """
     Check files for biome-ignore statements.
 
