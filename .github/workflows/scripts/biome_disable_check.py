@@ -24,6 +24,7 @@ import os
 import re
 import argparse
 import sys
+from typing import List
 
 
 def has_biome_ignore(file_path: str) -> bool:
@@ -56,7 +57,7 @@ def has_biome_ignore(file_path: str) -> bool:
         return False
 
 
-def check_biome(files_or_directories):
+def check_biome(files_or_directories: List[str]) -> bool:
     """
     Check files for biome-ignore statements.
 
@@ -69,12 +70,9 @@ def check_biome(files_or_directories):
     biome_found = False
 
     for item in files_or_directories:
-        if os.path.isfile(item):
-            # If it's a file, directly check it
-            if item.endswith(".ts") :
-                if has_biome_ignore(item):
-                    print(f"File {item} contains biome-ignore statement. Please remove them and ensure the code adheres to the specified Biome rules.")
-                    biome_found = True
+        if os.path.isfile(item) and item.endswith(".ts") and has_biome_ignore(item):
+            print(f"File {item} contains biome-ignore statement. Please remove them and ensure the code adheres to the specified Biome rules.")
+            biome_found = True
         elif os.path.isdir(item):
             # If it's a directory, walk through it and check all
             # .ts and .tsx files
@@ -87,7 +85,7 @@ def check_biome(files_or_directories):
                         if has_biome_ignore(file_path):
                             print(
                                 f"""File {file_path} contains biome-ignore
-                                statement."""
+                                statement.""",
                             )
                             biome_found = True
 
