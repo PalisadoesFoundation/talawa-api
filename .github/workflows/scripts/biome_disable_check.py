@@ -64,7 +64,7 @@ def check_biome(files_or_directories: list[str]) -> bool:
     biome_found = False
 
     for item in files_or_directories:
-        if os.path.isfile(item) and item.endswith(".ts") and has_biome_ignore(item):
+        if os.path.isfile(item) and item.endswith((".ts", ".tsx")) and has_biome_ignore(item):
             print(f"File {item} contains biome-ignore statement. Please remove them and ensure the code adheres to the specified Biome rules.")
             biome_found = True
         elif os.path.isdir(item):
