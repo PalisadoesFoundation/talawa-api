@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-imports */
 import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
@@ -7,31 +6,31 @@ import path from "path";
 import type { ExecException } from "child_process";
 import { exec, spawn, execSync } from "child_process";
 import { MongoClient } from "mongodb";
-import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
+import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "@constants";
 import {
   askForMongoDBUrl,
   checkConnection,
   checkExistingMongoDB,
-} from "./src/setup/MongoDB";
-import { askToKeepValues } from "./src/setup/askToKeepValues";
-import { getNodeEnvironment } from "./src/setup/getNodeEnvironment";
-import { isValidEmail } from "./src/setup/isValidEmail";
-import { validateRecaptcha } from "./src/setup/reCaptcha";
+} from "@setup/MongoDB";
+import { askToKeepValues } from "@setup/askToKeepValues";
+import { getNodeEnvironment } from "@setup/getNodeEnvironment";
+import { isValidEmail } from "@setup/isValidEmail";
+import { validateRecaptcha } from "@setup/reCaptcha";
 import {
   askForRedisUrl,
   checkExistingRedis,
   checkRedisConnection,
-} from "./src/setup/redisConfiguration";
+} from "@setup/redisConfiguration";
 import {
   setImageUploadSize,
   validateImageFileSize,
-} from "./src/setup/setImageUploadSize";
-import { askForSuperAdminEmail } from "./src/setup/superAdmin";
-import { updateEnvVariable } from "./src/setup/updateEnvVariable";
-import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
-import { loadDefaultOrganiation } from "./src/utilities/loadDefaultOrg";
-import { isMinioInstalled } from "./src/setup/isMinioInstalled";
-import { installMinio } from "./src/setup/installMinio";
+} from "@setup/setImageUploadSize";
+import { askForSuperAdminEmail } from "@setup/superAdmin";
+import { updateEnvVariable } from "@setup/updateEnvVariable";
+import { verifySmtpConnection } from "@setup/verifySmtpConnection";
+import { loadDefaultOrganiation } from "@utilities/loadDefaultOrg";
+import { isMinioInstalled } from "@setup/isMinioInstalled";
+import { installMinio } from "@setup/installMinio";
 
 dotenv.config();
 
@@ -1015,6 +1014,14 @@ async function main(): Promise<void> {
     const REDIS_PASSWORD = "";
     const MINIO_ENDPOINT = "http://minio:9000";
 
+    const { pwdVariable } = await inquirer.prompt({
+      type: "input",
+      name: "pwdVariable",
+      message:
+        "Please enter the value for PWD (working directory for Docker setup):",
+      default: ".",
+    });
+
     const config = dotenv.parse(fs.readFileSync(".env"));
 
     config.MONGO_DB_URL = DB_URL;
@@ -1022,18 +1029,21 @@ async function main(): Promise<void> {
     config.REDIS_PORT = REDIS_PORT;
     config.REDIS_PASSWORD = REDIS_PASSWORD;
     config.MINIO_ENDPOINT = MINIO_ENDPOINT;
+    config.PWD = pwdVariable;
 
     process.env.MONGO_DB_URL = DB_URL;
     process.env.REDIS_HOST = REDIS_HOST;
     process.env.REDIS_PORT = REDIS_PORT;
     process.env.REDIS_PASSWORD = REDIS_PASSWORD;
     process.env.MINIO_ENDPOINT = MINIO_ENDPOINT;
+    process.env.PWD = pwdVariable;
 
     updateEnvVariable(config);
     console.log(`Your MongoDB URL is:\n${process.env.MONGO_DB_URL}`);
     console.log(`Your Redis host is:\n${process.env.REDIS_HOST}`);
     console.log(`Your Redis port is:\n${process.env.REDIS_PORT}`);
     console.log(`Your MinIO endpoint is:\n${process.env.MINIO_ENDPOINT}`);
+    console.log(`Your PWD value is:\n${process.env.PWD}`);
   }
 
   if (!isDockerInstallation) {

@@ -74,6 +74,7 @@ async function formatDatabase(): Promise<void> {
     Post.deleteMany({}),
     AppUserProfile.deleteMany({}),
     RecurrenceRule.deleteMany({}),
+    Venue.deleteMany({}),
   ]);
   console.log("Cleared all collections\n");
 }
@@ -85,7 +86,7 @@ async function formatDatabase(): Promise<void> {
 async function insertCollections(collections: string[]): Promise<void> {
   try {
     // Connect to MongoDB database
-    await connect();
+    await connect("talawa-api");
 
     const { format } = yargs(hideBin(process.argv))
       .options({
@@ -170,7 +171,7 @@ async function insertCollections(collections: string[]): Promise<void> {
 async function checkCountAfterImport(): Promise<void> {
   try {
     // Connect to MongoDB database
-    await connect();
+    await connect("talawa-api");
 
     const collections = [
       { name: "users", model: User },

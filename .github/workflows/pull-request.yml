@@ -88,6 +88,7 @@ jobs:
           echo "Source Branch ${{ github.event.pull_request.head.ref }}"
           echo "Target Branch ${{ github.event.pull_request.base.ref }}"
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
+          echo "Error: Close this PR and try again."          
           exit 1
 
   Check-Sensitive-Files:
@@ -312,6 +313,130 @@ jobs:
         with:
           path: './coverage/lcov.info'
           min_coverage: 95.0
+
+  Docker-Check:
+    name: Docker Check
+    needs: Test-Application
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-docker-check-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-docker-check-
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      - name: Check if Talawa API starts in Docker
+        run: |
+          # Ensure no containers are running
+          docker-compose -f docker-compose.dev.yaml down -v || true
+
+          # Verify docker-compose file exists
+          chmod +x .github/workflows/scripts/docker_file_check.sh
+          ./.github/workflows/scripts/docker_file_check.sh
+
+          # Start containers
+          if ! timeout 300 docker-compose -f docker-compose.dev.yaml up -d --build; then
+            echo "Failed to start containers"
+            docker-compose -f docker-compose.dev.yaml logs
+            exit 1
+          fi
+
+          # Wait for MongoDB and Redis to be ready
+          echo "Waiting for MongoDB..."
+          timeout=30
+          until docker-compose -f docker-compose.dev.yaml exec -T mongo mongosh --eval "db.runCommand({ ping: 1 }).ok">/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Waiting for MongoDB to be ready..."
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "Error: MongoDB failed to start within timeout"
+            echo "Fetching MongoDB logs..."
+            docker-compose -f docker-compose.dev.yaml logs mongodb
+            echo "Shutting down MongoDB..."
+            docker-compose -f docker-compose.dev.yaml down -v
+            exit 1
+          else
+            echo "MongoDB is ready!"
+          fi
+
+          echo "Waiting for Redis..."
+          timeout=30
+          until docker-compose -f docker-compose.dev.yaml exec -T redis-stack-server redis-cli ping >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "Error: Redis failed to start within timeout"
+            echo "Fetching Redis logs..."
+            docker-compose -f docker-compose.dev.yaml logs redis-stack-server
+            echo "Shutting down Redis..."
+            docker-compose -f docker-compose.dev.yaml down -v
+            exit 1    
+          else
+            echo "Redis is ready!"
+          fi
+
+          # Wait for TALAWA API to be healthy 
+          timeout=60
+          until docker-compose -f docker-compose.dev.yaml exec -T talawa-api-dev curl -v -X OPTIONS "http://talawa-api-dev:4000/graphql" 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Waiting for API to start... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+
+          if [ $timeout -eq 0 ]; then
+            echo "Error: API failed to start within timeout"
+            docker-compose -f docker-compose.dev.yaml logs
+            docker-compose -f docker-compose.dev.yaml down -v
+            exit 1
+          fi
+
+          echo "API started successfully"
+
+          # Ensure cleanup runs even if the script fails
+          cleanup() {
+            local exit_code=$?
+            echo "Cleaning up containers..."
+            if ! docker-compose -f  docker-compose.dev.yaml down -v; then
+              echo "Warning: Failed to cleanup containers"
+            fi
+            exit $exit_code
+          }
+          trap cleanup EXIT
+    env:
+      HEALTH_CHECK_URL: http://localhost:4000
+      COMPOSE_PROJECT_NAME: pr-${{ github.event.pull_request.number }}
+      MONGO_DB_URL: mongodb://mongo:27017?replicaSet=rs0
+      REDIS_HOST: redis-stack-server
+      REDIS_PORT: 6379
+      ACCESS_TOKEN_SECRET: ${{ secrets.GITHUB_TOKEN }}_${{ github.run_id }}_${{ github.run_number }}
+      REFRESH_TOKEN_SECRET: ${{ secrets.GITHUB_TOKEN }}_${{ github.run_id }}_${{ github.run_attempt }}
+      LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
+      COLORIZE_LOGS: "true"
+      LOG_LEVEL: "info"
+      RECAPTCHA_SITE_KEY: ${{secrets.RECAPTCHA_SITE_KEY}}
+      RECAPTCHA_SECRET_KEY: ${{secrets.RECAPTCHA_SECRET_KEY}}
+      MAIL_USERNAME: ${{secrets.MAIL_USERNAME}}
+      MAIL_PASSWORD: ${{secrets.MAIL_PASSWORD}}
           
   Test-Builds:
     name: Test Development and Production Builds
@@ -346,7 +471,7 @@ jobs:
       LAST_RESORT_SUPERADMIN_EMAIL: "abc@gmail.com"
       COLORIZE_LOGS: "true"
       LOG_LEVEL: "info"
-
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -479,4 +604,5 @@ jobs:
         if: github.event.pull_request.base.ref != 'develop'
         run: |
           echo "PR is not against develop branch. Please refer PR_GUIDELINES.md"
+          echo "Error: Close this PR and try again."
           exit 1
