@@ -176,10 +176,37 @@ it("checks if the resolver is supplied, and return null data, if not", async () 
   expect(result.body.singleResult.data).toEqual({ hello: null });
 });
 
-test("should use testData in a meaningful way", () => {
-  expect(testData.testUser.name).toBeDefined();
-  expect(testData.testUser.email).toMatch(/@test.com$/);
-  expect(testData.testOrg.name).toContain("org");
+it("uses testUser from testData in context", async () => {
+  const query = `
+    query {
+      hello
+    }
+  `;
+  const authenticatedContext = {
+    isAuth: true,
+    user: testData.testUser, // Use testUser in the context
+  };
+
+  let schema = makeExecutableSchema({
+    typeDefs,
+    resolvers,
+  });
+
+  schema = authDirectiveTransformer(schema, "auth");
+  const apolloServer = new ApolloServer({ schema });
+
+  const result = await apolloServer.executeOperation(
+    {
+      query,
+      variables: {},
+    },
+    {
+      contextValue: authenticatedContext,
+    },
+  );
+
+  //@ts-expect-error-ignore
+  expect(result.body.singleResult.data).toEqual({ hello: "hi" });
 });
 
 it("returns data if isAuth == true and expire == false", async () => {

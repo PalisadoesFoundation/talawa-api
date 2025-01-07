@@ -1,33 +1,67 @@
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
+import { v4 as uuidv4 } from "uuid";
 
 export class TestHelper {
-  private static _mongod: MongoMemoryServer;
+  private static _instance: TestHelper;
+  private _mongod?: MongoMemoryServer;
 
-  // Starts the in-memory database
-  static async startDatabase(): Promise<void> {
-    this._mongod = await MongoMemoryServer.create();
-    const uri = this._mongod.getUri();
-    await mongoose.connect(uri);
+  private constructor() {}
+
+  /**
+   * Returns a singleton instance of TestHelper.
+   */
+  public static getInstance(): TestHelper {
+    if (!TestHelper._instance) {
+      TestHelper._instance = new TestHelper();
+    }
+    return TestHelper._instance;
   }
 
-  // Stops the in-memory database and cleans up
-  static async stopDatabase(): Promise<void> {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-    await this._mongod.stop();
+  /**
+   * Starts an in-memory MongoDB instance and connects to it.
+   */
+  async startDatabase(): Promise<void> {
+    try {
+      this._mongod = await MongoMemoryServer.create();
+      const uri = this._mongod.getUri();
+      await mongoose.connect(uri, {
+        maxPoolSize: 10,
+        minPoolSize: 2,
+      });
+
+      // Cleanup on process exit
+      process.on("SIGINT", async () => {
+        await this.stopDatabase();
+        process.exit(0);
+      });
+    } catch (error) {
+      throw new Error(`Failed to start database: ${(error as Error).message}`);
+    }
   }
 
-  // Creates a unique database for isolated tests
-  static async createUniqueDatabase(): Promise<string> {
-    const uniqueId = Math.random().toString(36).substring(7);
-    const testDB = await MongoMemoryServer.create({
-      instance: { dbName: `test_${uniqueId}` },
-    });
-    return testDB.getUri();
+  /**
+   * Stops the in-memory MongoDB instance and cleans up connections.
+   */
+  async stopDatabase(): Promise<void> {
+    try {
+      if (mongoose.connection.readyState) {
+        await mongoose.connection.dropDatabase();
+        await mongoose.connection.close();
+      }
+      if (this._mongod) {
+        await this._mongod.stop();
+      }
+    } catch (error) {
+      throw new Error(`Failed to stop database: ${(error as Error).message}`);
+    }
   }
 
-  // Creates isolated test data
+  /**
+   * Creates isolated test data for tests.
+   * @param prefix - Unique identifier for the test data.
+   * @returns Test user and organization data.
+   */
   static createTestData(prefix: string): {
     testUser: { name: string; email: string };
     testOrg: { name: string };
@@ -36,5 +70,23 @@ export class TestHelper {
       testUser: { name: `${prefix}_user`, email: `${prefix}@test.com` },
       testOrg: { name: `${prefix}_org` },
     };
+  }
+
+  /**
+   * Creates a unique in-memory database for isolated tests.
+   * @returns The URI of the unique in-memory database.
+   */
+  async createUniqueDatabase(): Promise<string> {
+    try {
+      const uniqueId = uuidv4();
+      const testDB = await MongoMemoryServer.create({
+        instance: { dbName: `test_${uniqueId}` },
+      });
+      return testDB.getUri();
+    } catch (error) {
+      throw new Error(
+        `Failed to create unique database: ${(error as Error).message}`,
+      );
+    }
   }
 }
