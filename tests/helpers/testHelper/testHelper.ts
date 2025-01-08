@@ -14,10 +14,6 @@ export class TestHelper {
     }
     return TestHelper._instance;
   }
-
-  /**
-   * Starts an in-memory MongoDB instance and connects to it.
-   */
   async startDatabase(): Promise<void> {
     try {
       this._mongod = await MongoMemoryServer.create();
