@@ -28,7 +28,6 @@ export class BaseTest {
     }
 
     try {
-      // Connect to MongoDB with a timeout configuration
       await mongoose.connect(dbUri, {
         serverSelectionTimeoutMS: 5000,
         connectTimeoutMS: 10000,
