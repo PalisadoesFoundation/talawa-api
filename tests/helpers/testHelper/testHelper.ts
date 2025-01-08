@@ -8,6 +8,9 @@ export class TestHelper {
 
   private constructor() {}
 
+  /**
+   * Returns a singleton instance of TestHelper.
+   */
   public static getInstance(): TestHelper {
     if (!TestHelper._instance) {
       TestHelper._instance = new TestHelper();
