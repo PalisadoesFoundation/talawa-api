@@ -16,7 +16,7 @@ services:
         condition: service_healthy
         # Should be set to false when a third party minio test service could be used in the api service and the `minio_test` compose profile is disabled.
         required: true
-      postgres_test:
+      postgres-test:
         condition: service_healthy
         # Should be set to false when a third party postgres test service could be used in the api service the and the `postgres_test` compose profile is disabled.
         required: true
@@ -40,11 +40,11 @@ services:
     # https://docs.docker.com/compose/environment-variables/
     # https://docs.docker.com/reference/compose-file/services/#environment
     environment:
-      - MINIO_BROWSER=${MINIO_TEST_BROWSER:?error}
+      - MINIO_BROWSER=${MINIO_BROWSER:?error}
         # https://min.io/docs/minio/linux/reference/minio-server/settings/root-credentials.html#envvar.MINIO_ROOT_PASSWORD
-      - MINIO_ROOT_PASSWORD=${MINIO_TEST_ROOT_PASSWORD:?error}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:?error}
         # https://min.io/docs/minio/linux/reference/minio-server/settings/root-credentials.html#root-user
-      - MINIO_ROOT_USER=${MINIO_TEST_ROOT_USER:?error}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:?error}
     # https://docs.docker.com/reference/compose-file/services/#command
     command: server /data --console-address ":9001"
     # https://docs.docker.com/reference/dockerfile/#healthcheck
@@ -69,21 +69,16 @@ services:
       - minio_test
     # https://docs.docker.com/reference/compose-file/services/#restart
     restart: unless-stopped
-    # https://docs.docker.com/reference/compose-file/services/#volumes
-    volumes:
-      - source: minio_test_data
-        target: /data
-        type: volume
-  postgres_test:
+  postgres-test:
     # https://docs.docker.com/compose/environment-variables/
     # https://docs.docker.com/reference/compose-file/services/#environment
     environment:
         # https://github.com/docker-library/docs/blob/master/postgres/README.md#postgres_db
-      - POSTGRES_DB=${POSTGRES_TEST_DB:?error}
+      - POSTGRES_DB=${POSTGRES_DB:?error}
         # https://github.com/docker-library/docs/blob/master/postgres/README.md#postgres_password
-      - POSTGRES_PASSWORD=${POSTGRES_TEST_PASSWORD:?error}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?error}
         # https://github.com/docker-library/docs/blob/master/postgres/README.md#postgres_user
-      - POSTGRES_USER=${POSTGRES_TEST_USER:?error}
+      - POSTGRES_USER=${POSTGRES_USER:?error}
     # https://docs.docker.com/reference/dockerfile/#healthcheck
     # https://docs.docker.com/reference/compose-file/services/#healthcheck
     healthcheck:
@@ -106,12 +101,3 @@ services:
       - postgres_test
     # https://docs.docker.com/reference/compose-file/services/#restart
     restart: unless-stopped
-    # https://docs.docker.com/reference/compose-file/services/#volumes
-    volumes:
-      - source: postgres_test_data
-        target: /var/lib/postgresql/data
-        type: volume
-# https://docs.docker.com/reference/compose-file/volumes/
-volumes:
-  minio_test_data:
-  postgres_test_data:

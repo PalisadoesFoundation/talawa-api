@@ -26,17 +26,20 @@ RUN groupmod -n talawa vscode \
 # Sets read, no write and no execute permissions for the user and the group on `/etc/sudoers.d/talawa` file and no read, no write and no execute permissions for the other.  
 && chmod u=r--,g=r--,o=--- /etc/sudoers.d/talawa \
 && apt-get clean \
-&& rm -rf /var/lib/apt/lists/*
+&& rm -rf /var/lib/apt/lists/* \
+# https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
+&& mkdir /commandhistory \
+&& touch /commandhistory/.bash_history \
+&& chown -R talawa /commandhistory \
+&& echo "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" >> /home/talawa/.bashrc
 USER talawa
-ENV PNPM_HOME=/home/talawa/.local/share/pnpm
-ENV PATH=${PNPM_HOME}:/home/talawa/.local/share/fnm:${PATH}
 # Installs fnm.
 RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell \ 
 # Appends the fnm configuration to `/home/talawa/.bashrc` file.
 && echo eval \"\$\(fnm env --corepack-enabled --resolve-engines --use-on-cd --version-file-strategy=recursive\)\" >> /home/talawa/.bashrc
+ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 WORKDIR /home/talawa/api
-
-# This build stage sets up and switches to the `talawa` non root user, sets up pnpm configuration and checks out into the `/home/talawa/api` directory as the working directory.
+  
 FROM node:22.12.0-bookworm-slim AS base
 # Used to configure the group id for the group assigned to the non-root "talawa" user within the image.
 ARG API_GID
@@ -52,10 +55,6 @@ RUN userdel -r node \
 && useradd -g talawa -l -m -s "$(which bash)" -u ${API_UID} talawa \
 && corepack enable
 USER talawa
-# Adds `${PNPM_HOME}` environment variable with `/home/talawa/.local/share/pnpm` value to the container.
-ENV PNPM_HOME=/home/talawa/.local/share/pnpm
-# Adds value of `${PNPM_HOME}` environment variable to the `${PATH}` environment variable within the container.
-ENV PATH=${PNPM_HOME}:${PATH}
 WORKDIR /home/talawa/api
 
 FROM base AS non_production

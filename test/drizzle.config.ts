@@ -4,16 +4,20 @@
 import { type Static, Type } from "@sinclair/typebox";
 import { defineConfig } from "drizzle-kit";
 import { envSchema } from "env-schema";
-import { envConfigSchema, envSchemaAjv } from "./src/envConfigSchema";
+import { envConfigSchema, envSchemaAjv } from "~/src/envConfigSchema";
+import { testEnvConfigSchema } from "./envConfigSchema";
 
-const schema = Type.Pick(envConfigSchema, [
-	"API_POSTGRES_DATABASE",
-	"API_POSTGRES_PASSWORD",
-	"API_POSTGRES_HOST",
-	"API_POSTGRES_PORT",
-	"API_POSTGRES_USER",
-	"API_POSTGRES_SSL_MODE",
-]);
+const schema = Type.Pick(
+	Type.Composite([envConfigSchema, testEnvConfigSchema]),
+	[
+		"API_POSTGRES_DATABASE",
+		"API_POSTGRES_PASSWORD",
+		"API_POSTGRES_PORT",
+		"API_POSTGRES_USER",
+		"API_POSTGRES_SSL_MODE",
+		"API_POSTGRES_TEST_HOST",
+	],
+);
 
 const envConfig = envSchema<Static<typeof schema>>({
 	ajv: envSchemaAjv,
@@ -26,7 +30,7 @@ export default defineConfig({
 	dbCredentials: {
 		database: envConfig.API_POSTGRES_DATABASE,
 		password: envConfig.API_POSTGRES_PASSWORD,
-		host: envConfig.API_POSTGRES_HOST,
+		host: envConfig.API_POSTGRES_TEST_HOST,
 		port: envConfig.API_POSTGRES_PORT,
 		user: envConfig.API_POSTGRES_USER,
 		ssl: envConfig.API_POSTGRES_SSL_MODE,
