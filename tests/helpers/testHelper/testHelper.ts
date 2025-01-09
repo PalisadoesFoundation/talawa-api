@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { v4 as uuidv4 } from "uuid";
 
 export class TestHelper {
   private static _instance: TestHelper;
@@ -9,7 +8,7 @@ export class TestHelper {
   private constructor() {}
 
   /**
-   * Returns a singleton instance of TestHelper.
+   * Singleton instance of TestHelper.
    */
   public static getInstance(): TestHelper {
     if (!TestHelper._instance) {
@@ -17,6 +16,10 @@ export class TestHelper {
     }
     return TestHelper._instance;
   }
+
+  /**
+   * Starts an in-memory MongoDB instance.
+   */
   async startDatabase(): Promise<void> {
     try {
       this._mongod = await MongoMemoryServer.create();
@@ -54,8 +57,8 @@ export class TestHelper {
   }
 
   /**
-   * Creates isolated test data for tests.
-   * @param prefix - Unique identifier for the test data.
+   * Creates isolated test data.
+   * @param prefix - Unique identifier for test data.
    * @returns Test user and organization data.
    */
   static createTestData(prefix: string): {
@@ -66,23 +69,5 @@ export class TestHelper {
       testUser: { name: `${prefix}_user`, email: `${prefix}@test.com` },
       testOrg: { name: `${prefix}_org` },
     };
-  }
-
-  /**
-   * Creates a unique in-memory database for isolated tests.
-   * @returns The URI of the unique in-memory database.
-   */
-  async createUniqueDatabase(): Promise<string> {
-    try {
-      const uniqueId = uuidv4();
-      const testDB = await MongoMemoryServer.create({
-        instance: { dbName: `test_${uniqueId}` },
-      });
-      return testDB.getUri();
-    } catch (error) {
-      throw new Error(
-        `Failed to create unique database: ${(error as Error).message}`,
-      );
-    }
   }
 }
