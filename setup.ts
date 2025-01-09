@@ -30,11 +30,10 @@ import { verifySmtpConnection } from "@setup/verifySmtpConnection";
 import { loadDefaultOrganiation } from "@utilities/loadDefaultOrg";
 import { isMinioInstalled } from "@setup/isMinioInstalled";
 import { installMinio } from "@setup/installMinio";
-import { fileURLToPath } from 'url';
-import util from 'util';
+import { fileURLToPath } from "url";
+import util from "util";
 
 dotenv.config();
-
 
 // type of error in exec while importing sample data : exec("npm run import:sample-data");
 interface InterfaceExecError extends Error {
@@ -273,7 +272,7 @@ export async function checkDb(url: string): Promise<boolean> {
  * @returns The function returns a Promise that resolves to `void`.
  */
 
-// converts callback-based exec to Promise-based 
+// converts callback-based exec to Promise-based
 const exec = util.promisify(execCallback);
 
 export async function importData(): Promise<void> {
@@ -299,7 +298,7 @@ export async function importData(): Promise<void> {
   } catch (error) {
     // Type guard to check if error is an ExecError
     const execError = error as InterfaceExecError;
-    
+
     console.error(`Error during import: ${execError.message}`);
     if (execError.code) {
       console.error(`Exit code: ${execError.code}`);
@@ -525,10 +524,10 @@ async function runDockerComposeWithLogs(): Promise<void> {
         code === 0
           ? resolve(null)
           : reject(
-            new Error(
-              "Docker daemon not running. Please ensure Docker Desktop is running and try again.",
+              new Error(
+                "Docker daemon not running. Please ensure Docker Desktop is running and try again.",
+              ),
             ),
-          ),
       );
     });
   } catch (error: unknown) {
@@ -1080,8 +1079,9 @@ async function main(): Promise<void> {
         ? "X".repeat(process.env.REDIS_PASSWORD.length)
         : "";
 
-      const url = `redis://${process.env.REDIS_PASSWORD ? redisPasswordStr + "@" : ""
-        }${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
+      const url = `redis://${
+        process.env.REDIS_PASSWORD ? redisPasswordStr + "@" : ""
+      }${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
 
       console.log(`\nRedis URL already exists with the value:\n${url}`);
 
@@ -1188,10 +1188,11 @@ async function main(): Promise<void> {
 
   console.log(
     `\nConfiguring MinIO storage...\n` +
-    `${isDockerInstallation
-      ? `Since you are using Docker, MinIO will be configured with the Docker-specific endpoint: http://minio:9000.\n`
-      : `Since you are not using Docker, MinIO will be configured with the local endpoint: http://localhost:9000.\n`
-    }`,
+      `${
+        isDockerInstallation
+          ? `Since you are using Docker, MinIO will be configured with the Docker-specific endpoint: http://minio:9000.\n`
+          : `Since you are not using Docker, MinIO will be configured with the local endpoint: http://localhost:9000.\n`
+      }`,
   );
 
   await configureMinio(isDockerInstallation);
@@ -1233,12 +1234,14 @@ async function main(): Promise<void> {
     {
       type: "input",
       name: "imageSizeLimit",
-      message: `Enter the maximum size limit of Images uploaded (in MB) max: ${MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
-        }`,
+      message: `Enter the maximum size limit of Images uploaded (in MB) max: ${
+        MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+      }`,
       default: 3,
       validate: (input: number): boolean | string =>
         validateImageFileSize(input) ||
-        `Enter a valid number between 0 and ${MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+        `Enter a valid number between 0 and ${
+          MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
         }`,
     },
   ]);
@@ -1306,7 +1309,6 @@ async function main(): Promise<void> {
 
   // if the setup is for a Docker installation.
   if (isDockerInstallation) {
-
     // if Docker container needs to start now
     const { shouldStartDockerContainers } = await inquirer.prompt({
       type: "confirm",
