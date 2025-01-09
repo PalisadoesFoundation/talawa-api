@@ -37,7 +37,7 @@ dotenv.config();
 
 
 // type of error in exec while importing sample data : exec("npm run import:sample-data");
-interface ExecError extends Error {
+interface InterfaceExecError extends Error {
   code?: number;
   killed?: boolean;
   signal?: string;
@@ -152,12 +152,12 @@ export async function accessAndRefreshTokens(
 function transactionLogPath(logPath: string | null): void {
   const config = dotenv.parse(fs.readFileSync(".env"));
   config.LOG = "true";
-  const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
-  const __dirname = path.dirname(__filename); // get the name of the directory
+  const currentFilename = fileURLToPath(import.meta.url); // get the resolved path to the file
+  const currentDirname = path.dirname(currentFilename); // get the name of the directory
 
   if (!logPath) {
     // Check if the logs/transaction.log file exists, if not, create it
-    const defaultLogPath = path.resolve(__dirname, "logs");
+    const defaultLogPath = path.resolve(currentDirname, "logs");
     const defaultLogFile = path.join(defaultLogPath, "transaction.log");
     if (!fs.existsSync(defaultLogPath)) {
       console.log("Creating logs/transaction.log file...");
@@ -167,7 +167,7 @@ function transactionLogPath(logPath: string | null): void {
     config.LOG_PATH = defaultLogFile;
   } else {
     // Remove the logs files, if exists
-    const logsDirPath = path.resolve(__dirname, "logs");
+    const logsDirPath = path.resolve(currentDirname, "logs");
     if (fs.existsSync(logsDirPath)) {
       fs.readdirSync(logsDirPath).forEach((file: string) => {
         if (file !== "README.md") {
@@ -298,7 +298,7 @@ export async function importData(): Promise<void> {
     }
   } catch (error) {
     // Type guard to check if error is an ExecError
-    const execError = error as ExecError;
+    const execError = error as InterfaceExecError;
     
     console.error(`Error during import: ${execError.message}`);
     if (execError.code) {
