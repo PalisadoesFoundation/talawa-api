@@ -3,8 +3,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
-import type { ExecException } from "child_process";
-import { exec, spawn, execSync } from "child_process";
+import { spawn, execSync, exec as execCallback } from "child_process";
 import { MongoClient } from "mongodb";
 import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "@constants";
 import {
@@ -31,8 +30,19 @@ import { verifySmtpConnection } from "@setup/verifySmtpConnection";
 import { loadDefaultOrganiation } from "@utilities/loadDefaultOrg";
 import { isMinioInstalled } from "@setup/isMinioInstalled";
 import { installMinio } from "@setup/installMinio";
+import { fileURLToPath } from 'url';
+import util from 'util';
 
 dotenv.config();
+
+
+// type of error in exec while importing sample data : exec("npm run import:sample-data");
+interface ExecError extends Error {
+  code?: number;
+  killed?: boolean;
+  signal?: string;
+  cmd?: string;
+}
 
 // Check if all the fields in .env.sample are present in .env
 /**
@@ -142,6 +152,9 @@ export async function accessAndRefreshTokens(
 function transactionLogPath(logPath: string | null): void {
   const config = dotenv.parse(fs.readFileSync(".env"));
   config.LOG = "true";
+  const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+  const __dirname = path.dirname(__filename); // get the name of the directory
+
   if (!logPath) {
     // Check if the logs/transaction.log file exists, if not, create it
     const defaultLogPath = path.resolve(__dirname, "logs");
@@ -259,28 +272,42 @@ export async function checkDb(url: string): Promise<boolean> {
  * is determined that existing data should be wiped.
  * @returns The function returns a Promise that resolves to `void`.
  */
+
+// converts callback-based exec to Promise-based 
+const exec = util.promisify(execCallback);
+
 export async function importData(): Promise<void> {
   if (!process.env.MONGO_DB_URL) {
     console.log("Couldn't find mongodb url");
     return;
   }
 
-  console.log("Importing sample data...");
-  if (process.env.NODE_ENV !== "test") {
-    await exec(
-      "npm run import:sample-data",
-      (error: ExecException | null, stdout: string, stderr: string) => {
-        if (error) {
-          console.error(`Error: ${error.message}`);
-          abort();
-        }
-        if (stderr) {
-          console.error(`Error: ${stderr}`);
-          abort();
-        }
-        console.log(`Output: ${stdout}`);
-      },
-    );
+  try {
+    console.log("Importing sample data...");
+
+    if (process.env.NODE_ENV !== "test") {
+      const { stdout, stderr } = await exec("npm run import:sample-data");
+
+      if (stderr) {
+        console.error(`Error: ${stderr}`);
+        process.exit(1);
+      }
+
+      console.log(`Output: ${stdout}`);
+      console.log("Data import completed successfully!");
+    }
+  } catch (error) {
+    // Type guard to check if error is an ExecError
+    const execError = error as ExecError;
+    
+    console.error(`Error during import: ${execError.message}`);
+    if (execError.code) {
+      console.error(`Exit code: ${execError.code}`);
+    }
+    if (execError.signal) {
+      console.error(`Signal: ${execError.signal}`);
+    }
+    process.exit(1);
   }
 }
 
@@ -498,10 +525,10 @@ async function runDockerComposeWithLogs(): Promise<void> {
         code === 0
           ? resolve(null)
           : reject(
-              new Error(
-                "Docker daemon not running. Please ensure Docker Desktop is running and try again.",
-              ),
+            new Error(
+              "Docker daemon not running. Please ensure Docker Desktop is running and try again.",
             ),
+          ),
       );
     });
   } catch (error: unknown) {
@@ -1053,9 +1080,8 @@ async function main(): Promise<void> {
         ? "X".repeat(process.env.REDIS_PASSWORD.length)
         : "";
 
-      const url = `redis://${
-        process.env.REDIS_PASSWORD ? redisPasswordStr + "@" : ""
-      }${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
+      const url = `redis://${process.env.REDIS_PASSWORD ? redisPasswordStr + "@" : ""
+        }${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
 
       console.log(`\nRedis URL already exists with the value:\n${url}`);
 
@@ -1162,11 +1188,10 @@ async function main(): Promise<void> {
 
   console.log(
     `\nConfiguring MinIO storage...\n` +
-      `${
-        isDockerInstallation
-          ? `Since you are using Docker, MinIO will be configured with the Docker-specific endpoint: http://minio:9000.\n`
-          : `Since you are not using Docker, MinIO will be configured with the local endpoint: http://localhost:9000.\n`
-      }`,
+    `${isDockerInstallation
+      ? `Since you are using Docker, MinIO will be configured with the Docker-specific endpoint: http://minio:9000.\n`
+      : `Since you are not using Docker, MinIO will be configured with the local endpoint: http://localhost:9000.\n`
+    }`,
   );
 
   await configureMinio(isDockerInstallation);
@@ -1208,14 +1233,12 @@ async function main(): Promise<void> {
     {
       type: "input",
       name: "imageSizeLimit",
-      message: `Enter the maximum size limit of Images uploaded (in MB) max: ${
-        MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
-      }`,
+      message: `Enter the maximum size limit of Images uploaded (in MB) max: ${MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+        }`,
       default: 3,
       validate: (input: number): boolean | string =>
         validateImageFileSize(input) ||
-        `Enter a valid number between 0 and ${
-          MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
+        `Enter a valid number between 0 and ${MAXIMUM_IMAGE_SIZE_LIMIT_KB / 1000
         }`,
     },
   ]);
@@ -1246,6 +1269,7 @@ async function main(): Promise<void> {
         });
         if (overwriteDefaultData) {
           await importDefaultData();
+          console.log("Default data import completed.");
         } else {
           const { overwriteSampleData } = await inquirer.prompt({
             type: "confirm",
@@ -1280,22 +1304,26 @@ async function main(): Promise<void> {
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉",
   );
 
-  const { shouldStartDockerContainers } = await inquirer.prompt({
-    type: "confirm",
-    name: "shouldStartDockerContainers",
-    message: "Do you want to start the Docker containers now?",
-    default: true,
-  });
-
-  const { shouldImportSampleData } = await inquirer.prompt({
-    type: "confirm",
-    name: "shouldImportSampleData",
-    message:
-      "Do you want to import Talawa sample data for testing and evaluation purposes?",
-    default: true,
-  });
-
+  // if the setup is for a Docker installation.
   if (isDockerInstallation) {
+
+    // if Docker container needs to start now
+    const { shouldStartDockerContainers } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldStartDockerContainers",
+      message: "Do you want to start the Docker containers now?",
+      default: true,
+    });
+
+    // if Sample data needs to be imported for docker
+    const { shouldImportSampleData } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldImportSampleData",
+      message:
+        "Do you want to import Talawa sample data for testing and evaluation purposes?",
+      default: true,
+    });
+
     if (shouldStartDockerContainers) {
       console.log("Starting docker container...");
       try {
