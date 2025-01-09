@@ -25,7 +25,9 @@ Though, many of these penalties and limitations don't apply to windows subsystem
 
 We provide a mostly automated way of setting up the development environment for talawa api using git, docker and visual studio code as shown in the following video:
 
-<!-- Video link or embed here -->
+. Click on the image to play the video
+
+[![Talawa API Environment Setup - Development](https://img.youtube.com/vi/jz7koJIXqtk/0.jpg)](https://www.youtube.com/watch?v=jz7koJIXqtk)
 
 It is very important that you go through [this](https://code.visualstudio.com/docs/devcontainers/containers) official documentation for working with devcontainers in visual studio code.
 
@@ -45,4 +47,6 @@ You must have basic competence and experience in the following technologies to b
 
 We provide a mostly automated way of running the production build of talawa api locally on your system using git, docker and docker compose as shown in the following video:
 
-<!-- Video link or embed here -->
+. Click on the image to play the video
+
+[![Talawa API Environment Setup - Production](https://img.youtube.com/vi/10Zi2srGPHM/0.jpg)](https://www.youtube.com/watch?v=10Zi2srGPHM)
