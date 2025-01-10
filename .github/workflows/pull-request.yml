@@ -111,6 +111,7 @@ jobs:
             .github/**
             .husky/**
             scripts/**
+            sample_data/**
             .env.sample
             .dockerignore
             .node-version
