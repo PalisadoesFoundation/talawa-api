@@ -267,7 +267,7 @@ export async function importData(): Promise<void> {
 
   console.log("Importing sample data...");
   if (process.env.NODE_ENV !== "test") {
-    await exec(
+    exec(
       "npm run import:sample-data",
       (error: ExecException | null, stdout: string, stderr: string) => {
         if (error) {
@@ -1227,36 +1227,32 @@ async function main(): Promise<void> {
       console.log("Couldn't find mongodb url");
       return;
     }
+
     const isDbEmpty = await checkDb(process.env.MONGO_DB_URL);
     if (!isDbEmpty) {
       const { shouldOverwriteData } = await inquirer.prompt({
         type: "confirm",
         name: "shouldOverwriteData",
-        message: "Do you want to overwrite the existing data?",
+        message:
+          "Do you want to delete the existing data and import required default Data to start using Talawa?",
         default: false,
       });
       if (shouldOverwriteData) {
         await wipeExistingData(process.env.MONGO_DB_URL);
-        const { overwriteDefaultData } = await inquirer.prompt({
+        // Import Default Data
+        await importDefaultData();
+
+        // Prompt to import Sample Data
+        const { importSampleData } = await inquirer.prompt({
           type: "confirm",
-          name: "overwriteDefaultData",
+          name: "importSampleData",
           message:
-            "Do you want to import the required default data to start using Talawa in a production environment?",
+            "Do you want to import Talawa sample data for testing and evaluation purposes?",
           default: false,
         });
-        if (overwriteDefaultData) {
-          await importDefaultData();
-        } else {
-          const { overwriteSampleData } = await inquirer.prompt({
-            type: "confirm",
-            name: "overwriteSampleData",
-            message:
-              "Do you want to import Talawa sample data for testing and evaluation purposes?",
-            default: false,
-          });
-          if (overwriteSampleData) {
-            await importData();
-          }
+
+        if (importSampleData) {
+          await importData();
         }
       }
     } else {
@@ -1267,35 +1263,19 @@ async function main(): Promise<void> {
           "Do you want to import Talawa sample data for testing and evaluation purposes?",
         default: false,
       });
-      await wipeExistingData(process.env.MONGO_DB_URL);
       if (shouldImportSampleData) {
         await importData();
       } else {
         await importDefaultData();
       }
     }
-  }
-
-  console.log(
-    "\nCongratulations! Talawa API has been successfully setup! 🥂🎉",
-  );
-
-  const { shouldStartDockerContainers } = await inquirer.prompt({
-    type: "confirm",
-    name: "shouldStartDockerContainers",
-    message: "Do you want to start the Docker containers now?",
-    default: true,
-  });
-
-  const { shouldImportSampleData } = await inquirer.prompt({
-    type: "confirm",
-    name: "shouldImportSampleData",
-    message:
-      "Do you want to import Talawa sample data for testing and evaluation purposes?",
-    default: true,
-  });
-
-  if (isDockerInstallation) {
+  } else {
+    const { shouldStartDockerContainers } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldStartDockerContainers",
+      message: "Do you want to start the Docker containers now?",
+      default: true,
+    });
     if (shouldStartDockerContainers) {
       console.log("Starting docker container...");
       try {
@@ -1329,6 +1309,15 @@ async function main(): Promise<void> {
           }
         }
 
+        await importDefaultData();
+        const { shouldImportSampleData } = await inquirer.prompt({
+          type: "confirm",
+          name: "shouldImportSampleData",
+          message:
+            "Do you want to import Talawa sample data for testing and evaluation purposes?",
+          default: true,
+        });
+
         if (shouldImportSampleData) {
           await importData();
         }
@@ -1337,6 +1326,10 @@ async function main(): Promise<void> {
       }
     }
   }
+
+  console.log(
+    "\nCongratulations! Talawa API has been successfully setup! 🥂🎉",
+  );
 }
 
 main();
