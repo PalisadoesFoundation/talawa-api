@@ -1,0 +1,17 @@
+[
+  {
+    "_id": "66043dbcd72afa8f13db5854",
+    "userId": "65ecb93989225c818f784821",
+    "adminFor": ["65ecb98712e5d1c5a4504ce4"],
+    "appLanguageCode": "en",
+    "createdEvents": [],
+    "createdOrganizations": ["65ecb98712e5d1c5a4504ce4"],
+    "eventAdmin": [],
+    "pluginCreationAllowed": true,
+    "token": null,
+    "tokenVersion": 0,
+    "isSuperAdmin": false,
+    "createdAt": "2023-04-13T04:53:17.742Z",
+    "__v": 0
+  }
+]
