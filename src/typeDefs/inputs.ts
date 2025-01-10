@@ -24,6 +24,17 @@ export const inputs = gql`
     image: String
   }
 
+  input createGroupChatInput {
+    userIds: [ID!]!
+    organizationId: ID!
+    title: String!
+  }
+
+  input ChatWhereInput {
+    user: UserWhereInput
+    name_contains: String
+  }
+
   input createUserFamilyInput {
     title: String!
     userIds: [ID!]!
@@ -82,6 +93,10 @@ export const inputs = gql`
   input ActionItemCategoryWhereInput {
     name_contains: String
     is_disabled: Boolean
+  }
+
+  input AgendaItemCategoryWhereInput {
+    name_contains: String
   }
 
   input CreateAgendaCategoryInput {
@@ -143,6 +158,7 @@ export const inputs = gql`
     latitude: Latitude
     longitude: Longitude
     organizationId: ID!
+    createChat: Boolean!
   }
 
   input EventVolunteerInput {

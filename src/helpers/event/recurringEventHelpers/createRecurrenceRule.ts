@@ -1,5 +1,6 @@
 import type mongoose from "mongoose";
-import { rrulestr } from "rrule";
+import rrule from "rrule";
+const { rrulestr } = rrule;
 import type { InterfaceRecurrenceRule } from "../../../models";
 import { RecurrenceRule } from "../../../models";
 import {

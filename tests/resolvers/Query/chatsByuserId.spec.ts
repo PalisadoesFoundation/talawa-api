@@ -43,7 +43,9 @@ describe("resolvers -> Query -> chatsByUserId", () => {
       id: testUser?._id,
     };
 
-    const chatsByUserIdPayload = await chatsByUserIdResolver?.({}, args, {});
+    const chatsByUserIdPayload = await chatsByUserIdResolver?.({}, args, {
+      apiRootUrl: "",
+    });
 
     const chatsByUserId = await Chat.find({
       users: testUser?._id,
