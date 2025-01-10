@@ -37,6 +37,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    ports:
+      - "4000:4000"
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -48,6 +50,8 @@ services:
       - MONGO_DB_URL=mongodb://mongodb:27017
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379
+    networks:
+      - talawa-network
 
   caddy:
     image: caddy/caddy:2.2.1-alpine
@@ -61,6 +65,8 @@ services:
       - $PWD/site:/srv
       - caddy_data:/data
       - caddy_config:/config
+    network:
+      - talawa-network
 
 volumes:
   mongodb-data:
