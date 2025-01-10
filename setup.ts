@@ -2,7 +2,7 @@ import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
 import inquirer from "inquirer";
-import path from "path";
+import path, { dirname } from "path";
 import type { ExecException } from "child_process";
 import { exec, spawn, execSync } from "child_process";
 import { MongoClient } from "mongodb";
@@ -31,6 +31,7 @@ import { verifySmtpConnection } from "@setup/verifySmtpConnection";
 import { loadDefaultOrganiation } from "@utilities/loadDefaultOrg";
 import { isMinioInstalled } from "@setup/isMinioInstalled";
 import { installMinio } from "@setup/installMinio";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 
@@ -141,10 +142,11 @@ export async function accessAndRefreshTokens(
 
 function transactionLogPath(logPath: string | null): void {
   const config = dotenv.parse(fs.readFileSync(".env"));
+  const currDir = dirname(fileURLToPath(import.meta.url));
   config.LOG = "true";
   if (!logPath) {
     // Check if the logs/transaction.log file exists, if not, create it
-    const defaultLogPath = path.resolve(__dirname, "logs");
+    const defaultLogPath = path.resolve(currDir, "logs");
     const defaultLogFile = path.join(defaultLogPath, "transaction.log");
     if (!fs.existsSync(defaultLogPath)) {
       console.log("Creating logs/transaction.log file...");
@@ -154,7 +156,7 @@ function transactionLogPath(logPath: string | null): void {
     config.LOG_PATH = defaultLogFile;
   } else {
     // Remove the logs files, if exists
-    const logsDirPath = path.resolve(__dirname, "logs");
+    const logsDirPath = path.resolve(currDir, "logs");
     if (fs.existsSync(logsDirPath)) {
       fs.readdirSync(logsDirPath).forEach((file: string) => {
         if (file !== "README.md") {
@@ -221,7 +223,7 @@ export async function wipeExistingData(url: string): Promise<void> {
       console.log("All existing data has been deleted.");
     }
   } catch {
-    console.error("Could not connect to database to check for data");
+    throw new Error("Could not connect to database to check for data");
   }
   client.close();
   // return shouldImport;
@@ -237,6 +239,7 @@ export async function wipeExistingData(url: string): Promise<void> {
 export async function checkDb(url: string): Promise<boolean> {
   let dbEmpty = false;
   const client = new MongoClient(`${url}`);
+  console.log(`Connecting to database...`);
   try {
     await client.connect();
     const db = client.db();
@@ -248,7 +251,7 @@ export async function checkDb(url: string): Promise<boolean> {
       dbEmpty = true;
     }
   } catch {
-    console.error("Could not connect to database to check for data");
+    throw new Error("Could not connect to database to check for data");
   }
   client.close();
   return dbEmpty;
@@ -278,7 +281,7 @@ export async function importData(): Promise<void> {
           console.error(`Error: ${stderr}`);
           abort();
         }
-        console.log(`Output: ${stdout}`);
+        console.log(`\nOutput: ${stdout}`);
       },
     );
   }
