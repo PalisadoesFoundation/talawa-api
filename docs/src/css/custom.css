@@ -21,6 +21,8 @@
   --ifm-link-color: #1e56e3;
   --ifm-button-background-color: #2e8555;
   --ifm-button-background-color-dark: #205d3b;
+  --ifm-button-background-color-hover: #359469;  
+  --ifm-button-background-color-dark-hover: #266745; 
   --ifm-hover-overlay: rgba(0, 0, 0, 0.05);
   --brand-color: black;
   --next-prev-border-color: #e5e7eb;
@@ -73,7 +75,6 @@
 .menu * {
   font-size: 1rem;
   padding-left: 0.5rem;
-  text-transform: uppercase;
   font-weight: 700;
   line-height: 1.5;
 }
@@ -102,7 +103,7 @@
 }
 
 .navbar__items--right > .navbar__item:not(:first-of-type) {
-  margin-left: 0.25px;
+  margin-left: 0.25rem;
 }
 
 .footer--dark {
@@ -115,7 +116,7 @@
   width: 20px;
   height: 20px;
   display: flex;
-  background: url("/img/logos/github-dark.svg") no-repeat;
+  background: url("../../static/img/logos/github-dark.svg") no-repeat;  
   position: relative;
   right: 8px;
   top: 1.5px;
@@ -126,17 +127,17 @@
   width: 25px;
   height: 30px;
   display: flex;
-  background: url("/img/logos/youtube.svg") no-repeat;
+  background: url("../../static/img/logos/youtube.svg") no-repeat;
   position: relative;
   right: 8px;
   top: 4.5px;
 }
 
 html[data-theme="dark"] .header-github-link:before {
-  background: url(/img/logos/github.svg) no-repeat;
+  background: url("../../static/img/logos/github.svg") no-repeat;
 }
 html[data-theme="dark"] .header-youtube-link:before {
-  background: url(/img/logos/youtube-light.svg) no-repeat;
+  background: url("../../static/img/logos/youtube-light.svg") no-repeat;
 }
 
 .footer--dark li {
