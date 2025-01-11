@@ -14,7 +14,7 @@ export const SubscriptionChatMessageCreateInput = builder
 		description: "",
 		fields: (t) => ({
 			id: t.string({
-				description: "Global id of the chat.",
+				description: "Global identifier of the chat.",
 				required: true,
 			}),
 		}),

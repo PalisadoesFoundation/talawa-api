@@ -15,7 +15,7 @@ builder.queryField("organization", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "Input required to read an organization.",
+				description: "",
 				required: true,
 				type: QueryOrganizationInput,
 			}),

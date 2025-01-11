@@ -38,14 +38,11 @@ const mutationCreateVenueArgumentsSchema = z.object({
 					}
 				}
 			} else {
-				return {
-					...arg,
-					attachments: rawAttachments.map((attachment, index) =>
-						Object.assign(attachment, {
-							mimetype: data[index],
-						}),
-					),
-				};
+				attachments = rawAttachments.map((attachment, index) =>
+					Object.assign(attachment, {
+						mimetype: data[index],
+					}),
+				);
 			}
 		}
 
@@ -107,7 +104,7 @@ builder.mutationField("createVenue", (t) =>
 						countryCode: true,
 					},
 					with: {
-						organizationMembershipsWhereOrganization: {
+						membershipsWhereOrganization: {
 							columns: {
 								role: true,
 							},
@@ -116,7 +113,7 @@ builder.mutationField("createVenue", (t) =>
 						},
 						venuesWhereOrganization: {
 							columns: {
-								updaterId: true,
+								updatedAt: true,
 							},
 							where: (fields, operators) =>
 								operators.eq(fields.name, parsedArgs.input.name),
@@ -166,7 +163,7 @@ builder.mutationField("createVenue", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingOrganization.organizationMembershipsWhereOrganization[0];
+				existingOrganization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -224,18 +221,20 @@ builder.mutationField("createVenue", (t) =>
 						)
 						.returning();
 
-					Promise.all(
-						createdVenueAttachments.map((attachment, index) =>
-							ctx.minio.client.putObject(
-								ctx.minio.bucketName,
-								attachment.name,
-								attachments[index].createReadStream(),
-								undefined,
-								{
-									"content-type": attachment.mimeType,
-								},
-							),
-						),
+					await Promise.all(
+						createdVenueAttachments.map((attachment, index) => {
+							if (attachments[index] !== undefined) {
+								return ctx.minio.client.putObject(
+									ctx.minio.bucketName,
+									attachment.name,
+									attachments[index].createReadStream(),
+									undefined,
+									{
+										"content-type": attachment.mimeType,
+									},
+								);
+							}
+						}),
 					);
 
 					return Object.assign(createdVenue, {

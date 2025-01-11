@@ -71,7 +71,7 @@ export const MutationCreateAgendaItemInput = builder
 				required: true,
 			}),
 			key: t.string({
-				description: `Key of the agenda item if it's type is "song". More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.`,
+				description: `Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.`,
 			}),
 			name: t.string({
 				description: "Name of the agenda item.",

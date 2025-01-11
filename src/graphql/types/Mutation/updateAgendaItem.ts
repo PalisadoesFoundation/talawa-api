@@ -80,7 +80,7 @@ builder.mutationField("updateAgendaItem", (t) =>
 												countryCode: true,
 											},
 											with: {
-												organizationMembershipsWhereOrganization: {
+												membershipsWhereOrganization: {
 													columns: {
 														role: true,
 													},
@@ -224,7 +224,7 @@ builder.mutationField("updateAgendaItem", (t) =>
 								{
 									argumentPath: ["input", "folderId"],
 									message:
-										"This agenda folder is not associated to the event associated to the agenda item.",
+										"This agenda folder does not belong to the event to the agenda item.",
 								},
 							],
 						},
@@ -249,7 +249,7 @@ builder.mutationField("updateAgendaItem", (t) =>
 
 			const currentUserOrganizationMembership =
 				existingAgendaItem.folder.event.organization
-					.organizationMembershipsWhereOrganization[0];
+					.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

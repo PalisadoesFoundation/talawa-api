@@ -15,7 +15,7 @@ builder.mutationField("deleteUser", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "Input required to delete a user.",
+				description: "",
 				required: true,
 				type: MutationDeleteUserInput,
 			}),

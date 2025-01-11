@@ -59,13 +59,13 @@ builder.queryField("event", (t) =>
 				}),
 				ctx.drizzleClient.query.eventsTable.findFirst({
 					with: {
-						eventAttachmentsWhereEvent: true,
+						attachmentsWhereEvent: true,
 						organization: {
 							columns: {
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -102,7 +102,7 @@ builder.queryField("event", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingEvent.organization.organizationMembershipsWhereOrganization[0];
+				existingEvent.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -121,7 +121,7 @@ builder.queryField("event", (t) =>
 			}
 
 			return Object.assign(existingEvent, {
-				attachments: existingEvent.eventAttachmentsWhereEvent,
+				attachments: existingEvent.attachmentsWhereEvent,
 			});
 		},
 		type: Event,

@@ -79,7 +79,7 @@ builder.mutationField("deleteAgendaItem", (t) =>
 												countryCode: true,
 											},
 											with: {
-												organizationMembershipsWhereOrganization: {
+												membershipsWhereOrganization: {
 													columns: {
 														role: true,
 													},
@@ -121,7 +121,7 @@ builder.mutationField("deleteAgendaItem", (t) =>
 
 			const currentUserOrganizationMembership =
 				existingAgendaItem.folder.event.organization
-					.organizationMembershipsWhereOrganization[0];
+					.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

@@ -10,7 +10,7 @@ Comment.implement({
 				const existingPost = await ctx.drizzleClient.query.postsTable.findFirst(
 					{
 						with: {
-							postAttachmentsWherePost: true,
+							attachmentsWherePost: true,
 						},
 						where: (fields, operators) =>
 							operators.eq(fields.id, parent.postId),
@@ -31,7 +31,7 @@ Comment.implement({
 				}
 
 				return Object.assign(existingPost, {
-					attachments: existingPost.postAttachmentsWherePost,
+					attachments: existingPost.attachmentsWherePost,
 				});
 			},
 			type: Post,

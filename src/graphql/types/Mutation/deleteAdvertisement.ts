@@ -64,13 +64,13 @@ builder.mutationField("deleteAdvertisement", (t) =>
 						type: true,
 					},
 					with: {
-						advertisementAttachmentsWhereAdvertisement: true,
+						attachmentsWhereAdvertisement: true,
 						organization: {
 							columns: {
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -107,8 +107,7 @@ builder.mutationField("deleteAdvertisement", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingAdvertisement.organization
-					.organizationMembershipsWhereOrganization[0];
+				existingAdvertisement.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -144,14 +143,13 @@ builder.mutationField("deleteAdvertisement", (t) =>
 
 				await ctx.minio.client.removeObjects(
 					ctx.minio.bucketName,
-					existingAdvertisement.advertisementAttachmentsWhereAdvertisement.map(
+					existingAdvertisement.attachmentsWhereAdvertisement.map(
 						(attachment) => attachment.name,
 					),
 				);
 
 				return Object.assign(deletedAdvertisement, {
-					attachments:
-						existingAdvertisement.advertisementAttachmentsWhereAdvertisement,
+					attachments: existingAdvertisement.attachmentsWhereAdvertisement,
 				});
 			});
 		},

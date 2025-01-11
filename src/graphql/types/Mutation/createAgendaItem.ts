@@ -73,7 +73,7 @@ builder.mutationField("createAgendaItem", (t) =>
 										countryCode: true,
 									},
 									with: {
-										organizationMembershipsWhereOrganization: {
+										membershipsWhereOrganization: {
 											columns: {
 												role: true,
 											},
@@ -127,8 +127,7 @@ builder.mutationField("createAgendaItem", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingAgendaFolder.event.organization
-					.organizationMembershipsWhereOrganization[0];
+				existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

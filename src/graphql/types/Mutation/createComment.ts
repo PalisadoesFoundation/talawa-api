@@ -68,7 +68,7 @@ builder.mutationField("createComment", (t) =>
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -105,7 +105,7 @@ builder.mutationField("createComment", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingPost.organization.organizationMembershipsWhereOrganization[0];
+				existingPost.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

@@ -110,13 +110,13 @@ export const postsTableRelations = relations(postsTable, ({ many, one }) => ({
 	/**
 	 * One to many relationship from `posts` table to `post_attachments` table.
 	 */
-	postAttachmentsWherePost: many(postAttachmentsTable, {
+	attachmentsWherePost: many(postAttachmentsTable, {
 		relationName: "post_attachments.post_id:posts.id",
 	}),
 	/**
 	 * One to many relationship from `posts` table to `post_votes` table.
 	 */
-	postVotesWherePost: many(postVotesTable, {
+	votesWherePost: many(postVotesTable, {
 		relationName: "post_votes.post_id:posts.id",
 	}),
 	/**

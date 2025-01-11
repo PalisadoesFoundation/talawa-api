@@ -52,43 +52,36 @@ builder.mutationField("createOrganizationMembership", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [
-				currentUser,
-				existingMember,
-				existingOrganization,
-				existingOrganizationMembership,
-			] = await Promise.all([
-				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-				}),
-				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.memberId),
-				}),
-				ctx.drizzleClient.query.organizationsTable.findFirst({
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.organizationId),
-				}),
-				ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.memberId, parsedArgs.input.memberId),
-							operators.eq(
-								fields.organizationId,
-								parsedArgs.input.organizationId,
-							),
-						),
-				}),
-			]);
+			const [currentUser, existingMember, existingOrganization] =
+				await Promise.all([
+					ctx.drizzleClient.query.usersTable.findFirst({
+						columns: {
+							role: true,
+						},
+						where: (fields, operators) =>
+							operators.eq(fields.id, currentUserId),
+					}),
+					ctx.drizzleClient.query.usersTable.findFirst({
+						columns: {
+							role: true,
+						},
+						where: (fields, operators) =>
+							operators.eq(fields.id, parsedArgs.input.memberId),
+					}),
+					ctx.drizzleClient.query.organizationsTable.findFirst({
+						where: (fields, operators) =>
+							operators.eq(fields.id, parsedArgs.input.organizationId),
+						with: {
+							membershipsWhereOrganization: {
+								columns: {
+									role: true,
+								},
+								where: (fields, operators) =>
+									operators.eq(fields.memberId, parsedArgs.input.memberId),
+							},
+						},
+					}),
+				]);
 
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
@@ -140,6 +133,9 @@ builder.mutationField("createOrganizationMembership", (t) =>
 				});
 			}
 
+			const existingOrganizationMembership =
+				existingOrganization.membershipsWhereOrganization[0];
+
 			if (existingOrganizationMembership !== undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -148,11 +144,11 @@ builder.mutationField("createOrganizationMembership", (t) =>
 							{
 								argumentPath: ["input", "memberId"],
 								message:
-									"This user already has the membership of the associated organization.",
+									"This user already has the membership of the organization.",
 							},
 							{
 								argumentPath: ["input", "organizationId"],
-								message: "This organization already has the associated member.",
+								message: "This organization already has the user as a member.",
 							},
 						],
 					},
@@ -160,11 +156,26 @@ builder.mutationField("createOrganizationMembership", (t) =>
 			}
 
 			if (currentUser.role !== "administrator") {
+				// Only administrator users can create organization memberships for users other than themselves.
+				if (currentUserId !== parsedArgs.input.memberId) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action_on_arguments_associated_resources",
+							issues: [
+								{
+									argumentPath: ["input", "memberId"],
+								},
+							],
+						},
+					});
+				}
+
 				const unauthorizedArgumentPaths = getKeyPathsWithNonUndefinedValues({
 					keyPaths: [["input", "role"]],
 					object: parsedArgs,
 				});
 
+				// Only administrator users can provide the argument `input.role` for  this graphql operation.
 				if (unauthorizedArgumentPaths.length !== 0) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -195,6 +206,7 @@ builder.mutationField("createOrganizationMembership", (t) =>
 				ctx.log.error(
 					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 				);
+
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",

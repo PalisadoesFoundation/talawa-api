@@ -41,7 +41,7 @@ AgendaItem.implement({
 											countryCode: true,
 										},
 										with: {
-											organizationMembershipsWhereOrganization: {
+											membershipsWhereOrganization: {
 												columns: {
 													role: true,
 												},
@@ -79,7 +79,7 @@ AgendaItem.implement({
 
 				const currentUserOrganizationMembership =
 					existingAgendaFolder.event.organization
-						.organizationMembershipsWhereOrganization[0];
+						.membershipsWhereOrganization[0];
 
 				if (
 					currentUser.role !== "administrator" &&

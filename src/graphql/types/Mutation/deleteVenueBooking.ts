@@ -22,7 +22,7 @@ builder.mutationField("deleteVenueBooking", (t) =>
 				type: MutationDeleteVenueBookingInput,
 			}),
 		},
-		description: "Mutation field to delete an venue booking.",
+		description: "Mutation field to delete a venue booking.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -75,7 +75,7 @@ builder.mutationField("deleteVenueBooking", (t) =>
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -84,7 +84,7 @@ builder.mutationField("deleteVenueBooking", (t) =>
 								},
 							},
 						},
-						venueAttachmentsWhereVenue: true,
+						attachmentsWhereVenue: true,
 						venueBookingsWhereVenue: {
 							columns: {
 								creatorId: true,
@@ -165,7 +165,7 @@ builder.mutationField("deleteVenueBooking", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingVenue.organization.organizationMembershipsWhereOrganization[0];
+				existingVenue.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -207,7 +207,7 @@ builder.mutationField("deleteVenueBooking", (t) =>
 			}
 
 			return Object.assign(existingVenue, {
-				attachments: existingVenue.venueAttachmentsWhereVenue,
+				attachments: existingVenue.attachmentsWhereVenue,
 			});
 		},
 		type: Venue,

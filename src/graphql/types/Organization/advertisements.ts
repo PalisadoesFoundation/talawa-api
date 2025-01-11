@@ -173,7 +173,7 @@ Organization.implement({
 							limit,
 							orderBy,
 							with: {
-								advertisementAttachmentsWhereAdvertisement: true,
+								attachmentsWhereAdvertisement: true,
 							},
 							where,
 						});
@@ -198,12 +198,9 @@ Organization.implement({
 									name: advertisement.name,
 								}),
 							).toString("base64url"),
-						createNode: ({
-							advertisementAttachmentsWhereAdvertisement,
-							...advertisement
-						}) =>
+						createNode: ({ attachmentsWhereAdvertisement, ...advertisement }) =>
 							Object.assign(advertisement, {
-								attachments: advertisementAttachmentsWhereAdvertisement,
+								attachments: attachmentsWhereAdvertisement,
 							}),
 						parsedArgs,
 						rawNodes: advertisements,

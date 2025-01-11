@@ -51,7 +51,7 @@ export const agendaFoldersTable = pgTable(
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
 		/**
-		 * Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
+		 * Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent folder for other agenda folders.
 		 */
 		isAgendaItemFolder: boolean("is_agenda_item_folder").notNull(),
 		/**
@@ -59,7 +59,7 @@ export const agendaFoldersTable = pgTable(
 		 */
 		name: text("name", {}).notNull(),
 		/**
-		 * Foreign key reference to the id of the agenda folder the agenda folder is associated to.
+		 * Foreign key reference to the id of the agenda folder the agenda folder is contained within.
 		 */
 		parentFolderId: uuid("parent_folder_id").references(
 			(): AnyPgColumn => agendaFoldersTable.id,

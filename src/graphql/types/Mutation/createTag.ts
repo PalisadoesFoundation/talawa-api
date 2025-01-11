@@ -64,7 +64,7 @@ builder.mutationField("createTag", (t) =>
 						countryCode: true,
 					},
 					with: {
-						organizationMembershipsWhereOrganization: {
+						membershipsWhereOrganization: {
 							columns: {
 								role: true,
 							},
@@ -170,7 +170,7 @@ builder.mutationField("createTag", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingOrganization.organizationMembershipsWhereOrganization[0];
+				existingOrganization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

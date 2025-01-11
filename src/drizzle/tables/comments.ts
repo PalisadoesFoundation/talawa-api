@@ -70,7 +70,7 @@ export const commentsTableRelations = relations(
 		/**
 		 * One to many relationship from `comments` table to `comment_votes` table.
 		 */
-		commentVotesWhereComment: many(commentVotesTable, {
+		votesWhereComment: many(commentVotesTable, {
 			relationName: "comment_votes.comment_id:comments.id",
 		}),
 		/**
