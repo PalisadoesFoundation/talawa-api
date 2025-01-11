@@ -279,58 +279,88 @@ const filesystemTests = [
 ];
 
 function updateTestFile(filePath: string): void {
+  console.log(`Processing file: ${filePath}`);
+
   let content = fs.readFileSync(filePath, "utf-8");
+  console.log("Initial content:\n", content);
 
-  const beforeAllAddition = `
-    beforeAll(async () => {
-      this.testPath = await ${generateUniqueTestPath()};
-      await fs.promises.mkdir(this.testPath, { recursive: true });
-    });
-  `;
-
-  const afterAllAddition = `
-    afterAll(async () => {
-      if (this.testPath && await fs.promises.access(this.testPath).then(() => true).catch(() => false)) {
-        await fs.promises.rm(this.testPath, { recursive: true, force: true });
-      }
-    });
-  `;
-
-  // Add imports if needed
-  if (!content.includes("import * as os")) {
-    content = `import * as os from 'os';\n${content}`;
+  // Add BaseTest import if not present
+  if (!content.includes("import { BaseTest }")) {
+    content = `import { BaseTest } from "../../helpers/testHelper/baseTest";\n${content}`;
   }
 
-  content = content
-    .replace(/fs\.promises\.(read|write|mkdir|rm)Sync/g, "await fs.promises.$1")
-    .replace(/describe\([^{]*{/, `$&\n  let testPath: string;\n`)
-    .replace(/beforeAll\([^{]*{/, (match) => {
-      if (match.includes("testPath")) return match;
-      return `${beforeAllAddition}${match}`;
-    })
-    .replace(/afterAll\([^{]*{/, (match) => {
-      if (match.includes("testPath")) return match;
-      return `${afterAllAddition}${match}`;
-    });
+  // Add Vitest imports if not present
+  if (!content.includes("import { describe, beforeAll, afterAll }")) {
+    content = `import { test } from 'vitest';\n${content}`;
+  }
 
-  content = content
-    .replace(/describe\.concurrent/g, "describe")
-    .replace(/it\.concurrent/g, "it");
+  // // Add vi.setTimeout if not present
+  // if (!content.includes("vi.setTimeout")) {
+  //   content = `vi.setTimeout(15000);\n${content}`;
+  // }
 
-  // Add the beforeAll and afterAll hooks if not already present
+  // Add test instance and data declarations
+  const testInstanceDeclaration = `
+  let testInstance: BaseTest;
+  let testData: {
+    testUser: { name: string; email: string };
+    testOrg: { name: string };
+  };`;
+
+  if (!content.includes("let testInstance: BaseTest")) {
+    content = content.replace(
+      /describe\([^{]*{/,
+      `$&\n${testInstanceDeclaration}`,
+    );
+  }
+
+  // Add BaseTest beforeAll hook if not present
+  const baseTestBeforeAll = `
+  beforeAll(async () => {
+    testInstance = new BaseTest();
+    try {
+      testData = await testInstance.beforeEach();
+    } catch (error) {
+      console.error('Error in beforeAll:', error);
+      throw error;
+    }
+  }, { timeout: 30000 });`;
+
   if (!content.includes("beforeAll(async () =>")) {
-    content = content.replace(/describe\([^{]*{/, `$&${beforeAllAddition}`);
+    content = content.replace(/describe\([^{]*{/, `$&\n${baseTestBeforeAll}`);
   }
+
+  // Add BaseTest afterAll hook if not present
+  const baseTestAfterAll = `
+  afterAll(async () => {
+    try {
+      await testInstance.afterEach();
+    } catch (error) {
+      console.error('Error in afterAll:', error);
+      throw error;
+    }
+  }, { timeout: 30000 });`;
+
   if (!content.includes("afterAll(async () =>")) {
-    content = content.replace(/describe\([^{]*{/, `$&${afterAllAddition}`);
+    content = content.replace(/describe\([^{]*{/, `$&\n${baseTestAfterAll}`);
   }
 
-  fs.writeFileSync(filePath, content, "utf-8");
-  console.log(`Updated: ${filePath}`);
-}
+  // Replace `describe.concurrent` with `describe`
+  content = content.replace(/describe\.concurrent/g, "describe");
 
-function generateUniqueTestPath(): string {
-  return `os.tmpdir() + '/test-path-' + Date.now()`;
+  // Replace `it.concurrent` with `test`
+  content = content.replace(/it\.concurrent/g, "test");
+
+  // Replace `it` with `test` and add correct syntax
+  content = content.replace(/\bit\(/g, "test(");
+  content = content.replace(
+    /test\(['"](.*?)['"]\s*,\s*async\s*\([^)]*\)\s*=>\s*{/g,
+    'test("$1", async () => {',
+  );
+
+  // Write updated content back to the file
+  fs.writeFileSync(filePath, content, "utf-8");
+  console.log(`Updated file: ${filePath}`);
 }
 
 try {

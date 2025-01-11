@@ -1,17 +1,18 @@
 import { beforeAll, afterAll, it, expect } from "vitest";
+import { connect, disconnect } from "../../helpers/db";
+import type mongoose from "mongoose";
 import { ApolloServer } from "@apollo/server";
 import { gql } from "graphql-tag";
 import "dotenv/config";
 import i18n from "i18n";
 import express from "express";
-// import type { TestUserType } from "../../helpers/userAndOrg";
-// import { createTestUserFunc } from "../../helpers/user";
+import type { TestUserType } from "../../helpers/userAndOrg";
+import { createTestUserFunc } from "../../helpers/user";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import authDirectiveTransformer from "../../../src/directives/directiveTransformer/authDirectiveTransformer";
 import roleDirectiveTransformer from "../../../src/directives/directiveTransformer/roleDirectiveTransformer";
 import { appConfig } from "../../../src/config";
 import { errors } from "../../../src/libraries";
-import { BaseTest } from "../../helpers/testHelper/baseTest";
 import enLocale from "../../../locales/en.json";
 import hiLocale from "../../../locales/hi.json";
 import zhLocale from "../../../locales/zh.json";
@@ -37,7 +38,7 @@ i18n.configure({
 });
 app.use(i18n.init);
 
-// let testUser: TestUserType;
+let testUser: TestUserType;
 
 const typeDefs = gql`
   directive @auth on FIELD_DEFINITION
@@ -53,18 +54,16 @@ const resolvers = {
   },
 };
 
-let testInstance: BaseTest;
-let testData: {
-  testUser: { name: string; email: string };
-  testOrg: { name: string };
-};
+let MONGOOSE_INSTANCE: typeof mongoose;
+
 beforeAll(async () => {
-  testInstance = new BaseTest();
-  testData = await testInstance.beforeEach();
+  MONGOOSE_INSTANCE = await connect();
+  testUser = await createTestUserFunc();
 });
 
 afterAll(async () => {
-  await testInstance.afterEach();
+  await testUser?.deleteOne();
+  await disconnect(MONGOOSE_INSTANCE);
 });
 
 it("throws UnauthenticatedError when context is expired", async () => {
@@ -174,39 +173,6 @@ it("checks if the resolver is supplied, and return null data, if not", async () 
 
   //@ts-expect-error-ts-ignore
   expect(result.body.singleResult.data).toEqual({ hello: null });
-});
-
-it("uses testUser from testData in context", async () => {
-  const query = `
-    query {
-      hello
-    }
-  `;
-  const authenticatedContext = {
-    isAuth: true,
-    user: testData.testUser, // Use testUser in the context
-  };
-
-  let schema = makeExecutableSchema({
-    typeDefs,
-    resolvers,
-  });
-
-  schema = authDirectiveTransformer(schema, "auth");
-  const apolloServer = new ApolloServer({ schema });
-
-  const result = await apolloServer.executeOperation(
-    {
-      query,
-      variables: {},
-    },
-    {
-      contextValue: authenticatedContext,
-    },
-  );
-
-  //@ts-expect-error-ignore
-  expect(result.body.singleResult.data).toEqual({ hello: "hi" });
 });
 
 it("returns data if isAuth == true and expire == false", async () => {
