@@ -140,7 +140,7 @@ export async function accessAndRefreshTokens(
   }
 }
 
-function transactionLogPath(logPath: string | null): void {
+export function transactionLogPath(logPath: string | null): void {
   const config = dotenv.parse(fs.readFileSync(".env"));
   const currDir = dirname(fileURLToPath(import.meta.url));
   config.LOG = "true";
@@ -169,12 +169,12 @@ function transactionLogPath(logPath: string | null): void {
   }
 }
 
-async function askForTransactionLogPath(): Promise<string> {
+export async function askForTransactionLogPath(): Promise<string> {
   let logPath: string | null = null;
   let isValidPath = false;
 
   while (!isValidPath) {
-    const response = await inquirer.prompt([
+    const { logpath } = await inquirer.prompt([
       {
         type: "input",
         name: "logPath",
@@ -182,7 +182,7 @@ async function askForTransactionLogPath(): Promise<string> {
         default: null,
       },
     ]);
-    logPath = response.logPath;
+    logPath = logpath;
 
     if (logPath && fs.existsSync(logPath)) {
       try {
@@ -468,7 +468,7 @@ export async function mongoDB(): Promise<void> {
   For Docker setup
 */
 
-function getDockerComposeCommand(): { command: string; args: string[] } {
+export function getDockerComposeCommand(): { command: string; args: string[] } {
   let dockerComposeCmd = "docker-compose"; // Default to v1
   let args = ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"];
 
