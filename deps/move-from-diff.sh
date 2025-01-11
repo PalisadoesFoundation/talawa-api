@@ -78,7 +78,7 @@ for PACKAGE in $DEV_ONLY_PACKAGES; do
   echo "Checking if $PACKAGE is used in production..."
   
   # Use grep to check if the package name appears in the production code
-  if grep -qr "$PACKAGE" ./src ./lib ./app; then
+  if grep -qr "$PACKAGE" ./src; then
     echo "$PACKAGE is required in production."
     echo "$PACKAGE" >> "$REQUIRED_FOR_PRODUCTION_FILE"
   else
@@ -100,10 +100,17 @@ while IFS= read -r PACKAGE; do
   echo "Moving $PACKAGE to dependencies..."
 
   # First, remove the package from devDependencies
-  npm uninstall "$PACKAGE" --save-dev
-  
+   if ! npm uninstall "$PACKAGE" --save-dev; then
+    echo "Error: Failed to uninstall $PACKAGE from devDependencies"
+    exit 1
+  fi
   # Install as a production dependency
-  npm install "$PACKAGE" --save-prod
+  if ! npm install "$PACKAGE" --save-prod; then
+    echo "Error: Failed to install $PACKAGE as production dependency"
+    echo "Warning: Package is now removed from both devDependencies and dependencies"
+    exit 1
+  fi
+
 done < "$REQUIRED_FOR_PRODUCTION_FILE"
 
 # Clean up

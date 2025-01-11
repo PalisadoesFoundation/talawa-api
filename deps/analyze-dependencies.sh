@@ -14,8 +14,13 @@
 # - To provide insight into potential misclassified dependencies.
 #
 # Prerequisites:
-# 1. Ensure `jq` is installed on your system. If not installed, the script will attempt
-#    to install it using your system's package manager (`apk`, `apt-get`, or `yum`).
+# 1. Ensure `jq` is installed on your system. If not installed, use the following commands
+#    based on your operating system:
+#    - **Alpine Linux**: `apk add --no-cache jq`
+#    - **Debian/Ubuntu**: `apt-get update && apt-get install -y jq`
+#    - **RHEL/CentOS**: `yum install -y jq`
+#    - **MacOS (with Homebrew)**: `brew install jq`
+#    - **Windows**: Download the appropriate binary from https://stedolan.github.io/jq/download/
 #
 # 2. Ensure the script has execute permissions:
 #    ```sh
@@ -52,18 +57,14 @@ set -e
 install_jq_if_missing() {
   echo "Checking if jq is installed..."
   if ! command -v jq >/dev/null 2>&1; then
-    echo "jq is not installed. Installing jq..."
-    if [ -x "$(command -v apk)" ]; then
-      apk add --no-cache jq
-    elif [ -x "$(command -v apt-get)" ]; then
-      apt-get update && apt-get install -y jq
-    elif [ -x "$(command -v yum)" ]; then
-      yum install -y jq
-    else
-      echo "Error: Could not determine package manager to install jq."
-      exit 1
-    fi
-    echo "jq installed successfully."
+    echo "jq is not installed."
+    echo "Error: jq is required but not installed. Please install jq first:"
+    echo "Alpine: apk add --no-cache jq"
+    echo "Debian/Ubuntu: apt-get update && apt-get install -y jq"
+    echo "RHEL/CentOS: yum install -y jq"
+    echo "MacOS (with Homebrew): brew install jq"
+    echo "Windows: Download jq from https://stedolan.github.io/jq/download/"
+    exit 1
   else
     echo "jq is already installed."
   fi
@@ -83,14 +84,38 @@ DEPS_FOLDER="deps"
 echo "Creating the $DEPS_FOLDER folder for storing dependency files..."
 mkdir -p "$DEPS_FOLDER"
 
-echo "Installing dependencies (if necessary) to ensure npm ls commands run accurately..."
-npm install
+# Check if .env file exists and load it
+if [ -f ".env" ]; then
+  . ./.env
+else
+  echo "Warning: .env file not found"
+fi
+
+# Check if NODE_ENV is set
+if [ -z "$NODE_ENV" ]; then
+  echo "Warning: NODE_ENV is not set"
+  NODE_ENV="development"  # Set default to development
+fi
+
+echo "Current NODE_ENV: $NODE_ENV"
+
+# Check for production environment
+if [ "$NODE_ENV" = "production" ]; then
+  echo "Skipping npm install in production environment"
+else
+  echo "Installing dependencies (if necessary) to ensure npm ls commands run accurately..."
+  npm install
+fi
 
 echo "Generating list of production dependencies (top-level only)..."
-npm ls --omit=dev --json > "$DEPS_FOLDER/prod-deps.json"
+if ! npm ls --omit=dev --json > "$DEPS_FOLDER/prod-deps.json" 2>/dev/null; then
+  echo "Warning: npm ls command produced errors, results may be incomplete"
+fi
 
 echo "Generating list of dev+prod dependencies (top-level only)..."
-npm ls --prod=false --json > "$DEPS_FOLDER/dev-deps.json"
+if ! npm ls --prod=false --json > "$DEPS_FOLDER/dev-deps.json" 2>/dev/null; then
+  echo "Warning: npm ls command produced errors, results may be incomplete"
+fi
 
 # Extract just the top-level dependencies' keys. If a key is absent, we fall back to an empty object "{}".
 echo "Extracting top-level dependencies from prod-deps.json..."
