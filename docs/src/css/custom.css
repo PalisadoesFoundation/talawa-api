@@ -5,8 +5,6 @@
  */
 
 /* You can override the default Infima variables here. */
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap");
 
 :root {
   --ifm-code-font-size: 95%;
@@ -73,7 +71,7 @@
 
 .menu__link,
 .menu * {
-  font-size: 0.7rem;
+  font-size: 1rem;
   padding-left: 0.5rem;
   text-transform: uppercase;
   font-weight: 700;
