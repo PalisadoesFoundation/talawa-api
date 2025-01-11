@@ -5,14 +5,14 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 ## Prerequisites
 
 - **fnm** (Fast Node Manager)
-- **Node.js** (version specified in your Talawa API's `package.json`)
+- **Node.js** (`jq -r '.engines.node' package.json`)
 - **tsx** (TypeScript execution environment, install globally with `npm install -g tsx`)
 - A Linux system with **systemd**
 - **Root access** or `sudo` privileges for service installation
 - **Dedicated system user** `talawa` for running the service (security best practice)
 - **MongoDB** installed and running (required for Talawa API)
 - **Redis** installed and running (required for Talawa API)
-- Proper file permissions on `/path/to/your/talawa-api`
+- Proper file permissions on `/path/to/your/talawa-api` (e.g., /opt/talawa-api or /usr/local/talawa-api)
 - For development:
   - Ensure `.env` file sets `NODE_ENV=development`
   - Run the service manually to verify functionality
@@ -160,13 +160,19 @@ sudo apt install jq
 sudo systemctl daemon-reload
 ```
 
-2. Enable the service:
+2. Verify service security settings:
+
+```bash
+sudo systemd-analyze security talawa-api.service
+```
+
+3. Enable the service:
 
 ```bash
 sudo systemctl enable talawa-api.service
 ```
 
-3. Start the service:
+4. Start the service:
 
 ```bash
 sudo systemctl start talawa-api.service
