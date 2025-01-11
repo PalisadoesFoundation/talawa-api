@@ -29,7 +29,8 @@
     "import:sample-data": "tsx ./src/utilities/loadSampleData.ts",
     "import:sample-data:prod": "node ./build/utilities/loadSampleData.js",
     "gen:schema": "graphql-inspector introspect ./src/typeDefs/**/**/*.ts --write ./schema.graphql ",
-    "update:toc": "node scripts/githooks/update-toc.js"
+    "update:toc": "node scripts/githooks/update-toc.js",
+    "move-and-prune": "./deps/analyze-dependencies.sh && ./deps/move-from-diff.sh && npm prune --omit=dev"
   },
   "repository": {
     "type": "git",
