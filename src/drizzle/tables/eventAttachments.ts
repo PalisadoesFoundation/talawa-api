@@ -105,6 +105,6 @@ export const eventAttachmentsTableRelations = relations(
 export const eventAttachmentsTableInsertSchema = createInsertSchema(
 	eventAttachmentsTable,
 	{
-		name: (schema) => schema.name.min(1),
+		name: (schema) => schema.min(1),
 	},
 );

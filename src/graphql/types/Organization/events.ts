@@ -1,16 +1,16 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
-import type { z } from "zod";
+import { z } from "zod";
 import {
 	eventsTable,
 	eventsTableInsertSchema,
 } from "~/src/drizzle/tables/events";
 import { Event } from "~/src/graphql/types/Event/Event";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Organization } from "./Organization";
 
 const eventsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -39,27 +39,28 @@ const eventsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 		};
 	});
 
-const cursorSchema = eventsTableInsertSchema
-	.pick({
-		startAt: true,
-	})
-	.extend({
+const cursorSchema = z
+	.object({
 		id: eventsTableInsertSchema.shape.id.unwrap(),
-	});
+		startAt: z.string().datetime(),
+	})
+	.transform((arg) => ({
+		id: arg.id,
+		startAt: new Date(arg.startAt),
+	}));
 
 Organization.implement({
 	fields: (t) => ({
 		events: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the events associated to the organization.",
+					"GraphQL connection to traverse through the events belonging to the organization.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "unauthenticated",
 							},
-							message: "Only authenticated users can perform this action.",
 						});
 					}
 
@@ -78,7 +79,6 @@ Organization.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -107,7 +107,6 @@ Organization.implement({
 							extensions: {
 								code: "unauthenticated",
 							},
-							message: "Only authenticated users can perform this action.",
 						});
 					}
 
@@ -122,7 +121,6 @@ Organization.implement({
 							extensions: {
 								code: "unauthorized_action",
 							},
-							message: "You are not authorized to perform this action.",
 						});
 					}
 
@@ -209,8 +207,6 @@ Organization.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 
@@ -218,7 +214,8 @@ Organization.implement({
 						createCursor: (event) =>
 							Buffer.from(
 								JSON.stringify({
-									name: event.name,
+									id: event.id,
+									startAt: event.startAt.toISOString(),
 								}),
 							).toString("base64url"),
 						createNode: ({ eventAttachmentsWhereEvent, ...event }) =>

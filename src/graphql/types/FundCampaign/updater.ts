@@ -1,5 +1,5 @@
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { FundCampaign } from "./FundCampaign";
 
 FundCampaign.implement({
@@ -12,7 +12,6 @@ FundCampaign.implement({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 
@@ -53,20 +52,19 @@ FundCampaign.implement({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 
-				// Fund id existing but the associated fund not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Fund id existing but the associated fund not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingFund === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a fund campaign's fund id that isn't null.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again later.",
 					});
 				}
 
@@ -82,7 +80,6 @@ FundCampaign.implement({
 						extensions: {
 							code: "unauthorized_action",
 						},
-						message: "You are not authorized to perform this action.",
 					});
 				}
 
@@ -102,16 +99,16 @@ FundCampaign.implement({
 					},
 				);
 
-				// Updater id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Updater id existing but the associated user not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingUser === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a fund campaign's updater id that isn't null.",
 					);
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again later.",
 					});
 				}
 

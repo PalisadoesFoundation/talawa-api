@@ -1,16 +1,16 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
-import type { z } from "zod";
+import { z } from "zod";
 import {
 	venueBookingsTable,
 	venueBookingsTableInsertSchema,
 } from "~/src/drizzle/tables/venueBookings";
 import { Event } from "~/src/graphql/types/Event/Event";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Venue } from "./Venue";
 
 const eventsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -44,22 +44,25 @@ const cursorSchema = venueBookingsTableInsertSchema
 		eventId: true,
 	})
 	.extend({
-		createdAt: venueBookingsTableInsertSchema.shape.createdAt.unwrap(),
-	});
+		createdAt: z.string().datetime(),
+	})
+	.transform((arg) => ({
+		createdAt: new Date(arg.createdAt),
+		eventId: arg.eventId,
+	}));
 
 Venue.implement({
 	fields: (t) => ({
 		events: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the events associated to the venue.",
+					"GraphQL connection to traverse through the events the venue has been booked for.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "unauthenticated",
 							},
-							message: "Only authenticated users can perform this action.",
 						});
 					}
 
@@ -78,7 +81,6 @@ Venue.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -107,7 +109,6 @@ Venue.implement({
 							extensions: {
 								code: "unauthenticated",
 							},
-							message: "Only authenticated users can perform this action.",
 						});
 					}
 
@@ -123,7 +124,6 @@ Venue.implement({
 							extensions: {
 								code: "unauthorized_action",
 							},
-							message: "You are not authorized to perform this action.",
 						});
 					}
 
@@ -133,12 +133,10 @@ Venue.implement({
 						? [
 								asc(venueBookingsTable.createdAt),
 								asc(venueBookingsTable.eventId),
-								asc(venueBookingsTable.venueId),
 							]
 						: [
 								desc(venueBookingsTable.createdAt),
 								desc(venueBookingsTable.eventId),
-								desc(venueBookingsTable.venueId),
 							];
 
 					let where: SQL | undefined;
@@ -227,8 +225,6 @@ Venue.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 
@@ -236,7 +232,7 @@ Venue.implement({
 						createCursor: (booking) =>
 							Buffer.from(
 								JSON.stringify({
-									createdAt: booking.createdAt,
+									createdAt: booking.createdAt.toISOString(),
 									eventId: booking.eventId,
 								}),
 							).toString("base64url"),

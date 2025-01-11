@@ -2,12 +2,12 @@ import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
 import type { z } from "zod";
 import { tagsTable, tagsTableInsertSchema } from "~/src/drizzle/tables/tags";
 import { Tag } from "~/src/graphql/types/Tag/Tag";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { TagFolder } from "./TagFolder";
 
 const tagsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -45,7 +45,7 @@ TagFolder.implement({
 		tags: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the tags associated to the tag folder.",
+					"GraphQL connection to traverse through the tags contained within the tag folder.",
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,
@@ -62,7 +62,6 @@ TagFolder.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -132,8 +131,6 @@ TagFolder.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 

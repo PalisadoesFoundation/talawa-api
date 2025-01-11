@@ -7,8 +7,8 @@ import {
 	mutationUpdateAgendaFolderInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateAgendaFolderInput";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationUpdateAgendaFolderArgumentsSchema = z.object({
 	input: mutationUpdateAgendaFolderInputSchema,
@@ -30,7 +30,6 @@ builder.mutationField("updateAgendaFolder", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -49,7 +48,6 @@ builder.mutationField("updateAgendaFolder", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -99,7 +97,6 @@ builder.mutationField("updateAgendaFolder", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -113,7 +110,6 @@ builder.mutationField("updateAgendaFolder", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -136,8 +132,6 @@ builder.mutationField("updateAgendaFolder", (t) =>
 								},
 							],
 						},
-						message:
-							"No associated resources found for the provided arguments.",
 					});
 				}
 
@@ -153,8 +147,6 @@ builder.mutationField("updateAgendaFolder", (t) =>
 								},
 							],
 						},
-						message:
-							"This action is forbidden on the resources associated to the provided arguments.",
 					});
 				}
 
@@ -170,8 +162,6 @@ builder.mutationField("updateAgendaFolder", (t) =>
 								},
 							],
 						},
-						message:
-							"This action is forbidden on the resources associated to the provided arguments.",
 					});
 				}
 			}
@@ -194,8 +184,6 @@ builder.mutationField("updateAgendaFolder", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -215,7 +203,6 @@ builder.mutationField("updateAgendaFolder", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

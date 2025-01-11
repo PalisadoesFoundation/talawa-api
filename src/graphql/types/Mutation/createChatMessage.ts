@@ -6,7 +6,7 @@ import {
 	mutationCreateChatMessageInputSchema,
 } from "~/src/graphql/inputs/MutationCreateChatMessageInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateChatMessageArgumentsSchema = z.object({
 	input: mutationCreateChatMessageInputSchema,
@@ -28,7 +28,6 @@ builder.mutationField("createChatMessage", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -47,7 +46,6 @@ builder.mutationField("createChatMessage", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -97,7 +95,6 @@ builder.mutationField("createChatMessage", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -111,12 +108,11 @@ builder.mutationField("createChatMessage", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
-			if (parsedArgs.input.parentChatMessageId !== undefined) {
-				const parentChatMessageId = parsedArgs.input.parentChatMessageId;
+			if (parsedArgs.input.parentMessageId !== undefined) {
+				const parentMessageId = parsedArgs.input.parentMessageId;
 
 				const existingChatMessage =
 					await ctx.drizzleClient.query.chatMessagesTable.findFirst({
@@ -126,7 +122,7 @@ builder.mutationField("createChatMessage", (t) =>
 						where: (fields, operators) =>
 							operators.and(
 								operators.eq(fields.chatId, parsedArgs.input.chatId),
-								operators.eq(fields.id, parentChatMessageId),
+								operators.eq(fields.id, parentMessageId),
 							),
 					});
 
@@ -136,12 +132,10 @@ builder.mutationField("createChatMessage", (t) =>
 							code: "arguments_associated_resources_not_found",
 							issues: [
 								{
-									argumentPath: ["input", "parentChatMessageId"],
+									argumentPath: ["input", "parentMessageId"],
 								},
 							],
 						},
-						message:
-							"No associated resources found for the provided arguments.",
 					});
 				}
 			}
@@ -166,8 +160,6 @@ builder.mutationField("createChatMessage", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -177,7 +169,7 @@ builder.mutationField("createChatMessage", (t) =>
 					body: parsedArgs.input.body,
 					chatId: parsedArgs.input.chatId,
 					creatorId: currentUserId,
-					parentChatMessageId: parsedArgs.input.parentChatMessageId,
+					parentMessageId: parsedArgs.input.parentMessageId,
 				})
 				.returning();
 
@@ -187,7 +179,6 @@ builder.mutationField("createChatMessage", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

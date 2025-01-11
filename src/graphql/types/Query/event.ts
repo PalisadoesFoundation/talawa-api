@@ -5,7 +5,7 @@ import {
 	queryEventInputSchema,
 } from "~/src/graphql/inputs/QueryEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryEventArgumentsSchema = z.object({
 	input: queryEventInputSchema,
@@ -27,7 +27,6 @@ builder.queryField("event", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -46,7 +45,6 @@ builder.queryField("event", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -87,7 +85,6 @@ builder.queryField("event", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -101,7 +98,6 @@ builder.queryField("event", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -121,8 +117,6 @@ builder.queryField("event", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 

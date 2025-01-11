@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 builder.mutationField("deleteCurrentUser", (t) =>
 	t.field({
@@ -13,7 +13,6 @@ builder.mutationField("deleteCurrentUser", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -31,7 +30,6 @@ builder.mutationField("deleteCurrentUser", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -47,7 +45,6 @@ builder.mutationField("deleteCurrentUser", (t) =>
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 

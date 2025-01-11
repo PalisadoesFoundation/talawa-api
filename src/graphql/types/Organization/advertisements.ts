@@ -5,12 +5,12 @@ import {
 	advertisementsTableInsertSchema,
 } from "~/src/drizzle/tables/advertisements";
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Organization } from "./Organization";
 
 const advertisementsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -48,14 +48,13 @@ Organization.implement({
 		advertisements: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the advertisements associated to the organization.",
+					"GraphQL connection to traverse through the advertisements belonging to the organization.",
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "unauthenticated",
 							},
-							message: "Only authenticated users can perform this action.",
 						});
 					}
 
@@ -74,7 +73,6 @@ Organization.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -103,7 +101,6 @@ Organization.implement({
 							extensions: {
 								code: "unauthenticated",
 							},
-							message: "Only authenticated users can perform this action.",
 						});
 					}
 
@@ -118,7 +115,6 @@ Organization.implement({
 							extensions: {
 								code: "unauthorized_action",
 							},
-							message: "You are not authorized to perform this action.",
 						});
 					}
 
@@ -129,6 +125,7 @@ Organization.implement({
 						: [asc(advertisementsTable.name)];
 
 					let where: SQL | undefined;
+
 					if (isInversed) {
 						if (cursor !== undefined) {
 							where = and(
@@ -191,8 +188,6 @@ Organization.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 

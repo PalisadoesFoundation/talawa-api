@@ -7,7 +7,8 @@ export type Organization = typeof organizationsTable.$inferSelect;
 export const Organization = builder.objectRef<Organization>("Organization");
 
 Organization.implement({
-	description: "",
+	description:
+		"Organizations are controlled spaces of collections of users who associate with the purpose those organizations exist for.",
 	fields: (t) => ({
 		address: t.exposeString("address", {
 			description: "Address of the organization.",
@@ -19,8 +20,7 @@ Organization.implement({
 			description: "Name of the city where the organization exists in.",
 		}),
 		countryCode: t.expose("countryCode", {
-			description:
-				"Country code of the country the organization is a citizen of.",
+			description: "Country code of the country the organization exists in.",
 			type: Iso3166Alpha2CountryCode,
 		}),
 		createdAt: t.expose("createdAt", {

@@ -129,5 +129,5 @@ export const tagsTableRelations = relations(tagsTable, ({ many, one }) => ({
 }));
 
 export const tagsTableInsertSchema = createInsertSchema(tagsTable, {
-	name: (schema) => schema.name.min(1).max(256),
+	name: (schema) => schema.min(1).max(256),
 });

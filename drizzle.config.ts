@@ -1,15 +1,24 @@
 /**
  * More information at this link: {@link https://orm.drizzle.team/kit-docs/config-reference}
  */
-import type { Static } from "@sinclair/typebox";
+import { type Static, Type } from "@sinclair/typebox";
 import { defineConfig } from "drizzle-kit";
 import { envSchema } from "env-schema";
-import { drizzleEnvConfigSchema, envSchemaAjv } from "./src/envConfigSchema";
+import { envConfigSchema, envSchemaAjv } from "./src/envConfigSchema";
 
-const envConfig = envSchema<Static<typeof drizzleEnvConfigSchema>>({
+const schema = Type.Pick(envConfigSchema, [
+	"API_POSTGRES_DATABASE",
+	"API_POSTGRES_PASSWORD",
+	"API_POSTGRES_HOST",
+	"API_POSTGRES_PORT",
+	"API_POSTGRES_USER",
+	"API_POSTGRES_SSL_MODE",
+]);
+
+const envConfig = envSchema<Static<typeof schema>>({
 	ajv: envSchemaAjv,
 	dotenv: true,
-	schema: drizzleEnvConfigSchema,
+	schema,
 });
 
 export default defineConfig({

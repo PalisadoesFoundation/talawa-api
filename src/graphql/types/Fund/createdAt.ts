@@ -1,4 +1,4 @@
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Fund } from "./Fund";
 
 Fund.implement({
@@ -11,7 +11,6 @@ Fund.implement({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 
@@ -38,7 +37,6 @@ Fund.implement({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 
@@ -54,7 +52,6 @@ Fund.implement({
 						extensions: {
 							code: "unauthorized_action",
 						},
-						message: "You are not authorized to perform this action.",
 					});
 				}
 

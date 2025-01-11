@@ -6,7 +6,8 @@ export type Fund = typeof fundsTable.$inferSelect;
 export const Fund = builder.objectRef<Fund>("Fund");
 
 Fund.implement({
-	description: "",
+	description:
+		"Funds are sums of money possessed by organizations for specific purposes pertaning to them.",
 	fields: (t) => ({
 		id: t.exposeID("id", {
 			description: "Global identifier of the fund.",

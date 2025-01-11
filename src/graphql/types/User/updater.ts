@@ -1,4 +1,4 @@
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { User } from "./User";
 
 User.implement({
@@ -11,7 +11,6 @@ User.implement({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 
@@ -26,7 +25,6 @@ User.implement({
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 
@@ -34,11 +32,14 @@ User.implement({
 					currentUser.role !== "administrator" &&
 					currentUserId !== parent.id
 				) {
+					console.log("========================");
+					console.log(currentUser.role);
+					console.log("========================");
+
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action",
 						},
-						message: "You are not authorized to perform this action.",
 					});
 				}
 
@@ -58,7 +59,7 @@ User.implement({
 					},
 				);
 
-				// Updater id existing but the associated user not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Updater id existing but the associated user not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingUser === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a user's updater id that isn't null.",
@@ -68,7 +69,6 @@ User.implement({
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again later.",
 					});
 				}
 

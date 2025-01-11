@@ -7,7 +7,7 @@ import {
 	mutationDeleteVenueInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteVenueInput";
 import { Venue } from "~/src/graphql/types/Venue/Venue";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeleteVenueArgumentsSchema = z.object({
 	input: mutationDeleteVenueInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("deleteVenue", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("deleteVenue", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -92,7 +90,6 @@ builder.mutationField("deleteVenue", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -106,7 +103,6 @@ builder.mutationField("deleteVenue", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -127,8 +123,6 @@ builder.mutationField("deleteVenue", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -144,7 +138,6 @@ builder.mutationField("deleteVenue", (t) =>
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again.",
 					});
 				}
 

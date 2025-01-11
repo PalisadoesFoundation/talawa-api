@@ -5,7 +5,7 @@ import { builder } from "~/src/graphql/builder";
 import { MutationDeleteUserInput } from "~/src/graphql/inputs/MutationDeleteUserInput";
 import { mutationDeleteUserInputSchema } from "~/src/graphql/inputs/MutationDeleteUserInput";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeleteUserArgumentsSchema = z.object({
 	input: mutationDeleteUserInputSchema,
@@ -27,7 +27,6 @@ builder.mutationField("deleteUser", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -46,7 +45,6 @@ builder.mutationField("deleteUser", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -73,7 +71,6 @@ builder.mutationField("deleteUser", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -82,7 +79,6 @@ builder.mutationField("deleteUser", (t) =>
 					extensions: {
 						code: "unauthorized_action",
 					},
-					message: "You are not authorized to perform this action.",
 				});
 			}
 
@@ -96,7 +92,6 @@ builder.mutationField("deleteUser", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -112,8 +107,6 @@ builder.mutationField("deleteUser", (t) =>
 							},
 						],
 					},
-					message:
-						"This action is forbidden on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -134,8 +127,6 @@ builder.mutationField("deleteUser", (t) =>
 								},
 							],
 						},
-						message:
-							"No associated resources found for the provided arguments.",
 					});
 				}
 

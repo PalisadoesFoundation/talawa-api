@@ -128,7 +128,7 @@ export const chatsTableRelations = relations(chatsTable, ({ one, many }) => ({
 }));
 
 export const chatsTableInsertSchema = createInsertSchema(chatsTable, {
-	avatarName: (schema) => schema.avatarName.min(1),
-	description: (schema) => schema.description.min(1).max(2048),
-	name: (schema) => schema.name.min(1).max(256),
+	avatarName: (schema) => schema.min(1),
+	description: (schema) => schema.min(1).max(2048),
+	name: (schema) => schema.min(1).max(256),
 });

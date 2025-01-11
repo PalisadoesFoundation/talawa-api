@@ -5,12 +5,12 @@ import {
 	chatMembershipsTableInsertSchema,
 } from "~/src/drizzle/tables/chatMemberships";
 import { User } from "~/src/graphql/types/User/User";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Chat } from "./Chat";
 
 const membersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -73,7 +73,6 @@ Chat.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
 						});
 					}
 
@@ -83,12 +82,10 @@ Chat.implement({
 						? [
 								asc(chatMembershipsTable.createdAt),
 								asc(chatMembershipsTable.memberId),
-								asc(chatMembershipsTable.chatId),
 							]
 						: [
 								desc(chatMembershipsTable.createdAt),
 								desc(chatMembershipsTable.memberId),
-								desc(chatMembershipsTable.chatId),
 							];
 
 					let where: SQL | undefined;
@@ -134,7 +131,6 @@ Chat.implement({
 										),
 								),
 								eq(chatMembershipsTable.chatId, parent.id),
-
 								or(
 									and(
 										eq(chatMembershipsTable.createdAt, cursor.createdAt),
@@ -172,8 +168,6 @@ Chat.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 
@@ -181,7 +175,7 @@ Chat.implement({
 						createCursor: (chatMembership) =>
 							Buffer.from(
 								JSON.stringify({
-									createdAt: chatMembership.createdAt,
+									createdAt: chatMembership.createdAt.toISOString(),
 									memberId: chatMembership.memberId,
 								}),
 							).toString("base64url"),

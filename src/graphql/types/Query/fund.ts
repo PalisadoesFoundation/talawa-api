@@ -5,7 +5,7 @@ import {
 	queryFundInputSchema,
 } from "~/src/graphql/inputs/QueryFundInput";
 import { Fund } from "~/src/graphql/types/Fund/Fund";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryFundArgumentsSchema = z.object({
 	input: queryFundInputSchema,
@@ -27,7 +27,6 @@ builder.queryField("fund", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -46,7 +45,6 @@ builder.queryField("fund", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -64,7 +62,6 @@ builder.queryField("fund", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -99,7 +96,6 @@ builder.queryField("fund", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -119,8 +115,6 @@ builder.queryField("fund", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 

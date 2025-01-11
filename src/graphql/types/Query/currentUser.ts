@@ -1,6 +1,6 @@
 import { builder } from "~/src/graphql/builder";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 builder.queryField("currentUser", (t) =>
 	t.field({
@@ -11,7 +11,6 @@ builder.queryField("currentUser", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated organizations can perform this action.",
 				});
 			}
 
@@ -26,7 +25,6 @@ builder.queryField("currentUser", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 

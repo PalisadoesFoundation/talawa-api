@@ -1,5 +1,5 @@
 import { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { FundCampaignPledge } from "./FundCampaignPledge";
 
 FundCampaignPledge.implement({
@@ -14,7 +14,7 @@ FundCampaignPledge.implement({
 							operators.eq(fields.id, parent.campaignId),
 					});
 
-				// Fund campaign id existing but the associated fund campaign not existing is a business logic error and means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				// Fund campaign id existing but the associated fund campaign not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingFundCampaign === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for a fund campaign pledge's campaign id that isn't null.",
@@ -24,7 +24,6 @@ FundCampaignPledge.implement({
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again later.",
 					});
 				}
 

@@ -7,7 +7,7 @@ import {
 	mutationUpdateAdvertisementInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateAdvertisementInput";
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateAdvertisementArgumentsSchema = z.object({
 	input: mutationUpdateAdvertisementInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("updateAdvertisement", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("updateAdvertisement", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -94,7 +92,6 @@ builder.mutationField("updateAdvertisement", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -108,7 +105,6 @@ builder.mutationField("updateAdvertisement", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -127,7 +123,6 @@ builder.mutationField("updateAdvertisement", (t) =>
 							},
 						],
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -146,7 +141,6 @@ builder.mutationField("updateAdvertisement", (t) =>
 							},
 						],
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -179,8 +173,6 @@ builder.mutationField("updateAdvertisement", (t) =>
 								},
 							],
 						},
-						message:
-							"This action is forbidden on the resources associated to the provided arguments.",
 					});
 				}
 			}
@@ -203,8 +195,6 @@ builder.mutationField("updateAdvertisement", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -227,7 +217,6 @@ builder.mutationField("updateAdvertisement", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

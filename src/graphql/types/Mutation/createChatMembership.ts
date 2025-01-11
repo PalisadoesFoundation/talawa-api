@@ -6,8 +6,8 @@ import {
 	mutationCreateChatMembershipInputSchema,
 } from "~/src/graphql/inputs/MutationCreateChatMembershipInput";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateChatMembershipArgumentsSchema = z.object({
 	input: mutationCreateChatMembershipInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("createChatMembership", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("createChatMembership", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -103,7 +101,6 @@ builder.mutationField("createChatMembership", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -120,7 +117,6 @@ builder.mutationField("createChatMembership", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -134,7 +130,6 @@ builder.mutationField("createChatMembership", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -148,7 +143,6 @@ builder.mutationField("createChatMembership", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -170,8 +164,6 @@ builder.mutationField("createChatMembership", (t) =>
 							},
 						],
 					},
-					message:
-						"This action is forbidden on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -196,8 +188,6 @@ builder.mutationField("createChatMembership", (t) =>
 								argumentPath,
 							})),
 						},
-						message:
-							"You are not authorized to perform this action with the provided arguments.",
 					});
 				}
 			}
@@ -224,7 +214,6 @@ builder.mutationField("createChatMembership", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

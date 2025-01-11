@@ -7,7 +7,7 @@ export const VenueAttachment =
 	builder.objectRef<VenueAttachment>("VenueAttachment");
 
 VenueAttachment.implement({
-	description: "",
+	description: "Attachment of the venue.",
 	fields: (t) => ({
 		mimeType: t.exposeString("mimeType", {
 			description: "Mime type of the attachment.",

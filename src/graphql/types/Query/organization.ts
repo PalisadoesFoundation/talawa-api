@@ -5,7 +5,7 @@ import {
 	queryOrganizationInputSchema,
 } from "~/src/graphql/inputs/QueryOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryOrganizationArgumentsSchema = z.object({
 	input: queryOrganizationInputSchema,
@@ -37,7 +37,6 @@ builder.queryField("organization", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -57,7 +56,6 @@ builder.queryField("organization", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 

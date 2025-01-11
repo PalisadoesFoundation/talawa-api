@@ -5,7 +5,7 @@ import {
 	queryChatMessageInputSchema,
 } from "~/src/graphql/inputs/QueryChatMessageInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryChatArgumentsSchema = z.object({
 	input: queryChatMessageInputSchema,
@@ -27,7 +27,6 @@ builder.queryField("chatMessage", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -46,7 +45,6 @@ builder.queryField("chatMessage", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -100,7 +98,6 @@ builder.queryField("chatMessage", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -114,7 +111,6 @@ builder.queryField("chatMessage", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -139,8 +135,6 @@ builder.queryField("chatMessage", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 

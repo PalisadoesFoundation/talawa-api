@@ -119,5 +119,5 @@ export const fundsTableRelations = relations(fundsTable, ({ one, many }) => ({
 }));
 
 export const fundsTableInsertSchema = createInsertSchema(fundsTable, {
-	name: (schema) => schema.name.min(1).max(256),
+	name: (schema) => schema.min(1).max(256),
 });

@@ -5,7 +5,7 @@ import { Post } from "./Post";
 Post.implement({
 	fields: (t) => ({
 		commentsCount: t.field({
-			description: "Total number of comments on the post.",
+			description: "Total number of comments created under the post.",
 			resolve: async (parent, _args, ctx) => {
 				const [commentsCount] = await ctx.drizzleClient
 					.select({

@@ -11,8 +11,8 @@ import {
 	mutationUpdateCurrentUserInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateCurrentUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationUpdateCurrentUserArgumentsSchema = z.object({
 	input: mutationUpdateCurrentUserInputSchema.transform(async (arg, ctx) => {
@@ -66,7 +66,6 @@ builder.mutationField("updateCurrentUser", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -85,7 +84,6 @@ builder.mutationField("updateCurrentUser", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -103,7 +101,6 @@ builder.mutationField("updateCurrentUser", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -130,8 +127,6 @@ builder.mutationField("updateCurrentUser", (t) =>
 								},
 							],
 						},
-						message:
-							"This action is forbidden on the resources associated to the provided arguments.",
 					});
 				}
 			}
@@ -186,7 +181,6 @@ builder.mutationField("updateCurrentUser", (t) =>
 						extensions: {
 							code: "unauthenticated",
 						},
-						message: "Only authenticated users can perform this action.",
 					});
 				}
 

@@ -55,7 +55,7 @@ export const chatMessagesTable = pgTable(
 		/**
 		 * Foreign key reference to the id of the chat message the chat message is associated to.
 		 */
-		parentChatMessageId: uuid("parent_chat_message_id").references(
+		parentMessageId: uuid("parent_message_id").references(
 			(): AnyPgColumn => chatMessagesTable.id,
 			{
 				onDelete: "set null",
@@ -77,7 +77,7 @@ export const chatMessagesTable = pgTable(
 		index().on(self.chatId),
 		index().on(self.createdAt),
 		index().on(self.creatorId),
-		index().on(self.parentChatMessageId),
+		index().on(self.parentMessageId),
 	],
 );
 
@@ -95,8 +95,8 @@ export const chatMessagesTableRelations = relations(
 		/**
 		 * One to many relationship from `chat_messages` table to `chat_messages` table.
 		 */
-		chatMessagesWhereParentChatMessage: many(chatMessagesTable, {
-			relationName: "chat_messages.id:chat_messages.parent_chat_message_id",
+		chatMessagesWhereParentMessage: many(chatMessagesTable, {
+			relationName: "chat_messages.id:chat_messages.parent_message_id",
 		}),
 		/**
 		 * Many to one relationship from `chat_messages` table to `users` table.
@@ -109,10 +109,10 @@ export const chatMessagesTableRelations = relations(
 		/**
 		 * Many to one relationship from `chat_messages` table to `chat_messages` table.
 		 */
-		parentChatMessage: one(chatMessagesTable, {
-			fields: [chatMessagesTable.parentChatMessageId],
+		parentMessage: one(chatMessagesTable, {
+			fields: [chatMessagesTable.parentMessageId],
 			references: [chatMessagesTable.id],
-			relationName: "chat_messages.id:chat_messages.parent_chat_message_id",
+			relationName: "chat_messages.id:chat_messages.parent_message_id",
 		}),
 	}),
 );
@@ -120,6 +120,6 @@ export const chatMessagesTableRelations = relations(
 export const chatMessagesTableInsertSchema = createInsertSchema(
 	chatMessagesTable,
 	{
-		body: (schema) => schema.body.min(1).max(2048),
+		body: (schema) => schema.min(1).max(2048),
 	},
 );

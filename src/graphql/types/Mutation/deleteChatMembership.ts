@@ -7,7 +7,7 @@ import {
 	mutationDeleteChatMembershipInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteChatMembershipInput";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeleteChatMembershipArgumentsSchema = z.object({
 	input: mutationDeleteChatMembershipInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("deleteChatMembership", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("deleteChatMembership", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -106,7 +104,6 @@ builder.mutationField("deleteChatMembership", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -123,7 +120,6 @@ builder.mutationField("deleteChatMembership", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -137,7 +133,6 @@ builder.mutationField("deleteChatMembership", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -151,7 +146,6 @@ builder.mutationField("deleteChatMembership", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -177,7 +171,6 @@ builder.mutationField("deleteChatMembership", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -204,8 +197,6 @@ builder.mutationField("deleteChatMembership", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -225,7 +216,6 @@ builder.mutationField("deleteChatMembership", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

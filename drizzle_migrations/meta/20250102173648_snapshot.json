@@ -1,5 +1,5 @@
 {
-  "id": "62950bfb-fb43-4883-a2df-9dcc9aaf1687",
+  "id": "2bd701f6-2186-44c7-93b4-56dc4ce1e21a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1457,8 +1457,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "parent_chat_message_id": {
-          "name": "parent_chat_message_id",
+        "parent_message_id": {
+          "name": "parent_message_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -1516,11 +1516,11 @@
           "method": "btree",
           "with": {}
         },
-        "chat_messages_parent_chat_message_id_index": {
-          "name": "chat_messages_parent_chat_message_id_index",
+        "chat_messages_parent_message_id_index": {
+          "name": "chat_messages_parent_message_id_index",
           "columns": [
             {
-              "expression": "parent_chat_message_id",
+              "expression": "parent_message_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -1559,12 +1559,12 @@
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
-        "chat_messages_parent_chat_message_id_chat_messages_id_fk": {
-          "name": "chat_messages_parent_chat_message_id_chat_messages_id_fk",
+        "chat_messages_parent_message_id_chat_messages_id_fk": {
+          "name": "chat_messages_parent_message_id_chat_messages_id_fk",
           "tableFrom": "chat_messages",
           "tableTo": "chat_messages",
           "columnsFrom": [
-            "parent_chat_message_id"
+            "parent_message_id"
           ],
           "columnsTo": [
             "id"
@@ -1965,12 +1965,6 @@
           "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "updater_id": {
-          "name": "updater_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -2045,19 +2039,6 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "comments_updater_id_users_id_fk": {
-          "name": "comments_updater_id_users_id_fk",
-          "tableFrom": "comments",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updater_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
           "onUpdate": "cascade"
         }
       },

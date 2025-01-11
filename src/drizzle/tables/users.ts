@@ -325,12 +325,6 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 		relationName: "comments.creator_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `comments` table.
-	 */
-	commentsWhereUpdater: many(commentsTable, {
-		relationName: "comments.updater_id:users.id",
-	}),
-	/**
 	 * One to many relationship from `users` table to `comment_votes` table.
 	 */
 	commentVotesWhereCreator: many(commentVotesTable, {
@@ -643,11 +637,11 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 }));
 
 export const usersTableInsertSchema = createInsertSchema(usersTable, {
-	address: (schema) => schema.address.min(1).max(1024),
-	avatarName: (schema) => schema.avatarName.min(1),
-	city: (schema) => schema.city.min(1).max(64),
-	description: (schema) => schema.description.min(1).max(2048),
-	name: (schema) => schema.name.min(1).max(256),
-	postalCode: (schema) => schema.postalCode.min(1).max(32),
-	state: (schema) => schema.state.min(1).max(64),
+	address: (schema) => schema.min(1).max(1024),
+	avatarName: (schema) => schema.min(1),
+	city: (schema) => schema.min(1).max(64),
+	description: (schema) => schema.min(1).max(2048),
+	name: (schema) => schema.min(1).max(256),
+	postalCode: (schema) => schema.min(1).max(32),
+	state: (schema) => schema.min(1).max(64),
 });

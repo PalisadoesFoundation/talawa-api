@@ -10,8 +10,8 @@ import {
 	mutationCreatePostInputSchema,
 } from "~/src/graphql/inputs/MutationCreatePostInput";
 import { Post } from "~/src/graphql/types/Post/Post";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreatePostArgumentsSchema = z.object({
 	input: mutationCreatePostInputSchema.transform(async (arg, ctx) => {
@@ -73,7 +73,6 @@ builder.mutationField("createPost", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -92,7 +91,6 @@ builder.mutationField("createPost", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -128,7 +126,6 @@ builder.mutationField("createPost", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -142,7 +139,6 @@ builder.mutationField("createPost", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -160,8 +156,6 @@ builder.mutationField("createPost", (t) =>
 								},
 							],
 						},
-						message:
-							"You are not authorized to perform this action on the resources associated to the provided arguments.",
 					});
 				}
 
@@ -179,8 +173,6 @@ builder.mutationField("createPost", (t) =>
 									argumentPath,
 								})),
 							},
-							message:
-								"You are not authorized to perform this action with the provided arguments.",
 						});
 					}
 				}
@@ -210,7 +202,6 @@ builder.mutationField("createPost", (t) =>
 						extensions: {
 							code: "unexpected",
 						},
-						message: "Something went wrong. Please try again.",
 					});
 				}
 

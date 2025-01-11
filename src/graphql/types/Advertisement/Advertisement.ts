@@ -13,7 +13,8 @@ export type Advertisement = typeof advertisementsTable.$inferSelect & {
 export const Advertisement = builder.objectRef<Advertisement>("Advertisement");
 
 Advertisement.implement({
-	description: "",
+	description:
+		"Advertisements are a way for an organization to gather funds by advertising them to its members.",
 	fields: (t) => ({
 		attachments: t.expose("attachments", {
 			description: "Array of attachments.",
@@ -38,7 +39,7 @@ Advertisement.implement({
 			type: "DateTime",
 		}),
 		type: t.expose("type", {
-			description: "Mime type of the attachment.",
+			description: "Type of the advertisement.",
 			type: AdvertisementType,
 		}),
 	}),

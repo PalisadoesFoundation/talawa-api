@@ -5,7 +5,7 @@ import {
 	queryAgendaItemInputSchema,
 } from "~/src/graphql/inputs/QueryAgendaItemInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryAgendaItemArgumentsSchema = z.object({
 	input: queryAgendaItemInputSchema,
@@ -27,7 +27,6 @@ builder.queryField("agendaItem", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -46,7 +45,6 @@ builder.queryField("agendaItem", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -100,7 +98,6 @@ builder.queryField("agendaItem", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -114,7 +111,6 @@ builder.queryField("agendaItem", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -135,8 +131,6 @@ builder.queryField("agendaItem", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 

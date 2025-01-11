@@ -7,7 +7,7 @@ import {
 	mutationUpdatePostVoteInputSchema,
 } from "~/src/graphql/inputs/MutationUpdatePostVoteInput";
 import { Post } from "~/src/graphql/types/Post/Post";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdatePostVoteArgumentsSchema = z.object({
 	input: mutationUpdatePostVoteInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("updatePostVote", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("updatePostVote", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -99,7 +97,6 @@ builder.mutationField("updatePostVote", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -113,7 +110,6 @@ builder.mutationField("updatePostVote", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 			const currentUserOrganizationMembership =
@@ -132,8 +128,6 @@ builder.mutationField("updatePostVote", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -157,7 +151,6 @@ builder.mutationField("updatePostVote", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

@@ -4,7 +4,7 @@ import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
-} from "~/src/utilities/talawaGraphQLError";
+} from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -155,9 +155,16 @@ suite("Query field user", () => {
 			},
 		);
 
+		assertToBeNonNullish(
+			administratorUserSignInResult.data.signIn?.authenticationToken,
+		);
+
 		assertToBeNonNullish(administratorUserSignInResult.data.signIn?.user?.id);
 
 		const userResult = await mercuriusClient.query(Query_user, {
+			headers: {
+				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+			},
 			variables: {
 				input: {
 					id: administratorUserSignInResult.data.signIn.user.id,

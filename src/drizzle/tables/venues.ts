@@ -125,6 +125,6 @@ export const venuesTableRelations = relations(venuesTable, ({ many, one }) => ({
 }));
 
 export const venuesTableInsertSchema = createInsertSchema(venuesTable, {
-	description: (schema) => schema.description.min(1).max(2048),
-	name: (schema) => schema.name.min(1).max(256),
+	description: (schema) => schema.min(1).max(2048),
+	name: (schema) => schema.min(1).max(256),
 });

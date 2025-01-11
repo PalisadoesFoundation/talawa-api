@@ -26,7 +26,7 @@ type Advertisement {
   """Date time at the time the advertised event starts at."""
   startAt: DateTime
 
-  """Mime type of the attachment."""
+  """Type of the advertisement."""
   type: AdvertisementType
 
   """Date time at the time the advertisement was last updated."""
@@ -44,7 +44,7 @@ type AdvertisementAttachment {
   url: String
 }
 
-""""""
+"""Possible variants of the type of an advertisement."""
 enum AdvertisementType {
   banner
   menu
@@ -57,13 +57,15 @@ type AgendaFolder {
   """
   childFolders(after: String, before: String, first: Int, last: Int): AgendaFolderChildFoldersConnection
 
-  """Date time at the time the agenda folder was last created."""
+  """Date time at the time the agenda folder was created."""
   createdAt: DateTime
 
   """User who created the agenda folder."""
   creator: User
 
-  """Event associated to the agenda folder."""
+  """
+  Event for which the agenda folder contains agenda items constituting a part of the agenda.
+  """
   event: Event
 
   """Global identifier of the agenda folder."""
@@ -75,7 +77,7 @@ type AgendaFolder {
   isAgendaItemFolder: Boolean
 
   """
-  GraphQL connection to traverse through the agenda item associated to the agenda folder.
+  GraphQL connection to traverse through the agenda items contained within the agenda folder.
   """
   items(after: String, before: String, first: Int, last: Int): AgendaFolderItemsConnection
 
@@ -129,7 +131,7 @@ type AgendaItem {
   """Duration of the agenda item."""
   duration: String
 
-  """Agenda folder associated to the agenda item."""
+  """Agenda folder within which the agenda item in contained."""
   event: AgendaFolder
 
   """Global identifier of the agenda item."""
@@ -153,7 +155,7 @@ type AgendaItem {
   updater: User
 }
 
-""""""
+"""Possible variants of the type of an agenda item."""
 enum AgendaItemType {
   general
   note
@@ -404,7 +406,7 @@ type Chat {
   """URL to the avatar of the chat."""
   avatarURL: String
 
-  """Date time at the time the chat was created."""
+  """Date time at the time the chat was first created."""
   createdAt: DateTime
 
   """User who created the chat."""
@@ -422,14 +424,14 @@ type Chat {
   members(after: String, before: String, first: Int, last: Int): ChatMembersConnection
 
   """
-  GraphQL connection to traverse through the chat messages that are associated to the chat.
+  GraphQL connection to traverse through the messages created within the chat.
   """
   messages(after: String, before: String, first: Int, last: Int): ChatMessagesConnection
 
   """Name of the chat."""
   name: String
 
-  """Organization which the chat is associated to."""
+  """Organization which the chat belongs to."""
   organization: Organization
 
   """Date time at the time the chat was last updated."""
@@ -451,7 +453,7 @@ type ChatMembersConnectionEdge {
   node: User
 }
 
-""""""
+"""Possible variants of the role assigned to a user within a chat."""
 enum ChatMembershipRole {
   administrator
   regular
@@ -473,8 +475,8 @@ type ChatMessage {
   """Global identifier of the chat message."""
   id: ID!
 
-  """Parent chat message of the chat message."""
-  parentChatMessage: ChatMessage
+  """Parent message of the chat message."""
+  parentMessage: ChatMessage
 
   """Date time at the time the chat message was last updated."""
   updatedAt: DateTime
@@ -595,7 +597,7 @@ type Comment {
   creator: User
 
   """
-  GraphQL connection to traverse through the voters that down voted the comment.
+  GraphQL connection to traverse through the users that down voted the comment.
   """
   downVoters(after: String, before: String, first: Int, last: Int): CommentDownVotersConnection
 
@@ -605,11 +607,11 @@ type Comment {
   """Global identifier of the comment."""
   id: ID!
 
-  """Post which the post belongs to."""
+  """Post which the comment belongs to."""
   post: Post
 
   """
-  GraphQL connection to traverse through the voters that up voted the comment.
+  GraphQL connection to traverse through the users that up voted the comment.
   """
   upVoters(after: String, before: String, first: Int, last: Int): CommentUpVotersConnection
 
@@ -618,9 +620,6 @@ type Comment {
 
   """Date time at the time the comment was last updated."""
   updatedAt: DateTime
-
-  """User who last updated the comment."""
-  updater: User
 }
 
 """"""
@@ -647,7 +646,7 @@ type CommentUpVotersConnectionEdge {
   node: User
 }
 
-""""""
+"""Possible variants of the type of of a vote on a comment."""
 enum CommentVoteType {
   down_vote
   up_vote
@@ -670,7 +669,7 @@ scalar EmailAddress
 
 type Event {
   """
-  GraphQL connection to traverse through the agenda folders associated to the event.
+  GraphQL connection to traverse through the agenda folders that contain agenda items constituting a part of the agenda for the event.
   """
   agendaFolders(after: String, before: String, first: Int, last: Int): EventAgendaFoldersConnection
 
@@ -695,7 +694,7 @@ type Event {
   """Name of the event."""
   name: String
 
-  """Organization associated to the event."""
+  """Organization the event belongs to."""
   organization: Organization
 
   """Date time at the time the event starts at."""
@@ -708,7 +707,7 @@ type Event {
   updater: User
 
   """
-  GraphQL connection to traverse through the venues that are associated to the event.
+  GraphQL connection to traverse through the venues that are booked for the event.
   """
   venues(after: String, before: String, first: Int, last: Int): EventVenuesConnection
 }
@@ -746,9 +745,7 @@ type EventVenuesConnectionEdge {
 }
 
 type Fund {
-  """
-  GraphQL connection to traverse through the fund campaigns that are associated to the fund.
-  """
+  """GraphQL connection to traverse through the campaigns for the fund."""
   campaigns(after: String, before: String, first: Int, last: Int): FundCampaignsConnection
 
   """Date time at the time the fund was created."""
@@ -789,7 +786,7 @@ type FundCampaign {
   """Date time at the time the fund campaign ends at."""
   endAt: DateTime
 
-  """Fund which the campaign is associated to."""
+  """Fund which the fund campaign belongs to."""
   fund: Fund
 
   """Minimum amount of money that is set as the goal for the fund campaign."""
@@ -805,7 +802,7 @@ type FundCampaign {
   pledgedAmount: BigInt
 
   """
-  GraphQL connection to traverse through the pledges associated to the fund campaign.
+  GraphQL connection to traverse through the pledges made under the fund campaign.
   """
   pledges(after: String, before: String, first: Int, last: Int): FundCampaignPledgesConnection
 
@@ -872,7 +869,9 @@ type FundCampaignsConnectionEdge {
   node: FundCampaign
 }
 
-""""""
+"""
+Possible variants of the two-letter country code defined in ISO 3166-1, part of the ISO 3166 standard published by the International Organization for Standardization (ISO), to represent countries, dependent territories, and special areas of geographical interest.
+"""
 enum Iso3166Alpha2CountryCode {
   ad
   ae
@@ -1125,7 +1124,9 @@ enum Iso3166Alpha2CountryCode {
   zw
 }
 
-""""""
+"""
+Possible variants of the currency code defined in ISO 4217 standard published by the International Organization for Standardization (ISO) which defines alpha codes and numeric codes for the representation of currencies and provides information about the relationships between individual currencies and their minor units.
+"""
 enum Iso4217CurrencyCode {
   AED
   AFN
@@ -1622,8 +1623,8 @@ input MutationCreateChatMessageInput {
   """Global identifier of the associated chat."""
   chatId: ID!
 
-  """Global identifier of the associated parent chat message."""
-  parentChatMessageId: ID!
+  """Global identifier of the associated parent message."""
+  parentMessageId: ID!
 }
 
 """"""
@@ -2505,7 +2506,7 @@ type Organization {
   address: String
 
   """
-  GraphQL connection to traverse through the advertisements associated to the organization.
+  GraphQL connection to traverse through the advertisements belonging to the organization.
   """
   advertisements(after: String, before: String, first: Int, last: Int): OrganizationAdvertisementsConnection
 
@@ -2516,14 +2517,14 @@ type Organization {
   avatarURL: String
 
   """
-  GraphQL connection to traverse through the chats that are associated to the organization.
+  GraphQL connection to traverse through the chats belonging to the organization.
   """
   chats(after: String, before: String, first: Int, last: Int): OrganizationChatsConnection
 
   """Name of the city where the organization exists in."""
   city: String
 
-  """Country code of the country the organization is a citizen of."""
+  """Country code of the country the organization exists in."""
   countryCode: Iso3166Alpha2CountryCode
 
   """Date time at the time the organization was created."""
@@ -2536,12 +2537,12 @@ type Organization {
   description: String
 
   """
-  GraphQL connection to traverse through the events associated to the organization.
+  GraphQL connection to traverse through the events belonging to the organization.
   """
   events(after: String, before: String, first: Int, last: Int): OrganizationEventsConnection
 
   """
-  GraphQL connection to traverse through the funds that are associated to the organization.
+  GraphQL connection to traverse through the funds belonging to the organization.
   """
   funds(after: String, before: String, first: Int, last: Int): OrganizationFundsConnection
 
@@ -2557,34 +2558,34 @@ type Organization {
   name: String
 
   """
-  GraphQL connection to traverse through the pinned posts associated to the organization.
+  GraphQL connection to traverse through the pinned posts belonging to the organization.
   """
   pinnedPosts(after: String, before: String, first: Int, last: Int): OrganizationPinnedPostsConnection
 
-  """Total number of pinned posts in the organization."""
+  """Total number of pinned posts belonging to the organization."""
   pinnedPostsCount: Int
 
   """Postal code of the organization."""
   postalCode: String
 
   """
-  GraphQL connection to traverse through the posts associated to the organization.
+  GraphQL connection to traverse through the posts belonging to the organization.
   """
   posts(after: String, before: String, first: Int, last: Int): OrganizationPostsConnection
 
-  """Total number of posts in the organization."""
+  """Total number of posts belonging to the organization."""
   postsCount: Int
 
   """Name of the state the organization exists in."""
   state: String
 
   """
-  GraphQL connection to traverse through the tag folders associated to the organization.
+  GraphQL connection to traverse through the tag folders belonging to the organization.
   """
   tagFolders(after: String, before: String, first: Int, last: Int): OrganizationTagFoldersConnection
 
   """
-  GraphQL connection to traverse through the tags associated to the organization.
+  GraphQL connection to traverse through the tags belonging to the organization.
   """
   tags(after: String, before: String, first: Int, last: Int): OrganizationTagsConnection
 
@@ -2595,7 +2596,7 @@ type Organization {
   updater: User
 
   """
-  GraphQL connection to traverse through the venues associated to the organization.
+  GraphQL connection to traverse through the venues belonging to the organization.
   """
   venues(after: String, before: String, first: Int, last: Int): OrganizationVenuesConnection
 }
@@ -2660,7 +2661,9 @@ type OrganizationMembersConnectionEdge {
   node: User
 }
 
-""""""
+"""
+Possible variants of the role assigned to a user within an organization.
+"""
 enum OrganizationMembershipRole {
   administrator
   regular
@@ -2746,11 +2749,11 @@ type Post {
   caption: String
 
   """
-  GraphQL connection to traverse through the comments associated to the post.
+  GraphQL connection to traverse through the comments created under the post.
   """
   comments(after: String, before: String, first: Int, last: Int): PostCommentsConnection
 
-  """Total number of comments on the post."""
+  """Total number of comments created under the post."""
   commentsCount: Int
 
   """Date time at the time the post was created."""
@@ -2760,7 +2763,7 @@ type Post {
   creator: User
 
   """
-  GraphQL connection to traverse through the voters that down voted the post.
+  GraphQL connection to traverse through the users that down voted the post.
   """
   downVoters(after: String, before: String, first: Int, last: Int): PostDownVotersConnection
 
@@ -2777,7 +2780,7 @@ type Post {
   pinnedAt: DateTime
 
   """
-  GraphQL connection to traverse through the voters that up voted the post.
+  GraphQL connection to traverse through the user that up voted the post.
   """
   upVoters(after: String, before: String, first: Int, last: Int): PostUpVotersConnection
 
@@ -2835,7 +2838,7 @@ type PostUpVotersConnectionEdge {
   node: User
 }
 
-""""""
+"""Possible variants of the type of a vote on a post."""
 enum PostVoteType {
   down_vote
   up_vote
@@ -3027,13 +3030,18 @@ input SubscriptionChatMessageCreateInput {
 }
 
 type Tag {
+  """
+  GraphQL connection to traverse through the users that are assignees of the tag.
+  """
+  assignees(after: String, before: String, first: Int, last: Int): TagAssigneesConnection
+
   """Date time at the time the tag was created."""
   createdAt: DateTime
 
   """User who created the tag."""
   creator: User
 
-  """Tag folder the tag is associated to."""
+  """Tag folder the tag is contained within."""
   folder: TagFolder
 
   """Global identifier of the tag."""
@@ -3042,7 +3050,7 @@ type Tag {
   """Name of the tag."""
   name: String
 
-  """Organization the tag is associated to."""
+  """Organization the tag belong to."""
   organization: Organization
 
   """Date time at the time the tag was last updated."""
@@ -3052,9 +3060,21 @@ type Tag {
   updater: User
 }
 
+""""""
+type TagAssigneesConnection {
+  edges: [TagAssigneesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type TagAssigneesConnectionEdge {
+  cursor: String!
+  node: User
+}
+
 type TagFolder {
   """
-  GraphQL connection to traverse through the tag folders that have the tag folder as their parent folder.
+  GraphQL connection to traverse through the tag folders contained within the tag folder.
   """
   childFolders(after: String, before: String, first: Int, last: Int): TagFolderChildFoldersConnection
 
@@ -3070,14 +3090,14 @@ type TagFolder {
   """Name of the tag folder."""
   name: String
 
-  """Organization which the tag folder is associated to."""
+  """Organization which the tag folder belongs to."""
   organization: Organization
 
-  """Parent folder of the tag folder."""
+  """Tag folder the tag folder is contained within."""
   parentFolder: TagFolder
 
   """
-  GraphQL connection to traverse through the tags associated to the tag folder.
+  GraphQL connection to traverse through the tags contained within the tag folder.
   """
   tags(after: String, before: String, first: Int, last: Int): TagFolderTagsConnection
 
@@ -3201,7 +3221,7 @@ type User {
   workPhoneNumber: PhoneNumber
 }
 
-""""""
+"""Possible variants of the education grade(if applicable) of a user."""
 enum UserEducationGrade {
   grade_1
   grade_2
@@ -3221,14 +3241,14 @@ enum UserEducationGrade {
   pre_kg
 }
 
-""""""
+"""Possible variants of the employment status(if applicable) of a user."""
 enum UserEmploymentStatus {
   full_time
   part_time
   unemployed
 }
 
-""""""
+"""Possible variants of the martial status(if applicable) of a user."""
 enum UserMaritalStatus {
   divorced
   engaged
@@ -3238,7 +3258,7 @@ enum UserMaritalStatus {
   widowed
 }
 
-""""""
+"""Possible variants of the sex assigned to a user at birth."""
 enum UserNatalSex {
   female
   intersex
@@ -3257,13 +3277,16 @@ type UserOrganizationsWhereMemberConnectionEdge {
   node: Organization
 }
 
-""""""
+"""Possible variants of the role assigned to a user."""
 enum UserRole {
   administrator
   regular
 }
 
 type Venue {
+  """Array of attachments."""
+  attachments: [VenueAttachment!]
+
   """Date time at the time the venue was created."""
   createdAt: DateTime
 
@@ -3274,7 +3297,7 @@ type Venue {
   description: String
 
   """
-  GraphQL connection to traverse through the events associated to the venue.
+  GraphQL connection to traverse through the events the venue has been booked for.
   """
   events(after: String, before: String, first: Int, last: Int): VenueEventsConnection
 
@@ -3284,7 +3307,7 @@ type Venue {
   """Name of the venue."""
   name: String
 
-  """Organization associated to the venue."""
+  """Organization the venue belongs to."""
   organization: Organization
 
   """Date time at the time the venue was last updated."""

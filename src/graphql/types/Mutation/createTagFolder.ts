@@ -6,8 +6,8 @@ import {
 	mutationCreateTagFolderInputSchema,
 } from "~/src/graphql/inputs/MutationCreateTagFolderInput";
 import { TagFolder } from "~/src/graphql/types/TagFolder/TagFolder";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 
 const mutationCreateTagFolderArgumentsSchema = z.object({
 	input: mutationCreateTagFolderInputSchema,
@@ -29,7 +29,6 @@ builder.mutationField("createTagFolder", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -48,7 +47,6 @@ builder.mutationField("createTagFolder", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -84,7 +82,6 @@ builder.mutationField("createTagFolder", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -98,7 +95,6 @@ builder.mutationField("createTagFolder", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -124,8 +120,6 @@ builder.mutationField("createTagFolder", (t) =>
 								},
 							],
 						},
-						message:
-							"No associated resources found for the provided arguments.",
 					});
 				}
 
@@ -140,12 +134,10 @@ builder.mutationField("createTagFolder", (t) =>
 								{
 									argumentPath: ["input", "parentFolderId"],
 									message:
-										"This tagFolder does not belong to the associated organization.",
+										"This tag folder does not belong to the associated organization.",
 								},
 							],
 						},
-						message:
-							"This action is forbidden on the resources associated to the provided arguments.",
 					});
 				}
 			}
@@ -167,8 +159,6 @@ builder.mutationField("createTagFolder", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -192,7 +182,6 @@ builder.mutationField("createTagFolder", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

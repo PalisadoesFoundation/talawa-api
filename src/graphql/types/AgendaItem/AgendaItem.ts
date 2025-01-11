@@ -7,7 +7,8 @@ export type AgendaItem = typeof agendaItemsTable.$inferSelect;
 export const AgendaItem = builder.objectRef<AgendaItem>("AgendaItem");
 
 AgendaItem.implement({
-	description: "",
+	description:
+		"Agenda items contain the important information about agenda for the associated event.",
 	fields: (t) => ({
 		description: t.exposeString("description", {
 			description: "Custom information about the agenda item.",

@@ -151,7 +151,7 @@ export const advertisementsTableRelations = relations(
 export const advertisementsTableInsertSchema = createInsertSchema(
 	advertisementsTable,
 	{
-		description: (schema) => schema.description.min(1).max(2048),
-		name: (schema) => schema.name.min(1).max(256),
+		description: (schema) => schema.min(1).max(2048),
+		name: (schema) => schema.min(1).max(256),
 	},
 );

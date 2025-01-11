@@ -5,7 +5,7 @@ import {
 	queryTagFolderInputSchema,
 } from "~/src/graphql/inputs/QueryTagFolderInput";
 import { TagFolder } from "~/src/graphql/types/TagFolder/TagFolder";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryTagFolderArgumentsSchema = z.object({
 	input: queryTagFolderInputSchema,
@@ -27,7 +27,6 @@ builder.queryField("tagFolder", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -46,7 +45,6 @@ builder.queryField("tagFolder", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -63,7 +61,6 @@ builder.queryField("tagFolder", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -99,7 +96,6 @@ builder.queryField("tagFolder", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -121,8 +117,6 @@ builder.queryField("tagFolder", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 

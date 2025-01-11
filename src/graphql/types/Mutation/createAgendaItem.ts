@@ -6,7 +6,7 @@ import {
 	mutationCreateAgendaItemInputSchema,
 } from "~/src/graphql/inputs/MutationCreateAgendaItemInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateAgendaItemArgumentsSchema = z.object({
 	input: mutationCreateAgendaItemInputSchema,
@@ -28,7 +28,6 @@ builder.mutationField("createAgendaItem", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -47,7 +46,6 @@ builder.mutationField("createAgendaItem", (t) =>
 							message: issue.message,
 						})),
 					},
-					message: "Invalid arguments provided.",
 				});
 			}
 
@@ -97,7 +95,6 @@ builder.mutationField("createAgendaItem", (t) =>
 					extensions: {
 						code: "unauthenticated",
 					},
-					message: "Only authenticated users can perform this action.",
 				});
 			}
 
@@ -111,7 +108,6 @@ builder.mutationField("createAgendaItem", (t) =>
 							},
 						],
 					},
-					message: "No associated resources found for the provided arguments.",
 				});
 			}
 
@@ -127,8 +123,6 @@ builder.mutationField("createAgendaItem", (t) =>
 							},
 						],
 					},
-					message:
-						"This action is forbidden on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -150,8 +144,6 @@ builder.mutationField("createAgendaItem", (t) =>
 							},
 						],
 					},
-					message:
-						"You are not authorized to perform this action on the resources associated to the provided arguments.",
 				});
 			}
 
@@ -178,7 +170,6 @@ builder.mutationField("createAgendaItem", (t) =>
 					extensions: {
 						code: "unexpected",
 					},
-					message: "Something went wrong. Please try again.",
 				});
 			}
 

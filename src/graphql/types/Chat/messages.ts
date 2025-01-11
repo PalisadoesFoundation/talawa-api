@@ -5,12 +5,12 @@ import {
 	chatMessagesTableInsertSchema,
 } from "~/src/drizzle/tables/chatMessages";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TalawaGraphQLError } from "~/src/utilities/talawaGraphQLError";
 import { Chat } from "./Chat";
 
 const messagesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -48,8 +48,16 @@ Chat.implement({
 		messages: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the chat messages that are associated to the chat.",
+					"GraphQL connection to traverse through the messages created within the chat.",
 				resolve: async (parent, args, ctx) => {
+					if (!ctx.currentClient.isAuthenticated) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+						});
+					}
+
 					const {
 						data: parsedArgs,
 						error,
@@ -65,7 +73,56 @@ Chat.implement({
 									message: issue.message,
 								})),
 							},
-							message: "Invalid arguments provided.",
+						});
+					}
+
+					const currentUserId = ctx.currentClient.user.id;
+
+					const currentUser =
+						await ctx.drizzleClient.query.usersTable.findFirst({
+							with: {
+								chatMembershipsWhereMember: {
+									columns: {
+										role: true,
+									},
+									where: (fields, operators) =>
+										operators.eq(fields.chatId, parent.id),
+								},
+								organizationMembershipsWhereMember: {
+									columns: {
+										role: true,
+									},
+									where: (fields, operators) =>
+										operators.eq(fields.organizationId, parent.organizationId),
+								},
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.id, currentUserId),
+						});
+
+					if (currentUser === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+						});
+					}
+
+					const currentUserOrganizationMembership =
+						currentUser.organizationMembershipsWhereMember[0];
+					const currentUserChatMembership =
+						currentUser.chatMembershipsWhereMember[0];
+
+					if (
+						currentUser.role !== "administrator" &&
+						(currentUserOrganizationMembership === undefined ||
+							(currentUserOrganizationMembership.role !== "administrator" &&
+								currentUserChatMembership === undefined))
+					) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthorized_action",
+							},
 						});
 					}
 
@@ -136,8 +193,6 @@ Chat.implement({
 									},
 								],
 							},
-							message:
-								"No associated resources found for the provided arguments.",
 						});
 					}
 

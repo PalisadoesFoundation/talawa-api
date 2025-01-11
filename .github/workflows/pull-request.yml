@@ -48,8 +48,8 @@ jobs:
           echo "Error: Close this PR and try again."          
           exit 1
 
-  check_eslint_disable:
-    name: Check for eslint-disable
+  check_biome_ignore:
+    name: Check for biome_ignore
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -66,7 +66,7 @@ jobs:
 
       - name: Run Python script
         run: |
-          python .github/workflows/scripts/eslint_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+          python .github/workflows/scripts/biome_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   check_code_coverage_disable:
     name: Check for code coverage disable
@@ -134,19 +134,47 @@ jobs:
       with:
         files: |
           .coderabbit.yaml
+          Caddyfile
+          codegen.ts
+          Dockerfile*
+          docker-compose*
+          .dockerignore
+          .env.sample
+          .env_test
+          eslint.config.mjs
+          .gitignore
+          init-mongo.sh
+          .prettierignore
+          .prettierrc.json
+          .pylintrc
           .github/**
           biome.jsonc
           drizzle_migrations/**
+          renovate.json
+          requirements.txt
+          schema.graphql
           CODEOWNERS
           LICENSE
           tsconfig.json
           vitest.config.ts
           pnpm-lock.yaml
           package.json
+          package-lock.json
           .nojekyll
           docs/docusaurus.config.ts
           docs/sidebar*
+          setup.ts
+          tsconfig.build.json
+          vite.config.mts
           CNAME
+          CODE_OF_CONDUCT.md
+          CODE_STYLE.md
+          CONTRIBUTING.md
+          DOCUMENTATION.md
+          INSTALLATION.md
+          ISSUE_GUIDELINES.md
+          PR_GUIDELINES.md
+          README.md          
     - env:
         CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
       if: steps.changed_files.outputs.any_changed == 'true' || steps.changed_files.outputs.any_deleted == 'true'
@@ -193,3 +221,20 @@ jobs:
       - name: Test building the website
         working-directory: ./docs
         run: pnpm build
+
+  Validate-Coderabbit:
+    name: Validate CodeRabbit Approval
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    needs: [Test-Docusaurus-Deployment]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Validate CodeRabbit.ai Approval
+        run: |
+          chmod +x $GITHUB_WORKSPACE/.github/workflows/scripts/validate-coderabbit.sh
+          $GITHUB_WORKSPACE/.github/workflows/scripts/validate-coderabbit.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
