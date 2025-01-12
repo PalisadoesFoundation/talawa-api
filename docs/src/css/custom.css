@@ -59,8 +59,7 @@
 .main-wrapper{
   background-color: var(--ifm-background);
   display: block;
-  margin: 0 calc(-1 * var(--ifm-pre-padding));
-  padding: 0 var(--ifm-pre-padding);
+  padding: 0 max(var(--ifm-pre-padding), 16px);
 }
 
 .table-of-contents {
@@ -144,6 +143,11 @@ html[data-theme="dark"] .header-youtube-link:before {
   margin-bottom: 0;
   padding: 0.5rem;
   line-height: normal;
+  transition: opacity 0.2s;
+}
+
+.footer--dark li:hover {
+  opacity: 0.8;
 }
 
 .footer__icon {
