@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: UTF-8 -*-
 """Biome Checker Script.
 
 Methodology:
@@ -7,7 +6,7 @@ Methodology:
     Recursively analyzes specified files or directories to ensure they do
     not contain biome-ignore statements, enforcing code quality practices.
 
-NOTE:
+Note:
     This script complies with our python3 coding and documentation standards.
     It complies with:
 
@@ -25,16 +24,17 @@ import sys
 
 
 def has_biome_ignore(file_path: str) -> bool:
-    """
-    Check if a file contains biome-ignore statements.
+    """Check if a file contains biome-ignore statements.
 
     Args:
-        file_path (str): Path to the file.
+        file_path: Path to the file.
 
     Returns:
         bool: True if biome-ignore statement is found, False otherwise.
     """
-    biome_ignore_pattern = re.compile(r"//\s*biome-ignore.*$", re.IGNORECASE | re.MULTILINE)
+    biome_ignore_pattern = re.compile(
+        r"//\s*biome-ignore.*$", re.IGNORECASE | re.MULTILINE
+    )
 
     try:
         with open(file_path, encoding="utf-8") as file:
@@ -52,11 +52,10 @@ def has_biome_ignore(file_path: str) -> bool:
 
 
 def check_biome(files_or_directories: list[str]) -> bool:
-    """
-    Check files for biome-ignore statements.
+    """Check files for biome-ignore statements.
 
     Args:
-        files_or_directories (list): List of files or directories to check.
+        files_or_directories: List of files or directories to check.
 
     Returns:
         bool: True if biome-ignore statement is found, False otherwise.
@@ -64,8 +63,16 @@ def check_biome(files_or_directories: list[str]) -> bool:
     biome_found = False
 
     for item in files_or_directories:
-        if os.path.isfile(item) and item.endswith((".ts", ".tsx")) and has_biome_ignore(item):
-            print(f"File {item} contains biome-ignore statement. Please remove them and ensure the code adheres to the specified Biome rules.")
+        if (
+            os.path.isfile(item)
+            and item.endswith((".ts", ".tsx"))
+            and has_biome_ignore(item)
+        ):
+            print(
+                f"""\
+File {item} contains biome-ignore statement. Please remove them and ensure \
+the code adheres to the specified Biome rules."""
+            )
             biome_found = True
         elif os.path.isdir(item):
             # If it's a directory, walk through it and check all
@@ -88,6 +95,9 @@ def check_biome(files_or_directories: list[str]) -> bool:
 
 def arg_parser_resolver():
     """Resolve the CLI arguments provided by the user.
+
+    Args:
+        None
 
     Returns:
         result: Parsed argument object
@@ -113,8 +123,7 @@ def arg_parser_resolver():
 
 
 def main():
-    """
-    Execute the script's main functionality.
+    """Execute the script's main functionality.
 
     This function serves as the entry point for the script. It performs
     the following tasks:
@@ -123,6 +132,12 @@ def main():
     2. Recursively checks files for biome-ignore statements.
     3. Provides informative messages based on the analysis.
     4. Exits with an error if biome-ignore statements are found.
+
+    Args:
+        None
+
+    Returns:
+        None
 
     Raises:
         SystemExit: If an error occurs during execution.
