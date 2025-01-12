@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # Remove development dependencies to reduce size For now we will keep them commented out .Once we sure which packages are not used in production we can use it.It will reduce the size of the image around 150MB.
-# RUN npm prune --production
+# RUN npm run move-and-prune
 
 # Stage 2: Final stage
 FROM node:22-alpine
