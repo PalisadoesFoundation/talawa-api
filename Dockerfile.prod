@@ -3,8 +3,11 @@ FROM node:22-alpine AS builder
 
 WORKDIR /usr/src/app
 
+# Install necessary tools (e.g., jq) for dependency analysis(required for our script to optimize production dependency process used in script)(note:use it once the #2848 pr merged in talawa-api develop branch.)
+# RUN apk add --no-cache bash jq
+
 # Copy only necessary files for dependency installation
-COPY package*.json ./
+COPY package*.json ./ 
 
 # Install dependencies
 RUN npm install
@@ -12,10 +15,13 @@ RUN npm install
 # Copy the rest of the source files (exclude .dockerignore content)
 COPY . .
 
+# Set execute permissions for dependency analysis scripts.(note:use it once the #2848 pr merged in talawa-api develop branch.)
+# RUN chmod +x ./deps/move-from-diff.sh ./deps/analyze-dependencies.sh
+
 # Build the application
 RUN npm run build
 
-# Remove development dependencies to reduce size For now we will keep them commented out .Once we sure which packages are not used in production we can use it.It will reduce the size of the image around 150MB.
+# Prune and optimize dependencies.(note:use it once the #2848 pr merged in talawa-api develop branch.)
 # RUN npm run move-and-prune
 
 # Stage 2: Final stage
@@ -23,15 +29,19 @@ FROM node:22-alpine
 
 WORKDIR /usr/src/app
 
-# Copy only the build output, node_modules, and package.json from the builder
+# Copy only the build output, node_modules, and necessary files from the builder
 COPY --from=builder /usr/src/app/build ./build
 COPY --from=builder /usr/src/app/package.json ./package.json
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/locales ./locales
 COPY --from=builder /usr/src/app/certs ./certs
+COPY --from=builder /usr/src/app/codegen.ts ./codegen.ts
+COPY --from=builder /usr/src/app/tsconfig.build.json ./tsconfig.build.json
+COPY --from=builder /usr/src/app/fix-imports ./fix-imports
+COPY --from=builder /usr/src/app/src ./src
 
 # Expose the application port
 EXPOSE 4000
 
 # Start the application
-CMD ["npm", "run", "prod"]
+CMD ["npm", "run", "start:with-minio"]
