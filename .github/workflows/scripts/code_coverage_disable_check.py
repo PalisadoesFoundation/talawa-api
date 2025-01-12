@@ -27,8 +27,7 @@ import sys
 
 
 def has_code_coverage_disable(file_path):
-    """
-    Check if a TypeScript file contains code coverage disable statements.
+    """Check if a TypeScript file contains code coverage disable statements.
 
     Args:
         file_path (str): Path to the TypeScript file.
@@ -38,8 +37,8 @@ def has_code_coverage_disable(file_path):
         otherwise.
     """
     code_coverage_disable_pattern = re.compile(
-        r"""//?\s*istanbul\s+ignore(?:\s+(?:next|-line))?[^\n]*|
-        /\*\s*istanbul\s+ignore\s+(?:next|-line)\s*\*/""",
+        r"//?\s*istanbul\s+ignore(?:\s+(?:next|-line))?[^\n]*|"
+        r"/\*\s*istanbul\s+ignore\s+(?:next|-line)\s*\*/",
         re.IGNORECASE,
     )
     try:
@@ -58,8 +57,7 @@ def has_code_coverage_disable(file_path):
 
 
 def check_code_coverage(files_or_dirs):
-    """
-    Check TypeScript files for code coverage disable statements.
+    """Check TypeScript files for code coverage disable statements.
 
     Args:
         files_or_dirs (list): List of files or directories to check.
@@ -85,7 +83,8 @@ def check_code_coverage(files_or_dirs):
                         file_path = os.path.join(root, file_name)
                         if has_code_coverage_disable(file_path):
                             print(
-                                f"""File {file_path} contains code coverage disable statement."""
+                                f"""\
+File {file_path} contains code coverage disable statement."""
                             )
                             code_coverage_found = True
         elif os.path.isfile(item):
@@ -97,7 +96,9 @@ def check_code_coverage(files_or_dirs):
             ):
                 if has_code_coverage_disable(item):
                     print(
-                        f"""File {item} contains code coverage disable statement. Please remove it and add the appropriate tests."""
+                        f"""\
+File {item} contains code coverage disable statement. \
+Please remove it and add the appropriate tests."""
                     )
                     code_coverage_found = True
 
@@ -106,6 +107,9 @@ def check_code_coverage(files_or_dirs):
 
 def arg_parser_resolver():
     """Resolve the CLI arguments provided by the user.
+
+    Args:
+        None
 
     Returns:
         result: Parsed argument object
@@ -131,8 +135,7 @@ def arg_parser_resolver():
 
 
 def main():
-    """
-    Execute the script's main functionality.
+    """Execute the script's main functionality.
 
     This function serves as the entry point for the script. It performs
     the following tasks:
@@ -141,6 +144,12 @@ def main():
     2. Checks files or directories for code coverage disable statements.
     3. Provides informative messages based on the analysis.
     4. Exits with an error if code coverage disable statements are found.
+
+    Args:
+        None
+
+    Returns:
+        None
 
     Raises:
         SystemExit: If an error occurs during execution.
