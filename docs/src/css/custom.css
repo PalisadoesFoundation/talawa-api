@@ -50,7 +50,7 @@
   --ifm-button-background-color: #25c2a0;
   --ifm-button-background-color-dark: #2e8555;
   --ifm-navbar-link-color: #9da4ae;
-  --ifm-navbar-border-color:#2d3956;
+  --ifm-navbar-border-color: #2d3956;
   --brand-color: white;
   --primary-neutral-600: #c4c4c4;
   --next-prev-border-color: #293441;
@@ -60,6 +60,8 @@
   background-color: var(--ifm-background);
   display: block;
   padding: 0 max(var(--ifm-pre-padding), 16px);
+  max-width: 1400px;  
+  margin: 0 auto;
 }
 
 .table-of-contents {
@@ -87,7 +89,7 @@
   background-color: var(--sidebar-bg-color);
   box-shadow: var(--ifm-navbar-shadow);
   padding: 24px;
-  height: auto;
+  height: 80px;
   border-bottom: 1px solid var(--ifm-navbar-border-color) ;
 }
 
