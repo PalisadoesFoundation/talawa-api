@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: UTF-8 -*-
 """Biome Checker Script.
 
 Methodology:
@@ -7,7 +6,7 @@ Methodology:
     Recursively analyzes specified files or directories to ensure they do
     not contain biome-ignore statements, enforcing code quality practices.
 
-NOTE:
+Note:
     This script complies with our python3 coding and documentation standards.
     It complies with:
 

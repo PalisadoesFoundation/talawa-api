@@ -8,7 +8,7 @@ Methodology:
 
     This script enforces proper code coverage practices in the project.
 
-NOTE:
+Note:
     This script complies with our python3 coding and documentation standards.
     It complies with:
 
