@@ -29,7 +29,7 @@ jobs:
           echo "Error: Close this PR and try again."
           exit 1 
  
-  check_code_quality:
+  Code-Quality-Checks:
     name: Checking code quality
     runs-on: ubuntu-latest
     steps:
@@ -124,6 +124,7 @@ jobs:
   Check-Sensitive-Files:
     if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.pull_request.labels.*.name, 'ignore-sensitive-files-pr') }}
     name: Checks if sensitive files have been changed without authorization
+    needs: [Code-Quality-Checks]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout this repository

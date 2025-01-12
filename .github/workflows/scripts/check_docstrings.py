@@ -736,7 +736,7 @@ Google Docstring 'Args' and 'Returns' sections.""",
         default=".",
         nargs="+",
         type=str,
-        help="Directory where the cache files are located.",
+        help="Directories to scan for docsctring compliant python files.",
     )
     args = parser.parse_args()
 
