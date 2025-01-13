@@ -922,11 +922,17 @@ export async function dataImportWithoutDocker(
   importData: () => Promise<void>,
 ): Promise<void> {
   if (!process.env.MONGO_DB_URL) {
-    console.log("Couldn't find mongodb url");
-    return;
+    throw new Error("MongoDB URL is not configured. Please run setup first.");
   }
 
-  const isDbEmpty = await checkDb(process.env.MONGO_DB_URL);
+  let isDbEmpty: boolean;
+  try {
+    isDbEmpty = await checkDb(process.env.MONGO_DB_URL);
+  } catch (error) {
+    throw new Error(
+      `Failed to check database: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
   if (!isDbEmpty) {
     const { shouldOverwriteData } = await inquirer.prompt({
       type: "confirm",

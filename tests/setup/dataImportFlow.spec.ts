@@ -198,6 +198,44 @@ describe("Data Importation Without Docker", () => {
     expect(importDefaultDataMock).not.toBeCalled();
     expect(importDataMock).not.toBeCalled();
   });
+
+  it("should handle database connection failure gracefully", async () => {
+    const checkDbMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<boolean> => {
+        return false;
+      });
+    const wipeExistingDataMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    const importDataMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    const importDefaultDataMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    const errorMessage = "Database connection failed";
+    checkDbMock.mockRejectedValueOnce(new Error(errorMessage));
+
+    await expect(
+      dataImportWithoutDocker(
+        checkDbMock,
+        wipeExistingDataMock,
+        importDefaultDataMock,
+        importDataMock,
+      ),
+    ).rejects.toThrow(errorMessage);
+
+    expect(wipeExistingDataMock).not.toBeCalled();
+    expect(importDefaultDataMock).not.toBeCalled();
+    expect(importDataMock).not.toBeCalled();
+  });
 });
 
 describe("Data Importation With Docker", () => {
