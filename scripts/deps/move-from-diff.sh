@@ -1,55 +1,8 @@
 #!/bin/sh
-
-# ==============================================
-# README
-# ==============================================
-# This script analyzes the difference between production and development dependencies
-# in a Node.js project. It identifies dev-only dependencies that are used in the
-# production code and moves them from `devDependencies` to `dependencies` in the 
-# project's `package.json` file.
-#
-# Purpose:
-# - To ensure all required production dependencies are correctly categorized.
-# - To prevent runtime errors in production due to missing dependencies.
-#
-# Prerequisites:
-# 1. Ensure `analyze-dependencies.sh` has been run beforehand. This script generates:
-#    - `prod-deps-keys.json`: Contains top-level production dependencies.
-#    - `dev-deps-keys.json`: Contains top-level dev+prod dependencies.
-#    These files must exist in the `deps` folder.
-#
-# 2. Ensure the script has execute permissions:
-#    ```sh
-#    chmod +x ./deps/move-from-diff.sh
-#    ```
-#
-# 3. Ensure `jq` is installed on the system. If it is missing, install it using the 
-#    appropriate package manager (e.g., `apt-get`, `yum`, or `apk`).
-#
-# Usage:
-# 1. Navigate to the project root directory where `package.json` is located.
-# 2. Execute this script:
-#    ```sh
-#    ./deps/move-from-diff.sh
-#    ```
-# 3. The script will:
-#    - Analyze the diff between `prod-deps-keys.json` and `dev-deps-keys.json`.
-#    - Identify dev-only dependencies used in production code.
-#    - Move required dependencies from `devDependencies` to `dependencies`.
-#
-# Output:
-# - Any required dependencies will be moved to `dependencies` in `package.json`.
-# - A confirmation message will be displayed upon successful execution.
-#
-# Note:
-# - Ensure your production code resides in `./src`, `./lib`, or `./app` folders.
-# - Modify the script if your codebase structure differs.
-# ==============================================
-
 set -e
 
 # Define the folder where dependency files are stored
-DEPS_FOLDER="deps"
+DEPS_FOLDER="./scripts/deps"
 
 echo "Analyzing dependencies from diff output..."
 

@@ -1,56 +1,4 @@
 #!/bin/sh
-
-# ==============================================
-# README
-# ==============================================
-# This script analyzes the difference between production and development dependencies
-# in a Node.js project. It generates files containing top-level dependencies for both
-# production-only and all dependencies (production + development) using `npm ls` and `jq`.
-# The results are saved in a `deps` folder, and a comparison is performed to identify
-# differences between the two sets of dependencies.
-#
-# Purpose:
-# - To identify dev-only and prod-only dependencies.
-# - To provide insight into potential misclassified dependencies.
-#
-# Prerequisites:
-# 1. Ensure `jq` is installed on your system. If not installed, use the following commands
-#    based on your operating system:
-#    - **Alpine Linux**: `apk add --no-cache jq`
-#    - **Debian/Ubuntu**: `apt-get update && apt-get install -y jq`
-#    - **RHEL/CentOS**: `yum install -y jq`
-#    - **MacOS (with Homebrew)**: `brew install jq`
-#    - **Windows**: Download the appropriate binary from https://stedolan.github.io/jq/download/
-#
-# 2. Ensure the script has execute permissions:
-#    ```sh
-#    chmod +x ./deps/analyze-dependencies.sh
-#    ```
-#
-# 3. Ensure `npm` is installed and properly set up in the current environment.
-#
-# Usage:
-# 1. Navigate to the root of your Node.js project where `package.json` is located.
-# 2. Run the script:
-#    ```sh
-#    ./deps/analyze-dependencies.sh
-#    ```
-# 3. The script will:
-#    - Generate files for production and dev+prod dependencies in the `deps` folder.
-#    - Sort and compare the dependency lists for differences.
-#
-# Output:
-# - The following files will be created in the `deps` folder:
-#   - `prod-deps.json`: Top-level production dependencies.
-#   - `dev-deps.json`: Top-level dev+prod dependencies.
-#   - `prod-deps-keys.json`: Keys of production dependencies.
-#   - `dev-deps-keys.json`: Keys of dev+prod dependencies.
-# - A `diff` will be displayed showing the differences between production and dev dependencies.
-#
-# Notes:
-# - Modify the script if your codebase structure differs or if additional processing is required.
-# ==============================================
-
 set -e
 
 # Function to check and install jq
@@ -80,7 +28,7 @@ if [ ! -f "package.json" ]; then
 fi
 
 # Create the deps folder if it does not exist
-DEPS_FOLDER="deps"
+DEPS_FOLDER="./scripts/deps"
 echo "Creating the $DEPS_FOLDER folder for storing dependency files..."
 mkdir -p "$DEPS_FOLDER"
 
