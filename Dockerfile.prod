@@ -4,7 +4,7 @@ FROM  node:20.10.0 AS builder
 WORKDIR /usr/src/app
 
 # Install necessary tools (e.g., jq) for dependency analysis(required for our script to optimize production dependency process used in script)(note:use it once the #2848 pr merged in talawa-api develop branch.)
-# RUN apk add --no-cache bash jq
+# RUN apt-get update && apt-get install -y bash jq && rm -rf /var/lib/apt/lists/*
 
 # Copy only necessary files for dependency installation
 COPY package*.json ./ 
