@@ -1,3 +1,4 @@
+version: "3.8"
 services:
   mongo:
   # No light weight image is available for mongo
@@ -15,7 +16,7 @@ services:
           memory: 512M
           cpus: '0.5'
     ports:
-      - "127.0.0.1:27017:27017"
+      - "27017:27017"
     volumes:
       - mongo_data:/data/db
       - ./init-mongo.sh:/init-mongo.sh

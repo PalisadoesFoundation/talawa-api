@@ -1,5 +1,5 @@
 # Stage 1: Build stage
-FROM node:22-alpine AS builder
+FROM  node:20.10.0 AS builder
 
 WORKDIR /usr/src/app
 
@@ -16,7 +16,7 @@ RUN npm install
 COPY . .
 
 # Set execute permissions for dependency analysis scripts.(note:use it once the #2848 pr merged in talawa-api develop branch.)
-# RUN chmod +x ./deps/move-from-diff.sh ./deps/analyze-dependencies.sh
+# RUN chmod +x ./scripts/deps/move-from-diff.sh ./scripts/deps/analyze-dependencies.sh
 
 # Build the application
 RUN npm run build
@@ -25,7 +25,7 @@ RUN npm run build
 # RUN npm run move-and-prune
 
 # Stage 2: Final stage
-FROM node:22-alpine
+FROM node:alpine
 
 WORKDIR /usr/src/app
 
