@@ -79,7 +79,10 @@ These scripts help analyze the difference between production and development dep
      - Identifies dev-only dependencies used in the production code.
      - Moves required dependencies from `devDependencies` to `dependencies` in `package.json`.
 
-2. **Validation**
+2. **Backup of `package.json`**
+   - Before making changes, the script creates a backup file `package.json.bak` for safety.
+
+3. **Validation**
    - The script checks if a dependency is used in the production code (default: `./src` folder).
    - Modify the script if your codebase structure differs.
 

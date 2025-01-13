@@ -52,7 +52,7 @@ if [ "$NODE_ENV" = "production" ]; then
   echo "Skipping npm install in production environment"
 else
   echo "Installing dependencies (if necessary) to ensure npm ls commands run accurately..."
-  npm install
+  npm install --no-save
 fi
 
 echo "Generating list of production dependencies (top-level only)..."

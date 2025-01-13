@@ -27,11 +27,14 @@ echo "$DEV_ONLY_PACKAGES"
 # Temporary file to store required production dependencies
 REQUIRED_FOR_PRODUCTION_FILE=$(mktemp)
 
+# Allow configuration of source directory
+SOURCE_DIR=${SOURCE_DIR:-"./src"}
+
 for PACKAGE in $DEV_ONLY_PACKAGES; do
   echo "Checking if $PACKAGE is used in production..."
   
   # Use grep to check if the package name appears in the production code
-  if grep -qr "$PACKAGE" ./src; then
+  if grep -qr "$PACKAGE" "$SOURCE_DIR"; then
     echo "$PACKAGE is required in production."
     echo "$PACKAGE" >> "$REQUIRED_FOR_PRODUCTION_FILE"
   else
@@ -47,6 +50,10 @@ fi
 
 echo "The following dev dependencies are required in production:"
 cat "$REQUIRED_FOR_PRODUCTION_FILE"
+
+# Backup package.json
+echo "Creating backup of package.json..."
+cp package.json package.json.bak
 
 # Move required dependencies to production dependencies
 while IFS= read -r PACKAGE; do
