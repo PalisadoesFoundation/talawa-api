@@ -487,7 +487,7 @@ export function getDockerComposeCommand(): { command: string; args: string[] } {
 }
 
 const DOCKER_COMPOSE_TIMEOUT_MS = 300000;
-async function runDockerComposeWithLogs(): Promise<void> {
+export async function runDockerComposeWithLogs(): Promise<void> {
   // Check if Docker daemon is running
   try {
     await new Promise((resolve, reject) => {
@@ -915,6 +915,126 @@ export async function configureMinio(
   console.log("[MINIO] MinIO configuration added successfully.\n");
 }
 
+export async function dataImportWithoutDocker(
+  checkDb: (url: string) => Promise<boolean>,
+  wipeExistingData: (url: string) => Promise<void>,
+  importDefaultData: () => Promise<void>,
+  importData: () => Promise<void>,
+): Promise<void> {
+  if (!process.env.MONGO_DB_URL) {
+    console.log("Couldn't find mongodb url");
+    return;
+  }
+
+  const isDbEmpty = await checkDb(process.env.MONGO_DB_URL);
+  if (!isDbEmpty) {
+    const { shouldOverwriteData } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldOverwriteData",
+      message:
+        "Do you want to delete the existing data and import required default Data to start using Talawa?",
+      default: false,
+    });
+    if (shouldOverwriteData) {
+      await wipeExistingData(process.env.MONGO_DB_URL);
+      // Import Default Data
+
+      // Prompt to import Sample Data
+      const { importSampleData } = await inquirer.prompt({
+        type: "confirm",
+        name: "importSampleData",
+        message:
+          "Do you want to import Talawa sample data for testing and evaluation purposes?",
+        default: false,
+      });
+
+      if (importSampleData) {
+        await importData();
+      } else await importDefaultData();
+    }
+  } else {
+    const { shouldImportSampleData } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldImportSampleData",
+      message:
+        "Do you want to import Talawa sample data for testing and evaluation purposes?",
+      default: false,
+    });
+    if (shouldImportSampleData) {
+      await importData();
+    } else {
+      await importDefaultData();
+    }
+  }
+}
+
+async function connectToDatabase(): Promise<void> {
+  console.log("Waiting for mongoDB to be ready...");
+  let isConnected = false;
+  const maxRetries = 30; // 30 seconds timeout
+  let retryCount = 0;
+  while (!isConnected) {
+    if (retryCount >= maxRetries) {
+      throw new Error(
+        "Timed out waiting for MongoDB to be ready after 30 seconds",
+      );
+    }
+    try {
+      const client = new MongoClient(process.env.MONGO_DB_URL as string);
+      await client.connect();
+      await client.db().command({ ping: 1 });
+      client.close();
+      isConnected = true;
+      console.log("MongoDB is ready!");
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err);
+      console.log(
+        `Waiting for MongoDB to be ready... Retry ${retryCount + 1}/${maxRetries}. Details: ${error}`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      retryCount++;
+    }
+  }
+  return Promise.resolve();
+}
+
+export async function dataImportWithDocker(
+  runDockerComposeWithLogs: () => Promise<void>,
+  importDefaultData: () => Promise<void>,
+  importData: () => Promise<void>,
+  connectToDatabase: () => Promise<void>,
+): Promise<void> {
+  const { shouldStartDockerContainers } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldStartDockerContainers",
+    message: "Do you want to start the Docker containers now?",
+    default: true,
+  });
+  if (shouldStartDockerContainers) {
+    console.log("Starting docker container...");
+    try {
+      await runDockerComposeWithLogs();
+      console.log("Docker containers have been built successfully!");
+      // Wait for mongoDB to be ready
+      await connectToDatabase();
+
+      const { shouldImportSampleData } = await inquirer.prompt({
+        type: "confirm",
+        name: "shouldImportSampleData",
+        message:
+          "Do you want to import Talawa sample data for testing and evaluation purposes?",
+        default: true,
+      });
+
+      if (shouldImportSampleData) {
+        await importData();
+      } else await importDefaultData();
+    } catch (err) {
+      console.log("Some error occurred: " + err);
+    }
+  }
+}
+
 /**
  * The main function sets up the Talawa API by prompting the user to configure various environment
  * variables and import sample data if desired.
@@ -1226,108 +1346,19 @@ async function main(): Promise<void> {
   await setImageUploadSize(imageSizeLimit * 1000);
 
   if (!isDockerInstallation) {
-    if (!process.env.MONGO_DB_URL) {
-      console.log("Couldn't find mongodb url");
-      return;
-    }
-
-    const isDbEmpty = await checkDb(process.env.MONGO_DB_URL);
-    if (!isDbEmpty) {
-      const { shouldOverwriteData } = await inquirer.prompt({
-        type: "confirm",
-        name: "shouldOverwriteData",
-        message:
-          "Do you want to delete the existing data and import required default Data to start using Talawa?",
-        default: false,
-      });
-      if (shouldOverwriteData) {
-        await wipeExistingData(process.env.MONGO_DB_URL);
-        // Import Default Data
-        await importDefaultData();
-
-        // Prompt to import Sample Data
-        const { importSampleData } = await inquirer.prompt({
-          type: "confirm",
-          name: "importSampleData",
-          message:
-            "Do you want to import Talawa sample data for testing and evaluation purposes?",
-          default: false,
-        });
-
-        if (importSampleData) {
-          await importData();
-        }
-      }
-    } else {
-      const { shouldImportSampleData } = await inquirer.prompt({
-        type: "confirm",
-        name: "shouldImportSampleData",
-        message:
-          "Do you want to import Talawa sample data for testing and evaluation purposes?",
-        default: false,
-      });
-      if (shouldImportSampleData) {
-        await importData();
-      } else {
-        await importDefaultData();
-      }
-    }
+    await dataImportWithoutDocker(
+      checkDb,
+      wipeExistingData,
+      importDefaultData,
+      importData,
+    );
   } else {
-    const { shouldStartDockerContainers } = await inquirer.prompt({
-      type: "confirm",
-      name: "shouldStartDockerContainers",
-      message: "Do you want to start the Docker containers now?",
-      default: true,
-    });
-    if (shouldStartDockerContainers) {
-      console.log("Starting docker container...");
-      try {
-        await runDockerComposeWithLogs();
-        console.log("Docker containers have been built successfully!");
-        // Wait for mongoDB to be ready
-        console.log("Waiting for mongoDB to be ready...");
-        let isConnected = false;
-        const maxRetries = 30; // 30 seconds timeout
-        let retryCount = 0;
-        while (!isConnected) {
-          if (retryCount >= maxRetries) {
-            throw new Error(
-              "Timed out waiting for MongoDB to be ready after 30 seconds",
-            );
-          }
-          try {
-            const client = new MongoClient(process.env.MONGO_DB_URL as string);
-            await client.connect();
-            await client.db().command({ ping: 1 });
-            client.close();
-            isConnected = true;
-            console.log("MongoDB is ready!");
-          } catch (err) {
-            const error = err instanceof Error ? err.message : String(err);
-            console.log(
-              `Waiting for MongoDB to be ready... Retry ${retryCount + 1}/${maxRetries}. Details: ${error}`,
-            );
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            retryCount++;
-          }
-        }
-
-        await importDefaultData();
-        const { shouldImportSampleData } = await inquirer.prompt({
-          type: "confirm",
-          name: "shouldImportSampleData",
-          message:
-            "Do you want to import Talawa sample data for testing and evaluation purposes?",
-          default: true,
-        });
-
-        if (shouldImportSampleData) {
-          await importData();
-        }
-      } catch (err) {
-        console.log("Some error occurred: " + err);
-      }
-    }
+    await dataImportWithDocker(
+      runDockerComposeWithLogs,
+      importDefaultData,
+      importData,
+      connectToDatabase,
+    );
   }
 
   console.log(
