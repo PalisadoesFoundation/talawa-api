@@ -13,6 +13,7 @@ npm run typecheck
 npm run lint-staged
 
 npm run gen:schema
+npm run generate:docs
 
 # Generate table of contents for markdown files in root directory
 npm run update:toc
