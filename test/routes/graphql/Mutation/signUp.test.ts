@@ -40,7 +40,6 @@ suite("Mutation field signUp", () => {
 					},
 					variables: {
 						input: {
-							confirmedPassword: "password",
 							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 							name: "name",
 							password: "password",
@@ -69,7 +68,6 @@ suite("Mutation field signUp", () => {
 		() => {
 			test(`length of the value of the argument "input.address" is less than 1.
 				length of the value of the argument "input.city" is less than 1.
-				length of the value of the argument "input.confirmedPassword" is less than 1.
 				length of the value of the argument "input.description" is less than 1.
 				length of the value of the argument "input.name" is less than 1.
 				length of the value of the argument "input.password" is less than 1.
@@ -80,7 +78,6 @@ suite("Mutation field signUp", () => {
 						input: {
 							address: "",
 							city: "",
-							confirmedPassword: "",
 							description: "",
 							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 							name: "",
@@ -106,10 +103,6 @@ suite("Mutation field signUp", () => {
 									},
 									{
 										argumentPath: ["input", "city"],
-										message: expect.any(String),
-									},
-									{
-										argumentPath: ["input", "confirmedPassword"],
 										message: expect.any(String),
 									},
 									{
@@ -143,7 +136,6 @@ suite("Mutation field signUp", () => {
 
 			test(`length of the value of the argument "input.address" is more than 1025.
 				length of the value of the argument "input.city" is more than 64.
-				length of the value of the argument "input.confirmedPassword" is more than 64.
 				length of the value of the argument "input.description" is more than 2048.
 				length of the value of the argument "input.name" is more than 256.
 				length of the value of the argument "input.password" is more than 64.
@@ -154,7 +146,6 @@ suite("Mutation field signUp", () => {
 						input: {
 							address: `address${faker.string.alpha(1025)}`,
 							city: `city${faker.string.alpha(65)}`,
-							confirmedPassword: `confirmedPassword${faker.string.alpha(65)}`,
 							description: `description${faker.string.alpha(2049)}`,
 							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 							name: `name${faker.string.alpha(257)}`,
@@ -180,10 +171,6 @@ suite("Mutation field signUp", () => {
 									},
 									{
 										argumentPath: ["input", "city"],
-										message: expect.any(String),
-									},
-									{
-										argumentPath: ["input", "confirmedPassword"],
 										message: expect.any(String),
 									},
 									{
@@ -214,45 +201,6 @@ suite("Mutation field signUp", () => {
 					]),
 				);
 			});
-
-			test(`value of the argument "input.confirmedPassword" does not match the value of the argument "input.password".
-				value of the argument "input.password" does not match the value of the argument "input.confirmedPassword".`, async () => {
-				const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
-					variables: {
-						input: {
-							confirmedPassword: "confirmedPassword",
-							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
-							name: "name",
-							password: "password",
-						},
-					},
-				});
-
-				expect(signUpResult.data.signUp).toEqual(null);
-				expect(signUpResult.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
-								issues: expect.arrayContaining<
-									InvalidArgumentsExtensions["issues"][number]
-								>([
-									{
-										argumentPath: ["input", "confirmedPassword"],
-										message: expect.any(String),
-									},
-									{
-										argumentPath: ["input", "password"],
-										message: expect.any(String),
-									},
-								]),
-							}),
-							message: expect.any(String),
-							path: ["signUp"],
-						}),
-					]),
-				);
-			});
 		},
 	);
 
@@ -263,7 +211,6 @@ suite("Mutation field signUp", () => {
 				const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
 					variables: {
 						input: {
-							confirmedPassword: "password",
 							emailAddress:
 								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
 							name: "name",
@@ -310,7 +257,6 @@ suite("Mutation field signUp", () => {
 						address: "address",
 						birthDate: "1901-01-01",
 						city: "city",
-						confirmedPassword: "password",
 						countryCode: "us",
 						description: "description",
 						educationGrade: "kg",
@@ -369,7 +315,6 @@ suite("Mutation field signUp", () => {
 			test(`nullable user fields have the "null" values if the corresponding nullable arguments are not provided in the graphql operation.`, async () => {
 				const variables: VariablesOf<typeof Mutation_signUp> = {
 					input: {
-						confirmedPassword: "password",
 						emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
 						name: "name",
 						password: "password",
