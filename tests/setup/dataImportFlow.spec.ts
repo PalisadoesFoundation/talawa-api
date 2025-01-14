@@ -14,7 +14,7 @@ describe("Data Importation Without Docker", () => {
     process.env = { ...mockEnv }; // Restore environment variables
   });
 
-  it("should import sample data if the database is empty and user opts to import sample data", async () => {
+  it("should import default data if the database is empty and user opts to import default data", async () => {
     const checkDbMock = vi
       .fn()
       .mockImplementation(async (): Promise<boolean> => {
@@ -36,8 +36,45 @@ describe("Data Importation Without Docker", () => {
         return Promise.resolve();
       });
     vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
-      shouldImportSampleData: true,
+      shouldImportDefaultData: true,
     });
+
+    await dataImportWithoutDocker(
+      checkDbMock,
+      wipeExistingDataMock,
+      importDefaultDataMock,
+      importDataMock,
+    );
+    expect(checkDbMock).toBeCalled();
+    expect(wipeExistingDataMock).not.toBeCalled();
+    expect(importDefaultDataMock).toBeCalled();
+    expect(importDataMock).not.toBeCalled();
+  });
+
+  it("should import sample data if the database is empty and user opts not to import default data but import sample data", async () => {
+    const checkDbMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<boolean> => {
+        return true;
+      });
+    const wipeExistingDataMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    const importDataMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    const importDefaultDataMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    vi.spyOn(inquirer, "prompt")
+      .mockResolvedValueOnce({ shouldImportDefaultData: false })
+      .mockResolvedValueOnce({ shouldImportSampleData: true });
 
     await dataImportWithoutDocker(
       checkDbMock,
@@ -51,7 +88,7 @@ describe("Data Importation Without Docker", () => {
     expect(importDataMock).toBeCalled();
   });
 
-  it("should not import sample data if the database is empty and user opts not to import sample data", async () => {
+  it("should do no-op if the database is empty and user imports neither default nor sample data", async () => {
     const checkDbMock = vi
       .fn()
       .mockImplementation(async (): Promise<boolean> => {
@@ -72,9 +109,9 @@ describe("Data Importation Without Docker", () => {
       .mockImplementation(async (): Promise<void> => {
         return Promise.resolve();
       });
-    vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
-      shouldImportSampleData: false,
-    });
+    vi.spyOn(inquirer, "prompt")
+      .mockResolvedValueOnce({ shouldImportDefaultData: false })
+      .mockResolvedValueOnce({ shouldImportSampleData: false });
 
     await dataImportWithoutDocker(
       checkDbMock,
@@ -84,7 +121,7 @@ describe("Data Importation Without Docker", () => {
     );
     expect(checkDbMock).toBeCalled();
     expect(wipeExistingDataMock).not.toBeCalled();
-    expect(importDefaultDataMock).toBeCalled();
+    expect(importDefaultDataMock).not.toBeCalled();
     expect(importDataMock).not.toBeCalled();
   });
 
@@ -111,7 +148,8 @@ describe("Data Importation Without Docker", () => {
       });
     vi.spyOn(inquirer, "prompt")
       .mockResolvedValueOnce({ shouldOverwriteData: true })
-      .mockResolvedValueOnce({ importSampleData: true });
+      .mockResolvedValueOnce({ overwriteDefaultData: false })
+      .mockResolvedValueOnce({ overwriteSampleData: true });
 
     await dataImportWithoutDocker(
       checkDbMock,
@@ -125,7 +163,7 @@ describe("Data Importation Without Docker", () => {
     expect(importDataMock).toBeCalled();
   });
 
-  it("should not import sample data if the database is not empty and user opts to overwrite and not import sample data", async () => {
+  it("should import default data if the database is not empty and user opts to overwrite and import default data", async () => {
     const checkDbMock = vi
       .fn()
       .mockImplementation(async (): Promise<boolean> => {
@@ -148,7 +186,7 @@ describe("Data Importation Without Docker", () => {
       });
     vi.spyOn(inquirer, "prompt")
       .mockResolvedValueOnce({ shouldOverwriteData: true })
-      .mockResolvedValueOnce({ importSampleData: false });
+      .mockResolvedValueOnce({ overwriteDefaultData: true });
 
     await dataImportWithoutDocker(
       checkDbMock,
@@ -162,7 +200,45 @@ describe("Data Importation Without Docker", () => {
     expect(importDataMock).not.toBeCalled();
   });
 
-  it("should complete the data importation if the database is not empty and user does not opt to overwrite", async () => {
+  it("should  do no-op if db not empty and user imports neither default nor sample data", async () => {
+    const checkDbMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<boolean> => {
+        return false;
+      });
+    const wipeExistingDataMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    const importDataMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    const importDefaultDataMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    vi.spyOn(inquirer, "prompt")
+      .mockResolvedValueOnce({ shouldOverwriteData: true })
+      .mockResolvedValueOnce({ overwriteDefaultData: false })
+      .mockResolvedValueOnce({ overwriteSampleData: false });
+
+    await dataImportWithoutDocker(
+      checkDbMock,
+      wipeExistingDataMock,
+      importDefaultDataMock,
+      importDataMock,
+    );
+    expect(checkDbMock).toBeCalled();
+    expect(wipeExistingDataMock).not.toBeCalled();
+    expect(importDefaultDataMock).not.toBeCalled();
+    expect(importDataMock).not.toBeCalled();
+  });
+
+  it("should do no-op if db not empty and user opts not to overwrite", async () => {
     const checkDbMock = vi
       .fn()
       .mockImplementation(async (): Promise<boolean> => {
@@ -250,7 +326,7 @@ describe("Data Importation With Docker", () => {
     process.env = { ...mockEnv }; // Restore environment variables
   });
 
-  it("should complete data importation if user opts not to start containers", async () => {
+  it("should do no-op if user opts not to start containers", async () => {
     const runDockerComposeMock = vi
       .fn()
       .mockImplementation(async (): Promise<void> => {
@@ -361,6 +437,43 @@ describe("Data Importation With Docker", () => {
     expect(importDataMock).not.toBeCalled();
   });
 
+  it("should import default data if user opts to import default data", async () => {
+    const runDockerComposeMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    const importDataMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    const importDefaultDataMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    const connectDatabaseMock = vi
+      .fn()
+      .mockImplementation(async (): Promise<void> => {
+        return Promise.resolve();
+      });
+    vi.spyOn(inquirer, "prompt")
+      .mockResolvedValueOnce({ shouldStartDockerContainers: true })
+      .mockResolvedValueOnce({ shouldImportDefaultData: true });
+
+    await dataImportWithDocker(
+      runDockerComposeMock,
+      importDefaultDataMock,
+      importDataMock,
+      connectDatabaseMock,
+    );
+    expect(runDockerComposeMock).toBeCalled();
+    expect(connectDatabaseMock).toBeCalled();
+    expect(importDefaultDataMock).toBeCalled();
+    expect(importDataMock).not.toBeCalled();
+  });
+
   it("should import sample data if user opts to import sample data", async () => {
     const runDockerComposeMock = vi
       .fn()
@@ -384,6 +497,7 @@ describe("Data Importation With Docker", () => {
       });
     vi.spyOn(inquirer, "prompt")
       .mockResolvedValueOnce({ shouldStartDockerContainers: true })
+      .mockResolvedValueOnce({ shouldImportDefaultData: false })
       .mockResolvedValueOnce({ shouldImportSampleData: true });
 
     await dataImportWithDocker(
@@ -398,7 +512,7 @@ describe("Data Importation With Docker", () => {
     expect(importDataMock).toBeCalled();
   });
 
-  it("should import default data if user does not opt to import sample data", async () => {
+  it("should do no-op if user opts to import neither sample data nor default data", async () => {
     const runDockerComposeMock = vi
       .fn()
       .mockImplementation(async (): Promise<void> => {
@@ -421,6 +535,7 @@ describe("Data Importation With Docker", () => {
       });
     vi.spyOn(inquirer, "prompt")
       .mockResolvedValueOnce({ shouldStartDockerContainers: true })
+      .mockResolvedValueOnce({ shouldImportDefaultData: false })
       .mockResolvedValueOnce({ shouldImportSampleData: false });
 
     await dataImportWithDocker(
@@ -431,7 +546,7 @@ describe("Data Importation With Docker", () => {
     );
     expect(runDockerComposeMock).toBeCalled();
     expect(connectDatabaseMock).toBeCalled();
-    expect(importDefaultDataMock).toBeCalled();
+    expect(importDefaultDataMock).not.toBeCalled();
     expect(importDataMock).not.toBeCalled();
   });
 

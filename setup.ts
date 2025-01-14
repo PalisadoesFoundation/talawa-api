@@ -922,7 +922,8 @@ export async function dataImportWithoutDocker(
   importData: () => Promise<void>,
 ): Promise<void> {
   if (!process.env.MONGO_DB_URL) {
-    throw new Error("MongoDB URL is not configured. Please run setup first.");
+    console.log("Couldn't find mongodb url");
+    return;
   }
 
   let isDbEmpty: boolean;
@@ -937,39 +938,55 @@ export async function dataImportWithoutDocker(
     const { shouldOverwriteData } = await inquirer.prompt({
       type: "confirm",
       name: "shouldOverwriteData",
-      message:
-        "Do you want to delete the existing data and import required default Data to start using Talawa?",
+      message: "Do you want to overwrite the existing data?",
       default: false,
     });
     if (shouldOverwriteData) {
-      await wipeExistingData(process.env.MONGO_DB_URL);
-      // Import Default Data
-
-      // Prompt to import Sample Data
-      const { importSampleData } = await inquirer.prompt({
+      const { overwriteDefaultData } = await inquirer.prompt({
         type: "confirm",
-        name: "importSampleData",
+        name: "overwriteDefaultData",
         message:
-          "Do you want to import Talawa sample data for testing and evaluation purposes?",
+          "Do you want to DESTROY the existing data, replacing it with the default data required for a fresh production system?",
         default: false,
       });
-
-      if (importSampleData) {
-        await importData();
-      } else await importDefaultData();
+      if (overwriteDefaultData) {
+        await wipeExistingData(process.env.MONGO_DB_URL);
+        await importDefaultData();
+      } else {
+        const { overwriteSampleData } = await inquirer.prompt({
+          type: "confirm",
+          name: "overwriteSampleData",
+          message:
+            "Do you want to DESTROY the existing data, replacing it with data suitable for testing and evaluation?",
+          default: false,
+        });
+        if (overwriteSampleData) {
+          await wipeExistingData(process.env.MONGO_DB_URL);
+          await importData();
+        }
+      }
     }
   } else {
-    const { shouldImportSampleData } = await inquirer.prompt({
+    const { shouldImportDefaultData } = await inquirer.prompt({
       type: "confirm",
-      name: "shouldImportSampleData",
+      name: "shouldImportDefaultData",
       message:
-        "Do you want to import Talawa sample data for testing and evaluation purposes?",
+        "Do you want to import default data required for a fresh production system?",
       default: false,
     });
-    if (shouldImportSampleData) {
-      await importData();
-    } else {
+    if (shouldImportDefaultData) {
       await importDefaultData();
+    } else {
+      const { shouldImportSampleData } = await inquirer.prompt({
+        type: "confirm",
+        name: "shouldImportSampleData",
+        message:
+          "Do you want to import data suitable for testing and evaluation?",
+        default: false,
+      });
+      if (shouldImportSampleData) {
+        await importData();
+      }
     }
   }
 }
@@ -1024,17 +1041,27 @@ export async function dataImportWithDocker(
       // Wait for mongoDB to be ready
       await connectToDatabase();
 
-      const { shouldImportSampleData } = await inquirer.prompt({
+      const { shouldImportDefaultData } = await inquirer.prompt({
         type: "confirm",
-        name: "shouldImportSampleData",
+        name: "shouldImportDefaultData",
         message:
-          "Do you want to import Talawa sample data for testing and evaluation purposes?",
-        default: true,
+          "Do you want to import default data required for a fresh production system?",
+        default: false,
       });
-
-      if (shouldImportSampleData) {
-        await importData();
-      } else await importDefaultData();
+      if (shouldImportDefaultData) {
+        await importDefaultData();
+      } else {
+        const { shouldImportSampleData } = await inquirer.prompt({
+          type: "confirm",
+          name: "shouldImportSampleData",
+          message:
+            "Do you want to import data suitable for testing and evaluation?",
+          default: false,
+        });
+        if (shouldImportSampleData) {
+          await importData();
+        }
+      }
     } catch (err) {
       console.log("Some error occurred: " + err);
     }
