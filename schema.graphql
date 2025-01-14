@@ -163,6 +163,226 @@ enum AgendaItemType {
   song
 }
 
+type AgendaFolder {
+  """
+  GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
+  """
+  childFolders(after: String, before: String, first: Int, last: Int): AgendaFolderChildFoldersConnection
+
+  """Date time at the time the agenda folder was last created."""
+  createdAt: DateTime
+
+  """User who created the agenda folder."""
+  creator: User
+
+  """Event associated to the agenda folder."""
+  event: Event
+
+  """Global identifier of the agenda folder."""
+  id: ID!
+
+  """
+  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
+  """
+  isAgendaItemFolder: Boolean
+
+  """
+  GraphQL connection to traverse through the agenda item associated to the agenda folder.
+  """
+  items(after: String, before: String, first: Int, last: Int): AgendaFolderItemsConnection
+
+  """Name of the agenda folder."""
+  name: String
+
+  """Agenda folder that is a parent folder to the agenda folder."""
+  parentFolder: AgendaFolder
+
+  """Date time at the time the agenda folder was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda folder."""
+  updater: User
+}
+
+""""""
+type AgendaFolderChildFoldersConnection {
+  edges: [AgendaFolderChildFoldersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type AgendaFolderChildFoldersConnectionEdge {
+  cursor: String!
+  node: AgendaFolder
+}
+
+""""""
+type AgendaFolderItemsConnection {
+  edges: [AgendaFolderItemsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type AgendaFolderItemsConnectionEdge {
+  cursor: String!
+  node: AgendaItem
+}
+
+type AgendaItem {
+  """Date time at the time the agenda item was last created."""
+  createdAt: DateTime
+
+  """User who created the agenda item."""
+  creator: User
+
+  """Custom information about the agenda item."""
+  description: String
+
+  """Duration of the agenda item."""
+  duration: String
+
+  """Agenda folder associated to the agenda item."""
+  event: AgendaFolder
+
+  """Global identifier of the agenda item."""
+  id: ID!
+
+  """
+  Key of the agenda item if it's type is "song". More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  """
+  key: String
+
+  """Name of the agenda item."""
+  name: String
+
+  """Type of the agenda item."""
+  type: AgendaItemType
+
+  """Date time at the time the agenda item was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda item."""
+  updater: User
+}
+
+""""""
+enum AgendaItemType {
+  general
+  note
+  scripture
+  song
+}
+
+type AgendaFolder {
+  """
+  GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
+  """
+  childFolders(after: String, before: String, first: Int, last: Int): AgendaFolderChildFoldersConnection
+
+  """Date time at the time the agenda folder was last created."""
+  createdAt: DateTime
+
+  """User who created the agenda folder."""
+  creator: User
+
+  """Event associated to the agenda folder."""
+  event: Event
+
+  """Global identifier of the agenda folder."""
+  id: ID!
+
+  """
+  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
+  """
+  isAgendaItemFolder: Boolean
+
+  """
+  GraphQL connection to traverse through the agenda item associated to the agenda folder.
+  """
+  items(after: String, before: String, first: Int, last: Int): AgendaFolderItemsConnection
+
+  """Name of the agenda folder."""
+  name: String
+
+  """Agenda folder that is a parent folder to the agenda folder."""
+  parentFolder: AgendaFolder
+
+  """Date time at the time the agenda folder was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda folder."""
+  updater: User
+}
+
+""""""
+type AgendaFolderChildFoldersConnection {
+  edges: [AgendaFolderChildFoldersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type AgendaFolderChildFoldersConnectionEdge {
+  cursor: String!
+  node: AgendaFolder
+}
+
+""""""
+type AgendaFolderItemsConnection {
+  edges: [AgendaFolderItemsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type AgendaFolderItemsConnectionEdge {
+  cursor: String!
+  node: AgendaItem
+}
+
+type AgendaItem {
+  """Date time at the time the agenda item was last created."""
+  createdAt: DateTime
+
+  """User who created the agenda item."""
+  creator: User
+
+  """Custom information about the agenda item."""
+  description: String
+
+  """Duration of the agenda item."""
+  duration: String
+
+  """Agenda folder associated to the agenda item."""
+  event: AgendaFolder
+
+  """Global identifier of the agenda item."""
+  id: ID!
+
+  """
+  Key of the agenda item if it's type is "song". More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  """
+  key: String
+
+  """Name of the agenda item."""
+  name: String
+
+  """Type of the agenda item."""
+  type: AgendaItemType
+
+  """Date time at the time the agenda item was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda item."""
+  updater: User
+}
+
+""""""
+enum AgendaItemType {
+  general
+  note
+  scripture
+  song
+}
+
 """"""
 type AuthenticationPayload {
   """
@@ -257,6 +477,98 @@ type ChatMessage {
 
   """Parent message of the chat message."""
   parentMessage: ChatMessage
+
+  """Date time at the time the chat message was last updated."""
+  updatedAt: DateTime
+}
+
+""""""
+type ChatMessagesConnection {
+  edges: [ChatMessagesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type ChatMessagesConnectionEdge {
+  cursor: String!
+  node: ChatMessage
+}
+
+type Chat {
+  """URI to the avatar of the chat."""
+  avatarURI: String
+
+  """Date time at the time the chat was created."""
+  createdAt: DateTime
+
+  """User who created the chat."""
+  creator: User
+
+  """Custom information about the chat."""
+  description: String
+
+  """Global identifier of the chat."""
+  id: ID!
+
+  """
+  GraphQL connection to traverse through the users that are members of the chat.
+  """
+  members(after: String, before: String, first: Int, last: Int): ChatMembersConnection
+
+  """
+  GraphQL connection to traverse through the chat messages that are associated to the chat.
+  """
+  messages(after: String, before: String, first: Int, last: Int): ChatMessagesConnection
+
+  """Name of the chat."""
+  name: String
+
+  """Organization which the chat is associated to."""
+  organization: Organization
+
+  """Date time at the time the chat was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the chat."""
+  updater: User
+}
+
+""""""
+type ChatMembersConnection {
+  edges: [ChatMembersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type ChatMembersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+""""""
+enum ChatMembershipRole {
+  administrator
+  regular
+}
+
+type ChatMessage {
+  """Body of the chat message."""
+  body: String
+
+  """Chat which the chat message belongs to."""
+  chat: Chat
+
+  """Date time at the time the chat message was created."""
+  createdAt: DateTime
+
+  """User who created the chat message."""
+  creator: User
+
+  """Global identifier of the chat message."""
+  id: ID!
+
+  """Parent chat message of the chat message."""
+  parentChatMessage: ChatMessage
 
   """Date time at the time the chat message was last updated."""
   updatedAt: DateTime
