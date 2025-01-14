@@ -23,24 +23,7 @@ export const mutationSignUpInputSchema = usersTableInsertSchema
 	})
 	.extend({
 		avatar: z.custom<Promise<FileUpload>>().nullish(),
-		confirmedPassword: z.string().min(1).max(64),
 		password: z.string().min(1).max(64),
-	})
-	.transform(({ confirmedPassword, ...transformedArg }, ctx) => {
-		if (confirmedPassword !== transformedArg.password) {
-			ctx.addIssue({
-				code: "custom",
-				path: ["confirmedPassword"],
-				message: "Does not match the password.",
-			});
-			ctx.addIssue({
-				code: "custom",
-				path: ["password"],
-				message: "Does not match the confirmed password.",
-			});
-		}
-
-		return transformedArg;
 	});
 
 export const MutationSignUpInput = builder
@@ -61,11 +44,6 @@ export const MutationSignUpInput = builder
 			}),
 			city: t.string({
 				description: "Name of the city where the user resides in.",
-			}),
-			confirmedPassword: t.string({
-				description:
-					"Confirmed password of the user to sign in to the application.",
-				required: true,
 			}),
 			countryCode: t.field({
 				description: "Country code of the country the user is a citizen of.",

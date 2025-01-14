@@ -1737,9 +1737,6 @@ input MutationSignUpInput {
   """Name of the city where the user resides in."""
   city: String
 
-  """Confirmed password of the user to sign in to the application."""
-  confirmedPassword: String!
-
   """Country code of the country the user is a citizen of."""
   countryCode: Iso3166Alpha2CountryCode
 
