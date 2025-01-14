@@ -9,7 +9,7 @@
     "dev": "concurrently \"nodemon --exec tsx ./src/index.ts\" \"graphql-codegen --watch\"",
     "minio:check": "npm run build && node ./build/minioInstallationCheck.js",
     "dev:with-minio": "concurrently \"npm run minio:check\" \"nodemon --exec tsx ./src/index.ts\" \"graphql-codegen --watch\"",
-    "start:with-minio": "concurrently \"npm run minio:check\" \"cross-env pm2-runtime start ./build/server.js\"",
+    "start:with-minio": "concurrently \"node ./build/minioInstallationCheck.js\" \"cross-env pm2-runtime start ./build/index.js\"",
     "prebuild": "graphql-codegen && rimraf ./build",
     "prod": "cross-env NODE_ENV=production pm2-runtime start ./build/index.js",
     "start": "cross-env pm2-runtime start ./build/server.js --watch",

@@ -33,12 +33,12 @@ WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app/build ./build
 COPY --from=builder /usr/src/app/package.json ./package.json
 COPY --from=builder /usr/src/app/node_modules ./node_modules
-COPY --from=builder /usr/src/app/locales ./locales
+# COPY --from=builder /usr/src/app/locales ./locales
 COPY --from=builder /usr/src/app/certs ./certs
-COPY --from=builder /usr/src/app/codegen.ts ./codegen.ts
-COPY --from=builder /usr/src/app/tsconfig.build.json ./tsconfig.build.json
-COPY --from=builder /usr/src/app/fix-imports ./fix-imports
-COPY --from=builder /usr/src/app/src ./src
+# COPY --from=builder /usr/src/app/codegen.ts ./codegen.ts
+# COPY --from=builder /usr/src/app/tsconfig.build.json ./tsconfig.build.json
+# COPY --from=builder /usr/src/app/fix-imports ./fix-imports
+# COPY --from=builder /usr/src/app/src ./src
 
 # Expose the application port
 EXPOSE 4000
