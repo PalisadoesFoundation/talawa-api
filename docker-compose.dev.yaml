@@ -16,7 +16,7 @@ services:
       - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
-      - ./init-mongo.sh:/init-mongo.sh
+      - ./scripts/docker/init-mongo.sh:/init-mongo.sh
     networks:
       - talawa-network
     entrypoint: ["/bin/bash", "/init-mongo.sh"]
