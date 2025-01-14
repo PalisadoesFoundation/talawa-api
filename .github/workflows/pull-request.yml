@@ -222,7 +222,7 @@ jobs:
   Test-Application:
     name: Testing Application
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks, Check-Eslint-Disable, Check-Code-Coverage-Disable]
+    needs: [Code-Quality-Checks, Check-ESlint-Disable, Check-Code-Coverage-Disable]
     strategy:
       matrix:
         node-version: [22.x]
@@ -607,3 +607,22 @@ jobs:
           echo "PR is not against develop branch. Please refer PR_GUIDELINES.md"
           echo "Error: Close this PR and try again."
           exit 1
+
+
+  Validate-Coderabbit:
+    name: Validate CodeRabbit Approval
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    needs: [Test-Builds]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Validate CodeRabbit.ai Approval
+        run: |
+          chmod +x $GITHUB_WORKSPACE/.github/workflows/scripts/validate-coderabbit.sh
+          $GITHUB_WORKSPACE/.github/workflows/scripts/validate-coderabbit.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
