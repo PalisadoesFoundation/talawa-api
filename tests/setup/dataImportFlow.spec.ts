@@ -434,4 +434,31 @@ describe("Data Importation With Docker", () => {
     expect(importDefaultDataMock).toBeCalled();
     expect(importDataMock).not.toBeCalled();
   });
+
+  it("should handle Docker container startup timeout", async () => {
+    const runDockerComposeMock = vi.fn().mockImplementation(async () => {
+      return new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error("Docker compose operation timed out"));
+        }, 3000);
+      });
+    });
+    const importDataMock = vi.fn();
+    const importDefaultDataMock = vi.fn();
+    const connectDatabaseMock = vi.fn();
+
+    vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+      shouldStartDockerContainers: true,
+    });
+
+    await dataImportWithDocker(
+      runDockerComposeMock,
+      importDefaultDataMock,
+      importDataMock,
+      connectDatabaseMock,
+    );
+
+    expect(runDockerComposeMock).toBeCalled();
+    expect(connectDatabaseMock).not.toBeCalled();
+  });
 });
