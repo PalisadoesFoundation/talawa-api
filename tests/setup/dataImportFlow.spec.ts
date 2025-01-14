@@ -14,7 +14,7 @@ describe("Data Importation Without Docker", () => {
     process.env = { ...mockEnv }; // Restore environment variables
   });
 
-  it("should import sample data if the database is empty and user opts to import", async () => {
+  it("should import sample data if the database is empty and user opts to import sample data", async () => {
     const checkDbMock = vi
       .fn()
       .mockImplementation(async (): Promise<boolean> => {
@@ -51,7 +51,7 @@ describe("Data Importation Without Docker", () => {
     expect(importDataMock).toBeCalled();
   });
 
-  it("should import sample data if the database is empty and user opts not to import", async () => {
+  it("should not import sample data if the database is empty and user opts not to import sample data", async () => {
     const checkDbMock = vi
       .fn()
       .mockImplementation(async (): Promise<boolean> => {
