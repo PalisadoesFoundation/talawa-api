@@ -34,7 +34,7 @@ jobs:
         node-version: [22.x]
     services:
       redis:
-        image: redis:6.0
+        image: redis:7.4
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -43,7 +43,7 @@ jobs:
         ports:
           - 6379:6379
       mongo:
-        image: mongo:4.4
+        image: mongo:8.0
         options: >-
           --health-cmd mongo
           --health-interval 10s
@@ -84,7 +84,7 @@ jobs:
     
       # Upload Coverage
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
