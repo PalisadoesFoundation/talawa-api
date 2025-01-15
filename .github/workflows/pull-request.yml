@@ -64,7 +64,7 @@ jobs:
       # or else we'll get failures
       - name: Get changed files
         id: changed_files
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v45
         with:
           files: |
             **.ts
@@ -105,7 +105,7 @@ jobs:
       
       - name: Get Changed Unauthorized files
         id: changed-unauth-files
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v45
         with:
           files: |
             .github/**
@@ -160,7 +160,7 @@ jobs:
         
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v45
 
       - name: Echo number of changed files
         env: 
@@ -228,7 +228,7 @@ jobs:
         node-version: [22.x]
     services:
       mongo:
-        image: mongo:4.4
+        image: mongo:8.0
         options: >-
           --health-cmd mongo
           --health-interval 10s
@@ -237,7 +237,7 @@ jobs:
         ports:
           - 27017:27017
       redis:
-        image: redis:6.0
+        image: redis:7.4
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -302,7 +302,7 @@ jobs:
         run: npm run import:sample-data  
 
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -310,7 +310,7 @@ jobs:
           name: '${{env.CODECOV_UNIQUE_NAME}}'
 
       - name: Test acceptable level of code coverage
-        uses: VeryGoodOpenSource/very_good_coverage@v2
+        uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
           path: './coverage/lcov.info'
           min_coverage: 95.0
@@ -448,7 +448,7 @@ jobs:
         node-version: [22.x]
     services:
       mongo:
-        image: mongo:4.4
+        image: mongo:8.0
         options: >-
           --health-cmd mongo
           --health-interval 10s
@@ -457,7 +457,7 @@ jobs:
         ports:
           - 27017:27017
       redis:
-        image: redis:6.0
+        image: redis:7.4
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
