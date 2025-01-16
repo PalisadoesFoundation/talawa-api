@@ -29,6 +29,7 @@ log/**
 
 # Just in case we ever have one
 data/**
+tmp/**
 
 # Code coverage directory
 coverage/**
