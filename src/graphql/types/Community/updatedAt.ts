@@ -1,10 +1,10 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { User } from "./User";
+import { Community } from "./Community";
 
-User.implement({
+Community.implement({
 	fields: (t) => ({
-		emailAddress: t.string({
-			description: "Email address of the user.",
+		updatedAt: t.field({
+			description: "Date time at the time the community was last updated.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -31,10 +31,7 @@ User.implement({
 					});
 				}
 
-				if (
-					currentUser.role !== "administrator" &&
-					parent.id !== currentUserId
-				) {
+				if (currentUser.role !== "administrator") {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action",
@@ -42,8 +39,9 @@ User.implement({
 					});
 				}
 
-				return parent.emailAddress;
+				return parent.updatedAt;
 			},
+			type: "DateTime",
 		}),
 	}),
 });

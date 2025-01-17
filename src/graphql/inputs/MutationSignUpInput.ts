@@ -55,10 +55,9 @@ export const MutationSignUpInput = builder
 				description: "Primary education grade of the user.",
 				type: UserEducationGrade,
 			}),
-			emailAddress: t.field({
+			emailAddress: t.string({
 				description: "Email address of the user.",
 				required: true,
-				type: "EmailAddress",
 			}),
 			employmentStatus: t.field({
 				description: "Employment status of the user.",

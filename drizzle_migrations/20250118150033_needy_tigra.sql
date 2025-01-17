@@ -131,6 +131,27 @@ CREATE TABLE "comments" (
 	"updated_at" timestamp (3) with time zone
 );
 --> statement-breakpoint
+CREATE TABLE "communities" (
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"facebook_url" text,
+	"github_url" text,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"inactivity_timeout_duration" integer,
+	"instagram_url" text,
+	"linkedin_url" text,
+	"logo_mime_type" text,
+	"logo_name" text,
+	"name" text NOT NULL,
+	"reddit_url" text,
+	"slack_url" text,
+	"updated_at" timestamp (3) with time zone,
+	"updater_id" uuid,
+	"website_url" text,
+	"x_url" text,
+	"youtube_url" text,
+	CONSTRAINT "communities_name_unique" UNIQUE("name")
+);
+--> statement-breakpoint
 CREATE TABLE "event_attachments" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
@@ -434,6 +455,7 @@ ALTER TABLE "comment_votes" ADD CONSTRAINT "comment_votes_creator_id_users_id_fk
 ALTER TABLE "comment_votes" ADD CONSTRAINT "comment_votes_updated_id_users_id_fk" FOREIGN KEY ("updated_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "comments" ADD CONSTRAINT "comments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "comments" ADD CONSTRAINT "comments_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "communities" ADD CONSTRAINT "communities_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_attachments" ADD CONSTRAINT "event_attachments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_attachments" ADD CONSTRAINT "event_attachments_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_attachments" ADD CONSTRAINT "event_attachments_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint

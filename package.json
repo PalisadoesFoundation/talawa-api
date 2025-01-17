@@ -38,7 +38,7 @@
 		"@swc/cli": "0.6.0",
 		"@swc/core": "^1.10.7",
 		"@types/node": "^22.10.7",
-		"@vitest/coverage-v8": "^3.0.1",
+		"@vitest/coverage-v8": "^3.0.2",
 		"drizzle-kit": "^0.30.2",
 		"drizzle-seed": "^0.3.0",
 		"gql.tada": "^1.8.10",
@@ -48,7 +48,7 @@
 		"tsx": "^4.19.2",
 		"typescript": "^5.7.3",
 		"vite-tsconfig-paths": "^5.1.4",
-		"vitest": "^3.0.1"
+		"vitest": "^3.0.2"
 	},
 	"engines": {
 		"node": "22.13.0"
