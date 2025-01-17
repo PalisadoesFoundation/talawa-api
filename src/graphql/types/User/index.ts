@@ -1,5 +1,6 @@
 import "./User";
-import "./address";
+import "./addressLine1";
+import "./addressLine2";
 import "./avatarURL";
 import "./birthDate";
 import "./city";

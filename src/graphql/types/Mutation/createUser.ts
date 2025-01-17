@@ -146,7 +146,8 @@ builder.mutationField("createUser", (t) =>
 				const [createdUser] = await tx
 					.insert(usersTable)
 					.values({
-						address: parsedArgs.input.address,
+						addressLine1: parsedArgs.input.addressLine1,
+						addressLine2: parsedArgs.input.addressLine2,
 						avatarMimeType,
 						avatarName,
 						birthDate: parsedArgs.input.birthDate,

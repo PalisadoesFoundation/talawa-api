@@ -147,7 +147,7 @@ suite("Mutation field updateUser", () => {
 						},
 						variables: {
 							input: {
-								address: null,
+								addressLine1: null,
 								id: createUserResult.data.createUser.user.id,
 							},
 						},
@@ -249,7 +249,8 @@ suite("Mutation field updateUser", () => {
 				);
 			});
 
-			test(`length of the value of the argument "input.address" is less than 1.
+			test(`length of the value of the argument "input.addressLine1" is less than 1.
+				length of the value of the argument "input.addressLine2" is less than 1.
 	    		length of the value of the argument "input.city" is less than 1.
 	    		length of the value of the argument "input.description" is less than 1.
 	    		length of the value of the argument "input.name" is less than 1.
@@ -301,7 +302,8 @@ suite("Mutation field updateUser", () => {
 						},
 						variables: {
 							input: {
-								address: "",
+								addressLine1: "",
+								addressLine2: "",
 								city: "",
 								description: "",
 								id: createUserResult.data.createUser.user.id,
@@ -324,7 +326,11 @@ suite("Mutation field updateUser", () => {
 									InvalidArgumentsExtensions["issues"][number]
 								>([
 									{
-										argumentPath: ["input", "address"],
+										argumentPath: ["input", "addressLine1"],
+										message: expect.any(String),
+									},
+									{
+										argumentPath: ["input", "addressLine2"],
 										message: expect.any(String),
 									},
 									{
@@ -360,7 +366,8 @@ suite("Mutation field updateUser", () => {
 				);
 			});
 
-			test(`length of the value of the argument "input.address" is more than 1025.
+			test(`length of the value of the argument "input.addressLine1" is more than 1025.
+				length of the value of the argument "input.addressLine1" is more than 1025.
 	    		length of the value of the argument "input.city" is more than 64.
 	    		length of the value of the argument "input.description" is more than 2048.
 	    		length of the value of the argument "input.name" is more than 256.
@@ -412,7 +419,8 @@ suite("Mutation field updateUser", () => {
 						},
 						variables: {
 							input: {
-								address: `address${faker.string.alpha(1025)}`,
+								addressLine1: `addressLine1${faker.string.alpha(1025)}`,
+								addressLine2: `addressLine2${faker.string.alpha(1025)}`,
 								city: `city${faker.string.alpha(65)}`,
 								description: `description${faker.string.alpha(2049)}`,
 								id: createUserResult.data.createUser.user.id,
@@ -435,7 +443,11 @@ suite("Mutation field updateUser", () => {
 									InvalidArgumentsExtensions["issues"][number]
 								>([
 									{
-										argumentPath: ["input", "address"],
+										argumentPath: ["input", "addressLine1"],
+										message: expect.any(String),
+									},
+									{
+										argumentPath: ["input", "addressLine2"],
 										message: expect.any(String),
 									},
 									{
@@ -624,7 +636,7 @@ suite("Mutation field updateUser", () => {
 						},
 						variables: {
 							input: {
-								address: null,
+								addressLine1: null,
 								id: createUserResult.data.createUser.user.id,
 							},
 						},
@@ -682,7 +694,7 @@ suite("Mutation field updateUser", () => {
 						},
 						variables: {
 							input: {
-								address: null,
+								addressLine1: null,
 								id: administratorUserSignInResult.data.signIn.user.id,
 							},
 						},
@@ -833,7 +845,8 @@ suite("Mutation field updateUser", () => {
 
 				const createUserVariables: VariablesOf<typeof Mutation_createUser> = {
 					input: {
-						address: "address",
+						addressLine1: "addressLine1",
+						addressLine2: "addressLine2",
 						birthDate: "1901-01-01",
 						city: "city",
 						countryCode: "us",
@@ -872,7 +885,8 @@ suite("Mutation field updateUser", () => {
 
 				const updateUserVariables: VariablesOf<typeof Mutation_updateUser> = {
 					input: {
-						address: null,
+						addressLine1: null,
+						addressLine2: null,
 						birthDate: null,
 						city: null,
 						countryCode: null,
@@ -910,7 +924,8 @@ suite("Mutation field updateUser", () => {
 					expect.objectContaining<
 						Partial<ResultOf<typeof Mutation_updateUser>["updateUser"]>
 					>({
-						address: updateUserVariables.input.address,
+						addressLine1: updateUserVariables.input.addressLine1,
+						addressLine2: updateUserVariables.input.addressLine2,
 						birthDate: updateUserVariables.input.birthDate,
 						city: updateUserVariables.input.city,
 						countryCode: updateUserVariables.input.countryCode,

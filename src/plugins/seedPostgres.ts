@@ -56,7 +56,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 
 		const userId = uuidv7();
 		const input: z.infer<typeof usersTableInsertSchema> = {
-			address: null,
+			addressLine1: null,
+			addressLine2: null,
 			avatarName: null,
 			city: null,
 			creatorId: userId,

@@ -150,7 +150,8 @@ builder.mutationField("updateOrganization", (t) =>
 				const [updatedOrganization] = await tx
 					.update(organizationsTable)
 					.set({
-						address: parsedArgs.input.address,
+						addressLine1: parsedArgs.input.addressLine1,
+						addressLine2: parsedArgs.input.addressLine2,
 						avatarMimeType: isNotNullish(parsedArgs.input.avatar)
 							? avatarMimeType
 							: null,

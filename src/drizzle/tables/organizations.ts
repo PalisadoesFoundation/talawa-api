@@ -25,9 +25,13 @@ export const organizationsTable = pgTable(
 	"organizations",
 	{
 		/**
-		 * Address of the organization.
+		 * Address line 1 of the organization's address.
 		 */
-		address: text("address"),
+		addressLine1: text("address_line_1"),
+		/**
+		 * Address line 2 of the organization's address.
+		 */
+		addressLine2: text("address_line_2"),
 		/**
 		 * Mime type of the avatar of the organization.
 		 */
@@ -211,7 +215,8 @@ export const organizationsTableRelations = relations(
 export const organizationsTableInsertSchema = createInsertSchema(
 	organizationsTable,
 	{
-		address: (schema) => schema.min(1).max(1024),
+		addressLine1: (schema) => schema.min(1).max(1024),
+		addressLine2: (schema) => schema.min(1).max(1024),
 		avatarName: (schema) => schema.min(1),
 		city: (schema) => schema.min(1).max(64),
 		description: (schema) => schema.min(1).max(2048),

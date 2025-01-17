@@ -317,7 +317,7 @@ suite("User field updater", () => {
 						},
 						variables: {
 							input: {
-								address: null,
+								addressLine1: null,
 								id: createUserResult.data.createUser.user.id,
 							},
 						},

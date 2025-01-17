@@ -10,8 +10,11 @@ Organization.implement({
 	description:
 		"Organizations are controlled spaces of collections of users who associate with the purpose those organizations exist for.",
 	fields: (t) => ({
-		address: t.exposeString("address", {
-			description: "Address of the organization.",
+		addressLine1: t.exposeString("addressLine1", {
+			description: "Address line 1 of the organization's address.",
+		}),
+		addressLine2: t.exposeString("addressLine2", {
+			description: "Address line 2 of the organization's address.",
 		}),
 		avatarMimeType: t.exposeString("avatarMimeType", {
 			description: "Mime type of the avatar of the organization.",

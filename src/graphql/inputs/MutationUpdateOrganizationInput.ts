@@ -7,7 +7,8 @@ import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2Count
 export const mutationUpdateOrganizationInputSchema =
 	organizationsTableInsertSchema
 		.pick({
-			address: true,
+			addressLine1: true,
+			addressLine2: true,
 			city: true,
 			countryCode: true,
 			description: true,
@@ -34,8 +35,11 @@ export const MutationUpdateOrganizationInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
-			address: t.string({
-				description: "Address of the organization.",
+			addressLine1: t.string({
+				description: "Address line 1 of the organization's address.",
+			}),
+			addressLine2: t.string({
+				description: "Address line 2 of the organization's address.",
 			}),
 			avatar: t.field({
 				description: "Avatar of the organization.",
