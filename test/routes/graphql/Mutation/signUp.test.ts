@@ -66,7 +66,8 @@ suite("Mutation field signUp", () => {
 	suite(
 		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.signUp" field if`,
 		() => {
-			test(`length of the value of the argument "input.address" is less than 1.
+			test(`length of the value of the argument "input.addressLine1" is less than 1.
+				length of the value of the argument "input.addressLine2" is less than 1.
 				length of the value of the argument "input.city" is less than 1.
 				length of the value of the argument "input.description" is less than 1.
 				length of the value of the argument "input.name" is less than 1.
@@ -76,7 +77,8 @@ suite("Mutation field signUp", () => {
 				const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
 					variables: {
 						input: {
-							address: "",
+							addressLine1: "",
+							addressLine2: "",
 							city: "",
 							description: "",
 							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
@@ -98,7 +100,11 @@ suite("Mutation field signUp", () => {
 									InvalidArgumentsExtensions["issues"][number]
 								>([
 									{
-										argumentPath: ["input", "address"],
+										argumentPath: ["input", "addressLine1"],
+										message: expect.any(String),
+									},
+									{
+										argumentPath: ["input", "addressLine2"],
 										message: expect.any(String),
 									},
 									{
@@ -134,7 +140,7 @@ suite("Mutation field signUp", () => {
 				);
 			});
 
-			test(`length of the value of the argument "input.address" is more than 1025.
+			test(`length of the value of the argument "input.addressLine1" is more than 1025.length of the value of the argument "input.addressLine2" is more than 1025.
 				length of the value of the argument "input.city" is more than 64.
 				length of the value of the argument "input.description" is more than 2048.
 				length of the value of the argument "input.name" is more than 256.
@@ -144,7 +150,8 @@ suite("Mutation field signUp", () => {
 				const signUpResult = await mercuriusClient.mutate(Mutation_signUp, {
 					variables: {
 						input: {
-							address: `address${faker.string.alpha(1025)}`,
+							addressLine1: `addressLine1${faker.string.alpha(1025)}`,
+							addressLine2: `addressLine2${faker.string.alpha(1025)}`,
 							city: `city${faker.string.alpha(65)}`,
 							description: `description${faker.string.alpha(2049)}`,
 							emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
@@ -166,7 +173,11 @@ suite("Mutation field signUp", () => {
 									InvalidArgumentsExtensions["issues"][number]
 								>([
 									{
-										argumentPath: ["input", "address"],
+										argumentPath: ["input", "addressLine1"],
+										message: expect.any(String),
+									},
+									{
+										argumentPath: ["input", "addressLine2"],
 										message: expect.any(String),
 									},
 									{
@@ -254,7 +265,8 @@ suite("Mutation field signUp", () => {
 				non-nullable user fields have the values of the corresponding non-nullable arguments.`, async () => {
 				const variables: VariablesOf<typeof Mutation_signUp> = {
 					input: {
-						address: "address",
+						addressLine1: "addressLine1",
+						addressLine2: "addressLine2",
 						birthDate: "1901-01-01",
 						city: "city",
 						countryCode: "us",
@@ -287,7 +299,8 @@ suite("Mutation field signUp", () => {
 								NonNullable<ResultOf<typeof Mutation_signUp>["signUp"]>["user"]
 							>
 						>({
-							address: variables.input.address,
+							addressLine1: variables.input.addressLine1,
+							addressLine2: variables.input.addressLine2,
 							birthDate: variables.input.birthDate,
 							city: variables.input.city,
 							countryCode: variables.input.countryCode,
@@ -334,7 +347,8 @@ suite("Mutation field signUp", () => {
 								NonNullable<ResultOf<typeof Mutation_signUp>["signUp"]>["user"]
 							>
 						>({
-							address: null,
+							addressLine1: null,
+							addressLine2: null,
 							birthDate: null,
 							city: null,
 							countryCode: null,

@@ -144,7 +144,8 @@ builder.mutationField("updateCurrentUser", (t) =>
 				const [updatedCurrentUser] = await tx
 					.update(usersTable)
 					.set({
-						address: parsedArgs.input.address,
+						addressLine1: parsedArgs.input.addressLine1,
+						addressLine2: parsedArgs.input.addressLine2,
 						avatarMimeType: isNotNullish(parsedArgs.input.avatar)
 							? avatarMimeType
 							: null,

@@ -235,7 +235,8 @@ CREATE TABLE "organization_memberships" (
 );
 --> statement-breakpoint
 CREATE TABLE "organizations" (
-	"address" text,
+	"address_line_1" text,
+	"address_line_2" text,
 	"avatar_mime_type" text,
 	"avatar_name" text,
 	"city" text,
@@ -314,7 +315,8 @@ CREATE TABLE "tags" (
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
-	"address" text,
+	"address_line_1" text,
+	"address_line_2" text,
 	"avatar_mime_type" text,
 	"avatar_name" text,
 	"birth_date" date,

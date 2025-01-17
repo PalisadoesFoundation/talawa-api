@@ -142,7 +142,8 @@ builder.mutationField("createOrganization", (t) =>
 				const [createdOrganization] = await tx
 					.insert(organizationsTable)
 					.values({
-						address: parsedArgs.input.address,
+						addressLine1: parsedArgs.input.addressLine1,
+						addressLine2: parsedArgs.input.addressLine2,
 						avatarMimeType,
 						avatarName,
 						city: parsedArgs.input.city,

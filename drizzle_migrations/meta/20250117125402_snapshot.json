@@ -1,5 +1,5 @@
 {
-  "id": "2bd701f6-2186-44c7-93b4-56dc4ce1e21a",
+  "id": "8b540cae-733e-4236-8c28-4e714421d86c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -3773,8 +3773,14 @@
       "name": "organizations",
       "schema": "",
       "columns": {
-        "address": {
-          "name": "address",
+        "address_line_1": {
+          "name": "address_line_1",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address_line_2": {
+          "name": "address_line_2",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -4940,8 +4946,14 @@
       "name": "users",
       "schema": "",
       "columns": {
-        "address": {
-          "name": "address",
+        "address_line_1": {
+          "name": "address_line_1",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address_line_2": {
+          "name": "address_line_2",
           "type": "text",
           "primaryKey": false,
           "notNull": false

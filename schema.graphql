@@ -1404,8 +1404,11 @@ input MutationCreateFundInput {
 
 """"""
 input MutationCreateOrganizationInput {
-  """Address of the organization."""
-  address: String
+  """Address line 1 of the organization's address."""
+  addressLine1: String
+
+  """Address line 2 of the organization's address."""
+  addressLine2: String
 
   """Avatar of the organization."""
   avatar: Upload
@@ -1493,8 +1496,11 @@ input MutationCreateTagInput {
 
 """"""
 input MutationCreateUserInput {
-  """Address of the user."""
-  address: String
+  """Address line 1 of the user's address."""
+  addressLine1: String
+
+  """Address line 2 of the user's address."""
+  addressLine2: String
 
   """Avatar of the user."""
   avatar: Upload
@@ -1725,11 +1731,11 @@ input MutationDeleteVenueInput {
 
 """"""
 input MutationSignUpInput {
-  """Address of the user."""
-  address: String
+  """Address line 1 of the user's address."""
+  addressLine1: String
 
-  """Avatar of the user."""
-  avatar: Upload
+  """Address line 2 of the user's address."""
+  addressLine2: String
 
   """Date of birth of the user."""
   birthDate: Date
@@ -1898,8 +1904,11 @@ input MutationUpdateCommentVoteInput {
 
 """"""
 input MutationUpdateCurrentUserInput {
-  """Address of the user."""
-  address: String
+  """Address line 1 of the user's address."""
+  addressLine1: String
+
+  """Address line 2 of the user's address."""
+  addressLine2: String
 
   """Avatar of the user."""
   avatar: Upload
@@ -2019,8 +2028,11 @@ input MutationUpdateFundInput {
 
 """"""
 input MutationUpdateOrganizationInput {
-  """Address of the organization."""
-  address: String
+  """Address line 1 of the organization's address."""
+  addressLine1: String
+
+  """Address line 2 of the organization's address."""
+  addressLine2: String
 
   """Avatar of the organization."""
   avatar: Upload
@@ -2106,8 +2118,11 @@ input MutationUpdateTagInput {
 
 """"""
 input MutationUpdateUserInput {
-  """Address of the user."""
-  address: String
+  """Address line 1 of the user's address."""
+  addressLine1: String
+
+  """Address line 2 of the user's address."""
+  addressLine2: String
 
   """Avatar of the user."""
   avatar: Upload
@@ -2187,8 +2202,11 @@ input MutationUpdateVenueInput {
 }
 
 type Organization {
-  """Address of the organization."""
-  address: String
+  """Address line 1 of the organization's address."""
+  addressLine1: String
+
+  """Address line 2 of the organization's address."""
+  addressLine2: String
 
   """
   GraphQL connection to traverse through the advertisements belonging to the organization.
@@ -2821,8 +2839,11 @@ type TagFolderTagsConnectionEdge {
 scalar Upload
 
 type User {
-  """Address of the user."""
-  address: String
+  """Address line 1 of the user's address."""
+  addressLine1: String
+
+  """Address line 2 of the user's address."""
+  addressLine2: String
 
   """Mime type of the avatar of the user."""
   avatarMimeType: String

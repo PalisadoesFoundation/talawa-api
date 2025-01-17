@@ -3,8 +3,8 @@ import { User } from "./User";
 
 User.implement({
 	fields: (t) => ({
-		address: t.field({
-			description: "Address of the user.",
+		addressLine1: t.field({
+			description: "Address line 1 of the user's address.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -42,7 +42,7 @@ User.implement({
 					});
 				}
 
-				return parent.address;
+				return parent.addressLine1;
 			},
 			type: "String",
 		}),

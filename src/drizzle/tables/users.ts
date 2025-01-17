@@ -58,9 +58,13 @@ export const usersTable = pgTable(
 	"users",
 	{
 		/**
-		 * Address of the user.
+		 * Address line 1 of the user's address.
 		 */
-		address: text("address"),
+		addressLine1: text("address_line_1"),
+		/**
+		 * Address line 2 of the user's address.
+		 */
+		addressLine2: text("address_line_2"),
 		/**
 		 * Mime type of the avatar of the user.
 		 */
@@ -637,7 +641,8 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 }));
 
 export const usersTableInsertSchema = createInsertSchema(usersTable, {
-	address: (schema) => schema.min(1).max(1024),
+	addressLine1: (schema) => schema.min(1).max(1024),
+	addressLine2: (schema) => schema.min(1).max(1024),
 	avatarName: (schema) => schema.min(1),
 	city: (schema) => schema.min(1).max(64),
 	description: (schema) => schema.min(1).max(2048),

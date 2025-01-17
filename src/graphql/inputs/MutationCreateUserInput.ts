@@ -32,8 +32,11 @@ export const MutationCreateUserInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
-			address: t.string({
-				description: "Address of the user.",
+			addressLine1: t.string({
+				description: "Address line 1 of the user's address.",
+			}),
+			addressLine2: t.string({
+				description: "Address line 2 of the user's address.",
 			}),
 			avatar: t.field({
 				description: "Avatar of the user.",

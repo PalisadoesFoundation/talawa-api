@@ -14,7 +14,8 @@ export const Mutation_createUser =
     createUser(input: $input){
         authenticationToken
         user {
-            address
+            addressLine1
+            addressLine2
             birthDate
             city
             countryCode
@@ -48,7 +49,8 @@ export const Mutation_deleteCurrentUser =
 export const Mutation_deleteUser =
 	gql(`mutation Mutation_deleteUser($input: MutationDeleteUserInput!) {
     deleteUser(input: $input) {
-        address
+        addressLine1
+        addressLine2
         birthDate
         city
         countryCode
@@ -76,7 +78,8 @@ export const Mutation_signUp =
     signUp(input: $input) {
         authenticationToken
         user {
-            address
+            addressLine1
+            addressLine2
             birthDate
             city
             countryCode
@@ -103,7 +106,8 @@ export const Mutation_signUp =
 export const Mutation_updateCurrentUser =
 	gql(`mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
     updateCurrentUser(input: $input) {
-        address
+        addressLine1
+        addressLine2
         birthDate
         city
         countryCode
@@ -129,7 +133,8 @@ export const Mutation_updateCurrentUser =
 export const Mutation_updateUser =
 	gql(`mutation Mutation_updateUser($input: MutationUpdateUserInput!) {
     updateUser(input: $input) {
-        address
+        addressLine1
+        addressLine2
         birthDate
         city
         countryCode
@@ -154,7 +159,8 @@ export const Mutation_updateUser =
 
 export const Query_currentUser = gql(`query Query_currentUser {
     currentUser {
-        address
+        addressLine1
+        addressLine2
         birthDate
         city
         countryCode
@@ -186,7 +192,8 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
     signIn(input: $input) {
         authenticationToken
         user {
-            address
+            addressLine1
+            addressLine2
             birthDate
             city
             countryCode
@@ -212,7 +219,8 @@ export const Query_signIn = gql(`query Query_signIn($input: QuerySignInInput!) {
 
 export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
     user(input: $input) {
-        address
+        addressLine1
+        addressLine2
         birthDate
         city
         countryCode
@@ -239,7 +247,8 @@ export const Query_user_creator =
 	gql(`query Query_user_creator($input: QueryUserInput!) {
     user(input: $input) {
         creator {
-            address
+            addressLine1
+            addressLine2
             birthDate
             city
             countryCode
@@ -274,7 +283,8 @@ export const Query_user_updater =
 	gql(`query Query_user_updater($input: QueryUserInput!) {
     user(input: $input) {
         updater {
-            address
+            addressLine1
+            addressLine2
             birthDate
             city
             countryCode
