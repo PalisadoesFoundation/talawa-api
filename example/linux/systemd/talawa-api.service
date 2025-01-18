@@ -21,9 +21,9 @@
 Description=Talawa-API Service
 
 [Service]
-Environment=CODEROOT=/path/to/your/talawa-api
+Environment=CODEROOT=/opt/talawa-api
 Environment=LOGFILE=/var/log/talawa-api.log
-ExecStart=/path/to/your/talawa-api/example/linux/systemd/Talawa-api.sh
+ExecStart=/opt/talawa-api/example/linux/systemd/Talawa-api.sh
 User=talawa
 Group=talawa
 RuntimeDirectory=talawa-api
