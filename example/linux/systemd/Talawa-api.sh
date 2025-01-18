@@ -1,5 +1,5 @@
 #!/bin/bash
-# filepath: /path/to/your/talawa-api/example/linux/systemd/Talawa-api.sh
+# filepath: example/linux/systemd/Talawa-api.sh
 # Description: Talawa API startup script
 # CODEROOT: Root directory of the Talawa API project.
 # This environment variable is declared in the systemd service file
