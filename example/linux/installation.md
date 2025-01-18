@@ -170,7 +170,7 @@ sudo systemctl start talawa-api.service
 sudo systemctl status talawa-api.service
 ```
 
-- View logs in real-time(Always use this if you stuck!):
+View logs in real-time (Always use this if you're stuck!):
 
 ```bash
 sudo journalctl -u talawa-api.service -f
