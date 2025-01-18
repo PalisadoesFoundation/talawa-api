@@ -21,6 +21,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 - **Log file setup**:
   - Ensure a log file exists at `/var/log/talawa-api.log` with appropriate permissions and ownership
 - Verify Node.js version in your system matches the version required by `package.json`
+- Install `jq` for parsing JSON data (`sudo apt install jq` or equivalent)
 
 ## Steps
 
@@ -150,8 +151,16 @@ npm install -g tsx
 
 ### 8. Enable and Start the Service
 
-1. Reload the systemd configuration:
+```bash
+# Reload systemd configuration
+sudo systemctl daemon-reload
 
+# Enable service to start on boot
+sudo systemctl enable talawa-api.service
+
+# Start the service
+sudo systemctl start talawa-api.service
+```
 
 ### 9. Verify the Installation
 
