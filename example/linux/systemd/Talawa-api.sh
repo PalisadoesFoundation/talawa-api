@@ -5,6 +5,10 @@
 
 #check this path if valid or not
 PROJECT_DIR=$CODEROOT
+if [ -z "$LOGFILE" ]; then
+  echo "Error: LOGFILE environment variable is not set. Exiting."
+  exit 1
+fi
 LOG_FILE=$LOGFILE
 DEV_PATH="src/index.ts"
 PROD_PATH="dist/index.js"
