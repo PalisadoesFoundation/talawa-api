@@ -5,7 +5,7 @@
 # This environment variable is declared in the systemd service file
 # and is available when the script is executed by systemd.
 
-#check this path if valid or not
+# Validate the project directory path from CODEROOT environment variable
 PROJECT_DIR=$CODEROOT
 if [ -z "$LOGFILE" ]; then
   echo "Error: LOGFILE environment variable is not set. Exiting."
