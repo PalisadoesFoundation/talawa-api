@@ -1,0 +1,46 @@
+# Talawa API Systemd Service Configuration
+#
+# This service file is used to manage the Talawa API service.
+#
+# README:
+# 1. Edit the paths in the `[Editable Configuration]` section to match your setup.
+# 2. `Environment=CODEROOT` specifies the root directory of the Talawa API project.
+# 3. `ExecStart` should reference the absolute path to the Talawa-api.sh script.
+# 4. `WorkingDirectory` must match the root project directory.
+# 5. The service runs as the `talawa` user and group for better security.
+# 6. The `RuntimeDirectory` creates a directory under `/run` for storing temporary runtime data.
+# 7. `LimitNOFILE=15000` ensures the service has sufficient open file descriptors for typical usage patterns.
+# 8. Do not modify the `[Static Configuration]` section unless absolutely necessary.
+# 9. Use `journalctl` for service logs (`journalctl -u talawa-api.service`).
+# 10. After editing, reload systemd with `sudo systemctl daemon-reload`.
+
+#########################################
+# [Editable Configuration]
+#########################################
+[Unit]
+Description=Talawa-API Service
+
+[Service]
+Environment=CODEROOT=/path/to/your/talawa-api
+ExecStart=/path/to/your/talawa-api/example/linux/systemd/Talawa-api.sh
+User=talawa
+Group=talawa
+RuntimeDirectory=talawa-api
+LimitNOFILE=15000
+
+#########################################
+# [Static Configuration]
+#########################################
+After=network.target
+Type=simple
+Restart=always
+RestartSec=5
+StandardOutput=journal+console
+StandardError=journal+console
+NoNewPrivileges=true
+PrivateTmp=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
