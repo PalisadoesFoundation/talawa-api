@@ -11,7 +11,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 - **Dedicated system user** `talawa` for running the service (security best practice)
 - **MongoDB** installed and running (required for Talawa API)
 - **Redis** installed and running (required for Talawa API)
-- Proper file permissions on `/path/to/your/talawa-api` (e.g., /opt/talawa-api or /usr/local/talawa-api)
+- Proper file permissions on `/opt/talawa-api` (recommended) or `/usr/local/talawa-api`
 - For development:
   - Ensure `.env` file sets `NODE_ENV=development`
   - Run the service manually to verify functionality
