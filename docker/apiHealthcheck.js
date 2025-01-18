@@ -9,7 +9,7 @@ request(
 		host: process.env.API_HOST ?? "0.0.0.0",
 		path: "/healthcheck",
 		method: "GET",
-		port: process.env.API_PORT ?? 8080,
+		port: process.env.API_PORT ?? 4000,
 	},
 	(response) => {
 		if (response.statusCode === 200) {
