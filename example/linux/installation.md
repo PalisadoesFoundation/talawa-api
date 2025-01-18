@@ -56,12 +56,9 @@ id talawa
   - **Project directory** (e.g., `/path/to/your/talawa-api` will own by `$CODEROOT` supplied by service as enviroment)
   - **Log file path** (e.g., `/var/log/talawa-api.log`)
   - Ensure that the development (`src/index.ts`) and production (`dist/index.js`) paths are correctly set
-  - Make sure `Talawa-api.sh` is executable and owned by user `talawa`. Log file should also be owned by user `talawa`
-  - Give execute permission to `Talawa-api.sh:
+  - Make sure `Talawa-api.sh` is executable and owned by user `talawa`. The log file should also be owned by user `talawa`
+  - Give the execute permission to `Talawa-api.sh`:
 
-    ```bash
-    chmod u+x Talawa-api.sh
-    ```
 
 ### 4. Configure the Environment
 
