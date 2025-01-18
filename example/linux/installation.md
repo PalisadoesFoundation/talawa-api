@@ -4,8 +4,7 @@ This guide provides step-by-step instructions for setting up the Talawa API serv
 
 ## Prerequisites
 
-- **fnm** (Fast Node Manager)
-- **Node.js** (`jq -r '.engines.node' package.json`)
+- **Node.js** (Install system-wide at version specified in package.json)
 - **tsx** (TypeScript execution environment, install globally with `npm install -g tsx`)
 - A Linux system with **systemd**
 - **Root access** or `sudo` privileges for service installation
