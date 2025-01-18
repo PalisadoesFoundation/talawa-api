@@ -89,7 +89,10 @@ echo "Target Node.js version: $TARGET_NODE_VERSION" | tee -a "$LOG_FILE"
 
 if [ "$INSTALLED_NODE_VERSION" != "$TARGET_NODE_VERSION" ]; then
   echo "Error: Node.js version mismatch. Found $INSTALLED_NODE_VERSION, need $TARGET_NODE_VERSION. Exiting." | tee -a "$LOG_FILE"
-  echo "First install the required Node.js version from package.json in system then proceed further. It should match system Node.js version and Talawa-api Node.js version v$TARGET_NODE_VERSION"  | tee -a "$LOG_FILE"
+  echo "To install the required Node.js version:" | tee -a "$LOG_FILE"
+  echo "1. Download: curl -O https://nodejs.org/dist/v${TARGET_NODE_VERSION}/node-v${TARGET_NODE_VERSION}-linux-x64.tar.xz" | tee -a "$LOG_FILE"
+  echo "2. Install: sudo tar -xJ -C /usr/local --strip-components=1 < node-v${TARGET_NODE_VERSION}-linux-x64.tar.xz" | tee -a "$LOG_FILE"
+  echo "3. Verify: node -v" | tee -a "$LOG_FILE"
   exit 1
 fi
 
