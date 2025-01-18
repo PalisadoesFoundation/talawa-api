@@ -143,6 +143,7 @@ jobs:
           .env.sample
           .env_test
           eslint.config.mjs
+          envFiles/**
           .gitignore
           init-mongo.sh
           .prettierignore
