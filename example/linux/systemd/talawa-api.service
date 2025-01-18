@@ -22,15 +22,16 @@ Description=Talawa-API Service
 
 [Service]
 Environment=CODEROOT=/path/to/your/talawa-api
+Environment=LOGFILE=/var/log/talawa-api.log
 ExecStart=/path/to/your/talawa-api/example/linux/systemd/Talawa-api.sh
 User=talawa
 Group=talawa
 RuntimeDirectory=talawa-api
-LimitNOFILE=15000
 
 #########################################
 # [Static Configuration]
 #########################################
+LimitNOFILE=15000
 After=network.target
 Type=simple
 Restart=always

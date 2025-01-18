@@ -5,7 +5,7 @@
 
 #check this path if valid or not
 PROJECT_DIR=$CODEROOT
-LOG_FILE="/var/log/talawa-api.log"
+LOG_FILE=$LOGFILE
 DEV_PATH="src/index.ts"
 PROD_PATH="dist/index.js"
 

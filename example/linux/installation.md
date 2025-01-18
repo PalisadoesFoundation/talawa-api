@@ -42,23 +42,28 @@ id talawa
 
 - Create the `talawa-api.service` file in the `/etc/systemd/system/` directory with root privileges
 - Check following placeholders:
+  - `Description` (Give Description about your service)
+  - `CODEROOT` (Path to talawa-api root directory)
+  - `LOGFILE` (Path to log file)
   - `ExecStart` (path to your `Talawa-api.sh` script: `/path/to/your/talawa-api/example/linux/systemd/Talawa-api.sh`)
-  - `WorkingDirectory` (root directory of your Talawa API project: `/path/to/your/talawa-api`)
-  - `ReadOnlyPaths` (root directory of your Talawa API project: `/path/to/your/talawa-api`)
   - `User, Group` (use the `talawa` user and group created earlier)
+  - `RuntimeDirectory` (Give directory name which will be used in runtime)
 - Refer to the example in `/path/to/your/talawa-api/example/linux/systemd/talawa-api.service` for guidance
 - Copy `talawa-api.service` then paste it inside `/etc/systemd/system/`
 - Make sure `talawa-api.service` is owned by root
 
 ### 3. Set Up the `Talawa-api.sh` Script
 
-- Edit the script to specify:
+- Check the script:
   - **Project directory** (e.g., `/path/to/your/talawa-api` will own by `$CODEROOT` supplied by service as enviroment)
-  - **Log file path** (e.g., `/var/log/talawa-api.log`)
+  - **Log file path** (e.g., `/var/log/talawa-api.log`will own by `$LOGFILE` supplied by service as enviroment)
   - Ensure that the development (`src/index.ts`) and production (`dist/index.js`) paths are correctly set
   - Make sure `Talawa-api.sh` is executable and owned by user `talawa`. The log file should also be owned by user `talawa`
   - Give the execute permission to `Talawa-api.sh`:
-
+  
+    ```bash
+    chmod 755 Talawa-api.sh
+    ```
 
 ### 4. Configure the Environment
 
@@ -101,8 +106,6 @@ sudo nano /etc/logrotate.d/talawa-api
     nolinkasym
     # Delete old versions of log files
     delaycompress
-    # Don't rotate empty log files
-    notifempty
     postrotate
         systemctl restart talawa-api.service > /dev/null 2>&1 || true
     endscript
