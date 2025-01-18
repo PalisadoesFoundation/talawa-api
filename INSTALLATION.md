@@ -11,11 +11,12 @@
       3. [Install Visual Studio Code and install Extensions](#install-visual-studio-code-and-install-extensions)
       4. [Install node.js](#install-nodejs)
       5. [Install TypeScript](#install-typescript)
-    3. [Setup using Instructional Video](#setup-using-instructional-video)
-    4. [Step-by-Step Guide for Setup](#step-by-step-guide-for-setup)
-        1. [Step 1: Check all the required software is installed](#step-1-check-all-the-required-software-is-installed)
-        2. [Step 2: Setting up this repository](#step-2-setting-up-this-repository)
-        3. [Step 3: Setting up the development environment](#step-3-setting-up-the-development-environment)
+   3. [Setup using Instructional Video](#setup-using-instructional-video)
+   4. [Step-by-Step Guide for Setup](#step-by-step-guide-for-setup)
+      1. [Step 1: Check all the required software is installed](#step-1-check-all-the-required-software-is-installed)
+      2. [Step 2: Setting up this repository](#step-2-setting-up-this-repository)
+      3. [Step 3: Setting up the development environment](#step-3-setting-up-the-development-environment)
+      4. [Step 4: Configuring Environment Variables](#step-4-configuring-environment-variables)
 3. [Production environment setup](#production-environment-setup)
    1. [Prerequisites](#prerequisites-1)
       1. [Install git and github](#install-git-and-github-1)
@@ -29,6 +30,7 @@
       3. [Step 3: Creating env file](#step-3-creating-env-file)
       4. [Step 4: Configuring Environment Variables](#step-4-configuring-environment-variables)
       5. [Step 5: Using Docker to Install and Start the Server](#step-5-using-docker-to-install-and-start-the-server)
+   4. [Commands to run the production server after closing the terminal, if docker containers are running.](#commands-to-run-the-production-server-after-closing-the-terminal-if-docker-containers-are-running)
 4. [How to use the API](#how-to-use-the-api)
    1. [For Talawa-API Developers](#for-talawa-api-developers)
    2. [For Mobile App Developers](#for-mobile-app-developers)
@@ -41,8 +43,6 @@
 8. [Using curl to test the API for production environment](#using-curl-to-test-the-api-for-production-environment)
    1. [1. Sign-in API](#1-sign-in-api)
    2. [2. Create Organization API](#2-create-organization-api)
-
-
 
 # Talawa-API Installation
 
@@ -82,34 +82,36 @@ Follow the setup guide for `git` on official [git docs](https://git-scm.com/down
 ### Install and Configure Docker
 
 #### For Windows / macOS:
+
 1. **Install [Docker Desktop for Windows/Mac](https://www.docker.com/products/docker-desktop).**
 2. **WSL on Windows:**
-    - Right-click on the Docker taskbar item and select **Settings**.
-    - Check **Use the WSL 2 based engine**.
-    - Verify your distribution is enabled under **Resources > WSL Integration**.
+   - Right-click on the Docker taskbar item and select **Settings**.
+   - Check **Use the WSL 2 based engine**.
+   - Verify your distribution is enabled under **Resources > WSL Integration**.
 
 #### For Linux:
+
 1. **Install [Docker CE/EE](https://docs.docker.com/engine/install/):**
-    - Follow the official install instructions for your distribution.
+   - Follow the official install instructions for your distribution.
 2. **Install Docker Compose:** (if you are using it)
-    - Follow the [Docker Compose directions](https://docs.docker.com/compose/install/).
+   - Follow the [Docker Compose directions](https://docs.docker.com/compose/install/).
 3. **Add your user to the docker group:**
-    - Use a terminal to run: `sudo usermod -aG docker $USER`
-    - Sign out and back in again so your changes take effect.
+   - Use a terminal to run: `sudo usermod -aG docker $USER`
+   - Sign out and back in again so your changes take effect.
 
 ### Install Visual Studio Code and install Extensions
 
 1. Install [Visual Studio Code](https://code.visualstudio.com/)
 
 2. Install the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension:
-    - Open Visual Studio Code.
-    - Go to the Extensions view by clicking on the Extensions icon in the Activity Bar on the side of the window or by pressing `Ctrl+Shift+X`.
-    - Search for `Dev Containers` and click **Install**.
-    - Alternatively, you can use the command line:
-      ```sh
-      code --install-extension ms-vscode-remote.remote-containers 
+   - Open Visual Studio Code.
+   - Go to the Extensions view by clicking on the Extensions icon in the Activity Bar on the side of the window or by pressing `Ctrl+Shift+X`.
+   - Search for `Dev Containers` and click **Install**.
+   - Alternatively, you can use the command line:
+     ```sh
+     code --install-extension ms-vscode-remote.remote-containers
+     ```
 3. It is very important that you go through [this](https://code.visualstudio.com/docs/devcontainers/containers) official documentation for working with devcontainers in visual studio code.
-
 
 ### Install node.js
 
@@ -159,7 +161,7 @@ Click on the image below to play the video.
 
 [![Talawa API Environment Setup - Development](https://img.youtube.com/vi/jz7koJIXqtk/0.jpg)](https://www.youtube.com/watch?v=jz7koJIXqtk)
 
-**Note: The video contains some inaccuracies.** 
+**Note: The video contains some inaccuracies.**
 
     1. Please ensure you clone from the correct repository [Talawa API Repository](https://github.com/PalisadoesFoundation/talawa-api)
     2. The correct branch to checkout is `develop-postgres`
@@ -171,17 +173,17 @@ Click on the image below to play the video.
 
 1. Open a terminal window.
 2. Run the following commands to check if the required software is installed:
-    - `git --version`
-    - `docker --version`
-    - `docker-compose --version`
-    - `code --version`
-    - `node --version`
-    - `npm --version`
-    - `fnm --version`
-    - `tsc --version`
+   - `git --version`
+   - `docker --version`
+   - `docker-compose --version`
+   - `code --version`
+   - `node --version`
+   - `npm --version`
+   - `fnm --version`
+   - `tsc --version`
 3. Check if docker is running:
-    - `docker info`
-     
+   - `docker info`
+
 ### Step 2: Setting up this repository
 
 First you need a local copy of `talawa-api`. Run the following command in the directory of choice on your local system.
@@ -210,21 +212,37 @@ First you need a local copy of `talawa-api`. Run the following command in the di
    5. You now have a local copy of the code files.
 
 ### Step 3: Setting up the development environment
+
 1. Open cloned talawa-api project in Visual Studio Code.
-2. You should see a notification that a `devcontainer` configuration file is available. Click on the notification and select `Reopen in Container`. 
-    - If you don't see the notification, you can open the command palette by pressing `Ctrl+Shift+P` and search for `Reopen in Container`.
+2. You should see a notification that a `devcontainer` configuration file is available. Click on the notification and select `Reopen in Container`.
+   - If you don't see the notification, you can open the command palette by pressing `Ctrl+Shift+P` and search for `Reopen in Container`.
 3. This will open a new Visual Studio Code window with the project running inside a Docker container. This will take a few minutes to complete.
 4. Wait till the process is complete and you see ports being forwarded in the terminal.
 5. You can check logs by clicking `Connecting to Dev Container (show log)`;
-6. Create a new terminal in Visual Studio Code by pressing ``Ctrl+Shift+` ``.
+6. Create a new terminal in Visual Studio Code by pressing `` Ctrl+Shift+`  ``.
 7. Run the `pwd` command to confirm you are in the `/home/talawa/api` directory.
 8. Run the following command to check if the project has required dependencies:
-    ```bash
-    node -v
-    pnpm -v
-    ```
-Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker and Vs code!
+   `bash
+node -v
+pnpm -v
+`
+   Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker and Vs code!
 
+### To run backend after closing the terminal or restating the vscode.
+
+- for normal mode
+
+```bash
+    pnpm run start_development_server
+```
+
+- for debugging mode
+
+```bash
+    pnpm run start_development_server_with_debugger
+```
+
+**Note:** These command will start the server in development mode.
 
 # Production environment setup
 
@@ -248,21 +266,22 @@ Follow the setup guide for `git` on official [git docs](https://git-scm.com/down
 ### Install and Configure Docker
 
 #### For Windows / macOS:
+
 1. **Install [Docker Desktop for Windows/Mac](https://www.docker.com/products/docker-desktop).**
 2. **WSL on Windows:**
-    - Right-click on the Docker taskbar item and select **Settings**.
-    - Check **Use the WSL 2 based engine**.
-    - Verify your distribution is enabled under **Resources > WSL Integration**.
+   - Right-click on the Docker taskbar item and select **Settings**.
+   - Check **Use the WSL 2 based engine**.
+   - Verify your distribution is enabled under **Resources > WSL Integration**.
 
 #### For Linux:
-1. **Install [Docker CE/EE](https://docs.docker.com/engine/install/):**
-    - Follow the official install instructions for your distribution.
-2. **Install Docker Compose:** (if you are using it)
-    - Follow the [Docker Compose directions](https://docs.docker.com/compose/install/).
-3. **Add your user to the docker group:**
-    - Use a terminal to run: `sudo usermod -aG docker $USER`
-    - Sign out and back in again so your changes take effect.
 
+1. **Install [Docker CE/EE](https://docs.docker.com/engine/install/):**
+   - Follow the official install instructions for your distribution.
+2. **Install Docker Compose:** (if you are using it)
+   - Follow the [Docker Compose directions](https://docs.docker.com/compose/install/).
+3. **Add your user to the docker group:**
+   - Use a terminal to run: `sudo usermod -aG docker $USER`
+   - Sign out and back in again so your changes take effect.
 
 ## Setup using Instructional Video
 
@@ -272,7 +291,7 @@ Click on the image below to play the video.
 
 [![Talawa API Environment Setup - Production](https://img.youtube.com/vi/10Zi2srGPHM/0.jpg)](https://www.youtube.com/watch?v=10Zi2srGPHM)
 
-**Note: The video contains some inaccuracies.** 
+**Note: The video contains some inaccuracies.**
 
     1. Please ensure you clone from the correct repository [Talawa API Repository](https://github.com/PalisadoesFoundation/talawa-api)
     2. The correct branch to checkout is `develop-postgres`
@@ -283,13 +302,13 @@ Click on the image below to play the video.
 
 1. Open a terminal window.
 2. Run the following commands to check if the required software is installed:
-    - `git --version`
-    - `docker --version`
-    - `docker-compose --version`
+   - `git --version`
+   - `docker --version`
+   - `docker-compose --version`
 3. Check if docker is running:
-    - `docker info`
+   - `docker info`
 
-### Step 2:  Setting up the `talawa-api` Repository for Production
+### Step 2: Setting up the `talawa-api` Repository for Production
 
 1. On your computer, navigate to the folder where you want to set up the repository.
 2. Open a command prompt (`cmd` for Windows) or terminal (`terminal` for Linux or MacOS) session in this folder.
@@ -299,12 +318,13 @@ Click on the image below to play the video.
    git clone https://github.com/PalisadoesFoundation/talawa-api.git
    cd talawa-api
     git checkout develop-postgres
-    ```
-    - **Note:** Make sure to check out the `develop-postgres` branch
+   ```
+   - **Note:** Make sure to check out the `develop-postgres` branch
 
 ### Step 3: Creating env file
 
 1. **Option 1:** Manually create the file and copy the content.
+
    - Create a new file named `.env` in the root folder.
    - Copy the content of `./envFiles/.env.production` to the `.env` file.
 
@@ -318,7 +338,7 @@ Choose whichever method suits you best!
 
 ### Step 4: Configuring Environment Variables
 
-Populate the following variables in your `.env` file: 
+Populate the following variables in your `.env` file:
 
     1. **CADDY_TALAWA_API_DOMAIN_NAME** (e.g., `localhost`)
     2. **CADDY_TALAWA_API_EMAIL** (e.g., `administrator@email.com`)
@@ -326,23 +346,39 @@ Populate the following variables in your `.env` file:
     4. **API_BASE_URL** (e.g., `https://localhost`)
     5. **API_JWT_SECRET**
 
-   To generate a 64-character JWT secret, run this command in your terminal:
-   ```bash
-   openssl rand -base64 64
-   ```
+To generate a 64-character JWT secret, run this command in your terminal:
+
+```bash
+openssl rand -base64 64
+```
 
 ### Step 5: Using Docker to Install and Start the Server
 
 1. Start the server by running the following command:
-    ```bash
-    docker compose up
-    ```
+   ```bash
+   docker compose up
+   ```
 2. To stop the Docker Server, use this command:
-    ```bash
-    docker compose down
-    ```
-Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!
+   `bash
+docker compose down
+`
+   Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!
 
+### Commands to run the production server after closing the terminal, if docker containers are running.
+
+- for normal mode
+
+```bash
+    pnpm run start_production_server
+```
+
+- for debugging mode
+
+```bash
+    pnpm run start_production_server_with_debugger
+```
+
+**Note:** These command will start the server in production mode.
 
 # How to use the API
 
@@ -364,12 +400,10 @@ These are some important URLs for coding and troubleshooting :
      {"talawa-version":"v1","status":"healthy"}
      ```
 
-
-2. The url for accessing the GraphQL Playground is 
-    ```bash
-    http://localhost:4000/graphiql 
-    ```
-
+2. The url for accessing the GraphQL Playground is
+   ```bash
+   http://localhost:4000/graphiql
+   ```
 
 ## For Mobile App Developers
 
@@ -411,27 +445,27 @@ The Organization URL for Talawa mobile app developers to use is:
 http://localhost:4000/graphql/
 ```
 
-
-
 # Accessing the PostgreSQL Database and PostgreSQL test Database
 
-1. Open your preferred browser and navigate to: 
-    ```bash
-    http://127.0.0.1:8978/
-    ```
+1. Open your preferred browser and navigate to:
+   ```bash
+   http://127.0.0.1:8978/
+   ```
 2. Log in to the CloudBeaver UI using the following credentials (these credentials can be modified in the `.env.devcontainer` file by changing the `CLOUDBEAVER_ADMIN_NAME` and `CLOUDBEAVER_ADMIN_PASSWORD` variables):
-    - Username: `talawa`
-    - Password: `password`
+   - Username: `talawa`
+   - Password: `password`
 3. You should now see the CloudBeaver UI. Click on the "New Connection" button and select `PostgreSQL` from the list of available connections.
 4. Fill in the connection details as follows:
-    - Name: `talawa`
-    - Host: `postgres` 
-    - Port: `5432`
-    - Database: `talawa`
-    - Username: `talawa`
-    - Password: `password`
 
-    **Note: The host name should match the one specified in the Docker Compose file and credentials should match those specified in the `.env.development` file.**  
+   - Name: `talawa`
+   - Host: `postgres`
+   - Port: `5432`
+   - Database: `talawa`
+   - Username: `talawa`
+   - Password: `password`
+
+   **Note: The host name should match the one specified in the Docker Compose file and credentials should match those specified in the `.env.development` file.**
+
 5. Check the `Save credentials for all users with access` option to avoid entering the credentials each time.
 6. Check the following boxes in the Database list:
    - Show all databases
@@ -443,14 +477,16 @@ http://localhost:4000/graphql/
 9. Navigate to `PostgreSql@postgres > Databases > talawa > Schemas > public > Tables` to view the available schemas.
 10. Again click on the `New Connection` button and select `PostgreSQL` from the list of available connections.
 11. Fill in the connection details as follows:
+
     - Name: `talawa`
-    - Host: `postgres-test` 
+    - Host: `postgres-test`
     - Port: `5432`
     - Database: `talawa`
     - Username: `talawa`
     - Password: `password`
 
-    **Note: The host name should match the one specified in the Docker Compose file and credentials should match those specified in the `.env.development` file.**  
+    **Note: The host name should match the one specified in the Docker Compose file and credentials should match those specified in the `.env.development` file.**
+
 12. Check the `Save credentials for all users with access` option to avoid entering the credentials each time.
 13. Click `Create` to save the connection.
 14. You should now see the `PostgreSql@postgres-test` connection in the list of available connections. Click on the connection to open the database.
@@ -458,28 +494,27 @@ http://localhost:4000/graphql/
 
 # Accessing the MinIo
 
-1. Open your preferred browser and navigate to: 
-    ```bash
-    http://127.0.0.1:9001/
-    ```
+1. Open your preferred browser and navigate to:
+   ```bash
+   http://127.0.0.1:9001/
+   ```
 2. Log in to the MinIO UI using the following credentials(these credentials can be modified in the `.env.devcontainer` file by changing the `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD` variables):
-    - Username: `talawa`
-    - Password: `password`
+   - Username: `talawa`
+   - Password: `password`
 3. You should now see the MinIO UI. Click on the `Login` button to access the MinIO dashboard.
 4. You can now view the available buckets and objects in the MinIO dashboard.
 
 # Accessing the MinIO Test
 
-1. Open your preferred browser and navigate to: 
-    ```bash
-    http://127.0.0.1:9003/
-    ```
+1. Open your preferred browser and navigate to:
+   ```bash
+   http://127.0.0.1:9003/
+   ```
 2. Log in to the MinIO UI using the following credentials(these credentials can be modified in the `.env.devcontainer` file by changing the `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD` variables):
-    - Username: `talawa`
-    - Password: `password`
+   - Username: `talawa`
+   - Password: `password`
 3. You should now see the MinIO UI. Click on the `Login` button to access the MinIO dashboard.
 4. You can now view the available buckets and objects in the MinIO dashboard.
-
 
 # Using curl to test the API for production environment
 
@@ -495,9 +530,7 @@ Endpoint: **https://localhost/graphql**
 
 ```bash
 
-curl -X POST \
--H "Content-Type: application/json" \
--d '{
+curl -X POST -H "Content-Type: application/json" -k -d '{
   "query": "query signIn($input: QuerySignInInput!) { signIn(input: $input) { authenticationToken user { emailAddress id name } } }",
   "variables": {
     "input": {
@@ -505,17 +538,17 @@ curl -X POST \
       "password": "password"
     }
   }
-}' \
-https://localhost/graphql
+}' https://localhost/graphql
 
 ```
+
 **Request Headers:**
 
 - `Content-Type: application/json`
 
 **Request Body:**
 
-``` json
+```json
 {
   "query": "query signIn($input: QuerySignInInput!) { signIn(input: $input) { authenticationToken user { emailAddress id name } } }",
   "variables": {
@@ -526,6 +559,7 @@ https://localhost/graphql
   }
 }
 ```
+
 **Response:**
 
 - Returns the authentication token and user details (email address, id, and name).
@@ -539,20 +573,16 @@ Endpoint: **https://localhost/graphql**
 Request:
 
 ```bash
-curl -X POST \
--H "Content-Type: application/json" \
--H "Authorization: Bearer <your_token>" \
--d '{
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer <your_token>" -k -d '{
   "query": "mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) { createOrganization(input: $input) { id name } }",
   "variables": {
     "input": {
       "name": "name0"
     }
   }
-}' \
-https://localhost/graphql
-
+}' https://localhost/graphql
 ```
+
 **Request Headers:**
 
 - `Content-Type: application/json`
@@ -560,7 +590,7 @@ https://localhost/graphql
 
 **Request Body:**
 
-``` json
+```json
 {
   "query": "mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) { createOrganization(input: $input) { id name } }",
   "variables": {
