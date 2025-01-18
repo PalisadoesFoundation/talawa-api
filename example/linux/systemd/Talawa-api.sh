@@ -1,7 +1,9 @@
 #!/bin/bash
 # filepath: /path/to/your/talawa-api/example/linux/systemd/Talawa-api.sh
 # Description: Talawa API startup script
-#CODEROOT this is declared as enviroment in service file.When systemd will run this script we will get this value.
+# CODEROOT: Root directory of the Talawa API project.
+# This environment variable is declared in the systemd service file
+# and is available when the script is executed by systemd.
 
 #check this path if valid or not
 PROJECT_DIR=$CODEROOT
