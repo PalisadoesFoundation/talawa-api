@@ -122,7 +122,7 @@ fi
 echo ".env file found in '$(pwd)' directory. Proceeding..." | tee -a "$LOG_FILE"
 
 # Load environment variables from .env file securely
-NODE_ENV=$(grep '^NODE_ENV=' .env | cut -d '=' -f2)
+NODE_ENV=$(grep '^NODE_ENV=' .env | sed 's/^NODE_ENV=\|"//g' | tr -d "[:space:]" | tr -d "'")
 if [ -n "$NODE_ENV" ]; then
   export NODE_ENV
 else
