@@ -152,39 +152,6 @@ npm install -g tsx
 
 1. Reload the systemd configuration:
 
-```bash
-sudo systemctl daemon-reload
-```
-
-2. Verify service security settings:
-
-```bash
-sudo systemd-analyze security talawa-api.service
-```
-
-3. Enable the service:
-
-```bash
-sudo systemctl enable talawa-api.service
-```
-
-4. Start the service:
-
-```bash
-sudo systemctl start talawa-api.service
-```
-
-5. Stop the service:
-
-```bash
-sudo systemctl stop talawa-api.service
-```
-
-6. Restart the service:
-
-```bash
-sudo systemctl restart talawa-api.service
-```
 
 ### 9. Verify the Installation
 
