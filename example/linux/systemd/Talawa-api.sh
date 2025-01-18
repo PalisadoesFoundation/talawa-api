@@ -63,6 +63,12 @@ fi
 echo "package.json is present in $(pwd). Proceeding..." | tee -a "$LOG_FILE"
 
 # Attempt to read the required Node.js version
+# Check if jq is installed
+if ! command -v jq >/dev/null 2>&1; then
+  echo "Error: 'jq' is not installed. Please install jq to continue. Exiting." | tee -a "$LOG_FILE"
+  exit 1
+fi
+
 TARGET_NODE_VERSION=$(jq -r '.engines.node' package.json 2>/dev/null)
 
 # Continue with your script...
