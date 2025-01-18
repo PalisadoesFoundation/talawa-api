@@ -16,7 +16,7 @@
       1. [Step 1: Check all the required software is installed](#step-1-check-all-the-required-software-is-installed)
       2. [Step 2: Setting up this repository](#step-2-setting-up-this-repository)
       3. [Step 3: Setting up the development environment](#step-3-setting-up-the-development-environment)
-      4. [Step 4: Configuring Environment Variables](#step-4-configuring-environment-variables)
+   5. [To run backend after closing the terminal or restating the vscode.](#to-run-backend-after-closing-the-terminal-or-restating-the-vscode)
 3. [Production environment setup](#production-environment-setup)
    1. [Prerequisites](#prerequisites-1)
       1. [Install git and github](#install-git-and-github-1)
@@ -602,4 +602,4 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer <your
 ```
 
 **Response:**
--Returns the newly created organization's ID and name.
+- Returns the newly created organization's ID and name.
