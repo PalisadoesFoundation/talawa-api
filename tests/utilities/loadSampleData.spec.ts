@@ -43,7 +43,7 @@ describe("Sample Data Import Tests", () => {
 
     expect(userCount).toBe(15);
     expect(organizationCount).toBe(4);
-    expect(postCount).toBe(17);
+    expect(postCount).toBe(29);
     expect(eventCount).toBe(17280);
     expect(venueCount).toBe(4);
     expect(recurrenceRuleCount).toBe(100);

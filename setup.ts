@@ -2,7 +2,7 @@ import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
 import inquirer from "inquirer";
-import path from "path";
+import path, { dirname } from "path";
 import type { ExecException } from "child_process";
 import { exec, spawn, execSync } from "child_process";
 import { MongoClient } from "mongodb";
@@ -31,6 +31,7 @@ import { verifySmtpConnection } from "@setup/verifySmtpConnection";
 import { loadDefaultOrganiation } from "@utilities/loadDefaultOrg";
 import { isMinioInstalled } from "@setup/isMinioInstalled";
 import { installMinio } from "@setup/installMinio";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 
@@ -139,12 +140,13 @@ export async function accessAndRefreshTokens(
   }
 }
 
-function transactionLogPath(logPath: string | null): void {
+export function transactionLogPath(logPath: string | null): void {
   const config = dotenv.parse(fs.readFileSync(".env"));
+  const currDir = dirname(fileURLToPath(import.meta.url));
   config.LOG = "true";
   if (!logPath) {
     // Check if the logs/transaction.log file exists, if not, create it
-    const defaultLogPath = path.resolve(__dirname, "logs");
+    const defaultLogPath = path.resolve(currDir, "logs");
     const defaultLogFile = path.join(defaultLogPath, "transaction.log");
     if (!fs.existsSync(defaultLogPath)) {
       console.log("Creating logs/transaction.log file...");
@@ -154,7 +156,7 @@ function transactionLogPath(logPath: string | null): void {
     config.LOG_PATH = defaultLogFile;
   } else {
     // Remove the logs files, if exists
-    const logsDirPath = path.resolve(__dirname, "logs");
+    const logsDirPath = path.resolve(currDir, "logs");
     if (fs.existsSync(logsDirPath)) {
       fs.readdirSync(logsDirPath).forEach((file: string) => {
         if (file !== "README.md") {
@@ -167,12 +169,12 @@ function transactionLogPath(logPath: string | null): void {
   }
 }
 
-async function askForTransactionLogPath(): Promise<string> {
+export async function askForTransactionLogPath(): Promise<string> {
   let logPath: string | null = null;
   let isValidPath = false;
 
   while (!isValidPath) {
-    const response = await inquirer.prompt([
+    const { logpath } = await inquirer.prompt([
       {
         type: "input",
         name: "logPath",
@@ -180,7 +182,7 @@ async function askForTransactionLogPath(): Promise<string> {
         default: null,
       },
     ]);
-    logPath = response.logPath;
+    logPath = logpath;
 
     if (logPath && fs.existsSync(logPath)) {
       try {
@@ -221,7 +223,7 @@ export async function wipeExistingData(url: string): Promise<void> {
       console.log("All existing data has been deleted.");
     }
   } catch {
-    console.error("Could not connect to database to check for data");
+    throw new Error("Could not connect to database to check for data");
   }
   client.close();
   // return shouldImport;
@@ -237,6 +239,7 @@ export async function wipeExistingData(url: string): Promise<void> {
 export async function checkDb(url: string): Promise<boolean> {
   let dbEmpty = false;
   const client = new MongoClient(`${url}`);
+  console.log(`Connecting to database...`);
   try {
     await client.connect();
     const db = client.db();
@@ -248,7 +251,7 @@ export async function checkDb(url: string): Promise<boolean> {
       dbEmpty = true;
     }
   } catch {
-    console.error("Could not connect to database to check for data");
+    throw new Error("Could not connect to database to check for data");
   }
   client.close();
   return dbEmpty;
@@ -267,7 +270,7 @@ export async function importData(): Promise<void> {
 
   console.log("Importing sample data...");
   if (process.env.NODE_ENV !== "test") {
-    await exec(
+    exec(
       "npm run import:sample-data",
       (error: ExecException | null, stdout: string, stderr: string) => {
         if (error) {
@@ -278,7 +281,7 @@ export async function importData(): Promise<void> {
           console.error(`Error: ${stderr}`);
           abort();
         }
-        console.log(`Output: ${stdout}`);
+        console.log(`\nOutput: ${stdout}`);
       },
     );
   }
@@ -465,7 +468,7 @@ export async function mongoDB(): Promise<void> {
   For Docker setup
 */
 
-function getDockerComposeCommand(): { command: string; args: string[] } {
+export function getDockerComposeCommand(): { command: string; args: string[] } {
   let dockerComposeCmd = "docker-compose"; // Default to v1
   let args = ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"];
 
@@ -484,7 +487,7 @@ function getDockerComposeCommand(): { command: string; args: string[] } {
 }
 
 const DOCKER_COMPOSE_TIMEOUT_MS = 300000;
-async function runDockerComposeWithLogs(): Promise<void> {
+export async function runDockerComposeWithLogs(): Promise<void> {
   // Check if Docker daemon is running
   try {
     await new Promise((resolve, reject) => {
@@ -912,6 +915,159 @@ export async function configureMinio(
   console.log("[MINIO] MinIO configuration added successfully.\n");
 }
 
+export async function dataImportWithoutDocker(
+  checkDb: (url: string) => Promise<boolean>,
+  wipeExistingData: (url: string) => Promise<void>,
+  importDefaultData: () => Promise<void>,
+  importData: () => Promise<void>,
+): Promise<void> {
+  if (!process.env.MONGO_DB_URL) {
+    console.log("Couldn't find mongodb url");
+    return;
+  }
+
+  let isDbEmpty: boolean;
+  try {
+    isDbEmpty = await checkDb(process.env.MONGO_DB_URL);
+  } catch (error) {
+    throw new Error(
+      `Failed to check database: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+  if (!isDbEmpty) {
+    const { shouldOverwriteData } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldOverwriteData",
+      message: "Do you want to overwrite the existing data?",
+      default: false,
+    });
+    if (shouldOverwriteData) {
+      const { overwriteDefaultData } = await inquirer.prompt({
+        type: "confirm",
+        name: "overwriteDefaultData",
+        message:
+          "Do you want to DESTROY the existing data, replacing it with the default data required for a fresh production system?",
+        default: false,
+      });
+      if (overwriteDefaultData) {
+        await wipeExistingData(process.env.MONGO_DB_URL);
+        await importDefaultData();
+      } else {
+        const { overwriteSampleData } = await inquirer.prompt({
+          type: "confirm",
+          name: "overwriteSampleData",
+          message:
+            "Do you want to DESTROY the existing data, replacing it with data suitable for testing and evaluation?",
+          default: false,
+        });
+        if (overwriteSampleData) {
+          await wipeExistingData(process.env.MONGO_DB_URL);
+          await importData();
+        }
+      }
+    }
+  } else {
+    const { shouldImportDefaultData } = await inquirer.prompt({
+      type: "confirm",
+      name: "shouldImportDefaultData",
+      message:
+        "Do you want to import default data required for a fresh production system?",
+      default: false,
+    });
+    if (shouldImportDefaultData) {
+      await importDefaultData();
+    } else {
+      const { shouldImportSampleData } = await inquirer.prompt({
+        type: "confirm",
+        name: "shouldImportSampleData",
+        message:
+          "Do you want to import data suitable for testing and evaluation?",
+        default: false,
+      });
+      if (shouldImportSampleData) {
+        await importData();
+      }
+    }
+  }
+}
+
+async function connectToDatabase(): Promise<void> {
+  console.log("Waiting for mongoDB to be ready...");
+  let isConnected = false;
+  const maxRetries = 30; // 30 seconds timeout
+  let retryCount = 0;
+  while (!isConnected) {
+    if (retryCount >= maxRetries) {
+      throw new Error(
+        "Timed out waiting for MongoDB to be ready after 30 seconds",
+      );
+    }
+    try {
+      const client = new MongoClient(process.env.MONGO_DB_URL as string);
+      await client.connect();
+      await client.db().command({ ping: 1 });
+      client.close();
+      isConnected = true;
+      console.log("MongoDB is ready!");
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err);
+      console.log(
+        `Waiting for MongoDB to be ready... Retry ${retryCount + 1}/${maxRetries}. Details: ${error}`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      retryCount++;
+    }
+  }
+  return Promise.resolve();
+}
+
+export async function dataImportWithDocker(
+  runDockerComposeWithLogs: () => Promise<void>,
+  importDefaultData: () => Promise<void>,
+  importData: () => Promise<void>,
+  connectToDatabase: () => Promise<void>,
+): Promise<void> {
+  const { shouldStartDockerContainers } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldStartDockerContainers",
+    message: "Do you want to start the Docker containers now?",
+    default: true,
+  });
+  if (shouldStartDockerContainers) {
+    console.log("Starting docker container...");
+    try {
+      await runDockerComposeWithLogs();
+      console.log("Docker containers have been built successfully!");
+      // Wait for mongoDB to be ready
+      await connectToDatabase();
+
+      const { shouldImportDefaultData } = await inquirer.prompt({
+        type: "confirm",
+        name: "shouldImportDefaultData",
+        message:
+          "Do you want to import default data required for a fresh production system?",
+        default: false,
+      });
+      if (shouldImportDefaultData) {
+        await importDefaultData();
+      } else {
+        const { shouldImportSampleData } = await inquirer.prompt({
+          type: "confirm",
+          name: "shouldImportSampleData",
+          message:
+            "Do you want to import data suitable for testing and evaluation?",
+          default: false,
+        });
+        if (shouldImportSampleData) {
+          await importData();
+        }
+      }
+    } catch (err) {
+      console.log("Some error occurred: " + err);
+    }
+  }
+}
+
 /**
  * The main function sets up the Talawa API by prompting the user to configure various environment
  * variables and import sample data if desired.
@@ -1223,120 +1379,24 @@ async function main(): Promise<void> {
   await setImageUploadSize(imageSizeLimit * 1000);
 
   if (!isDockerInstallation) {
-    if (!process.env.MONGO_DB_URL) {
-      console.log("Couldn't find mongodb url");
-      return;
-    }
-    const isDbEmpty = await checkDb(process.env.MONGO_DB_URL);
-    if (!isDbEmpty) {
-      const { shouldOverwriteData } = await inquirer.prompt({
-        type: "confirm",
-        name: "shouldOverwriteData",
-        message: "Do you want to overwrite the existing data?",
-        default: false,
-      });
-      if (shouldOverwriteData) {
-        await wipeExistingData(process.env.MONGO_DB_URL);
-        const { overwriteDefaultData } = await inquirer.prompt({
-          type: "confirm",
-          name: "overwriteDefaultData",
-          message:
-            "Do you want to import the required default data to start using Talawa in a production environment?",
-          default: false,
-        });
-        if (overwriteDefaultData) {
-          await importDefaultData();
-        } else {
-          const { overwriteSampleData } = await inquirer.prompt({
-            type: "confirm",
-            name: "overwriteSampleData",
-            message:
-              "Do you want to import Talawa sample data for testing and evaluation purposes?",
-            default: false,
-          });
-          if (overwriteSampleData) {
-            await importData();
-          }
-        }
-      }
-    } else {
-      const { shouldImportSampleData } = await inquirer.prompt({
-        type: "confirm",
-        name: "shouldImportSampleData",
-        message:
-          "Do you want to import Talawa sample data for testing and evaluation purposes?",
-        default: false,
-      });
-      await wipeExistingData(process.env.MONGO_DB_URL);
-      if (shouldImportSampleData) {
-        await importData();
-      } else {
-        await importDefaultData();
-      }
-    }
+    await dataImportWithoutDocker(
+      checkDb,
+      wipeExistingData,
+      importDefaultData,
+      importData,
+    );
+  } else {
+    await dataImportWithDocker(
+      runDockerComposeWithLogs,
+      importDefaultData,
+      importData,
+      connectToDatabase,
+    );
   }
 
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉",
   );
-
-  const { shouldStartDockerContainers } = await inquirer.prompt({
-    type: "confirm",
-    name: "shouldStartDockerContainers",
-    message: "Do you want to start the Docker containers now?",
-    default: true,
-  });
-
-  const { shouldImportSampleData } = await inquirer.prompt({
-    type: "confirm",
-    name: "shouldImportSampleData",
-    message:
-      "Do you want to import Talawa sample data for testing and evaluation purposes?",
-    default: true,
-  });
-
-  if (isDockerInstallation) {
-    if (shouldStartDockerContainers) {
-      console.log("Starting docker container...");
-      try {
-        await runDockerComposeWithLogs();
-        console.log("Docker containers have been built successfully!");
-        // Wait for mongoDB to be ready
-        console.log("Waiting for mongoDB to be ready...");
-        let isConnected = false;
-        const maxRetries = 30; // 30 seconds timeout
-        let retryCount = 0;
-        while (!isConnected) {
-          if (retryCount >= maxRetries) {
-            throw new Error(
-              "Timed out waiting for MongoDB to be ready after 30 seconds",
-            );
-          }
-          try {
-            const client = new MongoClient(process.env.MONGO_DB_URL as string);
-            await client.connect();
-            await client.db().command({ ping: 1 });
-            client.close();
-            isConnected = true;
-            console.log("MongoDB is ready!");
-          } catch (err) {
-            const error = err instanceof Error ? err.message : String(err);
-            console.log(
-              `Waiting for MongoDB to be ready... Retry ${retryCount + 1}/${maxRetries}. Details: ${error}`,
-            );
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            retryCount++;
-          }
-        }
-
-        if (shouldImportSampleData) {
-          await importData();
-        }
-      } catch (err) {
-        console.log("Some error occurred: " + err);
-      }
-    }
-  }
 }
 
 main();
