@@ -193,6 +193,8 @@ jobs:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
     needs: [Code-Quality-Checks, check_code_coverage_disable]
+    env:
+      CODECOV_UNIQUE_NAME: ${{github.workflow}}-${{github.ref_name}}
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
