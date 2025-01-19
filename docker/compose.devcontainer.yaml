@@ -27,6 +27,7 @@ services:
     # https://docs.docker.com/compose/environment-variables/
     # https://docs.docker.com/reference/compose-file/services/#environment
     # https://docs.docker.com/reference/compose-file/merge/#reset-value
+    # This resets any environment variables set under this keyword in other compose configuration files which prevents injecting those environment variables with default values within the execution context of this service. This in turn allows mutations to values of environment variables specific to this service within the `.env` file present within this service's devcontainer to take effect without restarting or rebuilding it.
     environment: !reset []
     # https://docs.docker.com/reference/dockerfile/#healthcheck
     # https://docs.docker.com/reference/compose-file/services/#healthcheck
