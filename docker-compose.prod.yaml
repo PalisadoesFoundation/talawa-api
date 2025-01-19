@@ -13,8 +13,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '0.5'
+          memory: 1G
+          cpus: '1.0'
     ports:
       - "27017:27017"
     volumes:
@@ -51,8 +51,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '0.5'
+          memory: 256M
+          cpus: '0.25'
     volumes:
       - minio-data:/data
     networks:
