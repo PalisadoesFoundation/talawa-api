@@ -445,14 +445,13 @@ export async function mongoDB(): Promise<void> {
       console.log("\nConnection to MongoDB successful! 🎉");
     }
     if (process.env.NODE_ENV === "test") {
-      DB_URL = `${url?.endsWith("/talawa-api?replicaSet=rs0&directConnection=true") ? url : `${url}/talawa-api?replicaSet=rs0&directConnection=true`}`;
+      DB_URL = `${url?.endsWith("/talawa-api") ? url : `${url}/talawa-api`}`;
       const config = dotenv.parse(fs.readFileSync(".env_test"));
       // Not updating actual environmental variable when in testing environment.
       config.MONGO_DB_URL = DB_URL;
       updateEnvVariable(config);
     } else {
-      DB_URL = `${url?.endsWith("/talawa-api?replicaSet=rs0&directConnection=true") ? url : `${url}/talawa-api?replicaSet=rs0&directConnection=true`}`;
-      console.log("DB_URL", DB_URL);
+      DB_URL = `${url?.endsWith("/talawa-api") ? url : `${url}/talawa-api`}`;
       const config = dotenv.parse(fs.readFileSync(".env"));
       config.MONGO_DB_URL = DB_URL;
       // Modifying the environment variable to be able to access the URL in importData function.
@@ -1165,8 +1164,7 @@ async function main(): Promise<void> {
   });
 
   if (isDockerInstallation) {
-    const DB_URL =
-      "mongodb://localhost:27017/talawa-api?replicaSet=rs0&directConnection=true";
+    const DB_URL = "mongodb://localhost:27017/talawa-api";
     const REDIS_HOST = "localhost";
     const REDIS_PORT = "6379"; // default Redis port
     const REDIS_PASSWORD = "";
