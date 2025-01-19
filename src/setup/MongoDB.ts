@@ -76,7 +76,8 @@ export async function askForMongoDBUrl(): Promise<string> {
       type: "input",
       name: "url",
       message: "Enter your MongoDB URL:",
-      default: "mongodb://localhost:27017",
+      default:
+        "mongodb://localhost:27017/talawa-api?replicaSet=rs0&directConnection=true",
     },
   ]);
 
