@@ -26,9 +26,8 @@ services:
         required: false
     # https://docs.docker.com/compose/environment-variables/
     # https://docs.docker.com/reference/compose-file/services/#environment
-    environment:
-      - API_DEBUGGER_HOST=${API_DEBUGGER_HOST:?error}
-      - API_DEBUGGER_PORT=${API_DEBUGGER_PORT:?error}
+    # https://docs.docker.com/reference/compose-file/merge/#reset-value
+    environment: !reset []
     # https://docs.docker.com/reference/dockerfile/#healthcheck
     # https://docs.docker.com/reference/compose-file/services/#healthcheck
     healthcheck:
