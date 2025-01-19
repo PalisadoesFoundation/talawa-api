@@ -192,8 +192,7 @@ jobs:
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
-    needs:
-      [Code-Quality-Checks, Check-ESlint-Disable, Check-Code-Coverage-Disable]
+    needs: [Code-Quality-Checks, check_code_coverage_disable]
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
