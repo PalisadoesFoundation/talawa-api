@@ -14,6 +14,10 @@ At runtime, talawa api requires certain environment variables to be defined in i
 
 This environment variable is used to configure the email address for the administrator user that talawa-api will make sure exists in the database at the time of server startup.
 
+## API_ADMINISTRATOR_USER_NAME
+
+This environment variable is used to configure the name for the administrator user that talawa-api will make sure exists in the database at the time of server startup.
+
 ## API_ADMINISTRATOR_USER_PASSWORD
 
 This environment variable is used to configure the password for the administrator user that talawa-api will make sure exists in the database at the time of server startup.
@@ -21,6 +25,50 @@ This environment variable is used to configure the password for the administrato
 ## API_BASE_URL
 
 This environment variable is used to configure the base url of the talawa api at runtime that clients making requests to the talawa api will make use of.
+
+## API_COMMUNITY_FACEBOOK_URL
+
+This environment variable is used to configure the url to the [facebook](https://facebook.com) account of the community.
+
+## API_COMMUNITY_GITHUB_URL
+
+This environment variable is used to configure the url to the [github](https://github.com) account of the community.
+
+## API_COMMUNITY_INACTIVITY_TIMEOUT_DURATION
+
+This environment variable is used to configure the duration in seconds it should take for inactive clients to get timed out of their authenticated session within client-side talawa applications.
+
+## API_COMMUNITY_INSTAGRAM_URL
+
+This environment variable is used to configure the url to the [instagram](https://instagram.com) account of the community.
+
+## API_COMMUNITY_LINKEDIN_URL
+
+This environment variable is used to configure the url to the [linkedin](https://linkedin.com) account of the community.
+
+## API_COMMUNITY_NAME
+
+This environment variable is used to configure the name of the community.
+
+## API_COMMUNITY_REDDIT_URL
+
+This environment variable is used to configure the url to the [reddit](https://reddit.com) account of the community.
+
+## API_COMMUNITY_SLACK_URL
+
+This environment variable is used to configure the url to the [slack](https://slack.com) account of the community.
+
+## API_COMMUNITY_WEBSITE_URL
+
+This environment variable is used to configure the url to the website of the community.
+
+## API_COMMUNITY_X_URL
+
+This environment variable is used to configure the url to the [x](https://x.com) account of the community.
+
+## API_COMMUNITY_YOUTUBE_URL
+
+This environment variable is used to configure the url to the [youtube](https://youtube.com) account of the community.
 
 ## API_DEBUGGER_HOST
 

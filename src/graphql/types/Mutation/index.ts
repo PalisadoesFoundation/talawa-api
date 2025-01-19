@@ -51,6 +51,7 @@ import "./updateChatMembership";
 import "./updateChatMessage";
 import "./updateComment";
 import "./updateCommentVote";
+import "./updateCommunity";
 import "./updateCurrentUser";
 import "./updateEvent";
 import "./updateFund";

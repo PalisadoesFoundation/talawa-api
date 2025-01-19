@@ -13,6 +13,13 @@ export const envConfigSchema = Type.Object({
 		format: "email",
 	}),
 	/**
+	 * Email address of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
+	 */
+	API_ADMINISTRATOR_USER_NAME: Type.String({
+		minLength: 1,
+		maxLength: 256,
+	}),
+	/**
 	 * Password of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
 	 */
 	API_ADMINISTRATOR_USER_PASSWORD: Type.String({
@@ -24,6 +31,92 @@ export const envConfigSchema = Type.Object({
 	API_BASE_URL: Type.String({
 		minLength: 1,
 	}),
+	/**
+	 * URL to the facebook account of the community.
+	 */
+	API_COMMUNITY_FACEBOOK_URL: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * URL to the github account of the community.
+	 */
+	API_COMMUNITY_GITHUB_URL: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * URL to the instagram account of the community.
+	 */
+	API_COMMUNITY_INACTIVITY_TIMEOUT_DURATION: Type.Optional(
+		Type.Integer({
+			minimum: 1,
+		}),
+	),
+	/**
+	 * URL to the instagram account of the community.
+	 */
+	API_COMMUNITY_INSTAGRAM_URL: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * URL to the linkedin account of the community.
+	 */
+	API_COMMUNITY_LINKEDIN_URL: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * Name of the community.
+	 */
+	API_COMMUNITY_NAME: Type.String({
+		minLength: 1,
+	}),
+	/**
+	 * URL to the reddit account of the community.
+	 */
+	API_COMMUNITY_REDDIT_URL: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * URL to the slack account of the community.
+	 */
+	API_COMMUNITY_SLACK_URL: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * URL to the website of the community.
+	 */
+	API_COMMUNITY_WEBSITE_URL: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * URL to the x account of the community.
+	 */
+	API_COMMUNITY_X_URL: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
+	/**
+	 * URL to the youtube account of the community.
+	 */
+	API_COMMUNITY_YOUTUBE_URL: Type.Optional(
+		Type.String({
+			minLength: 1,
+		}),
+	),
 	/**
 	 * Used for providing the host of the domain on which talawa api will run.
 	 */

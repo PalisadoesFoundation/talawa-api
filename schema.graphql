@@ -340,6 +340,60 @@ enum CommentVoteType {
   up_vote
 }
 
+type Community {
+  """Date time at the time the community was created."""
+  createdAt: DateTime
+
+  """URL to the facebook account of the community."""
+  facebookURL: String
+
+  """URL to the gitGub account of the community."""
+  githubURL: String
+
+  """Global identifier of the community."""
+  id: ID!
+
+  """ Duration in seconds it should take for inactive clients to get timed out of their authenticated session within client-side talawa applications.
+  """
+  inactivityTimeoutDuration: Int
+
+  """URL to the instagram account of the community."""
+  instagramURL: String
+
+  """URL to the linkedin account of the community."""
+  linkedinURL: String
+
+  """Mime type of the avatar of the community."""
+  logoMimeType: String
+
+  """URL to the logo of the community."""
+  logoURL: String
+
+  """Name of the community."""
+  name: String
+
+  """URL to the reddit account of the community."""
+  redditURL: String
+
+  """URL to the slack account of the community."""
+  slackURL: String
+
+  """Date time at the time the community was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the community."""
+  updater: User
+
+  """URL to the website of the community."""
+  websiteURL: String
+
+  """URL to the x account of the community."""
+  xURL: String
+
+  """URL to the youtube account of the community."""
+  youtubeURL: String
+}
+
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -349,11 +403,6 @@ scalar Date
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
 scalar DateTime
-
-"""
-A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
-"""
-scalar EmailAddress
 
 type Event {
   """
@@ -1162,6 +1211,9 @@ type Mutation {
   """Mutation field to update a comment vote."""
   updateCommentVote(input: MutationUpdateCommentVoteInput!): Comment
 
+  """Mutation field to update the community."""
+  updateCommunity(input: MutationUpdateCommunityInput!): Community
+
   """Mutation field to update the current user."""
   updateCurrentUser(
     """Input required to update the current user."""
@@ -1521,7 +1573,7 @@ input MutationCreateUserInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: EmailAddress!
+  emailAddress: String!
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -1753,7 +1805,7 @@ input MutationSignUpInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: EmailAddress!
+  emailAddress: String!
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -1903,6 +1955,47 @@ input MutationUpdateCommentVoteInput {
 }
 
 """"""
+input MutationUpdateCommunityInput {
+  """URL to the facebook account of the community."""
+  facebookURL: String
+
+  """URL to the gitGub account of the community."""
+  githubURL: String
+
+  """
+  Duration in seconds it should take for inactive clients to get timed out of their authenticated session within client-side talawa applications.
+  """
+  inactivityTimeoutDuration: Int
+
+  """URL to the instagram account of the community."""
+  instagramURL: String
+
+  """URL to the linkedin account of the community."""
+  linkedinURL: String
+
+  """Mime type of the logo of the community."""
+  logo: Upload
+
+  """Name of the community."""
+  name: String
+
+  """URL to the reddit account of the community."""
+  redditURL: String
+
+  """URL to the slack account of the community."""
+  slackURL: String
+
+  """URL to the website of the community."""
+  websiteURL: String
+
+  """URL to the x account of the community."""
+  xURL: String
+
+  """URL to the youtube account of the community."""
+  youtubeURL: String
+}
+
+""""""
 input MutationUpdateCurrentUserInput {
   """Address line 1 of the user's address."""
   addressLine1: String
@@ -1929,7 +2022,7 @@ input MutationUpdateCurrentUserInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: EmailAddress
+  emailAddress: String
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -2143,7 +2236,7 @@ input MutationUpdateUserInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: EmailAddress
+  emailAddress: String
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -2566,6 +2659,9 @@ type Query {
   """Query field to read a comment."""
   comment(input: QueryCommentInput!): Comment
 
+  """Query field to read the community."""
+  community: Community
+
   """Query field to read a user."""
   currentUser: User
 
@@ -2689,7 +2785,7 @@ input QueryPostInput {
 """"""
 input QuerySignInInput {
   """Email address of the user."""
-  emailAddress: EmailAddress!
+  emailAddress: String!
 
   """Password of the user to sign in to talawa."""
   password: String!
@@ -2873,7 +2969,7 @@ type User {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: EmailAddress
+  emailAddress: String
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
