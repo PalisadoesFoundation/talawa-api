@@ -19,6 +19,5 @@ npm run generate:graphql-markdown
 npm run generate:graphql-schema
 
 # Kill the background server process
-kill $SERVER_PID
 
 git add .
