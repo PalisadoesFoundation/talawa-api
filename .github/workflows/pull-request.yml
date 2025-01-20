@@ -177,6 +177,7 @@ jobs:
             ISSUE_GUIDELINES.md
             PR_GUIDELINES.md
             README.md
+
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
