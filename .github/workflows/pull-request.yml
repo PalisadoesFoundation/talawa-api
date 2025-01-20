@@ -204,6 +204,9 @@ jobs:
         run: docker compose build
       - name: Run tests
         run: docker compose up --exit-code-from api
+      - name: Copy coverage from container
+        run: |
+          docker cp $(docker ps -aqf "name=talawa-api-api-1"):/app/coverage ./coverage
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
         uses: codecov/codecov-action@v4
         with:
