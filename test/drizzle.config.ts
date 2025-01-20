@@ -1,5 +1,5 @@
 /**
- * More information at this link: {@link https://orm.drizzle.team/kit-docs/config-reference}
+ * This file is required for `package.json` scripts specific to the postgres test database to work. More information at this link: {@link https://orm.drizzle.team/kit-docs/config-reference}
  */
 import { type Static, Type } from "@sinclair/typebox";
 import { defineConfig } from "drizzle-kit";
