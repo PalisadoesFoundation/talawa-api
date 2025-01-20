@@ -3,8 +3,6 @@
 [ -n "$CI" ] && exit 0
 
 # Change to the current directory
-npm run dev & 
-SERVER_PID=$!
 
 # Wait for server to be ready (adjust sleep time as needed)
 sleep 10
@@ -15,9 +13,5 @@ npm run format:fix
 npm run lint-staged
 npm run typecheck
 npm run update:toc
-npm run generate:graphql-markdown
-npm run generate:graphql-schema
-
-# Kill the background server process
 
 git add .
