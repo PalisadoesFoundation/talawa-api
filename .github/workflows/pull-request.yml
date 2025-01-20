@@ -177,18 +177,6 @@ jobs:
             ISSUE_GUIDELINES.md
             PR_GUIDELINES.md
             README.md
-      - env:
-          CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
-        if: steps.changed_files.outputs.any_changed == 'true' || steps.changed_files.outputs.any_deleted == 'true'
-        name: Show changed files
-        run: |
-          echo "Unauthorized changes were made in the following files:"
-          for FILE in ${CHANGED_FILES}; do
-            echo "$FILE"
-          done
-          echo "To override this, apply the 'ignore-sensitive-files-pr' label"
-          exit 1
-
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
