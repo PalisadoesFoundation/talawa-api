@@ -6,6 +6,7 @@ import "./AuthenticationPayload";
 import "./Chat/index";
 import "./ChatMessage/index";
 import "./Comment/index";
+import "./Community/index";
 import "./Event/index";
 import "./EventAttachment/index";
 import "./Fund/index";

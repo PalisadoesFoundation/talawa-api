@@ -29,6 +29,7 @@ import { chatMessagesTable } from "./chatMessages";
 import { chatsTable } from "./chats";
 import { commentVotesTable } from "./commentVotes";
 import { commentsTable } from "./comments";
+import { communitiesTable } from "./communities";
 import { eventAttachmentsTable } from "./eventAttachments";
 import { eventAttendancesTable } from "./eventAttendances";
 import { eventsTable } from "./events";
@@ -341,6 +342,12 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 		relationName: "comment_votes.updater_id:users.id",
 	}),
 	/**
+	 * One to many relationship from `users` table to `communities` table.
+	 */
+	communitiesWhereUpdater: many(communitiesTable, {
+		relationName: "communities.updater_id:users.id",
+	}),
+	/**
 	 * Many to one relationship from `users` table to `users` table.
 	 */
 	creator: one(usersTable, {
@@ -646,6 +653,7 @@ export const usersTableInsertSchema = createInsertSchema(usersTable, {
 	avatarName: (schema) => schema.min(1),
 	city: (schema) => schema.min(1).max(64),
 	description: (schema) => schema.min(1).max(2048),
+	emailAddress: (schema) => schema.email(),
 	name: (schema) => schema.min(1).max(256),
 	postalCode: (schema) => schema.min(1).max(32),
 	state: (schema) => schema.min(1).max(64),
