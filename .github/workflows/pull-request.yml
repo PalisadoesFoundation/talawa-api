@@ -207,7 +207,7 @@ jobs:
       - name: Copy coverage from container
         run: |
           CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
-          docker cp $CONTAINER_ID:/app/coverage ./coverage
+          docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
         uses: codecov/codecov-action@v4
         with:
