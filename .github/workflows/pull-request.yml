@@ -126,7 +126,7 @@ jobs:
     name: Checks if sensitive files have been changed without authorization
     needs: [Code-Quality-Checks]
     runs-on: ubuntu-latest
-    steps:   
+    steps:
     - name: Checkout this repository
       uses: actions/checkout@v4.2.2
     - id: changed_files
