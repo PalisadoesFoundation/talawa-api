@@ -8,10 +8,10 @@ export default defineConfig({
 			provider: "v8", // or 'istanbul' if you prefer
 			reporter: ["text", "lcov", "html"],
 			thresholds: {
-				lines: 20,
-				functions: 20,
-				branches: 20,
-				statements: 20,
+				lines: 95,
+				functions: 95,
+				branches: 95,
+				statements: 95,
 			}, // Specify 'lcov' to generate lcov.info
 		},
 		// https://vitest.dev/config/#fileparallelism
