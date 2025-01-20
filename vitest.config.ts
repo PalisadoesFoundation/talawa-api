@@ -7,6 +7,12 @@ export default defineConfig({
 		coverage: {
 			provider: "v8", // or 'istanbul' if you prefer
 			reporter: ["text", "lcov", "html"],
+			thresholds: {
+				lines: 20,
+				functions: 20,
+				branches: 20,
+				statements: 20,
+			}, // Specify 'lcov' to generate lcov.info
 		},
 		// https://vitest.dev/config/#fileparallelism
 		// fileParallelism: true,
