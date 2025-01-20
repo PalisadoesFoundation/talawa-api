@@ -1,11 +1,14 @@
-// More information at this link: https://vitest.dev/config/
 import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
 	plugins: [tsconfigPaths()],
 	test: {
-		// // https://vitest.dev/config/#fileparallelism
+		coverage: {
+			provider: "v8", // or 'istanbul' if you prefer
+			reporter: ["text", "lcov"], // Specify 'lcov' to generate lcov.info
+		},
+		// https://vitest.dev/config/#fileparallelism
 		// fileParallelism: true,
 
 		// https://vitest.dev/config/#globalsetup
