@@ -53,17 +53,26 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 				"Administrator user already exists in the database with an invalid role. Assigning the correct role to the administrator user.",
 			);
 
-			await fastify.drizzleClient
-				.update(usersTable)
-				.set({
-					role: "administrator",
-				})
-				.where(
-					eq(
-						usersTable.emailAddress,
-						fastify.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					),
+			try {
+				await fastify.drizzleClient
+					.update(usersTable)
+					.set({
+						role: "administrator",
+					})
+					.where(
+						eq(
+							usersTable.emailAddress,
+							fastify.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						),
+					);
+			} catch (error) {
+				throw new Error(
+					"Failed to assign the correct role to the existing administrator user.",
+					{
+						cause: error,
+					},
 				);
+			}
 
 			fastify.log.info(
 				"Successfully assigned the correct role to the administrator user.",
