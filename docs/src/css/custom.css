@@ -639,6 +639,7 @@ h1 {
   mask-size: cover;
 }
 
+
 html[data-theme="dark"] .header-github-link:before {
   background: url(/img/github.svg) no-repeat;
 }
