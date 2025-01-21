@@ -1,5 +1,7 @@
 import type { Model, Document } from "mongoose";
-import { Schema, model, models } from "mongoose";
+import mongoose from "mongoose";
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const { Schema, model, models } = mongoose;
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 /**
@@ -11,6 +13,7 @@ export interface InterfaceSampleData extends Document {
     | "Organization"
     | "Post"
     | "Event"
+    | "Venue"
     | "User"
     | "Plugin"
     | "AppUserProfile";
@@ -28,7 +31,15 @@ const sampleDataSchema = new Schema<InterfaceSampleData>({
   collectionName: {
     type: String,
     required: true,
-    enum: ["Organization", "Post", "Event", "User", "AppUserProfile", "Plugin"],
+    enum: [
+      "Organization",
+      "Post",
+      "Event",
+      "Venue",
+      "User",
+      "AppUserProfile",
+      "Plugin",
+    ],
   },
 });
 

@@ -1,37 +1,36 @@
-/* eslint-disable no-restricted-imports */
 import * as cryptolib from "crypto";
 import dotenv from "dotenv";
 import fs from "fs";
 import inquirer from "inquirer";
 import path from "path";
 import type { ExecException } from "child_process";
-import { exec } from "child_process";
+import { exec, spawn, execSync } from "child_process";
 import { MongoClient } from "mongodb";
-import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "./src/constants";
+import { MAXIMUM_IMAGE_SIZE_LIMIT_KB } from "@constants";
 import {
   askForMongoDBUrl,
   checkConnection,
   checkExistingMongoDB,
-} from "./src/setup/MongoDB";
-import { askToKeepValues } from "./src/setup/askToKeepValues";
-import { getNodeEnvironment } from "./src/setup/getNodeEnvironment";
-import { isValidEmail } from "./src/setup/isValidEmail";
-import { validateRecaptcha } from "./src/setup/reCaptcha";
+} from "@setup/MongoDB";
+import { askToKeepValues } from "@setup/askToKeepValues";
+import { getNodeEnvironment } from "@setup/getNodeEnvironment";
+import { isValidEmail } from "@setup/isValidEmail";
+import { validateRecaptcha } from "@setup/reCaptcha";
 import {
   askForRedisUrl,
   checkExistingRedis,
   checkRedisConnection,
-} from "./src/setup/redisConfiguration";
+} from "@setup/redisConfiguration";
 import {
   setImageUploadSize,
   validateImageFileSize,
-} from "./src/setup/setImageUploadSize";
-import { askForSuperAdminEmail } from "./src/setup/superAdmin";
-import { updateEnvVariable } from "./src/setup/updateEnvVariable";
-import { verifySmtpConnection } from "./src/setup/verifySmtpConnection";
-import { loadDefaultOrganiation } from "./src/utilities/loadDefaultOrg";
-import { isMinioInstalled } from "./src/setup/isMinioInstalled";
-import { installMinio } from "./src/setup/installMinio";
+} from "@setup/setImageUploadSize";
+import { askForSuperAdminEmail } from "@setup/superAdmin";
+import { updateEnvVariable } from "@setup/updateEnvVariable";
+import { verifySmtpConnection } from "@setup/verifySmtpConnection";
+import { loadDefaultOrganiation } from "@utilities/loadDefaultOrg";
+import { isMinioInstalled } from "@setup/isMinioInstalled";
+import { installMinio } from "@setup/installMinio";
 
 dotenv.config();
 
@@ -460,6 +459,94 @@ export async function mongoDB(): Promise<void> {
     console.error(err);
     abort();
   }
+}
+
+/*
+  For Docker setup
+*/
+
+function getDockerComposeCommand(): { command: string; args: string[] } {
+  let dockerComposeCmd = "docker-compose"; // Default to v1
+  let args = ["-f", "docker-compose.dev.yaml", "up", "--build", "-d"];
+
+  try {
+    // Test if 'docker compose' works (v2)
+    execSync("docker compose version", { stdio: "ignore" });
+    dockerComposeCmd = "docker";
+    args = ["compose", ...args]; // Prefix 'compose' for v2
+  } catch (error) {
+    console.log(error);
+    dockerComposeCmd =
+      process.platform === "win32" ? "docker-compose.exe" : "docker-compose";
+  }
+
+  return { command: dockerComposeCmd, args };
+}
+
+const DOCKER_COMPOSE_TIMEOUT_MS = 300000;
+async function runDockerComposeWithLogs(): Promise<void> {
+  // Check if Docker daemon is running
+  try {
+    await new Promise((resolve, reject) => {
+      const dockerCheck = spawn(
+        process.platform === "win32" ? "docker.exe" : "docker",
+        ["info"],
+        { stdio: "ignore" },
+      );
+      dockerCheck.on("error", reject);
+      dockerCheck.on("close", (code) =>
+        code === 0
+          ? resolve(null)
+          : reject(
+              new Error(
+                "Docker daemon not running. Please ensure Docker Desktop is running and try again.",
+              ),
+            ),
+      );
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Docker daemon check failed. Please ensure:
+       1. Docker Desktop is installed and running
+       2. You have necessary permissions
+       3. Docker service is healthy
+       Details: ${errorMessage}`,
+    );
+  }
+
+  return new Promise((resolve, reject) => {
+    const { command, args } = getDockerComposeCommand();
+    let isCompleted = false;
+
+    const dockerCompose = spawn(command, args, { stdio: "inherit" });
+
+    const timeout = setTimeout(() => {
+      if (isCompleted) return;
+      dockerCompose.kill();
+      reject(new Error("Docker compose operation timed out after 5 minutes"));
+    }, DOCKER_COMPOSE_TIMEOUT_MS);
+
+    dockerCompose.on("error", (error) => {
+      if (isCompleted) return;
+      isCompleted = true;
+      clearTimeout(timeout);
+      console.error("Error running docker-compose:", error);
+      reject(error);
+    });
+
+    dockerCompose.on("close", (code) => {
+      if (isCompleted) return;
+      isCompleted = true;
+      clearTimeout(timeout);
+      if (code === 0) {
+        console.log("Docker Compose completed successfully.");
+        resolve();
+      } else {
+        reject(new Error(`Docker Compose exited with code ${code}`));
+      }
+    });
+  });
 }
 
 //Get recaptcha details
@@ -917,7 +1004,7 @@ async function main(): Promise<void> {
     type: "confirm",
     name: "isDockerInstallation",
     message: "Are you setting up this project using Docker?",
-    default: false,
+    default: process.env.MONGO ? false : true,
   });
 
   if (isDockerInstallation) {
@@ -927,6 +1014,14 @@ async function main(): Promise<void> {
     const REDIS_PASSWORD = "";
     const MINIO_ENDPOINT = "http://minio:9000";
 
+    const { pwdVariable } = await inquirer.prompt({
+      type: "input",
+      name: "pwdVariable",
+      message:
+        "Please enter the value for PWD (working directory for Docker setup):",
+      default: ".",
+    });
+
     const config = dotenv.parse(fs.readFileSync(".env"));
 
     config.MONGO_DB_URL = DB_URL;
@@ -934,18 +1029,21 @@ async function main(): Promise<void> {
     config.REDIS_PORT = REDIS_PORT;
     config.REDIS_PASSWORD = REDIS_PASSWORD;
     config.MINIO_ENDPOINT = MINIO_ENDPOINT;
+    config.PWD = pwdVariable;
 
     process.env.MONGO_DB_URL = DB_URL;
     process.env.REDIS_HOST = REDIS_HOST;
     process.env.REDIS_PORT = REDIS_PORT;
     process.env.REDIS_PASSWORD = REDIS_PASSWORD;
     process.env.MINIO_ENDPOINT = MINIO_ENDPOINT;
+    process.env.PWD = pwdVariable;
 
     updateEnvVariable(config);
     console.log(`Your MongoDB URL is:\n${process.env.MONGO_DB_URL}`);
     console.log(`Your Redis host is:\n${process.env.REDIS_HOST}`);
     console.log(`Your Redis port is:\n${process.env.REDIS_PORT}`);
     console.log(`Your MinIO endpoint is:\n${process.env.MINIO_ENDPOINT}`);
+    console.log(`Your PWD value is:\n${process.env.PWD}`);
   }
 
   if (!isDockerInstallation) {
@@ -1181,6 +1279,64 @@ async function main(): Promise<void> {
   console.log(
     "\nCongratulations! Talawa API has been successfully setup! 🥂🎉",
   );
+
+  const { shouldStartDockerContainers } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldStartDockerContainers",
+    message: "Do you want to start the Docker containers now?",
+    default: true,
+  });
+
+  const { shouldImportSampleData } = await inquirer.prompt({
+    type: "confirm",
+    name: "shouldImportSampleData",
+    message:
+      "Do you want to import Talawa sample data for testing and evaluation purposes?",
+    default: true,
+  });
+
+  if (isDockerInstallation) {
+    if (shouldStartDockerContainers) {
+      console.log("Starting docker container...");
+      try {
+        await runDockerComposeWithLogs();
+        console.log("Docker containers have been built successfully!");
+        // Wait for mongoDB to be ready
+        console.log("Waiting for mongoDB to be ready...");
+        let isConnected = false;
+        const maxRetries = 30; // 30 seconds timeout
+        let retryCount = 0;
+        while (!isConnected) {
+          if (retryCount >= maxRetries) {
+            throw new Error(
+              "Timed out waiting for MongoDB to be ready after 30 seconds",
+            );
+          }
+          try {
+            const client = new MongoClient(process.env.MONGO_DB_URL as string);
+            await client.connect();
+            await client.db().command({ ping: 1 });
+            client.close();
+            isConnected = true;
+            console.log("MongoDB is ready!");
+          } catch (err) {
+            const error = err instanceof Error ? err.message : String(err);
+            console.log(
+              `Waiting for MongoDB to be ready... Retry ${retryCount + 1}/${maxRetries}. Details: ${error}`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            retryCount++;
+          }
+        }
+
+        if (shouldImportSampleData) {
+          await importData();
+        }
+      } catch (err) {
+        console.log("Some error occurred: " + err);
+      }
+    }
+  }
 }
 
 main();

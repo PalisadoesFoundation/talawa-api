@@ -9,6 +9,8 @@ describe("Setup -> checkExistingMongoDB", () => {
   });
   it("should return the first valid URL when a connection is found", async () => {
     const result = await checkExistingMongoDB();
+    console.log(result);
+    console.log(process.env.MONGO_DB_URL);
     expect(result).toBe(process.env.MONGO_DB_URL);
   });
 
@@ -60,7 +62,8 @@ describe("Setup -> checkExistingMongoDB", () => {
     expect(result).toBe(false);
   });
   it("should return the first valid URL when a connection is found", async () => {
-    process.env.MONGO_DB_URL = "mongodb://localhost:27017/talawa-api";
+    process.env.MONGO_DB_URL =
+      "mongodb://localhost:27017/test?replicaSet=rs0&directConnection=true";
     const result = await checkExistingMongoDB();
     expect(result).toBe(process.env.MONGO_DB_URL);
   });

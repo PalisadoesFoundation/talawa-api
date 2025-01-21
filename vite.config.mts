@@ -1,6 +1,15 @@
 import { defineConfig } from "vitest/config";
+import path from 'node:path';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@constants': path.resolve(__dirname, 'src/constants'),
+      '@setup': path.resolve(__dirname, 'src/setup'),
+      '@utilities': path.resolve(__dirname, 'src/utilities'),
+    },
+  },
+
   test: {
     setupFiles: ["./config/vitestSetup.ts"],
 
@@ -36,6 +45,7 @@ export default defineConfig({
         "src/utilities/sample_data/*",
         "src/utilities/loadSampleData.ts",
       ],
+      
 
       // This is used to tell vitest which coverage provider to use. c8 is the newer and
       // recommended coverage provider for node.js applications. You can swap it with
