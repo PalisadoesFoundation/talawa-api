@@ -8,10 +8,8 @@ interface FourthPanelProps {
 	className?: string;
 }
 
-function FourthPanelProps({ className }: FourthPanelProps) {
+const FourthPanel: React.FC<FourthPanelProps> = ({ className }) => {
 	return (
-		// background="tint" removed
-
 		<Section className={`NativeDevelopment ${className} fourth-panel`}>
 			<div className="card__general card__wide">
 				<TwoColumns
@@ -20,6 +18,7 @@ function FourthPanelProps({ className }: FourthPanelProps) {
 						<TextColumn
 							title="Great Admin Features"
 							text={textcontent.forEveryone}
+							aria-label="Admin features overview"
 						/>
 					}
 					columnTwo={
@@ -28,6 +27,7 @@ function FourthPanelProps({ className }: FourthPanelProps) {
 								alt="talawa"
 								src="img/image-04.png"
 								className="fourth-panel-image"
+								aria-label="Administrative interface demonstration"
 							/>
 						</div>
 					}
@@ -37,4 +37,4 @@ function FourthPanelProps({ className }: FourthPanelProps) {
 	);
 }
 
-export default FourthPanelProps;
+export default FourthPanel;

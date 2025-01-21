@@ -6,6 +6,7 @@ interface ActionButtonProps {
   target?: string;
   children: React.ReactNode;
   buttonClassName?: string;
+  ariaLabel?: string;
 }
 
  function ActionButton({
@@ -18,9 +19,11 @@ interface ActionButtonProps {
   return (
     <a
       className={`ActionButton ${type} ${buttonClassName}`}
-      rel="noopener"
+      rel={target === '_blank' ? "noopener noreferrer" : undefined}
       href={href}
       target={target}
+      role="button"
+      aria-label={typeof children === 'string' ? children : undefined}
     >
       {children}
     </a>

@@ -34,7 +34,7 @@ const ParticipationFeaturesCard = () => {
 					</p>
 				</div>
 				<div className="participation-feature-card__image">
-					<img alt="talawa" src="img/image-07.png" />
+				<img alt="talawa" src={useBaseUrl("img/image-07.png")} />
 				</div>
 			</div>
 		</div>

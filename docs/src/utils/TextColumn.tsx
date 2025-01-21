@@ -9,11 +9,18 @@ interface TextColumnProps {
 
  function TextColumn({ title, text, moreContent }: TextColumnProps) {
   return (
-    <>
+
+     <article role="article" className="text-column">
       <Heading text={title} />
-      <div dangerouslySetInnerHTML={{ __html: text }} />
+      <div 
+        role="contentinfo"
+        dangerouslySetInnerHTML={{ __html: text }}
+      />
+        className="text-content"
       {moreContent}
-    </>
+
+    </article>
+
   );
 }
 

@@ -831,21 +831,25 @@ h1 {
 }
 
 .footer__github:before {
+  margin-bottom: 10px;
   mask: url(/img/github.svg) no-repeat 100% 100%;
   mask-size: cover;
 }
 
 .footer__slack:before {
+  margin-bottom: 10px;
   mask: url(/img/slack.svg) no-repeat 100% 100%;
   mask-size: cover;
 }
 
 .footer__facebook:before {
+  margin-top: 10px;
   mask: url(/img/facebook.svg) no-repeat 100% 100%;
   mask-size: cover;
 }
 
 .footer__instagram:before {
+  margin-top: 10px;
   mask: url(/img/instagram.svg) no-repeat 100% 100%;
   mask-size: cover;
 }
@@ -856,6 +860,7 @@ h1 {
 }
 
 .footer__news:before {
+  margin-bottom: 10px;
   mask: url(/img/source.svg) no-repeat 100% 100%;
   mask-size: cover;
 }

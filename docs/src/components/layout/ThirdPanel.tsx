@@ -1,10 +1,6 @@
 import React from "react";
 import Section from "../../utils/Section";
-// import TextColumn from "../../utils/TextColumn";
-// import TwoColumns from "../../utils/TwoColumns";
-// import textcontent from "../../utils/textcontent";
-// import useBaseUrl from "@docusaurus/useBaseUrl";
-import AboutCards from "../../utils/ManagementFeaturesCard";
+import ManagementFeaturesCard from "../../utils/ManagementFeaturesCard";
 
 interface ThirdPanelProps {}
 
@@ -13,17 +9,9 @@ const ThirdPanel: React.FC<ThirdPanelProps> = () => {
 
   return (
     <Section className="third-panel" background="light">
-      <AboutCards />
+      <ManagementFeaturesCard />
 
-      {/* <TwoColumns
-        columnOne={
-          <TextColumn
-            title="More Effective Management"
-            text={textcontent.nativeCode}
-          />
-        }
-        columnTwo={<img alt="" src={imgUrl} className="third-panel-image" />}
-      /> */}
+
     </Section>
   );
 };

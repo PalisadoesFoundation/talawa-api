@@ -12,7 +12,7 @@ import  FourthPanel  from "../components/layout/FourthPanel";
 import  FifthPanel  from "../components/layout/FifthPanel";
 import  SixthPanel  from "../components/layout/SixthPanel";
 import  SeventhPanel  from "../components/layout/SeventhPanel";
-import  EightPanel  from "../components/layout/EightPanel";
+import  EighthPanel  from "../components/layout/EightPanel";
 
 const Index = () => {
   useHomePageAnimations();
@@ -33,7 +33,7 @@ const Index = () => {
       <FifthPanel />
       <SixthPanel />
       <SeventhPanel />
-      <EightPanel />
+      <EighthPanel />
     </Layout>
   );
 };

@@ -6,7 +6,14 @@ const useHomePageAnimations = () => {
   useEffect(() => {
     setupHeaderAnimations();
     setupDissectionAnimation();
+    return () => {
+        
+          document.querySelectorAll('.dissection, .logo').forEach(element => {
+            element.classList.remove('animate');
+          });
+        };
   }, []);
+  return undefined;
 };
 
 export default useHomePageAnimations

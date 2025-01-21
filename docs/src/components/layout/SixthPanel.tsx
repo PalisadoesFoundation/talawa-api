@@ -11,7 +11,6 @@ const SixthPanel: React.FC<SixthPanelProps> = () => {
 	const { sixthPanel, codeExample } = textcontent;
 
 	return (
-		// background="tint" removed
 		<Section className="SixthPanel">
 			<TwoColumns
 				columnOne={

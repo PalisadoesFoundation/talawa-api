@@ -15,16 +15,20 @@ function HeaderHero() {
           <img
             className="custom-image bounce-animation"
             src={useBaseUrl("img/image-01.png")}
-            alt="HeaderHero Image"
+            alt="Talawa member management software interface showcase"
+            loading="lazy"
+            srcSet={`${useBaseUrl("img/image-01.png")} 1x, ${useBaseUrl("img/image-01@2x.png")} 2x`}
           />
         }
         columnTwo={
           <>
-            <h1 className="title">Talawa</h1>
-            <h2 className="tagline">Member Management Software</h2>
-            <p className="description">
-              For open source projects, charities and other non-profits
-            </p>
+           <h1 className="title" aria-label="Talawa - Member Management Software">
+            <span>Talawa</span>
+            <span className="tagline">Member Management Software</span>
+          </h1>
+          <p className="description" aria-label="Target audience description">
+            For open source projects, charities and other non-profits
+          </p>
             <div className="buttons">
               <HomeCallToAction />
             </div>

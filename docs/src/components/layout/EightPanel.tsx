@@ -4,9 +4,11 @@ import TextColumn from "../../utils/TextColumn";
 import TwoColumns from "../../utils/TwoColumns";
 import textcontent from "../../utils/textcontent";
 
-function EightPanel() {
+interface EightPanelProps {}
+
+const EightPanel: React.FC<EightPanelProps> = () => {
   return (
-    // background="tint" removed
+
     <Section className="EightPanel">
       <div className="card__general card__wide">
         <TwoColumns
@@ -15,14 +17,15 @@ function EightPanel() {
             <TextColumn
               title="Join Our Developer Community"
               text={textcontent.eightPanel}
+              aria-label="Developer community information"
             />
           }
           columnTwo={
             <div className="dissection">
               <img
-                alt="people using devices"
+                alt="Diverse group of developers collaborating using various devices"
                 src="img/image-08.png"
-                className="eigth-panel-image"
+                className="eight-panel-image"
               />
             </div>
           }
