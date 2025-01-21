@@ -1,8 +1,10 @@
 import fs from "fs/promises";
 import path from "path";
-const dirname: string = path.dirname(new URL(import.meta.url).pathname);
+import { fileURLToPath } from "url";
 import { connect, disconnect } from "../db";
 import { AppUserProfile, Organization, User } from "../models";
+
+const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Loads default organization data into the database.

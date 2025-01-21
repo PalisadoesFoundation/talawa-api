@@ -70,7 +70,9 @@ describe("Setup -> mongoDB", () => {
     await mongoDB();
 
     const env = dotenv.parse(fs.readFileSync(".env_test"));
-    expect(env.MONGO_DB_URL).toEqual(existingUrl + "/talawa-api");
+    expect(env.MONGO_DB_URL).toEqual(
+      existingUrl + "/talawa-api?replicaSet=rs0&directConnection=true",
+    );
   });
 
   /**
@@ -98,7 +100,9 @@ describe("Setup -> mongoDB", () => {
     await mongoDB();
 
     const env = dotenv.parse(fs.readFileSync(".env_test"));
-    expect(env.MONGO_DB_URL).toEqual(newUrl + "/talawa-api");
+    expect(env.MONGO_DB_URL).toEqual(
+      newUrl + "/talawa-api?replicaSet=rs0&directConnection=true",
+    );
     expect(consoleLogMock).not.toHaveBeenCalledWith("MongoDB URL detected:");
     expect(consoleLogMock).toHaveBeenCalledWith(
       "\nConnection to MongoDB successful! 🎉",
@@ -106,7 +110,8 @@ describe("Setup -> mongoDB", () => {
   });
 
   it("should ask for MongoDB url, and return it", async () => {
-    const url = "mongodb://localhost:27017/talawa-api";
+    const url =
+      "mongodb://localhost:27017/talawa-api?replicaSet=rs0&directConnection=true";
     vi.spyOn(inquirer, "prompt").mockImplementationOnce(() =>
       Promise.resolve({
         url: url,

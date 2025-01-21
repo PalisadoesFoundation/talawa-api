@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { MONGO_DB_URL } from "./constants";
 import { logger } from "./libraries";
 import { checkReplicaSet } from "./utilities/checkReplicaSet";
 
@@ -14,7 +13,7 @@ export const connect = async (dbName?: string): Promise<void> => {
 
   // If no connection exists, attempt to establish a new connection.
   try {
-    await mongoose.connect(MONGO_DB_URL as string, {
+    await mongoose.connect(process.env.MONGO_DB_URL as string, {
       dbName,
     });
 
