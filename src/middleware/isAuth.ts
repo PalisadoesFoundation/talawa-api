@@ -8,6 +8,7 @@ export interface InterfaceAuthData {
   isAuth: boolean;
   expired: boolean | undefined;
   userId: string | undefined;
+  isSuperAdmin: boolean;
 }
 
 /**
@@ -21,6 +22,7 @@ export const isAuth = (request: Request): InterfaceAuthData => {
     isAuth: false,
     expired: undefined,
     userId: undefined,
+    isSuperAdmin: false,
   };
 
   // Retrieve authorization header from request
@@ -73,6 +75,7 @@ export const isAuth = (request: Request): InterfaceAuthData => {
   // Set isAuth to true and extract userId from decoded token
   authData.isAuth = true;
   authData.userId = decodedToken.userId;
+  authData.isSuperAdmin = decodedToken.isSuperAdmin;
 
   // Return the finalized authData object
   return authData;
@@ -125,5 +128,35 @@ export const isAuthMiddleware = (
     return;
   }
 
+  next();
+};
+
+// Check if the user is valid and also a SuperAdmin
+export const isSuperAdminAuthMiddleware = (
+  req: InterfaceAuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+): void => {
+  const authData: InterfaceAuthData = isAuth(req);
+  req.isAuth = authData.isAuth;
+  req.userId = authData.userId;
+  req.tokenExpired = authData.expired;
+
+  // Check if the user is authenticated
+  if (!authData.isAuth) {
+    res.status(401).json({
+      message: requestContext.translate(UNAUTHENTICATED_ERROR.MESSAGE),
+      expired: authData.expired,
+    });
+    return;
+  }
+
+  // Check if the user is a super admin
+  if (!authData.isSuperAdmin) {
+    res.status(403).json({
+      message: requestContext.translate(UNAUTHENTICATED_ERROR.MESSAGE),
+    });
+    return;
+  }
   next();
 };
