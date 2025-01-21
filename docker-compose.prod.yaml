@@ -16,7 +16,7 @@ services:
           memory: 2G
           cpus: '2.0'
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
       - ./init-mongo.sh:/init-mongo.sh

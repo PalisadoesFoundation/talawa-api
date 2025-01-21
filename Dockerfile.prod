@@ -3,26 +3,13 @@ FROM  node:20.10.0 AS builder
 
 WORKDIR /usr/src/app
 
-# Install necessary tools (e.g., jq) for dependency analysis(required for our script to optimize production dependency process used in script)(note:use it once the #2848 pr merged in talawa-api develop branch.)
-# RUN apt-get update && apt-get install -y bash jq && rm -rf /var/lib/apt/lists/*
-
 # Copy only necessary files for dependency installation
 COPY package*.json ./ 
 
-# Install dependencies
-RUN npm install --production=false --frozen-lockfile
-
-# Copy the rest of the source files (exclude .dockerignore content)
 COPY . .
-
-# Set execute permissions for dependency analysis scripts.(note:use it once the #2848 pr merged in talawa-api develop branch.)
-# RUN chmod +x ./scripts/deps/move-from-diff.sh ./scripts/deps/analyze-dependencies.sh
 
 # Build the application
 RUN npm run build
-
-# Prune and optimize dependencies.(note:use it once the #2848 pr merged in talawa-api develop branch.)
-# RUN npm run move-and-prune
 
 # Stage 2: Final stage
 FROM node:alpine
@@ -33,11 +20,10 @@ WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app/build ./build
 COPY --from=builder /usr/src/app/package.json ./package.json
 COPY --from=builder /usr/src/app/node_modules ./node_modules
-COPY --from=builder /usr/src/app/locales ./locales
-COPY --from=builder /usr/src/app/certs ./certs
+
 
 # Expose the application port
 EXPOSE 4000
 
 # Start the application
-CMD ["npm", "run", "start:with-minio"]
+CMD ["npm", "run", "start"]
