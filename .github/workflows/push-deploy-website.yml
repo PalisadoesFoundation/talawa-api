@@ -46,6 +46,20 @@ jobs:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_GITHUB_PAGES }}
+
+      - name: Run Tests and Upload Coverage to Codecov
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run test
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
+
       - name: Deploy to GitHub Pages
         env:
           USE_SSH: true
@@ -62,3 +76,4 @@ jobs:
             echo "Deployment failed"
             exit 1
           fi
+
