@@ -87,7 +87,7 @@ services:
       - talawa-network
 
   caddy:
-    image: caddy/caddy:2.2.1-alpine
+    image: caddy/caddy:2.9.1-alpine
     container_name: caddy-service
     restart: unless-stopped
     ports:
