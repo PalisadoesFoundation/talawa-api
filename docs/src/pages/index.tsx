@@ -1,37 +1,41 @@
-import clsx from 'clsx';
-import Link from '@docusaurus/Link';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import Layout from '@theme/Layout';
-import HomepageFeatures from '@site/src/components/HomepageFeatures';
-import Heading from '@theme/Heading';
+// Import the necessary modules
+import React from "react";
+import Head from "@docusaurus/Head";
+import Layout from "@theme/Layout";
+import useHomePageAnimations  from "../hooks/useHomePageAnimations";
 
-import styles from './index.module.css';
+// Import the components
+import  HeaderHero  from "../components/layout/HeaderHero";
+import  SecondPanel  from "../components/layout/SecondPanel";
+import  ThirdPanel  from "../components/layout/ThirdPanel";
+import  FourthPanel  from "../components/layout/FourthPanel";
+import  FifthPanel  from "../components/layout/FifthPanel";
+import  SixthPanel  from "../components/layout/SixthPanel";
+import  SeventhPanel  from "../components/layout/SeventhPanel";
+import  EightPanel  from "../components/layout/EightPanel";
 
-function HomepageHeader() {
-  const { siteConfig } = useDocusaurusContext();
+const Index = () => {
+  useHomePageAnimations();
+
+  const pageTitle = "Talawa-Docs: Powered by The Palisadoes";
+
   return (
-    <header className={styles.heroBanner}>
-      <div className="container">
-        <Heading as="h1" className="hero__title">
-          {siteConfig.title}
-        </Heading>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
-      </div>
-    </header>
-  );
-}
-
-export default function Home(): JSX.Element {
-  const { siteConfig } = useDocusaurusContext();
-  return (
-    <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />"
-    >
-      <HomepageHeader />
-      <main>
-        <HomepageFeatures />
-      </main>
+    <Layout description="Powering Closer Communities" wrapperClassName="homepage">
+      <Head>
+        <title>{pageTitle}</title>
+        <meta property="og:title" content={pageTitle} />
+        <meta property="twitter:title" content={pageTitle} />
+      </Head>
+      <HeaderHero />
+      <SecondPanel/>
+      <ThirdPanel />
+      <FourthPanel />
+      <FifthPanel />
+      <SixthPanel />
+      <SeventhPanel />
+      <EightPanel />
     </Layout>
   );
-}
+};
+
+export default Index;
