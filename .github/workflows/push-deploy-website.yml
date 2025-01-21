@@ -59,6 +59,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
+          files: ./coverage/lcov.info
 
       - name: Deploy to GitHub Pages
         env:
