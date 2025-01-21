@@ -81,8 +81,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '1.0'
+          memory: 2G
+          cpus: '2.0'
     networks:
       - talawa-network
 
