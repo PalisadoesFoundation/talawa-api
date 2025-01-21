@@ -51,7 +51,7 @@ builder.mutationField("createPostVote", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingPost, existingPostVote] = await Promise.all([
+			const [currentUser, existingPost] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
@@ -60,12 +60,13 @@ builder.mutationField("createPostVote", (t) =>
 				}),
 				ctx.drizzleClient.query.postsTable.findFirst({
 					with: {
+						attachmentsWherePost: true,
 						organization: {
 							columns: {
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -74,7 +75,13 @@ builder.mutationField("createPostVote", (t) =>
 								},
 							},
 						},
-						postAttachmentsWherePost: true,
+						votesWherePost: {
+							columns: {
+								type: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.creatorId, currentUserId),
+						},
 					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.postId),
@@ -112,6 +119,8 @@ builder.mutationField("createPostVote", (t) =>
 				});
 			}
 
+			const existingPostVote = existingPost.votesWherePost[0];
+
 			if (existingPostVote !== undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -125,8 +134,9 @@ builder.mutationField("createPostVote", (t) =>
 					},
 				});
 			}
+
 			const currentUserOrganizationMembership =
-				existingPost.organization.organizationMembershipsWhereOrganization[0];
+				existingPost.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -158,6 +168,7 @@ builder.mutationField("createPostVote", (t) =>
 				ctx.log.error(
 					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 				);
+
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",
@@ -166,7 +177,7 @@ builder.mutationField("createPostVote", (t) =>
 			}
 
 			return Object.assign(existingPost, {
-				attachments: existingPost.postAttachmentsWherePost,
+				attachments: existingPost.attachmentsWherePost,
 			});
 		},
 		type: Post,

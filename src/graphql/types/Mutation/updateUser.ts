@@ -34,13 +34,12 @@ const mutationUpdateUserArgumentsSchema = z.object({
 					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
 				});
 			} else {
-				return {
-					...arg,
-					avatar: Object.assign(rawAvatar, {
-						mimetype: data,
-					}),
-				};
+				avatar = Object.assign(rawAvatar, {
+					mimetype: data,
+				});
 			}
+		} else if (arg.avatar !== undefined) {
+			avatar = null;
 		}
 
 		return {
@@ -54,7 +53,7 @@ builder.mutationField("updateUser", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "Input required to update a user.",
+				description: "",
 				required: true,
 				type: MutationUpdateUserInput,
 			}),
@@ -97,7 +96,10 @@ builder.mutationField("updateUser", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: { avatarName: true, role: true },
+					columns: {
+						avatarName: true,
+						role: true,
+					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.id),
 				}),
@@ -157,7 +159,7 @@ builder.mutationField("updateUser", (t) =>
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [updatedUser] = await ctx.drizzleClient
+				const [updatedUser] = await tx
 					.update(usersTable)
 					.set({
 						addressLine1: parsedArgs.input.addressLine1,

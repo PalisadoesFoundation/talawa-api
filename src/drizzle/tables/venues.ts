@@ -113,7 +113,7 @@ export const venuesTableRelations = relations(venuesTable, ({ many, one }) => ({
 	/**
 	 * One to many relationship from `venues` table to `venue_attachments` table.
 	 */
-	venueAttachmentsWhereVenue: many(venueAttachmentsTable, {
+	attachmentsWhereVenue: many(venueAttachmentsTable, {
 		relationName: "venue_attachments.venue_id:venues.id",
 	}),
 	/**
@@ -125,6 +125,6 @@ export const venuesTableRelations = relations(venuesTable, ({ many, one }) => ({
 }));
 
 export const venuesTableInsertSchema = createInsertSchema(venuesTable, {
-	description: (schema) => schema.min(1).max(2048),
+	description: (schema) => schema.min(1).max(2048).optional(),
 	name: (schema) => schema.min(1).max(256),
 });

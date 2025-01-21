@@ -35,7 +35,7 @@ export const MutationUpdateAgendaFolderInput = builder
 			}),
 			parentFolderId: t.id({
 				description:
-					"Global identifier of the agenda folder the agenda folder is associated to.",
+					"Global identifier of the agenda folder the agenda folder is contained within.",
 			}),
 		}),
 	});

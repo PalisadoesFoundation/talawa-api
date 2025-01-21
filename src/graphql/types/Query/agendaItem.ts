@@ -74,7 +74,7 @@ builder.queryField("agendaItem", (t) =>
 												countryCode: true,
 											},
 											with: {
-												organizationMembershipsWhereOrganization: {
+												membershipsWhereOrganization: {
 													columns: {
 														role: true,
 													},
@@ -116,7 +116,7 @@ builder.queryField("agendaItem", (t) =>
 
 			const currentUserOrganizationMembership =
 				existingAgendaItem.folder.event.organization
-					.organizationMembershipsWhereOrganization[0];
+					.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

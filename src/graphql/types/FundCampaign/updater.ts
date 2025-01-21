@@ -32,7 +32,7 @@ FundCampaign.implement({
 									countryCode: true,
 								},
 								with: {
-									organizationMembershipsWhereOrganization: {
+									membershipsWhereOrganization: {
 										columns: {
 											role: true,
 										},
@@ -69,7 +69,7 @@ FundCampaign.implement({
 				}
 
 				const currentUserOrganizationMembership =
-					existingFund.organization.organizationMembershipsWhereOrganization[0];
+					existingFund.organization.membershipsWhereOrganization[0];
 
 				if (
 					currentUser.role !== "administrator" &&

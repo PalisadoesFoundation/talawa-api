@@ -75,7 +75,7 @@ builder.mutationField("createChatMessage", (t) =>
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -141,7 +141,7 @@ builder.mutationField("createChatMessage", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingChat.organization.organizationMembershipsWhereOrganization[0];
+				existingChat.organization.membershipsWhereOrganization[0];
 			const currentUserChatMembership =
 				existingChat.chatMembershipsWhereChat[0];
 

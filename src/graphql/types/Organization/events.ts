@@ -192,7 +192,7 @@ Organization.implement({
 						limit,
 						orderBy,
 						with: {
-							eventAttachmentsWhereEvent: true,
+							attachmentsWhereEvent: true,
 						},
 						where,
 					});
@@ -218,9 +218,9 @@ Organization.implement({
 									startAt: event.startAt.toISOString(),
 								}),
 							).toString("base64url"),
-						createNode: ({ eventAttachmentsWhereEvent, ...event }) =>
+						createNode: ({ attachmentsWhereEvent, ...event }) =>
 							Object.assign(event, {
-								attachments: eventAttachmentsWhereEvent,
+								attachments: attachmentsWhereEvent,
 							}),
 						parsedArgs,
 						rawNodes: events,

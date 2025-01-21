@@ -80,7 +80,7 @@ builder.queryField("fundCampaignPledge", (t) =>
 												countryCode: true,
 											},
 											with: {
-												organizationMembershipsWhereOrganization: {
+												membershipsWhereOrganization: {
 													columns: {
 														role: true,
 													},
@@ -113,7 +113,7 @@ builder.queryField("fundCampaignPledge", (t) =>
 
 			const currentUserOrganizationMembership =
 				existingFundCampaignPledge.campaign.fund.organization
-					.organizationMembershipsWhereOrganization[0];
+					.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

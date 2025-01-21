@@ -1,5 +1,5 @@
 {
-  "id": "32df2a89-a895-4c5d-a4dc-cc8413ee818f",
+  "id": "8f027f04-270a-4d90-8653-683983016f02",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1802,12 +1802,6 @@
           "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "updated_id": {
-          "name": "updated_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -1898,19 +1892,6 @@
           "tableTo": "users",
           "columnsFrom": [
             "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
-        "comment_votes_updated_id_users_id_fk": {
-          "name": "comment_votes_updated_id_users_id_fk",
-          "tableFrom": "comment_votes",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updated_id"
           ],
           "columnsTo": [
             "id"
@@ -4274,12 +4255,6 @@
           "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "updated_id": {
-          "name": "updated_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -4375,19 +4350,6 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "post_votes_updated_id_users_id_fk": {
-          "name": "post_votes_updated_id_users_id_fk",
-          "tableFrom": "post_votes",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updated_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
           "onUpdate": "cascade"
         }
       },

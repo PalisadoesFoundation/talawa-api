@@ -17,7 +17,7 @@ builder.queryField("signIn", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "Input required to sign in to talawa.",
+				description: "",
 				required: true,
 				type: QuerySignInInput,
 			}),
@@ -84,7 +84,7 @@ builder.queryField("signIn", (t) =>
 				});
 			}
 
-			// The following code is necessary for continuing the expected graph traversal for an authenticated client because of absence of an authentication context for clients that triggered this operation. This should be removed when authentication flows are seperated from the graphql implementation.
+			// TODO: The following code is necessary for continuing the expected graph traversal for unauthenticated clients that triggered this operation because of absence of an authentication context for those clients. This should be removed when authentication flows are seperated from the graphql implementation.
 
 			// @ts-expect-error
 			ctx.currentClient.isAuthenticated = true;

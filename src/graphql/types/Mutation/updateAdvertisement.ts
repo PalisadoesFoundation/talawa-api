@@ -66,13 +66,13 @@ builder.mutationField("updateAdvertisement", (t) =>
 						startAt: true,
 					},
 					with: {
-						advertisementAttachmentsWhereAdvertisement: true,
+						attachmentsWhereAdvertisement: true,
 						organization: {
 							columns: {
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -178,8 +178,7 @@ builder.mutationField("updateAdvertisement", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingAdvertisement.organization
-					.organizationMembershipsWhereOrganization[0];
+				existingAdvertisement.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -221,8 +220,7 @@ builder.mutationField("updateAdvertisement", (t) =>
 			}
 
 			return Object.assign(updatedAdvertisement, {
-				attachments:
-					existingAdvertisement.advertisementAttachmentsWhereAdvertisement,
+				attachments: existingAdvertisement.attachmentsWhereAdvertisement,
 			});
 		},
 		type: Advertisement,

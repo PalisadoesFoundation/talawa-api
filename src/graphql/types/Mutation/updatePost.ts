@@ -66,13 +66,13 @@ builder.mutationField("updatePost", (t) =>
 						creatorId: true,
 					},
 					with: {
-						postAttachmentsWherePost: true,
+						attachmentsWherePost: true,
 						organization: {
 							columns: {
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -128,7 +128,7 @@ builder.mutationField("updatePost", (t) =>
 				}
 			} else {
 				const currentUserOrganizationMembership =
-					existingPost.organization.organizationMembershipsWhereOrganization[0];
+					existingPost.organization.membershipsWhereOrganization[0];
 
 				if (currentUserOrganizationMembership === undefined) {
 					throw new TalawaGraphQLError({
@@ -222,7 +222,7 @@ builder.mutationField("updatePost", (t) =>
 			}
 
 			return Object.assign(updatedPost, {
-				attachments: existingPost.postAttachmentsWherePost,
+				attachments: existingPost.attachmentsWherePost,
 			});
 		},
 		type: Post,

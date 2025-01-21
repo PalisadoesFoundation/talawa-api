@@ -21,8 +21,16 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 			}),
 		},
 		description:
-			"Subscription field to subscribe to the event of creation of a chat message.",
+			"Subscription field to subscribe to the event of creation of a message in a chat.",
 		subscribe: async (_parent, args, ctx) => {
+			if (!ctx.currentClient.isAuthenticated) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
+
 			const {
 				success,
 				data: parsedArgs,
@@ -41,18 +49,80 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 				});
 			}
 
-			const existingChat = await ctx.drizzleClient.query.chatsTable.findFirst({
-				columns: {
-					avatarMimeType: true,
-				},
-				where: (fields, operators) =>
-					operators.eq(fields.id, parsedArgs.input.id),
-			});
+			const currentUserId = ctx.currentClient.user.id;
+
+			const [currentUser, existingChat] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.chatsTable.findFirst({
+					columns: {
+						avatarMimeType: true,
+					},
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.id),
+					with: {
+						chatMembershipsWhereChat: {
+							columns: {
+								role: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.memberId, currentUserId),
+						},
+						organization: {
+							columns: {},
+							with: {
+								membershipsWhereOrganization: {
+									columns: {
+										role: true,
+									},
+									where: (fields, operators) =>
+										operators.eq(fields.memberId, currentUserId),
+								},
+							},
+						},
+					},
+				}),
+			]);
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
 
 			if (existingChat === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
+					},
+				});
+			}
+
+			const currentUserOrganizationMembership =
+				existingChat.organization.membershipsWhereOrganization[0];
+			const currentUserChatMembership =
+				existingChat.chatMembershipsWhereChat[0];
+
+			if (
+				currentUser.role !== "administrator" &&
+				(currentUserOrganizationMembership === undefined ||
+					(currentUserOrganizationMembership.role !== "administrator" &&
+						currentUserChatMembership === undefined))
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
 						issues: [
 							{
 								argumentPath: ["input", "id"],

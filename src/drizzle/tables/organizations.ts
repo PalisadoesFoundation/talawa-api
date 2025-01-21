@@ -170,13 +170,9 @@ export const organizationsTableRelations = relations(
 		/**
 		 * One to many relationship from `organizations` table to `organization_memberships` table.
 		 */
-		organizationMembershipsWhereOrganization: many(
-			organizationMembershipsTable,
-			{
-				relationName:
-					"organization_memberships.organization_id:organizations.id",
-			},
-		),
+		membershipsWhereOrganization: many(organizationMembershipsTable, {
+			relationName: "organization_memberships.organization_id:organizations.id",
+		}),
 		/**
 		 * One to many relationship from `organizations` table to `posts` table.
 		 */
@@ -215,13 +211,13 @@ export const organizationsTableRelations = relations(
 export const organizationsTableInsertSchema = createInsertSchema(
 	organizationsTable,
 	{
-		addressLine1: (schema) => schema.min(1).max(1024),
-		addressLine2: (schema) => schema.min(1).max(1024),
-		avatarName: (schema) => schema.min(1),
-		city: (schema) => schema.min(1).max(64),
-		description: (schema) => schema.min(1).max(2048),
+		addressLine1: (schema) => schema.min(1).max(1024).optional(),
+		addressLine2: (schema) => schema.min(1).max(1024).optional(),
+		avatarName: (schema) => schema.min(1).optional(),
+		city: (schema) => schema.min(1).max(64).optional(),
+		description: (schema) => schema.min(1).max(2048).optional(),
 		name: (schema) => schema.min(1).max(256),
-		postalCode: (schema) => schema.min(1).max(32),
-		state: (schema) => schema.min(1).max(64),
+		postalCode: (schema) => schema.min(1).max(32).optional(),
+		state: (schema) => schema.min(1).max(64).optional(),
 	},
 );

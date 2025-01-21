@@ -73,7 +73,7 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
 					with: {
-						organizationMembershipsWhereOrganization: {
+						membershipsWhereOrganization: {
 							columns: {
 								role: true,
 							},
@@ -165,29 +165,28 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 				});
 			}
 
-			if (currentUser.role !== "administrator") {
-				const currentUserOrganizationMembership =
-					existingOrganization.organizationMembershipsWhereOrganization[0];
+			const currentUserOrganizationMembership =
+				existingOrganization.membershipsWhereOrganization[0];
 
-				if (
-					currentUserOrganizationMembership === undefined ||
+			if (
+				currentUser.role !== "administrator" &&
+				(currentUserOrganizationMembership === undefined ||
 					(currentUserOrganizationMembership.role !== "administrator" &&
-						currentUserId !== parsedArgs.input.memberId)
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "memberId"],
-								},
-								{
-									argumentPath: ["input", "organizationId"],
-								},
-							],
-						},
-					});
-				}
+						currentUserId !== parsedArgs.input.memberId))
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "memberId"],
+							},
+							{
+								argumentPath: ["input", "organizationId"],
+							},
+						],
+					},
+				});
 			}
 
 			const [deletedOrganizationMembership] = await ctx.drizzleClient

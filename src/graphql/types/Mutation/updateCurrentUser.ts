@@ -34,13 +34,12 @@ const mutationUpdateCurrentUserArgumentsSchema = z.object({
 					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
 				});
 			} else {
-				return {
-					...arg,
-					avatar: Object.assign(rawAvatar, {
-						mimetype: data,
-					}),
-				};
+				avatar = Object.assign(rawAvatar, {
+					mimetype: data,
+				});
 			}
+		} else if (arg.avatar !== undefined) {
+			avatar = null;
 		}
 
 		return {
@@ -54,7 +53,7 @@ builder.mutationField("updateCurrentUser", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "Input required to update the current user.",
+				description: "",
 				required: true,
 				type: MutationUpdateCurrentUserInput,
 			}),
@@ -123,7 +122,7 @@ builder.mutationField("updateCurrentUser", (t) =>
 							issues: [
 								{
 									argumentPath: ["input", "emailAddress"],
-									message: "This email address is already registered.",
+									message: "This email address is not available.",
 								},
 							],
 						},
