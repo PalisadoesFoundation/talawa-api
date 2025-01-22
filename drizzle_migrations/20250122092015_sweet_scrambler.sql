@@ -354,6 +354,7 @@ CREATE TABLE "users" (
 	"mobile_phone_number" text,
 	"name" text NOT NULL,
 	"natal_sex" text,
+	"natural_language_code" text,
 	"password_hash" text NOT NULL,
 	"postal_code" text,
 	"role" text NOT NULL,

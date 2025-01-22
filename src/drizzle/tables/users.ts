@@ -12,6 +12,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
+import { iso639Set1LanguageCodeEnum } from "~/src/drizzle/enums/iso639Set1LanguageCode";
 import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import { userEducationGradeEnum } from "~/src/drizzle/enums/userEducationGrade";
 import { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStatus";
@@ -160,6 +161,12 @@ export const usersTable = pgTable(
 		 */
 		natalSex: text("natal_sex", {
 			enum: userNatalSexEnum.options,
+		}),
+		/**
+		 * Language code of the user's preferred natural language.
+		 */
+		naturalLanguageCode: text("natural_language_code", {
+			enum: iso639Set1LanguageCodeEnum.options,
 		}),
 		/**
 		 * Cryptographic hash of the password of the user to sign in to the application.
