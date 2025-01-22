@@ -59,13 +59,13 @@ builder.queryField("advertisement", (t) =>
 				}),
 				ctx.drizzleClient.query.advertisementsTable.findFirst({
 					with: {
-						advertisementAttachmentsWhereAdvertisement: true,
+						attachmentsWhereAdvertisement: true,
 						organization: {
 							columns: {
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -102,8 +102,7 @@ builder.queryField("advertisement", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingAdvertisement.organization
-					.organizationMembershipsWhereOrganization[0];
+				existingAdvertisement.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -122,8 +121,7 @@ builder.queryField("advertisement", (t) =>
 			}
 
 			return Object.assign(existingAdvertisement, {
-				attachments:
-					existingAdvertisement.advertisementAttachmentsWhereAdvertisement,
+				attachments: existingAdvertisement.attachmentsWhereAdvertisement,
 			});
 		},
 		type: Advertisement,

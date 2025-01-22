@@ -32,13 +32,12 @@ const mutationCreateOrganizationArgumentsSchema = z.object({
 					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
 				});
 			} else {
-				return {
-					...arg,
-					avatar: Object.assign(rawAvatar, {
-						mimetype: data,
-					}),
-				};
+				avatar = Object.assign(rawAvatar, {
+					mimetype: data,
+				});
 			}
+		} else if (arg.avatar !== undefined) {
+			avatar = null;
 		}
 
 		return {

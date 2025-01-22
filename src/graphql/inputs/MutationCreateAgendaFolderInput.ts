@@ -24,7 +24,7 @@ export const MutationCreateAgendaFolderInput = builder
 			}),
 			isAgendaItemFolder: t.boolean({
 				description:
-					"Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.",
+					"Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent folder for other agenda folders.",
 				required: true,
 			}),
 			name: t.string({
@@ -33,7 +33,7 @@ export const MutationCreateAgendaFolderInput = builder
 			}),
 			parentFolderId: t.id({
 				description:
-					"Global identifier of the agenda folder the agenda folder is associated to.",
+					"Global identifier of the agenda folder the agenda folder is contained within.",
 			}),
 		}),
 	});

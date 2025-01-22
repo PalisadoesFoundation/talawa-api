@@ -38,14 +38,11 @@ const mutationCreateEventArgumentsSchema = z.object({
 					}
 				}
 			} else {
-				return {
-					...arg,
-					attachments: rawAttachments.map((attachment, index) =>
-						Object.assign(attachment, {
-							mimetype: data[index],
-						}),
-					),
-				};
+				attachments = rawAttachments.map((attachment, index) =>
+					Object.assign(attachment, {
+						mimetype: data[index],
+					}),
+				);
 			}
 		}
 
@@ -107,7 +104,7 @@ builder.mutationField("createEvent", (t) =>
 						countryCode: true,
 					},
 					with: {
-						organizationMembershipsWhereOrganization: {
+						membershipsWhereOrganization: {
 							columns: {
 								role: true,
 							},
@@ -142,7 +139,7 @@ builder.mutationField("createEvent", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingOrganization.organizationMembershipsWhereOrganization[0];
+				existingOrganization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -202,18 +199,20 @@ builder.mutationField("createEvent", (t) =>
 						)
 						.returning();
 
-					Promise.all(
-						createdEventAttachments.map((attachment, index) =>
-							ctx.minio.client.putObject(
-								ctx.minio.bucketName,
-								attachment.name,
-								attachments[index].createReadStream(),
-								undefined,
-								{
-									"content-type": attachment.mimeType,
-								},
-							),
-						),
+					await Promise.all(
+						createdEventAttachments.map((attachment, index) => {
+							if (attachments[index] !== undefined) {
+								return ctx.minio.client.putObject(
+									ctx.minio.bucketName,
+									attachment.name,
+									attachments[index].createReadStream(),
+									undefined,
+									{
+										"content-type": attachment.mimeType,
+									},
+								);
+							}
+						}),
 					);
 
 					return Object.assign(createdEvent, {

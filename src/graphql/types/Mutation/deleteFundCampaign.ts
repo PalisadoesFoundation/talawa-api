@@ -74,7 +74,7 @@ builder.mutationField("deleteFundCampaign", (t) =>
 										countryCode: true,
 									},
 									with: {
-										organizationMembershipsWhereOrganization: {
+										membershipsWhereOrganization: {
 											columns: {
 												role: true,
 											},
@@ -113,8 +113,7 @@ builder.mutationField("deleteFundCampaign", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingFundCampaign.fund.organization
-					.organizationMembershipsWhereOrganization[0];
+				existingFundCampaign.fund.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

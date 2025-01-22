@@ -24,9 +24,9 @@ const mutationUpdateChatArgumentsSchema = z.object({
 
 		if (isNotNullish(arg.avatar)) {
 			const rawAvatar = await arg.avatar;
-			const result = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
+			const { data, success } = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
 
-			if (!result.success) {
+			if (!success) {
 				ctx.addIssue({
 					code: "custom",
 					path: ["avatar"],
@@ -34,19 +34,16 @@ const mutationUpdateChatArgumentsSchema = z.object({
 				});
 			} else {
 				avatar = Object.assign(rawAvatar, {
-					mimetype: result.data,
+					mimetype: data,
 				});
 			}
-
-			return {
-				...arg,
-				avatar,
-			};
+		} else if (arg.avatar !== undefined) {
+			avatar = null;
 		}
 
 		return {
 			...arg,
-			avatar: arg.avatar,
+			avatar,
 		};
 	}),
 });
@@ -114,7 +111,7 @@ builder.mutationField("updateChat", (t) =>
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -151,7 +148,7 @@ builder.mutationField("updateChat", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingChat.organization.organizationMembershipsWhereOrganization[0];
+				existingChat.organization.membershipsWhereOrganization[0];
 			const currentUserChatMembership =
 				existingChat.chatMembershipsWhereChat[0];
 

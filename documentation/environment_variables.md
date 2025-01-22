@@ -12,7 +12,7 @@ At runtime, talawa api requires certain environment variables to be defined in i
 
 ## API_ADMINISTRATOR_USER_EMAIL_ADDRESS
 
-This environment variable is used to configure the email address for the administrator user that talawa-api will make sure exists in the database at the time of server startup.
+This environment variable is used to configure the email address for the administrator user that talawa api will make sure exists in the database at the time of server startup.
 
 ## API_ADMINISTRATOR_USER_NAME
 
@@ -20,7 +20,7 @@ This environment variable is used to configure the name for the administrator us
 
 ## API_ADMINISTRATOR_USER_PASSWORD
 
-This environment variable is used to configure the password for the administrator user that talawa-api will make sure exists in the database at the time of server startup.
+This environment variable is used to configure the password for the administrator user that talawa api will make sure exists in the database at the time of server startup.
 
 ## API_BASE_URL
 

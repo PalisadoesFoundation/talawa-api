@@ -33,13 +33,12 @@ const mutationCreateUserArgumentsSchema = z.object({
 					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
 				});
 			} else {
-				return {
-					...arg,
-					avatar: Object.assign(rawAvatar, {
-						mimetype: data,
-					}),
-				};
+				avatar = Object.assign(rawAvatar, {
+					mimetype: data,
+				});
 			}
+		} else if (arg.avatar !== undefined) {
+			avatar = null;
 		}
 
 		return {
@@ -53,7 +52,7 @@ builder.mutationField("createUser", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "Input required to create a user.",
+				description: "",
 				required: true,
 				type: MutationCreateUserInput,
 			}),
@@ -138,8 +137,8 @@ builder.mutationField("createUser", (t) =>
 			let avatarName: string;
 
 			if (isNotNullish(parsedArgs.input.avatar)) {
-				avatarName = ulid();
 				avatarMimeType = parsedArgs.input.avatar.mimetype;
+				avatarName = ulid();
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {

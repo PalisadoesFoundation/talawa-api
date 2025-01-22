@@ -71,7 +71,7 @@ builder.mutationField("deleteOrganization", (t) =>
 								type: true,
 							},
 							with: {
-								advertisementAttachmentsWhereAdvertisement: true,
+								attachmentsWhereAdvertisement: true,
 							},
 						},
 						chatsWhereOrganization: {
@@ -84,7 +84,7 @@ builder.mutationField("deleteOrganization", (t) =>
 								startAt: true,
 							},
 							with: {
-								eventAttachmentsWhereEvent: true,
+								attachmentsWhereEvent: true,
 							},
 						},
 						postsWhereOrganization: {
@@ -92,7 +92,7 @@ builder.mutationField("deleteOrganization", (t) =>
 								pinnedAt: true,
 							},
 							with: {
-								postAttachmentsWherePost: true,
+								attachmentsWherePost: true,
 							},
 						},
 						venuesWhereOrganization: {
@@ -100,7 +100,7 @@ builder.mutationField("deleteOrganization", (t) =>
 								updatedAt: true,
 							},
 							with: {
-								venueAttachmentsWhereVenue: true,
+								attachmentsWhereVenue: true,
 							},
 						},
 					},
@@ -163,7 +163,7 @@ builder.mutationField("deleteOrganization", (t) =>
 				}
 
 				for (const advertisement of existingOrganization.advertisementsWhereOrganization) {
-					for (const attachment of advertisement.advertisementAttachmentsWhereAdvertisement) {
+					for (const attachment of advertisement.attachmentsWhereAdvertisement) {
 						objectNames.push(attachment.name);
 					}
 				}
@@ -175,19 +175,19 @@ builder.mutationField("deleteOrganization", (t) =>
 				}
 
 				for (const event of existingOrganization.eventsWhereOrganization) {
-					for (const attachment of event.eventAttachmentsWhereEvent) {
+					for (const attachment of event.attachmentsWhereEvent) {
 						objectNames.push(attachment.name);
 					}
 				}
 
 				for (const post of existingOrganization.postsWhereOrganization) {
-					for (const attachment of post.postAttachmentsWherePost) {
+					for (const attachment of post.attachmentsWherePost) {
 						objectNames.push(attachment.name);
 					}
 				}
 
 				for (const venue of existingOrganization.venuesWhereOrganization) {
-					for (const attachment of venue.venueAttachmentsWhereVenue) {
+					for (const attachment of venue.attachmentsWhereVenue) {
 						objectNames.push(attachment.name);
 					}
 				}

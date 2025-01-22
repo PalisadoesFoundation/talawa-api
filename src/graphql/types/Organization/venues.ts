@@ -173,7 +173,7 @@ Organization.implement({
 						limit,
 						orderBy,
 						with: {
-							venueAttachmentsWhereVenue: true,
+							attachmentsWhereVenue: true,
 						},
 						where,
 					});
@@ -198,9 +198,9 @@ Organization.implement({
 									name: venue.name,
 								}),
 							).toString("base64url"),
-						createNode: ({ venueAttachmentsWhereVenue, ...venue }) =>
+						createNode: ({ attachmentsWhereVenue, ...venue }) =>
 							Object.assign(venue, {
-								attachments: venueAttachmentsWhereVenue,
+								attachments: attachmentsWhereVenue,
 							}),
 						parsedArgs,
 						rawNodes: venues,

@@ -16,11 +16,12 @@ export const MutationCreateVenueBookingInput = builder
 		description: "",
 		fields: (t) => ({
 			eventId: t.id({
-				description: "Global identifier of the associated event.",
+				description:
+					"Global identifier of the event that the venue is to be booked for.",
 				required: true,
 			}),
 			venueId: t.id({
-				description: "Global identifier of the associated venue.",
+				description: "Global identifier of the venue to be booked.",
 				required: true,
 			}),
 		}),

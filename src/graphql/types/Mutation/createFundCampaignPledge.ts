@@ -81,7 +81,7 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 											countryCode: true,
 										},
 										with: {
-											organizationMembershipsWhereOrganization: {
+											membershipsWhereOrganization: {
 												columns: {
 													memberId: true,
 													role: true,
@@ -211,7 +211,7 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 
 			const [currentUserOrganizationMembership, pledgerOrganizationMembership] =
 				[currentUserId, parsedArgs.input.pledgerId].map((id) =>
-					existingFundCampaign.fund.organization.organizationMembershipsWhereOrganization.find(
+					existingFundCampaign.fund.organization.membershipsWhereOrganization.find(
 						(membership) => membership.memberId === id,
 					),
 				);

@@ -71,7 +71,7 @@ builder.queryField("tag", (t) =>
 							countryCode: true,
 						},
 						with: {
-							organizationMembershipsWhereOrganization: {
+							membershipsWhereOrganization: {
 								columns: {
 									role: true,
 								},
@@ -99,7 +99,7 @@ builder.queryField("tag", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingTag.organization.organizationMembershipsWhereOrganization[0];
+				existingTag.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

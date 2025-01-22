@@ -64,13 +64,13 @@ builder.mutationField("deletePost", (t) =>
 						creatorId: true,
 					},
 					with: {
-						postAttachmentsWherePost: true,
+						attachmentsWherePost: true,
 						organization: {
 							columns: {
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -108,7 +108,7 @@ builder.mutationField("deletePost", (t) =>
 
 			if (currentUser.role !== "administrator") {
 				const currentUserOrganizationMembership =
-					existingPost.organization.organizationMembershipsWhereOrganization[0];
+					existingPost.organization.membershipsWhereOrganization[0];
 
 				if (
 					currentUserOrganizationMembership === undefined ||
@@ -145,13 +145,13 @@ builder.mutationField("deletePost", (t) =>
 
 				await ctx.minio.client.removeObjects(
 					ctx.minio.bucketName,
-					existingPost.postAttachmentsWherePost.map(
+					existingPost.attachmentsWherePost.map(
 						(attachment) => attachment.name,
 					),
 				);
 
 				return Object.assign(deletedPost, {
-					attachments: existingPost.postAttachmentsWherePost,
+					attachments: existingPost.attachmentsWherePost,
 				});
 			});
 		},

@@ -1,80 +1,90 @@
-import { themes as prismThemes } from 'prism-react-renderer';
-import type { Config } from '@docusaurus/types';
-import type * as Preset from '@docusaurus/preset-classic';
+import { themes as prismThemes } from "prism-react-renderer";
+import type { Config } from "@docusaurus/types";
+import type * as Preset from "@docusaurus/preset-classic";
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'Talawa API Documentation',
-  tagline: 'Start your open source journey here',
-  favicon: 'img/favicon.ico',
+  title: "Talawa API Documentation",
+  tagline: "Start your open source journey here",
+  favicon: "img/favicon.ico",
 
-  url: 'https://docs-api.talawa.io',
-  baseUrl: '/',
-  deploymentBranch: 'gh-pages',
+  url: "https://docs-api.talawa.io",
+  baseUrl: "/",
+  deploymentBranch: "gh-pages",
 
-  organizationName: 'PalisadoesFoundation', // GitHub org
-  projectName: 'talawa-api', // repo name
+  organizationName: "PalisadoesFoundation", // GitHub org
+  projectName: "talawa-api", // repo name
 
-  onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "warn",
 
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: "en",
+    locales: ["en"],
   },
 
   presets: [
     [
-      'classic',
+      "classic",
+      /** @type {import('@docusaurus/preset-classic').Options} */
       {
         docs: {
-          sidebarPath: './sidebars.ts',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl: 'https://github.com/PalisadoesFoundation/talawa-api/blob/main/docs/',        },
-        theme: {
-          customCss: './src/css/custom.css',
+          sidebarPath: require.resolve("./sidebars.js"),
+          editUrl: ({ docPath }) => {
+            return `https://github.com/PalisadoesFoundation/talawa-api/edit/develop/docs/docs/${docPath}`;
+          },
         },
-      } satisfies Preset.Options,
+        blog: {
+          showReadingTime: true,
+          editUrl:
+            "https://github.com/PalisadoesFoundation/talawa-api/tree/develop/docs/docs",
+        },
+        theme: {
+          customCss: [
+            require.resolve("./src/css/custom.css"),
+            require.resolve("./src/css/index.css"),
+          ],
+        },
+      },
     ],
   ],
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/docusaurus-social-card.jpg',
+    image: "img/docusaurus-social-card.jpg",
     navbar: {
-      title: 'Talawa-docs',
+      title: "Talawa API",
       logo: {
-        alt: 'My Site Logo',
-        src: 'img/logos/logo.png',
+        alt: "My Site Logo",
+        src: "img/logos/logo.png",
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
-          position: 'left',
-          label: 'Tutorial',
+          type: "docSidebar",
+          sidebarId: "tutorialSidebar",
+          position: "left",
+          label: "Docs",
         },
         {
           label: "Mobile Guide",
           position: "left",
-          href: "https://docs-mobile.talawa.io/",
-          target: "_blank",
+          href: "https://docs-mobile.talawa.io/docs",
+          target: "_self",
         },
         {
           label: "Admin Guide",
           position: "left",
-          href: "https://docs-admin.talawa.io/",
-          target: "_blank",
+          href: "https://docs-admin.talawa.io/docs",
+          target: "_self",
         },
         {
           label: "API Guide",
           position: "left",
-          href: "https://docs-api.talawa.io/",
+          href: "/docs",
           target: "_self",
         },
         {
@@ -97,19 +107,19 @@ const config: Config = {
       ],
     },
     footer: {
-      style: 'dark',
+      style: "dark",
       links: [
         {
-          title: 'Docs',
+          title: "Docs",
           items: [
             {
-              label: 'Tutorial',
-              to: '/docs/intro',
+              label: "Docs",
+              to: "/docs",
             },
           ],
         },
         {
-          title: 'Community',
+          title: "Community",
           items: [
             {
               label: "Slack",
@@ -145,7 +155,7 @@ const config: Config = {
               label: " Instagram",
               to: "https://www.instagram.com/palisadoes/?hl=en",
               className: "footer__icon footer__instagram",
-            }
+            },
           ],
         },
         {
@@ -156,8 +166,8 @@ const config: Config = {
               to: "https://github.com/PalisadoesFoundation",
               className: "footer__icon footer__github",
             },
-          ]
-        }
+          ],
+        },
       ],
       copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
     },

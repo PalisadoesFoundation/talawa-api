@@ -38,14 +38,11 @@ const mutationCreateAdvertisementArgumentsSchema = z.object({
 					}
 				}
 			} else {
-				return {
-					...arg,
-					attachments: rawAttachments.map((attachment, index) =>
-						Object.assign(attachment, {
-							mimetype: data[index],
-						}),
-					),
-				};
+				attachments = rawAttachments.map((attachment, index) =>
+					Object.assign(attachment, {
+						mimetype: data[index],
+					}),
+				);
 			}
 		}
 
@@ -100,18 +97,6 @@ builder.mutationField("createAdvertisement", (t) =>
 					columns: {
 						role: true,
 					},
-					with: {
-						organizationMembershipsWhereMember: {
-							columns: {
-								role: true,
-							},
-							where: (fields, operators) =>
-								operators.eq(
-									fields.organizationId,
-									parsedArgs.input.organizationId,
-								),
-						},
-					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
@@ -125,6 +110,13 @@ builder.mutationField("createAdvertisement", (t) =>
 							},
 							where: (fields, operators) =>
 								operators.eq(fields.name, parsedArgs.input.name),
+						},
+						membershipsWhereOrganization: {
+							columns: {
+								role: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.memberId, currentUserId),
 						},
 					},
 					where: (fields, operators) =>
@@ -171,7 +163,7 @@ builder.mutationField("createAdvertisement", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				currentUser.organizationMembershipsWhereMember[0];
+				existingOrganization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -232,18 +224,20 @@ builder.mutationField("createAdvertisement", (t) =>
 						)
 						.returning();
 
-					Promise.all(
-						createdAdvertisementAttachments.map((attachment, index) =>
-							ctx.minio.client.putObject(
-								ctx.minio.bucketName,
-								attachment.name,
-								attachments[index].createReadStream(),
-								undefined,
-								{
-									"content-type": attachment.mimeType,
-								},
-							),
-						),
+					await Promise.all(
+						createdAdvertisementAttachments.map((attachment, index) => {
+							if (attachments[index] !== undefined) {
+								return ctx.minio.client.putObject(
+									ctx.minio.bucketName,
+									attachment.name,
+									attachments[index].createReadStream(),
+									undefined,
+									{
+										"content-type": attachment.mimeType,
+									},
+								);
+							}
+						}),
 					);
 
 					return Object.assign(createdAdvertisement, {

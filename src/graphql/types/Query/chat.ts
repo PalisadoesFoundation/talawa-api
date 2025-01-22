@@ -64,7 +64,7 @@ builder.queryField("chat", (t) =>
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -101,7 +101,7 @@ builder.queryField("chat", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingChat.organization.organizationMembershipsWhereOrganization[0];
+				existingChat.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

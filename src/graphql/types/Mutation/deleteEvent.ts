@@ -64,13 +64,13 @@ builder.mutationField("deleteEvent", (t) =>
 						startAt: true,
 					},
 					with: {
-						eventAttachmentsWhereEvent: true,
+						attachmentsWhereEvent: true,
 						organization: {
 							columns: {
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -107,7 +107,7 @@ builder.mutationField("deleteEvent", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingEvent.organization.organizationMembershipsWhereOrganization[0];
+				existingEvent.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -143,13 +143,13 @@ builder.mutationField("deleteEvent", (t) =>
 
 				await ctx.minio.client.removeObjects(
 					ctx.minio.bucketName,
-					existingEvent.eventAttachmentsWhereEvent.map(
+					existingEvent.attachmentsWhereEvent.map(
 						(attachment) => attachment.name,
 					),
 				);
 
 				return Object.assign(deletedEvent, {
-					attachments: existingEvent.eventAttachmentsWhereEvent,
+					attachments: existingEvent.attachmentsWhereEvent,
 				});
 			});
 		},

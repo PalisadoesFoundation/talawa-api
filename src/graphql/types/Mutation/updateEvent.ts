@@ -67,13 +67,13 @@ builder.mutationField("updateEvent", (t) =>
 						startAt: true,
 					},
 					with: {
-						eventAttachmentsWhereEvent: true,
+						attachmentsWhereEvent: true,
 						organization: {
 							columns: {
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -146,7 +146,7 @@ builder.mutationField("updateEvent", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingEvent.organization.organizationMembershipsWhereOrganization[0];
+				existingEvent.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -187,7 +187,7 @@ builder.mutationField("updateEvent", (t) =>
 			}
 
 			return Object.assign(updatedEvent, {
-				attachments: existingEvent.eventAttachmentsWhereEvent,
+				attachments: existingEvent.attachmentsWhereEvent,
 			});
 		},
 		type: Event,

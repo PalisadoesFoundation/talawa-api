@@ -39,14 +39,11 @@ const mutationCreatePostArgumentsSchema = z.object({
 					}
 				}
 			} else {
-				return {
-					...arg,
-					attachments: rawAttachments.map((attachment, index) =>
-						Object.assign(attachment, {
-							mimetype: data[index],
-						}),
-					),
-				};
+				attachments = rawAttachments.map((attachment, index) =>
+					Object.assign(attachment, {
+						mimetype: data[index],
+					}),
+				);
 			}
 		}
 
@@ -108,7 +105,7 @@ builder.mutationField("createPost", (t) =>
 						countryCode: true,
 					},
 					with: {
-						organizationMembershipsWhereOrganization: {
+						membershipsWhereOrganization: {
 							columns: {
 								role: true,
 							},
@@ -144,7 +141,7 @@ builder.mutationField("createPost", (t) =>
 
 			if (currentUser.role !== "administrator") {
 				const currentUserOrganizationMembership =
-					existingOrganization.organizationMembershipsWhereOrganization[0];
+					existingOrganization.membershipsWhereOrganization[0];
 
 				if (currentUserOrganizationMembership === undefined) {
 					throw new TalawaGraphQLError({
@@ -220,18 +217,20 @@ builder.mutationField("createPost", (t) =>
 						)
 						.returning();
 
-					Promise.all(
-						createdPostAttachments.map((attachment, index) =>
-							ctx.minio.client.putObject(
-								ctx.minio.bucketName,
-								attachment.name,
-								attachments[index].createReadStream(),
-								undefined,
-								{
-									"content-type": attachment.mimeType,
-								},
-							),
-						),
+					await Promise.all(
+						createdPostAttachments.map((attachment, index) => {
+							if (attachments[index] !== undefined) {
+								return ctx.minio.client.putObject(
+									ctx.minio.bucketName,
+									attachment.name,
+									attachments[index].createReadStream(),
+									undefined,
+									{
+										"content-type": attachment.mimeType,
+									},
+								);
+							}
+						}),
 					);
 
 					return Object.assign(createdPost, {

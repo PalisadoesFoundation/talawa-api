@@ -13,7 +13,7 @@ AgendaFolder.implement({
 						where: (fields, operators) =>
 							operators.eq(fields.id, parent.eventId),
 						with: {
-							eventAttachmentsWhereEvent: true,
+							attachmentsWhereEvent: true,
 						},
 					});
 
@@ -31,7 +31,7 @@ AgendaFolder.implement({
 				}
 
 				return Object.assign(existingEvent, {
-					attachments: existingEvent.eventAttachmentsWhereEvent,
+					attachments: existingEvent.attachmentsWhereEvent,
 				});
 			},
 			type: Event,

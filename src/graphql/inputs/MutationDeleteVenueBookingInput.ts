@@ -16,11 +16,12 @@ export const MutationDeleteVenueBookingInput = builder
 		description: "",
 		fields: (t) => ({
 			eventId: t.id({
-				description: "Global identifier of the associated event.",
+				description:
+					"Global identifier of the event that the venue is booked for.",
 				required: true,
 			}),
 			venueId: t.id({
-				description: "Global identifier of the associated venue.",
+				description: "Global identifier of the venue that is booked.",
 				required: true,
 			}),
 		}),

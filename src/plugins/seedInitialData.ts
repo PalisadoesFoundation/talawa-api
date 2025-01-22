@@ -1,4 +1,5 @@
 import { hash } from "@node-rs/argon2";
+import { eq } from "drizzle-orm";
 import type { FastifyPluginAsync } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import { uuidv7 } from "uuidv7";
@@ -9,53 +10,79 @@ import {
 } from "~/src/drizzle/tables/communities";
 import { usersTable, usersTableInsertSchema } from "~/src/drizzle/tables/users";
 
-// TODO: Will be replaced with a different implementation in the future.
-
 /**
- * This plugin handles seeding the database with data at the startup time of the talawa api.
+ * This plugin handles seeding the initial data into appropriate service at the startup time of the talawa api. The data must strictly only comprise of things that are required in the production environment of talawa api. This plugin shouldn't be used for seeding dummy data.
  *
  * @example
- * import seedDatabasePlugin from "./plugins/seedDatabase";
+ * import seedInitialDataPlugin from "./plugins/seedInitialData";
  *
- * fastify.register(seedDatabasePlugin, {});
+ * fastify.register(seedInitialDataPlugin, {});
  */
 const plugin: FastifyPluginAsync = async (fastify) => {
 	fastify.log.info(
-		"Checking if the administrator already exists in the database.",
+		"Checking if the administrator user already exists in the database.",
 	);
 
-	let existingAdministrator:
-		| Pick<typeof usersTable.$inferSelect, "role">
-		| undefined;
+	let existingUser: Pick<typeof usersTable.$inferSelect, "role"> | undefined;
 
 	try {
-		existingAdministrator =
-			await fastify.drizzleClient.query.usersTable.findFirst({
-				columns: {
-					role: true,
-				},
-				where: (fields, operators) =>
-					operators.eq(
-						fields.emailAddress,
-						fastify.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					),
-			});
+		existingUser = await fastify.drizzleClient.query.usersTable.findFirst({
+			columns: {
+				role: true,
+			},
+			where: (fields, operators) =>
+				operators.eq(
+					fields.emailAddress,
+					fastify.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				),
+		});
 	} catch (error) {
 		throw new Error(
-			"Failed to check if the administrator already exists in the database.",
+			"Failed to check if the administrator user already exists in the database.",
 			{
 				cause: error,
 			},
 		);
 	}
 
-	if (existingAdministrator !== undefined) {
-		fastify.log.info(
-			"Administrator already exists in the database. Skipping, the administrator creation.",
-		);
+	if (existingUser !== undefined) {
+		if (existingUser.role !== "administrator") {
+			fastify.log.info(
+				"Administrator user already exists in the database with an invalid role. Assigning the correct role to the administrator user.",
+			);
+
+			try {
+				await fastify.drizzleClient
+					.update(usersTable)
+					.set({
+						role: "administrator",
+					})
+					.where(
+						eq(
+							usersTable.emailAddress,
+							fastify.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						),
+					);
+			} catch (error) {
+				throw new Error(
+					"Failed to assign the correct role to the existing administrator user.",
+					{
+						cause: error,
+					},
+				);
+			}
+
+			fastify.log.info(
+				"Successfully assigned the correct role to the administrator user.",
+			);
+		} else {
+			fastify.log.info(
+				"Administrator user already exists in the database. Skipping, the administrator creation.",
+			);
+		}
 	} else {
 		fastify.log.info(
-			"Administrator does not exist in the database. Creating the administrator.",
+			"Administrator user does not exist in the database. Creating the administrator.",
 		);
 
 		const userId = uuidv7();

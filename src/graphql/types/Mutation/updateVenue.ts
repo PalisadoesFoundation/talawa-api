@@ -70,7 +70,7 @@ builder.mutationField("updateVenue", (t) =>
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -79,7 +79,7 @@ builder.mutationField("updateVenue", (t) =>
 								},
 							},
 						},
-						venueAttachmentsWhereVenue: true,
+						attachmentsWhereVenue: true,
 					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.id),
@@ -113,7 +113,7 @@ builder.mutationField("updateVenue", (t) =>
 				const existingVenueWithName =
 					await ctx.drizzleClient.query.venuesTable.findFirst({
 						columns: {
-							organizationId: true,
+							updatedAt: true,
 						},
 						where: (fields, operators) =>
 							operators.and(
@@ -141,7 +141,7 @@ builder.mutationField("updateVenue", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingVenue.organization.organizationMembershipsWhereOrganization[0];
+				existingVenue.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -180,7 +180,7 @@ builder.mutationField("updateVenue", (t) =>
 			}
 
 			return Object.assign(updatedVenue, {
-				attachments: existingVenue.venueAttachmentsWhereVenue,
+				attachments: existingVenue.attachmentsWhereVenue,
 			});
 		},
 		type: Venue,

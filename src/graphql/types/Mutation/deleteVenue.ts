@@ -69,7 +69,7 @@ builder.mutationField("deleteVenue", (t) =>
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -78,7 +78,7 @@ builder.mutationField("deleteVenue", (t) =>
 								},
 							},
 						},
-						venueAttachmentsWhereVenue: true,
+						attachmentsWhereVenue: true,
 					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.id),
@@ -107,7 +107,7 @@ builder.mutationField("deleteVenue", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingVenue.organization.organizationMembershipsWhereOrganization[0];
+				existingVenue.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -143,13 +143,13 @@ builder.mutationField("deleteVenue", (t) =>
 
 				await ctx.minio.client.removeObjects(
 					ctx.minio.bucketName,
-					existingVenue.venueAttachmentsWhereVenue.map(
+					existingVenue.attachmentsWhereVenue.map(
 						(attachment) => attachment.name,
 					),
 				);
 
 				return Object.assign(deletedVenue, {
-					attachments: existingVenue.venueAttachmentsWhereVenue,
+					attachments: existingVenue.attachmentsWhereVenue,
 				});
 			});
 		},

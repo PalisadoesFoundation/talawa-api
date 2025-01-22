@@ -209,7 +209,7 @@ Organization.implement({
 							limit,
 							orderBy,
 							with: {
-								postAttachmentsWherePost: true,
+								attachmentsWherePost: true,
 							},
 							where,
 						},
@@ -237,9 +237,9 @@ Organization.implement({
 									pinnedAt: post.pinnedAt?.toISOString(),
 								}),
 							).toString("base64url"),
-						createNode: ({ postAttachmentsWherePost, ...post }) =>
+						createNode: ({ attachmentsWherePost, ...post }) =>
 							Object.assign(post, {
-								attachments: postAttachmentsWherePost,
+								attachments: attachmentsWherePost,
 							}),
 						parsedArgs,
 						rawNodes: pinnedPosts,

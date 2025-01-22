@@ -114,13 +114,10 @@ export const advertisementsTableRelations = relations(
 		/**
 		 * One to many relationship from `advertisements` table to `advertisement_attachments` table.
 		 */
-		advertisementAttachmentsWhereAdvertisement: many(
-			advertisementAttachmentsTable,
-			{
-				relationName:
-					"advertisement_attachments.advertisement_id:advertisements.id",
-			},
-		),
+		attachmentsWhereAdvertisement: many(advertisementAttachmentsTable, {
+			relationName:
+				"advertisement_attachments.advertisement_id:advertisements.id",
+		}),
 		/**
 		 * Many to one relationship from `advertisements` table to `users` table.
 		 */
@@ -151,7 +148,7 @@ export const advertisementsTableRelations = relations(
 export const advertisementsTableInsertSchema = createInsertSchema(
 	advertisementsTable,
 	{
-		description: (schema) => schema.min(1).max(2048),
+		description: (schema) => schema.min(1).max(2048).optional(),
 		name: (schema) => schema.min(1).max(256),
 	},
 );
