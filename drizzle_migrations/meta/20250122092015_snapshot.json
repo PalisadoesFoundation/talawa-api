@@ -1,5 +1,5 @@
 {
-  "id": "8f027f04-270a-4d90-8653-683983016f02",
+  "id": "e5fe635f-2302-4a95-86e6-16508bb68c63",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -5163,6 +5163,12 @@
         },
         "natal_sex": {
           "name": "natal_sex",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "natural_language_code": {
+          "name": "natural_language_code",
           "type": "text",
           "primaryKey": false,
           "notNull": false
