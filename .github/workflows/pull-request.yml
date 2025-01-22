@@ -139,6 +139,7 @@ jobs:
           codegen.ts
           Dockerfile*
           docker-compose*
+          drizzle_migrations/**
           .dockerignore
           .env.sample
           .env_test
