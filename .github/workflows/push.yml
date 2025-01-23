@@ -16,8 +16,7 @@ jobs:
 
       # Install pnpm
       - name: Install pnpm
-        run: |
-          curl -fsSL https://get.pnpm.io/install.sh | sh -
+        run: npm install -g pnpm
 
       # Install dependencies and run tests
       - name: Run Tests and Upload Coverage to Codecov
