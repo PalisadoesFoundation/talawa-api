@@ -14,9 +14,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Install pnpm
-      - name: Install pnpm
-        run: npm install -g pnpm
+      # Setup pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          cache: pnpm
+          cache-dependency-path: |
+            docs/pnpm-lock.yaml
+            docs/package.json
 
       # Install dependencies and run tests
       - name: Run Tests and Upload Coverage to Codecov
