@@ -14,6 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Setup pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+          cache: pnpm
+
       # Install dependencies and run tests
       - name: Run Tests and Upload Coverage to Codecov
         run: |
