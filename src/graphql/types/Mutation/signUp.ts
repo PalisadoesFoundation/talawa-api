@@ -139,6 +139,7 @@ builder.mutationField("signUp", (t) =>
 						mobilePhoneNumber: parsedArgs.input.mobilePhoneNumber,
 						name: parsedArgs.input.name,
 						natalSex: parsedArgs.input.natalSex,
+						naturalLanguageCode: parsedArgs.input.naturalLanguageCode,
 						passwordHash: await hash(parsedArgs.input.password),
 						postalCode: parsedArgs.input.postalCode,
 						role: "regular",

@@ -14,6 +14,7 @@ import "./isEmailAddressVerified";
 import "./maritalStatus";
 import "./mobilePhoneNumber";
 import "./natalSex";
+import "./naturalLanguageCode";
 import "./organizationsWhereMember";
 import "./postalCode";
 import "./state";

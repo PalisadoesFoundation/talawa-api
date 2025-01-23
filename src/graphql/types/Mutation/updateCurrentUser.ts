@@ -163,6 +163,7 @@ builder.mutationField("updateCurrentUser", (t) =>
 						mobilePhoneNumber: parsedArgs.input.mobilePhoneNumber,
 						name: parsedArgs.input.name,
 						natalSex: parsedArgs.input.natalSex,
+						naturalLanguageCode: parsedArgs.input.naturalLanguageCode,
 						passwordHash:
 							parsedArgs.input.password !== undefined
 								? await hash(parsedArgs.input.password)
