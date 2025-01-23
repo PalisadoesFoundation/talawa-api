@@ -14,6 +14,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Install pnpm
+      - name: Install pnpm
+        run: |
+          curl -fsSL https://get.pnpm.io/install.sh | sh -
+
       # Install dependencies and run tests
       - name: Run Tests and Upload Coverage to Codecov
         run: |
