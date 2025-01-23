@@ -34,7 +34,7 @@ AgendaFolder.implement({
 									countryCode: true,
 								},
 								with: {
-									organizationMembershipsWhereOrganization: {
+									membershipsWhereOrganization: {
 										columns: {
 											role: true,
 										},
@@ -69,8 +69,7 @@ AgendaFolder.implement({
 				}
 
 				const currentUserOrganizationMembership =
-					existingEvent.organization
-						.organizationMembershipsWhereOrganization[0];
+					existingEvent.organization.membershipsWhereOrganization[0];
 
 				if (
 					currentUser.role !== "administrator" &&

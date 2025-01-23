@@ -70,7 +70,7 @@ builder.mutationField("updateTagFolder", (t) =>
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -151,8 +151,7 @@ builder.mutationField("updateTagFolder", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingTagFolder.organization
-					.organizationMembershipsWhereOrganization[0];
+				existingTagFolder.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

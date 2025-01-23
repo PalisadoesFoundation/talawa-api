@@ -27,8 +27,8 @@ jobs:
         run: |
           echo "Pull requests are only allowed against the 'develop-postgres' branch. Please refer to the pull request guidelines."
           echo "Error: Close this PR and try again."
-          exit 1 
- 
+          exit 1
+
   Code-Quality-Checks:
     name: Checking code quality
     runs-on: ubuntu-latest
@@ -86,7 +86,7 @@ jobs:
 
       - name: Run Python script
         run: |
-          python .github/workflows/scripts/code_coverage_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }} 
+          python .github/workflows/scripts/code_coverage_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   check_gql_tada:
     name: Check gql tada files and configuration
@@ -98,7 +98,7 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check gql tada
         run: docker container run talawa_api pnpm check_gql_tada
- 
+
   check_drizzle_migrations:
     name: Check drizzle migration files
     runs-on: ubuntu-latest
@@ -109,7 +109,7 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check drizzle migrations
         run: docker container run --env-file ./envFiles/.env.ci talawa_api pnpm check_drizzle_migrations
- 
+
   check_type_errors:
     name: Check type errors
     runs-on: ubuntu-latest
@@ -139,6 +139,7 @@ jobs:
           codegen.ts
           Dockerfile*
           docker-compose*
+          drizzle_migrations/**
           .dockerignore
           .env.sample
           .env_test
@@ -192,6 +193,9 @@ jobs:
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
+    needs: [Code-Quality-Checks, check_code_coverage_disable]
+    env:
+      CODECOV_UNIQUE_NAME: ${{github.workflow}}-${{github.ref_name}}
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
@@ -201,12 +205,29 @@ jobs:
         run: docker compose build
       - name: Run tests
         run: docker compose up --exit-code-from api
+      - name: Copy coverage from container
+        run: |
+          CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
+          docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
+      - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
+        uses: codecov/codecov-action@v4
+        with:
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          name: "${{env.CODECOV_UNIQUE_NAME}}"
+
+      - name: Test acceptable level of code coverage
+        uses: VeryGoodOpenSource/very_good_coverage@v2
+        with:
+          path: "./coverage/lcov.info"
+          min_coverage: 39.0
 
   Test-Docusaurus-Deployment:
     name: Test Deployment to https://docs-api.talawa.io
     runs-on: ubuntu-latest
     needs: [Run-Tests]
-    # Run only if the develop-postgres branch and not dependabot    
+    # Run only if the develop-postgres branch and not dependabot
     if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.base.ref == 'develop-postgres' }}
     steps:
       - uses: actions/checkout@v4
@@ -290,3 +311,4 @@ jobs:
         run: |
           source venv/bin/activate
           python .github/workflows/scripts/check_docstrings.py --directories .github
+

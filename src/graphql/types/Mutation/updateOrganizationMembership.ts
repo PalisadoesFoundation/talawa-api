@@ -52,53 +52,36 @@ builder.mutationField("updateOrganizationMembership", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [
-				currentUser,
-				existingMember,
-				existingOrganization,
-				existingOrganizationMembership,
-			] = await Promise.all([
-				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-				}),
-				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.memberId),
-				}),
-				ctx.drizzleClient.query.organizationsTable.findFirst({
-					with: {
-						organizationMembershipsWhereOrganization: {
-							columns: {
-								role: true,
-							},
-							where: (fields, operators) =>
-								operators.eq(fields.memberId, currentUserId),
+			const [currentUser, existingMember, existingOrganization] =
+				await Promise.all([
+					ctx.drizzleClient.query.usersTable.findFirst({
+						columns: {
+							role: true,
 						},
-					},
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.organizationId),
-				}),
-				ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
-					columns: {
-						role: true,
-					},
-
-					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.memberId, parsedArgs.input.memberId),
-							operators.eq(
-								fields.organizationId,
-								parsedArgs.input.organizationId,
-							),
-						),
-				}),
-			]);
+						where: (fields, operators) =>
+							operators.eq(fields.id, currentUserId),
+					}),
+					ctx.drizzleClient.query.usersTable.findFirst({
+						columns: {
+							role: true,
+						},
+						where: (fields, operators) =>
+							operators.eq(fields.id, parsedArgs.input.memberId),
+					}),
+					ctx.drizzleClient.query.organizationsTable.findFirst({
+						where: (fields, operators) =>
+							operators.eq(fields.id, parsedArgs.input.organizationId),
+						with: {
+							membershipsWhereOrganization: {
+								columns: {
+									role: true,
+								},
+								where: (fields, operators) =>
+									operators.eq(fields.memberId, currentUserId),
+							},
+						},
+					}),
+				]);
 
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
@@ -150,6 +133,9 @@ builder.mutationField("updateOrganizationMembership", (t) =>
 				});
 			}
 
+			const existingOrganizationMembership =
+				existingOrganization.membershipsWhereOrganization[0];
+
 			if (existingOrganizationMembership === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -166,28 +152,27 @@ builder.mutationField("updateOrganizationMembership", (t) =>
 				});
 			}
 
-			if (currentUser.role !== "administrator") {
-				const currentUserOrganizationMembership =
-					existingOrganization.organizationMembershipsWhereOrganization[0];
+			const currentUserOrganizationMembership =
+				existingOrganization.membershipsWhereOrganization[0];
 
-				if (
-					currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator"
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "memberId"],
-								},
-								{
-									argumentPath: ["input", "organizationId"],
-								},
-							],
-						},
-					});
-				}
+			if (
+				currentUser.role !== "administrator" &&
+				(currentUserOrganizationMembership === undefined ||
+					currentUserOrganizationMembership.role !== "administrator")
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "memberId"],
+							},
+							{
+								argumentPath: ["input", "organizationId"],
+							},
+						],
+					},
+				});
 			}
 
 			const [updatedOrganizationMembership] = await ctx.drizzleClient

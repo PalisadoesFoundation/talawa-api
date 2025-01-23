@@ -15,10 +15,9 @@ export const QuerySignInInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
-			emailAddress: t.field({
+			emailAddress: t.string({
 				description: "Email address of the user.",
 				required: true,
-				type: "EmailAddress",
 			}),
 			password: t.string({
 				description: "Password of the user to sign in to talawa.",

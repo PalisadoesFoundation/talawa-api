@@ -28,6 +28,7 @@
 				"tadaTurboLocation": "./test/routes/graphql/gql.tada-cache.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaturbolocation */
 			}
 		],
+		"noUncheckedIndexedAccess": true,
 		"skipLibCheck": true /* Skip type checking all .d.ts files. */,
 		"strict": true /* Enable all strict type-checking options. */,
 		"target": "ESNext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,

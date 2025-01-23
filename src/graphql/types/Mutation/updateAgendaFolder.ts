@@ -75,7 +75,7 @@ builder.mutationField("updateAgendaFolder", (t) =>
 										countryCode: true,
 									},
 									with: {
-										organizationMembershipsWhereOrganization: {
+										membershipsWhereOrganization: {
 											columns: {
 												role: true,
 											},
@@ -128,7 +128,7 @@ builder.mutationField("updateAgendaFolder", (t) =>
 							code: "arguments_associated_resources_not_found",
 							issues: [
 								{
-									argumentPath: ["input", "folderId"],
+									argumentPath: ["input", "parentFolderId"],
 								},
 							],
 						},
@@ -141,9 +141,9 @@ builder.mutationField("updateAgendaFolder", (t) =>
 							code: "forbidden_action_on_arguments_associated_resources",
 							issues: [
 								{
-									argumentPath: ["input", "folderId"],
+									argumentPath: ["input", "parentFolderId"],
 									message:
-										"This parent agenda folder is not associated to the event associated to the agenda folder.",
+										"This agenda folder does not belong to the event associated to the agenda folder being updated.",
 								},
 							],
 						},
@@ -156,9 +156,9 @@ builder.mutationField("updateAgendaFolder", (t) =>
 							code: "forbidden_action_on_arguments_associated_resources",
 							issues: [
 								{
-									argumentPath: ["input", "folderId"],
+									argumentPath: ["input", "parentFolderId"],
 									message:
-										"This agenda folder cannot be a parent to agenda folders.",
+										"This agenda folder cannot be a parent folder for other agenda folders.",
 								},
 							],
 						},
@@ -167,8 +167,7 @@ builder.mutationField("updateAgendaFolder", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingAgendaFolder.event.organization
-					.organizationMembershipsWhereOrganization[0];
+				existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

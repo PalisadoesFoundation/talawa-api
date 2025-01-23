@@ -70,7 +70,7 @@ builder.mutationField("createFund", (t) =>
 							where: (fields, operators) =>
 								operators.eq(fields.name, parsedArgs.input.name),
 						},
-						organizationMembershipsWhereOrganization: {
+						membershipsWhereOrganization: {
 							columns: {
 								role: true,
 							},
@@ -122,7 +122,7 @@ builder.mutationField("createFund", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingOrganization.organizationMembershipsWhereOrganization[0];
+				existingOrganization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

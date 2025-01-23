@@ -12,6 +12,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
+import { iso639Set1LanguageCodeEnum } from "~/src/drizzle/enums/iso639Set1LanguageCode";
 import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import { userEducationGradeEnum } from "~/src/drizzle/enums/userEducationGrade";
 import { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStatus";
@@ -29,6 +30,7 @@ import { chatMessagesTable } from "./chatMessages";
 import { chatsTable } from "./chats";
 import { commentVotesTable } from "./commentVotes";
 import { commentsTable } from "./comments";
+import { communitiesTable } from "./communities";
 import { eventAttachmentsTable } from "./eventAttachments";
 import { eventAttendancesTable } from "./eventAttendances";
 import { eventsTable } from "./events";
@@ -159,6 +161,12 @@ export const usersTable = pgTable(
 		 */
 		natalSex: text("natal_sex", {
 			enum: userNatalSexEnum.options,
+		}),
+		/**
+		 * Language code of the user's preferred natural language.
+		 */
+		naturalLanguageCode: text("natural_language_code", {
+			enum: iso639Set1LanguageCodeEnum.options,
 		}),
 		/**
 		 * Cryptographic hash of the password of the user to sign in to the application.
@@ -339,6 +347,12 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	 */
 	commentVotesWhereUpdater: many(commentVotesTable, {
 		relationName: "comment_votes.updater_id:users.id",
+	}),
+	/**
+	 * One to many relationship from `users` table to `communities` table.
+	 */
+	communitiesWhereUpdater: many(communitiesTable, {
+		relationName: "communities.updater_id:users.id",
 	}),
 	/**
 	 * Many to one relationship from `users` table to `users` table.
@@ -523,12 +537,6 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 		relationName: "post_votes.creator_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `post_votes` table.
-	 */
-	postVotesWhereUpdater: many(postVotesTable, {
-		relationName: "post_votes.updater_id:users.id",
-	}),
-	/**
 	 * One to many relationship from `users` table to `tag_folders` table.
 	 */
 	tagFoldersWhereCreator: many(tagFoldersTable, {
@@ -641,12 +649,13 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 }));
 
 export const usersTableInsertSchema = createInsertSchema(usersTable, {
-	addressLine1: (schema) => schema.min(1).max(1024),
-	addressLine2: (schema) => schema.min(1).max(1024),
-	avatarName: (schema) => schema.min(1),
-	city: (schema) => schema.min(1).max(64),
-	description: (schema) => schema.min(1).max(2048),
+	addressLine1: (schema) => schema.min(1).max(1024).optional(),
+	addressLine2: (schema) => schema.min(1).max(1024).optional(),
+	avatarName: (schema) => schema.min(1).optional(),
+	city: (schema) => schema.min(1).max(64).optional(),
+	description: (schema) => schema.min(1).max(2048).optional(),
+	emailAddress: (schema) => schema.email(),
 	name: (schema) => schema.min(1).max(256),
-	postalCode: (schema) => schema.min(1).max(32),
-	state: (schema) => schema.min(1).max(64),
+	postalCode: (schema) => schema.min(1).max(32).optional(),
+	state: (schema) => schema.min(1).max(64).optional(),
 });

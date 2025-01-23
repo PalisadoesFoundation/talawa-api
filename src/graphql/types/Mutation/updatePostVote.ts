@@ -52,7 +52,7 @@ builder.mutationField("updatePostVote", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingPost, existingPostVote] = await Promise.all([
+			const [currentUser, existingPost] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
@@ -61,12 +61,13 @@ builder.mutationField("updatePostVote", (t) =>
 				}),
 				ctx.drizzleClient.query.postsTable.findFirst({
 					with: {
+						attachmentsWherePost: true,
 						organization: {
 							columns: {
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -75,20 +76,16 @@ builder.mutationField("updatePostVote", (t) =>
 								},
 							},
 						},
-						postAttachmentsWherePost: true,
+						votesWherePost: {
+							columns: {
+								type: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.creatorId, currentUserId),
+						},
 					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.postId),
-				}),
-				ctx.drizzleClient.query.postVotesTable.findFirst({
-					columns: {
-						type: true,
-					},
-					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.creatorId, currentUserId),
-							operators.eq(fields.postId, parsedArgs.input.postId),
-						),
 				}),
 			]);
 
@@ -100,7 +97,7 @@ builder.mutationField("updatePostVote", (t) =>
 				});
 			}
 
-			if (existingPost === undefined || existingPostVote === undefined) {
+			if (existingPost === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -112,8 +109,25 @@ builder.mutationField("updatePostVote", (t) =>
 					},
 				});
 			}
+
+			const existingPostVote = existingPost.votesWherePost[0];
+
+			if (existingPostVote !== undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "postId"],
+								message: "You have already voted this post.",
+							},
+						],
+					},
+				});
+			}
+
 			const currentUserOrganizationMembership =
-				existingPost.organization.organizationMembershipsWhereOrganization[0];
+				existingPost.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -135,7 +149,6 @@ builder.mutationField("updatePostVote", (t) =>
 				.update(postVotesTable)
 				.set({
 					type: parsedArgs.input.type,
-					updaterId: currentUserId,
 				})
 				.where(
 					and(
@@ -155,7 +168,7 @@ builder.mutationField("updatePostVote", (t) =>
 			}
 
 			return Object.assign(existingPost, {
-				attachments: existingPost.postAttachmentsWherePost,
+				attachments: existingPost.attachmentsWherePost,
 			});
 		},
 		type: Post,

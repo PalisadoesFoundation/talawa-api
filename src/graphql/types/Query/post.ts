@@ -64,7 +64,7 @@ builder.queryField("post", (t) =>
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -73,7 +73,7 @@ builder.queryField("post", (t) =>
 								},
 							},
 						},
-						postAttachmentsWherePost: true,
+						attachmentsWherePost: true,
 					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.id),
@@ -102,7 +102,7 @@ builder.queryField("post", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingPost.organization.organizationMembershipsWhereOrganization[0];
+				existingPost.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -121,7 +121,7 @@ builder.queryField("post", (t) =>
 			}
 
 			return Object.assign(existingPost, {
-				attachments: existingPost.postAttachmentsWherePost,
+				attachments: existingPost.attachmentsWherePost,
 			});
 		},
 		type: Post,

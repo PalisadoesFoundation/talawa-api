@@ -49,6 +49,7 @@ import "./MutationUpdateChatMembershipInput";
 import "./MutationUpdateChatMessageInput";
 import "./MutationUpdateCommentInput";
 import "./MutationUpdateCommentVoteInput";
+import "./MutationUpdateCommunityInput";
 import "./MutationUpdateCurrentUserInput";
 import "./MutationUpdateEventInput";
 import "./MutationUpdateFundCampaignInput";

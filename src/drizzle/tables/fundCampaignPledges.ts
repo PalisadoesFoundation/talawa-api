@@ -135,6 +135,6 @@ export const fundCampaignPledgesTableInsertSchema = createInsertSchema(
 	fundCampaignPledgesTable,
 	{
 		amount: (schema) => schema.min(1),
-		note: (schema) => schema.min(1).max(2048),
+		note: (schema) => schema.min(1).max(2048).optional(),
 	},
 );

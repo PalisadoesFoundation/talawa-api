@@ -74,7 +74,7 @@ builder.mutationField("createVenueBooking", (t) =>
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -83,7 +83,7 @@ builder.mutationField("createVenueBooking", (t) =>
 								},
 							},
 						},
-						venueAttachmentsWhereVenue: true,
+						attachmentsWhereVenue: true,
 						venueBookingsWhereVenue: {
 							columns: {
 								creatorId: true,
@@ -154,12 +154,11 @@ builder.mutationField("createVenueBooking", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "eventId"],
-								message: "This event already has the associated venue booked.",
+								message: "This event has already the venue booked for it.",
 							},
 							{
 								argumentPath: ["input", "venueId"],
-								message:
-									"This venue is already booked by the associated event.",
+								message: "This venue is already booked for the event.",
 							},
 						],
 					},
@@ -167,7 +166,7 @@ builder.mutationField("createVenueBooking", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingVenue.organization.organizationMembershipsWhereOrganization[0];
+				existingVenue.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -212,7 +211,7 @@ builder.mutationField("createVenueBooking", (t) =>
 			}
 
 			return Object.assign(existingVenue, {
-				attachments: existingVenue.venueAttachmentsWhereVenue,
+				attachments: existingVenue.attachmentsWhereVenue,
 			});
 		},
 		type: Venue,

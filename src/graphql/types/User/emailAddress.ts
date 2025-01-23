@@ -3,7 +3,7 @@ import { User } from "./User";
 
 User.implement({
 	fields: (t) => ({
-		emailAddress: t.field({
+		emailAddress: t.string({
 			description: "Email address of the user.",
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
@@ -44,7 +44,6 @@ User.implement({
 
 				return parent.emailAddress;
 			},
-			type: "EmailAddress",
 		}),
 	}),
 });

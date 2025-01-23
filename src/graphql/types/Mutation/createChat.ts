@@ -32,13 +32,12 @@ const mutationCreateChatArgumentsSchema = z.object({
 					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
 				});
 			} else {
-				return {
-					...arg,
-					avatar: Object.assign(rawAvatar, {
-						mimetype: data,
-					}),
-				};
+				avatar = Object.assign(rawAvatar, {
+					mimetype: data,
+				});
 			}
+		} else if (arg.avatar !== undefined) {
+			avatar = null;
 		}
 
 		return {
@@ -99,7 +98,7 @@ builder.mutationField("createChat", (t) =>
 						countryCode: true,
 					},
 					with: {
-						organizationMembershipsWhereOrganization: {
+						membershipsWhereOrganization: {
 							columns: {
 								role: true,
 							},
@@ -134,7 +133,7 @@ builder.mutationField("createChat", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingOrganization.organizationMembershipsWhereOrganization[0];
+				existingOrganization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

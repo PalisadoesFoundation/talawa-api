@@ -138,7 +138,7 @@ type AgendaItem {
   id: ID!
 
   """
-  Key of the agenda item if it's type is "song". More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
   """
   key: String
 
@@ -340,6 +340,60 @@ enum CommentVoteType {
   up_vote
 }
 
+type Community {
+  """Date time at the time the community was created."""
+  createdAt: DateTime
+
+  """URL to the facebook account of the community."""
+  facebookURL: String
+
+  """URL to the gitGub account of the community."""
+  githubURL: String
+
+  """Global identifier of the community."""
+  id: ID!
+
+  """ Duration in seconds it should take for inactive clients to get timed out of their authenticated session within client-side talawa applications.
+  """
+  inactivityTimeoutDuration: Int
+
+  """URL to the instagram account of the community."""
+  instagramURL: String
+
+  """URL to the linkedin account of the community."""
+  linkedinURL: String
+
+  """Mime type of the avatar of the community."""
+  logoMimeType: String
+
+  """URL to the logo of the community."""
+  logoURL: String
+
+  """Name of the community."""
+  name: String
+
+  """URL to the reddit account of the community."""
+  redditURL: String
+
+  """URL to the slack account of the community."""
+  slackURL: String
+
+  """Date time at the time the community was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the community."""
+  updater: User
+
+  """URL to the website of the community."""
+  websiteURL: String
+
+  """URL to the x account of the community."""
+  xURL: String
+
+  """URL to the youtube account of the community."""
+  youtubeURL: String
+}
+
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -349,11 +403,6 @@ scalar Date
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
 scalar DateTime
-
-"""
-A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
-"""
-scalar EmailAddress
 
 type Event {
   """
@@ -1052,10 +1101,7 @@ type Mutation {
   createTagFolder(input: MutationCreateTagFolderInput!): TagFolder
 
   """Mutation field to create a user."""
-  createUser(
-    """Input required to create a user."""
-    input: MutationCreateUserInput!
-  ): AuthenticationPayload
+  createUser(input: MutationCreateUserInput!): AuthenticationPayload
 
   """Mutation field to create a venue."""
   createVenue(input: MutationCreateVenueInput!): Venue
@@ -1121,22 +1167,16 @@ type Mutation {
   deleteTagFolder(input: MutationDeleteTagFolderInput!): TagFolder
 
   """Mutation field to delete a user."""
-  deleteUser(
-    """Input required to delete a user."""
-    input: MutationDeleteUserInput!
-  ): User
+  deleteUser(input: MutationDeleteUserInput!): User
 
   """Mutation field to delete a venue."""
   deleteVenue(input: MutationDeleteVenueInput!): Venue
 
-  """Mutation field to delete an venue booking."""
+  """Mutation field to delete a venue booking."""
   deleteVenueBooking(input: MutationDeleteVenueBookingInput!): Venue
 
   """Mutation field to sign up to talawa."""
-  signUp(
-    """Input required to sign up to talawa."""
-    input: MutationSignUpInput!
-  ): AuthenticationPayload
+  signUp(input: MutationSignUpInput!): AuthenticationPayload
 
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
@@ -1162,11 +1202,11 @@ type Mutation {
   """Mutation field to update a comment vote."""
   updateCommentVote(input: MutationUpdateCommentVoteInput!): Comment
 
+  """Mutation field to update the community."""
+  updateCommunity(input: MutationUpdateCommunityInput!): Community
+
   """Mutation field to update the current user."""
-  updateCurrentUser(
-    """Input required to update the current user."""
-    input: MutationUpdateCurrentUserInput!
-  ): User
+  updateCurrentUser(input: MutationUpdateCurrentUserInput!): User
 
   """Mutation field to update an event."""
   updateEvent(input: MutationUpdateEventInput!): Event
@@ -1199,10 +1239,7 @@ type Mutation {
   updateTagFolder(input: MutationUpdateTagFolderInput!): TagFolder
 
   """Mutation field to update a user."""
-  updateUser(
-    """Input required to update a user."""
-    input: MutationUpdateUserInput!
-  ): User
+  updateUser(input: MutationUpdateUserInput!): User
 
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
@@ -1238,7 +1275,7 @@ input MutationCreateAgendaFolderInput {
   eventId: ID!
 
   """
-  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
+  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent folder for other agenda folders.
   """
   isAgendaItemFolder: Boolean!
 
@@ -1246,7 +1283,7 @@ input MutationCreateAgendaFolderInput {
   name: String!
 
   """
-  Global identifier of the agenda folder the agenda folder is associated to.
+  Global identifier of the agenda folder the agenda folder is contained within.
   """
   parentFolderId: ID
 }
@@ -1265,7 +1302,7 @@ input MutationCreateAgendaItemInput {
   folderId: ID!
 
   """
-  Key of the agenda item if it's type is "song". More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
   """
   key: String
 
@@ -1521,7 +1558,7 @@ input MutationCreateUserInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: EmailAddress!
+  emailAddress: String!
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -1566,10 +1603,10 @@ input MutationCreateUserInput {
 
 """"""
 input MutationCreateVenueBookingInput {
-  """Global identifier of the associated event."""
+  """Global identifier of the event that the venue is to be booked for."""
   eventId: ID!
 
-  """Global identifier of the associated venue."""
+  """Global identifier of the venue to be booked."""
   venueId: ID!
 }
 
@@ -1716,10 +1753,10 @@ input MutationDeleteUserInput {
 
 """"""
 input MutationDeleteVenueBookingInput {
-  """Global identifier of the associated event."""
+  """Global identifier of the event that the venue is booked for."""
   eventId: ID!
 
-  """Global identifier of the associated venue."""
+  """Global identifier of the venue that is booked."""
   venueId: ID!
 }
 
@@ -1753,7 +1790,7 @@ input MutationSignUpInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: EmailAddress!
+  emailAddress: String!
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -1820,7 +1857,7 @@ input MutationUpdateAgendaFolderInput {
   name: String
 
   """
-  Global identifier of the agenda folder the agenda folder is associated to.
+  Global identifier of the agenda folder the agenda folder is contained within.
   """
   parentFolderId: ID
 }
@@ -1840,7 +1877,7 @@ input MutationUpdateAgendaItemInput {
   id: ID!
 
   """
-  Key of the agenda item if it's type is "song". More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
   """
   key: String
 
@@ -1903,6 +1940,47 @@ input MutationUpdateCommentVoteInput {
 }
 
 """"""
+input MutationUpdateCommunityInput {
+  """URL to the facebook account of the community."""
+  facebookURL: String
+
+  """URL to the gitGub account of the community."""
+  githubURL: String
+
+  """
+  Duration in seconds it should take for inactive clients to get timed out of their authenticated session within client-side talawa applications.
+  """
+  inactivityTimeoutDuration: Int
+
+  """URL to the instagram account of the community."""
+  instagramURL: String
+
+  """URL to the linkedin account of the community."""
+  linkedinURL: String
+
+  """Mime type of the logo of the community."""
+  logo: Upload
+
+  """Name of the community."""
+  name: String
+
+  """URL to the reddit account of the community."""
+  redditURL: String
+
+  """URL to the slack account of the community."""
+  slackURL: String
+
+  """URL to the website of the community."""
+  websiteURL: String
+
+  """URL to the x account of the community."""
+  xURL: String
+
+  """URL to the youtube account of the community."""
+  youtubeURL: String
+}
+
+""""""
 input MutationUpdateCurrentUserInput {
   """Address line 1 of the user's address."""
   addressLine1: String
@@ -1929,7 +2007,7 @@ input MutationUpdateCurrentUserInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: EmailAddress
+  emailAddress: String
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -2143,7 +2221,7 @@ input MutationUpdateUserInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: EmailAddress
+  emailAddress: String
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -2566,6 +2644,9 @@ type Query {
   """Query field to read a comment."""
   comment(input: QueryCommentInput!): Comment
 
+  """Query field to read the community."""
+  community: Community
+
   """Query field to read a user."""
   currentUser: User
 
@@ -2582,10 +2663,7 @@ type Query {
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
   """Query field to read an organization."""
-  organization(
-    """Input required to read an organization."""
-    input: QueryOrganizationInput!
-  ): Organization
+  organization(input: QueryOrganizationInput!): Organization
 
   """Query field to read a post."""
   post(input: QueryPostInput!): Post
@@ -2596,10 +2674,7 @@ type Query {
   renewAuthenticationToken: String
 
   """Query field for a client to sign in to talawa."""
-  signIn(
-    """Input required to sign in to talawa."""
-    input: QuerySignInInput!
-  ): AuthenticationPayload
+  signIn(input: QuerySignInInput!): AuthenticationPayload
 
   """Query field to read a tag."""
   tag(input: QueryTagInput!): Tag
@@ -2689,7 +2764,7 @@ input QueryPostInput {
 """"""
 input QuerySignInInput {
   """Email address of the user."""
-  emailAddress: EmailAddress!
+  emailAddress: String!
 
   """Password of the user to sign in to talawa."""
   password: String!
@@ -2721,14 +2796,14 @@ input QueryVenueInput {
 
 type Subscription {
   """
-  Subscription field to subscribe to the event of creation of a chat message.
+  Subscription field to subscribe to the event of creation of a message in a chat.
   """
   chatMessageCreate(input: SubscriptionChatMessageCreateInput!): ChatMessage
 }
 
 """"""
 input SubscriptionChatMessageCreateInput {
-  """Global id of the chat."""
+  """Global identifier of the chat."""
   id: String!
 }
 
@@ -2873,7 +2948,7 @@ type User {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: EmailAddress
+  emailAddress: String
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus

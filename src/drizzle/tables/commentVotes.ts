@@ -65,13 +65,6 @@ export const commentVotesTable = pgTable(
 		})
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
-		/**
-		 * Foreign key reference to the id of the user who last updated the vote.
-		 */
-		updaterId: uuid("updated_id").references(() => usersTable.id, {
-			onDelete: "set null",
-			onUpdate: "cascade",
-		}),
 	},
 	(self) => [
 		index().on(self.commentId),
@@ -99,14 +92,6 @@ export const commentVotesTableRelations = relations(
 			fields: [commentVotesTable.creatorId],
 			references: [usersTable.id],
 			relationName: "comment_votes.creator_id:users.id",
-		}),
-		/**
-		 * Many to one relationship from `comment_votes` table to `users` table.
-		 */
-		updater: one(usersTable, {
-			fields: [commentVotesTable.updaterId],
-			references: [usersTable.id],
-			relationName: "comment_votes.updater_id:users.id",
 		}),
 	}),
 );

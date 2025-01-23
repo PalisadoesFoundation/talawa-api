@@ -92,24 +92,33 @@ export const organizationMembershipsTable = pgTable(
 export const organizationMembershipsTableRelations = relations(
 	organizationMembershipsTable,
 	({ one }) => ({
+		/**
+		 * Many to one relationship from `organization_memberships` table to `users` table.
+		 */
 		creator: one(usersTable, {
 			fields: [organizationMembershipsTable.creatorId],
 			references: [usersTable.id],
 			relationName: "organization_memberships.creator_id:users.id",
 		}),
-
+		/**
+		 * Many to one relationship from `organization_memberships` table to `users` table.
+		 */
 		member: one(usersTable, {
 			fields: [organizationMembershipsTable.memberId],
 			references: [usersTable.id],
 			relationName: "organization_memberships.member_id:users.id",
 		}),
-
+		/**
+		 * Many to one relationship from `organization_memberships` table to `organizations` table.
+		 */
 		organization: one(organizationsTable, {
 			fields: [organizationMembershipsTable.organizationId],
 			references: [organizationsTable.id],
 			relationName: "organization_memberships.organization_id:organizations.id",
 		}),
-
+		/**
+		 * Many to one relationship from `organization_memberships` table to `users` table.
+		 */
 		updater: one(usersTable, {
 			fields: [organizationMembershipsTable.updaterId],
 			references: [usersTable.id],

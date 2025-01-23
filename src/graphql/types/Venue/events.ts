@@ -208,7 +208,7 @@ Venue.implement({
 							with: {
 								event: {
 									with: {
-										eventAttachmentsWhereEvent: true,
+										attachmentsWhereEvent: true,
 									},
 								},
 							},
@@ -236,9 +236,9 @@ Venue.implement({
 									eventId: booking.eventId,
 								}),
 							).toString("base64url"),
-						createNode: ({ event: { eventAttachmentsWhereEvent, ...event } }) =>
+						createNode: ({ event: { attachmentsWhereEvent, ...event } }) =>
 							Object.assign(event, {
-								attachments: eventAttachmentsWhereEvent,
+								attachments: attachmentsWhereEvent,
 							}),
 						parsedArgs,
 						rawNodes: venueBookings,

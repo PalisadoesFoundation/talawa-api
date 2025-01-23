@@ -5,6 +5,7 @@ import "./agendaItem";
 import "./chat";
 import "./chatMessage";
 import "./comment";
+import "./community";
 import "./currentUser";
 import "./event";
 import "./fund";

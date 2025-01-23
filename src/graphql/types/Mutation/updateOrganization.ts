@@ -24,9 +24,9 @@ const mutationUpdateOrganizationArgumentsSchema = z.object({
 
 		if (isNotNullish(arg.avatar)) {
 			const rawAvatar = await arg.avatar;
-			const result = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
+			const { data, success } = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
 
-			if (!result.success) {
+			if (!success) {
 				ctx.addIssue({
 					code: "custom",
 					path: ["avatar"],
@@ -34,19 +34,16 @@ const mutationUpdateOrganizationArgumentsSchema = z.object({
 				});
 			} else {
 				avatar = Object.assign(rawAvatar, {
-					mimetype: result.data,
+					mimetype: data,
 				});
 			}
-
-			return {
-				...arg,
-				avatar,
-			};
+		} else if (arg.avatar !== undefined) {
+			avatar = null;
 		}
 
 		return {
 			...arg,
-			avatar: arg.avatar,
+			avatar,
 		};
 	}),
 });

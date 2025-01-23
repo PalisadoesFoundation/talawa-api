@@ -1,14 +1,12 @@
 import "./BigInt";
 import "./Date";
 import "./DateTime";
-import "./EmailAddress";
 import "./PhoneNumber";
 import "./Upload";
 
 import type { _BigInt } from "./BigInt";
 import type { _Date } from "./Date";
 import type { DateTime } from "./DateTime";
-import type { EmailAddress } from "./EmailAddress";
 import type { PhoneNumber } from "./PhoneNumber";
 import type { Upload } from "./Upload";
 
@@ -19,7 +17,6 @@ export type CustomScalars = {
 	BigInt: _BigInt;
 	Date: _Date;
 	DateTime: DateTime;
-	EmailAddress: EmailAddress;
 	PhoneNumber: PhoneNumber;
 	Upload: Upload;
 };
@@ -31,6 +28,5 @@ export type ClientCustomScalars = {
 	BigInt: string;
 	Date: string;
 	DateTime: string;
-	EmailAddress: string;
 	PhoneNumber: string;
 };

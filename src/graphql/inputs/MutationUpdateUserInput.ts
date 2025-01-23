@@ -2,6 +2,7 @@ import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import { usersTableInsertSchema } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
+import { Iso639Set1LanguageCode } from "~/src/graphql/enums/Iso639Set1LanguageCode";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
 import { UserEducationGrade } from "~/src/graphql/enums/UserEducationGrade";
 import { UserEmploymentStatus } from "~/src/graphql/enums/UserEmploymentStatus";
@@ -75,9 +76,8 @@ export const MutationUpdateUserInput = builder
 				description: "Primary education grade of the user.",
 				type: UserEducationGrade,
 			}),
-			emailAddress: t.field({
+			emailAddress: t.string({
 				description: "Email address of the user.",
-				type: "EmailAddress",
 			}),
 			employmentStatus: t.field({
 				description: "Employment status of the user.",
@@ -111,6 +111,10 @@ export const MutationUpdateUserInput = builder
 			natalSex: t.field({
 				description: "The sex assigned to the user at their birth.",
 				type: UserNatalSex,
+			}),
+			naturalLanguageCode: t.field({
+				description: "Language code of the user's preferred natural language.",
+				type: Iso639Set1LanguageCode,
 			}),
 			password: t.string({
 				description: "Password of the user to sign in to the application.",

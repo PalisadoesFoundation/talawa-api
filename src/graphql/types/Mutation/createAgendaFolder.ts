@@ -69,7 +69,7 @@ builder.mutationField("createAgendaFolder", (t) =>
 								countryCode: true,
 							},
 							with: {
-								organizationMembershipsWhereOrganization: {
+								membershipsWhereOrganization: {
 									columns: {
 										role: true,
 									},
@@ -120,7 +120,7 @@ builder.mutationField("createAgendaFolder", (t) =>
 							code: "arguments_associated_resources_not_found",
 							issues: [
 								{
-									argumentPath: ["input", "folderId"],
+									argumentPath: ["input", "parentFolderId"],
 								},
 							],
 						},
@@ -133,14 +133,14 @@ builder.mutationField("createAgendaFolder", (t) =>
 							code: "forbidden_action_on_arguments_associated_resources",
 							issues: [
 								{
-									argumentPath: ["input", "folderId"],
+									argumentPath: ["input", "parentFolderId"],
 									message:
-										"This agenda folder must be associated to the provided event.",
+										"This agenda folder does not belong to the provided event.",
 								},
 								{
 									argumentPath: ["input", "eventId"],
 									message:
-										"This event must be associated to the provided parent agenda folder.",
+										"This event does not contain the provided parent agenda folder.",
 								},
 							],
 						},
@@ -153,9 +153,9 @@ builder.mutationField("createAgendaFolder", (t) =>
 							code: "forbidden_action_on_arguments_associated_resources",
 							issues: [
 								{
-									argumentPath: ["input", "folderId"],
+									argumentPath: ["input", "parentFolderId"],
 									message:
-										"This agenda folder cannot be a parent to agenda folders.",
+										"This agenda folder cannot be a parent folder for other agenda folders.",
 								},
 							],
 						},
@@ -164,7 +164,7 @@ builder.mutationField("createAgendaFolder", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingEvent.organization.organizationMembershipsWhereOrganization[0];
+				existingEvent.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

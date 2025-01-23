@@ -1,0 +1,31 @@
+name: Push Workflow for develop-postgres
+
+on:
+  push:
+    branches:
+      - develop-postgres
+
+jobs:
+  test-and-upload-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Install dependencies and run tests
+      - name: Run Tests and Upload Coverage to Codecov
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run test
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      # Upload coverage to Codecov
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true
+          files: ./coverage/lcov.info

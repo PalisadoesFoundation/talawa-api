@@ -36,13 +36,12 @@ const mutationSignUpArgumentsSchema = z.object({
 					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
 				});
 			} else {
-				return {
-					...arg,
-					avatar: Object.assign(rawAvatar, {
-						mimetype: data,
-					}),
-				};
+				avatar = Object.assign(rawAvatar, {
+					mimetype: data,
+				});
 			}
+		} else if (arg.avatar !== undefined) {
+			avatar = null;
 		}
 
 		return {
@@ -56,7 +55,7 @@ builder.mutationField("signUp", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "Input required to sign up to talawa.",
+				description: "",
 				required: true,
 				type: MutationSignUpInput,
 			}),
@@ -140,6 +139,7 @@ builder.mutationField("signUp", (t) =>
 						mobilePhoneNumber: parsedArgs.input.mobilePhoneNumber,
 						name: parsedArgs.input.name,
 						natalSex: parsedArgs.input.natalSex,
+						naturalLanguageCode: parsedArgs.input.naturalLanguageCode,
 						passwordHash: await hash(parsedArgs.input.password),
 						postalCode: parsedArgs.input.postalCode,
 						role: "regular",
@@ -173,8 +173,7 @@ builder.mutationField("signUp", (t) =>
 					);
 				}
 
-				// The following code is necessary for continuing the expected graph traversal for an authenticated client because of absence of an authentication context for clients that triggered this operation. This should be removed when authentication flows are seperated from the graphql implementation.
-
+				// TODO: The following code is necessary for continuing the expected graph traversal for unauthenticated clients that triggered this operation because of absence of an authentication context for those clients. This should be removed when authentication flows are seperated from the graphql implementation.
 				ctx.currentClient.isAuthenticated = true;
 				ctx.currentClient.user = {
 					id: createdUser.id,

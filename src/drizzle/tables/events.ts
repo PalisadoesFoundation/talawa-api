@@ -115,7 +115,7 @@ export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 	/**
 	 * One to many relationship from `events` table to `event_attachments` table.
 	 */
-	eventAttachmentsWhereEvent: many(eventAttachmentsTable, {
+	attachmentsWhereEvent: many(eventAttachmentsTable, {
 		relationName: "event_attachments.event_id:events.id",
 	}),
 	/**
@@ -149,6 +149,6 @@ export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 }));
 
 export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
-	description: (schema) => schema.min(1).max(2048),
+	description: (schema) => schema.min(1).max(2048).optional(),
 	name: (schema) => schema.min(1).max(256),
 });

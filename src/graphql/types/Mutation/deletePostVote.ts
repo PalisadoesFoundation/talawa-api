@@ -52,51 +52,56 @@ builder.mutationField("deletePostVote", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingCreator, existingPost, existingPostVote] =
-				await Promise.all([
-					ctx.drizzleClient.query.usersTable.findFirst({
-						columns: {
-							role: true,
-						},
-						where: (fields, operators) =>
-							operators.eq(fields.id, currentUserId),
-					}),
-					ctx.drizzleClient.query.usersTable.findFirst({
-						where: (fields, operators) =>
-							operators.eq(fields.id, parsedArgs.input.creatorId),
-					}),
-					ctx.drizzleClient.query.postsTable.findFirst({
-						with: {
-							organization: {
-								columns: {
-									countryCode: true,
-								},
-								with: {
-									organizationMembershipsWhereOrganization: {
-										columns: {
-											role: true,
-										},
-										where: (fields, operators) =>
-											operators.eq(fields.memberId, parsedArgs.input.creatorId),
+			const [currentUser, existingCreator, existingPost] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.usersTable.findFirst({
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.creatorId),
+				}),
+				ctx.drizzleClient.query.postsTable.findFirst({
+					with: {
+						attachmentsWherePost: true,
+						organization: {
+							columns: {
+								countryCode: true,
+							},
+							with: {
+								membershipsWhereOrganization: {
+									columns: {
+										role: true,
 									},
+									where: (fields, operators) =>
+										operators.eq(fields.memberId, parsedArgs.input.creatorId),
 								},
 							},
-							postAttachmentsWherePost: true,
 						},
-						where: (fields, operators) =>
-							operators.eq(fields.id, parsedArgs.input.postId),
-					}),
-					ctx.drizzleClient.query.postVotesTable.findFirst({
-						columns: {
-							type: true,
+						votesWherePost: {
+							columns: {
+								type: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.creatorId, currentUserId),
 						},
-						where: (fields, operators) =>
-							operators.and(
-								operators.eq(fields.creatorId, parsedArgs.input.creatorId),
-								operators.eq(fields.postId, parsedArgs.input.postId),
-							),
-					}),
-				]);
+					},
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.postId),
+				}),
+				ctx.drizzleClient.query.postVotesTable.findFirst({
+					columns: {
+						type: true,
+					},
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.creatorId, parsedArgs.input.creatorId),
+							operators.eq(fields.postId, parsedArgs.input.postId),
+						),
+				}),
+			]);
 
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
@@ -112,10 +117,10 @@ builder.mutationField("deletePostVote", (t) =>
 						code: "arguments_associated_resources_not_found",
 						issues: [
 							{
-								argumentPath: ["input", "postId"],
+								argumentPath: ["input", "creatorId"],
 							},
 							{
-								argumentPath: ["input", "creatorId"],
+								argumentPath: ["input", "postId"],
 							},
 						],
 					},
@@ -148,16 +153,18 @@ builder.mutationField("deletePostVote", (t) =>
 				});
 			}
 
+			const existingPostVote = existingPost.votesWherePost[0];
+
 			if (existingPostVote === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
 						issues: [
 							{
-								argumentPath: ["input", "postId"],
+								argumentPath: ["input", "creatorId"],
 							},
 							{
-								argumentPath: ["input", "creatorId"],
+								argumentPath: ["input", "postId"],
 							},
 						],
 					},
@@ -165,7 +172,7 @@ builder.mutationField("deletePostVote", (t) =>
 			}
 
 			const currentUserOrganizationMembership =
-				existingPost.organization.organizationMembershipsWhereOrganization[0];
+				existingPost.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&
@@ -250,7 +257,7 @@ builder.mutationField("deletePostVote", (t) =>
 			}
 
 			return Object.assign(existingPost, {
-				attachments: existingPost.postAttachmentsWherePost,
+				attachments: existingPost.attachmentsWherePost,
 			});
 		},
 		type: Post,

@@ -37,6 +37,10 @@ export {
 } from "./tables/commentVotes";
 export { commentsTable, commentsTableRelations } from "./tables/comments";
 export {
+	communitiesTable,
+	communitiesTableRelations,
+} from "./tables/communities";
+export {
 	eventAttachmentsTable,
 	eventAttachmentsTableRelations,
 } from "./tables/eventAttachments";
