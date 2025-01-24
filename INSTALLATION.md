@@ -41,7 +41,7 @@ This document provides instructions on how to set up and start a running instanc
 
 Linux based distributions are simply the best platform for a very vast majority of use cases related to software development. As such we recommend using popular linux based distributions like fedora, arch, ubuntu, linux mint, debian etc., for having a better experience during software development.
 
-We make heavy of use docker containers in our workflows. Since, containers are a technology built on top of linux, on non-linux platforms they can only be used by emulating linux where they are ran inside linux based virtual machines. So, you should be aware that there are performance penalties and certain limitations with running containers on platforms like macOS and windows.
+We make heavy use of Docker containers in our workflows. Since containers are a Linux-based technology, on non-Linux platforms they require Linux emulation through virtual machines, which can impact performance. So, you should be aware that there are performance penalties and certain limitations with running containers on platforms like macOS and windows.
 
 Though, many of these penalties and limitations don't apply to windows subsystem for linux. So, if you plan on using windows, at the very least make use of windows subsystem for linux.
 
