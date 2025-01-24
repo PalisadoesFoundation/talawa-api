@@ -14,11 +14,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
       # Setup pnpm
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 8.6.12
 
       # Install dependencies and run tests
       - name: Run Tests and Upload Coverage to Codecov
