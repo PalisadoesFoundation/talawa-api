@@ -140,8 +140,6 @@ Click on the image below to play the video.
 
 ## How to use the API
 
-**Important:** Use the API URLs that were configured during the production environment setup.
-
 These are some important URLs for coding and troubleshooting :
 
 ### For Talawa-API Developers
