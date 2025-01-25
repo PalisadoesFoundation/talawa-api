@@ -14,7 +14,7 @@ name: PUSH Workflow - Website Deployment
 on:
   push:
     branches:
-      - "develop-postgres"
+      - "new-test-docs"
 
 env:
   CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
@@ -32,7 +32,7 @@ jobs:
       # "Code and automation > Environments > github-pages"
       # menu. The branch "name" must match the branch in the
       # "on.push.branches" section at the top of this file
-      name: develop-postgres
+      name: new-test-docs
       url: https://docs-api.talawa.io
     steps:
       - uses: actions/checkout@v4
