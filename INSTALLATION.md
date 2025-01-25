@@ -274,7 +274,7 @@ Please make sure that you have insalled the required software before starting th
 
 ## Setup using Instructional Video
 
-We provide a mostly automated way of setting up the development environment for the Talawa API using Git, Docker, and Visual Studio Code. Follow the instructions below and refer to the provided instructional video for a visual guide.
+We provide a mostly automated way of setting up the production environment for the Talawa API using Git, Docker, and Docker-compose. Follow the instructions below and refer to the provided instructional video for a visual guide.
 
 Click on the image below to play the video.
 
@@ -284,7 +284,7 @@ Click on the image below to play the video.
 
    1. Please ensure you clone from the correct repository [Talawa API Repository](https://github.com/PalisadoesFoundation/talawa-api)
    2. The correct branch to checkout is `develop-postgres`
-   3. All the field for .env files are not shown in the video. Refer [Creating env file](#step-3-creating-env-file)
+   3. All the field for .env files are not shown in the video. Refer [Configuring env file](###Step 4:-Configuring-Environment-Variables)
 
 ## Step-by-Step Guide for Setup
 
