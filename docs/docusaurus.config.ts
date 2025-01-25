@@ -67,7 +67,8 @@ const config: Config = {
           type: "docSidebar",
           sidebarId: "tutorialSidebar",
           position: "left",
-          label: "Docs",
+          label: "General",
+          href: "https://docs.talawa.io/",
         },
         {
           label: "Mobile Guide",

@@ -9,7 +9,7 @@ interface ActionButtonProps {
   ariaLabel?: string;
 }
 
- function ActionButton({
+function ActionButton({
   href,
   type = "primary",
   target,
@@ -19,15 +19,15 @@ interface ActionButtonProps {
   return (
     <a
       className={`ActionButton ${type} ${buttonClassName}`}
-      rel={target === '_blank' ? "noopener noreferrer" : undefined}
+      rel={target === "_blank" ? "noopener noreferrer" : undefined}
       href={href}
       target={target}
       role="button"
-      aria-label={typeof children === 'string' ? children : undefined}
+      aria-label={typeof children === "string" ? children : undefined}
     >
       {children}
     </a>
   );
 }
 
-export default ActionButton
+export default ActionButton;

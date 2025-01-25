@@ -1,17 +1,15 @@
 import React from "react";
-import  Section  from "../../utils/Section";
+import Section from "../../utils/Section";
 import OrganizationFeatureCard from "../../utils/OrganizationFeatureCard";
 
 interface SecondPanelProps {}
 
- const SecondPanel: React.FC<SecondPanelProps> = () => {
+const SecondPanel: React.FC<SecondPanelProps> = () => {
   return (
     <Section className="SecondPanel">
-     
-      <OrganizationFeatureCard/>
-    
+      <OrganizationFeatureCard />
     </Section>
   );
 };
 
-export default SecondPanel
+export default SecondPanel;

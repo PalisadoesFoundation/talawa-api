@@ -8,27 +8,27 @@ import CodeBlock from "@theme/CodeBlock";
 interface SixthPanelProps {}
 
 const SixthPanel: React.FC<SixthPanelProps> = () => {
-	const { sixthPanel, codeExample } = textcontent;
+  const { sixthPanel, codeExample } = textcontent;
 
-	return (
-		<Section className="SixthPanel">
-			<TwoColumns
-				columnOne={
-					<TextColumn
-						title="Open Source Software: Global Volunteers"
-						text={sixthPanel}
-					/>
-				}
-				columnTwo={
-					typeof window !== "undefined" ? (
-						<CodeBlock language="jsx">{codeExample}</CodeBlock>
-					) : (
-						<pre>{codeExample}</pre>
-					)
-				}
-			/>
-		</Section>
-	);
+  return (
+    <Section className="SixthPanel">
+      <TwoColumns
+        columnOne={
+          <TextColumn
+            title="Open Source Software: Global Volunteers"
+            text={sixthPanel}
+          />
+        }
+        columnTwo={
+          typeof window !== "undefined" ? (
+            <CodeBlock language="jsx">{codeExample}</CodeBlock>
+          ) : (
+            <pre>{codeExample}</pre>
+          )
+        }
+      />
+    </Section>
+  );
 };
 
 export default SixthPanel;

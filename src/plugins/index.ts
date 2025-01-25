@@ -4,9 +4,9 @@ import minioClient from "./minioClient";
 import seedInitialData from "./seedInitialData";
 
 export const plugins = fastifyPlugin(async (fastify) => {
-	fastify.register(drizzleClient);
-	fastify.register(minioClient);
-	fastify.register(seedInitialData);
+  fastify.register(drizzleClient);
+  fastify.register(minioClient);
+  fastify.register(seedInitialData);
 });
 
 export default plugins;
