@@ -284,7 +284,7 @@ Click on the image below to play the video.
 
    1. Please ensure you clone from the correct repository [Talawa API Repository](https://github.com/PalisadoesFoundation/talawa-api)
    2. The correct branch to checkout is `develop-postgres`
-   3. All the field for .env files are not shown in the video. Refer [Configuring env file](###Step 4:-Configuring-Environment-Variables)
+   3. All the field for .env files are not shown in the video. Refer [Step 4: Configuring Environment Variables](#step-4-configuring-environment-variables)
 
 ## Step-by-Step Guide for Setup
 
