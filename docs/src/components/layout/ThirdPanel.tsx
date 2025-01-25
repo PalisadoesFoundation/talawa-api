@@ -10,8 +10,6 @@ const ThirdPanel: React.FC<ThirdPanelProps> = () => {
   return (
     <Section className="third-panel" background="light">
       <ManagementFeaturesCard />
-
-
     </Section>
   );
 };

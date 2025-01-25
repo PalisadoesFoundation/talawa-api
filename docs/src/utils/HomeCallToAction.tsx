@@ -1,25 +1,19 @@
 import React from "react";
-import  ActionButton  from "./ActionButton";
+import ActionButton from "./ActionButton";
 
 interface HomeCallToActionProps {}
 
- const HomeCallToAction: React.FC<HomeCallToActionProps> = () => {
+const HomeCallToAction: React.FC<HomeCallToActionProps> = () => {
   return (
     <>
-      <ActionButton
-        type="primary"
-        href="/docs"
-        buttonClassName="custom-button"
-       
-      >
+      <ActionButton type="primary" href="/docs" buttonClassName="custom-button">
         Learn More
       </ActionButton>
       <ActionButton
         type="secondary"
         href="https://github.com/PalisadoesFoundation"
         buttonClassName="custom-button"
-         target="_blank"
-      
+        target="_blank"
       >
         GitHub
       </ActionButton>
@@ -27,5 +21,4 @@ interface HomeCallToActionProps {}
   );
 };
 
-
-export default HomeCallToAction
+export default HomeCallToAction;

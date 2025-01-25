@@ -11,9 +11,9 @@ import objects from "./objects";
  * fastify.register(routes, {});
  */
 export const routes = fastifyPlugin(async (fastify) => {
-	fastify.register(graphql);
-	fastify.register(healthcheck);
-	fastify.register(objects);
+  fastify.register(graphql);
+  fastify.register(healthcheck);
+  fastify.register(objects);
 });
 
 export default routes;

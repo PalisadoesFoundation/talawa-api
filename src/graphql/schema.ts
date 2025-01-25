@@ -10,5 +10,5 @@ import "./unions/index";
  * This is the executable graphql schema.
  */
 export const schema = builder.toSchema({
-	sortSchema: true,
+  sortSchema: true,
 });

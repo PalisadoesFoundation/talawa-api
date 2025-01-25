@@ -1,9 +1,8 @@
 import React from "react";
-import  Section  from "../../utils/Section";
+import Section from "../../utils/Section";
 import ParticipationFeaturesCard from "../../utils/ParticipationFeatureCard";
 
 const SeventhPanel: React.FC = () => {
-  
   return (
     <Section className="seventh-panel" background="light">
       <ParticipationFeaturesCard />
@@ -11,4 +10,4 @@ const SeventhPanel: React.FC = () => {
   );
 };
 
-export default SeventhPanel
+export default SeventhPanel;

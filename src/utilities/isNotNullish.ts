@@ -10,5 +10,5 @@
  * }
  */
 export function isNotNullish<T0>(value: T0 | undefined | null): value is T0 {
-	return value !== undefined && value !== null;
+  return value !== undefined && value !== null;
 }

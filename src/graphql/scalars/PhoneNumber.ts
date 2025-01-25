@@ -10,6 +10,6 @@ builder.addScalarType("PhoneNumber", PhoneNumberResolver);
  * `PhoneNumber` scalar type for pothos schema.
  */
 export type PhoneNumber = {
-	Input: string;
-	Output: string;
+  Input: string;
+  Output: string;
 };

@@ -1,7 +1,7 @@
 import {
-	GraphQLError,
-	type GraphQLErrorOptions,
-	type GraphQLFormattedError,
+  GraphQLError,
+  type GraphQLErrorOptions,
+  type GraphQLFormattedError,
 } from "graphql";
 
 // The term action used below is used to refer to read and write operations triggered by the clients. In the context of graphql query, mutation and subscription are the three possible ways to perform these actions.
@@ -30,10 +30,10 @@ import {
  * });
  */
 export type ArgumentsAssociatedResourcesNotFoundExtensions = {
-	code: "arguments_associated_resources_not_found";
-	issues: {
-		argumentPath: (string | number)[];
-	}[];
+  code: "arguments_associated_resources_not_found";
+  issues: {
+    argumentPath: (string | number)[];
+  }[];
 };
 
 /**
@@ -49,7 +49,7 @@ export type ArgumentsAssociatedResourcesNotFoundExtensions = {
  * );
  */
 export type ForbiddenActionExtensions = {
-	code: "forbidden_action";
+  code: "forbidden_action";
 };
 
 /**
@@ -73,11 +73,11 @@ export type ForbiddenActionExtensions = {
  * });
  */
 export type ForbiddenActionOnArgumentsAssociatedResourcesExtensions = {
-	code: "forbidden_action_on_arguments_associated_resources";
-	issues: {
-		argumentPath: (string | number)[];
-		message: string;
-	}[];
+  code: "forbidden_action_on_arguments_associated_resources";
+  issues: {
+    argumentPath: (string | number)[];
+    message: string;
+  }[];
 };
 
 /**
@@ -91,7 +91,7 @@ export type ForbiddenActionOnArgumentsAssociatedResourcesExtensions = {
  * });
  */
 export type UnauthenticatedExtensions = {
-	code: "unauthenticated";
+  code: "unauthenticated";
 };
 
 /**
@@ -119,11 +119,11 @@ export type UnauthenticatedExtensions = {
  * });
  */
 export type InvalidArgumentsExtensions = {
-	code: "invalid_arguments";
-	issues: {
-		argumentPath: (string | number)[];
-		message: string;
-	}[];
+  code: "invalid_arguments";
+  issues: {
+    argumentPath: (string | number)[];
+    message: string;
+  }[];
 };
 
 /**
@@ -137,7 +137,7 @@ export type InvalidArgumentsExtensions = {
  * });
  */
 export type UnauthorizedActionExtensions = {
-	code: "unauthorized_action";
+  code: "unauthorized_action";
 };
 
 /**
@@ -156,10 +156,10 @@ export type UnauthorizedActionExtensions = {
  * });
  */
 export type UnauthorizedActionOnArgumentsAssociatedResourcesExtensions = {
-	issues: {
-		argumentPath: (string | number)[];
-	}[];
-	code: "unauthorized_action_on_arguments_associated_resources";
+  issues: {
+    argumentPath: (string | number)[];
+  }[];
+  code: "unauthorized_action_on_arguments_associated_resources";
 };
 
 /**
@@ -179,10 +179,10 @@ export type UnauthorizedActionOnArgumentsAssociatedResourcesExtensions = {
  * });
  */
 export type UnauthorizedArgumentsExtensions = {
-	issues: {
-		argumentPath: (string | number)[];
-	}[];
-	code: "unauthorized_arguments";
+  issues: {
+    argumentPath: (string | number)[];
+  }[];
+  code: "unauthorized_arguments";
 };
 
 /**
@@ -196,36 +196,36 @@ export type UnauthorizedArgumentsExtensions = {
  * });
  */
 export type UnexpectedExtensions = {
-	code: "unexpected";
+  code: "unexpected";
 };
 
 export type TalawaGraphQLErrorExtensions =
-	| ArgumentsAssociatedResourcesNotFoundExtensions
-	| ForbiddenActionExtensions
-	| ForbiddenActionOnArgumentsAssociatedResourcesExtensions
-	| UnauthenticatedExtensions
-	| InvalidArgumentsExtensions
-	| UnauthorizedActionExtensions
-	| UnauthorizedActionOnArgumentsAssociatedResourcesExtensions
-	| UnauthorizedArgumentsExtensions
-	| UnexpectedExtensions;
+  | ArgumentsAssociatedResourcesNotFoundExtensions
+  | ForbiddenActionExtensions
+  | ForbiddenActionOnArgumentsAssociatedResourcesExtensions
+  | UnauthenticatedExtensions
+  | InvalidArgumentsExtensions
+  | UnauthorizedActionExtensions
+  | UnauthorizedActionOnArgumentsAssociatedResourcesExtensions
+  | UnauthorizedArgumentsExtensions
+  | UnexpectedExtensions;
 
 export const defaultTalawaGraphQLErrorMessages: {
-	[Key in TalawaGraphQLErrorExtensions["code"]]: string;
+  [Key in TalawaGraphQLErrorExtensions["code"]]: string;
 } = {
-	arguments_associated_resources_not_found:
-		"No associated resources found for the provided arguments.",
-	forbidden_action: "This action is forbidden.",
-	forbidden_action_on_arguments_associated_resources:
-		"This action is forbidden on the resources associated to the provided arguments.",
-	invalid_arguments: "You have provided invalid arguments for this action.",
-	unauthenticated: "You must be authenticated to perform this action.",
-	unauthorized_action: "You are not authorized to perform this action.",
-	unauthorized_action_on_arguments_associated_resources:
-		"You are not authorized to perform this action on the resources associated to the provided arguments.",
-	unauthorized_arguments:
-		"You are not authorized to perform this action with the provided arguments.",
-	unexpected: "Something went wrong. Please try again later.",
+  arguments_associated_resources_not_found:
+    "No associated resources found for the provided arguments.",
+  forbidden_action: "This action is forbidden.",
+  forbidden_action_on_arguments_associated_resources:
+    "This action is forbidden on the resources associated to the provided arguments.",
+  invalid_arguments: "You have provided invalid arguments for this action.",
+  unauthenticated: "You must be authenticated to perform this action.",
+  unauthorized_action: "You are not authorized to perform this action.",
+  unauthorized_action_on_arguments_associated_resources:
+    "You are not authorized to perform this action on the resources associated to the provided arguments.",
+  unauthorized_arguments:
+    "You are not authorized to perform this action with the provided arguments.",
+  unexpected: "Something went wrong. Please try again later.",
 };
 
 /**
@@ -258,23 +258,23 @@ export const defaultTalawaGraphQLErrorMessages: {
  * }
  */
 export class TalawaGraphQLError extends GraphQLError {
-	constructor({
-		message,
-		...options
-	}: GraphQLErrorOptions & {
-		extensions: TalawaGraphQLErrorExtensions;
-		message?: string;
-	}) {
-		if (message === undefined) {
-			message = defaultTalawaGraphQLErrorMessages[options.extensions.code];
-		}
-		super(message, options);
-	}
+  constructor({
+    message,
+    ...options
+  }: GraphQLErrorOptions & {
+    extensions: TalawaGraphQLErrorExtensions;
+    message?: string;
+  }) {
+    if (message === undefined) {
+      message = defaultTalawaGraphQLErrorMessages[options.extensions.code];
+    }
+    super(message, options);
+  }
 }
 
 /**
  * Type of the error returned by talawa api's graphql implementation in the root "errors" field of the graphql responses.
  */
 export type TalawaGraphQLFormattedError = GraphQLFormattedError & {
-	extensions: TalawaGraphQLErrorExtensions;
+  extensions: TalawaGraphQLErrorExtensions;
 };

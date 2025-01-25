@@ -10,6 +10,6 @@ builder.addScalarType("DateTime", DateTimeResolver);
  * `DateTime` scalar type for pothos schema.
  */
 export type DateTime = {
-	Input: Date;
-	Output: Date;
+  Input: Date;
+  Output: Date;
 };

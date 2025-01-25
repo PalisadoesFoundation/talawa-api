@@ -21,7 +21,7 @@
   /* UI and components */
   --tintColor: #f7f7f7;
   --rn-note-background: rgba(255, 229, 100, 0.25);
-  --ifm-font-family-base: 'Optimistic Display', system-ui, -apple-system,
+  --ifm-font-family-base: "Optimistic Display", system-ui, -apple-system,
     sans-serif;
   --ifm-font-size-base: 17px;
   --ifm-spacing-horizontal: 16px;
@@ -478,7 +478,7 @@
 }
 
 .ActionButton.secondary::after {
-  content: '›';
+  content: "›";
   font-size: 24px;
   margin-left: 5px;
 }
@@ -554,11 +554,11 @@
   .TwoColumns {
     margin: 0 auto;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-areas: 'first last';
+    grid-template-areas: "first last";
   }
 
   .TwoColumns.reverse {
-    grid-template-areas: 'last first';
+    grid-template-areas: "last first";
   }
 
   .TwoColumns .column {
@@ -578,7 +578,7 @@
   .TwoColumns,
   .TwoColumns.reverse {
     grid-template-columns: 1fr;
-    grid-template-areas: 'first' 'last';
+    grid-template-areas: "first" "last";
   }
 
   .TwoColumns .column {

@@ -10,6 +10,6 @@ builder.addScalarType("BigInt", BigIntResolver);
  * `BigInt` scalar type for pothos schema.
  */
 export type _BigInt = {
-	Input: bigint;
-	Output: bigint;
+  Input: bigint;
+  Output: bigint;
 };

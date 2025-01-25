@@ -1,6 +1,6 @@
 import {
-	type FileUpload,
-	GraphQLUpload as GraphQLUploadResolver,
+  type FileUpload,
+  GraphQLUpload as GraphQLUploadResolver,
 } from "graphql-upload-minimal";
 import { builder } from "~/src/graphql/builder";
 
@@ -15,6 +15,6 @@ builder.addScalarType("Upload", GraphQLUploadResolver);
  * `Upload` scalar type for pothos schema.
  */
 export type Upload = {
-	Input: Promise<FileUpload>;
-	Output: Promise<FileUpload>;
+  Input: Promise<FileUpload>;
+  Output: Promise<FileUpload>;
 };

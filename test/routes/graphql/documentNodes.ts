@@ -5,12 +5,12 @@ import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type { introspection } from "./gql.tada";
 
 const gql = initGraphQLTada<{
-	introspection: introspection;
-	scalars: ClientCustomScalars;
+  introspection: introspection;
+  scalars: ClientCustomScalars;
 }>();
 
 export const Mutation_createUser =
-	gql(`mutation Mutation_createUser($input: MutationCreateUserInput!) {
+  gql(`mutation Mutation_createUser($input: MutationCreateUserInput!) {
     createUser(input: $input){
         authenticationToken
         user {
@@ -40,14 +40,14 @@ export const Mutation_createUser =
 }`);
 
 export const Mutation_deleteCurrentUser =
-	gql(`mutation Mutation_deleteCurrentUser {
+  gql(`mutation Mutation_deleteCurrentUser {
     deleteCurrentUser {
         id  
     }
 }`);
 
 export const Mutation_deleteUser =
-	gql(`mutation Mutation_deleteUser($input: MutationDeleteUserInput!) {
+  gql(`mutation Mutation_deleteUser($input: MutationDeleteUserInput!) {
     deleteUser(input: $input) {
         addressLine1
         addressLine2
@@ -74,7 +74,7 @@ export const Mutation_deleteUser =
 }`);
 
 export const Mutation_signUp =
-	gql(`mutation Mutation_signUp($input: MutationSignUpInput!) {
+  gql(`mutation Mutation_signUp($input: MutationSignUpInput!) {
     signUp(input: $input) {
         authenticationToken
         user {
@@ -104,7 +104,7 @@ export const Mutation_signUp =
 }`);
 
 export const Mutation_updateCurrentUser =
-	gql(`mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
+  gql(`mutation Mutation_updateCurrentUser($input: MutationUpdateCurrentUserInput!) {
     updateCurrentUser(input: $input) {
         addressLine1
         addressLine2
@@ -131,7 +131,7 @@ export const Mutation_updateCurrentUser =
 }`);
 
 export const Mutation_updateUser =
-	gql(`mutation Mutation_updateUser($input: MutationUpdateUserInput!) {
+  gql(`mutation Mutation_updateUser($input: MutationUpdateUserInput!) {
     updateUser(input: $input) {
         addressLine1
         addressLine2
@@ -184,7 +184,7 @@ export const Query_currentUser = gql(`query Query_currentUser {
 }`);
 
 export const Query_renewAuthenticationToken =
-	gql(`query Query_renewAuthenticationToken {
+  gql(`query Query_renewAuthenticationToken {
     renewAuthenticationToken
 }`);
 
@@ -244,7 +244,7 @@ export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
 }`);
 
 export const Query_user_creator =
-	gql(`query Query_user_creator($input: QueryUserInput!) {
+  gql(`query Query_user_creator($input: QueryUserInput!) {
     user(input: $input) {
         creator {
             addressLine1
@@ -273,14 +273,14 @@ export const Query_user_creator =
 }`);
 
 export const Query_user_updatedAt =
-	gql(`query Query_user_updatedAt($input: QueryUserInput!) {
+  gql(`query Query_user_updatedAt($input: QueryUserInput!) {
     user(input: $input) {
         updatedAt
     }
 }`);
 
 export const Query_user_updater =
-	gql(`query Query_user_updater($input: QueryUserInput!) {
+  gql(`query Query_user_updater($input: QueryUserInput!) {
     user(input: $input) {
         updater {
             addressLine1

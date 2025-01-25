@@ -2,7 +2,7 @@ import { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStat
 import { builder } from "~/src/graphql/builder";
 
 export const UserEmploymentStatus = builder.enumType("UserEmploymentStatus", {
-	description:
-		"Possible variants of the employment status(if applicable) of a user.",
-	values: userEmploymentStatusEnum.options,
+  description:
+    "Possible variants of the employment status(if applicable) of a user.",
+  values: userEmploymentStatusEnum.options,
 });

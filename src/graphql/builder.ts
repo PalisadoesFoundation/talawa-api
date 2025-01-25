@@ -7,9 +7,9 @@ import type { CustomScalars } from "./scalars/index";
  * This is the pothos schema builder used for talawa api's code first graphql implementation.
  */
 export const builder = new SchemaBuilder<{
-	Context: GraphQLContext;
-	Scalars: CustomScalars;
+  Context: GraphQLContext;
+  Scalars: CustomScalars;
 }>({
-	plugins: [relayPlugin],
-	relay: {},
+  plugins: [relayPlugin],
+  relay: {},
 });

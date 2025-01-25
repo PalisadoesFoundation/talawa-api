@@ -1,15 +1,14 @@
 import React from "react";
-import  Section  from "../../utils/Section";
+import Section from "../../utils/Section";
 
 import AppFeaturesCard from "../../utils/AppFeaturesCard";
 
- function FifthPanel() {
+function FifthPanel() {
   return (
     <Section className="fifth-panel">
-      <AppFeaturesCard/>
-    
+      <AppFeaturesCard />
     </Section>
   );
 }
 
-export default FifthPanel
+export default FifthPanel;

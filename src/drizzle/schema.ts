@@ -2,102 +2,102 @@
 // MAKE SURE TO NOT MISS ANY OF THE MODULES THAT ARE DIRECTLY CONCERNED WITH DRIZZLE DATABASE MIGRATIONS. FAILING TO DO SO WILL RESULT IN INCORRECT DRIZZLE DATABASE MIGRATIONS BEING GENERATED.
 
 export {
-	actionCategoriesTable,
-	actionCategoriesTableRelations,
+  actionCategoriesTable,
+  actionCategoriesTableRelations,
 } from "./tables/actionCategories";
 export { actionsTable, actionsTableRelations } from "./tables/actions";
 export {
-	advertisementAttachmentsTable,
-	advertisementAttachmentsTableRelations,
+  advertisementAttachmentsTable,
+  advertisementAttachmentsTableRelations,
 } from "./tables/advertisementAttachments";
 export {
-	advertisementsTable,
-	advertisementsTableRelations,
+  advertisementsTable,
+  advertisementsTableRelations,
 } from "./tables/advertisements";
 export {
-	agendaItemsTable,
-	agendaItemsTableRelations,
+  agendaItemsTable,
+  agendaItemsTableRelations,
 } from "./tables/agendaItems";
 export {
-	agendaFoldersTable,
-	agendaFoldersTableRelations,
+  agendaFoldersTable,
+  agendaFoldersTableRelations,
 } from "./tables/agendaFolders";
 export {
-	chatMembershipsTable,
-	chatMembershipsTableRelations,
+  chatMembershipsTable,
+  chatMembershipsTableRelations,
 } from "./tables/chatMemberships";
 export {
-	chatMessagesTable,
-	chatMessagesTableRelations,
+  chatMessagesTable,
+  chatMessagesTableRelations,
 } from "./tables/chatMessages";
 export { chatsTable, chatsTableRelations } from "./tables/chats";
 export {
-	commentVotesTable,
-	commentVotesTableRelations,
+  commentVotesTable,
+  commentVotesTableRelations,
 } from "./tables/commentVotes";
 export { commentsTable, commentsTableRelations } from "./tables/comments";
 export {
-	communitiesTable,
-	communitiesTableRelations,
+  communitiesTable,
+  communitiesTableRelations,
 } from "./tables/communities";
 export {
-	eventAttachmentsTable,
-	eventAttachmentsTableRelations,
+  eventAttachmentsTable,
+  eventAttachmentsTableRelations,
 } from "./tables/eventAttachments";
 export {
-	eventAttendancesTable,
-	eventAttendancesTableRelations,
+  eventAttendancesTable,
+  eventAttendancesTableRelations,
 } from "./tables/eventAttendances";
 export { eventsTable, eventsTableRelations } from "./tables/events";
 export { familiesTable, familiesTableRelations } from "./tables/families";
 export {
-	familyMembershipsTable,
-	familyMembershipsTableRelations,
+  familyMembershipsTable,
+  familyMembershipsTableRelations,
 } from "./tables/familyMemberships";
 export {
-	fundCampaignsTable,
-	fundCampaignsTableRelations,
+  fundCampaignsTable,
+  fundCampaignsTableRelations,
 } from "./tables/fundCampaigns";
 export { fundsTable, fundsTableRelations } from "./tables/funds";
 export {
-	organizationMembershipsTable,
-	organizationMembershipsTableRelations,
+  organizationMembershipsTable,
+  organizationMembershipsTableRelations,
 } from "./tables/organizationMemberships";
 export {
-	organizationsTable,
-	organizationsTableRelations,
+  organizationsTable,
+  organizationsTableRelations,
 } from "./tables/organizations";
 export {
-	fundCampaignPledgesTable,
-	fundCampaignPledgesTableRelations,
+  fundCampaignPledgesTable,
+  fundCampaignPledgesTableRelations,
 } from "./tables/fundCampaignPledges";
 export {
-	postAttachmentsTable,
-	postAttachmentsTableRelations,
+  postAttachmentsTable,
+  postAttachmentsTableRelations,
 } from "./tables/postAttachments";
 export { postVotesTable, postVotesTableRelations } from "./tables/postVotes";
 export { postsTable, postsTableRelations } from "./tables/posts";
 export {
-	tagAssignmentsTable,
-	tagAssignmentsTableRelations,
+  tagAssignmentsTable,
+  tagAssignmentsTableRelations,
 } from "./tables/tagAssignments";
 export { tagFoldersTable, tagFoldersTableRelations } from "./tables/tagFolders";
 export { tagsTable, tagsTableRelations } from "./tables/tags";
 export { usersTable, usersTableRelations } from "./tables/users";
 export {
-	venueAttachmentsTable,
-	venueAttachmentsTableRelations,
+  venueAttachmentsTable,
+  venueAttachmentsTableRelations,
 } from "./tables/venueAttachments";
 export {
-	venueBookingsTable,
-	venueBookingsTableRelations,
+  venueBookingsTable,
+  venueBookingsTableRelations,
 } from "./tables/venueBookings";
 export { venuesTable, venuesTableRelations } from "./tables/venues";
 export {
-	volunteerGroupAssignmentsTable,
-	volunteerGroupAssignmentsTableRelations,
+  volunteerGroupAssignmentsTable,
+  volunteerGroupAssignmentsTableRelations,
 } from "./tables/volunteerGroupAssignments";
 export {
-	volunteerGroupsTable,
-	volunteerGroupsTableRelations,
+  volunteerGroupsTable,
+  volunteerGroupsTableRelations,
 } from "./tables/volunteerGroups";

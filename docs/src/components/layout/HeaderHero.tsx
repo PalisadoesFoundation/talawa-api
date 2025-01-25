@@ -1,9 +1,8 @@
 import React from "react";
-import  Section  from "../../utils/Section";
-import  TwoColumns  from "../../utils/TwoColumns";
-import  HomeCallToAction  from "../../utils/HomeCallToAction";
+import Section from "../../utils/Section";
+import TwoColumns from "../../utils/TwoColumns";
+import HomeCallToAction from "../../utils/HomeCallToAction";
 import useBaseUrl from "@docusaurus/useBaseUrl";
-
 
 function HeaderHero() {
   return (
@@ -24,13 +23,16 @@ function HeaderHero() {
         }
         columnTwo={
           <>
-           <h1 className="title" aria-label="Talawa - Member Management Software">
-            <span>Talawa</span>
-            <span className="tagline">Member Management Software</span>
-          </h1>
-          <p className="description" aria-label="Target audience description">
-            For open source projects, charities and other non-profits
-          </p>
+            <h1
+              className="title"
+              aria-label="Talawa - Member Management Software"
+            >
+              <span>Talawa</span>
+              <span className="tagline">Member Management Software</span>
+            </h1>
+            <p className="description" aria-label="Target audience description">
+              For open source projects, charities and other non-profits
+            </p>
             <div className="buttons">
               <HomeCallToAction />
             </div>
@@ -41,4 +43,4 @@ function HeaderHero() {
   );
 }
 
-export default HeaderHero
+export default HeaderHero;

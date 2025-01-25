@@ -8,7 +8,6 @@ interface EightPanelProps {}
 
 const EightPanel: React.FC<EightPanelProps> = () => {
   return (
-
     <Section className="EightPanel">
       <div className="card__general card__wide">
         <TwoColumns
@@ -33,6 +32,6 @@ const EightPanel: React.FC<EightPanelProps> = () => {
       </div>
     </Section>
   );
-}
+};
 
 export default EightPanel;

@@ -3,29 +3,29 @@ import { commentVotesTable } from "~/src/drizzle/tables/commentVotes";
 import { Comment } from "./Comment";
 
 Comment.implement({
-	fields: (t) => ({
-		upVotesCount: t.field({
-			description: "Total number of up votes on the comment.",
-			resolve: async (parent, _args, ctx) => {
-				const [commentVote] = await ctx.drizzleClient
-					.select({
-						count: count(),
-					})
-					.from(commentVotesTable)
-					.where(
-						and(
-							eq(commentVotesTable.commentId, parent.id),
-							eq(commentVotesTable.type, "up_vote"),
-						),
-					);
+  fields: (t) => ({
+    upVotesCount: t.field({
+      description: "Total number of up votes on the comment.",
+      resolve: async (parent, _args, ctx) => {
+        const [commentVote] = await ctx.drizzleClient
+          .select({
+            count: count(),
+          })
+          .from(commentVotesTable)
+          .where(
+            and(
+              eq(commentVotesTable.commentId, parent.id),
+              eq(commentVotesTable.type, "up_vote"),
+            ),
+          );
 
-				if (commentVote === undefined) {
-					return 0;
-				}
+        if (commentVote === undefined) {
+          return 0;
+        }
 
-				return commentVote.count;
-			},
-			type: "Int",
-		}),
-	}),
+        return commentVote.count;
+      },
+      type: "Int",
+    }),
+  }),
 });
