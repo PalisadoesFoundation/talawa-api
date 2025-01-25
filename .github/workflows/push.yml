@@ -14,12 +14,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Create .env file for talawa api testing environment
-      - name: Create .env file for talawa api testing environment
+      # Create .env file for Talawa API testing environment
+      - name: Create .env file for Talawa API testing environment
         run: cp ./envFiles/.env.ci ./.env
 
-      # Build talawa api compose testing environment
-      - name: Build talawa api compose testing environment
+      # Build Talawa API compose testing environment
+      - name: Build Talawa API compose testing environment
         run: docker compose build
 
       # Run tests
