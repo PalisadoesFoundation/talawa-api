@@ -3,7 +3,7 @@
 #
 # NOTE!
 #
-# Please read the README.md file in this directory that defines what should
+# Please read the README.md file in this directory that defines what should 
 # be placed in this file
 #
 ##############################################################################
@@ -14,23 +14,23 @@ name: PUSH Workflow - Website Deployment
 on:
   push:
     branches:
-      - "develop-postgres"
+      - 'develop-postgres'
 
 env:
   CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
 
 jobs:
   Deploy-Docusaurus:
-    name: Deploy https://docs-api.talawa.io website
+    name: Deploy https://docs-admin.talawa.io website
     runs-on: ubuntu-latest
     # Run only if the develop-postgres branch and not dependabot
     if: ${{ github.actor != 'dependabot[bot]' }}
     environment:
-      # This "name" has to be the repos' branch that contains
+      # This "name" has to be the repos' branch that contains 
       # the current active website. There must be an entry for
       # the same branch in the PalisadoesFoundation's
-      # "Code and automation > Environments > github-pages"
-      # menu. The branch "name" must match the branch in the
+      # "Code and automation > Environments > gigithub-pages"
+      # menu. The branch "name" must match the branch in the 
       # "on.push.branches" section at the top of this file
       name: develop-postgres
       url: https://docs-api.talawa.io
@@ -38,11 +38,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-      - name: Enable Corepack
-        run: corepack enable
-      - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
+          node-version: '20.x' 
+      - name: Install pnpm
+        run: |
+          npm install -g pnpm@9.15.4
+          pnpm --version
+      - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_GITHUB_PAGES }}
       - name: Deploy to GitHub Pages
@@ -53,5 +54,6 @@ jobs:
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "gh-actions"
-          yarn install --frozen-lockfile
-          yarn deploy
+          pnpm install --frozen-lockfile
+          pnpm run build
+          pnpm run deploy
