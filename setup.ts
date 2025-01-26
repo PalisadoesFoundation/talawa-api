@@ -1,48 +1,63 @@
 import dotenv from "dotenv";
 import fs from "fs";
-import { updateEnvVariable } from './src/setup/updateEnvVariable';
-import { getNodeEnvironment } from "./src/setup/getNodeEnvironment";
+import { updateEnvVariable } from "./src/setup/updateEnvVariable";
 import { abort } from "process";
-import { askForAdministratorEmail } from "./src/setup/administratorEmail";
 import inquirer from "inquirer";
 
-function checkEnvFile(): void {  
-    const envDevcontainer = dotenv.parse(fs.readFileSync("./envFiles/.env.devcontainer"));
-    const envFileName = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
 
-    const currentEnv = dotenv.parse(fs.readFileSync(envFileName));
-    const missingKeys = Object.keys(envDevcontainer).filter((key) => !(key in currentEnv));
-    if (missingKeys.length > 0) {
-        for (const key of missingKeys) {
-          fs.appendFileSync(envFileName, `${key}=${envDevcontainer[key]}\n`);
-        }
-      }
+let originalEnvContent: string | null = null;
+const envFileName = ".env";
+
+function backupEnvFile(): void {
+  if (fs.existsSync(envFileName)) {
+    originalEnvContent = fs.readFileSync(envFileName, "utf-8");
+  } else {
+    originalEnvContent = null;
   }
+}
 
-async function setNodeEnvironment(): Promise<void> {
-    if (process.env.NODE_ENV === "test") {
-      try {
-        const nodeEnv = await getNodeEnvironment();
-        const config = dotenv.parse(fs.readFileSync(".env_test"));
-        config.NODE_ENV = nodeEnv;
-        updateEnvVariable(config);
-      } catch (err) {
-        console.error(err);
-        abort();
-      }
-    } else {
-      try {
-        const nodeEnv = await getNodeEnvironment();
-        process.env.NODE_ENV = nodeEnv;
-  
-        const config = dotenv.parse(fs.readFileSync(".env"));
-        config.NODE_ENV = nodeEnv;
-        updateEnvVariable(config);
-      } catch (err) {
-        console.error(err);
-        abort();
-      }
+function restoreEnvFile(): void {
+  try {
+    if (originalEnvContent !== null) {
+      fs.writeFileSync(envFileName, originalEnvContent, "utf-8");
+      console.log("\nChanges undone. Restored the original environment file.");
+    } else if (fs.existsSync(envFileName)) {
+      fs.unlinkSync(envFileName);
+      console.log("\nChanges undone. Removed the environment file.");
     }
+  } catch (err) {
+    console.error("Error restoring env file:", err);
+  }
+}
+
+function checkEnvFile(): void {
+  const envFileName = ".env";
+
+  const envDevcontainer = dotenv.parse(fs.readFileSync("envFiles/.env.devcontainer"));
+
+    dotenv.config({ path: envFileName });
+    const content = Object.entries(envDevcontainer)
+    .map(([key, value]) => `${key}=${value}`)
+    .join("\n");
+  fs.writeFileSync(envFileName, content, { encoding: "utf-8" });
+}
+
+export async function setNodeEnvironment(): Promise<void> {
+      try {
+        const { nodeEnv } = await inquirer.prompt([
+          {
+            type: "list",
+            name: "nodeEnv",
+            message: "Select Node environment:",
+            choices: ["development", "production"],
+            default: "development",
+          },
+        ]);
+        process.env.NODE_ENV = nodeEnv;
+      } catch (err) {
+        console.error(err);
+        abort();
+      }
   }
 
 // Get the administratorEmail email
@@ -51,25 +66,24 @@ async function setNodeEnvironment(): Promise<void> {
  * with the email, and handles any errors that occur.
  */
 
-async function administratorEmail(): Promise<void> {
+  export async function administratorEmail(): Promise<void> {
     try {
-      const email = await askForAdministratorEmail();
-      if (process.env.NODE_ENV === "test") {
-        const config = dotenv.parse(fs.readFileSync(".env_test"));
-        config.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = email;
-        updateEnvVariable(config);
-      } else {
-        const config = dotenv.parse(fs.readFileSync(".env"));
-        config.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = email;
-        updateEnvVariable(config);
-      }
+      const { email } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "email",
+          message:
+            "Enter email :",
+        },
+      ]);
+        process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = email;
     } catch (err) {
       console.log(err);
       abort();
     }
   }
 
-async function apiSetup(): Promise<void> {
+export async function apiSetup(): Promise<void> {
   const questions = [
     {
       type: "input",
@@ -207,10 +221,14 @@ async function apiSetup(): Promise<void> {
 
   updateEnvVariable(answers);
 
+  Object.entries(answers).forEach(([key, value]) => {
+    process.env[key] = value;
+  });
+
   console.log("Environment variables updated.");
 }
 
-async function cloudbeaverSetup(): Promise<void> {
+export async function cloudbeaverSetup(): Promise<void> {
   const questions = [
     {
       type: "input",
@@ -252,10 +270,14 @@ async function cloudbeaverSetup(): Promise<void> {
 
   const answers = await inquirer.prompt(questions);
   updateEnvVariable(answers);
+
+  Object.entries(answers).forEach(([key, value]) => {
+    process.env[key] = value;
+  });
   console.log("CloudBeaver environment variables updated.");
 }
 
-async function minioSetup(): Promise<void> {
+export async function minioSetup(): Promise<void> {
   const questions = [
     {
       type: "input",
@@ -303,10 +325,14 @@ async function minioSetup(): Promise<void> {
 
   const answers = await inquirer.prompt(questions);
   updateEnvVariable(answers);
+
+  Object.entries(answers).forEach(([key, value]) => {
+    process.env[key] = value;
+  });
   console.log("Minio environment variables updated.");
 }
 
-async function postgresSetup(): Promise<void> {
+export async function postgresSetup(): Promise<void> {
   const questions = [
     {
       type: "input",
@@ -342,12 +368,25 @@ async function postgresSetup(): Promise<void> {
 
   const answers = await inquirer.prompt(questions);
   updateEnvVariable(answers);
+
+  Object.entries(answers).forEach(([key, value]) => {
+    process.env[key] = value;
+  });
   console.log("Postgres environment variables updated.");
 }
 
 export async function main(): Promise<void> {
+  dotenv.config({ path: envFileName });
   checkEnvFile();
-  const { useDefaultApi } = await inquirer.prompt([
+  backupEnvFile();
+
+  process.on("SIGINT", () => {
+    console.log("\nProcess interrupted! Undoing changes...");
+    restoreEnvFile();
+    process.exit(1);
+  });
+
+  const {useDefaultApi}  = await inquirer.prompt([
     {
       type: "confirm",
       name: "useDefaultApi",
@@ -402,7 +441,6 @@ export async function main(): Promise<void> {
   console.log("Configuration complete.");
 }
 
-// You can call main() to run this configuration setup:
 main().catch((err) => {
-  console.error("Configuration error:", err);
+  restoreEnvFile();
 });
