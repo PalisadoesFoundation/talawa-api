@@ -365,7 +365,7 @@ a:hover {
 }
 
 /* Hide external link svg on Navbar */
-.iconExternalLink_nPIU {
+.navbar__item .iconExternalLink_efnC {
   display: none !important;
 }
 
