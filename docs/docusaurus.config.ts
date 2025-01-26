@@ -57,7 +57,7 @@ const config: Config = {
     // Replace with your project's social card
     image: "img/docusaurus-social-card.jpg",
     navbar: {
-      title: "Talawa API",
+      title: "Talawa",
       logo: {
         alt: "My Site Logo",
         src: "img/logos/logo.png",
@@ -68,7 +68,7 @@ const config: Config = {
           sidebarId: "tutorialSidebar",
           position: "left",
           label: "General",
-          href : "https://docs.talawa.io/",
+          href: "https://docs.talawa.io/",
         },
         {
           label: "Mobile Guide",
