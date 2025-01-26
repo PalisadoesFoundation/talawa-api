@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import {
   LENGTH_VALIDATION_ERROR,
-  PLEASE_PROVIDE_TITLE,
   POST_NOT_FOUND_ERROR,
   USER_NOT_AUTHORIZED_ERROR,
   USER_NOT_AUTHORIZED_TO_PIN,
@@ -188,12 +187,6 @@ export const togglePostPin: MutationResolvers["togglePostPin"] = async (
     return updatedPost as InterfacePost;
   } else {
     // Pin the post if it is not currently pinned
-    if (!args.title) {
-      throw new errors.InputValidationError(
-        requestContext.translate(PLEASE_PROVIDE_TITLE.MESSAGE),
-        PLEASE_PROVIDE_TITLE.CODE,
-      );
-    }
 
     // Validate the title length if provided
     if (args?.title) {
