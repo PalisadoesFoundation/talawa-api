@@ -1050,12 +1050,6 @@ textarea,
   }
 }
 
-/* Hide external link svg on Navbar */
-
-.iconExternalLink_nPIU {
-  display: none !important;
-}
-
 /* Responsiveness for small screens */
 
 @media (max-width: 480px) {
