@@ -121,9 +121,9 @@ html[data-theme='dark'] {
 .menu__link,
 .menu * {
   line-height: 1.5;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   padding-bottom: 0;
-  padding-left: 0.3rem;
+  /* padding-left: 0.3rem; */
   font-weight: 800;
   background: transparent !important;
 }
@@ -152,7 +152,7 @@ html[data-theme='dark'] {
   overflow-wrap: break-word !important;
   width: 100% !important;
   max-width: 100% !important;
-  line-height: 1.2 !important;
+  /* line-height: 1.2 !important; */
   padding-right: 1rem !important;
 }
 
@@ -506,7 +506,7 @@ h1 {
 }
 
 @media (min-width: 997px) {
-  .menu_SIkG {
+  .menu_Guh8 {
     flex-grow: 1;
     padding: 1rem !important;
   }
