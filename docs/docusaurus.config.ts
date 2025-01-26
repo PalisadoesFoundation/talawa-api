@@ -61,14 +61,15 @@ const config: Config = {
       logo: {
         alt: "My Site Logo",
         src: "img/logos/logo.png",
+        href: "https://docs.talawa.io/",
+        target: "_self",
       },
       items: [
         {
-          type: "docSidebar",
-          sidebarId: "tutorialSidebar",
           position: "left",
           label: "General",
-          href: "https://docs.talawa.io/",
+          href: "https://docs.talawa.io/docs",
+          target: "_self",
         },
         {
           label: "Mobile Guide",
