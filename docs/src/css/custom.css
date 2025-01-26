@@ -398,11 +398,6 @@ a:hover {
   color: #86a7ef;
 }
 
-/* Hide external link svg on Navbar */
-.iconExternalLink_nPIU {
-  display: none !important;
-}
-
 [data-theme="dark"] {
   --ifm-color-primary: #1e56e3;
   --ifm-color-primary-light: #29d5b0;
@@ -1096,12 +1091,6 @@ textarea,
     padding: 0;
     max-width: auto;
   }
-}
-
-/* Hide external link svg on Navbar */
-
-.iconExternalLink_nPIU {
-  display: none !important;
 }
 
 /* Responsiveness for small screens */
