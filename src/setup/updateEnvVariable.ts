@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "node:fs";
 
 // Update the value of an environment variable in .env file
 /**
@@ -10,23 +10,23 @@ import fs from "fs";
  */
 
 export function updateEnvVariable(config: {
-  [key: string]: string | number;
+	[key: string]: string | number;
 }): void {
-  if (process.env.NODE_ENV === "test") {
-    const existingContent: string = fs.readFileSync(".env_test", "utf8");
-    let updatedContent: string = existingContent;
-    for (const key in config) {
-      const regex = new RegExp(`^${key}=.*`, "gm");
-      updatedContent = updatedContent.replace(regex, `${key}=${config[key]}`);
-    }
-    fs.writeFileSync(".env_test", updatedContent, "utf8");
-  } else {
-    const existingContent: string = fs.readFileSync(".env", "utf8");
-    let updatedContent: string = existingContent;
-    for (const key in config) {
-      const regex = new RegExp(`^${key}=.*`, "gm");
-      updatedContent = updatedContent.replace(regex, `${key}=${config[key]}`);
-    }
-    fs.writeFileSync(".env", updatedContent, "utf8");
-  }
+	if (process.env.NODE_ENV === "test") {
+		const existingContent: string = fs.readFileSync(".env_test", "utf8");
+		let updatedContent: string = existingContent;
+		for (const key in config) {
+			const regex = new RegExp(`^${key}=.*`, "gm");
+			updatedContent = updatedContent.replace(regex, `${key}=${config[key]}`);
+		}
+		fs.writeFileSync(".env_test", updatedContent, "utf8");
+	} else {
+		const existingContent: string = fs.readFileSync(".env", "utf8");
+		let updatedContent: string = existingContent;
+		for (const key in config) {
+			const regex = new RegExp(`^${key}=.*`, "gm");
+			updatedContent = updatedContent.replace(regex, `${key}=${config[key]}`);
+		}
+		fs.writeFileSync(".env", updatedContent, "utf8");
+	}
 }
