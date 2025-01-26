@@ -214,10 +214,6 @@ html[data-theme='dark'] {
   height: auto;
 }
 
-.navbar__title {
-  font-size: 1.155rem;
-}
-
 .navbar__item {
   font-size: 0.875rem;
 }
@@ -1311,4 +1307,12 @@ textarea,
   width: 100%;
   height: auto;
   object-fit: contain;
+}
+
+/* New */
+
+/* Hide external link svg on Navbar */
+
+.iconExternalLink_zRin {
+  display: none !important;
 }
