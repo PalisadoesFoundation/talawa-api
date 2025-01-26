@@ -12,13 +12,15 @@ function HeaderHero() {
       <TwoColumns
         reverse
         columnOne={
-          <img
-            className="custom-image bounce-animation"
-            src={useBaseUrl("img/image-01.png")}
-            alt="Talawa member management software interface showcase"
-            loading="lazy"
-            srcSet={`${useBaseUrl("img/image-01.png")} 1x, ${useBaseUrl("img/image-01@2x.png")} 2x`}
-          />
+          <div className="image-container">
+            <img
+              className="custom-image bounce-animation"
+              src={useBaseUrl("img/image-01.png")}
+              alt="Talawa member management software interface showcase"
+              loading="lazy"
+              // srcSet={`${useBaseUrl("img/image-01.png")} 1x, ${useBaseUrl("img/image-01@2x.png")} 2x`}
+            />
+          </div>
         }
         columnTwo={
           <>

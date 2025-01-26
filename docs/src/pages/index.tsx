@@ -1,10 +1,7 @@
-// Import the necessary modules
 import React from "react";
 import Head from "@docusaurus/Head";
 import Layout from "@theme/Layout";
 import useHomePageAnimations  from "../hooks/useHomePageAnimations";
-
-// Import the components
 import  HeaderHero  from "../components/layout/HeaderHero";
 import  SecondPanel  from "../components/layout/SecondPanel";
 import  ThirdPanel  from "../components/layout/ThirdPanel";
