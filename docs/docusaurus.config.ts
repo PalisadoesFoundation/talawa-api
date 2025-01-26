@@ -68,7 +68,8 @@ const config: Config = {
           sidebarId: "tutorialSidebar",
           position: "left",
           label: "General",
-          href: "https://docs.talawa.io/",
+          href: "https://docs.talawa.io/docs",
+          target: "_self",
         },
         {
           label: "Mobile Guide",
@@ -85,13 +86,15 @@ const config: Config = {
         {
           label: "API Guide",
           position: "left",
-          href: "/docs",
+          // href: "/docs",
+          // activeBasePath: "docs",
           target: "_self",
+          to: "/docs",
         },
         {
           label: "Demo",
           position: "left",
-          href: "http://admin-demo.talawa.io/",
+          href: "https://www.youtube.com/@PalisadoesOrganization/playlists",
         },
         {
           to: "https://github.com/PalisadoesFoundation",
