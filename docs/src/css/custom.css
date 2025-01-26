@@ -121,21 +121,56 @@ html[data-theme='dark'] {
 .menu__link,
 .menu * {
   line-height: 1.5;
-  font-size: 0.7rem;
-  padding-left: 0.5rem;
+  font-size: 0.65rem;
   padding-bottom: 0;
-  text-transform: uppercase;
-  font-weight: 700;
+  padding-left: 0.3rem;
+  font-weight: 800;
   background: transparent !important;
+}
+
+.menu__link:hover {
+  color: var(--primary-blue-600);
 }
 
 .menu__list {
   border-bottom: 1px solid var(--next-prev-border-color);
 }
 
-.menu__list ul {
+.menu__list-item {
+  padding: 0.5rem 0;
+}
+
+/* .menu__list ul {
   margin-left: 15px;
   margin-right: 15px;
+} */
+
+/* Target specifically the link text */
+.menu__link {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  line-height: 1.2 !important;
+  padding-right: 1rem !important;
+}
+
+/* Target the container of menu items */
+.menu__list-item {
+  width: 95% !important;
+  padding-right: 0px !important;
+}
+
+/* Ensure the menu itself has proper width */
+.menu__list {
+  width: 100% !important;
+}
+
+/* Target the entire menu container */
+.theme-doc-sidebar-menu {
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 /* Markdown styles */
