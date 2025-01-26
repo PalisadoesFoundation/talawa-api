@@ -8,6 +8,7 @@
 sleep 10
 
 # Run your commands
+npm run generate:docs
 npm run format:fix
 # npm run lint:fix
 npm run lint-staged
