@@ -13,8 +13,9 @@ You will need to configure the API to work correctly.
 
 1. The configuration file is called `.env` and must be placed in the root directory of the code.
 1. This table defines some the parameters required for smooth operation
+   1. Steps explaining the usage of the `.env` file will be found in subsequent sections
 
-Steps explaining the usage of the `.env` file will be found in subsequent sections
+- **NOTE:** Visit our [Environment Variables Page](./environment-variables.md) for a comprehensive list of possibilities.
 
 | **Variable**                           | **Use Case**                                                                                                          |
 | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
