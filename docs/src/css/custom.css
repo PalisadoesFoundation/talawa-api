@@ -312,76 +312,6 @@ html[data-theme="dark"] {
   top: 4.5px;
 }
 
-@media (max-width: 996px) {
-  .navbar__item.github-button {
-    display: none;
-  }
-
-  .github-button {
-    margin: var(--ifm-menu-link-padding-vertical)
-      var(--ifm-menu-link-padding-horizontal);
-  }
-
-  .navbar__item.youtube-button {
-    display: none;
-  }
-
-  .youtube-button {
-    margin: var(--ifm-menu-link-padding-vertical)
-      var(--ifm-menu-link-padding-horizontal);
-  }
-
-  .center {
-    text-align: center;
-  }
-}
-
-@media (max-width: 1000px) {
-  .navbar__items--right > .navbar__item:not(:first-of-type) {
-    margin-left: 0.25rem;
-  }
-
-  .github-button {
-    margin-right: 0.5rem;
-  }
-
-  .youtube-button {
-    margin-right: 0.5rem;
-  }
-
-  .hero__title {
-    font-size: 2rem;
-  }
-}
-
-@media (max-width: 1149px) and (min-width: 1050px) {
-  .navbar__items--right > .navbar__item:not(:first-of-type) {
-    margin-left: 1.5rem;
-  }
-
-  .github-button {
-    margin-right: 0.5rem;
-  }
-
-  .youtube-button {
-    margin-right: 0.5rem;
-  }
-}
-
-@media (max-width: 1049px) and (min-width: 1001px) {
-  .navbar__items--right > .navbar__item:not(:first-of-type) {
-    margin-left: 0.5rem;
-  }
-
-  .github-button {
-    margin-right: 0.5rem;
-  }
-
-  .youtube-button {
-    margin-right: 0.5rem;
-  }
-}
-
 h1 {
   font-size: 1.75rem;
   font-weight: 700;
@@ -418,26 +348,8 @@ a:hover {
   border-bottom: 1px solid #2d3956;
 }
 
-.container>div>div:first-child {
+.container > div > div:first-child {
   padding: 1rem 5rem;
-}
-@media (max-width: 768px) {
-  .container>div>div:first-child {
-    padding: 1rem !important;
-  }
-}
-
-@media (min-width: 997px) and (max-width: 1327px) {
-  .container>div>div:first-child {
-    padding-left: 4rem !important;
-    padding-right: 4rem !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .container > div > div:first-child {
-    padding: 1rem !important;
-  }
 }
 
 .breadcrumbs {
@@ -737,12 +649,84 @@ textarea,
 .HeaderHero {
   min-height: 500px;
 }
+/* Hide external link svg on Navbar */
 
-/* Responsiveness for tablets */
+.navbar__item > svg,
+.navbar-sidebar svg {
+  display: none !important;
+}
+/* Small Screen (max-width: 768px) */
+@media (max-width: 768px) {
+  .container > div > div:first-child {
+    padding: 1rem !important;
+  }
 
+  .center {
+    text-align: center;
+  }
+}
+
+/* Medium Screens (max-width: 996px) */
+@media (max-width: 996px) {
+  .navbar__item.github-button,
+  .navbar__item.youtube-button {
+    display: none;
+  }
+
+  .github-button,
+  .youtube-button {
+    margin: var(--ifm-menu-link-padding-vertical)
+      var(--ifm-menu-link-padding-horizontal);
+  }
+
+  .center {
+    text-align: center;
+  }
+}
+
+/* Small to Medium Screens (max-width: 1000px) */
+@media (max-width: 1000px) {
+  .navbar__items--right > .navbar__item:not(:first-of-type) {
+    margin-left: 0.25rem;
+  }
+
+  .github-button,
+  .youtube-button {
+    margin-right: 0.5rem;
+  }
+
+  .hero__title {
+    font-size: 2rem;
+  }
+}
+
+/* Large to Medium Screens (max-width: 1049px) and (min-width: 1001px) */
+@media (max-width: 1049px) and (min-width: 1001px) {
+  .navbar__items--right > .navbar__item:not(:first-of-type) {
+    margin-left: 0.5rem;
+  }
+
+  .github-button,
+  .youtube-button {
+    margin-right: 0.5rem;
+  }
+}
+
+/* Medium to Large Screens (max-width: 1149px) and (min-width: 1050px) */
+@media (max-width: 1149px) and (min-width: 1050px) {
+  .navbar__items--right > .navbar__item:not(:first-of-type) {
+    margin-left: 1.5rem;
+  }
+
+  .github-button,
+  .youtube-button {
+    margin-right: 0.5rem;
+  }
+}
+
+/* Tablet Responsiveness (min-width: 481px) and (max-width: 960px) */
 @media only screen and (min-width: 481px) and (max-width: 960px) {
   .ActionButton {
-    /* Section 1 Hero */
     max-width: 100%;
     width: 100%;
     display: block;
@@ -763,20 +747,18 @@ textarea,
   }
 }
 
-/* Responsiveness for extra wide screens */
-
+/* Extra Wide Screens (min-width: 1200px) */
 @media only screen and (min-width: 1200px) {
-  /* Section 1 Hero */
-
   .HeaderHero {
     height: 50vh;
     overflow: hidden;
   }
 }
 
-/* Hide external link svg on Navbar */
-
-.navbar__item > svg,
-.navbar-sidebar svg {
-  display: none !important;
+/* Responsiveness for Medium to Extra Large Screens (min-width: 997px) and (max-width: 1327px) */
+@media (min-width: 997px) and (max-width: 1327px) {
+  .container > div > div:first-child {
+    padding-left: 4rem !important;
+    padding-right: 4rem !important;
+  }
 }
