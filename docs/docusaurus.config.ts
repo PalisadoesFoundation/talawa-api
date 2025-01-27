@@ -84,10 +84,10 @@ const config: Config = {
           target: "_self",
         },
         {
+          to: "/docs",
+          activeBasePath: "docs",
           label: "API Guide",
           position: "left",
-          href: "/docs",
-          target: "_self",
         },
         {
           label: "Demo",
