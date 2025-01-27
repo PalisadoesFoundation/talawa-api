@@ -1247,7 +1247,6 @@ textarea,
 
 .HeaderHero {
   height: auto;
-  padding-top: 5rem !important;
 }
 
 @media (min-width: 1440px) {
