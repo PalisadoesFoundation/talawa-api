@@ -4,11 +4,8 @@
 
 # Change to the current directory
 
-# Wait for server to be ready (adjust sleep time as needed)
-sleep 10
-
 # Run your commands
-npm run generate:docs
+npm run generate-docs
 npm run format:fix
 # npm run lint:fix
 npm run lint-staged

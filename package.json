@@ -25,7 +25,7 @@
     "prepare": "husky",
     "generate:graphql-markdown": "graphql-markdown http://localhost:4000/graphql > docs/docs/Schema.md",
     "generate:graphql-schema": "get-graphql-schema http://localhost:4000/graphql --json > docs/github-actions/schema.json",
-    "generate:docs": "node scripts/schema-generator.mjs",
+    "generate-docs": "typedoc",
     "generate:ssl-private-key": "openssl req -x509 -nodes -days 1 -newkey rsa:2048 -keyout ./certs/key.pem -out ./certs/cert.pem -subj '/C=US/ST=State/L=City/O=Organization/CN=localhost'",
     "import:sample-data": "tsx ./src/utilities/loadSampleData.ts",
     "import:sample-data:prod": "node ./build/utilities/loadSampleData.js",
@@ -152,6 +152,7 @@
     "rimraf": "^6.0.1",
     "supertest": "^7.0.0",
     "tsx": "^4.19.1",
+    "typedoc": "^0.27.6",
     "typescript": "^5.6.2",
     "vitest": "^2.1.3"
   },
