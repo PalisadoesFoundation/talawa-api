@@ -140,11 +140,6 @@ html[data-theme='dark'] {
   padding: 0.5rem 0;
 }
 
-/* .menu__list ul {
-  margin-left: 15px;
-  margin-right: 15px;
-} */
-
 /* Target specifically the link text */
 .menu__link {
   white-space: normal !important;
@@ -501,7 +496,7 @@ h1 {
 }
 
 @media (min-width: 997px) {
-  .menu_Guh8 {
+  .menu {
     flex-grow: 1;
     padding: 1rem !important;
   }
@@ -1302,6 +1297,6 @@ textarea,
 
 /* Hide external link svg on Navbar */
 
-.iconExternalLink_zRin {
+.navbar__item > svg {
   display: none !important;
 }
