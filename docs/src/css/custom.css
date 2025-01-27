@@ -418,9 +418,20 @@ a:hover {
   border-bottom: 1px solid #2d3956;
 }
 
-.container > div > div:first-child {
-  padding-left: 4rem !important;
-  padding-right: 4rem !important;
+.container>div>div:first-child {
+  padding: 1rem 5rem;
+}
+@media (max-width: 768px) {
+  .container>div>div:first-child {
+    padding: 1rem !important;
+  }
+}
+
+@media (min-width: 997px) and (max-width: 1327px) {
+  .container>div>div:first-child {
+    padding-left: 4rem !important;
+    padding-right: 4rem !important;
+  }
 }
 
 @media (max-width: 768px) {
