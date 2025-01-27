@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+/* Root Variables */
 :root {
   /* Brand colors */
   --brand: #febc59;
@@ -36,12 +37,13 @@
   --ifm-link-hover-decoration: none;
 }
 
+/* Navbar */
 .navbar__brand {
   color: var(--brand-color);
   font-size: 20px;
 }
 
-/* Custom button */
+/* Custom Button */
 .custom-button {
   margin-right: 10px;
 }
@@ -53,7 +55,6 @@
 }
 
 /* Header Hero */
-
 .HeaderHero {
   padding-top: 20px;
   height: 70vh;
@@ -94,18 +95,7 @@
   margin-top: 40px;
 }
 
-@media only screen and (max-width: 760px) {
-  .HeaderHero .title {
-    font-size: 60px;
-  }
-
-  .HeaderHero .tagline {
-    font-size: 30px;
-  }
-}
-
-/* ActionButton */
-
+/* Action Button */
 .ActionButton {
   padding: 0.75rem 1.25rem;
   text-align: center;
@@ -144,6 +134,40 @@
   margin-left: 5px;
 }
 
+/* Homepage */
+.HomePage {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Section */
+.Section {
+  width: 100%;
+  padding-top: 50px;
+  padding: 0 1.25rem;
+  overflow-x: hidden;
+  margin-bottom: 5rem;
+}
+
+.Section.tint {
+  background-color: var(--ifm-hover-overlay);
+}
+
+.Section.dark {
+  background-color: var(--dark);
+}
+
+/* Media Queries */
+@media only screen and (max-width: 760px) {
+  .HeaderHero .title {
+    font-size: 60px;
+  }
+
+  .HeaderHero .tagline {
+    font-size: 30px;
+  }
+}
+
 @media only screen and (max-width: 480px) {
   .ActionButton {
     max-width: 100%;
@@ -163,32 +187,9 @@
   }
 }
 
-.HomePage {
-  width: 100%;
-  overflow-x: hidden;
-}
-
-/* Section */
-
-.Section {
-  width: 100%;
-  padding-top: 50px;
-  padding: 0 1.25rem;
-  overflow-x: hidden;
-  margin-bottom: 5rem;
-}
-
 @media only screen and (max-width: 960px) {
   .Section {
     margin-bottom: 2rem;
     padding-top: 1rem;
   }
-}
-
-.Section.tint {
-  background-color: var(--ifm-hover-overlay);
-}
-
-.Section.dark {
-  background-color: var(--dark);
 }
