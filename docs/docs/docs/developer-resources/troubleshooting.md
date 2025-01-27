@@ -2,7 +2,7 @@
 id: troubleshooting
 title: Operation & Troubleshooting
 slug: /developer-resources/troubleshooting
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 ## Operation
