@@ -404,6 +404,11 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+"""
+A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
+"""
+scalar EmailAddress
+
 type Event {
   """
   GraphQL connection to traverse through the agenda folders that contain agenda items constituting a part of the agenda for the event.
@@ -604,6 +609,195 @@ type FundCampaignsConnection {
 type FundCampaignsConnectionEdge {
   cursor: String!
   node: FundCampaign
+}
+
+"""
+Possible variants of the two-letter language code defined in ISO 639-1, part of the ISO 639 standard published by the International Organization for Standardization (ISO), to represent natural languages.
+"""
+enum Iso639Set1LanguageCode {
+  aa
+  ab
+  ae
+  af
+  ak
+  am
+  an
+  ar
+  as
+  av
+  ay
+  az
+  ba
+  be
+  bg
+  bi
+  bm
+  bn
+  bo
+  br
+  bs
+  ca
+  ce
+  ch
+  co
+  cr
+  cs
+  cu
+  cv
+  cy
+  da
+  de
+  dv
+  dz
+  ee
+  el
+  en
+  eo
+  es
+  et
+  eu
+  fa
+  ff
+  fi
+  fj
+  fo
+  fr
+  fy
+  ga
+  gd
+  gl
+  gn
+  gu
+  gv
+  ha
+  he
+  hi
+  ho
+  hr
+  ht
+  hu
+  hy
+  hz
+  ia
+  id
+  ie
+  ig
+  ii
+  ik
+  io
+  is
+  it
+  iu
+  ja
+  jv
+  ka
+  kg
+  ki
+  kj
+  kk
+  kl
+  km
+  kn
+  ko
+  kr
+  ks
+  ku
+  kv
+  kw
+  ky
+  la
+  lb
+  lg
+  li
+  ln
+  lo
+  lt
+  lu
+  lv
+  mg
+  mh
+  mi
+  mk
+  ml
+  mn
+  mr
+  ms
+  mt
+  my
+  na
+  nb
+  nd
+  ne
+  ng
+  nl
+  nn
+  no
+  nr
+  nv
+  ny
+  oc
+  oj
+  om
+  or
+  os
+  pa
+  pi
+  pl
+  ps
+  pt
+  qu
+  rm
+  rn
+  ro
+  ru
+  rw
+  sa
+  sc
+  sd
+  se
+  sg
+  si
+  sk
+  sl
+  sm
+  sn
+  so
+  sq
+  sr
+  ss
+  st
+  su
+  sv
+  sw
+  ta
+  te
+  tg
+  th
+  ti
+  tk
+  tl
+  tn
+  to
+  tr
+  ts
+  tt
+  tw
+  ty
+  ug
+  uk
+  ur
+  uz
+  ve
+  vi
+  vo
+  wa
+  wo
+  xh
+  yi
+  yo
+  za
+  zh
+  zu
 }
 
 """
@@ -1558,7 +1752,7 @@ input MutationCreateUserInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: String!
+  emailAddress: EmailAddress!
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -1582,6 +1776,9 @@ input MutationCreateUserInput {
 
   """The sex assigned to the user at their birth."""
   natalSex: UserNatalSex
+
+  """Language code of the user's preferred natural language."""
+  naturalLanguageCode: Iso639Set1LanguageCode
 
   """Password of the user to sign in to the application."""
   password: String!
@@ -1790,7 +1987,7 @@ input MutationSignUpInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: String!
+  emailAddress: EmailAddress!
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -1811,6 +2008,9 @@ input MutationSignUpInput {
 
   """The sex assigned to the user at their birth."""
   natalSex: UserNatalSex
+
+  """Language code of the user's preferred natural language."""
+  naturalLanguageCode: Iso639Set1LanguageCode
 
   """Password of the user to sign in to the application."""
   password: String!
@@ -2007,7 +2207,7 @@ input MutationUpdateCurrentUserInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: String
+  emailAddress: EmailAddress
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -2028,6 +2228,9 @@ input MutationUpdateCurrentUserInput {
 
   """The sex assigned to the user at their birth."""
   natalSex: UserNatalSex
+
+  """Language code of the user's preferred natural language."""
+  naturalLanguageCode: Iso639Set1LanguageCode
 
   """Password of the user to sign in to the application."""
   password: String
@@ -2221,7 +2424,7 @@ input MutationUpdateUserInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: String
+  emailAddress: EmailAddress
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -2248,6 +2451,9 @@ input MutationUpdateUserInput {
 
   """The sex assigned to the user at their birth."""
   natalSex: UserNatalSex
+
+  """Language code of the user's preferred natural language."""
+  naturalLanguageCode: Iso639Set1LanguageCode
 
   """Password of the user to sign in to the application."""
   password: String
@@ -2764,7 +2970,7 @@ input QueryPostInput {
 """"""
 input QuerySignInInput {
   """Email address of the user."""
-  emailAddress: String!
+  emailAddress: EmailAddress!
 
   """Password of the user to sign in to talawa."""
   password: String!
@@ -2948,7 +3154,7 @@ type User {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: String
+  emailAddress: EmailAddress
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -2975,6 +3181,9 @@ type User {
 
   """The sex assigned to the user at their birth."""
   natalSex: UserNatalSex
+
+  """Language code of the user's preferred natural language."""
+  naturalLanguageCode: Iso639Set1LanguageCode
 
   """
   GraphQL connection to traverse through the organizations the user is a member of.
