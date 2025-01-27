@@ -58,7 +58,9 @@
   padding-top: 20px;
   margin-top: 4rem;
   margin-bottom: 0;
+  min-height: 70vh;
 }
+
 
 .HeaderHero .TwoColumns .column {
   max-width: initial;
@@ -512,7 +514,7 @@
 .Section {
   width: 100%;
   padding-top: 50px;
-  padding: 50px;
+  padding: 0 1.25rem;
   overflow-x: hidden;
   margin-bottom: 5rem;
 }

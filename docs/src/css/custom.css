@@ -413,7 +413,7 @@ a:hover {
 
 
 .container>div>div:first-child {
-  padding: 1rem 5rem;
+  padding: 1rem !important;
 }
 
 
@@ -1296,6 +1296,6 @@ textarea,
 
 /* Hide external link svg on Navbar */
 
-.navbar__item > svg {
+.navbar__item > svg, .navbar-sidebar svg {
   display: none !important;
 }
