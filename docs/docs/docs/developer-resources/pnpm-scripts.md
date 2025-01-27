@@ -11,13 +11,13 @@ The scripts listed below are used with pnpm for many different workflows of tala
 
 This command is used to apply the sql migration files present in the `drizzle_migrations` directory to the postgres database being used by talawa api.
 
-- More information can be found at [this](https://orm.drizzle.team/kit-docs/commands#apply-migrations) link.
+- More information can be found at [this](https://orm.drizzle.team/docs/kit-overview) link.
 
 ## pnpm apply_drizzle_test_migrations
 
 This command is used to apply the sql migration files present in the `drizzle_migrations` directory to the postgres test database being used by talawa api.
 
-- More information can be found at [this](https://orm.drizzle.team/kit-docs/commands#apply-migrations) link.
+- More information can be found at [this](https://orm.drizzle.team/docs/kit-overview) link.
 
 ## pnpm build_production
 
@@ -35,7 +35,7 @@ This command is used to check the linting and formatting issues in the codebase.
 
 This command is used to check for inconsistencies and collisions in the sql migration files in the `drizzle_migrations` directory that could arise because of many contributers contributing to the project.
 
-- More information can be found at [this](https://orm.drizzle.team/kit-docs/commands#check) link.
+- More information can be found at [this](https://orm.drizzle.team/docs/kit-overview) link.
 
 ## pnpm check_type_errors
 
@@ -53,7 +53,7 @@ More information can be found [this](https://evilmartians.github.io/lefthook/usa
 
 This command is used to delete the existing sql migration files in the `drizzle_migrations` directory as their manual deletion would break drizzle-kit.
 
-- More information can be found at [this](https://orm.drizzle.team/kit-docs/commands#drop-migration) link.
+- More information can be found at [this](https://orm.drizzle.team/docs/kit-overview) link.
 
 ## pnpm enable_git_hooks
 
@@ -71,7 +71,7 @@ This command is used to fix as many linting and formatting issues in the codebas
 
 This command is used to generate the sql migration files in the `drizzle_migrations` directory that reflect the latest state of the drizzle schema in the codebase.
 
-- More information can be found at [this](https://orm.drizzle.team/kit-docs/commands#generate-migrations) link.
+- More information can be found at [this](https://orm.drizzle.team/docs/kit-overview) link.
 
 ## pnpm generate_graphql_sdl_file
 
@@ -90,13 +90,13 @@ More information can be found at these links:
 
 This command is used to push the changes in the drizzle-orm schema in the codebase to the postgres database for rapid local development(prototyping) without having to handle generating and applying the drizzle migration files after each little change.
 
-- More information can be found at [this](https://orm.drizzle.team/kit-docs/commands#apply-migrations) link.
+- More information can be found at [this](https://orm.drizzle.team/docs/kit-overview) link.
 
 ## pnpm push_drizzle_test_schema
 
 This command is used to push the changes in the drizzle-orm schema in the codebase to the postgres test database for rapid local development(prototyping) without having to handle generating and applying the drizzle migration files after each little change.
 
-- More information can be found at [this](https://orm.drizzle.team/kit-docs/commands#apply-migrations) link.
+- More information can be found at [this](https://orm.drizzle.team/docs/kit-overview) link.
 
 ## pnpm run_tests
 
@@ -134,4 +134,4 @@ More information at these links:
 
 This command is used to keep the drizzle metadata in the `drizzle_migrations/_meta` directory up to date with the latest changes in drizzle-orm and drizzle-kit.
 
-- More information can be found at [this](https://orm.drizzle.team/kit-docs/commands#maintain-stale-metadata) link.
+- More information can be found at [this](https://orm.drizzle.team/docs/kit-overview) link.

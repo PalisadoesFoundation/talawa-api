@@ -21,16 +21,14 @@ Development containers, or devcontainers, are Docker containers that are specifi
 
 The Development Container Specification seeks to find ways to enrich existing formats with common development specific settings, tools, and configuration while still providing a simplified, un-orchestrated single container option – so that they can be used as coding environments or for continuous integration and testing. Beyond the specification's core metadata, the spec also enables developers to quickly share and reuse container setup steps through Features and Templates.
 
-- For more information visit https://containers.dev/
+- For more information visit [containers.dev](https://containers.dev/)
 
 Regular Docker has core features are contrary to using it as a developer environment.
 
 1. Each container has an isolated filesystem, so the container can't normally see code on the host system, and the host system can't see tools that are only installed in the container.
 1. A container is based on an immutable image: you can't normally change the code a container is running without rebuilding the image and recreating the container. This is a familiar workflow for developers using compiled languages (C++, Java, Go, Rust), where even without Docker you still need to recompile and restart the application after every change.
 
-Visit this link for further information on the differences between Containers and Dev Containers:
-
-- https://stackoverflow.com/questions/75652065/whats-the-difference-between-docker-compose-and-dev-containers
+Visit [this link](https://stackoverflow.com/questions/75652065/whats-the-difference-between-docker-compose-and-dev-containers) for further information on the differences between Containers and Dev Containers.
 
 ##### Talawa API Dev Containers
 
