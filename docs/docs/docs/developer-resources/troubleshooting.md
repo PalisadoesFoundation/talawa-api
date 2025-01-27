@@ -11,7 +11,7 @@ This section covers how Talawa API operates
 
 ### Key Concepts
 
-Before you begin, here are some important summaries of the technologies ussed.
+Before you begin, here are some important summaries of the technologies used.
 
 #### Docker Development Containers (devcontainers)
 
@@ -23,10 +23,10 @@ The Development Container Specification seeks to find ways to enrich existing fo
 
 - For more information visit [containers.dev](https://containers.dev/)
 
-Regular Docker has core features are contrary to using it as a developer environment.
+Regular Docker's core features are contrary to using it as a developer environment.
 
 1. Each container has an isolated filesystem, so the container can't normally see code on the host system, and the host system can't see tools that are only installed in the container.
-1. A container is based on an immutable image: you can't normally change the code a container is running without rebuilding the image and recreating the container. This is a familiar workflow for developers using compiled languages (C++, Java, Go, Rust), where even without Docker you still need to recompile and restart the application after every change.
+2. A container is based on an immutable image: you can't normally change the code a container is running without rebuilding the image and recreating the container. This is a familiar workflow for developers using compiled languages (C++, Java, Go, Rust), where even without Docker you still need to recompile and restart the application after every change.
 
 Visit [this link](https://stackoverflow.com/questions/75652065/whats-the-difference-between-docker-compose-and-dev-containers) for further information on the differences between Containers and Dev Containers.
 
@@ -41,7 +41,7 @@ In Talawa API, the API devcontainer operates like a lightweight virtual machine 
 1. `cloudbeaver`
 1. `caddy`
 
-The Talawa API git repository is mounted into it. After the the Dev Container starts, the `node.js` development server runs on a port mapped to a port on your host system.
+The Talawa API git repository is mounted on it. After the Dev Container starts, the `node.js` development server runs on a port mapped to a port on your host system.
 
 The API runs by default when the devcontainer starts, but only after the these compose services have already started.
 
