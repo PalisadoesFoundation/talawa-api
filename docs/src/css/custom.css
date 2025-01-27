@@ -612,10 +612,6 @@ html[data-theme="dark"] .header-youtube-link:before {
   background: linear-gradient(90deg, #ff3600 30%, #ff8100 78%);
 }
 
-.Section {
-  margin-bottom: 0 !important;
-}
-
 .Heading {
   font-size: 1.5rem;
   font-weight: 700;
@@ -648,6 +644,8 @@ textarea,
 
 .HeaderHero {
   min-height: 500px;
+  max-height: 800px;
+  height: 70vh;
 }
 /* Hide external link svg on Navbar */
 

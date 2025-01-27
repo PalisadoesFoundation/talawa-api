@@ -57,12 +57,11 @@
 /* Header Hero */
 .HeaderHero {
   padding-top: 20px;
-  height: 70vh;
   display: flex;
   flex-direction: column;
   text-align: center;
   align-items: center;
-  margin-top: 15vh;
+  margin-top: clamp(2rem, 15vh, 8rem);
 }
 
 .HeaderHero .title {
