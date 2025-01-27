@@ -14,7 +14,7 @@ Enumeration for weekdays.
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:28](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/RecurrenceRule.ts#L28)
+[src/models/RecurrenceRule.ts:28](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L28)
 
 ***
 
@@ -24,7 +24,7 @@ Enumeration for weekdays.
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:24](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/RecurrenceRule.ts#L24)
+[src/models/RecurrenceRule.ts:24](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L24)
 
 ***
 
@@ -34,7 +34,7 @@ Enumeration for weekdays.
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:29](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/RecurrenceRule.ts#L29)
+[src/models/RecurrenceRule.ts:29](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L29)
 
 ***
 
@@ -44,7 +44,7 @@ Enumeration for weekdays.
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:23](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/RecurrenceRule.ts#L23)
+[src/models/RecurrenceRule.ts:23](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L23)
 
 ***
 
@@ -54,7 +54,7 @@ Enumeration for weekdays.
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:27](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/RecurrenceRule.ts#L27)
+[src/models/RecurrenceRule.ts:27](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L27)
 
 ***
 
@@ -64,7 +64,7 @@ Enumeration for weekdays.
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:25](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/RecurrenceRule.ts#L25)
+[src/models/RecurrenceRule.ts:25](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L25)
 
 ***
 
@@ -74,4 +74,4 @@ Enumeration for weekdays.
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:26](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/RecurrenceRule.ts#L26)
+[src/models/RecurrenceRule.ts:26](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L26)

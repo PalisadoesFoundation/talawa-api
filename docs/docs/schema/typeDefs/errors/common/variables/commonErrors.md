@@ -10,4 +10,4 @@ GraphQL schema definition for common error types.
 
 ## Defined in
 
-[src/typeDefs/errors/common.ts:6](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/typeDefs/errors/common.ts#L6)
+[src/typeDefs/errors/common.ts:6](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/typeDefs/errors/common.ts#L6)

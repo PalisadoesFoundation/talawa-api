@@ -12,7 +12,7 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:13](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L13)
+[src/models/AppUserProfile.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L13)
 
 ***
 
@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:15](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L15)
+[src/models/AppUserProfile.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L15)
 
 ***
 
@@ -32,7 +32,7 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:16](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L16)
+[src/models/AppUserProfile.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L16)
 
 ***
 
@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:21](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L21)
+[src/models/AppUserProfile.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L21)
 
 ***
 
@@ -52,7 +52,7 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:17](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L17)
+[src/models/AppUserProfile.ts:17](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L17)
 
 ***
 
@@ -62,7 +62,7 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:18](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L18)
+[src/models/AppUserProfile.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L18)
 
 ***
 
@@ -72,7 +72,7 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:19](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L19)
+[src/models/AppUserProfile.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L19)
 
 ***
 
@@ -82,7 +82,7 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:25](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L25)
+[src/models/AppUserProfile.ts:25](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L25)
 
 ***
 
@@ -92,7 +92,7 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:20](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L20)
+[src/models/AppUserProfile.ts:20](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L20)
 
 ***
 
@@ -102,7 +102,7 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:22](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L22)
+[src/models/AppUserProfile.ts:22](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L22)
 
 ***
 
@@ -112,7 +112,7 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:23](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L23)
+[src/models/AppUserProfile.ts:23](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L23)
 
 ***
 
@@ -122,7 +122,7 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:24](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L24)
+[src/models/AppUserProfile.ts:24](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L24)
 
 ***
 
@@ -132,4 +132,4 @@
 
 #### Defined in
 
-[src/models/AppUserProfile.ts:14](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AppUserProfile.ts#L14)
+[src/models/AppUserProfile.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AppUserProfile.ts#L14)

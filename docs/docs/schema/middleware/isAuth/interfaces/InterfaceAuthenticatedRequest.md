@@ -16,7 +16,7 @@
 
 #### Defined in
 
-[src/middleware/isAuth.ts:83](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/middleware/isAuth.ts#L83)
+[src/middleware/isAuth.ts:83](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/middleware/isAuth.ts#L83)
 
 ***
 
@@ -26,7 +26,7 @@
 
 #### Defined in
 
-[src/middleware/isAuth.ts:85](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/middleware/isAuth.ts#L85)
+[src/middleware/isAuth.ts:85](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/middleware/isAuth.ts#L85)
 
 ***
 
@@ -36,4 +36,4 @@
 
 #### Defined in
 
-[src/middleware/isAuth.ts:84](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/middleware/isAuth.ts#L84)
+[src/middleware/isAuth.ts:84](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/middleware/isAuth.ts#L84)

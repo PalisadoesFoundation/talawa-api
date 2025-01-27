@@ -14,7 +14,7 @@ Represents a MongoDB document for Plugin in the database.
 
 #### Defined in
 
-[src/models/Plugin.ts:11](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Plugin.ts#L11)
+[src/models/Plugin.ts:11](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Plugin.ts#L11)
 
 ***
 
@@ -24,7 +24,7 @@ Represents a MongoDB document for Plugin in the database.
 
 #### Defined in
 
-[src/models/Plugin.ts:13](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Plugin.ts#L13)
+[src/models/Plugin.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Plugin.ts#L13)
 
 ***
 
@@ -34,7 +34,7 @@ Represents a MongoDB document for Plugin in the database.
 
 #### Defined in
 
-[src/models/Plugin.ts:14](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Plugin.ts#L14)
+[src/models/Plugin.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Plugin.ts#L14)
 
 ***
 
@@ -44,7 +44,7 @@ Represents a MongoDB document for Plugin in the database.
 
 #### Defined in
 
-[src/models/Plugin.ts:12](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Plugin.ts#L12)
+[src/models/Plugin.ts:12](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Plugin.ts#L12)
 
 ***
 
@@ -54,4 +54,4 @@ Represents a MongoDB document for Plugin in the database.
 
 #### Defined in
 
-[src/models/Plugin.ts:15](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Plugin.ts#L15)
+[src/models/Plugin.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Plugin.ts#L15)

@@ -14,7 +14,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:18](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L18)
+[src/models/User.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L18)
 
 ***
 
@@ -56,7 +56,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:21](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L21)
+[src/models/User.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L21)
 
 ***
 
@@ -66,7 +66,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:20](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L20)
+[src/models/User.ts:20](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L20)
 
 ***
 
@@ -76,7 +76,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:32](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L32)
+[src/models/User.ts:32](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L32)
 
 ***
 
@@ -86,7 +86,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:33](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L33)
+[src/models/User.ts:33](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L33)
 
 ***
 
@@ -96,7 +96,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:35](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L35)
+[src/models/User.ts:35](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L35)
 
 ***
 
@@ -106,7 +106,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:36](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L36)
+[src/models/User.ts:36](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L36)
 
 ***
 
@@ -116,7 +116,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:37](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L37)
+[src/models/User.ts:37](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L37)
 
 ***
 
@@ -126,7 +126,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:53](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L53)
+[src/models/User.ts:53](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L53)
 
 ***
 
@@ -136,7 +136,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:39](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L39)
+[src/models/User.ts:39](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L39)
 
 ***
 
@@ -146,7 +146,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:40](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L40)
+[src/models/User.ts:40](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L40)
 
 ***
 
@@ -156,7 +156,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:19](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L19)
+[src/models/User.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L19)
 
 ***
 
@@ -166,7 +166,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:41](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L41)
+[src/models/User.ts:41](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L41)
 
 ***
 
@@ -176,7 +176,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:42](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L42)
+[src/models/User.ts:42](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L42)
 
 ***
 
@@ -186,7 +186,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:43](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L43)
+[src/models/User.ts:43](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L43)
 
 ***
 
@@ -196,7 +196,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:44](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L44)
+[src/models/User.ts:44](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L44)
 
 ***
 
@@ -206,7 +206,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:45](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L45)
+[src/models/User.ts:45](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L45)
 
 ***
 
@@ -216,7 +216,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:46](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L46)
+[src/models/User.ts:46](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L46)
 
 ***
 
@@ -226,7 +226,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:47](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L47)
+[src/models/User.ts:47](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L47)
 
 ***
 
@@ -248,7 +248,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:48](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L48)
+[src/models/User.ts:48](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L48)
 
 ***
 
@@ -258,7 +258,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:55](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L55)
+[src/models/User.ts:55](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L55)
 
 ***
 
@@ -268,7 +268,7 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:56](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L56)
+[src/models/User.ts:56](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L56)
 
 ***
 
@@ -278,4 +278,4 @@ Represents a MongoDB document for User in the database.
 
 #### Defined in
 
-[src/models/User.ts:58](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/User.ts#L58)
+[src/models/User.ts:58](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/User.ts#L58)

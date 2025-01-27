@@ -38,4 +38,4 @@ The updated tag with its new name.
 
 ## Defined in
 
-[src/resolvers/Mutation/updateUserTag.ts:29](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/resolvers/Mutation/updateUserTag.ts#L29)
+[src/resolvers/Mutation/updateUserTag.ts:29](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/updateUserTag.ts#L29)

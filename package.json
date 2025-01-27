@@ -108,6 +108,8 @@
     "zod-error": "^1.5.0"
   },
   "devDependencies": {
+    "@docusaurus/core": "^3.7.0",
+    "@docusaurus/preset-classic": "^3.7.0",
     "@eslint/compat": "^1.1.1",
     "@eslint/eslintrc": "^2.1.4",
     "@eslint/js": "^8.57.0",

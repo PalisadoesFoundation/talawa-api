@@ -34,4 +34,4 @@ A list of all agenda items stored in the database.
 
 ## Defined in
 
-[src/resolvers/Query/getAllAgendaItems.ts:17](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/resolvers/Query/getAllAgendaItems.ts#L17)
+[src/resolvers/Query/getAllAgendaItems.ts:17](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Query/getAllAgendaItems.ts#L17)

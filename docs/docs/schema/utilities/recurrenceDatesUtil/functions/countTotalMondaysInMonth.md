@@ -24,4 +24,4 @@ total number of mondays.
 
 ## Defined in
 
-[src/utilities/recurrenceDatesUtil.ts:40](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/utilities/recurrenceDatesUtil.ts#L40)
+[src/utilities/recurrenceDatesUtil.ts:40](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/utilities/recurrenceDatesUtil.ts#L40)

@@ -41,4 +41,4 @@ A promise that resolves to the agenda item documents found in the database. Thes
 
 ## Defined in
 
-[src/resolvers/AgendaSection/items.ts:17](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/resolvers/AgendaSection/items.ts#L17)
+[src/resolvers/AgendaSection/items.ts:17](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/AgendaSection/items.ts#L17)

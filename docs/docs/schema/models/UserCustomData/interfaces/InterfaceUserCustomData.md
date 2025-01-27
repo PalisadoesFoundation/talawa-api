@@ -14,7 +14,7 @@ Interface representing a document for custom field in the database (MongoDB).
 
 #### Defined in
 
-[src/models/UserCustomData.ts:10](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/UserCustomData.ts#L10)
+[src/models/UserCustomData.ts:10](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/UserCustomData.ts#L10)
 
 ***
 
@@ -24,7 +24,7 @@ Interface representing a document for custom field in the database (MongoDB).
 
 #### Defined in
 
-[src/models/UserCustomData.ts:11](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/UserCustomData.ts#L11)
+[src/models/UserCustomData.ts:11](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/UserCustomData.ts#L11)
 
 ***
 
@@ -34,7 +34,7 @@ Interface representing a document for custom field in the database (MongoDB).
 
 #### Defined in
 
-[src/models/UserCustomData.ts:14](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/UserCustomData.ts#L14)
+[src/models/UserCustomData.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/UserCustomData.ts#L14)
 
 ***
 
@@ -44,4 +44,4 @@ Interface representing a document for custom field in the database (MongoDB).
 
 #### Defined in
 
-[src/models/UserCustomData.ts:13](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/UserCustomData.ts#L13)
+[src/models/UserCustomData.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/UserCustomData.ts#L13)

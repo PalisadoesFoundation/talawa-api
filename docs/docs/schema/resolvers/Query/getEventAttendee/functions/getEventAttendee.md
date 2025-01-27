@@ -40,4 +40,4 @@ The attendee record for the specified event and user, or `null` if no record is 
 
 ## Defined in
 
-[src/resolvers/Query/getEventAttendee.ts:19](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/resolvers/Query/getEventAttendee.ts#L19)
+[src/resolvers/Query/getEventAttendee.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Query/getEventAttendee.ts#L19)

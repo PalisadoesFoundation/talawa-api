@@ -14,7 +14,7 @@ Represents a document for a chat message in the MongoDB database.
 
 #### Defined in
 
-[src/models/ChatMessage.ts:13](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/ChatMessage.ts#L13)
+[src/models/ChatMessage.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/ChatMessage.ts#L13)
 
 ***
 
@@ -24,7 +24,7 @@ Represents a document for a chat message in the MongoDB database.
 
 #### Defined in
 
-[src/models/ChatMessage.ts:14](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/ChatMessage.ts#L14)
+[src/models/ChatMessage.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/ChatMessage.ts#L14)
 
 ***
 
@@ -34,7 +34,7 @@ Represents a document for a chat message in the MongoDB database.
 
 #### Defined in
 
-[src/models/ChatMessage.ts:21](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/ChatMessage.ts#L21)
+[src/models/ChatMessage.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/ChatMessage.ts#L21)
 
 ***
 
@@ -44,7 +44,7 @@ Represents a document for a chat message in the MongoDB database.
 
 #### Defined in
 
-[src/models/ChatMessage.ts:20](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/ChatMessage.ts#L20)
+[src/models/ChatMessage.ts:20](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/ChatMessage.ts#L20)
 
 ***
 
@@ -54,7 +54,7 @@ Represents a document for a chat message in the MongoDB database.
 
 #### Defined in
 
-[src/models/ChatMessage.ts:18](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/ChatMessage.ts#L18)
+[src/models/ChatMessage.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/ChatMessage.ts#L18)
 
 ***
 
@@ -64,7 +64,7 @@ Represents a document for a chat message in the MongoDB database.
 
 #### Defined in
 
-[src/models/ChatMessage.ts:17](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/ChatMessage.ts#L17)
+[src/models/ChatMessage.ts:17](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/ChatMessage.ts#L17)
 
 ***
 
@@ -74,7 +74,7 @@ Represents a document for a chat message in the MongoDB database.
 
 #### Defined in
 
-[src/models/ChatMessage.ts:16](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/ChatMessage.ts#L16)
+[src/models/ChatMessage.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/ChatMessage.ts#L16)
 
 ***
 
@@ -84,7 +84,7 @@ Represents a document for a chat message in the MongoDB database.
 
 #### Defined in
 
-[src/models/ChatMessage.ts:15](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/ChatMessage.ts#L15)
+[src/models/ChatMessage.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/ChatMessage.ts#L15)
 
 ***
 
@@ -94,7 +94,7 @@ Represents a document for a chat message in the MongoDB database.
 
 #### Defined in
 
-[src/models/ChatMessage.ts:19](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/ChatMessage.ts#L19)
+[src/models/ChatMessage.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/ChatMessage.ts#L19)
 
 ***
 
@@ -104,4 +104,4 @@ Represents a document for a chat message in the MongoDB database.
 
 #### Defined in
 
-[src/models/ChatMessage.ts:22](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/ChatMessage.ts#L22)
+[src/models/ChatMessage.ts:22](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/ChatMessage.ts#L22)

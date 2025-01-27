@@ -14,7 +14,7 @@ Interface representing a document for a message in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Message.ts:13](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Message.ts#L13)
+[src/models/Message.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Message.ts#L13)
 
 ***
 
@@ -24,7 +24,7 @@ Interface representing a document for a message in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Message.ts:17](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Message.ts#L17)
+[src/models/Message.ts:17](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Message.ts#L17)
 
 ***
 
@@ -34,7 +34,7 @@ Interface representing a document for a message in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Message.ts:19](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Message.ts#L19)
+[src/models/Message.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Message.ts#L19)
 
 ***
 
@@ -44,7 +44,7 @@ Interface representing a document for a message in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Message.ts:20](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Message.ts#L20)
+[src/models/Message.ts:20](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Message.ts#L20)
 
 ***
 
@@ -54,7 +54,7 @@ Interface representing a document for a message in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Message.ts:15](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Message.ts#L15)
+[src/models/Message.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Message.ts#L15)
 
 ***
 
@@ -64,7 +64,7 @@ Interface representing a document for a message in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Message.ts:21](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Message.ts#L21)
+[src/models/Message.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Message.ts#L21)
 
 ***
 
@@ -74,7 +74,7 @@ Interface representing a document for a message in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Message.ts:14](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Message.ts#L14)
+[src/models/Message.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Message.ts#L14)
 
 ***
 
@@ -84,7 +84,7 @@ Interface representing a document for a message in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Message.ts:18](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Message.ts#L18)
+[src/models/Message.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Message.ts#L18)
 
 ***
 
@@ -94,4 +94,4 @@ Interface representing a document for a message in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Message.ts:16](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Message.ts#L16)
+[src/models/Message.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Message.ts#L16)

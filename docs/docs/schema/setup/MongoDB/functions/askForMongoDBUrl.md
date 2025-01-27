@@ -17,4 +17,4 @@ a Promise that resolves to a string.
 
 ## Defined in
 
-[src/setup/MongoDB.ts:73](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/setup/MongoDB.ts#L73)
+[src/setup/MongoDB.ts:73](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/setup/MongoDB.ts#L73)

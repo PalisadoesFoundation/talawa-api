@@ -14,7 +14,7 @@ Enumeration for recurrence frequencies.
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:16](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/RecurrenceRule.ts#L16)
+[src/models/RecurrenceRule.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L16)
 
 ***
 
@@ -24,7 +24,7 @@ Enumeration for recurrence frequencies.
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:14](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/RecurrenceRule.ts#L14)
+[src/models/RecurrenceRule.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L14)
 
 ***
 
@@ -34,7 +34,7 @@ Enumeration for recurrence frequencies.
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:15](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/RecurrenceRule.ts#L15)
+[src/models/RecurrenceRule.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L15)
 
 ***
 
@@ -44,4 +44,4 @@ Enumeration for recurrence frequencies.
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:13](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/RecurrenceRule.ts#L13)
+[src/models/RecurrenceRule.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L13)

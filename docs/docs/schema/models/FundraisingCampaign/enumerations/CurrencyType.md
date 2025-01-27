@@ -15,7 +15,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:14](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L14)
+[src/models/FundraisingCampaign.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L14)
 
 ***
 
@@ -25,7 +25,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:15](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L15)
+[src/models/FundraisingCampaign.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L15)
 
 ***
 
@@ -35,7 +35,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:16](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L16)
+[src/models/FundraisingCampaign.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L16)
 
 ***
 
@@ -45,7 +45,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:17](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L17)
+[src/models/FundraisingCampaign.ts:17](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L17)
 
 ***
 
@@ -55,7 +55,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:18](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L18)
+[src/models/FundraisingCampaign.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L18)
 
 ***
 
@@ -65,7 +65,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:19](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L19)
+[src/models/FundraisingCampaign.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L19)
 
 ***
 
@@ -75,7 +75,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:20](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L20)
+[src/models/FundraisingCampaign.ts:20](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L20)
 
 ***
 
@@ -85,7 +85,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:21](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L21)
+[src/models/FundraisingCampaign.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L21)
 
 ***
 
@@ -95,7 +95,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:22](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L22)
+[src/models/FundraisingCampaign.ts:22](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L22)
 
 ***
 
@@ -105,7 +105,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:23](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L23)
+[src/models/FundraisingCampaign.ts:23](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L23)
 
 ***
 
@@ -115,7 +115,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:24](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L24)
+[src/models/FundraisingCampaign.ts:24](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L24)
 
 ***
 
@@ -125,7 +125,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:25](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L25)
+[src/models/FundraisingCampaign.ts:25](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L25)
 
 ***
 
@@ -135,7 +135,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:26](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L26)
+[src/models/FundraisingCampaign.ts:26](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L26)
 
 ***
 
@@ -145,7 +145,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:27](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L27)
+[src/models/FundraisingCampaign.ts:27](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L27)
 
 ***
 
@@ -155,7 +155,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:28](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L28)
+[src/models/FundraisingCampaign.ts:28](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L28)
 
 ***
 
@@ -165,7 +165,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:29](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L29)
+[src/models/FundraisingCampaign.ts:29](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L29)
 
 ***
 
@@ -175,7 +175,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:30](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L30)
+[src/models/FundraisingCampaign.ts:30](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L30)
 
 ***
 
@@ -185,7 +185,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:31](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L31)
+[src/models/FundraisingCampaign.ts:31](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L31)
 
 ***
 
@@ -195,7 +195,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:32](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L32)
+[src/models/FundraisingCampaign.ts:32](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L32)
 
 ***
 
@@ -205,7 +205,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:33](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L33)
+[src/models/FundraisingCampaign.ts:33](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L33)
 
 ***
 
@@ -215,7 +215,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:34](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L34)
+[src/models/FundraisingCampaign.ts:34](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L34)
 
 ***
 
@@ -225,7 +225,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:35](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L35)
+[src/models/FundraisingCampaign.ts:35](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L35)
 
 ***
 
@@ -235,7 +235,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:36](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L36)
+[src/models/FundraisingCampaign.ts:36](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L36)
 
 ***
 
@@ -245,7 +245,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:37](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L37)
+[src/models/FundraisingCampaign.ts:37](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L37)
 
 ***
 
@@ -255,7 +255,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:38](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L38)
+[src/models/FundraisingCampaign.ts:38](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L38)
 
 ***
 
@@ -265,7 +265,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:39](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L39)
+[src/models/FundraisingCampaign.ts:39](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L39)
 
 ***
 
@@ -275,7 +275,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:40](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L40)
+[src/models/FundraisingCampaign.ts:40](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L40)
 
 ***
 
@@ -285,7 +285,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:41](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L41)
+[src/models/FundraisingCampaign.ts:41](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L41)
 
 ***
 
@@ -295,7 +295,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:42](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L42)
+[src/models/FundraisingCampaign.ts:42](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L42)
 
 ***
 
@@ -305,7 +305,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:43](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L43)
+[src/models/FundraisingCampaign.ts:43](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L43)
 
 ***
 
@@ -315,7 +315,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:44](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L44)
+[src/models/FundraisingCampaign.ts:44](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L44)
 
 ***
 
@@ -325,7 +325,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:45](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L45)
+[src/models/FundraisingCampaign.ts:45](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L45)
 
 ***
 
@@ -335,7 +335,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:46](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L46)
+[src/models/FundraisingCampaign.ts:46](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L46)
 
 ***
 
@@ -345,7 +345,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:47](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L47)
+[src/models/FundraisingCampaign.ts:47](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L47)
 
 ***
 
@@ -355,7 +355,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:48](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L48)
+[src/models/FundraisingCampaign.ts:48](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L48)
 
 ***
 
@@ -365,7 +365,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:49](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L49)
+[src/models/FundraisingCampaign.ts:49](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L49)
 
 ***
 
@@ -375,7 +375,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:50](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L50)
+[src/models/FundraisingCampaign.ts:50](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L50)
 
 ***
 
@@ -385,7 +385,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:51](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L51)
+[src/models/FundraisingCampaign.ts:51](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L51)
 
 ***
 
@@ -395,7 +395,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:52](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L52)
+[src/models/FundraisingCampaign.ts:52](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L52)
 
 ***
 
@@ -405,7 +405,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:53](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L53)
+[src/models/FundraisingCampaign.ts:53](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L53)
 
 ***
 
@@ -415,7 +415,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:54](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L54)
+[src/models/FundraisingCampaign.ts:54](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L54)
 
 ***
 
@@ -425,7 +425,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:55](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L55)
+[src/models/FundraisingCampaign.ts:55](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L55)
 
 ***
 
@@ -435,7 +435,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:56](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L56)
+[src/models/FundraisingCampaign.ts:56](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L56)
 
 ***
 
@@ -445,7 +445,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:57](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L57)
+[src/models/FundraisingCampaign.ts:57](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L57)
 
 ***
 
@@ -455,7 +455,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:58](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L58)
+[src/models/FundraisingCampaign.ts:58](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L58)
 
 ***
 
@@ -465,7 +465,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:59](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L59)
+[src/models/FundraisingCampaign.ts:59](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L59)
 
 ***
 
@@ -475,7 +475,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:60](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L60)
+[src/models/FundraisingCampaign.ts:60](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L60)
 
 ***
 
@@ -485,7 +485,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:61](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L61)
+[src/models/FundraisingCampaign.ts:61](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L61)
 
 ***
 
@@ -495,7 +495,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:62](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L62)
+[src/models/FundraisingCampaign.ts:62](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L62)
 
 ***
 
@@ -505,7 +505,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:63](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L63)
+[src/models/FundraisingCampaign.ts:63](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L63)
 
 ***
 
@@ -515,7 +515,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:64](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L64)
+[src/models/FundraisingCampaign.ts:64](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L64)
 
 ***
 
@@ -525,7 +525,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:65](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L65)
+[src/models/FundraisingCampaign.ts:65](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L65)
 
 ***
 
@@ -535,7 +535,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:66](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L66)
+[src/models/FundraisingCampaign.ts:66](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L66)
 
 ***
 
@@ -545,7 +545,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:67](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L67)
+[src/models/FundraisingCampaign.ts:67](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L67)
 
 ***
 
@@ -555,7 +555,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:68](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L68)
+[src/models/FundraisingCampaign.ts:68](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L68)
 
 ***
 
@@ -565,7 +565,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:69](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L69)
+[src/models/FundraisingCampaign.ts:69](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L69)
 
 ***
 
@@ -575,7 +575,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:70](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L70)
+[src/models/FundraisingCampaign.ts:70](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L70)
 
 ***
 
@@ -585,7 +585,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:71](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L71)
+[src/models/FundraisingCampaign.ts:71](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L71)
 
 ***
 
@@ -595,7 +595,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:72](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L72)
+[src/models/FundraisingCampaign.ts:72](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L72)
 
 ***
 
@@ -605,7 +605,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:73](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L73)
+[src/models/FundraisingCampaign.ts:73](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L73)
 
 ***
 
@@ -615,7 +615,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:74](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L74)
+[src/models/FundraisingCampaign.ts:74](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L74)
 
 ***
 
@@ -625,7 +625,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:75](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L75)
+[src/models/FundraisingCampaign.ts:75](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L75)
 
 ***
 
@@ -635,7 +635,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:76](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L76)
+[src/models/FundraisingCampaign.ts:76](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L76)
 
 ***
 
@@ -645,7 +645,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:77](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L77)
+[src/models/FundraisingCampaign.ts:77](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L77)
 
 ***
 
@@ -655,7 +655,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:78](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L78)
+[src/models/FundraisingCampaign.ts:78](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L78)
 
 ***
 
@@ -665,7 +665,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:79](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L79)
+[src/models/FundraisingCampaign.ts:79](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L79)
 
 ***
 
@@ -675,7 +675,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:80](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L80)
+[src/models/FundraisingCampaign.ts:80](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L80)
 
 ***
 
@@ -685,7 +685,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:81](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L81)
+[src/models/FundraisingCampaign.ts:81](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L81)
 
 ***
 
@@ -695,7 +695,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:82](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L82)
+[src/models/FundraisingCampaign.ts:82](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L82)
 
 ***
 
@@ -705,7 +705,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:83](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L83)
+[src/models/FundraisingCampaign.ts:83](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L83)
 
 ***
 
@@ -715,7 +715,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:84](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L84)
+[src/models/FundraisingCampaign.ts:84](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L84)
 
 ***
 
@@ -725,7 +725,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:85](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L85)
+[src/models/FundraisingCampaign.ts:85](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L85)
 
 ***
 
@@ -735,7 +735,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:86](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L86)
+[src/models/FundraisingCampaign.ts:86](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L86)
 
 ***
 
@@ -745,7 +745,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:87](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L87)
+[src/models/FundraisingCampaign.ts:87](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L87)
 
 ***
 
@@ -755,7 +755,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:88](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L88)
+[src/models/FundraisingCampaign.ts:88](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L88)
 
 ***
 
@@ -765,7 +765,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:89](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L89)
+[src/models/FundraisingCampaign.ts:89](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L89)
 
 ***
 
@@ -775,7 +775,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:90](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L90)
+[src/models/FundraisingCampaign.ts:90](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L90)
 
 ***
 
@@ -785,7 +785,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:91](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L91)
+[src/models/FundraisingCampaign.ts:91](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L91)
 
 ***
 
@@ -795,7 +795,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:92](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L92)
+[src/models/FundraisingCampaign.ts:92](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L92)
 
 ***
 
@@ -805,7 +805,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:93](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L93)
+[src/models/FundraisingCampaign.ts:93](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L93)
 
 ***
 
@@ -815,7 +815,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:94](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L94)
+[src/models/FundraisingCampaign.ts:94](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L94)
 
 ***
 
@@ -825,7 +825,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:95](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L95)
+[src/models/FundraisingCampaign.ts:95](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L95)
 
 ***
 
@@ -835,7 +835,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:96](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L96)
+[src/models/FundraisingCampaign.ts:96](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L96)
 
 ***
 
@@ -845,7 +845,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:97](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L97)
+[src/models/FundraisingCampaign.ts:97](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L97)
 
 ***
 
@@ -855,7 +855,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:98](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L98)
+[src/models/FundraisingCampaign.ts:98](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L98)
 
 ***
 
@@ -865,7 +865,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:99](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L99)
+[src/models/FundraisingCampaign.ts:99](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L99)
 
 ***
 
@@ -875,7 +875,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:100](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L100)
+[src/models/FundraisingCampaign.ts:100](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L100)
 
 ***
 
@@ -885,7 +885,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:101](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L101)
+[src/models/FundraisingCampaign.ts:101](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L101)
 
 ***
 
@@ -895,7 +895,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:102](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L102)
+[src/models/FundraisingCampaign.ts:102](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L102)
 
 ***
 
@@ -905,7 +905,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:103](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L103)
+[src/models/FundraisingCampaign.ts:103](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L103)
 
 ***
 
@@ -915,7 +915,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:104](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L104)
+[src/models/FundraisingCampaign.ts:104](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L104)
 
 ***
 
@@ -925,7 +925,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:105](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L105)
+[src/models/FundraisingCampaign.ts:105](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L105)
 
 ***
 
@@ -935,7 +935,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:106](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L106)
+[src/models/FundraisingCampaign.ts:106](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L106)
 
 ***
 
@@ -945,7 +945,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:107](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L107)
+[src/models/FundraisingCampaign.ts:107](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L107)
 
 ***
 
@@ -955,7 +955,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:108](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L108)
+[src/models/FundraisingCampaign.ts:108](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L108)
 
 ***
 
@@ -965,7 +965,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:109](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L109)
+[src/models/FundraisingCampaign.ts:109](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L109)
 
 ***
 
@@ -975,7 +975,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:110](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L110)
+[src/models/FundraisingCampaign.ts:110](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L110)
 
 ***
 
@@ -985,7 +985,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:111](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L111)
+[src/models/FundraisingCampaign.ts:111](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L111)
 
 ***
 
@@ -995,7 +995,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:112](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L112)
+[src/models/FundraisingCampaign.ts:112](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L112)
 
 ***
 
@@ -1005,7 +1005,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:113](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L113)
+[src/models/FundraisingCampaign.ts:113](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L113)
 
 ***
 
@@ -1015,7 +1015,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:114](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L114)
+[src/models/FundraisingCampaign.ts:114](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L114)
 
 ***
 
@@ -1025,7 +1025,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:115](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L115)
+[src/models/FundraisingCampaign.ts:115](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L115)
 
 ***
 
@@ -1035,7 +1035,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:116](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L116)
+[src/models/FundraisingCampaign.ts:116](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L116)
 
 ***
 
@@ -1045,7 +1045,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:117](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L117)
+[src/models/FundraisingCampaign.ts:117](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L117)
 
 ***
 
@@ -1055,7 +1055,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:118](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L118)
+[src/models/FundraisingCampaign.ts:118](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L118)
 
 ***
 
@@ -1065,7 +1065,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:119](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L119)
+[src/models/FundraisingCampaign.ts:119](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L119)
 
 ***
 
@@ -1075,7 +1075,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:120](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L120)
+[src/models/FundraisingCampaign.ts:120](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L120)
 
 ***
 
@@ -1085,7 +1085,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:121](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L121)
+[src/models/FundraisingCampaign.ts:121](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L121)
 
 ***
 
@@ -1095,7 +1095,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:122](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L122)
+[src/models/FundraisingCampaign.ts:122](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L122)
 
 ***
 
@@ -1105,7 +1105,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:123](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L123)
+[src/models/FundraisingCampaign.ts:123](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L123)
 
 ***
 
@@ -1115,7 +1115,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:124](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L124)
+[src/models/FundraisingCampaign.ts:124](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L124)
 
 ***
 
@@ -1125,7 +1125,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:125](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L125)
+[src/models/FundraisingCampaign.ts:125](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L125)
 
 ***
 
@@ -1135,7 +1135,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:126](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L126)
+[src/models/FundraisingCampaign.ts:126](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L126)
 
 ***
 
@@ -1145,7 +1145,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:127](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L127)
+[src/models/FundraisingCampaign.ts:127](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L127)
 
 ***
 
@@ -1155,7 +1155,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:128](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L128)
+[src/models/FundraisingCampaign.ts:128](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L128)
 
 ***
 
@@ -1165,7 +1165,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:129](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L129)
+[src/models/FundraisingCampaign.ts:129](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L129)
 
 ***
 
@@ -1175,7 +1175,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:130](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L130)
+[src/models/FundraisingCampaign.ts:130](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L130)
 
 ***
 
@@ -1185,7 +1185,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:131](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L131)
+[src/models/FundraisingCampaign.ts:131](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L131)
 
 ***
 
@@ -1195,7 +1195,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:132](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L132)
+[src/models/FundraisingCampaign.ts:132](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L132)
 
 ***
 
@@ -1205,7 +1205,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:133](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L133)
+[src/models/FundraisingCampaign.ts:133](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L133)
 
 ***
 
@@ -1215,7 +1215,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:134](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L134)
+[src/models/FundraisingCampaign.ts:134](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L134)
 
 ***
 
@@ -1225,7 +1225,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:135](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L135)
+[src/models/FundraisingCampaign.ts:135](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L135)
 
 ***
 
@@ -1235,7 +1235,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:136](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L136)
+[src/models/FundraisingCampaign.ts:136](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L136)
 
 ***
 
@@ -1245,7 +1245,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:137](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L137)
+[src/models/FundraisingCampaign.ts:137](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L137)
 
 ***
 
@@ -1255,7 +1255,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:138](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L138)
+[src/models/FundraisingCampaign.ts:138](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L138)
 
 ***
 
@@ -1265,7 +1265,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:139](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L139)
+[src/models/FundraisingCampaign.ts:139](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L139)
 
 ***
 
@@ -1275,7 +1275,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:140](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L140)
+[src/models/FundraisingCampaign.ts:140](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L140)
 
 ***
 
@@ -1285,7 +1285,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:141](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L141)
+[src/models/FundraisingCampaign.ts:141](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L141)
 
 ***
 
@@ -1295,7 +1295,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:142](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L142)
+[src/models/FundraisingCampaign.ts:142](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L142)
 
 ***
 
@@ -1305,7 +1305,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:143](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L143)
+[src/models/FundraisingCampaign.ts:143](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L143)
 
 ***
 
@@ -1315,7 +1315,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:144](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L144)
+[src/models/FundraisingCampaign.ts:144](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L144)
 
 ***
 
@@ -1325,7 +1325,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:145](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L145)
+[src/models/FundraisingCampaign.ts:145](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L145)
 
 ***
 
@@ -1335,7 +1335,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:146](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L146)
+[src/models/FundraisingCampaign.ts:146](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L146)
 
 ***
 
@@ -1345,7 +1345,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:147](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L147)
+[src/models/FundraisingCampaign.ts:147](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L147)
 
 ***
 
@@ -1355,7 +1355,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:148](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L148)
+[src/models/FundraisingCampaign.ts:148](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L148)
 
 ***
 
@@ -1365,7 +1365,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:149](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L149)
+[src/models/FundraisingCampaign.ts:149](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L149)
 
 ***
 
@@ -1375,7 +1375,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:150](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L150)
+[src/models/FundraisingCampaign.ts:150](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L150)
 
 ***
 
@@ -1385,7 +1385,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:151](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L151)
+[src/models/FundraisingCampaign.ts:151](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L151)
 
 ***
 
@@ -1395,7 +1395,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:152](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L152)
+[src/models/FundraisingCampaign.ts:152](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L152)
 
 ***
 
@@ -1405,7 +1405,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:153](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L153)
+[src/models/FundraisingCampaign.ts:153](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L153)
 
 ***
 
@@ -1415,7 +1415,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:154](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L154)
+[src/models/FundraisingCampaign.ts:154](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L154)
 
 ***
 
@@ -1425,7 +1425,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:155](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L155)
+[src/models/FundraisingCampaign.ts:155](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L155)
 
 ***
 
@@ -1435,7 +1435,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:156](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L156)
+[src/models/FundraisingCampaign.ts:156](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L156)
 
 ***
 
@@ -1445,7 +1445,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:157](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L157)
+[src/models/FundraisingCampaign.ts:157](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L157)
 
 ***
 
@@ -1455,7 +1455,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:158](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L158)
+[src/models/FundraisingCampaign.ts:158](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L158)
 
 ***
 
@@ -1465,7 +1465,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:159](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L159)
+[src/models/FundraisingCampaign.ts:159](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L159)
 
 ***
 
@@ -1475,7 +1475,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:160](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L160)
+[src/models/FundraisingCampaign.ts:160](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L160)
 
 ***
 
@@ -1485,7 +1485,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:161](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L161)
+[src/models/FundraisingCampaign.ts:161](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L161)
 
 ***
 
@@ -1495,7 +1495,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:162](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L162)
+[src/models/FundraisingCampaign.ts:162](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L162)
 
 ***
 
@@ -1505,7 +1505,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:163](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L163)
+[src/models/FundraisingCampaign.ts:163](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L163)
 
 ***
 
@@ -1515,7 +1515,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:164](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L164)
+[src/models/FundraisingCampaign.ts:164](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L164)
 
 ***
 
@@ -1525,7 +1525,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:165](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L165)
+[src/models/FundraisingCampaign.ts:165](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L165)
 
 ***
 
@@ -1535,7 +1535,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:166](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L166)
+[src/models/FundraisingCampaign.ts:166](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L166)
 
 ***
 
@@ -1545,7 +1545,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:167](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L167)
+[src/models/FundraisingCampaign.ts:167](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L167)
 
 ***
 
@@ -1555,7 +1555,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:168](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L168)
+[src/models/FundraisingCampaign.ts:168](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L168)
 
 ***
 
@@ -1565,7 +1565,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:169](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L169)
+[src/models/FundraisingCampaign.ts:169](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L169)
 
 ***
 
@@ -1575,7 +1575,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:170](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L170)
+[src/models/FundraisingCampaign.ts:170](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L170)
 
 ***
 
@@ -1585,7 +1585,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:171](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L171)
+[src/models/FundraisingCampaign.ts:171](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L171)
 
 ***
 
@@ -1595,7 +1595,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:172](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L172)
+[src/models/FundraisingCampaign.ts:172](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L172)
 
 ***
 
@@ -1605,7 +1605,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:173](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L173)
+[src/models/FundraisingCampaign.ts:173](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L173)
 
 ***
 
@@ -1615,7 +1615,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:174](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L174)
+[src/models/FundraisingCampaign.ts:174](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L174)
 
 ***
 
@@ -1625,7 +1625,7 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:175](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L175)
+[src/models/FundraisingCampaign.ts:175](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L175)
 
 ***
 
@@ -1635,4 +1635,4 @@ This enum lists all the possible currency codes that can be used in the system.
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:176](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/FundraisingCampaign.ts#L176)
+[src/models/FundraisingCampaign.ts:176](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaign.ts#L176)

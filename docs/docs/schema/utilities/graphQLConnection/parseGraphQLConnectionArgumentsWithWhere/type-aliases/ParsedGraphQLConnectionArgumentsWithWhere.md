@@ -23,4 +23,4 @@ arguments passed to `parseGraphQLConnectionArgumentsWithWhere` function.
 
 ## Defined in
 
-[src/utilities/graphQLConnection/parseGraphQLConnectionArgumentsWithWhere.ts:29](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/utilities/graphQLConnection/parseGraphQLConnectionArgumentsWithWhere.ts#L29)
+[src/utilities/graphQLConnection/parseGraphQLConnectionArgumentsWithWhere.ts:29](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/utilities/graphQLConnection/parseGraphQLConnectionArgumentsWithWhere.ts#L29)

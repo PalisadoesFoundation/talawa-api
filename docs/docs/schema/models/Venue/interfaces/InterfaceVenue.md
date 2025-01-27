@@ -12,7 +12,7 @@
 
 #### Defined in
 
-[src/models/Venue.ts:8](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Venue.ts#L8)
+[src/models/Venue.ts:8](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Venue.ts#L8)
 
 ***
 
@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[src/models/Venue.ts:11](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Venue.ts#L11)
+[src/models/Venue.ts:11](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Venue.ts#L11)
 
 ***
 
@@ -32,7 +32,7 @@
 
 #### Defined in
 
-[src/models/Venue.ts:10](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Venue.ts#L10)
+[src/models/Venue.ts:10](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Venue.ts#L10)
 
 ***
 
@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[src/models/Venue.ts:12](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Venue.ts#L12)
+[src/models/Venue.ts:12](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Venue.ts#L12)
 
 ***
 
@@ -52,7 +52,7 @@
 
 #### Defined in
 
-[src/models/Venue.ts:9](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Venue.ts#L9)
+[src/models/Venue.ts:9](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Venue.ts#L9)
 
 ***
 
@@ -62,4 +62,4 @@
 
 #### Defined in
 
-[src/models/Venue.ts:13](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Venue.ts#L13)
+[src/models/Venue.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Venue.ts#L13)

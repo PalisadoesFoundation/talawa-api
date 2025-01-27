@@ -34,4 +34,4 @@ An `object` that contains Organization data.
 
 ## Defined in
 
-[src/resolvers/Chat/organization.ts:11](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/resolvers/Chat/organization.ts#L11)
+[src/resolvers/Chat/organization.ts:11](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Chat/organization.ts#L11)

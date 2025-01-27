@@ -12,7 +12,7 @@
 
 #### Defined in
 
-[src/constants.ts:855](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/constants.ts#L855)
+[src/constants.ts:855](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/constants.ts#L855)
 
 ***
 
@@ -22,4 +22,4 @@
 
 #### Defined in
 
-[src/constants.ts:854](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/constants.ts#L854)
+[src/constants.ts:854](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/constants.ts#L854)

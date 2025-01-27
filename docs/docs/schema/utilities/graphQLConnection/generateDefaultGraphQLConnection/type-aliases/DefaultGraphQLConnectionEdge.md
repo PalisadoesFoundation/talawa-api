@@ -26,4 +26,4 @@ object adheres to the default type of this base connection edge object.
 
 ## Defined in
 
-[src/utilities/graphQLConnection/generateDefaultGraphQLConnection.ts:8](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/utilities/graphQLConnection/generateDefaultGraphQLConnection.ts#L8)
+[src/utilities/graphQLConnection/generateDefaultGraphQLConnection.ts:8](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/utilities/graphQLConnection/generateDefaultGraphQLConnection.ts#L8)

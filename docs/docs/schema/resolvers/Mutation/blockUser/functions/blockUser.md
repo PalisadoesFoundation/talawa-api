@@ -57,4 +57,4 @@ A promise that resolves to the updated user document after blocking.
 
 ## Defined in
 
-[src/resolvers/Mutation/blockUser.ts:45](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/resolvers/Mutation/blockUser.ts#L45)
+[src/resolvers/Mutation/blockUser.ts:45](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/blockUser.ts#L45)

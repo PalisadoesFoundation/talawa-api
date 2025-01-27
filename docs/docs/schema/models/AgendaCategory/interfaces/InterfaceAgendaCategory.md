@@ -14,7 +14,7 @@ Represents a document for an agenda category in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaCategory.ts:12](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaCategory.ts#L12)
+[src/models/AgendaCategory.ts:12](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaCategory.ts#L12)
 
 ***
 
@@ -24,7 +24,7 @@ Represents a document for an agenda category in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaCategory.ts:18](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaCategory.ts#L18)
+[src/models/AgendaCategory.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaCategory.ts#L18)
 
 ***
 
@@ -34,7 +34,7 @@ Represents a document for an agenda category in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaCategory.ts:16](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaCategory.ts#L16)
+[src/models/AgendaCategory.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaCategory.ts#L16)
 
 ***
 
@@ -44,7 +44,7 @@ Represents a document for an agenda category in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaCategory.ts:14](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaCategory.ts#L14)
+[src/models/AgendaCategory.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaCategory.ts#L14)
 
 ***
 
@@ -54,7 +54,7 @@ Represents a document for an agenda category in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaCategory.ts:13](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaCategory.ts#L13)
+[src/models/AgendaCategory.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaCategory.ts#L13)
 
 ***
 
@@ -64,7 +64,7 @@ Represents a document for an agenda category in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaCategory.ts:15](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaCategory.ts#L15)
+[src/models/AgendaCategory.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaCategory.ts#L15)
 
 ***
 
@@ -74,7 +74,7 @@ Represents a document for an agenda category in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaCategory.ts:19](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaCategory.ts#L19)
+[src/models/AgendaCategory.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaCategory.ts#L19)
 
 ***
 
@@ -84,4 +84,4 @@ Represents a document for an agenda category in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaCategory.ts:17](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaCategory.ts#L17)
+[src/models/AgendaCategory.ts:17](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaCategory.ts#L17)

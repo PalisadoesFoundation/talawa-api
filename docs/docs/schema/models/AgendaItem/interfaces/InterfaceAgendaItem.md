@@ -14,7 +14,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:15](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L15)
+[src/models/AgendaItem.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L15)
 
 ***
 
@@ -24,7 +24,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:19](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L19)
+[src/models/AgendaItem.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L19)
 
 ***
 
@@ -34,7 +34,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:25](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L25)
+[src/models/AgendaItem.ts:25](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L25)
 
 ***
 
@@ -44,7 +44,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:28](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L28)
+[src/models/AgendaItem.ts:28](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L28)
 
 ***
 
@@ -54,7 +54,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:20](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L20)
+[src/models/AgendaItem.ts:20](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L20)
 
 ***
 
@@ -64,7 +64,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:17](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L17)
+[src/models/AgendaItem.ts:17](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L17)
 
 ***
 
@@ -74,7 +74,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:18](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L18)
+[src/models/AgendaItem.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L18)
 
 ***
 
@@ -84,7 +84,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:27](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L27)
+[src/models/AgendaItem.ts:27](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L27)
 
 ***
 
@@ -94,7 +94,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:31](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L31)
+[src/models/AgendaItem.ts:31](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L31)
 
 ***
 
@@ -104,7 +104,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:30](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L30)
+[src/models/AgendaItem.ts:30](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L30)
 
 ***
 
@@ -114,7 +114,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:24](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L24)
+[src/models/AgendaItem.ts:24](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L24)
 
 ***
 
@@ -124,7 +124,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:26](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L26)
+[src/models/AgendaItem.ts:26](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L26)
 
 ***
 
@@ -134,7 +134,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:16](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L16)
+[src/models/AgendaItem.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L16)
 
 ***
 
@@ -144,7 +144,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:29](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L29)
+[src/models/AgendaItem.ts:29](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L29)
 
 ***
 
@@ -154,7 +154,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:21](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L21)
+[src/models/AgendaItem.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L21)
 
 ***
 
@@ -164,7 +164,7 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:22](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L22)
+[src/models/AgendaItem.ts:22](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L22)
 
 ***
 
@@ -174,4 +174,4 @@ Represents a document for an agenda item in the MongoDB database.
 
 #### Defined in
 
-[src/models/AgendaItem.ts:23](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/AgendaItem.ts#L23)
+[src/models/AgendaItem.ts:23](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/AgendaItem.ts#L23)

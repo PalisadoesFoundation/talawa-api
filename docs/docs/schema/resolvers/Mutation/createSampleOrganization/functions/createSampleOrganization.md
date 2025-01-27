@@ -41,4 +41,4 @@ This function is intended for creating sample data and should only be accessible
 
 ## Defined in
 
-[src/resolvers/Mutation/createSampleOrganization.ts:33](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/resolvers/Mutation/createSampleOrganization.ts#L33)
+[src/resolvers/Mutation/createSampleOrganization.ts:33](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/createSampleOrganization.ts#L33)

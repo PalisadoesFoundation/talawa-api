@@ -31,4 +31,4 @@ JSON Web Token string payload
 
 ## Defined in
 
-[src/utilities/auth.ts:60](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/utilities/auth.ts#L60)
+[src/utilities/auth.ts:60](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/utilities/auth.ts#L60)

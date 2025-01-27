@@ -51,4 +51,4 @@ A promise that resolves to a connection object containing the tags assigned to t
 
 ## Defined in
 
-[src/resolvers/User/tagsAssignedWith.ts:39](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/resolvers/User/tagsAssignedWith.ts#L39)
+[src/resolvers/User/tagsAssignedWith.ts:39](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/User/tagsAssignedWith.ts#L39)

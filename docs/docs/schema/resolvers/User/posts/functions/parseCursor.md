@@ -28,4 +28,4 @@ Error Throws an error if the provided cursor is invalid.
 
 ## Defined in
 
-[src/resolvers/User/posts.ts:102](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/resolvers/User/posts.ts#L102)
+[src/resolvers/User/posts.ts:102](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/User/posts.ts#L102)

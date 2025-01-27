@@ -12,4 +12,4 @@ Otherwise, it creates a new model.
 
 ## Defined in
 
-[src/models/Organization.ts:224](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Organization.ts#L224)
+[src/models/Organization.ts:224](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Organization.ts#L224)

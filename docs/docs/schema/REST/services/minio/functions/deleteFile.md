@@ -40,4 +40,4 @@ console.log(response);
 
 ## Defined in
 
-[src/REST/services/minio/index.ts:114](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/REST/services/minio/index.ts#L114)
+[src/REST/services/minio/index.ts:114](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/REST/services/minio/index.ts#L114)

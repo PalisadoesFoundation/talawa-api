@@ -34,4 +34,4 @@ An object that contains venue data. If the venue is not found then it throws a `
 
 ## Defined in
 
-[src/resolvers/Query/venue.ts:16](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/resolvers/Query/venue.ts#L16)
+[src/resolvers/Query/venue.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Query/venue.ts#L16)

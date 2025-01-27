@@ -39,4 +39,4 @@ If no associated events are found, it deletes the document from the database.
 
 ## Defined in
 
-[src/helpers/event/recurringEventHelpers/removeDanglingDocuments.ts:13](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/helpers/event/recurringEventHelpers/removeDanglingDocuments.ts#L13)
+[src/helpers/event/recurringEventHelpers/removeDanglingDocuments.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/helpers/event/recurringEventHelpers/removeDanglingDocuments.ts#L13)

@@ -55,7 +55,7 @@ Additional metadata related to the error. Defaults to an empty object.
 
 #### Defined in
 
-[src/libraries/errors/notFoundError.ts:18](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/libraries/errors/notFoundError.ts#L18)
+[src/libraries/errors/notFoundError.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/libraries/errors/notFoundError.ts#L18)
 
 ## Properties
 
@@ -65,7 +65,7 @@ Additional metadata related to the error. Defaults to an empty object.
 
 #### Defined in
 
-[src/libraries/errors/notFoundError.ts:8](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/libraries/errors/notFoundError.ts#L8)
+[src/libraries/errors/notFoundError.ts:8](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/libraries/errors/notFoundError.ts#L8)
 
 ***
 
@@ -81,7 +81,7 @@ An array of errors conforming to the InterfaceError interface
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:21](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/libraries/errors/applicationError.ts#L21)
+[src/libraries/errors/applicationError.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/libraries/errors/applicationError.ts#L21)
 
 ***
 
@@ -97,7 +97,7 @@ The HTTP status code associated with the error
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:23](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/libraries/errors/applicationError.ts#L23)
+[src/libraries/errors/applicationError.ts:23](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/libraries/errors/applicationError.ts#L23)
 
 ***
 
@@ -107,4 +107,4 @@ The HTTP status code associated with the error
 
 #### Defined in
 
-[src/libraries/errors/notFoundError.ts:9](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/libraries/errors/notFoundError.ts#L9)
+[src/libraries/errors/notFoundError.ts:9](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/libraries/errors/notFoundError.ts#L9)

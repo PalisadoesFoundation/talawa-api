@@ -36,4 +36,4 @@ The decrypted plaintext string.
 
 ## Defined in
 
-[src/utilities/PII/decryption.ts:11](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/utilities/PII/decryption.ts#L11)
+[src/utilities/PII/decryption.ts:11](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/utilities/PII/decryption.ts#L11)

@@ -14,7 +14,7 @@ Interface representing a document for a group in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Group.ts:12](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Group.ts#L12)
+[src/models/Group.ts:12](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Group.ts#L12)
 
 ***
 
@@ -24,7 +24,7 @@ Interface representing a document for a group in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Group.ts:17](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Group.ts#L17)
+[src/models/Group.ts:17](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Group.ts#L17)
 
 ***
 
@@ -34,7 +34,7 @@ Interface representing a document for a group in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Group.ts:18](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Group.ts#L18)
+[src/models/Group.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Group.ts#L18)
 
 ***
 
@@ -44,7 +44,7 @@ Interface representing a document for a group in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Group.ts:14](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Group.ts#L14)
+[src/models/Group.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Group.ts#L14)
 
 ***
 
@@ -54,7 +54,7 @@ Interface representing a document for a group in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Group.ts:15](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Group.ts#L15)
+[src/models/Group.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Group.ts#L15)
 
 ***
 
@@ -64,7 +64,7 @@ Interface representing a document for a group in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Group.ts:16](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Group.ts#L16)
+[src/models/Group.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Group.ts#L16)
 
 ***
 
@@ -74,7 +74,7 @@ Interface representing a document for a group in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Group.ts:13](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Group.ts#L13)
+[src/models/Group.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Group.ts#L13)
 
 ***
 
@@ -84,4 +84,4 @@ Interface representing a document for a group in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Group.ts:19](https://github.com/Suyash878/talawa-api/blob/095e6964ce2a06c1c30d1acf81b6162203f1db91/src/models/Group.ts#L19)
+[src/models/Group.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Group.ts#L19)
