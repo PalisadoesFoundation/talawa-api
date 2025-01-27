@@ -112,15 +112,6 @@ const config: Config = {
       style: "dark",
       links: [
         {
-          title: "Docs",
-          items: [
-            {
-              label: "Docs",
-              to: "/docs",
-            },
-          ],
-        },
-        {
           title: "Community",
           items: [
             {
@@ -171,7 +162,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} The Palisadoes Foundation, LLC. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
