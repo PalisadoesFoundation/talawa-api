@@ -35,6 +35,10 @@
   --ifm-blockquote-font-size: 16px;
   --ifm-table-head-color: var(--subtle);
   --ifm-link-hover-decoration: none;
+
+  --breakpoint-mobile: 480px;
+  --breakpoint-tablet: 760px;
+  --breakpoint-desktop: 960px;
 }
 
 /* Navbar */
@@ -157,7 +161,7 @@
 }
 
 /* Media Queries */
-@media only screen and (max-width: 760px) {
+@media only screen and (max-width: var(--breakpoint-tablet)) {
   .HeaderHero .title {
     font-size: 60px;
   }
@@ -167,7 +171,7 @@
   }
 }
 
-@media only screen and (max-width: 480px) {
+@media only screen and (max-width: var(--breakpoint-mobile)) {
   .ActionButton {
     max-width: 100%;
     width: 100%;
@@ -186,7 +190,7 @@
   }
 }
 
-@media only screen and (max-width: 960px) {
+@media only screen and (max-width: var(--breakpoint-desktop)) {
   .Section {
     margin-bottom: 2rem;
     padding-top: 1rem;
