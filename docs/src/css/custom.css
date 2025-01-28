@@ -651,8 +651,17 @@ textarea,
 
 .navbar__item > svg,
 .navbar-sidebar svg {
-  display: none !important;
+  position: absolute;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
 }
+
 /* Small Screen (max-width: 768px) */
 @media (max-width: 768px) {
   .container > div > div:first-child {
