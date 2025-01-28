@@ -1615,7 +1615,11 @@ type Query {
   users(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]
   usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]!
   venue(id: ID!): Venue
-  verifyRole: VerifyRoleResponse
+  """
+  Verifies the role and authorization status of the current user.
+  Returns the user's role and whether they are authorized.
+  """
+  verifyRole: VerifyRoleResponse @auth
 }
 
 input RecaptchaVerification {
