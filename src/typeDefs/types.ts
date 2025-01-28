@@ -843,8 +843,17 @@ export const types = gql`
     messageId: ID!
   }
 
+  """
+  Response type for verifying user roles and their authorization status.
+  """
   type VerifyRoleResponse {
-    role: String
-    isAuthorized: Boolean
+    """
+    The role of the user (e.g., 'ADMIN', 'USER', etc.).
+    """
+    role: String!
+    """
+    Whether the user is authorized for the requested action.
+    """
+    isAuthorized: Boolean!
   }
 `;
