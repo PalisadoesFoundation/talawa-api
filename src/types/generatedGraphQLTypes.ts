@@ -3346,10 +3346,13 @@ export type VenueWhereInput = {
   name_starts_with?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** Response type for verifying user roles and their authorization status. */
 export type VerifyRoleResponse = {
   __typename?: 'VerifyRoleResponse';
-  isAuthorized?: Maybe<Scalars['Boolean']['output']>;
-  role?: Maybe<Scalars['String']['output']>;
+  /** Whether the user is authorized for the requested action. */
+  isAuthorized: Scalars['Boolean']['output'];
+  /** The role of the user (e.g., 'ADMIN', 'USER', etc.). */
+  role: Scalars['String']['output'];
 };
 
 export type VolunteerMembership = {
@@ -5113,8 +5116,8 @@ export type VenueResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type VerifyRoleResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['VerifyRoleResponse'] = ResolversParentTypes['VerifyRoleResponse']> = {
-  isAuthorized?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  role?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  isAuthorized?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  role?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

@@ -34,15 +34,15 @@ export const verifyRole: QueryResolvers["verifyRole"] = async (
       return { role: "", isAuthorized: false };
     }
 
-    const token = authHeader.startsWith('Bearer ')
-      ? authHeader.split(' ')[1]
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
       : authHeader;
     if (!token) {
       return { role: "", isAuthorized: false };
     }
     // Verify token
     if (!process.env.ACCESS_TOKEN_SECRET) {
-      throw new Error('ACCESS_TOKEN_SECRET is not defined');
+      throw new Error("ACCESS_TOKEN_SECRET is not defined");
     }
     const decoded = jwt.verify(
       token,
@@ -50,13 +50,15 @@ export const verifyRole: QueryResolvers["verifyRole"] = async (
     );
     const decodedToken = decoded as InterfaceJwtTokenPayload;
     if (!decodedToken.userId) {
-      throw new Error('Invalid token: userId is missing');
+      throw new Error("Invalid token: userId is missing");
     }
     const appUserProfile: InterfaceAppUserProfile | null =
       await AppUserProfile.findOne({
         userId: decodedToken.userId,
         appLanguageCode: process.env.DEFAULT_LANGUAGE_CODE || "en",
-        tokenVersion: process.env.TOKEN_VERSION ? parseInt(process.env.TOKEN_VERSION) : 0,
+        tokenVersion: process.env.TOKEN_VERSION
+          ? parseInt(process.env.TOKEN_VERSION)
+          : 0,
       }).lean();
 
     let role = "";
@@ -71,7 +73,18 @@ export const verifyRole: QueryResolvers["verifyRole"] = async (
       isAuthorized: true,
     };
   } catch (error) {
-    console.error("Token verification failed:", error);
-    return { role: "", isAuthorized: false };
+    // Log sanitized error for debugging
+    console.error(
+      "Token verification failed:",
+      error instanceof Error ? error.message : "Unknown error",
+    );
+
+    // Return specific error status
+    const isJwtError = error instanceof jwt.JsonWebTokenError;
+    return {
+      role: "",
+      isAuthorized: false,
+      error: isJwtError ? "Invalid token" : "Authentication failed",
+    };
   }
 };
