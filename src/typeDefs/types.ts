@@ -842,4 +842,9 @@ export const types = gql`
     messageContent: String!
     messageId: ID!
   }
+
+  type VerifyRoleResponse {
+    role: String
+    isAuthorized: Boolean
+  }
 `;

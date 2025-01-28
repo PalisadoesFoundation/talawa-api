@@ -1615,6 +1615,7 @@ type Query {
   users(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]
   usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]!
   venue(id: ID!): Venue
+  verifyRole: VerifyRoleResponse
 }
 
 input RecaptchaVerification {
@@ -2162,6 +2163,11 @@ input VenueWhereInput {
   description_starts_with: String
   name_contains: String
   name_starts_with: String
+}
+
+type VerifyRoleResponse {
+  isAuthorized: Boolean
+  role: String
 }
 
 type VolunteerMembership {
