@@ -34,8 +34,9 @@ export const verifyRole: QueryResolvers["verifyRole"] = async (
       return { role: "", isAuthorized: false };
     }
 
-    // const token = authHeader.split(' ')[1]; // Assuming "Bearer <token>" format
-    const token = authHeader;
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.split(' ')[1]
+      : authHeader;
     if (!token) {
       return { role: "", isAuthorized: false };
     }
