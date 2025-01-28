@@ -643,9 +643,7 @@ textarea,
 }
 
 .HeaderHero {
-  min-height: 500px;
-  max-height: 800px;
-  height: 70vh;
+  height: clamp(500px, 70vh, 800px);
 }
 /* Hide external link svg on Navbar */
 
