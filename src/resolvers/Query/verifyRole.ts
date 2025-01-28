@@ -29,7 +29,7 @@ export const verifyRole: QueryResolvers["verifyRole"] = async (
   try {
     // Extract token from the Authorization header
     const authHeader = req.headers.authorization;
-    console.log("authHeader", authHeader);
+    // console.debug("Authorization header detected.") // OR remove entirely
     if (!authHeader) {
       return { role: "", isAuthorized: false };
     }
