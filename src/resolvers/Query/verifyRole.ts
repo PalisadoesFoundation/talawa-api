@@ -41,6 +41,9 @@ export const verifyRole: QueryResolvers["verifyRole"] = async (
       return { role: "", isAuthorized: false };
     }
     // Verify token
+    if (!process.env.ACCESS_TOKEN_SECRET) {
+      throw new Error('ACCESS_TOKEN_SECRET is not defined');
+    }
     const decoded = jwt.verify(
       token,
       process.env.ACCESS_TOKEN_SECRET as string,
