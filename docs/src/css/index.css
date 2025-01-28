@@ -35,15 +35,11 @@
   --ifm-blockquote-font-size: 16px;
   --ifm-table-head-color: var(--subtle);
   --ifm-link-hover-decoration: none;
-
-  --breakpoint-mobile: 480px;
-  --breakpoint-tablet: 760px;
-  --breakpoint-desktop: 960px;
 }
 
 /* Navbar */
 .navbar__brand {
-  color: var(--brand-color);
+  color: var(--brand);
   font-size: 20px;
 }
 
@@ -161,7 +157,7 @@
 }
 
 /* Media Queries */
-@media only screen and (max-width: var(--breakpoint-tablet)) {
+@media only screen and (max-width: 760px) {
   .HeaderHero .title {
     font-size: 60px;
   }
@@ -171,7 +167,7 @@
   }
 }
 
-@media only screen and (max-width: var(--breakpoint-mobile)) {
+@media only screen and (max-width: 480px) {
   .ActionButton {
     max-width: 100%;
     width: 100%;
@@ -190,7 +186,7 @@
   }
 }
 
-@media only screen and (max-width: var(--breakpoint-desktop)) {
+@media only screen and (max-width: 960px) {
   .Section {
     margin-bottom: 2rem;
     padding-top: 1rem;
