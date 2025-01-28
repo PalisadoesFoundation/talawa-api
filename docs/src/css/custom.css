@@ -665,7 +665,6 @@ textarea,
   clip-path: inset(50%);
   overflow: hidden;
 }
-
 /* Small Screen (max-width: 768px) */
 @media (max-width: 768px) {
   .container > div > div:first-child {

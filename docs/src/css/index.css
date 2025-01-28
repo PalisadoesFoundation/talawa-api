@@ -39,7 +39,7 @@
 
 /* Navbar */
 .navbar__brand {
-  color: var(--brand-color);
+  color: var(--brand);
   font-size: 20px;
 }
 
