@@ -1,11 +1,9 @@
 import type { InterfaceJwtTokenPayload } from "@utilities/auth";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import jwt from "jsonwebtoken";
-import type {
-  InterfaceAppUserProfile} from "../../models/AppUserProfile";
-import {
-  AppUserProfile
-} from "../../models/AppUserProfile";
+import type { InterfaceAppUserProfile } from "../../models/AppUserProfile";
+import { AppUserProfile } from "../../models/AppUserProfile";
+import type { Request } from "express";
 /**
  * This query verifies the user's role based on the provided JWT token.
  * @param _ - Unused parent parameter (as this is a root-level query).
@@ -23,7 +21,6 @@ import {
  * - Returns the role and authorization status.
  */
 
-import type { Request } from "express";
 export const verifyRole: QueryResolvers["verifyRole"] = async (
   _: unknown,
   args: unknown,
@@ -39,7 +36,6 @@ export const verifyRole: QueryResolvers["verifyRole"] = async (
 
     // const token = authHeader.split(' ')[1]; // Assuming "Bearer <token>" format
     const token = authHeader;
-    console.log("token", token);
     if (!token) {
       return { role: "", isAuthorized: false };
     }
@@ -48,7 +44,6 @@ export const verifyRole: QueryResolvers["verifyRole"] = async (
       token,
       process.env.ACCESS_TOKEN_SECRET as string,
     );
-    console.log("decoded", decoded);
     const decodedToken = decoded as InterfaceJwtTokenPayload;
     const appUserProfile: InterfaceAppUserProfile | null =
       await AppUserProfile.findOne({
