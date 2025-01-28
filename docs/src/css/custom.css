@@ -68,6 +68,12 @@
   --sidebar-bg-color: #f3f4f6;
   --next-prev-border-color: #e5e7eb;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.29);
+  --icon-github-width: 20px;
+  --icon-github-height: 20px;
+  --icon-twitter-width: 15px;
+  --icon-twitter-height: 15px;
+  --icon-youtube-width: 25px;
+  --icon-youtube-height: 30px;
 }
 
 html[data-theme="dark"] {
@@ -281,8 +287,8 @@ html[data-theme="dark"] {
 
 .header-github-link:before {
   content: "";
-  width: 20px;
-  height: 20px;
+  width: var(--icon-github-width);
+  height: var(--icon-github-height);
   display: flex;
   background: url("/img/icons/github-dark.svg") no-repeat;
   position: relative;
@@ -292,8 +298,8 @@ html[data-theme="dark"] {
 
 .header-twitter-link:before {
   content: "";
-  width: 15px;
-  height: 15px;
+  width: var(--icon-twitter-width);
+  height: var(--icon-twitter-height);
   display: flex;
   background: url("/img/icons/twitter.svg") no-repeat 90% 100%;
   position: relative;
@@ -303,8 +309,8 @@ html[data-theme="dark"] {
 
 .header-youtube-link:before {
   content: "";
-  width: 25px;
-  height: 30px;
+  width: var(--icon-youtube-width);
+  height: var(--icon-youtube-height);
   display: flex;
   background: url("/img/icons/youtube.svg") no-repeat;
   position: relative;
