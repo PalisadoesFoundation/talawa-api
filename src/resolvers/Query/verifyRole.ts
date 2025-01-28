@@ -49,11 +49,14 @@ export const verifyRole: QueryResolvers["verifyRole"] = async (
       process.env.ACCESS_TOKEN_SECRET as string,
     );
     const decodedToken = decoded as InterfaceJwtTokenPayload;
+    if (!decodedToken.userId) {
+      throw new Error('Invalid token: userId is missing');
+    }
     const appUserProfile: InterfaceAppUserProfile | null =
       await AppUserProfile.findOne({
         userId: decodedToken.userId,
-        appLanguageCode: "en",
-        tokenVersion: 0,
+        appLanguageCode: process.env.DEFAULT_LANGUAGE_CODE || "en",
+        tokenVersion: process.env.TOKEN_VERSION ? parseInt(process.env.TOKEN_VERSION) : 0,
       }).lean();
 
     let role = "";
