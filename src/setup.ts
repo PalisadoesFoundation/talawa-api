@@ -7,11 +7,52 @@ import { updateEnvVariable } from "./setup/updateEnvVariable";
 
 export function generateJwtSecret(): string {
 	try {
-		return crypto.randomBytes(32).toString("hex");
+		return crypto.randomBytes(64).toString("hex");
 	} catch (err) {
 		console.error("Failed to generate JWT secret:", err);
 		throw new Error("Failed to generate JWT secret");
 	}
+}
+
+export function validateURL(input: string): true | string {
+	try {
+		new URL(input);
+		return true;
+	} catch {
+		return "Please enter a valid URL.";
+	}
+}
+
+export function validatePort(input: string): true | string {
+	const portNumber = Number(input);
+	if (Number.isNaN(portNumber) || portNumber <= 0 || portNumber > 65535) {
+		return "Please enter a valid port number (1-65535).";
+	}
+	return true;
+}
+
+export function validateEmail(input: string): true | string {
+	if (!input.trim()) {
+		console.log("Email cannot be empty.");
+		return "Email cannot be empty.";
+	}
+
+	if (input.length > 254) {
+		return "Email is too long.";
+	}
+
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	if (!emailRegex.test(input)) {
+		return "Invalid email format. Please enter a valid email address.";
+	}
+	return true;
+}
+
+function checkEnvFile(): boolean {
+	if (fs.existsSync(envFileName)) {
+		return true;
+	}
+	return false;
 }
 
 let originalEnvContent: string | null = null;
@@ -39,7 +80,7 @@ export function restoreEnvFile(): void {
 	}
 }
 
-function initializeEnvFile(): void {
+export function initializeEnvFile(): void {
 	const envFileToUse =
 		process.env.CI === "true"
 			? "envFiles/.env.ci"
@@ -100,6 +141,7 @@ export async function administratorEmail(): Promise<void> {
 				name: "API_ADMINISTRATOR_USER_EMAIL_ADDRESS",
 				message: "Enter email :",
 				default: "administrator@email.com",
+				validate: validateEmail,
 			},
 		]);
 		updateEnvVariable({ API_ADMINISTRATOR_USER_EMAIL_ADDRESS });
@@ -116,14 +158,7 @@ export async function apiSetup(): Promise<void> {
 			name: "API_BASE_URL",
 			message: "API base URL:",
 			default: "http://127.0.0.1:4000",
-			validate: (input: string) => {
-				try {
-					new URL(input);
-					return true;
-				} catch {
-					return "Please enter a valid URL.";
-				}
-			},
+			validate: validateURL,
 		},
 	]);
 	updateEnvVariable({ API_BASE_URL });
@@ -144,13 +179,7 @@ export async function apiSetup(): Promise<void> {
 			name: "API_PORT",
 			message: "API port:",
 			default: "4000",
-			validate: (input: string) => {
-				const portNumber = Number(input);
-				if (Number.isNaN(portNumber) || portNumber <= 0 || portNumber > 65535) {
-					return "Please enter a valid port number (1-65535).";
-				}
-				return true;
-			},
+			validate: validatePort,
 		},
 	]);
 	updateEnvVariable({ API_PORT });
@@ -398,13 +427,7 @@ export async function cloudbeaverSetup(): Promise<void> {
 			name: "CLOUDBEAVER_MAPPED_PORT",
 			message: "CloudBeaver mapped port:",
 			default: "8978",
-			validate: (input: string) => {
-				const portNumber = Number(input);
-				if (Number.isNaN(portNumber) || portNumber <= 0 || portNumber > 65535) {
-					return "Please enter a valid port number (1-65535).";
-				}
-				return true;
-			},
+			validate: validatePort,
 		},
 	]);
 	updateEnvVariable({ CLOUDBEAVER_MAPPED_PORT });
@@ -425,14 +448,7 @@ export async function cloudbeaverSetup(): Promise<void> {
 			name: "CLOUDBEAVER_SERVER_URL",
 			message: "CloudBeaver server URL:",
 			default: "http://127.0.0.1:8978",
-			validate: (input: string) => {
-				try {
-					new URL(input);
-					return true;
-				} catch {
-					return "Please enter a valid URL.";
-				}
-			},
+			validate: validateURL,
 		},
 	]);
 	updateEnvVariable({ CLOUDBEAVER_SERVER_URL });
@@ -467,17 +483,7 @@ export async function minioSetup(): Promise<void> {
 				name: "MINIO_API_MAPPED_PORT",
 				message: "Minio API mapped port:",
 				default: "9000",
-				validate: (input: string) => {
-					const portNumber = Number(input);
-					if (
-						Number.isNaN(portNumber) ||
-						portNumber <= 0 ||
-						portNumber > 65535
-					) {
-						return "Please enter a valid port number (1-65535).";
-					}
-					return true;
-				},
+				validate: validatePort,
 			},
 		]);
 		updateEnvVariable({ MINIO_API_MAPPED_PORT });
@@ -498,17 +504,7 @@ export async function minioSetup(): Promise<void> {
 				name: "MINIO_CONSOLE_MAPPED_PORT",
 				message: "Minio console mapped port:",
 				default: "9001",
-				validate: (input: string) => {
-					const portNumber = Number(input);
-					if (
-						Number.isNaN(portNumber) ||
-						portNumber <= 0 ||
-						portNumber > 65535
-					) {
-						return "Please enter a valid port number (1-65535).";
-					}
-					return true;
-				},
+				validate: validatePort,
 			},
 		]);
 		updateEnvVariable({ MINIO_CONSOLE_MAPPED_PORT });
@@ -566,17 +562,7 @@ export async function postgresSetup(): Promise<void> {
 				name: "POSTGRES_MAPPED_PORT",
 				message: "Postgres mapped port:",
 				default: "5432",
-				validate: (input: string) => {
-					const portNumber = Number(input);
-					if (
-						Number.isNaN(portNumber) ||
-						portNumber <= 0 ||
-						portNumber > 65535
-					) {
-						return "Please enter a valid port number (1-65535).";
-					}
-					return true;
-				},
+				validate: validatePort,
 			},
 		]);
 		updateEnvVariable({ POSTGRES_MAPPED_PORT });
@@ -604,6 +590,19 @@ export async function postgresSetup(): Promise<void> {
 }
 
 export async function setup(): Promise<void> {
+	if (checkEnvFile()) {
+		const { envExists } = await inquirer.prompt([
+			{
+				type: "confirm",
+				name: "envExists",
+				message: "Env file found, Do you want to re-configure? (Y)/N",
+				default: true,
+			},
+		]);
+		if (!envExists) {
+			process.exit(1);
+		}
+	}
 	dotenv.config({ path: envFileName });
 	backupEnvFile();
 	await setCI();

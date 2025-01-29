@@ -1,6 +1,11 @@
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiSetup } from "~/src/setup";
+import {
+	apiSetup,
+	generateJwtSecret,
+	validatePort,
+	validateURL,
+} from "~/src/setup";
 
 vi.mock("inquirer");
 
@@ -74,5 +79,51 @@ describe("Setup -> apiSetup", () => {
 		for (const [key, value] of Object.entries(expectedEnv)) {
 			expect(process.env[key]).toBe(value);
 		}
+	});
+});
+describe("validateURL", () => {
+	it("should return true for a valid URL", () => {
+		expect(validateURL("https://example.com")).toBe(true);
+		expect(validateURL("http://localhost:3000")).toBe(true);
+		expect(validateURL("ftp://ftp.example.com")).toBe(true);
+	});
+
+	it("should return an error message for an invalid URL", () => {
+		expect(validateURL("invalid-url")).toBe("Please enter a valid URL.");
+		expect(validateURL(" ")).toBe("Please enter a valid URL.");
+	});
+});
+
+describe("validatePort", () => {
+	it("should return true for valid port numbers", () => {
+		expect(validatePort("80")).toBe(true);
+		expect(validatePort("443")).toBe(true);
+		expect(validatePort("65535")).toBe(true);
+		expect(validatePort("1")).toBe(true);
+	});
+
+	it("should return an error message for invalid port numbers", () => {
+		expect(validatePort("0")).toBe(
+			"Please enter a valid port number (1-65535).",
+		);
+		expect(validatePort("65536")).toBe(
+			"Please enter a valid port number (1-65535).",
+		);
+		expect(validatePort("-1")).toBe(
+			"Please enter a valid port number (1-65535).",
+		);
+		expect(validatePort("not-a-number")).toBe(
+			"Please enter a valid port number (1-65535).",
+		);
+		expect(validatePort(" ")).toBe(
+			"Please enter a valid port number (1-65535).",
+		);
+	});
+});
+
+describe("generateJwtSecret", () => {
+	it("should generate a 64-byte hex string", () => {
+		const secret = generateJwtSecret();
+		expect(secret).toMatch(/^[a-f0-9]{128}$/);
 	});
 });

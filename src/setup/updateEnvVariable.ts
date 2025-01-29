@@ -10,32 +10,39 @@ export function updateEnvVariable(config: {
 }): void {
 	const envFileName = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
 
-	// Read the existing content of the .env or .env_test file
-	const existingContent: string = fs.existsSync(envFileName)
-		? fs.readFileSync(envFileName, "utf8")
-		: "";
-
-	let updatedContent: string = existingContent;
-
-	// Update the .env file and process.env for each variable
-	for (const key in config) {
-		const value = config[key];
-		const regex = new RegExp(
-			`^${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}=.*`,
-			"gm",
-		);
-
-		// Update or add the variable in the .env file
-		if (regex.test(updatedContent)) {
-			updatedContent = updatedContent.replace(regex, `${key}=${value}`);
-		} else {
-			updatedContent += `\n${key}=${value}`;
-		}
-
-		// Update the variable in process.env
-		process.env[key] = String(value);
+	const backupFile = `${envFileName}.backup`;
+	if (fs.existsSync(envFileName)) {
+		fs.copyFileSync(envFileName, backupFile);
 	}
 
-	// Write the updated content back to the .env or .env_test file
-	fs.writeFileSync(envFileName, updatedContent, "utf8");
+	try {
+		const existingContent: string = fs.existsSync(envFileName)
+			? fs.readFileSync(envFileName, "utf8")
+			: "";
+
+		let updatedContent: string = existingContent;
+
+		for (const key in config) {
+			const value = config[key];
+			const regex = new RegExp(
+				`^${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}=.*`,
+				"gm",
+			);
+
+			if (regex.test(updatedContent)) {
+				updatedContent = updatedContent.replace(regex, `${key}=${value}`);
+			} else {
+				updatedContent += `\n${key}=${value}`;
+			}
+
+			process.env[key] = String(value);
+		}
+
+		fs.writeFileSync(envFileName, updatedContent, "utf8");
+	} catch (error) {
+		if (fs.existsSync(backupFile)) {
+			fs.copyFileSync(backupFile, envFileName);
+		}
+		throw error;
+	}
 }

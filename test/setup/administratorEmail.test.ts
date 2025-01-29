@@ -1,6 +1,7 @@
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { administratorEmail } from "~/src/setup";
+import { validateEmail } from "~/src/setup";
 
 vi.mock("inquirer");
 
@@ -19,8 +20,22 @@ describe("Setup -> askForAdministratorEmail", () => {
 		});
 
 		await administratorEmail();
-		console.log(process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS);
 
 		expect(process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS).toBe(mockedEmail);
+	});
+
+	it("should return true for valid email addresses", () => {
+		expect(validateEmail("user@example.com")).toBe(true);
+		expect(validateEmail("test.email@domain.io")).toBe(true);
+	});
+
+	it("should return an error message for invalid email addresses", () => {
+		expect(validateEmail("invalid-email")).toBe(
+			"Invalid email format. Please enter a valid email address.",
+		);
+		expect(validateEmail(" ")).toBe("Email cannot be empty.");
+		expect(validateEmail(`${"a".repeat(255)}@example.com`)).toBe(
+			"Email is too long.",
+		);
 	});
 });
