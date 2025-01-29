@@ -1,4 +1,4 @@
-[**talawa-api**](../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -19,4 +19,4 @@ This resolver is used to resolve the fields of an `AgendaSection` type.
 
 ## Defined in
 
-[src/resolvers/AgendaSection/index.ts:17](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/resolvers/AgendaSection/index.ts#L17)
+[src/resolvers/AgendaSection/index.ts:17](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/resolvers/AgendaSection/index.ts#L17)

@@ -1,4 +1,4 @@
-[**talawa-api**](../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -65,4 +65,4 @@ export const bestFriend = async (parent) =\> {
 
 #### Defined in
 
-[src/utilities/TalawaGraphQLError.ts:189](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/utilities/TalawaGraphQLError.ts#L189)
+[src/utilities/TalawaGraphQLError.ts:189](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/utilities/TalawaGraphQLError.ts#L189)

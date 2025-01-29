@@ -1,4 +1,4 @@
-[**talawa-api**](../../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -38,4 +38,4 @@ The updated post object after the pinning status has been toggled.
 
 ## Defined in
 
-[src/resolvers/Mutation/togglePostPin.ts:40](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/resolvers/Mutation/togglePostPin.ts#L40)
+[src/resolvers/Mutation/togglePostPin.ts:40](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/resolvers/Mutation/togglePostPin.ts#L40)

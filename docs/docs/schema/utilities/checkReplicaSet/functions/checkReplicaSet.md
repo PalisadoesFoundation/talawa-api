@@ -1,4 +1,4 @@
-[**talawa-api**](../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -18,4 +18,4 @@ A promise that resolves to a boolean indicating whether the connection is part o
 
 ## Defined in
 
-[src/utilities/checkReplicaSet.ts:11](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/utilities/checkReplicaSet.ts#L11)
+[src/utilities/checkReplicaSet.ts:11](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/utilities/checkReplicaSet.ts#L11)

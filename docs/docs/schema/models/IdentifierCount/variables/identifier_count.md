@@ -1,4 +1,4 @@
-[**talawa-api**](../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -10,4 +10,4 @@ Export the Mongoose model for the identifier collection.
 
 ## Defined in
 
-[src/models/IdentifierCount.ts:46](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/IdentifierCount.ts#L46)
+[src/models/IdentifierCount.ts:46](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/IdentifierCount.ts#L46)

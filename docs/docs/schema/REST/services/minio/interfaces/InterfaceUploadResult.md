@@ -1,4 +1,4 @@
-[**talawa-api**](../../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -12,7 +12,7 @@
 
 #### Defined in
 
-[src/REST/services/minio/index.ts:17](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/REST/services/minio/index.ts#L17)
+[src/REST/services/minio/index.ts:17](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/REST/services/minio/index.ts#L17)
 
 ***
 
@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[src/REST/services/minio/index.ts:19](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/REST/services/minio/index.ts#L19)
+[src/REST/services/minio/index.ts:19](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/REST/services/minio/index.ts#L19)
 
 ***
 
@@ -32,7 +32,7 @@
 
 #### Defined in
 
-[src/REST/services/minio/index.ts:20](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/REST/services/minio/index.ts#L20)
+[src/REST/services/minio/index.ts:20](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/REST/services/minio/index.ts#L20)
 
 ***
 
@@ -42,4 +42,4 @@
 
 #### Defined in
 
-[src/REST/services/minio/index.ts:18](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/REST/services/minio/index.ts#L18)
+[src/REST/services/minio/index.ts:18](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/REST/services/minio/index.ts#L18)

@@ -1,4 +1,4 @@
-[**talawa-api**](../../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -51,4 +51,4 @@ A promise that resolves to a connection object containing the tags assigned to t
 
 ## Defined in
 
-[src/resolvers/User/tagsAssignedWith.ts:39](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/resolvers/User/tagsAssignedWith.ts#L39)
+[src/resolvers/User/tagsAssignedWith.ts:39](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/resolvers/User/tagsAssignedWith.ts#L39)

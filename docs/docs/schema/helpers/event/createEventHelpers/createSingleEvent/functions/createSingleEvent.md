@@ -1,4 +1,4 @@
-[**talawa-api**](../../../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -61,4 +61,4 @@ This function follows these steps:
 
 ## Defined in
 
-[src/helpers/event/createEventHelpers/createSingleEvent.ts:29](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/helpers/event/createEventHelpers/createSingleEvent.ts#L29)
+[src/helpers/event/createEventHelpers/createSingleEvent.ts:29](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/helpers/event/createEventHelpers/createSingleEvent.ts#L29)

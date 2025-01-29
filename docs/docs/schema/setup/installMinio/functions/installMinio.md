@@ -1,4 +1,4 @@
-[**talawa-api**](../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -20,4 +20,4 @@ Error If the download or installation fails.
 
 ## Defined in
 
-[src/setup/installMinio.ts:19](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/setup/installMinio.ts#L19)
+[src/setup/installMinio.ts:19](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/setup/installMinio.ts#L19)

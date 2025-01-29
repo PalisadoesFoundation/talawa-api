@@ -1,4 +1,4 @@
-[**talawa-api**](../../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -30,4 +30,4 @@ A message indicating that the start date must be earlier than the end date, or a
 
 ## Defined in
 
-[src/libraries/validators/compareDates.ts:8](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/libraries/validators/compareDates.ts#L8)
+[src/libraries/validators/compareDates.ts:8](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/libraries/validators/compareDates.ts#L8)

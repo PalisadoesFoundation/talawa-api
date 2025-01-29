@@ -1,4 +1,4 @@
-[**talawa-api**](../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -14,7 +14,7 @@ Represents a document for an encoded image in the MongoDB database.
 
 #### Defined in
 
-[src/models/EncodedImage.ts:11](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/EncodedImage.ts#L11)
+[src/models/EncodedImage.ts:11](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/EncodedImage.ts#L11)
 
 ***
 
@@ -24,7 +24,7 @@ Represents a document for an encoded image in the MongoDB database.
 
 #### Defined in
 
-[src/models/EncodedImage.ts:13](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/EncodedImage.ts#L13)
+[src/models/EncodedImage.ts:13](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/EncodedImage.ts#L13)
 
 ***
 
@@ -34,7 +34,7 @@ Represents a document for an encoded image in the MongoDB database.
 
 #### Defined in
 
-[src/models/EncodedImage.ts:12](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/EncodedImage.ts#L12)
+[src/models/EncodedImage.ts:12](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/EncodedImage.ts#L12)
 
 ***
 
@@ -44,4 +44,4 @@ Represents a document for an encoded image in the MongoDB database.
 
 #### Defined in
 
-[src/models/EncodedImage.ts:14](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/EncodedImage.ts#L14)
+[src/models/EncodedImage.ts:14](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/EncodedImage.ts#L14)

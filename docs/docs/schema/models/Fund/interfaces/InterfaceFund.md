@@ -1,4 +1,4 @@
-[**talawa-api**](../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -15,7 +15,7 @@ This interface defines the structure and types of data that a fund document will
 
 #### Defined in
 
-[src/models/Fund.ts:13](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Fund.ts#L13)
+[src/models/Fund.ts:13](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/Fund.ts#L13)
 
 ***
 
@@ -25,7 +25,7 @@ This interface defines the structure and types of data that a fund document will
 
 #### Defined in
 
-[src/models/Fund.ts:21](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Fund.ts#L21)
+[src/models/Fund.ts:21](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/Fund.ts#L21)
 
 ***
 
@@ -35,7 +35,7 @@ This interface defines the structure and types of data that a fund document will
 
 #### Defined in
 
-[src/models/Fund.ts:22](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Fund.ts#L22)
+[src/models/Fund.ts:22](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/Fund.ts#L22)
 
 ***
 
@@ -45,7 +45,7 @@ This interface defines the structure and types of data that a fund document will
 
 #### Defined in
 
-[src/models/Fund.ts:20](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Fund.ts#L20)
+[src/models/Fund.ts:20](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/Fund.ts#L20)
 
 ***
 
@@ -55,7 +55,7 @@ This interface defines the structure and types of data that a fund document will
 
 #### Defined in
 
-[src/models/Fund.ts:19](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Fund.ts#L19)
+[src/models/Fund.ts:19](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/Fund.ts#L19)
 
 ***
 
@@ -65,7 +65,7 @@ This interface defines the structure and types of data that a fund document will
 
 #### Defined in
 
-[src/models/Fund.ts:18](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Fund.ts#L18)
+[src/models/Fund.ts:18](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/Fund.ts#L18)
 
 ***
 
@@ -75,7 +75,7 @@ This interface defines the structure and types of data that a fund document will
 
 #### Defined in
 
-[src/models/Fund.ts:15](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Fund.ts#L15)
+[src/models/Fund.ts:15](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/Fund.ts#L15)
 
 ***
 
@@ -85,7 +85,7 @@ This interface defines the structure and types of data that a fund document will
 
 #### Defined in
 
-[src/models/Fund.ts:14](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Fund.ts#L14)
+[src/models/Fund.ts:14](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/Fund.ts#L14)
 
 ***
 
@@ -95,7 +95,7 @@ This interface defines the structure and types of data that a fund document will
 
 #### Defined in
 
-[src/models/Fund.ts:16](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Fund.ts#L16)
+[src/models/Fund.ts:16](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/Fund.ts#L16)
 
 ***
 
@@ -105,7 +105,7 @@ This interface defines the structure and types of data that a fund document will
 
 #### Defined in
 
-[src/models/Fund.ts:17](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Fund.ts#L17)
+[src/models/Fund.ts:17](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/Fund.ts#L17)
 
 ***
 
@@ -115,4 +115,4 @@ This interface defines the structure and types of data that a fund document will
 
 #### Defined in
 
-[src/models/Fund.ts:23](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Fund.ts#L23)
+[src/models/Fund.ts:23](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/Fund.ts#L23)

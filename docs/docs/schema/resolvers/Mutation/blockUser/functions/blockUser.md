@@ -1,4 +1,4 @@
-[**talawa-api**](../../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -57,4 +57,4 @@ A promise that resolves to the updated user document after blocking.
 
 ## Defined in
 
-[src/resolvers/Mutation/blockUser.ts:45](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/resolvers/Mutation/blockUser.ts#L45)
+[src/resolvers/Mutation/blockUser.ts:45](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/resolvers/Mutation/blockUser.ts#L45)

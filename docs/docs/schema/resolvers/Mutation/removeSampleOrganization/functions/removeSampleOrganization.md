@@ -1,4 +1,4 @@
-[**talawa-api**](../../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -34,4 +34,4 @@ A boolean value indicating whether the operation was successful.
 
 ## Defined in
 
-[src/resolvers/Mutation/removeSampleOrganization.ts:31](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/resolvers/Mutation/removeSampleOrganization.ts#L31)
+[src/resolvers/Mutation/removeSampleOrganization.ts:31](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/resolvers/Mutation/removeSampleOrganization.ts#L31)

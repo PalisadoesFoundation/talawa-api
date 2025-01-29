@@ -1,4 +1,4 @@
-[**talawa-api**](../../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -24,4 +24,4 @@ A promise resolving to void.
 
 ## Defined in
 
-[src/services/PostCache/cachePosts.ts:11](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/services/PostCache/cachePosts.ts#L11)
+[src/services/PostCache/cachePosts.ts:11](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/services/PostCache/cachePosts.ts#L11)

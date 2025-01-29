@@ -1,4 +1,4 @@
-[**talawa-api**](../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -24,4 +24,4 @@ EventVolunteerGroup
 
 ## Defined in
 
-[src/utilities/checks.ts:114](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/utilities/checks.ts#L114)
+[src/utilities/checks.ts:114](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/utilities/checks.ts#L114)

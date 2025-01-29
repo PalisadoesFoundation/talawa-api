@@ -1,4 +1,4 @@
-[**talawa-api**](../../../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -28,7 +28,7 @@ Express response object
 
 `Promise`\<`void`\>
 
-Promise<void> - Responds with updated post or error
+Promise`void` - Responds with updated post or error
 
 Description
 This controller handles post updates with the following features:
@@ -66,4 +66,4 @@ InputValidationError - When title/text validation fails or pinned status require
 
 ## Defined in
 
-[src/REST/controllers/mutation/updatePost.ts:73](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/REST/controllers/mutation/updatePost.ts#L73)
+[src/REST/controllers/mutation/updatePost.ts:73](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/REST/controllers/mutation/updatePost.ts#L73)

@@ -1,4 +1,4 @@
-[**talawa-api**](../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -16,4 +16,4 @@ It also logs warnings regarding the LAST_RESORT_SUPERADMIN_EMAIL variable.
 
 ## Defined in
 
-[src/checks.ts:46](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/checks.ts#L46)
+[src/checks.ts:46](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/checks.ts#L46)

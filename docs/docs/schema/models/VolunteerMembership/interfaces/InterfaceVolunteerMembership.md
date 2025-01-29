@@ -1,4 +1,4 @@
-[**talawa-api**](../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -15,7 +15,7 @@ This interface defines the structure and types of data that a volunteer membersh
 
 #### Defined in
 
-[src/models/VolunteerMembership.ts:16](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/VolunteerMembership.ts#L16)
+[src/models/VolunteerMembership.ts:16](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/VolunteerMembership.ts#L16)
 
 ***
 
@@ -25,7 +25,7 @@ This interface defines the structure and types of data that a volunteer membersh
 
 #### Defined in
 
-[src/models/VolunteerMembership.ts:23](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/VolunteerMembership.ts#L23)
+[src/models/VolunteerMembership.ts:23](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/VolunteerMembership.ts#L23)
 
 ***
 
@@ -35,7 +35,7 @@ This interface defines the structure and types of data that a volunteer membersh
 
 #### Defined in
 
-[src/models/VolunteerMembership.ts:21](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/VolunteerMembership.ts#L21)
+[src/models/VolunteerMembership.ts:21](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/VolunteerMembership.ts#L21)
 
 ***
 
@@ -45,7 +45,7 @@ This interface defines the structure and types of data that a volunteer membersh
 
 #### Defined in
 
-[src/models/VolunteerMembership.ts:19](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/VolunteerMembership.ts#L19)
+[src/models/VolunteerMembership.ts:19](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/VolunteerMembership.ts#L19)
 
 ***
 
@@ -55,7 +55,7 @@ This interface defines the structure and types of data that a volunteer membersh
 
 #### Defined in
 
-[src/models/VolunteerMembership.ts:18](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/VolunteerMembership.ts#L18)
+[src/models/VolunteerMembership.ts:18](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/VolunteerMembership.ts#L18)
 
 ***
 
@@ -65,7 +65,7 @@ This interface defines the structure and types of data that a volunteer membersh
 
 #### Defined in
 
-[src/models/VolunteerMembership.ts:20](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/VolunteerMembership.ts#L20)
+[src/models/VolunteerMembership.ts:20](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/VolunteerMembership.ts#L20)
 
 ***
 
@@ -75,7 +75,7 @@ This interface defines the structure and types of data that a volunteer membersh
 
 #### Defined in
 
-[src/models/VolunteerMembership.ts:24](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/VolunteerMembership.ts#L24)
+[src/models/VolunteerMembership.ts:24](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/VolunteerMembership.ts#L24)
 
 ***
 
@@ -85,7 +85,7 @@ This interface defines the structure and types of data that a volunteer membersh
 
 #### Defined in
 
-[src/models/VolunteerMembership.ts:22](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/VolunteerMembership.ts#L22)
+[src/models/VolunteerMembership.ts:22](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/VolunteerMembership.ts#L22)
 
 ***
 
@@ -95,4 +95,4 @@ This interface defines the structure and types of data that a volunteer membersh
 
 #### Defined in
 
-[src/models/VolunteerMembership.ts:17](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/VolunteerMembership.ts#L17)
+[src/models/VolunteerMembership.ts:17](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/VolunteerMembership.ts#L17)

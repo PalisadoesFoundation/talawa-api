@@ -1,4 +1,4 @@
-[**talawa-api**](../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -14,7 +14,7 @@ Interface for the fields required to send an email.
 
 #### Defined in
 
-[src/utilities/mailer.ts:17](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/utilities/mailer.ts#L17)
+[src/utilities/mailer.ts:17](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/utilities/mailer.ts#L17)
 
 ***
 
@@ -24,7 +24,7 @@ Interface for the fields required to send an email.
 
 #### Defined in
 
-[src/utilities/mailer.ts:15](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/utilities/mailer.ts#L15)
+[src/utilities/mailer.ts:15](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/utilities/mailer.ts#L15)
 
 ***
 
@@ -34,4 +34,4 @@ Interface for the fields required to send an email.
 
 #### Defined in
 
-[src/utilities/mailer.ts:16](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/utilities/mailer.ts#L16)
+[src/utilities/mailer.ts:16](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/utilities/mailer.ts#L16)

@@ -1,4 +1,4 @@
-[**talawa-api**](../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -12,4 +12,4 @@ Otherwise, it creates a new model.
 
 ## Defined in
 
-[src/models/RecurrenceRule.ts:126](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/RecurrenceRule.ts#L126)
+[src/models/RecurrenceRule.ts:126](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/models/RecurrenceRule.ts#L126)

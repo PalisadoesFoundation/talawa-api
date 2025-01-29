@@ -1,4 +1,4 @@
-[**talawa-api**](../../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -20,8 +20,8 @@ Array of organizations to be cached.
 
 `Promise`\<`void`\>
 
-Promise<void>
+Promise`void`
 
 ## Defined in
 
-[src/services/OrganizationCache/cacheOrganizations.ts:10](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/services/OrganizationCache/cacheOrganizations.ts#L10)
+[src/services/OrganizationCache/cacheOrganizations.ts:10](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/services/OrganizationCache/cacheOrganizations.ts#L10)

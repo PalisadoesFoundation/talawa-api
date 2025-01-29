@@ -1,4 +1,4 @@
-[**talawa-api**](../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -16,4 +16,4 @@ FundResolvers - The type definition for the resolvers of the Fund fields.
 
 ## Defined in
 
-[src/resolvers/Fund/index.ts:12](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/resolvers/Fund/index.ts#L12)
+[src/resolvers/Fund/index.ts:12](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/resolvers/Fund/index.ts#L12)

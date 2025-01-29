@@ -1,4 +1,4 @@
-[**talawa-api**](../../../../../README.md)
+[Admin Docs](/)
 
 ***
 
@@ -28,7 +28,7 @@ Express response object
 
 `Promise`\<`void`\>
 
-Promise<void> - Responds with created post or error
+Promise`void` - Responds with created post or error
 
 Description
 This controller handles post creation with the following features:
@@ -62,4 +62,4 @@ InputValidationError - When title or text validation fails
 
 ## Defined in
 
-[src/REST/controllers/mutation/createPost.ts:71](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/REST/controllers/mutation/createPost.ts#L71)
+[src/REST/controllers/mutation/createPost.ts:71](https://github.com/Suyash878/talawa-api/blob/cfd688207611ba245c99edd8dbaccb2cdbf6a043/src/REST/controllers/mutation/createPost.ts#L71)
