@@ -1,9 +1,9 @@
-import type { InterfaceJwtTokenPayload } from "@utilities/auth";
 import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import jwt from "jsonwebtoken";
 import type { InterfaceAppUserProfile } from "../../models/AppUserProfile";
 import { AppUserProfile } from "../../models/AppUserProfile";
 import type { Request } from "express";
+import type { InterfaceJwtTokenPayload } from "../../utilities";
 /**
  * This query verifies the user's role based on the provided JWT token.
  * @param _ - Unused parent parameter (as this is a root-level query).
