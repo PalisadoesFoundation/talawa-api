@@ -48,4 +48,4 @@ The created event volunteer record.
 
 ## Defined in
 
-[src/resolvers/Mutation/createEventVolunteer.ts:35](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Mutation/createEventVolunteer.ts#L35)
+[src/resolvers/Mutation/createEventVolunteer.ts:35](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/resolvers/Mutation/createEventVolunteer.ts#L35)

@@ -14,7 +14,7 @@ Interface representing a document for a check-out record in MongoDB.
 
 #### Defined in
 
-[src/models/CheckOut.ts:17](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/CheckOut.ts#L17)
+[src/models/CheckOut.ts:17](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/CheckOut.ts#L17)
 
 ***
 
@@ -24,7 +24,7 @@ Interface representing a document for a check-out record in MongoDB.
 
 #### Defined in
 
-[src/models/CheckOut.ts:20](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/CheckOut.ts#L20)
+[src/models/CheckOut.ts:20](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/CheckOut.ts#L20)
 
 ***
 
@@ -34,7 +34,7 @@ Interface representing a document for a check-out record in MongoDB.
 
 #### Defined in
 
-[src/models/CheckOut.ts:18](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/CheckOut.ts#L18)
+[src/models/CheckOut.ts:18](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/CheckOut.ts#L18)
 
 ***
 
@@ -44,7 +44,7 @@ Interface representing a document for a check-out record in MongoDB.
 
 #### Defined in
 
-[src/models/CheckOut.ts:19](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/CheckOut.ts#L19)
+[src/models/CheckOut.ts:19](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/CheckOut.ts#L19)
 
 ***
 
@@ -54,4 +54,4 @@ Interface representing a document for a check-out record in MongoDB.
 
 #### Defined in
 
-[src/models/CheckOut.ts:21](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/CheckOut.ts#L21)
+[src/models/CheckOut.ts:21](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/CheckOut.ts#L21)

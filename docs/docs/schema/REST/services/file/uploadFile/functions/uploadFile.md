@@ -34,4 +34,4 @@ Error - Throws an error if no file is uploaded or if the file type is invalid.
 
 ## Defined in
 
-[src/REST/services/file/uploadFile.ts:28](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/REST/services/file/uploadFile.ts#L28)
+[src/REST/services/file/uploadFile.ts:28](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/REST/services/file/uploadFile.ts#L28)

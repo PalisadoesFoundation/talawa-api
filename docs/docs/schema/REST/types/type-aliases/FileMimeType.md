@@ -10,4 +10,4 @@ Allowed MIME types for files.
 
 ## Defined in
 
-[src/REST/types/index.ts:4](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/REST/types/index.ts#L4)
+[src/REST/types/index.ts:4](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/REST/types/index.ts#L4)

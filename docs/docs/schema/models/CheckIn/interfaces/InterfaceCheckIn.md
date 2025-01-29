@@ -14,7 +14,7 @@ Represents a document for a check-in entry in the MongoDB database.
 
 #### Defined in
 
-[src/models/CheckIn.ts:17](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/CheckIn.ts#L17)
+[src/models/CheckIn.ts:17](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/CheckIn.ts#L17)
 
 ***
 
@@ -24,7 +24,7 @@ Represents a document for a check-in entry in the MongoDB database.
 
 #### Defined in
 
-[src/models/CheckIn.ts:21](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/CheckIn.ts#L21)
+[src/models/CheckIn.ts:21](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/CheckIn.ts#L21)
 
 ***
 
@@ -34,7 +34,7 @@ Represents a document for a check-in entry in the MongoDB database.
 
 #### Defined in
 
-[src/models/CheckIn.ts:18](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/CheckIn.ts#L18)
+[src/models/CheckIn.ts:18](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/CheckIn.ts#L18)
 
 ***
 
@@ -44,7 +44,7 @@ Represents a document for a check-in entry in the MongoDB database.
 
 #### Defined in
 
-[src/models/CheckIn.ts:20](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/CheckIn.ts#L20)
+[src/models/CheckIn.ts:20](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/CheckIn.ts#L20)
 
 ***
 
@@ -54,7 +54,7 @@ Represents a document for a check-in entry in the MongoDB database.
 
 #### Defined in
 
-[src/models/CheckIn.ts:19](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/CheckIn.ts#L19)
+[src/models/CheckIn.ts:19](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/CheckIn.ts#L19)
 
 ***
 
@@ -64,4 +64,4 @@ Represents a document for a check-in entry in the MongoDB database.
 
 #### Defined in
 
-[src/models/CheckIn.ts:22](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/CheckIn.ts#L22)
+[src/models/CheckIn.ts:22](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/CheckIn.ts#L22)

@@ -48,4 +48,4 @@ This function performs the following steps:
 
 ## Defined in
 
-[src/helpers/event/recurringEventHelpers/getRecurringInstanceDates.ts:25](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/helpers/event/recurringEventHelpers/getRecurringInstanceDates.ts#L25)
+[src/helpers/event/recurringEventHelpers/getRecurringInstanceDates.ts:25](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/helpers/event/recurringEventHelpers/getRecurringInstanceDates.ts#L25)

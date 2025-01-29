@@ -43,4 +43,4 @@ A promise that resolves to an array of user documents found in the database. The
 
 ## Defined in
 
-[src/resolvers/Organization/admins.ts:16](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Organization/admins.ts#L16)
+[src/resolvers/Organization/admins.ts:16](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/resolvers/Organization/admins.ts#L16)

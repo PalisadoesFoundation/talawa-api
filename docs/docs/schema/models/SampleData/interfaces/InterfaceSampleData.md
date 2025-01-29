@@ -18,7 +18,7 @@ Interface representing a document for sample data in the database (MongoDB).
 
 #### Defined in
 
-[src/models/SampleData.ts:12](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/SampleData.ts#L12)
+[src/models/SampleData.ts:12](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/SampleData.ts#L12)
 
 ***
 
@@ -28,4 +28,4 @@ Interface representing a document for sample data in the database (MongoDB).
 
 #### Defined in
 
-[src/models/SampleData.ts:11](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/SampleData.ts#L11)
+[src/models/SampleData.ts:11](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/SampleData.ts#L11)

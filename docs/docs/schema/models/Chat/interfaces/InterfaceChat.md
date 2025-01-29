@@ -14,7 +14,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:13](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L13)
+[src/models/Chat.ts:13](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L13)
 
 ***
 
@@ -24,7 +24,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:22](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L22)
+[src/models/Chat.ts:22](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L22)
 
 ***
 
@@ -34,7 +34,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:23](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L23)
+[src/models/Chat.ts:23](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L23)
 
 ***
 
@@ -44,7 +44,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:19](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L19)
+[src/models/Chat.ts:19](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L19)
 
 ***
 
@@ -54,7 +54,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:16](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L16)
+[src/models/Chat.ts:16](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L16)
 
 ***
 
@@ -64,7 +64,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:14](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L14)
+[src/models/Chat.ts:14](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L14)
 
 ***
 
@@ -74,7 +74,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:25](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L25)
+[src/models/Chat.ts:25](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L25)
 
 ***
 
@@ -84,7 +84,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:18](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L18)
+[src/models/Chat.ts:18](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L18)
 
 ***
 
@@ -94,7 +94,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:15](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L15)
+[src/models/Chat.ts:15](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L15)
 
 ***
 
@@ -104,7 +104,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:20](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L20)
+[src/models/Chat.ts:20](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L20)
 
 ***
 
@@ -114,7 +114,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:21](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L21)
+[src/models/Chat.ts:21](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L21)
 
 ***
 
@@ -124,7 +124,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:26](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L26)
+[src/models/Chat.ts:26](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L26)
 
 ***
 
@@ -134,7 +134,7 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:24](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L24)
+[src/models/Chat.ts:24](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L24)
 
 ***
 
@@ -144,4 +144,4 @@ Interface representing a document for direct chat in MongoDB.
 
 #### Defined in
 
-[src/models/Chat.ts:17](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Chat.ts#L17)
+[src/models/Chat.ts:17](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Chat.ts#L17)

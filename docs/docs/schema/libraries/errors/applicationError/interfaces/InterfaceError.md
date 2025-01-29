@@ -16,7 +16,7 @@ The error code, can be null
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:8](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/libraries/errors/applicationError.ts#L8)
+[src/libraries/errors/applicationError.ts:8](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/libraries/errors/applicationError.ts#L8)
 
 ***
 
@@ -28,7 +28,7 @@ The error message
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:6](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/libraries/errors/applicationError.ts#L6)
+[src/libraries/errors/applicationError.ts:6](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/libraries/errors/applicationError.ts#L6)
 
 ***
 
@@ -40,7 +40,7 @@ Optional additional metadata associated with the error
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:12](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/libraries/errors/applicationError.ts#L12)
+[src/libraries/errors/applicationError.ts:12](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/libraries/errors/applicationError.ts#L12)
 
 ***
 
@@ -52,4 +52,4 @@ The parameter associated with the error, can be null
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:10](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/libraries/errors/applicationError.ts#L10)
+[src/libraries/errors/applicationError.ts:10](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/libraries/errors/applicationError.ts#L10)

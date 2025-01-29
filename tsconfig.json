@@ -8,7 +8,6 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "resolveJsonModule": true /* Allow to import JSON files */,
     "moduleResolution": "node",
-    "jsx": "react",
     "noUncheckedSideEffectImports": true /* Checks if module's path exists. */
   }
 }

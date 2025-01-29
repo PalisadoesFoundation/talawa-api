@@ -33,4 +33,4 @@ If the `appLanguageCode` field not found then it throws a `NotFoundError` error.
 
 ## Defined in
 
-[src/resolvers/Query/myLanguage.ts:13](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Query/myLanguage.ts#L13)
+[src/resolvers/Query/myLanguage.ts:13](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/resolvers/Query/myLanguage.ts#L13)

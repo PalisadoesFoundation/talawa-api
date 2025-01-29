@@ -12,7 +12,7 @@
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:180](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaign.ts#L180)
+[src/models/FundraisingCampaign.ts:180](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/FundraisingCampaign.ts#L180)
 
 ***
 
@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:189](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaign.ts#L189)
+[src/models/FundraisingCampaign.ts:189](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/FundraisingCampaign.ts#L189)
 
 ***
 
@@ -32,7 +32,7 @@
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:187](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaign.ts#L187)
+[src/models/FundraisingCampaign.ts:187](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/FundraisingCampaign.ts#L187)
 
 ***
 
@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:185](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaign.ts#L185)
+[src/models/FundraisingCampaign.ts:185](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/FundraisingCampaign.ts#L185)
 
 ***
 
@@ -52,7 +52,7 @@
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:181](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaign.ts#L181)
+[src/models/FundraisingCampaign.ts:181](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/FundraisingCampaign.ts#L181)
 
 ***
 
@@ -62,7 +62,7 @@
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:186](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaign.ts#L186)
+[src/models/FundraisingCampaign.ts:186](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/FundraisingCampaign.ts#L186)
 
 ***
 
@@ -72,7 +72,7 @@
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:183](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaign.ts#L183)
+[src/models/FundraisingCampaign.ts:183](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/FundraisingCampaign.ts#L183)
 
 ***
 
@@ -82,7 +82,7 @@
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:182](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaign.ts#L182)
+[src/models/FundraisingCampaign.ts:182](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/FundraisingCampaign.ts#L182)
 
 ***
 
@@ -92,7 +92,7 @@
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:188](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaign.ts#L188)
+[src/models/FundraisingCampaign.ts:188](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/FundraisingCampaign.ts#L188)
 
 ***
 
@@ -102,7 +102,7 @@
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:184](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaign.ts#L184)
+[src/models/FundraisingCampaign.ts:184](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/FundraisingCampaign.ts#L184)
 
 ***
 
@@ -112,4 +112,4 @@
 
 #### Defined in
 
-[src/models/FundraisingCampaign.ts:190](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaign.ts#L190)
+[src/models/FundraisingCampaign.ts:190](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/FundraisingCampaign.ts#L190)

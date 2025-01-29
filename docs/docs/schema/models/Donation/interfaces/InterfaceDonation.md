@@ -14,7 +14,7 @@ Interface representing a document for a donation in MongoDB.
 
 #### Defined in
 
-[src/models/Donation.ts:16](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Donation.ts#L16)
+[src/models/Donation.ts:16](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Donation.ts#L16)
 
 ***
 
@@ -24,7 +24,7 @@ Interface representing a document for a donation in MongoDB.
 
 #### Defined in
 
-[src/models/Donation.ts:17](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Donation.ts#L17)
+[src/models/Donation.ts:17](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Donation.ts#L17)
 
 ***
 
@@ -34,7 +34,7 @@ Interface representing a document for a donation in MongoDB.
 
 #### Defined in
 
-[src/models/Donation.ts:13](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Donation.ts#L13)
+[src/models/Donation.ts:13](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Donation.ts#L13)
 
 ***
 
@@ -44,7 +44,7 @@ Interface representing a document for a donation in MongoDB.
 
 #### Defined in
 
-[src/models/Donation.ts:15](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Donation.ts#L15)
+[src/models/Donation.ts:15](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Donation.ts#L15)
 
 ***
 
@@ -54,7 +54,7 @@ Interface representing a document for a donation in MongoDB.
 
 #### Defined in
 
-[src/models/Donation.ts:12](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Donation.ts#L12)
+[src/models/Donation.ts:12](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Donation.ts#L12)
 
 ***
 
@@ -64,7 +64,7 @@ Interface representing a document for a donation in MongoDB.
 
 #### Defined in
 
-[src/models/Donation.ts:14](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Donation.ts#L14)
+[src/models/Donation.ts:14](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Donation.ts#L14)
 
 ***
 
@@ -74,7 +74,7 @@ Interface representing a document for a donation in MongoDB.
 
 #### Defined in
 
-[src/models/Donation.ts:18](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Donation.ts#L18)
+[src/models/Donation.ts:18](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Donation.ts#L18)
 
 ***
 
@@ -84,4 +84,4 @@ Interface representing a document for a donation in MongoDB.
 
 #### Defined in
 
-[src/models/Donation.ts:11](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Donation.ts#L11)
+[src/models/Donation.ts:11](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Donation.ts#L11)

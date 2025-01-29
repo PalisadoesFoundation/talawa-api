@@ -14,7 +14,7 @@ Interface representing a document for an agenda section in MongoDB.
 
 #### Defined in
 
-[src/models/AgendaSection.ts:13](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/AgendaSection.ts#L13)
+[src/models/AgendaSection.ts:13](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/AgendaSection.ts#L13)
 
 ***
 
@@ -24,7 +24,7 @@ Interface representing a document for an agenda section in MongoDB.
 
 #### Defined in
 
-[src/models/AgendaSection.ts:18](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/AgendaSection.ts#L18)
+[src/models/AgendaSection.ts:18](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/AgendaSection.ts#L18)
 
 ***
 
@@ -34,7 +34,7 @@ Interface representing a document for an agenda section in MongoDB.
 
 #### Defined in
 
-[src/models/AgendaSection.ts:20](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/AgendaSection.ts#L20)
+[src/models/AgendaSection.ts:20](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/AgendaSection.ts#L20)
 
 ***
 
@@ -44,7 +44,7 @@ Interface representing a document for an agenda section in MongoDB.
 
 #### Defined in
 
-[src/models/AgendaSection.ts:15](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/AgendaSection.ts#L15)
+[src/models/AgendaSection.ts:15](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/AgendaSection.ts#L15)
 
 ***
 
@@ -54,7 +54,7 @@ Interface representing a document for an agenda section in MongoDB.
 
 #### Defined in
 
-[src/models/AgendaSection.ts:16](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/AgendaSection.ts#L16)
+[src/models/AgendaSection.ts:16](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/AgendaSection.ts#L16)
 
 ***
 
@@ -64,7 +64,7 @@ Interface representing a document for an agenda section in MongoDB.
 
 #### Defined in
 
-[src/models/AgendaSection.ts:14](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/AgendaSection.ts#L14)
+[src/models/AgendaSection.ts:14](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/AgendaSection.ts#L14)
 
 ***
 
@@ -74,7 +74,7 @@ Interface representing a document for an agenda section in MongoDB.
 
 #### Defined in
 
-[src/models/AgendaSection.ts:17](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/AgendaSection.ts#L17)
+[src/models/AgendaSection.ts:17](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/AgendaSection.ts#L17)
 
 ***
 
@@ -84,7 +84,7 @@ Interface representing a document for an agenda section in MongoDB.
 
 #### Defined in
 
-[src/models/AgendaSection.ts:19](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/AgendaSection.ts#L19)
+[src/models/AgendaSection.ts:19](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/AgendaSection.ts#L19)
 
 ***
 
@@ -94,4 +94,4 @@ Interface representing a document for an agenda section in MongoDB.
 
 #### Defined in
 
-[src/models/AgendaSection.ts:21](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/AgendaSection.ts#L21)
+[src/models/AgendaSection.ts:21](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/AgendaSection.ts#L21)

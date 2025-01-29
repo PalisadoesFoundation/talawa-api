@@ -55,4 +55,4 @@ A promise that resolves to the newly created feedback document.
 
 ## Defined in
 
-[src/resolvers/Mutation/addFeedback.ts:37](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Mutation/addFeedback.ts#L37)
+[src/resolvers/Mutation/addFeedback.ts:37](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/resolvers/Mutation/addFeedback.ts#L37)

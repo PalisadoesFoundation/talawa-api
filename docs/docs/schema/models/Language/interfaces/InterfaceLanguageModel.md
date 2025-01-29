@@ -14,7 +14,7 @@ Interface representing a Language Model document in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Language.ts:14](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Language.ts#L14)
+[src/models/Language.ts:14](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Language.ts#L14)
 
 ***
 
@@ -24,7 +24,7 @@ Interface representing a Language Model document in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Language.ts:11](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Language.ts#L11)
+[src/models/Language.ts:11](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Language.ts#L11)
 
 ***
 
@@ -34,7 +34,7 @@ Interface representing a Language Model document in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Language.ts:12](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Language.ts#L12)
+[src/models/Language.ts:12](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Language.ts#L12)
 
 ***
 
@@ -44,4 +44,4 @@ Interface representing a Language Model document in the database (MongoDB).
 
 #### Defined in
 
-[src/models/Language.ts:13](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Language.ts#L13)
+[src/models/Language.ts:13](https://github.com/Suyash878/talawa-api/blob/b5a9d8b4a1ea678a3d6f5b710b3721f91a3052fc/src/models/Language.ts#L13)
