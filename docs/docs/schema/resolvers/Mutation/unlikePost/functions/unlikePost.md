@@ -42,4 +42,4 @@ The following checks are done:
 
 ## Defined in
 
-[src/resolvers/Mutation/unlikePost.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/unlikePost.ts#L18)
+[src/resolvers/Mutation/unlikePost.ts:18](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Mutation/unlikePost.ts#L18)

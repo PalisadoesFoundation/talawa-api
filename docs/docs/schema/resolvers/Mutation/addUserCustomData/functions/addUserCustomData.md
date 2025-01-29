@@ -47,4 +47,4 @@ A promise that resolves to the newly added or updated user custom data object.
 
 ## Defined in
 
-[src/resolvers/Mutation/addUserCustomData.ts:34](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/addUserCustomData.ts#L34)
+[src/resolvers/Mutation/addUserCustomData.ts:34](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Mutation/addUserCustomData.ts#L34)

@@ -31,4 +31,4 @@ An object containing the parsed cursor value, or an array of errors if the curso
 
 ## Defined in
 
-[src/resolvers/Organization/advertisements.ts:130](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Organization/advertisements.ts#L130)
+[src/resolvers/Organization/advertisements.ts:130](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Organization/advertisements.ts#L130)

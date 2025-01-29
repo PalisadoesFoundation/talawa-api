@@ -20,4 +20,4 @@ This function is used to get an object containing sorting logic.a
 
 ## Defined in
 
-[src/utilities/userTagsPaginationUtils/getUserTagGraphQLConnectionSort.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/utilities/userTagsPaginationUtils/getUserTagGraphQLConnectionSort.ts#L18)
+[src/utilities/userTagsPaginationUtils/getUserTagGraphQLConnectionSort.ts:18](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/utilities/userTagsPaginationUtils/getUserTagGraphQLConnectionSort.ts#L18)

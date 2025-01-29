@@ -12,7 +12,7 @@
 
 #### Defined in
 
-[src/models/File.ts:10](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L10)
+[src/models/File.ts:10](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L10)
 
 ***
 
@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[src/models/File.ts:22](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L22)
+[src/models/File.ts:22](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L22)
 
 ***
 
@@ -32,7 +32,7 @@
 
 #### Defined in
 
-[src/models/File.ts:28](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L28)
+[src/models/File.ts:28](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L28)
 
 ***
 
@@ -42,7 +42,7 @@
 
 #### Defined in
 
-[src/models/File.ts:24](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L24)
+[src/models/File.ts:24](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L24)
 
 ***
 
@@ -52,7 +52,7 @@
 
 #### Defined in
 
-[src/models/File.ts:26](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L26)
+[src/models/File.ts:26](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L26)
 
 ***
 
@@ -62,7 +62,7 @@
 
 #### Defined in
 
-[src/models/File.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L21)
+[src/models/File.ts:21](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L21)
 
 ***
 
@@ -72,7 +72,7 @@
 
 #### Defined in
 
-[src/models/File.ts:11](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L11)
+[src/models/File.ts:11](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L11)
 
 ***
 
@@ -90,7 +90,7 @@
 
 #### Defined in
 
-[src/models/File.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L14)
+[src/models/File.ts:14](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L14)
 
 ***
 
@@ -100,7 +100,7 @@
 
 #### Defined in
 
-[src/models/File.ts:20](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L20)
+[src/models/File.ts:20](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L20)
 
 ***
 
@@ -110,7 +110,7 @@
 
 #### Defined in
 
-[src/models/File.ts:12](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L12)
+[src/models/File.ts:12](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L12)
 
 ***
 
@@ -120,7 +120,7 @@
 
 #### Defined in
 
-[src/models/File.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L19)
+[src/models/File.ts:19](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L19)
 
 ***
 
@@ -130,7 +130,7 @@
 
 #### Defined in
 
-[src/models/File.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L13)
+[src/models/File.ts:13](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L13)
 
 ***
 
@@ -140,7 +140,7 @@
 
 #### Defined in
 
-[src/models/File.ts:25](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L25)
+[src/models/File.ts:25](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L25)
 
 ***
 
@@ -150,7 +150,7 @@
 
 #### Defined in
 
-[src/models/File.ts:27](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L27)
+[src/models/File.ts:27](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L27)
 
 ***
 
@@ -160,7 +160,7 @@
 
 #### Defined in
 
-[src/models/File.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L18)
+[src/models/File.ts:18](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L18)
 
 ***
 
@@ -170,4 +170,4 @@
 
 #### Defined in
 
-[src/models/File.ts:23](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/File.ts#L23)
+[src/models/File.ts:23](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/File.ts#L23)

@@ -49,4 +49,4 @@ This function includes validation for user authorization, venue uniqueness, and 
 
 ## Defined in
 
-[src/resolvers/Mutation/createVenue.ts:40](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/createVenue.ts#L40)
+[src/resolvers/Mutation/createVenue.ts:40](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Mutation/createVenue.ts#L40)

@@ -57,4 +57,4 @@ This function first checks the cache for the current user and then queries the d
 
 ## Defined in
 
-[src/resolvers/Mutation/createEventVolunteerGroup.ts:44](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/createEventVolunteerGroup.ts#L44)
+[src/resolvers/Mutation/createEventVolunteerGroup.ts:44](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Mutation/createEventVolunteerGroup.ts#L44)

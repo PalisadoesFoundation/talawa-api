@@ -49,4 +49,4 @@ The tag that was deleted.
 
 ## Defined in
 
-[src/resolvers/Mutation/removeUserTag.ts:43](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/removeUserTag.ts#L43)
+[src/resolvers/Mutation/removeUserTag.ts:43](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Mutation/removeUserTag.ts#L43)

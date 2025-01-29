@@ -38,4 +38,4 @@ A promise that resolves to the updated agenda section.
 
 ## Defined in
 
-[src/resolvers/Mutation/updateAgendaSection.ts:30](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/updateAgendaSection.ts#L30)
+[src/resolvers/Mutation/updateAgendaSection.ts:30](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Mutation/updateAgendaSection.ts#L30)

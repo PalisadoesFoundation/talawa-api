@@ -29,4 +29,4 @@ following the relay cursor connection specification, more info here:- [https://r
 
 ## Defined in
 
-[src/utilities/graphQLConnection/index.ts:33](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/utilities/graphQLConnection/index.ts#L33)
+[src/utilities/graphQLConnection/index.ts:33](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/utilities/graphQLConnection/index.ts#L33)

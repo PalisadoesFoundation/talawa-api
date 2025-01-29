@@ -14,7 +14,7 @@ Interface representing a MongoDB document for User Family.
 
 #### Defined in
 
-[src/models/userFamily.ts:11](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/userFamily.ts#L11)
+[src/models/userFamily.ts:11](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/userFamily.ts#L11)
 
 ***
 
@@ -24,7 +24,7 @@ Interface representing a MongoDB document for User Family.
 
 #### Defined in
 
-[src/models/userFamily.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/userFamily.ts#L14)
+[src/models/userFamily.ts:14](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/userFamily.ts#L14)
 
 ***
 
@@ -34,7 +34,7 @@ Interface representing a MongoDB document for User Family.
 
 #### Defined in
 
-[src/models/userFamily.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/userFamily.ts#L15)
+[src/models/userFamily.ts:15](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/userFamily.ts#L15)
 
 ***
 
@@ -44,7 +44,7 @@ Interface representing a MongoDB document for User Family.
 
 #### Defined in
 
-[src/models/userFamily.ts:12](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/userFamily.ts#L12)
+[src/models/userFamily.ts:12](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/userFamily.ts#L12)
 
 ***
 
@@ -54,4 +54,4 @@ Interface representing a MongoDB document for User Family.
 
 #### Defined in
 
-[src/models/userFamily.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/userFamily.ts#L13)
+[src/models/userFamily.ts:13](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/userFamily.ts#L13)

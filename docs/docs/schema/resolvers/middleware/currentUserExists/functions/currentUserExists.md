@@ -59,4 +59,4 @@ The result of the next function in the resolver chain.
 
 ## Defined in
 
-[src/resolvers/middleware/currentUserExists.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/middleware/currentUserExists.ts#L21)
+[src/resolvers/middleware/currentUserExists.ts:21](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/middleware/currentUserExists.ts#L21)

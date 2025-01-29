@@ -14,7 +14,7 @@ Interface representing a document for a fundraising campaign pledge in the datab
 
 #### Defined in
 
-[src/models/FundraisingCampaignPledge.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaignPledge.ts#L15)
+[src/models/FundraisingCampaignPledge.ts:15](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaignPledge.ts#L15)
 
 ***
 
@@ -24,7 +24,7 @@ Interface representing a document for a fundraising campaign pledge in the datab
 
 #### Defined in
 
-[src/models/FundraisingCampaignPledge.ts:20](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaignPledge.ts#L20)
+[src/models/FundraisingCampaignPledge.ts:20](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaignPledge.ts#L20)
 
 ***
 
@@ -34,7 +34,7 @@ Interface representing a document for a fundraising campaign pledge in the datab
 
 #### Defined in
 
-[src/models/FundraisingCampaignPledge.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaignPledge.ts#L16)
+[src/models/FundraisingCampaignPledge.ts:16](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaignPledge.ts#L16)
 
 ***
 
@@ -44,7 +44,7 @@ Interface representing a document for a fundraising campaign pledge in the datab
 
 #### Defined in
 
-[src/models/FundraisingCampaignPledge.ts:22](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaignPledge.ts#L22)
+[src/models/FundraisingCampaignPledge.ts:22](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaignPledge.ts#L22)
 
 ***
 
@@ -54,7 +54,7 @@ Interface representing a document for a fundraising campaign pledge in the datab
 
 #### Defined in
 
-[src/models/FundraisingCampaignPledge.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaignPledge.ts#L21)
+[src/models/FundraisingCampaignPledge.ts:21](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaignPledge.ts#L21)
 
 ***
 
@@ -64,7 +64,7 @@ Interface representing a document for a fundraising campaign pledge in the datab
 
 #### Defined in
 
-[src/models/FundraisingCampaignPledge.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaignPledge.ts#L19)
+[src/models/FundraisingCampaignPledge.ts:19](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaignPledge.ts#L19)
 
 ***
 
@@ -74,7 +74,7 @@ Interface representing a document for a fundraising campaign pledge in the datab
 
 #### Defined in
 
-[src/models/FundraisingCampaignPledge.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaignPledge.ts#L18)
+[src/models/FundraisingCampaignPledge.ts:18](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaignPledge.ts#L18)
 
 ***
 
@@ -84,7 +84,7 @@ Interface representing a document for a fundraising campaign pledge in the datab
 
 #### Defined in
 
-[src/models/FundraisingCampaignPledge.ts:23](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaignPledge.ts#L23)
+[src/models/FundraisingCampaignPledge.ts:23](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaignPledge.ts#L23)
 
 ***
 
@@ -94,4 +94,4 @@ Interface representing a document for a fundraising campaign pledge in the datab
 
 #### Defined in
 
-[src/models/FundraisingCampaignPledge.ts:17](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/FundraisingCampaignPledge.ts#L17)
+[src/models/FundraisingCampaignPledge.ts:17](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/FundraisingCampaignPledge.ts#L17)

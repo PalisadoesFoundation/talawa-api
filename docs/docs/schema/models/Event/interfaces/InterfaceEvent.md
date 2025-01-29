@@ -14,7 +14,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L18)
+[src/models/Event.ts:18](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L18)
 
 ***
 
@@ -24,7 +24,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L19)
+[src/models/Event.ts:19](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L19)
 
 ***
 
@@ -34,7 +34,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:46](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L46)
+[src/models/Event.ts:46](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L46)
 
 ***
 
@@ -44,7 +44,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:20](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L20)
+[src/models/Event.ts:20](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L20)
 
 ***
 
@@ -54,7 +54,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L21)
+[src/models/Event.ts:21](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L21)
 
 ***
 
@@ -64,7 +64,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:22](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L22)
+[src/models/Event.ts:22](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L22)
 
 ***
 
@@ -74,7 +74,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:47](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L47)
+[src/models/Event.ts:47](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L47)
 
 ***
 
@@ -84,7 +84,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:23](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L23)
+[src/models/Event.ts:23](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L23)
 
 ***
 
@@ -94,7 +94,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:24](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L24)
+[src/models/Event.ts:24](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L24)
 
 ***
 
@@ -104,7 +104,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:25](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L25)
+[src/models/Event.ts:25](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L25)
 
 ***
 
@@ -114,7 +114,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:26](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L26)
+[src/models/Event.ts:26](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L26)
 
 ***
 
@@ -124,7 +124,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:27](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L27)
+[src/models/Event.ts:27](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L27)
 
 ***
 
@@ -134,7 +134,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:28](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L28)
+[src/models/Event.ts:28](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L28)
 
 ***
 
@@ -144,7 +144,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:29](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L29)
+[src/models/Event.ts:29](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L29)
 
 ***
 
@@ -154,7 +154,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:30](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L30)
+[src/models/Event.ts:30](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L30)
 
 ***
 
@@ -164,7 +164,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:31](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L31)
+[src/models/Event.ts:31](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L31)
 
 ***
 
@@ -174,7 +174,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:32](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L32)
+[src/models/Event.ts:32](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L32)
 
 ***
 
@@ -184,7 +184,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:33](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L33)
+[src/models/Event.ts:33](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L33)
 
 ***
 
@@ -194,7 +194,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:34](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L34)
+[src/models/Event.ts:34](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L34)
 
 ***
 
@@ -204,7 +204,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:35](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L35)
+[src/models/Event.ts:35](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L35)
 
 ***
 
@@ -214,7 +214,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:36](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L36)
+[src/models/Event.ts:36](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L36)
 
 ***
 
@@ -224,7 +224,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:37](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L37)
+[src/models/Event.ts:37](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L37)
 
 ***
 
@@ -234,7 +234,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:38](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L38)
+[src/models/Event.ts:38](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L38)
 
 ***
 
@@ -244,7 +244,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:39](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L39)
+[src/models/Event.ts:39](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L39)
 
 ***
 
@@ -254,7 +254,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:40](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L40)
+[src/models/Event.ts:40](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L40)
 
 ***
 
@@ -264,7 +264,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:41](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L41)
+[src/models/Event.ts:41](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L41)
 
 ***
 
@@ -274,7 +274,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:42](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L42)
+[src/models/Event.ts:42](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L42)
 
 ***
 
@@ -284,7 +284,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:43](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L43)
+[src/models/Event.ts:43](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L43)
 
 ***
 
@@ -294,7 +294,7 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:45](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L45)
+[src/models/Event.ts:45](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L45)
 
 ***
 
@@ -304,4 +304,4 @@ Represents a document for an event in the MongoDB database.
 
 #### Defined in
 
-[src/models/Event.ts:44](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Event.ts#L44)
+[src/models/Event.ts:44](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Event.ts#L44)

@@ -41,4 +41,4 @@ A promise that resolves to the user document found in the database. This documen
 
 ## Defined in
 
-[src/resolvers/ActionItemCategory/creator.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/ActionItemCategory/creator.ts#L15)
+[src/resolvers/ActionItemCategory/creator.ts:15](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/ActionItemCategory/creator.ts#L15)

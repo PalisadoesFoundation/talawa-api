@@ -43,4 +43,4 @@ A promise that resolves to an array of membership request documents found in the
 
 ## Defined in
 
-[src/resolvers/Organization/membershipRequests.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Organization/membershipRequests.ts#L16)
+[src/resolvers/Organization/membershipRequests.ts:16](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Organization/membershipRequests.ts#L16)

@@ -55,4 +55,4 @@ and it updates the organization document to include the new agenda category.
 
 ## Defined in
 
-[src/resolvers/Mutation/createAgendaCategory.ts:49](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/createAgendaCategory.ts#L49)
+[src/resolvers/Mutation/createAgendaCategory.ts:49](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Mutation/createAgendaCategory.ts#L49)

@@ -14,7 +14,7 @@ Interface representing a document for a recurrence rule in the database (MongoDB
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:36](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L36)
+[src/models/RecurrenceRule.ts:36](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/RecurrenceRule.ts#L36)
 
 ***
 
@@ -24,7 +24,7 @@ Interface representing a document for a recurrence rule in the database (MongoDB
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:38](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L38)
+[src/models/RecurrenceRule.ts:38](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/RecurrenceRule.ts#L38)
 
 ***
 
@@ -34,7 +34,7 @@ Interface representing a document for a recurrence rule in the database (MongoDB
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:45](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L45)
+[src/models/RecurrenceRule.ts:45](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/RecurrenceRule.ts#L45)
 
 ***
 
@@ -44,7 +44,7 @@ Interface representing a document for a recurrence rule in the database (MongoDB
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:42](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L42)
+[src/models/RecurrenceRule.ts:42](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/RecurrenceRule.ts#L42)
 
 ***
 
@@ -54,7 +54,7 @@ Interface representing a document for a recurrence rule in the database (MongoDB
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:44](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L44)
+[src/models/RecurrenceRule.ts:44](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/RecurrenceRule.ts#L44)
 
 ***
 
@@ -64,7 +64,7 @@ Interface representing a document for a recurrence rule in the database (MongoDB
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:47](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L47)
+[src/models/RecurrenceRule.ts:47](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/RecurrenceRule.ts#L47)
 
 ***
 
@@ -74,7 +74,7 @@ Interface representing a document for a recurrence rule in the database (MongoDB
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:37](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L37)
+[src/models/RecurrenceRule.ts:37](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/RecurrenceRule.ts#L37)
 
 ***
 
@@ -84,7 +84,7 @@ Interface representing a document for a recurrence rule in the database (MongoDB
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:41](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L41)
+[src/models/RecurrenceRule.ts:41](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/RecurrenceRule.ts#L41)
 
 ***
 
@@ -94,7 +94,7 @@ Interface representing a document for a recurrence rule in the database (MongoDB
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:39](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L39)
+[src/models/RecurrenceRule.ts:39](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/RecurrenceRule.ts#L39)
 
 ***
 
@@ -104,7 +104,7 @@ Interface representing a document for a recurrence rule in the database (MongoDB
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:40](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L40)
+[src/models/RecurrenceRule.ts:40](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/RecurrenceRule.ts#L40)
 
 ***
 
@@ -114,7 +114,7 @@ Interface representing a document for a recurrence rule in the database (MongoDB
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:46](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L46)
+[src/models/RecurrenceRule.ts:46](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/RecurrenceRule.ts#L46)
 
 ***
 
@@ -124,4 +124,4 @@ Interface representing a document for a recurrence rule in the database (MongoDB
 
 #### Defined in
 
-[src/models/RecurrenceRule.ts:43](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/RecurrenceRule.ts#L43)
+[src/models/RecurrenceRule.ts:43](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/RecurrenceRule.ts#L43)

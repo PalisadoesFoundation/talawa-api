@@ -13,8 +13,8 @@ It extends the built-in Error class to include additional properties and methods
 
 ## Extended by
 
-- [`ImageSizeLimitExceeded`](../../ImageSizeLimitExceeded/classes/ImageSizeLimitExceeded.md)
 - [`ConflictError`](../../conflictError/classes/ConflictError.md)
+- [`ImageSizeLimitExceeded`](../../ImageSizeLimitExceeded/classes/ImageSizeLimitExceeded.md)
 - [`InputValidationError`](../../inputValidationError/classes/InputValidationError.md)
 - [`InternalServerError`](../../internalServerError/classes/InternalServerError.md)
 - [`InvalidFileTypeError`](../../invalidFileTypeError/classes/InvalidFileTypeError.md)
@@ -61,7 +61,7 @@ The error message (default is "Error").
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:32](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/libraries/errors/applicationError.ts#L32)
+[src/libraries/errors/applicationError.ts:32](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/libraries/errors/applicationError.ts#L32)
 
 ## Properties
 
@@ -73,7 +73,7 @@ An array of errors conforming to the InterfaceError interface
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/libraries/errors/applicationError.ts#L21)
+[src/libraries/errors/applicationError.ts:21](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/libraries/errors/applicationError.ts#L21)
 
 ***
 
@@ -85,4 +85,4 @@ The HTTP status code associated with the error
 
 #### Defined in
 
-[src/libraries/errors/applicationError.ts:23](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/libraries/errors/applicationError.ts#L23)
+[src/libraries/errors/applicationError.ts:23](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/libraries/errors/applicationError.ts#L23)

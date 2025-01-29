@@ -45,4 +45,4 @@ const objectList = await User.find().sort(sort).limit(10);
 
 ## Defined in
 
-[src/utilities/graphQLConnection/getCommonGraphQLConnectionSort.ts:34](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/utilities/graphQLConnection/getCommonGraphQLConnectionSort.ts#L34)
+[src/utilities/graphQLConnection/getCommonGraphQLConnectionSort.ts:34](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/utilities/graphQLConnection/getCommonGraphQLConnectionSort.ts#L34)

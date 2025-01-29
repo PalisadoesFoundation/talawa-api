@@ -38,4 +38,4 @@ An object containing the updated advertisement with all its fields.
 
 ## Defined in
 
-[src/resolvers/Mutation/updateAdvertisement.ts:37](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/updateAdvertisement.ts#L37)
+[src/resolvers/Mutation/updateAdvertisement.ts:37](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Mutation/updateAdvertisement.ts#L37)

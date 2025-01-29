@@ -43,4 +43,4 @@ The following checks are done:
 
 ## Defined in
 
-[src/resolvers/Mutation/removeUserFromUserFamily.ts:29](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/removeUserFromUserFamily.ts#L29)
+[src/resolvers/Mutation/removeUserFromUserFamily.ts:29](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Mutation/removeUserFromUserFamily.ts#L29)

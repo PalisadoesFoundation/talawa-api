@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[src/types/generatedGraphQLTypes.ts:4515](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/types/generatedGraphQLTypes.ts#L4515)
+[src/types/generatedGraphQLTypes.ts:4515](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/types/generatedGraphQLTypes.ts#L4515)

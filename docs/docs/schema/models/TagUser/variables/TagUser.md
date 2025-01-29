@@ -8,4 +8,4 @@
 
 ## Defined in
 
-[src/models/TagUser.ts:58](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/TagUser.ts#L58)
+[src/models/TagUser.ts:58](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/TagUser.ts#L58)

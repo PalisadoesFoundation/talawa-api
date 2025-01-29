@@ -29,4 +29,4 @@ Error If an error occurs during the check or installation process.
 
 ## Defined in
 
-[src/minioInstallationCheck.ts:25](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/minioInstallationCheck.ts#L25)
+[src/minioInstallationCheck.ts:25](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/minioInstallationCheck.ts#L25)

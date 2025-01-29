@@ -17,4 +17,4 @@ The email entered by the user is being returned.
 
 ## Defined in
 
-[src/setup/superAdmin.ts:9](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/setup/superAdmin.ts#L9)
+[src/setup/superAdmin.ts:9](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/setup/superAdmin.ts#L9)

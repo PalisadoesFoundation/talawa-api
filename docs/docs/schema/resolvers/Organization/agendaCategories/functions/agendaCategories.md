@@ -41,4 +41,4 @@ A promise that resolves to an array of agenda category documents found in the da
 
 ## Defined in
 
-[src/resolvers/Organization/agendaCategories.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Organization/agendaCategories.ts#L16)
+[src/resolvers/Organization/agendaCategories.ts:16](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Organization/agendaCategories.ts#L16)

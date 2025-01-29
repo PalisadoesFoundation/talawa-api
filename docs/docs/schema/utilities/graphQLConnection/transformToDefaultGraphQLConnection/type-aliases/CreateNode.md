@@ -26,4 +26,4 @@ This is typescript type of the callback function `createNode`.
 
 ## Defined in
 
-[src/utilities/graphQLConnection/transformToDefaultGraphQLConnection.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/utilities/graphQLConnection/transformToDefaultGraphQLConnection.ts#L16)
+[src/utilities/graphQLConnection/transformToDefaultGraphQLConnection.ts:16](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/utilities/graphQLConnection/transformToDefaultGraphQLConnection.ts#L16)

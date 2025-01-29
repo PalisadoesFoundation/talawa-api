@@ -34,4 +34,4 @@ The ID of the agenda item associated with the note.
 
 ## Defined in
 
-[src/models/Note.ts:29](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Note.ts#L29)
+[src/models/Note.ts:29](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Note.ts#L29)

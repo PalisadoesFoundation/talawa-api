@@ -24,4 +24,4 @@ VolunteerMembership
 
 ## Defined in
 
-[src/utilities/checks.ts:136](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/utilities/checks.ts#L136)
+[src/utilities/checks.ts:136](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/utilities/checks.ts#L136)

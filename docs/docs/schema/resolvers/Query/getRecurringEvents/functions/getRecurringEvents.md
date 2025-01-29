@@ -34,4 +34,4 @@ An array of `Event` objects that are instances of the base recurring event.
 
 ## Defined in
 
-[src/resolvers/Query/getRecurringEvents.ts:11](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Query/getRecurringEvents.ts#L11)
+[src/resolvers/Query/getRecurringEvents.ts:11](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Query/getRecurringEvents.ts#L11)

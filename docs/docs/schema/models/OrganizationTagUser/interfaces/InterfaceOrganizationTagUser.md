@@ -14,7 +14,7 @@ Interface representing a document for an Organization Tag User in the database (
 
 #### Defined in
 
-[src/models/OrganizationTagUser.ts:12](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/OrganizationTagUser.ts#L12)
+[src/models/OrganizationTagUser.ts:12](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/OrganizationTagUser.ts#L12)
 
 ***
 
@@ -24,7 +24,7 @@ Interface representing a document for an Organization Tag User in the database (
 
 #### Defined in
 
-[src/models/OrganizationTagUser.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/OrganizationTagUser.ts#L15)
+[src/models/OrganizationTagUser.ts:15](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/OrganizationTagUser.ts#L15)
 
 ***
 
@@ -34,7 +34,7 @@ Interface representing a document for an Organization Tag User in the database (
 
 #### Defined in
 
-[src/models/OrganizationTagUser.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/OrganizationTagUser.ts#L13)
+[src/models/OrganizationTagUser.ts:13](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/OrganizationTagUser.ts#L13)
 
 ***
 
@@ -44,7 +44,7 @@ Interface representing a document for an Organization Tag User in the database (
 
 #### Defined in
 
-[src/models/OrganizationTagUser.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/OrganizationTagUser.ts#L14)
+[src/models/OrganizationTagUser.ts:14](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/OrganizationTagUser.ts#L14)
 
 ***
 
@@ -54,4 +54,4 @@ Interface representing a document for an Organization Tag User in the database (
 
 #### Defined in
 
-[src/models/OrganizationTagUser.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/OrganizationTagUser.ts#L16)
+[src/models/OrganizationTagUser.ts:16](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/OrganizationTagUser.ts#L16)

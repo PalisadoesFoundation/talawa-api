@@ -15,7 +15,7 @@ This interface defines the structure and types of data that an event volunteer g
 
 #### Defined in
 
-[src/models/EventVolunteerGroup.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/EventVolunteerGroup.ts#L16)
+[src/models/EventVolunteerGroup.ts:16](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/EventVolunteerGroup.ts#L16)
 
 ***
 
@@ -25,7 +25,7 @@ This interface defines the structure and types of data that an event volunteer g
 
 #### Defined in
 
-[src/models/EventVolunteerGroup.ts:24](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/EventVolunteerGroup.ts#L24)
+[src/models/EventVolunteerGroup.ts:24](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/EventVolunteerGroup.ts#L24)
 
 ***
 
@@ -35,7 +35,7 @@ This interface defines the structure and types of data that an event volunteer g
 
 #### Defined in
 
-[src/models/EventVolunteerGroup.ts:25](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/EventVolunteerGroup.ts#L25)
+[src/models/EventVolunteerGroup.ts:25](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/EventVolunteerGroup.ts#L25)
 
 ***
 
@@ -45,7 +45,7 @@ This interface defines the structure and types of data that an event volunteer g
 
 #### Defined in
 
-[src/models/EventVolunteerGroup.ts:17](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/EventVolunteerGroup.ts#L17)
+[src/models/EventVolunteerGroup.ts:17](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/EventVolunteerGroup.ts#L17)
 
 ***
 
@@ -55,7 +55,7 @@ This interface defines the structure and types of data that an event volunteer g
 
 #### Defined in
 
-[src/models/EventVolunteerGroup.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/EventVolunteerGroup.ts#L21)
+[src/models/EventVolunteerGroup.ts:21](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/EventVolunteerGroup.ts#L21)
 
 ***
 
@@ -65,7 +65,7 @@ This interface defines the structure and types of data that an event volunteer g
 
 #### Defined in
 
-[src/models/EventVolunteerGroup.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/EventVolunteerGroup.ts#L18)
+[src/models/EventVolunteerGroup.ts:18](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/EventVolunteerGroup.ts#L18)
 
 ***
 
@@ -75,7 +75,7 @@ This interface defines the structure and types of data that an event volunteer g
 
 #### Defined in
 
-[src/models/EventVolunteerGroup.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/EventVolunteerGroup.ts#L19)
+[src/models/EventVolunteerGroup.ts:19](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/EventVolunteerGroup.ts#L19)
 
 ***
 
@@ -85,7 +85,7 @@ This interface defines the structure and types of data that an event volunteer g
 
 #### Defined in
 
-[src/models/EventVolunteerGroup.ts:20](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/EventVolunteerGroup.ts#L20)
+[src/models/EventVolunteerGroup.ts:20](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/EventVolunteerGroup.ts#L20)
 
 ***
 
@@ -95,7 +95,7 @@ This interface defines the structure and types of data that an event volunteer g
 
 #### Defined in
 
-[src/models/EventVolunteerGroup.ts:26](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/EventVolunteerGroup.ts#L26)
+[src/models/EventVolunteerGroup.ts:26](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/EventVolunteerGroup.ts#L26)
 
 ***
 
@@ -105,7 +105,7 @@ This interface defines the structure and types of data that an event volunteer g
 
 #### Defined in
 
-[src/models/EventVolunteerGroup.ts:22](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/EventVolunteerGroup.ts#L22)
+[src/models/EventVolunteerGroup.ts:22](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/EventVolunteerGroup.ts#L22)
 
 ***
 
@@ -115,4 +115,4 @@ This interface defines the structure and types of data that an event volunteer g
 
 #### Defined in
 
-[src/models/EventVolunteerGroup.ts:23](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/EventVolunteerGroup.ts#L23)
+[src/models/EventVolunteerGroup.ts:23](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/EventVolunteerGroup.ts#L23)

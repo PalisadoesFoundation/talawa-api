@@ -20,4 +20,4 @@ function to parse the args.sortedBy for UserTag queries
 
 ## Defined in
 
-[src/utilities/userTagsPaginationUtils/parseUserTagSortedBy.ts:20](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/utilities/userTagsPaginationUtils/parseUserTagSortedBy.ts#L20)
+[src/utilities/userTagsPaginationUtils/parseUserTagSortedBy.ts:20](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/utilities/userTagsPaginationUtils/parseUserTagSortedBy.ts#L20)

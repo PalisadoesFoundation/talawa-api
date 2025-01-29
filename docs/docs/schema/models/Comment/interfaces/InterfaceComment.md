@@ -14,7 +14,7 @@ Represents a document for a comment in the MongoDB database.
 
 #### Defined in
 
-[src/models/Comment.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Comment.ts#L13)
+[src/models/Comment.ts:13](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Comment.ts#L13)
 
 ***
 
@@ -24,7 +24,7 @@ Represents a document for a comment in the MongoDB database.
 
 #### Defined in
 
-[src/models/Comment.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Comment.ts#L15)
+[src/models/Comment.ts:15](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Comment.ts#L15)
 
 ***
 
@@ -34,7 +34,7 @@ Represents a document for a comment in the MongoDB database.
 
 #### Defined in
 
-[src/models/Comment.ts:16](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Comment.ts#L16)
+[src/models/Comment.ts:16](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Comment.ts#L16)
 
 ***
 
@@ -44,7 +44,7 @@ Represents a document for a comment in the MongoDB database.
 
 #### Defined in
 
-[src/models/Comment.ts:20](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Comment.ts#L20)
+[src/models/Comment.ts:20](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Comment.ts#L20)
 
 ***
 
@@ -54,7 +54,7 @@ Represents a document for a comment in the MongoDB database.
 
 #### Defined in
 
-[src/models/Comment.ts:19](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Comment.ts#L19)
+[src/models/Comment.ts:19](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Comment.ts#L19)
 
 ***
 
@@ -64,7 +64,7 @@ Represents a document for a comment in the MongoDB database.
 
 #### Defined in
 
-[src/models/Comment.ts:18](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Comment.ts#L18)
+[src/models/Comment.ts:18](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Comment.ts#L18)
 
 ***
 
@@ -74,7 +74,7 @@ Represents a document for a comment in the MongoDB database.
 
 #### Defined in
 
-[src/models/Comment.ts:21](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Comment.ts#L21)
+[src/models/Comment.ts:21](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Comment.ts#L21)
 
 ***
 
@@ -84,7 +84,7 @@ Represents a document for a comment in the MongoDB database.
 
 #### Defined in
 
-[src/models/Comment.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Comment.ts#L14)
+[src/models/Comment.ts:14](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Comment.ts#L14)
 
 ***
 
@@ -94,4 +94,4 @@ Represents a document for a comment in the MongoDB database.
 
 #### Defined in
 
-[src/models/Comment.ts:17](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/Comment.ts#L17)
+[src/models/Comment.ts:17](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/Comment.ts#L17)

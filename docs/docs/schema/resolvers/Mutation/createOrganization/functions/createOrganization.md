@@ -56,4 +56,4 @@ This function creates an organization, uploads an optional image, validates the 
 
 ## Defined in
 
-[src/resolvers/Mutation/createOrganization.ts:55](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/resolvers/Mutation/createOrganization.ts#L55)
+[src/resolvers/Mutation/createOrganization.ts:55](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/resolvers/Mutation/createOrganization.ts#L55)

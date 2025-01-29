@@ -14,7 +14,7 @@ Represents a database document for Membership Request.
 
 #### Defined in
 
-[src/models/MembershipRequest.ts:12](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/MembershipRequest.ts#L12)
+[src/models/MembershipRequest.ts:12](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/MembershipRequest.ts#L12)
 
 ***
 
@@ -24,7 +24,7 @@ Represents a database document for Membership Request.
 
 #### Defined in
 
-[src/models/MembershipRequest.ts:13](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/MembershipRequest.ts#L13)
+[src/models/MembershipRequest.ts:13](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/MembershipRequest.ts#L13)
 
 ***
 
@@ -34,7 +34,7 @@ Represents a database document for Membership Request.
 
 #### Defined in
 
-[src/models/MembershipRequest.ts:15](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/MembershipRequest.ts#L15)
+[src/models/MembershipRequest.ts:15](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/MembershipRequest.ts#L15)
 
 ***
 
@@ -44,4 +44,4 @@ Represents a database document for Membership Request.
 
 #### Defined in
 
-[src/models/MembershipRequest.ts:14](https://github.com/Suyash878/talawa-api/blob/e4413cec641a837926071678fed3c7f67234e31e/src/models/MembershipRequest.ts#L14)
+[src/models/MembershipRequest.ts:14](https://github.com/Suyash878/talawa-api/blob/f376d03c37e9acd046e7cc983947432c95f74442/src/models/MembershipRequest.ts#L14)
