@@ -197,10 +197,7 @@ Click on the image below to play the video.
 These steps are specific to Linux. You will need to modify them accordingly for other operating systems
 
 1. Install `docker` and ensure that the daemon is running.
-1. Exit the PostgreSQL CLI
-   ```bash
-   exit
-   ```
+1. This process does not require the installation of PostgresSQL. If you have installed postgres on your system, make sure that it is not running.
 1. Create the `.env` file by copying the template from the `envFiles/` directory.
    1. **DO NOT EDIT EITHER FILE!**
       ```bash
