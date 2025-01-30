@@ -197,14 +197,6 @@ Click on the image below to play the video.
 These steps are specific to Linux. You will need to modify them accordingly for other operating systems
 
 1. Install `docker` and ensure that the daemon is running.
-1. Install the PostgreSQL database.
-   ```bash
-   sudo apt-get -y install postgresql postgresql-contrib
-   sudo systemctl disable postgresql.service
-   sudo systemctl stop postgresql.service
-   ```
-   1. There is no need to create databases, users and any associated permissions
-   1. These steps are done so that the docker container will have access to the PostgreSQL executables
 1. Exit the PostgreSQL CLI
    ```bash
    exit
@@ -213,15 +205,11 @@ These steps are specific to Linux. You will need to modify them accordingly for 
    ```bash
    cp envFiles/.env.devcontainer .env
    ```
-1. Change the `.env` file's `API_POSTGRES_HOST` parameter to `localhost`.
-   ```ini
-   API_POSTGRES_HOST=localhost
-   ```
 1. Install the packages
    ```bash
    pnpm install
    ```
-1. Intall the `devcontainers/cli` package
+1. Install the `devcontainers/cli` package
    ```
    pnpm install -g @devcontainers/cli
    ```
@@ -237,7 +225,7 @@ These steps are specific to Linux. You will need to modify them accordingly for 
    ```
    devcontainer build --workspace-folder .
    ```
-1. When build is complete, the last line of the output should be:
+1. When the build is complete, the last line of the output should be:
    ```
    {"outcome":"success","imageName":"talawa-api"}
    ```
@@ -247,7 +235,24 @@ These steps are specific to Linux. You will need to modify them accordingly for 
    ```
 1. When the startup is complete, the last line of out put should look like this:
    ```
-   {"outcome":"success","containerId":"XXX","composeProjectName":"talawa","remoteUser":"talawa","remoteWorkspaceFolder":"/home/talawa/api"}
+   [19:53:14.063] INFO (166): Checking the connection to the postgres database.
+   [19:53:14.077] INFO (166): Successfully connected to the postgres database.
+   [19:53:14.077] INFO (166): Applying the drizzle migration files to the postgres database.
+   [19:53:14.080] INFO (166): Successfully applied the drizzle migrations to the postgres database.
+   [19:53:14.080] INFO (166): Checking the connection to the minio server.
+   [19:53:14.087] INFO (166): Successfully connected to the minio server.
+   [19:53:14.087] INFO (166): Checking if the "talawa" bucket exists in the minio server.
+   [19:53:14.087] INFO (166): "talawa" bucket already exists in the minio server. Skipping, the bucket creation.
+   [19:53:14.087] INFO (166): Checking if the administrator user already exists in the database.
+   [19:53:14.089] INFO (166): Administrator user already exists in the database. Skipping, the administrator creation.
+   [19:53:14.089] INFO (166): Checking if the community already exists in the database.
+   [19:53:14.090] INFO (166): Community already exists in the database. Skipping, the community creation.
+   [19:53:14.113] INFO (166): Server listening at http://127.0.0.1:4000
+   [19:53:14.113] INFO (166): Server listening at http://172.23.0.3:4000
+   [19:53:14.113] INFO (166): Server listening at http://172.20.0.2:4000
+   [19:53:14.113] INFO (166): Server listening at http://172.19.0.3:4000
+   [19:53:14.113] INFO (166): Server listening at http://172.21.0.3:4000
+   [19:53:14.113] INFO (166): Server listening at http://172.22.0.4:4000
    ```
 
 All done!
