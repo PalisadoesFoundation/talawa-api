@@ -196,7 +196,66 @@ Click on the image below to play the video.
 
 Follow these steps to have the best experience
 
-### IDE Setup
+#### Using the CLI
+
+These steps are specific to Linux. You will need to modify them accordingly for other operating systems
+
+1. Install `docker` and ensure that the daemon is running.
+1. Install the PostgreSQL database
+   ```bash
+   sudo apt-get -y install postgresql postgresql-contrib
+   sudo systemctl enable postgresql.service
+   sudo systemctl start postgresql.service
+   ```
+1. Connect to the PostgreSQL CLI
+
+   ```bash
+   sudo -u postgres psql
+
+   ```
+
+1. Create the database, grant permissions then exit
+   ```sql
+   CREATE DATABASE talawa;
+   CREATE USER talawa WITH PASSWORD 'password';
+   GRANT ALL PRIVILEGES ON DATABASE talawa TO talawa;
+   GRANT ALL ON SCHEMA public TO talawa;
+   ```
+1. Exit the PostgreSQL CLI
+   ```bash
+   exit
+   ```
+1. Create the `.env` file by copying the template from the `envFiles/` directory
+   ```bash
+   cp envFiles/.env.devcontainer .env
+   ```
+1. Change the `.env` file's `API_POSTGRES_HOST` parameter to `localhost`.
+   ```ini
+   API_POSTGRES_HOST=localhost
+   ```
+1. Install the packages
+   ```bash
+   pnpm install
+   ```
+1. You will now need to make your user a part of the `docker` operating system group or else you will get `permission denied` messages when starting docker later. `$USER` is a universal representation of your username. You don't need to change this in the command below.
+   ```
+   sudo usermod -a -G docker $USER
+   ```
+1. You will only become a part of the `docker` group on your next login. You don't have to logout, just start another session on the CLI using the `su` command.
+   ```
+   sudo su $USER -
+   ```
+1. Start the docker devcontainer
+   ```
+   devcontainer build --workspace-folder .
+   ```
+1. When startup is complete, the last like of the output should be:
+   ```
+   {"outcome":"success","imageName":"talawa-api"}
+   ```
+   All done!
+
+#### Using the VScode IDE
 
 1. Open cloned talawa-api project in Visual Studio Code.
 2. You should see a notification that a `devcontainer` configuration file is available. Click on the notification and select `Reopen in Container`.
@@ -205,7 +264,7 @@ Follow these steps to have the best experience
 3. This will open a new Visual Studio Code window with the project running inside a Docker container. This will take a few minutes to complete.
 4. Wait till the process is complete and you see ports being forwarded in the terminal.
 5. You can check logs by clicking `Connecting to Dev Container (show log)`;
-6. Create a new terminal in Visual Studio Code by pressing ``Ctrl+Shift+` ``.
+6. Create a new terminal in Visual Studio Code by pressing `` Ctrl+Shift+`  ``.
 7. Run the `pwd` command to confirm you are in the `/home/talawa/api` directory.
 8. Run the following command to check if the project has required dependencies installed correctly:
    ```bash

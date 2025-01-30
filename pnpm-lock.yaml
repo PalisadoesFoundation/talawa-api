@@ -90,6 +90,9 @@ importers:
       '@biomejs/biome':
         specifier: ^1.9.4
         version: 1.9.4
+      '@devcontainers/cli':
+        specifier: 0.73.0
+        version: 0.73.0
       '@faker-js/faker':
         specifier: ^9.4.0
         version: 9.4.0
@@ -229,6 +232,11 @@ packages:
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
+
+  '@devcontainers/cli@0.73.0':
+    resolution: {integrity: sha512-YyePZ2staU5qgRaCUA/pHS5Uen/+q8mIbwhnfFgGmmIta9kSQHPTLEWmZPrG9UXrvrJ4uoWPfdEmwjTxbaTEYw==}
+    engines: {node: ^16.13.0 || >=18.0.0}
+    hasBin: true
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
@@ -3101,6 +3109,8 @@ snapshots:
 
   '@biomejs/cli-win32-x64@1.9.4':
     optional: true
+
+  '@devcontainers/cli@0.73.0': {}
 
   '@drizzle-team/brocli@0.10.2': {}
 
