@@ -201,10 +201,11 @@ These steps are specific to Linux. You will need to modify them accordingly for 
    ```bash
    exit
    ```
-1. Create the `.env` file by copying the template from the `envFiles/` directory
-   ```bash
-   cp envFiles/.env.devcontainer .env
-   ```
+1. Create the `.env` file by copying the template from the `envFiles/` directory.
+   1. **DO NOT EDIT EITHER FILE!**
+      ```bash
+      cp envFiles/.env.devcontainer .env
+      ```
 1. Install the packages
    ```bash
    pnpm install
