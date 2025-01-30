@@ -313,6 +313,16 @@ These are some important URLs for coding and troubleshooting:
    http://127.0.0.1:4000
    ```
 
+   - If you navigate to the endpoint you and see a JSON response like this.
+
+   ```json
+   {
+     "message": "Route GET:/ not found",
+     "error": "Not Found",
+     "statusCode": 404
+   }
+   ```
+
 2. The url for accessing the GraphQL Playground is
    ```bash
    http://127.0.0.1:4000/graphiql
