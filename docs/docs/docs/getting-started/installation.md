@@ -237,6 +237,10 @@ These steps are specific to Linux. You will need to modify them accordingly for 
    ```bash
    pnpm install
    ```
+1. Intall the `devcontainers/cli` package
+   ```
+   pnpm install -g @devcontainers/cli
+   ```
 1. You will now need to make your user a part of the `docker` operating system group or else you will get `permission denied` messages when starting docker later. `$USER` is a universal representation of your username. You don't need to change this in the command below.
    ```
    sudo usermod -a -G docker $USER
