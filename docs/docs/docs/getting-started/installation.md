@@ -201,26 +201,14 @@ Follow these steps to have the best experience
 These steps are specific to Linux. You will need to modify them accordingly for other operating systems
 
 1. Install `docker` and ensure that the daemon is running.
-1. Install the PostgreSQL database
+1. Install the PostgreSQL database.
    ```bash
    sudo apt-get -y install postgresql postgresql-contrib
-   sudo systemctl enable postgresql.service
-   sudo systemctl start postgresql.service
+   sudo systemctl disable postgresql.service
+   sudo systemctl stop postgresql.service
    ```
-1. Connect to the PostgreSQL CLI
-
-   ```bash
-   sudo -u postgres psql
-
-   ```
-
-1. Create the database, grant permissions then exit
-   ```sql
-   CREATE DATABASE talawa;
-   CREATE USER talawa WITH PASSWORD 'password';
-   GRANT ALL PRIVILEGES ON DATABASE talawa TO talawa;
-   GRANT ALL ON SCHEMA public TO talawa;
-   ```
+   1. There is no need to create databases, users and any associated permissions
+   1. These steps are done so that the docker container will have access to the PostgreSQL executables
 1. Exit the PostgreSQL CLI
    ```bash
    exit
@@ -249,15 +237,20 @@ These steps are specific to Linux. You will need to modify them accordingly for 
    ```
    sudo su $USER -
    ```
-1. Start the docker devcontainer
+1. Build the docker devcontainer
    ```
    devcontainer build --workspace-folder .
    ```
-1. When startup is complete, the last like of the output should be:
+1. When build is complete, the last like of the output should be:
    ```
    {"outcome":"success","imageName":"talawa-api"}
    ```
-   All done!
+1. Start the docker devcontainer
+   ```
+   devcontainer up --workspace-folder .
+   ```
+
+All done!
 
 #### Using the VScode IDE
 
