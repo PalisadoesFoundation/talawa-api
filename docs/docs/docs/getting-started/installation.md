@@ -255,6 +255,23 @@ These steps are specific to Linux. You will need to modify them accordingly for 
 
 All done!
 
+#### CLI Shutdown (Development)
+
+Use the command `docker compose` command to cleanly shutdown the dev container
+
+```
+docker compose down
+```
+
+#### CLI Startup (Development)
+
+After a successful installation, yse these commands in sequence to start the dev container.
+
+```
+devcontainer build --workspace-folder .
+devcontainer up --workspace-folder .
+```
+
 ### Setup: Using the VScode IDE
 
 You can setup the app using the VScode IDE. Here are the steps to follow:
