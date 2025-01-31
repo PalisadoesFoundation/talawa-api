@@ -19,7 +19,6 @@ type LogOptions = Record<string, string | number | boolean>;
 type PubSubEvents = {
 	COMMUNITY_CREATED: { id: string };
 	POST_CREATED: { id: string };
-	// Add other event types as needed
 };
 
 interface TestContext extends Omit<GraphQLContext, "log"> {
@@ -34,7 +33,6 @@ interface TestContext extends Omit<GraphQLContext, "log"> {
 }
 
 const createMockLogger = (): FastifyBaseLogger => {
-	// Create base logger object with explicit types
 	const logger = {
 		error: vi.fn(),
 		warn: vi.fn(),
