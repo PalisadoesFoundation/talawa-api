@@ -1,5 +1,7 @@
+version: "3.8"
 services:
   mongo:
+  # No light weight image is available for mongo
     image: mongo:latest
     container_name: mongo
     restart: unless-stopped
@@ -12,8 +14,10 @@ services:
       resources:
         limits:
           memory: 1G
+          cpus: '1.0'
     ports:
       - "127.0.0.1:27017:27017"
+
     volumes:
       - mongo_data:/data/db
       - ./scripts/docker/init-mongo.sh:/init-mongo.sh
@@ -22,15 +26,21 @@ services:
     entrypoint: ["/bin/bash", "/init-mongo.sh"]
 
   redis-stack-server:
-    image: redis/redis-stack-server:latest
+    image: redis:8.0-M02-alpine
     ports:
       - 6379:6379
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
     volumes:
       - redis-data:/data/redis
     networks:
       - talawa-network
 
   minio:
+  # No light weight image is available
     image: minio/minio
     ports:
       - "9000:9000"
@@ -39,6 +49,11 @@ services:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
     volumes:
       - minio-data:/data
     networks:
@@ -52,7 +67,6 @@ services:
     ports:
       - "4000:4000"
     volumes:
-      - .:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
       mongo:
@@ -65,10 +79,16 @@ services:
       - MONGO_DB_URL=mongodb://mongo:27017/talawa-api?replicaSet=rs0&directConnection=true
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
     networks:
       - talawa-network
+
   caddy:
-    image: caddy/caddy:2.2.1-alpine
+    image: caddy/caddy:2.9.1-alpine
     container_name: caddy-service
     restart: unless-stopped
     ports:
@@ -79,8 +99,12 @@ services:
       - $PWD/site:/srv
       - caddy_data:/data
       - caddy_config:/config
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
     
-
 volumes:
   redis-data:
   minio-data:
@@ -90,4 +114,3 @@ volumes:
 
 networks:
   talawa-network:
-    driver: bridge
