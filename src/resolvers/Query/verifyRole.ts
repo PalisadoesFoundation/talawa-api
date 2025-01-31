@@ -29,11 +29,9 @@ export const verifyRole: QueryResolvers["verifyRole"] = async (
   try {
     // Extract token from the Authorization header
     const authHeader = req.headers.authorization;
-    // console.debug("Authorization header detected.") // OR remove entirely
     if (!authHeader) {
       return { role: "", isAuthorized: false };
     }
-
     const token = authHeader.startsWith("Bearer ")
       ? authHeader.split(" ")[1]
       : authHeader;
@@ -59,15 +57,22 @@ export const verifyRole: QueryResolvers["verifyRole"] = async (
         tokenVersion: process.env.TOKEN_VERSION
           ? parseInt(process.env.TOKEN_VERSION)
           : 0,
-      }).lean();
-
-    let role = "";
-    if (appUserProfile?.isSuperAdmin) {
-      role = "admin";
-    } else {
-      role = "user";
+      });
+    if (appUserProfile == null || appUserProfile == undefined) {
+      throw new Error("User profile not found");
     }
 
+    let role = "user"; // Default role
+    if (appUserProfile) {
+      if (appUserProfile.isSuperAdmin) {
+        role = "superAdmin";
+      } else if (
+        appUserProfile.adminFor &&
+        appUserProfile.adminFor.length > 0
+      ) {
+        role = "admin";
+      }
+    }
     return {
       role: role,
       isAuthorized: true,
@@ -78,7 +83,6 @@ export const verifyRole: QueryResolvers["verifyRole"] = async (
       "Token verification failed:",
       error instanceof Error ? error.message : "Unknown error",
     );
-
     // Return specific error status
     const isJwtError = error instanceof jwt.JsonWebTokenError;
     return {
