@@ -34,7 +34,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
-          editUrl: ({ docPath }: { docPath: string }) => {
+          editUrl: ({ docPath }) => {
             return `https://github.com/PalisadoesFoundation/talawa-api/edit/develop/docs/docs/${docPath}`;
           },
         },
