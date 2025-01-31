@@ -5,6 +5,10 @@ import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { updateEnvVariable } from "./setup/updateEnvVariable";
 
+let answers: Record<string, string> = {};
+
+const envFileName = ".env";
+
 export function generateJwtSecret(): string {
 	try {
 		return crypto.randomBytes(64).toString("hex");
@@ -55,38 +59,9 @@ function checkEnvFile(): boolean {
 	return false;
 }
 
-let originalEnvContent: string | null = null;
-const envFileName = ".env";
-
-function backupEnvFile(): void {
-	if (fs.existsSync(envFileName)) {
-		originalEnvContent = fs.readFileSync(envFileName, "utf-8");
-	} else {
-		originalEnvContent = null;
-	}
-}
-
-export function restoreEnvFile(): void {
-	try {
-		if (originalEnvContent !== null) {
-			fs.writeFileSync(envFileName, originalEnvContent, "utf-8");
-			console.log("\nChanges undone. Restored the original environment file.");
-		} else if (fs.existsSync(envFileName)) {
-			fs.unlinkSync(envFileName);
-			console.log("\nChanges undone. Removed the environment file.");
-		}
-	} catch (err) {
-		console.error("Error restoring env file:", err);
-	}
-}
-
 export function initializeEnvFile(): void {
 	const envFileToUse =
-		process.env.CI === "true"
-			? "envFiles/.env.ci"
-			: "envFiles/.env.devcontainer";
-
-	const envFileName = ".env";
+		answers.CI === "true" ? "envFiles/.env.ci" : "envFiles/.env.devcontainer";
 
 	const parsedEnv = dotenv.parse(fs.readFileSync(envFileToUse));
 
@@ -108,14 +83,14 @@ export async function setCI(): Promise<void> {
 				default: "false",
 			},
 		]);
-		updateEnvVariable({ CI });
+		answers.CI = CI;
 	} catch (err) {
 		console.error(err);
 		abort();
 	}
 }
 
-export async function setNodeEnvironment(): Promise<void> {
+export async function setNodeEnvironment(): Promise<Record<string, string>> {
 	try {
 		const { NODE_ENV } = await inquirer.prompt([
 			{
@@ -126,14 +101,15 @@ export async function setNodeEnvironment(): Promise<void> {
 				default: "production",
 			},
 		]);
-		updateEnvVariable({ NODE_ENV });
+		answers.NODE_ENV = NODE_ENV;
 	} catch (err) {
 		console.error(err);
 		abort();
 	}
+	return answers;
 }
 
-export async function administratorEmail(): Promise<void> {
+export async function administratorEmail(): Promise<Record<string, string>> {
 	try {
 		const { API_ADMINISTRATOR_USER_EMAIL_ADDRESS } = await inquirer.prompt([
 			{
@@ -144,14 +120,16 @@ export async function administratorEmail(): Promise<void> {
 				validate: validateEmail,
 			},
 		]);
-		updateEnvVariable({ API_ADMINISTRATOR_USER_EMAIL_ADDRESS });
+		answers.API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 	} catch (err) {
 		console.log(err);
 		abort();
 	}
+	return answers;
 }
 
-export async function apiSetup(): Promise<void> {
+export async function apiSetup(): Promise<Record<string, string>> {
 	const { API_BASE_URL } = await inquirer.prompt([
 		{
 			type: "input",
@@ -161,7 +139,7 @@ export async function apiSetup(): Promise<void> {
 			validate: validateURL,
 		},
 	]);
-	updateEnvVariable({ API_BASE_URL });
+	answers.API_BASE_URL = API_BASE_URL;
 
 	const { API_HOST } = await inquirer.prompt([
 		{
@@ -171,7 +149,7 @@ export async function apiSetup(): Promise<void> {
 			default: "0.0.0.0",
 		},
 	]);
-	updateEnvVariable({ API_HOST });
+	answers.API_HOST = API_HOST;
 
 	const { API_PORT } = await inquirer.prompt([
 		{
@@ -182,7 +160,7 @@ export async function apiSetup(): Promise<void> {
 			validate: validatePort,
 		},
 	]);
-	updateEnvVariable({ API_PORT });
+	answers.API_PORT = API_PORT;
 
 	const { API_IS_APPLY_DRIZZLE_MIGRATIONS } = await inquirer.prompt([
 		{
@@ -193,7 +171,7 @@ export async function apiSetup(): Promise<void> {
 			default: "true",
 		},
 	]);
-	updateEnvVariable({ API_IS_APPLY_DRIZZLE_MIGRATIONS });
+	answers.API_IS_APPLY_DRIZZLE_MIGRATIONS = API_IS_APPLY_DRIZZLE_MIGRATIONS;
 
 	const { API_IS_GRAPHIQL } = await inquirer.prompt([
 		{
@@ -201,10 +179,10 @@ export async function apiSetup(): Promise<void> {
 			name: "API_IS_GRAPHIQL",
 			message: "Enable GraphQL?",
 			choices: ["true", "false"],
-			default: process.env.CI === "false" ? "false" : "true",
+			default: answers.CI === "false" ? "false" : "true",
 		},
 	]);
-	updateEnvVariable({ API_IS_GRAPHIQL });
+	answers.API_IS_GRAPHIQL = API_IS_GRAPHIQL;
 
 	const { API_IS_PINO_PRETTY } = await inquirer.prompt([
 		{
@@ -212,10 +190,10 @@ export async function apiSetup(): Promise<void> {
 			name: "API_IS_PINO_PRETTY",
 			message: "Enable Pino Pretty logs?",
 			choices: ["true", "false"],
-			default: process.env.CI === "false" ? "false" : "true",
+			default: answers.CI === "false" ? "false" : "true",
 		},
 	]);
-	updateEnvVariable({ API_IS_PINO_PRETTY });
+	answers.API_IS_PINO_PRETTY = API_IS_PINO_PRETTY;
 
 	const { API_JWT_EXPIRES_IN } = await inquirer.prompt([
 		{
@@ -225,7 +203,7 @@ export async function apiSetup(): Promise<void> {
 			default: "2592000000",
 		},
 	]);
-	updateEnvVariable({ API_JWT_EXPIRES_IN });
+	answers.API_JWT_EXPIRES_IN = API_JWT_EXPIRES_IN;
 
 	const jwtSecret = generateJwtSecret();
 
@@ -236,14 +214,14 @@ export async function apiSetup(): Promise<void> {
 			message: "JWT secret:",
 			default: jwtSecret,
 			validate: (input: string) => {
-				if (input.length < 64) {
-					return "JWT secret must be at least 64 characters long.";
+				if (input.length < 128) {
+					return "JWT secret must be at least 128 characters long.";
 				}
 				return true;
 			},
 		},
 	]);
-	updateEnvVariable({ API_JWT_SECRET });
+	answers.API_JWT_SECRET = API_JWT_SECRET;
 
 	const { API_LOG_LEVEL } = await inquirer.prompt([
 		{
@@ -251,10 +229,10 @@ export async function apiSetup(): Promise<void> {
 			name: "API_LOG_LEVEL",
 			message: "LOG level:",
 			choices: ["info", "debug"],
-			default: process.env.CI === "true" ? "info" : "debug",
+			default: answers.CI === "true" ? "info" : "debug",
 		},
 	]);
-	updateEnvVariable({ API_LOG_LEVEL });
+	answers.API_LOG_LEVEL = API_LOG_LEVEL;
 
 	const { API_MINIO_ACCESS_KEY } = await inquirer.prompt([
 		{
@@ -264,7 +242,7 @@ export async function apiSetup(): Promise<void> {
 			default: "talawa",
 		},
 	]);
-	updateEnvVariable({ API_MINIO_ACCESS_KEY });
+	answers.API_MINIO_ACCESS_KEY = API_MINIO_ACCESS_KEY;
 
 	const { API_MINIO_END_POINT } = await inquirer.prompt([
 		{
@@ -274,7 +252,7 @@ export async function apiSetup(): Promise<void> {
 			default: "minio",
 		},
 	]);
-	updateEnvVariable({ API_MINIO_END_POINT });
+	answers.API_MINIO_END_POINT = API_MINIO_END_POINT;
 
 	const { API_MINIO_PORT } = await inquirer.prompt([
 		{
@@ -284,7 +262,7 @@ export async function apiSetup(): Promise<void> {
 			default: "9000",
 		},
 	]);
-	updateEnvVariable({ API_MINIO_PORT });
+	answers.API_MINIO_PORT = API_MINIO_PORT;
 
 	const { API_MINIO_SECRET_KEY } = await inquirer.prompt([
 		{
@@ -294,7 +272,7 @@ export async function apiSetup(): Promise<void> {
 			default: "password",
 		},
 	]);
-	updateEnvVariable({ API_MINIO_SECRET_KEY });
+	answers.API_MINIO_SECRET_KEY = API_MINIO_SECRET_KEY;
 
 	const { API_MINIO_TEST_END_POINT } = await inquirer.prompt([
 		{
@@ -304,7 +282,7 @@ export async function apiSetup(): Promise<void> {
 			default: "minio-test",
 		},
 	]);
-	updateEnvVariable({ API_MINIO_TEST_END_POINT });
+	answers.API_MINIO_TEST_END_POINT = API_MINIO_TEST_END_POINT;
 
 	const { API_MINIO_USE_SSL } = await inquirer.prompt([
 		{
@@ -315,7 +293,7 @@ export async function apiSetup(): Promise<void> {
 			default: "false",
 		},
 	]);
-	updateEnvVariable({ API_MINIO_USE_SSL });
+	answers.API_MINIO_USE_SSL = API_MINIO_USE_SSL;
 
 	const { API_POSTGRES_DATABASE } = await inquirer.prompt([
 		{
@@ -325,7 +303,7 @@ export async function apiSetup(): Promise<void> {
 			default: "talawa",
 		},
 	]);
-	updateEnvVariable({ API_POSTGRES_DATABASE });
+	answers.API_POSTGRES_DATABASE = API_POSTGRES_DATABASE;
 
 	const { API_POSTGRES_HOST } = await inquirer.prompt([
 		{
@@ -335,7 +313,7 @@ export async function apiSetup(): Promise<void> {
 			default: "postgres",
 		},
 	]);
-	updateEnvVariable({ API_POSTGRES_HOST });
+	answers.API_POSTGRES_HOST = API_POSTGRES_HOST;
 
 	const { API_POSTGRES_PASSWORD } = await inquirer.prompt([
 		{
@@ -345,7 +323,7 @@ export async function apiSetup(): Promise<void> {
 			default: "password",
 		},
 	]);
-	updateEnvVariable({ API_POSTGRES_PASSWORD });
+	answers.API_POSTGRES_PASSWORD = API_POSTGRES_PASSWORD;
 
 	const { API_POSTGRES_PORT } = await inquirer.prompt([
 		{
@@ -355,7 +333,7 @@ export async function apiSetup(): Promise<void> {
 			default: "5432",
 		},
 	]);
-	updateEnvVariable({ API_POSTGRES_PORT });
+	answers.API_POSTGRES_PORT = API_POSTGRES_PORT;
 
 	const { API_POSTGRES_SSL_MODE } = await inquirer.prompt([
 		{
@@ -366,7 +344,7 @@ export async function apiSetup(): Promise<void> {
 			default: "false",
 		},
 	]);
-	updateEnvVariable({ API_POSTGRES_SSL_MODE });
+	answers.API_POSTGRES_SSL_MODE = API_POSTGRES_SSL_MODE;
 
 	const { API_POSTGRES_TEST_HOST } = await inquirer.prompt([
 		{
@@ -376,7 +354,7 @@ export async function apiSetup(): Promise<void> {
 			default: "postgres-test",
 		},
 	]);
-	updateEnvVariable({ API_POSTGRES_TEST_HOST });
+	answers.API_POSTGRES_TEST_HOST = API_POSTGRES_TEST_HOST;
 
 	const { API_POSTGRES_USER } = await inquirer.prompt([
 		{
@@ -386,11 +364,11 @@ export async function apiSetup(): Promise<void> {
 			default: "talawa",
 		},
 	]);
-	updateEnvVariable({ API_POSTGRES_USER });
-	console.log("Environment variables updated.");
+	answers.API_POSTGRES_USER = API_POSTGRES_USER;
+	return answers;
 }
 
-export async function cloudbeaverSetup(): Promise<void> {
+export async function cloudbeaverSetup(): Promise<Record<string, string>> {
 	const { CLOUDBEAVER_ADMIN_NAME } = await inquirer.prompt([
 		{
 			type: "input",
@@ -399,7 +377,7 @@ export async function cloudbeaverSetup(): Promise<void> {
 			default: "talawa",
 		},
 	]);
-	updateEnvVariable({ CLOUDBEAVER_ADMIN_NAME });
+	answers.CLOUDBEAVER_ADMIN_NAME = CLOUDBEAVER_ADMIN_NAME;
 
 	const { CLOUDBEAVER_ADMIN_PASSWORD } = await inquirer.prompt([
 		{
@@ -409,7 +387,7 @@ export async function cloudbeaverSetup(): Promise<void> {
 			default: "password",
 		},
 	]);
-	updateEnvVariable({ CLOUDBEAVER_ADMIN_PASSWORD });
+	answers.CLOUDBEAVER_ADMIN_PASSWORD = CLOUDBEAVER_ADMIN_PASSWORD;
 
 	const { CLOUDBEAVER_MAPPED_HOST_IP } = await inquirer.prompt([
 		{
@@ -419,7 +397,7 @@ export async function cloudbeaverSetup(): Promise<void> {
 			default: "127.0.0.1",
 		},
 	]);
-	updateEnvVariable({ CLOUDBEAVER_MAPPED_HOST_IP });
+	answers.CLOUDBEAVER_MAPPED_HOST_IP = CLOUDBEAVER_MAPPED_HOST_IP;
 
 	const { CLOUDBEAVER_MAPPED_PORT } = await inquirer.prompt([
 		{
@@ -430,7 +408,7 @@ export async function cloudbeaverSetup(): Promise<void> {
 			validate: validatePort,
 		},
 	]);
-	updateEnvVariable({ CLOUDBEAVER_MAPPED_PORT });
+	answers.CLOUDBEAVER_MAPPED_PORT = CLOUDBEAVER_MAPPED_PORT;
 
 	const { CLOUDBEAVER_SERVER_NAME } = await inquirer.prompt([
 		{
@@ -440,7 +418,7 @@ export async function cloudbeaverSetup(): Promise<void> {
 			default: "Talawa CloudBeaver Server",
 		},
 	]);
-	updateEnvVariable({ CLOUDBEAVER_SERVER_NAME });
+	answers.CLOUDBEAVER_SERVER_NAME = CLOUDBEAVER_SERVER_NAME;
 
 	const { CLOUDBEAVER_SERVER_URL } = await inquirer.prompt([
 		{
@@ -451,22 +429,22 @@ export async function cloudbeaverSetup(): Promise<void> {
 			validate: validateURL,
 		},
 	]);
-	updateEnvVariable({ CLOUDBEAVER_SERVER_URL });
-	console.log("CloudBeaver environment variables updated.");
+	answers.CLOUDBEAVER_SERVER_URL = CLOUDBEAVER_SERVER_URL;
+	return answers;
 }
 
-export async function minioSetup(): Promise<void> {
+export async function minioSetup(): Promise<Record<string, string>> {
 	const { MINIO_BROWSER } = await inquirer.prompt([
 		{
 			type: "input",
 			name: "MINIO_BROWSER",
 			message: "Minio browser (on/off):",
-			default: process.env.CI === "true" ? "off" : "on",
+			default: answers.CI === "true" ? "off" : "on",
 		},
 	]);
-	updateEnvVariable({ MINIO_BROWSER });
+	answers.MINIO_BROWSER = MINIO_BROWSER;
 
-	if (process.env.CI === "false") {
+	if (answers.CI === "false") {
 		const { MINIO_API_MAPPED_HOST_IP } = await inquirer.prompt([
 			{
 				type: "input",
@@ -475,7 +453,7 @@ export async function minioSetup(): Promise<void> {
 				default: "127.0.0.1",
 			},
 		]);
-		updateEnvVariable({ MINIO_API_MAPPED_HOST_IP });
+		answers.MINIO_API_MAPPED_HOST_IP = MINIO_API_MAPPED_HOST_IP;
 
 		const { MINIO_API_MAPPED_PORT } = await inquirer.prompt([
 			{
@@ -486,7 +464,7 @@ export async function minioSetup(): Promise<void> {
 				validate: validatePort,
 			},
 		]);
-		updateEnvVariable({ MINIO_API_MAPPED_PORT });
+		answers.MINIO_API_MAPPED_PORT = MINIO_API_MAPPED_PORT;
 
 		const { MINIO_CONSOLE_MAPPED_HOST_IP } = await inquirer.prompt([
 			{
@@ -496,7 +474,7 @@ export async function minioSetup(): Promise<void> {
 				default: "127.0.0.1",
 			},
 		]);
-		updateEnvVariable({ MINIO_CONSOLE_MAPPED_HOST_IP });
+		answers.MINIO_CONSOLE_MAPPED_HOST_IP = MINIO_CONSOLE_MAPPED_HOST_IP;
 
 		const { MINIO_CONSOLE_MAPPED_PORT } = await inquirer.prompt([
 			{
@@ -507,7 +485,7 @@ export async function minioSetup(): Promise<void> {
 				validate: validatePort,
 			},
 		]);
-		updateEnvVariable({ MINIO_CONSOLE_MAPPED_PORT });
+		answers.MINIO_CONSOLE_MAPPED_PORT = MINIO_CONSOLE_MAPPED_PORT;
 	}
 
 	const { MINIO_ROOT_PASSWORD } = await inquirer.prompt([
@@ -518,7 +496,7 @@ export async function minioSetup(): Promise<void> {
 			default: "password",
 		},
 	]);
-	updateEnvVariable({ MINIO_ROOT_PASSWORD });
+	answers.MINIO_ROOT_PASSWORD = MINIO_ROOT_PASSWORD;
 
 	const { MINIO_ROOT_USER } = await inquirer.prompt([
 		{
@@ -528,13 +506,11 @@ export async function minioSetup(): Promise<void> {
 			default: "talawa",
 		},
 	]);
-	updateEnvVariable({ MINIO_ROOT_USER });
-	console.log("Minio environment variables updated.");
+	answers.MINIO_ROOT_USER = MINIO_ROOT_USER;
+	return answers;
 }
 
-export async function postgresSetup(): Promise<void> {
-	console.log("\n--- Postgres Setup ---");
-
+export async function postgresSetup(): Promise<Record<string, string>> {
 	const { POSTGRES_DB } = await inquirer.prompt([
 		{
 			type: "input",
@@ -543,9 +519,9 @@ export async function postgresSetup(): Promise<void> {
 			default: "talawa",
 		},
 	]);
-	updateEnvVariable({ POSTGRES_DB });
+	answers.POSTGRES_DB = POSTGRES_DB;
 
-	if (process.env.CI === "false") {
+	if (answers.CI === "false") {
 		const { POSTGRES_MAPPED_HOST_IP } = await inquirer.prompt([
 			{
 				type: "input",
@@ -554,7 +530,7 @@ export async function postgresSetup(): Promise<void> {
 				default: "127.0.0.1",
 			},
 		]);
-		updateEnvVariable({ POSTGRES_MAPPED_HOST_IP });
+		answers.POSTGRES_MAPPED_HOST_IP = POSTGRES_MAPPED_HOST_IP;
 
 		const { POSTGRES_MAPPED_PORT } = await inquirer.prompt([
 			{
@@ -565,7 +541,7 @@ export async function postgresSetup(): Promise<void> {
 				validate: validatePort,
 			},
 		]);
-		updateEnvVariable({ POSTGRES_MAPPED_PORT });
+		answers.POSTGRES_MAPPED_PORT = POSTGRES_MAPPED_PORT;
 	}
 
 	const { POSTGRES_PASSWORD } = await inquirer.prompt([
@@ -576,7 +552,7 @@ export async function postgresSetup(): Promise<void> {
 			default: "password",
 		},
 	]);
-	updateEnvVariable({ POSTGRES_PASSWORD });
+	answers.POSTGRES_PASSWORD = POSTGRES_PASSWORD;
 
 	const { POSTGRES_USER } = await inquirer.prompt([
 		{
@@ -586,31 +562,31 @@ export async function postgresSetup(): Promise<void> {
 			default: "talawa",
 		},
 	]);
-	updateEnvVariable({ POSTGRES_USER });
+	answers.POSTGRES_USER = POSTGRES_USER;
+	return answers;
 }
 
 export async function setup(): Promise<void> {
 	if (checkEnvFile()) {
-		const { envExists } = await inquirer.prompt([
+		const { envReconfigure } = await inquirer.prompt([
 			{
 				type: "confirm",
-				name: "envExists",
+				name: "envReconfigure",
 				message: "Env file found, Do you want to re-configure? (Y)/N",
 				default: true,
 			},
 		]);
-		if (!envExists) {
+		if (!envReconfigure) {
 			process.exit(1);
 		}
 	}
 	dotenv.config({ path: envFileName });
-	backupEnvFile();
 	await setCI();
 	initializeEnvFile();
 
 	process.on("SIGINT", () => {
 		console.log("\nProcess interrupted! Undoing changes...");
-		restoreEnvFile();
+		answers = {};
 		process.exit(1);
 	});
 	await setNodeEnvironment();
@@ -640,7 +616,7 @@ export async function setup(): Promise<void> {
 		await minioSetup();
 	}
 
-	if (process.env.CI === "false") {
+	if (answers.CI === "false") {
 		const { useDefaultCloudbeaver } = await inquirer.prompt([
 			{
 				type: "confirm",
@@ -669,5 +645,6 @@ export async function setup(): Promise<void> {
 	}
 	await administratorEmail();
 
+	updateEnvVariable(answers);
 	console.log("Configuration complete.");
 }

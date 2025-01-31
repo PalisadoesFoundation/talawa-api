@@ -24,7 +24,7 @@ describe("Setup -> postgresSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		await postgresSetup();
+		const answers = await postgresSetup();
 
 		const expectedEnv = {
 			POSTGRES_DB: "mocked-db",
@@ -33,7 +33,7 @@ describe("Setup -> postgresSetup", () => {
 		};
 
 		for (const [key, value] of Object.entries(expectedEnv)) {
-			expect(process.env[key]).toBe(value);
+			expect(answers[key]).toBe(value);
 		}
 	});
 });

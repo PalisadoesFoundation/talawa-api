@@ -28,7 +28,7 @@ describe("Setup -> cloudbeaverSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		await cloudbeaverSetup();
+		const answers = await cloudbeaverSetup();
 
 		const expectedEnv = {
 			CLOUDBEAVER_ADMIN_NAME: "mocked-admin",
@@ -40,7 +40,7 @@ describe("Setup -> cloudbeaverSetup", () => {
 		};
 
 		for (const [key, value] of Object.entries(expectedEnv)) {
-			expect(process.env[key]).toBe(value);
+			expect(answers[key]).toBe(value);
 		}
 	});
 });

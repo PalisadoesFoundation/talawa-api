@@ -19,14 +19,18 @@ describe("Setup -> askForAdministratorEmail", () => {
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: mockedEmail,
 		});
 
-		await administratorEmail();
+		const answers = await administratorEmail();
 
-		expect(process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS).toBe(mockedEmail);
+		expect(answers.API_ADMINISTRATOR_USER_EMAIL_ADDRESS).toBe(mockedEmail);
 	});
 
 	it("should return true for valid email addresses", () => {
 		expect(validateEmail("user@example.com")).toBe(true);
 		expect(validateEmail("test.email@domain.io")).toBe(true);
+		expect(validateEmail("user+tag@example.co.uk")).toBe(true);
+		expect(validateEmail("user@xn--80ak6aa92e.com")).toBe(true);
+		expect(validateEmail("user+tag@example.co.uk")).toBe(true);
+		expect(validateEmail("user@xn--80ak6aa92e.com")).toBe(true);
 	});
 
 	it("should return an error message for invalid email addresses", () => {

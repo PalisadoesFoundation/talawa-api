@@ -49,7 +49,7 @@ describe("Setup -> apiSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		await apiSetup();
+		const answers = await apiSetup();
 
 		const expectedEnv = {
 			API_BASE_URL: "http://localhost:5000",
@@ -77,7 +77,7 @@ describe("Setup -> apiSetup", () => {
 		};
 
 		for (const [key, value] of Object.entries(expectedEnv)) {
-			expect(process.env[key]).toBe(value);
+			expect(answers[key]).toBe(value);
 		}
 	});
 });

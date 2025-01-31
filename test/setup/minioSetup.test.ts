@@ -25,7 +25,7 @@ describe("Setup -> minioSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		await minioSetup();
+		const answers = await minioSetup();
 
 		const expectedEnv = {
 			MINIO_BROWSER: "off",
@@ -34,7 +34,7 @@ describe("Setup -> minioSetup", () => {
 		};
 
 		for (const [key, value] of Object.entries(expectedEnv)) {
-			expect(process.env[key]).toBe(value);
+			expect(answers[key]).toBe(value);
 		}
 	});
 });
