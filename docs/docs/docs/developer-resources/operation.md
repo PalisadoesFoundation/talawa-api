@@ -5,15 +5,35 @@ slug: /developer-resources/operation
 sidebar_position: 3
 ---
 
-## Operation
-
 This section covers how Talawa API operates
 
-### Key Concepts
+## Key Concepts
 
 Before you begin, here are some important summaries of the technologies used.
 
-#### Docker Development Containers (devcontainers)
+### API Administrators
+
+The role of API Administrators is defined in the [Talawa Core Concepts page](https://docs.talawa.io/docs/introduction/core-concepts).
+
+This section explains how they are managed in the database.
+
+1. When the API starts, it checks fo the existence of an account with the email address that matches the `API_ADMINISTRATOR_USER_EMAIL_ADDRESS` parameter in the API's `.env` file
+1. If an account with this email address does not exist:
+   1. An account is automatically created using the configured `API_ADMINISTRATOR_USER_EMAIL_ADDRESS` as the username and `API_ADMINISTRATOR_USER_PASSWORD` as the password
+   1. The account with the matching `API_ADMINISTRATOR_USER_EMAIL_ADDRESS` becomes the API Administrtor
+   1. The account automatically has `adminstrator` rights.
+1. If an account with this email address exists:
+   1. The account with the matching `API_ADMINISTRATOR_USER_EMAIL_ADDRESS` becomes the API Administrtor
+   1. The account automatically has `adminstrator` rights.
+
+Therefore. Make sure to configure the API's `.env` file with these parameters.
+
+```
+API_ADMINISTRATOR_USER_EMAIL_ADDRESS
+API_ADMINISTRATOR_USER_PASSWORD
+```
+
+### Docker Development Containers (devcontainers)
 
 Talawa API uses devcontainers for many features
 
@@ -30,7 +50,7 @@ Regular Docker's core features are contrary to using it as a developer environme
 
 Visit [this link](https://stackoverflow.com/questions/75652065/whats-the-difference-between-docker-compose-and-dev-containers) for further information on the differences between Containers and Dev Containers.
 
-##### Talawa API Dev Containers
+#### Talawa API Dev Containers
 
 In Talawa API, the API devcontainer operates like a lightweight virtual machine which has network access available to the external containers services including:
 
@@ -53,6 +73,4 @@ The API runs by default when the devcontainer starts, but only after the these c
    3. Preexisting `.env` files are not automatically updated with remote changes, you have to do that yourself.
 2. Healthchecks are skipped in the devcontainer, because if the healthcheck for it was running then the api devcontainer would never start.
 
-### Startup Sequence
-
-## Troubleshooting
+## Startup Sequence
