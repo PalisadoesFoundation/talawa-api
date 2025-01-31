@@ -4,7 +4,6 @@ import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { resolveCreator } from "../../../../src/graphql/types/Advertisement/Advertisement";
 
-// Define test context interface
 interface TestContext {
 	currentClient: {
 		isAuthenticated: boolean;
