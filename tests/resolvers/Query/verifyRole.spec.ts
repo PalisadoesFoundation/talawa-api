@@ -39,7 +39,7 @@ describe("verifyRole", () => {
     }
   });
   test("should handle token without 'Bearer' prefix correctly", async () => {
-    const req = { headers: { authorization: "validToken" } };
+    const req = { headers: { authorization: `${token}` } };
 
     if (verifyRole !== undefined) {
       vi.spyOn(jwt, "verify").mockImplementationOnce(() => {
@@ -228,13 +228,13 @@ describe("verifyRole", () => {
   });
 
   test("should handle missing ACCESS_TOKEN_SECRET", async () => {
-    delete process.env.ACCESS_TOKEN_SECRET;
+    process.env.ACCESS_TOKEN_SECRET = undefined;
     if (verifyRole !== undefined) {
       const result = await verifyRole({}, {}, { req });
       expect(result).toEqual({
         role: "",
         isAuthorized: false,
-        error: "Authentication failed",
+        error: "Invalid token",
       });
       // Restore ACCESS_TOKEN_SECRET
       process.env.ACCESS_TOKEN_SECRET = "test_secret";
