@@ -224,5 +224,7 @@ export const queries = gql`
     venue(id: ID!): Venue
 
     eventsAttendedByUser(id: ID, orderBy: EventOrderByInput): [Event]
+
+    verifyRole: VerifyRoleResponse
   }
 `;
