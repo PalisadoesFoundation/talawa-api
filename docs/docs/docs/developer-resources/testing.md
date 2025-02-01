@@ -46,7 +46,7 @@ http://127.0.0.1:4000/graphiql
 The graphQL endpoint for handling `queries` and `mutations` is this:
 
 ```
-http://127.0.0.1:4000/graphql/
+http://127.0.0.1:4000/graphql
 ```
 
 1. This is the Organization URL to be used for:
@@ -63,7 +63,7 @@ http://127.0.0.1:4000/graphql/
 The GraphQL endpoint for handling `subscriptions` is:
 
 ```
-ws://127.0.0.1:4000/graphql/
+ws://127.0.0.1:4000/graphql
 ```
 
 ## Database Management
