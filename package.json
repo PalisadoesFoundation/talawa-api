@@ -25,7 +25,7 @@
 		"graphql-upload-minimal": "^1.6.1",
 		"mercurius": "^16.0.1",
 		"mercurius-upload": "^8.0.0",
-		"minio": "^8.0.3",
+		"minio": "^8.0.4",
 		"postgres": "^3.4.5",
 		"ulidx": "^2.4.1",
 		"uuidv7": "^1.0.2",
