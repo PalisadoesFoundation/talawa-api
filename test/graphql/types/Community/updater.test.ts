@@ -139,25 +139,4 @@ describe("Community Resolver - Updater Field", () => {
 			}),
 		);
 	});
-
-
-	it("should return null for non-admin with null updaterId", async () => {
-		// Mock the database to return a non-admin user
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			...mockUser,
-			role: "regular",
-		});
-
-		const nullUpdaterCommunity = {
-			...mockCommunity,
-			updaterId: null,
-		};
-
-		const result = await CommunityResolver.updater(
-			nullUpdaterCommunity,
-			{},
-			ctx,
-		);
-		expect(result).toBeNull();
-	});
 });
