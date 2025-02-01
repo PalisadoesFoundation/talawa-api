@@ -16,7 +16,8 @@
 			"./docs/tsconfig.json",
 			"./docs/docusaurus.config.ts",
 			"./docs/src/**",
-			"./docs/sidebars.ts"
+			"./docs/sidebars.ts",
+			"./docs/docs/docs/schema"
 		],
 		// https://biomejs.dev/reference/configuration/#filesignoreunknown
 		"ignoreUnknown": true
