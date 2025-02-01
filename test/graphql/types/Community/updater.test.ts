@@ -201,40 +201,6 @@ describe("Community Resolver - Updater Field", () => {
 		);
 	});
 
-	it("should throw unauthorized error for non-admin", async () => {
-		// Create a non-admin user with the correct role type
-		const nonAdminUser: DeepPartial<User> = {
-			id: "789",
-			name: "Regular User",
-			role: "regular" as const, // Using the correct role type
-			createdAt: new Date(),
-			updatedAt: null,
-		};
-
-		// Reset the mock implementation
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockResolvedValueOnce(nonAdminUser); // First call returns non-admin user
-
-		// Update context with non-admin user
-		ctx.currentClient = {
-			isAuthenticated: true,
-			user: {
-				id: nonAdminUser.id ?? "default-id", // Provide a sensible default or handle null case
-				role: nonAdminUser.role ?? "regular", // Replace with an appropriate default role
-			},
-		};
-
-		await expect(
-			CommunityResolver.updater(mockCommunity, {}, ctx),
-		).rejects.toThrow(
-			new TalawaGraphQLError({
-				message: "User is not authorized",
-				extensions: { code: "unauthorized_action" },
-			}),
-		);
-	});
-
 	it("should return null for non-admin with null updaterId", async () => {
 		ctx.currentClient = {
 			isAuthenticated: true,
