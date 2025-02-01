@@ -30,12 +30,6 @@ export const CommunityResolver: CommunityResolvers = {
 				return null;
 			}
 
-			if (context.currentClient.user.role !== "administrator") {
-				throw new TalawaGraphQLError({
-					message: "User is not authorized",
-					extensions: { code: "unauthorized_action" },
-				});
-			}
 			const updaterId = parent.updaterId;
 
 			const existingUser =

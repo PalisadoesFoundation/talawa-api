@@ -2,9 +2,6 @@ import type { FastifyInstance } from "fastify";
 import type { usersTable } from "~/src/drizzle/tables/users";
 import type { PubSub } from "./pubsub";
 
-
-export type AuthTokenUserFields = Pick<typeof usersTable.$inferSelect, "id" | "role">;
-
 /**
  * Type of the implicit context object passed by mercurius that is merged with the explicit context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
  */
@@ -17,8 +14,8 @@ export type ImplicitMercuriusContext = {
  */
 // src/context.ts
 export type ExplicitAuthenticationTokenPayload = {
-	user: AuthTokenUserFields;
-  };
+	user: Pick<typeof usersTable.$inferSelect, "id">; // 🔴 Add 'role'
+};
 /**
  * Type of the client-specific context for a grahphql operation client.
  */
