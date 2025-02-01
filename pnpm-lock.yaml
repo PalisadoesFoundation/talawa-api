@@ -109,8 +109,8 @@ importers:
         specifier: ^0.30.4
         version: 0.30.4
       drizzle-seed:
-        specifier: ^0.3.0
-        version: 0.3.0(drizzle-orm@0.39.1(postgres@3.4.5))
+        specifier: ^0.3.1
+        version: 0.3.1(drizzle-orm@0.39.1(postgres@3.4.5))
       gql.tada:
         specifier: ^1.8.10
         version: 1.8.10(graphql@16.10.0)(typescript@5.7.3)
@@ -1766,8 +1766,8 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-seed@0.3.0:
-    resolution: {integrity: sha512-8WSt1WdtYWqClsCxKeAmU/bw8X+weYtuA/h8M3gVc8LiHU2AZX5ZUnvUxwdBsP+SkN26ARGhmU0XIJ2OEmHmfA==}
+  drizzle-seed@0.3.1:
+    resolution: {integrity: sha512-F/0lgvfOAsqlYoHM/QAGut4xXIOXoE5VoAdv2FIl7DpGYVXlAzKuJO+IphkKUFK3Dz+rFlOsQLnMNrvoQ0cx7g==}
     peerDependencies:
       drizzle-orm: '>=0.36.4'
     peerDependenciesMeta:
@@ -4207,7 +4207,7 @@ snapshots:
     optionalDependencies:
       postgres: 3.4.5
 
-  drizzle-seed@0.3.0(drizzle-orm@0.39.1(postgres@3.4.5)):
+  drizzle-seed@0.3.1(drizzle-orm@0.39.1(postgres@3.4.5)):
     dependencies:
       pure-rand: 6.1.0
     optionalDependencies:
