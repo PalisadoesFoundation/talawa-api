@@ -34,7 +34,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
-          editUrl: ({ docPath }) => {
+          editUrl: ({ docPath }: { docPath: string }) => {
             return `https://github.com/PalisadoesFoundation/talawa-api/edit/develop/docs/docs/${docPath}`;
           },
         },
@@ -84,10 +84,10 @@ const config: Config = {
           target: "_self",
         },
         {
+          to: "/docs",
+          activeBasePath: "docs",
           label: "API Guide",
           position: "left",
-          href: "/docs",
-          target: "_self",
         },
         {
           label: "Demo",
@@ -111,15 +111,6 @@ const config: Config = {
     footer: {
       style: "dark",
       links: [
-        {
-          title: "Docs",
-          items: [
-            {
-              label: "Docs",
-              to: "/docs",
-            },
-          ],
-        },
         {
           title: "Community",
           items: [
@@ -171,7 +162,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} The Palisadoes Foundation, LLC. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,

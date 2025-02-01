@@ -178,7 +178,7 @@ You must have basic competence and experience in the following technologies to b
 
 It is very important that you go through [this](https://code.visualstudio.com/docs/devcontainers/containers) official documentation for working with devcontainers in visual studio code.
 
-### Setup - Instructional Video
+### Setup: Instructional Video
 
 We provide a mostly automated way of setting up the development environment for the Talawa API using Git, Docker, and Visual Studio Code. Follow the instructions below and refer to the provided instructional video for a visual guide.
 
@@ -192,29 +192,108 @@ Click on the image below to play the video.
 2.  The correct branch to checkout is `develop-postgres`
 3.  `postgres-test` is the name of the test database in the docker-compose file.
 
-### Setup - All Steps
+### Setup: Using the CLI
 
-Follow these steps to have the best experience
+These steps are specific to Linux. You will need to modify them accordingly for other operating systems
 
-### IDE Setup
+1. Install `docker` and ensure that the daemon is running.
+1. This process does not require the installation of PostgresSQL. If you have installed postgres on your system, make sure that it is not running.
+1. Create the `.env` file by copying the template from the `envFiles/` directory.
+   1. **DO NOT EDIT EITHER FILE!**
+      ```bash
+      cp envFiles/.env.devcontainer .env
+      ```
+1. Install the packages
+   ```bash
+   pnpm install
+   ```
+1. Install the `devcontainers/cli` package
+   ```
+   pnpm install -g @devcontainers/cli
+   ```
+1. You will now need to make your user a part of the `docker` operating system group or else you will get `permission denied` messages when starting docker later. `$USER` is a universal representation of your username. You don't need to change this in the command below.
+   ```
+   sudo usermod -a -G docker $USER
+   ```
+1. You will only become a part of the `docker` group on your next login. You don't have to logout, just start another session on the CLI using the `su` command.
+   ```
+   sudo su $USER -
+   ```
+1. Build the docker devcontainer
+   ```
+   devcontainer build --workspace-folder .
+   ```
+1. When the build is complete, the last line of the output should be:
+   ```
+   {"outcome":"success","imageName":"talawa-api"}
+   ```
+1. Start the docker devcontainer
+   ```
+   devcontainer up --workspace-folder .
+   ```
+1. When the startup is complete, the last line of out put should look like this:
+   ```
+   [19:53:14.063] INFO (166): Checking the connection to the postgres database.
+   [19:53:14.077] INFO (166): Successfully connected to the postgres database.
+   [19:53:14.077] INFO (166): Applying the drizzle migration files to the postgres database.
+   [19:53:14.080] INFO (166): Successfully applied the drizzle migrations to the postgres database.
+   [19:53:14.080] INFO (166): Checking the connection to the minio server.
+   [19:53:14.087] INFO (166): Successfully connected to the minio server.
+   [19:53:14.087] INFO (166): Checking if the "talawa" bucket exists in the minio server.
+   [19:53:14.087] INFO (166): "talawa" bucket already exists in the minio server. Skipping, the bucket creation.
+   [19:53:14.087] INFO (166): Checking if the administrator user already exists in the database.
+   [19:53:14.089] INFO (166): Administrator user already exists in the database. Skipping, the administrator creation.
+   [19:53:14.089] INFO (166): Checking if the community already exists in the database.
+   [19:53:14.090] INFO (166): Community already exists in the database. Skipping, the community creation.
+   [19:53:14.113] INFO (166): Server listening at http://127.0.0.1:4000
+   [19:53:14.113] INFO (166): Server listening at http://172.23.0.3:4000
+   [19:53:14.113] INFO (166): Server listening at http://172.20.0.2:4000
+   [19:53:14.113] INFO (166): Server listening at http://172.19.0.3:4000
+   [19:53:14.113] INFO (166): Server listening at http://172.21.0.3:4000
+   [19:53:14.113] INFO (166): Server listening at http://172.22.0.4:4000
+   ```
+
+All done!
+
+#### CLI Shutdown (Development)
+
+Use the command `docker compose` command to cleanly shutdown the dev container
+
+```
+docker compose down
+```
+
+#### CLI Startup (Development)
+
+After a successful installation, yse these commands in sequence to start the dev container.
+
+```
+devcontainer build --workspace-folder .
+devcontainer up --workspace-folder .
+```
+
+### Setup: Using the VScode IDE
+
+You can setup the app using the VScode IDE. Here are the steps to follow:
 
 1. Open cloned talawa-api project in Visual Studio Code.
-2. You should see a notification that a `devcontainer` configuration file is available. Click on the notification and select `Reopen in Container`.
+1. Install the `devcontainer` extension in VScode.
+1. You should see a notification that a `devcontainer` configuration file is available. Click on the notification and select `Reopen in Container`.
    - If you don't see the notification, you can open the command palette by pressing `Ctrl+Shift+P` and search for `Reopen in Container`.
    - Make sure you have downloaded `devcontainer` extension of vs code.
-3. This will open a new Visual Studio Code window with the project running inside a Docker container. This will take a few minutes to complete.
-4. Wait till the process is complete and you see ports being forwarded in the terminal.
-5. You can check logs by clicking `Connecting to Dev Container (show log)`;
-6. Create a new terminal in Visual Studio Code by pressing ``Ctrl+Shift+` ``.
-7. Run the `pwd` command to confirm you are in the `/home/talawa/api` directory.
-8. Run the following command to check if the project has required dependencies installed correctly:
+1. This will open a new Visual Studio Code window with the project running inside a Docker container. This will take a few minutes to complete.
+1. Wait till the process is complete and you see ports being forwarded in the terminal.
+1. You can check logs by clicking `Connecting to Dev Container (show log)`;
+1. Create a new terminal in Visual Studio Code by pressing `` Ctrl+Shift+`  ``.
+1. Run the `pwd` command to confirm you are in the `/home/talawa/api` directory.
+1. Run the following command to check if the project has required dependencies installed correctly:
    ```bash
       node -v
       pnpm -v
    ```
    Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker and Vs code!
 
-### Development Mode Operation
+#### Development Mode Operation
 
 You can run the app after closing the terminal or restating the vscode using these commands:
 
@@ -232,230 +311,6 @@ You can run the app after closing the terminal or restating the vscode using the
 
 **Note:** These commands will start the server in development mode.
 
-## Testing Operation - Developers
+## Testing and Validation
 
-This section covers important tests to validate the operation of the API.
-
-### Accessing the API
-
-These are some important URLs for coding and troubleshooting:
-
-#### For Talawa-API Developers
-
-1. By default talawa-api runs on port 4000. It is available on the following endpoint:
-
-   ```
-   http://127.0.0.1:4000
-   ```
-
-2. The url for accessing the GraphQL Playground is
-   ```bash
-   http://127.0.0.1:4000/graphiql
-   ```
-3. The graphQL endpoint for handling `queries` and `mutations` is this:
-
-   ```
-   http://127.0.0.1:4000/graphql/
-   ```
-
-   - If you navigate to the endpoint you and see a JSON response like this.
-     ```json
-     { "data": null, "errors": [{ "message": "Unknown query" }] }
-     ```
-
-4. GraphQL endpoint for handling `subscriptions` is this:
-
-   ```
-   ws://127.0.0.1:4000/graphql/
-   ```
-
-#### For Talawa-Admin Developers
-
-The Organization URL for Talawa mobile app developers to use is:
-
-```
-http://127.0.0.1:4000/graphql/
-```
-
-### Database Management
-
-This section covers easy ways for developers to validate their work
-
-#### CloudBeaver
-
-CloudBeaver is a lightweight web application designed for comprehensive data management. It allows you to work with various data sources, including SQL, NoSQL, and cloud databases, all through a single secure cloud solution accessible via a browser.
-
-##### Accessing the PostgreSQL Database using CloudBeaver
-
-1. Open your preferred browser and navigate to:
-   ```bash
-   http://127.0.0.1:8978/
-   ```
-2. Log in to the CloudBeaver UI using the following credentials (these credentials can be modified in the `.env.devcontainer` file by changing the `CLOUDBEAVER_ADMIN_NAME` and `CLOUDBEAVER_ADMIN_PASSWORD` variables):
-   ```
-   Username: talawa
-   Password: password
-   ```
-3. You should now see the CloudBeaver UI. Click on the "New Connection" button and select `PostgreSQL` from the list of available connections.
-4. Fill in the connection details as follows:
-   ```
-   Name: talawa
-   Host: postgres
-   Port: 5432
-   Database: talawa
-   Username: talawa
-   Password: password
-   ```
-   - **Note:** The host name should match the one specified in the Docker Compose file and credentials should match those specified in the `.env.development` file.
-5. Check the `Save credentials for all users with access` option to avoid entering the credentials each time.
-6. Check the following boxes in the Database list:
-   ```
-   show all databases
-   show template databases
-   show unavailable databases
-   show database statistics
-   ```
-7. Click `Create` to save the connection.
-8. You should now see the `PostgreSql@postgres` connection in the list of available connections. Click on the connection to open the database.
-9. Navigate to `PostgreSql@postgres > Databases > talawa > Schemas > public > Tables` to view the available schemas.
-
-##### Accessing the PostgreSQL Test Database using CloudBeaver
-
-1. Click on the `New Connection` button and select `PostgreSQL` from the list of available connections.
-2. Fill in the connection details as follows:
-
-   ```
-   Name: talawa
-   Host: postgrestest
-   Port: 5432
-   Database: talawa
-   Username: talawa
-   Password: password
-   ```
-
-   - **Note:** The host name should match the one specified in the Docker Compose file and credentials should match those specified in the `.env.development` file.
-
-3. Check the `Save credentials for all users with access` option to avoid entering the credentials each time.
-4. Check the following boxes in the Database list:
-   ```
-   show all databases
-   show template databases
-   show unavailable databases
-   show database statistics
-   ```
-5. Click `Create` to save the connection.
-6. You should now see the `PostgreSql@postgres-test` connection in the list of available connections. Click on the connection to open the database.
-7. Navigate to `PostgreSql@postgres-test > Databases > talawa > Schemas > public > Tables` to view the available tables.
-
-### Validating MinIO
-
-MinIO is a free, open-source object storage server that's compatible with Amazon S3. It's designed for large-scale data storage and can run on-premises or in the cloud.
-
-#### Accessing the MinIO - Production
-
-1. Open your preferred browser and navigate to:
-   ```bash
-   http://127.0.0.1:9001/
-   ```
-2. Log in to the MinIO UI using the following credentials(these credentials can be modified in the env files by changing the `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD` variables):
-   - Username: `talawa`
-   - Password: `password`
-3. You should now see the MinIO UI. Click on the `Login` button to access the MinIO dashboard.
-4. You can now view the available buckets and objects in the MinIO dashboard.
-
-#### Accessing the MinIO - Development
-
-1. Open your preferred browser and navigate to:
-   ```bash
-   http://127.0.0.1:9003/
-   ```
-2. Log in to the MinIO UI using the following credentials(these credentials can be modified in the `.env.devcontainer` file by changing the `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD` variables):
-   - Username: `talawa`
-   - Password: `password`
-3. You should now see the MinIO UI. Click on the `Login` button to access the MinIO dashboard.
-4. You can now view the available buckets and objects in the MinIO dashboard.
-
-## Testing The API in Production Environments
-
-Use the `API_BASE_URL` URL configured in the `.env` file
-
-### Sign-in API
-
-This endpoint is used to sign in a user.
-
-**Request:**
-
-```bash
-
-curl -X POST -H "Content-Type: application/json" -k <API_BASE_URL> -d '{
-  "query": "query signIn($input: QuerySignInInput!) { signIn(input: $input) { authenticationToken user { emailAddress id name } } }",
-  "variables": {
-    "input": {
-      "emailAddress": "administrator@email.com",
-      "password": "password"
-    }
-  }
-}'
-
-```
-
-**Request Headers:**
-
-- `Content-Type: application/json`
-
-**Request Body:**
-
-```json
-{
-  "query": "query signIn($input: QuerySignInInput!) { signIn(input: $input) { authenticationToken user { emailAddress id name } } }",
-  "variables": {
-    "input": {
-      "emailAddress": "administrator@email.com",
-      "password": "password"
-    }
-  }
-}
-```
-
-**Response:**
-
-- Returns the authentication token and user details (email address, id, and name).
-
-### Organization Creation
-
-This endpoint is used to create a new organization.
-
-**Request:**
-
-```bash
-curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer <your_token>" -k  <API_BASE_URL> -d '{
-  "query": "mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) { createOrganization(input: $input) { id name } }",
-  "variables": {
-    "input": {
-      "name": "name0"
-    }
-  }
-}'
-```
-
-**Request Headers:**
-
-- `Content-Type: application/json`
-- `Authorization: Bearer <your_token>`
-
-**Request Body:**
-
-```json
-{
-  "query": "mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) { createOrganization(input: $input) { id name } }",
-  "variables": {
-    "input": {
-      "name": "name0"
-    }
-  }
-}
-```
-
-**Response:**
-
-- Returns the newly created organization's ID and name.
+Please refer to the [Testing and Validation Page](../developer-resources/testing.md) for more details
