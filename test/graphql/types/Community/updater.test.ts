@@ -107,7 +107,7 @@ describe("Community Resolver - Updater Field", () => {
 			currentClient: {
 				isAuthenticated: true,
 				user: {
-					id: "123", // Only include id as per context type
+					id: "123", // Ensure this is always set
 				},
 			},
 		};
@@ -139,4 +139,111 @@ describe("Community Resolver - Updater Field", () => {
 			}),
 		);
 	});
+
+	it("should make correct database queries with expected parameters", async () => {
+		const updaterUser = {
+			id: "456",
+			name: "Jane Updater",
+			role: "user",
+			createdAt: new Date(),
+			updatedAt: null,
+		};
+
+		ctx.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(mockUser)
+			.mockResolvedValueOnce(updaterUser);
+
+		await CommunityResolver.updater(mockCommunity, {}, ctx);
+
+		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith({
+			where: expect.any(Function),
+		});
+		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledTimes(
+			2,
+		);
+	});
+
+	it("should successfully return updater user when all conditions are met", async () => {
+		const updaterUser = {
+			id: "456",
+			name: "Jane Updater",
+			role: "user",
+			createdAt: new Date(),
+			updatedAt: null,
+		};
+
+		ctx.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(mockUser)
+			.mockResolvedValueOnce(updaterUser);
+
+		const result = await CommunityResolver.updater(mockCommunity, {}, ctx);
+
+		expect(result).toEqual(updaterUser);
+		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledTimes(
+			2,
+		);
+	});
+
+	it("should return the correct updater user when all conditions are met", async () => {
+		const updaterUser = {
+			id: "456",
+			name: "Jane Updater",
+			role: "user",
+			createdAt: new Date(),
+			updatedAt: null,
+		};
+
+		ctx.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(mockUser) // First call for admin check
+			.mockResolvedValueOnce(updaterUser); // Second call for updater user
+
+		const result = await CommunityResolver.updater(mockCommunity, {}, ctx);
+
+		expect(result).toEqual(updaterUser);
+	});
+
+	it("should correctly query the database for current user and updater user", async () => {
+		const updaterUser = {
+			id: "456",
+			name: "Jane Updater",
+			role: "user",
+			createdAt: new Date(),
+			updatedAt: null,
+		};
+
+		ctx.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(mockUser) // First call for current user
+			.mockResolvedValueOnce(updaterUser); // Second call for updater user
+
+		await CommunityResolver.updater(mockCommunity, {}, ctx);
+
+		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledTimes(
+			2,
+		);
+	});
+
+	//   it("should log a warning when an updater ID exists but no user is found", async () => {
+	// 	// Mock the database query to return undefined for the updater user
+	// 	ctx.drizzleClient.query.usersTable.findFirst
+	// 	  .mockResolvedValueOnce(mockUser) // Mocking the current user query
+	// 	  .mockResolvedValueOnce(undefined); // Simulating no updater user found
+
+	// 	// Run the resolver and assert that it rejects with the correct error
+	// 	await expect(
+	// 	  CommunityResolver.updater(mockCommunity, {}, ctx)
+	// 	).rejects.toThrowError(
+	// 	  new TalawaGraphQLError({
+	// 		message: "Updater user not found",
+	// 		extensions: {
+	// 		  code: "arguments_associated_resources_not_found",
+	// 		  issues: [{ argumentPath: ["updaterId"] }],
+	// 		},
+	// 	  })
+	// 	);
+
+	// 	// Ensure the log warning is triggered
+	// 	expect(ctx.log.warn).toHaveBeenCalledWith(
+	// 	  `No user found for updaterId: ${mockCommunity.updaterId}`
+	// 	);
+	//   });
 });
