@@ -42,11 +42,11 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0
       drizzle-orm:
-        specifier: ^0.38.4
-        version: 0.38.4(postgres@3.4.5)
+        specifier: ^0.39.1
+        version: 0.39.1(postgres@3.4.5)
       drizzle-zod:
         specifier: 0.6.1
-        version: 0.6.1(drizzle-orm@0.38.4(postgres@3.4.5))(zod@3.24.1)
+        version: 0.6.1(drizzle-orm@0.39.1(postgres@3.4.5))(zod@3.24.1)
       env-schema:
         specifier: ^6.0.1
         version: 6.0.1
@@ -110,7 +110,7 @@ importers:
         version: 0.30.2
       drizzle-seed:
         specifier: ^0.3.0
-        version: 0.3.0(drizzle-orm@0.38.4(postgres@3.4.5))
+        version: 0.3.0(drizzle-orm@0.39.1(postgres@3.4.5))
       gql.tada:
         specifier: ^1.8.10
         version: 1.8.10(graphql@16.10.0)(typescript@5.7.3)
@@ -1674,8 +1674,8 @@ packages:
     resolution: {integrity: sha512-vhdLrxWA32WNVF77NabpSnX7pQBornx64VDQDmKddRonOB2Xe/yY4glQ7rECoa+ogqcQNo7VblLUbeBK6Zn9Ow==}
     hasBin: true
 
-  drizzle-orm@0.38.4:
-    resolution: {integrity: sha512-s7/5BpLKO+WJRHspvpqTydxFob8i1vo2rEx4pY6TGY7QSMuUfWUuzaY0DIpXCkgHOo37BaFC+SJQb99dDUXT3Q==}
+  drizzle-orm@0.39.1:
+    resolution: {integrity: sha512-2bDHlzTY31IDmrYn8i+ZZrxK8IyBD4mPZ7JmZdVDQj2tpBZXs/gxB/1kK5pSvkjxPUMNOVsTnoGkSltgjuJwcA==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -4203,19 +4203,19 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.38.4(postgres@3.4.5):
+  drizzle-orm@0.39.1(postgres@3.4.5):
     optionalDependencies:
       postgres: 3.4.5
 
-  drizzle-seed@0.3.0(drizzle-orm@0.38.4(postgres@3.4.5)):
+  drizzle-seed@0.3.0(drizzle-orm@0.39.1(postgres@3.4.5)):
     dependencies:
       pure-rand: 6.1.0
     optionalDependencies:
-      drizzle-orm: 0.38.4(postgres@3.4.5)
+      drizzle-orm: 0.39.1(postgres@3.4.5)
 
-  drizzle-zod@0.6.1(drizzle-orm@0.38.4(postgres@3.4.5))(zod@3.24.1):
+  drizzle-zod@0.6.1(drizzle-orm@0.39.1(postgres@3.4.5))(zod@3.24.1):
     dependencies:
-      drizzle-orm: 0.38.4(postgres@3.4.5)
+      drizzle-orm: 0.39.1(postgres@3.4.5)
       zod: 3.24.1
 
   dunder-proto@1.0.1:
