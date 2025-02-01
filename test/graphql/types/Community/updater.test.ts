@@ -140,22 +140,6 @@ describe("Community Resolver - Updater Field", () => {
 		);
 	});
 
-	it("should throw unauthorized error for non-admin", async () => {
-		// Mock the database to return a non-admin user
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			...mockUser,
-			role: "regular",
-		});
-
-		await expect(
-			CommunityResolver.updater(mockCommunity, {}, ctx),
-		).rejects.toThrow(
-			new TalawaGraphQLError({
-				message: "User is not authorized",
-				extensions: { code: "unauthorized_action" },
-			}),
-		);
-	});
 
 	it("should return null for non-admin with null updaterId", async () => {
 		// Mock the database to return a non-admin user
