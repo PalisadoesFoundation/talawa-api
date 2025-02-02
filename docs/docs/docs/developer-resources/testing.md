@@ -166,7 +166,7 @@ MinIO is a free, open-source object storage server that's compatible with Amazon
 
 ## Testing The API
 
-Use the `API_BASE_URL` URL configured in the `.env` file
+Use the `API_BASE_URL` URL configured in the `.env` file. As the endpoint uses GraphQL, the complete URL will be `API_BASE_URL/graphql`
 
 ### Sign-in
 
@@ -176,7 +176,7 @@ This endpoint is used to sign in a user.
 
 ```bash
 
-curl -X POST -H "Content-Type: application/json" -k <API_BASE_URL> -d '{
+curl -X POST -H "Content-Type: application/json" -k <API_BASE_URL>/graphql -d '{
   "query": "query signIn($input: QuerySignInInput!) { signIn(input: $input) { authenticationToken user { emailAddress id name } } }",
   "variables": {
     "input": {
@@ -217,7 +217,7 @@ This endpoint is used to create a new organization.
 **Request:**
 
 ```bash
-curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer <your_token>" -k  <API_BASE_URL> -d '{
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer <your_token>" -k  <API_BASE_URL>/graphql -d '{
   "query": "mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) { createOrganization(input: $input) { id name } }",
   "variables": {
     "input": {
