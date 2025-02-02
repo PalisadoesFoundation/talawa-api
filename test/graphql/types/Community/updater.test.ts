@@ -223,4 +223,95 @@ describe("Community Resolver - Updater Field", () => {
 			`No user found for updaterId: ${mockCommunity.updaterId}`,
 		);
 	});
+	it("should handle database errors gracefully", async () => {
+		const dbError = new Error("Database connection failed");
+
+		ctx.drizzleClient.query.usersTable.findFirst
+			.mockRejectedValueOnce(dbError)
+			.mockResolvedValueOnce(mockUser);
+
+		const logErrorSpy = vi.spyOn(ctx.log, "error");
+
+		await expect(
+			CommunityResolver.updater(mockCommunity, {}, ctx),
+		).rejects.toThrow(dbError);
+
+		expect(logErrorSpy).toHaveBeenCalledWith(
+			"Database error in community updater resolver",
+			{ error: dbError },
+		);
+	});
+
+	it("should fetch different user when updaterId doesn't match current user", async () => {
+		const differentUpdaterCommunity = {
+			...mockCommunity,
+			updaterId: "different-id-789",
+		};
+
+		const differentUser: DeepPartial<User> = {
+			...mockUser,
+			id: "different-id-789",
+			name: "Jane Smith",
+		};
+
+		ctx.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(mockUser)
+			.mockResolvedValueOnce(differentUser);
+		const result = await CommunityResolver.updater(
+			differentUpdaterCommunity,
+			{},
+			ctx,
+		);
+
+		expect(result).toEqual(differentUser);
+
+		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledTimes(
+			2,
+		);
+
+		expect(
+			ctx.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenNthCalledWith(2, {
+			where: expect.any(Function),
+		});
+	});
+
+	it("should log warning and throw error when updater is not found", async () => {
+		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
+
+		const testCommunity = {
+			...mockCommunity,
+			updaterId: "non-existent-id",
+		};
+
+		await expect(
+			CommunityResolver.updater(testCommunity, {}, ctx),
+		).rejects.toThrow(
+			new TalawaGraphQLError({
+				message: "Updater user not found",
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [{ argumentPath: ["updaterId"] }],
+				},
+			}),
+		);
+
+		expect(ctx.log.warn).toHaveBeenCalledWith(
+			`No user found for updaterId: ${testCommunity.updaterId}`,
+		);
+	});
+
+	it("should log error when database query fails", async () => {
+		const dbError = new Error("Database connection failed");
+		ctx.drizzleClient.query.usersTable.findFirst.mockRejectedValue(dbError);
+
+		await expect(
+			CommunityResolver.updater(mockCommunity, {}, ctx),
+		).rejects.toThrow(dbError);
+
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			"Database error in community updater resolver",
+			{ error: dbError },
+		);
+	});
 });
