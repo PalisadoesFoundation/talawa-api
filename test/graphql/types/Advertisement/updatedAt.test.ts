@@ -302,7 +302,7 @@ describe("Advertisement Resolver - UpdatedAt Field", () => {
 
 	it("should handle case-sensitive role checks", async () => {
 		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			role: "Administrator", // Capital A
+			role: "Administrator",
 			organizationMembershipsWhereMember: [],
 		});
 
