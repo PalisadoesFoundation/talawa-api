@@ -40,7 +40,7 @@
 		"@types/node": "^22.10.7",
 		"@vitest/coverage-v8": "^3.0.3",
 		"drizzle-kit": "^0.30.4",
-		"drizzle-seed": "^0.3.0",
+		"drizzle-seed": "^0.3.1",
 		"gql.tada": "^1.8.10",
 		"lefthook": "^1.10.10",
 		"mercurius-integration-testing": "^9.0.1",
