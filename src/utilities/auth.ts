@@ -41,6 +41,7 @@ export const createAccessToken = async (
       lastName: user.lastName,
       email: user.email,
       timeout: timeout,
+      isSuperAdmin: appUserProfile.isSuperAdmin, //for admin auth validation
     },
     ACCESS_TOKEN_SECRET as string,
     {
@@ -68,6 +69,7 @@ export const createRefreshToken = (
       firstName: user?.firstName,
       lastName: user?.lastName,
       email: user?.email,
+      isSuperAdmin: appUserProfile.isSuperAdmin, //for admin auth validation
     },
     REFRESH_TOKEN_SECRET as string,
     {

@@ -11,6 +11,7 @@
 - [expired](middleware_isAuth.InterfaceAuthData.md#expired)
 - [isAuth](middleware_isAuth.InterfaceAuthData.md#isauth)
 - [userId](middleware_isAuth.InterfaceAuthData.md#userid)
+- [isSuperAdmin](middleware_isAuth.InterfaceAuthData.md#isSuperAdmin)
 
 ## Properties
 
@@ -41,3 +42,13 @@
 #### Defined in
 
 [src/middleware/isAuth.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/middleware/isAuth.ts#L10)
+
+---
+
+### isSuperAdmin
+
+• **isSuperAdmin**: `boolean`
+
+#### Defined in
+
+[src/middleware/isAuth.ts:8](https://github.com/PalisadoesFoundation/talawa-api/blob/cf57ca9/src/middleware/isAuth.ts#L11)
