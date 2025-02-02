@@ -336,7 +336,7 @@ describe("Advertisement Resolver - UpdatedAt Field", () => {
 		}).rejects.toThrow(/Database connection error|Something went wrong/); // Allow multiple matches
 	});
 
-	it("should handle empty role string", async () => {
+	it("should handle empty role string: ", async () => {
 		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			role: "",
 			organizationMembershipsWhereMember: [],
