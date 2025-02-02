@@ -1,4 +1,3 @@
-// test/utilities/mockLogger.ts
 import type { FastifyBaseLogger } from "fastify";
 import { vi } from "vitest";
 
