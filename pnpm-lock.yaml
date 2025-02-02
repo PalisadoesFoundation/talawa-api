@@ -72,8 +72,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0(graphql@16.10.0)
       minio:
-        specifier: ^8.0.4
-        version: 8.0.4
+        specifier: ^8.0.3
+        version: 8.0.3
       postgres:
         specifier: ^3.4.5
         version: 3.4.5
@@ -1971,9 +1971,8 @@ packages:
     resolution: {integrity: sha512-+iwzCJ7C5v5KgcBuueqVoNiHVoQpwiUK5XFLjf0affFTep+Wcw93tPvmb8tqujDNmzhBDPddnWV/qgWSXgq+Hg==}
     engines: {node: '>=12'}
 
-  for-each@0.3.4:
-    resolution: {integrity: sha512-kKaIINnFpzW6ffJNDjjyjrk21BkDx38c0xa/klsT8VzLCaMEefv4ZTacrcVR4DmgTeBra++jMDAfS/tS799YDw==}
-    engines: {node: '>= 0.4'}
+  for-each@0.3.3:
+    resolution: {integrity: sha512-jqYfLp7mo9vIyQf8ykW2v7A+2N4QjeCeI5+Dz9XraiO1ign81wjiH7Fb9vSOWvQfNtmSa4H2RoQTrrXivdUZmw==}
 
   foreground-child@3.3.0:
     resolution: {integrity: sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==}
@@ -2408,8 +2407,8 @@ packages:
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
-  minio@8.0.4:
-    resolution: {integrity: sha512-GVW7y2PNbzjjFJ9opVMGKvDNuRkyz3bMt1q7UrHs7bsKFWLXbSvMPffjE/HkVYWUjlD8kQwMaeqiHhhvZJJOfQ==}
+  minio@8.0.3:
+    resolution: {integrity: sha512-+FIYQ+HZ5GrBjEmIYienRgEikqaTWAflXIV5lJOtUzfYxn3NvjQx7BsJSORXExlqgzWxKTWsqkyk2wiyFjs9/w==}
     engines: {node: ^16 || ^18 || >=20}
 
   minipass@7.1.2:
@@ -4534,7 +4533,7 @@ snapshots:
     dependencies:
       semver-regex: 4.0.5
 
-  for-each@0.3.4:
+  for-each@0.3.3:
     dependencies:
       is-callable: 1.2.7
 
@@ -4965,7 +4964,7 @@ snapshots:
 
   minimist@1.2.8: {}
 
-  minio@8.0.4:
+  minio@8.0.3:
     dependencies:
       async: 3.2.6
       block-stream2: 2.1.0
@@ -5540,7 +5539,7 @@ snapshots:
       available-typed-arrays: 1.0.7
       call-bind: 1.0.8
       call-bound: 1.0.3
-      for-each: 0.3.4
+      for-each: 0.3.3
       gopd: 1.2.0
       has-tostringtag: 1.0.2
 
