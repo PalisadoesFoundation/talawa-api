@@ -22,7 +22,7 @@ importers:
         version: 10.2.2
       '@fastify/type-provider-typebox':
         specifier: ^5.1.0
-        version: 5.1.0(@sinclair/typebox@0.34.15)
+        version: 5.1.0(@sinclair/typebox@0.34.14)
       '@node-rs/argon2':
         specifier: ^2.0.2
         version: 2.0.2
@@ -33,8 +33,8 @@ importers:
         specifier: ^4.3.0
         version: 4.3.0(@pothos/core@4.3.0(graphql@16.10.0))(graphql@16.10.0)
       '@sinclair/typebox':
-        specifier: ^0.34.15
-        version: 0.34.15
+        specifier: ^0.34.14
+        version: 0.34.14
       ajv-formats:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.17.1)
@@ -1238,8 +1238,8 @@ packages:
   '@sec-ant/readable-stream@0.4.1':
     resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
 
-  '@sinclair/typebox@0.34.15':
-    resolution: {integrity: sha512-xeIzl3h1Znn9w/LTITqpiwag0gXjA+ldi2ZkXIBxGEppGCW211Tza+eL6D4pKqs10bj5z2umBWk5WL6spQ2OCQ==}
+  '@sinclair/typebox@0.34.14':
+    resolution: {integrity: sha512-TJ7Al17j3+by5y2QkTLcF/oBVMbgXBhILVgi9PuwpxQVZZvGh5BFRzWbJPmZVNKpbRLjuMzFuRwR+tdFPqCkvA==}
 
   '@sindresorhus/is@5.6.0':
     resolution: {integrity: sha512-TV7t8GKYaJWsn00tFDqBw8+Uqmr8A0fRU1tvTQhyZzGv0sJCGRQL3JGMI3ucuKo3XIZdUP+Lx7/gh2t3lewy7g==}
@@ -3484,9 +3484,9 @@ snapshots:
       fastq: 1.18.0
       glob: 11.0.1
 
-  '@fastify/type-provider-typebox@5.1.0(@sinclair/typebox@0.34.15)':
+  '@fastify/type-provider-typebox@5.1.0(@sinclair/typebox@0.34.14)':
     dependencies:
-      '@sinclair/typebox': 0.34.15
+      '@sinclair/typebox': 0.34.14
 
   '@fastify/websocket@11.0.2':
     dependencies:
@@ -3763,7 +3763,7 @@ snapshots:
 
   '@sec-ant/readable-stream@0.4.1': {}
 
-  '@sinclair/typebox@0.34.15': {}
+  '@sinclair/typebox@0.34.14': {}
 
   '@sindresorhus/is@5.6.0': {}
 
