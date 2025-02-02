@@ -1,6 +1,13 @@
 import type { FastifyBaseLogger } from "fastify";
 import { vi } from "vitest";
 
+/**
+ * Configuration options for the mock logger.
+ * @interface MockLoggerConfig
+ * @property {string} [level] - The logging level to use. Defaults to "info".
+ * @property {Set<string>} [enabledLevels] - Set of enabled log levels.
+ */
+
 interface MockLoggerConfig {
 	level?: string;
 	enabledLevels?: Set<string>;
@@ -13,6 +20,10 @@ export const createMockLogger = (
 	const enabledLevels =
 		config?.enabledLevels ??
 		new Set(["error", "warn", "info", "debug", "trace", "fatal", "silent"]);
+
+	if (level && !enabledLevels.has(level)) {
+		throw new Error(`Invalid log level: ${level}`);
+	}
 
 	const logger = {
 		error: vi.fn(),

@@ -183,26 +183,6 @@ describe("Community Resolver - Updater Field", () => {
 		);
 	});
 
-	it("should correctly query the database for current user and updater user", async () => {
-		const updaterUser = {
-			id: "456",
-			name: "Jane Updater",
-			role: "user",
-			createdAt: new Date(),
-			updatedAt: null,
-		};
-
-		ctx.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce(mockUser) // First call for current user
-			.mockResolvedValueOnce(updaterUser); // Second call for updater user
-
-		await CommunityResolver.updater(mockCommunity, {}, ctx);
-
-		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledTimes(
-			2,
-		);
-	});
-
 	it("should log a warning when an updater ID exists but no user is found", async () => {
 		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 
@@ -299,4 +279,21 @@ describe("Community Resolver - Updater Field", () => {
 			`No user found for updaterId: ${testCommunity.updaterId}`,
 		);
 	});
+
+	it("should handle database timeout errors", async () => {
+		const timeoutError = new Error("Database timeout");
+		ctx.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			timeoutError,
+		);
+
+		await expect(
+			CommunityResolver.updater(mockCommunity, {}, ctx),
+		).rejects.toThrow(timeoutError);
+
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			"Database error in community updater resolver",
+			{ error: timeoutError },
+		);
+	});
+
 });

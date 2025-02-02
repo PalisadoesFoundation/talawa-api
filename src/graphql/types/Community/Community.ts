@@ -29,7 +29,8 @@ export const CommunityResolver: CommunityResolvers = {
 			if (!parent.updaterId) {
 				return null;
 			}
-
+			
+			
 			const updaterId = parent.updaterId;
 
 			const existingUser =
