@@ -47,5 +47,5 @@ export const createMockLogger = (
 		isSilentEnabled: () => enabledLevels.has("silent"),
 	};
 
-	return logger as unknown as FastifyBaseLogger;
+	return logger;
 };

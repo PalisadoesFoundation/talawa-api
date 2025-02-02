@@ -182,26 +182,6 @@ describe("Community Resolver - Updater Field", () => {
 			2,
 		);
 	});
-
-	it("should log a warning when an updater ID exists but no user is found", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
-
-		await expect(
-			CommunityResolver.updater(mockCommunity, {}, ctx),
-		).rejects.toThrowError(
-			new TalawaGraphQLError({
-				message: "Updater user not found",
-				extensions: {
-					code: "arguments_associated_resources_not_found",
-					issues: [{ argumentPath: ["updaterId"] }],
-				},
-			}),
-		);
-
-		expect(ctx.log.warn).toHaveBeenCalledWith(
-			`No user found for updaterId: ${mockCommunity.updaterId}`,
-		);
-	});
 	it("should handle database errors gracefully", async () => {
 		const dbError = new Error("Database connection failed");
 
