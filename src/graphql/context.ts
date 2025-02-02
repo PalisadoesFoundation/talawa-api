@@ -14,7 +14,7 @@ export type ImplicitMercuriusContext = {
  */
 // src/context.ts
 export type ExplicitAuthenticationTokenPayload = {
-	user: Pick<typeof usersTable.$inferSelect, "id" | "role">; // 🔴 Add 'role'
+	user: Pick<typeof usersTable.$inferSelect, "id">;
 };
 /**
  * Type of the client-specific context for a grahphql operation client.

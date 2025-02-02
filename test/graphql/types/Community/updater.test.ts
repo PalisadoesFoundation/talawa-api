@@ -6,20 +6,13 @@ import { CommunityResolver } from "~/src/graphql/types/Community/Community";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../../../src/graphql/context";
+import { createMockLogger } from "../../../utilities/mockLogger";
 
-type DeepPartial<T> = T extends object
-	? {
-			[P in keyof T]?: DeepPartial<T[P]>;
-		}
-	: T;
-
-type LogBindings = Record<string, string | number | boolean>;
-type LogOptions = Record<string, string | number | boolean>;
+type DeepPartial<T> = Partial<T>;
 
 type PubSubEvents = {
 	COMMUNITY_CREATED: { id: string };
 	POST_CREATED: { id: string };
-	// Add other event types as needed
 };
 
 interface TestContext extends Omit<GraphQLContext, "log"> {
@@ -32,34 +25,6 @@ interface TestContext extends Omit<GraphQLContext, "log"> {
 	} & GraphQLContext["drizzleClient"];
 	log: FastifyBaseLogger;
 }
-
-const createMockLogger = (): FastifyBaseLogger => {
-	// Create base logger object with explicit types
-	const logger = {
-		error: vi.fn(),
-		warn: vi.fn(),
-		info: vi.fn(),
-		debug: vi.fn(),
-		trace: vi.fn(),
-		fatal: vi.fn(),
-		silent: vi.fn(),
-		child: (bindings: LogBindings, options?: LogOptions) => createMockLogger(),
-		level: "info",
-		isLevelEnabled: vi.fn().mockReturnValue(true),
-		bindings: vi.fn().mockReturnValue({}),
-		flush: vi.fn(),
-		// Add level-enabled methods explicitly
-		isFatalEnabled: vi.fn().mockReturnValue(true),
-		isErrorEnabled: vi.fn().mockReturnValue(true),
-		isWarnEnabled: vi.fn().mockReturnValue(true),
-		isInfoEnabled: vi.fn().mockReturnValue(true),
-		isDebugEnabled: vi.fn().mockReturnValue(true),
-		isTraceEnabled: vi.fn().mockReturnValue(true),
-		isSilentEnabled: vi.fn().mockReturnValue(true),
-	};
-
-	return logger as unknown as FastifyBaseLogger;
-};
 
 const createMockPubSub = () => ({
 	publish: vi.fn().mockImplementation(
@@ -84,6 +49,7 @@ describe("Community Resolver - Updater Field", () => {
 	let mockCommunity: Community;
 
 	beforeEach(() => {
+		// Mock user with role for resolver logic, even though context user won't have it
 		mockUser = {
 			id: "123",
 			name: "John Doe",
@@ -131,30 +97,20 @@ describe("Community Resolver - Updater Field", () => {
 				sign: vi.fn().mockReturnValue("mock-token"),
 			},
 			minio: {
-				bucketName: "talawa", // Match your actual bucket name
+				bucketName: "talawa",
 				client: {
 					listBuckets: vi.fn(),
 					putObject: vi.fn(),
 					getObject: vi.fn(),
-					// Add other required Minio client methods
-				} as unknown as MinioClient, // Type assertion for client
+				} as unknown as MinioClient,
 			},
 			currentClient: {
 				isAuthenticated: true,
 				user: {
-					id: "123", // Must match mockUser.id
-					role: "administrator",
+					id: "123", // Ensure this is always set
 				},
 			},
 		};
-	});
-
-	it("should return updater user", async () => {
-		const result = await CommunityResolver.updater(mockCommunity, {}, ctx);
-		expect(result).toEqual(mockUser);
-		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith({
-			where: expect.any(Function),
-		});
 	});
 
 	it("should return null when updaterId is null", async () => {
@@ -184,80 +140,89 @@ describe("Community Resolver - Updater Field", () => {
 		);
 	});
 
-	it("should throw unauthorized error for non-admin", async () => {
-		ctx.currentClient = {
-			isAuthenticated: true,
-			user: {
-				id: "123",
-				role: "regular",
-			},
-		};
-
-		await expect(
-			CommunityResolver.updater(mockCommunity, {}, ctx),
-		).rejects.toThrow(
-			new TalawaGraphQLError({
-				message: "User is not authorized",
-				extensions: { code: "unauthorized_action" },
-			}),
-		);
-	});
-
-	it("should throw unauthorized error for non-admin", async () => {
-		// Create a non-admin user with the correct role type
-		const nonAdminUser: DeepPartial<User> = {
-			id: "789",
-			name: "Regular User",
-			role: "regular" as const, // Using the correct role type
+	it("should make correct database queries with expected parameters", async () => {
+		const updaterUser = {
+			id: "456",
+			name: "Jane Updater",
+			role: "user",
 			createdAt: new Date(),
 			updatedAt: null,
 		};
 
-		// Reset the mock implementation
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockResolvedValueOnce(nonAdminUser); // First call returns non-admin user
+		ctx.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(mockUser)
+			.mockResolvedValueOnce(updaterUser);
 
-		// Update context with non-admin user
-		ctx.currentClient = {
-			isAuthenticated: true,
-			user: {
-				id: nonAdminUser.id ?? "default-id", // Provide a sensible default or handle null case
-				role: nonAdminUser.role ?? "regular", // Replace with an appropriate default role
-			},
+		await CommunityResolver.updater(mockCommunity, {}, ctx);
+
+		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith({
+			where: expect.any(Function),
+		});
+		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledTimes(
+			2,
+		);
+	});
+
+	it("should successfully return updater user when all conditions are met", async () => {
+		const updaterUser = {
+			id: "456",
+			name: "Jane Updater",
+			role: "user",
+			createdAt: new Date(),
+			updatedAt: null,
 		};
+
+		ctx.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(mockUser)
+			.mockResolvedValueOnce(updaterUser);
+
+		const result = await CommunityResolver.updater(mockCommunity, {}, ctx);
+
+		expect(result).toEqual(updaterUser);
+		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledTimes(
+			2,
+		);
+	});
+
+	it("should correctly query the database for current user and updater user", async () => {
+		const updaterUser = {
+			id: "456",
+			name: "Jane Updater",
+			role: "user",
+			createdAt: new Date(),
+			updatedAt: null,
+		};
+
+		ctx.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(mockUser) // First call for current user
+			.mockResolvedValueOnce(updaterUser); // Second call for updater user
+
+		await CommunityResolver.updater(mockCommunity, {}, ctx);
+
+		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledTimes(
+			2,
+		);
+	});
+
+	it("should log a warning when an updater ID exists but no user is found", async () => {
+		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 
 		await expect(
 			CommunityResolver.updater(mockCommunity, {}, ctx),
-		).rejects.toThrow(
+		).rejects.toThrowError(
 			new TalawaGraphQLError({
-				message: "User is not authorized",
-				extensions: { code: "unauthorized_action" },
+				message: "Updater user not found",
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [{ argumentPath: ["updaterId"] }],
+				},
 			}),
 		);
-	});
 
-	it("should return null for non-admin with null updaterId", async () => {
-		ctx.currentClient = {
-			isAuthenticated: true,
-			user: {
-				id: "123",
-				role: "regular",
-			},
-		};
-		const nullUpdaterCommunity = {
-			...mockCommunity,
-			updaterId: null,
-		};
-
-		const result = await CommunityResolver.updater(
-			nullUpdaterCommunity,
-			{},
-			ctx,
+		expect(ctx.log.warn).toHaveBeenCalledWith(
+			`No user found for updaterId: ${mockCommunity.updaterId}`,
 		);
-		expect(result).toBeNull();
 	});
-
 	it("should handle database errors gracefully", async () => {
 		const dbError = new Error("Database connection failed");
 
@@ -289,30 +254,64 @@ describe("Community Resolver - Updater Field", () => {
 			name: "Jane Smith",
 		};
 
-		// Mock database calls
 		ctx.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce(mockUser) // First call: current user lookup
-			.mockResolvedValueOnce(differentUser); // Second call: different user lookup
-
+			.mockResolvedValueOnce(mockUser)
+			.mockResolvedValueOnce(differentUser);
 		const result = await CommunityResolver.updater(
 			differentUpdaterCommunity,
 			{},
 			ctx,
 		);
 
-		// Verify the result matches the different user
 		expect(result).toEqual(differentUser);
 
-		// Verify two database calls were made
 		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledTimes(
 			2,
 		);
 
-		// Verify the second call used the correct updaterId
 		expect(
 			ctx.drizzleClient.query.usersTable.findFirst,
 		).toHaveBeenNthCalledWith(2, {
-			where: expect.any(Function), // Should query for id: "different-id-789"
+			where: expect.any(Function),
 		});
+	});
+
+	it("should log warning and throw error when updater is not found", async () => {
+		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
+
+		const testCommunity = {
+			...mockCommunity,
+			updaterId: "non-existent-id",
+		};
+
+		await expect(
+			CommunityResolver.updater(testCommunity, {}, ctx),
+		).rejects.toThrow(
+			new TalawaGraphQLError({
+				message: "Updater user not found",
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [{ argumentPath: ["updaterId"] }],
+				},
+			}),
+		);
+
+		expect(ctx.log.warn).toHaveBeenCalledWith(
+			`No user found for updaterId: ${testCommunity.updaterId}`,
+		);
+	});
+
+	it("should log error when database query fails", async () => {
+		const dbError = new Error("Database connection failed");
+		ctx.drizzleClient.query.usersTable.findFirst.mockRejectedValue(dbError);
+
+		await expect(
+			CommunityResolver.updater(mockCommunity, {}, ctx),
+		).rejects.toThrow(dbError);
+
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			"Database error in community updater resolver",
+			{ error: dbError },
+		);
 	});
 });

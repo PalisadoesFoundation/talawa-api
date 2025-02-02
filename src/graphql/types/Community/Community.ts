@@ -30,12 +30,6 @@ export const CommunityResolver: CommunityResolvers = {
 				return null;
 			}
 
-			if (context.currentClient.user.role !== "administrator") {
-				throw new TalawaGraphQLError({
-					message: "User is not authorized",
-					extensions: { code: "unauthorized_action" },
-				});
-			}
 			const updaterId = parent.updaterId;
 
 			const existingUser =
@@ -44,8 +38,14 @@ export const CommunityResolver: CommunityResolvers = {
 				});
 
 			if (existingUser === undefined) {
-				console.log("No user found for updaterId:", updaterId);
-				return null;
+				context.log.warn(`No user found for updaterId: ${updaterId}`);
+				throw new TalawaGraphQLError({
+					message: "Updater user not found",
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [{ argumentPath: ["updaterId"] }],
+					},
+				});
 			}
 
 			const updater = await context.drizzleClient.query.usersTable.findFirst({
@@ -53,7 +53,18 @@ export const CommunityResolver: CommunityResolvers = {
 					parent.updaterId ? eq(users.id, parent.updaterId) : isNull(users.id),
 			});
 
-			return updater ?? null;
+			if (!updater) {
+				context.log.warn(`No user found for updaterId: ${parent.updaterId}`);
+				throw new TalawaGraphQLError({
+					message: "Updater user not found",
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [{ argumentPath: ["updaterId"] }],
+					},
+				});
+			}
+
+			return updater;
 		} catch (error) {
 			context.log.error("Database error in community updater resolver", {
 				error,
