@@ -25,12 +25,9 @@ export const CommunityResolver: CommunityResolvers = {
 					extensions: { code: "unauthenticated" },
 				});
 			}
-
 			if (!parent.updaterId) {
 				return null;
 			}
-			
-			
 			const updaterId = parent.updaterId;
 
 			const existingUser =
@@ -64,7 +61,6 @@ export const CommunityResolver: CommunityResolvers = {
 					},
 				});
 			}
-
 			return updater;
 		} catch (error) {
 			context.log.error("Database error in community updater resolver", {

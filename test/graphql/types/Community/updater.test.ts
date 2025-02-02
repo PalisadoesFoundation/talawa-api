@@ -295,5 +295,4 @@ describe("Community Resolver - Updater Field", () => {
 			{ error: timeoutError },
 		);
 	});
-
 });
