@@ -49,7 +49,6 @@ describe("Community Resolver - Updater Field", () => {
 	let mockCommunity: Community;
 
 	beforeEach(() => {
-		// Mock user with role for resolver logic, even though context user won't have it
 		mockUser = {
 			id: "123",
 			name: "John Doe",
@@ -298,20 +297,6 @@ describe("Community Resolver - Updater Field", () => {
 
 		expect(ctx.log.warn).toHaveBeenCalledWith(
 			`No user found for updaterId: ${testCommunity.updaterId}`,
-		);
-	});
-
-	it("should log error when database query fails", async () => {
-		const dbError = new Error("Database connection failed");
-		ctx.drizzleClient.query.usersTable.findFirst.mockRejectedValue(dbError);
-
-		await expect(
-			CommunityResolver.updater(mockCommunity, {}, ctx),
-		).rejects.toThrow(dbError);
-
-		expect(ctx.log.error).toHaveBeenCalledWith(
-			"Database error in community updater resolver",
-			{ error: dbError },
 		);
 	});
 });

@@ -1,7 +1,19 @@
 import type { FastifyBaseLogger } from "fastify";
 import { vi } from "vitest";
 
-export const createMockLogger = (): FastifyBaseLogger => {
+interface MockLoggerConfig {
+	level?: string;
+	enabledLevels?: Set<string>;
+}
+
+export const createMockLogger = (
+	config?: MockLoggerConfig,
+): FastifyBaseLogger => {
+	const level = config?.level ?? "info";
+	const enabledLevels =
+		config?.enabledLevels ??
+		new Set(["error", "warn", "info", "debug", "trace", "fatal", "silent"]);
+
 	const logger = {
 		error: vi.fn(),
 		warn: vi.fn(),
@@ -10,18 +22,18 @@ export const createMockLogger = (): FastifyBaseLogger => {
 		trace: vi.fn(),
 		fatal: vi.fn(),
 		silent: vi.fn(),
-		child: () => createMockLogger(),
-		level: "info",
-		isLevelEnabled: vi.fn().mockReturnValue(true),
+		child: () => createMockLogger(config),
+		level,
+		isLevelEnabled: (l: string) => enabledLevels.has(l),
 		bindings: vi.fn().mockReturnValue({}),
 		flush: vi.fn(),
-		isFatalEnabled: vi.fn().mockReturnValue(true),
-		isErrorEnabled: vi.fn().mockReturnValue(true),
-		isWarnEnabled: vi.fn().mockReturnValue(true),
-		isInfoEnabled: vi.fn().mockReturnValue(true),
-		isDebugEnabled: vi.fn().mockReturnValue(true),
-		isTraceEnabled: vi.fn().mockReturnValue(true),
-		isSilentEnabled: vi.fn().mockReturnValue(true),
+		isFatalEnabled: () => enabledLevels.has("fatal"),
+		isErrorEnabled: () => enabledLevels.has("error"),
+		isWarnEnabled: () => enabledLevels.has("warn"),
+		isInfoEnabled: () => enabledLevels.has("info"),
+		isDebugEnabled: () => enabledLevels.has("debug"),
+		isTraceEnabled: () => enabledLevels.has("trace"),
+		isSilentEnabled: () => enabledLevels.has("silent"),
 	};
 
 	return logger as unknown as FastifyBaseLogger;
