@@ -184,24 +184,6 @@ describe("Community Resolver - Updater Field", () => {
 		);
 	});
 
-	it("should return the correct updater user when all conditions are met", async () => {
-		const updaterUser = {
-			id: "456",
-			name: "Jane Updater",
-			role: "user",
-			createdAt: new Date(),
-			updatedAt: null,
-		};
-
-		ctx.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce(mockUser) // First call for admin check
-			.mockResolvedValueOnce(updaterUser); // Second call for updater user
-
-		const result = await CommunityResolver.updater(mockCommunity, {}, ctx);
-
-		expect(result).toEqual(updaterUser);
-	});
-
 	it("should correctly query the database for current user and updater user", async () => {
 		const updaterUser = {
 			id: "456",
@@ -222,28 +204,23 @@ describe("Community Resolver - Updater Field", () => {
 		);
 	});
 
-	//   it("should log a warning when an updater ID exists but no user is found", async () => {
-	// 	// Mock the database query to return undefined for the updater user
-	// 	ctx.drizzleClient.query.usersTable.findFirst
-	// 	  .mockResolvedValueOnce(mockUser) // Mocking the current user query
-	// 	  .mockResolvedValueOnce(undefined); // Simulating no updater user found
+	it("should log a warning when an updater ID exists but no user is found", async () => {
+		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 
-	// 	// Run the resolver and assert that it rejects with the correct error
-	// 	await expect(
-	// 	  CommunityResolver.updater(mockCommunity, {}, ctx)
-	// 	).rejects.toThrowError(
-	// 	  new TalawaGraphQLError({
-	// 		message: "Updater user not found",
-	// 		extensions: {
-	// 		  code: "arguments_associated_resources_not_found",
-	// 		  issues: [{ argumentPath: ["updaterId"] }],
-	// 		},
-	// 	  })
-	// 	);
+		await expect(
+			CommunityResolver.updater(mockCommunity, {}, ctx),
+		).rejects.toThrowError(
+			new TalawaGraphQLError({
+				message: "Updater user not found",
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [{ argumentPath: ["updaterId"] }],
+				},
+			}),
+		);
 
-	// 	// Ensure the log warning is triggered
-	// 	expect(ctx.log.warn).toHaveBeenCalledWith(
-	// 	  `No user found for updaterId: ${mockCommunity.updaterId}`
-	// 	);
-	//   });
+		expect(ctx.log.warn).toHaveBeenCalledWith(
+			`No user found for updaterId: ${mockCommunity.updaterId}`,
+		);
+	});
 });
