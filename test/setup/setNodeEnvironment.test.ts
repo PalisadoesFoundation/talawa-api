@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { setNodeEnvironment } from "~/src/setup";
+import { setNodeEnvironment } from "~/src/setup/setup";
 
 vi.mock("inquirer");
 

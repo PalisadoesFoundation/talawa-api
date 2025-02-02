@@ -1,7 +1,7 @@
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { administratorEmail } from "~/src/setup";
-import { validateEmail } from "~/src/setup";
+import { administratorEmail } from "~/src/setup/setup";
+import { validateEmail } from "~/src/setup/setup";
 
 vi.mock("inquirer");
 
@@ -27,8 +27,6 @@ describe("Setup -> askForAdministratorEmail", () => {
 	it("should return true for valid email addresses", () => {
 		expect(validateEmail("user@example.com")).toBe(true);
 		expect(validateEmail("test.email@domain.io")).toBe(true);
-		expect(validateEmail("user+tag@example.co.uk")).toBe(true);
-		expect(validateEmail("user@xn--80ak6aa92e.com")).toBe(true);
 		expect(validateEmail("user+tag@example.co.uk")).toBe(true);
 		expect(validateEmail("user@xn--80ak6aa92e.com")).toBe(true);
 	});

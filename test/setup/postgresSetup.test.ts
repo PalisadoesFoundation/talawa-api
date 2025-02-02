@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { postgresSetup } from "~/src/setup";
+import { postgresSetup } from "~/src/setup/setup";
 
 vi.mock("inquirer");
 

@@ -1,6 +1,13 @@
-import { setup } from "./src/setup";
+import { setup } from "~/src/setup/setup";
 
 setup().catch((err) => {
-	console.error("An error occurred during setup:", err);
-	process.exit(1);
+	setup().catch((err) => {
+		console.error(`Setup failed: ${err.message}`);
+		console.error("Error details:", {
+			type: err.name,
+			code: err.code,
+			stack: err.stack,
+		});
+		process.exit(1);
+	});
 });

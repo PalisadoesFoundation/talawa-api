@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { minioSetup } from "~/src/setup";
+import { minioSetup } from "~/src/setup/setup";
 
 vi.mock("inquirer");
 

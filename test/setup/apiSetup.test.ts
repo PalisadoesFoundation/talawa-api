@@ -5,7 +5,7 @@ import {
 	generateJwtSecret,
 	validatePort,
 	validateURL,
-} from "~/src/setup";
+} from "~/src/setup/setup";
 
 vi.mock("inquirer");
 
