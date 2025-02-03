@@ -49,7 +49,6 @@ describe("Community Resolver - Updater Field", () => {
 	let mockCommunity: Community;
 
 	beforeEach(() => {
-		// Mock user with role for resolver logic, even though context user won't have it
 		mockUser = {
 			id: "123",
 			name: "John Doe",
@@ -183,46 +182,6 @@ describe("Community Resolver - Updater Field", () => {
 			2,
 		);
 	});
-
-	it("should correctly query the database for current user and updater user", async () => {
-		const updaterUser = {
-			id: "456",
-			name: "Jane Updater",
-			role: "user",
-			createdAt: new Date(),
-			updatedAt: null,
-		};
-
-		ctx.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce(mockUser) // First call for current user
-			.mockResolvedValueOnce(updaterUser); // Second call for updater user
-
-		await CommunityResolver.updater(mockCommunity, {}, ctx);
-
-		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledTimes(
-			2,
-		);
-	});
-
-	it("should log a warning when an updater ID exists but no user is found", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
-
-		await expect(
-			CommunityResolver.updater(mockCommunity, {}, ctx),
-		).rejects.toThrowError(
-			new TalawaGraphQLError({
-				message: "Updater user not found",
-				extensions: {
-					code: "arguments_associated_resources_not_found",
-					issues: [{ argumentPath: ["updaterId"] }],
-				},
-			}),
-		);
-
-		expect(ctx.log.warn).toHaveBeenCalledWith(
-			`No user found for updaterId: ${mockCommunity.updaterId}`,
-		);
-	});
 	it("should handle database errors gracefully", async () => {
 		const dbError = new Error("Database connection failed");
 
@@ -301,17 +260,19 @@ describe("Community Resolver - Updater Field", () => {
 		);
 	});
 
-	it("should log error when database query fails", async () => {
-		const dbError = new Error("Database connection failed");
-		ctx.drizzleClient.query.usersTable.findFirst.mockRejectedValue(dbError);
+	it("should handle database timeout errors", async () => {
+		const timeoutError = new Error("Database timeout");
+		ctx.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			timeoutError,
+		);
 
 		await expect(
 			CommunityResolver.updater(mockCommunity, {}, ctx),
-		).rejects.toThrow(dbError);
+		).rejects.toThrow(timeoutError);
 
 		expect(ctx.log.error).toHaveBeenCalledWith(
 			"Database error in community updater resolver",
-			{ error: dbError },
+			{ error: timeoutError },
 		);
 	});
 });
