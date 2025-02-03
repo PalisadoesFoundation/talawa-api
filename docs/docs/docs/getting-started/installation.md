@@ -198,12 +198,28 @@ These steps are specific to Linux. You will need to modify them accordingly for 
 
 1. Install `docker` and ensure that the daemon is running.
 1. This process does not require the installation of PostgresSQL. If you have installed postgres on your system, make sure that it is not running.
+1. Windows Only
+   1. Make sure you clone the `talawa-api` repository to a `WSL` subdirectory.
+   2. Run all the following commands from the repository root in that subdirectory.
 1. Create the `.env` file by copying the template from the `envFiles/` directory.
    1. **DO NOT EDIT EITHER FILE!**
       ```bash
       cp envFiles/.env.devcontainer .env
       ```
-1. Install the packages
+1. Install `pnpm` using `npm`
+   ```bash
+   npm install pnpm
+   ```
+1. Linux / MacOS Only
+   1. Setup `pnpm` to be automatically configured on all future terminal session logins using your `~/.bashrc` file.
+      ```bash
+      pnpm setup
+      ```
+   2. Enable `pnpm` for your current terminal session.
+      ```
+      source ~/.bashrc
+      ```
+1. Install the `pnpm` packages
    ```bash
    pnpm install
    ```
@@ -220,38 +236,45 @@ These steps are specific to Linux. You will need to modify them accordingly for 
    sudo su $USER -
    ```
 1. Build the docker devcontainer
-   ```
-   devcontainer build --workspace-folder .
-   ```
-1. When the build is complete, the last line of the output should be:
-   ```
-   {"outcome":"success","imageName":"talawa-api"}
-   ```
-1. Start the docker devcontainer
-   ```
-   devcontainer up --workspace-folder .
-   ```
-1. When the startup is complete, the last line of out put should look like this:
-   ```
-   [19:53:14.063] INFO (166): Checking the connection to the postgres database.
-   [19:53:14.077] INFO (166): Successfully connected to the postgres database.
-   [19:53:14.077] INFO (166): Applying the drizzle migration files to the postgres database.
-   [19:53:14.080] INFO (166): Successfully applied the drizzle migrations to the postgres database.
-   [19:53:14.080] INFO (166): Checking the connection to the minio server.
-   [19:53:14.087] INFO (166): Successfully connected to the minio server.
-   [19:53:14.087] INFO (166): Checking if the "talawa" bucket exists in the minio server.
-   [19:53:14.087] INFO (166): "talawa" bucket already exists in the minio server. Skipping, the bucket creation.
-   [19:53:14.087] INFO (166): Checking if the administrator user already exists in the database.
-   [19:53:14.089] INFO (166): Administrator user already exists in the database. Skipping, the administrator creation.
-   [19:53:14.089] INFO (166): Checking if the community already exists in the database.
-   [19:53:14.090] INFO (166): Community already exists in the database. Skipping, the community creation.
-   [19:53:14.113] INFO (166): Server listening at http://127.0.0.1:4000
-   [19:53:14.113] INFO (166): Server listening at http://172.23.0.3:4000
-   [19:53:14.113] INFO (166): Server listening at http://172.20.0.2:4000
-   [19:53:14.113] INFO (166): Server listening at http://172.19.0.3:4000
-   [19:53:14.113] INFO (166): Server listening at http://172.21.0.3:4000
-   [19:53:14.113] INFO (166): Server listening at http://172.22.0.4:4000
-   ```
+
+```
+devcontainer build --workspace-folder .
+```
+
+10. When the build is complete, the last line of the output should be:
+
+```
+{"outcome":"success","imageName":"talawa-api"}
+```
+
+11. Start the docker devcontainer
+
+```
+devcontainer up --workspace-folder .
+```
+
+12. When the startup is complete, the last line of out put should look like this:
+
+```
+[19:53:14.063] INFO (166): Checking the connection to the postgres database.
+[19:53:14.077] INFO (166): Successfully connected to the postgres database.
+[19:53:14.077] INFO (166): Applying the drizzle migration files to the postgres database.
+[19:53:14.080] INFO (166): Successfully applied the drizzle migrations to the postgres database.
+[19:53:14.080] INFO (166): Checking the connection to the minio server.
+[19:53:14.087] INFO (166): Successfully connected to the minio server.
+[19:53:14.087] INFO (166): Checking if the "talawa" bucket exists in the minio server.
+[19:53:14.087] INFO (166): "talawa" bucket already exists in the minio server. Skipping, the bucket creation.
+[19:53:14.087] INFO (166): Checking if the administrator user already exists in the database.
+[19:53:14.089] INFO (166): Administrator user already exists in the database. Skipping, the administrator creation.
+[19:53:14.089] INFO (166): Checking if the community already exists in the database.
+[19:53:14.090] INFO (166): Community already exists in the database. Skipping, the community creation.
+[19:53:14.113] INFO (166): Server listening at http://127.0.0.1:4000
+[19:53:14.113] INFO (166): Server listening at http://172.23.0.3:4000
+[19:53:14.113] INFO (166): Server listening at http://172.20.0.2:4000
+[19:53:14.113] INFO (166): Server listening at http://172.19.0.3:4000
+[19:53:14.113] INFO (166): Server listening at http://172.21.0.3:4000
+[19:53:14.113] INFO (166): Server listening at http://172.22.0.4:4000
+```
 
 All done!
 
