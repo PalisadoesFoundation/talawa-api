@@ -328,12 +328,12 @@ describe("Advertisement Resolver - UpdatedAt Field", () => {
 	});
 	it("should handle database query errors", async () => {
 		ctx.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
-			new Error("Database connection error"), // Override error message
+			new Error("Database connection error"),
 		);
 
 		await expect(async () => {
 			await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-		}).rejects.toThrow(/Database connection error|Something went wrong/); // Allow multiple matches
+		}).rejects.toThrow(/Database connection error|Something went wrong/);
 	});
 
 	it("should handle empty role string: ", async () => {
