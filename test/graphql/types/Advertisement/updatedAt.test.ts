@@ -94,8 +94,6 @@ async function resolveUpdatedAt(
 				extensions: { code: "unauthenticated" },
 			});
 		}
-
-		// Check if user is system administrator
 		if (currentUser.role === "administrator") {
 			return parent.updatedAt;
 		}
