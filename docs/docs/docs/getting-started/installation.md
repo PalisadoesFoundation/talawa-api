@@ -198,6 +198,9 @@ These steps are specific to Linux. You will need to modify them accordingly for 
 
 1. Install `docker` and ensure that the daemon is running.
 1. This process does not require the installation of PostgresSQL. If you have installed postgres on your system, make sure that it is not running.
+1. Windows Only
+   1. Make sure you clone the `talawa-api` repository to a `WSL` subdirectory.
+   2. Run all the following commands from the repository root in that subdirectory.
 1. Create the `.env` file by copying the template from the `envFiles/` directory.
    1. **DO NOT EDIT EITHER FILE!**
       ```bash
@@ -233,18 +236,24 @@ These steps are specific to Linux. You will need to modify them accordingly for 
    sudo su $USER -
    ```
 1. Build the docker devcontainer
-   ```
-   devcontainer build --workspace-folder .
-   ```
-1. When the build is complete, the last line of the output should be:
-   ```
-   {"outcome":"success","imageName":"talawa-api"}
-   ```
-1. Start the docker devcontainer
-   ```
-   devcontainer up --workspace-folder .
-   ```
-1. When the startup is complete, the last line of out put should look like this:
+
+```
+devcontainer build --workspace-folder .
+```
+
+10. When the build is complete, the last line of the output should be:
+
+```
+{"outcome":"success","imageName":"talawa-api"}
+```
+
+11. Start the docker devcontainer
+
+```
+devcontainer up --workspace-folder .
+```
+
+12. When the startup is complete, the last line of out put should look like this:
 
 ```
 [19:53:14.063] INFO (166): Checking the connection to the postgres database.
