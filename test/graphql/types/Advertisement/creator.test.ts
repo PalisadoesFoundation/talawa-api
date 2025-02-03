@@ -158,31 +158,4 @@ describe("Advertisement Resolver - Creator Field", () => {
 
 		expect(result.id).toBe("123");
 	});
-
-	// it("should throw unauthorized error if the user is not an administrator", async () => {
-	//   // Mock current user with non-admin role and membership
-	//   const nonAdminUser = {
-	//     ...mockUser,
-	//     role: "member",
-	//     organizationMembershipsWhereMember: [{
-	//       role: "member",
-	//       organizationId: mockAdvertisement.organizationId
-	//     }]
-	//   };
-
-	//   ctx.drizzleClient.query.usersTable.findFirst
-	//     .mockResolvedValueOnce(nonAdminUser) // Current user lookup
-	//     .mockResolvedValueOnce({ id: "456" }); // Creator lookup
-
-	//   await expect(async () => {
-	//     await resolveCreator(
-	//       { ...mockAdvertisement, creatorId: "456" },
-	//       {},
-	//       ctx
-	//     );
-	//   }).rejects.toThrow(new TalawaGraphQLError({
-	//     message: "User is not authorized",
-	//     extensions: { code: "unauthorized_action" }
-	//   }));
-	// });
 });
