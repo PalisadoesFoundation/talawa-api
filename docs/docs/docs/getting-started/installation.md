@@ -203,7 +203,20 @@ These steps are specific to Linux. You will need to modify them accordingly for 
       ```bash
       cp envFiles/.env.devcontainer .env
       ```
-1. Install the packages
+1. Install `pnpm` using `npm`
+   ```bash
+   npm install pnpm
+   ```
+1. Linux / MacOS Only
+   1. Setup `pnpm` to be automatically configured on all future terminal session logins using your `~/.bashrc` file.
+      ```bash
+      pnpm setup
+      ```
+   2. Enable `pnpm` for your current terminal session.
+      ```
+      source ~/.bashrc
+      ```
+1. Install the `pnpm` packages
    ```bash
    pnpm install
    ```
@@ -232,26 +245,27 @@ These steps are specific to Linux. You will need to modify them accordingly for 
    devcontainer up --workspace-folder .
    ```
 1. When the startup is complete, the last line of out put should look like this:
-   ```
-   [19:53:14.063] INFO (166): Checking the connection to the postgres database.
-   [19:53:14.077] INFO (166): Successfully connected to the postgres database.
-   [19:53:14.077] INFO (166): Applying the drizzle migration files to the postgres database.
-   [19:53:14.080] INFO (166): Successfully applied the drizzle migrations to the postgres database.
-   [19:53:14.080] INFO (166): Checking the connection to the minio server.
-   [19:53:14.087] INFO (166): Successfully connected to the minio server.
-   [19:53:14.087] INFO (166): Checking if the "talawa" bucket exists in the minio server.
-   [19:53:14.087] INFO (166): "talawa" bucket already exists in the minio server. Skipping, the bucket creation.
-   [19:53:14.087] INFO (166): Checking if the administrator user already exists in the database.
-   [19:53:14.089] INFO (166): Administrator user already exists in the database. Skipping, the administrator creation.
-   [19:53:14.089] INFO (166): Checking if the community already exists in the database.
-   [19:53:14.090] INFO (166): Community already exists in the database. Skipping, the community creation.
-   [19:53:14.113] INFO (166): Server listening at http://127.0.0.1:4000
-   [19:53:14.113] INFO (166): Server listening at http://172.23.0.3:4000
-   [19:53:14.113] INFO (166): Server listening at http://172.20.0.2:4000
-   [19:53:14.113] INFO (166): Server listening at http://172.19.0.3:4000
-   [19:53:14.113] INFO (166): Server listening at http://172.21.0.3:4000
-   [19:53:14.113] INFO (166): Server listening at http://172.22.0.4:4000
-   ```
+
+```
+[19:53:14.063] INFO (166): Checking the connection to the postgres database.
+[19:53:14.077] INFO (166): Successfully connected to the postgres database.
+[19:53:14.077] INFO (166): Applying the drizzle migration files to the postgres database.
+[19:53:14.080] INFO (166): Successfully applied the drizzle migrations to the postgres database.
+[19:53:14.080] INFO (166): Checking the connection to the minio server.
+[19:53:14.087] INFO (166): Successfully connected to the minio server.
+[19:53:14.087] INFO (166): Checking if the "talawa" bucket exists in the minio server.
+[19:53:14.087] INFO (166): "talawa" bucket already exists in the minio server. Skipping, the bucket creation.
+[19:53:14.087] INFO (166): Checking if the administrator user already exists in the database.
+[19:53:14.089] INFO (166): Administrator user already exists in the database. Skipping, the administrator creation.
+[19:53:14.089] INFO (166): Checking if the community already exists in the database.
+[19:53:14.090] INFO (166): Community already exists in the database. Skipping, the community creation.
+[19:53:14.113] INFO (166): Server listening at http://127.0.0.1:4000
+[19:53:14.113] INFO (166): Server listening at http://172.23.0.3:4000
+[19:53:14.113] INFO (166): Server listening at http://172.20.0.2:4000
+[19:53:14.113] INFO (166): Server listening at http://172.19.0.3:4000
+[19:53:14.113] INFO (166): Server listening at http://172.21.0.3:4000
+[19:53:14.113] INFO (166): Server listening at http://172.22.0.4:4000
+```
 
 All done!
 
