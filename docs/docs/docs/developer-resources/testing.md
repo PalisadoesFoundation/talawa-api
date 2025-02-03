@@ -168,7 +168,11 @@ MinIO is a free, open-source object storage server that's compatible with Amazon
 
 Use the `API_BASE_URL` URL configured in the `.env` file. As the endpoint uses GraphQL, the complete URL will be `API_BASE_URL/graphql`
 
-### Sign-in
+### Using Curl
+
+This section shows how to do some basic transactions using CURL
+
+#### Sign-in
 
 This endpoint is used to sign in a user.
 
@@ -210,7 +214,7 @@ curl -X POST -H "Content-Type: application/json" -k <API_BASE_URL>/graphql -d '{
 
 - Returns the authentication token and user details (email address, id, and name).
 
-### Organization Creation
+#### Organization Creation
 
 This endpoint is used to create a new organization.
 
@@ -248,3 +252,95 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer <your
 **Response:**
 
 - Returns the newly created organization's ID and name.
+
+### Using GraphiQL
+
+Here are some basic commands you can use for testing
+
+#### Signing in as Administrator
+
+Use the following GraphQL **query** to get an **authentication token** for authorization in later queries:
+
+```graphql
+mutation {
+  signIn(
+    input: { emailAddress: "administrator@email.com", password: "password" }
+  ) {
+    authenticationToken
+    user {
+      id
+      name
+    }
+  }
+}
+```
+
+#### Promote a Registered User to an Administrator
+
+Use the following GraphQL **mutation** to assign **administrator** role to user:
+
+```graphql
+mutation {
+  updateUser(input: { id: "user-id", role: administrator }) {
+    id
+    name
+  }
+}
+```
+
+#### Creating Organizations
+
+Use the following GraphQL **mutation** to create an organization:
+
+```graphql
+mutation {
+  createOrganization(
+    input: {
+      addressLine1: "Los Angeles"
+      addressLine2: "USA"
+      city: "Los Angeles"
+      countryCode: in
+      description: "testing"
+      name: "Test Org 7"
+      postalCode: "876876"
+      state: "California"
+    }
+  ) {
+    id
+  }
+}
+```
+
+#### Create an Organization Administrator
+
+Use the following GraphQL **mutation** to assign **administrator** role to user:
+
+```graphql
+mutation {
+  createOrganizationMembership(
+    input: {
+      memberId: "user-id"
+      organizationId: "org-id"
+      role: administrator
+    }
+  ) {
+    id
+    name
+    addressLine1
+    createdAt
+    members(first: 5) {
+      pageInfo {
+        hasNextPage
+        startCursor
+      }
+      edges {
+        cursor
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+}
+```
