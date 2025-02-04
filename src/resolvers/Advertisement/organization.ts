@@ -1,5 +1,7 @@
 import type { AdvertisementResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
+import type { InterfaceOrganization } from '../../models';
+import type { Types } from "mongoose";
 
 /**
  * Resolver function for the `organization` field of an `Advertisement`.
@@ -14,8 +16,10 @@ import { Organization } from "../../models";
  */
 export const organization: AdvertisementResolvers["organization"] = async (
   parent,
-) => {
+): Promise<InterfaceOrganization | null> => {
+  if (!parent.organizationId) return null;
+
   return Organization.findOne({
-    _id: parent.organizationId,
-  }).lean();
+    _id: parent.organizationId as Types.ObjectId,
+  }).lean() as Promise<InterfaceOrganization | null>;
 };

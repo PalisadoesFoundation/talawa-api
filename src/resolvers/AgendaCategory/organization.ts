@@ -1,5 +1,7 @@
 import type { AgendaCategoryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceOrganization } from "../../models";
 import { Organization } from "../../models";
+import type { Types } from "mongoose";
 
 /**
  * Resolver function for the `organization` field of an `AgendaCategory`.
@@ -15,6 +17,10 @@ import { Organization } from "../../models";
 //@ts-expect-error - type error
 export const organization: AgendaCategoryResolvers["organization"] = async (
   parent,
-) => {
-  return Organization.findOne(parent.organizationId).lean();
+): Promise<InterfaceOrganization | null> => {
+  if (!parent.organizationId) return null;
+
+  return Organization.findOne({
+    _id: parent.organizationId as Types.ObjectId,
+  }).lean() as Promise<InterfaceOrganization | null>;
 };

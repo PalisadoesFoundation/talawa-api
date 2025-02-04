@@ -1,6 +1,7 @@
 import type { AgendaCategoryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
-
+import type { Types } from "mongoose";
 /**
  * Resolver function for the `createdBy` field of an `AgendaCategory`.
  *
@@ -16,6 +17,14 @@ import { User } from "../../models";
 //@ts-expect-error - type error
 export const createdBy: AgendaCategoryResolvers["createdBy"] = async (
   parent,
-) => {
-  return User.findOne(parent.createdBy).lean();
+): Promise<InterfaceUser | null> => {
+  if (!parent.createdBy) return null;
+
+  const userId = parent.createdBy instanceof User 
+    ? parent.createdBy._id 
+    : parent.createdBy;
+
+  return User.findOne({
+    _id: userId as Types.ObjectId,
+  }).lean() as Promise<InterfaceUser | null>;
 };

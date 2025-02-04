@@ -1,6 +1,7 @@
 import type { AgendaCategoryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
-
+import type { Types } from "mongoose";
 /**
  * Resolver function for the `updatedBy` field of an `AgendaCategory`.
  *
@@ -18,6 +19,10 @@ import { User } from "../../models";
  */
 export const updatedBy: AgendaCategoryResolvers["updatedBy"] = async (
   parent,
-) => {
-  return User.findOne(parent.updatedBy).lean();
+): Promise<InterfaceUser | null> => {
+  if (!parent.updatedBy) return null;
+
+  return User.findOne({
+    _id: parent.updatedBy as Types.ObjectId,
+  }).lean() as Promise<InterfaceUser | null>;
 };

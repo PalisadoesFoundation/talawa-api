@@ -1,5 +1,7 @@
 import type { ActionItemCategoryResolvers } from "../../types/generatedGraphQLTypes";
+import type { InterfaceUser } from "../../models";
 import { User } from "../../models";
+import type { Types } from "mongoose";
 
 /**
  * Resolver function for the `creator` field of an `ActionItemCategory`.
@@ -14,8 +16,10 @@ import { User } from "../../models";
  */
 export const creator: ActionItemCategoryResolvers["creator"] = async (
   parent,
-) => {
+): Promise<InterfaceUser | null> => {
+  if (!parent.creatorId) return null;
+  
   return User.findOne({
-    _id: parent.creatorId,
-  }).lean();
+    _id: parent.creatorId as Types.ObjectId,
+  }).lean() as Promise<InterfaceUser | null>;
 };

@@ -1,5 +1,11 @@
+import type { InterfaceChatMessage } from "../../models";
 import { ChatMessage } from "../../models";
-import type { ChatResolvers } from "../../types/generatedGraphQLTypes";
+import type {
+  ChatResolvers,
+  ResolverTypeWrapper,
+} from "../../types/generatedGraphQLTypes";
+import type { Types } from "mongoose";
+
 /**
  * This resolver function will fetch and return the list of all messages in specified Chat from database.
  * @param parent - An object that is the return value of the resolver for this field's parent.
@@ -9,18 +15,17 @@ export const messages: ChatResolvers["messages"] = async (
   parent,
   _args,
   context,
-) => {
-  let messages = await ChatMessage.find({
+): Promise<ResolverTypeWrapper<InterfaceChatMessage>[]> => {
+  if (!parent.messages?.length) return [];
+
+  const messages = await ChatMessage.find({
     _id: {
-      $in: parent.messages,
+      $in: parent.messages as Types.ObjectId[],
     },
   }).lean();
 
-  messages = messages.map((message) => {
-    if (message.media) {
-      return { ...message, media: `${context.apiRootUrl}${message.media}` };
-    }
-    return message;
-  });
-  return messages;
+  return messages.map((message) => ({
+    ...message,
+    media: message.media ? `${context.apiRootUrl}${message.media}` : message.media,
+  })) as ResolverTypeWrapper<InterfaceChatMessage>[];
 };
