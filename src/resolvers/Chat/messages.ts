@@ -1,5 +1,6 @@
-import { ChatMessage } from "../../models";
-import type { ChatResolvers } from "../../types/generatedGraphQLTypes";
+import { ChatMessage, InterfaceChatMessage } from "../../models";
+import type { ChatResolvers, ResolverTypeWrapper } from "../../types/generatedGraphQLTypes";
+
 /**
  * This resolver function will fetch and return the list of all messages in specified Chat from database.
  * @param parent - An object that is the return value of the resolver for this field's parent.
@@ -22,5 +23,10 @@ export const messages: ChatResolvers["messages"] = async (
     }
     return message;
   });
-  return messages;
+
+  // Ensure the result conforms to the expected type
+  return messages.map(message => ({
+    ...message,
+    // Add any necessary type adjustments here
+  })) as ResolverTypeWrapper<InterfaceChatMessage>[];
 };

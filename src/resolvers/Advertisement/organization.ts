@@ -1,4 +1,5 @@
 import type { AdvertisementResolvers } from "../../types/generatedGraphQLTypes";
+import { InterfaceOrganization } from "../../models";
 import { Organization } from "../../models";
 
 /**
@@ -14,8 +15,8 @@ import { Organization } from "../../models";
  */
 export const organization: AdvertisementResolvers["organization"] = async (
   parent,
-) => {
+): Promise<InterfaceOrganization | null> => {
   return Organization.findOne({
     _id: parent.organizationId,
-  }).lean();
+  }).lean() as Promise<InterfaceOrganization | null>;
 };

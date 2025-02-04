@@ -1,5 +1,5 @@
 import type { ActionItemCategoryResolvers } from "../../types/generatedGraphQLTypes";
-import { User } from "../../models";
+import { InterfaceUser, User } from "../../models";
 
 /**
  * Resolver function for the `creator` field of an `ActionItemCategory`.
@@ -14,8 +14,8 @@ import { User } from "../../models";
  */
 export const creator: ActionItemCategoryResolvers["creator"] = async (
   parent,
-) => {
+): Promise<InterfaceUser | null> => {
   return User.findOne({
     _id: parent.creatorId,
-  }).lean();
+  }).lean() as Promise<InterfaceUser | null>;
 };
