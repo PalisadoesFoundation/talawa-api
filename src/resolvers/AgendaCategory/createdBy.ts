@@ -17,5 +17,13 @@ import { User } from "../../models";
 export const createdBy: AgendaCategoryResolvers["createdBy"] = async (
   parent,
 ) => {
-  return User.findOne(parent.createdBy).lean();
+  if (parent.createdBy) {
+    if (parent.createdBy instanceof User) {
+      return User.findOne(parent.createdBy.toObject()).lean();
+    } else {
+      return null; // or handle the case when createdBy is not an instance of User
+    }
+  } else {
+    return null; // or handle the case when createdBy is undefined
+  }
 };

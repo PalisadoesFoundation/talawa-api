@@ -1,5 +1,6 @@
 import type { AgendaCategoryResolvers } from "../../types/generatedGraphQLTypes";
-import { Organization } from "../../models";
+import { InterfaceOrganization, Organization } from "../../models";
+import { RootFilterQuery } from "mongoose";
 
 /**
  * Resolver function for the `organization` field of an `AgendaCategory`.
@@ -16,5 +17,5 @@ import { Organization } from "../../models";
 export const organization: AgendaCategoryResolvers["organization"] = async (
   parent,
 ) => {
-  return Organization.findOne(parent.organizationId).lean();
+  return Organization.findOne(parent.organizationId as RootFilterQuery<InterfaceOrganization>).lean();
 };

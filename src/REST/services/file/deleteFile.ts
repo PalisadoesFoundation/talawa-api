@@ -27,6 +27,7 @@ export const deleteFile = async (
 
     await File.deleteOne({ _id: file.id });
     await deleteFileFromBucket(BUCKET_NAME as string, objectKey);
+
     return { success: true, message: "File deleted successfully" };
   } catch (error) {
     console.error("Error deleting file:", error);
