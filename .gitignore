@@ -11,8 +11,7 @@
 .docusaurus
 
 # Don't upload configuration files
-.env
-.env_test
+/.env*
 
 # Ignore upload directories
 cert/**
@@ -286,13 +285,6 @@ web_modules/
 
 # Yarn Integrity file
 .yarn-integrity
-
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
