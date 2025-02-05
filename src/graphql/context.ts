@@ -1,71 +1,60 @@
-
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import type { usersTable } from "~/src/drizzle/tables/users";
-import type { PubSub } from "./pubsub";
 import jwt from 'jsonwebtoken';
 
-const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key'; // Ensure this is set in your environment variables
+// Retrieve the secret key from the environment variable
+const SECRET_KEY = process.env.SECRET_KEY;
 
-// Define types
-export type ImplicitMercuriusContext = {
-  pubsub: PubSub;
-};
+if (!SECRET_KEY) {
+  throw new Error('SECRET_KEY environment variable is not set.');
+}
 
-export type ExplicitAuthenticationTokenPayload = {
-  user: Pick<typeof usersTable.$inferSelect, "id">;
-};
+import { IncomingMessage } from 'http';
 
-export type CurrentClient =
-  | ({ isAuthenticated: false } & { [K in keyof ExplicitAuthenticationTokenPayload]?: never })
-  | ({ isAuthenticated: true } & ExplicitAuthenticationTokenPayload);
+declare module 'http' {
+  interface IncomingMessage {
+    user?: object;
+  }
+}
 
-export type ExplicitGraphQLContext = {
-  currentClient: CurrentClient;
-  drizzleClient: FastifyInstance["drizzleClient"];
-  envConfig: Pick<FastifyInstance["envConfig"], "API_BASE_URL">;
-  jwt: {
-    sign: (payload: ExplicitAuthenticationTokenPayload) => string;
-  };
-  log: FastifyInstance["log"];
-  minio: FastifyInstance["minio"];
-};
+interface WebSocketInfo {
+  req: IncomingMessage;
+}
 
-export type GraphQLContext = ExplicitGraphQLContext & ImplicitMercuriusContext;
+export const verifyClient = (info: WebSocketInfo, next: (verified: boolean, code?: number, message?: string) => void) => {
+  const token = info.req.headers['sec-websocket-protocol'];
 
-type InitialContext = {
-  fastify: FastifyInstance;
-  request: FastifyRequest;
-} & (
-  | { isSubscription: false; reply: FastifyReply; socket?: never }
-  | { isSubscription: true; reply?: never; socket: WebSocket }
-);
-
-export type CreateContext = (initialContext: InitialContext) => Promise<ExplicitGraphQLContext>;
-
-export const createContext: CreateContext = async (initialContext) => {
-  const { fastify, request } = initialContext;
-
-  let currentClient: CurrentClient;
-  try {
-    const jwtPayload = await request.jwtVerify<ExplicitAuthenticationTokenPayload>();
-    currentClient = {
-      isAuthenticated: true,
-      user: jwtPayload.user,
-    };
-  } catch (error) {
-    currentClient = {
-      isAuthenticated: false,
-    };
+  if (!token) {
+    return next(false, 401, 'Unauthorized');
   }
 
-  return {
-    currentClient,
-    drizzleClient: fastify.drizzleClient,
-    envConfig: fastify.envConfig,
-    jwt: {
-      sign: (payload: ExplicitAuthenticationTokenPayload) => fastify.jwt.sign(payload),
-    },
-    log: fastify.log,
-    minio: fastify.minio,
-  };
+  jwt.verify(token, SECRET_KEY, (err: jwt.VerifyErrors | null, decoded: jwt.JwtPayload | string | undefined) => {
+    if (err) {
+      return next(false, 401, 'Unauthorized');
+    }
+
+    if (typeof decoded === 'object') {
+      info.req.user = decoded;
+    } else {
+      return next(false, 401, 'Unauthorized');
+    }
+    next(true);
+  });
+};
+
+interface ConnectData {
+  authToken: string;
+}
+
+export const onConnect = (data: ConnectData) => {
+  const token = data.authToken;
+
+  if (!token) {
+    throw new Error('Missing auth token!');
+  }
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    return { user: decoded };
+  } catch (err) {
+    throw new Error('Invalid auth token!');
+  }
 };
