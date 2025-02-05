@@ -78,10 +78,12 @@ export function checkEnvFile(): boolean {
 }
 
 export function initializeEnvFile(): void {
-	console.log("answer: ", answers.CI);
+	if (fs.existsSync(envFileName)) {
+		fs.copyFileSync(envFileName, `${envFileName}.backup`);
+		console.log(`Backup created at ${envFileName}.backup`);
+		}
 	const envFileToUse =
 		answers.CI === "true" ? "envFiles/.env.ci" : "envFiles/.env.devcontainer";
-	console.log("Reading from:", envFileToUse);
 
 	const parsedEnv = dotenv.parse(fs.readFileSync(envFileToUse));
 	dotenv.config({ path: envFileName });
