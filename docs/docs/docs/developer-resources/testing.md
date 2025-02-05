@@ -87,7 +87,6 @@ Replace `<IPv4 Address>` with the actual IP address you copied in step 2.
 
 **Note**: In the Talawa app, type the endpoint URL in the field labeled `Enter Community URL`.
 
-
 ## Database Management
 
 This section covers easy ways for developers to validate their work
