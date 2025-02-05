@@ -35,14 +35,14 @@ services:
       disable: true
     # https://docs.docker.com/reference/compose-file/services/#ports
     ports:
-      - host_ip: ${API_MAPPED_HOST_IP:?error}
-        name: api
-        published: ${API_MAPPED_PORT:?error}
-        target: ${API_PORT}
       - host_ip: ${API_DEBUGGER_MAPPED_HOST_IP:?error}
         name: api_debugger
         published: ${API_DEBUGGER_MAPPED_PORT:?error}
         target: ${API_DEBUGGER_PORT}
+      - host_ip: 0.0.0.0
+        name: api
+        published: ${API_MAPPED_PORT:?error}
+        target: ${API_PORT}
     # https://docs.docker.com/reference/compose-file/services/#restart
     restart: unless-stopped
     user: talawa
