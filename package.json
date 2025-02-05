@@ -53,7 +53,7 @@
 		"vitest": "^3.0.3"
 	},
 	"engines": {
-		"node": "22.13.0"
+		"node": ">=23.7.0"
 	},
 	"homepage": "https://github.com/PalisadoesFoundation/talawa-api#readme",
 	"keywords": [
