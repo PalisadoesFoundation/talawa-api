@@ -1,13 +1,7 @@
-
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { usersTable } from "~/src/drizzle/tables/users";
 import type { PubSub } from "./pubsub";
-import jwt from 'jsonwebtoken';
 
-if (!process.env.SECRET_KEY) {
-  throw new Error("SECRET_KEY must be set in environment variables.");
-}
-const SECRET_KEY = process.env.SECRET_KEY;
 
 // Define types
 export type ImplicitMercuriusContext = {
