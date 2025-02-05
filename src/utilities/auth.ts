@@ -7,7 +7,7 @@ if (!SECRET_KEY) {
   throw new Error('SECRET_KEY environment variable is not set.');
 }
 
-import { IncomingMessage } from 'http';
+import type { IncomingMessage } from 'node:http';
 
 declare module 'http' {
   interface IncomingMessage {
