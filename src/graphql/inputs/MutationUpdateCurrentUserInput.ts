@@ -69,8 +69,9 @@ export const MutationUpdateCurrentUserInput = builder
 				description: "Primary education grade of the user.",
 				type: UserEducationGrade,
 			}),
-			emailAddress: t.string({
+			emailAddress: t.field({
 				description: "Email address of the user.",
+				type: "EmailAddress",
 			}),
 			employmentStatus: t.field({
 				description: "Employment status of the user.",
