@@ -1,55 +1,71 @@
-import type { FastifyInstance } from "fastify";
+
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { usersTable } from "~/src/drizzle/tables/users";
 import type { PubSub } from "./pubsub";
+import jwt from 'jsonwebtoken';
 
-/**
- * Type of the implicit context object passed by mercurius that is merged with the explicit context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
- */
+const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key'; // Ensure this is set in your environment variables
+
+// Define types
 export type ImplicitMercuriusContext = {
-	pubsub: PubSub;
+  pubsub: PubSub;
 };
 
-/**
- * Type of the payload encoded into or decoded from the authentication json web token.
- */
 export type ExplicitAuthenticationTokenPayload = {
-	user: Pick<typeof usersTable.$inferSelect, "id">;
+  user: Pick<typeof usersTable.$inferSelect, "id">;
 };
 
-/**
- * Type of the client-specific context for a grahphql operation client.
- */
 export type CurrentClient =
-	| ({
-			/**
-			 * Type union discriminator field when the current client is unauthenticated.
-			 */
-			isAuthenticated: false;
-	  } & {
-			[K in keyof ExplicitAuthenticationTokenPayload]?: never;
-	  })
-	| ({
-			/**
-			 * Type union discriminator field when the current client is authenticated.
-			 */
-			isAuthenticated: true;
-	  } & ExplicitAuthenticationTokenPayload);
+  | ({ isAuthenticated: false } & { [K in keyof ExplicitAuthenticationTokenPayload]?: never })
+  | ({ isAuthenticated: true } & ExplicitAuthenticationTokenPayload);
 
-/**
- * Type of the transport protocol agnostic explicit context object that is merged with the implcit mercurius context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
- */
 export type ExplicitGraphQLContext = {
-	currentClient: CurrentClient;
-	drizzleClient: FastifyInstance["drizzleClient"];
-	envConfig: Pick<FastifyInstance["envConfig"], "API_BASE_URL">;
-	jwt: {
-		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
-	};
-	log: FastifyInstance["log"];
-	minio: FastifyInstance["minio"];
+  currentClient: CurrentClient;
+  drizzleClient: FastifyInstance["drizzleClient"];
+  envConfig: Pick<FastifyInstance["envConfig"], "API_BASE_URL">;
+  jwt: {
+    sign: (payload: ExplicitAuthenticationTokenPayload) => string;
+  };
+  log: FastifyInstance["log"];
+  minio: FastifyInstance["minio"];
 };
 
-/**
- * Type of the transport protocol agnostic context object passed to the graphql resolvers each time they resolve a graphql operation at runtime.
- */
 export type GraphQLContext = ExplicitGraphQLContext & ImplicitMercuriusContext;
+
+type InitialContext = {
+  fastify: FastifyInstance;
+  request: FastifyRequest;
+} & (
+  | { isSubscription: false; reply: FastifyReply; socket?: never }
+  | { isSubscription: true; reply?: never; socket: WebSocket }
+);
+
+export type CreateContext = (initialContext: InitialContext) => Promise<ExplicitGraphQLContext>;
+
+export const createContext: CreateContext = async (initialContext) => {
+  const { fastify, request } = initialContext;
+
+  let currentClient: CurrentClient;
+  try {
+    const jwtPayload = await request.jwtVerify<ExplicitAuthenticationTokenPayload>();
+    currentClient = {
+      isAuthenticated: true,
+      user: jwtPayload.user,
+    };
+  } catch (error) {
+    currentClient = {
+      isAuthenticated: false,
+    };
+  }
+
+  return {
+    currentClient,
+    drizzleClient: fastify.drizzleClient,
+    envConfig: fastify.envConfig,
+    jwt: {
+      sign: (payload: ExplicitAuthenticationTokenPayload) => fastify.jwt.sign(payload),
+    },
+    log: fastify.log,
+    minio: fastify.minio,
+  };
+};
