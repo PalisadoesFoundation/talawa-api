@@ -1,10 +1,12 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fastifyPlugin from 'fastify-plugin';
-import { mercurius } from 'mercurius';
+import mercurius from 'mercurius';
 import { mercuriusUpload } from 'mercurius-upload';
 import { createContext } from '~/src/graphql/context';
-import { verifyClient, onConnect } from '~/src/utilities/auth';
+import { verifyClient } from '~/src/utilities/auth';
 import { schema } from '~/src/graphql/schema';
+import jwt from 'jsonwebtoken';
+
 
 export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
   fastify.register(mercuriusUpload, {
@@ -35,7 +37,17 @@ export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
           socket,
         }),
       keepAlive: 1000 * 30,
-      onConnect,
+      onConnect: (data: { type: "connection_init"; payload: any; }) => {
+        if (data.payload.authToken) {
+          try {
+            const user = jwt.verify(data.payload.authToken, 'your-secret-key');
+            return { user };
+          } catch (err) {
+            throw new Error('Invalid auth token');
+          }
+        }
+        throw new Error('Missing auth token');
+      },
       onDisconnect: (ctx) => {},
       verifyClient,
     },
