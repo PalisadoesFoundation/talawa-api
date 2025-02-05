@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const docsDir = path.resolve(process.env.DOCS_DIR || "./docs/docs/docs/schema");
+const docsDir = path.resolve(
+	process.env.DOCS_DIR || "./docs/docs/docs/auto-schema",
+);
 
 function replaceLinks(dir) {
 	try {

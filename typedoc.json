@@ -1,5 +1,5 @@
 {
-	"out": "docs/docs/docs/schema",
+	"out": "docs/docs/docs/auto-schema",
 	"plugin": ["typedoc-plugin-markdown"],
 	"theme": "markdown",
 	"tsconfig": "tsconfig.docs.json",

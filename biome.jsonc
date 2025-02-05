@@ -17,7 +17,7 @@
 			"./docs/docusaurus.config.ts",
 			"./docs/src/**",
 			"./docs/sidebars.ts",
-			"./docs/docs/docs/schema"
+			"./docs/docs/docs/auto-schema"
 		],
 		// https://biomejs.dev/reference/configuration/#filesignoreunknown
 		"ignoreUnknown": true
