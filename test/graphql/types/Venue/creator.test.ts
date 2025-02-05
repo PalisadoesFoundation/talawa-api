@@ -98,7 +98,6 @@ const resolveCreator = async (
 		return currentUser as unknown as typeof User;
 	}
 
-	// Add type guard for creatorId
 	if (typeof parent.creatorId !== "string") {
 		throw new TalawaGraphQLError({
 			extensions: {
