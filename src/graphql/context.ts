@@ -4,7 +4,10 @@ import type { usersTable } from "~/src/drizzle/tables/users";
 import type { PubSub } from "./pubsub";
 import jwt from 'jsonwebtoken';
 
-const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key'; // Ensure this is set in your environment variables
+if (!process.env.SECRET_KEY) {
+  throw new Error("SECRET_KEY must be set in environment variables.");
+}
+const SECRET_KEY = process.env.SECRET_KEY;
 
 // Define types
 export type ImplicitMercuriusContext = {
