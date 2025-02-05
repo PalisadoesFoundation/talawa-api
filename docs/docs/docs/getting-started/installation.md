@@ -294,6 +294,7 @@ After a successful installation, yse these commands in sequence to start the dev
 devcontainer build --workspace-folder .
 devcontainer up --workspace-folder .
 ```
+
 #### Import Sample Data
 
 1. Once the server is running, open a new terminal session.
