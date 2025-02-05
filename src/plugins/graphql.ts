@@ -40,7 +40,7 @@ export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
       onConnect: (data: { type: "connection_init"; payload: any; }) => {
         if (data.payload.authToken) {
           try {
-            const user = jwt.verify(data.payload.authToken, 'your-secret-key');
+            const user = jwt.verify(data.payload.authToken, process.env.JWT_SECRET_KEY || 'default-secret-key');
             return { user };
           } catch (err) {
             throw new Error('Invalid auth token');
