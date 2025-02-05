@@ -37,7 +37,7 @@ export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
           socket,
         }),
       keepAlive: 1000 * 30,
-      onConnect: (data: { type: "connection_init"; payload: any; }) => {
+      onConnect: (data: { type: "connection_init"; payload: { authToken?: string } }) => {
         if (data.payload.authToken) {
           try {
             const user = jwt.verify(data.payload.authToken, process.env.JWT_SECRET_KEY || 'default-secret-key');
