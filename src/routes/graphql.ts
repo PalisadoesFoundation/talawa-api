@@ -124,7 +124,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					fastify,
 					isSubscription: true,
 					request,
-					socket,
+					socket: socket as unknown as WebSocket,
 				}),
 			// Intervals in milli-seconds to wait before sending the `GQL_CONNECTION_KEEP_ALIVE` message to the client to check if the connection is alive. This helps detect disconnected subscription clients and prevent unnecessary data transfer.
 			keepAlive: 1000 * 30,
