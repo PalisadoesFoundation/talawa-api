@@ -6,6 +6,8 @@
 	"dependencies": {
 		"@fastify/cors": "^10.0.2",
 		"@fastify/helmet": "^13.0.1",
+		"@types/jsonwebtoken": "^9.0.8",
+		"jsonwebtoken": "^9.0.2",
 		"@fastify/jwt": "^9.0.3",
 		"@fastify/rate-limit": "^10.2.2",
 		"@fastify/type-provider-typebox": "^5.1.0",
