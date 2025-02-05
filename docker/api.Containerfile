@@ -53,7 +53,8 @@ RUN userdel -r node \
 && groupadd -g ${API_GID} talawa \
 # Adds the "talawa" user with id equal to the value of argument "${API_UID}", assigns it to "talawa" group, creates the home directory for "talawa" user, sets bash as the "talawa" user's login shell.
 && useradd -g talawa -l -m -s "$(which bash)" -u ${API_UID} talawa \
-&& corepack enable
+&& corepack enable \
+&& export COREPACK_INTEGRITY_KEYS=0
 USER talawa
 WORKDIR /home/talawa/api
 
