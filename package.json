@@ -79,7 +79,7 @@
 		"check_code_quality": "biome check --error-on-warnings",
 		"check_drizzle_migrations": "drizzle-kit check",
 		"check_gql_tada": "gql.tada doctor && gql.tada check --fail-on-warn",
-		"check_type_errors": "tsc",
+		"check_type_errors": "tsc --jsx react --noEmit",
 		"disable_git_hooks": "lefthook uninstall",
 		"drop_drizzle_migrations": "drizzle-kit drop",
 		"enable_git_hooks": "lefthook install",
