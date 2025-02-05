@@ -66,6 +66,28 @@ The GraphQL endpoint for handling `subscriptions` is:
 ws://127.0.0.1:4000/graphql
 ```
 
+#### Accessing the API in Talawa App Using Remote Access
+
+1. Launch the terminal application on your device.
+
+2. **Retrieve IPv4 Address**:
+    - **For Windows Users**: Enter the command `ipconfig`.
+    - **For Linux/OSX Users**: Enter the command `ifconfig`.
+    - Copy the `IPv4 Address` displayed (e.g., `192.168.12.233`).
+
+3. Make sure both your mobile and your computer are connected to the same network.
+
+4. Use the following format for your endpoint:
+
+```
+http://<IPv4 address>:4000/graphql
+```
+
+Replace `<IPv4 Address>` with the actual IP address you copied in step 2.
+
+**Note**: In the Talawa app, type the endpoint URL in the field labeled `Enter Community URL`.
+
+
 ## Database Management
 
 This section covers easy ways for developers to validate their work
