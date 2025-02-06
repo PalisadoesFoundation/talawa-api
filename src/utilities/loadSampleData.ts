@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -146,6 +149,11 @@ async function insertCollections(
 					break;
 				}
 				case "posts": {
+					if (userIds.length === 0 || organizationIds.length === 0) {
+						throw new Error(
+							"Users and organizations must be populated before posts.",
+						);
+					}
 					const posts = JSON.parse(data).map(
 						(post: {
 							createdAt: string | number | Date;
@@ -169,6 +177,11 @@ async function insertCollections(
 					break;
 				}
 				case "events": {
+					if (userIds.length === 0 || organizationIds.length === 0) {
+						throw new Error(
+							"Users and organizations must be populated before events.",
+						);
+					}
 					type EventType = {
 						name: string;
 						description: string;
