@@ -347,7 +347,7 @@ jobs:
 
       - name: Import Sample Data
         run: |
-          CONTAINER_ID=$(docker ps -q --filter "name=talawa_api")
+          CONTAINER_ID=$(docker ps -q --filter "name=talawa-api-1")
           docker exec -i $CONTAINER_ID /bin/bash -c "pnpm run import:sample-data"
 
       - name: Stop Services
