@@ -1,11 +1,13 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { v4 as uuidv4 } from "uuid";
 import * as schema from "../drizzle/schema";
+dotenv.config();
 
 const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
@@ -30,31 +32,21 @@ interface LoadOptions {
  */
 export async function listSampleData(): Promise<void> {
 	try {
-		const sampleDataPath = path.resolve(dirname, "../../sample_data");
+		const sampleDataPath = path.resolve(dirname, "../../scripts");
 		const files = await fs.readdir(sampleDataPath);
 
 		console.log("Sample Data Files:\n");
 
-		console.log(
-			`${"| File Name".padEnd(30)}| Document Count |
-${"|".padEnd(30, "-")}|----------------|
-`,
-		);
-
 		for (const file of files) {
-			const filePath = path.resolve(sampleDataPath, file);
-			const stats = await fs.stat(filePath);
-			if (stats.isFile()) {
+			if (file.endsWith(".json")) {
+				const filePath = path.join(sampleDataPath, file);
 				const data = await fs.readFile(filePath, "utf8");
-				const docs = JSON.parse(data);
-				console.log(
-					`| ${file.padEnd(28)}| ${docs.length.toString().padEnd(15)}|`,
-				);
+				const documents = JSON.parse(data);
+				console.log(`${file}: ${documents.length} documents`);
 			}
 		}
-		console.log();
-	} catch (err) {
-		console.error("\x1b[31m", `Error listing sample data: ${err}`);
+	} catch (error) {
+		console.error("Error listing sample data:", error);
 	}
 }
 
@@ -93,14 +85,16 @@ async function insertCollections(
 		const organizationIds: string[] = [];
 
 		for (const collection of collections) {
-			const data = await fs.readFile(
-				path.resolve(dirname, `../../sample_data/${collection}.json`),
-				"utf8",
+			const filePath = path.resolve(
+				dirname,
+				`../../scripts/${collection}.json`,
 			);
+			const data = await fs.readFile(filePath, "utf8");
+			const documents = JSON.parse(data);
 
 			switch (collection) {
 				case "users": {
-					const users = JSON.parse(data).map(
+					const users = documents.map(
 						(user: {
 							createdAt: string | number | Date;
 							updatedAt: string | number | Date;
@@ -129,7 +123,7 @@ async function insertCollections(
 						createdAt: string | number | Date;
 						updatedAt: string | number | Date;
 					};
-					const organizations = JSON.parse(data).map((org: OrgType) => {
+					const organizations = documents.map((org: OrgType) => {
 						const id = uuidv4();
 						organizationIds.push(id);
 						return {
@@ -146,7 +140,7 @@ async function insertCollections(
 					break;
 				}
 				case "posts": {
-					const posts = JSON.parse(data).map(
+					const posts = documents.map(
 						(post: {
 							createdAt: string | number | Date;
 							updatedAt: string | number | Date;
@@ -177,7 +171,7 @@ async function insertCollections(
 						startAt: string | number | Date;
 						endAt: string | number | Date;
 					};
-					const events = JSON.parse(data).map((event: EventType) => ({
+					const events = documents.map((event: EventType) => ({
 						...event,
 						id: uuidv4(), // Convert to valid UUID
 						name: event.name,
@@ -208,8 +202,8 @@ async function insertCollections(
 		await queryClient.end();
 
 		console.log("\nTables populated successfully");
-	} catch (err) {
-		console.error("\x1b[31m", `Error adding data to tables: ${err}`);
+	} catch (error) {
+		console.error("Error adding data to tables:", error);
 	} finally {
 		process.exit(0);
 	}
@@ -231,8 +225,8 @@ async function checkCountAfterImport(): Promise<void> {
 
 		console.log(
 			`${"| Table Name".padEnd(30)}| Record Count |
-${"|".padEnd(30, "-")}|----------------|
-`,
+			${"|".padEnd(30, "-")}|----------------|
+			`,
 		);
 
 		for (const { name, table } of tables) {
