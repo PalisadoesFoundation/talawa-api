@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
-import { abort } from "node:process";
+import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { updateEnvVariable } from "./updateEnvVariable";
@@ -60,7 +60,6 @@ export function validatePort(input: string): true | string {
 
 export function validateEmail(input: string): true | string {
 	if (!input.trim()) {
-		console.log("Email cannot be empty.");
 		return "Email cannot be empty.";
 	}
 	if (input.length > 254) {
@@ -104,7 +103,7 @@ export async function setCI(): Promise<Record<string, string>> {
 		answers.CI = await promptList("CI", "Set CI:", ["true", "false"], "false");
 	} catch (err) {
 		console.error(err);
-		abort();
+		process.exit(1);
 	}
 	return answers;
 }
@@ -119,7 +118,7 @@ export async function setNodeEnvironment(): Promise<Record<string, string>> {
 		);
 	} catch (err) {
 		console.error(err);
-		abort();
+		process.exit(1);
 	}
 	return answers;
 }
@@ -134,7 +133,7 @@ export async function administratorEmail(): Promise<Record<string, string>> {
 		);
 	} catch (err) {
 		console.log(err);
-		abort();
+		process.exit(1);
 	}
 	return answers;
 }
@@ -426,7 +425,7 @@ export async function setup(): Promise<Record<string, string>> {
 			},
 		]);
 		if (!envReconfigure) {
-			process.exit(1);
+			process.exit(0);
 		}
 	}
 
@@ -499,5 +498,8 @@ export async function setup(): Promise<Record<string, string>> {
 
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");
+	if (fs.existsSync(".env.backup")) {
+		fs.unlinkSync(".env.backup");
+	}
 	return answers;
 }
