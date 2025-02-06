@@ -316,17 +316,41 @@ jobs:
     name: Test Import Sample Data
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout this repository
+      - name: Checkout repository
         uses: actions/checkout@v4
       - name: Create .env file for talawa api testing environment
         run: cp envFiles/.env.devcontainer .env
+      - name: Install Devcontainer CLI
+        run: npm install -g @devcontainers/cli
+      - name: Build Devcontainer
+        run: |
+          devcontainer build --workspace-folder .
+      - name: Verify Build Success
+        run: |
+          if ! grep -q '"outcome":"success"' <<< $(devcontainer build --workspace-folder .); then
+            echo "Devcontainer build failed."
+            exit 1
+          fi
+      - name: Start Devcontainer
+        run: devcontainer up --workspace-folder .
+      - name: Wait for Talawa API to be Healthy
+        run: |
+          for i in {1..10}; do
+            if [ "$(docker inspect -f {{.State.Health.Status}} talawa_api)" == "healthy" ]; then
+              break
+            fi
+            if [ $i -eq 10 ]; then
+              echo "Talawa API did not become healthy in time."
+              exit 1
+            fi
+            sleep 10
+          done
 
-      - name: Build talawa api non production environment docker image
-        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
-      - name: Start Talawa API Container
-        run: docker compose up -d
       - name: Import Sample Data
         run: |
-          docker exec talawa-api-1 /bin/bash -c "pnpm run import:sample-data"
-      - name: Stop Talawa API Container
+          CONTAINER_ID=$(docker ps -q --filter "name=talawa_api")
+          docker exec -i $CONTAINER_ID /bin/bash -c "pnpm run import:sample-data"
+
+      - name: Stop Talawa API and Dependencies
         run: docker compose down
+
