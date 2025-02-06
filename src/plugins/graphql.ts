@@ -1,10 +1,10 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import fastifyPlugin from 'fastify-plugin';
-import mercurius from 'mercurius';
-import { mercuriusUpload } from 'mercurius-upload';
-import { createContext } from '~/src/graphql/context';
-import { verifyClient } from '~/src/utilities/auth';
-import { schema } from '~/src/graphql/schema';
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import fastifyPlugin from "fastify-plugin";
+import mercurius from "mercurius";
+import { mercuriusUpload } from "mercurius-upload";
+import { createContext } from "~/src/graphql/context";
+import { verifyClient } from "~/src/utilities/auth";
+import { schema } from "~/src/graphql/schema";
 
 export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
   fastify.register(mercuriusUpload, {
@@ -24,7 +24,7 @@ export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
     graphiql: {
       enabled: fastify.envConfig.API_IS_GRAPHIQL,
     },
-    path: '/graphql',
+    path: "/graphql",
     schema,
     subscription: {
       context: async (socket, request) =>
@@ -35,23 +35,20 @@ export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
           socket,
         }),
       keepAlive: 1000 * 30,
-      onConnect: (data: { type: 'connection_init'; payload: { authToken: string } }) => {
-        const { authToken } = data.payload;
-        if (authToken) {
+      onConnect: (data: { type: "connection_init"; payload: { authToken: string } }) => {
+        if (data.payload.authToken) {
           try {
             const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
             if (!JWT_SECRET_KEY) {
-              throw new Error('JWT_SECRET_KEY environment variable is not set.');
+              throw new Error("JWT_SECRET_KEY environment variable is not set.");
             }
-            import jwt from 'jsonwebtoken';
-
-            const user = jwt.verify(authToken, JWT_SECRET_KEY);
+            const user = jwt.verify(data.payload.authToken, JWT_SECRET_KEY);
             return { user };
           } catch (err) {
-            throw new Error('Invalid auth token');
+            throw new Error("Invalid auth token");
           }
         }
-        throw new Error('Missing auth token');
+        throw new Error("Missing auth token");
       },
       onDisconnect: (ctx) => {},
       verifyClient,
