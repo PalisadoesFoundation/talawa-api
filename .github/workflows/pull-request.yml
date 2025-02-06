@@ -312,43 +312,15 @@ jobs:
           source venv/bin/activate
           python .github/workflows/scripts/check_docstrings.py --directories .github
 
-  Test-Import-Sample-Data:
-    name: Test Import Sample Data
+  Import-Sample-Data:
+    name: Import Sample Data
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
       - name: Create .env file for talawa api testing environment
-        run: cp envFiles/.env.devcontainer .env
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build Docker image
-        run: |
-          docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production .
-
-      - name: Start Services with Docker Compose
-        run: docker compose up -d
-      
-      # - name: Wait for Talawa API to be Healthy
-      #   run: |
-      #     for i in {1..10}; do
-      #       STATUS=$(docker inspect -f {{.State.Health.Status}} talawa_api)
-      #       echo "Talawa API health status: ${STATUS}"
-      #       if [ "${STATUS}" == "healthy" ]; then
-      #         break
-      #       fi
-      #       if [ $i -eq 10 ]; then
-      #         echo "Talawa API did not become healthy in time."
-      #         exit 1
-      #       fi
-      #       sleep 10
-      #     done
-
-      - name: Import Sample Data
-        run: |
-          CONTAINER_ID=$(docker ps -q --filter "name=talawa-api-1")
-          docker exec -i $CONTAINER_ID /bin/bash -c "pnpm run import:sample-data"
-
-      - name: Stop Services
-        run: docker compose down
+        run: cp ./envFiles/.env.ci ./.env
+      - name: Build talawa api non production environment docker image
+        run: docker compose build
+      - name: Import sample data
+        run: docker exec talawa-api-1 /bin/bash -c "pnpm run import:sample-data"
