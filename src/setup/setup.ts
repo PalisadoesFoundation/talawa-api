@@ -81,7 +81,7 @@ export function initializeEnvFile(): void {
 	if (fs.existsSync(envFileName)) {
 		fs.copyFileSync(envFileName, `${envFileName}.backup`);
 		console.log(`Backup created at ${envFileName}.backup`);
-		}
+	}
 	const envFileToUse =
 		answers.CI === "true" ? "envFiles/.env.ci" : "envFiles/.env.devcontainer";
 
@@ -162,14 +162,14 @@ export async function apiSetup(): Promise<Record<string, string>> {
 		"API_IS_GRAPHIQL",
 		"Enable GraphQL?",
 		["true", "false"],
-		answers.CI === "false" ? "false" : "true",
+		answers.CI === "false" ? "true" : "false",
 	);
 
 	answers.API_IS_PINO_PRETTY = await promptList(
 		"API_IS_PINO_PRETTY",
 		"Enable Pino Pretty logs?",
 		["true", "false"],
-		answers.CI === "false" ? "false" : "true",
+		answers.CI === "false" ? "true" : "false",
 	);
 
 	answers.API_JWT_EXPIRES_IN = await promptInput(
@@ -411,7 +411,7 @@ export async function postgresSetup(): Promise<Record<string, string>> {
 	return answers;
 }
 
-export async function setup(): Promise<void> {
+export async function setup(): Promise<Record<string, string>> {
 	if (checkEnvFile()) {
 		const { envReconfigure } = await inquirer.prompt([
 			{
@@ -495,4 +495,5 @@ export async function setup(): Promise<void> {
 
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");
+	return answers;
 }

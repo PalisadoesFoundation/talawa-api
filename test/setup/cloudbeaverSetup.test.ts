@@ -36,7 +36,7 @@ describe("Setup -> cloudbeaverSetup", () => {
 			CLOUDBEAVER_MAPPED_HOST_IP: "127.0.0.1",
 			CLOUDBEAVER_MAPPED_PORT: "8080",
 			CLOUDBEAVER_SERVER_NAME: "Mocked Server",
-			CLOUDBEAVER_SERVER_URL: "http://127.0.0.1:8080",
+			CLOUDBEAVER_SERVER_URL: "https://127.0.0.1:8080",
 		};
 
 		for (const [key, value] of Object.entries(expectedEnv)) {
