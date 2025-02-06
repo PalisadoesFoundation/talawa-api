@@ -2,22 +2,18 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-	plugins: [tsconfigPaths()],
-	test: {
-		coverage: {
-			provider: "v8", // or 'istanbul' if you prefer
-			reporter: ["text", "lcov", "html"],
-		},
-		// https://vitest.dev/config/#fileparallelism
-		// fileParallelism: true,
-
-		// https://vitest.dev/config/#globalsetup
-		globalSetup: ["./test/setup.ts"],
-
-		// https://vitest.dev/config/#passwithnotests
-		passWithNoTests: true,
-
-		// // https://vitest.dev/config/#teardowntimeout,
-		// teardownTimeout: 10000
-	},
+  plugins: [tsconfigPaths()],
+  test: {
+    include: [
+      "test/**/*.test.{js,ts,jsx,tsx}",
+      "test/**/*.spec.{js,ts,jsx,tsx}",
+    ], // ✅ Include deeply nested test files
+    exclude: ["node_modules", "dist", "cypress", "**/*.config.*"], // ✅ Prevent non-test files from being run
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov", "html"],
+    },
+    globalSetup: ["./test/setup.ts"],
+    passWithNoTests: true,
+  },
 });
