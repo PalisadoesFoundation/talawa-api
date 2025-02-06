@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-// import type { MercuriusContext } from "mercurius";
 type ResolverContext = GraphQLContext & MercuriusContext;
 
 interface CurrentClient {
