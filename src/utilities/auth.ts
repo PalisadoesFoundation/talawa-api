@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken";
 import type { IncomingMessage } from "node:http";
+import jwt from "jsonwebtoken";
 
 // Retrieve the secret key from the environment variable
 const SECRET_KEY = process.env.SECRET_KEY;
