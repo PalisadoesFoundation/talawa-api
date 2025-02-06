@@ -14,7 +14,6 @@ docs/build-stats.json
 package-lock.json
 .eslintcache
 tsconfig.tsbuildinfo
-docs/docs/auto-schema/*
 
 # Misc
 .DS_Store
