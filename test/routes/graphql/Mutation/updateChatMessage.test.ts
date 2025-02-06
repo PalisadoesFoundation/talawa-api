@@ -246,4 +246,106 @@ describe("updateChatMessage mutation", () => {
 		expect(result).toEqual(updatedChatMessage);
 		expect(returningMock).toHaveBeenCalled();
 	});
+
+	it("throws an unauthorized error if the user is not a member of the organization", async () => {
+		// Arrange: User is not a member of the organization
+		ctx.currentClient.user.id = "regularUserId";
+		(
+			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
+			role: "user",
+			id: "regularUserId",
+		});
+		(
+			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
+			creatorId: "someOtherUserId",
+			chat: {
+				organization: {
+					membershipsWhereOrganization: [], // Empty memberships array!
+				},
+				chatMembershipsWhereChat: [],
+			},
+		});
+
+		// Act & Assert
+		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "unauthorized_action_on_arguments_associated_resources",
+				}),
+			}),
+		);
+	});
+
+	it("throws an unauthorized error if the user is not a member of the chat", async () => {
+		// Arrange: User is not a member of the chat
+		ctx.currentClient.user.id = "regularUserId";
+		(
+			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
+			role: "user",
+			id: "regularUserId",
+		});
+		(
+			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
+			creatorId: "someOtherUserId",
+			chat: {
+				organization: {
+					membershipsWhereOrganization: [
+						{ role: "member", memberId: "someOrgMember" },
+					],
+				},
+				chatMembershipsWhereChat: [], // Empty memberships array!
+			},
+		});
+
+		// Act & Assert
+		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "unauthorized_action_on_arguments_associated_resources",
+				}),
+			}),
+		);
+	});
+
+	it("throws an unauthorized error if user is not org admin and chat membership is not found", async () => {
+		ctx.currentClient.user.id = "regularUserId";
+		(
+			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
+			role: "user",
+			id: "regularUserId",
+		});
+		(
+			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
+			creatorId: "someOtherUserId",
+			chat: {
+				organization: {
+					membershipsWhereOrganization: [
+						{ role: "member", memberId: "someOrgMember" },
+					],
+				},
+				chatMembershipsWhereChat: [], // Membership is not found
+			},
+		});
+
+		// Act & Assert
+		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "unauthorized_action_on_arguments_associated_resources",
+				}),
+			}),
+		);
+	});
 });
