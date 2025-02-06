@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.7.0">
 <title data-rh="true">Testing &amp; Validation | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://docs-api.talawa.io/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://docs-api.talawa.io/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/developer-resources/testing"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Testing &amp; Validation | Talawa API Documentation"><meta data-rh="true" name="description" content="This section covers important tests to validate the operation of the API."><meta data-rh="true" property="og:description" content="This section covers important tests to validate the operation of the API."><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/developer-resources/testing"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/developer-resources/testing" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/developer-resources/testing" hreflang="x-default"><link rel="stylesheet" href="/assets/css/styles.199ac911.css">
-<script src="/assets/js/runtime~main.b93f7502.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.b576eb3c.js" defer="defer"></script>
 <script src="/assets/js/main.c3721f68.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -43,6 +43,29 @@
 <h4 class="anchor anchorWithStickyNavbar_SI9C" id="subscriptions-with-graphql">Subscriptions with GraphQL<a href="#subscriptions-with-graphql" class="hash-link" aria-label="Direct link to Subscriptions with GraphQL" title="Direct link to Subscriptions with GraphQL">​</a></h4>
 <p>The GraphQL endpoint for handling <code>subscriptions</code> is:</p>
 <div class="codeBlockContainer_Vhwc theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent__qgx"><pre tabindex="0" class="prism-code language-text codeBlock_lQNK thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_f91_"><span class="token-line" style="color:#393A34"><span class="token plain">ws://127.0.0.1:4000/graphql</span><br></span></code></pre><div class="buttonGroup_R4rO"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_sQ7A" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon__Kke"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_JQxo"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<h4 class="anchor anchorWithStickyNavbar_SI9C" id="accessing-the-api-in-talawa-app-using-remote-access">Accessing the API in Talawa App Using Remote Access<a href="#accessing-the-api-in-talawa-app-using-remote-access" class="hash-link" aria-label="Direct link to Accessing the API in Talawa App Using Remote Access" title="Direct link to Accessing the API in Talawa App Using Remote Access">​</a></h4>
+<ol>
+<li>
+<p>Launch the terminal application on your device.</p>
+</li>
+<li>
+<p><strong>Retrieve IPv4 Address</strong>:</p>
+<ul>
+<li><strong>For Windows Users</strong>: Enter the command <code>ipconfig</code>.</li>
+<li><strong>For Linux/OSX Users</strong>: Enter the command <code>ifconfig</code>.</li>
+<li>Copy the <code>IPv4 Address</code> displayed (e.g., <code>192.168.12.233</code>).</li>
+</ul>
+</li>
+<li>
+<p>Make sure both your mobile and your computer are connected to the same network.</p>
+</li>
+<li>
+<p>Use the following format for your endpoint:</p>
+</li>
+</ol>
+<div class="codeBlockContainer_Vhwc theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent__qgx"><pre tabindex="0" class="prism-code language-text codeBlock_lQNK thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_f91_"><span class="token-line" style="color:#393A34"><span class="token plain">http://&lt;IPv4 address&gt;:4000/graphql</span><br></span></code></pre><div class="buttonGroup_R4rO"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_sQ7A" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon__Kke"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_JQxo"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<p>Replace <code>&lt;IPv4 Address&gt;</code> with the actual IP address you copied in step 2.</p>
+<p><strong>Note</strong>: In the Talawa app, type the endpoint URL in the field labeled <code>Enter Community URL</code>.</p>
 <h2 class="anchor anchorWithStickyNavbar_SI9C" id="database-management">Database Management<a href="#database-management" class="hash-link" aria-label="Direct link to Database Management" title="Direct link to Database Management">​</a></h2>
 <p>This section covers easy ways for developers to validate their work</p>
 <h3 class="anchor anchorWithStickyNavbar_SI9C" id="cloudbeaver">CloudBeaver<a href="#cloudbeaver" class="hash-link" aria-label="Direct link to CloudBeaver" title="Direct link to CloudBeaver">​</a></h3>
