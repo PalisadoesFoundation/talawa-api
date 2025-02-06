@@ -28,7 +28,7 @@ interface TestContext extends Partial<MercuriusContext> {
 	};
 	app: FastifyInstance;
 	reply: FastifyReply;
-	__currentQuery: string; // Changed from GraphQLOperation to string to match MercuriusContext
+	__currentQuery: string;
 }
 
 interface VenueParent {
