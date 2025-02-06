@@ -208,7 +208,7 @@ These steps are specific to Linux. You will need to modify them accordingly for 
       ```
 1. Install `pnpm` using `npm`
    ```bash
-   npm install pnpm
+   npm install -g pnpm
    ```
 1. Linux / MacOS Only
    1. Setup `pnpm` to be automatically configured on all future terminal session logins using your `~/.bashrc` file.
