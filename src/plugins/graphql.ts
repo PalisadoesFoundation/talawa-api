@@ -9,9 +9,9 @@ import { schema } from '~/src/graphql/schema';
 
 export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
   fastify.register(mercuriusUpload, {
-    maxFieldSize: 1048576,
-    maxFiles: 20,
-    maxFileSize: 10485760,
+    maxFieldSize: fastify.envConfig.UPLOAD_MAX_FIELD_SIZE || 1048576,
+    maxFiles: fastify.envConfig.UPLOAD_MAX_FILES || 20,
+    maxFileSize: fastify.envConfig.UPLOAD_MAX_FILE_SIZE || 10485760,
   });
 
   fastify.register(mercurius, {
