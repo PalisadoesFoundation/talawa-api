@@ -1,7 +1,6 @@
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import type { usersTable } from "~/src/drizzle/tables/users";
-import type { PubSub } from "./pubsub";
-
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import type { usersTable } from '~/src/drizzle/tables/users';
+import type { PubSub } from './pubsub';
 
 // Define types
 export type ImplicitMercuriusContext = {
@@ -9,7 +8,7 @@ export type ImplicitMercuriusContext = {
 };
 
 export type ExplicitAuthenticationTokenPayload = {
-  user: Pick<typeof usersTable.$inferSelect, "id">;
+  user: Pick<typeof usersTable.$inferSelect, 'id'>;
 };
 
 export type CurrentClient =
@@ -18,13 +17,13 @@ export type CurrentClient =
 
 export type ExplicitGraphQLContext = {
   currentClient: CurrentClient;
-  drizzleClient: FastifyInstance["drizzleClient"];
-  envConfig: Pick<FastifyInstance["envConfig"], "API_BASE_URL">;
+  drizzleClient: FastifyInstance['drizzleClient'];
+  envConfig: Pick<FastifyInstance['envConfig'], 'API_BASE_URL'>;
   jwt: {
     sign: (payload: ExplicitAuthenticationTokenPayload) => string;
   };
-  log: FastifyInstance["log"];
-  minio: FastifyInstance["minio"];
+  log: FastifyInstance['log'];
+  minio: FastifyInstance['minio'];
 };
 
 export type GraphQLContext = ExplicitGraphQLContext & ImplicitMercuriusContext;
