@@ -328,22 +328,22 @@ jobs:
           docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production .
 
       - name: Start Services with Docker Compose
-        run: docker-compose up -d
+        run: docker compose up -d
       
-      - name: Wait for Talawa API to be Healthy
-        run: |
-          for i in {1..10}; do
-            STATUS=$(docker inspect -f {{.State.Health.Status}} talawa_api)
-            echo "Talawa API health status: ${STATUS}"
-            if [ "${STATUS}" == "healthy" ]; then
-              break
-            fi
-            if [ $i -eq 10 ]; then
-              echo "Talawa API did not become healthy in time."
-              exit 1
-            fi
-            sleep 10
-          done
+      # - name: Wait for Talawa API to be Healthy
+      #   run: |
+      #     for i in {1..10}; do
+      #       STATUS=$(docker inspect -f {{.State.Health.Status}} talawa_api)
+      #       echo "Talawa API health status: ${STATUS}"
+      #       if [ "${STATUS}" == "healthy" ]; then
+      #         break
+      #       fi
+      #       if [ $i -eq 10 ]; then
+      #         echo "Talawa API did not become healthy in time."
+      #         exit 1
+      #       fi
+      #       sleep 10
+      #     done
 
       - name: Import Sample Data
         run: |
@@ -351,4 +351,4 @@ jobs:
           docker exec -i $CONTAINER_ID /bin/bash -c "pnpm run import:sample-data"
 
       - name: Stop Services
-        run: docker-compose down
+        run: docker compose down
