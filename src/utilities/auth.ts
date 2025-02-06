@@ -7,9 +7,9 @@ if (!SECRET_KEY) {
   throw new Error('SECRET_KEY environment variable is not set.');
 }
 
-import { IncomingMessage } from 'http';
+import type { IncomingMessage } from 'node:http';
 
-declare module 'http' {
+declare module 'node:http' {
   interface IncomingMessage {
     user?: object;
   }
@@ -19,7 +19,10 @@ interface WebSocketInfo {
   req: IncomingMessage;
 }
 
-export const verifyClient = (info: WebSocketInfo, next: (verified: boolean, code?: number, message?: string) => void) => {
+export const verifyClient = (
+  info: WebSocketInfo,
+  next: (verified: boolean, code?: number, message?: string) => void
+) => {
   const token = info.req.headers['sec-websocket-protocol'];
 
   if (!token) {
