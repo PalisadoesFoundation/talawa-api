@@ -206,9 +206,9 @@ These steps are specific to Linux. You will need to modify them accordingly for 
       ```bash
       cp envFiles/.env.devcontainer .env
       ```
-1. Install `pnpm` using `npm`
+1. Install `pnpm` using `codepack`
    ```bash
-   npm install pnpm
+   corepack install -g pnpm
    ```
 1. Linux / MacOS Only
    1. Setup `pnpm` to be automatically configured on all future terminal session logins using your `~/.bashrc` file.
@@ -256,18 +256,9 @@ devcontainer up --workspace-folder .
 12. When the startup is complete, the last line of out put should look like this:
 
 ```
-[19:53:14.063] INFO (166): Checking the connection to the postgres database.
-[19:53:14.077] INFO (166): Successfully connected to the postgres database.
-[19:53:14.077] INFO (166): Applying the drizzle migration files to the postgres database.
-[19:53:14.080] INFO (166): Successfully applied the drizzle migrations to the postgres database.
-[19:53:14.080] INFO (166): Checking the connection to the minio server.
-[19:53:14.087] INFO (166): Successfully connected to the minio server.
-[19:53:14.087] INFO (166): Checking if the "talawa" bucket exists in the minio server.
-[19:53:14.087] INFO (166): "talawa" bucket already exists in the minio server. Skipping, the bucket creation.
-[19:53:14.087] INFO (166): Checking if the administrator user already exists in the database.
-[19:53:14.089] INFO (166): Administrator user already exists in the database. Skipping, the administrator creation.
-[19:53:14.089] INFO (166): Checking if the community already exists in the database.
-[19:53:14.090] INFO (166): Community already exists in the database. Skipping, the community creation.
+...
+...
+...
 [19:53:14.113] INFO (166): Server listening at http://127.0.0.1:4000
 [19:53:14.113] INFO (166): Server listening at http://172.23.0.3:4000
 [19:53:14.113] INFO (166): Server listening at http://172.20.0.2:4000
@@ -288,12 +279,28 @@ docker compose down
 
 #### CLI Startup (Development)
 
-After a successful installation, yse these commands in sequence to start the dev container.
+After a successful installation, use these commands in sequence to start the dev container.
 
 ```
 devcontainer build --workspace-folder .
 devcontainer up --workspace-folder .
 ```
+
+#### Import Sample Data
+
+1. Once the server is running, open a new terminal session.
+2. Open a bash session inside the running container:
+   ```bash
+   docker exec -it talawa-api-1 /bin/bash
+   ```
+3. Inside the container, run the following command to import sample data into the database: 
+   ```bash
+    pnpm run import:sample-data
+   ```
+4. Then exit
+   ```bash
+    exit
+   ```
 
 ### Setup: Using the VScode IDE
 

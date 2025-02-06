@@ -33,5 +33,6 @@
 		"strict": true /* Enable all strict type-checking options. */,
 		"target": "ESNext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
 		"useUnknownInCatchVariables": true /* Default catch clause variables as 'unknown' instead of 'any'. */
-	}
+	},
+	"exclude": ["docs", "node_modules"]
 }

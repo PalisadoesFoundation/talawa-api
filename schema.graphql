@@ -404,6 +404,11 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+"""
+A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
+"""
+scalar EmailAddress
+
 type Event {
   """
   GraphQL connection to traverse through the agenda folders that contain agenda items constituting a part of the agenda for the event.
@@ -1747,7 +1752,7 @@ input MutationCreateUserInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: String!
+  emailAddress: EmailAddress!
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -1982,7 +1987,7 @@ input MutationSignUpInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: String!
+  emailAddress: EmailAddress!
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -2202,7 +2207,7 @@ input MutationUpdateCurrentUserInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: String
+  emailAddress: EmailAddress
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -2419,7 +2424,7 @@ input MutationUpdateUserInput {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: String
+  emailAddress: EmailAddress
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
@@ -2965,7 +2970,7 @@ input QueryPostInput {
 """"""
 input QuerySignInInput {
   """Email address of the user."""
-  emailAddress: String!
+  emailAddress: EmailAddress!
 
   """Password of the user to sign in to talawa."""
   password: String!
@@ -3149,7 +3154,7 @@ type User {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  emailAddress: String
+  emailAddress: EmailAddress
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
