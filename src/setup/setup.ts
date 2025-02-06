@@ -89,7 +89,11 @@ export function initializeEnvFile(): void {
 	dotenv.config({ path: envFileName });
 
 	const safeContent = Object.entries(parsedEnv)
-		.map(([key, value]) => `${key}="${value.replace(/"/g, '\\"')}"`)
+		.map(([key, value]) => {
+			const safeValue = value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+
+			return `${key}="${safeValue}"`;
+		})
 		.join("\n");
 
 	fs.writeFileSync(envFileName, safeContent, { encoding: "utf-8" });
