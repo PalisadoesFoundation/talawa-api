@@ -26,7 +26,6 @@ interface TestContext extends Partial<MercuriusContext> {
 	log: {
 		error: ReturnType<typeof vi.fn>;
 	};
-	// Properly type Mercurius context properties
 	app: FastifyInstance;
 	reply: FastifyReply;
 	__currentQuery: string; // Changed from GraphQLOperation to string to match MercuriusContext
