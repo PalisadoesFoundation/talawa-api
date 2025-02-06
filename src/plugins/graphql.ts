@@ -6,7 +6,6 @@ import { createContext } from '~/src/graphql/context';
 import { verifyClient } from '~/src/utilities/auth';
 import { schema } from '~/src/graphql/schema';
 
-
 export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
   fastify.register(mercuriusUpload, {
     maxFieldSize: fastify.envConfig.UPLOAD_MAX_FIELD_SIZE || 1048576,
@@ -36,21 +35,17 @@ export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
           socket,
         }),
       keepAlive: 1000 * 30,
-      onConnect: (data: { type: "connection_init"; payload: any; }) => {
-        if (data.payload.authToken) {
+      onConnect: (data: { type: 'connection_init'; payload: { authToken: string } }) => {
+        const { authToken } = data.payload;
+        if (authToken) {
           try {
             const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
             if (!JWT_SECRET_KEY) {
               throw new Error('JWT_SECRET_KEY environment variable is not set.');
             }
-import jwt from 'jsonwebtoken';
-// ... other existing imports
+            import jwt from 'jsonwebtoken';
 
-// ... rest of the file
-
-            const user = jwt.verify(data.payload.authToken, JWT_SECRET_KEY);
-
-// ... rest of the file
+            const user = jwt.verify(authToken, JWT_SECRET_KEY);
             return { user };
           } catch (err) {
             throw new Error('Invalid auth token');
