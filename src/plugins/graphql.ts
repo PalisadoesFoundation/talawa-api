@@ -5,7 +5,6 @@ import { mercuriusUpload } from 'mercurius-upload';
 import { createContext } from '~/src/graphql/context';
 import { verifyClient } from '~/src/utilities/auth';
 import { schema } from '~/src/graphql/schema';
-import jwt from 'jsonwebtoken';
 
 
 export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
