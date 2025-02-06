@@ -3,8 +3,8 @@ import fastifyPlugin from "fastify-plugin";
 import mercurius from "mercurius";
 import { mercuriusUpload } from "mercurius-upload";
 import { createContext } from "~/src/graphql/context";
-import { verifyClient } from "~/src/utilities/auth";
 import { schema } from "~/src/graphql/schema";
+import { verifyClient } from "~/src/utilities/auth";
 
 export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
   fastify.register(mercuriusUpload, {
