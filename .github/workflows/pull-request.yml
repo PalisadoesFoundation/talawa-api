@@ -322,5 +322,11 @@ jobs:
         run: cp ./envFiles/.env.ci ./.env
       - name: Build talawa api non production environment docker image
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
-      - name: Run Import Sample Data
-        run: docker container run --env-file ./.env talawa_api pnpm run import:sample-data
+      - name: Start Talawa API Container
+        run: docker compose up -d
+      - name: Import Sample Data
+        run: |
+          CONTAINER_ID=$(docker ps -q --filter "name=talawa-api-1")
+          docker exec -it $CONTAINER_ID /bin/bash -c "pnpm run import:sample-data"
+      - name: Stop Talawa API Container
+        run: docker compose down

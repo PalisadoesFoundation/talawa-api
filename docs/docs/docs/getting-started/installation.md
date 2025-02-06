@@ -299,11 +299,15 @@ devcontainer up --workspace-folder .
 
 1. Once the server is running, open a new terminal session.
 2. Open a bash session inside the running container:
+
    ```bash
    docker exec -it talawa-api-1 /bin/bash
+   ```
 3. Inside the container, run the following command to import sample data into the database: 
+
    ```bash
     pnpm run import:sample-data
+   ```
 
 ### Setup: Using the VScode IDE
 
