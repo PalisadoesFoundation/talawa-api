@@ -6,7 +6,7 @@ const docsDir = path.resolve(
 );
 
 function replaceLinks(dir) {
-	try {
+	try { // test
 		const files = fs.readdirSync(dir);
 		console.log(`Processing directory: ${dir}`);
 		for (const file of files) {
