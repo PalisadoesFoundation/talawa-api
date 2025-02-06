@@ -43,7 +43,14 @@ export const graphql = fastifyPlugin(async (fastify: FastifyInstance) => {
             if (!JWT_SECRET_KEY) {
               throw new Error('JWT_SECRET_KEY environment variable is not set.');
             }
+import jwt from 'jsonwebtoken';
+// ... other existing imports
+
+// ... rest of the file
+
             const user = jwt.verify(data.payload.authToken, JWT_SECRET_KEY);
+
+// ... rest of the file
             return { user };
           } catch (err) {
             throw new Error('Invalid auth token');
