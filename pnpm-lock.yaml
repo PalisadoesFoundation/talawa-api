@@ -42,7 +42,11 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0
       dotenv:
+<<<<<<< HEAD
         specifier: ^16.4.7
+=======
+        specifier: ^16.0.3
+>>>>>>> 8dca2acb28bed4a1f48534f6f79807752e48d54a
         version: 16.4.7
       drizzle-orm:
         specifier: ^0.39.1
@@ -5909,7 +5913,5 @@ snapshots:
     dependencies:
       buffer-crc32: 0.2.13
       pend: 1.2.0
-
-  yoctocolors-cjs@2.1.2: {}
 
   zod@3.24.1: {}

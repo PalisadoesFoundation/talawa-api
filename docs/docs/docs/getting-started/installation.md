@@ -208,7 +208,7 @@ These steps are specific to Linux. You will need to modify them accordingly for 
       ```
 1. Install `pnpm` using `npm`
    ```bash
-   npm install pnpm
+   npm install -g pnpm
    ```
 1. Linux / MacOS Only
    1. Setup `pnpm` to be automatically configured on all future terminal session logins using your `~/.bashrc` file.
@@ -294,6 +294,18 @@ After a successful installation, yse these commands in sequence to start the dev
 devcontainer build --workspace-folder .
 devcontainer up --workspace-folder .
 ```
+
+#### Import Sample Data
+
+1. Once the server is running, open a new terminal session.
+2. Open a bash session inside the running container:
+   ```bash
+   docker exec -it talawa-api-1 /bin/bash
+   ```
+3. Inside the container, run the following command to import sample data into the database: 
+   ```bash
+    pnpm run import:sample-data
+   ```
 
 ### Setup: Using the VScode IDE
 
