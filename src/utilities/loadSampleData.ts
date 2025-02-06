@@ -203,10 +203,12 @@ async function insertCollections(
 
 		console.log("\nTables populated successfully");
 	} catch (error) {
-		console.error("Error adding data to tables:", error);
+		console.error("Failed to import sample data:", error);
+		process.exit(1);
 	} finally {
-		process.exit(0);
+		await queryClient.end().catch(console.error);
 	}
+	process.exit(0);
 }
 
 /**
