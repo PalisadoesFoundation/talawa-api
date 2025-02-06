@@ -1,9 +1,10 @@
+import type { FastifyInstance, FastifyReply } from "fastify";
 import type { MercuriusContext } from "mercurius";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+// import type { MercuriusContext } from "mercurius";
 type ResolverContext = GraphQLContext & MercuriusContext;
 
 interface CurrentClient {
@@ -26,9 +27,10 @@ interface TestContext extends Partial<MercuriusContext> {
 	log: {
 		error: ReturnType<typeof vi.fn>;
 	};
-	app: any; // Add required MercuriusContext properties
-	reply: any;
-	__currentQuery: any;
+	// Properly type Mercurius context properties
+	app: FastifyInstance;
+	reply: FastifyReply;
+	__currentQuery: string; // Changed from GraphQLOperation to string to match MercuriusContext
 }
 
 interface VenueParent {
@@ -140,6 +142,21 @@ describe("Venue Resolver - Creator Field", () => {
 			organizationId: "org-123",
 		};
 
+		// Create mock Fastify instance
+		const mockApp = {
+			addHook: vi.fn(),
+			decorate: vi.fn(),
+			get: vi.fn(),
+			post: vi.fn(),
+		} as unknown as FastifyInstance;
+
+		// Create mock Fastify reply
+		const mockReply = {
+			code: vi.fn(),
+			send: vi.fn(),
+			header: vi.fn(),
+		} as unknown as FastifyReply;
+
 		ctx = {
 			currentClient: {
 				isAuthenticated: true,
@@ -158,10 +175,9 @@ describe("Venue Resolver - Creator Field", () => {
 			log: {
 				error: vi.fn(),
 			},
-			// Add required MercuriusContext properties
-			app: {},
-			reply: {},
-			__currentQuery: {},
+			app: mockApp,
+			reply: mockReply,
+			__currentQuery: "query { test }", // Mock GraphQL query string
 		};
 	});
 
@@ -313,7 +329,7 @@ describe("Venue Resolver - Creator Field", () => {
 		expect(result).toEqual(mockUser);
 	});
 
-	it("should fetch and return creator if different from current user", async () => {
+	it("should fetch and return creator if different from current user ", async () => {
 		const currentUser = {
 			id: "user-123",
 			role: "administrator",
