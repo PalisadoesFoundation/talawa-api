@@ -419,6 +419,74 @@ describe("updateChatMessage mutation", () => {
 		);
 	});
 
+	it("executes inline where functions in queries", async () => {
+		// Create a spy for the 'eq' operator.
+		const eqSpy = vi.fn((a, b) => a === b);
+		const dummyOperators = { eq: eqSpy };
+
+		(
+			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockImplementation(
+			(options: {
+				where: (
+					value: { id: string },
+					operators: { eq: (a: unknown, b: unknown) => boolean },
+				) => void;
+			}) => {
+				options.where({ id: ctx.currentClient.user.id }, dummyOperators);
+				return Promise.resolve({
+					role: "administrator",
+					id: ctx.currentClient.user.id,
+				});
+			},
+		);
+
+		// Override chatMessagesTable.findFirst to call its inline where functions.
+		(
+			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockImplementation((options) => {
+			options.where({ id: args.input.id }, dummyOperators);
+
+			options.with.chat.with.chatMembershipsWhereChat.where(
+				{ memberId: ctx.currentClient.user.id },
+				dummyOperators,
+			);
+
+			options.with.chat.with.organization.with.membershipsWhereOrganization.where(
+				{ memberId: ctx.currentClient.user.id },
+				dummyOperators,
+			);
+
+			return Promise.resolve({
+				creatorId: ctx.currentClient.user.id,
+				chat: {
+					organization: {
+						membershipsWhereOrganization: [{ role: "administrator" }],
+					},
+					chatMembershipsWhereChat: [{ role: "member" }],
+				},
+			});
+		});
+
+		const updatedChatMessage = {
+			id: args.input.id,
+			creatorId: ctx.currentClient.user.id,
+			body: args.input.body,
+		};
+		const returningMock = vi.fn().mockResolvedValue([updatedChatMessage]);
+		(ctx.drizzleClient.update as ReturnType<typeof vi.fn>).mockReturnValue({
+			set: vi.fn().mockReturnThis(),
+			where: vi.fn().mockReturnThis(),
+			returning: returningMock,
+		});
+
+		const result = await updateChatMessageResolver({}, args, ctx);
+		expect(result).toEqual(updatedChatMessage);
+		expect(eqSpy).toHaveBeenCalledTimes(4);
+	});
+
 	it("throws an unauthorized error if currentUserOrganizationMembership and currentUserChatMembership are undefined", async () => {
 		(
 			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
