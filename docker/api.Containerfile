@@ -40,7 +40,7 @@ RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell \
 ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 WORKDIR /home/talawa/api
   
-FROM node:22.13.0-bookworm-slim AS base
+FROM node:23.7.0-bookworm-slim AS base
 # Used to configure the group id for the group assigned to the non-root "talawa" user within the image.
 ARG API_GID
 # Used to configure the user id for the non-root "talawa" user within the image.
@@ -53,29 +53,29 @@ RUN userdel -r node \
 && groupadd -g ${API_GID} talawa \
 # Adds the "talawa" user with id equal to the value of argument "${API_UID}", assigns it to "talawa" group, creates the home directory for "talawa" user, sets bash as the "talawa" user's login shell.
 && useradd -g talawa -l -m -s "$(which bash)" -u ${API_UID} talawa \
-&& corepack enable && corepack prepare pnpm@10.0.0 --activate
+&& corepack enable
 USER talawa
 WORKDIR /home/talawa/api
 
 FROM base AS non_production
 COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml
-RUN corepack prepare pnpm@10.0.0 --activate && pnpm fetch --frozen-lockfile
+RUN pnpm fetch --frozen-lockfile
 COPY --chown=talawa:talawa ./ ./
-RUN corepack prepare pnpm@10.0.0 --activate && pnpm install --frozen-lockfile --offline
+RUN pnpm install --frozen-lockfile --offline
 
 # This build stage is used to build the codebase used in production environment of talawa api. 
 FROM base AS production_code
 COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml 
-RUN corepack prepare pnpm@10.0.0 --activate && pnpm fetch --frozen-lockfile
+RUN pnpm fetch --frozen-lockfile
 COPY --chown=talawa:talawa ./ ./
-RUN corepack prepare pnpm@10.0.0 --activate && pnpm install --frozen-lockfile --offline && pnpm build_production
+RUN pnpm install --frozen-lockfile --offline && pnpm build_production
 
 # This build stage is used to download and install the dependencies used in production environment of talawa api.
 FROM base AS production_dependencies
 COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml 
-RUN corepack prepare pnpm@10.0.0 --activate && pnpm fetch --frozen-lockfile --prod
+RUN pnpm fetch --frozen-lockfile --prod
 COPY --chown=talawa:talawa ./package.json ./package.json
-RUN corepack prepare pnpm@10.0.0 --activate && pnpm install --frozen-lockfile --offline --prod
+RUN pnpm install --frozen-lockfile --offline --prod
 
 # This build stage is used to create the container image for production environment of talawa api.
 FROM base AS production
