@@ -6,6 +6,7 @@ import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../drizzle/schema";
+import inquirer from "inquirer";
 
 dotenv.config();
 
@@ -191,8 +192,9 @@ function parseDate(date: string | number | Date): Date | null {
 
 /**
  * Checks record counts in specified tables after data insertion.
+ * @returns {Promise<boolean>} - Returns true if data exists, false otherwise.
  */
-async function checkCountAfterImport(): Promise<void> {
+async function checkCountAfterImport(): Promise<boolean> {
   try {
     const tables = [
       { name: "users", table: schema.usersTable },
@@ -209,6 +211,8 @@ ${"|".padEnd(30, "-")}|----------------|
 `
     );
 
+    let dataExists = false;
+
     for (const { name, table } of tables) {
       const result = await db
         .select({ count: sql<number>`count(*)` })
@@ -216,9 +220,16 @@ ${"|".padEnd(30, "-")}|----------------|
 
       const count = result?.[0]?.count ?? 0;
       console.log(`| ${name.padEnd(28)}| ${count.toString().padEnd(15)}|`);
+
+      if (count > 0) {
+        dataExists = true;
+      }
     }
+
+    return dataExists;
   } catch (err) {
     console.error("\x1b[31m", `Error checking record count: ${err}`);
+    return false;
   }
 }
 
@@ -238,5 +249,23 @@ if (itemsIndex !== -1 && args[itemsIndex + 1]) {
 
 (async (): Promise<void> => {
   await listSampleData();
+
+  const existingData = await checkCountAfterImport();
+  if (existingData) {
+    const { deleteExisting } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "deleteExisting",
+        message:
+          "Existing data found. Do you want to delete existing data and import the new data?",
+        default: false,
+      },
+    ]);
+
+    if (deleteExisting) {
+      options.format = true;
+    }
+  }
+
   await insertCollections(options.items || collections, options);
 })();

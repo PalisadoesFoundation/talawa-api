@@ -1,32 +1,38 @@
 [
   {
-    "id": "de4f5g6h-7i8j-9k0l-1m2n-3o4p5q6r7s8t",
-    "caption": "First post caption",
+    "id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+    "name": "Event One",
+    "description": "This is the first event.",
     "createdAt": "2023-04-13T04:53:17.742Z",
     "creatorId": "64378abd-8500-8f17-1cf2-990d00000001",
-    "organizationId": "ab1c2d3e-4f5g-6h7i-8j9k-0l1m2n3o4p5q",
-    "pinnedAt": "2023-04-14T04:53:17.742Z",
-    "updatedAt": "2023-04-15T04:53:17.742Z",
+    "organizationId": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5e",
+    "startAt": "2023-04-20T10:00:00.000Z",
+    "endAt": "2023-04-20T12:00:00.000Z",
+    "updatedAt": "2023-04-14T04:53:17.742Z",
     "updaterId": "65378abd-8500-8f17-1cf2-990d00000002"
   },
   {
-    "id": "ef5g6h7i-8j9k-0l1m-2n3o-4p5q6r7s8t9u",
-    "caption": "Second post caption",
+    "id": "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e",
+    "name": "Event Two",
+    "description": "This is the second event.",
     "createdAt": "2023-04-14T04:53:17.742Z",
     "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
-    "organizationId": "bc2d3e4f-5g6h-7i8j-9k0l-1m2n3o4p5q6r",
-    "pinnedAt": "2023-04-15T04:53:17.742Z",
-    "updatedAt": "2023-04-16T04:53:17.742Z",
+    "organizationId": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+    "startAt": "2023-04-21T10:00:00.000Z",
+    "endAt": "2023-04-21T12:00:00.000Z",
+    "updatedAt": "2023-04-15T04:53:17.742Z",
     "updaterId": "66378abd-8500-8f17-1cf2-990d00000003"
   },
   {
-    "id": "fg6h7i8j-9k0l-1m2n-3o4p-5q6r7s8t9u0v",
-    "caption": "Third post caption",
+    "id": "c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f",
+    "name": "Event Three",
+    "description": "This is the third event.",
     "createdAt": "2023-04-15T04:53:17.742Z",
     "creatorId": "66378abd-8500-8f17-1cf2-990d00000003",
-    "organizationId": "cd3e4f5g-6h7i-8j9k-0l1m-2n3o4p5q6r7s",
-    "pinnedAt": "2023-04-16T04:53:17.742Z",
-    "updatedAt": "2023-04-17T04:53:17.742Z",
+    "organizationId": "cd3e4f5b-6a7c-8d9e-0f1a-2b3c4d5e6f7a",
+    "startAt": "2023-04-22T10:00:00.000Z",
+    "endAt": "2023-04-22T12:00:00.000Z",
+    "updatedAt": "2023-04-16T04:53:17.742Z",
     "updaterId": "67378abd-8500-8f17-1cf2-990d00000004"
   }
 ]
