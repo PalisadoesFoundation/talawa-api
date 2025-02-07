@@ -53,7 +53,12 @@ describe("Chat.updatedAt resolver", () => {
 	it("throws unauthenticated error when user is not authenticated", async () => {
 		await expect(
 			resolveUpdatedAt(mockParent, {}, unauthenticatedContext),
-		).rejects.toThrow(/You must be authenticated to perform this action./i);
+		).rejects.toThrow(
+			expect.objectContaining({
+				message: expect.stringMatching(/authenticated/i),
+				extensions: { code: "unauthenticated" },
+			}),
+		);
 	});
 
 	it("throws unauthenticated error when user is not found", async () => {
