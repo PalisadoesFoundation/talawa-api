@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { updateChatMessageResolver } from "~/src/graphql/types/Mutation/updateChatMessage";
 
 // Define the types for the user and chat message returned from the database.
@@ -347,5 +347,177 @@ describe("updateChatMessage mutation", () => {
 				}),
 			}),
 		);
+	});
+
+	it("throws an unauthenticated error if the current user is not found in the users table", async () => {
+		(
+			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue(undefined);
+
+		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unauthenticated" }),
+			}),
+		);
+	});
+
+	it("throws an unauthorized error if the current user is not the creator of the chat message", async () => {
+		(
+			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
+			role: "user",
+			id: "11111111-1111-1111-1111-111111111111",
+		});
+
+		(
+			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
+			creatorId: "22222222-2222-2222-2222-222222222222", // Different from current user's ID
+			chat: {
+				organization: { membershipsWhereOrganization: [] },
+				chatMembershipsWhereChat: [],
+			},
+		});
+
+		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "unauthorized_action_on_arguments_associated_resources",
+				}),
+			}),
+		);
+	});
+
+	it("throws an unauthorized error if currentUserOrganizationMembership is undefined", async () => {
+		(
+			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
+			role: "user",
+			id: "11111111-1111-1111-1111-111111111111",
+		});
+
+		(
+			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
+			creatorId: "11111111-1111-1111-1111-111111111111",
+			chat: {
+				organization: { membershipsWhereOrganization: [] }, // Empty array triggers undefined membership
+				chatMembershipsWhereChat: [{ role: "member" }],
+			},
+		});
+
+		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "unauthorized_action_on_arguments_associated_resources",
+				}),
+			}),
+		);
+	});
+
+	it("throws an unauthorized error if currentUserOrganizationMembership and currentUserChatMembership are undefined", async () => {
+		(
+			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
+			role: "user",
+			id: "11111111-1111-1111-1111-111111111111",
+		});
+
+		(
+			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
+			creatorId: "11111111-1111-1111-1111-111111111111",
+			chat: {
+				organization: { membershipsWhereOrganization: [] },
+				chatMembershipsWhereChat: [], // Both are empty arrays
+			},
+		});
+
+		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "unauthorized_action_on_arguments_associated_resources",
+				}),
+			}),
+		);
+	});
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The following block tests the GraphQL schema wiring (i.e. lines 169–179)
+// by spying on builder.mutationField and invoking its callback.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("GraphQL schema wiring", () => {
+	// We use module isolation so that we can spy on builder.mutationField
+	let mutationFieldSpy: ReturnType<typeof vi.spyOn>;
+	let localBuilder: typeof import("~/src/graphql/builder").builder;
+	let localUpdateResolver: typeof updateChatMessageResolver;
+
+	beforeEach(async () => {
+		vi.resetModules();
+		// Import the builder and spy on its mutationField method.
+		const builderModule = await import("~/src/graphql/builder");
+		localBuilder = builderModule.builder;
+		mutationFieldSpy = vi.spyOn(localBuilder, "mutationField");
+
+		// Re-import the module to trigger the mutationField registration.
+		const mod = await import("~/src/graphql/types/Mutation/updateChatMessage");
+		localUpdateResolver = mod.updateChatMessageResolver;
+	});
+
+	afterEach(() => {
+		mutationFieldSpy.mockRestore();
+	});
+
+	interface BuilderType {
+		field: (config: unknown) => unknown;
+		arg: (config: unknown) => unknown;
+	}
+
+	it("should register updateChatMessage mutation correctly", () => {
+		// Check that mutationField was called with the correct name and a function.
+		expect(mutationFieldSpy).toHaveBeenCalledWith(
+			"updateChatMessage",
+			expect.any(Function),
+		);
+
+		// Retrieve the callback passed to mutationField.
+		const calls = mutationFieldSpy.mock.calls.filter(
+			(call) => call[0] === "updateChatMessage",
+		);
+		expect(calls.length).toBeGreaterThan(0);
+		const callback = calls[0]?.[1] as (t: BuilderType) => unknown;
+		if (!callback) {
+			throw new Error("Callback not found in mutation field calls");
+		}
+
+		// Create a dummy 't' object with minimal implementations of 'field' and 'arg'.
+		const dummyT = {
+			field: vi.fn().mockImplementation((config) => config),
+			arg: vi.fn().mockImplementation((config) => config),
+		};
+
+		// Invoke the callback to get the field configuration.
+		const fieldConfig = callback(dummyT) as { args: Record<string, unknown> };
+
+		// Verify that t.field was called with the expected configuration.
+		expect(dummyT.field).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: expect.anything(), // Your ChatMessage type
+				description: "Mutation field to update a chat message.",
+				args: expect.any(Object),
+				resolve: localUpdateResolver,
+			}),
+		);
+
+		// Optionally, check that the configuration includes an "input" argument defined using t.arg.
+		expect(fieldConfig.args).toHaveProperty("input");
 	});
 });
