@@ -307,3 +307,36 @@ export const Query_user_updater =
         }
     }
 }`);
+
+export const Query_fund = gql(`query Query_fund($input: QueryFundInput!) {
+    fund(input: $input) {
+      id
+      isTaxDeductible
+      name
+    }
+  }`);
+
+export const Mutation_createOrganization =
+	gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
+    createOrganization(input: $input) {
+      id 
+      name
+      countryCode
+    }
+  }`);
+
+export const Mutation_createFund =
+	gql(`mutation Mutation_createFund($input: MutationCreateFundInput!) {
+    createFund(input: $input) {
+      id
+      name
+      isTaxDeductible
+    }
+  }`);
+
+export const Mutation_createOrganizationMembership =
+	gql(`mutation Mutation_createOrganizationMembership($input: MutationCreateOrganizationMembershipInput!) {
+    createOrganizationMembership(input: $input) {
+      id
+    }
+  }`);
