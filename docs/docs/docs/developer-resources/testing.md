@@ -71,9 +71,10 @@ ws://127.0.0.1:4000/graphql
 1. Launch the terminal application on your device.
 
 2. **Retrieve IPv4 Address**:
-    - **For Windows Users**: Enter the command `ipconfig`.
-    - **For Linux/OSX Users**: Enter the command `ifconfig`.
-    - Copy the `IPv4 Address` displayed (e.g., `192.168.12.233`).
+
+   - **For Windows Users**: Enter the command `ipconfig`.
+   - **For Linux/OSX Users**: Enter the command `ifconfig`.
+   - Copy the `IPv4 Address` displayed (e.g., `192.168.12.233`).
 
 3. Make sure both your mobile and your computer are connected to the same network.
 
@@ -184,6 +185,31 @@ MinIO is a free, open-source object storage server that's compatible with Amazon
    - Password: `password`
 3. You should now see the MinIO UI. Click on the `Login` button to access the MinIO dashboard.
 4. You can now view the available buckets and objects in the MinIO dashboard.
+
+## Resetting Docker
+
+**NOTE:** This applies only to Talawa API developers.
+
+Sometimes you may want to start all over again from scratch. These steps will reset your development docker environment.
+
+1. From the repository's root directory, use this command to shutdown the dev container.
+   ```bash
+   docker compose down
+   ```
+1. **WARNING:** These commands will stop **ALL** your Docker processes and delete their volumes. This applies not only to the Talawa API instances, but everything. Use with extreme caution.
+   ```bash
+   docker stop $(docker ps -q)
+   docker rm $(docker ps -a -q)
+   docker rmi $(docker images -q)
+   docker volume prune -f
+   ```
+1. Restart the Docker dev containers to resume your development work.
+   ```bash
+   devcontainer build --workspace-folder .
+   devcontainer up --workspace-folder .
+   ```
+
+Now you can resume your development work.
 
 ## Testing The API
 

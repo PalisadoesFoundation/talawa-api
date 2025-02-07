@@ -206,9 +206,9 @@ These steps are specific to Linux. You will need to modify them accordingly for 
       ```bash
       cp envFiles/.env.devcontainer .env
       ```
-1. Install `pnpm` using `npm`
+1. Install `pnpm` using `codepack`
    ```bash
-   npm install -g pnpm
+   corepack install -g pnpm
    ```
 1. Linux / MacOS Only
    1. Setup `pnpm` to be automatically configured on all future terminal session logins using your `~/.bashrc` file.
