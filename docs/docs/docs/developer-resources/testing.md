@@ -438,7 +438,7 @@ This section explains how to use interactive GraphQL to query the database.
 
 ##### Query Organization Data
 
-Use the following GraphQL **mutation** to query organization data:
+Use the following GraphQL **query** to query organization data:
 
 ```graphql
 {
