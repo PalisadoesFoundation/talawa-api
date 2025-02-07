@@ -15,6 +15,7 @@ export const resolveUpdatedAt = async (
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {
 		throw new TalawaGraphQLError({
+			message: "You must be authenticated to perform this action.",
 			extensions: { code: "unauthenticated" },
 		});
 	}
@@ -41,6 +42,7 @@ export const resolveUpdatedAt = async (
 
 	if (!currentUser) {
 		throw new TalawaGraphQLError({
+			message: "User not found in the system",
 			extensions: { code: "unauthenticated" },
 		});
 	}
@@ -49,14 +51,14 @@ export const resolveUpdatedAt = async (
 		currentUser.organizationMembershipsWhereMember[0];
 	const currentUserChatMembership = currentUser.chatMembershipsWhereMember[0];
 
-	if (
-		currentUser.role !== "administrator" &&
-		(!currentUserOrganizationMembership ||
-			(currentUserOrganizationMembership.role !== "administrator" &&
-				(!currentUserChatMembership ||
-					currentUserChatMembership.role !== "administrator")))
-	) {
+	const isGlobalAdmin = currentUser.role === "administrator";
+	const isOrgAdmin =
+		currentUserOrganizationMembership?.role === "administrator";
+	const isChatAdmin = currentUserChatMembership?.role === "administrator";
+
+	if (!isGlobalAdmin && !isOrgAdmin && !isChatAdmin) {
 		throw new TalawaGraphQLError({
+			message: "You must be an administrator to view chat details",
 			extensions: { code: "unauthorized_action" },
 		});
 	}
