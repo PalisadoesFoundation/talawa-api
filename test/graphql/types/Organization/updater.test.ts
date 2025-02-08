@@ -106,7 +106,7 @@ interface TestContext extends Omit<GraphQLContext, "log" | "currentClient"> {
 	};
 }
 
-describe("Organization Resolver - Updater Field", () => {
+describe("Organization Resolver: Updater Field", () => {
 	let ctx: TestContext;
 	let mockUser: DeepPartial<User>;
 	let mockOrganization: DeepPartial<OrganizationType>;
