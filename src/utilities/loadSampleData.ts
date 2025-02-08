@@ -70,6 +70,7 @@ async function formatDatabase(): Promise<void> {
     schema.postsTable,
     schema.organizationsTable,
     schema.eventsTable,
+    schema.organizationMembershipsTable, // Add the organization memberships table
   ];
 
   for (const table of tables) {
@@ -127,40 +128,53 @@ async function insertCollections(
           await db.insert(schema.organizationsTable).values(organizations);
           break;
         }
-        case "posts": {
-          const posts = JSON.parse(data).map(
-            (post: {
-              createdAt: string | number | Date;
-              updatedAt: string | number | Date;
-              pinnedAt: string | number | Date;
-            }) => ({
-              ...post,
-              createdAt: parseDate(post.createdAt),
-              updatedAt: parseDate(post.updatedAt),
-              pinnedAt: post.pinnedAt ? parseDate(post.pinnedAt) : null,
+        case "organization_memberships": {
+          // Add case for organization memberships
+          const organizationMemberships = JSON.parse(data).map(
+            (membership: { createdAt: string | number | Date }) => ({
+              ...membership,
+              createdAt: parseDate(membership.createdAt),
             })
-          ) as (typeof schema.postsTable.$inferInsert)[];
-          await db.insert(schema.postsTable).values(posts);
+          ) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
+          await db
+            .insert(schema.organizationMembershipsTable)
+            .values(organizationMemberships);
           break;
         }
-        case "events": {
-          const events = JSON.parse(data).map(
-            (event: {
-              createdAt: string | number | Date;
-              updatedAt: string | number | Date;
-              startAt: string | number | Date;
-              endAt: string | number | Date;
-            }) => ({
-              ...event,
-              createdAt: parseDate(event.createdAt),
-              updatedAt: parseDate(event.updatedAt),
-              startAt: parseDate(event.startAt),
-              endAt: parseDate(event.endAt),
-            })
-          ) as (typeof schema.eventsTable.$inferInsert)[];
-          await db.insert(schema.eventsTable).values(events);
-          break;
-        }
+        // case "posts": {
+        //   const posts = JSON.parse(data).map(
+        //     (post: {
+        //       createdAt: string | number | Date;
+        //       updatedAt: string | number | Date;
+        //       pinnedAt: string | number | Date;
+        //     }) => ({
+        //       ...post,
+        //       createdAt: parseDate(post.createdAt),
+        //       updatedAt: parseDate(post.updatedAt),
+        //       pinnedAt: post.pinnedAt ? parseDate(post.pinnedAt) : null,
+        //     })
+        //   ) as (typeof schema.postsTable.$inferInsert)[];
+        //   await db.insert(schema.postsTable).values(posts);
+        //   break;
+        // }
+        // case "events": {
+        //   const events = JSON.parse(data).map(
+        //     (event: {
+        //       createdAt: string | number | Date;
+        //       updatedAt: string | number | Date;
+        //       startAt: string | number | Date;
+        //       endAt: string | number | Date;
+        //     }) => ({
+        //       ...event,
+        //       createdAt: parseDate(event.createdAt),
+        //       updatedAt: parseDate(event.updatedAt),
+        //       startAt: parseDate(event.startAt),
+        //       endAt: parseDate(event.endAt),
+        //     })
+        //   ) as (typeof schema.eventsTable.$inferInsert)[];
+        //   await db.insert(schema.eventsTable).values(events);
+        //   break;
+        // }
         default:
           console.log("\x1b[31m", `Invalid table name: ${collection}`);
           break;
@@ -201,6 +215,10 @@ async function checkCountAfterImport(): Promise<boolean> {
       { name: "organizations", table: schema.organizationsTable },
       { name: "posts", table: schema.postsTable },
       { name: "events", table: schema.eventsTable },
+      {
+        name: "organization_memberships",
+        table: schema.organizationMembershipsTable,
+      }, // Add organization memberships table
     ];
 
     console.log("\nRecord Counts After Import:\n");
@@ -233,7 +251,13 @@ ${"|".padEnd(30, "-")}|----------------|
   }
 }
 
-const collections = ["users", "organizations", "posts", "events"];
+const collections = [
+  "users",
+  "organizations",
+  "posts",
+  "events",
+  "organization_memberships",
+]; // Add organization memberships to collections
 
 const args = process.argv.slice(2);
 const options: LoadOptions = {
