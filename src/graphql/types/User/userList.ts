@@ -40,6 +40,9 @@ builder.queryField("userList", (t) =>
       const users = await ctx.drizzleClient.query.usersTable.findMany({
         limit: first,
         offset: skip,
+        orderBy: {
+          id: "asc"
+        }
       });
 
       return users;
