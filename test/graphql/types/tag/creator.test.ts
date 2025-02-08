@@ -1,9 +1,9 @@
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { tagCreatorResolver } from "~/src/graphql/types/Tag/creator";
-import type { Tag } from "~/src/graphql/types/Tag/Tag";
-import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
 import { beforeEach, describe, it, expect } from "vitest";
 import { vi } from "vitest";
+import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
+import { tagCreatorResolver } from "~/src/graphql/types/Tag/creator";
+import type { Tag } from "~/src/graphql/types/Tag/Tag";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 //function to return mock GraphqlContext
 const createMockContext = () => {
@@ -72,7 +72,7 @@ describe("Tag Creator Resolver -Test ", () => {
 			);
 		});
 
-        it("should throw unauthorized_action for non admin and no organizationMemberShip", async () => {
+        it("should throw unauthorized_action for non admin with member-level organization membership", async () => {
             const mockUserData: MockUser = {
 				id: "user-123",
 				role: "member",
@@ -176,7 +176,6 @@ describe("Tag Creator Resolver -Test ", () => {
 			).mockResolvedValue(mockUserData);
 
 			const result = await tagCreatorResolver(mockTag, {}, ctx);
-			console.log("result", result);
 			expect(result).toBeNull();
 		});
         

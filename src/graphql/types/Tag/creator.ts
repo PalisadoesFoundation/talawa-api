@@ -1,8 +1,8 @@
-import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import type { GraphQLContext } from "../../context";
 import { Tag } from "./Tag";
 import type { Tag as TagType } from "./Tag";
-import type { GraphQLContext } from "../../context";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { User } from "~/src/graphql/types/User/User";
 
 export const tagCreatorResolver = async (
 	parent: TagType,
