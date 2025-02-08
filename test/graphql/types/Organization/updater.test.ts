@@ -3,21 +3,15 @@ import type { PgTableWithColumns } from "drizzle-orm/pg-core";
 import type { FastifyBaseLogger } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { organizationsTable } from "~/src/drizzle/tables/organizations";
+import type { usersTable } from "~/src/drizzle/tables/users"; // Import your actual users table
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Organization } from "~/src/graphql/types/Organization/Organization";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockLogger } from "../../../utilities/mockLogger";
-import { usersTable } from "~/src/drizzle/tables/users"; // Import your actual users table
 
-type TableFields = {
-    id: string;
-    // Add other relevant fields as needed
-  };
-  
-  // Define more specific type for operators
-  type Operators = {
-    eq: (field: TableFields[keyof TableFields], value: any) => SQL;
+type Operators<T> = {
+    eq: (field: T, value: T) => SQL;
   };
 
 type DeepPartial<T> = {
@@ -25,9 +19,9 @@ type DeepPartial<T> = {
 };
 const OrganizationResolver = {
     updater: async (
-      parent: Organization, 
-      _args: {}, 
-      ctx: GraphQLContext & {
+      parent: Organization,
+      _args: {},
+      ctx: Omit<GraphQLContext, 'currentClient'> & {
         currentClient: {
           isAuthenticated: boolean;
           user: { id: string };
@@ -37,8 +31,8 @@ const OrganizationResolver = {
             usersTable: {
               findFirst: (params: {
                 where: (
-                  fields: typeof usersTable, 
-                  operators: { eq: (field: any, value: any) => SQL }
+                  fields: typeof usersTable,
+                  operators: Operators<typeof usersTable['id']>
                 ) => SQL;
               }) => Promise<User | undefined>;
             };
@@ -55,7 +49,7 @@ const OrganizationResolver = {
       const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
         where: (
           fields: typeof usersTable, 
-          operators: { eq: (field: any, value: any) => SQL }
+          operators: Operators<typeof usersTable['id']>
         ) => operators.eq(fields.id, ctx.currentClient.user.id),
       });
 
@@ -177,7 +171,7 @@ describe("Organization Resolver - Updater Field", () => {
 		);
 	});
 
-	it("should return null when updaterId is null", async () => {
+	it("should return null when  updaterId is null", async () => {
 		const nullUpdaterOrganization = {
 			...mockOrganization,
 			updaterId: null,
@@ -243,7 +237,7 @@ describe("Organization Resolver - Updater Field", () => {
 			OrganizationResolver.updater(mockOrganization as any, {}, ctx as any),
 		).rejects.toThrow(dbError);
 	});
-	it("should handle case-sensitive updaterId comparison", async () => {
+	it("should handle case updaterId comparison", async () => {
 		const caseInsensitiveOrganization = {
 			...mockOrganization,
 			updaterId: "123",
