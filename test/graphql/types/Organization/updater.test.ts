@@ -1,57 +1,56 @@
 import type { SQL } from "drizzle-orm";
-import type { PgTableWithColumns } from "drizzle-orm/pg-core";
 import type { FastifyBaseLogger } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { organizationsTable } from "~/src/drizzle/tables/organizations";
-import type { usersTable } from "~/src/drizzle/tables/users"; // Import your actual users table
+import type { usersTable } from "~/src/drizzle/tables/users";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Organization } from "~/src/graphql/types/Organization/Organization";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockLogger } from "../../../utilities/mockLogger";
+// import type { PubSub } from "graphql-subscriptions";
 
 type Operators<T> = {
-    eq: (field: T, value: T) => SQL;
-  };
+	eq: (field: T, value: T) => SQL;
+};
 
 type DeepPartial<T> = {
 	[P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
+
 const OrganizationResolver = {
-    updater: async (
-      parent: Organization,
-      _args: {},
-      ctx: Omit<GraphQLContext, 'currentClient'> & {
-        currentClient: {
-          isAuthenticated: boolean;
-          user: { id: string };
-        };
-        drizzleClient: {
-          query: {
-            usersTable: {
-              findFirst: (params: {
-                where: (
-                  fields: typeof usersTable,
-                  operators: Operators<typeof usersTable['id']>
-                ) => SQL;
-              }) => Promise<User | undefined>;
-            };
-          };
-        };
-      }
-    ) => {
-      if (!ctx.currentClient.isAuthenticated) {
-        throw new TalawaGraphQLError({
-          extensions: { code: "unauthenticated" },
-        });
-      }
-  
-      const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-        where: (
-          fields: typeof usersTable, 
-          operators: Operators<typeof usersTable['id']>
-        ) => operators.eq(fields.id, ctx.currentClient.user.id),
-      });
+	updater: async (
+		parent: Organization,
+		_args: Record<string, never>,
+		ctx: Omit<GraphQLContext, "currentClient"> & {
+			currentClient: {
+				isAuthenticated: boolean;
+				user: { id: string };
+			};
+			drizzleClient: {
+				query: {
+					usersTable: {
+						findFirst: (params: {
+							where: (
+								fields: typeof usersTable,
+								operators: Operators<string>, // Use string type for UUID
+							) => SQL;
+						}) => Promise<User | undefined>;
+					};
+				};
+			};
+		},
+	) => {
+		if (!ctx.currentClient.isAuthenticated) {
+			throw new TalawaGraphQLError({
+				extensions: { code: "unauthenticated" },
+			});
+		}
+
+		const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+			where: (fields, operators) =>
+				operators.eq(fields.id, ctx.currentClient.user.id),
+		});
 
 		if (!currentUser) {
 			throw new TalawaGraphQLError({
@@ -68,10 +67,8 @@ const OrganizationResolver = {
 		}
 
 		const updaterUser = await ctx.drizzleClient.query.usersTable.findFirst({
-			where: (
-				fields: PgTableWithColumns<any>,
-				operators: { eq: (field: any, value: any) => SQL },
-			) => operators.eq(fields.id, parent.updaterId),
+			where: (fields, operators) =>
+				operators.eq(fields.id, parent.updaterId as string), // Add type assertion
 		});
 
 		if (!updaterUser) {
@@ -104,9 +101,9 @@ interface TestContext extends Omit<GraphQLContext, "log" | "currentClient"> {
 			};
 		};
 	} & GraphQLContext["drizzleClient"];
-
-	jwt: any;
-	pubsub: any;
+	jwt: {
+		sign: (payload: Record<string, unknown>) => string;
+	};
 }
 
 describe("Organization Resolver - Updater Field", () => {
@@ -153,7 +150,6 @@ describe("Organization Resolver - Updater Field", () => {
 				token: "sample-token",
 			},
 			jwt: {},
-			pubsub: {},
 		} as TestContext;
 	});
 
@@ -163,7 +159,7 @@ describe("Organization Resolver - Updater Field", () => {
 		);
 
 		await expect(
-			OrganizationResolver.updater(mockOrganization as any, {}, ctx as any),
+			OrganizationResolver.updater(mockOrganization as Organization, {}, ctx),
 		).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "forbidden_action" },
@@ -171,16 +167,16 @@ describe("Organization Resolver - Updater Field", () => {
 		);
 	});
 
-	it("should return null when  updaterId is null", async () => {
+	it("should return null when updaterId is null", async () => {
 		const nullUpdaterOrganization = {
 			...mockOrganization,
 			updaterId: null,
 		};
 
 		const result = await OrganizationResolver.updater(
-			nullUpdaterOrganization as any,
+			nullUpdaterOrganization as Organization,
 			{},
-			ctx as any,
+			ctx,
 		);
 
 		expect(result).toBeNull();
@@ -193,9 +189,9 @@ describe("Organization Resolver - Updater Field", () => {
 		};
 
 		const result = await OrganizationResolver.updater(
-			currentUserOrganization as any,
+			currentUserOrganization as Organization,
 			{},
-			ctx as any,
+			ctx,
 		);
 
 		expect(result).toEqual(mockUser);
@@ -213,9 +209,9 @@ describe("Organization Resolver - Updater Field", () => {
 
 		await expect(
 			OrganizationResolver.updater(
-				differentUpdaterOrganization as any,
+				differentUpdaterOrganization as Organization,
 				{},
-				ctx as any,
+				ctx,
 			),
 		).rejects.toThrow(
 			new TalawaGraphQLError({
@@ -230,13 +226,13 @@ describe("Organization Resolver - Updater Field", () => {
 
 	it("should handle database errors gracefully", async () => {
 		const dbError = new Error("Database connection failed");
-
 		ctx.drizzleClient.query.usersTable.findFirst.mockRejectedValue(dbError);
 
 		await expect(
-			OrganizationResolver.updater(mockOrganization as any, {}, ctx as any),
+			OrganizationResolver.updater(mockOrganization as Organization, {}, ctx),
 		).rejects.toThrow(dbError);
 	});
+
 	it("should handle case updaterId comparison", async () => {
 		const caseInsensitiveOrganization = {
 			...mockOrganization,
@@ -244,9 +240,9 @@ describe("Organization Resolver - Updater Field", () => {
 		};
 
 		const result = await OrganizationResolver.updater(
-			caseInsensitiveOrganization as any,
+			caseInsensitiveOrganization as Organization,
 			{},
-			ctx as any,
+			ctx,
 		);
 
 		expect(result).toEqual(mockUser);
