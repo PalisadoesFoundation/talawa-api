@@ -44,5 +44,5 @@ builder.queryField("userList", (t) =>
 
 			return users;
 		},
-	})
+	}),
 );
