@@ -2,10 +2,9 @@ import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { MAXIMUM_FETCH_LIMIT } from "~/src/constants";
 
 const userListArgumentsSchema = z.object({
-  first: z.number().min(1).max(MAXIMUM_FETCH_LIMIT).default(10),
+  first: z.number().min(1).max(100).default(10),
   skip: z.number().min(0).default(0),
 });
 
@@ -17,11 +16,8 @@ builder.queryField("userList", (t) =>
     },
     type: [User],
     resolve: async (_parent, args, ctx) => {
-      const {
-        data: parsedArgs,
-        error,
-        success,
-      } = userListArgumentsSchema.safeParse(args);
+      const { data: parsedArgs, error, success } =
+        userListArgumentsSchema.safeParse(args);
 
       if (!success) {
         throw new TalawaGraphQLError({
@@ -45,5 +41,5 @@ builder.queryField("userList", (t) =>
 
       return users;
     },
-  }),
+  })
 );
