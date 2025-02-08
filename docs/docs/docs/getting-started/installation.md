@@ -347,21 +347,21 @@ Below is a table of sample user data.
 
 | **Name**          | **Email Address**           | **Password**  | **Role**        |
 | ----------------- | --------------------------- | ------------- | --------------- |
-| Wilt Shepherd     | <testsuperadmin@example.com>  | Pass@123      | administrator   |
-| Vyvyan Kerry      | <testadmin1@example.com>      | Pass@123      | administrator   |
-| Loyd Solomon      | <testadmin2@example.com>      | Pass@123      | administrator   |
-| Darcy Wilf        | <testadmin3@example.com>      | Pass@123      | administrator   |
-| Harve Lance       | <testuser1@example.com>       | Pass@123      | regular         |
-| Praise Norris     | <testuser2@example.com>       | Pass@123      | regular         |
-| Scott Tony        | <testuser3@example.com>       | Pass@123      | regular         |
-| Teresa Bradley    | <testuser4@example.com>       | Pass@123      | regular         |
-| Bruce Garza       | <testuser5@example.com>       | Pass@123      | regular         |
-| Burton Sanders    | <testuser6@example.com>       | Pass@123      | regular         |
-| Jeramy Garcia     | <testuser7@example.com>       | Pass@123      | regular         |
-| Deanne Marks      | <testuser8@example.com>       | Pass@123      | regular         |
-| Romeo Holland     | <testuser9@example.com>       | Pass@123      | regular         |
-| Carla Nguyen      | <testuser10@example.com>      | Pass@123      | regular         |
-| Peggy Bowers      | <testuser11@example.com>      | Pass@123      | regular         |
+| Wilt Shepherd     | testsuperadmin@example.com  | Pass@123      | administrator   |
+| Vyvyan Kerry      | testadmin1@example.com     | Pass@123      | administrator   |
+| Loyd Solomon      | testadmin2@example.com     | Pass@123      | administrator   |
+| Darcy Wilf        | testadmin3@example.com     | Pass@123      | administrator   |
+| Harve Lance       | testuser1@example.com      | Pass@123      | regular         |
+| Praise Norris     | testuser2@example.com      | Pass@123      | regular         |
+| Scott Tony        | testuser3@example.com      | Pass@123      | regular         |
+| Teresa Bradley    | testuser4@example.com      | Pass@123      | regular         |
+| Bruce Garza       | testuser5@example.com      | Pass@123      | regular         |
+| Burton Sanders    | testuser6@example.com      | Pass@123      | regular         |
+| Jeramy Garcia     | testuser7@example.com      | Pass@123      | regular         |
+| Deanne Marks      | testuser8@example.com      | Pass@123      | regular         |
+| Romeo Holland     | testuser9@example.com      | Pass@123      | regular         |
+| Carla Nguyen      | testuser10@example.com     | Pass@123      | regular         |
+| Peggy Bowers      | testuser11@example.com     | Pass@123      | regular         |
 
 ## Testing and Validation
 
