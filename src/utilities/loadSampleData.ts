@@ -1,14 +1,14 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
+import inquirer from "inquirer";
 import postgres from "postgres";
-import { v4 as uuidv4 } from "uuid";
 import * as schema from "../drizzle/schema";
+
+dotenv.config();
 
 const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
@@ -62,20 +62,28 @@ ${"|".padEnd(30, "-")}|----------------|
 }
 
 /**
- * Clears all tables in the database.
+ * Clears all tables in the database except for the specified user.
  */
 async function formatDatabase(): Promise<void> {
+	const emailToKeep = "administrator@email.com";
+
 	const tables = [
-		schema.usersTable,
 		schema.postsTable,
 		schema.organizationsTable,
 		schema.eventsTable,
+		schema.organizationMembershipsTable,
 	];
 
 	for (const table of tables) {
 		await db.delete(table);
 	}
-	console.log("Cleared all tables\n");
+
+	// Delete all users except the specified one
+	await db
+		.delete(schema.usersTable)
+		.where(sql`email_address != ${emailToKeep}`);
+
+	console.log("Cleared all tables except the specified user\n");
 }
 
 /**
@@ -92,9 +100,6 @@ async function insertCollections(
 			await formatDatabase();
 		}
 
-		const userIds: string[] = [];
-		const organizationIds: string[] = [];
-
 		for (const collection of collections) {
 			const data = await fs.readFile(
 				path.resolve(dirname, `../../sample_data/${collection}.json`),
@@ -107,108 +112,43 @@ async function insertCollections(
 						(user: {
 							createdAt: string | number | Date;
 							updatedAt: string | number | Date;
-						}) => {
-							const id = uuidv4();
-							userIds.push(id);
-							return {
-								...user,
-								id,
-								emailAddress: `${uuidv4()}@example.com`, // Ensure unique email address
-								createdAt: user.createdAt
-									? new Date(user.createdAt)
-									: new Date(),
-								updatedAt: user.updatedAt
-									? new Date(user.updatedAt)
-									: new Date(),
-							};
-						},
+						}) => ({
+							...user,
+							createdAt: parseDate(user.createdAt),
+							updatedAt: parseDate(user.updatedAt),
+						}),
 					) as (typeof schema.usersTable.$inferInsert)[];
 					await db.insert(schema.usersTable).values(users);
 					break;
 				}
 				case "organizations": {
-					type OrgType = {
-						name: string;
-						createdAt: string | number | Date;
-						updatedAt: string | number | Date;
-					};
-					const organizations = JSON.parse(data).map((org: OrgType) => {
-						const id = uuidv4();
-						organizationIds.push(id);
-						return {
+					const organizations = JSON.parse(data).map(
+						(org: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
 							...org,
-							id, // Convert to valid UUID
-							name: `${org.name}-${uuidv4()}`, // Ensure unique organization name
-							createdAt: org.createdAt ? new Date(org.createdAt) : new Date(),
-							updatedAt: org.updatedAt ? new Date(org.updatedAt) : new Date(),
-							creatorId: userIds[Math.floor(Math.random() * userIds.length)], // Use valid user ID
-							updaterId: userIds[Math.floor(Math.random() * userIds.length)], // Use valid user ID
-						};
-					}) as (typeof schema.organizationsTable.$inferInsert)[];
+							createdAt: parseDate(org.createdAt),
+							updatedAt: parseDate(org.updatedAt),
+						}),
+					) as (typeof schema.organizationsTable.$inferInsert)[];
 					await db.insert(schema.organizationsTable).values(organizations);
 					break;
 				}
-				case "posts": {
-					if (userIds.length === 0 || organizationIds.length === 0) {
-						throw new Error(
-							"Users and organizations must be populated before posts.",
-						);
-					}
-					const posts = JSON.parse(data).map(
-						(post: {
-							createdAt: string | number | Date;
-							updatedAt: string | number | Date;
-							pinnedAt: string | number | Date;
-						}) => ({
-							...post,
-							id: uuidv4(), // Convert to valid UUID
-							createdAt: post.createdAt ? new Date(post.createdAt) : new Date(),
-							updatedAt: post.updatedAt ? new Date(post.updatedAt) : new Date(),
-							pinnedAt: post.pinnedAt ? new Date(post.pinnedAt) : null,
-							creatorId: userIds[Math.floor(Math.random() * userIds.length)], // Use valid user ID
-							updaterId: userIds[Math.floor(Math.random() * userIds.length)], // Use valid user ID
-							organizationId:
-								organizationIds[
-									Math.floor(Math.random() * organizationIds.length)
-								], // Use valid organization ID
+				case "organization_memberships": {
+					// Add case for organization memberships
+					const organizationMemberships = JSON.parse(data).map(
+						(membership: { createdAt: string | number | Date }) => ({
+							...membership,
+							createdAt: parseDate(membership.createdAt),
 						}),
-					) as (typeof schema.postsTable.$inferInsert)[];
-					await db.insert(schema.postsTable).values(posts);
+					) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
+					await db
+						.insert(schema.organizationMembershipsTable)
+						.values(organizationMemberships);
 					break;
 				}
-				case "events": {
-					if (userIds.length === 0 || organizationIds.length === 0) {
-						throw new Error(
-							"Users and organizations must be populated before events.",
-						);
-					}
-					type EventType = {
-						name: string;
-						description: string;
-						createdAt: string | number | Date;
-						updatedAt: string | number | Date;
-						startAt: string | number | Date;
-						endAt: string | number | Date;
-					};
-					const events = JSON.parse(data).map((event: EventType) => ({
-						...event,
-						id: uuidv4(), // Convert to valid UUID
-						name: event.name,
-						description: event.description,
-						createdAt: event.createdAt ? new Date(event.createdAt) : new Date(),
-						updatedAt: event.updatedAt ? new Date(event.updatedAt) : new Date(),
-						startAt: event.startAt ? new Date(event.startAt) : new Date(),
-						endAt: event.endAt ? new Date(event.endAt) : new Date(),
-						creatorId: userIds[Math.floor(Math.random() * userIds.length)], // Use valid user ID
-						updaterId: userIds[Math.floor(Math.random() * userIds.length)], // Use valid user ID
-						organizationId:
-							organizationIds[
-								Math.floor(Math.random() * organizationIds.length)
-							], // Use valid organization ID
-					})) as (typeof schema.eventsTable.$inferInsert)[];
-					await db.insert(schema.eventsTable).values(events);
-					break;
-				}
+
 				default:
 					console.log("\x1b[31m", `Invalid table name: ${collection}`);
 					break;
@@ -229,15 +169,28 @@ async function insertCollections(
 }
 
 /**
- * Checks record counts in specified tables after data insertion.
+ * Parses a date string and returns a Date object. Returns null if the date is invalid.
+ * @param date - The date string to parse
+ * @returns The parsed Date object or null
  */
-async function checkCountAfterImport(): Promise<void> {
+function parseDate(date: string | number | Date): Date | null {
+	const parsedDate = new Date(date);
+	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+/**
+ * Checks record counts in specified tables after data insertion.
+ * @returns {Promise<boolean>} - Returns true if data exists, false otherwise.
+ */
+async function checkCountAfterImport(): Promise<boolean> {
 	try {
 		const tables = [
 			{ name: "users", table: schema.usersTable },
 			{ name: "organizations", table: schema.organizationsTable },
-			{ name: "posts", table: schema.postsTable },
-			{ name: "events", table: schema.eventsTable },
+			{
+				name: "organization_memberships",
+				table: schema.organizationMembershipsTable,
+			},
 		];
 
 		console.log("\nRecord Counts After Import:\n");
@@ -248,6 +201,8 @@ ${"|".padEnd(30, "-")}|----------------|
 `,
 		);
 
+		let dataExists = false;
+
 		for (const { name, table } of tables) {
 			const result = await db
 				.select({ count: sql<number>`count(*)` })
@@ -255,13 +210,20 @@ ${"|".padEnd(30, "-")}|----------------|
 
 			const count = result?.[0]?.count ?? 0;
 			console.log(`| ${name.padEnd(28)}| ${count.toString().padEnd(15)}|`);
+
+			if (count > 0) {
+				dataExists = true;
+			}
 		}
+
+		return dataExists;
 	} catch (err) {
 		console.error("\x1b[31m", `Error checking record count: ${err}`);
+		return false;
 	}
 }
 
-const collections = ["users", "organizations", "posts", "events"];
+const collections = ["users", "organizations", "organization_memberships"]; // Add organization memberships to collections
 
 const args = process.argv.slice(2);
 const options: LoadOptions = {
@@ -277,5 +239,23 @@ if (itemsIndex !== -1 && args[itemsIndex + 1]) {
 
 (async (): Promise<void> => {
 	await listSampleData();
+
+	const existingData = await checkCountAfterImport();
+	if (existingData) {
+		const { deleteExisting } = await inquirer.prompt([
+			{
+				type: "confirm",
+				name: "deleteExisting",
+				message:
+					"Existing data found. Do you want to delete existing data and import the new data?",
+				default: false,
+			},
+		]);
+
+		if (deleteExisting) {
+			options.format = true;
+		}
+	}
+
 	await insertCollections(options.items || collections, options);
 })();
