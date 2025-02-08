@@ -11,8 +11,16 @@ const userListArgumentsSchema = z.object({
 builder.queryField("userList", (t) =>
   t.field({
     args: {
-      first: t.arg({ type: "Int", required: false }),
-      skip: t.arg({ type: "Int", required: false }),
+      first: t.arg({ 
+        type: "Int", 
+        required: false,
+        description: "Number of items to return (1-100, default: 10)"
+      }),
+      skip: t.arg({ 
+        type: "Int", 
+        required: false,
+        description: "Number of items to skip (>= 0, default: 0)"
+      }),
     },
     type: [User],
     resolve: async (_parent, args, ctx) => {
