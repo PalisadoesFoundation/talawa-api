@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { vi } from "vitest";
 import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
-import { tagCreatorResolver } from "~/src/graphql/types/Tag/creator";
 import type { Tag as TagType } from "~/src/graphql/types/Tag/Tag";
+import { tagCreatorResolver } from "~/src/graphql/types/Tag/creator";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 //function to return mock GraphqlContext
