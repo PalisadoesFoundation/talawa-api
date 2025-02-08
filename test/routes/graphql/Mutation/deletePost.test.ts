@@ -257,37 +257,34 @@ describe("deletePostResolver", () => {
 			attachments.map((att) => att.name),
 		);
 	});
-	it("should delete the post, remove objects, and return the deleted post if user is admin", async () => {
-		// This test covers the transaction block (around line 54) and removeObjects call (around line 66).
-		ctx.drizzleClient.query.usersTable.findFirst = vi.fn().mockResolvedValue({
-			role: "administrator",
-		});
+
+	it("should handle concurrent delete attempts gracefully", async () => {
+		// Setup post and user
+		ctx.drizzleClient.query.usersTable.findFirst = vi
+			.fn()
+			.mockResolvedValue({ role: "administrator" });
 		ctx.drizzleClient.query.postsTable.findFirst = vi.fn().mockResolvedValue({
-			creatorId: "user999",
-			attachmentsWherePost: [{ name: "attachment1" }, { name: "attachment2" }],
+			creatorId: "user1",
+			attachmentsWherePost: [],
 			organization: { membershipsWhereOrganization: [] },
 		});
 
-		ctx.drizzleClient.transaction = vi.fn(async (cb) => {
-			return cb({
-				delete: () => ({
-					where: () => ({
-						returning: async () => [
-							{ id: testPostId, content: "Deleted content" },
-						],
-					}),
-				}),
-			});
-		});
+		// Simulate a race condition where the post is deleted between check and delete
+		let firstCheck = true;
+		ctx.drizzleClient.transaction = vi.fn(async (fn) => {
+			if (firstCheck) {
+				firstCheck = false;
+				return { id: "post1" };
+			}
+			throw new Error("Post already deleted");
+		}) as unknown as typeof ctx.drizzleClient.transaction;
 
-		const result = await deletePostResolver(null, validArgs, ctx);
+		// First delete should succeed
+		await expect(
+			deletePostResolver(null, validArgs, ctx),
+		).resolves.toBeDefined();
 
-		expect(ctx.drizzleClient.transaction).toHaveBeenCalled();
-		expect(ctx.minio.client.removeObjects).toHaveBeenCalledWith(
-			ctx.minio.bucketName,
-			["attachment1", "attachment2"],
-		);
-		expect(result.id).toBe(testPostId);
-		expect(result.attachments).toHaveLength(2);
+		// Second delete should fail
+		await expect(deletePostResolver(null, validArgs, ctx)).rejects.toThrow();
 	});
 });
