@@ -19,7 +19,7 @@ builder.queryField("userList", (t) =>
       const { 
         data: parsedArgs, 
         error, 
-        success 
+        success,
       } = userListArgumentsSchema.safeParse(args);
 
       if (!success) {
