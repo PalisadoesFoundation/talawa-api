@@ -1,8 +1,8 @@
-import { beforeEach, describe, it, expect } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { vi } from "vitest";
 import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
 import { tagCreatorResolver } from "~/src/graphql/types/Tag/creator";
-import type { Tag } from "~/src/graphql/types/Tag/Tag";
+import type { Tag as TagType } from "~/src/graphql/types/Tag/Tag";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 //function to return mock GraphqlContext
@@ -20,7 +20,7 @@ const createMockContext = () => {
 	};
 	return mockContext as unknown as GraphQLContext;
 };
-//mock current user details 
+//mock current user details
 type MockUser = {
 	id: string;
 	role: string;
@@ -32,7 +32,7 @@ type MockUser = {
 
 describe("Tag Creator Resolver -Test ", () => {
 	let ctx: GraphQLContext;
-	let mockTag: Tag;
+	let mockTag: TagType;
 
 	beforeEach(() => {
 		ctx = createMockContext();
@@ -56,8 +56,8 @@ describe("Tag Creator Resolver -Test ", () => {
 			);
 		});
 
-        it("should throw unauthorized_action for non admin and no organizationMemberShip", async () => {
-            const mockUserData: MockUser = {
+		it("should throw unauthorized_action for non admin and no organizationMemberShip", async () => {
+			const mockUserData: MockUser = {
 				id: "user-123",
 				role: "member",
 				organizationMembershipsWhereMember: [],
@@ -72,11 +72,13 @@ describe("Tag Creator Resolver -Test ", () => {
 			);
 		});
 
-        it("should throw unauthorized_action for non admin with member-level organization membership", async () => {
-            const mockUserData: MockUser = {
+		it("should throw unauthorized_action for non admin with member-level organization membership", async () => {
+			const mockUserData: MockUser = {
 				id: "user-123",
 				role: "member",
-				organizationMembershipsWhereMember: [{ role: "member", organizationId: mockTag.organizationId },],
+				organizationMembershipsWhereMember: [
+					{ role: "member", organizationId: mockTag.organizationId },
+				],
 			};
 
 			(
@@ -130,37 +132,34 @@ describe("Tag Creator Resolver -Test ", () => {
 			);
 		});
 
-        it("should throw an unexpected error if database query fails", async () => {
-            const mockCurrentUser: MockUser = {
-                id: "user-123",
-                role: "administrator",
-                organizationMembershipsWhereMember: [
-                    { role: "administrator", organizationId: mockTag.organizationId },
-                ],
-            };
-        
-            const findFirst = ctx.drizzleClient.query.usersTable
-                .findFirst as ReturnType<typeof vi.fn>;
-        
-            // First call returns a valid current user
-            findFirst.mockResolvedValueOnce(mockCurrentUser);
-        
-            // Simulate a database error when fetching creator
-            findFirst.mockRejectedValueOnce(new Error("Database connection failed"));
-        
-            await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
-                new TalawaGraphQLError({
-                    message: "Internal server error", 
-                    extensions: { code: "unexpected" },
-                }),
-            );
-            
-        });
-        
+		it("should throw an unexpected error if database query fails", async () => {
+			const mockCurrentUser: MockUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [
+					{ role: "administrator", organizationId: mockTag.organizationId },
+				],
+			};
+
+			const findFirst = ctx.drizzleClient.query.usersTable
+				.findFirst as ReturnType<typeof vi.fn>;
+
+			// First call returns a valid current user
+			findFirst.mockResolvedValueOnce(mockCurrentUser);
+
+			// Simulate a database error when fetching creator
+			findFirst.mockRejectedValueOnce(new Error("Database connection failed"));
+
+			await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({
+					message: "Internal server error",
+					extensions: { code: "unexpected" },
+				}),
+			);
+		});
 	});
 
 	describe("Creator Retrieval tests", () => {
-
 		it("should return null for null creatorId", async () => {
 			mockTag.creatorId = null;
 			const mockUserData: MockUser = {
@@ -178,7 +177,7 @@ describe("Tag Creator Resolver -Test ", () => {
 			const result = await tagCreatorResolver(mockTag, {}, ctx);
 			expect(result).toBeNull();
 		});
-        
+
 		it("should throw an unauthorized_action error if the current user is not an administrator", async () => {
 			mockTag.creatorId = "user-123";
 			const mockUserData: MockUser = {
@@ -246,8 +245,8 @@ describe("Tag Creator Resolver -Test ", () => {
 				}),
 			);
 		});
-		
-        it("should throw unexpected error if existing user is not found ", async () => {
+
+		it("should throw unexpected error if existing user is not found ", async () => {
 			const mockCurrentUser: MockUser = {
 				id: "user-123",
 				role: "member",
@@ -256,18 +255,146 @@ describe("Tag Creator Resolver -Test ", () => {
 				],
 			};
 
-
 			const findFirst = ctx.drizzleClient.query.usersTable
 				.findFirst as ReturnType<typeof vi.fn>;
 			findFirst
 				.mockResolvedValueOnce(mockCurrentUser)
 				.mockResolvedValueOnce(undefined);
 
-		    await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
+			await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
-			);			
+			);
+		});
+	});
+
+	describe("Database Query Errors", () => {
+		it("should handle database connection error", async () => {
+			// Simulate database connection error for first findFirst call
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockRejectedValueOnce(new Error("ECONNREFUSED"));
+
+			await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({
+					message: "Internal server error",
+					extensions: { code: "unexpected" },
+				}),
+			);
+
+			expect(ctx.log.error).toHaveBeenCalled();
 		});
 
+		it("should handle database timeout error", async () => {
+			// Simulate database timeout for first findFirst call
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockRejectedValueOnce(new Error("Query timeout"));
 
+			await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({
+					message: "Internal server error",
+					extensions: { code: "unexpected" },
+				}),
+			);
+
+			expect(ctx.log.error).toHaveBeenCalled();
+		}, 1000);
+
+		it("should handle database constraint violation", async () => {
+			// Simulate database constraint error
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockRejectedValueOnce(new Error("violates foreign key constraint"));
+
+			await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({
+					message: "Internal server error",
+					extensions: { code: "unexpected" },
+				}),
+			);
+
+			expect(ctx.log.error).toHaveBeenCalled();
+		});
+
+		it("should handle database query syntax error", async () => {
+			// Simulate database syntax error
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockRejectedValueOnce(new Error("syntax error in SQL statement"));
+
+			await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({
+					message: "Internal server error",
+					extensions: { code: "unexpected" },
+				}),
+			);
+
+			expect(ctx.log.error).toHaveBeenCalled();
+		});
 	});
+
+	describe("Concurrent Access", () => {
+		it("should handle concurrent updates to the same tag", async () => {
+			const mockUserData = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [
+					{
+						role: "administrator",
+						organizationId: mockTag.organizationId,
+					},
+				],
+			};
+
+			// First call returns the current user successfully
+			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockUserData)
+				// Second call (for creator) returns undefined, simulating concurrent deletion
+				.mockResolvedValueOnce(undefined);
+
+			await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unexpected" },
+				}),
+			);
+
+			// Verify error was logged
+			expect(ctx.log.error).toHaveBeenCalledWith(
+				"Postgres select operation returned an empty array for a tag's creator id that isn't null.",
+			);
+		});
+
+		it("should handle database error during concurrent access", async () => {
+			const mockUserData = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [
+					{
+						role: "administrator",
+						organizationId: mockTag.organizationId,
+					},
+				],
+			};
+
+			// First call succeeds
+			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockUserData)
+				// Second call fails with database error
+				.mockRejectedValueOnce(
+					new Error("Database error during concurrent access"),
+				);
+
+			await expect(tagCreatorResolver(mockTag, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({
+					message: "Internal server error",
+					extensions: { code: "unexpected" },
+				}),
+			);
+
+			// Verify error was logged
+			expect(ctx.log.error).toHaveBeenCalled();
+		});
+	});
+
+	
 });
