@@ -16,7 +16,11 @@ builder.queryField("organizationConnectionList", (t) =>
     },
     type: [Organization],
     resolve: async (_parent, args, ctx) => {
-      const { data: parsedArgs, error, success } = organizationConnectionListArgumentsSchema.safeParse(args);
+      const {
+        data: parsedArgs,
+        error,
+        success,
+      } = organizationConnectionListArgumentsSchema.safeParse(args);
 
       if (!success) {
         throw new TalawaGraphQLError({
@@ -33,12 +37,13 @@ builder.queryField("organizationConnectionList", (t) =>
       const { first, skip } = parsedArgs;
 
       // Fetch organizations with pagination
-      const organizations = await ctx.drizzleClient.query.organizationsTable.findMany({
-        limit: first,
-        offset: skip,
-      });
+      const organizations =
+        await ctx.drizzleClient.query.organizationsTable.findMany({
+          limit: first,
+          offset: skip,
+        });
 
       return organizations;
     },
-  })
+  }),
 );
