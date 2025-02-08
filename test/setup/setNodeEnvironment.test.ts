@@ -1,6 +1,7 @@
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { setNodeEnvironment } from "~/src/setup/setup";
+import * as SetupModule from "~/src/setup/setup";
 
 vi.mock("inquirer");
 
@@ -16,5 +17,26 @@ describe("Setup -> setNodeEnvironment", () => {
 		const answers = await setNodeEnvironment();
 
 		expect(answers.NODE_ENV).toBe(mockedNodeEnv);
+	});
+	it("should log error and exit with code 1 if inquirer fails", async () => {
+		const consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
+			throw new Error("process.exit called");
+		});
+
+		const promptError = new Error("inquirer failure");
+		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
+
+		await expect(SetupModule.setNodeEnvironment()).rejects.toThrow(
+			"process.exit called",
+		);
+
+		expect(consoleErrorSpy).toHaveBeenCalledWith(promptError);
+		expect(processExitSpy).toHaveBeenCalledWith(1);
+
+		processExitSpy.mockRestore();
+		consoleErrorSpy.mockRestore();
 	});
 });

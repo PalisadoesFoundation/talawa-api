@@ -14,6 +14,7 @@ describe("Setup", () => {
 
 	it("should set up environment variables with default configuration when CI=false", async () => {
 		const mockResponses = [
+			{ envReconfigure: true },
 			{ CI: "false" },
 			{ NODE_ENV: "production" },
 			{ useDefaultApi: "true" },
@@ -66,7 +67,7 @@ describe("Setup", () => {
 
 	it("should correctly set up environment variables when CI=true (skips CloudBeaver)", async () => {
 		const mockResponses = [
-			{ envReconfigure: "true" },
+			{ envReconfigure: true },
 			{ CI: "true" },
 			{ NODE_ENV: "production" },
 			{ useDefaultApi: "true" },

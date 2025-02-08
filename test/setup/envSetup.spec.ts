@@ -2,6 +2,7 @@ import fs from "node:fs";
 import inquirer from "inquirer";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { checkEnvFile, initializeEnvFile, setCI } from "~/src/setup/setup";
+import * as SetupModule from "~/src/setup/setup";
 
 vi.mock("dotenv", async (importOriginal) => {
 	const actual = await importOriginal();
@@ -63,5 +64,25 @@ describe("initializeEnvFile", () => {
 		initializeEnvFile();
 
 		expect(fs.readFileSync).toHaveBeenCalledWith("envFiles/.env.ci");
+	});
+
+	it("should log error and exit with code 1 if inquirer fails", async () => {
+		const consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
+			throw new Error("process.exit called");
+		});
+
+		const promptError = new Error("inquirer failure");
+		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
+
+		await expect(SetupModule.setCI()).rejects.toThrow("process.exit called");
+
+		expect(consoleErrorSpy).toHaveBeenCalledWith(promptError);
+		expect(processExitSpy).toHaveBeenCalledWith(1);
+
+		processExitSpy.mockRestore();
+		consoleErrorSpy.mockRestore();
 	});
 });

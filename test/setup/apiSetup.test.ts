@@ -1,11 +1,13 @@
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-	apiSetup,
 	generateJwtSecret,
+	setup,
 	validatePort,
 	validateURL,
 } from "~/src/setup/setup";
+
+import dotenv from "dotenv";
 
 vi.mock("inquirer");
 
@@ -19,6 +21,9 @@ describe("Setup -> apiSetup", () => {
 
 	it("should prompt the user for API configuration and update environment variables", async () => {
 		const mockResponses = [
+			{ CI: "true" },
+			{ NODE_ENV: "production" },
+			{ useDefaultApi: false },
 			{ API_BASE_URL: "http://localhost:5000" },
 			{ API_HOST: "127.0.0.1" },
 			{ API_PORT: "5000" },
@@ -41,6 +46,9 @@ describe("Setup -> apiSetup", () => {
 			{ API_POSTGRES_SSL_MODE: "true" },
 			{ API_POSTGRES_TEST_HOST: "mocked-test-host" },
 			{ API_POSTGRES_USER: "mocked-user" },
+			{ useDefaultMinio: true },
+			{ useDefaultPostgres: true },
+			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -49,7 +57,8 @@ describe("Setup -> apiSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		const answers = await apiSetup();
+		const answers = await setup();
+		dotenv.config({ path: ".env" });
 
 		const expectedEnv = {
 			API_BASE_URL: "http://localhost:5000",

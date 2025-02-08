@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cloudbeaverSetup } from "~/src/setup/setup";
+import { setup } from "~/src/setup/setup";
 
 vi.mock("inquirer");
 
@@ -14,12 +14,20 @@ describe("Setup -> cloudbeaverSetup", () => {
 
 	it("should prompt the user for CloudBeaver configuration and update process.env", async () => {
 		const mockResponses = [
+			{ envReconfigure: true },
+			{ CI: "false" },
+			{ NODE_ENV: "production" },
+			{ useDefaultApi: true },
+			{ useDefaultMinio: true },
+			{ useDefaultCloudbeaver: false },
 			{ CLOUDBEAVER_ADMIN_NAME: "mocked-admin" },
 			{ CLOUDBEAVER_ADMIN_PASSWORD: "mocked-password" },
 			{ CLOUDBEAVER_MAPPED_HOST_IP: "127.0.0.1" },
 			{ CLOUDBEAVER_MAPPED_PORT: "8080" },
 			{ CLOUDBEAVER_SERVER_NAME: "Mocked Server" },
 			{ CLOUDBEAVER_SERVER_URL: "https://127.0.0.1:8080" },
+			{ useDefaultPostgres: true },
+			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -28,7 +36,7 @@ describe("Setup -> cloudbeaverSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		const answers = await cloudbeaverSetup();
+		const answers = await setup();
 
 		const expectedEnv = {
 			CLOUDBEAVER_ADMIN_NAME: "mocked-admin",

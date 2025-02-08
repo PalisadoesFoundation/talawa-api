@@ -36,7 +36,10 @@ export function generateJwtSecret(): string {
 	try {
 		return crypto.randomBytes(64).toString("hex");
 	} catch (err) {
-		console.error("Failed to generate JWT secret:", err);
+		console.error(
+			"⚠️ Warning: Permission denied while generating JWT secret. Ensure the process has sufficient filesystem access.",
+			err,
+		);
 		throw new Error("Failed to generate JWT secret");
 	}
 }
@@ -79,23 +82,44 @@ export function checkEnvFile(): boolean {
 export function initializeEnvFile(): void {
 	if (fs.existsSync(envFileName)) {
 		fs.copyFileSync(envFileName, `${envFileName}.backup`);
-		console.log(`Backup created at ${envFileName}.backup`);
+		console.log(`✅ Backup created at ${envFileName}.backup`);
 	}
+
 	const envFileToUse =
 		answers.CI === "true" ? "envFiles/.env.ci" : "envFiles/.env.devcontainer";
 
-	const parsedEnv = dotenv.parse(fs.readFileSync(envFileToUse));
-	dotenv.config({ path: envFileName });
+	if (!fs.existsSync(envFileToUse)) {
+		console.warn(`⚠️ Warning: Configuration file '${envFileToUse}' is missing.`);
+		console.log(
+			"Please create the file or use a different environment configuration.",
+		);
+		return;
+	}
 
-	const safeContent = Object.entries(parsedEnv)
-		.map(([key, value]) => {
-			const safeValue = value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+	try {
+		const parsedEnv = dotenv.parse(fs.readFileSync(envFileToUse));
+		dotenv.config({ path: envFileName });
 
-			return `${key}="${safeValue}"`;
-		})
-		.join("\n");
+		const safeContent = Object.entries(parsedEnv)
+			.map(([key, value]) => {
+				const safeValue = value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+				return `${key}="${safeValue}"`;
+			})
+			.join("\n");
 
-	fs.writeFileSync(envFileName, safeContent, { encoding: "utf-8" });
+		fs.writeFileSync(envFileName, safeContent, { encoding: "utf-8" });
+		console.log(
+			`✅ Environment variables loaded successfully from ${envFileToUse}`,
+		);
+	} catch (error) {
+		console.error(
+			`❌ Error: Failed to load environment file '${envFileToUse}'.`,
+		);
+		console.error(error instanceof Error ? error.message : error);
+		console.log(
+			"Please check the file permissions and ensure it contains valid environment variables.",
+		);
+	}
 }
 
 export async function setCI(): Promise<Record<string, string>> {
@@ -103,6 +127,9 @@ export async function setCI(): Promise<Record<string, string>> {
 		answers.CI = await promptList("CI", "Set CI:", ["true", "false"], "false");
 	} catch (err) {
 		console.error(err);
+		if (fs.existsSync(".env.backup")) {
+			fs.copyFileSync(".env.backup", ".env");
+		}
 		process.exit(1);
 	}
 	return answers;
@@ -118,6 +145,9 @@ export async function setNodeEnvironment(): Promise<Record<string, string>> {
 		);
 	} catch (err) {
 		console.error(err);
+		if (fs.existsSync(".env.backup")) {
+			fs.copyFileSync(".env.backup", ".env");
+		}
 		process.exit(1);
 	}
 	return answers;
@@ -133,6 +163,9 @@ export async function administratorEmail(): Promise<Record<string, string>> {
 		);
 	} catch (err) {
 		console.log(err);
+		if (fs.existsSync(".env.backup")) {
+			fs.copyFileSync(".env.backup", ".env");
+		}
 		process.exit(1);
 	}
 	return answers;
@@ -425,6 +458,9 @@ export async function setup(): Promise<Record<string, string>> {
 			},
 		]);
 		if (!envReconfigure) {
+			if (fs.existsSync(".env.backup")) {
+				fs.copyFileSync(".env.backup", ".env");
+			}
 			process.exit(0);
 		}
 	}
@@ -437,6 +473,9 @@ export async function setup(): Promise<Record<string, string>> {
 			fs.copyFileSync(".env.backup", ".env");
 		}
 		answers = {};
+		if (fs.existsSync(".env.backup")) {
+			fs.copyFileSync(".env.backup", ".env");
+		}
 		process.exit(1);
 	});
 

@@ -2,6 +2,7 @@ import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { administratorEmail } from "~/src/setup/setup";
 import { validateEmail } from "~/src/setup/setup";
+import * as SetupModule from "~/src/setup/setup";
 
 vi.mock("inquirer");
 
@@ -39,5 +40,25 @@ describe("Setup -> askForAdministratorEmail", () => {
 		expect(validateEmail(`${"a".repeat(255)}@example.com`)).toBe(
 			"Email is too long.",
 		);
+	});
+
+	it("should log error and exit with code 1 if inquirer fails", async () => {
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
+			throw new Error("process.exit called");
+		});
+
+		const promptError = new Error("inquirer failure");
+		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
+
+		await expect(SetupModule.administratorEmail()).rejects.toThrow(
+			"process.exit called",
+		);
+
+		expect(consoleLogSpy).toHaveBeenCalledWith(promptError);
+		expect(processExitSpy).toHaveBeenCalledWith(1);
+
+		processExitSpy.mockRestore();
+		consoleLogSpy.mockRestore();
 	});
 });
