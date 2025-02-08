@@ -16,7 +16,11 @@ builder.queryField("userList", (t) =>
     },
     type: [User],
     resolve: async (_parent, args, ctx) => {
-      const { data: parsedArgs, error, success } = userListArgumentsSchema.safeParse(args);
+      const {
+        data: parsedArgs,
+        error,
+        success,
+      } = userListArgumentsSchema.safeParse(args);
 
       if (!success) {
         throw new TalawaGraphQLError({
@@ -40,5 +44,5 @@ builder.queryField("userList", (t) =>
 
       return users;
     },
-  })
+  }),
 );
