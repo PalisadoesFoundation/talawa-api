@@ -466,9 +466,6 @@ export async function setup(): Promise<Record<string, string>> {
 
 	process.on("SIGINT", () => {
 		console.log("\nProcess interrupted! Undoing changes...");
-		if (fs.existsSync(".env.backup")) {
-			fs.copyFileSync(".env.backup", ".env");
-		}
 		answers = {};
 		if (fs.existsSync(".env.backup")) {
 			fs.copyFileSync(".env.backup", ".env");

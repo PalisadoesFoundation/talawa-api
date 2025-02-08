@@ -16,6 +16,7 @@ describe("Setup", () => {
 
 	it("should set up environment variables with default configuration when CI=false", async () => {
 		const mockResponses = [
+			{ envReconfigure: true },
 			{ CI: "false" },
 			{ NODE_ENV: "production" },
 			{ useDefaultApi: "true" },
