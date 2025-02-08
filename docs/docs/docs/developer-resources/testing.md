@@ -309,7 +309,7 @@ Here are some basic commands you can use for testing
 Use the following GraphQL **query** to get an **authentication token** for authorization in later queries:
 
 ```graphql
-mutation {
+query {
   signIn(
     input: { emailAddress: "administrator@email.com", password: "password" }
   ) {
@@ -322,7 +322,35 @@ mutation {
 }
 ```
 
-#### Promote a Registered User to an Administrator
+**Example Response:**
+
+```json
+{
+  "data": {
+    "signIn": {
+      "authenticationToken": "YWQ2LWE2OTctMjZjYmFlYjEyYTI1In0sImlhdCI6MTceyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiMDE5NGM5MWQtMDQzYS03zODkzOTM3MiwiZXhwIjo0MzMwOTM5MzcyfQ.jVH3un6CBQ62aD_eXIwghoaQ6ak4ZnYfLgz6uDuZbrM",
+      "user": {
+        "id": "0194c91d-043a-7ad6-a697-26cbaeb12a25",
+        "name": "administrator"
+      }
+    }
+  }
+}
+```
+
+#### Mutations
+
+This section explains how to use interactive GraphQL to make changes to the database.
+
+**NOTE:** For all mutations, make sure the Headers section at the bottom of the page has the Authorization Bearer type method. Use the `authenticationToken` received during login step above. We use that value received previously in this example.
+
+```json
+{
+  "Authorization": "Bearer YWQ2LWE2OTctMjZjYmFlYjEyYTI1In0sImlhdCI6MTceyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiMDE5NGM5MWQtMDQzYS03zODkzOTM3MiwiZXhwIjo0MzMwOTM5MzcyfQ.jVH3un6CBQ62aD_eXIwghoaQ6ak4ZnYfLgz6uDuZbrM"
+}
+```
+
+##### Promote a Registered User to an Administrator
 
 Use the following GraphQL **mutation** to assign **administrator** role to user:
 
@@ -335,7 +363,7 @@ mutation {
 }
 ```
 
-#### Creating Organizations
+##### Creating Organizations
 
 Use the following GraphQL **mutation** to create an organization:
 
@@ -358,7 +386,19 @@ mutation {
 }
 ```
 
-#### Create an Organization Administrator
+**Example Response:**
+
+```json
+{
+  "data": {
+    "createOrganization": {
+      "id": "0194e104-31df-7906-a221-90d80ff27582"
+    }
+  }
+}
+```
+
+##### Create an Organization Administrator
 
 Use the following GraphQL **mutation** to assign **administrator** role to user:
 
@@ -387,6 +427,50 @@ mutation {
           name
         }
       }
+    }
+  }
+}
+```
+
+#### Queries
+
+This section explains how to use interactive GraphQL to query the database.
+
+##### Query Organization Data
+
+Use the following GraphQL **query** to query organization data:
+
+```graphql
+{
+  organization(input: { id: "0194e11a-1d2f-7425-b447-84e641687570" }) {
+    id
+    name
+    description
+    addressLine1
+    addressLine2
+    city
+    postalCode
+    state
+    countryCode
+  }
+}
+```
+
+**Example Response:**
+
+```json
+{
+  "data": {
+    "organization": {
+      "id": "0194e11a-1d2f-7425-b447-84e641687570",
+      "name": "Test Org 27",
+      "description": "testing",
+      "addressLine1": "Los Angeles",
+      "addressLine2": "USA",
+      "city": "Los Angeles",
+      "postalCode": "876876",
+      "state": "California",
+      "countryCode": "in"
     }
   }
 }
