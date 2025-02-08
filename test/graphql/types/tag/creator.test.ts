@@ -106,7 +106,7 @@ describe("Tag Creator Resolver -Test ", () => {
 		it("should allow organization administrator access", async () => {
 			const mockUserData: MockUser = {
 				id: "user-123",
-				role: "administartor",
+				role: "administrator",
 				organizationMembershipsWhereMember: [
 					{ role: "administrator", organizationId: mockTag.organizationId },
 				],
