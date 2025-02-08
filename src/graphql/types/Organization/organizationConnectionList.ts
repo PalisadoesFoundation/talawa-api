@@ -45,5 +45,5 @@ builder.queryField("organizationConnectionList", (t) =>
 
 			return organizations;
 		},
-	})
+	}),
 );
