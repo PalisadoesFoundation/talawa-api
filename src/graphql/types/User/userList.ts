@@ -16,9 +16,9 @@ builder.queryField("userList", (t) =>
     },
     type: [User],
     resolve: async (_parent, args, ctx) => {
-      const { 
-        data: parsedArgs, 
-        error, 
+      const {
+        data: parsedArgs,
+        error,
         success,
       } = userListArgumentsSchema.safeParse(args);
 
