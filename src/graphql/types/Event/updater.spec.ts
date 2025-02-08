@@ -86,10 +86,10 @@ describe("resolveEventUpdater", async () => {
 			expect.objectContaining({
 				extensions: {
 					code: "unauthorized_action",
+					message: expect.stringMatching(
+						/Only administrators can access event updater information./i,
+					),
 				},
-				message: expect.stringMatching(
-					/You are not authorized to perform this action./i,
-				),
 			}),
 		);
 	});
@@ -187,6 +187,9 @@ describe("resolveEventUpdater", async () => {
 			expect.objectContaining({
 				extensions: {
 					code: "unexpected",
+					message: expect.stringMatching(
+						/Event updater not found in the database. This indicates a data integrity issue./i,
+					),
 				},
 			}),
 		);
