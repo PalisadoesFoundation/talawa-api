@@ -62,21 +62,28 @@ ${"|".padEnd(30, "-")}|----------------|
 }
 
 /**
- * Clears all tables in the database.
+ * Clears all tables in the database except for the specified user.
  */
 async function formatDatabase(): Promise<void> {
+  const emailToKeep = "administrator@email.com";
+
   const tables = [
-    schema.usersTable,
     schema.postsTable,
     schema.organizationsTable,
     schema.eventsTable,
-    schema.organizationMembershipsTable, // Add the organization memberships table
+    schema.organizationMembershipsTable,
   ];
 
   for (const table of tables) {
     await db.delete(table);
   }
-  console.log("Cleared all tables\n");
+
+  // Delete all users except the specified one
+  await db
+    .delete(schema.usersTable)
+    .where(sql`email_address != ${emailToKeep}`);
+
+  console.log("Cleared all tables except the specified user\n");
 }
 
 /**
@@ -141,40 +148,7 @@ async function insertCollections(
             .values(organizationMemberships);
           break;
         }
-        // case "posts": {
-        //   const posts = JSON.parse(data).map(
-        //     (post: {
-        //       createdAt: string | number | Date;
-        //       updatedAt: string | number | Date;
-        //       pinnedAt: string | number | Date;
-        //     }) => ({
-        //       ...post,
-        //       createdAt: parseDate(post.createdAt),
-        //       updatedAt: parseDate(post.updatedAt),
-        //       pinnedAt: post.pinnedAt ? parseDate(post.pinnedAt) : null,
-        //     })
-        //   ) as (typeof schema.postsTable.$inferInsert)[];
-        //   await db.insert(schema.postsTable).values(posts);
-        //   break;
-        // }
-        // case "events": {
-        //   const events = JSON.parse(data).map(
-        //     (event: {
-        //       createdAt: string | number | Date;
-        //       updatedAt: string | number | Date;
-        //       startAt: string | number | Date;
-        //       endAt: string | number | Date;
-        //     }) => ({
-        //       ...event,
-        //       createdAt: parseDate(event.createdAt),
-        //       updatedAt: parseDate(event.updatedAt),
-        //       startAt: parseDate(event.startAt),
-        //       endAt: parseDate(event.endAt),
-        //     })
-        //   ) as (typeof schema.eventsTable.$inferInsert)[];
-        //   await db.insert(schema.eventsTable).values(events);
-        //   break;
-        // }
+
         default:
           console.log("\x1b[31m", `Invalid table name: ${collection}`);
           break;
@@ -213,12 +187,10 @@ async function checkCountAfterImport(): Promise<boolean> {
     const tables = [
       { name: "users", table: schema.usersTable },
       { name: "organizations", table: schema.organizationsTable },
-      { name: "posts", table: schema.postsTable },
-      { name: "events", table: schema.eventsTable },
       {
         name: "organization_memberships",
         table: schema.organizationMembershipsTable,
-      }, // Add organization memberships table
+      },
     ];
 
     console.log("\nRecord Counts After Import:\n");
@@ -251,13 +223,7 @@ ${"|".padEnd(30, "-")}|----------------|
   }
 }
 
-const collections = [
-  "users",
-  "organizations",
-  "posts",
-  "events",
-  "organization_memberships",
-]; // Add organization memberships to collections
+const collections = ["users", "organizations", "organization_memberships"]; // Add organization memberships to collections
 
 const args = process.argv.slice(2);
 const options: LoadOptions = {
