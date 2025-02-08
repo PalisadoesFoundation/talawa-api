@@ -395,6 +395,4 @@ describe("Tag Creator Resolver -Test ", () => {
 			expect(ctx.log.error).toHaveBeenCalled();
 		});
 	});
-
-	
 });
