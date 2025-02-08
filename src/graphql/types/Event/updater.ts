@@ -17,7 +17,8 @@ export const resolveEventUpdater = async (
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unauthenticated",
-				message: "You must be authenticated to access event updater information.",
+				message:
+					"You must be authenticated to access event updater information.",
 			},
 		});
 	}
@@ -43,7 +44,8 @@ export const resolveEventUpdater = async (
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unauthenticated",
-				message: "You must be authenticated to access event updater information.",
+				message:
+					"You must be authenticated to access event updater information.",
 			},
 		});
 	}
@@ -87,7 +89,8 @@ export const resolveEventUpdater = async (
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unexpected",
-				message: "Event updater not found in the database. This indicates a data integrity issue.",
+				message:
+					"Event updater not found in the database. This indicates a data integrity issue.",
 			},
 		});
 	}
