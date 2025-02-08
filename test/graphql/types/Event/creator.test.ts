@@ -30,7 +30,7 @@ type MockUser = {
 	}>;
 };
 
-describe("Tag Creator Resolver -Test ", () => {
+describe("Event Creator Resolver -Test ", () => {
 	let ctx: GraphQLContext;
 	let mockEvent: EventType;
 
