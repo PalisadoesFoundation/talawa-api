@@ -183,14 +183,15 @@ describe("resolveEventUpdater", async () => {
 
 		await expect(
 			resolveEventUpdater(MockEvent, {}, authenticatedContext),
-		).rejects.toThrowError(expect.objectContaining({
-            extensions: {
-                code: "unexpected"
-            }
-        }));
+		).rejects.toThrowError(
+			expect.objectContaining({
+				extensions: {
+					code: "unexpected",
+				},
+			}),
+		);
 
-		const logError = authenticatedContext.log.error;
-		expect(logError).toHaveBeenLastCalledWith(
+		expect(authenticatedContext.log.error).toHaveBeenLastCalledWith(
 			"Postgres select operation returned an empty array for an event's updater id that isn't null.",
 		);
 	});
