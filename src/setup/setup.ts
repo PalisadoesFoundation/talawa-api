@@ -458,9 +458,6 @@ export async function setup(): Promise<Record<string, string>> {
 			},
 		]);
 		if (!envReconfigure) {
-			if (fs.existsSync(".env.backup")) {
-				fs.copyFileSync(".env.backup", ".env");
-			}
 			process.exit(0);
 		}
 	}

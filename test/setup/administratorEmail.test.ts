@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { administratorEmail } from "~/src/setup/setup";
@@ -42,12 +43,37 @@ describe("Setup -> askForAdministratorEmail", () => {
 		);
 	});
 
-	it("should log error and exit with code 1 if inquirer fails", async () => {
+	it("should log error, create a backup, and exit with code 1 if inquirer fails", async () => {
 		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
 			throw new Error("process.exit called");
 		});
 
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
+
+		const promptError = new Error("inquirer failure");
+		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
+
+		await expect(SetupModule.administratorEmail()).rejects.toThrow(
+			"process.exit called",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(promptError);
+		expect(fs.existsSync).toHaveBeenCalledWith(".env.backup");
+		expect(fs.copyFileSync).toHaveBeenCalledWith(".env.backup", ".env");
+		expect(processExitSpy).toHaveBeenCalledWith(1);
+
+		processExitSpy.mockRestore();
+		consoleLogSpy.mockRestore();
+	});
+
+	it("should log error but not create a backup if .env.backup is missing", async () => {
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
+			throw new Error("process.exit called");
+		});
+
+		vi.spyOn(fs, "existsSync").mockReturnValue(false);
 		const promptError = new Error("inquirer failure");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
 
@@ -56,6 +82,7 @@ describe("Setup -> askForAdministratorEmail", () => {
 		);
 
 		expect(consoleLogSpy).toHaveBeenCalledWith(promptError);
+		expect(fs.existsSync).toHaveBeenCalledWith(".env.backup");
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		processExitSpy.mockRestore();

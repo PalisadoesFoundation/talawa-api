@@ -21,6 +21,7 @@ describe("Setup -> apiSetup", () => {
 
 	it("should prompt the user for API configuration and update environment variables", async () => {
 		const mockResponses = [
+			{ envReconfigure: true },
 			{ CI: "true" },
 			{ NODE_ENV: "production" },
 			{ useDefaultApi: false },
