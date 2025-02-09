@@ -388,6 +388,12 @@ suite("Funds schema validation and field behavior", () => {
 			organizationId: faker.string.uuid(),
 		});
 		expect(spacePaddedResult.success).toBe(true);
+
+		// Also verify trimming behavior with valid name
+		if (validResult.success) {
+			const trimmedResult = validResult.data;
+			expect(trimmedResult.name).toBe(validName.trim());
+		}
 	});
 
 	test("verifies unique constraint on fund name within organization", async () => {
@@ -454,77 +460,149 @@ suite("Funds schema validation and field behavior", () => {
 			"forbidden_action_on_arguments_associated_resources",
 		);
 	});
+});
 
-	test("verifies UUID generation for fund id", async () => {
+suite("UUID Validation", () => {
+	test("verifies UUID validation", async () => {
+		// Test valid UUID generation
 		const { fundId } = await createFund();
+
+		// Verify format matches UUID v7 format
 		expect(fundId).toMatch(
 			/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
 		);
+
+		// Get admin token for subsequent requests
+		const adminAuthToken = await getAdminAuthToken();
+
+		// Test invalid UUID formats
+		const invalidFormats = [
+			"not-a-uuid", // Not a UUID at all
+			"123e4567-e89b-12d3-a456-426614174000", // Invalid version (v1)
+			"123e4567-e89b-7-a456-426614174000", // Missing digits
+		];
+
+		for (const invalidId of invalidFormats) {
+			const fundResult = await mercuriusClient.query(Query_fund, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: { id: invalidId },
+				},
+			});
+
+			expect(fundResult.errors).toBeDefined();
+		}
+
+		// Test case sensitivity
+		const upperCaseId = fundId.toUpperCase();
+		const lowerCaseId = fundId.toLowerCase();
+
+		// Both upper and lower case should be valid
+		for (const testId of [upperCaseId, lowerCaseId]) {
+			const fundResult = await mercuriusClient.query(Query_fund, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: { id: testId },
+				},
+			});
+
+			// Should fail because fund doesn't exist, not because of UUID format
+			expect(fundResult.errors?.[0]?.extensions?.code).toBe(undefined);
+		}
+
+		// Test UUID version validation
+		const invalidVersions = Array.from({ length: 9 }, (_, i) => {
+			// Create UUIDs with different versions (0-8, excluding 7)
+			if (i === 7) return null;
+			return fundId.replace(/-7/, `-${i}`) as string;
+		}).filter((id): id is string => id !== null);
+
+		for (const invalidVersionId of invalidVersions) {
+			const fundResult = await mercuriusClient.query(Query_fund, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: { id: invalidVersionId },
+				},
+			});
+
+			expect(fundResult.errors).toBeDefined();
+			expect(fundResult.errors?.[0]?.extensions?.code).toBe(
+				"arguments_associated_resources_not_found",
+			);
+		}
 	});
 });
 
-test("validates required fund fields", () => {
-	const validInput = {
-		name: "Test Fund",
-		isTaxDeductible: false,
-		organizationId: faker.string.uuid(),
-	};
+suite("Required Feilds", () => {
+	test("validates required fund fields", () => {
+		const validInput = {
+			name: "Test Fund",
+			isTaxDeductible: false,
+			organizationId: faker.string.uuid(),
+		};
 
-	// Test missing name
-	const missingName = { ...validInput, name: undefined };
-	expect(fundsTableInsertSchema.safeParse(missingName).success).toBe(false);
+		// Test missing name
+		const missingName = { ...validInput, name: undefined };
+		expect(fundsTableInsertSchema.safeParse(missingName).success).toBe(false);
 
-	// Test missing isTaxDeductible
-	const missingTaxStatus = { ...validInput, isTaxDeductible: undefined };
-	expect(fundsTableInsertSchema.safeParse(missingTaxStatus).success).toBe(
-		false,
-	);
+		// Test missing isTaxDeductible
+		const missingTaxStatus = { ...validInput, isTaxDeductible: undefined };
+		expect(fundsTableInsertSchema.safeParse(missingTaxStatus).success).toBe(
+			false,
+		);
 
-	// Test missing organizationId
-	const missingOrgId = { ...validInput, organizationId: undefined };
-	expect(fundsTableInsertSchema.safeParse(missingOrgId).success).toBe(false);
+		// Test missing organizationId
+		const missingOrgId = { ...validInput, organizationId: undefined };
+		expect(fundsTableInsertSchema.safeParse(missingOrgId).success).toBe(false);
 
-	// Valid data should pass
-	expect(fundsTableInsertSchema.safeParse(validInput).success).toBe(true);
-});
+		// Valid data should pass
+		expect(fundsTableInsertSchema.safeParse(validInput).success).toBe(true);
+	});
 
-test("validates fund field constraints", () => {
-	const validInput = {
-		name: "Test Fund",
-		isTaxDeductible: false,
-		organizationId: faker.string.uuid(),
-	};
+	test("validates fund field constraints", () => {
+		const validInput = {
+			name: "Test Fund",
+			isTaxDeductible: false,
+			organizationId: faker.string.uuid(),
+		};
 
-	// Test name constraints
-	expect(
-		fundsTableInsertSchema.safeParse({
-			...validInput,
-			name: "",
-		}).success,
-	).toBe(false);
+		// Test name constraints
+		expect(
+			fundsTableInsertSchema.safeParse({
+				...validInput,
+				name: "",
+			}).success,
+		).toBe(false);
 
-	expect(
-		fundsTableInsertSchema.safeParse({
-			...validInput,
-			name: "a".repeat(257),
-		}).success,
-	).toBe(false);
+		expect(
+			fundsTableInsertSchema.safeParse({
+				...validInput,
+				name: "a".repeat(257),
+			}).success,
+		).toBe(false);
 
-	// Test isTaxDeductible must be boolean
-	expect(
-		fundsTableInsertSchema.safeParse({
-			...validInput,
-			isTaxDeductible: "true",
-		}).success,
-	).toBe(false);
+		// Test isTaxDeductible must be boolean
+		expect(
+			fundsTableInsertSchema.safeParse({
+				...validInput,
+				isTaxDeductible: "true",
+			}).success,
+		).toBe(false);
 
-	// Test organizationId must be UUID
-	expect(
-		fundsTableInsertSchema.safeParse({
-			...validInput,
-			organizationId: "invalid-uuid",
-		}).success,
-	).toBe(false);
+		// Test organizationId must be UUID
+		expect(
+			fundsTableInsertSchema.safeParse({
+				...validInput,
+				organizationId: "invalid-uuid",
+			}).success,
+		).toBe(false);
+	});
 });
 
 // Test helper functions
