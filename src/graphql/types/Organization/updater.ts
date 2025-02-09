@@ -3,29 +3,26 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
 /**
- * Resolver to update an organization's user.
+ * Resolver to retrieve the user who last updated an organization.
  *
- * This resolver checks if the current user is authenticated, and if they are an
- * administrator in the given organization. It updates the organization with the
- * specified updater user, or throws an error if the conditions are not met.
+ * This resolver checks if the current user is authenticated and has administrative
+ * privileges in the specified organization. It then returns the user who last updated
+ * the organization (if applicable). If conditions are not met, an error is thrown.
  *
- * @param {Organization} parent - The parent organization object being updated.
- * @param {Record<string, never>} _args - Arguments passed to the resolver (currently not used).
- * @param {Context} ctx - The context object containing the authentication info and database client.
- * @returns {Promise<User | null>} - Returns the updated user if the updater ID is valid, otherwise null.
- * @throws {TalawaGraphQLError} - Throws an error if the user is not authenticated, doesn't have the required role,
- * or the updaterId is invalid.
+ * @param {Organization} parent - The parent organization object.
+ * @param {Record<string, never>} _args - Unused arguments.
+ * @param {Context} ctx - Context object containing authentication info and database client.
+ * @returns {Promise<User | null>} - Returns the last updater user if valid, otherwise null.
+ * @throws {TalawaGraphQLError} - Throws an error if the user lacks required permissions or the updater ID is invalid.
  */
 
-interface DrizzleClientQuery<T = UserWithRoles> {
+interface UsersTableQuery<T = UserWithRoles> {
 	query: {
 		usersTable: {
 			findFirst: (params: {
 				with?: {
 					organizationMembershipsWhereMember?: {
-						columns: {
-							role: boolean;
-						};
+						columns: { role: boolean };
 						where: (
 							fields: UserOrganizationFields,
 							operators: QueryOperators,
@@ -45,6 +42,7 @@ interface Log {
 	warn: (message: string) => void;
 	error: (message: string) => void; // Added error method
 	info: (message: string) => void; // Added info method
+	debug?: (message: string) => void;
 }
 
 interface UserOrganizationFields {
@@ -103,7 +101,7 @@ interface Context {
 			id: string;
 		};
 	};
-	drizzleClient: DrizzleClientQuery;
+	drizzleClient: UsersTableQuery;
 	log: Log;
 }
 
