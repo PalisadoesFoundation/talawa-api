@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
 import { mutationDeletePostInputSchema } from "~/src/graphql/inputs/MutationDeletePostInput";
 import { deletePostResolver } from "~/src/graphql/types/Mutation/deletePost";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /** Represents a successfully deleted post returned by the resolver */
 interface DeletedPost {
@@ -12,9 +13,9 @@ interface DeletedPost {
 
 /** Mock transaction interface for testing database operations */
 interface FakeTx {
-	delete: () => {
+	delete: <T = DeletedPost>() => {
 		where: () => {
-			returning: () => Promise<DeletedPost[]>;
+			returning: () => Promise<T[]>;
 		};
 	};
 }
@@ -61,9 +62,13 @@ const invalidArgs = { input: {} } as unknown as z.infer<
 
 function createFakeTransaction(
 	returningData: unknown[],
+	shouldFail = false,
 ): (fn: (tx: FakeTx) => Promise<unknown>) => Promise<unknown> {
 	return vi.fn(
 		async (fn: (tx: FakeTx) => Promise<unknown>): Promise<unknown> => {
+			if (shouldFail) {
+				throw new Error("Transaction failed");
+			}
 			const fakeTx: FakeTx = {
 				delete: vi.fn().mockReturnValue({
 					where: vi.fn().mockReturnValue({
@@ -240,14 +245,24 @@ describe("deletePostResolver", () => {
 				firstCheck = false;
 				return { id: "post1" };
 			}
-			throw new Error("Post already deleted");
+			// On subsequent calls, throw a TalawaGraphQLError with the desired message and extension.
+			throw new TalawaGraphQLError({
+				extensions: { code: "unexpected" },
+				message: "Post already deleted",
+			});
 		}) as unknown as typeof ctx.drizzleClient.transaction;
 
+		// First delete should succeed.
 		await expect(
 			deletePostResolver(null, validArgs, ctx),
 		).resolves.toBeDefined();
 
-		// Second delete should fail
-		await expect(deletePostResolver(null, validArgs, ctx)).rejects.toThrow();
+		// Second delete should fail with an error that includes "Post already deleted"
+		await expect(deletePostResolver(null, validArgs, ctx)).rejects.toThrow(
+			"Post already deleted",
+		);
+		await expect(
+			deletePostResolver(null, validArgs, ctx),
+		).rejects.toHaveProperty("extensions.code", "unexpected");
 	});
 });
