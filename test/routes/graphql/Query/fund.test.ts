@@ -539,7 +539,7 @@ suite("UUID Validation", () => {
 	});
 });
 
-suite("Required Feilds", () => {
+suite("Required Fields", () => {
 	test("validates required fund fields", () => {
 		const validInput = {
 			name: "Test Fund",
@@ -605,121 +605,226 @@ suite("Required Feilds", () => {
 	});
 });
 
-// Test helper functions
-async function createRegularUser() {
-	// First sign in as admin
-	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
-
-	assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
-
-	// Create regular user as admin
-	const userResult = await mercuriusClient.mutate(Mutation_createUser, {
-		headers: {
-			authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
-		},
-		variables: {
-			input: {
-				emailAddress: `email${faker.string.uuid()}@test.com`,
-				password: "password123",
-				role: "regular",
-				name: "Test User",
-				isEmailAddressVerified: false,
-			},
-		},
-	});
-
-	assertToBeNonNullish(userResult.data?.createUser?.authenticationToken);
-	assertToBeNonNullish(userResult.data?.createUser?.user?.id);
-
-	return {
-		authToken: userResult.data.createUser.authenticationToken,
-		userId: userResult.data.createUser.user.id,
-	};
+// Helper function types
+interface TestUser {
+	authToken: string;
+	userId: string;
+	cleanup: () => Promise<void>;
 }
 
-async function createFund() {
-	// First sign in as admin to create org and fund
-	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
+interface TestFund {
+	fundId: string;
+	orgId: string;
+	cleanup: () => Promise<void>;
+}
 
-	assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+// Retry configuration
+const RETRY_OPTIONS = {
+	maxRetries: 3,
+	delay: 1000, // ms
+};
 
-	// Create organization
-	const createOrgResult = await mercuriusClient.mutate(
-		Mutation_createOrganization,
-		{
-			headers: {
-				authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
-			},
-			variables: {
-				input: {
-					name: `Org ${faker.string.uuid()}`,
-					countryCode: "us",
+async function retry<T>(
+	operation: () => Promise<T>,
+	options = RETRY_OPTIONS,
+): Promise<T> {
+	let lastError: Error | undefined;
+
+	for (let attempt = 1; attempt <= options.maxRetries; attempt++) {
+		try {
+			return await operation();
+		} catch (error) {
+			lastError = error as Error;
+			if (attempt < options.maxRetries) {
+				await new Promise((resolve) => setTimeout(resolve, options.delay));
+				console.warn(`Retry attempt ${attempt} after error:`, error);
+			}
+		}
+	}
+
+	throw lastError;
+}
+
+// test helper functions
+
+async function createRegularUser(): Promise<TestUser> {
+	try {
+		return await retry(async () => {
+			const adminAuthToken = await getAdminAuthToken();
+
+			const userResult = await mercuriusClient.mutate(Mutation_createUser, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
 				},
-			},
-		},
-	);
+				variables: {
+					input: {
+						emailAddress: `email${faker.string.uuid()}@test.com`,
+						password: "password123",
+						role: "regular",
+						name: "Test User",
+						isEmailAddressVerified: false,
+					},
+				},
+			});
 
-	assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
-	const orgId = createOrgResult.data.createOrganization.id;
+			if (
+				!userResult.data?.createUser?.authenticationToken ||
+				!userResult.data?.createUser?.user?.id
+			) {
+				throw new Error("Failed to create user: Missing required data");
+			}
 
-	// Create fund
-	const createFundResult = await mercuriusClient.mutate(Mutation_createFund, {
-		headers: {
-			authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
-		},
-		variables: {
-			input: {
-				name: `Fund ${faker.string.uuid()}`,
-				organizationId: orgId,
-				isTaxDeductible: false,
-			},
-		},
-	});
+			const userId = userResult.data.createUser.user.id;
+			const authToken = userResult.data.createUser.authenticationToken;
 
-	assertToBeNonNullish(createFundResult.data?.createFund?.id);
-
-	return {
-		fundId: createFundResult.data.createFund.id,
-		orgId,
-	};
+			return {
+				authToken,
+				userId,
+				cleanup: async () => {
+					try {
+						// Add cleanup mutation here when available
+						// await mercuriusClient.mutate(Mutation_deleteUser, {
+						//     headers: { authorization: `bearer ${adminAuthToken}` },
+						//     variables: { input: { id: userId } }
+						// });
+						console.log(`Cleanup: User ${userId} would be deleted here`);
+					} catch (error) {
+						console.error("Failed to cleanup user:", error);
+						throw error;
+					}
+				},
+			};
+		});
+	} catch (error) {
+		console.error("Failed to create regular user:", error);
+		throw error;
+	}
 }
 
-async function addUserToOrg(userId: string, orgId: string) {
-	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
+async function createFund(): Promise<TestFund> {
+	try {
+		return await retry(async () => {
+			const adminAuthToken = await getAdminAuthToken();
 
-	assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+			// Create organization
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							name: `Org ${faker.string.uuid()}`,
+							countryCode: "us",
+						},
+					},
+				},
+			);
 
-	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-		headers: {
-			authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
-		},
-		variables: {
-			input: {
-				memberId: userId,
-				organizationId: orgId,
-				role: "regular",
-			},
-		},
-	});
+			if (!createOrgResult.data?.createOrganization?.id) {
+				throw new Error(
+					"Failed to create organization: Missing organization ID",
+				);
+			}
+
+			const orgId = createOrgResult.data.createOrganization.id;
+
+			// Create fund
+			const createFundResult = await mercuriusClient.mutate(
+				Mutation_createFund,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							name: `Fund ${faker.string.uuid()}`,
+							organizationId: orgId,
+							isTaxDeductible: false,
+						},
+					},
+				},
+			);
+
+			if (!createFundResult.data?.createFund?.id) {
+				throw new Error("Failed to create fund: Missing fund ID");
+			}
+
+			const fundId = createFundResult.data.createFund.id;
+
+			return {
+				fundId,
+				orgId,
+				cleanup: async () => {
+					try {
+						// Add cleanup mutations here when available
+						// First delete fund, then organization
+						// await mercuriusClient.mutate(Mutation_deleteFund, {
+						//     headers: { authorization: `bearer ${adminAuthToken}` },
+						//     variables: { input: { id: fundId } }
+						// });
+						// await mercuriusClient.mutate(Mutation_deleteOrganization, {
+						//     headers: { authorization: `bearer ${adminAuthToken}` },
+						//     variables: { input: { id: orgId } }
+						// });
+						console.log(
+							`Cleanup: Fund ${fundId} and Org ${orgId} would be deleted here`,
+						);
+					} catch (error) {
+						console.error("Failed to cleanup fund and organization:", error);
+						throw error;
+					}
+				},
+			};
+		});
+	} catch (error) {
+		console.error("Failed to create fund:", error);
+		throw error;
+	}
+}
+
+async function addUserToOrg(
+	userId: string,
+	orgId: string,
+): Promise<{ cleanup: () => Promise<void> }> {
+	try {
+		return await retry(async () => {
+			const adminAuthToken = await getAdminAuthToken();
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						memberId: userId,
+						organizationId: orgId,
+						role: "regular",
+					},
+				},
+			});
+
+			return {
+				cleanup: async () => {
+					try {
+						// Add cleanup mutation here when available
+						// await mercuriusClient.mutate(Mutation_deleteOrganizationMembership, {
+						//     headers: { authorization: `bearer ${adminAuthToken}` },
+						//     variables: { input: { memberId: userId, organizationId: orgId } }
+						// });
+						console.log(
+							`Cleanup: Membership for user ${userId} in org ${orgId} would be deleted here`,
+						);
+					} catch (error) {
+						console.error("Failed to cleanup organization membership:", error);
+						throw error;
+					}
+				},
+			};
+		});
+	} catch (error) {
+		console.error("Failed to add user to organization:", error);
+		throw error;
+	}
 }
