@@ -17,7 +17,7 @@ import { Organization } from "./Organization";
  * or the updaterId is invalid.
  */
 
-interface DrizzleClientQuery {
+interface DrizzleClientQuery<T = UserWithRoles> {
 	query: {
 		usersTable: {
 			findFirst: (params: {
@@ -27,25 +27,27 @@ interface DrizzleClientQuery {
 							role: boolean;
 						};
 						where: (
-							fields: UserOrgDBRecord,
+							fields: UserOrganizationFields,
 							operators: QueryOperators,
 						) => { field: string; value: string; operator: "=" };
 					};
 				};
 				where: (
-					fields: UserOrgDBRecord,
+					fields: UserOrganizationFields,
 					operators: QueryOperators,
 				) => { field: string; value: string; operator: "=" };
-			}) => Promise<UserWithRoles | undefined>;
+			}) => Promise<T | undefined>;
 		};
 	};
 }
 
 interface Log {
 	warn: (message: string) => void;
+	error: (message: string) => void; // Added error method
+	info: (message: string) => void; // Added info method
 }
 
-interface UserOrgDBRecord {
+interface UserOrganizationFields {
 	id: string;
 	organizationId: string;
 	role: string;
@@ -59,6 +61,30 @@ interface QueryOperators {
 		field: "role" | "organizationId" | "id";
 		value: string;
 		operator: "=";
+	};
+	gt: (
+		field: "role" | "organizationId" | "id",
+		value: string,
+	) => {
+		field: "role" | "organizationId" | "id";
+		value: string;
+		operator: ">";
+	};
+	lt: (
+		field: "role" | "organizationId" | "id",
+		value: string,
+	) => {
+		field: "role" | "organizationId" | "id";
+		value: string;
+		operator: "<";
+	};
+	in: (
+		field: "role" | "organizationId" | "id",
+		values: string[],
+	) => {
+		field: "role" | "organizationId" | "id";
+		values: string[];
+		operator: "IN";
 	};
 }
 
