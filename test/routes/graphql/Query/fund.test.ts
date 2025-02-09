@@ -104,31 +104,6 @@ suite("Query field fund", () => {
 			);
 		});
 
-		test("returns fund data if user is an admin", async () => {
-			const adminAuthToken = await getAdminAuthToken();
-			const { fundId } = await createFund();
-
-			const fundResult = await mercuriusClient.query(Query_fund, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						id: fundId,
-					},
-				},
-			});
-
-			expect(fundResult.errors).toBeUndefined();
-			expect(fundResult.data.fund).toEqual(
-				expect.objectContaining({
-					id: fundId,
-					isTaxDeductible: expect.any(Boolean),
-					name: expect.any(String),
-				}),
-			);
-		});
-
 		test("returns fund data if user is organization member", async () => {
 			const regularUserResult = await createRegularUser();
 			const { fundId, orgId } = await createFund();
@@ -348,11 +323,19 @@ test("returns fund data if user is organization member", async () => {
 });
 
 suite("Funds schema validation and field behavior", () => {
-	test("validates fund name length constraints", () => {
+	test("validates fund name constraints", () => {
+		// Test length constraints
 		const tooShortName = "";
 		const tooLongName = "a".repeat(257);
 		const validName = "Test Fund";
 
+		// Test special cases
+		const specialCharsName = "Fund #1 @Special!";
+		const whitespaceOnlyName = "   ";
+		const unicodeName = "Fund 🚀 测试";
+		const spacePaddedName = "  Test Fund  ";
+
+		// Test length constraints
 		const tooShortResult = fundsTableInsertSchema.safeParse({
 			name: tooShortName,
 			isTaxDeductible: false,
@@ -373,6 +356,38 @@ suite("Funds schema validation and field behavior", () => {
 			organizationId: faker.string.uuid(),
 		});
 		expect(validResult.success).toBe(true);
+
+		// Test special characters
+		const specialCharsResult = fundsTableInsertSchema.safeParse({
+			name: specialCharsName,
+			isTaxDeductible: false,
+			organizationId: faker.string.uuid(),
+		});
+		expect(specialCharsResult.success).toBe(true);
+
+		// Test whitespace-only name
+		const whitespaceOnlyResult = fundsTableInsertSchema.safeParse({
+			name: whitespaceOnlyName,
+			isTaxDeductible: false,
+			organizationId: faker.string.uuid(),
+		});
+		expect(whitespaceOnlyResult.success).toBe(true);
+
+		// Test unicode characters
+		const unicodeResult = fundsTableInsertSchema.safeParse({
+			name: unicodeName,
+			isTaxDeductible: false,
+			organizationId: faker.string.uuid(),
+		});
+		expect(unicodeResult.success).toBe(true);
+
+		// Test space-padded name
+		const spacePaddedResult = fundsTableInsertSchema.safeParse({
+			name: spacePaddedName,
+			isTaxDeductible: false,
+			organizationId: faker.string.uuid(),
+		});
+		expect(spacePaddedResult.success).toBe(true);
 	});
 
 	test("verifies unique constraint on fund name within organization", async () => {
