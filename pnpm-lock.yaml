@@ -43,7 +43,7 @@ importers:
         version: 2.2.0
       dotenv:
         specifier: ^16.0.3
-        version: 16.4.7
+        version: 16.0.3
       drizzle-orm:
         specifier: ^0.39.1
         version: 0.39.2(postgres@3.4.5)
