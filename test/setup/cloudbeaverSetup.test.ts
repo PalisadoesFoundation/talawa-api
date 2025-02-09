@@ -1,6 +1,11 @@
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { setup } from "~/src/setup/setup";
+import {
+	setup,
+	validateCloudBeaverAdmin,
+	validateCloudBeaverPassword,
+	validateCloudBeaverURL,
+} from "~/src/setup/setup";
 
 vi.mock("inquirer");
 
@@ -49,5 +54,48 @@ describe("Setup -> cloudbeaverSetup", () => {
 		for (const [key, value] of Object.entries(expectedEnv)) {
 			expect(answers[key]).toBe(value);
 		}
+	});
+});
+
+describe("CloudBeaver Validation", () => {
+	describe("validateCloudBeaverAdmin", () => {
+		it("should validate admin name format", () => {
+			expect(validateCloudBeaverAdmin("")).toBe("Admin name is required");
+			expect(validateCloudBeaverAdmin("ab")).toBe(
+				"Admin name must be at least 3 characters long",
+			);
+			expect(validateCloudBeaverAdmin("admin@123")).toBe(
+				"Admin name can only contain letters, numbers, and underscores",
+			);
+			expect(validateCloudBeaverAdmin("admin_123")).toBe(true);
+		});
+	});
+
+	describe("validateCloudBeaverPassword", () => {
+		it("should validate password strength", () => {
+			expect(validateCloudBeaverPassword("")).toBe("Password is required");
+			expect(validateCloudBeaverPassword("weak")).toBe(
+				"Password must be at least 8 characters long",
+			);
+			expect(validateCloudBeaverPassword("onlyletters")).toBe(
+				"Password must contain both letters and numbers",
+			);
+			expect(validateCloudBeaverPassword("12345678")).toBe(
+				"Password must contain both letters and numbers",
+			);
+			expect(validateCloudBeaverPassword("Strong2024")).toBe(true);
+		});
+	});
+
+	describe("validateCloudBeaverURL", () => {
+		it("should validate server URL format", () => {
+			expect(validateCloudBeaverURL("")).toBe("Server URL is required");
+			expect(validateCloudBeaverURL("invalid")).toBe("Invalid URL format");
+			expect(validateCloudBeaverURL("ftp://127.0.0.1")).toBe(
+				"URL must use HTTP or HTTPS protocol",
+			);
+			expect(validateCloudBeaverURL("http://127.0.0.1:8978")).toBe(true);
+			expect(validateCloudBeaverURL("https://localhost:8978")).toBe(true);
+		});
 	});
 });

@@ -90,15 +90,41 @@ describe("Setup -> apiSetup", () => {
 	});
 });
 describe("validateURL", () => {
-	it("should return true for a valid URL", () => {
+	it("should validate standard URLs", () => {
 		expect(validateURL("https://example.com")).toBe(true);
 		expect(validateURL("http://localhost:3000")).toBe(true);
-		expect(validateURL("ftp://ftp.example.com")).toBe(true);
 	});
 
-	it("should return an error message for an invalid URL", () => {
-		expect(validateURL("invalid-url")).toBe("Please enter a valid URL.");
+	it("should validate URLs with complex components", () => {
+		expect(validateURL("https://sub.example.com:8080/path")).toBe(true);
+		expect(validateURL("http://sub.domain.example.com/path?query=1")).toBe(
+			true,
+		);
+		expect(validateURL("https://example.com/path#fragment")).toBe(true);
+	});
+
+	it("should validate IP addresses", () => {
+		expect(validateURL("http://127.0.0.1:4000")).toBe(true);
+		expect(validateURL("https://[::1]:8080")).toBe(true);
+		expect(validateURL("http://192.168.1.1")).toBe(true);
+	});
+
+	it("should reject invalid protocols", () => {
+		expect(validateURL("ftp://example.com")).toBe(
+			"Please enter a valid URL with http:// or https:// protocol.",
+		);
+		expect(validateURL("ws://example.com")).toBe(
+			"Please enter a valid URL with http:// or https:// protocol.",
+		);
+	});
+
+	it("should reject malformed URLs", () => {
+		expect(validateURL("http://")).toBe("Please enter a valid URL.");
+		expect(validateURL("http://example.com:abc")).toBe(
+			"Please enter a valid URL.",
+		);
 		expect(validateURL(" ")).toBe("Please enter a valid URL.");
+		expect(validateURL("")).toBe("Please enter a valid URL.");
 	});
 });
 

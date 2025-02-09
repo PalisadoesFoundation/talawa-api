@@ -78,4 +78,24 @@ describe("Setup -> minioSetup", () => {
 			expect(process.env[key]).toBe(value);
 		}
 	});
+	it("should detect port conflicts between API and Console ports", async () => {
+		process.env.CI = "false";
+
+		const mockResponses = [
+			{ MINIO_BROWSER: "on" },
+			{ MINIO_API_MAPPED_HOST_IP: "127.0.0.1" },
+			{ MINIO_API_MAPPED_PORT: "9000" },
+			{ MINIO_CONSOLE_MAPPED_HOST_IP: "127.0.0.1" },
+			{ MINIO_CONSOLE_MAPPED_PORT: "9000" },
+		];
+
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		for (const response of mockResponses) {
+			promptMock.mockResolvedValueOnce(response);
+		}
+
+		await expect(minioSetup()).rejects.toThrow(
+			"Port conflict detected: MinIO API and Console ports must be different",
+		);
+	});
 });

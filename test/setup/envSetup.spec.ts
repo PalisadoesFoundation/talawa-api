@@ -70,7 +70,7 @@ describe("initializeEnvFile", () => {
 
 	it("should create a backup of .env if it exists", async () => {
 		vi.spyOn(fs, "existsSync").mockImplementation(
-			(path) => path === envFileName,
+			(path) => path === envFileName || path === devEnvFile,
 		);
 		vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
 		vi.spyOn(fs, "readFileSync").mockReturnValue(mockEnvContent);
@@ -83,16 +83,11 @@ describe("initializeEnvFile", () => {
 		);
 	});
 
-	it("should log a warning and return if the environment file is missing", async () => {
+	it("should throw an error if the environment file is missing", async () => {
 		vi.spyOn(fs, "existsSync").mockImplementation(() => false);
 
-		initializeEnvFile();
-
-		expect(console.warn).toHaveBeenCalledWith(
-			expect.stringContaining("⚠️ Warning: Configuration file"),
-		);
-		expect(console.log).toHaveBeenCalledWith(
-			"Please create the file or use a different environment configuration.",
+		expect(() => initializeEnvFile()).toThrow(
+			"Configuration file 'envFiles/.env.devcontainer' is missing. Please create the file or use a different environment configuration.",
 		);
 	});
 
@@ -104,15 +99,14 @@ describe("initializeEnvFile", () => {
 			throw new Error("File read error");
 		});
 
-		initializeEnvFile();
+		expect(() => initializeEnvFile()).toThrow(
+			"Failed to load environment file. Please check file permissions and ensure it contains valid environment variables.",
+		);
 
 		expect(console.error).toHaveBeenCalledWith(
 			`❌ Error: Failed to load environment file '${devEnvFile}'.`,
 		);
 		expect(console.error).toHaveBeenCalledWith("File read error");
-		expect(console.log).toHaveBeenCalledWith(
-			"Please check the file permissions and ensure it contains valid environment variables.",
-		);
 	});
 
 	it("should read from .env.ci when answers.CI is 'true'", async () => {

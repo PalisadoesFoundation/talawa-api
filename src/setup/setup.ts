@@ -29,6 +29,17 @@ async function promptList(
 	return result;
 }
 
+async function promptConfirm(
+	name: string,
+	message: string,
+	defaultValue?: boolean,
+): Promise<string> {
+	const { [name]: result } = await inquirer.prompt([
+		{ type: "confirm", name, message, default: defaultValue },
+	]);
+	return result;
+}
+
 let answers: Record<string, string> = {};
 const envFileName = ".env";
 
@@ -45,8 +56,22 @@ export function generateJwtSecret(): string {
 }
 
 export function validateURL(input: string): true | string {
+	if (!input?.trim()) {
+		return "Please enter a valid URL.";
+	}
+
 	try {
-		new URL(input);
+		const trimmedInput = input.trim();
+		const url = new URL(trimmedInput);
+
+		if (!["http:", "https:"].includes(url.protocol)) {
+			return "Please enter a valid URL with http:// or https:// protocol.";
+		}
+
+		if (!url.hostname) {
+			return "Please enter a valid URL.";
+		}
+
 		return true;
 	} catch {
 		return "Please enter a valid URL.";
@@ -75,6 +100,40 @@ export function validateEmail(input: string): true | string {
 	return true;
 }
 
+export function validateCloudBeaverAdmin(input: string): true | string {
+	if (!input) return "Admin name is required";
+	if (input.length < 3) return "Admin name must be at least 3 characters long";
+	if (!/^[a-zA-Z0-9_]+$/.test(input))
+		return "Admin name can only contain letters, numbers, and underscores";
+	return true;
+}
+
+export function validateCloudBeaverPassword(input: string): true | string {
+	if (!input) return "Password is required";
+	if (input.length < 8) return "Password must be at least 8 characters long";
+	if (!/[A-Za-z]/.test(input) || !/[0-9]/.test(input)) {
+		return "Password must contain both letters and numbers";
+	}
+	return true;
+}
+
+export function validateCloudBeaverURL(input: string): true | string {
+	if (!input) return "Server URL is required";
+	try {
+		const url = new URL(input);
+		if (!["http:", "https:"].includes(url.protocol)) {
+			return "URL must use HTTP or HTTPS protocol";
+		}
+		const port = url.port || (url.protocol === "https:" ? "443" : "80");
+		if (!/^\d+$/.test(port) || Number.parseInt(port) > 65535) {
+			return "Invalid port in URL";
+		}
+		return true;
+	} catch {
+		return "Invalid URL format";
+	}
+}
+
 export function checkEnvFile(): boolean {
 	return fs.existsSync(envFileName);
 }
@@ -90,10 +149,9 @@ export function initializeEnvFile(): void {
 
 	if (!fs.existsSync(envFileToUse)) {
 		console.warn(`⚠️ Warning: Configuration file '${envFileToUse}' is missing.`);
-		console.log(
-			"Please create the file or use a different environment configuration.",
+		throw new Error(
+			`Configuration file '${envFileToUse}' is missing. Please create the file or use a different environment configuration.`,
 		);
-		return;
 	}
 
 	try {
@@ -116,8 +174,8 @@ export function initializeEnvFile(): void {
 			`❌ Error: Failed to load environment file '${envFileToUse}'.`,
 		);
 		console.error(error instanceof Error ? error.message : error);
-		console.log(
-			"Please check the file permissions and ensure it contains valid environment variables.",
+		throw new Error(
+			"Failed to load environment file. Please check file permissions and ensure it contains valid environment variables.",
 		);
 	}
 }
@@ -305,12 +363,14 @@ export async function cloudbeaverSetup(): Promise<Record<string, string>> {
 		"CLOUDBEAVER_ADMIN_NAME",
 		"CloudBeaver admin name:",
 		"talawa",
+		validateCloudBeaverAdmin,
 	);
 
 	answers.CLOUDBEAVER_ADMIN_PASSWORD = await promptInput(
 		"CLOUDBEAVER_ADMIN_PASSWORD",
 		"CloudBeaver admin password:",
 		"password",
+		validateCloudBeaverPassword,
 	);
 
 	answers.CLOUDBEAVER_MAPPED_HOST_IP = await promptInput(
@@ -336,7 +396,7 @@ export async function cloudbeaverSetup(): Promise<Record<string, string>> {
 		"CLOUDBEAVER_SERVER_URL",
 		"CloudBeaver server URL:",
 		"http://127.0.0.1:8978",
-		validateURL,
+		validateCloudBeaverURL,
 	);
 
 	return answers;
@@ -375,6 +435,12 @@ export async function minioSetup(): Promise<Record<string, string>> {
 			"9001",
 			validatePort,
 		);
+
+		if (answers.MINIO_API_MAPPED_PORT === answers.MINIO_CONSOLE_MAPPED_PORT) {
+			throw new Error(
+				"Port conflict detected: MinIO API and Console ports must be different",
+			);
+		}
 	}
 
 	answers.MINIO_ROOT_PASSWORD = await promptInput(
@@ -431,14 +497,11 @@ export async function postgresSetup(): Promise<Record<string, string>> {
 
 export async function setup(): Promise<Record<string, string>> {
 	if (checkEnvFile()) {
-		const { envReconfigure } = await inquirer.prompt([
-			{
-				type: "confirm",
-				name: "envReconfigure",
-				message: "Env file found. Re-configure? (Y)/N",
-				default: true,
-			},
-		]);
+		const envReconfigure = await promptConfirm(
+			"envReconfigure",
+			"Env file found. Re-configure? (Y)/N",
+			true,
+		);
 		if (!envReconfigure) {
 			process.exit(0);
 		}
@@ -458,52 +521,42 @@ export async function setup(): Promise<Record<string, string>> {
 	await setCI();
 	initializeEnvFile();
 
-	const { useDefaultApi } = await inquirer.prompt([
-		{
-			type: "confirm",
-			name: "useDefaultApi",
-			message: "Use recommended default API settings? (Y)/N",
-			default: true,
-		},
-	]);
+	const useDefaultApi = await promptConfirm(
+		"useDefaultApi",
+		"Use recommended default API settings? (Y)/N",
+		true,
+	);
+
 	if (!useDefaultApi) {
 		await apiSetup();
 	}
 
-	const { useDefaultMinio } = await inquirer.prompt([
-		{
-			type: "confirm",
-			name: "useDefaultMinio",
-			message: "Use recommended default Minio settings? (Y)/N",
-			default: true,
-		},
-	]);
+	const useDefaultMinio = await promptConfirm(
+		"useDefaultMinio",
+		"Use recommended default Minio settings? (Y)/N",
+		true,
+	);
+
 	if (!useDefaultMinio) {
 		await minioSetup();
 	}
 
 	if (answers.CI === "false") {
-		const { useDefaultCloudbeaver } = await inquirer.prompt([
-			{
-				type: "confirm",
-				name: "useDefaultCloudbeaver",
-				message: "Use recommended default CloudBeaver settings? (Y)/N",
-				default: true,
-			},
-		]);
+		const useDefaultCloudbeaver = await promptConfirm(
+			"useDefaultCloudbeaver",
+			"Use recommended default CloudBeaver settings? (Y)/N",
+			true,
+		);
 		if (!useDefaultCloudbeaver) {
 			await cloudbeaverSetup();
 		}
 	}
 
-	const { useDefaultPostgres } = await inquirer.prompt([
-		{
-			type: "confirm",
-			name: "useDefaultPostgres",
-			message: "Use recommended default Postgres settings? (Y)/N",
-			default: true,
-		},
-	]);
+	const useDefaultPostgres = await promptConfirm(
+		"useDefaultPostgres",
+		"Use recommended default Postgres settings? (Y)/N",
+		true,
+	);
 	if (!useDefaultPostgres) {
 		await postgresSetup();
 	}
