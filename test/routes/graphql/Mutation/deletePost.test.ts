@@ -59,6 +59,23 @@ const invalidArgs = { input: {} } as unknown as z.infer<
 	typeof mutationDeletePostArgumentsSchema
 >;
 
+function createFakeTransaction(
+	returningData: unknown[],
+): (fn: (tx: FakeTx) => Promise<unknown>) => Promise<unknown> {
+	return vi.fn(
+		async (fn: (tx: FakeTx) => Promise<unknown>): Promise<unknown> => {
+			const fakeTx: FakeTx = {
+				delete: vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue(returningData),
+					}),
+				}),
+			};
+			return await fn(fakeTx);
+		},
+	);
+}
+
 describe("deletePostResolver", () => {
 	let ctx: GraphQLContext;
 
@@ -128,19 +145,6 @@ describe("deletePostResolver", () => {
 	});
 
 	it("should throw an unexpected error if the deletion returns no post", async () => {
-		// Define a fake transaction that returns an empty array.
-		const fakeTransaction = vi.fn(
-			async (fn: (tx: FakeTx) => Promise<unknown>): Promise<unknown> => {
-				const fakeTx: FakeTx = {
-					delete: vi.fn().mockReturnValue({
-						where: vi.fn().mockReturnValue({
-							returning: vi.fn().mockResolvedValue([]), // Simulate no deleted post.
-						}),
-					}),
-				};
-				return await fn(fakeTx);
-			},
-		);
 		ctx.drizzleClient.query.usersTable.findFirst = vi
 			.fn()
 			.mockResolvedValue({ role: "administrator" });
@@ -149,8 +153,12 @@ describe("deletePostResolver", () => {
 			attachmentsWherePost: [{ name: "file1" }],
 			organization: { membershipsWhereOrganization: [] },
 		});
-		ctx.drizzleClient.transaction =
-			fakeTransaction as unknown as typeof ctx.drizzleClient.transaction;
+
+		// Use the helper to create a fake transaction that returns an empty array.
+		ctx.drizzleClient.transaction = createFakeTransaction(
+			[],
+		) as unknown as typeof ctx.drizzleClient.transaction;
+
 		await expect(
 			deletePostResolver(null, validArgs, ctx),
 		).rejects.toHaveProperty("extensions.code", "unexpected");
@@ -159,19 +167,12 @@ describe("deletePostResolver", () => {
 	it("should successfully delete a post for an admin user", async () => {
 		const deletedPost: DeletedPost = { id: "post1", content: "some content" };
 		const attachments = [{ name: "file1" }, { name: "file2" }];
-		// Define a fake transaction that returns the deleted post.
-		const fakeTransaction = vi.fn(
-			async (fn: (tx: FakeTx) => Promise<unknown>): Promise<unknown> => {
-				const fakeTx: FakeTx = {
-					delete: vi.fn().mockReturnValue({
-						where: vi.fn().mockReturnValue({
-							returning: vi.fn().mockResolvedValue([deletedPost]),
-						}),
-					}),
-				};
-				return await fn(fakeTx);
-			},
-		);
+
+		// Use the helper to create a fake transaction that returns the deleted post.
+		ctx.drizzleClient.transaction = createFakeTransaction([
+			deletedPost,
+		]) as unknown as typeof ctx.drizzleClient.transaction;
+
 		ctx.drizzleClient.query.usersTable.findFirst = vi
 			.fn()
 			.mockResolvedValue({ role: "administrator" });
@@ -180,12 +181,11 @@ describe("deletePostResolver", () => {
 			attachmentsWherePost: attachments,
 			organization: { membershipsWhereOrganization: [] },
 		});
-		ctx.drizzleClient.transaction =
-			fakeTransaction as unknown as typeof ctx.drizzleClient.transaction;
 		const removeObjectsSpy = vi.fn().mockResolvedValue(undefined);
 		ctx.minio.client.removeObjects = removeObjectsSpy;
 		const result = await deletePostResolver(null, validArgs, ctx);
-		expect(result).toEqual(Object.assign(deletedPost, { attachments }));
+		const expectedDeletedPost = { ...deletedPost, attachments };
+		expect(result).toEqual(expectedDeletedPost);
 		expect(removeObjectsSpy).toHaveBeenCalledWith(
 			"test-bucket",
 			attachments.map((att) => att.name),
@@ -195,18 +195,12 @@ describe("deletePostResolver", () => {
 	it("should successfully delete a post for a non-admin user with organization admin membership", async () => {
 		const deletedPost: DeletedPost = { id: "post1", content: "some content" };
 		const attachments = [{ name: "file1" }];
-		const fakeTransaction = vi.fn(
-			async (fn: (tx: FakeTx) => Promise<unknown>): Promise<unknown> => {
-				const fakeTx: FakeTx = {
-					delete: vi.fn().mockReturnValue({
-						where: vi.fn().mockReturnValue({
-							returning: vi.fn().mockResolvedValue([deletedPost]),
-						}),
-					}),
-				};
-				return await fn(fakeTx);
-			},
-		);
+
+		// Use the helper to create a fake transaction that returns the deleted post.
+		ctx.drizzleClient.transaction = createFakeTransaction([
+			deletedPost,
+		]) as unknown as typeof ctx.drizzleClient.transaction;
+
 		// Non-admin user scenario.
 		ctx.drizzleClient.query.usersTable.findFirst = vi
 			.fn()
@@ -218,10 +212,10 @@ describe("deletePostResolver", () => {
 				membershipsWhereOrganization: [{ role: "administrator" }],
 			},
 		});
-		ctx.drizzleClient.transaction =
-			fakeTransaction as unknown as typeof ctx.drizzleClient.transaction;
+
 		const removeObjectsSpy = vi.fn().mockResolvedValue(undefined);
 		ctx.minio.client.removeObjects = removeObjectsSpy;
+
 		const result = await deletePostResolver(null, validArgs, ctx);
 		expect(result).toEqual(Object.assign(deletedPost, { attachments }));
 		expect(removeObjectsSpy).toHaveBeenCalledWith(
