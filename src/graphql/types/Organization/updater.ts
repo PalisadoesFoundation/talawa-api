@@ -150,8 +150,19 @@ export const OrganizationUpdaterResolver = {
 		const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
 			where: (fields, operators) => {
 				if (parent.updaterId == null) {
-					// Handle the case where updaterId is null or undefined
-					throw new Error("updaterId is required but not provided");
+					throw new TalawaGraphQLError({
+						message: "updaterId is required but not provided",
+						extensions: {
+							code: "invalid_arguments", // Valid error code
+							organizationId: parent.id, // Your custom data
+							issues: [
+								{
+									argumentPath: ["updaterId"], // Correct field name as an array
+									message: "updaterId is required but not provided", // Detailed issue message
+								},
+							],
+						},
+					});
 				}
 				return operators.eq(fields.id, parent.updaterId); // No need for non-null assertion
 			},

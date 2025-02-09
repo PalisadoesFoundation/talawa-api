@@ -8,9 +8,12 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockLogger } from "../../../utilities/mockLogger";
 
 interface ExtendedUser extends User {
-	organizationMembershipsWhereMember: Array<{ role: string }> | null;
+	organizationMembershipsWhereMember: Array<{
+		role: string;
+	}>;
 }
 
+// BaseOrganization represents a simplified structure for organization data used in tests.
 interface BaseOrganization {
 	id: string;
 	name: string;
@@ -263,12 +266,10 @@ describe("Organization Resolver: Updater Field", () => {
 				updaterId: "non-existent-id",
 			};
 
-			// Mock the response for the database calls
 			ctx.drizzleClient.query.usersTable.findFirst
 				.mockResolvedValueOnce(mockUser) // First call returns current user
 				.mockResolvedValueOnce(undefined); // Second call returns undefined for updater
 
-			// Call the resolver and expect an error
 			await expect(
 				OrganizationUpdaterResolver.updater(differentUpdaterOrg, {}, ctx),
 			).rejects.toThrow(
@@ -280,13 +281,9 @@ describe("Organization Resolver: Updater Field", () => {
 				}),
 			);
 
-			// Log the warning as expected
 			expect(ctx.log.warn).toHaveBeenCalledWith(
 				`Postgres select operation returned an empty array for organization ${differentUpdaterOrg.id}'s updaterId (${differentUpdaterOrg.updaterId}) that isn't null.`,
 			);
-
-			// Optional: Consider implementing a count for repeated failures
-			// You might want to add a test or logic to escalate repeated failures
 		});
 
 		it("should handle missing updater user scenarios appropriately", async () => {
@@ -342,7 +339,7 @@ describe("Organization Resolver: Updater Field", () => {
 			it("should return unauthorized_action error when user has no memberships", async () => {
 				const userWithNoMemberships: ExtendedUser = {
 					...mockUser,
-					organizationMembershipsWhereMember: null, // Use null here
+					organizationMembershipsWhereMember: [], // Use an empty array here
 				};
 
 				ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
