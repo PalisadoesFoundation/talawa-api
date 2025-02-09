@@ -6,8 +6,171 @@ import {
 	mutationCreateChatMembershipInputSchema,
 } from "~/src/graphql/inputs/MutationCreateChatMembershipInput";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
+import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
+// Define types for database fields and operators
+interface ChatMembershipDatabaseRecord {
+	id: string;
+	chatId: string;
+	memberId: string;
+	role: string;
+	creatorId: string;
+}
+
+interface QueryOperators {
+	eq: <T>(field: T, value: T) => boolean;
+}
+
+interface ChatMembershipRole {
+	role: string;
+}
+
+interface ChatWithMemberships extends Chat {
+	chatMembershipsWhereChat: ChatMembershipRole[];
+	organization: {
+		countryCode: string;
+		membershipsWhereOrganization: {
+			role: string;
+		}[];
+	};
+}
+
+interface Context {
+	currentClient: {
+		isAuthenticated: boolean;
+		user: {
+			id: string;
+		};
+	};
+	drizzleClient: {
+		query: {
+			chatsTable: {
+				findFirst: (params: {
+					with?: {
+						chatMembershipsWhereChat?: {
+							columns: {
+								role: boolean;
+							};
+							where: (
+								fields: ChatMembershipDatabaseRecord,
+								operators: QueryOperators,
+							) => boolean;
+						};
+						organization?: {
+							columns: {
+								countryCode: boolean;
+							};
+							with: {
+								membershipsWhereOrganization: {
+									columns: {
+										role: boolean;
+									};
+									where: (
+										fields: ChatMembershipDatabaseRecord,
+										operators: QueryOperators,
+									) => boolean;
+								};
+							};
+						};
+					};
+					where: (
+						fields: ChatMembershipDatabaseRecord,
+						operators: QueryOperators,
+					) => boolean;
+				}) => Promise<ChatWithMemberships | undefined>;
+			};
+			usersTable: {
+				findFirst: (params: {
+					columns: {
+						role: boolean;
+					};
+					where: (
+						fields: ChatMembershipDatabaseRecord,
+						operators: QueryOperators,
+					) => boolean;
+				}) => Promise<User | undefined>;
+			};
+		};
+	};
+	log: {
+		error: (message: string) => void;
+	};
+}
+
+export const ChatMembershipResolver = {
+	creator: async (
+		parent: ChatMembershipDatabaseRecord,
+		_args: Record<string, never>,
+		ctx: Context,
+	): Promise<User | null> => {
+		if (!ctx.currentClient.isAuthenticated) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "unauthenticated",
+				},
+			});
+		}
+
+		const currentUserId = ctx.currentClient.user.id;
+
+		// Check if the current user has permission to view the creator
+		const chat = await ctx.drizzleClient.query.chatsTable.findFirst({
+			with: {
+				organization: {
+					columns: { countryCode: true },
+					with: {
+						membershipsWhereOrganization: {
+							columns: { role: true },
+							where: (fields, operators) =>
+								operators.eq(fields.memberId, currentUserId),
+						},
+					},
+				},
+			},
+			where: (fields, operators) => operators.eq(fields.id, parent.chatId),
+		});
+
+		if (!chat) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "forbidden_action",
+				},
+			});
+		}
+
+		// Return creator information
+		if (!parent.creatorId) {
+			return null;
+		}
+
+		if (parent.creatorId === currentUserId) {
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: { role: true },
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+			return currentUser || null;
+		}
+
+		const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
+			columns: { role: true },
+			where: (fields, operators) => operators.eq(fields.id, parent.creatorId),
+		});
+
+		if (!existingUser) {
+			ctx.log.error(
+				`Postgres select operation returned an empty array for chat membership ${parent.id}'s creatorId (${parent.creatorId}) that isn't null.`,
+			);
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "unexpected",
+				},
+			});
+		}
+
+		return existingUser;
+	},
+};
 
 const mutationCreateChatMembershipArgumentsSchema = z.object({
 	input: mutationCreateChatMembershipInputSchema,
