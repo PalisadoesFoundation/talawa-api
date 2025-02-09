@@ -1,10 +1,12 @@
-import type { ExplicitGraphQLContext, ImplicitMercuriusContext } from '~/src/graphql/context';
-import { FundCampaignPledge } from "./FundCampaignPledge";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import type {
+	ExplicitGraphQLContext,
+	ImplicitMercuriusContext,
+} from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { FundCampaignPledge } from "./FundCampaignPledge";
 
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
-
 
 export const resolveUpdater = async (
 	parent: FundCampaignPledge,
