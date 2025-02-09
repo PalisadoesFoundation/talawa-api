@@ -99,9 +99,9 @@ interface Context {
 
 export const ChatMembershipResolver = {
 	creator: async (
-		_parent: ChatMembershipDatabaseRecord, // Type for parent
-		_args: Record<string, never>, // Type for args
-		ctx: Context, // Type for ctx
+		_parent: ChatMembershipDatabaseRecord,
+		_args: Record<string, never>,
+		ctx: Context,
 	): Promise<User | null> => {
 		if (!ctx.currentClient.isAuthenticated) {
 			throw new TalawaGraphQLError({
@@ -113,7 +113,6 @@ export const ChatMembershipResolver = {
 
 		const currentUserId = ctx.currentClient.user.id;
 
-		// Check if the current user has permission to view the creator
 		const chat = await ctx.drizzleClient.query.chatsTable.findFirst({
 			with: {
 				organization: {
@@ -138,7 +137,6 @@ export const ChatMembershipResolver = {
 			});
 		}
 
-		// Return creator information
 		if (!_parent.creatorId) {
 			return null;
 		}
@@ -171,16 +169,15 @@ export const ChatMembershipResolver = {
 	},
 
 	createChatMembership: async (
-		_parent: unknown, // Type for parent if not used
+		_parent: unknown,
 		args: {
-			// Define the shape of args
 			input: {
 				memberId: string;
 				chatId: string;
 				role?: string;
 			};
 		},
-		ctx: Context, // Type for ctx
+		ctx: Context,
 	) => {
 		if (!ctx.currentClient.isAuthenticated) {
 			throw new TalawaGraphQLError({
@@ -285,6 +282,19 @@ export const ChatMembershipResolver = {
 					issues: [
 						{
 							argumentPath: ["input", "chatId"],
+						},
+					],
+				},
+			});
+		}
+
+		if (existingMember === undefined) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [
+						{
+							argumentPath: ["input", "memberId"],
 						},
 					],
 				},
