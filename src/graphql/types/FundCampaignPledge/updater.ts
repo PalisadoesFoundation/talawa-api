@@ -87,6 +87,7 @@ export const resolveUpdater = async (
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unauthorized_action",
+				message: "Only administrators can perform this action",
 			},
 		});
 	}
