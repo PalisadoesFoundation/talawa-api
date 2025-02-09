@@ -8,9 +8,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockLogger } from "../../../utilities/mockLogger";
 
 interface ExtendedUser extends User {
-	organizationMembershipsWhereMember?: Array<{
-		role: string;
-	}>;
+	organizationMembershipsWhereMember: Array<{ role: string }> | null;
 }
 
 interface BaseOrganization {
@@ -182,7 +180,7 @@ describe("Organization Resolver: Updater Field", () => {
 					message: "You are not authorized to perform this action.",
 					extensions: {
 						code: "unauthorized_action",
-						message: "User must have at least one organization membership",
+						message: "User must have at least one organization membership", // Keep this message consistent for all missing user cases
 					},
 				}),
 			);
@@ -265,6 +263,38 @@ describe("Organization Resolver: Updater Field", () => {
 				updaterId: "non-existent-id",
 			};
 
+			// Mock the response for the database calls
+			ctx.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce(mockUser) // First call returns current user
+				.mockResolvedValueOnce(undefined); // Second call returns undefined for updater
+
+			// Call the resolver and expect an error
+			await expect(
+				OrganizationUpdaterResolver.updater(differentUpdaterOrg, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					message: "Something went wrong. Please try again later.",
+					extensions: {
+						code: "unexpected",
+					},
+				}),
+			);
+
+			// Log the warning as expected
+			expect(ctx.log.warn).toHaveBeenCalledWith(
+				`Postgres select operation returned an empty array for organization ${differentUpdaterOrg.id}'s updaterId (${differentUpdaterOrg.updaterId}) that isn't null.`,
+			);
+
+			// Optional: Consider implementing a count for repeated failures
+			// You might want to add a test or logic to escalate repeated failures
+		});
+
+		it("should handle missing updater user scenarios appropriately", async () => {
+			const differentUpdaterOrg: TestOrganization = {
+				...mockOrganization,
+				updaterId: "non-existent-id",
+			};
+
 			ctx.drizzleClient.query.usersTable.findFirst
 				.mockResolvedValueOnce(mockUser) // First call returns current user
 				.mockResolvedValueOnce(undefined); // Second call returns undefined for updater
@@ -299,21 +329,24 @@ describe("Organization Resolver: Updater Field", () => {
 
 				await expect(
 					OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
-				).rejects.toThrow(
+				).rejects.toThrowError(
 					new TalawaGraphQLError({
-						message: "You are not authorized to perform this action.",
-						extensions: { code: "unauthorized_action" },
+						extensions: {
+							code: "unauthorized_action",
+							message: "User must have at least one organization membership",
+						},
 					}),
 				);
 			});
 
 			it("should return unauthorized_action error when user has no memberships", async () => {
-				const userWithUndefinedMemberships: ExtendedUser = {
+				const userWithNoMemberships: ExtendedUser = {
 					...mockUser,
-					organizationMembershipsWhereMember: undefined,
+					organizationMembershipsWhereMember: null, // Use null here
 				};
+
 				ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-					userWithUndefinedMemberships,
+					userWithNoMemberships,
 				);
 
 				await expect(

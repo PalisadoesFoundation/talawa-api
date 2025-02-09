@@ -2,15 +2,65 @@ import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
-// Define types for database fields and operators
+/**
+ * Resolver to update an organization's user.
+ *
+ * This resolver checks if the current user is authenticated, and if they are an
+ * administrator in the given organization. It updates the organization with the
+ * specified updater user, or throws an error if the conditions are not met.
+ *
+ * @param {Organization} parent - The parent organization object being updated.
+ * @param {Record<string, never>} _args - Arguments passed to the resolver (currently not used).
+ * @param {Context} ctx - The context object containing the authentication info and database client.
+ * @returns {Promise<User | null>} - Returns the updated user if the updater ID is valid, otherwise null.
+ * @throws {TalawaGraphQLError} - Throws an error if the user is not authenticated, doesn't have the required role,
+ * or the updaterId is invalid.
+ */
+
+interface DrizzleClientQuery {
+	query: {
+		usersTable: {
+			findFirst: (params: {
+				with?: {
+					organizationMembershipsWhereMember?: {
+						columns: {
+							role: boolean;
+						};
+						where: (
+							fields: UserDatabaseRecord,
+							operators: QueryOperators,
+						) => { field: string; value: string; operator: "=" };
+					};
+				};
+				where: (
+					fields: UserDatabaseRecord,
+					operators: QueryOperators,
+				) => { field: string; value: string; operator: "=" };
+			}) => Promise<UserWithRoles | undefined>;
+		};
+	};
+}
+
+interface Log {
+	warn: (message: string) => void;
+}
+
 interface UserDatabaseRecord {
 	id: string;
 	organizationId: string;
 	role: string;
 }
 
+// Updated QueryOperators interface to ensure string-only operations
 interface QueryOperators {
-	eq: <T extends string | number | boolean>(field: T, value: T) => boolean;
+	eq: (
+		field: string,
+		value: string,
+	) => {
+		field: string;
+		value: string;
+		operator: "=";
+	};
 }
 
 interface UserOrganizationRole {
@@ -28,32 +78,8 @@ interface Context {
 			id: string;
 		};
 	};
-	drizzleClient: {
-		query: {
-			usersTable: {
-				findFirst: (params: {
-					with?: {
-						organizationMembershipsWhereMember?: {
-							columns: {
-								role: boolean;
-							};
-							where: (
-								fields: UserDatabaseRecord,
-								operators: QueryOperators,
-							) => boolean;
-						};
-					};
-					where: (
-						fields: UserDatabaseRecord,
-						operators: QueryOperators,
-					) => boolean;
-				}) => Promise<UserWithRoles | undefined>;
-			};
-		};
-	};
-	log: {
-		warn: (message: string) => void;
-	};
+	drizzleClient: DrizzleClientQuery;
+	log: Log;
 }
 
 export const OrganizationUpdaterResolver = {
@@ -75,33 +101,32 @@ export const OrganizationUpdaterResolver = {
 		const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 			with: {
 				organizationMembershipsWhereMember: {
-					columns: { role: true },
+					columns: { role: true }, // Fetch the role for the user within the organization
 					where: (fields, operators) =>
-						operators.eq(fields.organizationId, parent.id),
+						operators.eq(fields.organizationId, parent.id), // Filter by organization ID
 				},
 			},
-			where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			where: (fields, operators) => operators.eq(fields.id, currentUserId), // Ensure it’s the current user
 		});
-
 		if (
 			!currentUser ||
-			!Array.isArray(currentUser.organizationMembershipsWhereMember)
+			!Array.isArray(currentUser.organizationMembershipsWhereMember) ||
+			currentUser.organizationMembershipsWhereMember.length === 0
 		) {
 			throw new TalawaGraphQLError({
 				extensions: {
-					code: "unauthorized_action", // Use an allowed error code
+					code: "unauthorized_action",
 					message: "User must have at least one organization membership",
 				},
 			});
 		}
 
-		const currentUserOrganizationMembership =
-			currentUser.organizationMembershipsWhereMember[0];
+		// Check if any of the memberships have the role "administrator"
+		const isAdmin = currentUser.organizationMembershipsWhereMember.some(
+			(membership) => membership.role === "administrator",
+		);
 
-		if (
-			!currentUserOrganizationMembership ||
-			currentUserOrganizationMembership.role !== "administrator"
-		) {
+		if (!isAdmin) {
 			throw new TalawaGraphQLError({
 				extensions: {
 					code: "unauthorized_action",
@@ -117,11 +142,19 @@ export const OrganizationUpdaterResolver = {
 			return currentUser;
 		}
 
+		// Handle null updaterId case
+		if (parent.updaterId === null) {
+			return null;
+		}
+
 		const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-			where: (fields, operators) =>
-				parent.updaterId !== null
-					? operators.eq(fields.id, parent.updaterId)
-					: false,
+			where: (fields, operators) => {
+				if (parent.updaterId == null) {
+					// Handle the case where updaterId is null or undefined
+					throw new Error("updaterId is required but not provided");
+				}
+				return operators.eq(fields.id, parent.updaterId); // No need for non-null assertion
+			},
 		});
 
 		if (!existingUser) {
@@ -131,7 +164,7 @@ export const OrganizationUpdaterResolver = {
 
 			throw new TalawaGraphQLError({
 				extensions: {
-					code: "unexpected", // Ensures compliance with defined types
+					code: "unexpected",
 				},
 			});
 		}
