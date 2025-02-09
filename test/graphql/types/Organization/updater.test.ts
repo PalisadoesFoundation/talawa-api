@@ -7,15 +7,14 @@ import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockLogger } from "../../../utilities/mockLogger";
 interface OrganizationMembership {
-	role: "administrator" | "member" | "viewer"; // Use a union type for stricter type safety
-	joinDate?: string; // Optional field for future extensions
+	role: "administrator" | "member" | "viewer";
+	joinDate?: string;
 }
 
 interface ExtendedUser extends User {
 	organizationMembershipsWhereMember: OrganizationMembership[];
 }
 
-// BaseOrganization represents a simplified structure for organization data used in tests.
 interface BaseOrganization {
 	id: string;
 	name: string;
@@ -397,36 +396,29 @@ describe("Organization Resolver: Updater Field", () => {
 		});
 	});
 
+	// test/graphql/types/Organization/updater.test.ts
+
 	describe("Updater Resolution Tests", () => {
-		it("should return null when updaterId is null", async () => {
-			const nullUpdaterOrg: TestOrganization = {
-				...mockOrganization,
-				updaterId: null,
-			};
+		it.each([
+			{ updaterId: null, description: "null" },
+			{ updaterId: "", description: "empty string" },
+		])(
+			"should return null when updaterId is %s",
+			async ({ updaterId, description }) => {
+				const orgWithNoUpdater: TestOrganization = {
+					...mockOrganization,
+					updaterId,
+				};
 
-			const result = await OrganizationUpdaterResolver.updater(
-				nullUpdaterOrg,
-				{},
-				ctx,
-			);
+				const result = await OrganizationUpdaterResolver.updater(
+					orgWithNoUpdater,
+					{},
+					ctx,
+				);
 
-			expect(result).toBeNull();
-		});
-
-		it("should return null for an organization with empty string updaterId", async () => {
-			const emptyUpdaterOrg: TestOrganization = {
-				...mockOrganization,
-				updaterId: "",
-			};
-
-			const result = await OrganizationUpdaterResolver.updater(
-				emptyUpdaterOrg,
-				{},
-				ctx,
-			);
-
-			expect(result).toBeNull();
-		});
+				expect(result).toBeNull();
+			},
+		);
 
 		it("should return current user when updaterId matches current user", async () => {
 			const currentUserOrg: TestOrganization = {

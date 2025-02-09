@@ -42,7 +42,7 @@ interface Log {
 	warn: (message: string) => void;
 	error: (message: string) => void; // Added error method
 	info: (message: string) => void; // Added info method
-	debug?: (message: string) => void;
+	debug: (message: string) => void;
 }
 
 interface UserOrganizationFields {
