@@ -96,5 +96,33 @@
     "role": "regular",
     "createdAt": "2023-04-13T04:53:17.742Z",
     "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc"
+  },
+  {
+    "organizationId": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5e",
+    "memberId": "0194e562-0a52-70f3-9e7b-2e789a5aebdc",
+    "role": "administrator",
+    "createdAt": "2023-04-13T04:53:17.742Z",
+    "creatorId": "0194e562-0a52-70f3-9e7b-2e789a5aebdc"
+  },
+  {
+    "organizationId": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5f",
+    "memberId": "0194e562-0a52-70f3-9e7b-2e789a5aebdc",
+    "role": "administrator",
+    "createdAt": "2023-04-13T04:53:17.742Z",
+    "creatorId": "0194e562-0a52-70f3-9e7b-2e789a5aebdc"
+  },
+  {
+    "organizationId": "cd3e4f5b-6a7c-8d9e-0f1a-2b3c4d5e6f7a",
+    "memberId": "0194e562-0a52-70f3-9e7b-2e789a5aebdc",
+    "role": "administrator",
+    "createdAt": "2023-04-13T04:53:17.742Z",
+    "creatorId": "0194e562-0a52-70f3-9e7b-2e789a5aebdc"
+  },
+  {
+    "organizationId": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+    "memberId": "0194e562-0a52-70f3-9e7b-2e789a5aebdc",
+    "role": "administrator",
+    "createdAt": "2023-04-13T04:53:17.742Z",
+    "creatorId": "0194e562-0a52-70f3-9e7b-2e789a5aebdc"
   }
 ]

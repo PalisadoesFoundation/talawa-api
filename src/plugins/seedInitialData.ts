@@ -2,7 +2,6 @@ import { hash } from "@node-rs/argon2";
 import { eq } from "drizzle-orm";
 import type { FastifyPluginAsync } from "fastify";
 import fastifyPlugin from "fastify-plugin";
-import { uuidv7 } from "uuidv7";
 import type { z } from "zod";
 import {
 	communitiesTable,
@@ -85,7 +84,8 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 			"Administrator user does not exist in the database. Creating the administrator.",
 		);
 
-		const userId = uuidv7();
+		// Administrator is assigned fixed UUIDv7 id to load the sample data with this id.
+		const userId = "0194e562-0a52-70f3-9e7b-2e789a5aebdc";
 		const input: z.infer<typeof usersTableInsertSchema> = {
 			addressLine1: null,
 			addressLine2: null,
