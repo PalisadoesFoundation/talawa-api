@@ -286,21 +286,9 @@ devcontainer build --workspace-folder .
 devcontainer up --workspace-folder .
 ```
 
-#### Import Sample Data
+#### Importing Sample Data
 
-1. Once the server is running, open a new terminal session.
-2. Open a bash session inside the running container:
-   ```bash
-   docker exec -it talawa-api-1 /bin/bash
-   ```
-3. Inside the container, run the following command to import sample data into the database: 
-   ```bash
-    pnpm run import:sample-data
-   ```
-4. Then exit
-   ```bash
-    exit
-   ```
+Please refer to the section below.
 
 ### Setup: Using the VScode IDE
 
@@ -340,6 +328,51 @@ You can run the app after closing the terminal or restating the vscode using the
 ```
 
 **Note:** These commands will start the server in development mode.
+
+## Sample Data
+
+We have created sample data to make it easier for end users to get an understanding of the application.
+
+### Importing Sample Data
+
+This applies to users running Talawa API in dev containers.
+
+1. Once the server is running, open a new terminal session.
+2. Open a bash session inside the running container:
+   ```bash
+   docker exec -it talawa-api-1 /bin/bash
+   ```
+3. Inside the container, run the following command to import sample data into the database:
+   ```bash
+    pnpm run import:sample-data
+   ```
+4. Then exit
+   ```bash
+    exit
+   ```
+   Refer to the next section for login information.
+
+### Sample Data Users
+
+Below is a table of user login credentials for the sample data.
+
+| **Name**       | **Email Address**          | **Password** | **Role**      |
+| -------------- | -------------------------- | ------------ | ------------- |
+| Wilt Shepherd  | testsuperadmin@example.com | Pass@123     | administrator |
+| Vyvyan Kerry   | testadmin1@example.com     | Pass@123     | administrator |
+| Loyd Solomon   | testadmin2@example.com     | Pass@123     | administrator |
+| Darcy Wilf     | testadmin3@example.com     | Pass@123     | administrator |
+| Harve Lance    | testuser1@example.com      | Pass@123     | regular       |
+| Praise Norris  | testuser2@example.com      | Pass@123     | regular       |
+| Scott Tony     | testuser3@example.com      | Pass@123     | regular       |
+| Teresa Bradley | testuser4@example.com      | Pass@123     | regular       |
+| Bruce Garza    | testuser5@example.com      | Pass@123     | regular       |
+| Burton Sanders | testuser6@example.com      | Pass@123     | regular       |
+| Jeramy Garcia  | testuser7@example.com      | Pass@123     | regular       |
+| Deanne Marks   | testuser8@example.com      | Pass@123     | regular       |
+| Romeo Holland  | testuser9@example.com      | Pass@123     | regular       |
+| Carla Nguyen   | testuser10@example.com     | Pass@123     | regular       |
+| Peggy Bowers   | testuser11@example.com     | Pass@123     | regular       |
 
 ## Testing and Validation
 
