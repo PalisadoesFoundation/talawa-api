@@ -157,8 +157,6 @@ describe("Organization Resolver: Updater Field", () => {
 				},
 			};
 
-			// This test just verifies the authentication check passes
-			// The actual resolver result will depend on other conditions
 			await expect(
 				OrganizationUpdaterResolver.updater(
 					mockOrganization,
@@ -172,8 +170,7 @@ describe("Organization Resolver: Updater Field", () => {
 			);
 		});
 
-		it("should throw forbidden_action error when currentUser is not found", async () => {
-			// Mock the usersTable.findFirst to return null/undefined for currentUser
+		it("should throw unauthorized_action error when currentUser is not found", async () => {
 			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				undefined,
 			);
@@ -182,34 +179,38 @@ describe("Organization Resolver: Updater Field", () => {
 				OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
 			).rejects.toThrow(
 				new TalawaGraphQLError({
-					extensions: { code: "forbidden_action" },
+					message: "You are not authorized to perform this action.",
+					extensions: {
+						code: "unauthorized_action",
+						message: "User must have at least one organization membership",
+					},
 				}),
 			);
 		});
 
-		it("should throw forbidden_action error when currentUser is null", async () => {
-			// Mock the usersTable.findFirst to return null explicitly
+		it("should throw unauthorized_action error when currentUser is null", async () => {
 			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(null);
 
 			await expect(
 				OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
 			).rejects.toThrow(
 				new TalawaGraphQLError({
-					extensions: { code: "forbidden_action" },
+					message: "You are not authorized to perform this action.",
+					extensions: {
+						code: "unauthorized_action",
+						message: "User must have at least one organization membership",
+					},
 				}),
 			);
 		});
 
-		// Test the positive case
 		it("should not throw forbidden_action error when currentUser exists", async () => {
-			// Using the mockUser that's already set up in beforeEach
 			const result = await OrganizationUpdaterResolver.updater(
 				mockOrganization,
 				{},
 				ctx,
 			);
 
-			// Verify the resolver continues past the currentUser check
 			expect(result).toBeDefined();
 		});
 	});
@@ -306,7 +307,7 @@ describe("Organization Resolver: Updater Field", () => {
 				);
 			});
 
-			it("should handle user with undefined memberships array", async () => {
+			it("should return unauthorized_action error when user has no memberships", async () => {
 				const userWithUndefinedMemberships: ExtendedUser = {
 					...mockUser,
 					organizationMembershipsWhereMember: undefined,
@@ -318,7 +319,12 @@ describe("Organization Resolver: Updater Field", () => {
 				await expect(
 					OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
 				).rejects.toThrow(
-					TypeError("Cannot read properties of undefined (reading '0')"),
+					new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action",
+							message: "User must have at least one organization membership",
+						},
+					}),
 				);
 			});
 
@@ -379,16 +385,16 @@ describe("Organization Resolver: Updater Field", () => {
 				expect(result).toEqual(userWithMixedRoles);
 			});
 
-			it("should reject if administrator role is not first membership", async () => {
-				const userWithWrongRoleOrder: ExtendedUser = {
+			it("should reject if user has no administrator role in any membership", async () => {
+				const userWithoutAdminRole: ExtendedUser = {
 					...mockUser,
 					organizationMembershipsWhereMember: [
 						{ role: "member" },
-						{ role: "administrator" }, // Even though user has admin role, it's not first
+						{ role: "editor" }, // No administrator role at all
 					],
 				};
 				ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-					userWithWrongRoleOrder,
+					userWithoutAdminRole,
 				);
 
 				await expect(

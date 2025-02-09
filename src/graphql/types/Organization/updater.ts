@@ -10,7 +10,7 @@ interface UserDatabaseRecord {
 }
 
 interface QueryOperators {
-	eq: <T>(field: T, value: T) => boolean;
+	eq: <T extends string | number | boolean>(field: T, value: T) => boolean;
 }
 
 interface UserOrganizationRole {
@@ -83,10 +83,14 @@ export const OrganizationUpdaterResolver = {
 			where: (fields, operators) => operators.eq(fields.id, currentUserId),
 		});
 
-		if (!currentUser) {
+		if (
+			!currentUser ||
+			!Array.isArray(currentUser.organizationMembershipsWhereMember)
+		) {
 			throw new TalawaGraphQLError({
 				extensions: {
-					code: "forbidden_action",
+					code: "unauthorized_action", // Use an allowed error code
+					message: "User must have at least one organization membership",
 				},
 			});
 		}
@@ -114,7 +118,10 @@ export const OrganizationUpdaterResolver = {
 		}
 
 		const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-			where: (fields, operators) => operators.eq(fields.id, parent.updaterId),
+			where: (fields, operators) =>
+				parent.updaterId !== null
+					? operators.eq(fields.id, parent.updaterId)
+					: false,
 		});
 
 		if (!existingUser) {
