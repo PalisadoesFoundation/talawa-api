@@ -201,13 +201,15 @@ export type introspection_types = {
  * If you need to reuse this data or update your `scalars`, update `tadaOutputLocation` to
  * instead save to a .ts instead of a .d.ts file.
  */
-export type introspection = {
-  name: never;
-  query: 'Query';
-  mutation: 'Mutation';
-  subscription: 'Subscription';
-  types: introspection_types;
-};
+export const introspection = {
+  name: never,
+  query: 'Query',
+  mutation: 'Mutation',
+  subscription: 'Subscription',
+  types: introspection_types,
+} as const;
+
+export type introspection = typeof introspection;
 
 import * as gqlTada from 'gql.tada';
 
