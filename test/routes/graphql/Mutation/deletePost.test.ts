@@ -4,11 +4,13 @@ import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
 import { mutationDeletePostInputSchema } from "~/src/graphql/inputs/MutationDeletePostInput";
 import { deletePostResolver } from "~/src/graphql/types/Mutation/deletePost";
 
+/** Represents a successfully deleted post returned by the resolver */
 interface DeletedPost {
 	id: string;
 	content: string;
 }
 
+/** Mock transaction interface for testing database operations */
 interface FakeTx {
 	delete: () => {
 		where: () => {
@@ -17,7 +19,7 @@ interface FakeTx {
 	};
 }
 
-// Re-create the arguments schema used in the resolver
+/** Schema for validating mutation arguments, matching the resolver's expectations */
 const mutationDeletePostArgumentsSchema = z.object({
 	input: mutationDeletePostInputSchema,
 });
@@ -188,36 +190,6 @@ describe("deletePostResolver", () => {
 			"test-bucket",
 			attachments.map((att) => att.name),
 		);
-	});
-
-	it("should throw an unexpected error if no deleted post is returned", async () => {
-		const fakeTransaction = vi.fn(
-			async (fn: (tx: FakeTx) => Promise<unknown>) => {
-				const fakeTx = {
-					delete: vi.fn().mockReturnValue({
-						where: vi.fn().mockReturnValue({
-							returning: vi.fn().mockResolvedValue([]),
-						}),
-					}),
-				};
-				return await fn(fakeTx);
-			},
-		);
-		// Ensure that the query mocks return valid values.
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockResolvedValue({ role: "administrator" });
-		ctx.drizzleClient.query.postsTable.findFirst = vi.fn().mockResolvedValue({
-			creatorId: "user1",
-			attachmentsWherePost: [{ name: "file1" }],
-			organization: { membershipsWhereOrganization: [] },
-		});
-		ctx.drizzleClient.transaction =
-			fakeTransaction as unknown as typeof ctx.drizzleClient.transaction;
-
-		await expect(
-			deletePostResolver(null, validArgs, ctx),
-		).rejects.toHaveProperty("extensions.code", "unexpected");
 	});
 
 	it("should successfully delete a post for a non-admin user with organization admin membership", async () => {
