@@ -231,7 +231,6 @@ describe("deletePostResolver", () => {
 	});
 
 	it("should handle concurrent delete attempts gracefully", async () => {
-		// Setup post and user
 		ctx.drizzleClient.query.usersTable.findFirst = vi
 			.fn()
 			.mockResolvedValue({ role: "administrator" });
@@ -241,7 +240,6 @@ describe("deletePostResolver", () => {
 			organization: { membershipsWhereOrganization: [] },
 		});
 
-		// Simulate a race condition where the post is deleted between check and delete
 		let firstCheck = true;
 		ctx.drizzleClient.transaction = vi.fn(async (fn) => {
 			if (firstCheck) {
@@ -251,7 +249,6 @@ describe("deletePostResolver", () => {
 			throw new Error("Post already deleted");
 		}) as unknown as typeof ctx.drizzleClient.transaction;
 
-		// First delete should succeed
 		await expect(
 			deletePostResolver(null, validArgs, ctx),
 		).resolves.toBeDefined();
