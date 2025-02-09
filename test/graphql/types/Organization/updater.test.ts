@@ -1,6 +1,5 @@
 import type { FastifyBaseLogger } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-// import type { organizationsTable } from "~/src/drizzle/tables/organizations";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Organization } from "~/src/graphql/types/Organization/Organization";
 import { OrganizationUpdaterResolver } from "~/src/graphql/types/Organization/updater";
@@ -44,9 +43,6 @@ interface TestContext extends Omit<GraphQLContext, "log" | "currentClient"> {
 	} & GraphQLContext["drizzleClient"];
 	jwt: {
 		sign: (payload: Record<string, unknown>) => string;
-	};
-	metrics: {
-		increment: (metric: string, tags?: Record<string, string>) => void;
 	};
 }
 
@@ -102,6 +98,9 @@ describe("Organization Resolver: Updater Field", () => {
 			},
 			jwt: {},
 		} as TestContext;
+
+		// Clear mocks to prevent test pollution
+		vi.clearAllMocks();
 	});
 
 	describe("Authentication and Authorization", () => {
