@@ -27,13 +27,13 @@ interface DrizzleClientQuery {
 							role: boolean;
 						};
 						where: (
-							fields: UserDatabaseRecord,
+							fields: UserOrgDBRecord,
 							operators: QueryOperators,
 						) => { field: string; value: string; operator: "=" };
 					};
 				};
 				where: (
-					fields: UserDatabaseRecord,
+					fields: UserOrgDBRecord,
 					operators: QueryOperators,
 				) => { field: string; value: string; operator: "=" };
 			}) => Promise<UserWithRoles | undefined>;
@@ -45,26 +45,25 @@ interface Log {
 	warn: (message: string) => void;
 }
 
-interface UserDatabaseRecord {
+interface UserOrgDBRecord {
 	id: string;
 	organizationId: string;
 	role: string;
 }
 
-// Updated QueryOperators interface to ensure string-only operations
 interface QueryOperators {
 	eq: (
-		field: string,
+		field: "role" | "organizationId" | "id",
 		value: string,
 	) => {
-		field: string;
+		field: "role" | "organizationId" | "id";
 		value: string;
 		operator: "=";
 	};
 }
 
 interface UserOrganizationRole {
-	role: string;
+	role: "administrator" | "member" | "moderator";
 }
 
 interface UserWithRoles extends User {
@@ -101,13 +100,14 @@ export const OrganizationUpdaterResolver = {
 		const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 			with: {
 				organizationMembershipsWhereMember: {
-					columns: { role: true }, // Fetch the role for the user within the organization
+					columns: { role: true },
 					where: (fields, operators) =>
-						operators.eq(fields.organizationId, parent.id), // Filter by organization ID
+						operators.eq("organizationId", parent.id), // ✅ Explicit field name
 				},
 			},
-			where: (fields, operators) => operators.eq(fields.id, currentUserId), // Ensure it’s the current user
+			where: (fields, operators) => operators.eq("id", currentUserId), // ✅ Ensure ID is handled correctly
 		});
+
 		if (
 			!currentUser ||
 			!Array.isArray(currentUser.organizationMembershipsWhereMember) ||
@@ -121,7 +121,6 @@ export const OrganizationUpdaterResolver = {
 			});
 		}
 
-		// Check if any of the memberships have the role "administrator"
 		const isAdmin = currentUser.organizationMembershipsWhereMember.some(
 			(membership) => membership.role === "administrator",
 		);
@@ -135,6 +134,7 @@ export const OrganizationUpdaterResolver = {
 		}
 
 		if (parent.updaterId === currentUserId) {
+			console.debug(`User ${currentUserId} updated their own record.`);
 			return currentUser;
 		}
 
@@ -148,18 +148,18 @@ export const OrganizationUpdaterResolver = {
 					throw new TalawaGraphQLError({
 						message: "updaterId is required but not provided",
 						extensions: {
-							code: "invalid_arguments", // Valid error code
-							organizationId: parent.id, // Your custom data
+							code: "invalid_arguments",
+							organizationId: parent.id,
 							issues: [
 								{
-									argumentPath: ["updaterId"], // Correct field name as an array
-									message: "updaterId is required but not provided", // Detailed issue message
+									argumentPath: ["updaterId"],
+									message: "updaterId is required but not provided",
 								},
 							],
 						},
 					});
 				}
-				return operators.eq(fields.id, parent.updaterId); // No need for non-null assertion
+				return operators.eq("id", parent.updaterId); // ✅ Explicitly passing "id"
 			},
 		});
 
