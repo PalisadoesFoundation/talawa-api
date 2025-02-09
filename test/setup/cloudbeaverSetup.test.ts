@@ -16,7 +16,6 @@ describe("Setup -> cloudbeaverSetup", () => {
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "false" },
-			{ NODE_ENV: "production" },
 			{ useDefaultApi: true },
 			{ useDefaultMinio: true },
 			{ useDefaultCloudbeaver: false },

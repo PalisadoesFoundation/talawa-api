@@ -135,24 +135,6 @@ export async function setCI(): Promise<Record<string, string>> {
 	return answers;
 }
 
-export async function setNodeEnvironment(): Promise<Record<string, string>> {
-	try {
-		answers.NODE_ENV = await promptList(
-			"NODE_ENV",
-			"Select Node environment:",
-			["development", "production", "test"],
-			"production",
-		);
-	} catch (err) {
-		console.error(err);
-		if (fs.existsSync(".env.backup")) {
-			fs.copyFileSync(".env.backup", ".env");
-		}
-		process.exit(1);
-	}
-	return answers;
-}
-
 export async function administratorEmail(): Promise<Record<string, string>> {
 	try {
 		answers.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = await promptInput(
@@ -458,9 +440,6 @@ export async function setup(): Promise<Record<string, string>> {
 			},
 		]);
 		if (!envReconfigure) {
-			if (fs.existsSync(".env.backup")) {
-				fs.copyFileSync(".env.backup", ".env");
-			}
 			process.exit(0);
 		}
 	}
@@ -469,9 +448,6 @@ export async function setup(): Promise<Record<string, string>> {
 
 	process.on("SIGINT", () => {
 		console.log("\nProcess interrupted! Undoing changes...");
-		if (fs.existsSync(".env.backup")) {
-			fs.copyFileSync(".env.backup", ".env");
-		}
 		answers = {};
 		if (fs.existsSync(".env.backup")) {
 			fs.copyFileSync(".env.backup", ".env");
@@ -481,7 +457,6 @@ export async function setup(): Promise<Record<string, string>> {
 
 	await setCI();
 	initializeEnvFile();
-	await setNodeEnvironment();
 
 	const { useDefaultApi } = await inquirer.prompt([
 		{

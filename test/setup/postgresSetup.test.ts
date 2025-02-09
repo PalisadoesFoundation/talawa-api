@@ -42,7 +42,6 @@ describe("Setup -> postgresSetup", () => {
 		const mockResponses = [
 			{ envReconfigure: "true" },
 			{ CI: "false" },
-			{ NODE_ENV: "production" },
 			{ useDefaultApi: "true" },
 			{ useDefaultMinio: "true" },
 			{ useDefaultCloudbeaver: "true" },

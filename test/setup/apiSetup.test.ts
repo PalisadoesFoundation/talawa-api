@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
@@ -6,8 +8,6 @@ import {
 	validatePort,
 	validateURL,
 } from "~/src/setup/setup";
-
-import dotenv from "dotenv";
 
 vi.mock("inquirer");
 
@@ -22,7 +22,6 @@ describe("Setup -> apiSetup", () => {
 	it("should prompt the user for API configuration and update environment variables", async () => {
 		const mockResponses = [
 			{ CI: "true" },
-			{ NODE_ENV: "production" },
 			{ useDefaultApi: false },
 			{ API_BASE_URL: "http://localhost:5000" },
 			{ API_HOST: "127.0.0.1" },
@@ -134,5 +133,31 @@ describe("generateJwtSecret", () => {
 	it("should generate a 64-byte hex string", () => {
 		const secret = generateJwtSecret();
 		expect(secret).toMatch(/^[a-f0-9]{128}$/);
+	});
+
+	it("should generate unique secrets", () => {
+		const secret1 = generateJwtSecret();
+		const secret2 = generateJwtSecret();
+		expect(secret1).not.toBe(secret2);
+	});
+
+	it("should log a warning and throw an error if randomBytes fails", () => {
+		const randomBytesSpy = vi
+			.spyOn(crypto, "randomBytes")
+			.mockImplementation(() => {
+				throw new Error("Permission denied");
+			});
+		const consoleErrorSpy = vi
+			.spyOn(console, "error")
+			.mockImplementation(() => {});
+
+		expect(() => generateJwtSecret()).toThrow("Failed to generate JWT secret");
+		expect(consoleErrorSpy).toHaveBeenCalledWith(
+			"⚠️ Warning: Permission denied while generating JWT secret. Ensure the process has sufficient filesystem access.",
+			expect.any(Error),
+		);
+
+		randomBytesSpy.mockRestore();
+		consoleErrorSpy.mockRestore();
 	});
 });

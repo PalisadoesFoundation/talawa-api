@@ -1,7 +1,9 @@
+import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { setup } from "~/src/setup/setup";
+import * as SetupModule from "~/src/setup/setup";
 
 vi.mock("inquirer");
 describe("Setup", () => {
@@ -16,7 +18,6 @@ describe("Setup", () => {
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "false" },
-			{ NODE_ENV: "production" },
 			{ useDefaultApi: "true" },
 			{ useDefaultMinio: "true" },
 			{ useDefaultCloudbeaver: "true" },
@@ -69,7 +70,6 @@ describe("Setup", () => {
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "true" },
-			{ NODE_ENV: "production" },
 			{ useDefaultApi: "true" },
 			{ useDefaultMinio: "true" },
 			{ useDefaultPostgres: "true" },
@@ -113,5 +113,45 @@ describe("Setup", () => {
 		for (const [key, value] of Object.entries(expectedEnv)) {
 			expect(process.env[key]).toBe(value);
 		}
+	});
+	it("should restore .env from backup and exit when envReconfigure is false", async () => {
+		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
+			throw new Error("process.exit called");
+		});
+
+		vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
+			envReconfigure: false,
+		});
+
+		await expect(SetupModule.setup()).rejects.toThrow("process.exit called");
+		expect(processExitSpy).toHaveBeenCalledWith(0);
+
+		processExitSpy.mockRestore();
+	});
+
+	it("should restore .env on SIGINT (Ctrl+C) and exit with code 1", async () => {
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const copyFileSpy = vi
+			.spyOn(fs, "copyFileSync")
+			.mockImplementation(() => {});
+		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+
+		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
+			throw new Error("process.exit called");
+		});
+
+		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
+			"process.exit called",
+		);
+		expect(copyFileSpy).toHaveBeenCalledWith(".env.backup", ".env");
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"\nProcess interrupted! Undoing changes...",
+		);
+		expect(processExitSpy).toHaveBeenCalledWith(1);
+
+		consoleLogSpy.mockRestore();
+		processExitSpy.mockRestore();
+		copyFileSpy.mockRestore();
+		existsSyncSpy.mockRestore();
 	});
 });

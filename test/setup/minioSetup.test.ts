@@ -43,7 +43,6 @@ describe("Setup -> minioSetup", () => {
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "false" },
-			{ NODE_ENV: "production" },
 			{ useDefaultApi: true },
 			{ useDefaultMinio: false },
 			{ MINIO_BROWSER: "on" },
