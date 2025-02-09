@@ -71,9 +71,10 @@ ws://127.0.0.1:4000/graphql
 1. Launch the terminal application on your device.
 
 2. **Retrieve IPv4 Address**:
-    - **For Windows Users**: Enter the command `ipconfig`.
-    - **For Linux/OSX Users**: Enter the command `ifconfig`.
-    - Copy the `IPv4 Address` displayed (e.g., `192.168.12.233`).
+
+   - **For Windows Users**: Enter the command `ipconfig`.
+   - **For Linux/OSX Users**: Enter the command `ifconfig`.
+   - Copy the `IPv4 Address` displayed (e.g., `192.168.12.233`).
 
 3. Make sure both your mobile and your computer are connected to the same network.
 
@@ -185,6 +186,31 @@ MinIO is a free, open-source object storage server that's compatible with Amazon
 3. You should now see the MinIO UI. Click on the `Login` button to access the MinIO dashboard.
 4. You can now view the available buckets and objects in the MinIO dashboard.
 
+## Resetting Docker
+
+**NOTE:** This applies only to Talawa API developers.
+
+Sometimes you may want to start all over again from scratch. These steps will reset your development docker environment.
+
+1. From the repository's root directory, use this command to shutdown the dev container.
+   ```bash
+   docker compose down
+   ```
+1. **WARNING:** These commands will stop **ALL** your Docker processes and delete their volumes. This applies not only to the Talawa API instances, but everything. Use with extreme caution.
+   ```bash
+   docker stop $(docker ps -q)
+   docker rm $(docker ps -a -q)
+   docker rmi $(docker images -q)
+   docker volume prune -f
+   ```
+1. Restart the Docker dev containers to resume your development work.
+   ```bash
+   devcontainer build --workspace-folder .
+   devcontainer up --workspace-folder .
+   ```
+
+Now you can resume your development work.
+
 ## Testing The API
 
 Use the `API_BASE_URL` URL configured in the `.env` file. As the endpoint uses GraphQL, the complete URL will be `API_BASE_URL/graphql`
@@ -283,7 +309,7 @@ Here are some basic commands you can use for testing
 Use the following GraphQL **query** to get an **authentication token** for authorization in later queries:
 
 ```graphql
-mutation {
+query {
   signIn(
     input: { emailAddress: "administrator@email.com", password: "password" }
   ) {
@@ -296,7 +322,35 @@ mutation {
 }
 ```
 
-#### Promote a Registered User to an Administrator
+**Example Response:**
+
+```json
+{
+  "data": {
+    "signIn": {
+      "authenticationToken": "YWQ2LWE2OTctMjZjYmFlYjEyYTI1In0sImlhdCI6MTceyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiMDE5NGM5MWQtMDQzYS03zODkzOTM3MiwiZXhwIjo0MzMwOTM5MzcyfQ.jVH3un6CBQ62aD_eXIwghoaQ6ak4ZnYfLgz6uDuZbrM",
+      "user": {
+        "id": "0194c91d-043a-7ad6-a697-26cbaeb12a25",
+        "name": "administrator"
+      }
+    }
+  }
+}
+```
+
+#### Mutations
+
+This section explains how to use interactive GraphQL to make changes to the database.
+
+**NOTE:** For all mutations, make sure the Headers section at the bottom of the page has the Authorization Bearer type method. Use the `authenticationToken` received during login step above. We use that value received previously in this example.
+
+```json
+{
+  "Authorization": "Bearer YWQ2LWE2OTctMjZjYmFlYjEyYTI1In0sImlhdCI6MTceyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiMDE5NGM5MWQtMDQzYS03zODkzOTM3MiwiZXhwIjo0MzMwOTM5MzcyfQ.jVH3un6CBQ62aD_eXIwghoaQ6ak4ZnYfLgz6uDuZbrM"
+}
+```
+
+##### Promote a Registered User to an Administrator
 
 Use the following GraphQL **mutation** to assign **administrator** role to user:
 
@@ -309,7 +363,7 @@ mutation {
 }
 ```
 
-#### Creating Organizations
+##### Creating Organizations
 
 Use the following GraphQL **mutation** to create an organization:
 
@@ -332,7 +386,19 @@ mutation {
 }
 ```
 
-#### Create an Organization Administrator
+**Example Response:**
+
+```json
+{
+  "data": {
+    "createOrganization": {
+      "id": "0194e104-31df-7906-a221-90d80ff27582"
+    }
+  }
+}
+```
+
+##### Create an Organization Administrator
 
 Use the following GraphQL **mutation** to assign **administrator** role to user:
 
@@ -361,6 +427,50 @@ mutation {
           name
         }
       }
+    }
+  }
+}
+```
+
+#### Queries
+
+This section explains how to use interactive GraphQL to query the database.
+
+##### Query Organization Data
+
+Use the following GraphQL **query** to query organization data:
+
+```graphql
+{
+  organization(input: { id: "0194e11a-1d2f-7425-b447-84e641687570" }) {
+    id
+    name
+    description
+    addressLine1
+    addressLine2
+    city
+    postalCode
+    state
+    countryCode
+  }
+}
+```
+
+**Example Response:**
+
+```json
+{
+  "data": {
+    "organization": {
+      "id": "0194e11a-1d2f-7425-b447-84e641687570",
+      "name": "Test Org 27",
+      "description": "testing",
+      "addressLine1": "Los Angeles",
+      "addressLine2": "USA",
+      "city": "Los Angeles",
+      "postalCode": "876876",
+      "state": "California",
+      "countryCode": "in"
     }
   }
 }
