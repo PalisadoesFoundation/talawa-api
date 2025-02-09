@@ -21,7 +21,6 @@ interface BaseOrganization {
 	createdAt: Date;
 	updatedAt: Date | null;
 	updaterId: string | null;
-	// Add other required fields from your Organization type
 }
 
 type TestOrganization = Organization & BaseOrganization;
@@ -106,6 +105,28 @@ describe("Organization Resolver: Updater Field", () => {
 	});
 
 	describe("Authentication and Authorization", () => {
+		it("should throw unauthenticated error when user is not authenticated", async () => {
+			const unauthenticatedCtx = {
+				...ctx,
+				currentClient: {
+					...ctx.currentClient,
+					isAuthenticated: false as false,
+				},
+			};
+
+			await expect(
+				OrganizationUpdaterResolver.updater(
+					mockOrganization,
+					{},
+					unauthenticatedCtx,
+				),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unauthenticated" },
+				}),
+			);
+		});
+
 		it("should throw unauthorized error when user is not an administrator", async () => {
 			const nonAdminUser = {
 				...mockUser,
@@ -126,6 +147,71 @@ describe("Organization Resolver: Updater Field", () => {
 					extensions: { code: "unauthorized_action" },
 				}),
 			);
+		});
+
+		it("should proceed with authentication check when user is authenticated", async () => {
+			const authenticatedCtx = {
+				...ctx,
+				currentClient: {
+					...ctx.currentClient,
+					isAuthenticated: true,
+				},
+			};
+
+			// This test just verifies the authentication check passes
+			// The actual resolver result will depend on other conditions
+			await expect(
+				OrganizationUpdaterResolver.updater(
+					mockOrganization,
+					{},
+					authenticatedCtx,
+				),
+			).resolves.not.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unauthenticated" },
+				}),
+			);
+		});
+
+		it("should throw forbidden_action error when currentUser is not found", async () => {
+			// Mock the usersTable.findFirst to return null/undefined for currentUser
+			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+
+			await expect(
+				OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "forbidden_action" },
+				}),
+			);
+		});
+
+		it("should throw forbidden_action error when currentUser is null", async () => {
+			// Mock the usersTable.findFirst to return null explicitly
+			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(null);
+
+			await expect(
+				OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "forbidden_action" },
+				}),
+			);
+		});
+
+		// Test the positive case
+		it("should not throw forbidden_action error when currentUser exists", async () => {
+			// Using the mockUser that's already set up in beforeEach
+			const result = await OrganizationUpdaterResolver.updater(
+				mockOrganization,
+				{},
+				ctx,
+			);
+
+			// Verify the resolver continues past the currentUser check
+			expect(result).toBeDefined();
 		});
 	});
 
