@@ -3,22 +3,22 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
 // Define types for database fields and operators
-interface DatabaseFields {
+interface UserDatabaseRecord {
 	id: string;
 	organizationId: string;
 	role: string;
 }
 
-interface DatabaseOperators {
+interface QueryOperators {
 	eq: <T>(field: T, value: T) => boolean;
 }
 
-interface OrganizationMembership {
+interface UserOrganizationRole {
 	role: string;
 }
 
-interface UserWithMemberships extends User {
-	organizationMembershipsWhereMember: OrganizationMembership[];
+interface UserWithRoles extends User {
+	organizationMembershipsWhereMember: UserOrganizationRole[];
 }
 
 interface Context {
@@ -38,16 +38,16 @@ interface Context {
 								role: boolean;
 							};
 							where: (
-								fields: DatabaseFields,
-								operators: DatabaseOperators,
+								fields: UserDatabaseRecord,
+								operators: QueryOperators,
 							) => boolean;
 						};
 					};
 					where: (
-						fields: DatabaseFields,
-						operators: DatabaseOperators,
+						fields: UserDatabaseRecord,
+						operators: QueryOperators,
 					) => boolean;
-				}) => Promise<UserWithMemberships | undefined>;
+				}) => Promise<UserWithRoles | undefined>;
 			};
 		};
 	};
@@ -121,9 +121,10 @@ export const OrganizationUpdaterResolver = {
 			ctx.log.warn(
 				`Postgres select operation returned an empty array for organization ${parent.id}'s updaterId (${parent.updaterId}) that isn't null.`,
 			);
+
 			throw new TalawaGraphQLError({
 				extensions: {
-					code: "unexpected",
+					code: "unexpected", // Ensures compliance with defined types
 				},
 			});
 		}
