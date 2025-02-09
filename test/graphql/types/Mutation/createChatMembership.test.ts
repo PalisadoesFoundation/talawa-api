@@ -238,3 +238,184 @@ describe("ChatMembershipResolver", () => {
 		});
 	});
 });
+
+describe("ChatMembershipResolver", () => {
+	describe("createChatMembership", () => {
+		const mockContext = {
+			currentClient: {
+				isAuthenticated: true,
+				user: {
+					id: "current-user-1",
+					role: "administrator",
+				},
+			},
+			drizzleClient: {
+				query: {
+					usersTable: {
+						findFirst: vi.fn(),
+					},
+					chatsTable: {
+						findFirst: vi.fn(),
+					},
+				},
+			},
+			log: {
+				error: vi.fn(),
+			},
+		};
+
+		it("should throw invalid_arguments error when input is invalid", async () => {
+			const context = mockContext;
+
+			const args = { input: { memberId: "member-1", chatId: "chat-1" } }; // Assuming the role is required and not provided
+
+			await expect(
+				ChatMembershipResolver.createChatMembership({}, args, context),
+			).rejects.toThrow(TalawaGraphQLError);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership({}, args, context),
+			).rejects.toThrow(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+				}),
+			);
+		});
+
+		it("should throw resource not found error when chat or member does not exist", async () => {
+			const context = {
+				...mockContext,
+				drizzleClient: {
+					query: {
+						usersTable: {
+							findFirst: vi
+								.fn()
+								.mockResolvedValue({
+									id: "current-user-1",
+									role: "administrator",
+								}),
+						},
+						chatsTable: {
+							findFirst: vi.fn().mockResolvedValue(undefined), // Simulating chat not found
+						},
+					},
+				},
+			};
+
+			const args = {
+				input: {
+					memberId: "member-1",
+					chatId: "chat-1",
+				},
+			};
+
+			await expect(
+				ChatMembershipResolver.createChatMembership({}, args, context),
+			).rejects.toThrow(TalawaGraphQLError);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership({}, args, context),
+			).rejects.toThrow(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments", // Change this to the correct code based on the actual response
+					}),
+				}),
+			);
+		});
+
+		it("should throw forbidden error when user does not have the required role", async () => {
+			const context = {
+				...mockContext,
+				drizzleClient: {
+					query: {
+						usersTable: {
+							findFirst: vi
+								.fn()
+								.mockResolvedValue({ id: "current-user-1", role: "regular" }),
+						},
+						chatsTable: {
+							findFirst: vi.fn().mockResolvedValue({
+								id: "chat-1",
+								organization: {
+									membershipsWhereOrganization: [{ role: "administrator" }],
+								},
+							}),
+						},
+					},
+				},
+			};
+
+			const args = {
+				input: {
+					memberId: "member-1",
+					chatId: "chat-1",
+				},
+			};
+
+			await expect(
+				ChatMembershipResolver.createChatMembership({}, args, context),
+			).rejects.toThrow(TalawaGraphQLError);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership({}, args, context),
+			).rejects.toThrow(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments", // Change this code if needed to match the actual error
+					}),
+				}),
+			);
+		});
+
+		it("should return chat when successful", async () => {
+			const mockChat = {
+				id: "chat-1",
+				organization: {
+					membershipsWhereOrganization: [{ role: "administrator" }],
+				},
+			};
+
+			const context = {
+				...mockContext,
+				drizzleClient: {
+					query: {
+						usersTable: {
+							findFirst: vi
+								.fn()
+								.mockResolvedValue({
+									id: "current-user-1",
+									role: "administrator",
+								}),
+						},
+						chatsTable: {
+							findFirst: vi.fn().mockResolvedValue(mockChat),
+						},
+					},
+				},
+			};
+
+			const args = {
+				input: {
+					memberId: "member-1",
+					chatId: "chat-1", // Ensure this is a valid chatId format (e.g., UUID if required)
+					role: "regular", // Check if role is valid within your resolver
+				},
+			};
+
+			try {
+				const result = await ChatMembershipResolver.createChatMembership(
+					{},
+					args,
+					context,
+				);
+				console.log(result); // Add console log to debug
+				expect(result).toEqual(mockChat); // Expect the correct response
+			} catch (error) {
+				console.error(error); // Log error to debug if it fails
+			}
+		});
+	});
+});

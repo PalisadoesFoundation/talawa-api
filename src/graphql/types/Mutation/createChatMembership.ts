@@ -100,9 +100,9 @@ interface Context {
 
 export const ChatMembershipResolver = {
 	creator: async (
-		parent: ChatMembershipDatabaseRecord,
-		_args: Record<string, never>,
-		ctx: Context,
+		_parent: ChatMembershipDatabaseRecord, // Type for parent
+		_args: Record<string, never>, // Type for args
+		ctx: Context, // Type for ctx
 	): Promise<User | null> => {
 		if (!ctx.currentClient.isAuthenticated) {
 			throw new TalawaGraphQLError({
@@ -128,7 +128,7 @@ export const ChatMembershipResolver = {
 					},
 				},
 			},
-			where: (fields, operators) => operators.eq(fields.id, parent.chatId),
+			where: (fields, operators) => operators.eq(fields.id, _parent.chatId),
 		});
 
 		if (!chat) {
@@ -140,11 +140,11 @@ export const ChatMembershipResolver = {
 		}
 
 		// Return creator information
-		if (!parent.creatorId) {
+		if (!_parent.creatorId) {
 			return null;
 		}
 
-		if (parent.creatorId === currentUserId) {
+		if (_parent.creatorId === currentUserId) {
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 				columns: { role: true },
 				where: (fields, operators) => operators.eq(fields.id, currentUserId),
@@ -154,12 +154,12 @@ export const ChatMembershipResolver = {
 
 		const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
 			columns: { role: true },
-			where: (fields, operators) => operators.eq(fields.id, parent.creatorId),
+			where: (fields, operators) => operators.eq(fields.id, _parent.creatorId),
 		});
 
 		if (!existingUser) {
 			ctx.log.error(
-				`Postgres select operation returned an empty array for chat membership ${parent.id}'s creatorId (${parent.creatorId}) that isn't null.`,
+				`Postgres select operation returned an empty array for chat membership ${_parent.id}'s creatorId (${_parent.creatorId}) that isn't null.`,
 			);
 			throw new TalawaGraphQLError({
 				extensions: {
@@ -169,6 +169,189 @@ export const ChatMembershipResolver = {
 		}
 
 		return existingUser;
+	},
+
+	createChatMembership: async (
+		_parent: unknown, // Type for parent if not used
+		args: {
+			// Define the shape of args
+			input: {
+				memberId: string;
+				chatId: string;
+				role?: string;
+			};
+		},
+		ctx: Context, // Type for ctx
+	) => {
+		if (!ctx.currentClient.isAuthenticated) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "unauthenticated",
+				},
+			});
+		}
+
+		const {
+			data: parsedArgs,
+			error,
+			success,
+		} = mutationCreateChatMembershipArgumentsSchema.safeParse(args);
+
+		if (!success) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "invalid_arguments",
+					issues: error.issues.map((issue) => ({
+						argumentPath: issue.path,
+						message: issue.message,
+					})),
+				},
+			});
+		}
+
+		const currentUserId = ctx.currentClient.user.id;
+
+		const [currentUser, existingChat, existingMember] = await Promise.all([
+			ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			}),
+			ctx.drizzleClient.query.chatsTable.findFirst({
+				with: {
+					chatMembershipsWhereChat: {
+						columns: {
+							role: true,
+						},
+						where: (fields, operators) =>
+							operators.eq(fields.memberId, parsedArgs.input.memberId),
+					},
+					organization: {
+						columns: {
+							countryCode: true,
+						},
+						with: {
+							membershipsWhereOrganization: {
+								columns: {
+									role: true,
+								},
+								where: (fields, operators) =>
+									operators.eq(fields.memberId, currentUserId),
+							},
+						},
+					},
+				},
+				where: (fields, operators) =>
+					operators.eq(fields.id, parsedArgs.input.chatId),
+			}),
+
+			ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) =>
+					operators.eq(fields.id, parsedArgs.input.memberId),
+			}),
+		]);
+
+		if (currentUser === undefined) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "unauthenticated",
+				},
+			});
+		}
+
+		if (existingChat === undefined && existingMember === undefined) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [
+						{
+							argumentPath: ["input", "memberId"],
+						},
+						{
+							argumentPath: ["input", "chatId"],
+						},
+					],
+				},
+			});
+		}
+
+		if (existingChat === undefined) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [
+						{
+							argumentPath: ["input", "chatId"],
+						},
+					],
+				},
+			});
+		}
+
+		if (existingMember === undefined) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "arguments_associated_resources_not_found",
+					issues: [
+						{
+							argumentPath: ["input", "memberId"],
+						},
+					],
+				},
+			});
+		}
+
+		const existingChatMembership = existingChat.chatMembershipsWhereChat[0];
+
+		if (existingChatMembership !== undefined) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "forbidden_action_on_arguments_associated_resources",
+					issues: [
+						{
+							argumentPath: ["input", "chatId"],
+							message: "This chat already has the associated member.",
+						},
+						{
+							argumentPath: ["input", "memberId"],
+							message:
+								"This user already has the membership of the associated chat.",
+						},
+					],
+				},
+			});
+		}
+
+		const currentUserOrganizationMembership =
+			existingChat.organization.membershipsWhereOrganization[0];
+
+		if (
+			currentUser.role !== "administrator" &&
+			(currentUserOrganizationMembership === undefined ||
+				currentUserOrganizationMembership.role !== "administrator")
+		) {
+			const unauthorizedArgumentPaths = getKeyPathsWithNonUndefinedValues({
+				keyPaths: [["input", "role"]],
+				object: parsedArgs,
+			});
+
+			if (unauthorizedArgumentPaths.length !== 0) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_arguments",
+						issues: unauthorizedArgumentPaths.map((argumentPath) => ({
+							argumentPath,
+						})),
+					},
+				});
+			}
+		}
+
+		return existingChat;
 	},
 };
 
