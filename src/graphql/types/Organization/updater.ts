@@ -134,16 +134,11 @@ export const OrganizationUpdaterResolver = {
 			});
 		}
 
-		if (!parent.updaterId) {
-			return null;
-		}
-
 		if (parent.updaterId === currentUserId) {
 			return currentUser;
 		}
 
-		// Handle null updaterId case
-		if (parent.updaterId === null) {
+		if (!parent.updaterId) {
 			return null;
 		}
 

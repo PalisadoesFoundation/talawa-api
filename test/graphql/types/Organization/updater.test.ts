@@ -6,7 +6,6 @@ import { OrganizationUpdaterResolver } from "~/src/graphql/types/Organization/up
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockLogger } from "../../../utilities/mockLogger";
-
 interface ExtendedUser extends User {
 	organizationMembershipsWhereMember: Array<{
 		role: string;
@@ -285,32 +284,6 @@ describe("Organization Resolver: Updater Field", () => {
 				`Postgres select operation returned an empty array for organization ${differentUpdaterOrg.id}'s updaterId (${differentUpdaterOrg.updaterId}) that isn't null.`,
 			);
 		});
-
-		it("should handle missing updater user scenarios appropriately", async () => {
-			const differentUpdaterOrg: TestOrganization = {
-				...mockOrganization,
-				updaterId: "non-existent-id",
-			};
-
-			ctx.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(mockUser) // First call returns current user
-				.mockResolvedValueOnce(undefined); // Second call returns undefined for updater
-
-			await expect(
-				OrganizationUpdaterResolver.updater(differentUpdaterOrg, {}, ctx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					message: "Something went wrong. Please try again later.",
-					extensions: {
-						code: "unexpected",
-					},
-				}),
-			);
-
-			expect(ctx.log.warn).toHaveBeenCalledWith(
-				`Postgres select operation returned an empty array for organization ${differentUpdaterOrg.id}'s updaterId (${differentUpdaterOrg.updaterId}) that isn't null.`,
-			);
-		});
 	});
 
 	describe("Edge Cases", () => {
@@ -436,6 +409,53 @@ describe("Organization Resolver: Updater Field", () => {
 					}),
 				);
 			});
+		});
+	});
+
+	describe("Updater Resolution Tests", () => {
+		it("should return null when updaterId is null", async () => {
+			const nullUpdaterOrg: TestOrganization = {
+				...mockOrganization,
+				updaterId: null,
+			};
+
+			const result = await OrganizationUpdaterResolver.updater(
+				nullUpdaterOrg,
+				{},
+				ctx,
+			);
+
+			expect(result).toBeNull();
+		});
+
+		it("should return null for an organization with empty string updaterId", async () => {
+			const emptyUpdaterOrg: TestOrganization = {
+				...mockOrganization,
+				updaterId: "",
+			};
+
+			const result = await OrganizationUpdaterResolver.updater(
+				emptyUpdaterOrg,
+				{},
+				ctx,
+			);
+
+			expect(result).toBeNull();
+		});
+
+		it("should return current user when updaterId matches current user", async () => {
+			const currentUserOrg: TestOrganization = {
+				...mockOrganization,
+				updaterId: "123",
+			};
+
+			const result = await OrganizationUpdaterResolver.updater(
+				currentUserOrg,
+				{},
+				ctx,
+			);
+
+			expect(result).toEqual(mockUser);
 		});
 	});
 });
