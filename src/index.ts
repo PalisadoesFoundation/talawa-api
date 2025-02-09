@@ -52,6 +52,12 @@ const httpServer =
       )
     : http.createServer(app);
 
+    const logsDirPath = path.resolve(dirname, 'logs');
+    if (!fs.existsSync(logsDirPath)) {
+      fs.mkdirSync(logsDirPath, { recursive: true });
+    }
+    
+
 const server = new ApolloServer({
   schema,
   introspection: true,

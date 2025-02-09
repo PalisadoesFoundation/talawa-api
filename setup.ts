@@ -139,32 +139,47 @@ export async function accessAndRefreshTokens(
   }
 }
 
-function transactionLogPath(logPath: string | null): void {
+import { fileURLToPath } from "url";
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+
+async function transactionLogPath(logPath: string | null): Promise<void> {
   const config = dotenv.parse(fs.readFileSync(".env"));
   config.LOG = "true";
+
   if (!logPath) {
     // Check if the logs/transaction.log file exists, if not, create it
-    const defaultLogPath = path.resolve(__dirname, "logs");
+    const defaultLogPath = path.resolve(dirname, "logs");
     const defaultLogFile = path.join(defaultLogPath, "transaction.log");
+
     if (!fs.existsSync(defaultLogPath)) {
       console.log("Creating logs/transaction.log file...");
-      fs.mkdirSync(defaultLogPath);
+      fs.mkdirSync(defaultLogPath, { recursive: true });
     }
 
     config.LOG_PATH = defaultLogFile;
   } else {
     // Remove the logs files, if exists
-    const logsDirPath = path.resolve(__dirname, "logs");
+    const logsDirPath = path.resolve(dirname, "logs");
+
     if (fs.existsSync(logsDirPath)) {
       fs.readdirSync(logsDirPath).forEach((file: string) => {
         if (file !== "README.md") {
           const curPath = path.join(logsDirPath, file);
-          fs.unlinkSync(curPath);
+          fs.unlinkSync(curPath); // Removes all files except "README.md"
         }
       });
     }
     config.LOG_PATH = logPath;
   }
+
+  // Optionally save the updated configuration
+  fs.writeFileSync(
+    ".env",
+    Object.entries(config)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("\n"),
+  );
 }
 
 async function askForTransactionLogPath(): Promise<string> {
