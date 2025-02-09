@@ -1,7 +1,7 @@
-import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { FundCampaignPledge } from "./FundCampaignPledge";
 import type { ExplicitGraphQLContext, ImplicitMercuriusContext } from '~/src/graphql/context';
+import { FundCampaignPledge } from "./FundCampaignPledge";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { User } from "~/src/graphql/types/User/User";
 
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
 
