@@ -9,7 +9,6 @@ import { Chat } from "~/src/graphql/types/Chat/Chat";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
-// Define types for database fields and operators
 interface ChatMembershipDatabaseRecord {
 	id: string;
 	chatId: string;

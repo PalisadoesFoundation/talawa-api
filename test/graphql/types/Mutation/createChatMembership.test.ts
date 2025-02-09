@@ -290,12 +290,10 @@ describe("ChatMembershipResolver", () => {
 				drizzleClient: {
 					query: {
 						usersTable: {
-							findFirst: vi
-								.fn()
-								.mockResolvedValue({
-									id: "current-user-1",
-									role: "administrator",
-								}),
+							findFirst: vi.fn().mockResolvedValue({
+								id: "current-user-1",
+								role: "administrator",
+							}),
 						},
 						chatsTable: {
 							findFirst: vi.fn().mockResolvedValue(undefined), // Simulating chat not found
@@ -383,12 +381,10 @@ describe("ChatMembershipResolver", () => {
 				drizzleClient: {
 					query: {
 						usersTable: {
-							findFirst: vi
-								.fn()
-								.mockResolvedValue({
-									id: "current-user-1",
-									role: "administrator",
-								}),
+							findFirst: vi.fn().mockResolvedValue({
+								id: "current-user-1",
+								role: "administrator",
+							}),
 						},
 						chatsTable: {
 							findFirst: vi.fn().mockResolvedValue(mockChat),
@@ -411,11 +407,9 @@ describe("ChatMembershipResolver", () => {
 					args,
 					context,
 				);
-				console.log(result); // Add console log to debug
+
 				expect(result).toEqual(mockChat); // Expect the correct response
-			} catch (error) {
-				console.error(error); // Log error to debug if it fails
-			}
+			} catch (error) {}
 		});
 	});
 });
