@@ -55,7 +55,6 @@ const createMockContext = (
 const testPostId = "123e4567-e89b-12d3-a456-426614174000";
 const validArgs = { input: { id: testPostId } };
 
-// Since the input must include an id, we “force” invalid args via a cast.
 const invalidArgs = { input: {} } as unknown as z.infer<
 	typeof mutationDeletePostArgumentsSchema
 >;
@@ -229,7 +228,7 @@ describe("deletePostResolver", () => {
 		);
 	});
 
-	it("should handle concurrent delete attempts gracefully", async () => {
+	it("should succeed on first delete and fail with 'unexpected' error on subsequent attempts due to race condition", async () => {
 		ctx.drizzleClient.query.usersTable.findFirst = vi
 			.fn()
 			.mockResolvedValue({ role: "administrator" });
