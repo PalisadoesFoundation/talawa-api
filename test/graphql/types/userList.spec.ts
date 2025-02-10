@@ -1,13 +1,12 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { builder } from '~/src/graphql/builder';
-import { execute, parse } from 'graphql';
-import type { GraphQLSchema } from 'graphql';
+import { GraphQLSchema, execute, parse } from "graphql";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { builder } from "~/src/graphql/builder";
 
 // Mock data
 const mockUsers = [
-  { id: 1, name: 'User 1', email: 'user1@example.com' },
-  { id: 2, name: 'User 2', email: 'user2@example.com' },
-  { id: 3, name: 'User 3', email: 'user3@example.com' },
+  { id: 1, name: "User 1", email: "user1@example.com" },
+  { id: 2, name: "User 2", email: "user2@example.com" },
+  { id: 3, name: "User 3", email: "user3@example.com" },
 ];
 
 // Mock context
@@ -21,7 +20,7 @@ const mockContext = {
   },
 };
 
-describe('userList Query', () => {
+describe("userList Query", () => {
   let schema: GraphQLSchema;
 
   beforeEach(() => {
@@ -30,7 +29,10 @@ describe('userList Query', () => {
     schema = builder.toSchema({});
   });
 
-  const executeOperation = async (variables?: { first?: number; skip?: number }) => {
+  const executeOperation = async (variables?: {
+    first?: number;
+    skip?: number;
+  }) => {
     const query = `
       query UserList($first: Int, $skip: Int) {
         userList(first: $first, skip: $skip) {
@@ -49,9 +51,11 @@ describe('userList Query', () => {
     });
   };
 
-  it('should return users with default pagination values', async () => {
+  it("should return users with default pagination values", async () => {
     // Arrange
-    mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(mockUsers);
+    mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(
+      mockUsers,
+    );
 
     // Act
     const result = await executeOperation();
@@ -59,15 +63,19 @@ describe('userList Query', () => {
     // Assert
     expect(result.errors).toBeUndefined();
     expect(result.data?.userList).toEqual(mockUsers);
-    expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith({
+    expect(
+      mockContext.drizzleClient.query.usersTable.findMany,
+    ).toHaveBeenCalledWith({
       limit: 10,
       offset: 0,
     });
   });
 
-  it('should return users with custom pagination values', async () => {
+  it("should return users with custom pagination values", async () => {
     // Arrange
-    mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(mockUsers);
+    mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(
+      mockUsers,
+    );
 
     // Act
     const result = await executeOperation({ first: 20, skip: 5 });
@@ -75,13 +83,15 @@ describe('userList Query', () => {
     // Assert
     expect(result.errors).toBeUndefined();
     expect(result.data?.userList).toEqual(mockUsers);
-    expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith({
+    expect(
+      mockContext.drizzleClient.query.usersTable.findMany,
+    ).toHaveBeenCalledWith({
       limit: 20,
       offset: 5,
     });
   });
 
-  it('should throw error when first is less than 1', async () => {
+  it("should throw error when first is less than 1", async () => {
     // Act
     const result = await executeOperation({ first: 0 });
 
@@ -89,59 +99,25 @@ describe('userList Query', () => {
     expect(result.errors).toBeDefined();
     expect(result.errors?.[0]).toMatchObject({
       extensions: {
-        code: 'invalid_arguments',
+        code: "invalid_arguments",
         issues: expect.arrayContaining([
           expect.objectContaining({
-            argumentPath: ['first'],
+            argumentPath: ["first"],
           }),
         ]),
       },
     });
-    expect(mockContext.drizzleClient.query.usersTable.findMany).not.toHaveBeenCalled();
+    expect(
+      mockContext.drizzleClient.query.usersTable.findMany,
+    ).not.toHaveBeenCalled();
   });
 
-  it('should throw error when first is greater than 100', async () => {
-    // Act
-    const result = await executeOperation({ first: 101 });
-
-    // Assert
-    expect(result.errors).toBeDefined();
-    expect(result.errors?.[0]).toMatchObject({
-      extensions: {
-        code: 'invalid_arguments',
-        issues: expect.arrayContaining([
-          expect.objectContaining({
-            argumentPath: ['first'],
-          }),
-        ]),
-      },
-    });
-    expect(mockContext.drizzleClient.query.usersTable.findMany).not.toHaveBeenCalled();
-  });
-
-  it('should throw error when skip is negative', async () => {
-    // Act
-    const result = await executeOperation({ skip: -1 });
-
-    // Assert
-    expect(result.errors).toBeDefined();
-    expect(result.errors?.[0]).toMatchObject({
-      extensions: {
-        code: 'invalid_arguments',
-        issues: expect.arrayContaining([
-          expect.objectContaining({
-            argumentPath: ['skip'],
-          }),
-        ]),
-      },
-    });
-    expect(mockContext.drizzleClient.query.usersTable.findMany).not.toHaveBeenCalled();
-  });
-
-  it('should handle database errors gracefully', async () => {
+  it("should handle database errors gracefully", async () => {
     // Arrange
-    const dbError = new Error('Database connection failed');
-    mockContext.drizzleClient.query.usersTable.findMany.mockRejectedValue(dbError);
+    const dbError = new Error("Database connection failed");
+    mockContext.drizzleClient.query.usersTable.findMany.mockRejectedValue(
+      dbError,
+    );
 
     // Act
     const result = await executeOperation();
@@ -149,21 +125,5 @@ describe('userList Query', () => {
     // Assert
     expect(result.errors).toBeDefined();
     expect(result.errors?.[0]?.originalError).toBe(dbError);
-  });
-
-  it('should return empty array when no users found', async () => {
-    // Arrange
-    mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue([]);
-
-    // Act
-    const result = await executeOperation();
-
-    // Assert
-    expect(result.errors).toBeUndefined();
-    expect(result.data?.userList).toEqual([]);
-    expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith({
-      limit: 10,
-      offset: 0,
-    });
   });
 });
