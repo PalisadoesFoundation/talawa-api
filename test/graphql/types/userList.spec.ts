@@ -11,13 +11,7 @@ const mockUsers = [
 
 // Mock context
 const mockContext = {
-  drizzleClient: {
-    query: {
-      usersTable: {
-        findMany: vi.fn(),
-      },
-    },
-  },
+  drizzleClient: { query: { usersTable: { findMany: vi.fn() } } },
 };
 
 describe("userList Query", () => {
