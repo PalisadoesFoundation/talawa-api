@@ -72,7 +72,6 @@ function mockChatMessagesTableFindFirst(
 }
 // Create a schema for the mutation arguments, matching the resolver's expectations.
 
-// Use a valid UUID format for the id.
 let args: { input: { id: string; body: string } };
 
 describe("updateChatMessage mutation", () => {
