@@ -29,7 +29,10 @@ describe("organizationConnectionList Query", () => {
     schema = builder.toSchema({});
   });
 
-  const executeOperation = async (variables?: { first?: number; skip?: number }) => {
+  const executeOperation = async (variables?: {
+    first?: number;
+    skip?: number;
+  }) => {
     const query = `
       query OrganizationConnectionList($first: Int, $skip: Int) {
         organizationConnectionList(first: $first, skip: $skip) {
@@ -59,7 +62,9 @@ describe("organizationConnectionList Query", () => {
     // Assert
     expect(result.errors).toBeUndefined();
     expect(result.data?.organizationConnectionList).toEqual(mockOrganizations);
-    expect(mockContext.drizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith({
+    expect(
+      mockContext.drizzleClient.query.organizationsTable.findMany,
+    ).toHaveBeenCalledWith({
       limit: 10,
       offset: 0,
     });
@@ -77,7 +82,9 @@ describe("organizationConnectionList Query", () => {
     // Assert
     expect(result.errors).toBeUndefined();
     expect(result.data?.organizationConnectionList).toEqual(mockOrganizations);
-    expect(mockContext.drizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith({
+    expect(
+      mockContext.drizzleClient.query.organizationsTable.findMany,
+    ).toHaveBeenCalledWith({
       limit: 20,
       offset: 5,
     });
