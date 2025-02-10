@@ -10,20 +10,8 @@ import {
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { ChatMembershipResolver } from "../../../../src/graphql/types/Mutation/createChatMembership";
 
-type Fields = { [key: string]: any }; // Replace with actual field types
-type Operators = { eq: (field: string, value: any) => boolean };
-
-
 describe("ChatMembershipResolver", () => {
-
 	describe("creator", () => {
-		let parsedArgs = {
-			input: {
-			  chatId: 'chat-id-123',
-			  memberId: 'member-id-123',
-			},
-		  };
-
 		let mockParent: {
 			id: string;
 			chatId: string;
@@ -32,7 +20,6 @@ describe("ChatMembershipResolver", () => {
 			creatorId: string;
 		};
 
-		
 		let mockContext: {
 			currentClient: {
 				isAuthenticated: boolean;
@@ -57,7 +44,7 @@ describe("ChatMembershipResolver", () => {
 
 		const defaultArgs = {
 			input: {
-				memberId: "member-1", 
+				memberId: "member-1",
 				chatId: "chat-1",
 				role: "member",
 			},
@@ -94,33 +81,6 @@ describe("ChatMembershipResolver", () => {
 				},
 			};
 		});
-
-		const currentUserId = 123456;
-
-		const ctx = {
-			drizzleClient: {
-			  query: {
-				usersTable: {
-				  findFirst: vi.fn().mockResolvedValue({ role: 'administrator' }),
-				},
-				chatsTable: {
-				  findFirst: vi.fn().mockResolvedValue({
-					chatMembershipsWhereChat: { role: 'member' },
-					organization: {
-					  countryCode: 'US',
-					  membershipsWhereOrganization: { role: 'administrator' },
-					},
-				  }),
-				},
-			  
-			},
-			},
-			currentClient: {
-			  user: {
-				id: currentUserId, // Use the mocked user ID here
-			  },
-			},
-		  };
 
 		afterEach(() => {
 			vi.clearAllMocks();
@@ -471,133 +431,6 @@ describe("ChatMembershipResolver", () => {
 						}),
 					}),
 				);
-			});
-		});
-
-		
-		describe('Authentication Test for ChatMembershipResolver', () => {
-			const currentUserId = 'user-id-123';
-			const memberId = 'member-id-456';
-			const chatId = 'chat-id-789';
-
-		
-			it('should throw unauthenticated error if currentUser is not found', async () => {
-			  // Mock the usersTable query to return undefined (user not found)
-			  ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(undefined);
-		  
-			  try {
-				await Promise.all([
-				  ctx.drizzleClient.query.usersTable.findFirst({
-					columns: { role: true },
-					where: (fields: Fields, operators: Operators) => operators.eq(fields.id, currentUserId),
-				  }),
-				  ctx.drizzleClient.query.chatsTable.findFirst({
-					with: {
-					  chatMembershipsWhereChat: { columns: { role: true }, where: (fields: Fields, operators: Operators) => operators.eq(fields.memberId, memberId) },
-					  organization: {
-						columns: { countryCode: true },
-						with: { membershipsWhereOrganization: { columns: { role: true }, where: (fields: Fields, operators: Operators) => operators.eq(fields.memberId, currentUserId) } },
-					  },
-					},
-					where: (fields: Fields, operators: Operators) => operators.eq(fields.id, chatId),
-				  }),
-				  ctx.drizzleClient.query.usersTable.findFirst({
-					columns: { role: true },
-					where: (fields: Fields, operators: Operators) => operators.eq(fields.id, memberId),
-				  }),
-				]);
-			  } catch (error) {
-				expect(error).toBeInstanceOf(TalawaGraphQLError);
-				try {
-					// Your code that might throw an error
-				  } catch (error: unknown) {
-					if (error instanceof Error) {
-					  // Now TypeScript knows that 'error' is an instance of Error
-					  console.error(error.message); // Access 'message' property
-					  expect(error).toBeInstanceOf(TalawaGraphQLError);
-					} else {
-					  // Handle other types of errors, if needed
-					  console.error("An unknown error occurred");
-					}
-				  }
-				  
-			  }
-			});
-		  
-			it('should fetch current user, existing chat, and existing member data', async () => {
-			  const mockUser = { role: 'administrator' };
-			  const mockChat = {
-				chatMembershipsWhereChat: { role: 'member' },
-				organization: { countryCode: 'US', membershipsWhereOrganization: { role: 'administrator' } },
-			  };
-			  const mockMember = { role: 'member' };
-		  
-			  // Mock successful responses for all queries
-			  ctx.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(mockUser) // for current user
-				.mockResolvedValueOnce(mockMember); // for member
-		  
-			  ctx.drizzleClient.query.chatsTable.findFirst.mockResolvedValueOnce(mockChat); // for chat
-		  
-			  const [currentUser, existingChat, existingMember] = await Promise.all([
-				ctx.drizzleClient.query.usersTable.findFirst({
-				  columns: { role: true },
-				  where: (fields: Fields, operators: Operators) => operators.eq(fields.id, currentUserId),
-				}),
-				ctx.drizzleClient.query.chatsTable.findFirst({
-				  with: {
-					chatMembershipsWhereChat: { columns: { role: true }, where: (fields: Fields, operators: Operators) => operators.eq(fields.memberId, memberId) },
-					organization: {
-					  columns: { countryCode: true },
-					  with: { membershipsWhereOrganization: { columns: { role: true }, where: (fields: Fields, operators: Operators) => operators.eq(fields.memberId, currentUserId) } },
-					},
-				  },
-				  where: (fields: Fields, operators: Operators) => operators.eq(fields.id, chatId),
-				}),
-				ctx.drizzleClient.query.usersTable.findFirst({
-				  columns: { role: true },
-				  where: (fields: Fields, operators: Operators) => operators.eq(fields.id, memberId),
-				}),
-			  ]);
-		  
-			  expect(currentUser).toEqual({ role: 'administrator' });
-			  expect(existingChat).toEqual({
-				chatMembershipsWhereChat: { role: 'member' },
-				organization: { countryCode: 'US', membershipsWhereOrganization: { role: 'administrator' } },
-			  });
-			  expect(existingMember).toEqual({ role: 'member' });
-			});
-		  
-			it('should handle when chat or member data is not found', async () => {
-			  // Mock cases where chat or member are not found
-			  ctx.drizzleClient.query.chatsTable.findFirst.mockResolvedValueOnce(null); // no chat found
-			  ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(null); // no member found
-		  
-			  try {
-				await Promise.all([
-				  ctx.drizzleClient.query.usersTable.findFirst({
-					columns: { role: true },
-					where: (fields: Fields, operators: Operators) => operators.eq(fields.id, currentUserId),
-				  }),
-				  ctx.drizzleClient.query.chatsTable.findFirst({
-					with: {
-					  chatMembershipsWhereChat: { columns: { role: true }, where: (fields: Fields, operators: Operators) => operators.eq(fields.memberId, memberId) },
-					  organization: {
-						columns: { countryCode: true },
-						with: { membershipsWhereOrganization: { columns: { role: true }, where: (fields: Fields, operators: Operators) => operators.eq(fields.memberId, currentUserId) } },
-					  },
-					},
-					where: (fields: Fields, operators: Operators) => operators.eq(fields.id, chatId),
-				  }),
-				  ctx.drizzleClient.query.usersTable.findFirst({
-					columns: { role: true },
-					where: (fields: Fields, operators: Operators) => operators.eq(fields.id, memberId),
-				  }),
-				]);
-			  } catch (error) {
-				// Verify that the error handling works correctly
-				expect(error).toBeInstanceOf(TalawaGraphQLError);
-			  }
 			});
 		});
 	});
