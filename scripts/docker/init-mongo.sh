@@ -6,7 +6,7 @@ echo "Starting MongoDB..."
 container_id=$(hostname) 
 echo "Container ID is: $container_id"
 
-# Handle cleanup on script exit
+# Cleanup on script exit
 cleanup() {
     echo "MongoDB container is shutting down..."
     mongod --shutdown || kill $MONGOD_PID
@@ -28,10 +28,10 @@ done
 echo "MongoDB connection successful."
 
 # Wait for PRIMARY status
-timeout=60  # Increased timeout
+timeout=90  # Increased timeout
 start_time=$(date +%s)
 while true; do
-    if mongosh --quiet --eval "db.isMaster().ismaster" | grep -q "true"; then
+    if mongosh --quiet --eval "db.hello().isWritablePrimary" | grep -q "true"; then
         echo "Primary node elected."
         break
     fi
@@ -42,7 +42,8 @@ while true; do
         exit 1
     fi
 
-    sleep 1
+    echo "Waiting for primary election..."
+    sleep 2
 done
 
 # Check if replica set is already initialized
@@ -57,7 +58,7 @@ else
             {
                 _id: 0,
                 host: "mongo:27017",
-                priority: 2
+                priority: 1
             }
         ]
     }'
@@ -82,6 +83,7 @@ else
 fi
 
 # Final replica set status check
+sleep 5  # Allow MongoDB to stabilize
 mongosh --quiet --eval 'rs.status()' || echo "Replica set status check failed"
 
 # Keep the container running
