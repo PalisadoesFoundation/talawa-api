@@ -25,14 +25,11 @@ describe("organizationConnectionList Query", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockContext.drizzleClient.query.organizationsTable.findMany.mockReset();
     schema = builder.toSchema({});
+    mockContext.drizzleClient.query.organizationsTable.findMany.mockReset();
   });
 
-  const executeOperation = async (variables?: {
-    first?: number;
-    skip?: number;
-  }) => {
+  const executeOperation = async (variables?: { first?: number; skip?: number }) => {
     const query = `
       query OrganizationConnectionList($first: Int, $skip: Int) {
         organizationConnectionList(first: $first, skip: $skip) {
@@ -52,9 +49,7 @@ describe("organizationConnectionList Query", () => {
 
   it("should return organizations with default pagination values", async () => {
     // Arrange
-    mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(
-      mockOrganizations,
-    );
+    mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(mockOrganizations);
 
     // Act
     const result = await executeOperation();
@@ -62,9 +57,7 @@ describe("organizationConnectionList Query", () => {
     // Assert
     expect(result.errors).toBeUndefined();
     expect(result.data?.organizationConnectionList).toEqual(mockOrganizations);
-    expect(
-      mockContext.drizzleClient.query.organizationsTable.findMany,
-    ).toHaveBeenCalledWith({
+    expect(mockContext.drizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith({
       limit: 10,
       offset: 0,
     });
@@ -72,9 +65,7 @@ describe("organizationConnectionList Query", () => {
 
   it("should return organizations with custom pagination values", async () => {
     // Arrange
-    mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(
-      mockOrganizations,
-    );
+    mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(mockOrganizations);
 
     // Act
     const result = await executeOperation({ first: 20, skip: 5 });
@@ -82,15 +73,13 @@ describe("organizationConnectionList Query", () => {
     // Assert
     expect(result.errors).toBeUndefined();
     expect(result.data?.organizationConnectionList).toEqual(mockOrganizations);
-    expect(
-      mockContext.drizzleClient.query.organizationsTable.findMany,
-    ).toHaveBeenCalledWith({
+    expect(mockContext.drizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith({
       limit: 20,
       offset: 5,
     });
   });
 
-  it("should throw error when first is less than 1", async () => {
+  it("should throw an error when first is less than 1", async () => {
     // Act
     const result = await executeOperation({ first: 0 });
 
@@ -100,9 +89,7 @@ describe("organizationConnectionList Query", () => {
       extensions: {
         code: "invalid_arguments",
         issues: expect.arrayContaining([
-          expect.objectContaining({
-            argumentPath: ["first"],
-          }),
+          expect.objectContaining({ argumentPath: ["first"] }),
         ]),
       },
     });
@@ -119,6 +106,6 @@ describe("organizationConnectionList Query", () => {
 
     // Assert
     expect(result.errors).toBeDefined();
-    expect(result.errors?.[0]?.originalError).toBe(dbError);
+    expect(result.errors?.[0]?.message).toBe("Database connection failed");
   });
 });
