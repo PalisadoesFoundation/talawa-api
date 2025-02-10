@@ -1,4 +1,4 @@
-import { GraphQLSchema, execute, parse } from "graphql";
+import { type GraphQLSchema, execute, parse } from "graphql";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { builder } from "~/src/graphql/builder";
 
