@@ -147,6 +147,6 @@ describe('organizationConnectionList Query', () => {
 
     // Assert
     expect(result.errors).toBeDefined();
-    expect(result.errors && result.errors[0]?.originalError).toBe(dbError);
+    expect(result.errors?.[0]?.originalError).toBe(dbError);
   });
 });
