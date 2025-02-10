@@ -1,0 +1,58 @@
+[
+  {
+    "id": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5e",
+    "name": "Unity Foundation 1",
+    "addressLine1": "123 Random Street",
+    "addressLine2": "Apartment 456",
+    "avatar": null,
+    "city": "Bronx",
+    "countryCode": "us",
+    "description": "A foundation aimed at uniting the world and making it a better place for all.",
+    "postalCode": "10451",
+    "state": "NYC",
+    "createdAt": "2023-04-13T04:53:17.742Z",
+    "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc"
+  },
+  {
+    "id": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5f",
+    "name": "Unity Foundation 2",
+    "addressLine1": "123 Coffee Street",
+    "addressLine2": "Apartment 501",
+    "avatar": null,
+    "city": "Queens",
+    "countryCode": "us",
+    "description": "We are aimed at improving the education spaces for the underprivileged girl child.",
+    "postalCode": "11427",
+    "state": "NYC",
+    "createdAt": "2023-04-13T04:53:17.742Z",
+    "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc"
+  },
+  {
+    "id": "cd3e4f5b-6a7c-8d9e-0f1a-2b3c4d5e6f7a",
+    "name": "Unity Foundation 3",
+    "addressLine1": "123 Church Street",
+    "addressLine2": "Apartment 499",
+    "avatar": null,
+    "city": "Staten Island",
+    "countryCode": "us",
+    "description": "A place where money and power doesn't matter. Free legal aid to everyone.",
+    "postalCode": "10301",
+    "state": "NYC",
+    "createdAt": "2023-04-13T04:53:17.742Z",
+    "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc"
+  },
+  {
+    "id": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+    "name": "Unity Foundation 4",
+    "addressLine1": "123 Main Street",
+    "addressLine2": "Apt 456",
+    "avatar": null,
+    "city": "Brooklyn",
+    "countryCode": "us",
+    "description": "A foundation aimed at improving the lives of old age citizens.",
+    "postalCode": "10004",
+    "state": "NY",
+    "createdAt": "2023-04-13T04:53:17.742Z",
+    "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc"
+  }
+]
