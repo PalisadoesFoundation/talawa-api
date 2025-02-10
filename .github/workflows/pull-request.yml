@@ -312,3 +312,20 @@ jobs:
           source venv/bin/activate
           python .github/workflows/scripts/check_docstrings.py --directories .github
 
+
+  # Import-Sample-Data:
+  #   name: Import Sample Data
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout this repository
+  #       uses: actions/checkout@v4.2.2
+  #     - name: Create .env file for talawa api testing environment
+  #       run: cp ./envFiles/.env.ci ./.env
+  #     - name: Build talawa api non production environment docker image
+  #       run: docker compose build
+  #     - name: Run import:sample-data
+  #       uses: addnab/docker-run-action@v3
+  #       with:
+  #         image: talawa_api
+  #         options: --env-file ./envFiles/.env.ci
+  #         run: pnpm run import:sample-data
