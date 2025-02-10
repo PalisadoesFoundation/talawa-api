@@ -6,10 +6,10 @@ services:
     container_name: mongo
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 30s
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 10s
       timeout: 5s
-      retries: 30
+      retries: 10
     deploy:
       resources:
         limits:
@@ -101,6 +101,11 @@ services:
       - $PWD/site:/srv
       - caddy_data:/data
       - caddy_config:/config
+    healthcheck:
+     test: ["CMD", "curl", "-f", "http://localhost:4000/graphql"]
+     interval: 10s
+     timeout: 5s
+     retries: 5
     deploy:
       resources:
         limits:
