@@ -67,11 +67,7 @@ const authenticatedContext: TestContext = {
 	},
 	minio: {
 		bucketName: "talawa",
-		client: {
-			listBuckets: vi.fn(),
-			putObject: vi.fn(),
-			getObject: vi.fn(),
-		} as unknown as MinioClient,
+		client: {} as MinioClient, // minimal mock that satisfies the type
 	},
 	pubsub: {
 		publish: vi.fn(),
