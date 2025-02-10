@@ -139,11 +139,9 @@ suite("Query field fund", () => {
 			);
 		});
 
-		test("returns fund data if user is organization member", async () => {
+		test("with 'unauthorized_action_on_arguments_associated_resources' if non-admin user is not a member of fund's organization", async () => {
 			const regularUserResult = await createRegularUser();
-			const { fundId, orgId } = await createFund();
-
-			await addUserToOrg(regularUserResult.userId, orgId);
+			const { fundId } = await createFund();
 
 			const fundResult = await mercuriusClient.query(Query_fund, {
 				headers: {
@@ -156,110 +154,34 @@ suite("Query field fund", () => {
 				},
 			});
 
-			expect(fundResult.errors).toBeUndefined();
-			expect(fundResult.data.fund).toEqual(
-				expect.objectContaining({
-					id: fundId,
-					isTaxDeductible: expect.any(Boolean),
-					name: expect.any(String),
-				}),
+			expect(fundResult.data.fund).toEqual(null);
+			expect(fundResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions:
+							expect.objectContaining<UnauthorizedActionOnArgumentsAssociatedResourcesExtensions>(
+								{
+									code: "unauthorized_action_on_arguments_associated_resources",
+									issues: [
+										{
+											argumentPath: ["input", "id"],
+										},
+									],
+								},
+							),
+						message: expect.any(String),
+						path: ["fund"],
+					}),
+				]),
 			);
 		});
 	});
 
-	// Test helper functions
-	async function createRegularUser() {
-		const adminAuthToken = await getAdminAuthToken();
-
-		// Create regular user as admin
-		const userResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-			},
-			variables: {
-				input: {
-					emailAddress: `email${faker.string.uuid()}@test.com`,
-					password: "password123",
-					role: "regular",
-					name: "Test User",
-					isEmailAddressVerified: false,
-				},
-			},
-		});
-
-		assertToBeNonNullish(userResult.data?.createUser?.authenticationToken);
-		assertToBeNonNullish(userResult.data?.createUser?.user?.id);
-
-		return {
-			authToken: userResult.data.createUser.authenticationToken,
-			userId: userResult.data.createUser.user.id,
-		};
-	}
-
-	async function createFund() {
-		const adminAuthToken = await getAdminAuthToken();
-
-		// Create organization
-		const createOrgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						name: `Org ${faker.string.uuid()}`,
-						countryCode: "us",
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
-		const orgId = createOrgResult.data.createOrganization.id;
-
-		// Create fund
-		const createFundResult = await mercuriusClient.mutate(Mutation_createFund, {
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-			},
-			variables: {
-				input: {
-					name: `Fund ${faker.string.uuid()}`,
-					organizationId: orgId,
-					isTaxDeductible: false,
-				},
-			},
-		});
-
-		assertToBeNonNullish(createFundResult.data?.createFund?.id);
-
-		return {
-			fundId: createFundResult.data.createFund.id,
-			orgId,
-		};
-	}
-
-	async function addUserToOrg(userId: string, orgId: string) {
-		const adminAuthToken = await getAdminAuthToken();
-
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-			},
-			variables: {
-				input: {
-					memberId: userId,
-					organizationId: orgId,
-					role: "regular",
-				},
-			},
-		});
-	}
-
-	test("with 'unauthorized_action_on_arguments_associated_resources' if non-admin user is not a member of fund's organization", async () => {
+	test("returns fund data if user is organization member", async () => {
 		const regularUserResult = await createRegularUser();
-		const { fundId } = await createFund();
+		const { fundId, orgId } = await createFund();
+
+		await addUserToOrg(regularUserResult.userId, orgId);
 
 		const fundResult = await mercuriusClient.query(Query_fund, {
 			headers: {
@@ -272,89 +194,50 @@ suite("Query field fund", () => {
 			},
 		});
 
-		expect(fundResult.data.fund).toEqual(null);
-		expect(fundResult.errors).toEqual(
-			expect.arrayContaining<TalawaGraphQLFormattedError>([
-				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions:
-						expect.objectContaining<UnauthorizedActionOnArgumentsAssociatedResourcesExtensions>(
-							{
-								code: "unauthorized_action_on_arguments_associated_resources",
-								issues: [
-									{
-										argumentPath: ["input", "id"],
-									},
-								],
-							},
-						),
-					message: expect.any(String),
-					path: ["fund"],
-				}),
-			]),
+		expect(fundResult.errors).toBeUndefined();
+		expect(fundResult.data.fund).toEqual(
+			expect.objectContaining({
+				id: fundId,
+				isTaxDeductible: expect.any(Boolean),
+				name: expect.any(String),
+			}),
 		);
 	});
-});
 
-test("returns fund data if user is an admin", async () => {
-	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+	test("returns fund data if user is an admin", async () => {
+		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
 			},
-		},
-	});
+		});
 
-	assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
 
-	const { fundId } = await createFund();
+		const { fundId } = await createFund();
 
-	const fundResult = await mercuriusClient.query(Query_fund, {
-		headers: {
-			authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
-		},
-		variables: {
-			input: {
+		const fundResult = await mercuriusClient.query(Query_fund, {
+			headers: {
+				authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+			},
+			variables: {
+				input: {
+					id: fundId,
+				},
+			},
+		});
+
+		expect(fundResult.errors).toBeUndefined();
+		expect(fundResult.data.fund).toEqual(
+			expect.objectContaining({
 				id: fundId,
-			},
-		},
+				isTaxDeductible: expect.any(Boolean),
+				name: expect.any(String),
+			}),
+		);
 	});
-
-	expect(fundResult.errors).toBeUndefined();
-	expect(fundResult.data.fund).toEqual(
-		expect.objectContaining({
-			id: fundId,
-			isTaxDeductible: expect.any(Boolean),
-			name: expect.any(String),
-		}),
-	);
-});
-
-test("returns fund data if user is organization member", async () => {
-	const regularUserResult = await createRegularUser();
-	const { fundId, orgId } = await createFund();
-
-	await addUserToOrg(regularUserResult.userId, orgId);
-
-	const fundResult = await mercuriusClient.query(Query_fund, {
-		headers: {
-			authorization: `bearer ${regularUserResult.authToken}`,
-		},
-		variables: {
-			input: {
-				id: fundId,
-			},
-		},
-	});
-
-	expect(fundResult.errors).toBeUndefined();
-	expect(fundResult.data.fund).toEqual(
-		expect.objectContaining({
-			id: fundId,
-			isTaxDeductible: expect.any(Boolean),
-			name: expect.any(String),
-		}),
-	);
 });
 
 suite("Funds schema validation and field behavior", () => {
@@ -656,7 +539,8 @@ interface TestFund {
 // Retry configuration
 const RETRY_OPTIONS = {
 	maxRetries: 3,
-	delay: 1000, // ms
+	initialDelay: 1000, // ms
+	maxDelay: 5000, // ms
 };
 
 async function retry<T>(
@@ -671,7 +555,11 @@ async function retry<T>(
 		} catch (error) {
 			lastError = error as Error;
 			if (attempt < options.maxRetries) {
-				await new Promise((resolve) => setTimeout(resolve, options.delay));
+				const delay = Math.min(
+					options.initialDelay * 2 ** (attempt - 1),
+					options.maxDelay,
+				);
+				await new Promise((resolve) => setTimeout(resolve, delay));
 				console.warn(`Retry attempt ${attempt} after error:`, error);
 			}
 		}
