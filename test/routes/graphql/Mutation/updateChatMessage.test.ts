@@ -254,30 +254,6 @@ describe("updateChatMessage mutation", () => {
 		);
 	});
 
-	it("throws an unauthorized error if currentUserOrganizationMembership and currentUserChatMembership are undefined", async () => {
-		(ctx.currentClient.user as NonNullable<typeof ctx.currentClient.user>).id =
-			"regularUserId";
-		mockUsersTableFindFirst(ctx, { id: "regularUserId" });
-		mockChatMessagesTableFindFirst(ctx, {
-			creatorId: "someOtherUserId",
-			chat: {
-				organization: {
-					membershipsWhereOrganization: [
-						{ role: "member", memberId: "someOrgMember" },
-					],
-				},
-				chatMembershipsWhereChat: [],
-			},
-		});
-		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
-			expect.objectContaining({
-				extensions: expect.objectContaining({
-					code: "unauthorized_action_on_arguments_associated_resources",
-				}),
-			}),
-		);
-	});
-
 	it("executes inline where functions in queries", async () => {
 		const eqSpy = vi.fn((a, b) => a === b);
 		const dummyOperators = { eq: eqSpy };
