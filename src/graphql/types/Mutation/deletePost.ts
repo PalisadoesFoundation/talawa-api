@@ -130,7 +130,6 @@ export async function deletePostResolver(
 	});
 }
 
-// Register the mutation resolver with the builder
 builder.mutationField("deletePost", (t) =>
 	t.field({
 		args: {
