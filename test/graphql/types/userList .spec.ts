@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { builder } from '~/src/graphql/builder';
-import { execute, GraphQLSchema, parse } from 'graphql';
+import { execute, parse } from 'graphql';
+import type { GraphQLSchema } from 'graphql';
 
 // Mock data
 const mockUsers = [
