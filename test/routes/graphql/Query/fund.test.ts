@@ -179,9 +179,11 @@ suite("Query field fund", () => {
 
 	test("with 'unauthenticated' extensions code if authorization token is malformed", async () => {
 		const fundId = faker.string.uuid();
+		const invalidToken = Buffer.from("invalid-token").toString("base64");
+
 		const fundResult = await mercuriusClient.query(Query_fund, {
 			headers: {
-				authorization: "malformed_token",
+				authorization: `bearer ${invalidToken}`,
 			},
 			variables: {
 				input: {
@@ -206,8 +208,17 @@ suite("Query field fund", () => {
 
 	test("with 'unauthenticated' extensions code if authorization token is expired", async () => {
 		const fundId = faker.string.uuid();
-		const expiredToken =
-			"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjF9.DlOeaAiW9JJthDkhcLvMoJqFWZkiKnYAg4gXxHl6HN4";
+
+		// Generate an expired token with current time - 1 hour
+		const expiredTimestamp = Math.floor(Date.now() / 1000) - 3600;
+		const payload = {
+			exp: expiredTimestamp,
+			iat: expiredTimestamp - 3600,
+			sub: faker.string.uuid(),
+		};
+		const expiredToken = Buffer.from(JSON.stringify(payload)).toString(
+			"base64",
+		);
 
 		const fundResult = await mercuriusClient.query(Query_fund, {
 			headers: {
