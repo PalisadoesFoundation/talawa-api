@@ -1,9 +1,16 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
 import type { MercuriusContext } from "mercurius";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GraphQLContext } from "~/src/graphql/context";
-import type { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  MockedFunction as viMockedFunction,
+} from "vitest";
+import type { GraphQLContext } from "../../../../src/graphql/context";
+import type { User } from "../../../../src/graphql/types/User/User";
+import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
 
 type ResolverContext = GraphQLContext & MercuriusContext;
 
@@ -20,7 +27,7 @@ interface TestContext extends Pick<MercuriusContext, "reply"> {
   drizzleClient: {
     query: {
       usersTable: {
-        findFirst: vi.MockedFunction<
+        findFirst: viMockedFunction<
           (params: {
             columns?: Record<string, boolean>;
             with?: Record<string, unknown>;
@@ -94,17 +101,7 @@ const resolveCreator = async (
   parent: OrganizationParent,
   _args: Record<string, never>,
   ctx: ResolverContext,
-): Promise<typeof User | null> => {
-  if (!ctx.currentClient.isAuthenticated || !ctx.currentClient.user?.id) {
-    throw new TalawaGraphQLError({
-      extensions: {
-        code: "unauthenticated",
-      },
-    });
-  }
-
-  const currentUserId = ctx.currentClient.user.id;
-
+): Promise<User | null> => {
   const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
     columns: {
       role: true,
@@ -114,16 +111,11 @@ const resolveCreator = async (
         columns: {
           role: true,
         },
-        where: (
-          fields: { organizationId: string },
-          operators: { eq: (field: string, value: string) => boolean },
-        ) => operators.eq(fields.organizationId, parent.id),
+        where: (fields, operators) =>
+          operators.eq(fields.organizationId, parent.id),
       },
     },
-    where: (
-      fields: { id: string },
-      operators: { eq: (field: string, value: string) => boolean },
-    ) => operators.eq(fields.id, currentUserId),
+    where: (fields, operators) => operators.eq(fields.id, currentUser),
   });
 
   if (!currentUser) {
@@ -399,71 +391,69 @@ describe("Organization Resolver - Creator Field", () => {
       expect(result).toEqual(mockCreator);
     });
 
-    describe("Edge Cases", () => {
-      it("should verify columns are correctly specified in the user query", async () => {
-        const mockUser = createMockUser("administrator");
+    it("should verify columns are correctly specified in the user query", async () => {
+      const mockUser = createMockUser("administrator");
 
-        let columnsVerified = false;
-        ctx.drizzleClient.query.usersTable.findFirst.mockImplementationOnce(
-          async (params: { columns: Record<string, boolean> }) => {
-            expect(params.columns).toEqual({ role: true });
-            columnsVerified = true;
+      let columnsVerified = false;
+      ctx.drizzleClient.query.usersTable.findFirst.mockImplementationOnce(
+        async (params: { columns: Record<string, boolean> }) => {
+          expect(params.columns).toEqual({ role: true });
+          columnsVerified = true;
+          return mockUser;
+        },
+      );
+
+      const mockCreator = {
+        id: "creator-456",
+        role: "member",
+      };
+      ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+        mockCreator,
+      );
+
+      await resolveCreator(
+        mockOrganization,
+        {},
+        ctx as unknown as ResolverContext,
+      );
+
+      expect(columnsVerified).toBe(true);
+    });
+
+    it("should handle concurrent access to creator information", async () => {
+      const mockUser = createMockUser("administrator");
+      const mockCreator = {
+        id: "creator-456",
+        role: "member",
+      };
+
+      // Set up mock to handle multiple calls
+      ctx.drizzleClient.query.usersTable.findFirst.mockImplementation(
+        async (params) => {
+          // Return mockUser for authentication checks
+          if (params.columns?.role) {
             return mockUser;
-          },
+          }
+          // Return mockCreator for creator lookups
+          return mockCreator;
+        },
+      );
+
+      // Simulate concurrent requests
+      const requests = Array(5)
+        .fill(null)
+        .map(() =>
+          resolveCreator(
+            mockOrganization,
+            {},
+            ctx as unknown as ResolverContext,
+          ),
         );
 
-        const mockCreator = {
-          id: "creator-456",
-          role: "member",
-        };
-        ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-          mockCreator,
-        );
-
-        await resolveCreator(
-          mockOrganization,
-          {},
-          ctx as unknown as ResolverContext,
-        );
-
-        expect(columnsVerified).toBe(true);
-      });
-
-      it("should handle concurrent access to creator information", async () => {
-        const mockUser = createMockUser("administrator");
-        const mockCreator = {
-          id: "creator-456",
-          role: "member",
-        };
-
-        // Set up mock to handle multiple calls
-        ctx.drizzleClient.query.usersTable.findFirst.mockImplementation(
-          async (params) => {
-            // Return mockUser for authentication checks
-            if (params.columns?.role) {
-              return mockUser;
-            }
-            // Return mockCreator for creator lookups
-            return mockCreator;
-          },
-        );
-
-        // Simulate concurrent requests
-        const requests = Array(5)
-          .fill(null)
-          .map(() =>
-            resolveCreator(
-              mockOrganization,
-              {},
-              ctx as unknown as ResolverContext,
-            ),
-          );
-
-        const results = await Promise.all(requests);
-        results.forEach((result) => {
-          expect(result).toEqual(mockCreator);
-        });
-      });
+      const results = await Promise.all(requests);
+      for (const result of results) {
+        expect(result).toEqual(mockCreator);
+      }
     });
   });
 });
