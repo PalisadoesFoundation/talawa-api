@@ -15,12 +15,23 @@ interface CurrentClient {
   };
 }
 
-interface TestContext extends Partial<MercuriusContext> {
+interface TestContext extends Pick<MercuriusContext, "reply"> {
   currentClient: CurrentClient;
   drizzleClient: {
     query: {
       usersTable: {
-        findFirst: ReturnType<typeof vi.fn>;
+        findFirst: vi.MockedFunction<
+          (params: {
+            columns?: Record<string, boolean>;
+            with?: Record<string, unknown>;
+            where?: (
+              fields: Record<string, unknown>,
+              operators: {
+                eq: (field: unknown, value: unknown) => boolean;
+              },
+            ) => boolean;
+          }) => Promise<unknown>
+        >;
       };
     };
   };
@@ -36,6 +47,48 @@ interface OrganizationParent {
   id: string;
   creatorId: string | null;
 }
+
+// Add these helper functions at the top of the test file
+const createMockUser = (
+  role: string,
+  memberships: Array<{ role: string }> = [],
+) => ({
+  role,
+  organizationMembershipsWhereMember: memberships,
+});
+
+const createMockContext = (overrides?: Partial<TestContext>): TestContext => ({
+  currentClient: {
+    isAuthenticated: true,
+    user: {
+      id: "user-123",
+      role: "member",
+    },
+  },
+  drizzleClient: {
+    query: {
+      usersTable: {
+        findFirst: vi.fn(),
+      },
+    },
+  },
+  log: {
+    warn: vi.fn(),
+  },
+  app: {
+    addHook: vi.fn(),
+    decorate: vi.fn(),
+    get: vi.fn(),
+    post: vi.fn(),
+  } as unknown as FastifyInstance,
+  reply: {
+    code: vi.fn(),
+    send: vi.fn(),
+    header: vi.fn(),
+  } as unknown as FastifyReply,
+  __currentQuery: "query { test }",
+  ...overrides,
+});
 
 const resolveCreator = async (
   parent: OrganizationParent,
@@ -61,17 +114,24 @@ const resolveCreator = async (
         columns: {
           role: true,
         },
-        where: (fields: { organizationId: any; }, operators: { eq: (arg0: any, arg1: string) => any; }) =>
-          operators.eq(fields.organizationId, parent.id),
+        where: (
+          fields: { organizationId: string },
+          operators: { eq: (field: string, value: string) => boolean },
+        ) => operators.eq(fields.organizationId, parent.id),
       },
     },
-    where: (fields: { id: any; }, operators: { eq: (arg0: any, arg1: any) => any; }) => operators.eq(fields.id, currentUserId),
+    where: (
+      fields: { id: string },
+      operators: { eq: (field: string, value: string) => boolean },
+    ) => operators.eq(fields.id, currentUserId),
   });
 
   if (!currentUser) {
     throw new TalawaGraphQLError({
       extensions: {
         code: "unauthenticated",
+        message:
+          "User must be authenticated to access organization creator information",
       },
     });
   }
@@ -87,6 +147,8 @@ const resolveCreator = async (
     throw new TalawaGraphQLError({
       extensions: {
         code: "unauthorized_action",
+        message:
+          "User must be a system or organization administrator to access creator information",
       },
     });
   }
@@ -96,7 +158,10 @@ const resolveCreator = async (
   }
 
   const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-    where: (fields: { id: any; }, operators: { eq: (arg0: any, arg1: string | null) => any; }) => operators.eq(fields.id, parent.creatorId),
+    where: (
+      fields: { id: string },
+      operators: { eq: (field: string, value: string | null) => boolean },
+    ) => operators.eq(fields.id, parent.creatorId),
   });
 
   if (!existingUser) {
@@ -107,6 +172,7 @@ const resolveCreator = async (
     throw new TalawaGraphQLError({
       extensions: {
         code: "unexpected",
+        message: `Creator with ID ${parent.creatorId} not found for organization ${parent.id}`,
       },
     });
   }
@@ -115,275 +181,289 @@ const resolveCreator = async (
 };
 
 describe("Organization Resolver - Creator Field", () => {
-    let ctx: TestContext;
-    let mockOrganization: OrganizationParent;
+  let ctx: TestContext;
+  let mockOrganization: OrganizationParent;
 
   beforeEach(() => {
     mockOrganization = {
       id: "org-123",
       creatorId: "user-123",
     };
+    ctx = createMockContext();
+  });
 
-    // Create mock Fastify instance
-    const mockApp = {
-      addHook: vi.fn(),
-      decorate: vi.fn(),
-      get: vi.fn(),
-      post: vi.fn(),
-    } as unknown as FastifyInstance;
-
-    // Create mock Fastify reply
-    const mockReply = {
-      code: vi.fn(),
-      send: vi.fn(),
-      header: vi.fn(),
-    } as unknown as FastifyReply;
-
-    ctx = {
-      currentClient: {
-        isAuthenticated: true,
-        user: {
-          id: "user-123",
-          role: "member",
+  describe("Authentication", () => {
+    it("should throw unauthenticated error if user is not logged in", async () => {
+      const testCtx = createMockContext({
+        currentClient: {
+          isAuthenticated: false,
+          user: undefined,
         },
-      },
-      drizzleClient: {
-        query: {
-          usersTable: {
-            findFirst: vi.fn(),
+      });
+
+      await expect(async () => {
+        await resolveCreator(
+          mockOrganization,
+          {},
+          testCtx as unknown as ResolverContext,
+        );
+      }).rejects.toThrow(
+        new TalawaGraphQLError({
+          extensions: {
+            code: "unauthenticated",
+            message: undefined,
           },
-        },
-      },
-      log: {
-        warn: vi.fn(),
-      },
-      app: mockApp,
-      reply: mockReply,
-      __currentQuery: "query { test }",
-    };
-  });
-
-  it("should throw unauthenticated error if user is not logged in", async () => {
-    const testCtx = {
-      ...ctx,
-      currentClient: {
-        isAuthenticated: false,
-        user: undefined,
-      },
-    } as unknown as ResolverContext;
-
-    await expect(async () => {
-      await resolveCreator(mockOrganization, {}, testCtx);
-    }).rejects.toThrow(
-      new TalawaGraphQLError({
-        extensions: { code: "unauthenticated" },
-      }),
-    );
-  });
-
-  it("should throw unauthenticated error if current user is not found", async () => {
-    ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
-
-    await expect(async () => {
-      await resolveCreator(mockOrganization, {}, ctx as unknown as ResolverContext);
-    }).rejects.toThrow(
-      new TalawaGraphQLError({
-        extensions: { code: "unauthenticated" },
-      }),
-    );
-  });
-
-  it("should allow access if user is system administrator", async () => {
-    const mockUser = {
-      role: "administrator",
-      organizationMembershipsWhereMember: [],
-    };
-    const mockCreator = {
-      id: "user-123",
-      role: "member",
-    };
-    
-    ctx.drizzleClient.query.usersTable.findFirst
-      .mockResolvedValueOnce(mockUser)
-      .mockResolvedValueOnce(mockCreator);
-
-    const result = await resolveCreator(
-      mockOrganization,
-      {},
-      ctx as unknown as ResolverContext,
-    );
-    expect(result).toEqual(mockCreator);
-  });
-
-  it("should allow access if user is organization administrator", async () => {
-    const mockUser = {
-      role: "member",
-      organizationMembershipsWhereMember: [
-        {
-          role: "administrator",
-        },
-      ],
-    };
-    const mockCreator = {
-      id: "user-123",
-      role: "member",
-    };
-
-    ctx.drizzleClient.query.usersTable.findFirst
-      .mockResolvedValueOnce(mockUser)
-      .mockResolvedValueOnce(mockCreator);
-
-    const result = await resolveCreator(
-      mockOrganization,
-      {},
-      ctx as unknown as ResolverContext,
-    );
-    expect(result).toEqual(mockCreator);
-  });
-
-  it("should throw unauthorized error if user is not an administrator", async () => {
-    const mockUser = {
-      role: "member",
-      organizationMembershipsWhereMember: [
-        {
-          role: "member",
-        },
-      ],
-    };
-    ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(mockUser);
-
-    await expect(async () => {
-      await resolveCreator(mockOrganization, {}, ctx as unknown as ResolverContext);
-    }).rejects.toThrow(
-      new TalawaGraphQLError({
-        extensions: { code: "unauthorized_action" },
-      }),
-    );
-  });
-
-  it("should return null if organization has no creator", async () => {
-    mockOrganization.creatorId = null;
-    const mockUser = {
-      role: "administrator",
-      organizationMembershipsWhereMember: [],
-    };
-    ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(mockUser);
-
-    const result = await resolveCreator(
-      mockOrganization,
-      {},
-      ctx as unknown as ResolverContext,
-    );
-    expect(result).toBeNull();
-  });
-
-  it("should throw unexpected error if creator user is not found", async () => {
-    const mockUser = {
-      role: "administrator",
-      organizationMembershipsWhereMember: [],
-    };
-    
-    ctx.drizzleClient.query.usersTable.findFirst
-      .mockResolvedValueOnce(mockUser)
-      .mockResolvedValueOnce(undefined);
-
-    await expect(async () => {
-      await resolveCreator(mockOrganization, {}, ctx as unknown as ResolverContext);
-    }).rejects.toThrow(
-      new TalawaGraphQLError({
-        extensions: { code: "unexpected" },
-      }),
-    );
-
-    expect(ctx.log.warn).toHaveBeenCalledWith(
-      "Postgres select operation returned an empty array for an organization's creator id that isn't null.",
-    );
-  });
-
-  it("should handle empty organization memberships array", async () => {
-    const mockUser = {
-      role: "member",
-      organizationMembershipsWhereMember: [],
-    };
-    ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(mockUser);
-
-    await expect(async () => {
-      await resolveCreator(mockOrganization, {}, ctx as unknown as ResolverContext);
-    }).rejects.toThrow(
-      new TalawaGraphQLError({
-        extensions: { code: "unauthorized_action" },
-      }),
-    );
-  });
-
-  it("should handle undefined organization membership role", async () => {
-    const mockUser = {
-      role: "member",
-      organizationMembershipsWhereMember: [{ role: undefined }],
-    };
-    ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(mockUser);
-
-    await expect(async () => {
-      await resolveCreator(mockOrganization, {}, ctx as unknown as ResolverContext);
-    }).rejects.toThrow(
-      new TalawaGraphQLError({
-        extensions: { code: "unauthorized_action" },
-      }),
-    );
-  });
-
-   // Additional tests for 100% coverage:
-
-  it("should handle case when user has multiple organization memberships", async () => {
-    const mockUser = {
-      role: "member",
-      organizationMembershipsWhereMember: [
-        { role: "administrator" }, // First membership is admin
-        { role: "member" },
-      ],
-    };
-    const mockCreator = {
-      id: "creator-456",
-      role: "member",
-    };
-    
-    ctx.drizzleClient.query.usersTable.findFirst
-      .mockResolvedValueOnce(mockUser)
-      .mockResolvedValueOnce(mockCreator);
-
-    const result = await resolveCreator(
-      mockOrganization,
-      {},
-      ctx as unknown as ResolverContext,
-    );
-    expect(result).toEqual(mockCreator);
-  });
-
-  it("should verify columns are correctly specified in the user query", async () => {
-    const mockUser = {
-      role: "administrator",
-      organizationMembershipsWhereMember: [],
-    };
-
-    let columnsVerified = false;
-    ctx.drizzleClient.query.usersTable.findFirst.mockImplementationOnce(async (params: { columns: any; }) => {
-      expect(params.columns).toEqual({ role: true });
-      columnsVerified = true;
-      return mockUser;
+        }),
+      );
     });
 
-    const mockCreator = {
-      id: "creator-456",
-      role: "member",
-    };
-    ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(mockCreator);
+    it("should throw unauthenticated error if current user is not found", async () => {
+      ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 
-    await resolveCreator(
-      mockOrganization,
-      {},
-      ctx as unknown as ResolverContext,
-    );
-    
-    expect(columnsVerified).toBe(true);
+      await expect(async () => {
+        await resolveCreator(
+          mockOrganization,
+          {},
+          ctx as unknown as ResolverContext,
+        );
+      }).rejects.toThrow(
+        new TalawaGraphQLError({
+          extensions: {
+            code: "unauthenticated",
+            message:
+              "User must be authenticated to access organization creator information",
+          },
+        }),
+      );
+    });
+  });
+
+  describe("Authorization", () => {
+    it("should allow access if user is system administrator", async () => {
+      const mockUser = createMockUser("administrator");
+      const mockCreator = {
+        id: "user-123",
+        role: "member",
+      };
+
+      ctx.drizzleClient.query.usersTable.findFirst
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(mockCreator);
+
+      const result = await resolveCreator(
+        mockOrganization,
+        {},
+        ctx as unknown as ResolverContext,
+      );
+      expect(result).toEqual(mockCreator);
+    });
+
+    it("should allow access if user is organization administrator", async () => {
+      const mockUser = createMockUser("member", [{ role: "administrator" }]);
+      const mockCreator = {
+        id: "user-123",
+        role: "member",
+      };
+
+      ctx.drizzleClient.query.usersTable.findFirst
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(mockCreator);
+
+      const result = await resolveCreator(
+        mockOrganization,
+        {},
+        ctx as unknown as ResolverContext,
+      );
+      expect(result).toEqual(mockCreator);
+    });
+
+    it("should throw unauthorized error if user is not an administrator", async () => {
+      const mockUser = createMockUser("member", [{ role: "member" }]);
+      ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+        mockUser,
+      );
+
+      await expect(async () => {
+        await resolveCreator(
+          mockOrganization,
+          {},
+          ctx as unknown as ResolverContext,
+        );
+      }).rejects.toThrow(
+        new TalawaGraphQLError({
+          extensions: {
+            code: "unauthorized_action",
+            message:
+              "User must be a system or organization administrator to access creator information",
+          },
+        }),
+      );
+    });
+  });
+
+  describe("Error Handling", () => {
+    it("should throw unexpected error if creator user is not found", async () => {
+      const mockUser = createMockUser("administrator");
+
+      ctx.drizzleClient.query.usersTable.findFirst
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(undefined);
+
+      await expect(async () => {
+        await resolveCreator(
+          mockOrganization,
+          {},
+          ctx as unknown as ResolverContext,
+        );
+      }).rejects.toThrow(
+        new TalawaGraphQLError({
+          extensions: {
+            code: "unexpected",
+            message: `Creator with ID ${mockOrganization.creatorId} not found for organization ${mockOrganization.id}`,
+          },
+        }),
+      );
+
+      expect(ctx.log.warn).toHaveBeenCalledWith(
+        "Postgres select operation returned an empty array for an organization's creator id that isn't null.",
+      );
+    });
+
+    it("should handle empty organization memberships array", async () => {
+      const mockUser = createMockUser("member");
+      ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+        mockUser,
+      );
+
+      await expect(async () => {
+        await resolveCreator(
+          mockOrganization,
+          {},
+          ctx as unknown as ResolverContext,
+        );
+      }).rejects.toThrow(
+        new TalawaGraphQLError({
+          extensions: {
+            code: "unauthorized_action",
+            message:
+              "User must be a system or organization administrator to access creator information",
+          },
+        }),
+      );
+    });
+
+    it("should handle undefined organization membership role", async () => {
+      const mockUser = createMockUser("member", [{ role: undefined }]);
+      ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+        mockUser,
+      );
+
+      await expect(async () => {
+        await resolveCreator(
+          mockOrganization,
+          {},
+          ctx as unknown as ResolverContext,
+        );
+      }).rejects.toThrow(
+        new TalawaGraphQLError({
+          extensions: {
+            code: "unauthorized_action",
+            message:
+              "User must be a system or organization administrator to access creator information",
+          },
+        }),
+      );
+    });
+  });
+
+  describe("Edge Cases", () => {
+    it("should handle case when user has multiple organization memberships", async () => {
+      const mockUser = createMockUser("member", [
+        { role: "administrator" },
+        { role: "member" },
+      ]);
+      const mockCreator = {
+        id: "creator-456",
+        role: "member",
+      };
+
+      ctx.drizzleClient.query.usersTable.findFirst
+        .mockResolvedValueOnce(mockUser)
+        .mockResolvedValueOnce(mockCreator);
+
+      const result = await resolveCreator(
+        mockOrganization,
+        {},
+        ctx as unknown as ResolverContext,
+      );
+      expect(result).toEqual(mockCreator);
+    });
+
+    describe("Edge Cases", () => {
+      it("should verify columns are correctly specified in the user query", async () => {
+        const mockUser = createMockUser("administrator");
+
+        let columnsVerified = false;
+        ctx.drizzleClient.query.usersTable.findFirst.mockImplementationOnce(
+          async (params: { columns: Record<string, boolean> }) => {
+            expect(params.columns).toEqual({ role: true });
+            columnsVerified = true;
+            return mockUser;
+          },
+        );
+
+        const mockCreator = {
+          id: "creator-456",
+          role: "member",
+        };
+        ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+          mockCreator,
+        );
+
+        await resolveCreator(
+          mockOrganization,
+          {},
+          ctx as unknown as ResolverContext,
+        );
+
+        expect(columnsVerified).toBe(true);
+      });
+
+      it("should handle concurrent access to creator information", async () => {
+        const mockUser = createMockUser("administrator");
+        const mockCreator = {
+          id: "creator-456",
+          role: "member",
+        };
+
+        // Set up mock to handle multiple calls
+        ctx.drizzleClient.query.usersTable.findFirst.mockImplementation(
+          async (params) => {
+            // Return mockUser for authentication checks
+            if (params.columns?.role) {
+              return mockUser;
+            }
+            // Return mockCreator for creator lookups
+            return mockCreator;
+          },
+        );
+
+        // Simulate concurrent requests
+        const requests = Array(5)
+          .fill(null)
+          .map(() =>
+            resolveCreator(
+              mockOrganization,
+              {},
+              ctx as unknown as ResolverContext,
+            ),
+          );
+
+        const results = await Promise.all(requests);
+        results.forEach((result) => {
+          expect(result).toEqual(mockCreator);
+        });
+      });
+    });
   });
 });
