@@ -35,3 +35,5 @@ function replaceLinks(dir) {
 }
 
 replaceLinks(docsDir);
+
+export default replaceLinks;
