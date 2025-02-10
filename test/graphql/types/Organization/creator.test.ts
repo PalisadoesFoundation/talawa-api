@@ -38,13 +38,16 @@ interface OrganizationParent {
 	creatorId: string | null;
 }
 
-interface UserWithMemberships extends Omit<User, "role"> {
+type UserWithRole = {
+	id: string;
 	role: "administrator" | "regular" | "member";
 	organizationMembershipsWhereMember: Array<{
 		role: "administrator" | "regular" | "member";
 		organizationId: string;
 	}>;
-}
+};
+
+type UserWithMemberships = UserWithRole;
 
 const createMockUser = (
 	role: "administrator" | "regular" | "member",
@@ -52,16 +55,8 @@ const createMockUser = (
 		role: "administrator" | "regular" | "member";
 		organizationId: string;
 	}> = [],
-): UserWithMemberships => ({
+): UserWithRole => ({
 	id: "mock-id",
-	createdAt: new Date(),
-	addressLine1: null,
-	name: "Mock User",
-	addressLine2: null,
-	avatarMimeType: null,
-	email: "mock@example.com",
-	firstName: "Mock",
-	lastName: "User",
 	role,
 	organizationMembershipsWhereMember: memberships,
 });
