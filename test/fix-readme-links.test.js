@@ -1,61 +1,65 @@
-import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
-import replaceLinks from '../fix-readme-links';
+import fs from "node:fs";
+import path from "node:path";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import replaceLinks from "../fix-readme-links";
 
-vi.mock('node:fs');
-vi.mock('node:path');
+vi.mock("node:fs");
+vi.mock("node:path");
 
-describe('replaceLinks', () => {
-  const mockConsole = {
-    log: vi.spyOn(console, 'log').mockImplementation(() => {}),
-    error: vi.spyOn(console, 'error').mockImplementation(() => {})
-  };
+describe("replaceLinks", () => {
+	const mockConsole = {
+		log: vi.spyOn(console, "log").mockImplementation(() => {}),
+		error: vi.spyOn(console, "error").mockImplementation(() => {}),
+	};
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    process.env.DOCS_DIR = './test-docs';
-    
-    vi.mocked(fs.readdirSync).mockReturnValue(['file.md', 'subdir']);
-    vi.mocked(fs.lstatSync).mockReturnValue({ isDirectory: () => false });
-    vi.mocked(fs.readFileSync).mockReturnValue('[Test](../README.md)');
-    vi.mocked(path.resolve).mockReturnValue('/test/docs');
-    vi.mocked(path.join).mockImplementation((...args) => args.join('/'));
-  });
+	beforeEach(() => {
+		vi.clearAllMocks();
+		process.env.DOCS_DIR = "./test-docs";
 
-  afterEach(() => {
-    delete process.env.DOCS_DIR;
-  });
+		vi.mocked(fs.readdirSync).mockReturnValue(["file.md", "subdir"]);
+		vi.mocked(fs.lstatSync).mockReturnValue({ isDirectory: () => false });
+		vi.mocked(fs.readFileSync).mockReturnValue("[Test](../README.md)");
+		vi.mocked(path.resolve).mockReturnValue("/test/docs");
+		vi.mocked(path.join).mockImplementation((...args) => args.join("/"));
+	});
 
-  test('processes markdown files and replaces README links', () => {
-    replaceLinks('/test/docs');
+	afterEach(() => {
+		process.env.DOCS_DIR = undefined;
+	});
 
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
-      '/test/docs/file.md',
-      '[Admin Docs](/)',
-      'utf8'
-    );
-    expect(mockConsole.log).toHaveBeenCalledWith('Processing directory: /test/docs');
-  });
+	test("processes markdown files and replaces README links", () => {
+		replaceLinks("/test/docs");
 
-  test('recursively processes subdirectories', () => {
-    vi.mocked(fs.lstatSync)
-      .mockReturnValueOnce({ isDirectory: () => true })
-      .mockReturnValue({ isDirectory: () => false });
+		expect(fs.writeFileSync).toHaveBeenCalledWith(
+			"/test/docs/file.md",
+			"[Admin Docs](/)",
+			"utf8",
+		);
+		expect(mockConsole.log).toHaveBeenCalledWith(
+			"Processing directory: /test/docs",
+		);
+	});
 
-    replaceLinks('/test/docs');
+	test("recursively processes subdirectories", () => {
+		vi.mocked(fs.lstatSync)
+			.mockReturnValueOnce({ isDirectory: () => true })
+			.mockReturnValue({ isDirectory: () => false });
 
-    expect(fs.readdirSync).toHaveBeenCalledTimes(2);
-  });
+		replaceLinks("/test/docs");
 
-  test('handles file system errors', () => {
-    const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {});
-    vi.mocked(fs.readdirSync).mockImplementation(() => { throw new Error('Test error'); });
+		expect(fs.readdirSync).toHaveBeenCalledTimes(2);
+	});
 
-    replaceLinks('/test/docs');
+	test("handles file system errors", () => {
+		const mockExit = vi.spyOn(process, "exit").mockImplementation(() => {});
+		vi.mocked(fs.readdirSync).mockImplementation(() => {
+			throw new Error("Test error");
+		});
 
-    expect(mockConsole.error).toHaveBeenCalled();
-    expect(mockExit).toHaveBeenCalledWith(1);
-    mockExit.mockRestore();
-  });
+		replaceLinks("/test/docs");
+
+		expect(mockConsole.error).toHaveBeenCalled();
+		expect(mockExit).toHaveBeenCalledWith(1);
+		mockExit.mockRestore();
+	});
 });
