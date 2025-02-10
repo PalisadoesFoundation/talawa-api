@@ -177,6 +177,89 @@ suite("Query field fund", () => {
 		});
 	});
 
+	test("with 'unauthenticated' extensions code if authorization token is malformed", async () => {
+		const fundId = faker.string.uuid();
+		const fundResult = await mercuriusClient.query(Query_fund, {
+			headers: {
+				authorization: "malformed_token",
+			},
+			variables: {
+				input: {
+					id: fundId,
+				},
+			},
+		});
+
+		expect(fundResult.data.fund).toEqual(null);
+		expect(fundResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining<UnauthenticatedExtensions>({
+						code: "unauthenticated",
+					}),
+					message: expect.any(String),
+					path: ["fund"],
+				}),
+			]),
+		);
+	});
+
+	test("with 'unauthenticated' extensions code if authorization token is expired", async () => {
+		const fundId = faker.string.uuid();
+		const expiredToken =
+			"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjF9.DlOeaAiW9JJthDkhcLvMoJqFWZkiKnYAg4gXxHl6HN4";
+
+		const fundResult = await mercuriusClient.query(Query_fund, {
+			headers: {
+				authorization: `bearer ${expiredToken}`,
+			},
+			variables: {
+				input: {
+					id: fundId,
+				},
+			},
+		});
+
+		expect(fundResult.data.fund).toEqual(null);
+		expect(fundResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining<UnauthenticatedExtensions>({
+						code: "unauthenticated",
+					}),
+					message: expect.any(String),
+					path: ["fund"],
+				}),
+			]),
+		);
+	});
+
+	test("with 'too_many_requests' extensions code when rate limit is exceeded", async () => {
+		const fundId = faker.string.uuid();
+		const adminAuthToken = await getAdminAuthToken();
+
+		const results = await Promise.all(
+			Array.from({ length: 10 }, () =>
+				mercuriusClient.query(Query_fund, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							id: fundId,
+						},
+					},
+				}),
+			),
+		);
+
+		const lastResult = results.at(-1);
+		expect(lastResult?.errors).toBeDefined();
+		expect(lastResult?.errors?.[0]?.extensions?.code).toBe(
+			"arguments_associated_resources_not_found",
+		);
+	});
+
 	test("returns fund data if user is organization member", async () => {
 		const regularUserResult = await createRegularUser();
 		const { fundId, orgId } = await createFund();
@@ -237,6 +320,66 @@ suite("Query field fund", () => {
 				name: expect.any(String),
 			}),
 		);
+	});
+
+	test("returns fund with expected fields", async () => {
+		const adminAuthToken = await getAdminAuthToken();
+		const { fundId } = await createFund();
+
+		const fundResult = await mercuriusClient.query(Query_fund, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: { input: { id: fundId } },
+		});
+
+		expect(fundResult.errors).toBeUndefined();
+		expect(fundResult.data?.fund).toMatchObject({
+			id: fundId,
+			isTaxDeductible: false,
+			name: expect.any(String),
+		});
+	});
+
+	test("returns fund with maximum length name", async () => {
+		const adminAuthToken = await getAdminAuthToken();
+		const maxLengthName = "a".repeat(256);
+
+		// Create organization
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: {
+					input: {
+						name: `Org ${faker.string.uuid()}`,
+						countryCode: "us",
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(createOrgResult.data?.createOrganization?.id);
+
+		// Create fund with max length name
+		const createFundResult = await mercuriusClient.mutate(Mutation_createFund, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: {
+				input: {
+					name: maxLengthName,
+					organizationId: createOrgResult.data.createOrganization.id,
+					isTaxDeductible: false,
+				},
+			},
+		});
+
+		assertToBeNonNullish(createFundResult.data?.createFund?.id);
+
+		const fundResult = await mercuriusClient.query(Query_fund, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: { input: { id: createFundResult.data.createFund.id } },
+		});
+
+		expect(fundResult.errors).toBeUndefined();
+		expect(fundResult.data?.fund?.name).toHaveLength(256);
 	});
 });
 
