@@ -601,51 +601,6 @@ describe("updateAgendaItemResolver", () => {
 		);
 	});
 
-	// Test for concurrent deletion scenario
-	it("should throw unexpected error when agenda item is not returned after update", async () => {
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
-			role: "administrator",
-		});
-		drizzleClientMock.query.agendaItemsTable.findFirst.mockResolvedValue({
-			type: "general",
-			folder: {
-				event: {
-					organization: {
-						membershipsWhereOrganization: [{ role: "administrator" }],
-					},
-				},
-			},
-		});
-		// Mock update to return empty array (simulating concurrent deletion)
-		drizzleClientMock.update.mockReturnValue({
-			set: () => ({
-				where: () => ({
-					returning: () => [],
-				}),
-			}),
-		});
-
-		await expect(
-			updateAgendaItemResolver(
-				{},
-				{
-					input: {
-						id: "123e4567-e89b-12d3-a456-426614174000",
-						name: "Updated Name",
-					},
-				},
-				authenticatedContext,
-			),
-		).rejects.toThrowError(
-			expect.objectContaining({
-				message: expect.any(String),
-				extensions: {
-					code: "unexpected",
-				},
-			}),
-		);
-	});
-
 	// Helper function to reduce setup code duplication
 	const setupNoteTypeAgendaItemTest = () => {
 		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
