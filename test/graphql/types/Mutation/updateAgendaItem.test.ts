@@ -5,24 +5,27 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { updateAgendaItemResolver } from "~/src/graphql/types/Mutation/updateAgendaItem";
 
-interface TestContext extends Omit<GraphQLContext, "log"> {
-	drizzleClient: {
-		query: {
-			usersTable: {
-				findFirst: ReturnType<typeof vi.fn>;
-			};
-			agendaItemsTable: {
-				findFirst: ReturnType<typeof vi.fn>;
-			};
-			agendaFoldersTable: {
-				findFirst: ReturnType<typeof vi.fn>;
-			};
+interface MockDrizzleClient {
+	query: {
+		usersTable: {
+			findFirst: ReturnType<typeof vi.fn>;
 		};
-		update: ReturnType<typeof vi.fn>;
-		set: ReturnType<typeof vi.fn>;
-		where: ReturnType<typeof vi.fn>;
-		returning: ReturnType<typeof vi.fn>;
-	} & GraphQLContext["drizzleClient"];
+		agendaItemsTable: {
+			findFirst: ReturnType<typeof vi.fn>;
+		};
+		agendaFoldersTable: {
+			findFirst: ReturnType<typeof vi.fn>;
+		};
+	};
+	update: ReturnType<typeof vi.fn>;
+	set: ReturnType<typeof vi.fn>;
+	where: ReturnType<typeof vi.fn>;
+	returning: ReturnType<typeof vi.fn>;
+}
+
+// Simplified TestContext that uses the mock client
+interface TestContext extends Omit<GraphQLContext, "log" | "drizzleClient"> {
+	drizzleClient: MockDrizzleClient & GraphQLContext["drizzleClient"];
 	log: FastifyBaseLogger;
 }
 
@@ -229,52 +232,60 @@ describe("updateAgendaItemResolver", () => {
 		);
 	});
 
-	it("should throw forbidden_action error when attempting to set duration or key for note-type agenda item", async () => {
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
-			role: "administrator",
-		});
-		drizzleClientMock.query.agendaItemsTable.findFirst.mockResolvedValue({
+	it.each([
+		{
 			type: "note",
-			folder: {
-				event: {
-					organization: {
-						membershipsWhereOrganization: [{ role: "administrator" }],
-					},
-				},
-			},
-		});
-
-		await expect(
-			updateAgendaItemResolver(
-				{},
+			input: { duration: "10", key: "C" },
+			expectedIssues: [
 				{
-					input: {
-						id: "123e4567-e89b-12d3-a456-426614174000",
-						duration: "10",
-						key: "C",
+					argumentPath: ["input", "duration"],
+					message: 'Cannot be provided for an agenda item of type "note"',
+				},
+				{
+					argumentPath: ["input", "key"],
+					message: 'Cannot be provided for an agenda item of type "note"',
+				},
+			],
+		},
+	])(
+		"should throw forbidden_action error for invalid fields on %s-type agenda item",
+		async ({ type, input, expectedIssues }) => {
+			drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
+				role: "administrator",
+			});
+			drizzleClientMock.query.agendaItemsTable.findFirst.mockResolvedValue({
+				type,
+				folder: {
+					event: {
+						organization: {
+							membershipsWhereOrganization: [{ role: "administrator" }],
+						},
 					},
 				},
-				authenticatedContext,
-			),
-		).rejects.toThrowError(
-			expect.objectContaining({
-				message: expect.any(String),
-				extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: [
-						{
-							argumentPath: ["input", "duration"],
-							message: 'Cannot be provided for an agenda item of type "note"',
+			});
+
+			await expect(
+				updateAgendaItemResolver(
+					{},
+					{
+						input: {
+							id: "123e4567-e89b-12d3-a456-426614174000",
+							...input,
 						},
-						{
-							argumentPath: ["input", "key"],
-							message: 'Cannot be provided for an agenda item of type "note"',
-						},
-					],
-				},
-			}),
-		);
-	});
+					},
+					authenticatedContext,
+				),
+			).rejects.toThrowError(
+				expect.objectContaining({
+					message: expect.any(String),
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: expectedIssues,
+					},
+				}),
+			);
+		},
+	);
 
 	it("should throw forbidden_action error when attempting to set key for general-type agenda item", async () => {
 		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
@@ -550,92 +561,6 @@ describe("updateAgendaItemResolver", () => {
 		);
 	});
 
-	// Test for note-type agenda item with only duration
-	it("should throw forbidden_action error when attempting to set only duration for note-type agenda item", async () => {
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
-			role: "administrator",
-		});
-		drizzleClientMock.query.agendaItemsTable.findFirst.mockResolvedValue({
-			type: "note",
-			folder: {
-				event: {
-					organization: {
-						membershipsWhereOrganization: [{ role: "administrator" }],
-					},
-				},
-			},
-		});
-
-		await expect(
-			updateAgendaItemResolver(
-				{},
-				{
-					input: {
-						id: "123e4567-e89b-12d3-a456-426614174000",
-						duration: "10",
-					},
-				},
-				authenticatedContext,
-			),
-		).rejects.toThrowError(
-			expect.objectContaining({
-				message: expect.any(String),
-				extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: [
-						{
-							argumentPath: ["input", "duration"],
-							message: 'Cannot be provided for an agenda item of type "note"',
-						},
-					],
-				},
-			}),
-		);
-	});
-
-	// Test for note-type agenda item with only key
-	it("should throw forbidden_action error when attempting to set only key for note-type agenda item", async () => {
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
-			role: "administrator",
-		});
-		drizzleClientMock.query.agendaItemsTable.findFirst.mockResolvedValue({
-			type: "note",
-			folder: {
-				event: {
-					organization: {
-						membershipsWhereOrganization: [{ role: "administrator" }],
-					},
-				},
-			},
-		});
-
-		await expect(
-			updateAgendaItemResolver(
-				{},
-				{
-					input: {
-						id: "123e4567-e89b-12d3-a456-426614174000",
-						key: "C",
-					},
-				},
-				authenticatedContext,
-			),
-		).rejects.toThrowError(
-			expect.objectContaining({
-				message: expect.any(String),
-				extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: [
-						{
-							argumentPath: ["input", "key"],
-							message: 'Cannot be provided for an agenda item of type "note"',
-						},
-					],
-				},
-			}),
-		);
-	});
-
 	// Test for scripture-type agenda item with key
 	it("should throw forbidden_action error when attempting to set key for scripture-type agenda item", async () => {
 		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
@@ -673,97 +598,6 @@ describe("updateAgendaItemResolver", () => {
 							argumentPath: ["input", "key"],
 							message:
 								'Cannot be provided for an agenda item of type "scripture"',
-						},
-					],
-				},
-			}),
-		);
-	});
-
-	// Test for note-type agenda item with both duration and key
-	it("should throw error when updating note-type agenda item with both duration and key", async () => {
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
-			role: "administrator",
-		});
-		drizzleClientMock.query.agendaItemsTable.findFirst.mockResolvedValue({
-			type: "note",
-			folder: {
-				event: {
-					organization: {
-						membershipsWhereOrganization: [{ role: "administrator" }],
-					},
-				},
-			},
-		});
-
-		await expect(
-			updateAgendaItemResolver(
-				{},
-				{
-					input: {
-						id: "123e4567-e89b-12d3-a456-426614174000",
-						duration: "10",
-						key: "C",
-					},
-				},
-				authenticatedContext,
-			),
-		).rejects.toThrowError(
-			expect.objectContaining({
-				message: expect.any(String),
-				extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: [
-						{
-							argumentPath: ["input", "duration"],
-							message: 'Cannot be provided for an agenda item of type "note"',
-						},
-						{
-							argumentPath: ["input", "key"],
-							message: 'Cannot be provided for an agenda item of type "note"',
-						},
-					],
-				},
-			}),
-		);
-	});
-
-	// Test for note-type agenda item with only duration
-	it("should throw error when updating note-type agenda item with duration", async () => {
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
-			role: "administrator",
-		});
-		drizzleClientMock.query.agendaItemsTable.findFirst.mockResolvedValue({
-			type: "note",
-			folder: {
-				event: {
-					organization: {
-						membershipsWhereOrganization: [{ role: "administrator" }],
-					},
-				},
-			},
-		});
-
-		await expect(
-			updateAgendaItemResolver(
-				{},
-				{
-					input: {
-						id: "123e4567-e89b-12d3-a456-426614174000",
-						duration: "10",
-					},
-				},
-				authenticatedContext,
-			),
-		).rejects.toThrowError(
-			expect.objectContaining({
-				message: expect.any(String),
-				extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: [
-						{
-							argumentPath: ["input", "duration"],
-							message: 'Cannot be provided for an agenda item of type "note"',
 						},
 					],
 				},
@@ -816,14 +650,14 @@ describe("updateAgendaItemResolver", () => {
 		);
 	});
 
-	it("should handle note-type agenda item validations", async () => {
+	// Helper function to reduce setup code duplication
+	const setupNoteTypeAgendaItemTest = () => {
 		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
 			role: "administrator",
 		});
 		drizzleClientMock.query.agendaItemsTable.findFirst.mockResolvedValue({
 			type: "note",
 			folder: {
-				eventId: "event_1",
 				event: {
 					organization: {
 						membershipsWhereOrganization: [{ role: "administrator" }],
@@ -831,37 +665,98 @@ describe("updateAgendaItemResolver", () => {
 				},
 			},
 		});
+	};
 
-		// Test both duration and key provided (lines 80, 90)
-		await expect(
-			updateAgendaItemResolver(
-				{},
-				{
-					input: {
-						id: "123e4567-e89b-12d3-a456-426614174000",
-						duration: "10",
-						key: "C",
+	describe("note-type agenda item validations", () => {
+		beforeEach(() => {
+			setupNoteTypeAgendaItemTest();
+		});
+
+		it("should throw forbidden_action error when attempting to set both duration and key", async () => {
+			await expect(
+				updateAgendaItemResolver(
+					{},
+					{
+						input: {
+							id: "123e4567-e89b-12d3-a456-426614174000",
+							duration: "10",
+							key: "C",
+						},
 					},
-				},
-				authenticatedContext,
-			),
-		).rejects.toThrowError(
-			expect.objectContaining({
-				extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: [
-						{
-							argumentPath: ["input", "duration"],
-							message: 'Cannot be provided for an agenda item of type "note"',
+					authenticatedContext,
+				),
+			).rejects.toThrowError(
+				expect.objectContaining({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: expect.arrayContaining([
+							{
+								argumentPath: ["input", "duration"],
+								message: 'Cannot be provided for an agenda item of type "note"',
+							},
+							{
+								argumentPath: ["input", "key"],
+								message: 'Cannot be provided for an agenda item of type "note"',
+							},
+						]),
+					},
+				}),
+			);
+		});
+
+		it("should throw forbidden_action error when attempting to set only duration", async () => {
+			await expect(
+				updateAgendaItemResolver(
+					{},
+					{
+						input: {
+							id: "123e4567-e89b-12d3-a456-426614174000",
+							duration: "10",
 						},
-						{
-							argumentPath: ["input", "key"],
-							message: 'Cannot be provided for an agenda item of type "note"',
+					},
+					authenticatedContext,
+				),
+			).rejects.toThrowError(
+				expect.objectContaining({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "duration"],
+								message: 'Cannot be provided for an agenda item of type "note"',
+							},
+						],
+					},
+				}),
+			);
+		});
+
+		it("should throw forbidden_action error when attempting to set only key", async () => {
+			await expect(
+				updateAgendaItemResolver(
+					{},
+					{
+						input: {
+							id: "123e4567-e89b-12d3-a456-426614174000",
+							key: "C",
 						},
-					],
-				},
-			}),
-		);
+					},
+					authenticatedContext,
+				),
+			).rejects.toThrowError(
+				expect.objectContaining({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "key"],
+								message: 'Cannot be provided for an agenda item of type "note"',
+							},
+						],
+					},
+				}),
+			);
+		});
 	});
 
 	it("should handle folder validation and update authorization", async () => {
