@@ -101,7 +101,6 @@ describe("deletePostResolver", () => {
 	});
 
 	it("should throw an unauthenticated error if the current user is not found", async () => {
-		// Simulate no user found by returning undefined.
 		ctx.drizzleClient.query.usersTable.findFirst = vi
 			.fn()
 			.mockResolvedValue(undefined);
@@ -131,7 +130,6 @@ describe("deletePostResolver", () => {
 	});
 
 	it("should throw an unauthorized_action_on_arguments_associated_resources error for an unauthorized non-admin user", async () => {
-		// Simulate a non-admin user and a post that the user is neither creator nor organization admin for.
 		ctx.drizzleClient.query.usersTable.findFirst = vi
 			.fn()
 			.mockResolvedValue({ role: "user" });
@@ -158,7 +156,6 @@ describe("deletePostResolver", () => {
 			organization: { membershipsWhereOrganization: [] },
 		});
 
-		// Use the helper to create a fake transaction that returns an empty array.
 		ctx.drizzleClient.transaction = createFakeTransaction(
 			[],
 		) as unknown as typeof ctx.drizzleClient.transaction;
@@ -172,7 +169,6 @@ describe("deletePostResolver", () => {
 		const deletedPost: DeletedPost = { id: "post1", content: "some content" };
 		const attachments = [{ name: "file1" }, { name: "file2" }];
 
-		// Use the helper to create a fake transaction that returns the deleted post.
 		ctx.drizzleClient.transaction = createFakeTransaction([
 			deletedPost,
 		]) as unknown as typeof ctx.drizzleClient.transaction;
@@ -200,12 +196,10 @@ describe("deletePostResolver", () => {
 		const deletedPost: DeletedPost = { id: "post1", content: "some content" };
 		const attachments = [{ name: "file1" }];
 
-		// Use the helper to create a fake transaction that returns the deleted post.
 		ctx.drizzleClient.transaction = createFakeTransaction([
 			deletedPost,
 		]) as unknown as typeof ctx.drizzleClient.transaction;
 
-		// Non-admin user scenario.
 		ctx.drizzleClient.query.usersTable.findFirst = vi
 			.fn()
 			.mockResolvedValue({ role: "user" });
@@ -228,6 +222,65 @@ describe("deletePostResolver", () => {
 		);
 	});
 
+	it("should call usersTable.findFirst with correct eq condition using currentUserId", async () => {
+		const findFirstSpy = vi.fn().mockResolvedValue({ role: "administrator" });
+		ctx.drizzleClient.query.usersTable.findFirst = findFirstSpy;
+
+		ctx.drizzleClient.query.postsTable.findFirst = vi.fn().mockResolvedValue({
+			creatorId: "user1",
+			attachmentsWherePost: [],
+			organization: { membershipsWhereOrganization: [] },
+		});
+
+		ctx.drizzleClient.transaction = createFakeTransaction([
+			{ id: testPostId, content: "dummy content" },
+		]) as unknown as typeof ctx.drizzleClient.transaction;
+
+		await deletePostResolver(null, validArgs, ctx);
+
+		expect(findFirstSpy).toHaveBeenCalled();
+
+		expect(findFirstSpy.mock.calls.length).toBeGreaterThan(0);
+		const firstCall = findFirstSpy.mock.calls[0];
+		if (!firstCall) {
+			throw new Error("Expected findFirst to be called at least once");
+		}
+		const optionsPassed = firstCall[0];
+		expect(typeof optionsPassed.where).toBe("function");
+
+		const fakeFields = { id: "user1" };
+		const eqMock = vi.fn((a, b) => `eq(${a},${b})`);
+		const fakeOperators = { eq: eqMock };
+
+		const conditionResult = optionsPassed.where(fakeFields, fakeOperators);
+
+		expect(eqMock).toHaveBeenCalledWith(
+			fakeFields.id,
+			ctx.currentClient.user?.id,
+		);
+		expect(conditionResult).toEqual("eq(user1,user1)");
+	});
+
+	it("should throw unauthorized error for non-admin user when organization membership is defined but not admin and post creator is not current user", async () => {
+		ctx.drizzleClient.query.usersTable.findFirst = vi
+			.fn()
+			.mockResolvedValue({ role: "user" });
+		ctx.drizzleClient.query.postsTable.findFirst = vi.fn().mockResolvedValue({
+			creatorId: "otherUser",
+			attachmentsWherePost: [],
+			organization: {
+				membershipsWhereOrganization: [{ role: "user" }],
+			},
+		});
+
+		await expect(
+			deletePostResolver(null, validArgs, ctx),
+		).rejects.toHaveProperty(
+			"extensions.code",
+			"unauthorized_action_on_arguments_associated_resources",
+		);
+	});
+
 	it("should succeed on first delete and fail with 'unexpected' error on subsequent attempts due to race condition", async () => {
 		ctx.drizzleClient.query.usersTable.findFirst = vi
 			.fn()
@@ -244,19 +297,16 @@ describe("deletePostResolver", () => {
 				firstCheck = false;
 				return { id: "post1" };
 			}
-			// On subsequent calls, throw a TalawaGraphQLError with the desired message and extension.
 			throw new TalawaGraphQLError({
 				extensions: { code: "unexpected" },
 				message: "Post already deleted",
 			});
 		}) as unknown as typeof ctx.drizzleClient.transaction;
 
-		// First delete should succeed.
 		await expect(
 			deletePostResolver(null, validArgs, ctx),
 		).resolves.toBeDefined();
 
-		// Second delete should fail with an error that includes "Post already deleted"
 		await expect(deletePostResolver(null, validArgs, ctx)).rejects.toThrow(
 			"Post already deleted",
 		);
