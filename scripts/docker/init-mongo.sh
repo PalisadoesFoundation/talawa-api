@@ -1,90 +1,53 @@
 #!/bin/bash
 set -e
 
-echo "Starting MongoDB..."
-
-container_id=$(hostname) 
-echo "Container ID is: $container_id"
-
-# Cleanup on script exit
+# Handle cleanup on script exit
 cleanup() {
-    echo "MongoDB container is shutting down..."
-    mongod --shutdown || kill $MONGOD_PID
+    echo "Shutting down MongoDB..."
+    mongod --shutdown
     exit 0
 }
-trap cleanup SIGTERM SIGINT EXIT
+trap cleanup SIGTERM SIGINT
 
-# Start MongoDB with replication enabled
-echo "Starting MongoDB with replication..."
 mongod --replSet rs0 --bind_ip_all --dbpath /data/db &
 MONGOD_PID=$!
 
 # Wait for MongoDB to be ready
+MAX_TRIES=30
+COUNTER=0
 echo "Waiting for MongoDB to start..."
-until mongosh --quiet --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
-    echo "Ping failed, retrying..."
+until mongosh --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
+    if [ $COUNTER -gt $MAX_TRIES ]; then
+        echo "Error: MongoDB failed to start"
+        exit 1
+    fi
+    let COUNTER=COUNTER+1
     sleep 1
 done
-echo "MongoDB connection successful."
 
-# Wait for PRIMARY status
-timeout=90  # Increased timeout
-start_time=$(date +%s)
-while true; do
-    if mongosh --quiet --eval "db.hello().isWritablePrimary" | grep -q "true"; then
-        echo "Primary node elected."
-        break
-    fi
+# Initialize the replica set
+mongosh --eval '
+  config = {
+    "_id" : "rs0",
+    "members" : [
+      {
+        "_id" : 0,
+        "host" : "mongo:27017",
+        "priority": 1
+      }
+    ]
+  };
+  
+  while (true) {
+    try {
+      rs.initiate(config);
+      break;
+    } catch (err) {
+      print("Failed to initiate replica set, retrying in 5 seconds...");
+      sleep(5000);
+    }
+  }
+'
 
-    current_time=$(date +%s)
-    if (( current_time - start_time > timeout )); then
-        echo "Primary election failed after $timeout seconds."
-        exit 1
-    fi
-
-    echo "Waiting for primary election..."
-    sleep 2
-done
-
-# Check if replica set is already initialized
-echo "Checking replica set initialization..."
-if mongosh --quiet --eval "rs.status().ok" | grep -q "1"; then
-    echo "Replica set already initialized."
-else
-    echo "Initializing replica set..."
-    config='{
-        _id: "rs0",
-        members: [
-            {
-                _id: 0,
-                host: "mongo:27017",
-                priority: 1
-            }
-        ]
-    }'
-
-    retry_count=0
-    max_retries=5
-    while (( retry_count < max_retries )); do
-        if mongosh --quiet --eval "rs.initiate($config)" | grep -q "ok"; then
-            echo "Replica set initialized successfully."
-            break
-        else
-            echo "Failed to initiate replica set, retrying in 5 seconds..."
-            sleep 5
-            ((retry_count++))
-        fi
-    done
-
-    if (( retry_count == max_retries )); then
-        echo "Replica set initialization failed after $max_retries attempts."
-        exit 1
-    fi
-fi
-
-# Final replica set status check
-sleep 5  # Allow MongoDB to stabilize
-mongosh --quiet --eval 'rs.status()' || echo "Replica set status check failed"
-
-# Keep the container running
+# Keep container running
 wait $MONGOD_PID

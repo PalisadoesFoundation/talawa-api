@@ -16,7 +16,7 @@ services:
           memory: 1G
           cpus: "1.0"
     ports:
-      - "127.0.0.1:27017:27017"
+      - "27017:27017"
     volumes:
       - mongo_data:/data/db
       - ./scripts/docker/init-mongo.sh:/init-mongo.sh
@@ -102,10 +102,10 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     healthcheck:
-     test: ["CMD", "curl", "-f", "http://localhost:4000/graphql"]
-     interval: 10s
-     timeout: 5s
-     retries: 5
+      test: ["CMD", "curl", "-f", "http://localhost:4000/graphql"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     deploy:
       resources:
         limits:
