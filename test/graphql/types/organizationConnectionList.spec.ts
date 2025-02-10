@@ -1,4 +1,4 @@
-import { GraphQLSchema, execute, parse } from "graphql";
+import { type GraphQLSchema, execute, parse } from "graphql";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { builder } from "~/src/graphql/builder";
 
@@ -29,10 +29,7 @@ describe("organizationConnectionList Query", () => {
     schema = builder.toSchema({});
   });
 
-  const executeOperation = async (variables?: {
-    first?: number;
-    skip?: number;
-  }) => {
+  const executeOperation = async (variables?: { first?: number; skip?: number }) => {
     const query = `
       query OrganizationConnectionList($first: Int, $skip: Int) {
         organizationConnectionList(first: $first, skip: $skip) {
@@ -62,9 +59,7 @@ describe("organizationConnectionList Query", () => {
     // Assert
     expect(result.errors).toBeUndefined();
     expect(result.data?.organizationConnectionList).toEqual(mockOrganizations);
-    expect(
-      mockContext.drizzleClient.query.organizationsTable.findMany,
-    ).toHaveBeenCalledWith({
+    expect(mockContext.drizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith({
       limit: 10,
       offset: 0,
     });
@@ -82,9 +77,7 @@ describe("organizationConnectionList Query", () => {
     // Assert
     expect(result.errors).toBeUndefined();
     expect(result.data?.organizationConnectionList).toEqual(mockOrganizations);
-    expect(
-      mockContext.drizzleClient.query.organizationsTable.findMany,
-    ).toHaveBeenCalledWith({
+    expect(mockContext.drizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith({
       limit: 20,
       offset: 5,
     });
@@ -106,17 +99,13 @@ describe("organizationConnectionList Query", () => {
         ]),
       },
     });
-    expect(
-      mockContext.drizzleClient.query.organizationsTable.findMany,
-    ).not.toHaveBeenCalled();
+    expect(mockContext.drizzleClient.query.organizationsTable.findMany).not.toHaveBeenCalled();
   });
 
   it("should handle database errors gracefully", async () => {
     // Arrange
     const dbError = new Error("Database connection failed");
-    mockContext.drizzleClient.query.organizationsTable.findMany.mockRejectedValue(
-      dbError,
-    );
+    mockContext.drizzleClient.query.organizationsTable.findMany.mockRejectedValue(dbError);
 
     // Act
     const result = await executeOperation();
