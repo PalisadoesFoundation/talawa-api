@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import { expect, suite, test } from "vitest";
 import { fundsTableInsertSchema } from "~/src/drizzle/tables/funds";
+import { usersTable } from "~/src/drizzle/tables/users";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	TalawaGraphQLFormattedError,
@@ -41,6 +43,39 @@ suite("Query field fund", () => {
 				variables: {
 					input: {
 						id: faker.string.uuid(),
+					},
+				},
+			});
+
+			expect(fundResult.data.fund).toEqual(null);
+			expect(fundResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnauthenticatedExtensions>({
+							code: "unauthenticated",
+						}),
+						message: expect.any(String),
+						path: ["fund"],
+					}),
+				]),
+			);
+		});
+
+		test("with 'unauthenticated' extensions code if authenticated user doesn't exist in database", async () => {
+			const regularUserResult = await createRegularUser();
+			const { fundId } = await createFund();
+
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, regularUserResult.userId));
+
+			const fundResult = await mercuriusClient.query(Query_fund, {
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					input: {
+						id: fundId,
 					},
 				},
 			});
