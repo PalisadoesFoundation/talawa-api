@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { updateChatMessageResolver } from "~/src/graphql/types/Mutation/updateChatMessage";
+import type { User } from "~/src/graphql/types/User/User";
 
 interface ChatMessage {
 	id: string;
@@ -43,6 +44,32 @@ const createMockContext = (
 	} as GraphQLContext;
 };
 
+function mockUsersTableFindFirst(
+	ctx: GraphQLContext,
+	returnValue: Partial<User> = {},
+): void {
+	ctx.drizzleClient.query.usersTable.findFirst = vi.fn().mockResolvedValue({
+		role: "user",
+		id: "11111111-1111-1111-1111-111111111111",
+		...returnValue,
+	});
+}
+
+function mockChatMessagesTableFindFirst(
+	ctx: GraphQLContext,
+	returnValue: Partial<ChatMessage> = {},
+): void {
+	ctx.drizzleClient.query.chatMessagesTable.findFirst = vi
+		.fn()
+		.mockResolvedValue({
+			creatorId: "22222222-2222-2222-2222-222222222222",
+			chat: {
+				organization: { membershipsWhereOrganization: [] },
+				chatMembershipsWhereChat: [],
+			},
+			...returnValue,
+		});
+}
 // Create a schema for the mutation arguments, matching the resolver's expectations.
 
 // Use a valid UUID format for the id.
@@ -86,18 +113,14 @@ describe("updateChatMessage mutation", () => {
 	});
 
 	it("throws an arguments_associated_resources_not_found error if chat message is not found", async () => {
-		// Simulate a valid user but no chat message found.
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue({
-			role: "user",
-			id: "11111111-1111-1111-1111-111111111111",
-		});
+		mockUsersTableFindFirst(ctx);
+
 		(
 			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
 				typeof vi.fn
 			>
 		).mockResolvedValue(undefined);
+
 		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
 			expect.objectContaining({
 				extensions: expect.objectContaining({
@@ -108,26 +131,9 @@ describe("updateChatMessage mutation", () => {
 	});
 
 	it("throws an unauthorized error if the current user is not allowed to update the message", async () => {
-		// Simulate a user that is not authorized:
-		// - Current user is a regular user (not an administrator)
-		// - The chat message was created by another user.
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue({
-			role: "user",
-			id: "11111111-1111-1111-1111-111111111111",
-		});
-		(
-			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
-				typeof vi.fn
-			>
-		).mockResolvedValue({
-			creatorId: "22222222-2222-2222-2222-222222222222",
-			chat: {
-				organization: { membershipsWhereOrganization: [] },
-				chatMembershipsWhereChat: [],
-			},
-		});
+		mockUsersTableFindFirst(ctx);
+		mockChatMessagesTableFindFirst(ctx);
+
 		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
 			expect.objectContaining({
 				extensions: expect.objectContaining({
@@ -140,17 +146,11 @@ describe("updateChatMessage mutation", () => {
 	it("throws an unexpected error if the update operation returns undefined", async () => {
 		(ctx.currentClient.user as NonNullable<typeof ctx.currentClient.user>).id =
 			"11111111-1111-1111-1111-111111111111";
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue({
+		mockUsersTableFindFirst(ctx, {
 			role: "administrator",
 			id: "11111111-1111-1111-1111-111111111111",
 		});
-		(
-			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
-				typeof vi.fn
-			>
-		).mockResolvedValue({
+		mockChatMessagesTableFindFirst(ctx, {
 			creatorId: "11111111-1111-1111-1111-111111111111",
 			chat: {
 				organization: {
@@ -159,6 +159,7 @@ describe("updateChatMessage mutation", () => {
 				chatMembershipsWhereChat: [{ role: "member" }],
 			},
 		});
+
 		const returningMock = vi.fn().mockResolvedValue([]);
 		(ctx.drizzleClient.update as ReturnType<typeof vi.fn>).mockReturnValue({
 			set: vi.fn().mockReturnThis(),
@@ -175,17 +176,11 @@ describe("updateChatMessage mutation", () => {
 	it("successfully updates and returns the updated chat message", async () => {
 		(ctx.currentClient.user as NonNullable<typeof ctx.currentClient.user>).id =
 			"11111111-1111-1111-1111-111111111111";
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue({
+		mockUsersTableFindFirst(ctx, {
 			role: "administrator",
 			id: "11111111-1111-1111-1111-111111111111",
 		});
-		(
-			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
-				typeof vi.fn
-			>
-		).mockResolvedValue({
+		mockChatMessagesTableFindFirst(ctx, {
 			creatorId: "11111111-1111-1111-1111-111111111111",
 			chat: {
 				organization: {
@@ -194,6 +189,7 @@ describe("updateChatMessage mutation", () => {
 				chatMembershipsWhereChat: [{ role: "member" }],
 			},
 		});
+
 		const updatedChatMessage: ChatMessage = {
 			id: args.input.id,
 			creatorId: ctx.currentClient.user?.id ?? "",
@@ -215,20 +211,11 @@ describe("updateChatMessage mutation", () => {
 	it("throws an unauthorized error if the user is not a member of the organization", async () => {
 		(ctx.currentClient.user as NonNullable<typeof ctx.currentClient.user>).id =
 			"regularUserId";
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue({
-			role: "user",
-			id: "regularUserId",
-		});
-		(
-			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
-				typeof vi.fn
-			>
-		).mockResolvedValue({
+		mockUsersTableFindFirst(ctx, { id: "regularUserId" });
+		mockChatMessagesTableFindFirst(ctx, {
 			creatorId: "someOtherUserId",
 			chat: {
-				organization: { membershipsWhereOrganization: [] }, // Empty memberships array.
+				organization: { membershipsWhereOrganization: [] },
 				chatMembershipsWhereChat: [],
 			},
 		});
@@ -244,17 +231,10 @@ describe("updateChatMessage mutation", () => {
 	it("throws an unauthorized error if the user is not a member of the chat", async () => {
 		(ctx.currentClient.user as NonNullable<typeof ctx.currentClient.user>).id =
 			"regularUserId";
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue({
-			role: "user",
-			id: "regularUserId",
-		});
-		(
-			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
-				typeof vi.fn
-			>
-		).mockResolvedValue({
+
+		mockUsersTableFindFirst(ctx, { id: "regularUserId" });
+
+		mockChatMessagesTableFindFirst(ctx, {
 			creatorId: "someOtherUserId",
 			chat: {
 				organization: {
@@ -277,17 +257,8 @@ describe("updateChatMessage mutation", () => {
 	it("throws an unauthorized error if currentUserOrganizationMembership and currentUserChatMembership are undefined", async () => {
 		(ctx.currentClient.user as NonNullable<typeof ctx.currentClient.user>).id =
 			"regularUserId";
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue({
-			role: "user",
-			id: "regularUserId",
-		});
-		(
-			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
-				typeof vi.fn
-			>
-		).mockResolvedValue({
+		mockUsersTableFindFirst(ctx, { id: "regularUserId" });
+		mockChatMessagesTableFindFirst(ctx, {
 			creatorId: "someOtherUserId",
 			chat: {
 				organization: {
@@ -374,25 +345,18 @@ describe("updateChatMessage mutation", () => {
 	});
 
 	it("throws an unauthorized error if currentUserOrganizationMembership and currentUserChatMembership are undefined", async () => {
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue({
-			role: "user",
+		mockUsersTableFindFirst(ctx, {
 			id: "11111111-1111-1111-1111-111111111111",
 		});
-
-		(
-			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
-				typeof vi.fn
-			>
-		).mockResolvedValue({
+		mockChatMessagesTableFindFirst(ctx, {
 			creatorId: "11111111-1111-1111-1111-111111111111",
 			chat: {
-				organization: { membershipsWhereOrganization: [] },
+				organization: {
+					membershipsWhereOrganization: [],
+				},
 				chatMembershipsWhereChat: [],
 			},
 		});
-
 		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
 			expect.objectContaining({
 				extensions: expect.objectContaining({
@@ -415,25 +379,18 @@ describe("updateChatMessage mutation", () => {
 	});
 
 	it("throws an unauthorized error if the current user is not the creator of the chat message", async () => {
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue({
-			role: "user",
+		mockUsersTableFindFirst(ctx, {
 			id: "11111111-1111-1111-1111-111111111111",
 		});
-
-		(
-			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
-				typeof vi.fn
-			>
-		).mockResolvedValue({
-			creatorId: "22222222-2222-2222-2222-222222222222",
+		mockChatMessagesTableFindFirst(ctx, {
+			creatorId: "11111111-1111-1111-1111-111111111111",
 			chat: {
-				organization: { membershipsWhereOrganization: [] },
+				organization: {
+					membershipsWhereOrganization: [],
+				},
 				chatMembershipsWhereChat: [],
 			},
 		});
-
 		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
 			expect.objectContaining({
 				extensions: expect.objectContaining({
