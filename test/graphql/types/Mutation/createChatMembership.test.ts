@@ -42,6 +42,14 @@ describe("ChatMembershipResolver", () => {
 			};
 		};
 
+		// Define mockContextWithUser as a separate object with an additional user property
+		let mockContextWithUser: typeof mockContext & {
+			user: {
+				id: string;
+				role: string;
+			};
+		};
+
 		const defaultArgs = {
 			input: {
 				memberId: "member-1",
@@ -78,6 +86,26 @@ describe("ChatMembershipResolver", () => {
 				},
 				log: {
 					error: vi.fn(),
+				},
+			};
+
+			// Properly assign mockContextWithUser here
+			mockContextWithUser = {
+				...mockContext,
+				user: {
+					id: "f47ac10b-58cc-4372-a567-0e02b2c3d479", // Provide a valid user ID
+					role: "regular", // User role can be 'regular' or 'administrator'
+				},
+				drizzleClient: {
+					...mockContext.drizzleClient,
+					query: {
+						chatsTable: {
+							findFirst: vi.fn().mockResolvedValueOnce(undefined), // Mock chat not found
+						},
+						usersTable: {
+							findFirst: vi.fn().mockResolvedValueOnce(undefined), // Mock member not found
+						},
+					},
 				},
 			};
 		});
@@ -432,6 +460,155 @@ describe("ChatMembershipResolver", () => {
 					}),
 				);
 			});
+		});
+
+		it("should throw TalawaGraphQLError if currentUser is undefined", async () => {
+			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					defaultArgs,
+					mockContext,
+				),
+			).rejects.toThrowError(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+				}),
+			);
+		});
+
+		it("should throw invalid_arguments error when invalid data is provided", async () => {
+			const invalidArgs = {
+				input: {
+					memberId: "invalid-uuid", // Invalid UUID
+					chatId: "invalid-uuid", // Invalid UUID
+					role: "member", // Invalid role
+				},
+			};
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					invalidArgs,
+					mockContextWithUser,
+				),
+			).rejects.toThrowError(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "chatId"],
+								message: "Invalid uuid",
+							}),
+							expect.objectContaining({
+								argumentPath: ["input", "memberId"],
+								message: "Invalid uuid",
+							}),
+							expect.objectContaining({
+								argumentPath: ["input", "role"],
+								message:
+									"Invalid enum value. Expected 'administrator' | 'regular', received 'member'",
+							}),
+						]),
+					}),
+				}),
+			);
+		});
+
+		it("should throw error if existing chat is not found", async () => {
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: { chatId: "chat-1", memberId: "member-1", role: "regular" },
+					},
+					mockContext,
+				),
+			).rejects.toThrowError(
+				new TalawaGraphQLError({
+					message: "You have provided invalid arguments for this action.",
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{ argumentPath: ["input", "chatId"], message: "Invalid uuid" },
+							{ argumentPath: ["input", "memberId"], message: "Invalid uuid" },
+						],
+					},
+				}),
+			);
+		});
+
+		it("should throw error if existing member is not found", async () => {
+			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: { chatId: "chat-1", memberId: "member-1", role: "regular" },
+					},
+					mockContext,
+				),
+			).rejects.toThrowError(
+				new TalawaGraphQLError({
+					message: "You have provided invalid arguments for this action.",
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{ argumentPath: ["input", "chatId"], message: "Invalid uuid" },
+							{ argumentPath: ["input", "memberId"], message: "Invalid uuid" },
+						],
+					},
+				}),
+			);
+		});
+
+		it("should throw error if the chat already has the associated member", async () => {
+			const existingChat = {
+				chatMembershipsWhereChat: [{ chatId: "chat-1", memberId: "member-1" }],
+			};
+
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValueOnce(
+				existingChat,
+			);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: { chatId: "chat-1", memberId: "member-1", role: "regular" },
+					},
+					mockContext,
+				),
+			).rejects.toThrowError(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "chatId"],
+								message: "Invalid uuid",
+							},
+							{
+								argumentPath: ["input", "memberId"],
+								message: "Invalid uuid",
+							},
+						],
+					},
+				}),
+			);
 		});
 	});
 });

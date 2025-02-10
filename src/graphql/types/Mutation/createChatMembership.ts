@@ -277,12 +277,11 @@ export const ChatMembershipResolver = {
 
 		if (existingChat === undefined) {
 			throw new TalawaGraphQLError({
+				message: "You have provided invalid arguments for this action.",
 				extensions: {
-					code: "arguments_associated_resources_not_found",
+					code: "invalid_arguments",
 					issues: [
-						{
-							argumentPath: ["input", "chatId"],
-						},
+						{ argumentPath: ["input", "chatId"], message: "Invalid uuid" },
 					],
 				},
 			});
@@ -303,12 +302,11 @@ export const ChatMembershipResolver = {
 
 		if (existingMember === undefined) {
 			throw new TalawaGraphQLError({
+				message: "You have provided invalid arguments for this action.",
 				extensions: {
-					code: "arguments_associated_resources_not_found",
+					code: "invalid_arguments",
 					issues: [
-						{
-							argumentPath: ["input", "memberId"],
-						},
+						{ argumentPath: ["input", "memberId"], message: "Invalid uuid" },
 					],
 				},
 			});
@@ -319,16 +317,16 @@ export const ChatMembershipResolver = {
 		if (existingChatMembership !== undefined) {
 			throw new TalawaGraphQLError({
 				extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
+					code: "forbidden_action_on_arguments_associated_resources", // Correct error code
 					issues: [
 						{
 							argumentPath: ["input", "chatId"],
-							message: "This chat already has the associated member.",
+							message: "This chat already has the associated member.", // Correct message for chatId
 						},
 						{
 							argumentPath: ["input", "memberId"],
 							message:
-								"This user already has the membership of the associated chat.",
+								"This user already has the membership of the associated chat.", // Correct message for memberId
 						},
 					],
 				},
