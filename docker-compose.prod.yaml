@@ -1,25 +1,25 @@
 version: "3.8"
 services:
   mongo:
-  # No light weight image is available for mongo
-    image: mongo:latest
+    # No light weight image is available for mongo
+    image: mongo:8.0.4
     container_name: mongo
     restart: unless-stopped
     healthcheck:
-      test: mongosh --eval "try { rs.status().ok } catch (e) { 0 }"
-      interval: 30s
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 }).ok"]
+      interval: 10s
       timeout: 5s
-      retries: 30
+      retries: 10
     deploy:
       resources:
         limits:
-          memory: 2G
-          cpus: '2.0'
+          memory: 1G
+          cpus: "1.0"
     ports:
       - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
-      - ./init-mongo.sh:/init-mongo.sh
+      - ./scripts/docker/init-mongo.sh:/init-mongo.sh
     networks:
       - talawa-network
     entrypoint: ["/bin/bash", "/init-mongo.sh"]
@@ -32,19 +32,19 @@ services:
       resources:
         limits:
           memory: 512M
-          cpus: '0.5'
+          cpus: "0.5"
     volumes:
       - redis-data:/data/redis
     networks:
       - talawa-network
 
   minio:
-  # No light weight image is available
+    # No light weight image is available
     image: minio/minio
     ports:
       - "9000:9000"
       - "9001:9001"
-    environment:  
+    environment:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
@@ -52,7 +52,7 @@ services:
       resources:
         limits:
           memory: 512M
-          cpus: '0.5'
+          cpus: "0.5"
     volumes:
       - minio-data:/data
     networks:
@@ -67,6 +67,7 @@ services:
       - "4000:4000"
     volumes:
       - /usr/src/app/node_modules
+      - ./scripts/docker/init-data-import.sh:/init-data-import.sh
     depends_on:
       mongo:
         condition: service_healthy
@@ -75,14 +76,16 @@ services:
       minio:
         condition: service_started
     environment:
-      - MONGO_DB_URL=mongodb://mongo:27017/talawa-api?replicaSet=rs0&directConnection=true
+      - MONGO_DB_URL=mongodb://mongo:27017/talawa-dev?replicaSet=rs0
+      - NODE_ENV=development
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379
     deploy:
       resources:
         limits:
-          memory: 2G
-          cpus: '2.0'
+          memory: 1G
+          cpus: "1.0"
+    entrypoint: ["/bin/bash", "/init-data-import.sh"]
     networks:
       - talawa-network
 
@@ -98,12 +101,19 @@ services:
       - $PWD/site:/srv
       - caddy_data:/data
       - caddy_config:/config
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/graphql"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     deploy:
       resources:
         limits:
           memory: 256M
-          cpus: '0.25'
-    
+          cpus: "0.25"
+    networks:
+      - talawa-network
+
 volumes:
   redis-data:
   minio-data:
