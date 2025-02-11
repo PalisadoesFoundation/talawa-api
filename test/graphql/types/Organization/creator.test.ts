@@ -105,13 +105,8 @@ type UserFromDB = {
 	role: UserRole;
 	homePhoneNumber: string | null;
 	workPhoneNumber: string | null;
-	avatarMimeType:
-		| "image/avif"
-		| "image/jpeg"
-		| "image/png"
-		| "image/webp"
-		| null;
-	avatarBase64: string | null;
+    avatarMimeType: "image/avif" | "image/jpeg" | "image/png" | "image/webp" | null
+    avatarBase64: string | null;
 	educationGrade: string | null;
 	employmentStatus: string | null;
 	maritalStatus: string | null;
@@ -177,7 +172,7 @@ const createMockContext = (overrides?: Partial<TestContext>): TestContext => ({
 		decorate: vi.fn(),
 		get: vi.fn(),
 		post: vi.fn(),
-	} as unknown as FastifyInstance,
+	} as Partial<Pick<FastifyInstance, 'addHook' | 'decorate' | 'get' | 'post'>>,
 	reply: {
 		code: vi.fn(),
 		send: vi.fn(),
@@ -227,6 +222,11 @@ const resolveCreator = async (
 			},
 		});
 	}
+
+    // Early return if organization has no creator
+    if (parent.creatorId === null) {
+        return null;
+    }
 
 	const currentUserOrganizationMembership =
 		currentUser.organizationMembershipsWhereMember[0];
@@ -377,6 +377,23 @@ describe("Organization Resolver - Creator Field", () => {
 			);
 		});
 	});
+
+    it("should throw unauthorized error if user has no organization membership", async () => {
+        const mockUser = createCompleteMockUser("regular", []);
+        ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(mockUser);
+      
+        await expect(async () => {
+          await resolveCreator(
+            mockOrganization,
+            {},
+            ctx as unknown as ResolverContext,
+          );
+        }).rejects.toThrow(
+          new TalawaGraphQLError({
+            extensions: { code: "unauthorized_action" },
+          }),
+        );
+      });
 
 	describe("Error Handling", () => {
 		it("should throw unexpected error if creator user is not found", async () => {
