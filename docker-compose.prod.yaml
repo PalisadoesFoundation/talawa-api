@@ -94,8 +94,8 @@ services:
     container_name: caddy-service
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "9080:9080"
+      - "9443:9443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - $PWD/site:/srv
