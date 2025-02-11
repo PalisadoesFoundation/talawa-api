@@ -8,6 +8,10 @@ const docsDir = path.resolve(
 function replaceLinks(dir) {
 	try {
 		const files = fs.readdirSync(dir);
+		if (!Array.isArray(files)) {
+			console.error("Please enter a valid directory path");
+			return;
+		}
 		console.log(`Processing directory: ${dir}`);
 		for (const file of files) {
 			const filePath = path.join(dir, file);
