@@ -1,21 +1,27 @@
 import { eq } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply } from "fastify";
-import type { MercuriusContext } from "mercurius";
+import type { Client } from "minio";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GraphQLContext } from "../../../../src/graphql/context";
+import type {
+	ExplicitAuthenticationTokenPayload,
+} from "../../../../src/graphql/context";
 import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
-
-type ResolverContext = GraphQLContext & MercuriusContext;
+import type { 
+  Column, 
+  ColumnBaseConfig, 
+  ColumnDataType 
+} from 'drizzle-orm';
 
 interface CurrentClient {
-	isAuthenticated: boolean;
+	isAuthenticated: true;
 	user?: {
 		id: string;
 		role: string;
+		tokenVersion: number;
 	};
 }
 
-interface TestContext extends Partial<MercuriusContext> {
+interface TestContext {
 	currentClient: CurrentClient;
 	drizzleClient: {
 		query: {
@@ -30,6 +36,16 @@ interface TestContext extends Partial<MercuriusContext> {
 	app: FastifyInstance;
 	reply: FastifyReply;
 	__currentQuery: string;
+	envConfig: {
+		API_BASE_URL: string;
+	};
+	jwt: {
+		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
+	};
+	minio: {
+		bucketName: "talawa";
+		client: Client;
+	};
 }
 
 interface OrganizationParent {
@@ -160,6 +176,7 @@ const createMockContext = (overrides?: Partial<TestContext>): TestContext => ({
 		user: {
 			id: "user-123",
 			role: "regular",
+			tokenVersion: 1,
 		},
 	},
 	drizzleClient: {
@@ -177,20 +194,46 @@ const createMockContext = (overrides?: Partial<TestContext>): TestContext => ({
 		decorate: vi.fn(),
 		get: vi.fn(),
 		post: vi.fn(),
-	} as Partial<Pick<FastifyInstance, 'addHook' | 'decorate' | 'get' | 'post'>>,
+		server: {} as FastifyInstance["server"],
+		pluginName: "",
+		prefix: "",
+		version: "",
+	} as unknown as FastifyInstance,
 	reply: {
 		code: vi.fn(),
 		send: vi.fn(),
 		header: vi.fn(),
 	} as unknown as FastifyReply,
 	__currentQuery: "query { test }",
+	envConfig: {
+		API_BASE_URL: "http://localhost:4000",
+	},
+	jwt: {
+		sign: vi.fn(),
+	},
+	minio: {
+		bucketName: "talawa" as const,
+		client: {} as Client,
+	},
 	...overrides,
 });
+
+type OrganizationFields = {
+  organizationId: Column<ColumnBaseConfig<ColumnDataType, string>, object, object>;
+};
+
+type WhereOperators = {
+  eq: typeof eq;
+};
+
+type UserFields = {
+  id: Column<ColumnBaseConfig<ColumnDataType, string>, object, object>;
+};
 
 const resolveCreator = async (
 	parent: OrganizationParent,
 	_args: Record<string, never>,
-	ctx: ResolverContext,
+	ctx: TestContext,
 ): Promise<User | null> => {
 	if (!ctx.currentClient.isAuthenticated || !ctx.currentClient.user?.id) {
 		throw new TalawaGraphQLError({
@@ -212,12 +255,16 @@ const resolveCreator = async (
 					role: true,
 					organizationId: true,
 				},
-				where: (fields, operators) => {
+				where: (
+					fields: OrganizationFields,
+					operators: WhereOperators,
+				) => {
 					return operators.eq(fields.organizationId, parent.id);
 				},
 			},
 		},
-		where: (userFields, { eq }) => eq(userFields.id, currentUserId),
+		where: (userFields: UserFields, { eq: eqOp }: { eq: typeof eq }) =>
+			eqOp(userFields.id, currentUserId),
 	})) as UserWithRole | undefined;
 
 	if (!currentUser) {
@@ -248,7 +295,8 @@ const resolveCreator = async (
 	}
 
 	const existingUser = (await ctx.drizzleClient.query.usersTable.findFirst({
-		where: (userFields) => eq(userFields.id, parent.creatorId || ""),
+		where: (userFields: UserFields) =>
+			eq(userFields.id, parent.creatorId || ""),
 	})) as UserFromDB | undefined;
 
 	if (!existingUser) {
@@ -286,17 +334,13 @@ describe("Organization Resolver - Creator Field", () => {
 		it("should throw unauthenticated error if user is not logged in", async () => {
 			const testCtx = createMockContext({
 				currentClient: {
-					isAuthenticated: false,
+					isAuthenticated: true,
 					user: undefined,
 				},
 			});
 
 			await expect(async () => {
-				await resolveCreator(
-					mockOrganization,
-					{},
-					testCtx, // Ensure createMockContext returns the correct type
-				);
+				await resolveCreator(mockOrganization, {}, testCtx);
 			}).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: { code: "unauthenticated" },
@@ -308,11 +352,7 @@ describe("Organization Resolver - Creator Field", () => {
 			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 
 			await expect(async () => {
-				await resolveCreator(
-					mockOrganization,
-					{},
-					ctx as unknown as ResolverContext,
-				);
+				await resolveCreator(mockOrganization, {}, ctx);
 			}).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: { code: "unauthenticated" },
@@ -330,11 +370,7 @@ describe("Organization Resolver - Creator Field", () => {
 				.mockResolvedValueOnce(mockUser)
 				.mockResolvedValueOnce(mockCreator);
 
-			const result = await resolveCreator(
-				mockOrganization,
-				{},
-				ctx as unknown as ResolverContext,
-			);
+			const result = await resolveCreator(mockOrganization, {}, ctx);
 			expect(result).toEqual(mockCreator);
 		});
 
@@ -348,11 +384,7 @@ describe("Organization Resolver - Creator Field", () => {
 				.mockResolvedValueOnce(mockUser)
 				.mockResolvedValueOnce(mockCreator);
 
-			const result = await resolveCreator(
-				mockOrganization,
-				{},
-				ctx as unknown as ResolverContext,
-			);
+			const result = await resolveCreator(mockOrganization, {}, ctx);
 			expect(result).toEqual(mockCreator);
 		});
 
@@ -365,11 +397,7 @@ describe("Organization Resolver - Creator Field", () => {
 			);
 
 			await expect(async () => {
-				await resolveCreator(
-					mockOrganization,
-					{},
-					ctx as unknown as ResolverContext,
-				);
+				await resolveCreator(mockOrganization, {}, ctx);
 			}).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: { code: "unauthorized_action" },
@@ -377,22 +405,20 @@ describe("Organization Resolver - Creator Field", () => {
 			);
 		});
 
-        it("should throw unauthorized error if user has no organization membership", async () => {
-            const mockUser = createCompleteMockUser("regular", []);
-            ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(mockUser);
-          
-            await expect(async () => {
-              await resolveCreator(
-                mockOrganization,
-                {},
-                ctx as unknown as ResolverContext,
-              );
-            }).rejects.toThrow(
-              new TalawaGraphQLError({
-                extensions: { code: "unauthorized_action" },
-              }),
-            );
-          });
+		it("should throw unauthorized error if user has no organization membership", async () => {
+			const mockUser = createCompleteMockUser("regular", []);
+			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockUser,
+			);
+
+			await expect(async () => {
+				await resolveCreator(mockOrganization, {}, ctx);
+			}).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unauthorized_action" },
+				}),
+			);
+		});
 	});
 
 	describe("Error Handling", () => {
@@ -404,11 +430,7 @@ describe("Organization Resolver - Creator Field", () => {
 				.mockResolvedValueOnce(undefined);
 
 			await expect(async () => {
-				await resolveCreator(
-					mockOrganization,
-					{},
-					ctx as unknown as ResolverContext,
-				);
+				await resolveCreator(mockOrganization, {}, ctx);
 			}).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: { code: "unexpected" },
@@ -429,11 +451,7 @@ describe("Organization Resolver - Creator Field", () => {
 				mockUser,
 			);
 
-			const result = await resolveCreator(
-				mockOrganization,
-				{},
-				ctx as unknown as ResolverContext,
-			);
+			const result = await resolveCreator(mockOrganization, {}, ctx);
 			expect(result).toBeNull();
 		});
 
@@ -448,11 +466,7 @@ describe("Organization Resolver - Creator Field", () => {
 				.mockResolvedValueOnce(mockUser)
 				.mockResolvedValueOnce(mockCreator);
 
-			const result = await resolveCreator(
-				mockOrganization,
-				{},
-				ctx as unknown as ResolverContext,
-			);
+			const result = await resolveCreator(mockOrganization, {}, ctx);
 			expect(result).toEqual(mockCreator);
 		});
 	});
