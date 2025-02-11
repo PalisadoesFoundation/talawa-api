@@ -25,7 +25,7 @@ describe("Setup -> postgresSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		const answers = await postgresSetup();
+		const answers = await postgresSetup({});
 
 		const expectedEnv = {
 			POSTGRES_DB: "mocked-db",

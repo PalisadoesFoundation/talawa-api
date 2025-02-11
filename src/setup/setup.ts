@@ -5,6 +5,10 @@ import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { updateEnvVariable } from "./updateEnvVariable";
 
+interface SetupAnswers {
+	[key: string]: string;
+}
+
 async function promptInput(
 	name: string,
 	message: string,
@@ -40,7 +44,6 @@ async function promptConfirm(
 	return result;
 }
 
-let answers: Record<string, string> = {};
 const envFileName = ".env";
 
 export function generateJwtSecret(): string {
@@ -138,7 +141,7 @@ export function checkEnvFile(): boolean {
 	return fs.existsSync(envFileName);
 }
 
-export function initializeEnvFile(): void {
+export function initializeEnvFile(answers: SetupAnswers): void {
 	if (fs.existsSync(envFileName)) {
 		fs.copyFileSync(envFileName, `${envFileName}.backup`);
 		console.log(`✅ Backup created at ${envFileName}.backup`);
@@ -180,7 +183,7 @@ export function initializeEnvFile(): void {
 	}
 }
 
-export async function setCI(): Promise<Record<string, string>> {
+export async function setCI(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {
 		answers.CI = await promptList("CI", "Set CI:", ["true", "false"], "false");
 	} catch (err) {
@@ -193,7 +196,9 @@ export async function setCI(): Promise<Record<string, string>> {
 	return answers;
 }
 
-export async function administratorEmail(): Promise<Record<string, string>> {
+export async function administratorEmail(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
 	try {
 		answers.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = await promptInput(
 			"API_ADMINISTRATOR_USER_EMAIL_ADDRESS",
@@ -211,7 +216,7 @@ export async function administratorEmail(): Promise<Record<string, string>> {
 	return answers;
 }
 
-export async function apiSetup(): Promise<Record<string, string>> {
+export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	answers.API_BASE_URL = await promptInput(
 		"API_BASE_URL",
 		"API base URL:",
@@ -358,7 +363,9 @@ export async function apiSetup(): Promise<Record<string, string>> {
 	return answers;
 }
 
-export async function cloudbeaverSetup(): Promise<Record<string, string>> {
+export async function cloudbeaverSetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
 	answers.CLOUDBEAVER_ADMIN_NAME = await promptInput(
 		"CLOUDBEAVER_ADMIN_NAME",
 		"CloudBeaver admin name:",
@@ -402,7 +409,7 @@ export async function cloudbeaverSetup(): Promise<Record<string, string>> {
 	return answers;
 }
 
-export async function minioSetup(): Promise<Record<string, string>> {
+export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	answers.MINIO_BROWSER = await promptInput(
 		"MINIO_BROWSER",
 		"Minio browser (on/off):",
@@ -435,8 +442,16 @@ export async function minioSetup(): Promise<Record<string, string>> {
 			"9001",
 			validatePort,
 		);
+		console.log("❌ Detected Port Conflict", {
+			apiPort: answers.MINIO_API_MAPPED_PORT,
+			consolePort: answers.MINIO_CONSOLE_MAPPED_PORT,
+		});
 
 		if (answers.MINIO_API_MAPPED_PORT === answers.MINIO_CONSOLE_MAPPED_PORT) {
+			console.log("❌ Detected Port Conflict", {
+				apiPort: answers.MINIO_API_MAPPED_PORT,
+				consolePort: answers.MINIO_CONSOLE_MAPPED_PORT,
+			});
 			throw new Error(
 				"Port conflict detected: MinIO API and Console ports must be different",
 			);
@@ -458,7 +473,9 @@ export async function minioSetup(): Promise<Record<string, string>> {
 	return answers;
 }
 
-export async function postgresSetup(): Promise<Record<string, string>> {
+export async function postgresSetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
 	answers.POSTGRES_DB = await promptInput(
 		"POSTGRES_DB",
 		"Postgres database:",
@@ -495,7 +512,8 @@ export async function postgresSetup(): Promise<Record<string, string>> {
 	return answers;
 }
 
-export async function setup(): Promise<Record<string, string>> {
+export async function setup(): Promise<SetupAnswers> {
+	let answers: SetupAnswers = {};
 	if (checkEnvFile()) {
 		const envReconfigure = await promptConfirm(
 			"envReconfigure",
@@ -518,8 +536,8 @@ export async function setup(): Promise<Record<string, string>> {
 		process.exit(1);
 	});
 
-	await setCI();
-	initializeEnvFile();
+	answers = await setCI(answers);
+	initializeEnvFile(answers);
 
 	const useDefaultApi = await promptConfirm(
 		"useDefaultApi",
@@ -528,7 +546,7 @@ export async function setup(): Promise<Record<string, string>> {
 	);
 
 	if (!useDefaultApi) {
-		await apiSetup();
+		answers = await apiSetup(answers);
 	}
 
 	const useDefaultMinio = await promptConfirm(
@@ -538,7 +556,7 @@ export async function setup(): Promise<Record<string, string>> {
 	);
 
 	if (!useDefaultMinio) {
-		await minioSetup();
+		answers = await minioSetup(answers);
 	}
 
 	if (answers.CI === "false") {
@@ -548,7 +566,7 @@ export async function setup(): Promise<Record<string, string>> {
 			true,
 		);
 		if (!useDefaultCloudbeaver) {
-			await cloudbeaverSetup();
+			answers = await cloudbeaverSetup(answers);
 		}
 	}
 
@@ -558,10 +576,10 @@ export async function setup(): Promise<Record<string, string>> {
 		true,
 	);
 	if (!useDefaultPostgres) {
-		await postgresSetup();
+		answers = await postgresSetup(answers);
 	}
 
-	await administratorEmail();
+	answers = await administratorEmail(answers);
 
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");

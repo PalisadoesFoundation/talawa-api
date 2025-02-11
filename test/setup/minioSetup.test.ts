@@ -26,7 +26,7 @@ describe("Setup -> minioSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		const answers = await minioSetup();
+		const answers = await minioSetup({});
 
 		const expectedEnv = {
 			MINIO_BROWSER: "off",
@@ -79,7 +79,7 @@ describe("Setup -> minioSetup", () => {
 		}
 	});
 	it("should detect port conflicts between API and Console ports", async () => {
-		process.env.CI = "false";
+		const inputAnswers = { CI: "false" };
 
 		const mockResponses = [
 			{ MINIO_BROWSER: "on" },
@@ -94,7 +94,7 @@ describe("Setup -> minioSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		await expect(minioSetup()).rejects.toThrow(
+		await expect(minioSetup(inputAnswers)).rejects.toThrow(
 			"Port conflict detected: MinIO API and Console ports must be different",
 		);
 	});

@@ -21,7 +21,7 @@ describe("Setup -> askForAdministratorEmail", () => {
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: mockedEmail,
 		});
 
-		const answers = await administratorEmail();
+		const answers = await administratorEmail({});
 
 		expect(answers.API_ADMINISTRATOR_USER_EMAIL_ADDRESS).toBe(mockedEmail);
 	});
@@ -55,7 +55,7 @@ describe("Setup -> askForAdministratorEmail", () => {
 		const promptError = new Error("inquirer failure");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
 
-		await expect(SetupModule.administratorEmail()).rejects.toThrow(
+		await expect(SetupModule.administratorEmail({})).rejects.toThrow(
 			"process.exit called",
 		);
 		expect(consoleLogSpy).toHaveBeenCalledWith(promptError);
@@ -77,7 +77,7 @@ describe("Setup -> askForAdministratorEmail", () => {
 		const promptError = new Error("inquirer failure");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
 
-		await expect(SetupModule.administratorEmail()).rejects.toThrow(
+		await expect(SetupModule.administratorEmail({})).rejects.toThrow(
 			"process.exit called",
 		);
 

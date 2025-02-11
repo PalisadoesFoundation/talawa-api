@@ -60,10 +60,10 @@ describe("initializeEnvFile", () => {
 	});
 	it("should read from .env.devcontainer when answers.CI is 'false'", async () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({ CI: "false" });
-		await setCI();
+		const answers = await setCI({});
 		vi.spyOn(fs, "readFileSync").mockReturnValue("KEY1=VAL1\nKEY2=VAL2");
 
-		initializeEnvFile();
+		initializeEnvFile(answers);
 
 		expect(fs.readFileSync).toHaveBeenCalledWith("envFiles/.env.devcontainer");
 	});
@@ -75,7 +75,7 @@ describe("initializeEnvFile", () => {
 		vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
 		vi.spyOn(fs, "readFileSync").mockReturnValue(mockEnvContent);
 
-		initializeEnvFile();
+		initializeEnvFile({});
 
 		expect(fs.copyFileSync).toHaveBeenCalledWith(envFileName, backupEnvFile);
 		expect(console.log).toHaveBeenCalledWith(
@@ -86,7 +86,7 @@ describe("initializeEnvFile", () => {
 	it("should throw an error if the environment file is missing", async () => {
 		vi.spyOn(fs, "existsSync").mockImplementation(() => false);
 
-		expect(() => initializeEnvFile()).toThrow(
+		expect(() => initializeEnvFile({})).toThrow(
 			"Configuration file 'envFiles/.env.devcontainer' is missing. Please create the file or use a different environment configuration.",
 		);
 	});
@@ -99,7 +99,7 @@ describe("initializeEnvFile", () => {
 			throw new Error("File read error");
 		});
 
-		expect(() => initializeEnvFile()).toThrow(
+		expect(() => initializeEnvFile({})).toThrow(
 			"Failed to load environment file. Please check file permissions and ensure it contains valid environment variables.",
 		);
 
@@ -111,10 +111,10 @@ describe("initializeEnvFile", () => {
 
 	it("should read from .env.ci when answers.CI is 'true'", async () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({ CI: "true" });
-		await setCI();
+		const answers = await setCI({});
 		vi.spyOn(fs, "readFileSync").mockReturnValue("FOO=bar");
 
-		initializeEnvFile();
+		initializeEnvFile(answers);
 
 		expect(fs.readFileSync).toHaveBeenCalledWith("envFiles/.env.ci");
 	});
@@ -130,7 +130,7 @@ describe("initializeEnvFile", () => {
 		const promptError = new Error("inquirer failure");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(promptError);
 
-		await expect(SetupModule.setCI()).rejects.toThrow("process.exit called");
+		await expect(SetupModule.setCI({})).rejects.toThrow("process.exit called");
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(promptError);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
