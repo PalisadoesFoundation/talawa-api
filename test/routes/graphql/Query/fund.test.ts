@@ -17,6 +17,10 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
+	Mutation_deleteFund,
+	Mutation_deleteOrganization,
+	Mutation_deleteOrganizationMembership,
+	Mutation_deleteUser,
 	Query_fund,
 	Query_signIn,
 } from "../documentNodes";
@@ -179,7 +183,10 @@ suite("Query field fund", () => {
 
 	test("with 'unauthenticated' extensions code if authorization token is malformed", async () => {
 		const fundId = faker.string.uuid();
-		const invalidToken = Buffer.from("invalid-token").toString("base64");
+		// Generate a random invalid token instead of using a hard-coded value
+		const invalidToken = Buffer.from(faker.string.alphanumeric(32)).toString(
+			"base64",
+		);
 
 		const fundResult = await mercuriusClient.query(Query_fund, {
 			headers: {
@@ -611,8 +618,8 @@ suite("UUID Validation", () => {
 	});
 });
 
-suite("Required Fields", () => {
-	test("validates required fund fields", () => {
+suite("Required Field Validation", () => {
+	test("validates that all required fund fields (name, isTaxDeductible, organizationId) are present", () => {
 		const validInput = {
 			name: "Test Fund",
 			isTaxDeductible: false,
@@ -637,7 +644,7 @@ suite("Required Fields", () => {
 		expect(fundsTableInsertSchema.safeParse(validInput).success).toBe(true);
 	});
 
-	test("validates fund field constraints", () => {
+	test("validates field constraints: name length, isTaxDeductible type, and organizationId format", () => {
 		const validInput = {
 			name: "Test Fund",
 			isTaxDeductible: false,
@@ -690,16 +697,24 @@ interface TestFund {
 	cleanup: () => Promise<void>;
 }
 
+interface RetryOptions {
+	maxRetries: number;
+	initialDelay: number;
+	maxDelay: number;
+	backoffFactor: number;
+}
+
 // Retry configuration
-const RETRY_OPTIONS = {
+const RETRY_OPTIONS: RetryOptions = {
 	maxRetries: 3,
-	initialDelay: 1000, // ms
-	maxDelay: 5000, // ms
+	initialDelay: 100, // ms
+	maxDelay: 1000, // ms
+	backoffFactor: 2,
 };
 
 async function retry<T>(
 	operation: () => Promise<T>,
-	options = RETRY_OPTIONS,
+	options: RetryOptions = RETRY_OPTIONS,
 ): Promise<T> {
 	let lastError: Error | undefined;
 
@@ -708,13 +723,21 @@ async function retry<T>(
 			return await operation();
 		} catch (error) {
 			lastError = error as Error;
+
 			if (attempt < options.maxRetries) {
-				const delay = Math.min(
-					options.initialDelay * 2 ** (attempt - 1),
-					options.maxDelay,
+				// Calculate exponential backoff delay
+				const backoffDelay =
+					options.initialDelay * options.backoffFactor ** (attempt - 1);
+				const delay = Math.min(backoffDelay, options.maxDelay);
+
+				// Log retry attempt for debugging
+				console.warn(
+					`Retry attempt ${attempt}/${options.maxRetries} after error:`,
+					error,
+					`(waiting ${delay}ms)`,
 				);
+
 				await new Promise((resolve) => setTimeout(resolve, delay));
-				console.warn(`Retry attempt ${attempt} after error:`, error);
 			}
 		}
 	}
@@ -759,11 +782,10 @@ async function createRegularUser(): Promise<TestUser> {
 				userId,
 				cleanup: async () => {
 					try {
-						// Add cleanup mutation here when available
-						// await mercuriusClient.mutate(Mutation_deleteUser, {
-						//     headers: { authorization: `bearer ${adminAuthToken}` },
-						//     variables: { input: { id: userId } }
-						// });
+						await mercuriusClient.mutate(Mutation_deleteUser, {
+							headers: { authorization: `bearer ${adminAuthToken}` },
+							variables: { input: { id: userId } },
+						});
 						console.log(`Cleanup: User ${userId} would be deleted here`);
 					} catch (error) {
 						console.error("Failed to cleanup user:", error);
@@ -835,16 +857,14 @@ async function createFund(): Promise<TestFund> {
 				orgId,
 				cleanup: async () => {
 					try {
-						// Add cleanup mutations here when available
-						// First delete fund, then organization
-						// await mercuriusClient.mutate(Mutation_deleteFund, {
-						//     headers: { authorization: `bearer ${adminAuthToken}` },
-						//     variables: { input: { id: fundId } }
-						// });
-						// await mercuriusClient.mutate(Mutation_deleteOrganization, {
-						//     headers: { authorization: `bearer ${adminAuthToken}` },
-						//     variables: { input: { id: orgId } }
-						// });
+						await mercuriusClient.mutate(Mutation_deleteFund, {
+							headers: { authorization: `bearer ${adminAuthToken}` },
+							variables: { input: { id: fundId } },
+						});
+						await mercuriusClient.mutate(Mutation_deleteOrganization, {
+							headers: { authorization: `bearer ${adminAuthToken}` },
+							variables: { input: { id: orgId } },
+						});
 						console.log(
 							`Cleanup: Fund ${fundId} and Org ${orgId} would be deleted here`,
 						);
@@ -886,10 +906,15 @@ async function addUserToOrg(
 				cleanup: async () => {
 					try {
 						// Add cleanup mutation here when available
-						// await mercuriusClient.mutate(Mutation_deleteOrganizationMembership, {
-						//     headers: { authorization: `bearer ${adminAuthToken}` },
-						//     variables: { input: { memberId: userId, organizationId: orgId } }
-						// });
+						await mercuriusClient.mutate(
+							Mutation_deleteOrganizationMembership,
+							{
+								headers: { authorization: `bearer ${adminAuthToken}` },
+								variables: {
+									input: { memberId: userId, organizationId: orgId },
+								},
+							},
+						);
 						console.log(
 							`Cleanup: Membership for user ${userId} in org ${orgId} would be deleted here`,
 						);

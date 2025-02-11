@@ -340,3 +340,30 @@ export const Mutation_createOrganizationMembership =
       id
     }
   }`);
+
+export const Mutation_deleteFund =
+	gql(`mutation Mutation_deleteFund($input: MutationDeleteFundInput!) {
+    deleteFund(input: $input) {
+      id
+      name
+      isTaxDeductible
+    }
+}`);
+
+export const Mutation_deleteOrganization =
+	gql(`mutation Mutation_deleteOrganization($input: MutationDeleteOrganizationInput!) {
+    deleteOrganization(input: $input) {
+      id
+      name
+      countryCode
+    }
+}`);
+
+export const Mutation_deleteOrganizationMembership =
+	gql(`mutation Mutation_deleteOrganizationMembership($input: MutationDeleteOrganizationMembershipInput!) {
+    deleteOrganizationMembership(input: $input) {
+      id
+      name
+      countryCode
+    }
+}`);
