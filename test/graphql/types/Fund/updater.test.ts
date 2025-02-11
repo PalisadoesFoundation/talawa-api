@@ -1,133 +1,117 @@
-import { describe, it, expect } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { GraphQLContext } from "../../../../src/graphql/context";
+import type { FastifyBaseLogger } from "fastify";
+import { User } from "~/src/graphql/types/User/User";
+import { Fund } from "~/src/graphql/types/Fund/Fund";
+import { createMockLogger } from "test/utilities/mockLogger";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { resolveUpdater } from "~/src/graphql/types/Fund/updater";
 
-describe("Math Functions", () => {
-  const add = (a: number, b: number) => a + b;
+type DeepPartial<T> = Partial<T>;
+interface TestContext extends Omit<GraphQLContext, "log"> {
+  drizzleClient: {
+    query: {
+      usersTable: {
+        findFirst: ReturnType<typeof vi.fn>;
+      };
+    };
+  } & GraphQLContext["drizzleClient"];
+  log: FastifyBaseLogger;
+}
 
-  it("should add two numbers correctly", () => {
-    expect(add(2, 3)).toBe(5);
+describe("Fund Resolver - Updater Field", () => {
+  let ctx: TestContext;
+  let mockUser: DeepPartial<User>;
+  let mockFund: Fund;
+
+  beforeEach(() => {
+    mockUser = {
+      id: "123",
+      name: "John Doe",
+      role: "administrator",
+      createdAt: new Date(),
+    };
+
+    mockFund = {
+      createdAt: new Date(),
+      name: "Student Fund",
+      id: "fund-111",
+      creatorId: "000",
+      updatedAt: new Date(),
+      updaterId: "id-222",
+      organizationId: "org-01",
+      isTaxDeductible: false,
+    };
+
+    const mockLogger = createMockLogger();
+    vi.clearAllMocks();
+
+    ctx = {
+      drizzleClient: {
+        query: {
+          usersTable: {
+            findFirst: vi.fn().mockResolvedValue(mockUser),
+          },
+        },
+      },
+      currentClient: {
+        isAuthenticated: true,
+        user: { id: "321" },
+      },
+      log: mockLogger,
+    } as unknown as TestContext;
   });
 
-  it("should return 0 when adding 0 and 0", () => {
-    expect(add(0, 0)).toBe(0);
+  it("should return null if updaterId is null", async () => {
+    mockFund.updaterId = null;
+    await expect(resolveUpdater(mockFund, {}, ctx)).resolves.toBeNull();
+  });
+
+  it("should throw unauthenticated error when user is not authenticated", async () => {
+    ctx.currentClient.isAuthenticated = false;
+    await expect(resolveUpdater(mockFund, {}, ctx)).rejects.toThrow(
+      expect.objectContaining({ extensions: { code: "unauthenticated" } })
+    );
+  });
+
+  it("should throw unauthorized error when user is not administrator", async () => {
+    mockUser.role = "regular";
+    ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+      mockUser
+    );
+    await expect(resolveUpdater(mockFund, {}, ctx)).rejects.toThrow(
+      new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } })
+    );
+  });
+
+  it("should return current user if updaterId matches current user id", async () => {
+    mockFund.updaterId = "123";
+    await expect(resolveUpdater(mockFund, {}, ctx)).resolves.toEqual(mockUser);
+  });
+
+  it("should fetch updater user if updaterId is different", async () => {
+    const updaterUser: DeepPartial<User> = { id: "456", name: "Updater User" };
+
+    ctx.drizzleClient.query.usersTable.findFirst
+      .mockResolvedValueOnce(mockUser)
+      .mockResolvedValueOnce(updaterUser);
+
+    await expect(resolveUpdater(mockFund, {}, ctx)).resolves.toEqual(
+      updaterUser
+    );
+  });
+
+  it("should throw unexpected error if updater user does not exist", async () => {
+    ctx.drizzleClient.query.usersTable.findFirst
+      .mockResolvedValueOnce(mockUser)
+      .mockResolvedValueOnce(undefined);
+
+    await expect(resolveUpdater(mockFund, {}, ctx)).rejects.toThrow(
+      new TalawaGraphQLError({ extensions: { code: "unexpected" } })
+    );
+
+    expect(ctx.log.error).toHaveBeenCalledWith(
+      "Postgres select operation returned an empty array for a fund's updater id that isn't null."
+    );
   });
 });
-
-// import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
-// import { Fund } from "../../../../src/graphql/types/Fund/Fund";
-// import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
-// const mockCtx = {
-//   currentClient: {
-//     isAuthenticated: true,
-//     user: { id: "user1", role: "member" },
-//   },
-//   drizzleClient: {
-//     query: {
-//       usersTable: {
-//         findFirst: vi.fn(),
-//       },
-//     },
-//   },
-//   log: { error: vi.fn() },
-// };
-
-// describe("Fund.implement - updater field", () => {
-//   beforeAll(() => {
-//     console.log("Running tests in Fund.updater test suite");
-//   });
-
-//   beforeEach(() => {
-//     vi.clearAllMocks();
-//   });
-
-//   it("throws an unauthenticated error if user is not authenticated", async () => {
-//     mockCtx.currentClient.isAuthenticated = false;
-//     await expect(
-//       Fund.fields.updater.resolve({}, {}, mockCtx)
-//     ).rejects.toThrowError(
-//       new TalawaGraphQLError({ extensions: { code: "unauthenticated" } })
-//     );
-//   });
-
-//   it("throws an unauthenticated error if user is not found", async () => {
-//     mockCtx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-//       undefined
-//     );
-//     await expect(
-//       Fund.fields.updater.resolve({}, {}, mockCtx)
-//     ).rejects.toThrowError(
-//       new TalawaGraphQLError({ extensions: { code: "unauthenticated" } })
-//     );
-//   });
-
-//   it("throws an unauthorized_action error if user is not an administrator", async () => {
-//     mockCtx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-//       id: "user1",
-//       role: "member",
-//       organizationMembershipsWhereMember: [{ role: "member" }],
-//     });
-//     await expect(
-//       Fund.fields.updater.resolve({}, {}, mockCtx)
-//     ).rejects.toThrowError(
-//       new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } })
-//     );
-//   });
-
-//   it("returns null if parent.updaterId is null", async () => {
-//     mockCtx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-//       id: "user1",
-//       role: "administrator",
-//       organizationMembershipsWhereMember: [{ role: "administrator" }],
-//     });
-//     await expect(
-//       Fund.fields.updater.resolve({ updaterId: null }, {}, mockCtx)
-//     ).resolves.toBeNull();
-//   });
-
-//   it("returns current user if parent.updaterId matches user.id", async () => {
-//     const user = {
-//       id: "user1",
-//       role: "administrator",
-//       organizationMembershipsWhereMember: [{ role: "administrator" }],
-//     };
-//     mockCtx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(user);
-//     await expect(
-//       Fund.fields.updater.resolve({ updaterId: "user1" }, {}, mockCtx)
-//     ).resolves.toEqual(user);
-//   });
-
-//   it("throws an unexpected error if updaterId exists but user is not found", async () => {
-//     mockCtx.drizzleClient.query.usersTable.findFirst
-//       .mockResolvedValueOnce({
-//         id: "user1",
-//         role: "administrator",
-//         organizationMembershipsWhereMember: [{ role: "administrator" }],
-//       })
-//       .mockResolvedValueOnce(undefined);
-//     await expect(
-//       Fund.fields.updater.resolve({ updaterId: "user2" }, {}, mockCtx)
-//     ).rejects.toThrowError(
-//       new TalawaGraphQLError({ extensions: { code: "unexpected" } })
-//     );
-//     expect(mockCtx.log.error).toHaveBeenCalledWith(
-//       "Postgres select operation returned an empty array for a fund's updater id that isn't null."
-//     );
-//   });
-
-//   it("returns the found updater user if updaterId exists", async () => {
-//     const currentUser = {
-//       id: "user1",
-//       role: "administrator",
-//       organizationMembershipsWhereMember: [{ role: "administrator" }],
-//     };
-//     const updaterUser = { id: "user2", role: "member" };
-
-//     mockCtx.drizzleClient.query.usersTable.findFirst
-//       .mockResolvedValueOnce(currentUser)
-//       .mockResolvedValueOnce(updaterUser);
-
-//     await expect(
-//       Fund.fields.updater.resolve({ updaterId: "user2" }, {}, mockCtx)
-//     ).resolves.toEqual(updaterUser);
-//   });
-// });
