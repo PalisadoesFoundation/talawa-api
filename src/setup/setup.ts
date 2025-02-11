@@ -137,6 +137,14 @@ export function validateCloudBeaverURL(input: string): true | string {
 	}
 }
 
+function handlePromptError(err: unknown): never {
+	console.error(err);
+	if (fs.existsSync(".env.backup")) {
+		fs.copyFileSync(".env.backup", ".env");
+	}
+	process.exit(1);
+}
+
 export function checkEnvFile(): boolean {
 	return fs.existsSync(envFileName);
 }
@@ -163,8 +171,11 @@ export function initializeEnvFile(answers: SetupAnswers): void {
 
 		const safeContent = Object.entries(parsedEnv)
 			.map(([key, value]) => {
-				const safeValue = value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-				return `${key}="${safeValue}"`;
+				const escaped = value
+					.replace(/\\/g, "\\\\")
+					.replace(/"/g, '\\"')
+					.replace(/\n/g, "\\n");
+				return `${key}="${escaped}"`;
 			})
 			.join("\n");
 
@@ -188,10 +199,7 @@ export async function setCI(answers: SetupAnswers): Promise<SetupAnswers> {
 		answers.CI = await promptList("CI", "Set CI:", ["true", "false"], "false");
 	} catch (err) {
 		console.error(err);
-		if (fs.existsSync(".env.backup")) {
-			fs.copyFileSync(".env.backup", ".env");
-		}
-		process.exit(1);
+		handlePromptError(err);
 	}
 	return answers;
 }
@@ -208,10 +216,7 @@ export async function administratorEmail(
 		);
 	} catch (err) {
 		console.log(err);
-		if (fs.existsSync(".env.backup")) {
-			fs.copyFileSync(".env.backup", ".env");
-		}
-		process.exit(1);
+		handlePromptError(err);
 	}
 	return answers;
 }
@@ -442,16 +447,8 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"9001",
 			validatePort,
 		);
-		console.log("❌ Detected Port Conflict", {
-			apiPort: answers.MINIO_API_MAPPED_PORT,
-			consolePort: answers.MINIO_CONSOLE_MAPPED_PORT,
-		});
 
 		if (answers.MINIO_API_MAPPED_PORT === answers.MINIO_CONSOLE_MAPPED_PORT) {
-			console.log("❌ Detected Port Conflict", {
-				apiPort: answers.MINIO_API_MAPPED_PORT,
-				consolePort: answers.MINIO_CONSOLE_MAPPED_PORT,
-			});
 			throw new Error(
 				"Port conflict detected: MinIO API and Console ports must be different",
 			);
