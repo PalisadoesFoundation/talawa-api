@@ -7,7 +7,7 @@ import { schema } from "~/src/graphql/schema";
 try {
 	console.log("Generating the talawa api graphql schema.");
 	await writeFile(
-		"../schema.graphql",
+		`${import.meta.dirname}/../schema.graphql`,
 		printSchema(lexicographicSortSchema(schema)),
 	);
 	console.log("Successfully generated the talawa api graphql schema.");

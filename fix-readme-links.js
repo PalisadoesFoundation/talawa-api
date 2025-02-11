@@ -5,6 +5,8 @@ const docsDir = path.resolve(
 	process.env.DOCS_DIR || "./docs/docs/docs/auto-schema",
 );
 
+const debug = process.env.DEBUG === 'true';
+
 function replaceLinks(dir) {
 	try {
 		const files = fs.readdirSync(dir);
@@ -12,17 +14,26 @@ function replaceLinks(dir) {
 			console.error("Please enter a valid directory path");
 			return;
 		}
-		console.log(`Processing directory: ${dir}`);
+		if (debug) {
+			console.log(
+				JSON.stringify({
+					level: "info",
+					message: "Processing directory",
+					directory: dir,
+				})
+			);
+		}
 		for (const file of files) {
 			const filePath = path.join(dir, file);
-			if (fs.lstatSync(filePath).isDirectory()) {
+			const stats = fs.lstatSync(filePath);
+			if (stats.isDirectory() && !stats.isSymbolicLink()) {
 				replaceLinks(filePath);
 			} else if (file.endsWith(".md")) {
 				let content = fs.readFileSync(filePath, "utf8");
 				console.log(`Processing file: ${filePath}`);
 				// Replace any README.md links with root directory ("/")
 				content = content.replace(
-					/\[([^\]]+)\]\((?:\.\.\/)*README\.md\)/g,
+					/\[([^\]]+)\]\((?:\.\.\/|\/)*README\.md(?:#[^\)]+)?\)/gi,
 					(match, linkText) => {
 						console.log(`Replacing README.md link in ${filePath}`);
 						return "[Admin Docs](/)"; // Preserve original link text if needed

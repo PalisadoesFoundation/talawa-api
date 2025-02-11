@@ -21,7 +21,7 @@
 	],
 	"readme": "none",
 	"cleanOutputDir": true,
-	"skipErrorChecking": true,
+	"skipErrorChecking": false,
 	"logLevel": "Warn",
 	"hideBreadcrumbs": true
 }
