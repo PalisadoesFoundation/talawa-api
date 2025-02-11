@@ -252,7 +252,7 @@ suite("Query field fund", () => {
 		);
 	});
 
-	test("with 'too_many_requests' extensions code when rate limit is exceeded", async () => {
+	test("with 'arguments_associated_resources_not_found' extensions code when rate limit is exceeded", async () => {
 		const fundId = faker.string.uuid();
 		const adminAuthToken = await getAdminAuthToken();
 
