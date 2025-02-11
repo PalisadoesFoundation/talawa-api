@@ -222,148 +222,152 @@ export async function administratorEmail(
 }
 
 export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
-	answers.API_BASE_URL = await promptInput(
-		"API_BASE_URL",
-		"API base URL:",
-		"http://127.0.0.1:4000",
-		validateURL,
-	);
-	answers.API_HOST = await promptInput("API_HOST", "API host:", "0.0.0.0");
+	try {
+		answers.API_BASE_URL = await promptInput(
+			"API_BASE_URL",
+			"API base URL:",
+			"http://127.0.0.1:4000",
+			validateURL,
+		);
+		answers.API_HOST = await promptInput("API_HOST", "API host:", "0.0.0.0");
 
-	answers.API_PORT = await promptInput(
-		"API_PORT",
-		"API port:",
-		"4000",
-		validatePort,
-	);
+		answers.API_PORT = await promptInput(
+			"API_PORT",
+			"API port:",
+			"4000",
+			validatePort,
+		);
 
-	answers.API_IS_APPLY_DRIZZLE_MIGRATIONS = await promptList(
-		"API_IS_APPLY_DRIZZLE_MIGRATIONS",
-		"Apply Drizzle migrations?",
-		["true", "false"],
-		"true",
-	);
+		answers.API_IS_APPLY_DRIZZLE_MIGRATIONS = await promptList(
+			"API_IS_APPLY_DRIZZLE_MIGRATIONS",
+			"Apply Drizzle migrations?",
+			["true", "false"],
+			"true",
+		);
 
-	answers.API_IS_GRAPHIQL = await promptList(
-		"API_IS_GRAPHIQL",
-		"Enable GraphQL?",
-		["true", "false"],
-		answers.CI === "false" ? "true" : "false",
-	);
+		answers.API_IS_GRAPHIQL = await promptList(
+			"API_IS_GRAPHIQL",
+			"Enable GraphQL?",
+			["true", "false"],
+			answers.CI === "false" ? "true" : "false",
+		);
 
-	answers.API_IS_PINO_PRETTY = await promptList(
-		"API_IS_PINO_PRETTY",
-		"Enable Pino Pretty logs?",
-		["true", "false"],
-		answers.CI === "false" ? "true" : "false",
-	);
+		answers.API_IS_PINO_PRETTY = await promptList(
+			"API_IS_PINO_PRETTY",
+			"Enable Pino Pretty logs?",
+			["true", "false"],
+			answers.CI === "false" ? "true" : "false",
+		);
 
-	answers.API_JWT_EXPIRES_IN = await promptInput(
-		"API_JWT_EXPIRES_IN",
-		"JWT expiration (ms):",
-		"2592000000",
-	);
+		answers.API_JWT_EXPIRES_IN = await promptInput(
+			"API_JWT_EXPIRES_IN",
+			"JWT expiration (ms):",
+			"2592000000",
+		);
 
-	const jwtSecret = generateJwtSecret();
-	answers.API_JWT_SECRET = await promptInput(
-		"API_JWT_SECRET",
-		"JWT secret:",
-		jwtSecret,
-		(input: string) => {
-			const trimmed = input.trim();
-			if (trimmed.length < 128) {
-				return "JWT secret must be at least 128 characters long.";
-			}
-			return true;
-		},
-	);
+		const jwtSecret = generateJwtSecret();
+		answers.API_JWT_SECRET = await promptInput(
+			"API_JWT_SECRET",
+			"JWT secret:",
+			jwtSecret,
+			(input: string) => {
+				const trimmed = input.trim();
+				if (trimmed.length < 128) {
+					return "JWT secret must be at least 128 characters long.";
+				}
+				return true;
+			},
+		);
 
-	answers.API_LOG_LEVEL = await promptList(
-		"API_LOG_LEVEL",
-		"Log level:",
-		["info", "debug"],
-		answers.CI === "true" ? "info" : "debug",
-	);
+		answers.API_LOG_LEVEL = await promptList(
+			"API_LOG_LEVEL",
+			"Log level:",
+			["info", "debug"],
+			answers.CI === "true" ? "info" : "debug",
+		);
 
-	answers.API_MINIO_ACCESS_KEY = await promptInput(
-		"API_MINIO_ACCESS_KEY",
-		"Minio access key:",
-		"talawa",
-	);
+		answers.API_MINIO_ACCESS_KEY = await promptInput(
+			"API_MINIO_ACCESS_KEY",
+			"Minio access key:",
+			"talawa",
+		);
 
-	answers.API_MINIO_END_POINT = await promptInput(
-		"API_MINIO_END_POINT",
-		"Minio endpoint:",
-		"minio",
-	);
+		answers.API_MINIO_END_POINT = await promptInput(
+			"API_MINIO_END_POINT",
+			"Minio endpoint:",
+			"minio",
+		);
 
-	answers.API_MINIO_PORT = await promptInput(
-		"API_MINIO_PORT",
-		"Minio port:",
-		"9000",
-	);
+		answers.API_MINIO_PORT = await promptInput(
+			"API_MINIO_PORT",
+			"Minio port:",
+			"9000",
+		);
 
-	answers.API_MINIO_SECRET_KEY = await promptInput(
-		"API_MINIO_SECRET_KEY",
-		"Minio secret key:",
-		"password",
-	);
+		answers.API_MINIO_SECRET_KEY = await promptInput(
+			"API_MINIO_SECRET_KEY",
+			"Minio secret key:",
+			"password",
+		);
 
-	answers.API_MINIO_TEST_END_POINT = await promptInput(
-		"API_MINIO_TEST_END_POINT",
-		"Minio test endpoint:",
-		"minio-test",
-	);
+		answers.API_MINIO_TEST_END_POINT = await promptInput(
+			"API_MINIO_TEST_END_POINT",
+			"Minio test endpoint:",
+			"minio-test",
+		);
 
-	answers.API_MINIO_USE_SSL = await promptList(
-		"API_MINIO_USE_SSL",
-		"Use Minio SSL?",
-		["true", "false"],
-		"false",
-	);
+		answers.API_MINIO_USE_SSL = await promptList(
+			"API_MINIO_USE_SSL",
+			"Use Minio SSL?",
+			["true", "false"],
+			"false",
+		);
 
-	answers.API_POSTGRES_DATABASE = await promptInput(
-		"API_POSTGRES_DATABASE",
-		"Postgres database:",
-		"talawa",
-	);
+		answers.API_POSTGRES_DATABASE = await promptInput(
+			"API_POSTGRES_DATABASE",
+			"Postgres database:",
+			"talawa",
+		);
 
-	answers.API_POSTGRES_HOST = await promptInput(
-		"API_POSTGRES_HOST",
-		"Postgres host:",
-		"postgres",
-	);
+		answers.API_POSTGRES_HOST = await promptInput(
+			"API_POSTGRES_HOST",
+			"Postgres host:",
+			"postgres",
+		);
 
-	answers.API_POSTGRES_PASSWORD = await promptInput(
-		"API_POSTGRES_PASSWORD",
-		"Postgres password:",
-		"password",
-	);
+		answers.API_POSTGRES_PASSWORD = await promptInput(
+			"API_POSTGRES_PASSWORD",
+			"Postgres password:",
+			"password",
+		);
 
-	answers.API_POSTGRES_PORT = await promptInput(
-		"API_POSTGRES_PORT",
-		"Postgres port:",
-		"5432",
-	);
+		answers.API_POSTGRES_PORT = await promptInput(
+			"API_POSTGRES_PORT",
+			"Postgres port:",
+			"5432",
+		);
 
-	answers.API_POSTGRES_SSL_MODE = await promptList(
-		"API_POSTGRES_SSL_MODE",
-		"Use Postgres SSL?",
-		["true", "false"],
-		"false",
-	);
+		answers.API_POSTGRES_SSL_MODE = await promptList(
+			"API_POSTGRES_SSL_MODE",
+			"Use Postgres SSL?",
+			["true", "false"],
+			"false",
+		);
 
-	answers.API_POSTGRES_TEST_HOST = await promptInput(
-		"API_POSTGRES_TEST_HOST",
-		"Postgres test host:",
-		"postgres-test",
-	);
+		answers.API_POSTGRES_TEST_HOST = await promptInput(
+			"API_POSTGRES_TEST_HOST",
+			"Postgres test host:",
+			"postgres-test",
+		);
 
-	answers.API_POSTGRES_USER = await promptInput(
-		"API_POSTGRES_USER",
-		"Postgres user:",
-		"talawa",
-	);
+		answers.API_POSTGRES_USER = await promptInput(
+			"API_POSTGRES_USER",
+			"Postgres user:",
+			"talawa",
+		);
+	} catch (err) {
+		handlePromptError(err);
+	}
 
 	return answers;
 }

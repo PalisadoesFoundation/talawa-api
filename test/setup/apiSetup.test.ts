@@ -1,8 +1,10 @@
 import crypto from "node:crypto";
+import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+	apiSetup,
 	generateJwtSecret,
 	setup,
 	validatePort,
@@ -185,5 +187,29 @@ describe("generateJwtSecret", () => {
 
 		randomBytesSpy.mockRestore();
 		consoleErrorSpy.mockRestore();
+	});
+
+	it("should handle prompt errors correctly", async () => {
+		const processExitSpy = vi
+			.spyOn(process, "exit")
+			.mockImplementation(() => undefined as never);
+		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const fsCopyFileSyncSpy = vi
+			.spyOn(fs, "copyFileSync")
+			.mockImplementation(() => undefined);
+
+		const mockError = new Error("Prompt failed");
+		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
+
+		const consoleErrorSpy = vi.spyOn(console, "error");
+
+		await apiSetup({});
+
+		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
+		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".env.backup", ".env");
+		expect(processExitSpy).toHaveBeenCalledWith(1);
+
+		vi.clearAllMocks();
 	});
 });
