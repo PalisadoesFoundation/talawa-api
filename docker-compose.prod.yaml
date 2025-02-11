@@ -2,7 +2,7 @@ version: "3.8"
 services:
   mongo:
     # No light weight image is available for mongo
-    image: mongo
+    image: mongo:8.0.4
     container_name: mongo
     restart: unless-stopped
     healthcheck:
@@ -58,7 +58,7 @@ services:
     networks:
       - talawa-network
 
-  talawa-api-dev:
+  talawa-api-prod:
     build:
       context: .
       dockerfile: Dockerfile.prod
