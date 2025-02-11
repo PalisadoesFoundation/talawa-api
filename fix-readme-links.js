@@ -5,7 +5,7 @@ const docsDir = path.resolve(
 	process.env.DOCS_DIR || "./docs/docs/docs/auto-schema",
 );
 
-const debug = process.env.DEBUG === 'true';
+const debug = process.env.DEBUG === "true";
 
 function replaceLinks(dir) {
 	try {
@@ -20,7 +20,7 @@ function replaceLinks(dir) {
 					level: "info",
 					message: "Processing directory",
 					directory: dir,
-				})
+				}),
 			);
 		}
 		for (const file of files) {
