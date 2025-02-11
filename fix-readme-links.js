@@ -30,7 +30,7 @@ function replaceLinks(dir) {
 		}
 	} catch (err) {
 		console.error(`Error processing directory ${dir}:`, err);
-		process.exit(1); 	
+		throw err;
 	}
 }
 

@@ -23,7 +23,7 @@ describe("replaceLinks", () => {
         }));
         vi.mocked(fs.readFileSync).mockReturnValue("[Test](../README.md)");
         vi.mocked(fs.writeFileSync).mockImplementation(() => undefined);
-        
+
         // Mock path functions
         vi.mocked(path.resolve).mockReturnValue("/test/docs");
         vi.mocked(path.join).mockImplementation((...args) => args.join("/"));
@@ -55,19 +55,11 @@ describe("replaceLinks", () => {
     });
 
     test("handles file system errors", () => {
-        const mockExit = vi.spyOn(process, "exit").mockImplementation(() => {
-            throw new Error("process.exit called");  // Throw error instead of exiting
-        });
-
         vi.mocked(fs.readdirSync).mockImplementation(() => {
             throw new Error("Test error");
         });
 
-        expect(() => replaceLinks("/test/docs")).toThrow("process.exit called");
-
+        expect(() => replaceLinks("/test/docs")).toThrow("Test error");
         expect(mockConsole.error).toHaveBeenCalled();
-        expect(mockExit).toHaveBeenCalledWith(1);
-        
-        mockExit.mockRestore();
     });
 });
