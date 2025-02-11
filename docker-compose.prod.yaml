@@ -61,8 +61,8 @@ services:
   talawa-api-dev:
     build:
       context: .
-      dockerfile: Dockerfile.dev
-    container_name: talawa-api-dev
+      dockerfile: Dockerfile.prod
+    container_name: talawa-api-prod
     ports:
       - "4000:4000"
     volumes:
