@@ -56,7 +56,6 @@ export async function updateAgendaItemResolver(
 	}
 
 	const currentUserId = ctx.currentClient.user.id;
-
 	const [currentUser, existingAgendaItem] = await Promise.all([
 		ctx.drizzleClient.query.usersTable.findFirst({
 			columns: { role: true },
@@ -86,8 +85,7 @@ export async function updateAgendaItemResolver(
 					},
 				},
 			},
-			where: (fields, operators) =>
-				operators.eq(fields.id, parsedArgs.input.id),
+			where: (fields, { eq }) => eq(fields.id, parsedArgs.input.id),
 		}),
 	]);
 
