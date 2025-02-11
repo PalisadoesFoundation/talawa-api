@@ -28,4 +28,4 @@ COPY --from=builder /usr/src/app/node_modules ./node_modules
 EXPOSE 4000
 
 # Start the application
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]

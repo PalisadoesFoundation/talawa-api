@@ -16,7 +16,7 @@ services:
           memory: 1G
           cpus: "1.0"
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
       - ./scripts/docker/init-mongo.sh:/init-mongo.sh
