@@ -1,16 +1,10 @@
 import { eq } from "drizzle-orm";
+import type { Column, ColumnBaseConfig, ColumnDataType } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply } from "fastify";
 import type { Client } from "minio";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type {
-	ExplicitAuthenticationTokenPayload,
-} from "../../../../src/graphql/context";
+import type { ExplicitAuthenticationTokenPayload } from "../../../../src/graphql/context";
 import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
-import type { 
-  Column, 
-  ColumnBaseConfig, 
-  ColumnDataType 
-} from 'drizzle-orm';
 
 interface CurrentClient {
 	isAuthenticated: true;
@@ -219,15 +213,19 @@ const createMockContext = (overrides?: Partial<TestContext>): TestContext => ({
 });
 
 type OrganizationFields = {
-  organizationId: Column<ColumnBaseConfig<ColumnDataType, string>, object, object>;
+	organizationId: Column<
+		ColumnBaseConfig<ColumnDataType, string>,
+		object,
+		object
+	>;
 };
 
 type WhereOperators = {
-  eq: typeof eq;
+	eq: typeof eq;
 };
 
 type UserFields = {
-  id: Column<ColumnBaseConfig<ColumnDataType, string>, object, object>;
+	id: Column<ColumnBaseConfig<ColumnDataType, string>, object, object>;
 };
 
 const resolveCreator = async (
@@ -255,10 +253,7 @@ const resolveCreator = async (
 					role: true,
 					organizationId: true,
 				},
-				where: (
-					fields: OrganizationFields,
-					operators: WhereOperators,
-				) => {
+				where: (fields: OrganizationFields, operators: WhereOperators) => {
 					return operators.eq(fields.organizationId, parent.id);
 				},
 			},
