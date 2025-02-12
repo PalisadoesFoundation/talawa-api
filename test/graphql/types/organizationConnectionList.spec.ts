@@ -90,7 +90,7 @@ describe("organizationConnectionList Query", () => {
 		});
 	});
 
-	it("should throw an error when first is less than 1", async () => {
+		it("should throw an error when first is less than 1", async () => {
 		// Act
 		const result = await executeOperation({ first: 0 });
 
@@ -104,13 +104,17 @@ describe("organizationConnectionList Query", () => {
 				]),
 			},
 		});
-		expect(mockContext.drizzleClient.query.organizationsTable.findMany).not.toHaveBeenCalled();
+		expect(
+			mockContext.drizzleClient.query.usersTable.findMany,
+		).not.toHaveBeenCalled();
 	});
 
 	it("should handle database errors gracefully", async () => {
 		// Arrange
 		const dbError = new Error("Database connection failed");
-		mockContext.drizzleClient.query.organizationsTable.findMany.mockRejectedValue(dbError);
+		mockContext.drizzleClient.query.usersTable.findMany.mockRejectedValue(
+			dbError,
+		);
 
 		// Act
 		const result = await executeOperation();
@@ -119,4 +123,3 @@ describe("organizationConnectionList Query", () => {
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.[0]?.message).toBe("Database connection failed");
 	});
-});
