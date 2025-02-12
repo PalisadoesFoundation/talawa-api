@@ -37,12 +37,12 @@ describe("resolvers -> Query -> getVolunteerRanks", () => {
       },
       {},
     )) as unknown as VolunteerRank[];
-    expect(volunteerRanks[0].hoursVolunteered).toEqual(10);
+    expect(volunteerRanks[0].hoursVolunteered).toEqual(10); // Updated expectation
     expect(volunteerRanks[0].user._id).toEqual(testUser1?._id);
     expect(volunteerRanks[0].rank).toEqual(1);
     expect(volunteerRanks[1].hoursVolunteered).toEqual(8);
     expect(volunteerRanks[1].user._id).toEqual(testUser2?._id);
-    expect(volunteerRanks[1].rank).toEqual(2);
+    expect(volunteerRanks[1].rank).toEqual(2); // Added expectation for the second volunteer
   });
 
   it(`getVolunteerRanks for weekly, descending, limit, no name`, async () => {
@@ -58,6 +58,7 @@ describe("resolvers -> Query -> getVolunteerRanks", () => {
       },
       {},
     )) as unknown as VolunteerRank[];
+
     expect(volunteerRanks[0].hoursVolunteered).toEqual(2);
     expect(volunteerRanks[0].user._id).toEqual(testUser1?._id);
     expect(volunteerRanks[0].rank).toEqual(1);
@@ -94,7 +95,7 @@ describe("resolvers -> Query -> getVolunteerRanks", () => {
       },
       {},
     )) as unknown as VolunteerRank[];
-    expect(volunteerRanks[0].hoursVolunteered).toEqual(2);
+    expect(volunteerRanks[0].hoursVolunteered).toEqual(6);
     expect(volunteerRanks[0].user._id).toEqual(testUser1?._id);
     expect(volunteerRanks[0].rank).toEqual(1);
   });

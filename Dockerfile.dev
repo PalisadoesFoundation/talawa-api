@@ -1,14 +1,19 @@
-# Stage 1: Install Dependencies
-FROM node:20.10.0 AS builder
+# Stage 1: Build stage
+FROM node:23.7.0 
 
 WORKDIR /usr/src/app
 
-COPY package.json ./
+# Copy only necessary files for dependency installation
+COPY package*.json ./
 
+# Install dependencies
 RUN npm install
 
+# Copy the rest of the source files (exclude .dockerignore content)
 COPY . .
 
+# Expose the application port
 EXPOSE 4000
 
+# Start the application
 CMD ["npm", "run", "dev"]

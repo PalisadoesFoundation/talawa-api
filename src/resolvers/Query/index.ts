@@ -57,6 +57,7 @@ import { eventsAttendedByUser } from "./eventsAttendedByUser";
 import { getRecurringEvents } from "./getRecurringEvents";
 import { getVolunteerMembership } from "./getVolunteerMembership";
 import { getVolunteerRanks } from "./getVolunteerRanks";
+import { verifyRole } from "./verifyRole";
 
 export const Query: QueryResolvers = {
   actionItemsByEvent,
@@ -117,4 +118,5 @@ export const Query: QueryResolvers = {
   eventsAttendedByUser,
   getVolunteerMembership,
   getVolunteerRanks,
+  verifyRole,
 };

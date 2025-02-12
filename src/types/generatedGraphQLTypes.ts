@@ -2407,6 +2407,7 @@ export type Query = {
   users?: Maybe<Array<Maybe<UserData>>>;
   usersConnection: Array<Maybe<UserData>>;
   venue?: Maybe<Venue>;
+  verifyRole?: Maybe<VerifyRoleResponse>;
 };
 
 
@@ -3345,6 +3346,15 @@ export type VenueWhereInput = {
   name_starts_with?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** Response type for verifying user roles and their authorization status. */
+export type VerifyRoleResponse = {
+  __typename?: 'VerifyRoleResponse';
+  /** Whether the user is authorized for the requested action. */
+  isAuthorized: Scalars['Boolean']['output'];
+  /** The role of the user (e.g., 'ADMIN', 'USER', etc.). */
+  role: Scalars['String']['output'];
+};
+
 export type VolunteerMembership = {
   __typename?: 'VolunteerMembership';
   _id: Scalars['ID']['output'];
@@ -3725,6 +3735,7 @@ export type ResolversTypes = {
   VenueInput: VenueInput;
   VenueOrderByInput: VenueOrderByInput;
   VenueWhereInput: VenueWhereInput;
+  VerifyRoleResponse: ResolverTypeWrapper<VerifyRoleResponse>;
   VolunteerMembership: ResolverTypeWrapper<InterfaceVolunteerMembershipModel>;
   VolunteerMembershipInput: VolunteerMembershipInput;
   VolunteerMembershipOrderByInput: VolunteerMembershipOrderByInput;
@@ -3936,6 +3947,7 @@ export type ResolversParentTypes = {
   Venue: InterfaceVenueModel;
   VenueInput: VenueInput;
   VenueWhereInput: VenueWhereInput;
+  VerifyRoleResponse: VerifyRoleResponse;
   VolunteerMembership: InterfaceVolunteerMembershipModel;
   VolunteerMembershipInput: VolunteerMembershipInput;
   VolunteerMembershipWhereInput: VolunteerMembershipWhereInput;
@@ -4903,6 +4915,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   users?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserData']>>>, ParentType, ContextType, Partial<QueryUsersArgs>>;
   usersConnection?: Resolver<Array<Maybe<ResolversTypes['UserData']>>, ParentType, ContextType, Partial<QueryUsersConnectionArgs>>;
   venue?: Resolver<Maybe<ResolversTypes['Venue']>, ParentType, ContextType, RequireFields<QueryVenueArgs, 'id'>>;
+  verifyRole?: Resolver<Maybe<ResolversTypes['VerifyRoleResponse']>, ParentType, ContextType>;
 };
 
 export type RecurrenceRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['RecurrenceRule'] = ResolversParentTypes['RecurrenceRule']> = {
@@ -5102,6 +5115,12 @@ export type VenueResolvers<ContextType = any, ParentType extends ResolversParent
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type VerifyRoleResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['VerifyRoleResponse'] = ResolversParentTypes['VerifyRoleResponse']> = {
+  isAuthorized?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  role?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type VolunteerMembershipResolvers<ContextType = any, ParentType extends ResolversParentTypes['VolunteerMembership'] = ResolversParentTypes['VolunteerMembership']> = {
   _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -5233,6 +5252,7 @@ export type Resolvers<ContextType = any> = {
   UsersConnection?: UsersConnectionResolvers<ContextType>;
   UsersConnectionEdge?: UsersConnectionEdgeResolvers<ContextType>;
   Venue?: VenueResolvers<ContextType>;
+  VerifyRoleResponse?: VerifyRoleResponseResolvers<ContextType>;
   VolunteerMembership?: VolunteerMembershipResolvers<ContextType>;
   VolunteerRank?: VolunteerRankResolvers<ContextType>;
 };

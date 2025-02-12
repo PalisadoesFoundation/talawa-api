@@ -1,25 +1,31 @@
-# Stage 1: Install Dependencies and Build
-FROM node:lts AS builder
+# Stage 1: Build stage
+FROM  node:20.10.0 AS builder
 
 WORKDIR /usr/src/app
 
-COPY package*.json ./
+# Copy only necessary files for dependency installation
+COPY package*.json ./ 
 
-RUN npm install -g npm@latest && npm install && rm -rf ./package-lock.json
+RUN npm install
 
 COPY . .
 
+# Build the application
 RUN npm run build
 
-# Stage 2: Final image
+# Stage 2: Final stage
 FROM node:alpine
 
 WORKDIR /usr/src/app
 
-COPY --from=builder /usr/src/app/package.json ./
-COPY --from=builder /usr/src/app/node_modules ./node_modules
+# Copy only the build output, node_modules, and necessary files from the builder
 COPY --from=builder /usr/src/app/build ./build
+COPY --from=builder /usr/src/app/package.json ./package.json
+COPY --from=builder /usr/src/app/node_modules ./node_modules
 
+
+# Expose the application port
 EXPOSE 4000
 
-CMD ["npm", "start"]
+# Start the application
+CMD ["npm", "run", "start"]
