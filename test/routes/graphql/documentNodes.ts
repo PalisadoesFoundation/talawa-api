@@ -393,15 +393,16 @@ export const Mutation_createTag = gql(`
 
         }
     }
-  }
-`);
+  }`);
+
 export const Query_organization = gql(`
    query Organization($input: QueryOrganizationInput!) {
-    organization(input: $input) {      id
-            name
-            members(first:10) {
-                edges {
-                    node {
+    organization(input: $input) {
+        id
+        name
+        members(first:10){
+            edges {
+                node{
                         id
                         name
                     }
