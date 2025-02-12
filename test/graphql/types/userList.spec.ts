@@ -23,7 +23,10 @@ describe("userList Query", () => {
     mockContext.drizzleClient.query.usersTable.findMany.mockReset();
   });
 
-  const executeOperation = async (variables?: { first?: number; skip?: number }) => {
+  const executeOperation = async (variables?: {
+    first?: number;
+    skip?: number;
+  }) => {
     const query = `
       query UserList($first: Int, $skip: Int) {
         userList(first: $first, skip: $skip) {
@@ -44,7 +47,9 @@ describe("userList Query", () => {
 
   it("should return users with default pagination values", async () => {
     // Arrange
-    mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(mockUsers);
+    mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(
+      mockUsers,
+    );
 
     // Act
     const result = await executeOperation();
@@ -52,7 +57,9 @@ describe("userList Query", () => {
     // Assert
     expect(result.errors).toBeUndefined();
     expect(result.data?.userList).toEqual(mockUsers);
-    expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith({
+    expect(
+      mockContext.drizzleClient.query.usersTable.findMany,
+    ).toHaveBeenCalledWith({
       limit: 10,
       offset: 0,
     });
@@ -60,7 +67,9 @@ describe("userList Query", () => {
 
   it("should return users with custom pagination values", async () => {
     // Arrange
-    mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(mockUsers);
+    mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(
+      mockUsers,
+    );
 
     // Act
     const result = await executeOperation({ first: 20, skip: 5 });
@@ -68,7 +77,9 @@ describe("userList Query", () => {
     // Assert
     expect(result.errors).toBeUndefined();
     expect(result.data?.userList).toEqual(mockUsers);
-    expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith({
+    expect(
+      mockContext.drizzleClient.query.usersTable.findMany,
+    ).toHaveBeenCalledWith({
       limit: 20,
       offset: 5,
     });
