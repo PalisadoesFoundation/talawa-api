@@ -1,112 +1,114 @@
 import { execute } from "graphql";
 import { parse } from "graphql";
 import { schema } from "~/src/graphql/schema";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { mockContext } from "~/src/test/mockContext";
 
-const mockOrganizations = [
-	{ id: "org-1", name: "Org One" },
-	{ id: "org-2", name: "Org Two" },
-];
+const executeOperation = async (variables?: { first?: number; skip?: number }) => {
+	const query = `
+		query UserList($first: Int, $skip: Int) {
+			userList(first: $first, skip: $skip) {
+				id
+				name
+				email
+			}
+		}
+	`;
 
-const mockContext = {
-	drizzleClient: {
-		query: {
-			organizationsTable: {
-				findMany: jest.fn(),
-			},
-		},
-	},
-};
-
-// Helper function to execute the query
-const executeQuery = async (variables?: { first?: number; skip?: number }) => {
 	return execute({
 		schema,
-		document: parse(`
-			query OrganizationList($first: Int, $skip: Int) {
-				organizationConnectionList(first: $first, skip: $skip) {
-					id
-					name
-				}
-			}
-		`),
+		document: parse(query),
 		variableValues: variables,
 		contextValue: mockContext,
 	});
 };
 
-describe("organizationConnectionList Query", () => {
-	afterEach(() => {
+describe("User List GraphQL Query", () => {
+	const mockUsers = [
+		{ id: "1", name: "John Doe", email: "john@example.com" },
+		{ id: "2", name: "Jane Doe", email: "jane@example.com" },
+	];
+
+	beforeEach(() => {
 		jest.clearAllMocks();
 	});
 
-	// ✅ Test Case 1: Returns organizations with default pagination values
-	it("should return organizations with default pagination", async () => {
-		mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(mockOrganizations);
+	it("should return users with default pagination values", async () => {
+		mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(mockUsers);
 
-		const result = await executeQuery();
+		const result = await executeOperation();
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.organizationConnectionList).toEqual(mockOrganizations);
-		expect(mockContext.drizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith({
+		expect(result.data?.userList).toEqual(mockUsers);
+		expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith({
 			limit: 10,
 			offset: 0,
 		});
 	});
 
-	// ✅ Test Case 2: Returns organizations with custom pagination values
-	it("should return organizations with custom pagination values", async () => {
-		mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(mockOrganizations);
+	it("should return users with custom pagination values", async () => {
+		mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(mockUsers);
 
-		const result = await executeQuery({ first: 5, skip: 2 });
+		const result = await executeOperation({ first: 5, skip: 2 });
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data?.organizationConnectionList).toEqual(mockOrganizations);
-		expect(mockContext.drizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith({
+		expect(result.data?.userList).toEqual(mockUsers);
+		expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith({
 			limit: 5,
 			offset: 2,
 		});
 	});
 
-	// 🚨 Test Case 3: Should return error for invalid arguments
-	it("should return an error for invalid arguments", async () => {
-		const result = await executeQuery({ first: -1, skip: -5 });
+	it("should return an error if arguments are invalid", async () => {
+		const result = await executeOperation({ first: -1, skip: -5 });
 
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.[0]?.message).toContain("Invalid arguments");
-		expect(mockContext.drizzleClient.query.organizationsTable.findMany).not.toHaveBeenCalled();
+		expect(mockContext.drizzleClient.query.usersTable.findMany).not.toHaveBeenCalled();
 	});
 
-	// 🔐 Test Case 4: Should return an unauthorized error if user is not authenticated
 	it("should return unauthorized error if user is not authenticated", async () => {
-		const testContext = { ...mockContext, currentClient: { isAuthenticated: false, user: null } };
+		const testContext = {
+			...mockContext,
+			currentClient: { isAuthenticated: false, user: null },
+		};
 
 		const result = await execute({
 			schema,
-			document: parse(`
-				query {
-					organizationConnectionList {
-						id
-						name
-					}
-				}
-			`),
+			document: parse("query { userList { id name email } }"),
 			contextValue: testContext,
 		});
 
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.[0]?.message).toContain("User is not authorized");
-		expect(testContext.drizzleClient.query.organizationsTable.findMany).not.toHaveBeenCalled();
+		expect(testContext.drizzleClient.query.usersTable.findMany).not.toHaveBeenCalled();
 	});
 
-	// 🛑 Test Case 5: Should handle database errors gracefully
-	it("should return an error when the database query fails", async () => {
-		const dbError = new Error("Database connection failed");
-		mockContext.drizzleClient.query.organizationsTable.findMany.mockRejectedValue(dbError);
+	it("should return unauthorized error if user lacks admin privileges", async () => {
+		const testContext = {
+			...mockContext,
+			currentClient: {
+				isAuthenticated: true,
+				user: { id: "user-123", role: "regular" },
+			},
+		};
 
-		const result = await executeQuery();
+		const result = await execute({
+			schema,
+			document: parse("query { userList { id name email } }"),
+			contextValue: testContext,
+		});
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0]?.message).toContain("Database connection failed");
+		expect(result.errors?.[0]?.message).toBe("User is not authorized to access this resource");
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthorized_action");
+	});
+
+	it("should handle database errors gracefully", async () => {
+		const dbError = new Error("Database connection failed");
+		mockContext.drizzleClient.query.usersTable.findMany.mockRejectedValue(dbError);
+
+		const result = await executeOperation();
+
+		expect(result.errors).toBeDefined();
 	});
 });
