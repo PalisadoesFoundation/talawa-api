@@ -1,6 +1,7 @@
 import { type GraphQLSchema, execute, parse } from "graphql";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { builder } from "~/src/graphql/builder";
+import "~/src/graphql/schema"; // Ensure schema definitions are loaded
 
 // Mock data
 const mockUsers = [
@@ -19,7 +20,9 @@ describe("userList Query", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		schema = builder.toSchema({});
+		schema = builder.toSchema({
+			query: builder.queryType, // Ensure query type is defined
+		});
 		mockContext.drizzleClient.query.usersTable.findMany.mockReset();
 	});
 
