@@ -20,9 +20,7 @@ describe("userList Query", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		schema = builder.toSchema({
-			query: builder.queryType, // Ensure query type is defined
-		});
+		schema = builder.toSchema();
 		mockContext.drizzleClient.query.usersTable.findMany.mockReset();
 	});
 
