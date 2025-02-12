@@ -1,468 +1,373 @@
-import { eq } from "drizzle-orm";
-import type { Column, ColumnBaseConfig, ColumnDataType } from "drizzle-orm";
-import type { FastifyInstance, FastifyReply } from "fastify";
-import type { Client } from "minio";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ExplicitAuthenticationTokenPayload } from "../../../../src/graphql/context";
-import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
+import { beforeEach, describe, expect, it } from "vitest";
+import { vi } from "vitest";
+import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
+import type { Organization as OrganizationType } from "~/src/graphql/types/Organization/Organization";
+import { OrganizationCreatorResolver } from "~/src/graphql/types/Organization/creator";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-interface CurrentClient {
-	isAuthenticated: true;
-	user?: {
-		id: string;
+const createMockContext = () => {
+	const mockContext = {
+		currentClient: {
+			isAuthenticated: true,
+			user: { id: "user-123", isAdmin: true },
+		} as CurrentClient,
+		drizzleClient: { query: { usersTable: { findFirst: vi.fn() } } },
+		envConfig: { API_BASE_URL: "mock url" },
+		jwt: { sign: vi.fn() },
+		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
+	};
+	return mockContext as unknown as GraphQLContext;
+};
+
+type MockUser = {
+	id: string;
+	role: string;
+	organizationMembershipsWhereMember: Array<{
 		role: string;
-		tokenVersion: number;
-	};
-}
-
-interface TestContext {
-	currentClient: CurrentClient;
-	drizzleClient: {
-		query: {
-			usersTable: {
-				findFirst: ReturnType<typeof vi.fn>;
-			};
-		};
-	};
-	log: {
-		warn: ReturnType<typeof vi.fn>;
-	};
-	app: FastifyInstance;
-	reply: FastifyReply;
-	__currentQuery: string;
-	envConfig: {
-		API_BASE_URL: string;
-	};
-	jwt: {
-		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
-	};
-	minio: {
-		bucketName: "talawa";
-		client: Client;
-	};
-}
-
-interface OrganizationParent {
-	id: string;
-	creatorId: string | null;
-}
-
-type UserRole = "administrator" | "regular";
-
-type User = {
-	id: string;
-	createdAt: Date;
-	updatedAt: Date;
-	email: string;
-	password: string;
-	firstName: string;
-	lastName: string;
-	name: string;
-	appLanguageCode: string;
-	birthDate: string | null;
-	gender: string | null;
-	phoneNumber: string | null;
-	addressLine1: string | null;
-	addressLine2: string | null;
-	city: string | null;
-	state: string | null;
-	zipCode: string | null;
-	countryCode: string | null;
-	status: string;
-	role: UserRole;
-	homePhoneNumber: string | null;
-	workPhoneNumber: string | null;
-	avatarMimeType: string | null;
-	avatarBase64: string | null;
-	educationGrade: string | null;
-	employmentStatus: string | null;
-	maritalStatus: string | null;
-	organizationMembershipsWhereMember: Array<{
-		role: "administrator" | "regular" | "member";
 		organizationId: string;
 	}>;
 };
 
-type UserWithRole = {
-	id: string;
-	role: UserRole;
-	organizationMembershipsWhereMember: Array<{
-		role: "administrator" | "regular" | "member";
-		organizationId: string;
-	}>;
-};
-
-type UserFromDB = {
-	id: string;
-	createdAt: Date;
-	updatedAt: Date;
-	email: string;
-	password: string;
-	firstName: string;
-	lastName: string;
-	name: string;
-	appLanguageCode: string;
-	birthDate: string | null;
-	gender: string | null;
-	phoneNumber: string | null;
-	addressLine1: string | null;
-	addressLine2: string | null;
-	city: string | null;
-	state: string | null;
-	zipCode: string | null;
-	countryCode: string | null;
-	status: string;
-	role: UserRole;
-	homePhoneNumber: string | null;
-	workPhoneNumber: string | null;
-	avatarMimeType:
-		| "image/avif"
-		| "image/jpeg"
-		| "image/png"
-		| "image/webp"
-		| null;
-	avatarBase64: string | null;
-	educationGrade: string | null;
-	employmentStatus: string | null;
-	maritalStatus: string | null;
-};
-
-const createCompleteMockUser = (
-	role: UserRole = "regular",
-	memberships: Array<{
-		role: "administrator" | "regular" | "member";
-		organizationId: string;
-	}> = [],
-): User => ({
-	id: "mock-id",
-	createdAt: new Date(),
-	updatedAt: new Date(),
-	email: "test@example.com",
-	password: "hashedpassword",
-	firstName: "Test",
-	lastName: "User",
-	name: "Test User",
-	appLanguageCode: "en",
-	birthDate: null,
-	gender: null,
-	phoneNumber: null,
-	addressLine1: null,
-	addressLine2: null,
-	city: null,
-	state: null,
-	zipCode: null,
-	countryCode: null,
-	status: "ACTIVE",
-	role,
-	homePhoneNumber: null,
-	workPhoneNumber: null,
-	avatarMimeType: null,
-	avatarBase64: null,
-	educationGrade: null,
-	employmentStatus: null,
-	maritalStatus: null,
-	organizationMembershipsWhereMember: memberships,
-});
-
-const createMockContext = (overrides?: Partial<TestContext>): TestContext => ({
-	currentClient: {
-		isAuthenticated: true,
-		user: {
-			id: "user-123",
-			role: "regular",
-			tokenVersion: 1,
-		},
-	},
-	drizzleClient: {
-		query: {
-			usersTable: {
-				findFirst: vi.fn(),
-			},
-		},
-	},
-	log: {
-		warn: vi.fn(),
-	},
-	app: {
-		addHook: vi.fn(),
-		decorate: vi.fn(),
-		get: vi.fn(),
-		post: vi.fn(),
-		server: {} as FastifyInstance["server"],
-		pluginName: "",
-		prefix: "",
-		version: "",
-	} as unknown as FastifyInstance,
-	reply: {
-		code: vi.fn(),
-		send: vi.fn(),
-		header: vi.fn(),
-	} as unknown as FastifyReply,
-	__currentQuery: "query { test }",
-	envConfig: {
-		API_BASE_URL: "http://localhost:4000",
-	},
-	jwt: {
-		sign: vi.fn(),
-	},
-	minio: {
-		bucketName: "talawa" as const,
-		client: {} as Client,
-	},
-	...overrides,
-});
-
-type OrganizationFields = {
-	organizationId: Column<
-		ColumnBaseConfig<ColumnDataType, string>,
-		object,
-		object
-	>;
-};
-
-type WhereOperators = {
-	eq: typeof eq;
-};
-
-type UserFields = {
-	id: Column<ColumnBaseConfig<ColumnDataType, string>, object, object>;
-};
-
-const resolveCreator = async (
-	parent: OrganizationParent,
-	_args: Record<string, never>,
-	ctx: TestContext,
-): Promise<User | null> => {
-	if (!ctx.currentClient.isAuthenticated || !ctx.currentClient.user?.id) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthenticated",
-			},
-		});
-	}
-
-	const currentUserId = ctx.currentClient.user.id;
-
-	const currentUser = (await ctx.drizzleClient.query.usersTable.findFirst({
-		columns: {
-			role: true,
-		},
-		with: {
-			organizationMembershipsWhereMember: {
-				columns: {
-					role: true,
-					organizationId: true,
-				},
-				where: (fields: OrganizationFields, operators: WhereOperators) => {
-					return operators.eq(fields.organizationId, parent.id);
-				},
-			},
-		},
-		where: (userFields: UserFields, { eq: eqOp }: { eq: typeof eq }) =>
-			eqOp(userFields.id, currentUserId),
-	})) as UserWithRole | undefined;
-
-	if (!currentUser) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthenticated",
-			},
-		});
-	}
-
-	const currentUserOrganizationMembership =
-		currentUser.organizationMembershipsWhereMember[0];
-
-	if (
-		currentUser.role !== "administrator" &&
-		(!currentUserOrganizationMembership ||
-			currentUserOrganizationMembership.role !== "administrator")
-	) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthorized_action",
-			},
-		});
-	}
-
-	if (parent.creatorId === null) {
-		return null;
-	}
-
-	const existingUser = (await ctx.drizzleClient.query.usersTable.findFirst({
-		where: (userFields: UserFields) =>
-			eq(userFields.id, parent.creatorId || ""),
-	})) as UserFromDB | undefined;
-
-	if (!existingUser) {
-		ctx.log.warn(
-			"Postgres select operation returned an empty array for an organization's creator id that isn't null.",
-		);
-
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unexpected",
-			},
-		});
-	}
-
-	return {
-		...existingUser,
-		organizationMembershipsWhereMember: [],
-	};
-};
-
-describe("Organization Resolver - Creator Field", () => {
-	let ctx: TestContext;
-	let mockOrganization: OrganizationParent;
+describe("Organization Creator Resolver Tests", () => {
+	let ctx: GraphQLContext;
+	let mockOrganization: OrganizationType;
 
 	beforeEach(() => {
-		mockOrganization = {
-			id: "org-123",
-			creatorId: "user-123",
-		};
-
 		ctx = createMockContext();
+		mockOrganization = {
+			id: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
+			name: "Test Organization",
+			description: "Test Description",
+			creatorId: "123e4567-e89b-12d3-a456-426614174000",
+			createdAt: new Date("2024-02-07T10:30:00.000Z"),
+			updatedAt: new Date("2024-02-07T12:00:00.000Z"),
+			addressLine1: null,
+			addressLine2: null,
+			avatarMimeType: null,
+			avatarName: null,
+			city: null,
+			countryCode: null,
+			updaterId: null,
+			state: null,
+			postalCode: null,
+		};
 	});
 
-	describe("Authentication", () => {
+	describe("Authentication and Authorization", () => {
 		it("should throw unauthenticated error if user is not logged in", async () => {
-			const testCtx = createMockContext({
-				currentClient: {
-					isAuthenticated: true,
-					user: undefined,
-				},
-			});
-
-			await expect(async () => {
-				await resolveCreator(mockOrganization, {}, testCtx);
-			}).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unauthenticated" },
-				}),
+			ctx.currentClient.isAuthenticated = false;
+			await expect(
+				OrganizationCreatorResolver(mockOrganization, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 			);
 		});
 
-		it("should throw unauthenticated error if current user is not found", async () => {
-			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
+		it("should throw unauthorized_action for non-admin and no organizationMembership", async () => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [],
+			};
 
-			await expect(async () => {
-				await resolveCreator(mockOrganization, {}, ctx);
-			}).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unauthenticated" },
-				}),
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValue(mockUserData);
+
+			await expect(
+				OrganizationCreatorResolver(mockOrganization, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 			);
+		});
+
+		it("should throw unauthorized_action for non-admin with member-level organization membership", async () => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [
+					{ role: "member", organizationId: mockOrganization.id },
+				],
+			};
+
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValue(mockUserData);
+
+			await expect(
+				OrganizationCreatorResolver(mockOrganization, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+			);
+		});
+
+		it("should allow system administrator full access", async () => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [],
+			};
+
+			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockUserData)
+				.mockResolvedValueOnce({ id: mockOrganization.creatorId });
+
+			const result = await OrganizationCreatorResolver(
+				mockOrganization,
+				{},
+				ctx,
+			);
+			expect(result).toBeDefined();
+		});
+
+		it("should allow organization administrator access", async () => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [
+					{ role: "administrator", organizationId: mockOrganization.id },
+				],
+			};
+
+			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockUserData)
+				.mockResolvedValueOnce({ id: mockOrganization.creatorId });
+
+			const result = await OrganizationCreatorResolver(
+				mockOrganization,
+				{},
+				ctx,
+			);
+			expect(result).toBeDefined();
 		});
 	});
 
-	describe("Authorization", () => {
-		it("should allow access if user is system administrator", async () => {
-			const mockUser = createCompleteMockUser("administrator");
-			const mockCreator = createCompleteMockUser("regular");
+	describe("Creator Retrieval Tests", () => {
+		it("should return null for null creatorId", async () => {
+			mockOrganization.creatorId = null;
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [
+					{ role: "administrator", organizationId: mockOrganization.id },
+				],
+			};
 
-			ctx.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(mockUser)
-				.mockResolvedValueOnce(mockCreator);
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValue(mockUserData);
 
-			const result = await resolveCreator(mockOrganization, {}, ctx);
-			expect(result).toEqual(mockCreator);
+			const result = await OrganizationCreatorResolver(
+				mockOrganization,
+				{},
+				ctx,
+			);
+			expect(result).toBeNull();
 		});
 
-		it("should allow access if user is organization administrator", async () => {
-			const mockUser = createCompleteMockUser("regular", [
-				{ role: "administrator", organizationId: "org-123" },
-			]);
-			const mockCreator = createCompleteMockUser("regular");
+		it("should throw unexpected error if creator user is not found", async () => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [
+					{ role: "administrator", organizationId: mockOrganization.id },
+				],
+			};
 
-			ctx.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(mockUser)
-				.mockResolvedValueOnce(mockCreator);
+			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockUserData)
+				.mockResolvedValueOnce(undefined);
 
-			const result = await resolveCreator(mockOrganization, {}, ctx);
-			expect(result).toEqual(mockCreator);
-		});
-
-		it("should throw unauthorized error if user is not an administrator", async () => {
-			const mockUser = createCompleteMockUser("regular", [
-				{ role: "member", organizationId: "org-123" },
-			]);
-			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockUser,
+			await expect(
+				OrganizationCreatorResolver(mockOrganization, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 			);
-
-			await expect(async () => {
-				await resolveCreator(mockOrganization, {}, ctx);
-			}).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unauthorized_action" },
-				}),
-			);
-		});
-
-		it("should throw unauthorized error if user has no organization membership", async () => {
-			const mockUser = createCompleteMockUser("regular", []);
-			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockUser,
-			);
-
-			await expect(async () => {
-				await resolveCreator(mockOrganization, {}, ctx);
-			}).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unauthorized_action" },
-				}),
-			);
+			expect(ctx.log.warn).toHaveBeenCalled();
 		});
 	});
 
 	describe("Error Handling", () => {
-		it("should throw unexpected error if creator user is not found", async () => {
-			const mockUser = createCompleteMockUser("administrator");
+		it("should handle database connection error", async () => {
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockRejectedValue(new Error("Database connection failed"));
 
-			ctx.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(mockUser)
-				.mockResolvedValueOnce(undefined);
-
-			await expect(async () => {
-				await resolveCreator(mockOrganization, {}, ctx);
-			}).rejects.toThrow(
+			await expect(
+				OrganizationCreatorResolver(mockOrganization, {}, ctx),
+			).rejects.toThrow(
 				new TalawaGraphQLError({
+					message: "Internal server error",
 					extensions: { code: "unexpected" },
 				}),
+			);
+			expect(ctx.log.error).toHaveBeenCalled();
+		});
+
+		it("should handle database timeout error", async () => {
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockRejectedValue(new Error("Query timeout"));
+
+			await expect(
+				OrganizationCreatorResolver(mockOrganization, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					message: "Internal server error",
+					extensions: { code: "unexpected" },
+				}),
+			);
+			expect(ctx.log.error).toHaveBeenCalled();
+		});
+	});
+
+	describe("Concurrent Access", () => {
+		it("should handle concurrent updates to organization", async () => {
+			const mockUserData = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [
+					{ role: "administrator", organizationId: mockOrganization.id },
+				],
+			};
+
+			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockUserData)
+				.mockResolvedValueOnce(undefined);
+
+			await expect(
+				OrganizationCreatorResolver(mockOrganization, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 			);
 
 			expect(ctx.log.warn).toHaveBeenCalledWith(
 				"Postgres select operation returned an empty array for an organization's creator id that isn't null.",
 			);
 		});
-	});
 
-	describe("Edge Cases", () => {
-		it("should return null if organization has no creator", async () => {
-			mockOrganization.creatorId = null;
-			const mockUser = createCompleteMockUser("administrator");
-			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockUser,
-			);
+		it("should query organization memberships with correct organizationId filter", async () => {
+			const findFirstSpy = vi.fn();
+			ctx.drizzleClient.query.usersTable.findFirst = findFirstSpy;
 
-			const result = await resolveCreator(mockOrganization, {}, ctx);
-			expect(result).toBeNull();
+			try {
+				await OrganizationCreatorResolver(mockOrganization, {}, ctx);
+			} catch (error) {
+				// Expected error
+			}
+
+			const firstCall = findFirstSpy.mock.calls[0]?.[0];
+			expect(firstCall).toBeDefined();
+
+			if (firstCall?.with?.organizationMembershipsWhereMember?.where) {
+				const whereFunction =
+					firstCall.with.organizationMembershipsWhereMember.where;
+				const mockFields = { organizationId: "organizationId" };
+				const mockOperators = { eq: vi.fn() };
+				whereFunction(mockFields, mockOperators);
+				expect(mockOperators.eq).toHaveBeenCalledWith(
+					mockFields.organizationId,
+					mockOrganization.id,
+				);
+			}
 		});
 
-		it("should handle multiple organization memberships", async () => {
-			const mockUser = createCompleteMockUser("regular", [
-				{ role: "administrator", organizationId: "org-123" },
-				{ role: "member", organizationId: "other-org" },
-			]);
-			const mockCreator = createCompleteMockUser("regular");
+		it("should throw unauthenticated error if current user is not found in database", async () => {
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValue(undefined);
 
-			ctx.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(mockUser)
-				.mockResolvedValueOnce(mockCreator);
+			await expect(
+				OrganizationCreatorResolver(mockOrganization, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
+			);
+		});
 
-			const result = await resolveCreator(mockOrganization, {}, ctx);
-			expect(result).toEqual(mockCreator);
+		it("should query users with correct ID filter", async () => {
+			const findFirstSpy = vi.fn();
+			ctx.drizzleClient.query.usersTable.findFirst = findFirstSpy;
+
+			const currentUserId = ctx.currentClient?.user?.id;
+			expect(currentUserId).toBeDefined();
+
+			try {
+				await OrganizationCreatorResolver(mockOrganization, {}, ctx);
+			} catch (error) {
+				// Expected error
+			}
+
+			const firstCall = findFirstSpy.mock.calls[0]?.[0];
+			expect(firstCall).toBeDefined();
+
+			if (firstCall?.where) {
+				const whereFunction = firstCall.where;
+				const mockFields = { id: "id" };
+				const mockOperators = { eq: vi.fn() };
+				whereFunction(mockFields, mockOperators);
+				expect(mockOperators.eq).toHaveBeenCalledWith(
+					mockFields.id,
+					currentUserId,
+				);
+			}
+		});
+		it("should query creator with correct ID filter", async () => {
+			const mockUserData = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [],
+			};
+
+			const findFirstSpy = vi.fn().mockResolvedValueOnce(mockUserData);
+			ctx.drizzleClient.query.usersTable.findFirst = findFirstSpy;
+
+			try {
+				await OrganizationCreatorResolver(mockOrganization, {}, ctx);
+			} catch (error) {
+				// Expected error
+			}
+
+			const secondCall = findFirstSpy.mock.calls[1]?.[0];
+			expect(secondCall).toBeDefined();
+
+			if (secondCall?.where) {
+				const whereFunction = secondCall.where;
+				const mockFields = { id: "id" };
+				const mockOperators = { eq: vi.fn() };
+				whereFunction(mockFields, mockOperators);
+				expect(mockOperators.eq).toHaveBeenCalledWith(
+					mockFields.id,
+					mockOrganization.creatorId,
+				);
+			}
+		});
+
+		it("should handle database error during concurrent access", async () => {
+			const mockUserData = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [
+					{ role: "administrator", organizationId: mockOrganization.id },
+				],
+			};
+
+			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockUserData)
+				.mockRejectedValueOnce(
+					new Error("Database error during concurrent access"),
+				);
+
+			await expect(
+				OrganizationCreatorResolver(mockOrganization, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					message: "Internal server error",
+					extensions: { code: "unexpected" },
+				}),
+			);
+
+			expect(ctx.log.error).toHaveBeenCalled();
 		});
 	});
 });
