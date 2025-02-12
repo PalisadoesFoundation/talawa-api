@@ -1,4 +1,4 @@
-import { type GraphQLSchema, execute, parse, GraphQLError } from "graphql"; // Import GraphQLError
+import { type GraphQLSchema, execute, parse } from "graphql"; // Removed GraphQLError since it's unused
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { builder } from "~/src/graphql/builder";
 import "~/src/graphql/schema"; // Ensure schema definitions are loaded
