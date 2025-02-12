@@ -46,7 +46,7 @@ describe("userList Query", () => {
 	it("should return users with default pagination values", async () => {
 		// Arrange
 		mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(
-			mockUsers,
+			mockUsers
 		);
 
 		// Act
@@ -56,7 +56,7 @@ describe("userList Query", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.userList).toEqual(mockUsers);
 		expect(
-			mockContext.drizzleClient.query.usersTable.findMany,
+			mockContext.drizzleClient.query.usersTable.findMany
 		).toHaveBeenCalledWith({
 			limit: 10,
 			offset: 0,
@@ -66,7 +66,7 @@ describe("userList Query", () => {
 	it("should return users with custom pagination values", async () => {
 		// Arrange
 		mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(
-			mockUsers,
+			mockUsers
 		);
 
 		// Act
@@ -76,7 +76,7 @@ describe("userList Query", () => {
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.userList).toEqual(mockUsers);
 		expect(
-			mockContext.drizzleClient.query.usersTable.findMany,
+			mockContext.drizzleClient.query.usersTable.findMany
 		).toHaveBeenCalledWith({
 			limit: 20,
 			offset: 5,
@@ -98,7 +98,7 @@ describe("userList Query", () => {
 			},
 		});
 		expect(
-			mockContext.drizzleClient.query.usersTable.findMany,
+			mockContext.drizzleClient.query.usersTable.findMany
 		).not.toHaveBeenCalled();
 	});
 
@@ -106,7 +106,7 @@ describe("userList Query", () => {
 		// Arrange
 		const dbError = new Error("Database connection failed");
 		mockContext.drizzleClient.query.usersTable.findMany.mockRejectedValue(
-			dbError,
+			dbError
 		);
 
 		// Act
