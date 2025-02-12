@@ -266,6 +266,43 @@ describe("deleteChatMessageResolver", () => {
 		);
 	});
 
+	it("allows a non-admin user to delete their own message", async () => {
+		mockUsersTableFindFirst(ctx, { role: "user" });
+		mockChatMessagesTableFindFirst(ctx, {
+			creatorId: ctx.currentClient.user?.id,
+			chat: {
+				organization: { membershipsWhereOrganization: [{ role: "member" }] },
+				chatMembershipsWhereChat: [{ role: "member" }],
+			},
+		});
+		ctx.drizzleClient.delete = vi.fn().mockReturnValue(
+			createFakeDeleteChain([
+				{
+					id: validArgs.input.id,
+					creatorId: ctx.currentClient.user?.id ?? "unknown",
+					body: "Creator's own message",
+					chat: {
+						organization: {
+							membershipsWhereOrganization: [{ role: "member" }],
+						},
+						chatMembershipsWhereChat: [{ role: "member" }],
+					},
+					chatId: "chat-123",
+				},
+			]),
+		);
+
+		const publishSpy = vi.spyOn(ctx.pubsub, "publish");
+		const result = await deleteChatMessageResolver({}, validArgs, ctx);
+
+		expect(result).toEqual(
+			expect.objectContaining({
+				creatorId: ctx.currentClient.user?.id ?? "unknown",
+			}),
+		);
+		expect(publishSpy).toHaveBeenCalled();
+	});
+
 	it("calls usersTable.findFirst where lambda with correct user id", async () => {
 		const eqSpy = vi.fn((value, expected) => value === expected);
 		(ctx.drizzleClient.query.usersTable.findFirst as unknown as (args: {
