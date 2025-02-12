@@ -99,13 +99,17 @@ describe("userList Query", () => {
 				]),
 			},
 		});
-		expect(mockContext.drizzleClient.query.usersTable.findMany).not.toHaveBeenCalled();
+		expect(
+			mockContext.drizzleClient.query.usersTable.findMany,
+		).not.toHaveBeenCalled();
 	});
 
 	it("should handle database errors gracefully", async () => {
 		// Arrange
 		const dbError = new Error("Database connection failed");
-		mockContext.drizzleClient.query.usersTable.findMany.mockRejectedValue(dbError);
+		mockContext.drizzleClient.query.usersTable.findMany.mockRejectedValue(
+			dbError,
+		);
 
 		// Act
 		const result = await executeOperation();
@@ -114,4 +118,4 @@ describe("userList Query", () => {
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.[0]?.message).toBe("Database connection failed");
 	});
-});
+
