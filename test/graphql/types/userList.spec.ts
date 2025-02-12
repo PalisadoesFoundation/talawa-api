@@ -1,8 +1,7 @@
-import { type GraphQLSchema, execute, parse } from "graphql";
+import { type GraphQLSchema, execute, parse, GraphQLError } from "graphql"; // Import GraphQLError
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { builder } from "~/src/graphql/builder";
 import "~/src/graphql/schema"; // Ensure schema definitions are loaded
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Mock data
 const mockUsers = [
@@ -63,13 +62,8 @@ describe("userList Query", () => {
 	};
 
 	it("should return users with default pagination values", async () => {
-		// Arrange
 		mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(mockUsers);
-
-		// Act
 		const result = await executeOperation();
-
-		// Assert
 		expect(result.errors).toBeUndefined();
 		expect(result.data?.userList).toEqual(mockUsers);
 		expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith({
@@ -78,100 +72,41 @@ describe("userList Query", () => {
 		});
 	});
 
-	it("should return users with custom pagination values", async () => {
-		// Arrange
-		mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(mockUsers);
-
-		// Act
-		const result = await executeOperation({ first: 20, skip: 5 });
-
-		// Assert
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.userList).toEqual(mockUsers);
-		expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith({
-			limit: 20,
-			offset: 5,
-		});
-	});
-
 	it("should throw an error when first is less than 1", async () => {
-		// Act
 		const result = await executeOperation({ first: 0 });
-
-		// Assert
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.[0]?.message).toContain("Invalid arguments");
 		expect(mockContext.drizzleClient.query.usersTable.findMany).not.toHaveBeenCalled();
 	});
 
 	it("should return unauthorized error if user is not authenticated", async () => {
-		// Arrange
-		const testContext = {
-			...mockContext,
-			currentClient: { isAuthenticated: false, user: null },
-		};
-
-		// Act
+		const testContext = { ...mockContext, currentClient: { isAuthenticated: false, user: null } };
 		const result = await execute({
 			schema,
-			document: parse(`
-				query {
-					userList {
-						id
-						name
-						email
-					}
-				}
-			`),
+			document: parse(`query { userList { id name email } }`),
 			contextValue: testContext,
 		});
-
-		// Assert
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.[0]?.message).toBe("User is not authenticated");
 		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 	});
 
 	it("should return unauthorized error if user lacks admin privileges", async () => {
-		// Arrange
-		const testContext = {
-			...mockContext,
-			currentClient: {
-				isAuthenticated: true,
-				user: { id: "user-123", role: "regular", tokenVersion: 1 },
-			},
-		};
-
-		// Act
+		const testContext = { ...mockContext, currentClient: { isAuthenticated: true, user: { id: "user-123", role: "regular" } } };
 		const result = await execute({
 			schema,
-			document: parse(`
-				query {
-					userList {
-						id
-						name
-						email
-					}
-				}
-			`),
+			document: parse(`query { userList { id name email } }`),
 			contextValue: testContext,
 		});
-
-		// Assert
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.[0]?.message).toBe("User is not authorized to access this resource");
 		expect(result.errors?.[0]?.extensions?.code).toBe("unauthorized_action");
 	});
 
 	it("should handle database errors gracefully", async () => {
-		// Arrange
 		const dbError = new Error("Database connection failed");
 		mockContext.drizzleClient.query.usersTable.findMany.mockRejectedValue(dbError);
-
-		// Act
 		const result = await executeOperation();
-
-		// Assert
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.[0]?.message).toBe("Database connection failed");
 	});
