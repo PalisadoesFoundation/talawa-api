@@ -26,7 +26,12 @@ describe("userList Query", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		schema = builder.toSchema({}); // Ensure schema is built correctly
+		try {
+			schema = builder.toSchema({});
+		} catch (error) {
+			console.error('Failed to build schema:', error);
+			throw error;
+		}
 		mockContext.drizzleClient.query.usersTable.findMany.mockReset();
 	});
 
