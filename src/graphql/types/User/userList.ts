@@ -24,12 +24,7 @@ describe("userList Query", () => {
 		mockContext.drizzleClient.query.usersTable.findMany.mockReset();
 	});
 
-	const executeOperation = async (
-		variables?: {
-			first?: number;
-			skip?: number;
-		}
-	) => {
+	const executeOperation = async (variables?: { first?: number; skip?: number }) => {
 		const query = `
 			query UserList($first: Int, $skip: Int) {
 				userList(first: $first, skip: $skip) {
