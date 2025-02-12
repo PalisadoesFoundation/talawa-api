@@ -118,4 +118,3 @@ describe("userList Query", () => {
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.[0]?.message).toBe("Database connection failed");
 	});
-
