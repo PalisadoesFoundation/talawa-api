@@ -574,6 +574,7 @@ suite("Query field tag", () => {
 				headers: { authorization: `bearer ${regularUserToken}` },
 				variables: {
 					input: { id: organizationId },
+					first: 10,
 				},
 			},
 		);
