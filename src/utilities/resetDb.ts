@@ -1,3 +1,7 @@
+/**
+ * Resets the database by clearing all existing data from collections.
+ * This function ensures that all collections are emptied before seeding new data.
+ */
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -28,6 +32,9 @@ const collections = [
   "agendaCategories",
 ];
 
+/**
+ * Deletes all documents from the collections to reset the database.
+ */
 async function resetDatabase(): Promise<void> {
   await connect("talawa-api");
 
@@ -49,6 +56,9 @@ async function resetDatabase(): Promise<void> {
   console.log("Database reset completed.");
 }
 
+/**
+ * Seeds the database with sample data from JSON files.
+ */
 async function seedDatabase(collections: string[]): Promise<void> {
   try {
     await resetDatabase();
@@ -102,6 +112,9 @@ async function seedDatabase(collections: string[]): Promise<void> {
   }
 }
 
+/**
+ * Executes the database reset and seed process.
+ */
 (async (): Promise<void> => {
   await seedDatabase(collections);
 })();
