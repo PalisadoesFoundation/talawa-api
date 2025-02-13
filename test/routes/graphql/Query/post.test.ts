@@ -71,7 +71,7 @@ suite("Query field post", () => {
 		return signInResult.data.signIn?.authenticationToken;
 	};
 
-	const createTestPost = async (creatorId: string) => {
+	const createTestPost = async (creatorId: string): Promise<{ postId: string; organizationId: string }> => {
 		const [organizationRow] = await server.drizzleClient
 			.insert(organizationsTable)
 			.values({
