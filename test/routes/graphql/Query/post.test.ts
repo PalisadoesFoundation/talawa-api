@@ -62,6 +62,9 @@ suite("Query field post", () => {
 				},
 			},
 		});
+		if (!signInResult.data?.signIn?.authenticationToken) {
+			throw new Error("Failed to get authentication token");
+		}
 		return signInResult.data.signIn?.authenticationToken;
 	};
 
