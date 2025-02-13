@@ -1,21 +1,24 @@
+// External packages
 import { faker } from "@faker-js/faker";
-import { eq } from "drizzle-orm";
 import { hash } from "@node-rs/argon2";
-import {
-    organizationsTable,
-	postsTable,
-	usersTable,
-} from "src/drizzle/schema";
+import { eq } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { beforeEach, expect, suite, test } from "vitest";
-import type {
-	ArgumentsAssociatedResourcesNotFoundExtensions,
-	InvalidArgumentsExtensions,
-	TalawaGraphQLFormattedError,
-	UnauthenticatedExtensions,
-	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
-} from "~/src/utilities/TalawaGraphQLError";
+
+// Internal modules
+import { organizationsTable, postsTable, usersTable } from "src/drizzle/schema";
 import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { Query_post, Query_signIn } from "../documentNodes";
+
+// Types
+import type {
+    ArgumentsAssociatedResourcesNotFoundExtensions,
+    InvalidArgumentsExtensions,
+    TalawaGraphQLFormattedError,
+    UnauthenticatedExtensions,
+    UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
+} from "~/src/utilities/TalawaGraphQLError";
 import { mercuriusClient } from "../client";
 import { Query_post, Query_signIn } from "../documentNodes";
 
