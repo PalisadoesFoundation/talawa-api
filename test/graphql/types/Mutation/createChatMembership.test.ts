@@ -463,20 +463,31 @@ describe("ChatMembershipResolver", () => {
 		});
 
 		it("should throw TalawaGraphQLError if currentUser is undefined", async () => {
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				undefined,
-			);
+			// Set currentUser to undefined in mockContext
+			const contextWithoutUser = {
+				...mockContext,
+				currentUser: undefined,
+			};
+
+			// Provide valid input data to pass validation
+			const validArgs = {
+				input: {
+					chatId: "123e4567-e89b-12d3-a456-426614174000", // valid UUID
+					memberId: "123e4567-e89b-12d3-a456-426614174001", // valid UUID
+					role: "administrator", // valid role enum value
+				},
+			};
 
 			await expect(
 				ChatMembershipResolver.createChatMembership(
 					{},
-					defaultArgs,
-					mockContext,
+					validArgs,
+					contextWithoutUser,
 				),
 			).rejects.toThrowError(
 				expect.objectContaining({
 					extensions: expect.objectContaining({
-						code: "invalid_arguments",
+						code: "unauthenticated",
 					}),
 				}),
 			);
