@@ -367,3 +367,19 @@ export const Mutation_deleteOrganizationMembership =
       countryCode
     }
 }`);
+
+export const Query_post = gql(`query Query_post($input: QueryPostInput!) {
+    post(input: $input) {
+        id
+        caption
+        createdAt
+        updatedAt
+        pinnedAt
+        organization {
+            countryCode
+        }
+        attachments {
+            mimeType
+        }
+    }
+}`);
