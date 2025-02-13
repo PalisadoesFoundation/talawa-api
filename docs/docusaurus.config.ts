@@ -92,7 +92,7 @@ const config: Config = {
         {
           label: "Demo",
           position: "left",
-          href: "http://admin-demo.talawa.io/",
+          href: "https://demo.talawa.io/",
         },
         {
           to: "https://github.com/PalisadoesFoundation",
