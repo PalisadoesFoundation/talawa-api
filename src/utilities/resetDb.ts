@@ -3,6 +3,7 @@
  * This function ensures that all collections are emptied before seeding new data.
  */
 import fs from "fs/promises";
+import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
 import { connect } from "../db";
@@ -36,24 +37,33 @@ const collections = [
  * Deletes all documents from the collections to reset the database.
  */
 async function resetDatabase(): Promise<void> {
-  await connect("talawa-api");
+  await connect(process.env.DATABASE_NAME || "talawa-api");
+  const session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async () => {
+      if ((await User.countDocuments()) > 0) await User.deleteMany({});
+      if ((await Organization.countDocuments()) > 0)
+        await Organization.deleteMany({});
+      if ((await ActionItemCategory.countDocuments()) > 0)
+        await ActionItemCategory.deleteMany({});
+      if ((await AgendaCategoryModel.countDocuments()) > 0)
+        await AgendaCategoryModel.deleteMany({});
+      if ((await Event.countDocuments()) > 0) await Event.deleteMany({});
+      if ((await Venue.countDocuments()) > 0) await Venue.deleteMany({});
+      if ((await RecurrenceRule.countDocuments()) > 0)
+        await RecurrenceRule.deleteMany({});
+      if ((await Post.countDocuments()) > 0) await Post.deleteMany({});
+      if ((await AppUserProfile.countDocuments()) > 0)
+        await AppUserProfile.deleteMany({});
+    });
 
-  if ((await User.countDocuments()) > 0) await User.deleteMany({});
-  if ((await Organization.countDocuments()) > 0)
-    await Organization.deleteMany({});
-  if ((await ActionItemCategory.countDocuments()) > 0)
-    await ActionItemCategory.deleteMany({});
-  if ((await AgendaCategoryModel.countDocuments()) > 0)
-    await AgendaCategoryModel.deleteMany({});
-  if ((await Event.countDocuments()) > 0) await Event.deleteMany({});
-  if ((await Venue.countDocuments()) > 0) await Venue.deleteMany({});
-  if ((await RecurrenceRule.countDocuments()) > 0)
-    await RecurrenceRule.deleteMany({});
-  if ((await Post.countDocuments()) > 0) await Post.deleteMany({});
-  if ((await AppUserProfile.countDocuments()) > 0)
-    await AppUserProfile.deleteMany({});
-
-  console.log("Database reset completed.");
+    console.log("Database reset completed.");
+  } catch (error) {
+    console.error("Database reset failed:", error);
+    throw error;
+  } finally {
+    await session.endSession();
+  }
 }
 
 /**
