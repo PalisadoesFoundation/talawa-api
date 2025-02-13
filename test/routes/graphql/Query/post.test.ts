@@ -288,7 +288,7 @@ suite("Query field post", () => {
                 // Attempt to access post
                 const result = await mercuriusClient.query(Query_post, {
                     headers: {
-                        Authorization: `Bearer ${authToken}`,
+                        authorization: `bearer ${authToken}`,
                     },
                     variables: {
                         input: {
