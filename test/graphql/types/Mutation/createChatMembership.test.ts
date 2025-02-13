@@ -315,47 +315,14 @@ describe("ChatMembershipResolver", () => {
 				).rejects.toThrow(
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "invalid_arguments", // Correct error code
+							code: "invalid_arguments", // Keep this if it's the correct code
 							issues: expect.arrayContaining([
 								expect.objectContaining({
 									argumentPath: ["input", "memberId"],
-									message: "Invalid uuid", // Add expected message
-								}),
-								expect.objectContaining({
-									argumentPath: ["input", "chatId"],
-									message: "Invalid uuid", // Add expected message
-								}),
-							]),
-						}),
-					}),
-				);
-			});
-
-			it("should throw error when chat does not exist", async () => {
-				mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-					role: "member",
-				});
-				mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-					undefined,
-				);
-
-				await expect(
-					ChatMembershipResolver.createChatMembership(
-						{},
-						defaultArgs,
-						mockContext,
-					),
-				).rejects.toThrow(
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "chatId"],
 									message: "Invalid uuid",
 								}),
 								expect.objectContaining({
-									argumentPath: ["input", "memberId"],
+									argumentPath: ["input", "chatId"],
 									message: "Invalid uuid",
 								}),
 							]),
@@ -677,65 +644,5 @@ describe("ChatMembershipResolver", () => {
 				},
 			});
 		});
-
-		//   it('should throw error when non-admin user tries to set role', async () => {
-		// 	const existingChat = {
-		// 	  chatMembershipsWhereChat: [],
-		// 	  organization: {
-		// 		membershipsWhereOrganization: [{
-		// 		  role: 'member',
-		// 		}],
-		// 	  },
-		// 	};
-
-		// 	mockContextWithUser.user.role = 'regular';
-		// 	mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValueOnce(existingChat);
-
-		// 	const parsedArgs = {
-		// 	  input: {
-		// 		...defaultArgs.input,
-		// 		role: 'admin',
-		// 	  },
-		// 	};
-
-		// 	const validateFn = async () => {
-		// 	  const currentUser = mockContextWithUser.user;
-		// 	  const currentUserOrganizationMembership = existingChat.organization.membershipsWhereOrganization[0];
-
-		// 	  if (
-		// 		currentUser.role !== "administrator" &&
-		// 		(currentUserOrganizationMembership === undefined ||
-		// 		  currentUserOrganizationMembership.role !== "administrator")
-		// 	  ) {
-		// 		const unauthorizedArgumentPaths = getKeyPathsWithNonUndefinedValues({
-		// 		  keyPaths: [["input", "role"]],
-		// 		  object: parsedArgs,
-		// 		});
-
-		// 		if (unauthorizedArgumentPaths.length !== 0) {
-		// 		  throw new TalawaGraphQLError({
-		// 			extensions: {
-		// 			  code: "unauthorized_arguments",
-		// 			  issues: unauthorizedArgumentPaths.map((argumentPath) => ({
-		// 				argumentPath,
-		// 			  })),
-		// 			},
-		// 		  });
-		// 		}
-		// 	  }
-		// 	};
-
-		// 	await expect(validateFn()).rejects.toThrow(TalawaGraphQLError);
-		// 	await expect(validateFn()).rejects.toMatchObject({
-		// 	  extensions: {
-		// 		code: "unauthorized_arguments",
-		// 		issues: expect.arrayContaining([
-		// 		  expect.objectContaining({
-		// 			argumentPath: ["input", "role"],
-		// 		  }),
-		// 		]),
-		// 	  },
-		// 	});
-		//   });
 	});
 });

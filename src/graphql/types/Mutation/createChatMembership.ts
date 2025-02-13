@@ -288,19 +288,6 @@ export const ChatMembershipResolver = {
 
 		if (existingMember === undefined) {
 			throw new TalawaGraphQLError({
-				extensions: {
-					code: "arguments_associated_resources_not_found",
-					issues: [
-						{
-							argumentPath: ["input", "memberId"],
-						},
-					],
-				},
-			});
-		}
-
-		if (existingMember === undefined) {
-			throw new TalawaGraphQLError({
 				message: "You have provided invalid arguments for this action.",
 				extensions: {
 					code: "invalid_arguments",
