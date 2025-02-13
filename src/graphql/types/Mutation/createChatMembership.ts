@@ -13,7 +13,6 @@ interface ChatMembershipDatabaseRecord {
 	id: string;
 	chatId: string;
 	memberId: string;
-	role: string;
 	creatorId: string;
 }
 
