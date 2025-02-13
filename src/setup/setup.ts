@@ -198,7 +198,6 @@ export async function setCI(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {
 		answers.CI = await promptList("CI", "Set CI:", ["true", "false"], "false");
 	} catch (err) {
-		console.error(err);
 		handlePromptError(err);
 	}
 	return answers;
@@ -215,7 +214,6 @@ export async function administratorEmail(
 			validateEmail,
 		);
 	} catch (err) {
-		console.log(err);
 		handlePromptError(err);
 	}
 	return answers;
@@ -375,6 +373,8 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 export async function cloudbeaverSetup(
 	answers: SetupAnswers,
 ): Promise<SetupAnswers> {
+	try {
+
 	answers.CLOUDBEAVER_ADMIN_NAME = await promptInput(
 		"CLOUDBEAVER_ADMIN_NAME",
 		"CloudBeaver admin name:",
@@ -416,9 +416,13 @@ export async function cloudbeaverSetup(
 	);
 
 	return answers;
+} catch(err) {
+	handlePromptError(err);
+}
 }
 
 export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
+	try {
 	answers.MINIO_BROWSER = await promptInput(
 		"MINIO_BROWSER",
 		"Minio browser (on/off):",
@@ -472,11 +476,15 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	);
 
 	return answers;
+} catch (err) {
+	handlePromptError(err);
+}
 }
 
 export async function postgresSetup(
 	answers: SetupAnswers,
 ): Promise<SetupAnswers> {
+	try {
 	answers.POSTGRES_DB = await promptInput(
 		"POSTGRES_DB",
 		"Postgres database:",
@@ -511,6 +519,9 @@ export async function postgresSetup(
 	);
 
 	return answers;
+} catch (err) {
+	handlePromptError(err);
+}
 }
 
 export async function setup(): Promise<SetupAnswers> {
