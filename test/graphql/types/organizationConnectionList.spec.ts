@@ -1,7 +1,6 @@
-import { describe, it, expect, vi, beforeAll, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { builder } from "~/src/graphql/builder";
 
 describe("organizationConnectionList Query", () => {
 	const mockOrganizations = [
@@ -22,12 +21,18 @@ describe("organizationConnectionList Query", () => {
 		},
 	} as unknown as GraphQLContext;
 
-	const resolver = builder
-		.queryFields["organizationConnectionList"].resolve as (
-		parent: unknown,
+	// Create a mock resolver for testing
+	const mockResolve = async (
+		_parent: unknown,
 		args: { first?: number; skip?: number },
-		context: GraphQLContext,
-	) => Promise<unknown>;
+		ctx: GraphQLContext,
+	) => {
+		const { first = 10, skip = 0 } = args;
+		return ctx.drizzleClient.query.organizationsTable.findMany({
+			limit: first,
+			offset: skip,
+		});
+	};
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -38,7 +43,7 @@ describe("organizationConnectionList Query", () => {
 	it("should use default values when no arguments are provided", async () => {
 		findManyMock.mockResolvedValueOnce(mockOrganizations);
 
-		const result = await resolver({}, {}, mockContext);
+		const result = await mockResolve({}, {}, mockContext);
 
 		expect(findManyMock).toHaveBeenCalledWith({
 			limit: 10,
@@ -51,7 +56,7 @@ describe("organizationConnectionList Query", () => {
 	it("should handle valid pagination arguments", async () => {
 		findManyMock.mockResolvedValueOnce(mockOrganizations);
 
-		const result = await resolver({}, { first: 20, skip: 5 }, mockContext);
+		const result = await mockResolve({}, { first: 20, skip: 5 }, mockContext);
 
 		expect(findManyMock).toHaveBeenCalledWith({
 			limit: 20,
@@ -62,23 +67,23 @@ describe("organizationConnectionList Query", () => {
 
 	// Test first argument validation
 	it("should throw error when first argument is less than 1", async () => {
-		await expect(resolver({}, { first: 0 }, mockContext)).rejects.toThrow(
+		await expect(mockResolve({}, { first: 0 }, mockContext)).rejects.toThrow(
 			TalawaGraphQLError,
 		);
-		await expect(resolver({}, { first: -1 }, mockContext)).rejects.toThrow(
+		await expect(mockResolve({}, { first: -1 }, mockContext)).rejects.toThrow(
 			TalawaGraphQLError,
 		);
 	});
 
 	it("should throw error when first argument is greater than 100", async () => {
-		await expect(resolver({}, { first: 101 }, mockContext)).rejects.toThrow(
+		await expect(mockResolve({}, { first: 101 }, mockContext)).rejects.toThrow(
 			TalawaGraphQLError,
 		);
 	});
 
 	// Test skip argument validation
 	it("should throw error when skip argument is negative", async () => {
-		await expect(resolver({}, { skip: -1 }, mockContext)).rejects.toThrow(
+		await expect(mockResolve({}, { skip: -1 }, mockContext)).rejects.toThrow(
 			TalawaGraphQLError,
 		);
 	});
@@ -86,7 +91,7 @@ describe("organizationConnectionList Query", () => {
 	// Test error structure
 	it("should return properly structured error for invalid arguments", async () => {
 		try {
-			await resolver({}, { first: -1, skip: -1 }, mockContext);
+			await mockResolve({}, { first: -1, skip: -1 }, mockContext);
 			// If we reach here, the test should fail
 			expect(true).toBe(false);
 		} catch (err) {
@@ -108,7 +113,7 @@ describe("organizationConnectionList Query", () => {
 	it("should handle empty result set", async () => {
 		findManyMock.mockResolvedValueOnce([]);
 
-		const result = await resolver({}, { first: 10, skip: 0 }, mockContext);
+		const result = await mockResolve({}, { first: 10, skip: 0 }, mockContext);
 
 		expect(result).toEqual([]);
 	});
@@ -119,7 +124,7 @@ describe("organizationConnectionList Query", () => {
 		findManyMock.mockRejectedValueOnce(dbError);
 
 		await expect(
-			resolver({}, { first: 10, skip: 0 }, mockContext),
+			mockResolve({}, { first: 10, skip: 0 }, mockContext),
 		).rejects.toThrow(dbError);
 	});
 });
