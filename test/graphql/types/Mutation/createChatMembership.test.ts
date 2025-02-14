@@ -673,7 +673,7 @@ describe("ChatMembershipResolver", () => {
 						input: {
 							memberId: "00000000-0000-0000-0000-000000000001",
 							chatId: "00000000-0000-0000-0000-000000000002", // Valid UUID
-							role: "administrator", // Unauthorized argument
+							role: "administrator",
 						},
 					},
 					mockContext,
@@ -686,6 +686,211 @@ describe("ChatMembershipResolver", () => {
 							{
 								argumentPath: ["input", "role"],
 							},
+						],
+					}),
+				}),
+			);
+		});
+
+		it("should throw forbidden_action error when chat membership already exists", async () => {
+			// Mock a chat with existing membership
+			const mockChatWithMembership = {
+				id: "00000000-0000-0000-0000-000000000001",
+				chatMembershipsWhereChat: [
+					{
+						memberId: "00000000-0000-0000-0000-000000000002",
+						role: "regular",
+					},
+				],
+				organization: {
+					membershipsWhereOrganization: [],
+				},
+			};
+
+			// Setup mocks
+			mockContext.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce({ role: "regular" }) // Current user
+				.mockResolvedValueOnce({ id: "00000000-0000-0000-0000-000000000002" }); // Existing member
+
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
+				mockChatWithMembership,
+			);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: {
+							memberId: "00000000-0000-0000-0000-000000000002",
+							chatId: "00000000-0000-0000-0000-000000000001",
+						},
+					},
+					mockContext,
+				),
+			).rejects.toThrow(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "chatId"],
+								message: "This chat already has the associated member.",
+							}),
+							expect.objectContaining({
+								argumentPath: ["input", "memberId"],
+								message:
+									"This user already has the membership of the associated chat.",
+							}),
+						]),
+					}),
+				}),
+			);
+		});
+		it("should throw invalid_arguments error when ONLY member is not found", async () => {
+			// Mock setup
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue({
+				id: "valid-chat",
+				organization: { membershipsWhereOrganization: [] },
+			});
+			mockContext.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce({ role: "regular" }) // Current user
+				.mockResolvedValueOnce(undefined); // Target member missing
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: {
+							// Valid chat UUID but invalid member UUID
+							memberId: "invalid-member-id",
+							chatId: "00000000-0000-0000-0000-000000000002",
+						},
+					},
+					mockContext,
+				),
+			).rejects.toThrow(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							expect.objectContaining({
+								argumentPath: ["input", "memberId"],
+								message: "Invalid uuid",
+							}),
+						],
+					}),
+				}),
+			);
+		});
+
+		it("should throw invalid_arguments error when ONLY chat is not found", async () => {
+			// Mock setup
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+			mockContext.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce({ role: "regular" }) // Current user
+				.mockResolvedValueOnce({ id: "valid-member" }); // Target member exists
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: {
+							// Valid member UUID but invalid chat UUID
+							memberId: "00000000-0000-0000-0000-000000000001",
+							chatId: "invalid-chat-id",
+						},
+					},
+					mockContext,
+				),
+			).rejects.toThrow(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							expect.objectContaining({
+								argumentPath: ["input", "chatId"],
+								message: "Invalid uuid",
+							}),
+						],
+					}),
+				}),
+			);
+		});
+
+		it("should throw invalid_arguments error when chat is not found", async () => {
+			// Mock chat not found but member exists
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				{
+					id: "valid-member",
+					role: "regular",
+				},
+			);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: {
+							memberId: "00000000-0000-0000-0000-000000000001",
+							chatId: "invalid-chat-id",
+						},
+					},
+					mockContext,
+				),
+			).rejects.toThrow(
+				expect.objectContaining({
+					message: "You have provided invalid arguments for this action.",
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							expect.objectContaining({
+								argumentPath: ["input", "chatId"],
+								message: "Invalid uuid",
+							}),
+						],
+					}),
+				}),
+			);
+		});
+
+		it("should throw invalid_arguments error when member is not found", async () => {
+			// Mock member not found but chat exists
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue({
+				id: "valid-chat",
+				organization: {
+					membershipsWhereOrganization: [],
+				},
+			});
+			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: {
+							memberId: "invalid-member-id",
+							chatId: "00000000-0000-0000-0000-000000000002",
+						},
+					},
+					mockContext,
+				),
+			).rejects.toThrow(
+				expect.objectContaining({
+					message: "You have provided invalid arguments for this action.",
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							expect.objectContaining({
+								argumentPath: ["input", "memberId"],
+								message: "Invalid uuid",
+							}),
 						],
 					}),
 				}),
