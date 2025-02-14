@@ -1,52 +1,129 @@
-import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
-import type { GraphQLContext } from "~/src/graphql/context";
-import type { drizzleClient } from "~/src/drizzle/client"; // Import actual drizzle client type
+import { expect, test, describe, vi, beforeEach } from 'vitest';
+import { createTestContext } from '~/src/tests/createTestContext';
+import { gql } from 'graphql-tag';
+import '../../../src/graphql/types/Organization/organization.queries';
+import { mockOrganizations } from '~/src/tests/mocks/organizations';
 
-describe("organizationConnectionList Query", () => {
-	const mockOrganizations = [
-		{ id: 1, name: "Org 1" },
-		{ id: 2, name: "Org 2" },
-		{ id: 3, name: "Org 3" },
-	];
+describe('organizationConnectionList Query', () => {
+	const testContext = createTestContext();
+	let context;
 
-	const findManyMock: Mock = vi.fn();
-
-	// Create a properly typed partial mock of drizzleClient.query
-	const mockQuery: Partial<typeof drizzleClient.query> = {
-		organizationsTable: {
-			findMany: findManyMock,
-		} as any, // Required to bypass strict typing for test mocks
-	};
-
-	const mockContext: GraphQLContext = {
-		drizzleClient: {
-			query: mockQuery as typeof drizzleClient.query, // Ensures correct type compatibility
-		},
-	};
-
-	// Resolver function that will use the mocked context
-	const mockResolve = async (
-		_parent: unknown,
-		args: { first?: number; skip?: number },
-		ctx: GraphQLContext,
-	) => {
-		const { first = 10, skip = 0 } = args;
-		return ctx.drizzleClient.query.organizationsTable.findMany({
-			limit: first,
-			offset: skip,
-		});
-	};
-
-	beforeEach(() => {
-		vi.clearAllMocks();
-		findManyMock.mockClear();
+	beforeEach(async () => {
+		vi.resetAllMocks();
+		context = await testContext.createContext();
+		vi.spyOn(context.drizzleClient.query.organizationsTable, 'findMany');
 	});
 
-	it("should use default values when no arguments are provided", async () => {
-		findManyMock.mockResolvedValueOnce(mockOrganizations);
-		const result = await mockResolve({}, {}, mockContext);
+	const ORGANIZATION_CONNECTION_LIST_QUERY = gql`
+		query OrganizationConnectionList($first: Int, $skip: Int) {
+			organizationConnectionList(first: $first, skip: $skip) {
+				_id
+				name
+				description
+				isPublic
+				createdAt
+				updatedAt
+			}
+		}
+	`;
 
-		expect(findManyMock).toHaveBeenCalledWith({ limit: 10, offset: 0 });
-		expect(result).toEqual(mockOrganizations);
+	test('should return organizations with default pagination', async () => {
+		// Setup mock return value
+		context.drizzleClient.query.organizationsTable.findMany.mockResolvedValueOnce(mockOrganizations.slice(0, 10));
+
+		// Execute query without arguments
+		const result = await testContext.executeOperation({
+			query: ORGANIZATION_CONNECTION_LIST_QUERY,
+			contextValue: context,
+		});
+
+		// Assert
+		expect(result.errors).toBeUndefined();
+		expect(context.drizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith({
+			limit: 10,
+			offset: 0,
+		});
+		expect(result.data?.organizationConnectionList).toHaveLength(10);
+	});
+
+	test('should return organizations with custom pagination', async () => {
+		// Setup mock return value
+		context.drizzleClient.query.organizationsTable.findMany.mockResolvedValueOnce(mockOrganizations.slice(5, 10));
+
+		// Execute query with custom pagination
+		const result = await testContext.executeOperation({
+			query: ORGANIZATION_CONNECTION_LIST_QUERY,
+			variables: { first: 5, skip: 5 },
+			contextValue: context,
+		});
+
+		// Assert
+		expect(result.errors).toBeUndefined();
+		expect(context.drizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith({
+			limit: 5,
+			offset: 5,
+		});
+		expect(result.data?.organizationConnectionList).toHaveLength(5);
+	});
+
+	test('should throw error when first is less than 1', async () => {
+		// Execute query with invalid first parameter
+		const result = await testContext.executeOperation({
+			query: ORGANIZATION_CONNECTION_LIST_QUERY,
+			variables: { first: 0 },
+			contextValue: context,
+		});
+
+		// Assert
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0].message).toContain('invalid_arguments');
+		expect(context.drizzleClient.query.organizationsTable.findMany).not.toHaveBeenCalled();
+	});
+
+	test('should throw error when first exceeds maximum allowed', async () => {
+		// Execute query with invalid first parameter
+		const result = await testContext.executeOperation({
+			query: ORGANIZATION_CONNECTION_LIST_QUERY,
+			variables: { first: 101 },
+			contextValue: context,
+		});
+
+		// Assert
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0].message).toContain('invalid_arguments');
+		expect(context.drizzleClient.query.organizationsTable.findMany).not.toHaveBeenCalled();
+	});
+
+	test('should throw error when skip is negative', async () => {
+		// Execute query with invalid skip parameter
+		const result = await testContext.executeOperation({
+			query: ORGANIZATION_CONNECTION_LIST_QUERY,
+			variables: { skip: -1 },
+			contextValue: context,
+		});
+
+		// Assert
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0].message).toContain('invalid_arguments');
+		expect(context.drizzleClient.query.organizationsTable.findMany).not.toHaveBeenCalled();
+	});
+
+	test('should validate and format error details', async () => {
+		// Execute query with multiple invalid parameters
+		const result = await testContext.executeOperation({
+			query: ORGANIZATION_CONNECTION_LIST_QUERY,
+			variables: { first: 0, skip: -1 },
+			contextValue: context,
+		});
+
+		// Assert
+		expect(result.errors).toBeDefined();
+		expect(result.errors[0].extensions.code).toBe('invalid_arguments');
+		expect(result.errors[0].extensions.issues).toBeInstanceOf(Array);
+		
+		// Check that issues contain proper format with argumentPath and message
+		const issues = result.errors[0].extensions.issues;
+		expect(issues.some(issue => issue.argumentPath.includes('first') && issue.message)).toBeTruthy();
+		expect(issues.some(issue => issue.argumentPath.includes('skip') && issue.message)).toBeTruthy();
 	});
 });
