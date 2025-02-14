@@ -1,116 +1,136 @@
-import { execute, parse } from "graphql";
-import { schema } from "~/src/graphql/schema";
-import { mockContext } from "~/src/test/mockContext";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { builder } from "~/src/graphql/builder";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-const executeOperation = async (variables?: { first?: number; skip?: number }) => {
-	const query = `
-		query UserList($first: Int, $skip: Int) {
-			userList(first: $first, skip: $skip) {
-				id
-				name
-				email
-			}
-		}
-	`;
-
-	return execute({
-		schema,
-		document: parse(query),
-		variableValues: variables,
-		contextValue: mockContext,
-	});
-};
-
-describe("User List GraphQL Query", () => {
-	const mockUsers = [
-		{ id: "1", name: "John Doe", email: "john@example.com" },
-		{ id: "2", name: "Jane Doe", email: "jane@example.com" },
+describe("organizationConnectionList Query", () => {
+	const mockOrganizations = [
+		{ id: 1, name: "Org 1" },
+		{ id: 2, name: "Org 2" },
+		{ id: 3, name: "Org 3" },
 	];
 
+	const mockContext = {
+		drizzleClient: {
+			query: {
+				organizationsTable: {
+					findMany: vi.fn(),
+				},
+			},
+		},
+	};
+
 	beforeEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
+		mockContext.drizzleClient.query.organizationsTable.findMany.mockReset();
 	});
 
-	it("should return users with default pagination values", async () => {
-		mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(mockUsers);
+	// Test default values
+	it("should use default values when no arguments are provided", async () => {
+		mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(
+			mockOrganizations,
+		);
 
-		const result = await executeOperation();
+		const resolver = builder.getField("Query", "organizationConnectionList").resolve;
+		const result = await resolver({}, {}, mockContext);
 
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.userList).toEqual(mockUsers);
-		expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith({
+		expect(
+			mockContext.drizzleClient.query.organizationsTable.findMany,
+		).toHaveBeenCalledWith({
 			limit: 10,
 			offset: 0,
 		});
+		expect(result).toEqual(mockOrganizations);
 	});
 
-	it("should return users with custom pagination values", async () => {
-		mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(mockUsers);
+	// Test with valid arguments
+	it("should handle valid pagination arguments", async () => {
+		mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(
+			mockOrganizations,
+		);
 
-		const result = await executeOperation({ first: 5, skip: 2 });
+		const resolver = builder.getField("Query", "organizationConnectionList").resolve;
+		const result = await resolver({}, { first: 20, skip: 5 }, mockContext);
 
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.userList).toEqual(mockUsers);
-		expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith({
-			limit: 5,
-			offset: 2,
+		expect(
+			mockContext.drizzleClient.query.organizationsTable.findMany,
+		).toHaveBeenCalledWith({
+			limit: 20,
+			offset: 5,
 		});
+		expect(result).toEqual(mockOrganizations);
 	});
 
-	it("should return an error if arguments are invalid", async () => {
-		const result = await executeOperation({ first: -1, skip: -5 });
+	// Test first argument validation
+	it("should throw error when first argument is less than 1", async () => {
+		const resolver = builder.getField("Query", "organizationConnectionList").resolve;
 
-		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0]?.message).toContain("Invalid arguments");
-		expect(mockContext.drizzleClient.query.usersTable.findMany).not.toHaveBeenCalled();
+		await expect(resolver({}, { first: 0 }, mockContext)).rejects.toThrow(
+			TalawaGraphQLError,
+		);
+		await expect(resolver({}, { first: -1 }, mockContext)).rejects.toThrow(
+			TalawaGraphQLError,
+		);
 	});
 
-	it("should return unauthorized error if user is not authenticated", async () => {
-		const testContext = {
-			...mockContext,
-			currentClient: { isAuthenticated: false, user: null },
-		};
+	it("should throw error when first argument is greater than 100", async () => {
+		const resolver = builder.getField("Query", "organizationConnectionList").resolve;
 
-		const result = await execute({
-			schema,
-			document: parse("query { userList { id name email } }"),
-			contextValue: testContext,
-		});
-
-		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0]?.message).toContain("User is not authorized");
-		expect(testContext.drizzleClient.query.usersTable.findMany).not.toHaveBeenCalled();
+		await expect(resolver({}, { first: 101 }, mockContext)).rejects.toThrow(
+			TalawaGraphQLError,
+		);
 	});
 
-	it("should return unauthorized error if user lacks admin privileges", async () => {
-		const testContext = {
-			...mockContext,
-			currentClient: {
-				isAuthenticated: true,
-				user: { id: "user-123", role: "regular" },
-			},
-		};
+	// Test skip argument validation
+	it("should throw error when skip argument is negative", async () => {
+		const resolver = builder.getField("Query", "organizationConnectionList").resolve;
 
-		const result = await execute({
-			schema,
-			document: parse("query { userList { id name email } }"),
-			contextValue: testContext,
-		});
-
-		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0]?.message).toBe("User is not authorized to access this resource");
-		expect(result.errors?.[0]?.extensions?.code).toBe("unauthorized_action");
+		await expect(resolver({}, { skip: -1 }, mockContext)).rejects.toThrow(
+			TalawaGraphQLError,
+		);
 	});
 
-	it("should handle database errors gracefully", async () => {
+	// Test error structure
+	it("should return properly structured error for invalid arguments", async () => {
+		const resolver = builder.getField("Query", "organizationConnectionList").resolve;
+
+		try {
+			await resolver({}, { first: -1, skip: -1 }, mockContext);
+		} catch (error) {
+			expect(error).toBeInstanceOf(TalawaGraphQLError);
+			expect(error.extensions).toEqual({
+				code: "invalid_arguments",
+				issues: expect.arrayContaining([
+					expect.objectContaining({
+						argumentPath: expect.any(Array),
+						message: expect.any(String),
+					}),
+				]),
+			});
+		}
+	});
+
+	// Test empty results
+	it("should handle empty result set", async () => {
+		mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(
+			[],
+		);
+
+		const resolver = builder.getField("Query", "organizationConnectionList").resolve;
+		const result = await resolver({}, { first: 10, skip: 0 }, mockContext);
+
+		expect(result).toEqual([]);
+	});
+
+	// Test database error handling
+	it("should propagate database errors", async () => {
 		const dbError = new Error("Database connection failed");
-		mockContext.drizzleClient.query.usersTable.findMany.mockRejectedValue(dbError);
+		mockContext.drizzleClient.query.organizationsTable.findMany.mockRejectedValue(
+			dbError,
+		);
 
-		const result = await executeOperation();
-
-		expect(result.errors?.[0]).toMatchObject({
-			message: expect.stringContaining("Database connection failed"),
-			originalError: dbError,
-		});
+		const resolver = builder.getField("Query", "organizationConnectionList").resolve;
+		await expect(
+			resolver({}, { first: 10, skip: 0 }, mockContext),
+		).rejects.toThrow(dbError);
 	});
 });
