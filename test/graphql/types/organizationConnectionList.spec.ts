@@ -108,6 +108,9 @@ describe("User List GraphQL Query", () => {
 
 		const result = await executeOperation();
 
-		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]).toMatchObject({
+			message: expect.stringContaining("Database connection failed"),
+			originalError: dbError,
+		});
 	});
 });
