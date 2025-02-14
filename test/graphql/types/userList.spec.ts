@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import type { RelationalQueryBuilder } from "drizzle-orm";
 
 describe("userList Query", () => {
 	const mockUsers = [
@@ -17,7 +15,7 @@ describe("userList Query", () => {
 			query: {
 				usersTable: {
 					findMany: findManyMock,
-				} as Partial<RelationalQueryBuilder<any, any>>, // ✅ Fixed TypeScript issue
+				} as unknown, // ✅ Fixed TypeScript issue by using `unknown`
 			},
 		},
 	};
