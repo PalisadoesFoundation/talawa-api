@@ -61,32 +61,13 @@ export async function listSampleData(): Promise<void> {
 }
 
 /**
- * Clears all collections in the database.
- */
-async function formatDatabase(): Promise<void> {
-  // Clear all collections
-  await Promise.all([
-    Community.deleteMany({}),
-    User.deleteMany({}),
-    Organization.deleteMany({}),
-    ActionItemCategory.deleteMany({}),
-    AgendaCategoryModel.deleteMany({}),
-    Event.deleteMany({}),
-    Post.deleteMany({}),
-    AppUserProfile.deleteMany({}),
-    RecurrenceRule.deleteMany({}),
-    Venue.deleteMany({}),
-  ]);
-  console.log("Cleared all collections\n");
-}
-
-/**
  * Deletes all documents from the collections to reset the database.
  */
 async function resetDatabase(): Promise<void> {
   const session = await mongoose.startSession();
   try {
     await session.withTransaction(async () => {
+      await Community.deleteMany({});
       await User.deleteMany({});
       await Organization.deleteMany({});
       await ActionItemCategory.deleteMany({});
@@ -117,27 +98,6 @@ async function insertCollections(collections: string[]): Promise<void> {
     await connect("talawa-api");
 
     await resetDatabase();
-    const { format } = yargs(hideBin(process.argv))
-      .options({
-        items: {
-          alias: "i",
-          describe:
-            "Comma-separated list of collections to load sample data into",
-          type: "string",
-        },
-        format: {
-          alias: "f",
-          describe:
-            "Formats all the collections present in the database before the insertion of objects. [WARNING] Use carefully.",
-          type: "boolean",
-        },
-      })
-      .parseSync() as InterfaceArgs;
-
-    // Check if formatting is requested
-    if (format) {
-      await formatDatabase();
-    }
 
     // Insert data into each specified collection
     for (const collection of collections) {
