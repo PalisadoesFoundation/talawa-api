@@ -83,14 +83,12 @@ export const updatedAtResolver = async (
 			});
 		}
 
-		const currentUserOrganizationMembership =
-			existingFund.organization.membershipsWhereOrganization[0];
+		const hasAdminRole =
+			existingFund.organization.membershipsWhereOrganization.some(
+				(membership) => membership.role === "administrator",
+			);
 
-		if (
-			currentUser.role !== "administrator" &&
-			(currentUserOrganizationMembership === undefined ||
-				currentUserOrganizationMembership.role !== "administrator")
-		) {
+		if (currentUser.role !== "administrator" && !hasAdminRole) {
 			throw new TalawaGraphQLError({
 				extensions: {
 					code: "unauthorized_action",
