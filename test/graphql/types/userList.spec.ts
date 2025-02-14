@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -9,17 +9,17 @@ describe("userList Query", () => {
 		{ id: 3, name: "User 3", email: "user3@example.com" },
 	];
 
-	const findManyMock = vi.fn();
+	const findManyMock: Mock = vi.fn(); // ✅ Explicitly typed
 
-	const mockContext = {
+	const mockContext: GraphQLContext = {
 		drizzleClient: {
 			query: {
 				usersTable: {
-					findMany: findManyMock as vi.Mock, // Fixed `any` issue
+					findMany: findManyMock,
 				},
 			},
 		},
-	} as unknown as GraphQLContext;
+	};
 
 	// Create a mock resolver for testing
 	const mockResolve = async (
