@@ -3,7 +3,7 @@ set -e
 
 # Import sample data
 echo "Importing sample data..."
-npm run reset-import:sample-data || {
+npm run import:sample-data || {
     echo "Sample data import failed."
     exit 1
 }

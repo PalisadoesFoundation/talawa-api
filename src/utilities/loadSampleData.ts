@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
+import mongoose from "mongoose";
 import { connect } from "../db";
 import {
   ActionItemCategory,
@@ -80,6 +81,38 @@ async function formatDatabase(): Promise<void> {
 }
 
 /**
+ * Deletes all documents from the collections to reset the database.
+ */
+async function resetDatabase(): Promise<void> {
+  const session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async () => {
+      if ((await User.countDocuments()) > 0) await User.deleteMany({});
+      if ((await Organization.countDocuments()) > 0)
+        await Organization.deleteMany({});
+      if ((await ActionItemCategory.countDocuments()) > 0)
+        await ActionItemCategory.deleteMany({});
+      if ((await AgendaCategoryModel.countDocuments()) > 0)
+        await AgendaCategoryModel.deleteMany({});
+      if ((await Event.countDocuments()) > 0) await Event.deleteMany({});
+      if ((await Venue.countDocuments()) > 0) await Venue.deleteMany({});
+      if ((await RecurrenceRule.countDocuments()) > 0)
+        await RecurrenceRule.deleteMany({});
+      if ((await Post.countDocuments()) > 0) await Post.deleteMany({});
+      if ((await AppUserProfile.countDocuments()) > 0)
+        await AppUserProfile.deleteMany({});
+    });
+
+    console.log("Database reset completed.");
+  } catch (error) {
+    console.error("Database reset failed:", error);
+    throw error;
+  } finally {
+    await session.endSession();
+  }
+}
+
+/**
  * Inserts data into specified collections.
  * @param collections - Array of collection names to insert data into
  */
@@ -88,6 +121,7 @@ async function insertCollections(collections: string[]): Promise<void> {
     // Connect to MongoDB database
     await connect("talawa-api");
 
+    await resetDatabase();
     const { format } = yargs(hideBin(process.argv))
       .options({
         items: {
