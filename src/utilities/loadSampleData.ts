@@ -87,20 +87,15 @@ async function resetDatabase(): Promise<void> {
   const session = await mongoose.startSession();
   try {
     await session.withTransaction(async () => {
-      if ((await User.countDocuments()) > 0) await User.deleteMany({});
-      if ((await Organization.countDocuments()) > 0)
-        await Organization.deleteMany({});
-      if ((await ActionItemCategory.countDocuments()) > 0)
-        await ActionItemCategory.deleteMany({});
-      if ((await AgendaCategoryModel.countDocuments()) > 0)
-        await AgendaCategoryModel.deleteMany({});
-      if ((await Event.countDocuments()) > 0) await Event.deleteMany({});
-      if ((await Venue.countDocuments()) > 0) await Venue.deleteMany({});
-      if ((await RecurrenceRule.countDocuments()) > 0)
-        await RecurrenceRule.deleteMany({});
-      if ((await Post.countDocuments()) > 0) await Post.deleteMany({});
-      if ((await AppUserProfile.countDocuments()) > 0)
-        await AppUserProfile.deleteMany({});
+      await User.deleteMany({});
+      await Organization.deleteMany({});
+      await ActionItemCategory.deleteMany({});
+      await AgendaCategoryModel.deleteMany({});
+      await Event.deleteMany({});
+      await Venue.deleteMany({});
+      await RecurrenceRule.deleteMany({});
+      await Post.deleteMany({});
+      await AppUserProfile.deleteMany({});
     });
 
     console.log("Database reset completed.");
