@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { usersTable } from "~/src/drizzle/schema";
-import type { RelationalQueryBuilder, ExtractTablesWithRelations } from "drizzle-orm";
+import type { drizzleClient } from "~/src/drizzle/client"; // Import actual drizzle client type
 
 describe("userList Query", () => {
 	const mockUsers = [
@@ -12,22 +11,20 @@ describe("userList Query", () => {
 
 	const findManyMock: Mock = vi.fn();
 
-	const mockUsersTable: RelationalQueryBuilder<
-		ExtractTablesWithRelations<typeof import("~/src/drizzle/schema")>,
-		typeof usersTable
-	> = {
-		findMany: findManyMock,
-	} as unknown as RelationalQueryBuilder<any, any>; // ✅ Correctly typed mock
+	// Create a properly typed partial mock of drizzleClient.query
+	const mockQuery: Partial<typeof drizzleClient.query> = {
+		usersTable: {
+			findMany: findManyMock,
+		} as any, // Required to bypass strict typing for test mocks
+	};
 
 	const mockContext: GraphQLContext = {
 		drizzleClient: {
-			query: {
-				usersTable: mockUsersTable,
-			},
+			query: mockQuery as typeof drizzleClient.query, // Ensures correct type compatibility
 		},
 	};
 
-	// Mock resolver function
+	// Resolver function that will use the mocked context
 	const mockResolve = async (
 		_parent: unknown,
 		args: { first?: number; skip?: number },
