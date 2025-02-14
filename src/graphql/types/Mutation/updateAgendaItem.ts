@@ -56,27 +56,40 @@ export async function updateAgendaItemResolver(
 	}
 
 	const currentUserId = ctx.currentClient.user.id;
+
 	const [currentUser, existingAgendaItem] = await Promise.all([
 		ctx.drizzleClient.query.usersTable.findFirst({
-			columns: { role: true },
-			where: (fields, { eq }) => eq(fields.id, currentUserId),
+			columns: {
+				role: true,
+			},
+			where: (fields, operators) => operators.eq(fields.id, currentUserId),
 		}),
 		ctx.drizzleClient.query.agendaItemsTable.findFirst({
-			columns: { type: true },
+			columns: {
+				type: true,
+			},
 			with: {
 				folder: {
-					columns: { eventId: true },
+					columns: {
+						eventId: true,
+					},
 					with: {
 						event: {
-							columns: { startAt: true },
+							columns: {
+								startAt: true,
+							},
 							with: {
 								organization: {
-									columns: { countryCode: true },
+									columns: {
+										countryCode: true,
+									},
 									with: {
 										membershipsWhereOrganization: {
-											columns: { role: true },
-											where: (fields, { eq }) =>
-												eq(fields.memberId, currentUserId),
+											columns: {
+												role: true,
+											},
+											where: (fields, operators) =>
+												operators.eq(fields.memberId, currentUserId),
 										},
 									},
 								},
@@ -184,7 +197,10 @@ export async function updateAgendaItemResolver(
 
 		const existingAgendaFolder =
 			await ctx.drizzleClient.query.agendaFoldersTable.findFirst({
-				columns: { eventId: true, isAgendaItemFolder: true },
+				columns: {
+					eventId: true,
+					isAgendaItemFolder: true,
+				},
 				where: (fields, operators) => operators.eq(fields.id, folderId),
 			});
 
@@ -265,7 +281,7 @@ export async function updateAgendaItemResolver(
 		.where(eq(agendaItemsTable.id, parsedArgs.input.id))
 		.returning();
 
-	// Updated agenda item not being returned means that either it was deleted or its id column was changed by external entities before this update operation could take place.
+	// Updated agenda item not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
 	if (updatedAgendaItem === undefined) {
 		throw new TalawaGraphQLError({
 			extensions: {
