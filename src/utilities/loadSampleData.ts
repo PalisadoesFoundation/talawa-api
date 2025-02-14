@@ -95,7 +95,7 @@ async function resetDatabase(): Promise<void> {
 async function insertCollections(collections: string[]): Promise<void> {
   try {
     // Connect to MongoDB database
-    await connect("talawa-dev");
+    await connect("talawa-api");
 
     await resetDatabase();
 
@@ -160,7 +160,7 @@ async function insertCollections(collections: string[]): Promise<void> {
 async function checkCountAfterImport(): Promise<void> {
   try {
     // Connect to MongoDB database
-    await connect("talawa-dev");
+    await connect("talawa-api");
 
     const collections = [
       { name: "users", model: User },
