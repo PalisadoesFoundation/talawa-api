@@ -367,3 +367,47 @@ export const Mutation_deleteOrganizationMembership =
       countryCode
     }
 }`);
+
+export const Query_tag = gql(`
+    query tag($input:QueryTagInput!) {
+  tag(input: $input) {
+    id
+    name
+    organization {
+      id
+    }
+    createdAt
+  }
+}`);
+
+export const Mutation_createTag = gql(`
+  mutation CreateTag($input:MutationCreateTagInput!) {
+    createTag(input: $input) {
+      id
+      name
+      createdAt
+      organization{
+        id
+        name
+        createdAt
+
+        }
+    }
+  }`);
+
+export const Query_organization = gql(`
+    query Organization($input: QueryOrganizationInput!, $first: Int!) {
+      organization(input: $input) {
+        id
+        name
+        members(first: $first) {
+          edges {
+            node {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+  `);
