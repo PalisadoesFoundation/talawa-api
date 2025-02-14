@@ -75,6 +75,8 @@ services:
         condition: service_started
       minio:
         condition: service_started
+    env_file:
+     - .env
     environment:
       - MONGO_DB_URL=mongodb://mongo:27017/talawa-api?replicaSet=rs0
       - NODE_ENV=development
