@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 describe("userList Query", () => {
 	const mockUsers = [
@@ -15,8 +15,8 @@ describe("userList Query", () => {
 		drizzleClient: {
 			query: {
 				usersTable: {
-					findMany: findManyMock,
-				} as any,
+					findMany: findManyMock as vi.Mock, // Fixed `any` issue
+				},
 			},
 		},
 	} as unknown as GraphQLContext;
@@ -92,7 +92,6 @@ describe("userList Query", () => {
 	it("should return properly structured error for invalid arguments", async () => {
 		try {
 			await mockResolve({}, { first: -1, skip: -1 }, mockContext);
-			// If we reach here, the test should fail
 			expect(true).toBe(false);
 		} catch (err) {
 			const error = err as TalawaGraphQLError;
