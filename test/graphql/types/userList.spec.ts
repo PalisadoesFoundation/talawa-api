@@ -1,8 +1,7 @@
 // test/graphql/types/userList.spec.ts
-import { expect, test, describe, vi, beforeEach } from 'vitest';
+import { expect, test, describe, vi, beforeEach, fail } from 'vitest';
 import { execute } from 'graphql';
 import { schema } from '~/src/graphql/schema';
-import { TalawaGraphQLError } from '~/src/utilities/TalawaGraphQLError';
 
 describe('userList Query', () => {
 	// Mock users data
@@ -17,7 +16,7 @@ describe('userList Query', () => {
 		drizzleClient: {
 			query: {
 				usersTable: {
-					findMany: jest.Mock;
+					findMany: ReturnType<typeof vi.fn>;
 				};
 			};
 		};
@@ -108,7 +107,11 @@ describe('userList Query', () => {
 		
 		// Assert
 		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0].message).toContain('invalid_arguments');
+		if (result.errors && result.errors.length > 0) {
+			expect(result.errors[0].message).toContain('invalid_arguments');
+		} else {
+			fail('Expected errors to be defined');
+		}
 		expect(context.drizzleClient.query.usersTable.findMany).not.toHaveBeenCalled();
 	});
 	
@@ -121,7 +124,11 @@ describe('userList Query', () => {
 		
 		// Assert
 		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0].message).toContain('invalid_arguments');
+		if (result.errors && result.errors.length > 0) {
+			expect(result.errors[0].message).toContain('invalid_arguments');
+		} else {
+			fail('Expected errors to be defined');
+		}
 		expect(context.drizzleClient.query.usersTable.findMany).not.toHaveBeenCalled();
 	});
 	
@@ -134,7 +141,11 @@ describe('userList Query', () => {
 		
 		// Assert
 		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0].message).toContain('invalid_arguments');
+		if (result.errors && result.errors.length > 0) {
+			expect(result.errors[0].message).toContain('invalid_arguments');
+		} else {
+			fail('Expected errors to be defined');
+		}
 		expect(context.drizzleClient.query.usersTable.findMany).not.toHaveBeenCalled();
 	});
 	
@@ -148,7 +159,7 @@ describe('userList Query', () => {
 		// Assert
 		expect(result.errors).toBeDefined();
 		
-		if (result.errors && result.errors[0].extensions) {
+		if (result.errors && result.errors.length > 0 && result.errors[0].extensions) {
 			expect(result.errors[0].extensions.code).toBe('invalid_arguments');
 			expect(Array.isArray(result.errors[0].extensions.issues)).toBe(true);
 			
@@ -156,6 +167,8 @@ describe('userList Query', () => {
 			const issues = result.errors[0].extensions.issues as Array<{ argumentPath: string[], message: string }>;
 			expect(issues.some(issue => issue.argumentPath.includes('first') && issue.message)).toBeTruthy();
 			expect(issues.some(issue => issue.argumentPath.includes('skip') && issue.message)).toBeTruthy();
+		} else {
+			fail('Expected errors with extensions to be defined');
 		}
 	});
 });
