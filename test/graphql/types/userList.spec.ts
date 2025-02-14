@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, beforeEach } from "vitest";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "~/src/graphql/context";
+import { builder } from "~/src/graphql/builder";
 
 describe("userList Query", () => {
 	const mockUsers = [
@@ -9,58 +10,52 @@ describe("userList Query", () => {
 		{ id: 3, name: "User 3", email: "user3@example.com" },
 	];
 
-	const mockContext: Pick<GraphQLContext, "drizzleClient"> = {
+	const findManyMock = vi.fn();
+
+	const mockContext = {
 		drizzleClient: {
 			query: {
 				usersTable: {
-					findMany: vi.fn(),
-				},
+					findMany: findManyMock,
+				} as any,
 			},
 		},
-	};
+	} as unknown as GraphQLContext;
 
-	let resolver: (
+	const resolver = builder.queryFields["userList"].resolve as (
 		parent: unknown,
 		args: { first?: number; skip?: number },
-		context: Pick<GraphQLContext, "drizzleClient">,
+		context: GraphQLContext,
 	) => Promise<unknown>;
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		mockContext.drizzleClient.query.usersTable.findMany.mockReset();
+		findManyMock.mockClear();
 	});
 
 	// Test default values
 	it("should use default values when no arguments are provided", async () => {
-		mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(
-			mockUsers,
-		);
+		findManyMock.mockResolvedValueOnce(mockUsers);
 
 		const result = await resolver({}, {}, mockContext);
 
-		expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith(
-			{
-				limit: 10,
-				offset: 0,
-			},
-		);
+		expect(findManyMock).toHaveBeenCalledWith({
+			limit: 10,
+			offset: 0,
+		});
 		expect(result).toEqual(mockUsers);
 	});
 
 	// Test with valid arguments
 	it("should handle valid pagination arguments", async () => {
-		mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue(
-			mockUsers,
-		);
+		findManyMock.mockResolvedValueOnce(mockUsers);
 
 		const result = await resolver({}, { first: 20, skip: 5 }, mockContext);
 
-		expect(mockContext.drizzleClient.query.usersTable.findMany).toHaveBeenCalledWith(
-			{
-				limit: 20,
-				offset: 5,
-			},
-		);
+		expect(findManyMock).toHaveBeenCalledWith({
+			limit: 20,
+			offset: 5,
+		});
 		expect(result).toEqual(mockUsers);
 	});
 
@@ -110,7 +105,7 @@ describe("userList Query", () => {
 
 	// Test empty results
 	it("should handle empty result set", async () => {
-		mockContext.drizzleClient.query.usersTable.findMany.mockResolvedValue([]);
+		findManyMock.mockResolvedValueOnce([]);
 
 		const result = await resolver({}, { first: 10, skip: 0 }, mockContext);
 
@@ -120,7 +115,7 @@ describe("userList Query", () => {
 	// Test database error handling
 	it("should propagate database errors", async () => {
 		const dbError = new Error("Database connection failed");
-		mockContext.drizzleClient.query.usersTable.findMany.mockRejectedValue(dbError);
+		findManyMock.mockRejectedValueOnce(dbError);
 
 		await expect(
 			resolver({}, { first: 10, skip: 0 }, mockContext),
