@@ -589,7 +589,6 @@ describe("ChatMembershipResolver", () => {
 		});
 
 		it("should throw error when chat membership already exists", async () => {
-			// Mock existing chat with membership
 			const existingChat = {
 				chatMembershipsWhereChat: [
 					{
@@ -606,8 +605,6 @@ describe("ChatMembershipResolver", () => {
 			);
 
 			const validateFn = async () => {
-				// Call your validation function here with mocked data
-				// This is where you'd put the code block you provided
 				const existingChatMembership = existingChat.chatMembershipsWhereChat[0];
 				if (existingChatMembership !== undefined) {
 					throw new TalawaGraphQLError({
@@ -643,6 +640,56 @@ describe("ChatMembershipResolver", () => {
 					]),
 				},
 			});
+		});
+
+		it("should throw unauthorized_arguments when non-admin tries to set role", async () => {
+			mockContext.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce({
+					role: "regular",
+					id: "00000000-0000-0000-0000-000000000003",
+				})
+				.mockResolvedValueOnce({
+					id: "00000000-0000-0000-0000-000000000001",
+				});
+
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue({
+				id: "00000000-0000-0000-0000-000000000002",
+				chatMembershipsWhereChat: [],
+				organization: {
+					countryCode: "US",
+					membershipsWhereOrganization: [
+						{
+							role: "member",
+							memberId: "00000000-0000-0000-0000-000000000003",
+						},
+					],
+				},
+			});
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: {
+							memberId: "00000000-0000-0000-0000-000000000001",
+							chatId: "00000000-0000-0000-0000-000000000002", // Valid UUID
+							role: "administrator", // Unauthorized argument
+						},
+					},
+					mockContext,
+				),
+			).rejects.toThrow(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "unauthorized_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "role"],
+							},
+						],
+					}),
+				}),
+			);
 		});
 	});
 });
