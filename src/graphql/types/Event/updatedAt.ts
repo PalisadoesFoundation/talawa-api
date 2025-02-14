@@ -8,7 +8,6 @@ export const eventUpdatedAtResolver = async (
 	_args: unknown,
 	ctx: GraphQLContext,
 ) => {
-	console.log("here");
 	try {
 		if (!ctx.currentClient.isAuthenticated) {
 			throw new TalawaGraphQLError({
@@ -65,7 +64,7 @@ export const eventUpdatedAtResolver = async (
 		}
 		ctx.log.error(error);
 		throw new TalawaGraphQLError({
-			message: "Internal server error",
+			message: "Unexpected error while resolving Event.updatedAt field",
 			extensions: {
 				code: "unexpected",
 			},

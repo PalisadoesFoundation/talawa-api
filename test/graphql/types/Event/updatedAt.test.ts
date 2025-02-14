@@ -1,13 +1,11 @@
-import { beforeAll, vi } from "vitest";
+import { vi } from "vitest";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
 import type { Event as EventType } from "~/src/graphql/types/Event/Event";
-import { Event } from "~/src/graphql/types/Event/Event";
 import { eventUpdatedAtResolver } from "~/src/graphql/types/Event/updatedAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 import "~/src/graphql/types/Event/Event";
-import { builder } from "~/src/graphql/builder";
 
 const createMockContext = () => {
 	const mockContext = {
@@ -125,14 +123,32 @@ describe("Event Updated At Resolver Tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
+			// Mocking the query result
 			(
 				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
 			).mockResolvedValue(mockUserData);
 
 			const result = await eventUpdatedAtResolver(mockEvent, {}, ctx);
+
+			// Expect the function to return the correct updatedAt value
 			expect(result).toBe(mockEvent.updatedAt);
+
+			// ✅ Assert that the query was called with the correct parameters
+			expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
+				expect.objectContaining({
+					where: expect.any(Function), // Ensure `where` is a function
+					columns: { role: true }, // Ensure correct columns are queried
+					with: {
+						organizationMembershipsWhereMember: expect.objectContaining({
+							columns: { role: true }, // Ensure nested columns are correct
+							where: expect.any(Function), // Ensure `where` is a function inside relationships
+						}),
+					},
+				}),
+			);
 		});
-		it("should return updatedAt if user is system administrator", async () => {
+
+		it("should return updatedAt if user is system administrator with org membership as administrator role", async () => {
 			const mockUserData: MockUser = {
 				id: "user-123",
 				role: "administrator",
@@ -148,7 +164,7 @@ describe("Event Updated At Resolver Tests", () => {
 			const result = await eventUpdatedAtResolver(mockEvent, {}, ctx);
 			expect(result).toBe(mockEvent.updatedAt);
 		});
-		it("should return updatedAt if user is system administrator with org membership", async () => {
+		it("should return updatedAt if user is system administrator with org membership ", async () => {
 			const mockUserData: MockUser = {
 				id: "user-123",
 				role: "administrator",
@@ -190,7 +206,7 @@ describe("Event Updated At Resolver Tests", () => {
 			).mockRejectedValue(new Error("Database error"));
 
 			await expect(eventUpdatedAtResolver(mockEvent, {}, ctx)).rejects.toThrow(
-				"Internal server error",
+				"Unexpected error while resolving Event.updatedAt field",
 			);
 		});
 
@@ -229,7 +245,7 @@ describe("Event Updated At Resolver Tests", () => {
 		});
 
 		it("should handle invalid organizationId", async () => {
-			//intentional type casting to check for this case
+			/** Intentionally cast to null to test error handling for invalid organizationId */
 			mockEvent.organizationId = null as unknown as string;
 			const mockUserData: MockUser = {
 				id: "user-123",
