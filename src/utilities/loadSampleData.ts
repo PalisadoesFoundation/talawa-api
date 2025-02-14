@@ -95,7 +95,7 @@ async function resetDatabase(): Promise<void> {
 async function insertCollections(collections: string[]): Promise<void> {
   try {
     // Connect to MongoDB database
-    await connect("talawa-api");
+    await connect("talawa-dev");
 
     await resetDatabase();
 
