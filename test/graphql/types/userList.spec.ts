@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
+import type { usersTable } from "~/src/drizzle/schema";
+import type { RelationalQueryBuilder, ExtractTablesWithRelations } from "drizzle-orm";
 
 describe("userList Query", () => {
 	const mockUsers = [
@@ -10,12 +12,17 @@ describe("userList Query", () => {
 
 	const findManyMock: Mock = vi.fn();
 
+	const mockUsersTable: RelationalQueryBuilder<
+		ExtractTablesWithRelations<typeof import("~/src/drizzle/schema")>,
+		typeof usersTable
+	> = {
+		findMany: findManyMock,
+	} as unknown as RelationalQueryBuilder<any, any>; // ✅ Correctly typed mock
+
 	const mockContext: GraphQLContext = {
 		drizzleClient: {
 			query: {
-				usersTable: {
-					findMany: findManyMock,
-				} as unknown, // ✅ Fixed TypeScript issue by using `unknown`
+				usersTable: mockUsersTable,
 			},
 		},
 	};
