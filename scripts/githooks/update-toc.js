@@ -1,6 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import fs from "fs";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+ 
 import { execSync } from "child_process";
 
 const markdownFiles = fs
