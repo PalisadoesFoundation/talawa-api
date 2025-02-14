@@ -76,10 +76,12 @@ services:
       minio:
         condition: service_started
     environment:
-      - MONGO_DB_URL=mongodb://mongo:27017/talawa-dev?replicaSet=rs0
+      - MONGO_DB_URL=mongodb://mongo:27017/talawa-api?replicaSet=rs0
       - NODE_ENV=development
       - REDIS_HOST=redis-stack-server
       - REDIS_PORT=6379
+      - ACCESS_TOKEN_SECRET=191c1f0a811c2aa620681db2bed1370f1a991a4afb21a6d8a79c5ef4e44371d6
+      - REFRESH_TOKEN_SECRET=3f5d0137a92bc9da04b3271f85f12163a0bc6a553951f80df8ab860617cbbf36
     deploy:
       resources:
         limits:
