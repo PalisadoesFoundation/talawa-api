@@ -1,5 +1,4 @@
-import { execute } from "graphql";
-import { parse } from "graphql";
+import { execute, parse } from "graphql";
 import { schema } from "~/src/graphql/schema";
 import { mockContext } from "~/src/test/mockContext";
 
