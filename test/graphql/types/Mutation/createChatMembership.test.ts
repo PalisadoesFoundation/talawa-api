@@ -1020,5 +1020,89 @@ describe("ChatMembershipResolver", () => {
 				}),
 			);
 		});
+
+		// Fix for chatId error test
+		it("should throw chatId error when ONLY chat is not found (valid UUIDs)", async () => {
+			// Mock current user exists
+			mockContext.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce({ role: "regular" }) // Current user
+				.mockResolvedValueOnce({ id: "00000000-0000-0000-0000-000000000002" }); // Target member exists
+
+			// Mock chat not found
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: {
+							memberId: "00000000-0000-0000-0000-000000000002",
+							chatId: "00000000-0000-0000-0000-000000000001", // Valid but missing chat
+						},
+					},
+					mockContext,
+				),
+			).rejects.toThrow(
+				expect.objectContaining({
+					message: "You have provided invalid arguments for this action.",
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							expect.objectContaining({
+								argumentPath: ["input", "chatId"],
+								message: "Invalid uuid",
+							}),
+						],
+					}),
+				}),
+			);
+		});
+
+		// Fix for memberId error test
+		it("should throw memberId error when ONLY member is not found (valid UUIDs)", async () => {
+			// Mock current user exists
+			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				{ role: "regular" },
+			); // Current user
+
+			// Mock chat exists
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue({
+				id: "00000000-0000-0000-0000-000000000001",
+				organization: { membershipsWhereOrganization: [] },
+			});
+
+			// Mock member not found
+			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				undefined,
+			); // Target member
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: {
+							memberId: "00000000-0000-0000-0000-000000000002", // Valid but missing member
+							chatId: "00000000-0000-0000-0000-000000000001",
+						},
+					},
+					mockContext,
+				),
+			).rejects.toThrow(
+				expect.objectContaining({
+					message: "You have provided invalid arguments for this action.",
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							expect.objectContaining({
+								argumentPath: ["input", "memberId"],
+								message: "Invalid uuid",
+							}),
+						],
+					}),
+				}),
+			);
+		});
 	});
 });
