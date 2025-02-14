@@ -693,7 +693,6 @@ describe("ChatMembershipResolver", () => {
 		});
 
 		it("should throw forbidden_action error when chat membership already exists", async () => {
-			// Mock a chat with existing membership
 			const mockChatWithMembership = {
 				id: "00000000-0000-0000-0000-000000000001",
 				chatMembershipsWhereChat: [
@@ -819,16 +818,16 @@ describe("ChatMembershipResolver", () => {
 			);
 		});
 
-		it("should throw invalid_arguments error when chat is not found", async () => {
-			// Mock chat not found but member exists
-			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
-				undefined,
-			);
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				{
-					id: "valid-member",
-					role: "regular",
+		it("should throw invalid_arguments error when member is not found", async () => {
+			// Mock member not found but chat exists
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue({
+				id: "valid-chat",
+				organization: {
+					membershipsWhereOrganization: [],
 				},
+			});
+			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				undefined,
 			);
 
 			await expect(
@@ -836,8 +835,133 @@ describe("ChatMembershipResolver", () => {
 					{},
 					{
 						input: {
+							memberId: "invalid-member-id",
+							chatId: "00000000-0000-0000-0000-000000000002",
+						},
+					},
+					mockContext,
+				),
+			).rejects.toThrow(
+				expect.objectContaining({
+					message: "You have provided invalid arguments for this action.",
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							expect.objectContaining({
+								argumentPath: ["input", "memberId"],
+								message: "Invalid uuid",
+							}),
+						],
+					}),
+				}),
+			);
+		});
+
+		it("should throw arguments_associated_resources_not_found when both chat and member do not exist", async () => {
+			// Clear previous mocks to avoid interference
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockReset();
+			mockContext.drizzleClient.query.usersTable.findFirst.mockReset();
+
+			// Mock the three parallel queries in order:
+			// 1. Current user exists
+			// 2. Chat not found
+			// 3. Member not found
+			mockContext.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce({ role: "regular" }) // Current user query
+				.mockResolvedValueOnce(undefined); // Member query
+
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
+				undefined,
+			); // Chat query
+
+			// Use valid UUID format to pass Zod validation
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: {
 							memberId: "00000000-0000-0000-0000-000000000001",
-							chatId: "invalid-chat-id",
+							chatId: "00000000-0000-0000-0000-000000000002",
+						},
+					},
+					mockContext,
+				),
+			).rejects.toThrow(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "memberId"],
+							}),
+							expect.objectContaining({
+								argumentPath: ["input", "chatId"],
+							}),
+						]),
+					}),
+				}),
+			);
+		});
+
+		// Add these tests to the "Resource Existence Tests" describe block
+
+		it("should throw arguments_associated_resources_not_found when both chat and member are missing (valid UUIDs)", async () => {
+			// Clear previous mocks
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockReset();
+			mockContext.drizzleClient.query.usersTable.findFirst.mockReset();
+
+			// Mock current user exists
+			mockContext.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce({ role: "regular" }) // Current user
+				.mockResolvedValueOnce(undefined); // Target member
+
+			// Mock chat not found
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: {
+							memberId: "00000000-0000-0000-0000-000000000001", // Valid UUID
+							chatId: "00000000-0000-0000-0000-000000000002", // Valid UUID
+						},
+					},
+					mockContext,
+				),
+			).rejects.toThrow(
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({ argumentPath: ["input", "memberId"] }),
+							expect.objectContaining({ argumentPath: ["input", "chatId"] }),
+						]),
+					}),
+				}),
+			);
+		});
+
+		it("should throw invalid_arguments with chatId error when only chat is missing (valid member UUID)", async () => {
+			// Mock member exists
+			mockContext.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce({ role: "regular" }) // Current user
+				.mockResolvedValueOnce({ id: "00000000-0000-0000-0000-000000000001" }); // Valid member
+
+			// Mock chat not found
+			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+
+			await expect(
+				ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: {
+							memberId: "00000000-0000-0000-0000-000000000001", // Valid UUID
+							chatId: "invalid-chat-id", // Invalid UUID
 						},
 					},
 					mockContext,
@@ -858,25 +982,25 @@ describe("ChatMembershipResolver", () => {
 			);
 		});
 
-		it("should throw invalid_arguments error when member is not found", async () => {
-			// Mock member not found but chat exists
+		it("should throw invalid_arguments with memberId error when only member is missing (valid chat UUID)", async () => {
+			// Mock chat exists
 			mockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue({
-				id: "valid-chat",
-				organization: {
-					membershipsWhereOrganization: [],
-				},
+				id: "00000000-0000-0000-0000-000000000002",
+				organization: { membershipsWhereOrganization: [] },
 			});
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				undefined,
-			);
+
+			// Mock member not found
+			mockContext.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce({ role: "regular" }) // Current user
+				.mockResolvedValueOnce(undefined); // Target member
 
 			await expect(
 				ChatMembershipResolver.createChatMembership(
 					{},
 					{
 						input: {
-							memberId: "invalid-member-id",
-							chatId: "00000000-0000-0000-0000-000000000002",
+							memberId: "invalid-member-id", // Invalid UUID
+							chatId: "00000000-0000-0000-0000-000000000002", // Valid UUID
 						},
 					},
 					mockContext,
