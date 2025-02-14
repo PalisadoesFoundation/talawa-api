@@ -1,10 +1,10 @@
 import { createTestClient } from 'apollo-server-testing';
 import { ApolloServer } from 'apollo-server';
 import { schema } from '~/src/graphql/schema';
-import { context } from '~/src/graphql/context';
+import { context } from '~/src/graphql/context'; // Ensure 'context' is correctly exported from this module
 
 describe('userList', () => {
-    let query;
+    let query: any;
 
     beforeAll(() => {
         const server = new ApolloServer({ schema, context });
