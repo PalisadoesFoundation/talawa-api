@@ -57,14 +57,23 @@ export async function updateAgendaItemResolver(
 
 	const currentUserId = ctx.currentClient.user.id;
 
-	const [currentUser, existingAgendaItem] = await Promise.all([
-		ctx.drizzleClient.query.usersTable.findFirst({
-			columns: {
-				role: true,
+	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+		columns: {
+			role: true,
+		},
+		where: (fields, operators) => operators.eq(fields.id, currentUserId),
+	});
+
+	if (currentUser === undefined) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthenticated",
 			},
-			where: (fields, operators) => operators.eq(fields.id, currentUserId),
-		}),
-		ctx.drizzleClient.query.agendaItemsTable.findFirst({
+		});
+	}
+
+	const existingAgendaItem =
+		await ctx.drizzleClient.query.agendaItemsTable.findFirst({
 			columns: {
 				type: true,
 			},
@@ -99,16 +108,7 @@ export async function updateAgendaItemResolver(
 				},
 			},
 			where: (fields, { eq }) => eq(fields.id, parsedArgs.input.id),
-		}),
-	]);
-
-	if (currentUser === undefined) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthenticated",
-			},
 		});
-	}
 
 	if (existingAgendaItem === undefined) {
 		throw new TalawaGraphQLError({
@@ -123,71 +123,52 @@ export async function updateAgendaItemResolver(
 		});
 	}
 
-	if (existingAgendaItem.type === "note") {
-		if (
-			parsedArgs.input.duration !== undefined &&
-			parsedArgs.input.key !== undefined
-		) {
-			throw new TalawaGraphQLError({
-				extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: [
-						{
-							argumentPath: ["input", "duration"],
-							message: `Cannot be provided for an agenda item of type "${existingAgendaItem.type}"`,
-						},
-						{
-							argumentPath: ["input", "key"],
-							message: `Cannot be provided for an agenda item of type "${existingAgendaItem.type}"`,
-						},
-					],
-				},
-			});
-		}
-
-		if (parsedArgs.input.duration !== undefined) {
-			throw new TalawaGraphQLError({
-				extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: [
-						{
-							argumentPath: ["input", "duration"],
-							message: `Cannot be provided for an agenda item of type "${existingAgendaItem.type}"`,
-						},
-					],
-				},
-			});
-		}
-
-		if (parsedArgs.input.key !== undefined) {
-			throw new TalawaGraphQLError({
-				extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: [
-						{
-							argumentPath: ["input", "key"],
-							message: `Cannot be provided for an agenda item of type "${existingAgendaItem.type}"`,
-						},
-					],
-				},
-			});
-		}
-	}
-
-	if (
-		(existingAgendaItem.type === "general" ||
-			existingAgendaItem.type === "scripture") &&
-		parsedArgs.input.key !== undefined
+	function validateAgendaItemTypeConstraints(
+		type: string,
+		input: {
+			duration?: string | null | undefined;
+			key?: string | null | undefined;
+		},
 	) {
+		const issues: Array<{ argumentPath: string[]; message: string }> = [];
+
+		if (type === "note") {
+			if (input.duration !== undefined) {
+				issues.push({
+					argumentPath: ["input", "duration"],
+					message: `Cannot be provided for an agenda item of type "${type}"`,
+				});
+			}
+			if (input.key !== undefined) {
+				issues.push({
+					argumentPath: ["input", "key"],
+					message: `Cannot be provided for an agenda item of type "${type}"`,
+				});
+			}
+		}
+
+		if (
+			(type === "general" || type === "scripture") &&
+			input.key !== undefined
+		) {
+			issues.push({
+				argumentPath: ["input", "key"],
+				message: `Cannot be provided for an agenda item of type "${type}"`,
+			});
+		}
+
+		return issues;
+	}
+	const validationIssues = validateAgendaItemTypeConstraints(
+		existingAgendaItem.type,
+		parsedArgs.input,
+	);
+
+	if (validationIssues.length > 0) {
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "forbidden_action_on_arguments_associated_resources",
-				issues: [
-					{
-						argumentPath: ["input", "key"],
-						message: `Cannot be provided for an agenda item of type "${existingAgendaItem.type}"`,
-					},
-				],
+				issues: validationIssues,
 			},
 		});
 	}
