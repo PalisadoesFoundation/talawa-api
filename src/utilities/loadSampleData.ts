@@ -1,19 +1,25 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { hash } from "@node-rs/argon2";
 import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import inquirer from "inquirer";
 import postgres from "postgres";
+import { uuidv7 } from "uuidv7";
 import * as schema from "../drizzle/schema";
 
 dotenv.config();
 
 const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
+const isTestEnvironment = process.env.NODE_ENV === "test";
+
 const queryClient = postgres({
-	host: process.env.API_POSTGRES_HOST,
+	host: isTestEnvironment
+		? process.env.API_POSTGRES_TEST_HOST
+		: process.env.API_POSTGRES_HOST,
 	port: Number(process.env.API_POSTGRES_PORT),
 	database: process.env.API_POSTGRES_DATABASE,
 	username: process.env.API_POSTGRES_USER,
@@ -91,11 +97,65 @@ async function formatDatabase(): Promise<void> {
  * @param collections - Array of collection/table names to insert data into
  * @param options - Options for loading data
  */
+
+async function ensureAdministratorExists(): Promise<void> {
+	console.log("Checking if the administrator user exists...");
+
+	const email = process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+	if (!email) {
+		console.error(
+			"ERROR: API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.",
+		);
+		return;
+	}
+
+	const existingUser = await db.query.usersTable.findFirst({
+		columns: { id: true, role: true },
+		where: (fields, operators) => operators.eq(fields.emailAddress, email),
+	});
+
+	if (existingUser) {
+		if (existingUser.role !== "administrator") {
+			console.log("Updating user role to administrator...");
+			await db
+				.update(schema.usersTable)
+				.set({ role: "administrator" })
+				.where(sql`email_address = ${email}`);
+			console.log("Administrator role updated.");
+		} else {
+			console.log("Administrator user already exists.");
+		}
+		return;
+	}
+
+	console.log("Creating administrator user...");
+	const userId = uuidv7();
+	const password = process.env.API_ADMINISTRATOR_USER_PASSWORD;
+	if (!password) {
+		throw new Error("API_ADMINISTRATOR_USER_PASSWORD is not defined.");
+	}
+	const passwordHash = await hash(password);
+
+	await db.insert(schema.usersTable).values({
+		id: userId,
+		emailAddress: email,
+		name: process.env.API_ADMINISTRATOR_USER_NAME || "",
+		passwordHash,
+		role: "administrator",
+		isEmailAddressVerified: true,
+		creatorId: userId,
+	});
+
+	console.log("Administrator user created successfully.");
+}
+
 async function insertCollections(
 	collections: string[],
 	options: LoadOptions = {},
 ): Promise<void> {
 	try {
+		await ensureAdministratorExists();
+
 		if (options.format) {
 			await formatDatabase();
 		}
