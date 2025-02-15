@@ -15,8 +15,6 @@ const mutationUpdateAgendaItemArgumentsSchema = z.object({
 	input: MutationUpdateAgendaItemInputSchema,
 });
 
-
-
 export async function updateAgendaItemResolver(
 	_parent: unknown,
 	args: {
