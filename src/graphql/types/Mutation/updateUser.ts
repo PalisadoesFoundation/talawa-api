@@ -113,32 +113,6 @@ builder.mutationField("updateUser", (t) =>
 				});
 			}
 
-			if (
-				currentUser.role !== "administrator" &&
-				parsedArgs.input.id !== currentUserId
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-					},
-				});
-			}
-
-			// if (parsedArgs.input.id === currentUserId) {
-			// 	throw new TalawaGraphQLError({
-			// 		extensions: {
-			// 			code: "forbidden_action_on_arguments_associated_resources",
-			// 			issues: [
-			// 				{
-			// 					argumentPath: ["input", "id"],
-			// 					message:
-			// 						"You cannot update the user record associated to you with this action.",
-			// 				},
-			// 			],
-			// 		},
-			// 	});
-			// }
-
 			if (existingUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -152,6 +126,20 @@ builder.mutationField("updateUser", (t) =>
 				});
 			}
 
+			if (
+				currentUser.role !== "administrator" &&
+				parsedArgs.input.role !== undefined &&
+				parsedArgs.input.role !== existingUser.role
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action",
+						message:
+							"Unable to change user role without administrator privileges.",
+					},
+				});
+			}
+
 			let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
 			let avatarName: string;
 
@@ -160,7 +148,7 @@ builder.mutationField("updateUser", (t) =>
 					existingUser.avatarName === null ? ulid() : existingUser.avatarName;
 				avatarMimeType = parsedArgs.input.avatar.mimetype;
 			}
-			console.log("name", parsedArgs.input.name);
+
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				const [updatedUser] = await tx
 					.update(usersTable)
@@ -199,7 +187,7 @@ builder.mutationField("updateUser", (t) =>
 					})
 					.where(eq(usersTable.id, parsedArgs.input.id))
 					.returning();
-				console.log("updatedUser", updatedUser);
+
 				// Updated user not being returned means that either the user does not exist or it was deleted or its `id` column was changed by an external entity before this upate operation.
 				if (updatedUser === undefined) {
 					throw new TalawaGraphQLError({
