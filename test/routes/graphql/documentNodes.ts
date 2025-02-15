@@ -367,3 +367,71 @@ export const Mutation_deleteOrganizationMembership =
       countryCode
     }
 }`);
+
+export const Query_post = gql(`query Query_post($input: QueryPostInput!) {
+    post(input: $input) {
+        id
+        organization {
+            countryCode
+        }
+    }
+}`);
+
+export const Query_event = gql(`query Query_event($input: QueryEventInput!) {
+    event(input: $input) {
+        id
+        name
+        description
+        startAt
+        endAt
+        organization {
+            id
+            countryCode
+        }
+    }
+}`);
+
+export const Mutation_createEvent =
+	gql(`mutation Mutation_createEvent($input: MutationCreateEventInput!) {
+    createEvent(input: $input) {
+        id
+        name
+        description
+        startAt
+        endAt
+        organization {
+            id
+            countryCode
+        }
+    }
+}`);
+
+export const Mutation_deleteEvent =
+	gql(`mutation Mutation_deleteEvent($input: MutationDeleteEventInput!) {
+    deleteEvent(input: $input) {
+        id
+        name
+        description
+        startAt
+        endAt
+        organization {
+            id
+            countryCode
+        }
+    }
+}`);
+
+export const Mutation_updateEvent =
+	gql(`mutation Mutation_updateEvent($input: MutationUpdateEventInput!) {
+    updateEvent(input: $input) {
+        id
+        name
+        description
+        startAt
+        endAt
+        organization {
+            id
+            countryCode
+        }
+    }
+}`);
