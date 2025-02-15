@@ -1,351 +1,224 @@
-import type { SQL } from "drizzle-orm";
-import { eq } from "drizzle-orm";
-import { pgTable, text, uuid } from "drizzle-orm/pg-core";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
+import { vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
+import type { Advertisement as AdvertisementType } from "~/src/graphql/types/Advertisement/Advertisement";
+import { advertisementUpdatedAtResolver } from "~/src/graphql/types/Advertisement/updatedAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { usersTable } from "../../../../src/drizzle/tables/users";
 
-const organizationMembershipsTable = pgTable("organization_memberships", {
-	userId: uuid("user_id").references(() => usersTable.id),
-	organizationId: uuid("organization_id").notNull(),
-	role: text("role").notNull(),
-});
+const createMockContext = () => {
+	const mockContext = {
+		currentClient: {
+			isAuthenticated: true,
+			user: { id: "user-123", isAdmin: true },
+		} as CurrentClient,
+		drizzleClient: { query: { usersTable: { findFirst: vi.fn() } } },
+		envConfig: { API_BASE_URL: "mock url" },
+		jwt: { sign: vi.fn() },
+		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
+	};
+	return mockContext as unknown as GraphQLContext;
+};
 
-interface DrizzleOperators {
-	eq: <T>(field: SQL<T>, value: T) => SQL<boolean>;
-	and: (...conditions: SQL<boolean>[]) => SQL<boolean>;
-}
-
-interface UserRow {
+type MockUser = {
+	id: string;
 	role: string;
 	organizationMembershipsWhereMember: Array<{
 		role: string;
 		organizationId: string;
 	}>;
-}
+};
 
-interface TestContext {
-	currentClient: {
-		isAuthenticated: boolean;
-		user: {
-			id: string;
-			role: string;
-		};
-	};
-	drizzleClient: {
-		query: {
-			usersTable: {
-				findFirst: ReturnType<typeof vi.fn>;
-			};
-		};
-	};
-}
-interface OrganizationMembership {
-	role: string;
-	organizationId: string;
-}
-
-async function resolveUpdatedAt(
-	parent: Advertisement,
-	_args: unknown,
-	ctx: TestContext,
-): Promise<Date | null> {
-	if (!ctx.currentClient.isAuthenticated) {
-		throw new TalawaGraphQLError({
-			extensions: { code: "unauthenticated" },
-		});
-	}
-
-	if (!parent.organizationId) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "invalid_arguments",
-				issues: [
-					{
-						argumentPath: ["organizationId"],
-						message: "Organization ID cannot be null",
-					},
-				],
-			},
-		});
-	}
-
-	const currentUserId = ctx.currentClient.user.id;
-
-	try {
-		const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-			columns: { role: true },
-			with: {
-				organizationMembershipsWhereMember: {
-					columns: { role: true },
-					where: () =>
-						eq(
-							organizationMembershipsTable.organizationId,
-							parent.organizationId,
-						),
-				},
-			},
-			where: () => eq(usersTable.id, currentUserId),
-		});
-
-		if (!currentUser) {
-			throw new TalawaGraphQLError({
-				extensions: { code: "unauthenticated" },
-			});
-		}
-		if (currentUser.role === "administrator") {
-			return parent.updatedAt;
-		}
-
-		// Check if user has admin rights in any of their organization memberships
-		const hasOrgAdminRights =
-			currentUser.organizationMembershipsWhereMember.some(
-				(membership: OrganizationMembership) =>
-					membership.role === "administrator" &&
-					membership.organizationId === parent.organizationId,
-			);
-
-		if (!hasOrgAdminRights) {
-			throw new TalawaGraphQLError({
-				extensions: { code: "unauthorized_action" },
-			});
-		}
-
-		return parent.updatedAt;
-	} catch (error) {
-		if (error instanceof TalawaGraphQLError) {
-			throw error;
-		}
-
-		throw new Error("Database connection error");
-	}
-}
-
-type WhereClause = (
-	fields: typeof usersTable | typeof organizationMembershipsTable,
-	operators: DrizzleOperators,
-) => SQL<boolean>;
-
-describe("Advertisement Resolver - UpdatedAt Field", () => {
-	let ctx: TestContext;
-	let mockAdvertisement: Advertisement;
+describe("Advertisement Updated At Resolver Tests", () => {
+	let ctx: GraphQLContext;
+	let mockAdvertisement: AdvertisementType;
 
 	beforeEach(() => {
+		vi.clearAllMocks();
+		ctx = createMockContext();
 		mockAdvertisement = {
-			id: "advert-123",
-			name: "Test Advertisement",
-			description: "Test Description",
-			createdAt: new Date(),
-			updatedAt: new Date(),
-			creatorId: "user-123",
-			updaterId: "user-123",
-			organizationId: "org-123",
-			type: "banner",
-			startAt: new Date(),
-			endAt: new Date(),
-			attachments: [],
-		};
+			id: "adv-123",
+			organizationId: "org-456",
+			updatedAt: new Date("2024-02-05T12:00:00Z"),
+		} as AdvertisementType;
+	});
 
-		ctx = {
-			currentClient: {
-				isAuthenticated: true,
-				user: {
-					id: "user-123",
-					role: "member",
-				},
-			},
-			drizzleClient: {
-				query: {
-					usersTable: {
-						findFirst: vi.fn(),
+	describe("Authentication and Authorization", () => {
+		it("should throw unauthenticated error if user is not logged in", async () => {
+			ctx.currentClient.isAuthenticated = false;
+			await expect(
+				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
+			).rejects.toThrowError(
+				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
+			);
+			expect(
+				ctx.drizzleClient.query.usersTable.findFirst,
+			).not.toHaveBeenCalled();
+		});
+
+		it("should throw unauthenticated error if user exists but current user doesn't exist", async () => {
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValue(undefined);
+
+			await expect(
+				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
+			).rejects.toThrowError(
+				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
+			);
+			expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
+		});
+
+		it("should throw unauthorized_action for non-admin user with no organization membership", async () => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [],
+			};
+
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValue(mockUserData);
+
+			await expect(
+				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
+			).rejects.toThrowError(TalawaGraphQLError);
+		});
+
+		it("should throw unauthorized_action for non-admin user with regular membership", async () => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [
+					{ role: "member", organizationId: mockAdvertisement.organizationId },
+				],
+			};
+
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValue(mockUserData);
+
+			await expect(
+				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
+			).rejects.toThrowError(
+				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+			);
+		});
+	});
+
+	describe("Successful Access Cases", () => {
+		it("should return updatedAt if user is system administrator", async () => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [],
+			};
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValue(mockUserData);
+
+			const result = await advertisementUpdatedAtResolver(
+				mockAdvertisement,
+				{},
+				ctx,
+			);
+			expect(result).toBe(mockAdvertisement.updatedAt);
+		});
+
+		it("should return updatedAt if user is organization administrator", async () => {
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [
+					{
+						role: "administrator",
+						organizationId: mockAdvertisement.organizationId,
 					},
-				},
-			},
-		};
-	});
+				],
+			};
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValue(mockUserData);
 
-	it("should throw unauthenticated error if user is not logged in", async () => {
-		ctx.currentClient.isAuthenticated = false;
-
-		await expect(async () => {
-			await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-		}).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthenticated" },
-			}),
-		);
-	});
-
-	it("should allow access if user is system administrator", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			role: "administrator",
-			organizationMembershipsWhereMember: [],
-		});
-
-		const result = await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-		expect(result).toBe(mockAdvertisement.updatedAt);
-	});
-
-	it("should allow access if user is organization administrator", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			role: "member",
-			organizationMembershipsWhereMember: [
-				{
-					role: "administrator",
-					organizationId: mockAdvertisement.organizationId,
-				},
-			],
-		});
-
-		const result = await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-		expect(result).toBe(mockAdvertisement.updatedAt);
-	});
-
-	it("should deny access if user is not an administrator", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			role: "member",
-			organizationMembershipsWhereMember: [
-				{
-					role: "member",
-					organizationId: mockAdvertisement.organizationId,
-				},
-			],
-		});
-
-		await expect(async () => {
-			await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-		}).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthorized_action" },
-			}),
-		);
-	});
-
-	it("should deny access if user has no organization membership", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			role: "member",
-			organizationMembershipsWhereMember: [],
-		});
-
-		await expect(async () => {
-			await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-		}).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthorized_action" },
-			}),
-		);
-	});
-
-	it("should make correct database query for user role check", async () => {
-		const mockUser: UserRow = {
-			role: "administrator",
-			organizationMembershipsWhereMember: [],
-		};
-
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUser);
-
-		await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-
-		expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith({
-			columns: { role: true },
-			with: {
-				organizationMembershipsWhereMember: {
-					columns: { role: true },
-					where: expect.any(Function) as WhereClause,
-				},
-			},
-			where: expect.any(Function) as WhereClause,
+			const result = await advertisementUpdatedAtResolver(
+				mockAdvertisement,
+				{},
+				ctx,
+			);
+			expect(result).toBe(mockAdvertisement.updatedAt);
 		});
 	});
 
-	it("should handle user with multiple organization memberships", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			role: "member",
-			organizationMembershipsWhereMember: [
-				{
-					role: "member",
-					organizationId: "other-org-123",
-				},
-				{
-					role: "administrator",
-					organizationId: mockAdvertisement.organizationId,
-				},
-			],
+	describe("Error Handling", () => {
+		it("should handle database query failures", async () => {
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockRejectedValue(new Error("Database error"));
+
+			await expect(
+				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
+			).rejects.toThrowError(
+				new TalawaGraphQLError({
+					message: "Internal server error",
+					extensions: { code: "unexpected" },
+				}),
+			);
+		});
+		it("should handle case-sensitive role checks", async () => {
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValue({
+				role: "Administrator",
+				organizationMembershipsWhereMember: [],
+			});
+
+			await expect(async () => {
+				await advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx);
+			}).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: { code: "unauthorized_action" },
+				}),
+			);
+		});
+		it("should throw data_integrity_error if advertisement has no updatedAt value", async () => {
+			mockAdvertisement.updatedAt = null; // 🚨 Missing updatedAt
+			const mockUserData: MockUser = {
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [
+					{
+						role: "administrator",
+						organizationId: mockAdvertisement.organizationId,
+					},
+				],
+			};
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValue(mockUserData);
+
+			await expect(
+				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					message: "Missing updatedAt value for the advertisement",
+					extensions: { code: "unexpected" },
+				}),
+			);
 		});
 
-		const result = await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-		expect(result).toBe(mockAdvertisement.updatedAt);
-	});
+		it("should throw unexpected error if database query returns null values", async () => {
+			(
+				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			).mockResolvedValue(null); // 🚨 Query returned null
 
-	it("should handle user with administrator role in wrong organization", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			role: "member",
-			organizationMembershipsWhereMember: [
-				{
-					role: "administrator",
-					organizationId: "different-org-id",
-				},
-			],
+			await expect(
+				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
+			).rejects.toThrowError(
+				new TalawaGraphQLError({
+					message: "Internal server error",
+					extensions: { code: "unexpected" },
+				}),
+			);
 		});
-
-		await expect(async () => {
-			await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-		}).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthorized_action" },
-			}),
-		);
-	});
-
-	it("should handle case-sensitive role checks", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			role: "Administrator",
-			organizationMembershipsWhereMember: [],
-		});
-
-		await expect(async () => {
-			await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-		}).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthorized_action" },
-			}),
-		);
-	});
-
-	it("should handle missing user data from database", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(null);
-
-		await expect(async () => {
-			await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-		}).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthenticated" },
-			}),
-		);
-	});
-	it("should handle database query errors", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
-			new Error("Database connection error"),
-		);
-
-		await expect(async () => {
-			await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-		}).rejects.toThrow(/Database connection error|Something went wrong/);
-	});
-
-	it("should handle empty role string: ", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			role: "",
-			organizationMembershipsWhereMember: [],
-		});
-
-		await expect(async () => {
-			await resolveUpdatedAt(mockAdvertisement, {}, ctx);
-		}).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthorized_action" },
-			}),
-		);
 	});
 });
