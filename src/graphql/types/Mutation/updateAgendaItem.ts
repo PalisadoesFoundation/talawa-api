@@ -84,14 +84,10 @@ export async function updateAgendaItemResolver(
 					},
 					with: {
 						event: {
-							columns: {
-								startAt: true,
-							},
+							columns: {},
 							with: {
 								organization: {
-									columns: {
-										countryCode: true,
-									},
+									columns: {},
 									with: {
 										membershipsWhereOrganization: {
 											columns: {
