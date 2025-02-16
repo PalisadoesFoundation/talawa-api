@@ -133,6 +133,50 @@ async function insertCollections(
 						}),
 					) as (typeof schema.organizationsTable.$inferInsert)[];
 					await db.insert(schema.organizationsTable).values(organizations);
+
+					// Add API_ADMINISTRATOR_USER_EMAIL_ADDRESS as administrator of the all organization
+					const API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
+						process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+					if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
+						console.error(
+							"\x1b[31m",
+							"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined in .env file",
+						);
+						return;
+					}
+
+					const API_ADMINISTRATOR_USER = await db.query.usersTable.findFirst({
+						columns: {
+							id: true,
+						},
+						where: (fields, operators) =>
+							operators.eq(
+								fields.emailAddress,
+								API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							),
+					});
+					if (!API_ADMINISTRATOR_USER) {
+						console.error(
+							"\x1b[31m",
+							"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not found in users table",
+						);
+						return;
+					}
+
+					const organizationAdminMembership = organizations.map((org) => ({
+						organizationId: org.id,
+						memberId: API_ADMINISTRATOR_USER.id,
+						creatorId: API_ADMINISTRATOR_USER.id,
+						createdAt: new Date(),
+						role: "administrator",
+					})) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
+					await db
+						.insert(schema.organizationMembershipsTable)
+						.values(organizationAdminMembership);
+					console.log(
+						"\x1b[35m",
+						"Added API_ADMINISTRATOR_USER as administrator of the all organization",
+					);
 					break;
 				}
 				case "organization_memberships": {
