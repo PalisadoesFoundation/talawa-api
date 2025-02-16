@@ -35,7 +35,7 @@ interface LoadOptions {
 }
 
 /**
- * Clears all tables in the database except for the specified user.
+ * Clears all tables in the database.
  */
 export async function formatDatabase(): Promise<void> {
 	const tables = [
