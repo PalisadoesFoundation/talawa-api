@@ -1,7 +1,7 @@
 import { populateDB } from "./helpers";
 
 async function main() {
-	await populateDB("interactive");
+  await populateDB("interactive");
 }
 
 main();
