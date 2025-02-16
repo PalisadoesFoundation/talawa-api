@@ -73,7 +73,7 @@ suite("Query field post", () => {
 					),
 				)
 				.limit(1);
-			
+
 			//Throw error if user doesn't exist
 			if (!existingAdmin)
 				throw new Error("Failed to find or create admin user");
