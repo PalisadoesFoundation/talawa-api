@@ -7,6 +7,17 @@ sidebar_position: 4
 
 This section covers important tests to validate the operation of the API.
 
+### Sample Database Login Credentials
+
+If the API:
+1. is running with an unmodified `.env` file copied from `envFiles/.env.devcontainer` and;
+2. the API sample database is loaded;
+then you can use these login credentials to access the API via various clients.
+
+| Email                      | Password | User Type     | Joined Organization  |
+| -------------------------- | -------- | --------------| -------------------- |
+| administrator@email.com    | password | Administrator | N/A                  |
+
 ## Accessing the API
 
 These are some important URLs for coding and troubleshooting:
