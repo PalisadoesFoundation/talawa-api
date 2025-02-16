@@ -403,6 +403,11 @@ export const Mutation_createEvent =
         description
         startAt
         endAt
+        createdAt
+        creator{
+            id
+            name
+        }
         organization {
             id
             countryCode
