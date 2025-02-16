@@ -84,7 +84,6 @@ export async function formatDatabase(): Promise<void> {
 	}
 
 	console.log("\x1b[33m", "Cleared all tables");
-	
 }
 
 /**
@@ -372,5 +371,5 @@ export async function populateDB(method: string): Promise<void> {
 const scriptPath = fileURLToPath(import.meta.url);
 
 if (scriptPath === process.argv[1]) {
-    await populateDB("interactive");
+	await populateDB("interactive");
 }

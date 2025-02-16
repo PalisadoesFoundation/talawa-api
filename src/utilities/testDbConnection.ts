@@ -28,8 +28,6 @@ const db = drizzle(queryClient, { schema });
 
 const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
-
-
 async function getExpectedCounts(): Promise<Record<string, number>> {
 	try {
 		await formatDatabase();
@@ -91,7 +89,6 @@ async function getExpectedCounts(): Promise<Record<string, number>> {
 }
 
 const expectedCounts: Record<string, number> = await getExpectedCounts();
-
 
 /**
  * Checks record counts in specified tables after data insertion.
