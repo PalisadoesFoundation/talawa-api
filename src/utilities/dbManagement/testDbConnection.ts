@@ -5,8 +5,8 @@ import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import * as schema from "../drizzle/schema";
-import { formatDatabase, populateDB } from "./loadSampleData";
+import * as schema from "../../drizzle/schema";
+import { populateDB, getExpectedCounts } from "./helpers";
 
 dotenv.config();
 
@@ -25,68 +25,6 @@ const queryClient = postgres({
 });
 
 const db = drizzle(queryClient, { schema });
-
-const dirname: string = path.dirname(fileURLToPath(import.meta.url));
-
-async function getExpectedCounts(): Promise<Record<string, number>> {
-	try {
-		await formatDatabase();
-		const tables = [
-			{ name: "users", table: schema.usersTable },
-			{ name: "organizations", table: schema.organizationsTable },
-			{
-				name: "organization_memberships",
-				table: schema.organizationMembershipsTable,
-			},
-		];
-
-		const expectedCounts: Record<string, number> = {};
-
-		// Get current counts from DB
-		for (const { name, table } of tables) {
-			const result = await db
-				.select({ count: sql<number>`count(*)` })
-				.from(table);
-			expectedCounts[name] = Number(result[0]?.count ?? 0);
-		}
-
-		// Get counts from sample data files
-		const sampleDataPath = path.resolve(dirname, "../../sample_data");
-		const files = await fs.readdir(sampleDataPath);
-		let numberOfOrganizations = 0;
-
-		for (const file of files) {
-			const filePath = path.resolve(sampleDataPath, file);
-			const stats = await fs.stat(filePath);
-
-			if (stats.isFile() && file.endsWith(".json")) {
-				const data = await fs.readFile(filePath, "utf8");
-				const docs = JSON.parse(data);
-				const name = file.replace(".json", "");
-				if (expectedCounts[name] !== undefined) {
-					expectedCounts[name] += docs.length;
-				}
-				if (name === "organizations") {
-					numberOfOrganizations += docs.length;
-				}
-			}
-		}
-
-		if (expectedCounts.users !== undefined) {
-			expectedCounts.users += 1;
-		}
-
-		// Give administrator access of all organizations
-		if (expectedCounts.organization_memberships !== undefined) {
-			expectedCounts.organization_memberships += numberOfOrganizations;
-		}
-
-		return expectedCounts;
-	} catch (err) {
-		console.error("\x1b[31m", `Error fetching expected counts: ${err}`);
-		return {};
-	}
-}
 
 const expectedCounts: Record<string, number> = await getExpectedCounts();
 

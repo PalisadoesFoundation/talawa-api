@@ -8,7 +8,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import inquirer from "inquirer";
 import postgres from "postgres";
 import { uuidv7 } from "uuidv7";
-import * as schema from "../drizzle/schema";
+import * as schema from "../../drizzle/schema";
 
 dotenv.config();
 
@@ -35,11 +35,30 @@ interface LoadOptions {
 }
 
 /**
+ * Clears all tables in the database except for the specified user.
+ */
+export async function formatDatabase(): Promise<void> {
+	const tables = [
+		schema.postsTable,
+		schema.organizationsTable,
+		schema.eventsTable,
+		schema.organizationMembershipsTable,
+		schema.usersTable,
+	];
+
+	for (const table of tables) {
+		await db.delete(table);
+	}
+
+	console.log("\x1b[33m", "Cleared all tables");
+}
+
+/**
  * Lists sample data files and their document counts in the sample_data directory.
  */
 export async function listSampleData(): Promise<void> {
 	try {
-		const sampleDataPath = path.resolve(dirname, "../../sample_data");
+		const sampleDataPath = path.resolve(dirname, "../../../sample_data");
 		const files = await fs.readdir(sampleDataPath);
 
 		console.log("Sample Data Files:\n");
@@ -67,30 +86,9 @@ ${"|".padEnd(30, "-")}|----------------|
 	}
 }
 
-/**
- * Clears all tables in the database except for the specified user.
- */
-export async function formatDatabase(): Promise<void> {
-	const tables = [
-		schema.postsTable,
-		schema.organizationsTable,
-		schema.eventsTable,
-		schema.organizationMembershipsTable,
-		schema.usersTable,
-	];
 
-	for (const table of tables) {
-		await db.delete(table);
-	}
 
-	console.log("\x1b[33m", "Cleared all tables");
-}
 
-/**
- * Inserts data into specified tables.
- * @param collections - Array of collection/table names to insert data into
- * @param options - Options for loading data
- */
 
 export async function ensureAdministratorExists(): Promise<void> {
 	console.log("Checking if the administrator user exists...");
@@ -143,7 +141,13 @@ export async function ensureAdministratorExists(): Promise<void> {
 	console.log("Administrator user created successfully.");
 }
 
-async function insertCollections(
+/**
+ * Inserts data into specified tables.
+ * @param collections - Array of collection/table names to insert data into
+ * @param options - Options for loading data
+ */
+
+export async function insertCollections(
 	collections: string[],
 	method: string,
 	options: LoadOptions = {},
@@ -157,7 +161,7 @@ async function insertCollections(
 
 		for (const collection of collections) {
 			const data = await fs.readFile(
-				path.resolve(dirname, `../../sample_data/${collection}.json`),
+				path.resolve(dirname, `../../../sample_data/${collection}.json`),
 				"utf8",
 			);
 
@@ -274,9 +278,76 @@ async function insertCollections(
  * @param date - The date string to parse
  * @returns The parsed Date object or null
  */
-function parseDate(date: string | number | Date): Date | null {
+export function parseDate(date: string | number | Date): Date | null {
 	const parsedDate = new Date(date);
 	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+
+/**
+ * Fetches the expected counts of records in the database.
+ * @param - The date string to parse
+ * @returns Expected counts of records in the database
+ */
+
+export async function getExpectedCounts(): Promise<Record<string, number>> {
+    try {
+        await formatDatabase();
+        const tables = [
+            { name: "users", table: schema.usersTable },
+            { name: "organizations", table: schema.organizationsTable },
+            {
+                name: "organization_memberships",
+                table: schema.organizationMembershipsTable,
+            },
+        ];
+
+        const expectedCounts: Record<string, number> = {};
+
+        // Get current counts from DB
+        for (const { name, table } of tables) {
+            const result = await db
+                .select({ count: sql<number>`count(*)` })
+                .from(table);
+            expectedCounts[name] = Number(result[0]?.count ?? 0);
+        }
+
+        // Get counts from sample data files
+        const sampleDataPath = path.resolve(dirname, "../../../sample_data");
+        const files = await fs.readdir(sampleDataPath);
+        let numberOfOrganizations = 0;
+
+        for (const file of files) {
+            const filePath = path.resolve(sampleDataPath, file);
+            const stats = await fs.stat(filePath);
+
+            if (stats.isFile() && file.endsWith(".json")) {
+                const data = await fs.readFile(filePath, "utf8");
+                const docs = JSON.parse(data);
+                const name = file.replace(".json", "");
+                if (expectedCounts[name] !== undefined) {
+                    expectedCounts[name] += docs.length;
+                }
+                if (name === "organizations") {
+                    numberOfOrganizations += docs.length;
+                }
+            }
+        }
+
+        if (expectedCounts.users !== undefined) {
+            expectedCounts.users += 1;
+        }
+
+        // Give administrator access of all organizations
+        if (expectedCounts.organization_memberships !== undefined) {
+            expectedCounts.organization_memberships += numberOfOrganizations;
+        }
+
+        return expectedCounts;
+    } catch (err) {
+        console.error("\x1b[31m", `Error fetching expected counts: ${err}`);
+        return {};
+    }
 }
 
 /**
@@ -324,6 +395,13 @@ ${"|".padEnd(30, "-")}|----------------|
 	}
 }
 
+
+/**
+ * Populates the database with sample data.
+ * @returns {Promise<void>} - Returns a promise when the database is populated.
+ */
+
+
 const collections = ["users", "organizations", "organization_memberships"]; // Add organization memberships to collections
 
 const args = process.argv.slice(2);
@@ -366,10 +444,4 @@ export async function populateDB(method: string): Promise<void> {
 	if (method === "interactive") {
 		process.exit(0);
 	}
-}
-
-const scriptPath = fileURLToPath(import.meta.url);
-
-if (scriptPath === process.argv[1]) {
-	await populateDB("interactive");
 }
