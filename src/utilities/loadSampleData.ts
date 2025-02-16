@@ -89,7 +89,7 @@ async function formatDatabase(): Promise<void> {
 		.delete(schema.usersTable)
 		.where(sql`email_address != ${emailToKeep}`);
 
-	console.log("Cleared all tables except the specified user\n");
+	console.log("\x1b[33m", "Cleared all tables except the specified user");
 }
 
 /**
@@ -123,7 +123,7 @@ async function ensureAdministratorExists(): Promise<void> {
 				.where(sql`email_address = ${email}`);
 			console.log("Administrator role updated.");
 		} else {
-			console.log("Administrator user already exists.");
+			console.log("\x1b[33m", "\nAdministrator user already exists.\n");
 		}
 		return;
 	}
@@ -261,7 +261,7 @@ async function insertCollections(
 			console.log("\x1b[35m", `Added ${collection} table data`);
 		}
 
-		await checkCountAfterImport();
+		await checkCountAfterImport("After");
 		await queryClient.end();
 
 		console.log("\nTables populated successfully");
@@ -286,18 +286,18 @@ function parseDate(date: string | number | Date): Date | null {
  * Checks record counts in specified tables after data insertion.
  * @returns {Promise<boolean>} - Returns true if data exists, false otherwise.
  */
-async function checkCountAfterImport(): Promise<boolean> {
+async function checkCountAfterImport(stage: string): Promise<boolean> {
 	try {
 		const tables = [
-			{ name: "users", table: schema.usersTable },
-			{ name: "organizations", table: schema.organizationsTable },
 			{
 				name: "organization_memberships",
 				table: schema.organizationMembershipsTable,
 			},
+			{ name: "organizations", table: schema.organizationsTable },
+			{ name: "users", table: schema.usersTable },
 		];
 
-		console.log("\nRecord Counts After Import:\n");
+		console.log(`\nRecord Counts ${stage} Import:\n`);
 
 		console.log(
 			`${"| Table Name".padEnd(30)}| Record Count |
@@ -344,7 +344,7 @@ if (itemsIndex !== -1 && args[itemsIndex + 1]) {
 (async (): Promise<void> => {
 	await listSampleData();
 
-	const existingData = await checkCountAfterImport();
+	const existingData = await checkCountAfterImport("Before");
 	if (existingData) {
 		const { deleteExisting } = await inquirer.prompt([
 			{

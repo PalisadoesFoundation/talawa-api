@@ -61,8 +61,8 @@ async function checkCountAfterImport(): Promise<boolean> {
 		return allValid;
 	} catch (error) {
 		console.error(`ERROR: ${error}`);
-		return false;
 	}
+	return false;
 }
 
 /**
@@ -81,17 +81,15 @@ async function updateDatabase(): Promise<boolean> {
 
 		const userId = user[0]?.id;
 
-		await db
+		// Update the user and return the updated row
+		const [updatedUser] = await db
 			.update(schema.usersTable)
 			.set({ name: updatedName })
-			.where(sql`id = ${userId}`);
+			.where(sql`id = ${userId}`)
+			.returning({ name: schema.usersTable.name });
 
-		const updatedUser = await db
-			.select()
-			.from(schema.usersTable)
-			.where(sql`id = ${userId}`);
-
-		if (updatedUser[0]?.name !== updatedName) {
+		// Validate update in one step
+		if (!updatedUser || updatedUser.name !== updatedName) {
 			console.error("ERROR: Database update failed!");
 			return false;
 		}
@@ -119,6 +117,7 @@ async function runValidation(): Promise<void> {
 			process.exit(1);
 		}
 		console.log("Database Updation : Success");
+		await queryClient.end();
 		process.exit(0);
 	} catch (error) {
 		if (error instanceof Error) {
