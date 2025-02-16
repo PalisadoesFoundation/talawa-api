@@ -261,8 +261,7 @@ export async function insertCollections(
 
 		console.log("\nTables populated successfully");
 
-		if (method === "interactive") process.exit(0);
-		else return;
+		
 	} catch (err) {
 		console.error("\x1b[31m", `Error adding data to tables: ${err}`);
 		process.exit(1);
