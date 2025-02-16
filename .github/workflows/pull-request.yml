@@ -238,8 +238,6 @@ jobs:
         run: docker compose up -d
       - name: Adding tables to testing environment
         run: docker compose exec api pnpm apply_drizzle_test_migrations
-      - name: Import Sample Data into Database
-        run: docker compose exec api sh -c "yes yes | pnpm import:sample-data"
       - name: Validate Database Records
         run: docker compose exec api pnpm test:db-connection
       - name: Stop Services
@@ -248,7 +246,7 @@ jobs:
   Test-Docusaurus-Deployment:
     name: Test Deployment to https://docs-api.talawa.io
     runs-on: ubuntu-latest
-    needs: [Run-Tests,Database-Access-Check]
+    needs: [Run-Tests, Database-Access-Check]
     # Run only if the develop-postgres branch and not dependabot
     if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.base.ref == 'develop-postgres' }}
     steps:

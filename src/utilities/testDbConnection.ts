@@ -1,8 +1,12 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../drizzle/schema";
+import { populateDB } from "./loadSampleData";
 
 dotenv.config();
 
@@ -22,12 +26,56 @@ const queryClient = postgres({
 
 const db = drizzle(queryClient, { schema });
 
-const expectedCounts: Record<string, number> = {
-	users: 16,
-	organizations: 4,
-	organization_memberships: 18,
-};
+const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
+async function getExpectedCounts(): Promise<Record<string, number>> {
+	try {
+		const tables = [
+			{ name: "users", table: schema.usersTable },
+			{ name: "organizations", table: schema.organizationsTable },
+			{
+				name: "organization_memberships",
+				table: schema.organizationMembershipsTable,
+			},
+		];
+
+		const expectedCounts: Record<string, number> = {};
+
+		// Get current counts from DB
+		for (const { name, table } of tables) {
+			const result = await db
+				.select({ count: sql<number>`count(*)` })
+				.from(table);
+			expectedCounts[name] = Number(result[0]?.count ?? 0);
+		}
+
+		// Get counts from sample data files
+		const sampleDataPath = path.resolve(dirname, "../../sample_data");
+		const files = await fs.readdir(sampleDataPath);
+
+		for (const file of files) {
+			const filePath = path.resolve(sampleDataPath, file);
+			const stats = await fs.stat(filePath);
+
+			if (stats.isFile() && file.endsWith(".json")) {
+				const data = await fs.readFile(filePath, "utf8");
+				const docs = JSON.parse(data);
+				const name = file.replace(".json", "");
+				if (expectedCounts[name] !== undefined) {
+					expectedCounts[name] += docs.length;
+				}
+			}
+		}
+		return expectedCounts;
+	} catch (err) {
+		console.error("\x1b[31m", `Error fetching expected counts: ${err}`);
+		return {};
+	}
+}
+
+const expectedCounts: Record<string, number> = await getExpectedCounts();
+
+await populateDB("non-interactive");
 /**
  * Checks record counts in specified tables after data insertion.
  * @returns {Promise<boolean>} - Returns true if data matches expected values.

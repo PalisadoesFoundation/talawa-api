@@ -341,11 +341,13 @@ if (itemsIndex !== -1 && args[itemsIndex + 1]) {
 	options.items = items ? items.split(",") : undefined;
 }
 
-(async (): Promise<void> => {
+export async function populateDB(method: string): Promise<void> {
 	await listSampleData();
 
 	const existingData = await checkCountAfterImport("Before");
-	if (existingData) {
+	if (method === "non-interactive") {
+		options.format = false;
+	} else if (existingData) {
 		const { deleteExisting } = await inquirer.prompt([
 			{
 				type: "confirm",
@@ -362,4 +364,6 @@ if (itemsIndex !== -1 && args[itemsIndex + 1]) {
 	}
 
 	await insertCollections(options.items || collections, options);
-})();
+}
+
+populateDB("interactive");
