@@ -70,26 +70,21 @@ ${"|".padEnd(30, "-")}|----------------|
 /**
  * Clears all tables in the database except for the specified user.
  */
-async function formatDatabase(): Promise<void> {
-	const emailToKeep = "administrator@email.com";
-
+export async function formatDatabase(): Promise<void> {
 	const tables = [
 		schema.postsTable,
 		schema.organizationsTable,
 		schema.eventsTable,
 		schema.organizationMembershipsTable,
+		schema.usersTable,
 	];
 
 	for (const table of tables) {
 		await db.delete(table);
 	}
 
-	// Delete all users except the specified one
-	await db
-		.delete(schema.usersTable)
-		.where(sql`email_address != ${emailToKeep}`);
-
-	console.log("\x1b[33m", "Cleared all tables except the specified user");
+	console.log("\x1b[33m", "Cleared all tables");
+	
 }
 
 /**
@@ -98,7 +93,7 @@ async function formatDatabase(): Promise<void> {
  * @param options - Options for loading data
  */
 
-async function ensureAdministratorExists(): Promise<void> {
+export async function ensureAdministratorExists(): Promise<void> {
 	console.log("Checking if the administrator user exists...");
 
 	const email = process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
@@ -151,14 +146,15 @@ async function ensureAdministratorExists(): Promise<void> {
 
 async function insertCollections(
 	collections: string[],
+	method: string,
 	options: LoadOptions = {},
 ): Promise<void> {
 	try {
-		await ensureAdministratorExists();
-
 		if (options.format) {
 			await formatDatabase();
 		}
+
+		await ensureAdministratorExists();
 
 		for (const collection of collections) {
 			const data = await fs.readFile(
@@ -265,10 +261,12 @@ async function insertCollections(
 		await queryClient.end();
 
 		console.log("\nTables populated successfully");
+
+		if (method === "interactive") process.exit(0);
+		else return;
 	} catch (err) {
 		console.error("\x1b[31m", `Error adding data to tables: ${err}`);
-	} finally {
-		process.exit(0);
+		process.exit(1);
 	}
 }
 
@@ -345,7 +343,8 @@ export async function populateDB(method: string): Promise<void> {
 	await listSampleData();
 
 	const existingData = await checkCountAfterImport("Before");
-	if (method === "non-interactive") {
+
+	if (method !== "interactive") {
 		options.format = false;
 	} else if (existingData) {
 		const { deleteExisting } = await inquirer.prompt([
@@ -363,7 +362,15 @@ export async function populateDB(method: string): Promise<void> {
 		}
 	}
 
-	await insertCollections(options.items || collections, options);
+	await insertCollections(options.items || collections, method, options);
+
+	if (method === "interactive") {
+		process.exit(0);
+	}
 }
 
-populateDB("interactive");
+const scriptPath = fileURLToPath(import.meta.url);
+
+if (scriptPath === process.argv[1]) {
+    await populateDB("interactive");
+}

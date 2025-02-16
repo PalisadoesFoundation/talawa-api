@@ -6,7 +6,7 @@ import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../drizzle/schema";
-import { populateDB } from "./loadSampleData";
+import { formatDatabase, populateDB } from "./loadSampleData";
 
 dotenv.config();
 
@@ -28,8 +28,11 @@ const db = drizzle(queryClient, { schema });
 
 const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
+
+
 async function getExpectedCounts(): Promise<Record<string, number>> {
 	try {
+		await formatDatabase();
 		const tables = [
 			{ name: "users", table: schema.usersTable },
 			{ name: "organizations", table: schema.organizationsTable },
@@ -52,6 +55,7 @@ async function getExpectedCounts(): Promise<Record<string, number>> {
 		// Get counts from sample data files
 		const sampleDataPath = path.resolve(dirname, "../../sample_data");
 		const files = await fs.readdir(sampleDataPath);
+		let numberOfOrganizations = 0;
 
 		for (const file of files) {
 			const filePath = path.resolve(sampleDataPath, file);
@@ -64,8 +68,21 @@ async function getExpectedCounts(): Promise<Record<string, number>> {
 				if (expectedCounts[name] !== undefined) {
 					expectedCounts[name] += docs.length;
 				}
+				if (name === "organizations") {
+					numberOfOrganizations += docs.length;
+				}
 			}
 		}
+
+		if (expectedCounts.users !== undefined) {
+			expectedCounts.users += 1;
+		}
+
+		// Give administrator access of all organizations
+		if (expectedCounts.organization_memberships !== undefined) {
+			expectedCounts.organization_memberships += numberOfOrganizations;
+		}
+
 		return expectedCounts;
 	} catch (err) {
 		console.error("\x1b[31m", `Error fetching expected counts: ${err}`);
@@ -75,7 +92,7 @@ async function getExpectedCounts(): Promise<Record<string, number>> {
 
 const expectedCounts: Record<string, number> = await getExpectedCounts();
 
-await populateDB("non-interactive");
+
 /**
  * Checks record counts in specified tables after data insertion.
  * @returns {Promise<boolean>} - Returns true if data matches expected values.
@@ -177,4 +194,5 @@ async function runValidation(): Promise<void> {
 	}
 }
 
-runValidation();
+await populateDB("test");
+await runValidation();
