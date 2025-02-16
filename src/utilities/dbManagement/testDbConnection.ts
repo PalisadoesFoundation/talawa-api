@@ -1,12 +1,9 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../../drizzle/schema";
-import { populateDB, getExpectedCounts } from "./helpers";
+import { getExpectedCounts, populateDB } from "./helpers";
 
 dotenv.config();
 

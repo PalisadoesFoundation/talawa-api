@@ -86,10 +86,6 @@ ${"|".padEnd(30, "-")}|----------------|
 	}
 }
 
-
-
-
-
 export async function ensureAdministratorExists(): Promise<void> {
 	console.log("Checking if the administrator user exists...");
 
@@ -283,7 +279,6 @@ export function parseDate(date: string | number | Date): Date | null {
 	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
 }
 
-
 /**
  * Fetches the expected counts of records in the database.
  * @param - The date string to parse
@@ -291,63 +286,63 @@ export function parseDate(date: string | number | Date): Date | null {
  */
 
 export async function getExpectedCounts(): Promise<Record<string, number>> {
-    try {
-        await formatDatabase();
-        const tables = [
-            { name: "users", table: schema.usersTable },
-            { name: "organizations", table: schema.organizationsTable },
-            {
-                name: "organization_memberships",
-                table: schema.organizationMembershipsTable,
-            },
-        ];
+	try {
+		await formatDatabase();
+		const tables = [
+			{ name: "users", table: schema.usersTable },
+			{ name: "organizations", table: schema.organizationsTable },
+			{
+				name: "organization_memberships",
+				table: schema.organizationMembershipsTable,
+			},
+		];
 
-        const expectedCounts: Record<string, number> = {};
+		const expectedCounts: Record<string, number> = {};
 
-        // Get current counts from DB
-        for (const { name, table } of tables) {
-            const result = await db
-                .select({ count: sql<number>`count(*)` })
-                .from(table);
-            expectedCounts[name] = Number(result[0]?.count ?? 0);
-        }
+		// Get current counts from DB
+		for (const { name, table } of tables) {
+			const result = await db
+				.select({ count: sql<number>`count(*)` })
+				.from(table);
+			expectedCounts[name] = Number(result[0]?.count ?? 0);
+		}
 
-        // Get counts from sample data files
-        const sampleDataPath = path.resolve(dirname, "../../../sample_data");
-        const files = await fs.readdir(sampleDataPath);
-        let numberOfOrganizations = 0;
+		// Get counts from sample data files
+		const sampleDataPath = path.resolve(dirname, "../../../sample_data");
+		const files = await fs.readdir(sampleDataPath);
+		let numberOfOrganizations = 0;
 
-        for (const file of files) {
-            const filePath = path.resolve(sampleDataPath, file);
-            const stats = await fs.stat(filePath);
+		for (const file of files) {
+			const filePath = path.resolve(sampleDataPath, file);
+			const stats = await fs.stat(filePath);
 
-            if (stats.isFile() && file.endsWith(".json")) {
-                const data = await fs.readFile(filePath, "utf8");
-                const docs = JSON.parse(data);
-                const name = file.replace(".json", "");
-                if (expectedCounts[name] !== undefined) {
-                    expectedCounts[name] += docs.length;
-                }
-                if (name === "organizations") {
-                    numberOfOrganizations += docs.length;
-                }
-            }
-        }
+			if (stats.isFile() && file.endsWith(".json")) {
+				const data = await fs.readFile(filePath, "utf8");
+				const docs = JSON.parse(data);
+				const name = file.replace(".json", "");
+				if (expectedCounts[name] !== undefined) {
+					expectedCounts[name] += docs.length;
+				}
+				if (name === "organizations") {
+					numberOfOrganizations += docs.length;
+				}
+			}
+		}
 
-        if (expectedCounts.users !== undefined) {
-            expectedCounts.users += 1;
-        }
+		if (expectedCounts.users !== undefined) {
+			expectedCounts.users += 1;
+		}
 
-        // Give administrator access of all organizations
-        if (expectedCounts.organization_memberships !== undefined) {
-            expectedCounts.organization_memberships += numberOfOrganizations;
-        }
+		// Give administrator access of all organizations
+		if (expectedCounts.organization_memberships !== undefined) {
+			expectedCounts.organization_memberships += numberOfOrganizations;
+		}
 
-        return expectedCounts;
-    } catch (err) {
-        console.error("\x1b[31m", `Error fetching expected counts: ${err}`);
-        return {};
-    }
+		return expectedCounts;
+	} catch (err) {
+		console.error("\x1b[31m", `Error fetching expected counts: ${err}`);
+		return {};
+	}
 }
 
 /**
@@ -395,12 +390,10 @@ ${"|".padEnd(30, "-")}|----------------|
 	}
 }
 
-
 /**
  * Populates the database with sample data.
  * @returns {Promise<void>} - Returns a promise when the database is populated.
  */
-
 
 const collections = ["users", "organizations", "organization_memberships"]; // Add organization memberships to collections
 
