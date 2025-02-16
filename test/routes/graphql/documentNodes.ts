@@ -384,6 +384,10 @@ export const Query_event = gql(`query Query_event($input: QueryEventInput!) {
         description
         startAt
         endAt
+        creator {
+            id
+            name
+        }
         organization {
             id
             countryCode
@@ -410,14 +414,6 @@ export const Mutation_deleteEvent =
 	gql(`mutation Mutation_deleteEvent($input: MutationDeleteEventInput!) {
     deleteEvent(input: $input) {
         id
-        name
-        description
-        startAt
-        endAt
-        organization {
-            id
-            countryCode
-        }
     }
 }`);
 
@@ -429,6 +425,7 @@ export const Mutation_updateEvent =
         description
         startAt
         endAt
+        updatedAt
         organization {
             id
             countryCode
