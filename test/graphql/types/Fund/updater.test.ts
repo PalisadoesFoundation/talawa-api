@@ -1,13 +1,18 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GraphQLContext } from "../../../../src/graphql/context";
 import type { FastifyBaseLogger } from "fastify";
-import { User } from "~/src/graphql/types/User/User";
-import { Fund } from "~/src/graphql/types/Fund/Fund";
-import { createMockLogger } from "test/utilities/mockLogger";
+import type { GraphQLContext } from "../../../../src/graphql/context";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Fund } from "~/src/graphql/types/Fund/Fund";
+import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { resolveUpdater } from "~/src/graphql/types/Fund/updater";
+import { createMockLogger } from "test/utilities/mockLogger";
 
-type DeepPartial<T> = Partial<T>;
+type DeepPartial<T> = T extends object
+  ? {
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
+  : T;
+
 interface TestContext extends Omit<GraphQLContext, "log" | "currentClient"> {
   log: FastifyBaseLogger;
   currentClient: {
@@ -101,7 +106,7 @@ describe("Fund Resolver - Updater Field", () => {
     ).rejects.toThrow(TalawaGraphQLError);
   });
 
-  it("should throw unauthorized_action when user is not an andministrator", async () => {
+  it("should throw unauthorized_action when user is not an administrator", async () => {
     ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
       id: "user123",
       role: "member",
