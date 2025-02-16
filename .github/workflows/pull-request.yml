@@ -221,7 +221,7 @@ jobs:
         uses: VeryGoodOpenSource/very_good_coverage@v2
         with:
           path: "./coverage/lcov.info"
-          min_coverage: 39.0
+          min_coverage: 45.0
 
   Database-Access-Check:
     name: Checking database connection and access
