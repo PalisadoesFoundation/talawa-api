@@ -132,6 +132,7 @@ function mockCommentsTableFindFirst(
 	});
 }
 
+// --- Helper: Create a fake delete chain for delete operations ---
 function createFakeDeleteChain(returningData: unknown[]): {
 	where: () => { returning: () => Promise<unknown[]> };
 } {
