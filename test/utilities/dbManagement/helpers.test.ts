@@ -1,8 +1,6 @@
 import path from "node:path";
-// populate.test.ts
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it} from "vitest";
 
-// Import the functions you want to test
 import {
 	checkCountAfterImport,
 	disconnect,
@@ -12,9 +10,6 @@ import {
 	listSampleData,
 	parseDate,
 	populateDB,
-	runValidation,
-	updateDatabase,
-	verifyCountAfterImport,
 } from "src/utilities/dbManagement/helpers";
 
 import dotenv from "dotenv";
