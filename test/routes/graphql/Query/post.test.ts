@@ -40,7 +40,7 @@ suite("Query field post", () => {
 				id: usersTable.id,
 			});
 
-		if (!userRow) throw new Error("Failed to create test user");
+		if (!userRow) throw new Error("Failed to create test user"); // throws an error
 
 		return { userId: userRow.id, email: testEmail, password: testPassword };
 	};
