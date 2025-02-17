@@ -346,7 +346,7 @@ export async function getExpectedCounts(): Promise<Record<string, number>> {
  * Checks record counts in specified tables after data insertion.
  * @returns {Promise<boolean>} - Returns true if data exists, false otherwise.
  */
-async function checkCountAfterImport(stage: string): Promise<boolean> {
+export async function checkCountAfterImport(stage: string): Promise<boolean> {
 	try {
 		const tables = [
 			{
