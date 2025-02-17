@@ -296,11 +296,9 @@ describe("deleteCommentResolver", () => {
 
 		await deleteCommentResolver({}, validArgs, ctx);
 		expect(commentFindFirstSpy).toHaveBeenCalledTimes(1);
-		if (!commentFindFirstSpy.mock.calls[0]) {
-			throw new Error("Expected mock to have been called");
-		}
+		expect(commentFindFirstSpy.mock.calls.length).toBeGreaterThan(0);
 		const config = commentFindFirstSpy.mock
-			.calls[0][0] as CommentsFindFirstConfig;
+			.calls[0]?.[0] as CommentsFindFirstConfig;
 
 		expect(config.columns).toEqual({ creatorId: true });
 		expect(typeof config.where).toBe("function");
