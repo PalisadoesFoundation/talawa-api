@@ -8,10 +8,7 @@ import {
 	communitiesTable,
 	communitiesTableInsertSchema,
 } from "~/src/drizzle/tables/communities";
-import {
-	organizationMembershipsTable,
-	organizationMembershipsTableInsertSchema,
-} from "~/src/drizzle/tables/organizationMemberships";
+import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import {
 	organizationsTable,
 	organizationsTableInsertSchema,
