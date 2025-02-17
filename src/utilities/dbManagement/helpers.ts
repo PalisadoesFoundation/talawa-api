@@ -17,18 +17,20 @@ const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 const isTestEnvironment = process.env.NODE_ENV === "test";
 
 const requiredEnvVars = [
-	'API_POSTGRES_HOST',
-	'API_POSTGRES_PORT',
-	'API_POSTGRES_DATABASE',
-	'API_POSTGRES_USER',
-	'API_POSTGRES_PASSWORD',
-	'API_POSTGRES_SSL_MODE',
+	"API_POSTGRES_HOST",
+	"API_POSTGRES_PORT",
+	"API_POSTGRES_DATABASE",
+	"API_POSTGRES_USER",
+	"API_POSTGRES_PASSWORD",
+	"API_POSTGRES_SSL_MODE",
 ];
 
 const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
 
 if (missingVars.length > 0) {
-	throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+	throw new Error(
+		`Missing required environment variables: ${missingVars.join(", ")}`,
+	);
 }
 
 export const queryClient = postgres({
@@ -39,9 +41,8 @@ export const queryClient = postgres({
 	database: process.env.API_POSTGRES_DATABASE,
 	username: process.env.API_POSTGRES_USER,
 	password: process.env.API_POSTGRES_PASSWORD,
-	ssl: process.env.API_POSTGRES_SSL_MODE === 'true',
+	ssl: process.env.API_POSTGRES_SSL_MODE === "true",
 });
-
 
 const db = drizzle(queryClient, { schema });
 
