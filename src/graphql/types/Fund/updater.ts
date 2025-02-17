@@ -6,9 +6,7 @@ import { Fund } from "./Fund";
 const authenticateUser = async (ctx: GraphQLContext) => {
 	if (!ctx.currentClient.isAuthenticated) {
 		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthenticated",
-			},
+			extensions: { code: "unauthenticated" },
 		});
 	}
 

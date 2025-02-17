@@ -7,11 +7,13 @@ import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../../../src/graphql/context";
 
-type DeepPartial<T> = T extends object
-	? {
-			[P in keyof T]?: DeepPartial<T[P]>;
-		}
-	: T;
+interface OrganizationMembership {
+	role: "administrator" | "member";
+}
+interface ExtendedUser extends User {
+	organizationMembershipsWhereMember: OrganizationMembership;
+	isAuthenticated: boolean;
+}
 
 interface TestContext extends Omit<GraphQLContext, "log" | "currentClient"> {
 	log: FastifyBaseLogger;
@@ -37,11 +39,10 @@ interface TestContext extends Omit<GraphQLContext, "log" | "currentClient"> {
 
 describe("Fund Resolver - Updater Field", () => {
 	let ctx: TestContext;
-	let mockUser: DeepPartial<User>;
 	let mockFund: Fund;
 
 	beforeEach(() => {
-		mockUser = {
+		const mockUser: Partial<ExtendedUser> = {
 			id: "123",
 			name: "John Doe",
 			role: "administrator",
@@ -50,7 +51,7 @@ describe("Fund Resolver - Updater Field", () => {
 			},
 			isAuthenticated: true,
 			createdAt: new Date(),
-		} as unknown as DeepPartial<User>;
+		};
 
 		mockFund = {
 			createdAt: new Date(),
@@ -90,7 +91,7 @@ describe("Fund Resolver - Updater Field", () => {
 		vi.clearAllMocks();
 	});
 
-	it("should throw unauthenticated check when user is not authenticated", async () => {
+	it("should throw unauthenticated error when user is not authenticated", async () => {
 		ctx.currentClient.isAuthenticated = false;
 
 		await expect(
@@ -129,7 +130,7 @@ describe("Fund Resolver - Updater Field", () => {
 		);
 	});
 
-	it("should throw unauthorized_action when membershipsWhereOrganization is undefined", async () => {
+	it("should throw unauthorized_action when user has no organization memberships", async () => {
 		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
 			role: "member",
