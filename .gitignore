@@ -11,7 +11,10 @@
 .docusaurus
 
 # Don't upload configuration files
-/.env*
+/.env
+/.env.*
+/.env-*
+/.env_*
 
 # Ignore upload directories
 cert/**
