@@ -238,7 +238,7 @@ describe("deleteCommentResolver", () => {
 		);
 	});
 
-	it("throws unexpected error when deletion returns undefined", async () => {
+	it("throws unexpected error when comment deletion operation returns empty result", async () => {
 		mockUsersTableFindFirst(ctx, { role: "administrator" });
 		mockCommentsTableFindFirst(ctx, {
 			creatorId: "current-user-id",
