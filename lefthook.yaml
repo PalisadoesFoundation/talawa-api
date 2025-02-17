@@ -31,4 +31,6 @@ pre-commit:
         git add {staged_files}
     8_check_type_errors:
       run: pnpm check_type_errors
+    9_generate_docs:
+      run: pnpm generate:docs
   piped: true

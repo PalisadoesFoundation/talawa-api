@@ -6,7 +6,7 @@
 
 > **ArgumentsAssociatedResourcesNotFoundExtensions**: `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:32](https://github.com/Suyash878/talawa-api/blob/4657139c817cb5935454def8fb620b05175365a9/src/utilities/TalawaGraphQLError.ts#L32)
+Defined in: [src/utilities/TalawaGraphQLError.ts:32](https://github.com/Suyash878/talawa-api/blob/05d9dfc8d9c5928ef559c72f2ab0492d0dbbb48c/src/utilities/TalawaGraphQLError.ts#L32)
 
 When resources associated to the provided graphql arguments cannot be not found.
 
