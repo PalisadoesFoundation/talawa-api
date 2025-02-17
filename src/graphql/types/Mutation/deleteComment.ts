@@ -51,7 +51,9 @@ export async function deleteCommentResolver(
 			where: (fields, operators) => operators.eq(fields.id, currentUserId),
 		}),
 		ctx.drizzleClient.query.commentsTable.findFirst({
-			columns: { creatorId: true },
+			columns: {
+				creatorId: true,
+			},
 			with: {
 				post: {
 					columns: {
