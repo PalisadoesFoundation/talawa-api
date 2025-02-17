@@ -92,7 +92,6 @@ interface CommentsFindFirstConfig {
 	};
 }
 
-// --- Helper: Mock commentsTable.findFirst ---
 interface Comment {
 	id: string;
 	creatorId: string;
