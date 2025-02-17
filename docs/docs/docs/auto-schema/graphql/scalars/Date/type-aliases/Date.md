@@ -6,7 +6,7 @@
 
 > **\_Date**: `object`
 
-Defined in: [src/graphql/scalars/Date.ts:12](https://github.com/Suyash878/talawa-api/blob/0d5834ec7c0ad3d008c3a8e58fbf32c7824b9122/src/graphql/scalars/Date.ts#L12)
+Defined in: [src/graphql/scalars/Date.ts:12](https://github.com/Suyash878/talawa-api/blob/3646aad880eea5a7cfb665aa9031a4d873c30798/src/graphql/scalars/Date.ts#L12)
 
 `Date` scalar type for pothos schema.
 

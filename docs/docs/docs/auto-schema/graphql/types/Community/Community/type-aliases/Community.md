@@ -6,4 +6,4 @@
 
 > **Community**: *typeof* `communitiesTable.$inferSelect`
 
-Defined in: [src/graphql/types/Community/Community.ts:7](https://github.com/Suyash878/talawa-api/blob/0d5834ec7c0ad3d008c3a8e58fbf32c7824b9122/src/graphql/types/Community/Community.ts#L7)
+Defined in: [src/graphql/types/Community/Community.ts:7](https://github.com/Suyash878/talawa-api/blob/3646aad880eea5a7cfb665aa9031a4d873c30798/src/graphql/types/Community/Community.ts#L7)

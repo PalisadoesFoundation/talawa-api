@@ -6,7 +6,7 @@
 
 > **graphql**(`fastify`): `Promise`\<`void`\>
 
-Defined in: [src/routes/graphql.ts:83](https://github.com/Suyash878/talawa-api/blob/0d5834ec7c0ad3d008c3a8e58fbf32c7824b9122/src/routes/graphql.ts#L83)
+Defined in: [src/routes/graphql.ts:83](https://github.com/Suyash878/talawa-api/blob/3646aad880eea5a7cfb665aa9031a4d873c30798/src/routes/graphql.ts#L83)
 
 This fastify route plugin function is initializes mercurius on the fastify instance and directs incoming requests on the `/graphql` route to it.
 
