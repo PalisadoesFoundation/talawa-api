@@ -17,7 +17,6 @@ import "src/utilities/dbManagement/testDbConnection";
 
 describe("main function", () => {
 	it("should call populateDB with 'interactive'", async () => {
-
 		await new Promise((resolve) => setTimeout(resolve, 0));
 
 		expect(getExpectedCounts).toHaveBeenCalledTimes(1);
