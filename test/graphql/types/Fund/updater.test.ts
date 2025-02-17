@@ -11,7 +11,7 @@ interface OrganizationMembership {
 	role: "administrator" | "member";
 }
 interface ExtendedUser extends User {
-	organizationMembershipsWhereMember: OrganizationMembership;
+	organizationMembershipsWhereMember: OrganizationMembership[];
 	isAuthenticated: boolean;
 }
 
@@ -46,9 +46,11 @@ describe("Fund Resolver - Updater Field", () => {
 			id: "123",
 			name: "John Doe",
 			role: "administrator",
-			organizationMembershipsWhereMember: {
-				role: "administrator",
-			},
+			organizationMembershipsWhereMember: [
+				{
+					role: "administrator",
+				},
+			],
 			isAuthenticated: true,
 			createdAt: new Date(),
 		};
