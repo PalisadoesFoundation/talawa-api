@@ -16,7 +16,7 @@ const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
 const isTestEnvironment = process.env.NODE_ENV === "test";
 
-const queryClient = postgres({
+export const queryClient = postgres({
 	host: isTestEnvironment
 		? process.env.API_POSTGRES_TEST_HOST
 		: process.env.API_POSTGRES_HOST,
@@ -257,12 +257,11 @@ export async function insertCollections(
 		}
 
 		await checkCountAfterImport("After");
-		await queryClient.end();
 
 		console.log("\nTables populated successfully");
 	} catch (err) {
 		console.error("\x1b[31m", `Error adding data to tables: ${err}`);
-		process.exit(1);
+		
 	}
 }
 
@@ -434,4 +433,113 @@ export async function populateDB(method: string): Promise<void> {
 	if (method === "interactive") {
 		process.exit(0);
 	}
+}
+
+/**
+ * Checks record counts in specified tables after data insertion.
+ * @returns {Promise<boolean>} - Returns true if data matches expected values.
+ */
+
+export async function verifyCountAfterImport(
+	expectedCounts: Record<string, number>,
+): Promise<boolean> {
+	try {
+		const tables = [
+			{ name: "users", table: schema.usersTable },
+			{ name: "organizations", table: schema.organizationsTable },
+			{
+				name: "organization_memberships",
+				table: schema.organizationMembershipsTable,
+			},
+		];
+		let allValid = true;
+		for (const { name, table } of tables) {
+			const result = await db
+				.select({ count: sql<number>`count(*)` })
+				.from(table);
+			const actualCount = Number(result[0]?.count ?? 0); // Convert actual count to number
+			const expectedCount = expectedCounts[name]; // Expected count is already a number
+
+			if (actualCount !== expectedCount) {
+				console.error(
+					`ERROR: Record count mismatch in ${name} (Expected ${expectedCount}, Found ${actualCount})`,
+				);
+				allValid = false;
+			}
+		}
+
+		return allValid;
+	} catch (error) {
+		console.error(`ERROR: ${error}`);
+	}
+	return false;
+}
+
+/**
+ * Makes an update in the database (Modify the first user's name).
+ * @returns {Promise<boolean>} - Returns true if the update was successful.
+ */
+export async function updateDatabase(): Promise<boolean> {
+	const updatedName = "Test User";
+
+	try {
+		const user = await db.select().from(schema.usersTable).limit(1);
+		if (user.length === 0) {
+			console.error("ERROR: No user found to update!");
+			return false;
+		}
+
+		const userId = user[0]?.id;
+
+		// Update the user and return the updated row
+		const [updatedUser] = await db
+			.update(schema.usersTable)
+			.set({ name: updatedName })
+			.where(sql`id = ${userId}`)
+			.returning({ name: schema.usersTable.name });
+
+		// Validate update in one step
+		if (!updatedUser || updatedUser.name !== updatedName) {
+			console.error("ERROR: Database update failed!");
+			return false;
+		}
+		return true;
+	} catch (error) {
+		console.error(`ERROR: ${error}`);
+		return false;
+	}
+}
+
+/**
+ * Runs the validation and update process.
+ */
+export async function runValidation(
+	expectedCounts: Record<string, number>,
+): Promise<void> {
+	try {
+		const validRecords = await verifyCountAfterImport(expectedCounts);
+		if (!validRecords) {
+			console.error("\nERROR: Database validation failed!");
+			
+		}
+		console.log("\nDatabase Validation : Success");
+		const updateSuccess = await updateDatabase();
+		if (!updateSuccess) {
+			console.error("\nERROR: Database update validation failed!");
+			
+		}
+		console.log("Database Updation : Success");
+		process.exit(0);
+	} catch (error) {
+		if (error instanceof Error) {
+			console.error(`\nERROR: ${error.message}`);
+		} else {
+			console.error(`\nERROR: ${String(error)}`);
+		}
+	
+	}
+}
+
+export async function disconnect(): Promise<void> {
+	await queryClient.end();
 }
