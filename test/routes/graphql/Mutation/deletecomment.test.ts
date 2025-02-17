@@ -175,7 +175,6 @@ describe("deleteCommentResolver", () => {
 	});
 
 	it("throws unauthenticated error when currentUser is undefined", async () => {
-		// Return undefined for the user.
 		ctx.drizzleClient.query.usersTable.findFirst = vi
 			.fn()
 			.mockResolvedValue(undefined);
