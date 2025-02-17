@@ -394,6 +394,13 @@ type Community {
   youtubeURL: String
 }
 
+type CustomField {
+  id: ID!
+  name: String!
+  organizationId: String!
+  type: String!
+}
+
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -1240,6 +1247,8 @@ enum Iso4217CurrencyCode {
 }
 
 type Mutation {
+  addOrganizationCustomField(name: String!, organizationId: String!, type: String!): OrganizationCustomField
+
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
 
@@ -2520,6 +2529,9 @@ type Organization {
   """User who created the organization."""
   creator: User
 
+  """Custom fields associated with the organization"""
+  customFields: [CustomField!]!
+
   """Custom information about the organization."""
   description: String
 
@@ -2610,6 +2622,13 @@ type OrganizationChatsConnection {
 type OrganizationChatsConnectionEdge {
   cursor: String!
   node: Chat
+}
+
+type OrganizationCustomField {
+  id: ID!
+  name: String!
+  organizationId: String!
+  type: String!
 }
 
 """"""
@@ -2856,6 +2875,9 @@ type Query {
   """Query field to read a user."""
   currentUser: User
 
+  """Query to fetch custom fields for an organization"""
+  customFields(input: QueryCustomFieldsInput!): [CustomField!]
+
   """Query field to read an event."""
   event(input: QueryEventInput!): Event
 
@@ -2929,6 +2951,11 @@ input QueryChatMessageInput {
 input QueryCommentInput {
   """Global id of the comment."""
   id: String!
+}
+
+input QueryCustomFieldsInput {
+  """ID of the organization to fetch custom fields for"""
+  organizationId: String!
 }
 
 """"""
