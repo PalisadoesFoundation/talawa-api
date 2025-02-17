@@ -1,5 +1,5 @@
 import { hash } from "@node-rs/argon2";
-import { eq } from "drizzle-orm";
+import { eq, isNotNull, name } from "drizzle-orm";
 import type { FastifyPluginAsync } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import { uuidv7 } from "uuidv7";
@@ -8,8 +8,17 @@ import {
 	communitiesTable,
 	communitiesTableInsertSchema,
 } from "~/src/drizzle/tables/communities";
+import {
+	organizationMembershipsTable,
+	organizationMembershipsTableInsertSchema,
+} from "~/src/drizzle/tables/organizationMemberships";
+import {
+	organizationsTable,
+	organizationsTableInsertSchema,
+} from "~/src/drizzle/tables/organizations";
 import { usersTable, usersTableInsertSchema } from "~/src/drizzle/tables/users";
-
+// import { organizationsTable } from "../drizzle/schema";
+// import { organizationsTableInsertSchema } from "../drizzle/tables/organizations";
 /**
  * This plugin handles seeding the initial data into appropriate service at the startup time of the talawa api. The data must strictly only comprise of things that are required in the production environment of talawa api. This plugin shouldn't be used for seeding dummy data.
  *
@@ -173,6 +182,82 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 		}
 
 		fastify.log.info("Successfully created the community in the database.");
+	}
+
+	fastify.log.info("Checking if an organization with a valid address exists.");
+
+	try {
+		const organizationExists = await fastify.drizzleClient
+			.select({ addressLine1: organizationsTable.addressLine1 })
+			.from(organizationsTable)
+			.where(isNotNull(organizationsTable.addressLine1))
+			.limit(1)
+			.then((result) => result.length > 0);
+
+		if (organizationExists) {
+			fastify.log.info(
+				"Organization with a valid address already exists. Skipping creation.",
+			);
+			return;
+		}
+
+		fastify.log.info(
+			"Creating default organization as no valid address was found.",
+		);
+
+		const adminUser = await fastify.drizzleClient.query.usersTable.findFirst({
+			columns: { id: true },
+			where: (fields, operators) =>
+				operators.eq(
+					fields.emailAddress,
+					fastify.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				),
+		});
+
+		if (!adminUser) {
+			throw new Error("API Administrator user not found.");
+		}
+
+		await fastify.drizzleClient.transaction(async (tx) => {
+			const organizationId = uuidv7();
+
+			const defaultOrganization = organizationsTableInsertSchema.parse({
+				id: organizationId,
+				name: "Unity Foundation USA",
+				description: "Service to the Community",
+				addressLine1: "1268 Finwood Road",
+				addressLine2: "Suite 200",
+				city: "Dodge City",
+				postalCode: "67801",
+				state: "Kansas",
+				avatarName: null,
+				countryCode: "us",
+				createdAt: new Date(),
+				creatorId: adminUser.id,
+			});
+
+			await tx.insert(organizationsTable).values(defaultOrganization);
+
+			await tx.insert(organizationMembershipsTable).values({
+				memberId: adminUser.id,
+				organizationId,
+				role: "administrator",
+				creatorId: adminUser.id,
+				createdAt: new Date(),
+			});
+
+			fastify.log.info(
+				"Default organization and admin membership created successfully.",
+			);
+		});
+	} catch (error) {
+		fastify.log.error(
+			{ err: error },
+			"Error while checking or creating organization",
+		);
+		throw new Error("Database operation failed while handling organization.", {
+			cause: error,
+		});
 	}
 };
 

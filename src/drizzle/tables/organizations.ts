@@ -211,6 +211,7 @@ export const organizationsTableRelations = relations(
 export const organizationsTableInsertSchema = createInsertSchema(
 	organizationsTable,
 	{
+		id: (schema) => schema.optional(),
 		addressLine1: (schema) => schema.min(1).max(1024).optional(),
 		addressLine2: (schema) => schema.min(1).max(1024).optional(),
 		avatarName: (schema) => schema.min(1).optional(),
