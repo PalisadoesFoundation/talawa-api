@@ -1,15 +1,12 @@
-import { populateDB,disconnect } from "./helpers";
-
+import { disconnect, populateDB } from "./helpers";
 
 export async function main() {
-	try{
+	try {
 		await populateDB("interactive");
 		await disconnect();
+	} catch (error) {
+		console.log("Error: ", error);
 	}
-	catch(error){
-		console.log("Error: ",error);
-	}
-	
 }
 
 main();

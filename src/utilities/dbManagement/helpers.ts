@@ -261,7 +261,6 @@ export async function insertCollections(
 		console.log("\nTables populated successfully");
 	} catch (err) {
 		console.error("\x1b[31m", `Error adding data to tables: ${err}`);
-		
 	}
 }
 
@@ -520,13 +519,11 @@ export async function runValidation(
 		const validRecords = await verifyCountAfterImport(expectedCounts);
 		if (!validRecords) {
 			console.error("\nERROR: Database validation failed!");
-			
 		}
 		console.log("\nDatabase Validation : Success");
 		const updateSuccess = await updateDatabase();
 		if (!updateSuccess) {
 			console.error("\nERROR: Database update validation failed!");
-			
 		}
 		console.log("Database Updation : Success");
 		process.exit(0);
@@ -536,7 +533,6 @@ export async function runValidation(
 		} else {
 			console.error(`\nERROR: ${String(error)}`);
 		}
-	
 	}
 }
 

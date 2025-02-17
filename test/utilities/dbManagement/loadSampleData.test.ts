@@ -1,4 +1,4 @@
-import { populateDB,disconnect } from "src/utilities/dbManagement/helpers";
+import { disconnect, populateDB } from "src/utilities/dbManagement/helpers";
 import { describe, expect, it, vi } from "vitest";
 
 // Mock populateDB before importing the module

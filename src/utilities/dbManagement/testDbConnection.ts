@@ -1,15 +1,18 @@
-import { getExpectedCounts, populateDB, disconnect,runValidation } from "./helpers";
-
+import {
+	disconnect,
+	getExpectedCounts,
+	populateDB,
+	runValidation,
+} from "./helpers";
 
 export async function main() {
-	try{
+	try {
 		const expectedCounts: Record<string, number> = await getExpectedCounts();
 		await populateDB("test");
 		await runValidation(expectedCounts);
 		await disconnect();
-	}
-	catch(error){
-		console.log("Error: ",error);
+	} catch (error) {
+		console.log("Error: ", error);
 	}
 }
 
