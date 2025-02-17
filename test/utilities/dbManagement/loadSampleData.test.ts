@@ -9,7 +9,7 @@ vi.mock("src/utilities/dbManagement/helpers", () => ({
 import "src/utilities/dbManagement/loadSampleData";
 
 describe("main function", () => {
-	it("should call populateDB with 'interactive'", async () => {
+	it("should call populateDB with 'interactive' and disconnect", async () => {
 		await new Promise((resolve) => setTimeout(resolve, 0));
 
 		expect(populateDB).toHaveBeenCalledTimes(1);

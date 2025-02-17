@@ -16,7 +16,7 @@ vi.mock("src/utilities/dbManagement/helpers", () => ({
 import "src/utilities/dbManagement/testDbConnection";
 
 describe("main function", () => {
-	it("should call populateDB with 'interactive'", async () => {
+	it("should execute database validation steps in the correct order", async () => {
 		await new Promise((resolve) => setTimeout(resolve, 0));
 
 		expect(getExpectedCounts).toHaveBeenCalledTimes(1);

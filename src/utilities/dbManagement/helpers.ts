@@ -155,6 +155,16 @@ export async function insertCollections(
 
 		await ensureAdministratorExists();
 
+		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
+			process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+		if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
+			console.error(
+				"\x1b[31m",
+				"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined in .env file",
+			);
+			return;
+		}
+
 		for (const collection of collections) {
 			const data = await fs.readFile(
 				path.resolve(dirname, `../../../sample_data/${collection}.json`),
@@ -190,15 +200,6 @@ export async function insertCollections(
 					await db.insert(schema.organizationsTable).values(organizations);
 
 					// Add API_ADMINISTRATOR_USER_EMAIL_ADDRESS as administrator of the all organization
-					const API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
-						process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-					if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
-						console.error(
-							"\x1b[31m",
-							"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined in .env file",
-						);
-						return;
-					}
 
 					const API_ADMINISTRATOR_USER = await db.query.usersTable.findFirst({
 						columns: {
