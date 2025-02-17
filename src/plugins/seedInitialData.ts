@@ -1,5 +1,5 @@
 import { hash } from "@node-rs/argon2";
-import { eq, isNotNull, name } from "drizzle-orm";
+import { and, eq, isNotNull, sql } from "drizzle-orm";
 import type { FastifyPluginAsync } from "fastify";
 import fastifyPlugin from "fastify-plugin";
 import { uuidv7 } from "uuidv7";
@@ -17,8 +17,7 @@ import {
 	organizationsTableInsertSchema,
 } from "~/src/drizzle/tables/organizations";
 import { usersTable, usersTableInsertSchema } from "~/src/drizzle/tables/users";
-// import { organizationsTable } from "../drizzle/schema";
-// import { organizationsTableInsertSchema } from "../drizzle/tables/organizations";
+
 /**
  * This plugin handles seeding the initial data into appropriate service at the startup time of the talawa api. The data must strictly only comprise of things that are required in the production environment of talawa api. This plugin shouldn't be used for seeding dummy data.
  *
@@ -190,7 +189,13 @@ const plugin: FastifyPluginAsync = async (fastify) => {
 		const organizationExists = await fastify.drizzleClient
 			.select({ addressLine1: organizationsTable.addressLine1 })
 			.from(organizationsTable)
-			.where(isNotNull(organizationsTable.addressLine1))
+			.where(
+				and(
+					isNotNull(organizationsTable.addressLine1),
+					sql`char_length(${organizationsTable.addressLine1}) > 0`,
+				),
+			)
+
 			.limit(1)
 			.then((result) => result.length > 0);
 
