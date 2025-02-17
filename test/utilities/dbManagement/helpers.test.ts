@@ -28,9 +28,9 @@ process.env.API_ADMINISTRATOR_USER_PASSWORD = "password";
 process.env.API_ADMINISTRATOR_USER_NAME = "Admininstrator";
 
 describe("populate script basic tests", () => {
-	beforeAll(async () => {});
-
-	afterAll(async () => {});
+	afterAll(async () => {
+    await disconnect();
+  });
 
 	it("parseDate function should correctly parse a valid date", () => {
 		const validDate = "2023-01-01T00:00:00Z";

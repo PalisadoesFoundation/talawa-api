@@ -12,7 +12,7 @@ export async function main() {
 		await runValidation(expectedCounts);
 		await disconnect();
 	} catch (error) {
-		console.log("Error: ", error);
+		console.error("Error: ", error);
 	}
 }
 

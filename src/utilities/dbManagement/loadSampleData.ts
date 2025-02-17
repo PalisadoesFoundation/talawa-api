@@ -5,7 +5,7 @@ export async function main() {
 		await populateDB("interactive");
 		await disconnect();
 	} catch (error) {
-		console.log("Error: ", error);
+		console.error("Error: ", error);
 	}
 }
 
