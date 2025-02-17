@@ -7,7 +7,7 @@ const validArgs = { input: { id: validUuid } };
 
 // --- Helper: Create a full mock GraphQLContext ---
 function createMockContext(
-	overrides: Partial<GraphQLContext> = {},
+	overrides: Partial<Required<GraphQLContext>> = {},
 ): GraphQLContext {
 	return {
 		currentClient: {
