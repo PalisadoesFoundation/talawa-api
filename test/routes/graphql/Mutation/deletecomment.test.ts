@@ -5,7 +5,12 @@ import { deleteCommentResolver } from "~/src/graphql/types/Mutation/deleteCommen
 const validUuid = "11111111-1111-1111-1111-111111111111";
 const validArgs = { input: { id: validUuid } };
 
-// --- Helper: Create a full mock GraphQLContext ---
+/**
+ * Creates a mock GraphQLContext for testing.
+ * @param overrides - Partial context to override default values
+ * @returns GraphQLContext with mocked functionality
+ */
+
 function createMockContext(
 	overrides: Partial<Required<GraphQLContext>> = {},
 ): GraphQLContext {
@@ -393,10 +398,11 @@ describe("GraphQL schema wiring", () => {
 		expect(calls.length).toBeGreaterThan(0);
 		if (calls[0] === undefined)
 			throw new Error("No calls found for deleteComment mutation");
-		const callback = calls[0][1] as (t: {
+		type BuilderCallback = (t: {
 			field: (config: unknown) => unknown;
 			arg: (config: unknown) => unknown;
 		}) => unknown;
+		const callback = calls[0][1] as BuilderCallback;
 		const dummyT = {
 			field: vi.fn().mockImplementation((config) => config),
 			arg: vi.fn().mockImplementation((config) => config),
