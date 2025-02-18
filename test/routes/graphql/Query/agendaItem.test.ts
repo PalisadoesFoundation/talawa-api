@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test } from "vitest";
 import { usersTable } from "~/src/drizzle/schema";
 import { agendaItemsTableInsertSchema } from "~/src/drizzle/tables/agendaItems";
 import type {
@@ -483,17 +483,31 @@ suite("Input Validation Tests", () => {
 	});
 
 	suite("Authorization Tests", () => {
+		const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+		afterEach(async () => {
+			for (const cleanup of testCleanupFunctions.reverse()) {
+				try {
+					await cleanup();
+				} catch (error) {
+					console.error("Cleanup failed:", error);
+				}
+			}
+			// Reset the cleanup functions array
+			testCleanupFunctions.length = 0;
+		});
+
 		test("denies access if user is not organization member and not admin", async () => {
-			// Create a regular user
-			const regularUserResult = await createRegularUser();
+			const { authToken, cleanup: userCleanup } = await createRegularUser();
+			testCleanupFunctions.push(userCleanup);
 
-			// Create an agenda item (this creates the necessary org/event/folder hierarchy)
-			const { agendaItemId } = await createTestAgendaItem();
+			const { agendaItemId, cleanup: agendaCleanup } =
+				await createTestAgendaItem();
+			testCleanupFunctions.push(agendaCleanup);
 
-			// Attempt to query agenda item without being org member
 			const agendaItemResult = await mercuriusClient.query(Query_agendaItem, {
 				headers: {
-					authorization: `bearer ${regularUserResult.authToken}`,
+					authorization: `bearer ${authToken}`,
 				},
 				variables: {
 					input: {
@@ -522,30 +536,42 @@ suite("Input Validation Tests", () => {
 		});
 
 		test("allows access if user is organization member", async () => {
-			// Create a regular user
-			const regularUserResult = await createRegularUser();
+			const {
+				userId,
+				authToken,
+				cleanup: userCleanup,
+			} = await createRegularUser();
+			testCleanupFunctions.push(userCleanup);
 
-			// Create an agenda item and get org ID
-			const { agendaItemId, orgId } = await createTestAgendaItem();
+			const {
+				agendaItemId,
+				orgId,
+				cleanup: agendaCleanup,
+			} = await createTestAgendaItem();
+			testCleanupFunctions.push(agendaCleanup);
 
-			// Add user to organization
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: {
-					authorization: `bearer ${await getAdminAuthToken()}`,
-				},
-				variables: {
-					input: {
-						memberId: regularUserResult.userId,
-						organizationId: orgId,
-						role: "regular",
+			const membershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: {
+						authorization: `bearer ${await getAdminAuthToken()}`,
+					},
+					variables: {
+						input: {
+							memberId: userId,
+							organizationId: orgId, // Use orgId captured from createTestAgendaItem
+							role: "regular",
+						},
 					},
 				},
-			});
+			);
 
-			// Query agenda item as org member
+			assertToBeNonNullish(membershipResult.data);
+			assertToBeNonNullish(membershipResult.data.createOrganizationMembership);
+
 			const agendaItemResult = await mercuriusClient.query(Query_agendaItem, {
 				headers: {
-					authorization: `bearer ${regularUserResult.authToken}`,
+					authorization: `bearer ${authToken}`,
 				},
 				variables: {
 					input: {
@@ -563,13 +589,38 @@ suite("Input Validation Tests", () => {
 			);
 		});
 
-		test("allows access if user is administrator", async () => {
-			const adminAuthToken = await getAdminAuthToken();
-			const { agendaItemId } = await createTestAgendaItem();
+		test("allows access if user is organization admin", async () => {
+			// Create test resources
+			const {
+				userId,
+				authToken,
+				cleanup: userCleanup,
+			} = await createRegularUser();
+			testCleanupFunctions.push(userCleanup);
+
+			const {
+				agendaItemId,
+				orgId,
+				cleanup: agendaCleanup,
+			} = await createTestAgendaItem();
+			testCleanupFunctions.push(agendaCleanup);
+
+			// Add user as organization admin
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: {
+					authorization: `bearer ${await getAdminAuthToken()}`,
+				},
+				variables: {
+					input: {
+						memberId: userId,
+						organizationId: orgId,
+					},
+				},
+			});
 
 			const agendaItemResult = await mercuriusClient.query(Query_agendaItem, {
 				headers: {
-					authorization: `bearer ${adminAuthToken}`,
+					authorization: `bearer ${authToken}`,
 				},
 				variables: {
 					input: {
