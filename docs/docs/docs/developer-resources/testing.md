@@ -180,6 +180,7 @@ Sometimes you may want to start all over again from scratch. These steps will re
    ```bash
    pnpm run reset:db
    ```
+   
 1. This command will add sample data to make it easier for developers to get an understanding of the application.
    ```bash
    pnpm run add:sample_data
