@@ -30,21 +30,25 @@ const resolvers = {
 			// Implement the logic to add a custom field to the organization
 			// For example, you can use a data source to interact with your database
 			// Validate input parameters
-			const allowedTypes = ['TEXT', 'NUMBER', 'DATE', 'BOOLEAN'];
+			const allowedTypes = ["TEXT", "NUMBER", "DATE", "BOOLEAN"];
 			if (!allowedTypes.includes(type.toUpperCase())) {
-				throw new Error(`Invalid field type. Allowed types: ${allowedTypes.join(', ')}`);
+				throw new Error(
+					`Invalid field type. Allowed types: ${allowedTypes.join(", ")}`,
+				);
 			}
 
 			try {
-				const newCustomField = await dataSources.organizationAPI.addCustomField({
-					organizationId,
-					name: name.trim(),
-					type,
-				});
+				const newCustomField = await dataSources.organizationAPI.addCustomField(
+					{
+						organizationId,
+						name: name.trim(),
+						type,
+					},
+				);
 
 				return newCustomField;
 			} catch (error) {
-				throw new Error(`Failed to add custom field:`);
+				throw new Error("Failed to add custom field ");
 			}
 		},
 	},
