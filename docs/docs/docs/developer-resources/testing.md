@@ -176,7 +176,7 @@ CloudBeaver is a lightweight web application designed for comprehensive data man
 
 Sometimes you may want to start all over again from scratch. These steps will reset your development postgres database.
 
-1. **WARNING:** This command will **DELETE** all data from each table in your database, administrator previleges will be restored. Use with extreme caution.
+1. **WARNING:** This command will **DELETE** all data from each table in your database, administrator roles will be restored. Use with extreme caution.
    ```bash
    pnpm run reset:db
    ```
