@@ -170,11 +170,6 @@ You will need to update the `.env` file with the following information. This val
 1. `CADDY_TALAWA_API_DOMAIN_NAME` can be set to `localhost`
 2. `CADDY_TALAWA_API_EMAIL` can be set to a suitable email address
 
-```
-localhost
-```
-```
-```
 ##### Update the Social Media URLs
 
 You will need to update the `.env` file with the following information. 
