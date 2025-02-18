@@ -411,3 +411,71 @@ export const Query_organization = gql(`
       }
     }
   `);
+
+export const Query_agendaItem =
+	gql(`query Query_agendaItem($input: QueryAgendaItemInput!) {
+  agendaItem(input: $input) {
+    id
+    name
+    description
+    duration
+    key
+    type
+  }
+}`);
+
+export const Mutation_createEvent = gql(`
+  mutation Mutation_createEvent($input: MutationCreateEventInput!) {
+    createEvent(input: $input) {
+      id
+      name
+      startAt
+      endAt
+      organization {
+        id
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteEvent = gql(`
+  mutation Mutation_deleteEvent($input: MutationDeleteEventInput!) {
+    deleteEvent(input: $input) {
+      id
+      name
+    }
+  }
+`);
+
+export const Mutation_createAgendaFolder = gql(`
+  mutation Mutation_createAgendaFolder($input: MutationCreateAgendaFolderInput!) {
+    createAgendaFolder(input: $input) {
+      id
+      name
+      event {
+        id
+      }
+    }
+  }
+`);
+
+export const Mutation_createAgendaItem = gql(`
+  mutation Mutation_createAgendaItem($input: MutationCreateAgendaItemInput!) {
+    createAgendaItem(input: $input) {
+      id
+      name
+      description
+      duration
+      type
+    }
+  }
+`);
+
+export const Mutation_deleteAgendaItem = gql(`
+  mutation Mutation_deleteAgendaItem($input: MutationDeleteAgendaItemInput!) {
+    deleteAgendaItem(input: $input) {
+      id
+      name
+    }
+  }
+`);
