@@ -15,12 +15,16 @@ import * as schema from "../../drizzle/schema";
 dotenv.config();
 const NODE_ENV = process.env.NODE_ENV || "development";
 
+const isTestEnvironment = process.env.NODE_ENV === "test";
+
 // Get the directory name of the current module
 const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
 // Create a new database client
 export const queryClient = postgres({
-	host: process.env.API_POSTGRES_HOST,
+	host: isTestEnvironment
+		? process.env.API_POSTGRES_TEST_HOST
+		: process.env.API_POSTGRES_HOST,
 	port: Number(process.env.API_POSTGRES_PORT),
 	database: process.env.API_POSTGRES_DATABASE,
 	username: process.env.API_POSTGRES_USER,
