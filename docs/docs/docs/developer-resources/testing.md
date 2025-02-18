@@ -10,13 +10,14 @@ This section covers important tests to validate the operation of the API.
 ### Sample Database Login Credentials
 
 If the API:
+
 1. is running with an unmodified `.env` file copied from `envFiles/.env.devcontainer` and;
 2. the API sample database is loaded;
-then you can use these login credentials to access the API via various clients.
+   then you can use these login credentials to access the API via various clients.
 
-| Email                      | Password | User Type     | Joined Organization  |
-| -------------------------- | -------- | --------------| -------------------- |
-| administrator@email.com    | password | Administrator | N/A                  |
+| Email                   | Password | User Type     | Joined Organization |
+| ----------------------- | -------- | ------------- | ------------------- |
+| administrator@email.com | password | Administrator | N/A                 |
 
 ## Accessing the API
 
@@ -168,6 +169,23 @@ CloudBeaver is a lightweight web application designed for comprehensive data man
 5. Click `Create` to save the connection.
 6. You should now see the `PostgreSql@postgres-test` connection in the list of available connections. Click on the connection to open the database.
 7. Navigate to `PostgreSql@postgres-test > Databases > talawa > Schemas > public > Tables` to view the available tables.
+
+## Resetting Database
+
+**NOTE:** This applies only to Talawa API developers.
+
+Sometimes you may want to start all over again from scratch. These steps will reset your development postgres database.
+
+1. **WARNING:** This command will **DELETE** all data from each table in your database, administrator previleges will be restored. Use with extreme caution.
+   ```bash
+   pnpm run reset:db
+   ```
+1. This command will add sample data to make it easier for developers to get an understanding of the application.
+   ```bash
+   pnpm run add:sample_data
+   ```
+
+Now you can resume your development work.
 
 ## Object Storage Management
 

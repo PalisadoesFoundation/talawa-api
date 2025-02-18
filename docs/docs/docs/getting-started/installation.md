@@ -344,7 +344,7 @@ This applies to users running Talawa API in dev containers.
    ```
 3. Inside the container, run the following command to import sample data into the database:
    ```bash
-    pnpm run import:sample-data
+    pnpm run add:sample_data
    ```
 4. Then exit
    ```bash

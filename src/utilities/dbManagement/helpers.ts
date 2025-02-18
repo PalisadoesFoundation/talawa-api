@@ -4,39 +4,23 @@ import { fileURLToPath } from "node:url";
 import { hash } from "@node-rs/argon2";
 import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
+import type { PgTable } from "drizzle-orm/pg-core";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/postgres-js";
-import inquirer from "inquirer";
 import postgres from "postgres";
 import { uuidv7 } from "uuidv7";
 import * as schema from "../../drizzle/schema";
 
+//Load Environment Variables
 dotenv.config();
+const NODE_ENV = process.env.NODE_ENV || "development";
 
+// Get the directory name of the current module
 const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
-const isTestEnvironment = process.env.NODE_ENV === "test";
-
-const requiredEnvVars = [
-	"API_POSTGRES_HOST",
-	"API_POSTGRES_PORT",
-	"API_POSTGRES_DATABASE",
-	"API_POSTGRES_USER",
-	"API_POSTGRES_PASSWORD",
-	"API_POSTGRES_SSL_MODE",
-];
-
-const missingVars = requiredEnvVars.filter((key) => !process.env[key]);
-
-if (missingVars.length > 0) {
-	throw new Error(
-		`Missing required environment variables: ${missingVars.join(", ")}`,
-	);
-}
-
+// Create a new database client
 export const queryClient = postgres({
-	host: isTestEnvironment
-		? process.env.API_POSTGRES_TEST_HOST
-		: process.env.API_POSTGRES_HOST,
+	host: process.env.API_POSTGRES_HOST,
 	port: Number(process.env.API_POSTGRES_PORT),
 	database: process.env.API_POSTGRES_DATABASE,
 	username: process.env.API_POSTGRES_USER,
@@ -46,28 +30,70 @@ export const queryClient = postgres({
 
 const db = drizzle(queryClient, { schema });
 
-interface LoadOptions {
-	items?: string[];
-	format?: boolean;
-}
-
 /**
  * Clears all tables in the database.
  */
 export async function formatDatabase(): Promise<void> {
-	const tables = [
-		schema.postsTable,
-		schema.organizationsTable,
-		schema.eventsTable,
-		schema.organizationMembershipsTable,
-		schema.usersTable,
-	];
-
-	for (const table of tables) {
-		await db.delete(table);
+	if (NODE_ENV === "production") {
+		throw new Error(
+			"\n\x1b[31mRestricted: Resetting the database in production is not allowed\x1b[0m\n",
+		);
 	}
 
-	console.log("\x1b[33m", "Cleared all tables");
+	const tables = await db.execute(sql`
+		SELECT tablename FROM pg_catalog.pg_tables 
+		WHERE schemaname = 'public'
+	`);
+
+	for (const row of tables) {
+		const tableName = row.tablename;
+		if (typeof tableName === "string") {
+			await db.execute(sql`DELETE FROM ${sql.identifier(tableName)}`);
+		}
+	}
+}
+
+export async function ensureAdministratorExists(): Promise<void> {
+	const email = process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+
+	if (!email) {
+		throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.");
+	}
+
+	const existingUser = await db.query.usersTable.findFirst({
+		columns: { id: true, role: true },
+		where: (fields, operators) => operators.eq(fields.emailAddress, email),
+	});
+
+	if (existingUser) {
+		if (existingUser.role !== "administrator") {
+			await db
+				.update(schema.usersTable)
+				.set({ role: "administrator" })
+				.where(sql`email_address = ${email}`);
+			console.log("Role Change: Updated user role to administrator");
+		} else {
+			console.log("\x1b[33mFound: Administrator user already exists\x1b[0m \n");
+		}
+		return;
+	}
+
+	const userId = uuidv7();
+	const password = process.env.API_ADMINISTRATOR_USER_PASSWORD;
+	if (!password) {
+		throw new Error("API_ADMINISTRATOR_USER_PASSWORD is not defined.");
+	}
+	const passwordHash = await hash(password);
+
+	await db.insert(schema.usersTable).values({
+		id: userId,
+		emailAddress: email,
+		name: process.env.API_ADMINISTRATOR_USER_NAME || "",
+		passwordHash,
+		role: "administrator",
+		isEmailAddressVerified: true,
+		creatorId: userId,
+	});
 }
 
 /**
@@ -75,7 +101,7 @@ export async function formatDatabase(): Promise<void> {
  */
 export async function listSampleData(): Promise<void> {
 	try {
-		const sampleDataPath = path.resolve(dirname, "../../../sample_data");
+		const sampleDataPath = path.resolve(dirname, "./sample_data");
 		const files = await fs.readdir(sampleDataPath);
 
 		console.log("Sample Data Files:\n");
@@ -103,55 +129,39 @@ ${"|".padEnd(30, "-")}|----------------|
 	}
 }
 
-export async function ensureAdministratorExists(): Promise<void> {
-	console.log("Checking if the administrator user exists...");
+/**
+ * Check database connection
+ */
 
-	const email = process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-	if (!email) {
-		console.error(
-			"ERROR: API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.",
-		);
-		return;
+export async function pingDB(): Promise<void> {
+	try {
+		await db.execute(sql`SELECT 1`);
+	} catch (error) {
+		throw new Error("Unable to connect to the database.");
 	}
+}
 
-	const existingUser = await db.query.usersTable.findFirst({
-		columns: { id: true, role: true },
-		where: (fields, operators) => operators.eq(fields.emailAddress, email),
-	});
+/**
+ * Check duplicate data
+ */
 
-	if (existingUser) {
-		if (existingUser.role !== "administrator") {
-			console.log("Updating user role to administrator...");
-			await db
-				.update(schema.usersTable)
-				.set({ role: "administrator" })
-				.where(sql`email_address = ${email}`);
-			console.log("Administrator role updated.");
-		} else {
-			console.log("\x1b[33m", "\nAdministrator user already exists.\n");
-		}
-		return;
-	}
+export async function checkAndInsertData<T>(
+	table: PgTable,
+	rows: T[],
+	conflictTarget: AnyPgColumn | AnyPgColumn[],
+): Promise<void> {
+	// If you have zero rows, just exit quickly
+	if (!rows.length) return;
 
-	console.log("Creating administrator user...");
-	const userId = uuidv7();
-	const password = process.env.API_ADMINISTRATOR_USER_PASSWORD;
-	if (!password) {
-		throw new Error("API_ADMINISTRATOR_USER_PASSWORD is not defined.");
-	}
-	const passwordHash = await hash(password);
-
-	await db.insert(schema.usersTable).values({
-		id: userId,
-		emailAddress: email,
-		name: process.env.API_ADMINISTRATOR_USER_NAME || "",
-		passwordHash,
-		role: "administrator",
-		isEmailAddressVerified: true,
-		creatorId: userId,
-	});
-
-	console.log("Administrator user created successfully.");
+	// Drizzle’s `onConflictDoNothing` usage for PostgreSQL
+	// If your primary key is a single column, conflictTarget can be a single column
+	// If it's a composite key, pass them as an array
+	await db
+		.insert(table)
+		.values(rows)
+		.onConflictDoNothing({
+			target: Array.isArray(conflictTarget) ? conflictTarget : [conflictTarget],
+		});
 }
 
 /**
@@ -160,17 +170,9 @@ export async function ensureAdministratorExists(): Promise<void> {
  * @param options - Options for loading data
  */
 
-export async function insertCollections(
-	collections: string[],
-	method: string,
-	options: LoadOptions = {},
-): Promise<void> {
+export async function insertCollections(collections: string[]): Promise<void> {
 	try {
-		if (options.format) {
-			await formatDatabase();
-		}
-
-		await ensureAdministratorExists();
+		await checkDataSize("Before");
 
 		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
 			process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
@@ -183,14 +185,16 @@ export async function insertCollections(
 		}
 
 		for (const collection of collections) {
-			const data = await fs.readFile(
-				path.resolve(dirname, `../../../sample_data/${collection}.json`),
-				"utf8",
+			const dataPath = path.resolve(
+				dirname,
+				`./sample_data/${collection}.json`,
 			);
+			const fileContent = await fs.readFile(dataPath, "utf8");
 
 			switch (collection) {
 				case "users": {
-					const users = JSON.parse(data).map(
+					// Strictly type your parsed data
+					const users = JSON.parse(fileContent).map(
 						(user: {
 							createdAt: string | number | Date;
 							updatedAt: string | number | Date;
@@ -200,11 +204,22 @@ export async function insertCollections(
 							updatedAt: parseDate(user.updatedAt),
 						}),
 					) as (typeof schema.usersTable.$inferInsert)[];
-					await db.insert(schema.usersTable).values(users);
+
+					// Insert with "onConflictDoNothing" on the 'id' PK
+					await checkAndInsertData(
+						schema.usersTable,
+						users,
+						schema.usersTable.id,
+					);
+
+					console.log(
+						"\n\x1b[35mAdded: Users table data (skipping duplicates)\x1b[0m",
+					);
 					break;
 				}
+
 				case "organizations": {
-					const organizations = JSON.parse(data).map(
+					const organizations = JSON.parse(fileContent).map(
 						(org: {
 							createdAt: string | number | Date;
 							updatedAt: string | number | Date;
@@ -214,10 +229,14 @@ export async function insertCollections(
 							updatedAt: parseDate(org.updatedAt),
 						}),
 					) as (typeof schema.organizationsTable.$inferInsert)[];
-					await db.insert(schema.organizationsTable).values(organizations);
 
-					// Add API_ADMINISTRATOR_USER_EMAIL_ADDRESS as administrator of the all organization
+					await checkAndInsertData(
+						schema.organizationsTable,
+						organizations,
+						schema.organizationsTable.id,
+					);
 
+					// Add your administrator membership logic
 					const API_ADMINISTRATOR_USER = await db.query.usersTable.findFirst({
 						columns: {
 							id: true,
@@ -236,6 +255,7 @@ export async function insertCollections(
 						return;
 					}
 
+					// For each organization, create membership row
 					const organizationAdminMembership = organizations.map((org) => ({
 						organizationId: org.id,
 						memberId: API_ADMINISTRATOR_USER.id,
@@ -243,26 +263,47 @@ export async function insertCollections(
 						createdAt: new Date(),
 						role: "administrator",
 					})) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
-					await db
-						.insert(schema.organizationMembershipsTable)
-						.values(organizationAdminMembership);
+
+					// If organizationMemberships has a composite primary key, specify both columns
+					// e.g., [schema.organizationMembershipsTable.organizationId, schema.organizationMembershipsTable.memberId]
+					await checkAndInsertData(
+						schema.organizationMembershipsTable,
+						organizationAdminMembership,
+						[
+							schema.organizationMembershipsTable.organizationId,
+							schema.organizationMembershipsTable.memberId,
+						],
+					);
+
 					console.log(
-						"\x1b[35m",
-						"Added API_ADMINISTRATOR_USER as administrator of the all organization",
+						"\x1b[35mAdded: Organizations table data (skipping duplicates), plus admin memberships\x1b[0m",
 					);
 					break;
 				}
+
 				case "organization_memberships": {
-					// Add case for organization memberships
-					const organizationMemberships = JSON.parse(data).map(
-						(membership: { createdAt: string | number | Date }) => ({
+					const organizationMemberships = JSON.parse(fileContent).map(
+						(membership: {
+							createdAt: string | number | Date;
+						}) => ({
 							...membership,
 							createdAt: parseDate(membership.createdAt),
 						}),
 					) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
-					await db
-						.insert(schema.organizationMembershipsTable)
-						.values(organizationMemberships);
+
+					// If there's a composite PK or unique constraint, specify all relevant columns
+					await checkAndInsertData(
+						schema.organizationMembershipsTable,
+						organizationMemberships,
+						[
+							schema.organizationMembershipsTable.organizationId,
+							schema.organizationMembershipsTable.memberId,
+						],
+					);
+
+					console.log(
+						"\x1b[35mAdded: Organization_memberships data (skipping duplicates)\x1b[0m",
+					);
 					break;
 				}
 
@@ -270,15 +311,11 @@ export async function insertCollections(
 					console.log("\x1b[31m", `Invalid table name: ${collection}`);
 					break;
 			}
-
-			console.log("\x1b[35m", `Added ${collection} table data`);
 		}
 
-		await checkCountAfterImport("After");
-
-		console.log("\nTables populated successfully");
+		await checkDataSize("After");
 	} catch (err) {
-		console.error("\x1b[31m", `Error adding data to tables: ${err}`);
+		throw new Error(`\x1b[31mError adding data to tables: ${err}\x1b[0m`);
 	}
 }
 
@@ -293,76 +330,10 @@ export function parseDate(date: string | number | Date): Date | null {
 }
 
 /**
- * Fetches the expected counts of records in the database.
- * @param - The date string to parse
- * @returns Expected counts of records in the database
- */
-
-export async function getExpectedCounts(): Promise<Record<string, number>> {
-	try {
-		await formatDatabase();
-		const tables = [
-			{ name: "users", table: schema.usersTable },
-			{ name: "organizations", table: schema.organizationsTable },
-			{
-				name: "organization_memberships",
-				table: schema.organizationMembershipsTable,
-			},
-		];
-
-		const expectedCounts: Record<string, number> = {};
-
-		// Get current counts from DB
-		for (const { name, table } of tables) {
-			const result = await db
-				.select({ count: sql<number>`count(*)` })
-				.from(table);
-			expectedCounts[name] = Number(result[0]?.count ?? 0);
-		}
-
-		// Get counts from sample data files
-		const sampleDataPath = path.resolve(dirname, "../../../sample_data");
-		const files = await fs.readdir(sampleDataPath);
-		let numberOfOrganizations = 0;
-
-		for (const file of files) {
-			const filePath = path.resolve(sampleDataPath, file);
-			const stats = await fs.stat(filePath);
-
-			if (stats.isFile() && file.endsWith(".json")) {
-				const data = await fs.readFile(filePath, "utf8");
-				const docs = JSON.parse(data);
-				const name = file.replace(".json", "");
-				if (expectedCounts[name] !== undefined) {
-					expectedCounts[name] += docs.length;
-				}
-				if (name === "organizations") {
-					numberOfOrganizations += docs.length;
-				}
-			}
-		}
-
-		if (expectedCounts.users !== undefined) {
-			expectedCounts.users += 1;
-		}
-
-		// Give administrator access of all organizations
-		if (expectedCounts.organization_memberships !== undefined) {
-			expectedCounts.organization_memberships += numberOfOrganizations;
-		}
-
-		return expectedCounts;
-	} catch (err) {
-		console.error("\x1b[31m", `Error fetching expected counts: ${err}`);
-		return {};
-	}
-}
-
-/**
  * Checks record counts in specified tables after data insertion.
  * @returns {Promise<boolean>} - Returns true if data exists, false otherwise.
  */
-export async function checkCountAfterImport(stage: string): Promise<boolean> {
+export async function checkDataSize(stage: string): Promise<boolean> {
 	try {
 		const tables = [
 			{
@@ -400,157 +371,6 @@ ${"|".padEnd(30, "-")}|----------------|
 	} catch (err) {
 		console.error("\x1b[31m", `Error checking record count: ${err}`);
 		return false;
-	}
-}
-
-/**
- * Populates the database with sample data.
- * @returns {Promise<void>} - Returns a promise when the database is populated.
- */
-
-const collections = ["users", "organizations", "organization_memberships"]; // Add organization memberships to collections
-
-const args = process.argv.slice(2);
-const options: LoadOptions = {
-	format: args.includes("--format") || args.includes("-f"),
-	items: undefined,
-};
-
-const itemsIndex = args.findIndex((arg) => arg === "--items" || arg === "-i");
-if (itemsIndex !== -1 && args[itemsIndex + 1]) {
-	const items = args[itemsIndex + 1];
-	options.items = items ? items.split(",") : undefined;
-}
-
-export async function populateDB(method: string): Promise<void> {
-	await listSampleData();
-
-	const existingData = await checkCountAfterImport("Before");
-
-	if (method !== "interactive") {
-		options.format = false;
-	} else if (existingData) {
-		const { deleteExisting } = await inquirer.prompt([
-			{
-				type: "confirm",
-				name: "deleteExisting",
-				message:
-					"Existing data found. Do you want to delete existing data and import the new data?",
-				default: false,
-			},
-		]);
-
-		if (deleteExisting) {
-			options.format = true;
-		}
-	}
-
-	await insertCollections(options.items || collections, method, options);
-
-	if (method === "interactive") {
-		process.exit(0);
-	}
-}
-
-/**
- * Checks record counts in specified tables after data insertion.
- * @returns {Promise<boolean>} - Returns true if data matches expected values.
- */
-
-export async function verifyCountAfterImport(
-	expectedCounts: Record<string, number>,
-): Promise<boolean> {
-	try {
-		const tables = [
-			{ name: "users", table: schema.usersTable },
-			{ name: "organizations", table: schema.organizationsTable },
-			{
-				name: "organization_memberships",
-				table: schema.organizationMembershipsTable,
-			},
-		];
-		let allValid = true;
-		for (const { name, table } of tables) {
-			const result = await db
-				.select({ count: sql<number>`count(*)` })
-				.from(table);
-			const actualCount = Number(result[0]?.count ?? 0); // Convert actual count to number
-			const expectedCount = expectedCounts[name]; // Expected count is already a number
-
-			if (actualCount !== expectedCount) {
-				console.error(
-					`ERROR: Record count mismatch in ${name} (Expected ${expectedCount}, Found ${actualCount})`,
-				);
-				allValid = false;
-			}
-		}
-
-		return allValid;
-	} catch (error) {
-		console.error(`ERROR: ${error}`);
-	}
-	return false;
-}
-
-/**
- * Makes an update in the database (Modify the first user's name).
- * @returns {Promise<boolean>} - Returns true if the update was successful.
- */
-export async function updateDatabase(): Promise<boolean> {
-	const updatedName = "Test User";
-
-	try {
-		const user = await db.select().from(schema.usersTable).limit(1);
-		if (user.length === 0) {
-			console.error("ERROR: No user found to update!");
-			return false;
-		}
-
-		const userId = user[0]?.id;
-
-		// Update the user and return the updated row
-		const [updatedUser] = await db
-			.update(schema.usersTable)
-			.set({ name: updatedName })
-			.where(sql`id = ${userId}`)
-			.returning({ name: schema.usersTable.name });
-
-		// Validate update in one step
-		if (!updatedUser || updatedUser.name !== updatedName) {
-			console.error("ERROR: Database update failed!");
-			return false;
-		}
-		return true;
-	} catch (error) {
-		console.error(`ERROR: ${error}`);
-		return false;
-	}
-}
-
-/**
- * Runs the validation and update process.
- */
-export async function runValidation(
-	expectedCounts: Record<string, number>,
-): Promise<void> {
-	try {
-		const validRecords = await verifyCountAfterImport(expectedCounts);
-		if (!validRecords) {
-			console.error("\nERROR: Database validation failed!");
-		}
-		console.log("\nDatabase Validation : Success");
-		const updateSuccess = await updateDatabase();
-		if (!updateSuccess) {
-			console.error("\nERROR: Database update validation failed!");
-		}
-		console.log("Database Updation : Success");
-		process.exit(0);
-	} catch (error) {
-		if (error instanceof Error) {
-			console.error(`\nERROR: ${error.message}`);
-		} else {
-			console.error(`\nERROR: ${String(error)}`);
-		}
 	}
 }
 
