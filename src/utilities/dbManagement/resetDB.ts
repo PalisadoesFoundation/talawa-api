@@ -55,6 +55,14 @@ export async function main(): Promise<void> {
 				"\n\x1b[31mAdministrator access may be lost, try reformatting DB to restore access\x1b[0m\n",
 			);
 		}
+		try {
+			await disconnect();
+			console.log(
+				"\n\x1b[32mSuccess:\x1b[0m Gracefully disconnecting from the database\n",
+			);
+		} catch (error) {
+			console.error("Error: ", error);
+		}
 		process.exit(0);
 	} else {
 		console.log("Operation cancelled");
