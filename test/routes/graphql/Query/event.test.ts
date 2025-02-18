@@ -20,6 +20,44 @@ import {
 } from "../documentNodes";
 
 suite("Query field event", () => {
+	// Helper function to get admin auth token
+	async function getAdminToken() {
+		const signInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		const authToken = signInResult.data?.signIn?.authenticationToken;
+		assertToBeNonNullish(authToken);
+		return authToken;
+	}
+
+	// Helper function to create an organization
+	async function createTestOrganization(authToken: string) {
+		const orgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						countryCode: "us",
+						name: `Test Organization ${crypto.randomUUID()}`,
+					},
+				},
+			},
+		);
+
+		const organization = orgResult.data?.createOrganization;
+		assertToBeNonNullish(organization);
+		return organization;
+	}
+
 	suite(
 		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.event" field if`,
 		() => {
@@ -222,7 +260,7 @@ suite("Query field event", () => {
 		const authToken = signInResult.data?.signIn?.authenticationToken;
 		assertToBeNonNullish(authToken);
 
-		const validNonExistentId = crypto.randomUUID();
+		const validNonExistentId = faker.string.ulid();
 
 		const eventResult = await mercuriusClient.query(Query_event, {
 			headers: {
@@ -434,44 +472,6 @@ suite("Query field event", () => {
 
 	// These additional test cases do not improve coverage from the actual files, However -> They help testing the application better
 	suite("Additional event tests", () => {
-		// Helper function to get admin auth token
-		async function getAdminToken() {
-			const signInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-
-			const authToken = signInResult.data?.signIn?.authenticationToken;
-			assertToBeNonNullish(authToken);
-			return authToken;
-		}
-
-		// Helper function to create an organization
-		async function createTestOrganization(authToken: string) {
-			const orgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							countryCode: "us",
-							name: `Test Organization ${crypto.randomUUID()}`,
-						},
-					},
-				},
-			);
-
-			const organization = orgResult.data?.createOrganization;
-			assertToBeNonNullish(organization);
-			return organization;
-		}
-
 		test("handles events with past dates correctly", async () => {
 			const authToken = await getAdminToken();
 			const organization = await createTestOrganization(authToken);
