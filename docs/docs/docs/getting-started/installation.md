@@ -153,8 +153,8 @@ You will need to update the `.env` file with the following information.
 ##### Update the PostgreSQL Credentials
 
 You will need to update the `.env` file with the following information. The passwords are in plain text and must match.
-1. `API_POSTGRES_PASSWORD` needs to be set to `talawa` (This needs to be fixed in a GitHub issue)
-2. `POSTGRES_PASSWORD` needs to be set to `talawa` (This needs to be fixed in a GitHub issue)
+1. `API_POSTGRES_PASSWORD`
+2. `POSTGRES_PASSWORD`
 
 ##### Update the API_BASE_URL Value
 
