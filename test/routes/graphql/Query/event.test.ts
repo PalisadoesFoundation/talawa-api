@@ -431,4 +431,246 @@ suite("Query field event", () => {
 		expect(queriedEvent.id).toBe(event.id);
 		expect(queryResult.errors).toBeUndefined();
 	});
+
+	// These additional test cases do not improve coverage from the actual files, However -> They help testing the application better
+	suite("Additional event tests", () => {
+		// Helper function to get admin auth token
+		async function getAdminToken() {
+			const signInResult = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			const authToken = signInResult.data?.signIn?.authenticationToken;
+			assertToBeNonNullish(authToken);
+			return authToken;
+		}
+
+		// Helper function to create an organization
+		async function createTestOrganization(authToken: string) {
+			const orgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							countryCode: "us",
+							name: `Test Organization ${crypto.randomUUID()}`,
+						},
+					},
+				},
+			);
+
+			const organization = orgResult.data?.createOrganization;
+			assertToBeNonNullish(organization);
+			return organization;
+		}
+
+		test("handles events with past dates correctly", async () => {
+			const authToken = await getAdminToken();
+			const organization = await createTestOrganization(authToken);
+
+			// Create an event in the past
+			const pastEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							description: "Past Event",
+							// Set dates to last week
+							startAt: new Date(
+								Date.now() - 7 * 24 * 60 * 60 * 1000,
+							).toISOString(),
+							endAt: new Date(
+								Date.now() - 6 * 24 * 60 * 60 * 1000,
+							).toISOString(),
+							name: "Past Event",
+							organizationId: organization.id,
+						},
+					},
+				},
+			);
+
+			const pastEvent = pastEventResult.data?.createEvent;
+			assertToBeNonNullish(pastEvent);
+
+			// Query the past event
+			const queryResult = await mercuriusClient.query(Query_event, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						id: pastEvent.id,
+					},
+				},
+			});
+
+			const queriedEvent = queryResult.data.event;
+			expect(queriedEvent).not.toBeNull();
+			assertToBeNonNullish(queriedEvent);
+			expect(queriedEvent.id).toBe(pastEvent.id);
+			assertToBeNonNullish(queriedEvent.startAt);
+			assertToBeNonNullish(queriedEvent.endAt);
+			expect(new Date(queriedEvent.startAt).getTime()).toBeLessThan(Date.now());
+			expect(new Date(queriedEvent.endAt).getTime()).toBeLessThan(Date.now());
+		});
+
+		test("handles multi-day events correctly", async () => {
+			const authToken = await getAdminToken();
+			const organization = await createTestOrganization(authToken);
+
+			// Create a multi-day event
+			const multiDayEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							description: "Multi-day Conference",
+							startAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+							endAt: new Date(
+								Date.now() + 3 * 24 * 60 * 60 * 1000,
+							).toISOString(), // 3 days from now
+							name: "Annual Conference",
+							organizationId: organization.id,
+						},
+					},
+				},
+			);
+
+			const multiDayEvent = multiDayEventResult.data?.createEvent;
+			assertToBeNonNullish(multiDayEvent);
+
+			// Query the multi-day event
+			const queryResult = await mercuriusClient.query(Query_event, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						id: multiDayEvent.id,
+					},
+				},
+			});
+
+			const queriedEvent = queryResult.data.event;
+			expect(queriedEvent).not.toBeNull();
+			assertToBeNonNullish(queriedEvent);
+			expect(queriedEvent.id).toBe(multiDayEvent.id);
+
+			assertToBeNonNullish(queriedEvent.startAt);
+			assertToBeNonNullish(queriedEvent.endAt);
+			const startDate = new Date(queriedEvent.startAt);
+			const endDate = new Date(queriedEvent.endAt);
+			const durationInDays =
+				(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+			expect(durationInDays).toBeGreaterThan(1);
+		});
+
+		test("handles events with minimal fields correctly", async () => {
+			const authToken = await getAdminToken();
+			const organization = await createTestOrganization(authToken);
+
+			// Create an event with only required fields
+			const minimalEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							name: "Minimal Event",
+							startAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour from now
+							endAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
+							organizationId: organization.id,
+						},
+					},
+				},
+			);
+
+			const minimalEvent = minimalEventResult.data?.createEvent;
+			assertToBeNonNullish(minimalEvent);
+
+			// Query the minimal event
+			const queryResult = await mercuriusClient.query(Query_event, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						id: minimalEvent.id,
+					},
+				},
+			});
+
+			const queriedEvent = queryResult.data.event;
+			expect(queriedEvent).not.toBeNull();
+			assertToBeNonNullish(queriedEvent);
+			expect(queriedEvent.id).toBe(minimalEvent.id);
+			expect(queriedEvent.description).toBeNull();
+		});
+
+		test("handles concurrent access patterns correctly", async () => {
+			const authToken = await getAdminToken();
+			const organization = await createTestOrganization(authToken);
+
+			// Create an initial event
+			const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						name: "Concurrent Access Event",
+						startAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+						endAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+						organizationId: organization.id,
+					},
+				},
+			});
+
+			const event = eventResult.data?.createEvent;
+			assertToBeNonNullish(event);
+
+			// Perform multiple concurrent queries
+			const concurrentQueries = Array(5)
+				.fill(null)
+				.map(() =>
+					mercuriusClient.query(Query_event, {
+						headers: {
+							authorization: `bearer ${authToken}`,
+						},
+						variables: {
+							input: {
+								id: event.id,
+							},
+						},
+					}),
+				);
+
+			const results = await Promise.all(concurrentQueries);
+
+			// Verify all queries returned the same data
+			for (const result of results) {
+				const queriedEvent = result.data.event;
+				expect(queriedEvent).not.toBeNull();
+				assertToBeNonNullish(queriedEvent);
+				expect(queriedEvent.id).toBe(event.id);
+				expect(queriedEvent.name).toBe("Concurrent Access Event");
+			}
+		});
+	});
 });
