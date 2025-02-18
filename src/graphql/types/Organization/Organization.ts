@@ -1,6 +1,8 @@
+import { customFieldsTable } from "~/src/drizzle/tables/customFields";
 import type { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
+
 // First, create a CustomField type
 const CustomField = builder.objectRef<{
 	id: string;
@@ -76,7 +78,7 @@ Organization.implement({
 				}
 				const customFields: CustomField[] =
 					await ctx.drizzleClient.query.customFieldsTable.findMany({
-						where: (fields: any, operators: any) =>
+						where: (fields, operators) =>
 							operators.eq(fields.organizationId, organization.id),
 					});
 				return customFields || [];

@@ -1,13 +1,25 @@
 const resolvers = {
 	Mutation: {
 		addOrganizationCustomField: async (
-			_: any,
+			_: unknown,
 			{
 				organizationId,
 				name,
 				type,
 			}: { organizationId: string; name: string; type: string },
-			{ dataSources }: { dataSources: any },
+			{
+				dataSources,
+			}: {
+				dataSources: {
+					organizationAPI: {
+						addCustomField: (args: {
+							organizationId: string;
+							name: string;
+							type: string;
+						}) => Promise<unknown>;
+					};
+				};
+			},
 		) => {
 			// Implement the logic to add a custom field to the organization
 			// For example, you can use a data source to interact with your database
