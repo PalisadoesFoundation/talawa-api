@@ -46,7 +46,7 @@ suite("Query field event", () => {
 				variables: {
 					input: {
 						countryCode: "us",
-						name: `Test Organization ${crypto.randomUUID()}`,
+						name: `Test Organization ${faker.string.ulid()}`,
 					},
 				},
 			},
@@ -55,6 +55,88 @@ suite("Query field event", () => {
 		const organization = orgResult.data?.createOrganization;
 		assertToBeNonNullish(organization);
 		return organization;
+	}
+
+	// Add this helper function alongside the other helpers
+	async function createTestEvent(authToken: string, organizationId: string) {
+		const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+			headers: {
+				authorization: `bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					description: "Test Event",
+					endAt: new Date(Date.now() + 86400000).toISOString(),
+					name: "Test Event",
+					organizationId,
+					startAt: new Date().toISOString(),
+				},
+			},
+		});
+
+		const event = eventResult.data?.createEvent;
+		assertToBeNonNullish(event);
+		return event;
+	}
+
+	async function setupTestData(authToken: string) {
+		const orgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						countryCode: "us",
+						name: `Test Organization ${faker.string.alphanumeric(8)}`,
+					},
+				},
+			},
+		);
+
+		const organization = orgResult.data?.createOrganization;
+		assertToBeNonNullish(organization);
+
+		const event = await createTestEvent(authToken, organization.id);
+
+		return { organization, event };
+	}
+
+	// Helper function to create and delete a test user
+	async function createAndDeleteTestUser(authToken: string) {
+		const userResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: {
+				authorization: `bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					emailAddress: `${faker.string.ulid()}@test.com`,
+					isEmailAddressVerified: true,
+					name: "Test User",
+					password: "password123",
+					role: "regular",
+				},
+			},
+		});
+
+		const user = userResult.data?.createUser;
+		assertToBeNonNullish(user);
+		assertToBeNonNullish(user.authenticationToken);
+		assertToBeNonNullish(user.user);
+
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: {
+				authorization: `bearer ${authToken}`,
+			},
+			variables: {
+				input: {
+					id: user.user.id,
+				},
+			},
+		});
+
+		return user;
 	}
 
 	suite(
@@ -84,93 +166,14 @@ suite("Query field event", () => {
 			});
 
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
-				const signInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-
-				const authToken = signInResult.data?.signIn?.authenticationToken;
-				assertToBeNonNullish(authToken);
-
-				// Create test organization and event
-				const orgResult = await mercuriusClient.mutate(
-					Mutation_createOrganization,
-					{
-						headers: {
-							authorization: `bearer ${authToken}`,
-						},
-						variables: {
-							input: {
-								countryCode: "us",
-								name: `Test Organization ${faker.string.alphanumeric(8)}`,
-							},
-						},
-					},
-				);
-
-				const organization = orgResult.data?.createOrganization;
-				assertToBeNonNullish(organization);
-
-				const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							description: "Test Event",
-							endAt: new Date(Date.now() + 86400000).toISOString(),
-							name: "Test Event",
-							organizationId: organization.id,
-							startAt: new Date().toISOString(),
-						},
-					},
-				});
-
-				const event = eventResult.data?.createEvent;
-				assertToBeNonNullish(event);
-
-				// Create and sign in as a regular user
-				const userResult = await mercuriusClient.mutate(Mutation_createUser, {
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							emailAddress: `${faker.string.ulid()}@test.com`,
-							isEmailAddressVerified: true,
-							name: "Test User",
-							password: "password123",
-							role: "regular",
-						},
-					},
-				});
-
-				const user = userResult.data?.createUser;
-				assertToBeNonNullish(user);
-				assertToBeNonNullish(user.authenticationToken);
-				assertToBeNonNullish(user.user);
-
-				// Delete the user to make authentication context invalid
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							id: user.user.id,
-						},
-					},
-				});
+				const authToken = await getAdminToken();
+				const { event } = await setupTestData(authToken);
+				const deletedUser = await createAndDeleteTestUser(authToken);
 
 				// Try to access event with deleted user's token
 				const queryResult = await mercuriusClient.query(Query_event, {
 					headers: {
-						authorization: `bearer ${user.authenticationToken}`,
+						authorization: `bearer ${deletedUser.authenticationToken}`,
 					},
 					variables: {
 						input: {
@@ -246,55 +249,9 @@ suite("Query field event", () => {
 	);
 
 	test("unauthorized regular user cannot access event from an organization they are not a member of", async () => {
-		// First sign in as admin to create test data
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const adminAuthToken = signInResult.data?.signIn?.authenticationToken;
-		assertToBeNonNullish(adminAuthToken);
-
-		// Create test organization and event
-		const orgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						countryCode: "us",
-						name: `Test Organization ${faker.string.alphanumeric(8)}`,
-					},
-				},
-			},
-		);
-
-		const organization = orgResult.data?.createOrganization;
-		assertToBeNonNullish(organization);
-
-		const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-			},
-			variables: {
-				input: {
-					description: "Test Event",
-					endAt: new Date(Date.now() + 86400000).toISOString(),
-					name: "Test Event",
-					organizationId: organization.id,
-					startAt: new Date().toISOString(),
-				},
-			},
-		});
-
-		const event = eventResult.data?.createEvent;
-		assertToBeNonNullish(event);
+		const adminAuthToken = await getAdminToken();
+		const organization = await createTestOrganization(adminAuthToken);
+		const event = await createTestEvent(adminAuthToken, organization.id);
 
 		// Create a regular user who is not a member of the organization
 		const userResult = await mercuriusClient.mutate(Mutation_createUser, {
@@ -350,21 +307,11 @@ suite("Query field event", () => {
 		);
 	});
 
+	// Then refactor the "admin user can access event" test to:
 	test("admin user can access event from any organization", async () => {
-		// Sign in as admin
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
+		const adminAuthToken = await getAdminToken();
 
-		const adminAuthToken = signInResult.data?.signIn?.authenticationToken;
-		assertToBeNonNullish(adminAuthToken);
-
-		// Create test organization and event
+		// Create test organization
 		const orgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
@@ -383,23 +330,8 @@ suite("Query field event", () => {
 		const organization = orgResult.data?.createOrganization;
 		assertToBeNonNullish(organization);
 
-		const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-			},
-			variables: {
-				input: {
-					description: "Test Event",
-					endAt: new Date(Date.now() + 86400000).toISOString(),
-					name: "Test Event",
-					organizationId: organization.id,
-					startAt: new Date().toISOString(),
-				},
-			},
-		});
-
-		const event = eventResult.data?.createEvent;
-		assertToBeNonNullish(event);
+		// Create test event using helper
+		const event = await createTestEvent(adminAuthToken, organization.id);
 
 		// Try to access event as admin
 		const queryResult = await mercuriusClient.query(Query_event, {
