@@ -46,7 +46,7 @@ suite("Query field event", () => {
 				variables: {
 					input: {
 						countryCode: "us",
-						name: `Test Organization ${faker.string.alphanumeric(8)}`,
+						name: `Test Organization ${faker.string.ulid()}`,
 					},
 				},
 			},
@@ -57,19 +57,39 @@ suite("Query field event", () => {
 		return organization;
 	}
 
-	// Add this helper function alongside the other helpers
-	async function createTestEvent(authToken: string, organizationId: string) {
+	async function createTestEvent(
+		authToken: string,
+		organizationId: string,
+		options: {
+			durationInHours?: number;
+			startOffset?: number; // milliseconds from now
+			description?: string;
+			name?: string;
+		} = {},
+	) {
+		const {
+			durationInHours = 24,
+			startOffset = 0,
+			description = "Test Event",
+			name = "Test Event",
+		} = options;
+
+		const startAt = new Date(Date.now() + startOffset);
+		const endAt = new Date(
+			startAt.getTime() + durationInHours * 60 * 60 * 1000,
+		);
+
 		const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
 			headers: {
 				authorization: `bearer ${authToken}`,
 			},
 			variables: {
 				input: {
-					description: "Test Event",
-					endAt: new Date(Date.now() + 86400000).toISOString(),
-					name: "Test Event",
+					description,
+					endAt: endAt.toISOString(),
+					name,
 					organizationId,
-					startAt: new Date().toISOString(),
+					startAt: startAt.toISOString(),
 				},
 			},
 		});
@@ -80,26 +100,8 @@ suite("Query field event", () => {
 	}
 
 	async function setupTestData(authToken: string) {
-		const orgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						countryCode: "us",
-						name: `Test Organization ${faker.string.alphanumeric(8)}`,
-					},
-				},
-			},
-		);
-
-		const organization = orgResult.data?.createOrganization;
-		assertToBeNonNullish(organization);
-
+		const organization = await createTestOrganization(authToken);
 		const event = await createTestEvent(authToken, organization.id);
-
 		return { organization, event };
 	}
 
@@ -201,6 +203,72 @@ suite("Query field event", () => {
 	suite(
 		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.event" field if`,
 		() => {
+			test("fails with ULID of wrong length", async () => {
+				const authToken = await getAdminToken();
+				const result = await mercuriusClient.query(Query_event, {
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							id: "01ARZ3NDEKTSV4RRFFQ69G5FAV", // 26 chars instead of 27
+						},
+					},
+				});
+
+				expect(result.data.event).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "id"],
+										message: "Invalid uuid",
+									}),
+								]),
+							}),
+							message: "You have provided invalid arguments for this action.",
+							path: ["event"],
+						}),
+					]),
+				);
+			});
+
+			test("fails with ULID containing invalid characters", async () => {
+				const authToken = await getAdminToken();
+				const result = await mercuriusClient.query(Query_event, {
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							id: "01ARZ3NDEKTSV4RRFFQ69G5FA!", // Contains invalid '!'
+						},
+					},
+				});
+
+				expect(result.data.event).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "id"],
+										message: "Invalid uuid",
+									}),
+								]),
+							}),
+							message: "You have provided invalid arguments for this action.",
+							path: ["event"],
+						}),
+					]),
+				);
+			});
+
 			test("provided event ID is not a valid ULID.", async () => {
 				const signInResult = await mercuriusClient.query(Query_signIn, {
 					variables: {
