@@ -206,16 +206,14 @@ These steps are specific to Linux. You will need to modify them accordingly for 
       ```bash
       cp envFiles/.env.devcontainer .env
       ```
-1. Install `pnpm` using `codepack`
-   ```bash
-   corepack install -g pnpm
-   ```
+1. Install Node.js
+   1. Linux
+       1. Install `node` from the [Node Source website](https://github.com/nodesource/distributions)
+   1. Windows / Mac / Linux
+       1. Install `node` from the [Node website](https://nodejs.org)
+1. Install `pnpm` from the [pnpm website](https://pnpm.io/installation)
 1. Linux / MacOS Only
-   1. Setup `pnpm` to be automatically configured on all future terminal session logins using your `~/.bashrc` file.
-      ```bash
-      pnpm setup
-      ```
-   2. Enable `pnpm` for your current terminal session.
+   1. Enable `pnpm` for your current terminal session.
       ```
       source ~/.bashrc
       ```
