@@ -25,19 +25,53 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-// Helper function to get admin auth token
+/**
+ * Helper function to get admin auth token with proper error handling
+ * @throws {Error} If admin credentials are invalid or missing
+ * @returns {Promise<string>} Admin authentication token
+ */
 async function getAdminAuthToken(): Promise<string> {
-	const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
-		},
-	});
+	try {
+		// Check if admin credentials exist
+		if (
+			!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
+			!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
+		) {
+			throw new Error(
+				"Admin credentials are missing in environment configuration",
+			);
+		}
 
-	assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
-	return adminSignInResult.data.signIn.authenticationToken;
+		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		// Check for GraphQL errors
+		if (adminSignInResult.errors) {
+			throw new Error(
+				`Admin authentication failed: ${adminSignInResult.errors[0]?.message || "Unknown error"}`,
+			);
+		}
+
+		// Check for missing data
+		if (!adminSignInResult.data?.signIn?.authenticationToken) {
+			throw new Error(
+				"Admin authentication succeeded but no token was returned",
+			);
+		}
+
+		return adminSignInResult.data.signIn.authenticationToken;
+	} catch (error) {
+		// Wrap and rethrow with more context
+		throw new Error(
+			`Failed to get admin authentication token: ${error instanceof Error ? error.message : "Unknown error"}`,
+		);
+	}
 }
 
 suite("Query field agendaItem", () => {
@@ -66,7 +100,11 @@ suite("Query field agendaItem", () => {
 		});
 
 		test("returns error with invalid authentication token", async () => {
-			const invalidToken = "invalid_token_123";
+			// Generate a random invalid token
+			const invalidToken = Buffer.from(faker.string.alphanumeric(32)).toString(
+				"base64",
+			);
+
 			const agendaItemResult = await mercuriusClient.query(Query_agendaItem, {
 				headers: {
 					authorization: `bearer ${invalidToken}`,
