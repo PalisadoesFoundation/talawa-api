@@ -14,9 +14,24 @@ If the API:
 2. the API sample database is loaded;
 then you can use these login credentials to access the API via various clients.
 
-| Email                      | Password | User Type     | Joined Organization  |
-| -------------------------- | -------- | --------------| -------------------- |
-| administrator@email.com    | password | Administrator | N/A                  |
+| Email                              | Password | User Type      | Joined Organization  |
+| -----------------------------------| -------- | ---------------| -------------------- |
+| administrator@email.com            | password | Administrator  | N/A                  |
+| testsuperadmin@example.com         | Pass@123 | Administrator  | N/A                  |
+| testadmin1@example.com             | Pass@123 | Administrator  | N/A                  |
+| testadmin2@example.com             | Pass@123 | Administrator  | N/A                  |
+| testadmin3@example.com             | Pass@123 | Administrator  | N/A                  |
+| testuser1@example.com              | Pass@123 | Regular        | N/A                  |
+| testuser2@example.com              | Pass@123 | Regular        | N/A                  |
+| testuser3@example.com              | Pass@123 | Regular        | N/A                  |
+| testuser4@example.com              | Pass@123 | Regular        | N/A                  |
+| testuser5@example.com              | Pass@123 | Regular        | N/A                  |
+| testuser6@example.com              | Pass@123 | Regular        | N/A                  |
+| testuser7@example.com              | Pass@123 | Regular        | N/A                  |
+| testuser8@example.com              | Pass@123 | Regular        | N/A                  |
+| testuser9@example.com              | Pass@123 | Regular        | N/A                  |
+| testuser10@example.com             | Pass@123 | Regular        | N/A                  |
+| testuser11@example.com             | Pass@123 | Regular        | N/A                  |
 
 ## Accessing the API
 
