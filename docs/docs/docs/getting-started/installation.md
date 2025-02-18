@@ -138,10 +138,63 @@ Your new 64-character JWT secret will be displayed on the screen.
 
 ##### Update the API_ADMINISTRATOR_USER Credentials
 
-You will need to update the `.env` file with the following information. The password is plain text.
+You will need to update the `.env` file with the following information. 
+1. `API_ADMINISTRATOR_USER_NAME` is the name of the primary administrator person.
+2. `API_ADMINISTRATOR_USER_EMAIL_ADDRESS` is the email address of the primary administrator. This will be required for logins.
+3. `API_ADMINISTRATOR_USER_PASSWORD` is plain text and is used for logins.
+
+##### Update the MINIO Credentials
+
+You will need to update the `.env` file with the following information.
+1. `MINIO_ROOT_PASSWORD` is a plain text password of your choosing.
+1. `API_MINIO_SECRET_KEY` is a plain text password of your choosing.
+
+
+##### Update the PostgreSQL Credentials
+
+You will need to update the `.env` file with the following information. The passwords are in plain text and must match.
+1. `API_POSTGRES_PASSWORD` needs to be set to `talawa` (This needs to be fixed in a GitHub issue)
+2. `POSTGRES_PASSWORD` needs to be set to `talawa` (This needs to be fixed in a GitHub issue)
+
+##### Update the API_BASE_URL Value
+
+You will need to update the `.env` file with the following information. This value uses the expected defaults.
+
 ```
-API_ADMINISTRATOR_USER_EMAIL_ADDRESS
-API_ADMINISTRATOR_USER_NAME
+http://127.0.0.1:4000
+```
+
+##### Update the CADDY Configuration
+
+You will need to update the `.env` file with the following information. This value uses the expected defaults.
+1. `CADDY_TALAWA_API_DOMAIN_NAME` can be set to `localhost`
+2. `CADDY_TALAWA_API_EMAIL` can be set to a suitable email address
+
+```
+localhost
+```
+```
+```
+##### Update the Social Media URLs
+
+You will need to update the `.env` file with the following information. 
+
+```
+API_COMMUNITY_FACEBOOK_URL
+API_COMMUNITY_GITHUB_URL
+API_COMMUNITY_INSTAGRAM_URL
+API_COMMUNITY_LINKEDIN_URL
+API_COMMUNITY_REDDIT_URL
+API_COMMUNITY_SLACK_URL
+API_COMMUNITY_WEBSITE_URL
+API_COMMUNITY_X_URL
+API_COMMUNITY_YOUTUBE_URL
+```
+##### Update the Name of the Parent Organization / Community
+
+You will need to update the `.env` file with the following information. 
+```
+API_COMMUNITY_NAME
 ```
 
 #### Start the App
