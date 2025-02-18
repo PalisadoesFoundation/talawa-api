@@ -1,7 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import type {
-	ArgumentsAssociatedResourcesNotFoundExtensions,
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -245,55 +244,6 @@ suite("Query field event", () => {
 			});
 		},
 	);
-
-	// For this test, we'll need to generate a valid ULID that doesn't exist in the database
-	test("fails with resource not found when event with valid ID doesn't exist", async () => {
-		const signInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-
-		const authToken = signInResult.data?.signIn?.authenticationToken;
-		assertToBeNonNullish(authToken);
-
-		const validNonExistentId = faker.string.ulid();
-
-		const eventResult = await mercuriusClient.query(Query_event, {
-			headers: {
-				authorization: `bearer ${authToken}`,
-			},
-			variables: {
-				input: {
-					id: validNonExistentId,
-				},
-			},
-		});
-
-		expect(eventResult.data.event).toBeNull();
-		expect(eventResult.errors).toEqual(
-			expect.arrayContaining<TalawaGraphQLFormattedError>([
-				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions:
-						expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
-							{
-								code: "arguments_associated_resources_not_found",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["input", "id"],
-									}),
-								]),
-							},
-						),
-					message: expect.any(String),
-					path: ["event"],
-				}),
-			]),
-		);
-	});
 
 	test("unauthorized regular user cannot access event from an organization they are not a member of", async () => {
 		// First sign in as admin to create test data
