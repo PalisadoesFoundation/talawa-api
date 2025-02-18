@@ -191,12 +191,37 @@ CloudBeaver is a lightweight web application designed for comprehensive data man
 
 Sometimes you may want to start all over again from scratch. These steps will reset your development postgres database.
 
+### Using the CLI (Dev Containers)
+
+This applies to users running Talawa API in dev containers.
+
+1. Once the server is running, open a new terminal session.
+2. Open a bash session inside the running container:
+   ```bash
+   docker exec -it talawa-api-1 /bin/bash
+   ```
+3. **WARNING:** This command will **DELETE** all data from each table in your database, administrator roles will be restored. Use with extreme caution.
+   ```bash
+   pnpm run reset:db
+   ```
+4. This command will add sample data to make it easier for developers to get an understanding of the application.
+   ```bash
+   pnpm run add:sample_data
+   ```
+5. Then exit
+   ```bash
+    exit
+   ```
+   
+### Using VS Code Dev Container
+
+This applies to users running Talawa API in dev containers and VSCode.
+
 1. **WARNING:** This command will **DELETE** all data from each table in your database, administrator roles will be restored. Use with extreme caution.
    ```bash
    pnpm run reset:db
    ```
-   
-1. This command will add sample data to make it easier for developers to get an understanding of the application.
+2. This command will add sample data to make it easier for developers to get an understanding of the application.
    ```bash
    pnpm run add:sample_data
    ```

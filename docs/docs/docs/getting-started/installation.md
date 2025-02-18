@@ -411,7 +411,7 @@ This applies to users running Talawa API in dev containers.
 This applies to users running Talawa API in dev containers and VSCode.
 
 1. Open a terminal inside the container.
-1. Run the following command to import sample data into the database:
+2. Run the following command to import sample data into the database:
    ```bash
     pnpm run add:sample_data
    ```
