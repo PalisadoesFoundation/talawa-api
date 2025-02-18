@@ -136,6 +136,62 @@ Your new 64-character JWT secret will be displayed on the screen.
 1. Copy this secret
 2. Add it to the `API_JWT_SECRET` value in the `.env` file.
 
+##### Update the API_ADMINISTRATOR_USER Credentials
+
+You will need to update the `.env` file with the following information. 
+1. `API_ADMINISTRATOR_USER_NAME` is the name of the primary administrator person.
+2. `API_ADMINISTRATOR_USER_EMAIL_ADDRESS` is the email address of the primary administrator. This will be required for logins.
+3. `API_ADMINISTRATOR_USER_PASSWORD` is plain text and is used for logins.
+
+##### Update the MINIO Credentials
+
+You will need to update the `.env` file with the following information.
+1. `MINIO_ROOT_PASSWORD` is a plain text password of your choosing.
+1. `API_MINIO_SECRET_KEY` is a plain text password of your choosing.
+
+
+##### Update the PostgreSQL Credentials
+
+You will need to update the `.env` file with the following information. The passwords are in plain text and must match.
+1. `API_POSTGRES_PASSWORD`
+2. `POSTGRES_PASSWORD`
+
+##### Update the API_BASE_URL Value
+
+You will need to update the `.env` file with the following information. This value uses the expected defaults.
+
+```
+http://127.0.0.1:4000
+```
+
+##### Update the CADDY Configuration
+
+You will need to update the `.env` file with the following information. This value uses the expected defaults.
+1. `CADDY_TALAWA_API_DOMAIN_NAME` can be set to `localhost`
+2. `CADDY_TALAWA_API_EMAIL` can be set to a suitable email address
+
+##### Update the Social Media URLs
+
+You will need to update the `.env` file with the following information. 
+
+```
+API_COMMUNITY_FACEBOOK_URL
+API_COMMUNITY_GITHUB_URL
+API_COMMUNITY_INSTAGRAM_URL
+API_COMMUNITY_LINKEDIN_URL
+API_COMMUNITY_REDDIT_URL
+API_COMMUNITY_SLACK_URL
+API_COMMUNITY_WEBSITE_URL
+API_COMMUNITY_X_URL
+API_COMMUNITY_YOUTUBE_URL
+```
+##### Update the Name of the Parent Organization / Community
+
+You will need to update the `.env` file with the following information. 
+```
+API_COMMUNITY_NAME
+```
+
 #### Start the App
 
 1. Start the server by running the following command:
@@ -206,16 +262,14 @@ These steps are specific to Linux. You will need to modify them accordingly for 
       ```bash
       cp envFiles/.env.devcontainer .env
       ```
-1. Install `pnpm` using `codepack`
-   ```bash
-   corepack install -g pnpm
-   ```
+1. Install Node.js
+   1. Linux
+       1. Install `node` from the [Node Source website](https://github.com/nodesource/distributions)
+   1. Windows / Mac / Linux
+       1. Install `node` from the [Node website](https://nodejs.org)
+1. Install `pnpm` from the [pnpm website](https://pnpm.io/installation)
 1. Linux / MacOS Only
-   1. Setup `pnpm` to be automatically configured on all future terminal session logins using your `~/.bashrc` file.
-      ```bash
-      pnpm setup
-      ```
-   2. Enable `pnpm` for your current terminal session.
+   1. Enable `pnpm` for your current terminal session.
       ```
       source ~/.bashrc
       ```
