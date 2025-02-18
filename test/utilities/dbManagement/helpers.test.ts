@@ -2,12 +2,12 @@ import path from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 
 import {
+	checkDataSize,
 	disconnect,
 	ensureAdministratorExists,
+	insertCollections,
 	listSampleData,
 	parseDate,
-	checkDataSize,
-	insertCollections
 } from "src/utilities/dbManagement/helpers";
 
 import dotenv from "dotenv";
