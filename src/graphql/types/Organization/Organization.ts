@@ -1,4 +1,3 @@
-import { customFieldsTable } from "~/src/drizzle/schema";
 import type { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import { Iso3166Alpha2CountryCode } from "~/src/graphql/enums/Iso3166Alpha2CountryCode";
