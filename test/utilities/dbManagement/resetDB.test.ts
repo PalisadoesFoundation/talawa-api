@@ -24,7 +24,7 @@ vi.mock("src/utilities/dbManagement/helpers", () => ({
 	disconnect: vi.fn(),
 }));
 
-import "src/utilities/dbManagement/testDbConnection";
+import "src/utilities/dbManagement/resetDB";
 
 describe("main function", () => {
 	it("should format database", async () => {
