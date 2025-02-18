@@ -1,7 +1,11 @@
-import { disconnect,ensureAdministratorExists,formatDatabase } from "src/utilities/dbManagement/helpers";
-import { describe, expect, it, vi } from "vitest";
 import path from "node:path";
 import dotenv from "dotenv";
+import {
+	disconnect,
+	ensureAdministratorExists,
+	formatDatabase,
+} from "src/utilities/dbManagement/helpers";
+import { describe, expect, it, vi } from "vitest";
 
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
@@ -16,7 +20,6 @@ process.env.API_POSTGRES_SSL_MODE = "false";
 process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = "administrator@test.com";
 process.env.API_ADMINISTRATOR_USER_PASSWORD = "password";
 process.env.API_ADMINISTRATOR_USER_NAME = "Admininstrator";
-
 
 vi.mock("src/utilities/dbManagement/helpers", () => ({
 	formatDatabase: vi.fn(),

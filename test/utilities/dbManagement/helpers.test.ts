@@ -5,7 +5,6 @@ import {
 	checkDataSize,
 	disconnect,
 	ensureAdministratorExists,
-	insertCollections,
 	listSampleData,
 	parseDate,
 } from "src/utilities/dbManagement/helpers";

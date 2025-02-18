@@ -1,7 +1,11 @@
-import { pingDB,ensureAdministratorExists,insertCollections,disconnect } from "src/utilities/dbManagement/helpers";
-import { describe, expect, it, vi } from "vitest";
 import path from "node:path";
 import dotenv from "dotenv";
+import {
+	disconnect,
+	ensureAdministratorExists,
+	pingDB,
+} from "src/utilities/dbManagement/helpers";
+import { describe, expect, it, vi } from "vitest";
 
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
@@ -28,23 +32,23 @@ import "src/utilities/dbManagement/addSampleData";
 
 describe("main function", () => {
 	it("should check database connection", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 0));
-	
-			expect(pingDB).toHaveBeenCalledTimes(1);
-		});
-		it("should restore administrator roles", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 0));
-	
-			expect(ensureAdministratorExists).toHaveBeenCalledTimes(1);
-		});
-		// it("should add sampledata", async () => {
-		// 	await new Promise((resolve) => setTimeout(resolve, 0));
-	
-		// 	expect(insertCollections).toHaveBeenCalledTimes(1);
-		// });
-		it("should disconnect database client", async () => {
-			await new Promise((resolve) => setTimeout(resolve, 0));
-	
-			expect(disconnect).toHaveBeenCalledTimes(1);
-		});
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(pingDB).toHaveBeenCalledTimes(1);
+	});
+	it("should restore administrator roles", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(ensureAdministratorExists).toHaveBeenCalledTimes(1);
+	});
+	// it("should add sampledata", async () => {
+	// 	await new Promise((resolve) => setTimeout(resolve, 0));
+
+	// 	expect(insertCollections).toHaveBeenCalledTimes(1);
+	// });
+	it("should disconnect database client", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(disconnect).toHaveBeenCalledTimes(1);
+	});
 });
