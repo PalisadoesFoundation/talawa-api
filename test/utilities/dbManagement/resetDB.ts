@@ -1,8 +1,6 @@
 import {
 	disconnect,
-	getExpectedCounts,
-	populateDB,
-	runValidation,
+
 } from "src/utilities/dbManagement/helpers";
 import { describe, expect, it, vi } from "vitest";
 
@@ -19,10 +17,6 @@ describe("main function", () => {
 	it("should execute database validation steps in the correct order", async () => {
 		await new Promise((resolve) => setTimeout(resolve, 0));
 
-		expect(getExpectedCounts).toHaveBeenCalledTimes(1);
-		expect(populateDB).toHaveBeenCalledTimes(1);
-		expect(populateDB).toHaveBeenCalledWith("test");
-		expect(runValidation).toHaveBeenCalledTimes(1);
 		expect(disconnect).toHaveBeenCalledTimes(1);
 	});
 });

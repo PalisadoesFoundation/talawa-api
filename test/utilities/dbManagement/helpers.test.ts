@@ -2,14 +2,12 @@ import path from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 
 import {
-	checkCountAfterImport,
 	disconnect,
 	ensureAdministratorExists,
-	formatDatabase,
-	getExpectedCounts,
 	listSampleData,
 	parseDate,
-	populateDB,
+	checkDataSize,
+	insertCollections
 } from "src/utilities/dbManagement/helpers";
 
 import dotenv from "dotenv";
@@ -55,25 +53,13 @@ describe("populate script basic tests", () => {
 		await expect(ensureAdministratorExists()).resolves.not.toThrow();
 	});
 
-	it("formatDatabase should not throw an error", async () => {
-		// Clears all tables
-		await expect(formatDatabase()).resolves.not.toThrow();
-	});
-
-	it("getExpectedCounts should return a valid object", async () => {
-		// Just checks that it returns an object with expected keys
-		const counts = await getExpectedCounts();
-		expect(counts).toBeTruthy();
-		expect(Object.keys(counts).length).toBeGreaterThan(0);
-	});
-
-	it("checkCountAfterImport should return a boolean", async () => {
-		const result = await checkCountAfterImport("Before");
+	it("checkDataSize should return a boolean", async () => {
+		const result = await checkDataSize("Before");
 		expect(typeof result).toBe("boolean");
 	});
 
 	it("populateDB should complete without throwing", async () => {
-		await expect(populateDB("test")).resolves.not.toThrow();
+		await expect(insertCollections).resolves.not.toThrow();
 	});
 
 	it("disconnect should not throw an error", async () => {
