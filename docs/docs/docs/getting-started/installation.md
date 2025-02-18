@@ -387,7 +387,7 @@ You can run the app after closing the terminal or restating the vscode using the
 
 We have created sample data to make it easier for end users to get an understanding of the application.
 
-### Importing Sample Data
+### Using the CLI (Dev Containers)
 
 This applies to users running Talawa API in dev containers.
 
@@ -405,6 +405,16 @@ This applies to users running Talawa API in dev containers.
     exit
    ```
    Refer to the next section for login information.
+
+### Using VS Code Dev Container
+
+This applies to users running Talawa API in dev containers and VSCode.
+
+1. Open a terminal inside the container.
+1. Run the following command to import sample data into the database:
+   ```bash
+    pnpm run add:sample_data
+   ```
 
 ### Sample Data Users
 
