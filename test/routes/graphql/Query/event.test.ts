@@ -46,7 +46,7 @@ suite("Query field event", () => {
 				variables: {
 					input: {
 						countryCode: "us",
-						name: `Test Organization ${faker.string.ulid()}`,
+						name: `Test Organization ${faker.string.alphanumeric(8)}`,
 					},
 				},
 			},
