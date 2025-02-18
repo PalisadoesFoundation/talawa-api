@@ -136,6 +136,14 @@ Your new 64-character JWT secret will be displayed on the screen.
 1. Copy this secret
 2. Add it to the `API_JWT_SECRET` value in the `.env` file.
 
+##### Update the API_ADMINISTRATOR_USER Credentials
+
+You will need to update the `.env` file with the following information. The password is plain text.
+```
+API_ADMINISTRATOR_USER_EMAIL_ADDRESS
+API_ADMINISTRATOR_USER_NAME
+```
+
 #### Start the App
 
 1. Start the server by running the following command:
