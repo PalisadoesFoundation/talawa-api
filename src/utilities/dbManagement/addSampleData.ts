@@ -5,14 +5,14 @@ import {
 	pingDB,
 } from "./helpers";
 
-export async function main() {
+export async function main(): Promise<void> {
 	const collections = ["users", "organizations", "organization_memberships"];
 
 	try {
 		await pingDB();
 		console.log("\n\x1b[32mSuccess:\x1b[0m Database connected successfully\n");
 	} catch (error) {
-		console.error("Error: ", error);
+		throw new Error(`Database connection failed: ${error}`);
 	}
 	try {
 		await ensureAdministratorExists().then(() => {
@@ -44,4 +44,4 @@ export async function main() {
 	process.exit(0);
 }
 
-main();
+await main();

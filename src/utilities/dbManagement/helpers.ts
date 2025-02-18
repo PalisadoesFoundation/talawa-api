@@ -149,19 +149,21 @@ export async function checkAndInsertData<T>(
 	table: PgTable,
 	rows: T[],
 	conflictTarget: AnyPgColumn | AnyPgColumn[],
+	batchSize: number,
 ): Promise<void> {
-	// If you have zero rows, just exit quickly
 	if (!rows.length) return;
 
-	// Drizzle’s `onConflictDoNothing` usage for PostgreSQL
-	// If your primary key is a single column, conflictTarget can be a single column
-	// If it's a composite key, pass them as an array
-	await db
-		.insert(table)
-		.values(rows)
-		.onConflictDoNothing({
-			target: Array.isArray(conflictTarget) ? conflictTarget : [conflictTarget],
-		});
+	for (let i = 0; i < rows.length; i += batchSize) {
+		const batch = rows.slice(i, i + batchSize);
+		await db
+			.insert(table)
+			.values(batch)
+			.onConflictDoNothing({
+				target: Array.isArray(conflictTarget)
+					? conflictTarget
+					: [conflictTarget],
+			});
+	}
 }
 
 /**
@@ -193,7 +195,6 @@ export async function insertCollections(collections: string[]): Promise<void> {
 
 			switch (collection) {
 				case "users": {
-					// Strictly type your parsed data
 					const users = JSON.parse(fileContent).map(
 						(user: {
 							createdAt: string | number | Date;
@@ -205,11 +206,11 @@ export async function insertCollections(collections: string[]): Promise<void> {
 						}),
 					) as (typeof schema.usersTable.$inferInsert)[];
 
-					// Insert with "onConflictDoNothing" on the 'id' PK
 					await checkAndInsertData(
 						schema.usersTable,
 						users,
 						schema.usersTable.id,
+						1000,
 					);
 
 					console.log(
@@ -234,9 +235,9 @@ export async function insertCollections(collections: string[]): Promise<void> {
 						schema.organizationsTable,
 						organizations,
 						schema.organizationsTable.id,
+						1000,
 					);
 
-					// Add your administrator membership logic
 					const API_ADMINISTRATOR_USER = await db.query.usersTable.findFirst({
 						columns: {
 							id: true,
@@ -255,7 +256,6 @@ export async function insertCollections(collections: string[]): Promise<void> {
 						return;
 					}
 
-					// For each organization, create membership row
 					const organizationAdminMembership = organizations.map((org) => ({
 						organizationId: org.id,
 						memberId: API_ADMINISTRATOR_USER.id,
@@ -264,8 +264,6 @@ export async function insertCollections(collections: string[]): Promise<void> {
 						role: "administrator",
 					})) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
 
-					// If organizationMemberships has a composite primary key, specify both columns
-					// e.g., [schema.organizationMembershipsTable.organizationId, schema.organizationMembershipsTable.memberId]
 					await checkAndInsertData(
 						schema.organizationMembershipsTable,
 						organizationAdminMembership,
@@ -273,6 +271,7 @@ export async function insertCollections(collections: string[]): Promise<void> {
 							schema.organizationMembershipsTable.organizationId,
 							schema.organizationMembershipsTable.memberId,
 						],
+						1000,
 					);
 
 					console.log(
@@ -291,7 +290,6 @@ export async function insertCollections(collections: string[]): Promise<void> {
 						}),
 					) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
 
-					// If there's a composite PK or unique constraint, specify all relevant columns
 					await checkAndInsertData(
 						schema.organizationMembershipsTable,
 						organizationMemberships,
@@ -299,6 +297,7 @@ export async function insertCollections(collections: string[]): Promise<void> {
 							schema.organizationMembershipsTable.organizationId,
 							schema.organizationMembershipsTable.memberId,
 						],
+						1000,
 					);
 
 					console.log(

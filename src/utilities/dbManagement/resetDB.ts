@@ -7,16 +7,21 @@ import {
 } from "./helpers";
 //Load Environment Variables
 dotenv.config();
+
+interface PromptResult {
+	deleteExisting: boolean;
+}
+
 const NODE_ENV = process.env.NODE_ENV || "development";
 
-export async function main() {
+export async function main(): Promise<void> {
 	if (NODE_ENV === "production") {
 		console.error(
 			"\x1b[31mRestricted: Resetting the database in production is not allowed\x1b[0m\n",
 		);
 		process.exit(0);
 	}
-	const { deleteExisting } = await inquirer.prompt([
+	const { deleteExisting } = await inquirer.prompt<PromptResult>([
 		{
 			type: "confirm",
 			name: "deleteExisting",
@@ -57,4 +62,4 @@ export async function main() {
 	}
 }
 
-main();
+await main();
