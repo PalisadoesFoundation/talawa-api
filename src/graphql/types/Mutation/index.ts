@@ -66,3 +66,4 @@ import "./updateTagFolder";
 import "./updateUser";
 import "./updateVenue";
 import "./createCustomField";
+import "./removeCustomField";

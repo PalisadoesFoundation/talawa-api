@@ -1,12 +1,8 @@
-import { z } from "zod";
+import { eq } from "drizzle-orm"; // Import eq for filtering
 import { customFieldsTable } from "~/src/drizzle/tables/customFields";
 import { builder } from "~/src/graphql/builder";
 import { OrganizationCustomField } from "~/src/graphql/types/Organization/OrganizationCustomField";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
-const mutationRemoveCustomFieldArgumentsSchema = z.object({
-	id: z.string().nonempty(),
-});
 
 builder.mutationField("removeOrganizationCustomField", (t) =>
 	t.field({
@@ -17,8 +13,18 @@ builder.mutationField("removeOrganizationCustomField", (t) =>
 		resolve: async (_parent, args, ctx) => {
 			const { id } = args;
 
+			// Check if the user is authenticated
+			if (!ctx.currentClient.user) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
+
 			const currentUserId = ctx.currentClient.user.id;
 
+			// Fetch the current user's role
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 				columns: {
 					role: true,
@@ -34,15 +40,32 @@ builder.mutationField("removeOrganizationCustomField", (t) =>
 				});
 			}
 
+			// Fetch the custom field to ensure it exists
+			const customFieldToDelete =
+				await ctx.drizzleClient.query.customFieldsTable.findFirst({
+					where: (fields, operators) => operators.eq(fields.id, id),
+				});
+
+			if (!customFieldToDelete) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "not_found",
+						message: "Custom field not found",
+					},
+				});
+			}
+
+			// Delete the custom field
 			const [deletedCustomField] = await ctx.drizzleClient
 				.delete(customFieldsTable)
-				.where((fields, operators) => operators.eq(fields.id, id))
+				.where(eq(customFieldsTable.id, id)) // Use eq for filtering
 				.returning();
 
-			if (deletedCustomField === undefined) {
+			if (!deletedCustomField) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",
+						message: "Failed to delete custom field",
 					},
 				});
 			}
