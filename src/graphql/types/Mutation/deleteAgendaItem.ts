@@ -2,26 +2,27 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
+import type { GraphQLContext } from "~/src/graphql/context";
 import {
 	MutationDeleteAgendaItemInput,
 	MutationDeleteAgendaItemInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteAgendaItemInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import type { GraphQLContext } from "~/src/graphql/context";
 
 const mutationDeleteAgendaItemArgumentsSchema = z.object({
 	input: MutationDeleteAgendaItemInputSchema,
 });
 
 export async function deleteAgendaItemResolver(
-	_parent : unknown, 
-	args :{
-		input : {
-			id : string
-		}
-	}, 
-	ctx :GraphQLContext){
+	_parent: unknown,
+	args: {
+		input: {
+			id: string;
+		};
+	},
+	ctx: GraphQLContext,
+) {
 	if (!ctx.currentClient.isAuthenticated) {
 		throw new TalawaGraphQLError({
 			extensions: {
