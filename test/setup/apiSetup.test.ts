@@ -11,7 +11,6 @@ import {
 	validatePort,
 	validateURL,
 } from "~/src/setup/setup";
-import { updateEnvVariable } from "~/src/setup/updateEnvVariable";
 
 vi.mock("inquirer");
 
@@ -279,28 +278,6 @@ describe("Error handling without backup", () => {
 		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
 		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
 		expect(processExitSpy).toHaveBeenCalledWith(1);
-
-		vi.clearAllMocks();
-	});
-});
-
-describe("Error handling without backup", () => {
-	it("should handle errors when backup doesn't exist", () => {
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => undefined);
-		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {
-			throw new Error("Write failed");
-		});
-
-		expect(() => updateEnvVariable({ TEST_VAR: "test" })).toThrow(
-			"Write failed",
-		);
-
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env");
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
-		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
 
 		vi.clearAllMocks();
 	});

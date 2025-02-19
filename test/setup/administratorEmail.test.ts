@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import inquirer from "inquirer";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { administratorEmail } from "~/src/setup/setup";
 import { validateEmail } from "~/src/setup/setup";
 import * as SetupModule from "~/src/setup/setup";
@@ -9,6 +9,11 @@ vi.mock("inquirer");
 
 describe("Setup -> askForAdministratorEmail", () => {
 	const originalEmail = process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+
+	beforeEach(() => {
+		// Ensure clean state
+		process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = undefined;
+	});
 
 	afterEach(() => {
 		process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS = originalEmail;
