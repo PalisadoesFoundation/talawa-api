@@ -75,6 +75,16 @@ builder.queryField("users", (t) =>
 				required: false,
 				type: QueryUserInput,
 			}),
+			first: t.arg({
+				description: "Number of users to return",
+				required: false,
+				type: "Int",
+			}),
+			after: t.arg({
+				description: "Cursor for pagination",
+				required: false,
+				type: "String",
+			}),
 		},
 		description: "Query field to read all users with optional filtering.",
 		resolve: async (_parent, args, ctx) => {
@@ -102,15 +112,6 @@ builder.queryField("users", (t) =>
 							operators.eq(fields.id, parsedArgs.input?.id ?? ""),
 					})
 				: await ctx.drizzleClient.query.usersTable.findMany();
-
-			if (users.length === 0) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [],
-					},
-				});
-			}
 
 			return users;
 		},
