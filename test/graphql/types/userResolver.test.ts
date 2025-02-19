@@ -1,7 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { execute, parse } from 'graphql';
 import { schema } from '~/src/graphql/schema';
-
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 describe('userList Query', () => {
   // Mock context
   const mockContext = {
