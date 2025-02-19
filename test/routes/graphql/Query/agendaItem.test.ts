@@ -704,8 +704,9 @@ suite("Input Validation Tests", () => {
 
 	suite("Token Validation Tests", () => {
 		test("returns error with malformed JWT token", async () => {
-			// Invalid JWT format (missing payload section)
-			const malformedToken = "header.invalidpayload";
+			const header = faker.string.alphanumeric(10);
+			const payload = faker.string.alphanumeric(15);
+			const malformedToken = `${header}.${payload}`;
 
 			const result = await mercuriusClient.query(Query_agendaItem, {
 				headers: {
