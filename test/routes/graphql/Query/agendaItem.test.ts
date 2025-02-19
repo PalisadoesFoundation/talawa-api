@@ -30,7 +30,12 @@ import {
  * @throws {Error} If admin credentials are invalid or missing
  * @returns {Promise<string>} Admin authentication token
  */
+let cachedAdminToken: string | null = null;
 async function getAdminAuthToken(): Promise<string> {
+	if (cachedAdminToken) {
+		return cachedAdminToken;
+	}
+
 	try {
 		// Check if admin credentials exist
 		if (
@@ -41,7 +46,6 @@ async function getAdminAuthToken(): Promise<string> {
 				"Admin credentials are missing in environment configuration",
 			);
 		}
-
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
@@ -50,22 +54,20 @@ async function getAdminAuthToken(): Promise<string> {
 				},
 			},
 		});
-
 		// Check for GraphQL errors
 		if (adminSignInResult.errors) {
 			throw new Error(
 				`Admin authentication failed: ${adminSignInResult.errors[0]?.message || "Unknown error"}`,
 			);
 		}
-
 		// Check for missing data
 		if (!adminSignInResult.data?.signIn?.authenticationToken) {
 			throw new Error(
 				"Admin authentication succeeded but no token was returned",
 			);
 		}
-
-		return adminSignInResult.data.signIn.authenticationToken;
+		cachedAdminToken = adminSignInResult.data.signIn.authenticationToken;
+		return cachedAdminToken;
 	} catch (error) {
 		// Wrap and rethrow with more context
 		throw new Error(
@@ -423,24 +425,36 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 		eventId,
 		folderId,
 		cleanup: async () => {
+			const errors: Error[] = [];
 			try {
 				await mercuriusClient.mutate(Mutation_deleteAgendaItem, {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: agendaItemId } },
 				});
-
+			} catch (error) {
+				errors.push(error as Error);
+				console.error("Failed to delete agenda item:", error);
+			}
+			try {
 				await mercuriusClient.mutate(Mutation_deleteEvent, {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: eventId } },
 				});
-
+			} catch (error) {
+				errors.push(error as Error);
+				console.error("Failed to delete event:", error);
+			}
+			try {
 				await mercuriusClient.mutate(Mutation_deleteOrganization, {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
 			} catch (error) {
-				console.error("Cleanup failed:", error);
-				throw error;
+				errors.push(error as Error);
+				console.error("Failed to delete organization:", error);
+			}
+			if (errors.length > 0) {
+				throw new AggregateError(errors, "One or more cleanup steps failed");
 			}
 		},
 	};
@@ -636,6 +650,165 @@ suite("Input Validation Tests", () => {
 					name: expect.any(String),
 				}),
 			);
+		});
+
+		test("allows access if user is organization admin", async () => {
+			const {
+				userId,
+				authToken,
+				cleanup: userCleanup,
+			} = await createRegularUser();
+			testCleanupFunctions.push(userCleanup);
+
+			const {
+				agendaItemId,
+				orgId,
+				cleanup: agendaCleanup,
+			} = await createTestAgendaItem();
+			testCleanupFunctions.push(agendaCleanup);
+
+			// Add user as organization admin
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: {
+					authorization: `bearer ${await getAdminAuthToken()}`,
+				},
+				variables: {
+					input: {
+						memberId: userId,
+						organizationId: orgId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const agendaItemResult = await mercuriusClient.query(Query_agendaItem, {
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						id: agendaItemId,
+					},
+				},
+			});
+
+			expect(agendaItemResult.errors).toBeUndefined();
+			expect(agendaItemResult.data.agendaItem).toEqual(
+				expect.objectContaining({
+					id: agendaItemId,
+					name: expect.any(String),
+				}),
+			);
+		});
+	});
+
+	suite("Token Validation Tests", () => {
+		test("returns error with malformed JWT token", async () => {
+			// Invalid JWT format (missing payload section)
+			const malformedToken = "header.invalidpayload";
+
+			const result = await mercuriusClient.query(Query_agendaItem, {
+				headers: {
+					authorization: `bearer ${malformedToken}`,
+				},
+				variables: {
+					input: {
+						id: faker.string.uuid(),
+					},
+				},
+			});
+
+			expect(result.data.agendaItem).toEqual(null);
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		});
+
+		test("returns error with expired token format", async () => {
+			// Create an expired token format
+			const expiredPayload = {
+				exp: Math.floor(Date.now() / 1000) - 3600, // 1 hour ago
+				sub: faker.string.uuid(),
+			};
+			const expiredToken = Buffer.from(JSON.stringify(expiredPayload)).toString(
+				"base64",
+			);
+
+			const result = await mercuriusClient.query(Query_agendaItem, {
+				headers: {
+					authorization: `bearer ${expiredToken}`,
+				},
+				variables: {
+					input: {
+						id: faker.string.uuid(),
+					},
+				},
+			});
+
+			expect(result.data.agendaItem).toEqual(null);
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		});
+
+		test("returns error with token containing invalid signature", async () => {
+			// Valid format but invalid signature
+			const invalidSignatureToken = [
+				Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString(
+					"base64",
+				),
+				Buffer.from(JSON.stringify({ sub: faker.string.uuid() })).toString(
+					"base64",
+				),
+				"invalidsignature",
+			].join(".");
+
+			const result = await mercuriusClient.query(Query_agendaItem, {
+				headers: {
+					authorization: `bearer ${invalidSignatureToken}`,
+				},
+				variables: {
+					input: {
+						id: faker.string.uuid(),
+					},
+				},
+			});
+
+			expect(result.data.agendaItem).toEqual(null);
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		});
+
+		test("returns error with empty token", async () => {
+			const result = await mercuriusClient.query(Query_agendaItem, {
+				headers: {
+					authorization: "bearer ",
+				},
+				variables: {
+					input: {
+						id: faker.string.uuid(),
+					},
+				},
+			});
+
+			expect(result.data.agendaItem).toEqual(null);
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		});
+
+		test("returns error with token containing invalid character encoding", async () => {
+			// Create token with invalid UTF-8 sequence
+			const invalidEncodingToken = Buffer.from([0xff, 0xfe, 0xfd]).toString(
+				"base64",
+			);
+
+			const result = await mercuriusClient.query(Query_agendaItem, {
+				headers: {
+					authorization: `bearer ${invalidEncodingToken}`,
+				},
+				variables: {
+					input: {
+						id: faker.string.uuid(),
+					},
+				},
+			});
+
+			expect(result.data.agendaItem).toEqual(null);
+			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 		});
 	});
 });
