@@ -1369,6 +1369,12 @@ type Mutation {
   """Mutation field to delete a venue booking."""
   deleteVenueBooking(input: MutationDeleteVenueBookingInput!): Venue
 
+  """Revokes the refresh token for a user by unsetting their stored token."""
+  revokeRefreshTokenForUser(
+    """Input containing user ID whose refresh token should be revoked."""
+    input: RevokeRefreshTokenInput!
+  ): Boolean
+
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
 
@@ -2868,6 +2874,9 @@ type Query {
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Fetch all organizations from the database."""
+  getAllOrganization: [Organization!]
+
   """Query field to read an organization."""
   organization(input: QueryOrganizationInput!): Organization
 
@@ -2997,6 +3006,12 @@ input QueryUserInput {
 """"""
 input QueryVenueInput {
   """Global id of the venue."""
+  id: String!
+}
+
+"""Input schema for revoking a user's refresh token."""
+input RevokeRefreshTokenInput {
+  """Unique identifier of the user."""
   id: String!
 }
 

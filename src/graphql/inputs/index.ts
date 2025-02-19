@@ -63,6 +63,7 @@ import "./MutationUpdateTagFolderInput";
 import "./MutationUpdateTagInput";
 import "./MutationUpdateUserInput";
 import "./MutationUpdateVenueInput";
+import "./MutationRevokeRefreshTokenForUserInput";
 import "./QueryAdvertisementInput";
 import "./QueryAgendaFolderInput";
 import "./QueryAgendaItemInput";

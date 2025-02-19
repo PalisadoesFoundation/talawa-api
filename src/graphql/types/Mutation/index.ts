@@ -42,6 +42,7 @@ import "./deleteTagFolder";
 import "./deleteUser";
 import "./deleteVenue";
 import "./deleteVenueBooking";
+import "./revokeRefreshTokenForUser";
 import "./signUp";
 import "./updateAdvertisement";
 import "./updateAgendaFolder";
