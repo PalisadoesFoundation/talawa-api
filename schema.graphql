@@ -1377,7 +1377,7 @@ type Mutation {
 
   """Mutation field to delete a venue booking."""
   deleteVenueBooking(input: MutationDeleteVenueBookingInput!): Venue
-  removeOrganizationCustomField(id: ID!): OrganizationCustomField
+  removeOrganizationCustomField(id: String!): OrganizationCustomField
 
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
@@ -2877,7 +2877,7 @@ type Query {
   currentUser: User
 
   """Query to fetch custom fields for an organization"""
-  customFields(input: QueryCustomFieldsInput!): [CustomField!]
+  customFields(input: QueryCustomFieldsInput!): [OrganizationCustomField!]
 
   """Query field to read an event."""
   event(input: QueryEventInput!): Event

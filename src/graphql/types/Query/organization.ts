@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { customFieldsTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
 import {
 	QueryOrganizationInput,
@@ -7,6 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { OrganizationCustomField } from "~/src/graphql/types/Organization/OrganizationCustomField";
 
 // Input schema for the query
 const QueryCustomFieldsInput = builder.inputType("QueryCustomFieldsInput", {
@@ -84,9 +84,21 @@ builder.queryField("organization", (t) =>
 	}),
 );
 
+interface QueryCustomFieldsArgs {
+	input: {
+		organizationId: string;
+	};
+}
+
+interface ParsedArgs {
+	data?: QueryCustomFieldsArgs;
+	error?: any;
+	success: boolean;
+}
+
 builder.queryField("customFields", (t) =>
 	t.field({
-		type: ["CustomField"],
+		type: [OrganizationCustomField],
 		args: {
 			input: t.arg({
 				type: QueryCustomFieldsInput,
@@ -94,18 +106,18 @@ builder.queryField("customFields", (t) =>
 			}),
 		},
 		description: "Query to fetch custom fields for an organization",
-		resolve: async (_parent, args, ctx) => {
+		resolve: async (_parent, args: QueryCustomFieldsArgs, ctx) => {
 			const {
 				data: parsedArgs,
 				error,
 				success,
-			} = queryCustomFieldsArgumentsSchema.safeParse(args);
+			}: ParsedArgs = queryCustomFieldsArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
+						issues: error.issues.map((issue: any) => ({
 							argumentPath: issue.path,
 							message: issue.message,
 						})),
@@ -116,10 +128,12 @@ builder.queryField("customFields", (t) =>
 			const customFields =
 				await ctx.drizzleClient.query.customFieldsTable.findMany({
 					where: (fields, operators) =>
-						operators.eq(
-							fields.organizationId,
-							parsedArgs.input.organizationId,
-						),
+						parsedArgs && parsedArgs.input.organizationId
+							? operators.eq(
+								fields.organizationId,
+								parsedArgs.input.organizationId,
+							)
+							: undefined,
 				});
 
 			if (!customFields.length) {

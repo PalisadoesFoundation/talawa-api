@@ -49,8 +49,9 @@ builder.mutationField("removeOrganizationCustomField", (t) =>
 			if (!customFieldToDelete) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "not_found",
+						code: "arguments_associated_resources_not_found",
 						message: "Custom field not found",
+						issues: [],
 					},
 				});
 			}
