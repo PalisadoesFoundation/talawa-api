@@ -1,222 +1,109 @@
-import { execute, parse } from 'graphql';
-import { makeExecutableSchema } from '@graphql-tools/schema';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { FastifyBaseLogger } from "fastify";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { GraphQLContext } from "~/src/graphql/context";
+import type { Organization } from "~/src/graphql/types/Organization/Organization";
+import { OrganizationUpdaterResolver } from "~/src/graphql/types/Organization/updater";
+import type { User } from "~/src/graphql/types/User/User";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { createMockLogger } from "../../../utilities/mockLogger";
 
-// Define your type definitions (schema) and resolvers
-const typeDefs = `
-  type Query {
-    organizationConnectionList(first: Int, skip: Int): [Organization]
-  }
-
-  type Organization {
-    id: ID!
-    name: String!
-  }
-`;
-
-// Mock resolvers
-const resolvers = {
-  Query: {
-    organizationConnectionList: async (_, { first = 10, skip = 0 }, { drizzleClient }) => {
-      // Validate arguments
-      if (first < 1 || first > 100) {
-        throw new Error('Invalid "first" argument');
-      }
-      if (skip < 0) {
-        throw new Error('Invalid "skip" argument');
-      }
-
-      // Fetch data from the mocked database client
-      return drizzleClient.query.organizationsTable.findMany({
-        limit: first,
-        offset: skip,
-      });
-    },
-  },
+// Mock data
+const mockOrganization: Organization = {
+	id: "org-1",
+	name: "Test Organization",
+	description: "A test organization",
+	// Add other necessary fields
 };
 
-// Create the executable schema
-const schema = makeExecutableSchema({ typeDefs, resolvers });
+const mockUser: User = {
+	id: "user-1",
+	name: "Test User",
+	email: "testuser@example.com",
+	// Add other necessary fields
+};
 
-describe('organizationConnectionList Query', () => {
-  // Mock context
-  const mockContext = {
-    drizzleClient: {
-      query: {
-        organizationsTable: {
-          findMany: vi.fn(),
-        },
-      },
-    },
-  };
+// Mock context
+const mockContext: GraphQLContext = {
+	drizzleClient: {
+		query: {
+			organizationsTable: {
+				findFirst: vi.fn(),
+			},
+		},
+		mutation: {
+			organizationsTable: {
+				update: vi.fn(),
+			},
+		},
+	},
+	currentUser: mockUser,
+	logger: createMockLogger() as FastifyBaseLogger,
+	// Add other necessary context fields
+};
 
-  // Sample organization data
-  const sampleOrganizations = [
-    { id: 1, name: 'Org 1' },
-    { id: 2, name: 'Org 2' },
-    { id: 3, name: 'Org 3' },
-  ];
+describe("OrganizationUpdaterResolver", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
 
-  beforeEach(() => {
-    // Reset all mocks before each test
-    vi.clearAllMocks();
-    mockContext.drizzleClient.query.organizationsTable.findMany.mockReset();
-  });
+	it("should update an organization successfully", async () => {
+		// Arrange
+		const updateInput = {
+			id: "org-1",
+			name: "Updated Organization Name",
+		};
 
-  const executeQuery = async (query, variables = {}) => {
-    return execute({
-      schema,
-      document: parse(query),
-      contextValue: mockContext,
-      variableValues: variables,
-    });
-  };
+		mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
+			mockOrganization
+		);
+		mockContext.drizzleClient.mutation.organizationsTable.update.mockResolvedValue(
+			{ ...mockOrganization, ...updateInput }
+		);
 
-  it('should return organizations with default pagination values', async () => {
-    // Arrange
-    mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(
-      sampleOrganizations
-    );
+		// Act
+		const result = await OrganizationUpdaterResolver.Mutation.updateOrganization(
+			{},
+			{ input: updateInput },
+			mockContext
+		);
 
-    const query = `
-      query {
-        organizationConnectionList {
-          id
-          name
-        }
-      }
-    `;
+		// Assert
+		expect(result).toEqual({ ...mockOrganization, ...updateInput });
+		expect(
+			mockContext.drizzleClient.query.organizationsTable.findFirst
+		).toHaveBeenCalledWith({ where: { id: updateInput.id } });
+		expect(
+			mockContext.drizzleClient.mutation.organizationsTable.update
+		).toHaveBeenCalledWith({
+			where: { id: updateInput.id },
+			data: updateInput,
+		});
+	});
 
-    // Act
-    const result = await executeQuery(query);
+	it("should throw an error if the organization does not exist", async () => {
+		// Arrange
+		const updateInput = {
+			id: "non-existent-org",
+			name: "Updated Organization Name",
+		};
 
-    // Assert
-    expect(result.errors).toBeUndefined();
-    expect(result.data?.organizationConnectionList).toEqual(sampleOrganizations);
-    expect(
-      mockContext.drizzleClient.query.organizationsTable.findMany
-    ).toHaveBeenCalledWith({
-      limit: 10, // default value
-      offset: 0, // default value
-    });
-  });
+		mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
+			null
+		);
 
-  it('should return organizations with custom pagination values', async () => {
-    // Arrange
-    mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(
-      sampleOrganizations
-    );
-
-    const query = `
-      query($first: Int, $skip: Int) {
-        organizationConnectionList(first: $first, skip: $skip) {
-          id
-          name
-        }
-      }
-    `;
-
-    // Act
-    const result = await executeQuery(query, { first: 5, skip: 10 });
-
-    // Assert
-    expect(result.errors).toBeUndefined();
-    expect(result.data?.organizationConnectionList).toEqual(sampleOrganizations);
-    expect(
-      mockContext.drizzleClient.query.organizationsTable.findMany
-    ).toHaveBeenCalledWith({
-      limit: 5,
-      offset: 10,
-    });
-  });
-
-  it('should throw error when first argument is less than 1', async () => {
-    // Arrange
-    const query = `
-      query {
-        organizationConnectionList(first: 0) {
-          id
-          name
-        }
-      }
-    `;
-
-    // Act
-    const result = await executeQuery(query);
-
-    // Assert
-    expect(result.errors).toBeDefined();
-    expect(result.errors?.[0].message).toBe('Invalid "first" argument');
-    expect(
-      mockContext.drizzleClient.query.organizationsTable.findMany
-    ).not.toHaveBeenCalled();
-  });
-
-  it('should throw error when first argument is greater than 100', async () => {
-    // Arrange
-    const query = `
-      query {
-        organizationConnectionList(first: 101) {
-          id
-          name
-        }
-      }
-    `;
-
-    // Act
-    const result = await executeQuery(query);
-
-    // Assert
-    expect(result.errors).toBeDefined();
-    expect(result.errors?.[0].message).toBe('Invalid "first" argument');
-    expect(
-      mockContext.drizzleClient.query.organizationsTable.findMany
-    ).not.toHaveBeenCalled();
-  });
-
-  it('should throw error when skip argument is negative', async () => {
-    // Arrange
-    const query = `
-      query {
-        organizationConnectionList(skip: -1) {
-          id
-          name
-        }
-      }
-    `;
-
-    // Act
-    const result = await executeQuery(query);
-
-    // Assert
-    expect(result.errors).toBeDefined();
-    expect(result.errors?.[0].message).toBe('Invalid "skip" argument');
-    expect(
-      mockContext.drizzleClient.query.organizationsTable.findMany
-    ).not.toHaveBeenCalled();
-  });
-
-  it('should handle database errors gracefully', async () => {
-    // Arrange
-    const dbError = new Error('Database connection failed');
-    mockContext.drizzleClient.query.organizationsTable.findMany.mockRejectedValue(
-      dbError
-    );
-
-    const query = `
-      query {
-        organizationConnectionList {
-          id
-          name
-        }
-      }
-    `;
-
-    // Act
-    const result = await executeQuery(query);
-
-    // Assert
-    expect(result.errors).toBeDefined();
-    expect(result.errors?.[0]?.message).toBe('Database connection failed');
-  });
+		// Act & Assert
+		await expect(
+			OrganizationUpdaterResolver.Mutation.updateOrganization(
+				{},
+				{ input: updateInput },
+				mockContext
+			)
+		).rejects.toThrow(TalawaGraphQLError);
+		expect(
+			mockContext.drizzleClient.query.organizationsTable.findFirst
+		).toHaveBeenCalledWith({ where: { id: updateInput.id } });
+		expect(
+			mockContext.drizzleClient.mutation.organizationsTable.update
+		).not.toHaveBeenCalled();
+	});
 });
