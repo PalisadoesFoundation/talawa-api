@@ -1,4 +1,5 @@
-import type { FastifyBaseLogger } from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyBaseLogger } from "fastify";
+import type { MercuriusContext } from "mercurius";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Organization } from "~/src/graphql/types/Organization/Organization";
@@ -7,103 +8,173 @@ import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockLogger } from "../../../utilities/mockLogger";
 
-// Mock data
-const mockOrganization: Organization = {
-	id: "org-1",
-	name: "Test Organization",
-	description: "A test organization",
-	// Add other necessary fields
-};
+type ResolverContext = GraphQLContext & MercuriusContext;
 
-const mockUser: User = {
-	id: "user-1",
-	name: "Test User",
-	email: "testuser@example.com",
-	// Add other necessary fields
-};
-
-// Mock context
-const mockContext: GraphQLContext = {
-	drizzleClient: {
-		query: {
-			organizationsTable: {
-				findFirst: vi.fn(),
+describe("organizationConnectionList Query", () => {
+	// Mock context
+	const mockContext: ResolverContext = {
+		app: {} as FastifyInstance,
+		reply: {} as FastifyReply,
+		logger: createMockLogger() as FastifyBaseLogger,
+		// Add other properties as required by GraphQLContext
+		drizzleClient: {
+			query: {
+				organizationsTable: {
+					findMany: vi.fn(),
+				},
 			},
 		},
-		mutation: {
-			organizationsTable: {
-				update: vi.fn(),
-			},
-		},
-	},
-	currentUser: mockUser,
-	logger: createMockLogger() as FastifyBaseLogger,
-	// Add other necessary context fields
-};
+	};
 
-describe("OrganizationUpdaterResolver", () => {
+	// Sample organization data
+	const sampleOrganizations: Organization[] = [
+		{ id: "1", name: "Org 1", description: "", createdAt: new Date(), addressLine1: null, addressLine2: null, avatarMimeType: null, city: null, country: null, email: null, facebook: null, instagram: null, linkedin: null, phoneNumber: null, postalCode: null, state: null, twitter: null, updatedAt: new Date(), updaterId: null, website: null, workPhoneNumber: null },
+		{ id: "2", name: "Org 2", description: "", createdAt: new Date(), addressLine1: null, addressLine2: null, avatarMimeType: null, city: null, country: null, email: null, facebook: null, instagram: null, linkedin: null, phoneNumber: null, postalCode: null, state: null, twitter: null, updatedAt: new Date(), updaterId: null, website: null, workPhoneNumber: null },
+		{ id: "3", name: "Org 3", description: "", createdAt: new Date(), addressLine1: null, addressLine2: null, avatarMimeType: null, city: null, country: null, email: null, facebook: null, instagram: null, linkedin: null, phoneNumber: null, postalCode: null, state: null, twitter: null, updatedAt: new Date(), updaterId: null, website: null, workPhoneNumber: null },
+	];
+
 	beforeEach(() => {
+		// Reset all mocks before each test
 		vi.clearAllMocks();
+		(mockContext.drizzleClient.query.organizationsTable.findMany as jest.Mock).mockReset();
 	});
 
-	it("should update an organization successfully", async () => {
-		// Arrange
-		const updateInput = {
-			id: "org-1",
-			name: "Updated Organization Name",
-		};
+	const executeQuery = async (query: string, variables = {}) => {
+		return OrganizationUpdaterResolver({
+			source: {},
+			args: variables,
+			context: mockContext,
+			info: {} as any, // Replace with appropriate GraphQLResolveInfo if available
+		});
+	};
 
-		mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-			mockOrganization
-		);
-		mockContext.drizzleClient.mutation.organizationsTable.update.mockResolvedValue(
-			{ ...mockOrganization, ...updateInput }
-		);
+	it("should return organizations with default pagination values", async () => {
+		// Arrange
+		(mockContext.drizzleClient.query.organizationsTable.findMany as jest.Mock).mockResolvedValue(sampleOrganizations);
+
+		const query = `
+			query {
+				organizationConnectionList {
+					id
+					name
+				}
+			}
+		`;
 
 		// Act
-		const result = await OrganizationUpdaterResolver.Mutation.updateOrganization(
-			{},
-			{ input: updateInput },
-			mockContext
-		);
+		const result = await executeQuery(query);
 
 		// Assert
-		expect(result).toEqual({ ...mockOrganization, ...updateInput });
-		expect(
-			mockContext.drizzleClient.query.organizationsTable.findFirst
-		).toHaveBeenCalledWith({ where: { id: updateInput.id } });
-		expect(
-			mockContext.drizzleClient.mutation.organizationsTable.update
-		).toHaveBeenCalledWith({
-			where: { id: updateInput.id },
-			data: updateInput,
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.organizationConnectionList).toEqual(sampleOrganizations);
+		expect(mockContext.drizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith({
+			limit: 10, // default value
+			offset: 0, // default value
 		});
 	});
 
-	it("should throw an error if the organization does not exist", async () => {
+	it("should return organizations with custom pagination values", async () => {
 		// Arrange
-		const updateInput = {
-			id: "non-existent-org",
-			name: "Updated Organization Name",
-		};
+		(mockContext.drizzleClient.query.organizationsTable.findMany as jest.Mock).mockResolvedValue(sampleOrganizations);
 
-		mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-			null
-		);
+		const query = `
+			query($first: Int, $skip: Int) {
+				organizationConnectionList(first: $first, skip: $skip) {
+					id
+					name
+				}
+			}
+		`;
 
-		// Act & Assert
-		await expect(
-			OrganizationUpdaterResolver.Mutation.updateOrganization(
-				{},
-				{ input: updateInput },
-				mockContext
-			)
-		).rejects.toThrow(TalawaGraphQLError);
-		expect(
-			mockContext.drizzleClient.query.organizationsTable.findFirst
-		).toHaveBeenCalledWith({ where: { id: updateInput.id } });
-		expect(
-			mockContext.drizzleClient.mutation.organizationsTable.update
-		).not.toHaveBeenCalled();
+		// Act
+		const result = await executeQuery(query, { first: 5, skip: 10 });
+
+		// Assert
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.organizationConnectionList).toEqual(sampleOrganizations);
+		expect(mockContext.drizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith({
+			limit: 5,
+			offset: 10,
+		});
 	});
-});
+
+	it("should throw error when first argument is less than 1", async () => {
+		// Arrange
+		const query = `
+			query {
+				organizationConnectionList(first: 0) {
+					id
+					name
+				}
+			}
+		`;
+
+		// Act
+		const result = await executeQuery(query);
+
+		// Assert
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]).toMatchObject({
+			extensions: {
+				code: "invalid_arguments",
+			},
+		});
+		expect(mockContext.drizzleClient.query.organizationsTable.findMany).not.toHaveBeenCalled();
+	});
+
+	it("should throw error when first argument is greater than 100", async () => {
+		// Arrange
+		const query = `
+			query {
+				organizationConnectionList(first: 101) {
+					id
+					name
+				}
+			}
+		`;
+
+		// Act
+		const result = await executeQuery(query);
+
+		// Assert
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]).toMatchObject({
+			extensions: {
+				code: "invalid_arguments",
+			},
+		});
+		expect(mockContext.drizzleClient.query.organizationsTable.findMany).not.toHaveBeenCalled();
+	});
+
+	it("should throw error when skip argument is negative", async () => {
+		// Arrange
+		const query = `
+			query {
+				organizationConnectionList(skip: -1) {
+					id
+					name
+				}
+			}
+		`;
+
+		// Act
+		const result = await executeQuery(query);
+
+		// Assert
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]).toMatchObject({
+			extensions: {
+				code: "invalid_arguments",
+			},
+		});
+		expect(mockContext.drizzleClient.query.organizationsTable.findMany).not.toHaveBeenCalled();
+	});
+
+	it("should handle database errors gracefully", async () => {
+		// Arrange
+		const dbError = new Error("Database connection failed");
+		(mockContext.drizzleClient.query.organizationsTable.findMany as jest.Mock).mockRejectedValue(dbError);
+
+		const query =
+::contentReference[oaicite:0]{index=0}
+ 
