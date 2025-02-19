@@ -443,8 +443,6 @@ suite("defaultGraphQLConnection utilities", () => {
 				rawNodes: beforeCursorUsers,
 			});
 
-			console.log(result.edges.length);
-
 			expect(result.edges).toHaveLength(2);
 			expect(result.edges[0]?.node.id).toBe("2");
 			expect(result.edges[1]?.node.id).toBe("1");
