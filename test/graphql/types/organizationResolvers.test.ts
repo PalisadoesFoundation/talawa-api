@@ -41,7 +41,7 @@ describe("organizationConnectionList Query", () => {
 		mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(
 			sampleOrganizations,
 		);
-		
+
 		const query = `
 			query {
 				organizationConnectionList {
@@ -62,8 +62,8 @@ describe("organizationConnectionList Query", () => {
 		expect(
 			mockContext.drizzleClient.query.organizationsTable.findMany,
 		).toHaveBeenCalledWith({
-			limit: 10,  // default value
-			offset: 0,  // default value
+			limit: 10, // default value
+			offset: 0, // default value
 		});
 	});
 
@@ -72,7 +72,7 @@ describe("organizationConnectionList Query", () => {
 		mockContext.drizzleClient.query.organizationsTable.findMany.mockResolvedValue(
 			sampleOrganizations,
 		);
-		
+
 		const query = `
 			query($first: Int, $skip: Int) {
 				organizationConnectionList(first: $first, skip: $skip) {
