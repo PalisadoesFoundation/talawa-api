@@ -1,3 +1,5 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
 	disconnect,
 	ensureAdministratorExists,
@@ -20,7 +22,7 @@ export async function main(): Promise<void> {
 		});
 	} catch (error) {
 		console.error("\nError: Administrator creation failed", error);
-		console.error(
+		throw new Error(
 			"\n\x1b[31mAdministrator access may be lost, try reimporting sample DB to restore access\x1b[0m\n",
 		);
 	}
@@ -30,18 +32,33 @@ export async function main(): Promise<void> {
 		console.log("\n\x1b[32mSuccess:\x1b[0m Sample Data added to the database");
 	} catch (error) {
 		console.error("Error: ", error);
+		throw new Error("Error adding sample data");
 	}
 
-	try {
-		await disconnect();
-		console.log(
-			"\n\x1b[32mSuccess:\x1b[0m Gracefully disconnecting from the database\n",
-		);
-	} catch (error) {
-		console.error("Error: ", error);
-	}
-
-	process.exit(0);
+	return;
 }
 
-await main();
+const scriptPath = fileURLToPath(import.meta.url);
+export const isMain =
+	process.argv[1] && path.resolve(process.argv[1]) === path.resolve(scriptPath);
+console.log("isMain", isMain);
+
+if (isMain) {
+	(async () => {
+		try {
+			await main();
+		} catch (error) {
+			console.error("Error adding sample data", error);
+			process.exit(1);
+		}
+		try {
+			await disconnect();
+			console.log(
+				"\n\x1b[32mSuccess:\x1b[0m Gracefully disconnecting from the database\n",
+			);
+			process.exit(0);
+		} catch (error) {
+			console.error("Error: Cannot disconnect", error);
+		}
+	})();
+}

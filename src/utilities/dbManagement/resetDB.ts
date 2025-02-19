@@ -1,9 +1,12 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import {
 	disconnect,
 	ensureAdministratorExists,
 	formatDatabase,
+	pingDB,
 } from "./helpers";
 //Load Environment Variables
 dotenv.config();
@@ -33,6 +36,14 @@ export async function main(): Promise<void> {
 
 	if (deleteExisting) {
 		try {
+			await pingDB();
+			console.log(
+				"\n\x1b[32mSuccess:\x1b[0m Database connected successfully\n",
+			);
+		} catch (error) {
+			throw new Error(`Database connection failed: ${error}`);
+		}
+		try {
 			await formatDatabase().then(() => {
 				console.log(
 					"\n\x1b[32mSuccess:\x1b[0m Database formatted successfully",
@@ -55,19 +66,33 @@ export async function main(): Promise<void> {
 				"\n\x1b[31mAdministrator access may be lost, try reformatting DB to restore access\x1b[0m\n",
 			);
 		}
+	} else {
+		console.log("Operation cancelled");
+	}
+
+	return;
+}
+
+const scriptPath = fileURLToPath(import.meta.url);
+export const isMain =
+	process.argv[1] && path.resolve(process.argv[1]) === path.resolve(scriptPath);
+
+if (isMain) {
+	(async () => {
+		try {
+			await main();
+		} catch (error) {
+			console.error("Error adding sample data", error);
+			process.exit(1);
+		}
 		try {
 			await disconnect();
 			console.log(
 				"\n\x1b[32mSuccess:\x1b[0m Gracefully disconnecting from the database\n",
 			);
+			process.exit(0);
 		} catch (error) {
-			console.error("Error: ", error);
+			console.error("Error: Cannot disconnect", error);
 		}
-		process.exit(0);
-	} else {
-		console.log("Operation cancelled");
-		await disconnect();
-	}
+	})();
 }
-
-await main();

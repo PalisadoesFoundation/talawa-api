@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import path from "node:path";
+import path, { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { hash } from "@node-rs/argon2";
 import dotenv from "dotenv";
@@ -8,16 +8,17 @@ import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { uuidv7 } from "uuidv7";
+import { promise } from "zod";
 import * as schema from "../../drizzle/schema";
 
 //Load Environment Variables
 dotenv.config();
-const NODE_ENV = process.env.NODE_ENV || "development";
+export const NODE_ENV = process.env.NODE_ENV || "development";
 
-const isTestEnvironment = process.env.NODE_ENV === "test";
+export const isTestEnvironment = process.env.NODE_ENV === "test";
 
 // Get the directory name of the current module
-const dirname: string = path.dirname(fileURLToPath(import.meta.url));
+export const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
 // Create a new database client
 export const queryClient = postgres({
@@ -31,7 +32,7 @@ export const queryClient = postgres({
 	ssl: process.env.API_POSTGRES_SSL_MODE === "true",
 });
 
-const db = drizzle(queryClient, { schema });
+export const db = drizzle(queryClient, { schema });
 
 /**
  * Clears all tables in the database.
@@ -54,6 +55,7 @@ export async function formatDatabase(): Promise<void> {
 			await db.execute(sql`DELETE FROM ${sql.identifier(tableName)}`);
 		}
 	}
+	return;
 }
 
 export async function ensureAdministratorExists(): Promise<void> {
