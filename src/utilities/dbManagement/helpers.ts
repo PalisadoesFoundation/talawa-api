@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import path, { resolve } from "node:path";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { hash } from "@node-rs/argon2";
 import dotenv from "dotenv";
@@ -8,7 +8,6 @@ import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { uuidv7 } from "uuidv7";
-import { promise } from "zod";
 import * as schema from "../../drizzle/schema";
 
 //Load Environment Variables
