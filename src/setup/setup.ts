@@ -59,24 +59,14 @@ export function generateJwtSecret(): string {
 }
 
 export function validateURL(input: string): true | string {
-	if (!input?.trim()) {
-		return "Please enter a valid URL.";
-	}
-
 	try {
-		const trimmedInput = input.trim();
-		const url = new URL(trimmedInput);
-
-		if (!["http:", "https:"].includes(url.protocol)) {
+		const url = new URL(input);
+		const protocol = url.protocol.toLowerCase();
+		if (protocol !== "http:" && protocol !== "https:") {
 			return "Please enter a valid URL with http:// or https:// protocol.";
 		}
-
-		if (!url.hostname) {
-			return "Please enter a valid URL.";
-		}
-
 		return true;
-	} catch {
+	} catch (error) {
 		return "Please enter a valid URL.";
 	}
 }
@@ -374,154 +364,153 @@ export async function cloudbeaverSetup(
 	answers: SetupAnswers,
 ): Promise<SetupAnswers> {
 	try {
+		answers.CLOUDBEAVER_ADMIN_NAME = await promptInput(
+			"CLOUDBEAVER_ADMIN_NAME",
+			"CloudBeaver admin name:",
+			"talawa",
+			validateCloudBeaverAdmin,
+		);
 
-	answers.CLOUDBEAVER_ADMIN_NAME = await promptInput(
-		"CLOUDBEAVER_ADMIN_NAME",
-		"CloudBeaver admin name:",
-		"talawa",
-		validateCloudBeaverAdmin,
-	);
+		answers.CLOUDBEAVER_ADMIN_PASSWORD = await promptInput(
+			"CLOUDBEAVER_ADMIN_PASSWORD",
+			"CloudBeaver admin password:",
+			"password",
+			validateCloudBeaverPassword,
+		);
 
-	answers.CLOUDBEAVER_ADMIN_PASSWORD = await promptInput(
-		"CLOUDBEAVER_ADMIN_PASSWORD",
-		"CloudBeaver admin password:",
-		"password",
-		validateCloudBeaverPassword,
-	);
+		answers.CLOUDBEAVER_MAPPED_HOST_IP = await promptInput(
+			"CLOUDBEAVER_MAPPED_HOST_IP",
+			"CloudBeaver mapped host IP:",
+			"127.0.0.1",
+		);
 
-	answers.CLOUDBEAVER_MAPPED_HOST_IP = await promptInput(
-		"CLOUDBEAVER_MAPPED_HOST_IP",
-		"CloudBeaver mapped host IP:",
-		"127.0.0.1",
-	);
+		answers.CLOUDBEAVER_MAPPED_PORT = await promptInput(
+			"CLOUDBEAVER_MAPPED_PORT",
+			"CloudBeaver mapped port:",
+			"8978",
+			validatePort,
+		);
 
-	answers.CLOUDBEAVER_MAPPED_PORT = await promptInput(
-		"CLOUDBEAVER_MAPPED_PORT",
-		"CloudBeaver mapped port:",
-		"8978",
-		validatePort,
-	);
+		answers.CLOUDBEAVER_SERVER_NAME = await promptInput(
+			"CLOUDBEAVER_SERVER_NAME",
+			"CloudBeaver server name:",
+			"Talawa CloudBeaver Server",
+		);
 
-	answers.CLOUDBEAVER_SERVER_NAME = await promptInput(
-		"CLOUDBEAVER_SERVER_NAME",
-		"CloudBeaver server name:",
-		"Talawa CloudBeaver Server",
-	);
+		answers.CLOUDBEAVER_SERVER_URL = await promptInput(
+			"CLOUDBEAVER_SERVER_URL",
+			"CloudBeaver server URL:",
+			"http://127.0.0.1:8978",
+			validateCloudBeaverURL,
+		);
 
-	answers.CLOUDBEAVER_SERVER_URL = await promptInput(
-		"CLOUDBEAVER_SERVER_URL",
-		"CloudBeaver server URL:",
-		"http://127.0.0.1:8978",
-		validateCloudBeaverURL,
-	);
-
-	return answers;
-} catch(err) {
-	handlePromptError(err);
-}
+		return answers;
+	} catch (err) {
+		handlePromptError(err);
+	}
 }
 
 export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	try {
-	answers.MINIO_BROWSER = await promptInput(
-		"MINIO_BROWSER",
-		"Minio browser (on/off):",
-		answers.CI === "true" ? "off" : "on",
-	);
-
-	if (answers.CI === "false") {
-		answers.MINIO_API_MAPPED_HOST_IP = await promptInput(
-			"MINIO_API_MAPPED_HOST_IP",
-			"Minio API mapped host IP:",
-			"127.0.0.1",
+		answers.MINIO_BROWSER = await promptInput(
+			"MINIO_BROWSER",
+			"Minio browser (on/off):",
+			answers.CI === "true" ? "off" : "on",
 		);
 
-		answers.MINIO_API_MAPPED_PORT = await promptInput(
-			"MINIO_API_MAPPED_PORT",
-			"Minio API mapped port:",
-			"9000",
-			validatePort,
-		);
-
-		answers.MINIO_CONSOLE_MAPPED_HOST_IP = await promptInput(
-			"MINIO_CONSOLE_MAPPED_HOST_IP",
-			"Minio console mapped host IP:",
-			"127.0.0.1",
-		);
-
-		answers.MINIO_CONSOLE_MAPPED_PORT = await promptInput(
-			"MINIO_CONSOLE_MAPPED_PORT",
-			"Minio console mapped port:",
-			"9001",
-			validatePort,
-		);
-
-		if (answers.MINIO_API_MAPPED_PORT === answers.MINIO_CONSOLE_MAPPED_PORT) {
-			throw new Error(
-				"Port conflict detected: MinIO API and Console ports must be different",
+		if (answers.CI === "false") {
+			answers.MINIO_API_MAPPED_HOST_IP = await promptInput(
+				"MINIO_API_MAPPED_HOST_IP",
+				"Minio API mapped host IP:",
+				"127.0.0.1",
 			);
+
+			answers.MINIO_API_MAPPED_PORT = await promptInput(
+				"MINIO_API_MAPPED_PORT",
+				"Minio API mapped port:",
+				"9000",
+				validatePort,
+			);
+
+			answers.MINIO_CONSOLE_MAPPED_HOST_IP = await promptInput(
+				"MINIO_CONSOLE_MAPPED_HOST_IP",
+				"Minio console mapped host IP:",
+				"127.0.0.1",
+			);
+
+			answers.MINIO_CONSOLE_MAPPED_PORT = await promptInput(
+				"MINIO_CONSOLE_MAPPED_PORT",
+				"Minio console mapped port:",
+				"9001",
+				validatePort,
+			);
+
+			if (answers.MINIO_API_MAPPED_PORT === answers.MINIO_CONSOLE_MAPPED_PORT) {
+				throw new Error(
+					"Port conflict detected: MinIO API and Console ports must be different",
+				);
+			}
 		}
+
+		answers.MINIO_ROOT_PASSWORD = await promptInput(
+			"MINIO_ROOT_PASSWORD",
+			"Minio root password:",
+			"password",
+		);
+
+		answers.MINIO_ROOT_USER = await promptInput(
+			"MINIO_ROOT_USER",
+			"Minio root user:",
+			"talawa",
+		);
+
+		return answers;
+	} catch (err) {
+		handlePromptError(err);
 	}
-
-	answers.MINIO_ROOT_PASSWORD = await promptInput(
-		"MINIO_ROOT_PASSWORD",
-		"Minio root password:",
-		"password",
-	);
-
-	answers.MINIO_ROOT_USER = await promptInput(
-		"MINIO_ROOT_USER",
-		"Minio root user:",
-		"talawa",
-	);
-
-	return answers;
-} catch (err) {
-	handlePromptError(err);
-}
 }
 
 export async function postgresSetup(
 	answers: SetupAnswers,
 ): Promise<SetupAnswers> {
 	try {
-	answers.POSTGRES_DB = await promptInput(
-		"POSTGRES_DB",
-		"Postgres database:",
-		"talawa",
-	);
-
-	if (answers.CI === "false") {
-		answers.POSTGRES_MAPPED_HOST_IP = await promptInput(
-			"POSTGRES_MAPPED_HOST_IP",
-			"Postgres mapped host IP:",
-			"127.0.0.1",
+		answers.POSTGRES_DB = await promptInput(
+			"POSTGRES_DB",
+			"Postgres database:",
+			"talawa",
 		);
 
-		answers.POSTGRES_MAPPED_PORT = await promptInput(
-			"POSTGRES_MAPPED_PORT",
-			"Postgres mapped port:",
-			"5432",
-			validatePort,
+		if (answers.CI === "false") {
+			answers.POSTGRES_MAPPED_HOST_IP = await promptInput(
+				"POSTGRES_MAPPED_HOST_IP",
+				"Postgres mapped host IP:",
+				"127.0.0.1",
+			);
+
+			answers.POSTGRES_MAPPED_PORT = await promptInput(
+				"POSTGRES_MAPPED_PORT",
+				"Postgres mapped port:",
+				"5432",
+				validatePort,
+			);
+		}
+
+		answers.POSTGRES_PASSWORD = await promptInput(
+			"POSTGRES_PASSWORD",
+			"Postgres password:",
+			"password",
 		);
+
+		answers.POSTGRES_USER = await promptInput(
+			"POSTGRES_USER",
+			"Postgres user:",
+			"talawa",
+		);
+
+		return answers;
+	} catch (err) {
+		handlePromptError(err);
 	}
-
-	answers.POSTGRES_PASSWORD = await promptInput(
-		"POSTGRES_PASSWORD",
-		"Postgres password:",
-		"password",
-	);
-
-	answers.POSTGRES_USER = await promptInput(
-		"POSTGRES_USER",
-		"Postgres user:",
-		"talawa",
-	);
-
-	return answers;
-} catch (err) {
-	handlePromptError(err);
-}
 }
 
 export async function setup(): Promise<SetupAnswers> {

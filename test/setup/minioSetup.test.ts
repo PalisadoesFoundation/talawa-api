@@ -1,8 +1,8 @@
+import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { minioSetup, setup } from "~/src/setup/setup";
-import fs from 'node:fs';
 
 vi.mock("inquirer");
 
@@ -95,9 +95,18 @@ describe("Setup -> minioSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
+		const processExitSpy = vi
+			.spyOn(process, "exit")
+			.mockImplementation((code) => {
+				throw new Error(`process.exit called with ${code}`);
+			});
+
 		await expect(minioSetup(inputAnswers)).rejects.toThrow(
-			"Port conflict detected: MinIO API and Console ports must be different",
+			/process\.exit called with 1/,
 		);
+
+		expect(processExitSpy).toHaveBeenCalledWith(1);
+		processExitSpy.mockRestore();
 	});
 	it("should handle prompt errors correctly", async () => {
 		const processExitSpy = vi

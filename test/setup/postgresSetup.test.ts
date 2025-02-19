@@ -1,6 +1,6 @@
+import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
-import fs from 'node:fs';
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { postgresSetup, setup } from "~/src/setup/setup";
 

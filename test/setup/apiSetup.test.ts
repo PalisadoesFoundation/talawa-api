@@ -5,11 +5,13 @@ import inquirer from "inquirer";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
 	apiSetup,
+	checkEnvFile,
 	generateJwtSecret,
 	setup,
 	validatePort,
 	validateURL,
 } from "~/src/setup/setup";
+import { updateEnvVariable } from "~/src/setup/updateEnvVariable";
 
 vi.mock("inquirer");
 
@@ -21,8 +23,11 @@ describe("Setup -> apiSetup", () => {
 		vi.resetAllMocks();
 	});
 
+	const isEnvConfigured = checkEnvFile();
+
 	it("should prompt the user for API configuration and update environment variables", async () => {
 		const mockResponses = [
+			...(isEnvConfigured ? [{ envReconfigure: true }] : []),
 			{ CI: "true" },
 			{ useDefaultApi: false },
 			{ API_BASE_URL: "http://localhost:5000" },
@@ -128,6 +133,22 @@ describe("validateURL", () => {
 		expect(validateURL(" ")).toBe("Please enter a valid URL.");
 		expect(validateURL("")).toBe("Please enter a valid URL.");
 	});
+
+	it("should validate URLs with different case protocols and domains", () => {
+		expect(validateURL("HTTPS://example.com")).toBe(true);
+		expect(validateURL("HTTP://example.com")).toBe(true);
+
+		expect(validateURL("HtTpS://example.com")).toBe(true);
+		expect(validateURL("HtTp://example.com")).toBe(true);
+
+		expect(validateURL("https://EXAMPLE.COM")).toBe(true);
+		expect(validateURL("http://LOCALHOST:3000")).toBe(true);
+
+		expect(validateURL("https://ExAmPlE.cOm")).toBe(true);
+		expect(validateURL("http://LoCaLhOsT:3000")).toBe(true);
+
+		expect(validateURL("HtTpS://ExAmPlE.cOm:8080/path")).toBe(true);
+	});
 });
 
 describe("validatePort", () => {
@@ -209,6 +230,77 @@ describe("generateJwtSecret", () => {
 		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
 		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".env.backup", ".env");
 		expect(processExitSpy).toHaveBeenCalledWith(1);
+
+		vi.clearAllMocks();
+	});
+});
+
+describe("Error handling without backup", () => {
+	it("should handle prompt errors when backup doesn't exist", async () => {
+		const processExitSpy = vi
+			.spyOn(process, "exit")
+			.mockImplementation(() => undefined as never);
+		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(false);
+		const fsCopyFileSyncSpy = vi
+			.spyOn(fs, "copyFileSync")
+			.mockImplementation(() => undefined);
+
+		const mockError = new Error("Prompt failed");
+		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
+
+		const consoleErrorSpy = vi.spyOn(console, "error");
+
+		await apiSetup({});
+
+		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
+		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
+		expect(processExitSpy).toHaveBeenCalledWith(1);
+
+		vi.clearAllMocks();
+	});
+
+	it("should handle SIGINT when backup doesn't exist", async () => {
+		const processExitSpy = vi
+			.spyOn(process, "exit")
+			.mockImplementation(() => undefined as never);
+		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(false);
+		const fsCopyFileSyncSpy = vi
+			.spyOn(fs, "copyFileSync")
+			.mockImplementation(() => undefined);
+
+		const consoleLogSpy = vi.spyOn(console, "log");
+
+		process.emit("SIGINT");
+
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"\nProcess interrupted! Undoing changes...",
+		);
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
+		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
+		expect(processExitSpy).toHaveBeenCalledWith(1);
+
+		vi.clearAllMocks();
+	});
+});
+
+describe("Error handling without backup", () => {
+	it("should handle errors when backup doesn't exist", () => {
+		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(false);
+		const fsCopyFileSyncSpy = vi
+			.spyOn(fs, "copyFileSync")
+			.mockImplementation(() => undefined);
+		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {
+			throw new Error("Write failed");
+		});
+
+		expect(() => updateEnvVariable({ TEST_VAR: "test" })).toThrow(
+			"Write failed",
+		);
+
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env");
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
+		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
 
 		vi.clearAllMocks();
 	});
