@@ -88,11 +88,36 @@ describe("Setup -> apiSetup", () => {
 			API_POSTGRES_SSL_MODE: "true",
 			API_POSTGRES_TEST_HOST: "mocked-test-host",
 			API_POSTGRES_USER: "mocked-user",
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 		};
 
 		for (const [key, value] of Object.entries(expectedEnv)) {
 			expect(answers[key]).toBe(value);
 		}
+	});
+
+	it("should handle prompt errors correctly", async () => {
+		const processExitSpy = vi
+			.spyOn(process, "exit")
+			.mockImplementation(() => undefined as never);
+		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const fsCopyFileSyncSpy = vi
+			.spyOn(fs, "copyFileSync")
+			.mockImplementation(() => undefined);
+
+		const mockError = new Error("Prompt failed");
+		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
+
+		const consoleErrorSpy = vi.spyOn(console, "error");
+
+		await apiSetup({});
+
+		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
+		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".env.backup", ".env");
+		expect(processExitSpy).toHaveBeenCalledWith(1);
+
+		vi.clearAllMocks();
 	});
 });
 describe("validateURL", () => {
@@ -207,30 +232,6 @@ describe("generateJwtSecret", () => {
 
 		randomBytesSpy.mockRestore();
 		consoleErrorSpy.mockRestore();
-	});
-
-	it("should handle prompt errors correctly", async () => {
-		const processExitSpy = vi
-			.spyOn(process, "exit")
-			.mockImplementation(() => undefined as never);
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
-		const fsCopyFileSyncSpy = vi
-			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => undefined);
-
-		const mockError = new Error("Prompt failed");
-		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
-
-		const consoleErrorSpy = vi.spyOn(console, "error");
-
-		await apiSetup({});
-
-		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".env.backup", ".env");
-		expect(processExitSpy).toHaveBeenCalledWith(1);
-
-		vi.clearAllMocks();
 	});
 });
 

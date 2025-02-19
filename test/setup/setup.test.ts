@@ -108,6 +108,7 @@ describe("Setup", () => {
 			CI: "true",
 			MINIO_ROOT_PASSWORD: "password",
 			MINIO_ROOT_USER: "talawa",
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 		};
 
 		for (const [key, value] of Object.entries(expectedEnv)) {

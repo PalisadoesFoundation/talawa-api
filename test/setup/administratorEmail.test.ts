@@ -48,7 +48,7 @@ describe("Setup -> askForAdministratorEmail", () => {
 		);
 	});
 
-	it("should log error, create a backup, and exit with code 1 if inquirer fails", async () => {
+	it("should restore from backup and exit when inquirer fails with existing backup", async () => {
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
 			.mockImplementation(() => {});
@@ -74,7 +74,7 @@ describe("Setup -> askForAdministratorEmail", () => {
 		consoleErrorSpy.mockRestore();
 	});
 
-	it("should log error but not create a backup if .env.backup is missing", async () => {
+	it("should handle inquirer failure gracefully when no backup exists", async () => {
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
 			.mockImplementation(() => {});
