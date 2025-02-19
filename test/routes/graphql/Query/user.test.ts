@@ -13,6 +13,7 @@ import {
 	Mutation_deleteUser,
 	Query_signIn,
 	Query_user,
+	Query_users,
 } from "../documentNodes";
 
 suite("Query field user", () => {
@@ -176,5 +177,33 @@ suite("Query field user", () => {
 		expect(userResult.data.user).toEqual(
 			administratorUserSignInResult.data.signIn.user,
 		);
+	});
+});
+suite("Query field users", () => {
+	test("returns an array of users when users exist", async () => {
+		const administratorUserSignInResult = await mercuriusClient.query(
+			Query_signIn,
+			{
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(
+			administratorUserSignInResult.data.signIn?.authenticationToken,
+		);
+
+		const usersResult = await mercuriusClient.query(Query_users, {
+			headers: {
+				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+			},
+		});
+
+		expect(usersResult.errors).toBeUndefined();
+		expect(usersResult.data.users).toBeInstanceOf(Array);
 	});
 });

@@ -2890,6 +2890,9 @@ type Query {
 
   """Query field to read a user."""
   user(input: QueryUserInput!): User
+  
+  """Query field to read multiple users."""
+  users(input: QueryUsersInput!): [User]!
 
   """Query field to read a venue."""
   venue(input: QueryVenueInput!): Venue
