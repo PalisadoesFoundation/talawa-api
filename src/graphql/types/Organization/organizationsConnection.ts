@@ -2,26 +2,42 @@ import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
+import {
+  transformDefaultGraphQLConnectionArguments,
+  transformToDefaultGraphQLConnection,
+} from "~/src/utilities/defaultGraphQLConnection";
 
 builder.queryField("organizationsConnection", (t) =>
   t.field({
     type: [Organization],
-    resolve: async (_parent, _args, ctx) => {
+    resolve: async (_parent, args, ctx) => {
+      const transformedArgs = transformDefaultGraphQLConnectionArguments(
+        args,
+        ctx,
+      );
+
       try {
         const organizations = await ctx.drizzleClient
           .select()
-          .from(organizationsTable);
+          .from(organizationsTable)
+          .limit(transformedArgs.limit)
+          .orderBy(organizationsTable.createdAt);
 
         if (!organizations || organizations.length === 0) {
           throw new TalawaGraphQLError({
             extensions: {
-              code: "unauthorized_action",
+              code: "not_found",
               issues: [{ message: "No organizations found in the database." }],
             },
           });
         }
 
-        return organizations;
+        return transformToDefaultGraphQLConnection({
+          parsedArgs: transformedArgs,
+          rawNodes: organizations,
+          createCursor: (org) => org.id,
+          createNode: (org) => org,
+        });
       } catch (error) {
         throw new TalawaGraphQLError({
           extensions: {
