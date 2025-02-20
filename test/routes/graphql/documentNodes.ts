@@ -494,29 +494,6 @@ export const Query_agendaItem =
   }
 }`);
 
-export const Mutation_createEvent = gql(`
-  mutation Mutation_createEvent($input: MutationCreateEventInput!) {
-    createEvent(input: $input) {
-      id
-      name
-      startAt
-      endAt
-      organization {
-        id
-      }
-    }
-  }
-`);
-
-export const Mutation_deleteEvent = gql(`
-  mutation Mutation_deleteEvent($input: MutationDeleteEventInput!) {
-    deleteEvent(input: $input) {
-      id
-      name
-    }
-  }
-`);
-
 export const Mutation_createAgendaFolder = gql(`
   mutation Mutation_createAgendaFolder($input: MutationCreateAgendaFolderInput!) {
     createAgendaFolder(input: $input) {
