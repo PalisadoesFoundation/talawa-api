@@ -16,11 +16,9 @@ describe("main function", () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
 			deleteExisting: true,
 		});
-		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(undefined);
-		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(
-			undefined,
-		);
-		vi.spyOn(helpers, "formatDatabase").mockResolvedValueOnce(undefined);
+		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(true);
+		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(true);
+		vi.spyOn(helpers, "formatDatabase").mockResolvedValueOnce(true);
 
 		await main();
 
@@ -36,10 +34,8 @@ describe("main function", () => {
 		vi.spyOn(helpers, "pingDB").mockRejectedValueOnce(
 			new Error("Connection failed"),
 		);
-		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(
-			undefined,
-		);
-		vi.spyOn(helpers, "formatDatabase").mockResolvedValueOnce(undefined);
+		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(true);
+		vi.spyOn(helpers, "formatDatabase").mockResolvedValueOnce(true);
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
 			.mockImplementation(() => {});
@@ -55,13 +51,11 @@ describe("main function", () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
 			deleteExisting: true,
 		});
-		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(undefined);
+		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "formatDatabase").mockRejectedValueOnce(
 			new Error("Format Failed"),
 		);
-		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(
-			undefined,
-		);
+		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(true);
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
 			.mockImplementation(() => {});
@@ -82,8 +76,8 @@ describe("main function", () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
 			deleteExisting: true,
 		});
-		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(undefined);
-		vi.spyOn(helpers, "formatDatabase").mockResolvedValueOnce(undefined);
+		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(true);
+		vi.spyOn(helpers, "formatDatabase").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "ensureAdministratorExists").mockRejectedValueOnce(
 			new Error("Admin creation failed"),
 		);
@@ -106,7 +100,7 @@ describe("main function", () => {
 	it("should not execute main() when imported", async () => {
 		const disconnectSpy = vi
 			.spyOn(helpers, "disconnect")
-			.mockResolvedValueOnce(undefined);
+			.mockResolvedValueOnce(true);
 
 		await import("src/utilities/dbManagement/resetDB");
 

@@ -18,11 +18,9 @@ describe("main function", () => {
 	});
 
 	it("should connect to the database, ensure admin exists, insert collections", async () => {
-		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(undefined);
-		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(
-			undefined,
-		);
-		vi.spyOn(helpers, "insertCollections").mockResolvedValueOnce(undefined);
+		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(true);
+		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(true);
+		vi.spyOn(helpers, "insertCollections").mockResolvedValueOnce(true);
 
 		await main();
 
@@ -39,10 +37,8 @@ describe("main function", () => {
 		vi.spyOn(helpers, "pingDB").mockRejectedValueOnce(
 			new Error("Connection failed"),
 		);
-		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(
-			undefined,
-		);
-		vi.spyOn(helpers, "insertCollections").mockResolvedValueOnce(undefined);
+		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(true);
+		vi.spyOn(helpers, "insertCollections").mockResolvedValueOnce(true);
 
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
@@ -56,11 +52,11 @@ describe("main function", () => {
 	});
 
 	it("should log an error if ensuring admin fails", async () => {
-		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(undefined);
+		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "ensureAdministratorExists").mockRejectedValueOnce(
 			new Error("Admin creation failed"),
 		);
-		vi.spyOn(helpers, "insertCollections").mockResolvedValueOnce(undefined);
+		vi.spyOn(helpers, "insertCollections").mockResolvedValueOnce(true);
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
 			.mockImplementation(() => {});
@@ -77,10 +73,8 @@ describe("main function", () => {
 	});
 
 	it("should log an error if inserting collections fails", async () => {
-		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(undefined);
-		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(
-			undefined,
-		);
+		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(true);
+		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "insertCollections").mockRejectedValueOnce(
 			new Error("Insert collections failed"),
 		);
@@ -96,7 +90,7 @@ describe("main function", () => {
 	it("should not execute main() when imported", async () => {
 		const disconnectSpy = vi
 			.spyOn(helpers, "disconnect")
-			.mockResolvedValueOnce(undefined);
+			.mockResolvedValueOnce(true);
 
 		await import("src/utilities/dbManagement/addSampleData");
 

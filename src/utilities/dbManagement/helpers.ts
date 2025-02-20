@@ -12,18 +12,16 @@ import * as schema from "../../drizzle/schema";
 
 //Load Environment Variables
 dotenv.config();
-export const NODE_ENV = process.env.NODE_ENV || "development";
-
-export const isTestEnvironment = process.env.NODE_ENV === "test";
 
 // Get the directory name of the current module
 export const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
 // Create a new database client
 export const queryClient = postgres({
-	host: isTestEnvironment
-		? process.env.API_POSTGRES_TEST_HOST
-		: process.env.API_POSTGRES_HOST,
+	host:
+		process.env.NODE_ENV === "test"
+			? process.env.API_POSTGRES_TEST_HOST
+			: process.env.API_POSTGRES_HOST,
 	port: Number(process.env.API_POSTGRES_PORT),
 	database: process.env.API_POSTGRES_DATABASE,
 	username: process.env.API_POSTGRES_USER,
@@ -36,8 +34,8 @@ export const db = drizzle(queryClient, { schema });
 /**
  * Clears all tables in the database.
  */
-export async function formatDatabase(): Promise<void> {
-	if (NODE_ENV === "production") {
+export async function formatDatabase(): Promise<boolean> {
+	if (process.env.NODE_ENV === "production") {
 		throw new Error(
 			"\n\x1b[31mRestricted: Resetting the database in production is not allowed\x1b[0m\n",
 		);
@@ -54,10 +52,10 @@ export async function formatDatabase(): Promise<void> {
 			await db.execute(sql`DELETE FROM ${sql.identifier(tableName)}`);
 		}
 	}
-	return;
+	return true;
 }
 
-export async function ensureAdministratorExists(): Promise<void> {
+export async function ensureAdministratorExists(): Promise<boolean> {
 	const email = process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 
 	if (!email) {
@@ -79,7 +77,7 @@ export async function ensureAdministratorExists(): Promise<void> {
 		} else {
 			console.log("\x1b[33mFound: Administrator user already exists\x1b[0m \n");
 		}
-		return;
+		return true;
 	}
 
 	const userId = uuidv7();
@@ -98,12 +96,14 @@ export async function ensureAdministratorExists(): Promise<void> {
 		isEmailAddressVerified: true,
 		creatorId: userId,
 	});
+
+	return true;
 }
 
 /**
  * Lists sample data files and their document counts in the sample_data directory.
  */
-export async function listSampleData(): Promise<void> {
+export async function listSampleData(): Promise<boolean> {
 	try {
 		const sampleDataPath = path.resolve(dirname, "./sample_data");
 		const files = await fs.readdir(sampleDataPath);
@@ -131,18 +131,21 @@ ${"|".padEnd(30, "-")}|----------------|
 	} catch (err) {
 		console.error("\x1b[31m", `Error listing sample data: ${err}`);
 	}
+
+	return true;
 }
 
 /**
  * Check database connection
  */
 
-export async function pingDB(): Promise<void> {
+export async function pingDB(): Promise<boolean> {
 	try {
 		await db.execute(sql`SELECT 1`);
 	} catch (error) {
 		throw new Error("Unable to connect to the database.");
 	}
+	return true;
 }
 
 /**
@@ -154,8 +157,8 @@ export async function checkAndInsertData<T>(
 	rows: T[],
 	conflictTarget: AnyPgColumn | AnyPgColumn[],
 	batchSize: number,
-): Promise<void> {
-	if (!rows.length) return;
+): Promise<boolean> {
+	if (!rows.length) return false;
 
 	for (let i = 0; i < rows.length; i += batchSize) {
 		const batch = rows.slice(i, i + batchSize);
@@ -168,6 +171,7 @@ export async function checkAndInsertData<T>(
 					: [conflictTarget],
 			});
 	}
+	return true;
 }
 
 /**
@@ -176,7 +180,9 @@ export async function checkAndInsertData<T>(
  * @param options - Options for loading data
  */
 
-export async function insertCollections(collections: string[]): Promise<void> {
+export async function insertCollections(
+	collections: string[],
+): Promise<boolean> {
 	try {
 		await checkDataSize("Before");
 
@@ -187,7 +193,7 @@ export async function insertCollections(collections: string[]): Promise<void> {
 				"\x1b[31m",
 				"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined in .env file",
 			);
-			return;
+			return false;
 		}
 
 		for (const collection of collections) {
@@ -257,7 +263,7 @@ export async function insertCollections(collections: string[]): Promise<void> {
 							"\x1b[31m",
 							"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not found in users table",
 						);
-						return;
+						return false;
 					}
 
 					const organizationAdminMembership = organizations.map((org) => ({
@@ -320,6 +326,8 @@ export async function insertCollections(collections: string[]): Promise<void> {
 	} catch (err) {
 		throw new Error(`\x1b[31mError adding data to tables: ${err}\x1b[0m`);
 	}
+
+	return true;
 }
 
 /**
@@ -377,6 +385,12 @@ ${"|".padEnd(30, "-")}|----------------|
 	}
 }
 
-export async function disconnect(): Promise<void> {
-	await queryClient.end();
+export async function disconnect(): Promise<boolean> {
+	try {
+		await queryClient.end();
+	} catch (err) {
+		console.error(`Error disconnecting from database: ${err}`);
+		return false;
+	}
+	return true;
 }
