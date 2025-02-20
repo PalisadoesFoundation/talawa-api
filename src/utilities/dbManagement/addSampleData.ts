@@ -41,7 +41,6 @@ export async function main(): Promise<void> {
 const scriptPath = fileURLToPath(import.meta.url);
 export const isMain =
 	process.argv[1] && path.resolve(process.argv[1]) === path.resolve(scriptPath);
-console.log("isMain", isMain);
 
 if (isMain) {
 	(async () => {

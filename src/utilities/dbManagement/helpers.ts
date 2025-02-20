@@ -20,12 +20,12 @@ export const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 export const queryClient = postgres({
 	host:
 		process.env.NODE_ENV === "test"
-			? process.env.API_POSTGRES_TEST_HOST
-			: process.env.API_POSTGRES_HOST,
-	port: Number(process.env.API_POSTGRES_PORT),
-	database: process.env.API_POSTGRES_DATABASE,
-	username: process.env.API_POSTGRES_USER,
-	password: process.env.API_POSTGRES_PASSWORD,
+			? process.env.API_POSTGRES_TEST_HOST || ""
+			: process.env.API_POSTGRES_HOST || "",
+	port: Number(process.env.API_POSTGRES_PORT) || 1,
+	database: process.env.API_POSTGRES_DATABASE || "",
+	username: process.env.API_POSTGRES_USER || "",
+	password: process.env.API_POSTGRES_PASSWORD || "",
 	ssl: process.env.API_POSTGRES_SSL_MODE === "true",
 });
 
@@ -107,7 +107,7 @@ export async function listSampleData(): Promise<boolean> {
 	try {
 		const sampleDataPath = path.resolve(dirname, "./sample_data");
 		const files = await fs.readdir(sampleDataPath);
-
+		console.log(files);
 		console.log("Sample Data Files:\n");
 
 		console.log(
@@ -129,7 +129,7 @@ ${"|".padEnd(30, "-")}|----------------|
 		}
 		console.log();
 	} catch (err) {
-		console.error("\x1b[31m", `Error listing sample data: ${err}`);
+		throw new Error(`\x1b[31mError listing sample data: ${err}\x1b[0m`);
 	}
 
 	return true;
@@ -189,11 +189,9 @@ export async function insertCollections(
 		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
 			process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 		if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
-			console.error(
-				"\x1b[31m",
-				"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined in .env file",
+			throw new Error(
+				"\x1b[31mAPI_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.\x1b[0m",
 			);
-			return false;
 		}
 
 		for (const collection of collections) {
@@ -259,11 +257,9 @@ export async function insertCollections(
 							),
 					});
 					if (!API_ADMINISTRATOR_USER) {
-						console.error(
-							"\x1b[31m",
-							"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not found in users table",
+						throw new Error(
+							"\x1b[31mAPI_ADMINISTRATOR_USER_EMAIL_ADDRESS is not found in users table\x1b[0m",
 						);
-						return false;
 					}
 
 					const organizationAdminMembership = organizations.map((org) => ({
@@ -317,7 +313,7 @@ export async function insertCollections(
 				}
 
 				default:
-					console.log("\x1b[31m", `Invalid table name: ${collection}`);
+					console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
 					break;
 			}
 		}
@@ -380,7 +376,7 @@ ${"|".padEnd(30, "-")}|----------------|
 
 		return dataExists;
 	} catch (err) {
-		console.error("\x1b[31m", `Error checking record count: ${err}`);
+		console.error(`\x1b[31mError checking record count: ${err}\x1b[0m`);
 		return false;
 	}
 }

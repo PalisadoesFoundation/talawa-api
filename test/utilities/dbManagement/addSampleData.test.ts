@@ -69,7 +69,7 @@ describe("main function", () => {
 			"\nError: Administrator creation failed",
 			expect.any(Error),
 		);
-		expect(helpers.insertCollections).not.toHaveBeenCalled;
+		expect(helpers.insertCollections).not.toHaveBeenCalled();
 	});
 
 	it("should log an error if inserting collections fails", async () => {
