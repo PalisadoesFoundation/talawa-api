@@ -9,239 +9,239 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 dotenv.config();
 // Mock the database query
 vi.mock("../src/utils/db", () => ({
-  db: {
-    query: {
-      organizationsTable: {
-        findMany: vi.fn().mockResolvedValue(mockOrganization),
-      },
-    },
-  },
+	db: {
+		query: {
+			organizationsTable: {
+				findMany: vi.fn().mockResolvedValue(mockOrganization),
+			},
+		},
+	},
 }));
 
 describe("Database Mocking", () => {
-  beforeEach(async () => {
-    vi.restoreAllMocks();
-    vi.resetModules();
-    vi.unstubAllEnvs();
-    await helpers.ensureAdministratorExists();
-  });
-  afterEach(async () => {
-    vi.unstubAllEnvs();
-    vi.restoreAllMocks();
-    await helpers.ensureAdministratorExists();
-  });
+	beforeEach(async () => {
+		vi.restoreAllMocks();
+		vi.resetModules();
+		vi.unstubAllEnvs();
+		await helpers.ensureAdministratorExists();
+	});
+	afterEach(async () => {
+		vi.unstubAllEnvs();
+		vi.restoreAllMocks();
+		await helpers.ensureAdministratorExists();
+	});
 
-  /*
-   * Parse Date function
-   *
-   */
+	/*
+	 * Parse Date function
+	 *
+	 */
 
-  it("should correctly parse a valid date string", () => {
-    expect(helpers.parseDate("2025-02-20")).toEqual(new Date("2025-02-20"));
-  });
+	it("should correctly parse a valid date string", () => {
+		expect(helpers.parseDate("2025-02-20")).toEqual(new Date("2025-02-20"));
+	});
 
-  it("should correctly parse a valid timestamp", () => {
-    const timestamp = 1708387200000; // Example timestamp
-    expect(helpers.parseDate(timestamp)).toEqual(new Date(timestamp));
-  });
+	it("should correctly parse a valid timestamp", () => {
+		const timestamp = 1708387200000; // Example timestamp
+		expect(helpers.parseDate(timestamp)).toEqual(new Date(timestamp));
+	});
 
-  it("should correctly parse a valid Date object", () => {
-    const date = new Date();
-    expect(helpers.parseDate(date)).toEqual(date);
-  });
+	it("should correctly parse a valid Date object", () => {
+		const date = new Date();
+		expect(helpers.parseDate(date)).toEqual(date);
+	});
 
-  it("should return null for an invalid date string", () => {
-    expect(helpers.parseDate("invalid-date")).toBeNull();
-  });
+	it("should return null for an invalid date string", () => {
+		expect(helpers.parseDate("invalid-date")).toBeNull();
+	});
 
-  /*
-   * List Sample Data function
-   *
-   */
+	/*
+	 * List Sample Data function
+	 *
+	 */
 
-  it("should list sample data", async () => {
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    const response = await helpers.listSampleData();
-    expect(response).toBe(true);
-    expect(consoleLogSpy).toHaveBeenCalledWith("Sample Data Files:\n");
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      `| organization_memberships.json| ${mockMembership.length}             |`
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      `| users.json                  | ${mockUser.length}             |`
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      `| organizations.json          | ${mockOrganization.length}              |`
-    );
-  });
+	it("should list sample data", async () => {
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const response = await helpers.listSampleData();
+		expect(response).toBe(true);
+		expect(consoleLogSpy).toHaveBeenCalledWith("Sample Data Files:\n");
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			`| organization_memberships.json| ${mockMembership.length}             |`,
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			`| users.json                  | ${mockUser.length}             |`,
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			`| organizations.json          | ${mockOrganization.length}              |`,
+		);
+	});
 
-  it("should handle an error while listing sample data", async () => {
-    vi.spyOn(fs, "readdir").mockRejectedValue(
-      new Error("Failed to read directory")
-    );
+	it("should handle an error while listing sample data", async () => {
+		vi.spyOn(fs, "readdir").mockRejectedValue(
+			new Error("Failed to read directory"),
+		);
 
-    await expect(helpers.listSampleData()).rejects.toThrow(
-      "Error listing sample data: Error: Failed to read directory"
-    );
+		await expect(helpers.listSampleData()).rejects.toThrow(
+			"Error listing sample data: Error: Failed to read directory",
+		);
 
-    vi.restoreAllMocks();
-  });
+		vi.restoreAllMocks();
+	});
 
-  /*
-   *	Connect to DB
-   *
-   */
+	/*
+	 *	Connect to DB
+	 *
+	 */
 
-  it("should return true when the database is reachable", async () => {
-    vi.spyOn(helpers, "pingDB").mockResolvedValue(true);
+	it("should return true when the database is reachable", async () => {
+		vi.spyOn(helpers, "pingDB").mockResolvedValue(true);
 
-    const result = await helpers.pingDB();
-    expect(result).toBe(true);
-  });
+		const result = await helpers.pingDB();
+		expect(result).toBe(true);
+	});
 
-  it("should throw an error when the database is not reachable", async () => {
-    vi.spyOn(helpers, "pingDB").mockRejectedValueOnce(
-      new Error("Connection failed")
-    );
+	it("should throw an error when the database is not reachable", async () => {
+		vi.spyOn(helpers, "pingDB").mockRejectedValueOnce(
+			new Error("Connection failed"),
+		);
 
-    await expect(helpers.pingDB).rejects.toThrow("Connection failed");
-  });
+		await expect(helpers.pingDB).rejects.toThrow("Connection failed");
+	});
 
-  /*
-   *   Ensuring Administrator function
-   *
-   */
+	/*
+	 *   Ensuring Administrator function
+	 *
+	 */
 
-  it("should create an administrator user if none exists", async () => {
-    const format = await helpers.formatDatabase();
-    const response = await helpers.ensureAdministratorExists();
-    expect(response).toBe(true);
-    expect(format).toBe(true);
-  });
+	it("should create an administrator user if none exists", async () => {
+		const format = await helpers.formatDatabase();
+		const response = await helpers.ensureAdministratorExists();
+		expect(response).toBe(true);
+		expect(format).toBe(true);
+	});
 
-  it("should skip if an administrator user exists", async () => {
-    await helpers.formatDatabase();
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+	it("should skip if an administrator user exists", async () => {
+		await helpers.formatDatabase();
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-    await helpers.ensureAdministratorExists();
+		await helpers.ensureAdministratorExists();
 
-    const response = await helpers.ensureAdministratorExists();
+		const response = await helpers.ensureAdministratorExists();
 
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      "\x1b[33mFound: Administrator user already exists\x1b[0m \n"
-    );
-    expect(response).toBe(true);
-  });
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"\x1b[33mFound: Administrator user already exists\x1b[0m \n",
+		);
+		expect(response).toBe(true);
+	});
 
-  /*
-   * List Database function
-   *
-   */
+	/*
+	 * List Database function
+	 *
+	 */
 
-  it("should return values from the database", async () => {
-    const collections = ["users", "organizations", "organization_memberships"];
-    await helpers.formatDatabase();
-    await helpers.ensureAdministratorExists();
-    await helpers.insertCollections(collections);
+	it("should return values from the database", async () => {
+		const collections = ["users", "organizations", "organization_memberships"];
+		await helpers.formatDatabase();
+		await helpers.ensureAdministratorExists();
+		await helpers.insertCollections(collections);
 
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-    const response = await helpers.checkDataSize("Current");
+		const response = await helpers.checkDataSize("Current");
 
-    expect(response).toBe(true);
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      "\nRecord Counts Current Import:\n"
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      `| organization_memberships    | ${
-        mockMembership.length + mockOrganization.length
-      }             |`
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      `| users                       | ${mockUser.length + 1}             |`
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      `| organizations               | ${mockOrganization.length}              |`
-    );
-  });
+		expect(response).toBe(true);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"\nRecord Counts Current Import:\n",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			`| organization_memberships    | ${
+				mockMembership.length + mockOrganization.length
+			}             |`,
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			`| users                       | ${mockUser.length + 1}             |`,
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			`| organizations               | ${mockOrganization.length}              |`,
+		);
+	});
 
-  /*
-   * Set Correct Envrironment
-   *
-   */
+	/*
+	 * Set Correct Envrironment
+	 *
+	 */
 
-  it("should set the correct host for the test environment", async () => {
-    vi.stubEnv("NODE_ENV", "test");
-    vi.resetModules();
-    const helpers = await import("src/utilities/dbManagement/helpers");
-    expect(helpers.queryClient.options.host[0]).toBe(
-      process.env.API_POSTGRES_TEST_HOST
-    );
-  });
+	it("should set the correct host for the test environment", async () => {
+		vi.stubEnv("NODE_ENV", "test");
+		vi.resetModules();
+		const helpers = await import("src/utilities/dbManagement/helpers");
+		expect(helpers.queryClient.options.host[0]).toBe(
+			process.env.API_POSTGRES_TEST_HOST,
+		);
+	});
 
-  it("should set the correct host for the production environment", async () => {
-    vi.stubEnv("NODE_ENV", "production");
-    vi.resetModules();
-    const helpers = await import("src/utilities/dbManagement/helpers");
-    expect(helpers.queryClient.options.host[0]).toBe(
-      process.env.API_POSTGRES_HOST
-    );
-  });
-  /*
-   * Format Database function
-   *
-   */
+	it("should set the correct host for the production environment", async () => {
+		vi.stubEnv("NODE_ENV", "production");
+		vi.resetModules();
+		const helpers = await import("src/utilities/dbManagement/helpers");
+		expect(helpers.queryClient.options.host[0]).toBe(
+			process.env.API_POSTGRES_HOST,
+		);
+	});
+	/*
+	 * Format Database function
+	 *
+	 */
 
-  it("should return 0 values from the database if format is success", async () => {
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    const format = await helpers.formatDatabase();
-    const response = await helpers.checkDataSize("Current");
+	it("should return 0 values from the database if format is success", async () => {
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const format = await helpers.formatDatabase();
+		const response = await helpers.checkDataSize("Current");
 
-    expect(format).toBe(true);
-    expect(response).toBe(false);
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      "\nRecord Counts Current Import:\n"
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      "| organization_memberships    | 0              |"
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      "| users                       | 0              |"
-    );
-    expect(consoleLogSpy).toHaveBeenCalledWith(
-      "| organizations               | 0              |"
-    );
-    await helpers.ensureAdministratorExists();
-  });
+		expect(format).toBe(true);
+		expect(response).toBe(false);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"\nRecord Counts Current Import:\n",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"| organization_memberships    | 0              |",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"| users                       | 0              |",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"| organizations               | 0              |",
+		);
+		await helpers.ensureAdministratorExists();
+	});
 
-  it("should throw error if executed production database", async () => {
-    vi.stubEnv("NODE_ENV", "production");
+	it("should throw error if executed production database", async () => {
+		vi.stubEnv("NODE_ENV", "production");
 
-    await expect(helpers.formatDatabase()).rejects.toThrow(
-      "Restricted: Resetting the database in production is not allowed"
-    );
-  });
+		await expect(helpers.formatDatabase()).rejects.toThrow(
+			"Restricted: Resetting the database in production is not allowed",
+		);
+	});
 
-  it("should throw an error if an issue occurs during database formatting", async () => {
-    vi.spyOn(helpers.db, "execute").mockRejectedValue(new Error("Restricted"));
+	it("should throw an error if an issue occurs during database formatting", async () => {
+		vi.spyOn(helpers.db, "execute").mockRejectedValue(new Error("Restricted"));
 
-    await expect(helpers.formatDatabase()).rejects.toThrow("Restricted");
+		await expect(helpers.formatDatabase()).rejects.toThrow("Restricted");
 
-    vi.restoreAllMocks();
-  });
+		vi.restoreAllMocks();
+	});
 
-  /*
-   * Disconnect function
-   *
-   */
+	/*
+	 * Disconnect function
+	 *
+	 */
 
-  it("should return false if an error occurs during disconnection", async () => {
-    // Mock queryClient.end() to throw an error
-    vi.spyOn(helpers.queryClient, "end").mockRejectedValue(
-      new Error("Database disconnection failed")
-    );
+	it("should return false if an error occurs during disconnection", async () => {
+		// Mock queryClient.end() to throw an error
+		vi.spyOn(helpers.queryClient, "end").mockRejectedValue(
+			new Error("Database disconnection failed"),
+		);
 
-    const response = await helpers.disconnect();
-    expect(response).toBe(false);
-  });
+		const response = await helpers.disconnect();
+		expect(response).toBe(false);
+	});
 });
