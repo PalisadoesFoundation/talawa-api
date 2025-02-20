@@ -192,6 +192,19 @@ async function insertCollections(
 						.values(organizationMemberships);
 					break;
 				}
+        case "posts": {
+					// Add case for organization memberships
+					const posts = JSON.parse(data).map(
+						(post: { createdAt: string | number | Date }) => ({
+							...post,
+							createdAt: parseDate(post.createdAt),
+						}),
+					) as (typeof schema.postsTable.$inferInsert)[];
+					await db
+						.insert(schema.postsTable)
+						.values(posts);
+					break;
+				}
 
 				default:
 					console.log("\x1b[31m", `Invalid table name: ${collection}`);
@@ -267,7 +280,7 @@ ${"|".padEnd(30, "-")}|----------------|
 	}
 }
 
-const collections = ["users", "organizations", "organization_memberships"]; // Add organization memberships to collections
+const collections = ["users", "organizations", "organization_memberships", "posts"]; // Add organization memberships to collections
 
 const args = process.argv.slice(2);
 const options: LoadOptions = {
