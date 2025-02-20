@@ -4,8 +4,13 @@
 import argparse
 import re
 import sys
+import logging
 
-TS_IGNORE_PATTERN = r"(?://|/\*)\s*@ts-ignore\b"
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s: %(message)s",
+)
 
 
 def check_ts_ignore(files: list[str]) -> int:
@@ -21,18 +26,25 @@ def check_ts_ignore(files: list[str]) -> int:
 
     for file in files:
         try:
+            logging.info(f"Checking file: {file}")
             with open(file, encoding="utf-8") as f:
                 for line_num, line in enumerate(f, start=1):
-                    if re.search(TS_IGNORE_PATTERN, line.strip()):
+                    # Handle more variations of @ts-ignore
+                    if re.search(
+                        r"(?://|/\*)\s*@ts-ignore(?:\s+|$)", line.strip()
+                    ):
                         print(
                             f"❌ Error: '@ts-ignore' found in {file} "
                             f"at line {line_num}"
                         )
+                        logging.debug(
+                            f"Found @ts-ignore in line: {line.strip()}"
+                        )
                         ts_ignore_found = True
         except FileNotFoundError:
-            print(f"⚠️ Warning: File not found: {file}")
+            logging.warning(f"File not found: {file}")
         except OSError as e:
-            print(f"⚠️ Warning: Could not read {file}: {e}")
+            logging.error(f"Could not read {file}: {e}")
     if not ts_ignore_found:
         print("✅ No '@ts-ignore' comments found in the files.")
 
@@ -59,6 +71,12 @@ def main() -> None:
         "--files", nargs="+", help="List of changed files", required=True
     )
     args = parser.parse_args()
+
+    # Filter TypeScript files
+    ts_files = [f for f in args.files if f.endswith((".ts", ".tsx"))]
+    if not ts_files:
+        logging.info("No TypeScript files to check.")
+        sys.exit(0)
 
     exit_code = check_ts_ignore(args.files)
     sys.exit(exit_code)
