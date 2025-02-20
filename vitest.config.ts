@@ -21,6 +21,6 @@ export default defineConfig({
 		// teardownTimeout: 10000
 
 		hookTimeout: 30000, // 30 seconds for hooks
-		pool: "threads", // for faster test execution and avoif postgres max-limit error
+		pool: "threads", // for faster test execution and to avoid postgres max-limit error
 	},
 });
