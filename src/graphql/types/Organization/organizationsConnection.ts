@@ -3,7 +3,7 @@ import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
-builder.queryField("organizationsConnection", (t) =>  
+builder.queryField("organizationsConnection", (t) =>
   t.field({
     type: [Organization],
     resolve: async (_parent, _args, ctx) => {
@@ -26,13 +26,17 @@ builder.queryField("organizationsConnection", (t) =>
         throw new TalawaGraphQLError({
           extensions: {
             code: "unexpected",
-            issues: [{
-              message: "An unexpected error occurred while fetching organizations.",
-              details: error instanceof Error ? error.message : "Unknown error",
-            }],
+            issues: [
+              {
+                message:
+                  "An unexpected error occurred while fetching organizations.",
+                details:
+                  error instanceof Error ? error.message : "Unknown error",
+              },
+            ],
           },
         });
       }
     },
-  })
+  }),
 );
