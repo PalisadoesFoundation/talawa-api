@@ -61,7 +61,11 @@ describe("organizationsConnection Query", async () => {
 			before: null,
 		};
 
-		const result = await resolve(null, args, mockContext as any);
+		const result = await resolve(
+			null,
+			args,
+			mockContext as unknown as GraphQLContext,
+		);
 
 		expect(mockSelect).toHaveBeenCalled();
 		expect(mockFrom).toHaveBeenCalledWith(organizationsTable);
@@ -74,7 +78,11 @@ describe("organizationsConnection Query", async () => {
 	it("should handle null arguments", async () => {
 		const args = {};
 
-		const result = await resolve(null, args, mockContext as any);
+		const result = await resolve(
+			null,
+			args,
+			mockContext as unknown as GraphQLContext,
+		);
 
 		expect(
 			defaultConnectionUtils.transformDefaultGraphQLConnectionArguments,
@@ -95,7 +103,11 @@ describe("organizationsConnection Query", async () => {
 		mockOrderBy.mockReset();
 		mockOrderBy.mockResolvedValueOnce([]);
 
-		const promise = resolve(null, { first: 10 }, mockContext as any);
+		const promise = resolve(
+			null,
+			{ first: 10 },
+			mockContext as unknown as GraphQLContext,
+		);
 
 		await expect(promise).rejects.toThrowError(TalawaGraphQLError);
 		await expect(promise).rejects.toThrow(
@@ -108,7 +120,11 @@ describe("organizationsConnection Query", async () => {
 		mockOrderBy.mockReset();
 		mockOrderBy.mockRejectedValueOnce(new Error("Database error"));
 
-		const promise = resolve(null, { first: 10 }, mockContext as any);
+		const promise = resolve(
+			null,
+			{ first: 10 },
+			mockContext as unknown as GraphQLContext,
+		);
 
 		await expect(promise).rejects.toThrowError(TalawaGraphQLError);
 		await expect(promise).rejects.toThrow(
@@ -124,7 +140,7 @@ describe("organizationsConnection Query", async () => {
 			before: null,
 		};
 
-		await resolve(null, args, mockContext as any);
+		await resolve(null, args, mockContext as unknown as GraphQLContext);
 
 		expect(
 			defaultConnectionUtils.transformDefaultGraphQLConnectionArguments,
@@ -147,7 +163,7 @@ describe("organizationsConnection Query", async () => {
 			last: null,
 		};
 
-		await resolve(null, args, mockContext as any);
+		await resolve(null, args, mockContext as unknown as GraphQLContext);
 
 		// Empty strings should be converted to undefined
 		expect(
@@ -190,7 +206,11 @@ describe("organizationsConnection Query", async () => {
 		const mockOrg = { id: "1", name: "Org 1", createdAt: new Date() };
 		mockOrderBy.mockResolvedValueOnce([mockOrg]);
 
-		await resolve(null, { first: 10 }, mockContext as any);
+		await resolve(
+			null,
+			{ first: 10 },
+			mockContext as unknown as GraphQLContext,
+		);
 
 		expect(
 			defaultConnectionUtils.transformToDefaultGraphQLConnection,
@@ -202,21 +222,45 @@ describe("organizationsConnection Query", async () => {
 		});
 	});
 
-	it("should verify cursor generation", async () => {
-		const mockOrg = { id: "test-id", name: "Test Org", createdAt: new Date() };
+	it("should correctly use createCursor and createNode functions", async () => {
+		const mockOrg = { id: "123", name: "Test Org", createdAt: new Date() };
 		mockOrderBy.mockResolvedValueOnce([mockOrg]);
+
+		const transformSpy = vi.spyOn(
+			defaultConnectionUtils,
+			"transformToDefaultGraphQLConnection",
+		);
 
 		await resolve(
 			null,
 			{ first: 10 },
-			mockContext as vi.Mocked<GraphQLContext>,
+			mockContext as unknown as GraphQLContext,
 		);
 
-		const { createCursor, createNode } = (
-			defaultConnectionUtils.transformToDefaultGraphQLConnection as vi.Spy
-		).mock.calls[0][0];
+		expect(transformSpy).toHaveBeenCalledWith(
+			expect.objectContaining({
+				rawNodes: [mockOrg],
+				createCursor: expect.any(Function),
+				createNode: expect.any(Function),
+			}),
+		);
 
-		expect(createCursor(mockOrg)).toBe("test-id");
-		expect(createNode(mockOrg)).toBe(mockOrg);
+		const { createCursor, createNode } = transformSpy.mock.calls[0]?.[0] ?? {};
+
+		if (createCursor && createNode) {
+			// Test createCursor function
+			expect(createCursor(mockOrg)).toBe("123");
+
+			// Test createNode function
+			expect(createNode(mockOrg)).toEqual(mockOrg);
+		} else {
+			fail("createCursor or createNode is undefined");
+		}
+
+		transformSpy.mockRestore();
 	});
 });
+
+function fail(message: string): never {
+	throw new Error(message);
+}
