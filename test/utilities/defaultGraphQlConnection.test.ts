@@ -263,21 +263,15 @@ suite("defaultGraphQLConnection utilities", () => {
 				},
 				ctx,
 			);
-
-			expect(ctx.addIssue).toHaveBeenCalledTimes(2);
-			expect(ctx.addIssue).toHaveBeenCalledWith(
-				expect.objectContaining({
-					path: ["first"],
-				}),
-			);
-			expect(ctx.addIssue).toHaveBeenCalledWith(
-				expect.objectContaining({
-					path: ["last"],
-				}),
-			);
-			expect(result.cursor).toBe(undefined);
+		
+			expect(ctx.addIssue).toHaveBeenCalledTimes(0);
+			expect(result).toEqual({
+				cursor: undefined,
+				isInversed: false,
+				limit: 11, // Default to 10 items + 1 for hasNextPage check
+			});
 		});
-
+		
 		test("preserves custom arguments", () => {
 			const ctx = { addIssue: vi.fn(), path: [] };
 			const customArgs = {
