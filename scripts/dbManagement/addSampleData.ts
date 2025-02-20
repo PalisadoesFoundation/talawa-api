@@ -43,21 +43,23 @@ export const isMain =
 	process.argv[1] && path.resolve(process.argv[1]) === path.resolve(scriptPath);
 
 if (isMain) {
+	let exitCode = 0;
 	(async () => {
 		try {
 			await main();
 		} catch (error) {
-			console.error("Error adding sample data", error);
-			process.exit(1);
+			exitCode = 1;
 		}
 		try {
 			await disconnect();
 			console.log(
 				"\n\x1b[32mSuccess:\x1b[0m Gracefully disconnecting from the database\n",
 			);
-			process.exit(0);
 		} catch (error) {
 			console.error("Error: Cannot disconnect", error);
+			exitCode = 1;
+		} finally {
+			process.exit(exitCode);
 		}
 	})();
 }

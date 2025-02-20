@@ -392,16 +392,19 @@ We have created sample data to make it easier for end users to get an understand
 This applies to users running Talawa API in dev containers.
 
 1. Once the server is running, open a new terminal session.
+
 2. Open a bash session inside the running container:
 
    ```bash
    docker exec -it talawa-api-1 /bin/bash
    ```
+
 3. Inside the container, run the following command to import sample data into the database:
 
    ```bash
    pnpm run add:sample_data
    ```
+
 4. Then exit
 
    ```bash
@@ -415,6 +418,7 @@ This applies to users running Talawa API in dev containers.
 This applies to users running Talawa API in dev containers and VSCode.
 
 1. Open a terminal inside the container.
+
 2. Run the following command to import sample data into the database:
 
    ```bash

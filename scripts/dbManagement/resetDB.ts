@@ -1,19 +1,15 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
-import inquirer from "inquirer";
 import {
+	askUserToContinue,
 	disconnect,
 	ensureAdministratorExists,
 	formatDatabase,
 	pingDB,
 } from "./helpers";
-//Load Environment Variables
-dotenv.config();
 
-interface PromptResult {
-	deleteExisting: boolean;
-}
+dotenv.config();
 
 const NODE_ENV = process.env.NODE_ENV || "development";
 
@@ -24,15 +20,10 @@ export async function main(): Promise<void> {
 		);
 		process.exit(0);
 	}
-	const { deleteExisting } = await inquirer.prompt<PromptResult>([
-		{
-			type: "confirm",
-			name: "deleteExisting",
-			message:
-				"\x1b[31m Warning:\x1b[0m This will delete all data in the database. Are you sure you want to continue?",
-			default: false,
-		},
-	]);
+
+	const deleteExisting = await askUserToContinue(
+		"\x1b[31m Warning:\x1b[0m This will delete all data in the database. Are you sure you want to continue?",
+	);
 
 	if (deleteExisting) {
 		try {
@@ -78,21 +69,23 @@ export const isMain =
 	process.argv[1] && path.resolve(process.argv[1]) === path.resolve(scriptPath);
 
 if (isMain) {
+	let exitCode = 0;
 	(async () => {
 		try {
 			await main();
 		} catch (error) {
-			console.error("Error adding sample data", error);
-			process.exit(1);
+			exitCode = 1;
 		}
 		try {
 			await disconnect();
 			console.log(
 				"\n\x1b[32mSuccess:\x1b[0m Gracefully disconnecting from the database\n",
 			);
-			process.exit(0);
 		} catch (error) {
 			console.error("Error: Cannot disconnect", error);
+			exitCode = 1;
+		} finally {
+			process.exit(exitCode);
 		}
 	})();
 }

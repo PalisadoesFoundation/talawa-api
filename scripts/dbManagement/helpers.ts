@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 import { hash } from "@node-rs/argon2";
 import dotenv from "dotenv";
@@ -7,10 +8,9 @@ import { sql } from "drizzle-orm";
 import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import * as schema from "src/drizzle/schema";
 import { uuidv7 } from "uuidv7";
-import * as schema from "../../drizzle/schema";
 
-//Load Environment Variables
 dotenv.config();
 
 // Get the directory name of the current module
@@ -30,6 +30,23 @@ export const queryClient = postgres({
 });
 
 export const db = drizzle(queryClient, { schema });
+
+/**
+ * Prompts the user for confirmation using the built-in readline module.
+ */
+export async function askUserToContinue(question: string): Promise<boolean> {
+	return new Promise((resolve) => {
+		const rl = readline.createInterface({
+			input: process.stdin,
+			output: process.stdout,
+		});
+
+		rl.question(`${question} (y/n): `, (answer) => {
+			rl.close();
+			resolve(answer.trim().toLowerCase() === "y");
+		});
+	});
+}
 
 /**
  * Clears all tables in the database.

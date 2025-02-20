@@ -1,13 +1,7 @@
-// import path from "node:path";
-import { main } from "src/utilities/dbManagement/addSampleData";
-import * as mainModule from "src/utilities/dbManagement/addSampleData";
-import * as helpers from "src/utilities/dbManagement/helpers";
+import { main } from "scripts/dbManagement/addSampleData";
+import * as mainModule from "scripts/dbManagement/addSampleData";
+import * as helpers from "scripts/dbManagement/helpers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-// const actualScriptPath = path.resolve(
-// 	process.cwd(),
-// 	"src/utilities/dbManagement/addSampleData.ts",
-// );
 
 describe("main function", () => {
 	beforeEach(() => {
@@ -92,27 +86,10 @@ describe("main function", () => {
 			.spyOn(helpers, "disconnect")
 			.mockResolvedValueOnce(true);
 
-		await import("src/utilities/dbManagement/addSampleData");
+		await import("scripts/dbManagement/addSampleData");
 
 		await new Promise((resolve) => setTimeout(resolve, 2000));
 		expect(mainModule.isMain).toBe(false);
 		expect(disconnectSpy).not.toHaveBeenCalled();
 	});
-
-	// it("should execute `main()` and call `disconnect()` when script is run directly", async () => {
-	// 	vi.spyOn(process, "argv", "get").mockReturnValue([
-	// 		"node",
-	// 		actualScriptPath,
-	// 	]);
-	//     const processExitSpy = vi
-	//             .spyOn(process, "exit")
-	//             .mockImplementation(( ) => { });
-
-	// 	await import("src/utilities/dbManagement/addSampleData").then(async() => {
-	//         await new Promise((resolve) => setTimeout(resolve, 2000));
-	//         expect(mainModule.isMain).toBe(true);
-	//         expect(processExitSpy).toHaveBeenCalledWith(0);
-	//     });
-
-	// });
 });

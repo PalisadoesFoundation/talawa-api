@@ -1,9 +1,10 @@
 import fs from "node:fs/promises";
+import readline from "node:readline";
 import dotenv from "dotenv";
-import * as helpers from "src/utilities/dbManagement/helpers";
-import mockMembership from "src/utilities/dbManagement/sample_data/organization_memberships.json";
-import mockOrganization from "src/utilities/dbManagement/sample_data/organizations.json";
-import mockUser from "src/utilities/dbManagement/sample_data/users.json";
+import * as helpers from "scripts/dbManagement/helpers";
+import mockMembership from "scripts/dbManagement/sample_data/organization_memberships.json";
+import mockOrganization from "scripts/dbManagement/sample_data/organizations.json";
+import mockUser from "scripts/dbManagement/sample_data/users.json";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 dotenv.config();
@@ -29,6 +30,45 @@ describe("Database Mocking", () => {
 		vi.unstubAllEnvs();
 		vi.restoreAllMocks();
 		await helpers.ensureAdministratorExists();
+	});
+
+	/*
+	 * Ask User to Continue function
+	 *
+	 */
+
+	it("should return true when user inputs 'y'", async () => {
+		const mockInterface = {
+			question: vi.fn().mockImplementation((_question, callback) => {
+				callback("y");
+			}),
+			close: vi.fn(),
+		};
+
+		vi.spyOn(readline, "createInterface").mockReturnValue(
+			mockInterface as unknown as readline.Interface,
+		);
+
+		const result = await helpers.askUserToContinue("Do you want to continue?");
+		expect(result).toBe(true);
+		expect(mockInterface.close).toHaveBeenCalled();
+	});
+	it("should return false when user inputs 'n'", async () => {
+		// Mock readline interface
+		const mockInterface = {
+			question: vi.fn().mockImplementation((_question, callback) => {
+				callback("n"); // Simulate user input 'n'
+			}),
+			close: vi.fn(),
+		};
+
+		vi.spyOn(readline, "createInterface").mockReturnValue(
+			mockInterface as unknown as readline.Interface,
+		);
+
+		const result = await helpers.askUserToContinue("Do you want to continue?");
+		expect(result).toBe(false);
+		expect(mockInterface.close).toHaveBeenCalled();
 	});
 
 	/*
@@ -173,7 +213,7 @@ describe("Database Mocking", () => {
 	it("should set the correct host for the test environment", async () => {
 		vi.stubEnv("NODE_ENV", "test");
 		vi.resetModules();
-		const helpers = await import("src/utilities/dbManagement/helpers");
+		const helpers = await import("scripts/dbManagement/helpers");
 		expect(helpers.queryClient.options.host[0]).toBe(
 			process.env.API_POSTGRES_TEST_HOST,
 		);
@@ -182,7 +222,7 @@ describe("Database Mocking", () => {
 	it("should set the correct host for the production environment", async () => {
 		vi.stubEnv("NODE_ENV", "production");
 		vi.resetModules();
-		const helpers = await import("src/utilities/dbManagement/helpers");
+		const helpers = await import("scripts/dbManagement/helpers");
 		expect(helpers.queryClient.options.host[0]).toBe(
 			process.env.API_POSTGRES_HOST,
 		);

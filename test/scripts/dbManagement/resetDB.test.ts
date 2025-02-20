@@ -1,7 +1,6 @@
-import inquirer from "inquirer";
-import * as helpers from "src/utilities/dbManagement/helpers";
-import { main } from "src/utilities/dbManagement/resetDB";
-import * as mainModule from "src/utilities/dbManagement/resetDB";
+import * as helpers from "scripts/dbManagement/helpers";
+import { main } from "scripts/dbManagement/resetDB";
+import * as mainModule from "scripts/dbManagement/resetDB";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("main function", () => {
@@ -15,9 +14,7 @@ describe("main function", () => {
 	});
 
 	it("should confirm to format, format DB, restore administrator", async () => {
-		vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
-			deleteExisting: true,
-		});
+		vi.spyOn(helpers, "askUserToContinue").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "formatDatabase").mockResolvedValueOnce(true);
@@ -30,9 +27,7 @@ describe("main function", () => {
 	});
 
 	it("should throw an error if database connection fails", async () => {
-		vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
-			deleteExisting: true,
-		});
+		vi.spyOn(helpers, "askUserToContinue").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "pingDB").mockRejectedValueOnce(
 			new Error("Connection failed"),
 		);
@@ -50,9 +45,7 @@ describe("main function", () => {
 	});
 
 	it("should log an error if formatting fails", async () => {
-		vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
-			deleteExisting: true,
-		});
+		vi.spyOn(helpers, "askUserToContinue").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "formatDatabase").mockRejectedValueOnce(
 			new Error("Format Failed"),
@@ -75,9 +68,7 @@ describe("main function", () => {
 	});
 
 	it("should log an error if ensuring admin fails", async () => {
-		vi.spyOn(inquirer, "prompt").mockResolvedValueOnce({
-			deleteExisting: true,
-		});
+		vi.spyOn(helpers, "askUserToContinue").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "formatDatabase").mockResolvedValueOnce(true);
 		vi.spyOn(helpers, "ensureAdministratorExists").mockRejectedValueOnce(
@@ -104,7 +95,7 @@ describe("main function", () => {
 			.spyOn(helpers, "disconnect")
 			.mockResolvedValueOnce(true);
 
-		await import("src/utilities/dbManagement/resetDB");
+		await import("scripts/dbManagement/resetDB");
 
 		await new Promise((resolve) => setTimeout(resolve, 2000));
 		expect(mainModule.isMain).toBe(false);
