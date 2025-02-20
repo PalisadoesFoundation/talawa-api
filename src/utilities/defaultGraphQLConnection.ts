@@ -210,7 +210,7 @@ export const transformToDefaultGraphQLConnection = <
 		if (rawNodes.length === limit) {
 			connection.pageInfo.hasPreviousPage = true;
 			// Remove the extra fetched node.
-			rawNodes.shift();
+			rawNodes.pop();
 		} else {
 			connection.pageInfo.hasPreviousPage = false;
 		}
