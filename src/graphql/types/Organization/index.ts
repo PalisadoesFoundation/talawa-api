@@ -6,6 +6,7 @@ import "./creator";
 import "./events";
 import "./funds";
 import "./members";
+import "./organizationsConnection";
 import "./pinnedPosts";
 import "./pinnedPostsCount";
 import "./posts";

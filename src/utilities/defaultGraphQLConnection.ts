@@ -102,22 +102,15 @@ export const transformDefaultGraphQLConnectionArguments = <
 			transformedArg.cursor = before;
 		}
 	} else {
-		ctx.addIssue({
-			code: "custom",
-			message: `A non-null value for argument "first" must be provided.`,
-			path: ["first"],
-		});
-		ctx.addIssue({
-			code: "custom",
-			message: `A non-null value for argument "last" must be provided.`,
-			path: ["last"],
-		});
-	}
+        // Set default values instead of throwing errors
+        transformedArg.isInversed = false;
+        transformedArg.limit = 11; // Default to 10 items + 1 for hasNextPage check
+    }
 
-	return {
-		...transformedArg,
-		...customArg,
-	};
+    return {
+        ...transformedArg,
+        ...customArg,
+    };
 };
 
 /**
