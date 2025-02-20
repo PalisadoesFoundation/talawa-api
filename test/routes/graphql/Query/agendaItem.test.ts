@@ -288,7 +288,45 @@ interface TestAgendaItem {
 	cleanup: () => Promise<void>;
 }
 
+interface TokenPayload {
+	exp: number;
+	iat: number;
+	sub: string;
+	jti?: string;
+	iss?: string;
+}
+
 // Helper Functions
+/**
+ * Creates test tokens with proper JWT structure
+ * Simulates real JWT format without needing external library
+ */
+function createTestToken(payload: Partial<TokenPayload> = {}): string {
+	const header = {
+		alg: "HS256",
+		typ: "JWT",
+	};
+
+	const defaultPayload = {
+		iat: Math.floor(Date.now() / 1000),
+		sub: faker.string.uuid(),
+		jti: faker.string.uuid(),
+		...payload,
+	};
+
+	const headerBase64 = Buffer.from(JSON.stringify(header)).toString(
+		"base64url",
+	);
+	const payloadBase64 = Buffer.from(JSON.stringify(defaultPayload)).toString(
+		"base64url",
+	);
+
+	// In real JWT this would be signed, but for testing we can use a consistent string
+	const signature = "test-signature";
+
+	return `${headerBase64}.${payloadBase64}.${signature}`;
+}
+
 async function createRegularUser(): Promise<TestUser> {
 	const adminAuthToken = await getAdminAuthToken();
 
@@ -723,15 +761,12 @@ suite("Input Validation Tests", () => {
 			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 		});
 
-		test("returns error with expired token format", async () => {
-			// Create an expired token format
-			const expiredPayload = {
-				exp: Math.floor(Date.now() / 1000) - 3600, // 1 hour ago
-				sub: faker.string.uuid(),
-			};
-			const expiredToken = Buffer.from(JSON.stringify(expiredPayload)).toString(
-				"base64",
-			);
+		test("returns error with expired token", async () => {
+			// Create token that expired 1 hour ago
+			const expiredToken = createTestToken({
+				exp: Math.floor(Date.now() / 1000) - 3600, // Expired 1 hour ago
+				iat: Math.floor(Date.now() / 1000) - 7200, // Created 2 hours ago
+			});
 
 			const result = await mercuriusClient.query(Query_agendaItem, {
 				headers: {
@@ -745,7 +780,21 @@ suite("Input Validation Tests", () => {
 			});
 
 			expect(result.data.agendaItem).toEqual(null);
-			expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+			expect(result.errors).toEqual([
+				expect.objectContaining({
+					extensions: {
+						code: "unauthenticated",
+					},
+					message: "You must be authenticated to perform this action.",
+					path: ["agendaItem"],
+					locations: expect.arrayContaining([
+						expect.objectContaining({
+							line: expect.any(Number),
+							column: expect.any(Number),
+						}),
+					]),
+				}),
+			]);
 		});
 
 		test("returns error with token containing invalid signature", async () => {
