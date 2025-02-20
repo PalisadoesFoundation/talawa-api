@@ -12,6 +12,8 @@ logging.basicConfig(
     format="%(levelname)s: %(message)s",
 )
 
+TS_IGNORE_PATTERN = r"(?://|/\*)\s*@ts-ignore(?:\s+|$)"
+
 
 def check_ts_ignore(files: list[str]) -> int:
     """Check for occurrences of '@ts-ignore' in the given files.
@@ -31,7 +33,8 @@ def check_ts_ignore(files: list[str]) -> int:
                 for line_num, line in enumerate(f, start=1):
                     # Handle more variations of @ts-ignore
                     if re.search(
-                        r"(?://|/\*)\s*@ts-ignore(?:\s+|$)", line.strip()
+                        TS_IGNORE_PATTERN,
+                        line.strip(),
                     ):
                         print(
                             f"❌ Error: '@ts-ignore' found in {file} "
@@ -44,7 +47,7 @@ def check_ts_ignore(files: list[str]) -> int:
         except FileNotFoundError:
             logging.warning(f"File not found: {file}")
         except OSError as e:
-            logging.error(f"Could not read {file}: {e}")
+            logging.exception(f"Could not read {file}: {e}")
     if not ts_ignore_found:
         print("✅ No '@ts-ignore' comments found in the files.")
 
@@ -65,10 +68,13 @@ def main() -> None:
         comments are found, or 1 if any are detected.
     """
     parser = argparse.ArgumentParser(
-        description="Check for @ts-ignore in changed files."
+        description="Check for @ts-ignore in changed files.",
     )
     parser.add_argument(
-        "--files", nargs="+", help="List of changed files", required=True
+        "--files",
+        nargs="+",
+        help="List of changed files",
+        required=True,
     )
     args = parser.parse_args()
 
