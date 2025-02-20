@@ -234,17 +234,27 @@ suite("Query field post", () => {
 		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.post" field if`,
 		() => {
 			test("authenticated user exists in token but not in database.", async () => {
-				const authToken = await getAuthToken();
-
+				// Create a new admin user specifically for this test
+				const { userId, email, password } = await createTestUser("administrator");
+				
+				// Sign in with the new admin user
+				const signInResult = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress: email,
+							password: password,
+						},
+					},
+				});
+				
+				const authToken = signInResult.data?.signIn?.authenticationToken;
+				if (!authToken) throw new Error("Failed to get authentication token");
+			
+				// Delete the newly created admin user
 				await server.drizzleClient
 					.delete(usersTable)
-					.where(
-						eq(
-							usersTable.emailAddress,
-							server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						),
-					);
-
+					.where(eq(usersTable.id, userId));
+			
 				const result = await mercuriusClient.query(Query_post, {
 					headers: {
 						authorization: `bearer ${authToken}`,
@@ -255,7 +265,7 @@ suite("Query field post", () => {
 						},
 					},
 				});
-
+			
 				expect(result.data.post).toEqual(null);
 				expect(result.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
