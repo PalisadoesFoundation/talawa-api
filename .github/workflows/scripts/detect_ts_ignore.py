@@ -28,7 +28,7 @@ def check_ts_ignore(files: list[str]) -> int:
 
     for file in files:
         try:
-            logging.info(f"Checking file: {file}")
+            logging.info("Checking file: %s", file)
             with open(file, encoding="utf-8") as f:
                 for line_num, line in enumerate(f, start=1):
                     # Handle more variations of @ts-ignore
@@ -37,17 +37,19 @@ def check_ts_ignore(files: list[str]) -> int:
                         line.strip(),
                     ):
                         print(
-                            f"❌ Error: '@ts-ignore' found in {file} "
-                            f"at line {line_num}"
+                            "❌ Error: '@ts-ignore' found in %s at line %d",
+                            file,
+                            line_num,
                         )
                         logging.debug(
-                            f"Found @ts-ignore in line: {line.strip()}"
+                            "Found @ts-ignore in line: %s",
+                            line.strip(),
                         )
                         ts_ignore_found = True
         except FileNotFoundError:
-            logging.warning(f"File not found: {file}")
-        except OSError as e:
-            logging.exception(f"Could not read {file}: {e}")
+            logging.warning("File not found: %s", file)
+        except OSError:
+            logging.exception("Could not read %s", file)
     if not ts_ignore_found:
         print("✅ No '@ts-ignore' comments found in the files.")
 
