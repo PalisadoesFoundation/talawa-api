@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm"; // Import eq for filtering
+import { eq } from "drizzle-orm";
 import { customFieldsTable } from "~/src/drizzle/tables/customFields";
 import { builder } from "~/src/graphql/builder";
 import { OrganizationCustomField } from "~/src/graphql/types/Organization/OrganizationCustomField";
@@ -13,7 +13,6 @@ builder.mutationField("removeOrganizationCustomField", (t) =>
 		resolve: async (_parent, args, ctx) => {
 			const { id } = args;
 
-			// Check if the user is authenticated
 			if (!ctx.currentClient.user) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -24,7 +23,6 @@ builder.mutationField("removeOrganizationCustomField", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			// Fetch the current user's role
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 				columns: {
 					role: true,
@@ -40,7 +38,6 @@ builder.mutationField("removeOrganizationCustomField", (t) =>
 				});
 			}
 
-			// Fetch the custom field to ensure it exists
 			const customFieldToDelete =
 				await ctx.drizzleClient.query.customFieldsTable.findFirst({
 					where: (fields, operators) => operators.eq(fields.id, id),
@@ -59,7 +56,7 @@ builder.mutationField("removeOrganizationCustomField", (t) =>
 			// Delete the custom field
 			const [deletedCustomField] = await ctx.drizzleClient
 				.delete(customFieldsTable)
-				.where(eq(customFieldsTable.id, id)) // Use eq for filtering
+				.where(eq(customFieldsTable.id, id))
 				.returning();
 
 			if (!deletedCustomField) {
