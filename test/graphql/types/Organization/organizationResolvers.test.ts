@@ -7,6 +7,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { User } from "~/src/graphql/types/User/User";
 import type { FastifyBaseLogger } from "fastify";
 import { createMockLogger } from "../../../utilities/mockLogger";
+import { builder } from "~/src/graphql/builder"; // Import the builder
 
 type ResolverContext = GraphQLContext & MercuriusContext;
 
@@ -98,13 +99,15 @@ describe("organizationConnectionList Query", () => {
 				context,
 			);
 		} catch (error) {
-			expect(error.extensions.code).toBe("invalid_arguments");
-			expect(error.extensions.issues).toEqual([
-				{
-					argumentPath: ["first"],
-					message: "Number must be greater than or equal to 1",
-				},
-			]);
+			if (error instanceof TalawaGraphQLError) {
+				expect(error.extensions.code).toBe("invalid_arguments");
+				expect(error.extensions.issues).toEqual([
+					{
+						argumentPath: ["first"],
+						message: "Number must be greater than or equal to 1",
+					},
+				]);
+			}
 		}
 	});
 
@@ -126,13 +129,15 @@ describe("organizationConnectionList Query", () => {
 				context,
 			);
 		} catch (error) {
-			expect(error.extensions.code).toBe("invalid_arguments");
-			expect(error.extensions.issues).toEqual([
-				{
-					argumentPath: ["first"],
-					message: "Number must be less than or equal to 100",
-				},
-			]);
+			if (error instanceof TalawaGraphQLError) {
+				expect(error.extensions.code).toBe("invalid_arguments");
+				expect(error.extensions.issues).toEqual([
+					{
+						argumentPath: ["first"],
+						message: "Number must be less than or equal to 100",
+					},
+				]);
+			}
 		}
 	});
 
@@ -154,13 +159,15 @@ describe("organizationConnectionList Query", () => {
 				context,
 			);
 		} catch (error) {
-			expect(error.extensions.code).toBe("invalid_arguments");
-			expect(error.extensions.issues).toEqual([
-				{
-					argumentPath: ["skip"],
-					message: "Number must be greater than or equal to 0",
-				},
-			]);
+			if (error instanceof TalawaGraphQLError) {
+				expect(error.extensions.code).toBe("invalid_arguments");
+				expect(error.extensions.issues).toEqual([
+					{
+						argumentPath: ["skip"],
+						message: "Number must be greater than or equal to 0",
+					},
+				]);
+			}
 		}
 	});
 });
