@@ -40,14 +40,30 @@ suite("Query field post", () => {
 				id: usersTable.id,
 			});
 
-		if (!userRow) throw new Error("Failed to create test user"); // throws an error
+		if (!userRow)
+			throw new Error(
+				"Failed to create test user: Database insert operation returned no rows",
+			);
 
 		return { userId: userRow.id, email: testEmail, password: testPassword };
 	};
 
 	beforeEach(async () => {
-		// Create admin user if it doesn't exist
-		const [adminUser] = await server.drizzleClient
+		const [existingAdmin] = await server.drizzleClient
+			.select({ id: usersTable.id })
+			.from(usersTable)
+			.where(
+				eq(
+					usersTable.emailAddress,
+					server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				),
+			)
+			.limit(1);
+		if (existingAdmin) {
+			adminUserId = existingAdmin.id;
+			return;
+		}
+		const [newAdmin] = await server.drizzleClient
 			.insert(usersTable)
 			.values({
 				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
@@ -58,27 +74,8 @@ suite("Query field post", () => {
 			})
 			.onConflictDoNothing()
 			.returning({ id: usersTable.id });
-
-		if (adminUser) {
-			adminUserId = adminUser.id;
-		} else {
-			// If user already exists, get their ID
-			const [existingAdmin] = await server.drizzleClient
-				.select({ id: usersTable.id })
-				.from(usersTable)
-				.where(
-					eq(
-						usersTable.emailAddress,
-						server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					),
-				)
-				.limit(1);
-
-			//Throw error if user doesn't exist
-			if (!existingAdmin)
-				throw new Error("Failed to find or create admin user");
-			adminUserId = existingAdmin.id;
-		}
+		if (!newAdmin) throw new Error("Failed to create admin user");
+		adminUserId = newAdmin.id;
 	});
 
 	const getAuthToken = async () => {
@@ -90,6 +87,11 @@ suite("Query field post", () => {
 				},
 			},
 		});
+		if (!signInResult.data?.signIn?.authenticationToken) {
+			throw new Error(
+				"Failed to get authentication token: Sign-in operation failed",
+			);
+		}
 		return signInResult.data.signIn?.authenticationToken;
 	};
 
@@ -131,7 +133,6 @@ suite("Query field post", () => {
 						},
 					},
 				});
-
 				expect(result.data.post).toEqual(null);
 				expect(result.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
@@ -147,13 +148,11 @@ suite("Query field post", () => {
 			});
 		},
 	);
-
 	suite(
 		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.post" field if`,
 		() => {
 			test("the provided post ID is not a valid UUID.", async () => {
 				const authToken = await getAuthToken();
-
 				const result = await mercuriusClient.query(Query_post, {
 					headers: {
 						authorization: `bearer ${authToken}`,
@@ -164,7 +163,6 @@ suite("Query field post", () => {
 						},
 					},
 				});
-
 				expect(result.data.post).toEqual(null);
 				expect(result.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
@@ -186,13 +184,11 @@ suite("Query field post", () => {
 			});
 		},
 	);
-
 	suite(
 		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.post" field if`,
 		() => {
 			test(`value of the "input.id" does not correspond to an existing post.`, async () => {
 				const authToken = await getAuthToken();
-
 				const result = await mercuriusClient.query(Query_post, {
 					headers: {
 						authorization: `bearer ${authToken}`,
@@ -203,7 +199,6 @@ suite("Query field post", () => {
 						},
 					},
 				});
-
 				expect(result.data.post).toEqual(null);
 				expect(result.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
@@ -229,16 +224,12 @@ suite("Query field post", () => {
 			});
 		},
 	);
-
 	suite(
 		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.post" field if`,
 		() => {
 			test("authenticated user exists in token but not in database.", async () => {
-				// Create a new admin user specifically for this test
 				const { userId, email, password } =
 					await createTestUser("administrator");
-
-				// Sign in with the new admin user
 				const signInResult = await mercuriusClient.query(Query_signIn, {
 					variables: {
 						input: {
@@ -249,13 +240,11 @@ suite("Query field post", () => {
 				});
 
 				const authToken = signInResult.data?.signIn?.authenticationToken;
-				if (!authToken) throw new Error("Failed to get authentication token");
+				if (!authToken) throw new Error("vfdv");
 
-				// Delete the newly created admin user
 				await server.drizzleClient
 					.delete(usersTable)
 					.where(eq(usersTable.id, userId));
-
 				const result = await mercuriusClient.query(Query_post, {
 					headers: {
 						authorization: `bearer ${authToken}`,
@@ -266,7 +255,6 @@ suite("Query field post", () => {
 						},
 					},
 				});
-
 				expect(result.data.post).toEqual(null);
 				expect(result.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
@@ -282,17 +270,14 @@ suite("Query field post", () => {
 			});
 		},
 	);
-
 	suite(
 		`results in a graphql error with "unauthorized_action_on_arguments_associated_resources" extensions code in the "errors" field and "null" as the value of "data.post" field if`,
 		() => {
 			test("regular user attempts to access a post from an organization they are not a member of", async () => {
 				// Create test user using the helper function
 				const { email, password } = await createTestUser();
-
 				// Create a different user's post
 				const { postId } = await createTestPost(adminUserId);
-
 				// Sign in with plain password
 				const signInResult = await mercuriusClient.query(Query_signIn, {
 					variables: {
@@ -302,9 +287,7 @@ suite("Query field post", () => {
 						},
 					},
 				});
-
 				const authToken = signInResult.data?.signIn?.authenticationToken;
-
 				// validation for authentication token
 				if (!authToken) {
 					console.error(
@@ -313,7 +296,6 @@ suite("Query field post", () => {
 					);
 					throw new Error("Failed to get authentication token");
 				}
-
 				// Attempt to access post
 				const result = await mercuriusClient.query(Query_post, {
 					headers: {
@@ -325,7 +307,6 @@ suite("Query field post", () => {
 						},
 					},
 				});
-
 				expect(result.data.post).toEqual(null);
 				expect(result.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
