@@ -42,6 +42,16 @@ describe("main function", () => {
 		expect(helpers.ensureAdministratorExists).toHaveBeenCalled();
 		expect(helpers.formatDatabase).toHaveBeenCalled();
 	});
+	it("should abort when user declines to continue", async () => {
+		vi.spyOn(helpers, "askUserToContinue").mockResolvedValueOnce(false);
+		const formatSpy = vi.spyOn(helpers, "formatDatabase");
+		const adminSpy = vi.spyOn(helpers, "ensureAdministratorExists");
+
+		await main();
+
+		expect(formatSpy).not.toHaveBeenCalled();
+		expect(adminSpy).not.toHaveBeenCalled();
+	});
 
 	it("should throw an error if database connection fails", async () => {
 		vi.spyOn(helpers, "askUserToContinue").mockResolvedValueOnce(true);

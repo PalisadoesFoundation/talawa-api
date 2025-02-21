@@ -45,6 +45,20 @@ describe("main function", () => {
 		]);
 	});
 
+	it("should handle concurrent sample data insertion attempts", async () => {
+		vi.spyOn(helpers, "pingDB").mockResolvedValue(true);
+		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValue(true);
+		vi.spyOn(helpers, "insertCollections").mockResolvedValue(true);
+
+		// Create multiple concurrent insertion attempts
+		const attempts = Array(3)
+			.fill(null)
+			.map(() => main());
+
+		await expect(Promise.all(attempts)).resolves.not.toThrow();
+		expect(helpers.insertCollections).toHaveBeenCalledTimes(3);
+	});
+
 	it("should throw an error if database connection fails", async () => {
 		vi.spyOn(helpers, "pingDB").mockRejectedValueOnce(
 			new Error("Connection failed"),

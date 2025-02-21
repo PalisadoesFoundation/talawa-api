@@ -79,8 +79,16 @@ describe("Database Mocking", () => {
 	 *
 	 */
 
-	it("should correctly parse a valid date string", () => {
-		expect(helpers.parseDate("2025-02-20")).toEqual(new Date("2025-02-20"));
+	it("should handle dates with different formats", () => {
+		expect(helpers.parseDate("2025/02/20")).toEqual(new Date("2025-02-20"));
+		expect(helpers.parseDate("20-02-2025")).toBeNull();
+		expect(helpers.parseDate("2025-13-20")).toBeNull(); // Invalid month
+		expect(helpers.parseDate("2025-02-31")).toBeNull(); // Invalid day
+	});
+
+	it("should handle timezone edge cases", () => {
+		const date = new Date("2025-02-20T23:59:59.999Z");
+		expect(helpers.parseDate(date.toISOString())).toEqual(date);
 	});
 
 	it("should correctly parse a valid timestamp", () => {
