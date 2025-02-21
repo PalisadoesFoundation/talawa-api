@@ -1,30 +1,17 @@
-import envSchema from "env-schema";
 import * as helpers from "scripts/dbManagement/helpers";
 import { main } from "scripts/dbManagement/resetDB";
 import * as mainModule from "scripts/dbManagement/resetDB";
-import {
-	type EnvConfig,
-	envConfigSchema,
-	envSchemaAjv,
-} from "src/envConfigSchema";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const envConfig = envSchema<EnvConfig>({
-	ajv: envSchemaAjv,
-	dotenv: true,
-	schema: envConfigSchema,
-});
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("main function", () => {
 	beforeEach(async () => {
 		vi.resetModules();
 		await helpers.ensureAdministratorExists();
-		envConfig.API_POSTGRES_HOST = "postgres-test";
 	});
 	afterEach(async () => {
 		vi.restoreAllMocks();
 		await helpers.ensureAdministratorExists();
-		envConfig.API_POSTGRES_HOST = "postgres-test";
 	});
 
 	it("should confirm to format, format DB, restore administrator", async () => {

@@ -18,7 +18,6 @@ import { uuidv7 } from "uuidv7";
 
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
-	dotenv: true,
 	schema: envConfigSchema,
 });
 

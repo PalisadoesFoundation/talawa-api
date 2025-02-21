@@ -1,28 +1,14 @@
-import envSchema from "env-schema";
 import { main } from "scripts/dbManagement/addSampleData";
 import * as mainModule from "scripts/dbManagement/addSampleData";
 import * as helpers from "scripts/dbManagement/helpers";
-import {
-	type EnvConfig,
-	envConfigSchema,
-	envSchemaAjv,
-} from "src/envConfigSchema";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-const envConfig = envSchema<EnvConfig>({
-	ajv: envSchemaAjv,
-	dotenv: true,
-	schema: envConfigSchema,
-});
 
 describe("main function", () => {
 	beforeEach(() => {
 		vi.resetModules();
-		envConfig.API_POSTGRES_HOST = "postgres-test";
 	});
 	afterEach(() => {
 		vi.restoreAllMocks();
-		envConfig.API_POSTGRES_HOST = "postgres-test";
 	});
 
 	it("should connect to the database, ensure admin exists, insert collections", async () => {
