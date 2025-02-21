@@ -1,7 +1,7 @@
-import { main } from "scripts/dbManagement/resetDB";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as mainModule from "scripts/dbManagement/addSampleData";
 import * as helpers from "scripts/dbManagement/helpers";
+import { main } from "scripts/dbManagement/resetDB";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("main function", () => {
 	beforeEach(async () => {
