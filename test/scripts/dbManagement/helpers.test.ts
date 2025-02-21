@@ -1,10 +1,28 @@
 import fs from "node:fs/promises";
 import readline from "node:readline";
-import * as helpers from "scripts/dbManagement/helpers";
 import mockMembership from "scripts/dbManagement/sample_data/organization_memberships.json";
 import mockOrganization from "scripts/dbManagement/sample_data/organizations.json";
 import mockUser from "scripts/dbManagement/sample_data/users.json";
+import type { EnvConfig } from "src/envConfigSchema";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("env-schema", async (importOriginal) => {
+	const actual = await importOriginal();
+	return {
+		...(actual as Record<string, unknown>),
+		default: vi.fn(
+			(): Partial<EnvConfig> => ({
+				API_POSTGRES_HOST: "postgres-test",
+				API_POSTGRES_PORT: 5432,
+				API_POSTGRES_PASSWORD: "password",
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "adminstrator@email.com",
+				API_ADMINISTRATOR_USER_PASSWORD: "password",
+			}),
+		),
+	};
+});
+
+import * as helpers from "scripts/dbManagement/helpers";
 
 describe("Database Mocking", () => {
 	beforeEach(async () => {
