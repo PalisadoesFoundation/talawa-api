@@ -2,10 +2,24 @@ import { main } from "scripts/dbManagement/addSampleData";
 import * as mainModule from "scripts/dbManagement/addSampleData";
 import * as helpers from "scripts/dbManagement/helpers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import envSchema from "env-schema";
+import {
+	type EnvConfig,
+	envConfigSchema,
+	envSchemaAjv,
+} from "src/envConfigSchema";
+
+const envConfig = envSchema<EnvConfig>({
+	ajv: envSchemaAjv,
+	dotenv: true,
+	schema: envConfigSchema,
+});
+
 
 describe("main function", () => {
 	beforeEach(() => {
 		vi.resetModules();
+		envConfig.API_POSTGRES_HOST = "postgres-test";
 	});
 	afterEach(() => {
 		vi.restoreAllMocks();

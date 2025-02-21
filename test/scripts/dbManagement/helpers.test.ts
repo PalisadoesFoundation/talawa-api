@@ -5,12 +5,25 @@ import mockMembership from "scripts/dbManagement/sample_data/organization_member
 import mockOrganization from "scripts/dbManagement/sample_data/organizations.json";
 import mockUser from "scripts/dbManagement/sample_data/users.json";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import envSchema from "env-schema";
+import {
+	type EnvConfig,
+	envConfigSchema,
+	envSchemaAjv,
+} from "src/envConfigSchema";
+
+const envConfig = envSchema<EnvConfig>({
+	ajv: envSchemaAjv,
+	dotenv: true,
+	schema: envConfigSchema,
+});
 
 describe("Database Mocking", () => {
 	beforeEach(async () => {
 		vi.restoreAllMocks();
 		vi.resetModules();
 		await helpers.ensureAdministratorExists();
+		envConfig.API_POSTGRES_HOST = "postgres-test";
 	});
 	afterEach(async () => {
 		vi.restoreAllMocks();
