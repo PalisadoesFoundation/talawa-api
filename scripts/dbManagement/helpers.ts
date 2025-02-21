@@ -57,18 +57,20 @@ export async function formatDatabase(): Promise<boolean> {
 			"\n\x1b[31mRestricted: Resetting the database in production is not allowed\x1b[0m\n",
 		);
 	}
-
-	const tables = await db.execute(sql`
+	type TableRow = { tablename: string };
+	const tables: TableRow[] = await db.execute(sql`
 		SELECT tablename FROM pg_catalog.pg_tables 
 		WHERE schemaname = 'public'
 	`);
 
-	for (const row of tables) {
-		const tableName = row.tablename;
-		if (typeof tableName === "string") {
-			await db.execute(sql`DELETE FROM ${sql.identifier(tableName)}`);
-		}
+	const tableNames = tables.map((row) => sql.identifier(row.tablename));
+
+	if (tableNames.length > 0) {
+		await db.execute(
+			sql`TRUNCATE TABLE ${sql.join(tableNames, sql`, `)} RESTART IDENTITY CASCADE;`,
+		);
 	}
+
 	return true;
 }
 

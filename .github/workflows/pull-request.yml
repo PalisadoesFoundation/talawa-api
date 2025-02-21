@@ -240,9 +240,10 @@ jobs:
         run: docker compose up -d
       - name: Adding tables to testing environment
         run: docker compose exec api pnpm apply_drizzle_test_migrations
-      - name: Validate Database Records
+      - name: Validate Database
         run: docker compose exec api pnpm add:sample_data
       - name: Stop Services
+        if: always()
         run: docker compose down
 
   Test-Docusaurus-Deployment:

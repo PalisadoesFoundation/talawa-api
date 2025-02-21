@@ -31,16 +31,13 @@ export async function main(): Promise<void> {
 			console.log(
 				"\n\x1b[32mSuccess:\x1b[0m Database connected successfully\n",
 			);
-		} catch (error) {
+		} catch (error: unknown) {
 			throw new Error(`Database connection failed: ${error}`);
 		}
 		try {
-			await formatDatabase().then(() => {
-				console.log(
-					"\n\x1b[32mSuccess:\x1b[0m Database formatted successfully",
-				);
-			});
-		} catch (error) {
+			await formatDatabase();
+			console.log("\n\x1b[32mSuccess:\x1b[0m Database formatted successfully");
+		} catch (error: unknown) {
 			console.error(
 				"\n\x1b[31mError: Database formatting failed\n\x1b[0m",
 				error,
@@ -48,10 +45,9 @@ export async function main(): Promise<void> {
 			console.error("\n\x1b[33mPreserving administrator access\x1b[0m");
 		}
 		try {
-			await ensureAdministratorExists().then(() => {
-				console.log("\x1b[32mSuccess:\x1b[0m Administrator access restored\n");
-			});
-		} catch (error) {
+			await ensureAdministratorExists();
+			console.log("\x1b[32mSuccess:\x1b[0m Administrator access restored\n");
+		} catch (error: unknown) {
 			console.error("\nError: Administrator creation failed", error);
 			console.error(
 				"\n\x1b[31mAdministrator access may be lost, try reformatting DB to restore access\x1b[0m\n",
@@ -73,7 +69,7 @@ if (isMain) {
 	(async () => {
 		try {
 			await main();
-		} catch (error) {
+		} catch (error: unknown) {
 			exitCode = 1;
 		}
 		try {
@@ -81,7 +77,7 @@ if (isMain) {
 			console.log(
 				"\n\x1b[32mSuccess:\x1b[0m Gracefully disconnecting from the database\n",
 			);
-		} catch (error) {
+		} catch (error: unknown) {
 			console.error("Error: Cannot disconnect", error);
 			exitCode = 1;
 		} finally {
