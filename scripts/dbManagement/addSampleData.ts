@@ -24,17 +24,6 @@ export async function main(): Promise<void> {
 		throw new Error(`Database connection failed: ${error}`);
 	}
 	try {
-		await formatDatabase();
-		console.log("\n\x1b[32mSuccess:\x1b[0m Database formatted successfully");
-	} catch (error: unknown) {
-		console.error(
-			"\n\x1b[31mError: Database formatting failed\n\x1b[0m",
-			error,
-		);
-		console.error("\n\x1b[33mRolled back to previous state\x1b[0m");
-		console.error("\n\x1b[33mPreserving administrator access\x1b[0m");
-	}
-	try {
 		await ensureAdministratorExists();
 		console.log("\x1b[32mSuccess:\x1b[0m Administrator setup complete\n");
 	} catch (error: unknown) {
