@@ -22,6 +22,7 @@ describe("main function", () => {
 	});
 	afterEach(() => {
 		vi.restoreAllMocks();
+		envConfig.API_POSTGRES_HOST = "postgres-test";
 	});
 
 	it("should connect to the database, ensure admin exists, insert collections", async () => {

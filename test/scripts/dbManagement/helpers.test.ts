@@ -28,6 +28,7 @@ describe("Database Mocking", () => {
 	afterEach(async () => {
 		vi.restoreAllMocks();
 		await helpers.ensureAdministratorExists();
+		envConfig.API_POSTGRES_HOST = "postgres-test";
 	});
 
 	/*

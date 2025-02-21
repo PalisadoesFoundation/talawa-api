@@ -24,6 +24,7 @@ describe("main function", () => {
 	afterEach(async () => {
 		vi.restoreAllMocks();
 		await helpers.ensureAdministratorExists();
+		envConfig.API_POSTGRES_HOST = "postgres-test";
 	});
 
 	it("should confirm to format, format DB, restore administrator", async () => {
