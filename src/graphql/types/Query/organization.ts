@@ -5,8 +5,8 @@ import {
 	queryOrganizationInputSchema,
 } from "~/src/graphql/inputs/QueryOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { OrganizationCustomField } from "~/src/graphql/types/Organization/OrganizationCustomField";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Input schema for the query
 const QueryCustomFieldsInput = builder.inputType("QueryCustomFieldsInput", {
@@ -92,7 +92,7 @@ interface QueryCustomFieldsArgs {
 
 interface ParsedArgs {
 	data?: QueryCustomFieldsArgs;
-	error?: any;
+	error?: z.ZodError;
 	success: boolean;
 }
 
@@ -113,11 +113,11 @@ builder.queryField("customFields", (t) =>
 				success,
 			}: ParsedArgs = queryCustomFieldsArgumentsSchema.safeParse(args);
 
-			if (!success) {
+			if (!success && error) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",
-						issues: error.issues.map((issue: any) => ({
+						issues: error.issues.map((issue) => ({
 							argumentPath: issue.path,
 							message: issue.message,
 						})),
@@ -128,11 +128,11 @@ builder.queryField("customFields", (t) =>
 			const customFields =
 				await ctx.drizzleClient.query.customFieldsTable.findMany({
 					where: (fields, operators) =>
-						parsedArgs && parsedArgs.input.organizationId
+						parsedArgs?.input.organizationId
 							? operators.eq(
-								fields.organizationId,
-								parsedArgs.input.organizationId,
-							)
+									fields.organizationId,
+									parsedArgs.input.organizationId,
+								)
 							: undefined,
 				});
 
