@@ -11,6 +11,52 @@ const mockDrizzleClient = {
 	},
 };
 
+// Register the query field in the builder
+builder.queryField("organizationConnectionList", (t) =>
+	t.field({
+		args: {
+			first: t.arg({ type: "Int", required: false }),
+			skip: t.arg({ type: "Int", required: false }),
+		},
+		type: ["Organization"],
+		resolve: async (_parent, args, ctx) => {
+			const {
+				data: parsedArgs,
+				error,
+				success,
+			} = z
+				.object({
+					first: z.number().min(1).max(100).default(10),
+					skip: z.number().min(0).default(0),
+				})
+				.safeParse(args);
+
+			if (!success) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: error.issues.map((issue) => ({
+							argumentPath: issue.path,
+							message: issue.message,
+						})),
+					},
+				});
+			}
+
+			const { first, skip } = parsedArgs;
+
+			// Fetch organizations with pagination
+			const organizations =
+				await ctx.drizzleClient.query.organizationsTable.findMany({
+					limit: first,
+					offset: skip,
+				});
+
+			return organizations;
+		},
+	}),
+);
+
 describe("organizationConnectionList Query", () => {
 	beforeEach(() => {
 		// Reset mocks before each test
