@@ -3,7 +3,6 @@ import { fileURLToPath } from "node:url";
 import {
 	disconnect,
 	ensureAdministratorExists,
-	formatDatabase,
 	insertCollections,
 	pingDB,
 } from "./helpers";
