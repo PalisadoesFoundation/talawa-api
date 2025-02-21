@@ -13,10 +13,6 @@ vi.mock("env-schema", async (importOriginal) => {
 		default: vi.fn(
 			(): Partial<EnvConfig> => ({
 				API_POSTGRES_HOST: "postgres-test",
-				API_POSTGRES_PORT: 5432,
-				API_POSTGRES_PASSWORD: "password",
-				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "adminstrator@email.com",
-				API_ADMINISTRATOR_USER_PASSWORD: "password",
 			}),
 		),
 	};
