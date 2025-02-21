@@ -368,6 +368,76 @@ export const Mutation_deleteOrganizationMembership =
     }
 }`);
 
+export const Query_post = gql(`query Query_post($input: QueryPostInput!) {
+    post(input: $input) {
+        id
+        organization {
+            countryCode
+        }
+    }
+}`);
+
+export const Query_event = gql(`query Query_event($input: QueryEventInput!) {
+    event(input: $input) {
+        id
+        name
+        description
+        startAt
+        endAt
+        creator {
+            id
+            name
+        }
+        organization {
+            id
+            countryCode
+        }
+    }
+}`);
+
+export const Mutation_createEvent =
+	gql(`mutation Mutation_createEvent($input: MutationCreateEventInput!) {
+    createEvent(input: $input) {
+        id
+        name
+        description
+        startAt
+        endAt
+        createdAt
+        creator{
+            id
+            name
+        }
+        organization {
+            id
+            countryCode
+        }
+    }
+}`);
+
+export const Mutation_deleteEvent =
+	gql(`mutation Mutation_deleteEvent($input: MutationDeleteEventInput!) {
+    deleteEvent(input: $input) {
+        id
+    }
+}`);
+
+export const Mutation_updateEvent =
+	gql(`mutation Mutation_updateEvent($input: MutationUpdateEventInput!) {
+    updateEvent(input: $input) {
+        id
+        name
+        description
+        startAt
+        endAt
+        updatedAt
+        organization {
+            id
+            countryCode
+        }
+    }
+}`);
+
 export const Query_tag = gql(`
     query tag($input:QueryTagInput!) {
   tag(input: $input) {
@@ -411,3 +481,48 @@ export const Query_organization = gql(`
       }
     }
   `);
+
+export const Query_agendaItem =
+	gql(`query Query_agendaItem($input: QueryAgendaItemInput!) {
+  agendaItem(input: $input) {
+    id
+    name
+    description
+    duration
+    key
+    type
+  }
+}`);
+
+export const Mutation_createAgendaFolder = gql(`
+  mutation Mutation_createAgendaFolder($input: MutationCreateAgendaFolderInput!) {
+    createAgendaFolder(input: $input) {
+      id
+      name
+      event {
+        id
+      }
+    }
+  }
+`);
+
+export const Mutation_createAgendaItem = gql(`
+  mutation Mutation_createAgendaItem($input: MutationCreateAgendaItemInput!) {
+    createAgendaItem(input: $input) {
+      id
+      name
+      description
+      duration
+      type
+    }
+  }
+`);
+
+export const Mutation_deleteAgendaItem = gql(`
+  mutation Mutation_deleteAgendaItem($input: MutationDeleteAgendaItemInput!) {
+    deleteAgendaItem(input: $input) {
+      id
+      name
+    }
+  }
+`);
