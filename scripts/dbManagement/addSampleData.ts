@@ -5,6 +5,7 @@ import {
 	ensureAdministratorExists,
 	insertCollections,
 	pingDB,
+	formatDatabase
 } from "./helpers";
 
 export async function main(): Promise<void> {
@@ -15,6 +16,17 @@ export async function main(): Promise<void> {
 		console.log("\n\x1b[32mSuccess:\x1b[0m Database connected successfully\n");
 	} catch (error) {
 		throw new Error(`Database connection failed: ${error}`);
+	}
+	try {
+		await formatDatabase().then(() => {
+			console.log("\n\x1b[32mSuccess:\x1b[0m Database formatted successfully");
+		});
+	} catch (error) {
+		console.error(
+			"\n\x1b[31mError: Database formatting failed\n\x1b[0m",
+			error,
+		);
+		console.error("\n\x1b[33mPreserving administrator access\x1b[0m");
 	}
 	try {
 		await ensureAdministratorExists().then(() => {
