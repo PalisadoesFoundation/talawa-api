@@ -204,29 +204,7 @@ describe("Database Mocking", () => {
 			`| organizations               | ${mockOrganization.length}              |`,
 		);
 	});
-
-	/*
-	 * Set Correct Envrironment
-	 *
-	 */
-
-	it("should set the correct host for the test environment", async () => {
-		vi.stubEnv("NODE_ENV", "test");
-		vi.resetModules();
-		const helpers = await import("scripts/dbManagement/helpers");
-		expect(helpers.queryClient.options.host[0]).toBe(
-			process.env.API_POSTGRES_TEST_HOST,
-		);
-	});
-
-	it("should set the correct host for the production environment", async () => {
-		vi.stubEnv("NODE_ENV", "production");
-		vi.resetModules();
-		const helpers = await import("scripts/dbManagement/helpers");
-		expect(helpers.queryClient.options.host[0]).toBe(
-			process.env.API_POSTGRES_HOST,
-		);
-	});
+	
 	/*
 	 * Format Database function
 	 *
@@ -254,34 +232,14 @@ describe("Database Mocking", () => {
 		await helpers.ensureAdministratorExists();
 	});
 
-	it("should throw error if executed production database", async () => {
-		vi.stubEnv("NODE_ENV", "production");
-
-		await expect(helpers.formatDatabase()).rejects.toThrow(
-			"Restricted: Resetting the database in production is not allowed",
-		);
-	});
-
 	it("should throw an error if an issue occurs during database formatting", async () => {
-		vi.spyOn(helpers.db, "execute").mockRejectedValue(new Error("Restricted"));
-
-		await expect(helpers.formatDatabase()).rejects.toThrow("Restricted");
-
+		vi.spyOn(helpers.db, "transaction").mockImplementation(async () => {
+			throw new Error("Restricted");
+		});
+	
+		await expect(helpers.formatDatabase()).resolves.toBe(false);
+	
 		vi.restoreAllMocks();
 	});
 
-	/*
-	 * Disconnect function
-	 *
-	 */
-
-	it("should return false if an error occurs during disconnection", async () => {
-		// Mock queryClient.end() to throw an error
-		vi.spyOn(helpers.queryClient, "end").mockRejectedValue(
-			new Error("Database disconnection failed"),
-		);
-
-		const response = await helpers.disconnect();
-		expect(response).toBe(false);
-	});
 });

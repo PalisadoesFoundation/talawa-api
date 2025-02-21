@@ -3,30 +3,36 @@ import path from "node:path";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 import { hash } from "@node-rs/argon2";
-import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
 import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/postgres-js";
+import envSchema from "env-schema";
 import postgres from "postgres";
 import * as schema from "src/drizzle/schema";
+import {
+	type EnvConfig,
+	envConfigSchema,
+	envSchemaAjv,
+} from "src/envConfigSchema";
 import { uuidv7 } from "uuidv7";
 
-dotenv.config();
+const envConfig = envSchema<EnvConfig>({
+	ajv: envSchemaAjv,
+	dotenv: true,
+	schema: envConfigSchema,
+});
 
 // Get the directory name of the current module
 export const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
 // Create a new database client
 export const queryClient = postgres({
-	host:
-		process.env.NODE_ENV === "test"
-			? process.env.API_POSTGRES_TEST_HOST || ""
-			: process.env.API_POSTGRES_HOST || "",
-	port: Number(process.env.API_POSTGRES_PORT) || 1,
-	database: process.env.API_POSTGRES_DATABASE || "",
-	username: process.env.API_POSTGRES_USER || "",
-	password: process.env.API_POSTGRES_PASSWORD || "",
-	ssl: process.env.API_POSTGRES_SSL_MODE === "true",
+	host: envConfig.API_POSTGRES_HOST,
+	port: Number(envConfig.API_POSTGRES_PORT) || 5432,
+	database: envConfig.API_POSTGRES_DATABASE || "",
+	username: envConfig.API_POSTGRES_USER || "",
+	password: envConfig.API_POSTGRES_PASSWORD || "",
+	ssl: envConfig.API_POSTGRES_SSL_MODE === "allow",
 });
 
 export const db = drizzle(queryClient, { schema });
@@ -52,11 +58,6 @@ export async function askUserToContinue(question: string): Promise<boolean> {
  * Clears all tables in the database.
  */
 export async function formatDatabase(): Promise<boolean> {
-	if (process.env.NODE_ENV === "production") {
-		throw new Error(
-			"\n\x1b[31mRestricted: Resetting the database in production is not allowed\x1b[0m\n",
-		);
-	}
 	type TableRow = { tablename: string };
 
 	try {
@@ -81,7 +82,7 @@ export async function formatDatabase(): Promise<boolean> {
 }
 
 export async function ensureAdministratorExists(): Promise<boolean> {
-	const email = process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+	const email = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 
 	if (!email) {
 		throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.");
@@ -106,7 +107,7 @@ export async function ensureAdministratorExists(): Promise<boolean> {
 	}
 
 	const userId = uuidv7();
-	const password = process.env.API_ADMINISTRATOR_USER_PASSWORD;
+	const password = envConfig.API_ADMINISTRATOR_USER_PASSWORD;
 	if (!password) {
 		throw new Error("API_ADMINISTRATOR_USER_PASSWORD is not defined.");
 	}
@@ -115,7 +116,7 @@ export async function ensureAdministratorExists(): Promise<boolean> {
 	await db.insert(schema.usersTable).values({
 		id: userId,
 		emailAddress: email,
-		name: process.env.API_ADMINISTRATOR_USER_NAME || "",
+		name: envConfig.API_ADMINISTRATOR_USER_NAME || "",
 		passwordHash,
 		role: "administrator",
 		isEmailAddressVerified: true,
@@ -185,17 +186,19 @@ export async function checkAndInsertData<T>(
 ): Promise<boolean> {
 	if (!rows.length) return false;
 
-	for (let i = 0; i < rows.length; i += batchSize) {
-		const batch = rows.slice(i, i + batchSize);
-		await db
-			.insert(table)
-			.values(batch)
-			.onConflictDoNothing({
-				target: Array.isArray(conflictTarget)
-					? conflictTarget
-					: [conflictTarget],
-			});
-	}
+	await db.transaction(async (tx) => {
+		for (let i = 0; i < rows.length; i += batchSize) {
+			const batch = rows.slice(i, i + batchSize);
+			await tx
+				.insert(table)
+				.values(batch)
+				.onConflictDoNothing({
+					target: Array.isArray(conflictTarget)
+						? conflictTarget
+						: [conflictTarget],
+				});
+		}
+	});
 	return true;
 }
 
@@ -212,137 +215,137 @@ export async function insertCollections(
 		await checkDataSize("Before");
 
 		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
-			process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+			envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 		if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
 			throw new Error(
 				"\x1b[31mAPI_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.\x1b[0m",
 			);
 		}
-		await db.transaction(async (tx) => {
-			for (const collection of collections) {
-				const dataPath = path.resolve(
-					dirname,
-					`./sample_data/${collection}.json`,
-				);
-				const fileContent = await fs.readFile(dataPath, "utf8");
 
-				switch (collection) {
-					case "users": {
-						const users = JSON.parse(fileContent).map(
-							(user: {
-								createdAt: string | number | Date;
-								updatedAt: string | number | Date;
-							}) => ({
-								...user,
-								createdAt: parseDate(user.createdAt),
-								updatedAt: parseDate(user.updatedAt),
-							}),
-						) as (typeof schema.usersTable.$inferInsert)[];
+		for (const collection of collections) {
+			const dataPath = path.resolve(
+				dirname,
+				`./sample_data/${collection}.json`,
+			);
+			const fileContent = await fs.readFile(dataPath, "utf8");
 
-						await checkAndInsertData(
-							schema.usersTable,
-							users,
-							schema.usersTable.id,
-							1000,
-						);
+			switch (collection) {
+				case "users": {
+					const users = JSON.parse(fileContent).map(
+						(user: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...user,
+							createdAt: parseDate(user.createdAt),
+							updatedAt: parseDate(user.updatedAt),
+						}),
+					) as (typeof schema.usersTable.$inferInsert)[];
 
-						console.log(
-							"\n\x1b[35mAdded: Users table data (skipping duplicates)\x1b[0m",
-						);
-						break;
-					}
+					await checkAndInsertData(
+						schema.usersTable,
+						users,
+						schema.usersTable.id,
+						1000,
+					);
 
-					case "organizations": {
-						const organizations = JSON.parse(fileContent).map(
-							(org: {
-								createdAt: string | number | Date;
-								updatedAt: string | number | Date;
-							}) => ({
-								...org,
-								createdAt: parseDate(org.createdAt),
-								updatedAt: parseDate(org.updatedAt),
-							}),
-						) as (typeof schema.organizationsTable.$inferInsert)[];
-
-						await checkAndInsertData(
-							schema.organizationsTable,
-							organizations,
-							schema.organizationsTable.id,
-							1000,
-						);
-
-						const API_ADMINISTRATOR_USER = await db.query.usersTable.findFirst({
-							columns: {
-								id: true,
-							},
-							where: (fields, operators) =>
-								operators.eq(
-									fields.emailAddress,
-									API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								),
-						});
-						if (!API_ADMINISTRATOR_USER) {
-							throw new Error(
-								"\x1b[31mAPI_ADMINISTRATOR_USER_EMAIL_ADDRESS is not found in users table\x1b[0m",
-							);
-						}
-
-						const organizationAdminMembership = organizations.map((org) => ({
-							organizationId: org.id,
-							memberId: API_ADMINISTRATOR_USER.id,
-							creatorId: API_ADMINISTRATOR_USER.id,
-							createdAt: new Date(),
-							role: "administrator",
-						})) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
-
-						await checkAndInsertData(
-							schema.organizationMembershipsTable,
-							organizationAdminMembership,
-							[
-								schema.organizationMembershipsTable.organizationId,
-								schema.organizationMembershipsTable.memberId,
-							],
-							1000,
-						);
-
-						console.log(
-							"\x1b[35mAdded: Organizations table data (skipping duplicates), plus admin memberships\x1b[0m",
-						);
-						break;
-					}
-
-					case "organization_memberships": {
-						const organizationMemberships = JSON.parse(fileContent).map(
-							(membership: {
-								createdAt: string | number | Date;
-							}) => ({
-								...membership,
-								createdAt: parseDate(membership.createdAt),
-							}),
-						) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
-
-						await checkAndInsertData(
-							schema.organizationMembershipsTable,
-							organizationMemberships,
-							[
-								schema.organizationMembershipsTable.organizationId,
-								schema.organizationMembershipsTable.memberId,
-							],
-							1000,
-						);
-
-						console.log(
-							"\x1b[35mAdded: Organization_memberships data (skipping duplicates)\x1b[0m",
-						);
-						break;
-					}
-
-					default:
-						console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
-						break;
+					console.log(
+						"\n\x1b[35mAdded: Users table data (skipping duplicates)\x1b[0m",
+					);
+					break;
 				}
+
+				case "organizations": {
+					const organizations = JSON.parse(fileContent).map(
+						(org: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...org,
+							createdAt: parseDate(org.createdAt),
+							updatedAt: parseDate(org.updatedAt),
+						}),
+					) as (typeof schema.organizationsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.organizationsTable,
+						organizations,
+						schema.organizationsTable.id,
+						1000,
+					);
+
+					const API_ADMINISTRATOR_USER = await db.query.usersTable.findFirst({
+						columns: {
+							id: true,
+						},
+						where: (fields, operators) =>
+							operators.eq(
+								fields.emailAddress,
+								API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							),
+					});
+					if (!API_ADMINISTRATOR_USER) {
+						throw new Error(
+							"\x1b[31mAPI_ADMINISTRATOR_USER_EMAIL_ADDRESS is not found in users table\x1b[0m",
+						);
+					}
+
+					const organizationAdminMembership = organizations.map((org) => ({
+						organizationId: org.id,
+						memberId: API_ADMINISTRATOR_USER.id,
+						creatorId: API_ADMINISTRATOR_USER.id,
+						createdAt: new Date(),
+						role: "administrator",
+					})) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.organizationMembershipsTable,
+						organizationAdminMembership,
+						[
+							schema.organizationMembershipsTable.organizationId,
+							schema.organizationMembershipsTable.memberId,
+						],
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Organizations table data (skipping duplicates), plus admin memberships\x1b[0m",
+					);
+					break;
+				}
+
+				case "organization_memberships": {
+					const organizationMemberships = JSON.parse(fileContent).map(
+						(membership: {
+							createdAt: string | number | Date;
+						}) => ({
+							...membership,
+							createdAt: parseDate(membership.createdAt),
+						}),
+					) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.organizationMembershipsTable,
+						organizationMemberships,
+						[
+							schema.organizationMembershipsTable.organizationId,
+							schema.organizationMembershipsTable.memberId,
+						],
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Organization_memberships data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
+				default:
+					console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
+					break;
 			}
-		});
+		}
+
 		await checkDataSize("After");
 	} catch (err) {
 		throw new Error(`\x1b[31mError adding data to tables: ${err}\x1b[0m`);
@@ -410,8 +413,7 @@ export async function disconnect(): Promise<boolean> {
 	try {
 		await queryClient.end();
 	} catch (err) {
-		console.error(`Error disconnecting from database: ${err}`);
-		return false;
+		throw new Error(`\x1b[31mError disconnecting from the database: ${err}\x1b[0m`);
 	}
 	return true;
 }
