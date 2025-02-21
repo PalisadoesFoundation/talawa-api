@@ -1,13 +1,11 @@
 import fs from "node:fs/promises";
 import readline from "node:readline";
-import dotenv from "dotenv";
 import * as helpers from "scripts/dbManagement/helpers";
 import mockMembership from "scripts/dbManagement/sample_data/organization_memberships.json";
 import mockOrganization from "scripts/dbManagement/sample_data/organizations.json";
 import mockUser from "scripts/dbManagement/sample_data/users.json";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-dotenv.config();
 // Mock the database query
 vi.mock("../src/utils/db", () => ({
 	db: {
@@ -23,11 +21,9 @@ describe("Database Mocking", () => {
 	beforeEach(async () => {
 		vi.restoreAllMocks();
 		vi.resetModules();
-		vi.unstubAllEnvs();
 		await helpers.ensureAdministratorExists();
 	});
 	afterEach(async () => {
-		vi.unstubAllEnvs();
 		vi.restoreAllMocks();
 		await helpers.ensureAdministratorExists();
 	});
