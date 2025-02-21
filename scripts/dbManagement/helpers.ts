@@ -58,20 +58,26 @@ export async function formatDatabase(): Promise<boolean> {
 		);
 	}
 	type TableRow = { tablename: string };
-	const tables: TableRow[] = await db.execute(sql`
-		SELECT tablename FROM pg_catalog.pg_tables 
-		WHERE schemaname = 'public'
-	`);
 
-	const tableNames = tables.map((row) => sql.identifier(row.tablename));
+	try {
+		await db.transaction(async (tx) => {
+			const tables: TableRow[] = await tx.execute(sql`
+                SELECT tablename FROM pg_catalog.pg_tables 
+                WHERE schemaname = 'public'
+            `);
+			const tableNames = tables.map((row) => sql.identifier(row.tablename));
 
-	if (tableNames.length > 0) {
-		await db.execute(
-			sql`TRUNCATE TABLE ${sql.join(tableNames, sql`, `)} RESTART IDENTITY CASCADE;`,
-		);
+			if (tableNames.length > 0) {
+				await tx.execute(
+					sql`TRUNCATE TABLE ${sql.join(tableNames, sql`, `)} RESTART IDENTITY CASCADE;`,
+				);
+			}
+		});
+
+		return true;
+	} catch (error) {
+		return false;
 	}
-
-	return true;
 }
 
 export async function ensureAdministratorExists(): Promise<boolean> {
@@ -212,131 +218,131 @@ export async function insertCollections(
 				"\x1b[31mAPI_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.\x1b[0m",
 			);
 		}
+		await db.transaction(async (tx) => {
+			for (const collection of collections) {
+				const dataPath = path.resolve(
+					dirname,
+					`./sample_data/${collection}.json`,
+				);
+				const fileContent = await fs.readFile(dataPath, "utf8");
 
-		for (const collection of collections) {
-			const dataPath = path.resolve(
-				dirname,
-				`./sample_data/${collection}.json`,
-			);
-			const fileContent = await fs.readFile(dataPath, "utf8");
+				switch (collection) {
+					case "users": {
+						const users = JSON.parse(fileContent).map(
+							(user: {
+								createdAt: string | number | Date;
+								updatedAt: string | number | Date;
+							}) => ({
+								...user,
+								createdAt: parseDate(user.createdAt),
+								updatedAt: parseDate(user.updatedAt),
+							}),
+						) as (typeof schema.usersTable.$inferInsert)[];
 
-			switch (collection) {
-				case "users": {
-					const users = JSON.parse(fileContent).map(
-						(user: {
-							createdAt: string | number | Date;
-							updatedAt: string | number | Date;
-						}) => ({
-							...user,
-							createdAt: parseDate(user.createdAt),
-							updatedAt: parseDate(user.updatedAt),
-						}),
-					) as (typeof schema.usersTable.$inferInsert)[];
-
-					await checkAndInsertData(
-						schema.usersTable,
-						users,
-						schema.usersTable.id,
-						1000,
-					);
-
-					console.log(
-						"\n\x1b[35mAdded: Users table data (skipping duplicates)\x1b[0m",
-					);
-					break;
-				}
-
-				case "organizations": {
-					const organizations = JSON.parse(fileContent).map(
-						(org: {
-							createdAt: string | number | Date;
-							updatedAt: string | number | Date;
-						}) => ({
-							...org,
-							createdAt: parseDate(org.createdAt),
-							updatedAt: parseDate(org.updatedAt),
-						}),
-					) as (typeof schema.organizationsTable.$inferInsert)[];
-
-					await checkAndInsertData(
-						schema.organizationsTable,
-						organizations,
-						schema.organizationsTable.id,
-						1000,
-					);
-
-					const API_ADMINISTRATOR_USER = await db.query.usersTable.findFirst({
-						columns: {
-							id: true,
-						},
-						where: (fields, operators) =>
-							operators.eq(
-								fields.emailAddress,
-								API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							),
-					});
-					if (!API_ADMINISTRATOR_USER) {
-						throw new Error(
-							"\x1b[31mAPI_ADMINISTRATOR_USER_EMAIL_ADDRESS is not found in users table\x1b[0m",
+						await checkAndInsertData(
+							schema.usersTable,
+							users,
+							schema.usersTable.id,
+							1000,
 						);
+
+						console.log(
+							"\n\x1b[35mAdded: Users table data (skipping duplicates)\x1b[0m",
+						);
+						break;
 					}
 
-					const organizationAdminMembership = organizations.map((org) => ({
-						organizationId: org.id,
-						memberId: API_ADMINISTRATOR_USER.id,
-						creatorId: API_ADMINISTRATOR_USER.id,
-						createdAt: new Date(),
-						role: "administrator",
-					})) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
+					case "organizations": {
+						const organizations = JSON.parse(fileContent).map(
+							(org: {
+								createdAt: string | number | Date;
+								updatedAt: string | number | Date;
+							}) => ({
+								...org,
+								createdAt: parseDate(org.createdAt),
+								updatedAt: parseDate(org.updatedAt),
+							}),
+						) as (typeof schema.organizationsTable.$inferInsert)[];
 
-					await checkAndInsertData(
-						schema.organizationMembershipsTable,
-						organizationAdminMembership,
-						[
-							schema.organizationMembershipsTable.organizationId,
-							schema.organizationMembershipsTable.memberId,
-						],
-						1000,
-					);
+						await checkAndInsertData(
+							schema.organizationsTable,
+							organizations,
+							schema.organizationsTable.id,
+							1000,
+						);
 
-					console.log(
-						"\x1b[35mAdded: Organizations table data (skipping duplicates), plus admin memberships\x1b[0m",
-					);
-					break;
+						const API_ADMINISTRATOR_USER = await db.query.usersTable.findFirst({
+							columns: {
+								id: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(
+									fields.emailAddress,
+									API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								),
+						});
+						if (!API_ADMINISTRATOR_USER) {
+							throw new Error(
+								"\x1b[31mAPI_ADMINISTRATOR_USER_EMAIL_ADDRESS is not found in users table\x1b[0m",
+							);
+						}
+
+						const organizationAdminMembership = organizations.map((org) => ({
+							organizationId: org.id,
+							memberId: API_ADMINISTRATOR_USER.id,
+							creatorId: API_ADMINISTRATOR_USER.id,
+							createdAt: new Date(),
+							role: "administrator",
+						})) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
+
+						await checkAndInsertData(
+							schema.organizationMembershipsTable,
+							organizationAdminMembership,
+							[
+								schema.organizationMembershipsTable.organizationId,
+								schema.organizationMembershipsTable.memberId,
+							],
+							1000,
+						);
+
+						console.log(
+							"\x1b[35mAdded: Organizations table data (skipping duplicates), plus admin memberships\x1b[0m",
+						);
+						break;
+					}
+
+					case "organization_memberships": {
+						const organizationMemberships = JSON.parse(fileContent).map(
+							(membership: {
+								createdAt: string | number | Date;
+							}) => ({
+								...membership,
+								createdAt: parseDate(membership.createdAt),
+							}),
+						) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
+
+						await checkAndInsertData(
+							schema.organizationMembershipsTable,
+							organizationMemberships,
+							[
+								schema.organizationMembershipsTable.organizationId,
+								schema.organizationMembershipsTable.memberId,
+							],
+							1000,
+						);
+
+						console.log(
+							"\x1b[35mAdded: Organization_memberships data (skipping duplicates)\x1b[0m",
+						);
+						break;
+					}
+
+					default:
+						console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
+						break;
 				}
-
-				case "organization_memberships": {
-					const organizationMemberships = JSON.parse(fileContent).map(
-						(membership: {
-							createdAt: string | number | Date;
-						}) => ({
-							...membership,
-							createdAt: parseDate(membership.createdAt),
-						}),
-					) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
-
-					await checkAndInsertData(
-						schema.organizationMembershipsTable,
-						organizationMemberships,
-						[
-							schema.organizationMembershipsTable.organizationId,
-							schema.organizationMembershipsTable.memberId,
-						],
-						1000,
-					);
-
-					console.log(
-						"\x1b[35mAdded: Organization_memberships data (skipping duplicates)\x1b[0m",
-					);
-					break;
-				}
-
-				default:
-					console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
-					break;
 			}
-		}
-
+		});
 		await checkDataSize("After");
 	} catch (err) {
 		throw new Error(`\x1b[31mError adding data to tables: ${err}\x1b[0m`);

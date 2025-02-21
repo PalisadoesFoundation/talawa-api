@@ -31,6 +31,7 @@ export async function main(): Promise<void> {
 			"\n\x1b[31mError: Database formatting failed\n\x1b[0m",
 			error,
 		);
+		console.error("\n\x1b[33mRolled back to previous state\x1b[0m");
 		console.error("\n\x1b[33mPreserving administrator access\x1b[0m");
 	}
 	try {
