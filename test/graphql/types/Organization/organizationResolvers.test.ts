@@ -1,15 +1,6 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
-import type { MercuriusContext } from "mercurius";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GraphQLContext } from "~/src/graphql/context";
-import type { Organization } from "~/src/graphql/types/Organization/Organization";
+import { vi, describe, it, expect, beforeEach } from "vitest";
+import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import type { User } from "~/src/graphql/types/User/User";
-import type { FastifyBaseLogger } from "fastify";
-import { createMockLogger } from "../../../utilities/mockLogger";
-import { builder } from "~/src/graphql/builder"; // Import the builder
-
-type ResolverContext = GraphQLContext & MercuriusContext;
 
 // Mock the drizzleClient
 const mockDrizzleClient = {
@@ -21,17 +12,9 @@ const mockDrizzleClient = {
 };
 
 describe("organizationConnectionList Query", () => {
-	let context: ResolverContext;
-	let logger: FastifyBaseLogger;
-
 	beforeEach(() => {
-		// Reset mocks and create a fresh context for each test
+		// Reset mocks before each test
 		vi.clearAllMocks();
-		logger = createMockLogger();
-		context = {
-			drizzleClient: mockDrizzleClient,
-			logger,
-		} as unknown as ResolverContext;
 	});
 
 	it("should return organizations with valid arguments", async () => {
@@ -48,7 +31,7 @@ describe("organizationConnectionList Query", () => {
 		const result = await builder.queryFields.organizationConnectionList.resolve(
 			{},
 			{ first: 10, skip: 0 },
-			context,
+			{ drizzleClient: mockDrizzleClient },
 		);
 
 		// Assertions
@@ -70,7 +53,7 @@ describe("organizationConnectionList Query", () => {
 		const result = await builder.queryFields.organizationConnectionList.resolve(
 			{},
 			{},
-			context,
+			{ drizzleClient: mockDrizzleClient },
 		);
 
 		// Assertions
@@ -87,7 +70,7 @@ describe("organizationConnectionList Query", () => {
 			builder.queryFields.organizationConnectionList.resolve(
 				{},
 				{ first: 0, skip: 0 },
-				context,
+				{ drizzleClient: mockDrizzleClient },
 			),
 		).rejects.toThrow(TalawaGraphQLError);
 
@@ -96,7 +79,7 @@ describe("organizationConnectionList Query", () => {
 			await builder.queryFields.organizationConnectionList.resolve(
 				{},
 				{ first: 0, skip: 0 },
-				context,
+				{ drizzleClient: mockDrizzleClient },
 			);
 		} catch (error) {
 			if (error instanceof TalawaGraphQLError) {
@@ -117,7 +100,7 @@ describe("organizationConnectionList Query", () => {
 			builder.queryFields.organizationConnectionList.resolve(
 				{},
 				{ first: 101, skip: 0 },
-				context,
+				{ drizzleClient: mockDrizzleClient },
 			),
 		).rejects.toThrow(TalawaGraphQLError);
 
@@ -126,7 +109,7 @@ describe("organizationConnectionList Query", () => {
 			await builder.queryFields.organizationConnectionList.resolve(
 				{},
 				{ first: 101, skip: 0 },
-				context,
+				{ drizzleClient: mockDrizzleClient },
 			);
 		} catch (error) {
 			if (error instanceof TalawaGraphQLError) {
@@ -147,7 +130,7 @@ describe("organizationConnectionList Query", () => {
 			builder.queryFields.organizationConnectionList.resolve(
 				{},
 				{ first: 10, skip: -1 },
-				context,
+				{ drizzleClient: mockDrizzleClient },
 			),
 		).rejects.toThrow(TalawaGraphQLError);
 
@@ -156,7 +139,7 @@ describe("organizationConnectionList Query", () => {
 			await builder.queryFields.organizationConnectionList.resolve(
 				{},
 				{ first: 10, skip: -1 },
-				context,
+				{ drizzleClient: mockDrizzleClient },
 			);
 		} catch (error) {
 			if (error instanceof TalawaGraphQLError) {
