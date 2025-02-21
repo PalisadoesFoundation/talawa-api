@@ -6,17 +6,6 @@ import mockOrganization from "scripts/dbManagement/sample_data/organizations.jso
 import mockUser from "scripts/dbManagement/sample_data/users.json";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock the database query
-vi.mock("../src/utils/db", () => ({
-	db: {
-		query: {
-			organizationsTable: {
-				findMany: vi.fn().mockResolvedValue(mockOrganization),
-			},
-		},
-	},
-}));
-
 describe("Database Mocking", () => {
 	beforeEach(async () => {
 		vi.restoreAllMocks();
