@@ -413,7 +413,9 @@ export async function disconnect(): Promise<boolean> {
 	try {
 		await queryClient.end();
 	} catch (err) {
-		throw new Error(`\x1b[31mError disconnecting from the database: ${err}\x1b[0m`);
+		throw new Error(
+			`\x1b[31mError disconnecting from the database: ${err}\x1b[0m`,
+		);
 	}
 	return true;
 }

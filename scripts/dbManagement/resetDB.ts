@@ -9,7 +9,6 @@ import {
 } from "./helpers";
 
 export async function main(): Promise<void> {
-
 	const deleteExisting = await askUserToContinue(
 		"\x1b[31m Warning:\x1b[0m This will delete all data in the database. Are you sure you want to continue?",
 	);

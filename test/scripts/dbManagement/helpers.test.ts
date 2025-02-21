@@ -204,7 +204,7 @@ describe("Database Mocking", () => {
 			`| organizations               | ${mockOrganization.length}              |`,
 		);
 	});
-	
+
 	/*
 	 * Format Database function
 	 *
@@ -236,10 +236,9 @@ describe("Database Mocking", () => {
 		vi.spyOn(helpers.db, "transaction").mockImplementation(async () => {
 			throw new Error("Restricted");
 		});
-	
+
 		await expect(helpers.formatDatabase()).resolves.toBe(false);
-	
+
 		vi.restoreAllMocks();
 	});
-
 });
