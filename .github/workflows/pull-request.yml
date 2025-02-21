@@ -167,6 +167,8 @@ jobs:
           docs/docusaurus.config.ts
           docs/sidebar*
           setup.ts
+          src/graphql/types/Mutation/**
+          src/graphql/types/Query/**
           tsconfig.build.json
           vite.config.mts
           CNAME
