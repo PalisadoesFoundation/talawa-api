@@ -240,7 +240,10 @@ suite("Query field post", () => {
 				});
 
 				const authToken = signInResult.data?.signIn?.authenticationToken;
-				if (!authToken) throw new Error("vfdv");
+				if (!authToken)
+					throw new Error(
+						"Failed to get authentication token from sign-in result",
+					);
 
 				await server.drizzleClient
 					.delete(usersTable)
