@@ -1,4 +1,6 @@
+import type { InferSelectModel } from "drizzle-orm"; //
 import { z } from "zod";
+import type { organizationsTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
 import {
 	QueryOrganizationInput,
@@ -11,18 +13,20 @@ const queryOrganizationArgumentsSchema = z.object({
 	input: queryOrganizationInputSchema,
 });
 
+type OrganizationType = InferSelectModel<typeof organizationsTable>;
+
 builder.queryField("organizations", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
 				description: "Filter organizations by ID or order",
-				required: false, // <-- Make input optional
+				required: false,
 				type: QueryOrganizationInput,
 			}),
 		},
 		description: "Query field to read organizations.",
-		resolve: async (_parent, args, ctx) => {
-			// If input is provided, validate it
+		resolve: async (_parent, args, ctx): Promise<OrganizationType[]> => {
+			// Validate input
 			if (args.input) {
 				const {
 					data: parsedArgs,
@@ -59,11 +63,11 @@ builder.queryField("organizations", (t) =>
 						});
 					}
 
-					return organization;
+					return [organization];
 				}
 			}
 
-			// If no input is provided, fetch all organizations (limit 100)
+			// Fetch all organizations (limit 100)
 			return await ctx.drizzleClient.query.organizationsTable.findMany({
 				limit: 100,
 			});
