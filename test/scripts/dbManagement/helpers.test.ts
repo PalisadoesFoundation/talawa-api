@@ -1,16 +1,16 @@
 import fs from "node:fs/promises";
 import readline from "node:readline";
+import envSchema from "env-schema";
 import * as helpers from "scripts/dbManagement/helpers";
 import mockMembership from "scripts/dbManagement/sample_data/organization_memberships.json";
 import mockOrganization from "scripts/dbManagement/sample_data/organizations.json";
 import mockUser from "scripts/dbManagement/sample_data/users.json";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import envSchema from "env-schema";
 import {
 	type EnvConfig,
 	envConfigSchema,
 	envSchemaAjv,
 } from "src/envConfigSchema";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
