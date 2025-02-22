@@ -17,7 +17,7 @@ const minioClient = new MinioClient({
 	accessKey: process.env.API_MINIO_ACCESS_KEY || "",
 	endPoint: process.env.API_MINIO_END_POINT || "minio",
 	port: Number(process.env.API_MINIO_PORT),
-	secretKey: process.env.API_MINIO_SECRET_KEY,
+	secretKey: process.env.API_MINIO_SECRET_KEY || "",
 	useSSL: process.env.API_MINIO_USE_SSL === "true",
 });
 
@@ -223,9 +223,9 @@ async function insertCollections(
 				}
 				case "post_attachments": {
 					const post_attachments = JSON.parse(data).map(
-						(post_attachement: { createdAt: string | number | Date }) => ({
-							...post_attachement,
-							createdAt: parseDate(post_attachement.createdAt),
+						(post_attachment: { createdAt: string | number | Date }) => ({
+							...post_attachment,
+							createdAt: parseDate(post_attachment.createdAt),
 						}),
 					) as (typeof schema.postAttachmentsTable.$inferInsert)[];
 					await db.insert(schema.postAttachmentsTable).values(post_attachments);
@@ -367,7 +367,7 @@ const collections = [
 	"post_attachments",
 	"comments",
 	"comment_votes",
-]; // Add organization memberships to collections
+]; // Add posts, votes, attachments, comments, and membership data to collections
 
 const args = process.argv.slice(2);
 const options: LoadOptions = {
