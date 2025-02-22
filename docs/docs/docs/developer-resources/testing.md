@@ -510,11 +510,9 @@ Use the following GraphQL **query** to query organization data:
 }
 ```
 
-
-
 ##### Query User Data with Organizations
 
-Use the following GraphQL **query** to o query user data including a list of organizations the user is a member of:
+Use the following GraphQL **query** to query user data including a list of organizations the user is a member of:
 
 ```graphql
   query {
@@ -584,6 +582,4 @@ Use the following GraphQL **query** to o query user data including a list of org
   }
 }
 ```
-
-
 
