@@ -5,12 +5,21 @@ import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import inquirer from "inquirer";
+import { Client as MinioClient } from "minio";
 import postgres from "postgres";
 import * as schema from "../drizzle/schema";
 
 dotenv.config();
 
 const dirname: string = path.dirname(fileURLToPath(import.meta.url));
+
+const minioClient = new MinioClient({
+	accessKey: process.env.API_MINIO_ACCESS_KEY,
+	endPoint: process.env.API_MINIO_END_POINT || "minio",
+	port: Number(process.env.API_MINIO_PORT),
+	secretKey: process.env.API_MINIO_SECRET_KEY,
+	useSSL: process.env.API_MINIO_USE_SSL === "true",
+});
 
 const queryClient = postgres({
 	host: process.env.API_POSTGRES_HOST,
@@ -222,6 +231,23 @@ async function insertCollections(
 					await db
 						.insert(schema.postAttachmentsTable)
 						.values(post_attachements);
+					post_attachements.map(async (attachment) => {
+						const fileExtension = attachment.mimeType.split("/").pop();
+						const filePath = path.resolve(
+							dirname,
+							`../../sample_data/images/${attachment.name}.${fileExtension}`,
+						);
+						const readStream = await fs.readFile(filePath);
+						await minioClient.putObject(
+							"talawa",
+							attachment.name,
+							readStream,
+							undefined,
+							{
+								"content-type": attachment.mimeType,
+							},
+						);
+					});
 					break;
 				}
 				case "comments": {
