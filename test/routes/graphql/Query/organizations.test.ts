@@ -1,13 +1,13 @@
-import { expect, suite, test } from 'vitest';
-import { faker } from '@faker-js/faker';
-import { mercuriusClient } from '../client';
-import { Query_organizations } from '../documentNodes';
-import { server } from '../../../server';
+import { expect, suite, test } from "vitest";
+import { faker } from "@faker-js/faker";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { Query_organization } from "../documentNodes";
 
 suite('Query field organizations', () => {
   suite('Input Validation', () => {
     test('returns an error if input validation fails', async () => {
-      const result = await mercuriusClient.query(Query_organizations, {
+      const result = await mercuriusClient.query(Query_organization, {
         variables: {
           input: {
             id: 'invalid-id', // Assuming ID should be a number
