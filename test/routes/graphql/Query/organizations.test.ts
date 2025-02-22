@@ -3,7 +3,6 @@ import { expect, suite, test } from "vitest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 
-
 suite("Query field organizations", () => {
   suite("Input Validation", () => {
     test("returns an error if input validation fails", async () => {
@@ -23,7 +22,7 @@ suite("Query field organizations", () => {
               code: "invalid_arguments",
             }),
           }),
-        ]),
+        ])
       );
     });
   });
@@ -43,7 +42,7 @@ suite("Query field organizations", () => {
           expect.objectContaining({
             id: organizationId.toString(),
           }),
-        ]),
+        ])
       );
     });
 
