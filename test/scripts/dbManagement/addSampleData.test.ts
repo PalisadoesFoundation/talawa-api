@@ -1,7 +1,7 @@
+import { sql } from "drizzle-orm";
 import { main } from "scripts/dbManagement/addSampleData";
 import type { EnvConfig } from "src/envConfigSchema";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
 vi.mock("env-schema", async (importOriginal) => {
 	const actual = await importOriginal();
 	return {
@@ -22,10 +22,16 @@ import * as mainModule from "scripts/dbManagement/addSampleData";
 import * as helpers from "scripts/dbManagement/helpers";
 
 describe("main function", () => {
-	beforeEach(() => {
+	beforeEach(async () => {
 		vi.resetModules();
+		await helpers.db.transaction(async (trx) => {
+			await trx.execute(sql`BEGIN;`);
+		});
 	});
-	afterEach(() => {
+	afterEach(async () => {
+		await helpers.db.transaction(async (trx) => {
+			await trx.execute(sql`ROLLBACK;`);
+		});
 		vi.restoreAllMocks();
 	});
 

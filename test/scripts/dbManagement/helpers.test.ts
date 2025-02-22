@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import readline from "node:readline";
+import { sql } from "drizzle-orm";
 import mockMembership from "scripts/dbManagement/sample_data/organization_memberships.json";
 import mockOrganization from "scripts/dbManagement/sample_data/organizations.json";
 import mockUser from "scripts/dbManagement/sample_data/users.json";
@@ -28,8 +29,14 @@ describe("Database Mocking", () => {
 	beforeEach(async () => {
 		vi.restoreAllMocks();
 		vi.resetModules();
+		await helpers.db.transaction(async (trx) => {
+			await trx.execute(sql`BEGIN;`);
+		});
 	});
 	afterEach(async () => {
+		await helpers.db.transaction(async (trx) => {
+			await trx.execute(sql`ROLLBACK;`);
+		});
 		vi.restoreAllMocks();
 	});
 

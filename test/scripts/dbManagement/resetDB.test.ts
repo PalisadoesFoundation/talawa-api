@@ -1,7 +1,7 @@
+import { sql } from "drizzle-orm";
 import { main } from "scripts/dbManagement/resetDB";
 import type { EnvConfig } from "src/envConfigSchema";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
 vi.mock("env-schema", async (importOriginal) => {
 	const actual = await importOriginal();
 	return {
@@ -23,11 +23,17 @@ import * as helpers from "scripts/dbManagement/helpers";
 describe("main function", () => {
 	beforeEach(async () => {
 		vi.resetModules();
+		await helpers.db.transaction(async (trx) => {
+			await trx.execute(sql`BEGIN;`);
+		});
 		await helpers.ensureAdministratorExists();
 	});
 	afterEach(async () => {
 		vi.restoreAllMocks();
 		await helpers.ensureAdministratorExists();
+		await helpers.db.transaction(async (trx) => {
+			await trx.execute(sql`ROLLBACK;`);
+		});
 	});
 
 	it("should confirm to format, format DB, restore administrator", async () => {
