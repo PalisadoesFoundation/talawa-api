@@ -28,11 +28,9 @@ describe("Database Mocking", () => {
 	beforeEach(async () => {
 		vi.restoreAllMocks();
 		vi.resetModules();
-		await helpers.ensureAdministratorExists();
 	});
 	afterEach(async () => {
 		vi.restoreAllMocks();
-		await helpers.ensureAdministratorExists();
 	});
 
 	/*

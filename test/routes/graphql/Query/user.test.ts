@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { formatDatabase } from "scripts/dbManagement/helpers";
 import { expect, suite, test } from "vitest";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
@@ -56,6 +57,7 @@ suite("Query field user", () => {
 		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.user" field if`,
 		() => {
 			test(`value of the argument "input.id" doesn't correspond to an existing user.`, async () => {
+				formatDatabase();
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
 					{
