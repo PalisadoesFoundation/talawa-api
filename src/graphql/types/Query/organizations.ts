@@ -67,7 +67,7 @@ builder.queryField("organizations", (t) =>
 				}
 			}
 
-			// Fetch all organizations (limit 100) we can modify also this
+			// Fetch all organizations (limit 20) we can modify also this
 			return await ctx.drizzleClient.query.organizationsTable.findMany({
 				limit: 20,
 			});
