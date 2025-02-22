@@ -24,7 +24,7 @@ export async function deleteChatMessageResolver(
 			extensions: { code: "unauthenticated" },
 		});
 	}
-//checks
+
 	const {
 		success,
 		data: parsedArgs,
