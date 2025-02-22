@@ -10,7 +10,7 @@ export default defineConfig({
 		},
 		// https://vitest.dev/config/#fileparallelism
 		// fileParallelism: true,
-		testTimeout: 15000,
+
 		// https://vitest.dev/config/#globalsetup
 		globalSetup: ["./test/setup.ts"],
 
