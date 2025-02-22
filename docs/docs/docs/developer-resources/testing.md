@@ -426,13 +426,15 @@ mutation {
 }
 ```
 
-##### Create an Organization Administrator
+##### Create an Organization Member
 
 This **mutation** is used to add a member to an organization and assign them a role.
 
 - Administrators can add other users and assign roles (administrator or regular).
 - Non-administrators can only add themselves to an organization.
 - Non-administrators cannot assign roles while adding themselves; they will be assigned the default role (regular).
+
+The example below shows how to add an administrator to an organization:
 
 ```graphql
 mutation {
