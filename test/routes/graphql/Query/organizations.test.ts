@@ -1,8 +1,8 @@
-import { expect, suite, test } from "vitest";
 import { faker } from "@faker-js/faker";
+import { expect, suite, test } from "vitest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { Query_organization } from "../documentNodes";
+
 
 suite("Query field organizations", () => {
   suite("Input Validation", () => {
