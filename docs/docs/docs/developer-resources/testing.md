@@ -185,7 +185,7 @@ CloudBeaver is a lightweight web application designed for comprehensive data man
 6. You should now see the `PostgreSql@postgres-test` connection in the list of available connections. Click on the connection to open the database.
 7. Navigate to `PostgreSql@postgres-test > Databases > talawa > Schemas > public > Tables` to view the available tables.
 
-## Resetting Database
+## Resetting Database (Interactive)
 
 **NOTE:** This applies only to Talawa API developers.
 
