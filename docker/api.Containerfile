@@ -38,6 +38,14 @@ RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell \
 # Appends the fnm configuration to `/home/talawa/.bashrc` file.
 && echo eval \"\$\(fnm env --corepack-enabled --resolve-engines --use-on-cd --version-file-strategy=recursive\)\" >> /home/talawa/.bashrc
 ENV PATH=/home/talawa/.local/share/fnm:${PATH}
+# Switched temporarily to root to install a global profile script
+USER root
+# Created a file in /etc/profile.d that will be sourced by most shells
+RUN echo '#!/bin/sh' > /etc/profile.d/fnm.sh \
+&& echo 'eval "$(fnm env --corepack-enabled --resolve-engines --use-on-cd --version-file-strategy=recursive)"' >> /etc/profile.d/fnm.sh \
+&& chmod +x /etc/profile.d/fnm.sh
+# Switched back to talawa
+USER talawa
 WORKDIR /home/talawa/api
   
 FROM node:23.7.0-bookworm-slim AS base
