@@ -10,7 +10,7 @@ import * as schema from "../drizzle/schema";
 
 dotenv.config();
 
-const dirname: string = path.dirname(fileURLToPath(import.meta.url));
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const queryClient = postgres({
 	host: process.env.API_POSTGRES_HOST,
@@ -87,132 +87,6 @@ async function formatDatabase(): Promise<void> {
 }
 
 /**
- * Inserts data into specified tables.
- * @param collections - Array of collection/table names to insert data into
- * @param options - Options for loading data
- */
-async function insertCollections(
-	collections: string[],
-	options: LoadOptions = {},
-): Promise<void> {
-	try {
-		if (options.format) {
-			await formatDatabase();
-		}
-
-		for (const collection of collections) {
-			const data = await fs.readFile(
-				path.resolve(dirname, `../../sample_data/${collection}.json`),
-				"utf8",
-			);
-
-			switch (collection) {
-				case "users": {
-					const users = JSON.parse(data).map(
-						(user: {
-							createdAt: string | number | Date;
-							updatedAt: string | number | Date;
-						}) => ({
-							...user,
-							createdAt: parseDate(user.createdAt),
-							updatedAt: parseDate(user.updatedAt),
-						}),
-					) as (typeof schema.usersTable.$inferInsert)[];
-					await db.insert(schema.usersTable).values(users);
-					break;
-				}
-				case "organizations": {
-					const organizations = JSON.parse(data).map(
-						(org: {
-							createdAt: string | number | Date;
-							updatedAt: string | number | Date;
-						}) => ({
-							...org,
-							createdAt: parseDate(org.createdAt),
-							updatedAt: parseDate(org.updatedAt),
-						}),
-					) as (typeof schema.organizationsTable.$inferInsert)[];
-					await db.insert(schema.organizationsTable).values(organizations);
-
-					// Add API_ADMINISTRATOR_USER_EMAIL_ADDRESS as administrator of the all organization
-					const API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
-						process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-					if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
-						console.error(
-							"\x1b[31m",
-							"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined in .env file",
-						);
-						return;
-					}
-
-					const API_ADMINISTRATOR_USER = await db.query.usersTable.findFirst({
-						columns: {
-							id: true,
-						},
-						where: (fields, operators) =>
-							operators.eq(
-								fields.emailAddress,
-								API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							),
-					});
-					if (!API_ADMINISTRATOR_USER) {
-						console.error(
-							"\x1b[31m",
-							"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not found in users table",
-						);
-						return;
-					}
-
-					const organizationAdminMembership = organizations.map((org) => ({
-						organizationId: org.id,
-						memberId: API_ADMINISTRATOR_USER.id,
-						creatorId: API_ADMINISTRATOR_USER.id,
-						createdAt: new Date(),
-						role: "administrator",
-					})) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
-					await db
-						.insert(schema.organizationMembershipsTable)
-						.values(organizationAdminMembership);
-					console.log(
-						"\x1b[35m",
-						"Added API_ADMINISTRATOR_USER as administrator of the all organization",
-					);
-					break;
-				}
-				case "organization_memberships": {
-					// Add case for organization memberships
-					const organizationMemberships = JSON.parse(data).map(
-						(membership: { createdAt: string | number | Date }) => ({
-							...membership,
-							createdAt: parseDate(membership.createdAt),
-						}),
-					) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
-					await db
-						.insert(schema.organizationMembershipsTable)
-						.values(organizationMemberships);
-					break;
-				}
-
-				default:
-					console.log("\x1b[31m", `Invalid table name: ${collection}`);
-					break;
-			}
-
-			console.log("\x1b[35m", `Added ${collection} table data`);
-		}
-
-		await checkCountAfterImport();
-		await queryClient.end();
-
-		console.log("\nTables populated successfully");
-	} catch (err) {
-		console.error("\x1b[31m", `Error adding data to tables: ${err}`);
-	} finally {
-		process.exit(0);
-	}
-}
-
-/**
  * Parses a date string and returns a Date object. Returns null if the date is invalid.
  * @param date - The date string to parse
  * @returns The parsed Date object or null
@@ -235,6 +109,7 @@ async function checkCountAfterImport(): Promise<boolean> {
 				name: "organization_memberships",
 				table: schema.organizationMembershipsTable,
 			},
+			{ name: "posts", table: schema.postsTable },
 		];
 
 		console.log("\nRecord Counts After Import:\n");
@@ -267,8 +142,190 @@ ${"|".padEnd(30, "-")}|----------------|
 	}
 }
 
-const collections = ["users", "organizations", "organization_memberships"]; // Add organization memberships to collections
+/**
+ * Inserts data into specified tables.
+ * @param collections - Array of collection/table names to insert data into
+ * @param options - Options for loading data
+ */
+async function insertCollections(
+	collections: string[],
+	options: LoadOptions = {},
+): Promise<void> {
+	try {
+		if (options.format) {
+			await formatDatabase();
+		}
 
+		for (const collection of collections) {
+			// Map collection names to file names
+			const fileMap: { [key: string]: string } = {
+				users: "users.json",
+				organizations: "organizations.json",
+				organization_memberships: "organization_memberships.json",
+				posts: "post.json", // Maps to post.json
+			};
+
+			const filename = fileMap[collection];
+			if (!filename) {
+				console.error(`No file mapping for collection: ${collection}`);
+				continue;
+			}
+
+			console.log(`\nProcessing ${filename}...`);
+
+			try {
+				const data = await fs.readFile(
+					path.resolve(dirname, `../../sample_data/${filename}`),
+					"utf8",
+				);
+
+				switch (collection) {
+					case "users": {
+						const users = JSON.parse(data).map(
+							(user: {
+								createdAt: string | number | Date;
+								updatedAt: string | number | Date;
+							}) => ({
+								...user,
+								createdAt: parseDate(user.createdAt),
+								updatedAt: parseDate(user.updatedAt),
+							}),
+						) as (typeof schema.usersTable.$inferInsert)[];
+						await db.insert(schema.usersTable).values(users);
+						break;
+					}
+					case "organizations": {
+						const organizations = JSON.parse(data).map(
+							(org: {
+								createdAt: string | number | Date;
+								updatedAt: string | number | Date;
+							}) => ({
+								...org,
+								createdAt: parseDate(org.createdAt),
+								updatedAt: parseDate(org.updatedAt),
+							}),
+						) as (typeof schema.organizationsTable.$inferInsert)[];
+						await db.insert(schema.organizationsTable).values(organizations);
+
+						// Add administrator as admin of all organizations
+						const adminEmail = process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+						if (!adminEmail) {
+							console.error(
+								"API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined in .env file",
+							);
+							return;
+						}
+
+						const admin = await db.query.usersTable.findFirst({
+							columns: { id: true },
+							where: (fields, operators) =>
+								operators.eq(fields.emailAddress, adminEmail),
+						});
+						if (!admin) {
+							console.error("Administrator user not found in users table");
+							return;
+						}
+
+						const orgAdminMemberships = organizations.map((org) => ({
+							organizationId: org.id,
+							memberId: admin.id,
+							creatorId: admin.id,
+							createdAt: new Date(),
+							role: "administrator",
+						})) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
+
+						await db
+							.insert(schema.organizationMembershipsTable)
+							.values(orgAdminMemberships);
+						console.log("Added administrator as admin of all organizations");
+						break;
+					}
+					case "organization_memberships": {
+						const memberships = JSON.parse(data).map(
+							(membership: { createdAt: string | number | Date }) => ({
+								...membership,
+								createdAt: parseDate(membership.createdAt),
+							}),
+						) as (typeof schema.organizationMembershipsTable.$inferInsert)[];
+						await db
+							.insert(schema.organizationMembershipsTable)
+							.values(memberships);
+						break;
+					}
+					case "posts": {
+						console.log("Processing posts...");
+						const rawData = JSON.parse(data);
+						console.log(`Found ${rawData.length} posts to import`);
+
+						const posts = rawData.map(
+							(post: {
+								createdAt: string | number | Date;
+								updatedAt: string | number | Date;
+								title: string;
+								text: string;
+								organizationId: string;
+								creatorId: string;
+							}) => {
+								console.log(`Processing post: ${post.title || "Untitled"}`);
+								return {
+									...post,
+									caption: post.text, // Map the text field to caption
+									createdAt: parseDate(post.createdAt),
+									updatedAt: parseDate(post.updatedAt),
+								};
+							},
+						) as (typeof schema.postsTable.$inferInsert)[];
+
+						try {
+							await db.insert(schema.postsTable).values(posts);
+							console.log(`Successfully inserted ${posts.length} posts`);
+						} catch (insertError) {
+							console.error("Error inserting posts:", insertError);
+							if (posts.length > 0) {
+								console.log(
+									"Sample post data:",
+									JSON.stringify(posts[0], null, 2),
+								);
+							}
+							throw insertError;
+						}
+						break;
+					}
+					default:
+						console.log(`Invalid table name: ${collection}`);
+						break;
+				}
+
+				console.log(`Added ${collection} table data`);
+			} catch (fileError) {
+				console.error(`Error processing ${filename}:`, fileError);
+				throw fileError;
+			}
+		}
+
+		await checkCountAfterImport();
+		await queryClient.end();
+
+		console.log("\nTables populated successfully");
+	} catch (err) {
+		console.error("Error adding data to tables:", err);
+		if (err instanceof Error) {
+			console.error("Error stack:", err.stack);
+		}
+	} finally {
+		process.exit(0);
+	}
+}
+
+// Define collection names
+const collections = [
+	"users",
+	"organizations",
+	"organization_memberships",
+	"posts",
+];
+
+// Parse command line arguments
 const args = process.argv.slice(2);
 const options: LoadOptions = {
 	format: args.includes("--format") || args.includes("-f"),
@@ -281,6 +338,7 @@ if (itemsIndex !== -1 && args[itemsIndex + 1]) {
 	options.items = items ? items.split(",") : undefined;
 }
 
+// Run the import process
 (async (): Promise<void> => {
 	await listSampleData();
 
