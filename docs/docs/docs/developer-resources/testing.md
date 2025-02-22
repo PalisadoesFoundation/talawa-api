@@ -61,7 +61,9 @@ This section covers how to access the GraphQL API interface.
 
 #### Interactive Web Queries With GraphiQL
 
-The url for accessing the GraphQL Playground is
+You can use GraphiQL to test your GraphQL queries interactively via a web page.
+
+The url for accessing the GraphQL Playground is:
 
 ```bash
 http://127.0.0.1:4000/graphiql
