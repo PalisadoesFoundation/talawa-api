@@ -465,6 +465,27 @@ export const Mutation_createTag = gql(`
     }
   }`);
 
+
+export const Query_organizations = gql(`
+  query QueryOrganization($input: OrganizationInput) {
+    organizations(input: $input) {
+      id
+      name
+      description
+      addressLine1
+      addressLine2
+      city
+      state
+      countryCode
+      postalCode
+      avatarName
+      avatarMimeType
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
 export const Query_organization = gql(`
     query Organization($input: QueryOrganizationInput!, $first: Int!) {
       organization(input: $input) {
