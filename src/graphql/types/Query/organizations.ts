@@ -69,7 +69,7 @@ builder.queryField("organizations", (t) =>
 
 			// Fetch all organizations (limit 100) we can modify also this
 			return await ctx.drizzleClient.query.organizationsTable.findMany({
-				limit: 100,
+				limit: 20,
 			});
 		},
 		type: [Organization],
