@@ -192,17 +192,56 @@ async function insertCollections(
 						.values(organizationMemberships);
 					break;
 				}
-        case "posts": {
-					// Add case for organization memberships
+				case "posts": {
 					const posts = JSON.parse(data).map(
 						(post: { createdAt: string | number | Date }) => ({
 							...post,
 							createdAt: parseDate(post.createdAt),
 						}),
 					) as (typeof schema.postsTable.$inferInsert)[];
+					await db.insert(schema.postsTable).values(posts);
+					break;
+				}
+				case "post_votes": {
+					const post_votes = JSON.parse(data).map(
+						(post_vote: { createdAt: string | number | Date }) => ({
+							...post_vote,
+							createdAt: parseDate(post_vote.createdAt),
+						}),
+					) as (typeof schema.postVotesTable.$inferInsert)[];
+					await db.insert(schema.postVotesTable).values(post_votes);
+					break;
+				}
+				case "post_attachements": {
+					const post_attachements = JSON.parse(data).map(
+						(post_attachement: { createdAt: string | number | Date }) => ({
+							...post_attachement,
+							createdAt: parseDate(post_attachement.createdAt),
+						}),
+					) as (typeof schema.postAttachmentsTable.$inferInsert)[];
 					await db
-						.insert(schema.postsTable)
-						.values(posts);
+						.insert(schema.postAttachmentsTable)
+						.values(post_attachements);
+					break;
+				}
+				case "comments": {
+					const comments = JSON.parse(data).map(
+						(comment: { createdAt: string | number | Date }) => ({
+							...comment,
+							createdAt: parseDate(comment.createdAt),
+						}),
+					) as (typeof schema.commentsTable.$inferInsert)[];
+					await db.insert(schema.commentsTable).values(comments);
+					break;
+				}
+				case "comment_votes": {
+					const comment_votes = JSON.parse(data).map(
+						(comment_vote: { createdAt: string | number | Date }) => ({
+							...comment_vote,
+							createdAt: parseDate(comment_vote.createdAt),
+						}),
+					) as (typeof schema.commentVotesTable.$inferInsert)[];
+					await db.insert(schema.commentVotesTable).values(comment_votes);
 					break;
 				}
 
@@ -248,6 +287,11 @@ async function checkCountAfterImport(): Promise<boolean> {
 				name: "organization_memberships",
 				table: schema.organizationMembershipsTable,
 			},
+			{ name: "posts", table: schema.postsTable },
+			{ name: "post_votes", table: schema.postVotesTable },
+			{ name: "post_attachements", table: schema.postAttachmentsTable },
+			{ name: "comments", table: schema.commentsTable },
+			{ name: "comment_votes", table: schema.commentVotesTable },
 		];
 
 		console.log("\nRecord Counts After Import:\n");
@@ -280,7 +324,16 @@ ${"|".padEnd(30, "-")}|----------------|
 	}
 }
 
-const collections = ["users", "organizations", "organization_memberships", "posts"]; // Add organization memberships to collections
+const collections = [
+	"users",
+	"organizations",
+	"organization_memberships",
+	"posts",
+	"post_votes",
+	"post_attachements",
+	"comments",
+	"comment_votes",
+]; // Add organization memberships to collections
 
 const args = process.argv.slice(2);
 const options: LoadOptions = {
