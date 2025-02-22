@@ -531,6 +531,11 @@ Use the following GraphQL **query** to o query user data including a list of org
 }
 ```
 
+**Request Headers:**
+
+- `Content-Type: application/json`
+- `Authorization: Bearer <your_token>`
+
 **Example Response:**
 
 ```json
