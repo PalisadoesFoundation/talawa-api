@@ -78,8 +78,8 @@ def check_ts_ignore(files: list[str]) -> int:
                             line.strip(),
                         ):
                             print(
-                                f"❌ Error: '@ts-ignore' found in {file} "
-                                f"at line {line_num}"
+                                f"❌ Error: '@ts-ignore' found in {file} ",
+                                f"at line {line_num}",
                             )
                             logging.debug(
                                 "Found @ts-ignore in line: %s",
