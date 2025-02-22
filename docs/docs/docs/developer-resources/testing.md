@@ -426,7 +426,11 @@ mutation {
 
 ##### Create an Organization Administrator
 
-Use the following GraphQL **mutation** to assign **administrator** role to user:
+This **mutation** is used to add a member to an organization and assign them a role.
+
+- Administrators can add other users and assign roles (administrator or regular).
+- Non-administrators can only add themselves to an organization.
+- Non-administrators cannot assign roles while adding themselves; they will be assigned the default role (regular).
 
 ```graphql
 mutation {
@@ -501,3 +505,76 @@ Use the following GraphQL **query** to query organization data:
   }
 }
 ```
+
+
+
+##### Query User Data with Organizations
+
+Use the following GraphQL **query** to o query user data including a list of organizations the user is a member of:
+
+```graphql
+  query {
+  user(input: { id: "user-id" }) {
+    name
+    emailAddress
+    organizationsWhereMember(first: 5, after: null, before: null, last: null) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+}
+```
+
+**Example Response:**
+
+```json
+{
+  "data": {
+    "user": {
+      "name": "administrator",
+      "emailAddress": "administrator@email.com",
+      "organizationsWhereMember": {
+        "edges": [
+          {
+            "node": {
+              "id": "019527e1-2f4a-7a89-94b6-193a3e9dfd76",
+              "name": "Test Org 7"
+            }
+          },
+          {
+            "node": {
+              "id": "cd3e4f5b-6a7c-8d9e-0f1a-2b3c4d5e6f7a",
+              "name": "Unity Foundation 3"
+            }
+          },
+          {
+            "node": {
+              "id": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+              "name": "Unity Foundation 4"
+            }
+          },
+          {
+            "node": {
+              "id": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5f",
+              "name": "Unity Foundation 2"
+            }
+          },
+          {
+            "node": {
+              "id": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5e",
+              "name": "Unity Foundation 1"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+
+
