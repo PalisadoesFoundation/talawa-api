@@ -13,7 +13,13 @@ export default defineConfig({
 		testTimeout: 15000,
 		// https://vitest.dev/config/#globalsetup
 		globalSetup: ["./test/setup.ts"],
+		sequence: {
+            shuffle: false,    // Keep tests in the order they are defined
+            concurrent: false, // Run tests one at a time
+        },
 
+        isolate: true,  // Ensures test files do not share global state
+      
 		// https://vitest.dev/config/#passwithnotests
 		passWithNoTests: true,
 

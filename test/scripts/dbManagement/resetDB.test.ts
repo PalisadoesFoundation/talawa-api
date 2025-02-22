@@ -1,7 +1,16 @@
 import { sql } from "drizzle-orm";
 import { main } from "scripts/dbManagement/resetDB";
 import type { EnvConfig } from "src/envConfigSchema";
-import { afterEach, beforeEach, describe, expect, it, vi, beforeAll,afterAll } from "vitest";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vitest";
 vi.mock("env-schema", async (importOriginal) => {
 	const actual = await importOriginal();
 	return {
@@ -22,7 +31,7 @@ import * as mainModule from "scripts/dbManagement/addSampleData";
 import * as helpers from "scripts/dbManagement/helpers";
 
 describe.sequential("main function", () => {
-	beforeAll(async() => {
+	beforeAll(async () => {
 		await helpers.db.transaction(async (trx) => {
 			console.log("created transaction");
 			await trx.execute(sql`BEGIN;`);
@@ -37,10 +46,10 @@ describe.sequential("main function", () => {
 		await helpers.ensureAdministratorExists();
 	});
 	afterAll(async () => {
-			await helpers.db.transaction(async (trx) => {
-				await trx.execute(sql`ROLLBACK;`);
-				console.log("rolledback");
-			});
+		await helpers.db.transaction(async (trx) => {
+			await trx.execute(sql`ROLLBACK;`);
+			console.log("rolledback");
+		});
 	});
 
 	it("should confirm to format, format DB, restore administrator", async () => {
