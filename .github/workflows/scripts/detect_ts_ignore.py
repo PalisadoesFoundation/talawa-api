@@ -15,7 +15,32 @@ logging.basicConfig(
 
 TS_IGNORE_PATTERN = r"(?://|/\*)\s*@ts-ignore(?:\s+|$)"
 
-IGNORED_EXTENSIONS = {".avif", ".jpeg", ".png", ".webp", ".mp4", ".webm"}
+IGNORED_EXTENSIONS = {
+    # Image formats
+    ".avif",
+    ".jpeg",
+    ".jpg",
+    ".png",
+    ".webp",
+    ".gif",
+    ".bmp",
+    ".ico",
+    ".svg",
+    # Video formats
+    ".mp4",
+    ".webm",
+    ".mov",
+    ".avi",
+    ".mkv",
+    # Audio formats
+    ".mp3",
+    ".wav",
+    ".ogg",
+    # Document formats
+    ".pdf",
+    ".doc",
+    ".docx",
+}
 
 
 def is_binary_file(filepath: str) -> bool:
@@ -42,7 +67,7 @@ def check_ts_ignore(files: list[str]) -> int:
     ts_ignore_found = False
 
     for file in files:
-        if is_binary_file(file):
+        if not is_binary_file(file):
             try:
                 logging.info("Checking file: %s", file)
                 with open(file, encoding="utf-8") as f:
@@ -53,9 +78,7 @@ def check_ts_ignore(files: list[str]) -> int:
                             line.strip(),
                         ):
                             print(
-                                "❌ Error: '@ts-ignore' found in %s at line %d",
-                                file,
-                                line_num,
+                                f"❌ Error: '@ts-ignore' found in {file} at line {line_num}"
                             )
                             logging.debug(
                                 "Found @ts-ignore in line: %s",
@@ -66,10 +89,10 @@ def check_ts_ignore(files: list[str]) -> int:
                 logging.warning("File not found: %s", file)
             except OSError:
                 logging.exception("Could not read %s", file)
-        if not ts_ignore_found:
-            print("✅ No '@ts-ignore' comments found in the files.")
+    if not ts_ignore_found:
+        print("✅ No '@ts-ignore' comments found in the files.")
 
-        return 1 if ts_ignore_found else 0
+    return 1 if ts_ignore_found else 0
 
 
 def main() -> None:

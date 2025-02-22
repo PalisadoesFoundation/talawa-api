@@ -14,7 +14,7 @@ dotenv.config();
 const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 
 const minioClient = new MinioClient({
-	accessKey: process.env.API_MINIO_ACCESS_KEY,
+	accessKey: process.env.API_MINIO_ACCESS_KEY || "",
 	endPoint: process.env.API_MINIO_END_POINT || "minio",
 	port: Number(process.env.API_MINIO_PORT),
 	secretKey: process.env.API_MINIO_SECRET_KEY,
@@ -229,31 +229,33 @@ async function insertCollections(
 						}),
 					) as (typeof schema.postAttachmentsTable.$inferInsert)[];
 					await db.insert(schema.postAttachmentsTable).values(post_attachments);
-					post_attachments.map(async (attachment) => {
-						try {
-							const fileExtension = attachment.mimeType.split("/").pop();
-							const filePath = path.resolve(
-								dirname,
-								`../../sample_data/images/${attachment.name}.${fileExtension}`,
-							);
-							const readStream = await fs.readFile(filePath);
-							await minioClient.putObject(
-								"talawa",
-								attachment.name,
-								readStream,
-								undefined,
-								{
-									"content-type": attachment.mimeType,
-								},
-							);
-						} catch (error) {
-							console.error(
-								`Failed to upload attachment ${attachment.name}:`,
-								error,
-							);
-							throw error;
-						}
-					});
+					await Promise.all(
+						post_attachments.map(async (attachment) => {
+							try {
+								const fileExtension = attachment.mimeType.split("/").pop();
+								const filePath = path.resolve(
+									dirname,
+									`../../sample_data/images/${attachment.name}.${fileExtension}`,
+								);
+								const readStream = await fs.readFile(filePath);
+								await minioClient.putObject(
+									"talawa",
+									attachment.name,
+									readStream,
+									undefined,
+									{
+										"content-type": attachment.mimeType,
+									},
+								);
+							} catch (error) {
+								console.error(
+									`Failed to upload attachment ${attachment.name}:`,
+									error,
+								);
+								throw error;
+							}
+						}),
+					);
 					break;
 				}
 				case "comments": {
