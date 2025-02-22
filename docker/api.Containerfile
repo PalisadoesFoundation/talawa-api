@@ -37,9 +37,6 @@ USER talawa
 RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell \ 
 # Appends the fnm configuration to `/home/talawa/.bashrc` file.
 && echo eval \"\$\(fnm env --corepack-enabled --resolve-engines --use-on-cd --version-file-strategy=recursive\)\" >> /home/talawa/.bashrc
-# Set the PATH for all shells
-ENV NODE_VERSION=23.7.0
-ENV PATH="/home/talawa/.local/share/fnm/node-versions/v${NODE_VERSION}/installation/bin:/home/talawa/.local/share/fnm/node-versions/v${NODE_VERSION}/installation/lib/node_modules/corepack/shims:${PATH}"
 ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 WORKDIR /home/talawa/api
   
