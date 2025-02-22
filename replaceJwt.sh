@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the path to the compose file
-COMPOSE_FILE="./compose.yaml"
+COMPOSE_FILE="./.env"
 
 # Generate a random JWT-like token (modify this logic if needed)
 RANDOM_TOKEN=$(openssl rand -base64 32 | tr -d '=+/')

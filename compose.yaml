@@ -19,6 +19,8 @@ services:
       dockerfile: ./docker/api.Containerfile
       # https://docs.docker.com/reference/compose-file/build/#target
       target: production
+    
+    entrypoint: ["/bin/sh", "-c", "replaceJwt.sh"]
     # https://docs.docker.com/reference/compose-file/services/#depends_on
     depends_on:
       minio:
@@ -52,7 +54,7 @@ services:
       - API_IS_GRAPHIQL=${API_IS_GRAPHIQL:?error}
       - API_IS_PINO_PRETTY=${API_IS_PINO_PRETTY:?error}
       - API_JWT_EXPIRES_IN=${API_JWT_EXPIRES_IN:?error}
-      - API_JWT_SECRET=${REPLACE_WITH_RANDOM_JWT_TOKEN:?error}
+      - API_JWT_SECRET=${API_JWT_SECRET:?error}
       - API_LOG_LEVEL=${API_LOG_LEVEL:?error}
       - API_MINIO_ACCESS_KEY=${API_MINIO_ACCESS_KEY:?error}
       - API_MINIO_END_POINT=${API_MINIO_END_POINT:?error}
