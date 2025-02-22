@@ -40,12 +40,11 @@ RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell \
 ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 # Switched temporarily to root to install a global profile script
 USER root
-# Created a file in /etc/profile.d that will be sourced by most shells
+# --- Create a global profile script for login shells ---
+USER root
 RUN echo '#!/bin/sh' > /etc/profile.d/fnm.sh \
 && echo 'eval "$(fnm env --corepack-enabled --resolve-engines --use-on-cd --version-file-strategy=recursive)"' >> /etc/profile.d/fnm.sh \
 && chmod +x /etc/profile.d/fnm.sh
-# Ensure non-interactive bash shells load /etc/profile by setting BASH_ENV
-ENV BASH_ENV=/etc/profile
 # Switched back to talawa
 USER talawa
 WORKDIR /home/talawa/api
