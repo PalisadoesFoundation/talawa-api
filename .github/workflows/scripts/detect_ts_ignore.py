@@ -5,6 +5,7 @@ import argparse
 import re
 import sys
 import logging
+import os
 
 # Configure logging
 logging.basicConfig(
@@ -14,6 +15,18 @@ logging.basicConfig(
 
 TS_IGNORE_PATTERN = r"(?://|/\*)\s*@ts-ignore(?:\s+|$)"
 
+IGNORED_EXTENSIONS = {".avif", ".jpeg", ".png", ".webp", ".mp4", ".webm"}
+
+def is_binary_file(filepath: str) -> bool:
+    """Check if a file is binary based on its extension.
+
+    Args:
+        filepath (str): The file path.
+
+    Returns:
+        bool: True if the file should be ignored, False otherwise.
+    """
+    return os.path.splitext(filepath)[1].lower() in IGNORED_EXTENSIONS
 
 def check_ts_ignore(files: list[str]) -> int:
     """Check for occurrences of '@ts-ignore' in the given files.
@@ -27,33 +40,34 @@ def check_ts_ignore(files: list[str]) -> int:
     ts_ignore_found = False
 
     for file in files:
-        try:
-            logging.info("Checking file: %s", file)
-            with open(file, encoding="utf-8") as f:
-                for line_num, line in enumerate(f, start=1):
-                    # Handle more variations of @ts-ignore
-                    if re.search(
-                        TS_IGNORE_PATTERN,
-                        line.strip(),
-                    ):
-                        print(
-                            "❌ Error: '@ts-ignore' found in %s at line %d",
-                            file,
-                            line_num,
-                        )
-                        logging.debug(
-                            "Found @ts-ignore in line: %s",
+        if is_binary_file(file):
+            try:
+                logging.info("Checking file: %s", file)
+                with open(file, encoding="utf-8") as f:
+                    for line_num, line in enumerate(f, start=1):
+                        # Handle more variations of @ts-ignore
+                        if re.search(
+                            TS_IGNORE_PATTERN,
                             line.strip(),
-                        )
-                        ts_ignore_found = True
-        except FileNotFoundError:
-            logging.warning("File not found: %s", file)
-        except OSError:
-            logging.exception("Could not read %s", file)
-    if not ts_ignore_found:
-        print("✅ No '@ts-ignore' comments found in the files.")
+                        ):
+                            print(
+                                "❌ Error: '@ts-ignore' found in %s at line %d",
+                                file,
+                                line_num,
+                            )
+                            logging.debug(
+                                "Found @ts-ignore in line: %s",
+                                line.strip(),
+                            )
+                            ts_ignore_found = True
+            except FileNotFoundError:
+                logging.warning("File not found: %s", file)
+            except OSError:
+                logging.exception("Could not read %s", file)
+        if not ts_ignore_found:
+            print("✅ No '@ts-ignore' comments found in the files.")
 
-    return 1 if ts_ignore_found else 0
+        return 1 if ts_ignore_found else 0
 
 
 def main() -> None:

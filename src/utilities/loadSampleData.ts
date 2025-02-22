@@ -221,32 +221,38 @@ async function insertCollections(
 					await db.insert(schema.postVotesTable).values(post_votes);
 					break;
 				}
-				case "post_attachements": {
-					const post_attachements = JSON.parse(data).map(
+				case "post_attachments": {
+					const post_attachments = JSON.parse(data).map(
 						(post_attachement: { createdAt: string | number | Date }) => ({
 							...post_attachement,
 							createdAt: parseDate(post_attachement.createdAt),
 						}),
 					) as (typeof schema.postAttachmentsTable.$inferInsert)[];
-					await db
-						.insert(schema.postAttachmentsTable)
-						.values(post_attachements);
-					post_attachements.map(async (attachment) => {
-						const fileExtension = attachment.mimeType.split("/").pop();
-						const filePath = path.resolve(
-							dirname,
-							`../../sample_data/images/${attachment.name}.${fileExtension}`,
-						);
-						const readStream = await fs.readFile(filePath);
-						await minioClient.putObject(
-							"talawa",
-							attachment.name,
-							readStream,
-							undefined,
-							{
-								"content-type": attachment.mimeType,
-							},
-						);
+					await db.insert(schema.postAttachmentsTable).values(post_attachments);
+					post_attachments.map(async (attachment) => {
+						try {
+							const fileExtension = attachment.mimeType.split("/").pop();
+							const filePath = path.resolve(
+								dirname,
+								`../../sample_data/images/${attachment.name}.${fileExtension}`,
+							);
+							const readStream = await fs.readFile(filePath);
+							await minioClient.putObject(
+								"talawa",
+								attachment.name,
+								readStream,
+								undefined,
+								{
+									"content-type": attachment.mimeType,
+								},
+							);
+						} catch (error) {
+							console.error(
+								`Failed to upload attachment ${attachment.name}:`,
+								error,
+							);
+							throw error;
+						}
 					});
 					break;
 				}
@@ -315,7 +321,7 @@ async function checkCountAfterImport(): Promise<boolean> {
 			},
 			{ name: "posts", table: schema.postsTable },
 			{ name: "post_votes", table: schema.postVotesTable },
-			{ name: "post_attachements", table: schema.postAttachmentsTable },
+			{ name: "post_attachments", table: schema.postAttachmentsTable },
 			{ name: "comments", table: schema.commentsTable },
 			{ name: "comment_votes", table: schema.commentVotesTable },
 		];
@@ -356,7 +362,7 @@ const collections = [
 	"organization_memberships",
 	"posts",
 	"post_votes",
-	"post_attachements",
+	"post_attachments",
 	"comments",
 	"comment_votes",
 ]; // Add organization memberships to collections
