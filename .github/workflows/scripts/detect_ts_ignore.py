@@ -17,6 +17,7 @@ TS_IGNORE_PATTERN = r"(?://|/\*)\s*@ts-ignore(?:\s+|$)"
 
 IGNORED_EXTENSIONS = {".avif", ".jpeg", ".png", ".webp", ".mp4", ".webm"}
 
+
 def is_binary_file(filepath: str) -> bool:
     """Check if a file is binary based on its extension.
 
@@ -27,6 +28,7 @@ def is_binary_file(filepath: str) -> bool:
         bool: True if the file should be ignored, False otherwise.
     """
     return os.path.splitext(filepath)[1].lower() in IGNORED_EXTENSIONS
+
 
 def check_ts_ignore(files: list[str]) -> int:
     """Check for occurrences of '@ts-ignore' in the given files.
