@@ -60,5 +60,13 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ createTag: { id: string; name: string | null; createdAt: string | null; organization: { id: string; name: string | null; createdAt: string | null; } | null; } | null; }, { input: { organizationId: string; name: string; folderId?: string | null | undefined; }; }, void>;
     "\n    query Organization($input: QueryOrganizationInput!, $first: Int!) {\n      organization(input: $input) {\n        id\n        name\n        members(first: $first) {\n          edges {\n            node {\n              id\n              name\n            }\n          }\n        }\n      }\n    }\n  ":
       TadaDocumentNode<{ organization: { id: string; name: string | null; members: { edges: ({ node: { id: string; name: string | null; } | null; } | null)[] | null; } | null; } | null; }, { first: number; input: { id: string; }; }, void>;
+    "query Query_agendaItem($input: QueryAgendaItemInput!) {\n  agendaItem(input: $input) {\n    id\n    name\n    description\n    duration\n    key\n    type\n  }\n}":
+      TadaDocumentNode<{ agendaItem: { id: string; name: string | null; description: string | null; duration: string | null; key: string | null; type: "general" | "note" | "scripture" | "song" | null; } | null; }, { input: { id: string; }; }, void>;
+    "\n  mutation Mutation_createAgendaFolder($input: MutationCreateAgendaFolderInput!) {\n    createAgendaFolder(input: $input) {\n      id\n      name\n      event {\n        id\n      }\n    }\n  }\n":
+      TadaDocumentNode<{ createAgendaFolder: { id: string; name: string | null; event: { id: string; } | null; } | null; }, { input: { parentFolderId?: string | null | undefined; name: string; isAgendaItemFolder: boolean; eventId: string; }; }, void>;
+    "\n  mutation Mutation_createAgendaItem($input: MutationCreateAgendaItemInput!) {\n    createAgendaItem(input: $input) {\n      id\n      name\n      description\n      duration\n      type\n    }\n  }\n":
+      TadaDocumentNode<{ createAgendaItem: { id: string; name: string | null; description: string | null; duration: string | null; type: "general" | "note" | "scripture" | "song" | null; } | null; }, { input: { type: "general" | "note" | "scripture" | "song"; name: string; key?: string | null | undefined; folderId: string; duration?: string | null | undefined; description?: string | null | undefined; }; }, void>;
+    "\n  mutation Mutation_deleteAgendaItem($input: MutationDeleteAgendaItemInput!) {\n    deleteAgendaItem(input: $input) {\n      id\n      name\n    }\n  }\n":
+      TadaDocumentNode<{ deleteAgendaItem: { id: string; name: string | null; } | null; }, { input: { id: string; }; }, void>;
   }
 }
