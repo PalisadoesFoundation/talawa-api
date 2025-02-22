@@ -136,6 +136,31 @@ describe("resolveEventUpdater", async () => {
 		expect(result).toBeNull();
 	});
 
+	it("returns the current user if updaterId matches current user's id", async () => {
+		const mockCurrentUser: UserObject = {
+			id: "user_1",
+			role: "administrator",
+			organizationMembershipsWhereMember: [{ role: "administrator" }],
+		};
+
+		// Mock the event with updaterId matching the current user's id
+		const eventWithCurrentUserAsUpdater = {
+			...MockEvent,
+			updaterId: "user_1", // Same as mockCurrentUser.id
+		};
+
+		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue(
+			mockCurrentUser,
+		);
+
+		const result = await resolveEventUpdater(
+			eventWithCurrentUserAsUpdater,
+			{},
+			authenticatedContext,
+		);
+		expect(result).toEqual(mockCurrentUser);
+	});
+
 	it("returns the currentUser if user is global administrator and event has updaterId", async () => {
 		const MockUser: UserObject = {
 			id: "updater_1",
