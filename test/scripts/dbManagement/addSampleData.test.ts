@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { main } from "scripts/dbManagement/addSampleData";
 import type { EnvConfig } from "src/envConfigSchema";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll ,beforeAll,afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("env-schema", async (importOriginal) => {
 	const actual = await importOriginal();
 	return {
@@ -21,19 +21,25 @@ vi.mock("env-schema", async (importOriginal) => {
 import * as mainModule from "scripts/dbManagement/addSampleData";
 import * as helpers from "scripts/dbManagement/helpers";
 
-describe("main function", () => {
-	beforeEach(async () => {
-		vi.resetModules();
+describe.sequential("main function", () => {
+	beforeAll(async() => {
 		await helpers.db.transaction(async (trx) => {
+			console.log("created transaction");
 			await trx.execute(sql`BEGIN;`);
 		});
 	});
+	beforeEach(async () => {
+		vi.resetModules();
+	});
 	afterEach(async () => {
-		await helpers.db.transaction(async (trx) => {
-			await trx.execute(sql`ROLLBACK;`);
-		});
 		vi.restoreAllMocks();
 	});
+	afterAll(async () => {
+		await helpers.db.transaction(async (trx) => {
+			await trx.execute(sql`ROLLBACK;`);
+			console.log("rolledback");
+		});
+});
 
 	it("should connect to the database, ensure admin exists, insert collections", async () => {
 		vi.spyOn(helpers, "pingDB").mockResolvedValueOnce(true);

@@ -5,7 +5,7 @@ import mockMembership from "scripts/dbManagement/sample_data/organization_member
 import mockOrganization from "scripts/dbManagement/sample_data/organizations.json";
 import mockUser from "scripts/dbManagement/sample_data/users.json";
 import type { EnvConfig } from "src/envConfigSchema";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("env-schema", async (importOriginal) => {
 	const actual = await importOriginal();
@@ -25,19 +25,27 @@ vi.mock("env-schema", async (importOriginal) => {
 
 import * as helpers from "scripts/dbManagement/helpers";
 
-describe("Database Mocking", () => {
-	beforeEach(async () => {
-		vi.restoreAllMocks();
-		vi.resetModules();
+describe.sequential("Database Mocking", () => {
+	beforeAll(async() => {
 		await helpers.db.transaction(async (trx) => {
+			console.log("created transaction");
 			await trx.execute(sql`BEGIN;`);
 		});
 	});
+		
+	beforeEach(async () => {
+		vi.restoreAllMocks();
+		vi.resetModules();
+		
+	});
 	afterEach(async () => {
+		vi.restoreAllMocks();
+	});
+	afterAll(async () => {
 		await helpers.db.transaction(async (trx) => {
 			await trx.execute(sql`ROLLBACK;`);
+			console.log("rolledback");
 		});
-		vi.restoreAllMocks();
 	});
 
 	/*
