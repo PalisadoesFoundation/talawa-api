@@ -35,7 +35,7 @@ You will need to configure the API to work correctly.
 | `API_COMMUNITY_YOUTUBE_URL`            | URL to the community's YouTube channel, used for linking and integrating video content.                               |
 | `API_JWT_SECRET`                       | Secret key for JWT(JSON Web Token) generation and validation, used for securing API authentication and authorization. |
 | `API_MINIO_SECRET_KEY`                 | Secret key for MinIO, used for securing access to MinIO object storage. **NOTE:** Must match `MINIO_ROOT_PASSWORD`    |
-| `API_POSTGRES_PASSWORD`                | Password for the PostgreSQL database, used for database authentication and security.                                  |
+| `API_POSTGRES_PASSWORD`                | Password for the PostgreSQL database, used for database authentication and security. **NOTE: Must match `POSTGRES_PASSWORD` |
 | `CADDY_TALAWA_API_DOMAIN_NAME`         | Domain name for the Talawa API, used for configuring and routing API traffic.                                         |
 | `CADDY_TALAWA_API_EMAIL`               | Email address for the Talawa API, used for SSL certificate registration and notifications.                            |
 | `MINIO_ROOT_PASSWORD`                  | Root password for MinIO, used for securing administrative access to MinIO object storage.                             |
@@ -147,13 +147,13 @@ You will need to update the `.env` file with the following information.
 
 You will need to update the `.env` file with the following information.
 1. `MINIO_ROOT_PASSWORD` is a plain text password of your choosing.
-1. `API_MINIO_SECRET_KEY` **NOTE:** must match `MINIO_ROOT_PASSWORD`.
+1. `API_MINIO_SECRET_KEY` - **NOTE:** must match `MINIO_ROOT_PASSWORD`.
 
 
 ##### Update the PostgreSQL Credentials
 
 You will need to update the `.env` file with the following information. The passwords are in plain text and must match.
-1. `API_POSTGRES_PASSWORD`
+1. `API_POSTGRES_PASSWORD` - **NOTE: Must match `POSTGRES_PASSWORD`
 2. `POSTGRES_PASSWORD`
 
 ##### Update the API_BASE_URL Value
