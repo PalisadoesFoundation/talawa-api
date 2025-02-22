@@ -1,5 +1,4 @@
 import type { InferSelectModel } from "drizzle-orm";
-import { z } from "zod";
 import type { organizationsTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -21,7 +20,11 @@ builder.queryField("organizations", (t) =>
 				type: QueryOrganizationInput,
 			}),
 		},
-		description: "Query field to read organizations. Returns a single organization when ID is provided, otherwise returns up to 20 organizations. Optional filtering available through input argument.",
+		description: `Query field to read organizations. 
+		Returns a single organization when ID is provided, 
+		otherwise returns up to 20 organizations. 
+		Optional filtering available through input argument.`,
+
 		resolve: async (_parent, args, ctx): Promise<OrganizationType[]> => {
 			try {
 				// Validate input
