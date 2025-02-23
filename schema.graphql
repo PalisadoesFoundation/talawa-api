@@ -2884,6 +2884,7 @@ type Query {
 
   """Query field to read a tag."""
   tag(input: QueryTagInput!): Tag
+  organizations(input: QueryOrganizationInput): [Organization]
 
   """Query field to read a tag folder."""
   tagFolder(input: QueryTagFolderInput!): TagFolder

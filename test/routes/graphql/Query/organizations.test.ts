@@ -1,69 +1,121 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
-import { server } from "../../../server";
+import type {
+	ArgumentsAssociatedResourcesNotFoundExtensions,
+	InvalidArgumentsExtensions,
+	TalawaGraphQLFormattedError,
+} from "~/src/utilities/TalawaGraphQLError";
 import { mercuriusClient } from "../client";
+import { Query_organizations } from "../documentNodes";
 
 suite("Query field organizations", () => {
-  suite("Input Validation", () => {
-    test("returns an error if input validation fails", async () => {
-      const result = await mercuriusClient.query(Query_organization, {
-        variables: {
-          input: {
-            id: "invalid-id", // Assuming ID should be a number
-          },
-        },
-      });
+	suite(
+		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.organizations" field if`,
+		() => {
+			test(`value of the "input.id" is not a valid UUID.`, async () => {
+				const result = await mercuriusClient.query(Query_organizations, {
+					variables: {
+						input: {
+							id: "invalid-uuid",
+						},
+					},
+				});
 
-      expect(result.data.organizations).toBeNull();
-      expect(result.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            extensions: expect.objectContaining({
-              code: "invalid_arguments",
-            }),
-          }),
-        ])
-      );
-    });
-  });
+				expect(result.data.organizations).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining<
+									InvalidArgumentsExtensions["issues"][number]
+								>([
+									{
+										argumentPath: ["input", "id"],
+										message: expect.any(String),
+									},
+								]),
+							}),
+							message: expect.any(String),
+							path: ["organizations"],
+						}),
+					]),
+				);
+			});
+		},
+	);
 
-  suite("Fetching Specific Organization", () => {
-    test("returns the organization if a valid ID is provided", async () => {
-      const organizationId = 1; // Use a known ID for testing
-      const result = await mercuriusClient.query(Query_organizations, {
-        variables: {
-          input: { id: organizationId },
-        },
-      });
+	suite(
+		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.organizations" field if`,
+		() => {
+			test(`value of the "input.id" does not correspond to an existing organization.`, async () => {
+				const result = await mercuriusClient.query(Query_organizations, {
+					variables: {
+						input: {
+							id: faker.string.uuid(),
+						},
+					},
+				});
 
-      expect(result.errors).toBeUndefined();
-      expect(result.data.organizations).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: organizationId.toString(),
-          }),
-        ])
-      );
-    });
+				expect(result.data.organizations).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions:
+								expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+									{
+										code: "arguments_associated_resources_not_found",
+										issues: expect.arrayContaining<
+											ArgumentsAssociatedResourcesNotFoundExtensions["issues"][number]
+										>([
+											{
+												argumentPath: ["input", "id"],
+											},
+										]),
+									},
+								),
+							message: expect.any(String),
+							path: ["organizations"],
+						}),
+					]),
+				);
+			});
+		},
+	);
 
-    test("returns null if organization is not found", async () => {
-      const result = await mercuriusClient.query(Query_organizations, {
-        variables: {
-          input: { id: 999999 }, // Assuming this ID does not exist
-        },
-      });
+	test("returns a list of organizations when no input is provided.", async () => {
+		const result = await mercuriusClient.query(Query_organizations);
 
-      expect(result.data.organizations).toEqual([]);
-    });
-  });
+		expect(result.errors).toBeUndefined();
+		expect(result.data.organizations).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: expect.any(String),
+					name: expect.any(String),
+				}),
+			]),
+		);
+	});
 
-  suite("Fetching All Organizations", () => {
-    test("returns all organizations when no ID is provided", async () => {
-      const result = await mercuriusClient.query(Query_organizations);
+	test(`returns a specific organization when a valid "input.id" is provided.`, async () => {
+		const validOrganizationId = "your-existing-organization-id"; // Replace with a valid ID for testing
 
-      expect(result.errors).toBeUndefined();
-      expect(result.data.organizations).toBeInstanceOf(Array);
-      expect(result.data.organizations.length).toBeGreaterThan(0);
-    });
-  });
+		const result = await mercuriusClient.query(Query_organizations, {
+			variables: {
+				input: {
+					id: validOrganizationId,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data.organizations).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: validOrganizationId,
+					name: expect.any(String),
+				}),
+			]),
+		);
+	});
 });

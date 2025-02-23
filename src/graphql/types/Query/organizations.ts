@@ -82,8 +82,7 @@ builder.queryField("organizations", (t) =>
 				// Throw a generic error message
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "internal_server_error",
-						message: "An unexpected error occurred.",
+						code: "unauthorized_action",
 					},
 				});
 			}
