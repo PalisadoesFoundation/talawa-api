@@ -1,8 +1,8 @@
 import type { FastifyInstance } from "fastify";
 import { describe, expect, it } from "vitest";
 import { type Mock, vi } from "vitest";
-import type { PubSub } from "../../pubsub";
-import { resolveEventUpdater } from "./updater";
+import type { PubSub } from "../../../../src/graphql/pubsub";
+import { resolveEventUpdater } from "../../../../src/graphql/types/Event/updater";
 
 // Define types for the user object structure
 type UserRole = "administrator" | "regular";

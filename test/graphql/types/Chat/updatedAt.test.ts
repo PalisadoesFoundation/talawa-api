@@ -6,8 +6,8 @@ import type { chatMembershipRoleEnum } from "~/src/drizzle/enums/chatMembershipR
 import type { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organizationMembershipRole";
 import type { userRoleEnum } from "~/src/drizzle/enums/userRole";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import type { PubSub } from "../../pubsub";
-import { resolveUpdatedAt } from "./updatedAt";
+import type { PubSub } from "../../../../src/graphql/pubsub";
+import { resolveUpdatedAt } from "../../../../src/graphql/types/Chat/updatedAt";
 
 // Infer types from the zod enums
 type UserRole = z.infer<typeof userRoleEnum>;
