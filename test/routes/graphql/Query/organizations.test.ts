@@ -1,9 +1,4 @@
 import { expect, suite, test, vi } from "vitest";
-import type {
-	ArgumentsAssociatedResourcesNotFoundExtensions,
-	InvalidArgumentsExtensions,
-	TalawaGraphQLFormattedError,
-} from "~/src/utilities/TalawaGraphQLError";
 import { mercuriusClient } from "../client";
 import { Query_organizations } from "../documentNodes";
 
