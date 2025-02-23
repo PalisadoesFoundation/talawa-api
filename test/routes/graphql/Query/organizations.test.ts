@@ -88,7 +88,7 @@ suite("Query field organizations", () => {
 	suite("successfully returns organizations data", () => {
 		test("returns a single organization when ID is provided", async () => {
 			// Assuming we have a known organization ID in the test database
-			const knownOrganizationId = ""; // Replace with actual test data
+			const knownOrganizationId = "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5f"; // Replace with actual test data
 			const result = await mercuriusClient.query(Query_organizations, {
 				variables: {
 					input: {
