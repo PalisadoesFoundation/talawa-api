@@ -5,12 +5,21 @@ import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import inquirer from "inquirer";
+import { Client as MinioClient } from "minio";
 import postgres from "postgres";
 import * as schema from "../drizzle/schema";
 
 dotenv.config();
 
 const dirname: string = path.dirname(fileURLToPath(import.meta.url));
+
+const minioClient = new MinioClient({
+	accessKey: process.env.API_MINIO_ACCESS_KEY || "",
+	endPoint: process.env.API_MINIO_END_POINT || "minio",
+	port: Number(process.env.API_MINIO_PORT),
+	secretKey: process.env.API_MINIO_SECRET_KEY || "",
+	useSSL: process.env.API_MINIO_USE_SSL === "true",
+});
 
 const queryClient = postgres({
 	host: process.env.API_POSTGRES_HOST,
@@ -192,6 +201,83 @@ async function insertCollections(
 						.values(organizationMemberships);
 					break;
 				}
+				case "posts": {
+					const posts = JSON.parse(data).map(
+						(post: { createdAt: string | number | Date }) => ({
+							...post,
+							createdAt: parseDate(post.createdAt),
+						}),
+					) as (typeof schema.postsTable.$inferInsert)[];
+					await db.insert(schema.postsTable).values(posts);
+					break;
+				}
+				case "post_votes": {
+					const post_votes = JSON.parse(data).map(
+						(post_vote: { createdAt: string | number | Date }) => ({
+							...post_vote,
+							createdAt: parseDate(post_vote.createdAt),
+						}),
+					) as (typeof schema.postVotesTable.$inferInsert)[];
+					await db.insert(schema.postVotesTable).values(post_votes);
+					break;
+				}
+				case "post_attachments": {
+					const post_attachments = JSON.parse(data).map(
+						(post_attachment: { createdAt: string | number | Date }) => ({
+							...post_attachment,
+							createdAt: parseDate(post_attachment.createdAt),
+						}),
+					) as (typeof schema.postAttachmentsTable.$inferInsert)[];
+					await db.insert(schema.postAttachmentsTable).values(post_attachments);
+					await Promise.all(
+						post_attachments.map(async (attachment) => {
+							try {
+								const fileExtension = attachment.mimeType.split("/").pop();
+								const filePath = path.resolve(
+									dirname,
+									`../../sample_data/images/${attachment.name}.${fileExtension}`,
+								);
+								const readStream = await fs.readFile(filePath);
+								await minioClient.putObject(
+									"talawa",
+									attachment.name,
+									readStream,
+									undefined,
+									{
+										"content-type": attachment.mimeType,
+									},
+								);
+							} catch (error) {
+								console.error(
+									`Failed to upload attachment ${attachment.name}:`,
+									error,
+								);
+								throw error;
+							}
+						}),
+					);
+					break;
+				}
+				case "comments": {
+					const comments = JSON.parse(data).map(
+						(comment: { createdAt: string | number | Date }) => ({
+							...comment,
+							createdAt: parseDate(comment.createdAt),
+						}),
+					) as (typeof schema.commentsTable.$inferInsert)[];
+					await db.insert(schema.commentsTable).values(comments);
+					break;
+				}
+				case "comment_votes": {
+					const comment_votes = JSON.parse(data).map(
+						(comment_vote: { createdAt: string | number | Date }) => ({
+							...comment_vote,
+							createdAt: parseDate(comment_vote.createdAt),
+						}),
+					) as (typeof schema.commentVotesTable.$inferInsert)[];
+					await db.insert(schema.commentVotesTable).values(comment_votes);
+					break;
+				}
 
 				default:
 					console.log("\x1b[31m", `Invalid table name: ${collection}`);
@@ -235,6 +321,11 @@ async function checkCountAfterImport(): Promise<boolean> {
 				name: "organization_memberships",
 				table: schema.organizationMembershipsTable,
 			},
+			{ name: "posts", table: schema.postsTable },
+			{ name: "post_votes", table: schema.postVotesTable },
+			{ name: "post_attachments", table: schema.postAttachmentsTable },
+			{ name: "comments", table: schema.commentsTable },
+			{ name: "comment_votes", table: schema.commentVotesTable },
 		];
 
 		console.log("\nRecord Counts After Import:\n");
@@ -267,7 +358,16 @@ ${"|".padEnd(30, "-")}|----------------|
 	}
 }
 
-const collections = ["users", "organizations", "organization_memberships"]; // Add organization memberships to collections
+const collections = [
+	"users",
+	"organizations",
+	"organization_memberships",
+	"posts",
+	"post_votes",
+	"post_attachments",
+	"comments",
+	"comment_votes",
+]; // Add posts, votes, attachments, comments, and membership data to collections
 
 const args = process.argv.slice(2);
 const options: LoadOptions = {
