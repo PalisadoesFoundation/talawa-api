@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import { afterEach, expect, suite, test } from "vitest";
 import {
 	agendaFoldersTable,
@@ -9,7 +10,6 @@ import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
-import { eq } from "drizzle-orm";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
