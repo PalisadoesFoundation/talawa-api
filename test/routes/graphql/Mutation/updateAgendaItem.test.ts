@@ -339,7 +339,7 @@ suite("Mutation updateAgendaItem", () => {
 			// Reset the cleanup functions array
 			testCleanupFunctions.length = 0;
 		});
-		test("return an error when user is unauthenticated", async () => {
+		test("Returns an error when the user is unauthenticated", async () => {
 			const updateAgendaItemResult = await mercuriusClient.mutate(
 				Mutation_updateAgendaItem,
 				{
@@ -365,7 +365,7 @@ suite("Mutation updateAgendaItem", () => {
 			);
 		});
 
-		test("return an error when user is present in token but not found in the database", async () => {
+		test("Returns an error when the user is present in the token but not found in the database", async () => {
 			// create a regular user
 			const regularUser = await createRegularUser();
 			testCleanupFunctions.push(regularUser.cleanup);
@@ -405,7 +405,7 @@ suite("Mutation updateAgendaItem", () => {
 			);
 		});
 
-		test("return an error when non admin non organization member tries to update the agenda item", async () => {
+		test("Returns an error when a non-admin, non-organization member tries to update an agenda item", async () => {
 			// create a regular user
 			const regularUser = await createRegularUser();
 			testCleanupFunctions.push(regularUser.cleanup);
@@ -447,7 +447,7 @@ suite("Mutation updateAgendaItem", () => {
 			);
 		});
 
-		test("return an error when non admin organization member tries to update the agenda item", async () => {
+		test("Returns an error when a regular member of the organization tries to update an agenda item", async () => {
 			// create a regular user
 			const regularUser = await createRegularUser();
 			testCleanupFunctions.push(regularUser.cleanup);
@@ -496,7 +496,7 @@ suite("Mutation updateAgendaItem", () => {
 			);
 		});
 
-		test("successfully update the agenda item when organization admin tries to update the agenda item", async () => {
+		test("Successfully updates the agenda item when an organization admin tries to update it", async () => {
 			// create a regular user
 			const regularUser = await createRegularUser();
 			testCleanupFunctions.push(regularUser.cleanup);
@@ -543,7 +543,7 @@ suite("Mutation updateAgendaItem", () => {
 				"Updated agenda item name",
 			);
 		});
-		test("successfully update the agenda item when admin (non org member) tries to update the agenda item", async () => {
+		test("Successfully updates the agenda item when an admin (non-organization member) tries to update it", async () => {
 			// get admin auth token
 			const { cachedAdminToken: adminAuthToken } =
 				await getAdminAuthTokenAndId();
@@ -593,7 +593,7 @@ suite("Mutation updateAgendaItem", () => {
 			// Reset the cleanup functions array
 			testCleanupFunctions.length = 0;
 		});
-		test("return an error when id and folderId is not a valid uuid", async () => {
+		test("Returns an error when id and folderId are not valid UUIDs", async () => {
 			// create a regular user
 			const regularUser = await createRegularUser();
 			testCleanupFunctions.push(regularUser.cleanup);
@@ -636,7 +636,7 @@ suite("Mutation updateAgendaItem", () => {
 				]),
 			);
 		});
-		test("return an error when only id is provided", async () => {
+		test("Returns an error when only id is provided", async () => {
 			// create a regular user
 			const regularUser = await createRegularUser();
 			testCleanupFunctions.push(regularUser.cleanup);
@@ -694,7 +694,7 @@ suite("Mutation updateAgendaItem", () => {
 			// Reset the cleanup functions array
 			testCleanupFunctions.length = 0;
 		});
-		test("return an error when type is note and duration is provided", async () => {
+		test("Returns an error when the type is note and duration is provided", async () => {
 			// create regular user
 			const regularUser = await createRegularUser();
 			testCleanupFunctions.push(regularUser.cleanup);
@@ -747,7 +747,7 @@ suite("Mutation updateAgendaItem", () => {
 				]),
 			);
 		});
-		test("return an error when type is note and key is provided", async () => {
+		test("Returns an error when the type is note and key is provided", async () => {
 			// create regular user
 			const regularUser = await createRegularUser();
 			testCleanupFunctions.push(regularUser.cleanup);
@@ -799,7 +799,7 @@ suite("Mutation updateAgendaItem", () => {
 				]),
 			);
 		});
-		test("return an error when type is general and key is provided", async () => {
+		test("Returns an error when the type is general and key is provided", async () => {
 			// create regular user
 			const regularUser = await createRegularUser();
 			testCleanupFunctions.push(regularUser.cleanup);
@@ -851,7 +851,7 @@ suite("Mutation updateAgendaItem", () => {
 				]),
 			);
 		});
-		test("return an error when type is scripture and key is provided", async () => {
+		test("Returns an error when the type is scripture and key is provided", async () => {
 			// create regular user
 			const regularUser = await createRegularUser();
 			testCleanupFunctions.push(regularUser.cleanup);
@@ -919,7 +919,7 @@ suite("Mutation updateAgendaItem", () => {
 			// Reset the cleanup functions array
 			testCleanupFunctions.length = 0;
 		});
-		test("returns an error when agenda item does not exist", async () => {
+		test("Returns an error when the agenda item does not exist", async () => {
 			// create regular user
 			const regularUser = await createRegularUser();
 			testCleanupFunctions.push(regularUser.cleanup);
@@ -957,7 +957,7 @@ suite("Mutation updateAgendaItem", () => {
 				]),
 			);
 		});
-		test("returns an error when agenda folder does not exist", async () => {
+		test("Returns an error when the agenda folder does not exist", async () => {
 			// create regular user
 			const regularUser = await createRegularUser();
 			testCleanupFunctions.push(regularUser.cleanup);
@@ -999,7 +999,7 @@ suite("Mutation updateAgendaItem", () => {
 				]),
 			);
 		});
-		test("returns an error when agenda folder does not belong to agenda item's event", async () => {
+		test("Returns an error when the agenda folder does not belong to the agenda item's event", async () => {
 			// create regular user
 			const regularUser = await createRegularUser();
 			// create two agendaItems and use the folder of the first agenda item for the second agenda item
@@ -1046,7 +1046,7 @@ suite("Mutation updateAgendaItem", () => {
 			);
 		});
 
-		test("returns an error when agenda folder cannot be a folder to agenda items", async () => {
+		test("Returns an error when the agenda folder cannot be a folder for agenda items", async () => {
 			// create regular user
 			const regularUser = await createRegularUser();
 			// create an agendaItem and use the folder of the agenda item for the event
