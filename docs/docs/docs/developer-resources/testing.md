@@ -48,7 +48,7 @@ Example test suites 1 and 2 depicting the violations and followage of these guid
 
 #### Guideline Violation Example
 
-This example show a violation of the guidelines.
+This example show a violation of the guidelines by using **non-randomized** data.
 
 ```typescript
 // Test suite 1
@@ -117,7 +117,7 @@ suite.concurrent("flaky concurrent tests", async () => {
 
 #### Guideline Compliance Example
 
-This example shows compliance with the guidelines.
+This example shows compliance with the guidelines  by using **randomized** data.
 
 ```typescript
 // Test suite 2
