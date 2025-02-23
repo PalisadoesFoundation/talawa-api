@@ -150,15 +150,12 @@ export async function ensureAdministratorExists(): Promise<boolean> {
 
 export async function emptyMinioBuckets(): Promise<boolean> {
 	try {
-		
 		let bucketsToReset: string[] = [];
 
 		const buckets: Bucket[] = await minioClient.listBuckets();
 		bucketsToReset = buckets.map((b) => b.name);
 
-		
 		for (const b of bucketsToReset) {
-			
 			const objectsList: string[] = await new Promise<string[]>(
 				(resolve, reject) => {
 					const objects: string[] = [];
@@ -174,7 +171,6 @@ export async function emptyMinioBuckets(): Promise<boolean> {
 				},
 			);
 
-	
 			if (objectsList.length > 0) {
 				await minioClient.removeObjects(b, objectsList);
 			}
