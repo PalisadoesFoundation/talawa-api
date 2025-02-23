@@ -7,6 +7,10 @@ sidebar_position: 1
 
 Welcome to the Talawa-API developer resources.
 
+## Design Philosophy
+
+Coming Soon
+
 ## Important Directories
 
 Review these important locations before you start your coding journey.
