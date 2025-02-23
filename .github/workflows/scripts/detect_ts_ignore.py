@@ -5,6 +5,7 @@ import argparse
 import re
 import sys
 import logging
+import os
 
 # Configure logging
 logging.basicConfig(
@@ -13,6 +14,45 @@ logging.basicConfig(
 )
 
 TS_IGNORE_PATTERN = r"(?://|/\*)\s*@ts-ignore(?:\s+|$)"
+
+IGNORED_EXTENSIONS = {
+    # Image formats
+    ".avif",
+    ".jpeg",
+    ".jpg",
+    ".png",
+    ".webp",
+    ".gif",
+    ".bmp",
+    ".ico",
+    ".svg",
+    # Video formats
+    ".mp4",
+    ".webm",
+    ".mov",
+    ".avi",
+    ".mkv",
+    # Audio formats
+    ".mp3",
+    ".wav",
+    ".ogg",
+    # Document formats
+    ".pdf",
+    ".doc",
+    ".docx",
+}
+
+
+def is_binary_file(filepath: str) -> bool:
+    """Check if a file is binary based on its extension.
+
+    Args:
+        filepath (str): The file path.
+
+    Returns:
+        bool: True if the file should be ignored, False otherwise.
+    """
+    return os.path.splitext(filepath)[1].lower() in IGNORED_EXTENSIONS
 
 
 def check_ts_ignore(files: list[str]) -> int:
@@ -27,29 +67,29 @@ def check_ts_ignore(files: list[str]) -> int:
     ts_ignore_found = False
 
     for file in files:
-        try:
-            logging.info("Checking file: %s", file)
-            with open(file, encoding="utf-8") as f:
-                for line_num, line in enumerate(f, start=1):
-                    # Handle more variations of @ts-ignore
-                    if re.search(
-                        TS_IGNORE_PATTERN,
-                        line.strip(),
-                    ):
-                        print(
-                            "❌ Error: '@ts-ignore' found in %s at line %d",
-                            file,
-                            line_num,
-                        )
-                        logging.debug(
-                            "Found @ts-ignore in line: %s",
+        if not is_binary_file(file):
+            try:
+                logging.info("Checking file: %s", file)
+                with open(file, encoding="utf-8") as f:
+                    for line_num, line in enumerate(f, start=1):
+                        # Handle more variations of @ts-ignore
+                        if re.search(
+                            TS_IGNORE_PATTERN,
                             line.strip(),
-                        )
-                        ts_ignore_found = True
-        except FileNotFoundError:
-            logging.warning("File not found: %s", file)
-        except OSError:
-            logging.exception("Could not read %s", file)
+                        ):
+                            print(
+                                f"❌ Error: '@ts-ignore' found in {file} ",
+                                f"at line {line_num}",
+                            )
+                            logging.debug(
+                                "Found @ts-ignore in line: %s",
+                                line.strip(),
+                            )
+                            ts_ignore_found = True
+            except FileNotFoundError:
+                logging.warning("File not found: %s", file)
+            except OSError:
+                logging.exception("Could not read %s", file)
     if not ts_ignore_found:
         print("✅ No '@ts-ignore' comments found in the files.")
 
