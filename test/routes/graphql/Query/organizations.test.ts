@@ -14,6 +14,7 @@ vi.mock("~/src/utilities/auth", () => ({
 }));
 
 suite("Query field organizations", () => {
+	// Invalid Arguments Test Suite
 	suite(
 		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.organizations" field if`,
 		() => {
@@ -50,6 +51,7 @@ suite("Query field organizations", () => {
 		},
 	);
 
+	// Arguments Associated Resources Not Found Test Suite
 	suite(
 		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.organizations" field if`,
 		() => {
@@ -88,6 +90,7 @@ suite("Query field organizations", () => {
 		},
 	);
 
+	// Successful Query with No Input
 	test("returns a list of organizations when no input is provided.", async () => {
 		const result = await mercuriusClient.query(Query_organizations);
 
@@ -102,6 +105,7 @@ suite("Query field organizations", () => {
 		);
 	});
 
+	// Successful Query with Valid Input
 	test(`returns a specific organization when a valid "input.id" is provided.`, async () => {
 		const validOrganizationId = "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5f"; // Replace with a valid ID for testing
 
