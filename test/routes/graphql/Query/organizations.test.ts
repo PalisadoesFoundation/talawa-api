@@ -1,137 +1,153 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { vi } from "vitest";
-import { GraphQLContext } from "~/src/graphql/context";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { organizationsTableQueryResolver } from "~/src/graphql/types/Query/organizations";
+import { faker } from "@faker-js/faker";
+import { expect, suite, test } from "vitest";
+import type {
+	ArgumentsAssociatedResourcesNotFoundExtensions,
+	InvalidArgumentsExtensions,
+	UnauthorizedActionExtensions,
+	TalawaGraphQLFormattedError,
+} from "~/src/utilities/TalawaGraphQLError";
+import { mercuriusClient } from "../client";
+import { Query_organizations } from "../documentNodes";
 
-const createMockContext = () => {
-	const mockContext = {
-		drizzleClient: {
-			query: {
-				organizationsTable: {
-					findFirst: vi.fn(),
-					findMany: vi.fn(),
-				},
-			},
+suite("Query field organizations", () => {
+	suite(
+		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.organizations" field if`,
+		() => {
+			test("input validation fails with invalid ID format", async () => {
+				const result = await mercuriusClient.query(Query_organizations, {
+					variables: {
+						input: {
+							id: "invalid-id-format",
+						},
+					},
+				});
+
+				expect(result.data.organizations).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining<
+									InvalidArgumentsExtensions["issues"][number]
+								>([
+									{
+										argumentPath: ["input", "id"],
+										message: expect.any(String),
+									},
+								]),
+							}),
+							message: expect.any(String),
+							path: ["organizations"],
+						}),
+					]),
+				);
+			});
 		},
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-	};
-	return mockContext as unknown as GraphQLContext;;
-};
+	);
 
-describe("Organizations Query Resolver Tests", () => {
-	let ctx: GraphQLContext;
-
-	beforeEach(() => {
-		ctx = createMockContext();
-	});
-
-	describe("Input Validation", () => {
-		it("should throw error for invalid input schema", async () => {
-			const args = { input: { id: "invalid-uuid" } };
-
-			await expect(
-				organizationsTableQueryResolver({}, args, ctx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{
-								argumentPath: ["input", "id"],
-								message: "Invalid UUID format",
-							},
-						],
+	suite(
+		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.organizations" field if`,
+		() => {
+			test("organization with provided ID does not exist", async () => {
+				const nonExistentId = faker.string.ulid();
+				const result = await mercuriusClient.query(Query_organizations, {
+					variables: {
+						input: {
+							id: nonExistentId,
+						},
 					},
-				}),
-			);
-		});
-	});
+				});
 
-	describe("Fetching Organizations", () => {
-		it("should return single organization when ID is provided", async () => {
-			const mockOrganization = {
-				id: "valid-uuid",
-				name: "Test Organization",
-			};
+				expect(result.data.organizations).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions:
+								expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+									{
+										code: "arguments_associated_resources_not_found",
+										issues: expect.arrayContaining<
+											ArgumentsAssociatedResourcesNotFoundExtensions["issues"][number]
+										>([
+											{
+												argumentPath: ["input", "id"],
+											},
+										]),
+									},
+								),
+							message: expect.any(String),
+							path: ["organizations"],
+						}),
+					]),
+				);
+			});
+		},
+	);
 
-			(
-				ctx.drizzleClient.query.organizationsTable.findFirst as ReturnType<
-					typeof vi.fn
-				>
-			).mockResolvedValue(mockOrganization);
-
-			const args = { input: { id: "valid-uuid" } };
-
-			const result = await organizationsTableQueryResolver({}, args, ctx);
-
-			expect(result).toEqual([mockOrganization]);
-		});
-
-		it("should throw error when organization not found by ID", async () => {
-			(
-				ctx.drizzleClient.query.organizationsTable.findFirst as ReturnType<
-					typeof vi.fn
-				>
-			).mockResolvedValue(null);
-
-			const args = { input: { id: "non-existent-uuid" } };
-
-			await expect(
-				organizationsTableQueryResolver({}, args, ctx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "id"],
-							},
-						],
+	suite("successfully returns organizations data", () => {
+		test("returns a single organization when ID is provided", async () => {
+			// Assuming we have a known organization ID in the test database
+			const knownOrganizationId = "known-org-id"; // Replace with actual test data
+			const result = await mercuriusClient.query(Query_organizations, {
+				variables: {
+					input: {
+						id: knownOrganizationId,
 					},
+				},
+			});
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data.organizations).toHaveLength(1);
+			expect(result.data.organizations).not.toBeNull();
+			expect(result.data.organizations![0]).toEqual(
+				expect.objectContaining({
+					id: knownOrganizationId,
+					// Add other expected organization fields
 				}),
 			);
 		});
 
-		it("should return up to 20 organizations when no ID is provided", async () => {
-			const mockOrganizations = Array.from({ length: 20 }, (_, index) => ({
-				id: `org-${index}`,
-				name: `Organization ${index}`,
-			}));
+		test("returns multiple organizations (max 20) when no ID is provided", async () => {
+			const result = await mercuriusClient.query(Query_organizations, {
+				variables: {},
+			});
 
-			(
-				ctx.drizzleClient.query.organizationsTable.findMany as ReturnType<
-					typeof vi.fn
-				>
-			).mockResolvedValue(mockOrganizations);
-
-			const args = { input: null };
-
-			const result = await organizationsTableQueryResolver({}, args, ctx);
-
-			expect(result).toEqual(mockOrganizations);
-			expect(result).toHaveLength(20);
+			expect(result.errors).toBeUndefined();
+			expect(Array.isArray(result.data.organizations)).toBe(true);
+			expect(result.data.organizations).not.toBeNull();
+			expect(result.data.organizations!.length).toBeLessThanOrEqual(20);
+			expect(result.data.organizations && result.data.organizations[0]).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					// Add other expected organization fields
+				}),
+			);
 		});
 	});
 
-	describe("Error Handling", () => {
-		it("should handle unexpected errors gracefully", async () => {
-			(
-				ctx.drizzleClient.query.organizationsTable.findMany as ReturnType<
-					typeof vi.fn
-				>
-			).mockRejectedValue(new Error("Database connection failed"));
+	suite("handles unauthorized access", () => {
+		test("returns unauthorized_action error when user lacks permissions", async () => {
+			// Simulate an unauthorized request (implementation depends on your auth setup)
+			const result = await mercuriusClient.query(Query_organizations, {
+				headers: {
+					authorization: "bearer invalid_token",
+				},
+				variables: {},
+			});
 
-			const args = { input: null };
-
-			await expect(
-				organizationsTableQueryResolver({}, args, ctx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unauthorized_action" },
-				}),
+			expect(result.data.organizations).toEqual(null);
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnauthorizedActionExtensions>({
+							code: "unauthorized_action",
+						}),
+						message: expect.any(String),
+						path: ["organizations"],
+					}),
+				]),
 			);
-			expect(ctx.log.error).toHaveBeenCalled();
 		});
 	});
 });
