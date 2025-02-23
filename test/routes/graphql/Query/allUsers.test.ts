@@ -29,7 +29,9 @@ suite("Query field allUsers", () => {
 		});
 
 		if (!adminSignInResult.data?.signIn?.authenticationToken) {
-			throw new Error("Failed to get admin authentication token");
+			throw new Error(
+				"Failed to get admin authentication token: Sign in response did not contain auth token",
+			);
 		}
 		adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
 
@@ -50,49 +52,13 @@ suite("Query field allUsers", () => {
 		});
 
 		if (!createUserResult.data?.createUser?.user?.id) {
-			throw new Error("Failed to create regular user");
+			throw new Error(
+				"Failed to create regular user: Create user mutation response did not contain user ID",
+			);
 		}
 		regularUserId = createUserResult.data.createUser.user?.id;
 		regularUserAuthToken =
 			createUserResult.data.createUser.authenticationToken || "";
-
-		//user2
-		// Create and sign in as regular user
-		const createUser2Result = await mercuriusClient.mutate(
-			Mutation_createUser,
-			{
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						emailAddress: `${faker.string.ulid()}2@test.com`,
-						isEmailAddressVerified: false,
-						name: "Regular User 2",
-						password: "password123",
-						role: "regular",
-					},
-				},
-			},
-		);
-
-		assertToBeNonNullish(createUser2Result.data?.createUser);
-		const regularUser2Id = createUser2Result.data.createUser.user?.id;
-		regularUser2AuthToken =
-			createUser2Result.data.createUser.authenticationToken || "";
-
-		if (regularUser2Id) {
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						id: regularUser2Id,
-					},
-				},
-			});
-		}
 	});
 
 	// Cleanup
@@ -123,6 +89,9 @@ suite("Query field allUsers", () => {
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
+						message: expect.stringContaining(
+							"You must be authenticated to perform this action.",
+						),
 						extensions: expect.objectContaining({
 							code: "unauthenticated",
 						}),
@@ -154,6 +123,44 @@ suite("Query field allUsers", () => {
 		});
 
 		test("returns error when authenticated user is deleted but token is still valid", async () => {
+			//user2
+			// Create and sign in as regular user
+			const createUser2Result = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `${faker.string.ulid()}2@test.com`,
+							isEmailAddressVerified: false,
+							name: "Regular User 2",
+							password: "password123",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createUser2Result.data?.createUser);
+			const regularUser2Id = createUser2Result.data.createUser.user?.id;
+			regularUser2AuthToken =
+				createUser2Result.data.createUser.authenticationToken || "";
+
+			if (regularUser2Id) {
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							id: regularUser2Id,
+						},
+					},
+				});
+			}
+
 			const result = await mercuriusClient.query(Query_allUsers, {
 				headers: {
 					authorization: `bearer ${regularUser2AuthToken}`,
@@ -191,6 +198,13 @@ suite("Query field allUsers", () => {
 			expect(result.data?.allUsers?.edges).toBeDefined();
 			expect(result.data?.allUsers?.pageInfo).toBeDefined();
 			expect(Array.isArray(result.data?.allUsers?.edges)).toBe(true);
+			expect(result.data?.allUsers?.edges?.length).toBeLessThanOrEqual(10);
+			expect(result.data?.allUsers?.pageInfo).toEqual(
+				expect.objectContaining({
+					hasNextPage: expect.any(Boolean),
+					hasPreviousPage: expect.any(Boolean),
+				}),
+			);
 		});
 
 		test("handles forward pagination with cursor", async () => {
@@ -453,28 +467,28 @@ suite("Query field allUsers", () => {
 				]),
 			);
 		});
-	});
 
-	test("returns error for invalid cursor using last", async () => {
-		const result = await mercuriusClient.query(Query_allUsers, {
-			headers: {
-				authorization: `bearer ${adminAuthToken}`,
-			},
-			variables: {
-				last: 5,
-				before: "eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VD",
-			},
-		});
+		test("returns error for invalid cursor using last", async () => {
+			const result = await mercuriusClient.query(Query_allUsers, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					last: 5,
+					before: "eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VD",
+				},
+			});
 
-		expect(result.data?.allUsers).toBeNull();
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
+			expect(result.data?.allUsers).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
 					}),
-				}),
-			]),
-		);
+				]),
+			);
+		});
 	});
 });
