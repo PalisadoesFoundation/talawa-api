@@ -778,4 +778,6 @@ Sometimes you may want to start all over again from scratch. These steps will re
    devcontainer up --workspace-folder .
    ```
 
+
 Now you can resume your development work.
+
