@@ -24,7 +24,7 @@ import {
 // Extend the default connection arguments to include name search
 const allUsersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
   .extend({
-    name: z.string().min(1).optional(),
+    name: z.string().min(1).optional().nullish(),
   })
   .transform(transformDefaultGraphQLConnectionArguments)
   .transform((arg, ctx) => {
@@ -68,6 +68,7 @@ builder.queryField("allUsers", (t) =>
     args: {
       name: t.arg.string({ required: false }),
     },
+    description: "Query field to read all Users.",
     resolve: async (_parent, args, ctx) => {
       if (!ctx.currentClient.isAuthenticated) {
         throw new TalawaGraphQLError({
