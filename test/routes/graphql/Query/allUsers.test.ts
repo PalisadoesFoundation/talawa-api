@@ -285,6 +285,35 @@ suite("Query field allUsers", () => {
 				]),
 			);
 		});
+
+		test("returns error for cursor of non-existing user using last", async () => {
+			const result = await mercuriusClient.query(Query_allUsers, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					last: 5,
+					before:
+						"eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9",
+				},
+			});
+
+			expect(result.data?.allUsers).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["before"],
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
 	});
 
 	suite("Name Search", () => {
@@ -402,7 +431,7 @@ suite("Query field allUsers", () => {
 			);
 		});
 
-		test("returns error for cursor of non-existing user", async () => {
+		test("returns error for invalid cursor using first", async () => {
 			const result = await mercuriusClient.query(Query_allUsers, {
 				headers: {
 					authorization: `bearer ${adminAuthToken}`,
@@ -424,5 +453,28 @@ suite("Query field allUsers", () => {
 				]),
 			);
 		});
+	});
+
+	test("returns error for invalid cursor using last", async () => {
+		const result = await mercuriusClient.query(Query_allUsers, {
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+			},
+			variables: {
+				last: 5,
+				before: "eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VD",
+			},
+		});
+
+		expect(result.data?.allUsers).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+				}),
+			]),
+		);
 	});
 });
