@@ -1,11 +1,5 @@
 import { faker } from "@faker-js/faker";
-
 import { afterEach, expect, suite, test } from "vitest";
-
-import { it } from "node:test";
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
-import { ag } from "node_modules/@faker-js/faker/dist/airline-D6ksJFwG";
 import {
 	agendaFoldersTable,
 	agendaItemsTable,
