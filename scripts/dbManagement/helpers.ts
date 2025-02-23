@@ -1,3 +1,4 @@
+import type { EventEmitter } from "node:events";
 import fs from "node:fs/promises";
 import path from "node:path";
 import readline from "node:readline";
@@ -17,6 +18,15 @@ import {
 } from "src/envConfigSchema";
 import { uuidv7 } from "uuidv7";
 
+interface MinioObject {
+	name: string;
+}
+
+interface Bucket {
+	name: string;
+	creationDate: Date;
+}
+
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
 	dotenv: true,
@@ -25,7 +35,7 @@ const envConfig = envSchema<EnvConfig>({
 
 // Get the directory name of the current module
 export const dirname: string = path.dirname(fileURLToPath(import.meta.url));
-export const bucketName: string = envConfig.MINIO_ROOT_USER || "";
+
 // Create a new database client
 export const queryClient = postgres({
 	host: envConfig.API_POSTGRES_HOST,
@@ -138,37 +148,36 @@ export async function ensureAdministratorExists(): Promise<boolean> {
 	return true;
 }
 
-export async function emptyMinioBucket(): Promise<boolean> {
+export async function emptyMinioBuckets(): Promise<boolean> {
 	try {
-		// List all objects in the bucket.
-		const objectsList: string[] = await new Promise<string[]>(
-			(resolve, reject) => {
-				const objects: string[] = [];
-				const stream = minioClient.listObjects(bucketName, "", true);
-				stream.on(
-					"data",
-					(obj: {
-						name: string;
-					}) => {
-						objects.push(obj.name);
-					},
-				);
-				stream.on("error", (err: Error) => {
-					console.error("Error listing objects in bucket:", err);
-					reject(err);
-				});
-				stream.on("end", () => resolve(objects));
-			},
-		);
+		let bucketsToReset: string[] = [];
 
-		// If there are objects, remove them all using removeObjects.
-		if (objectsList.length > 0) {
-			await minioClient.removeObjects(bucketName, objectsList);
+		const buckets: Bucket[] = await minioClient.listBuckets();
+		bucketsToReset = buckets.map((b) => b.name);
+
+		for (const b of bucketsToReset) {
+			const objectsList: string[] = await new Promise<string[]>(
+				(resolve, reject) => {
+					const objects: string[] = [];
+					const stream: EventEmitter = minioClient.listObjects(b, "", true);
+					stream.on("data", (obj: MinioObject) => {
+						objects.push(obj.name);
+					});
+					stream.on("error", (err: Error) => {
+						console.error(`Error listing objects in bucket ${b}:`, err);
+						reject(err);
+					});
+					stream.on("end", () => resolve(objects));
+				},
+			);
+
+			if (objectsList.length > 0) {
+				await minioClient.removeObjects(b, objectsList);
+			}
 		}
 
 		return true;
 	} catch (error: unknown) {
-		console.error("Error emptying bucket:", error);
 		return false;
 	}
 }
