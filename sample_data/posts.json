@@ -1,0 +1,66 @@
+[
+    {
+      "id": "2778f4a2-a6f1-45cc-857f-727ca942899d",
+      "caption": "Launching an initiative to support local artists in NYC.",
+      "createdAt": "2025-02-10T12:00:00.000Z",
+      "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+      "organizationId": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5e"
+    },
+    {
+      "id": "98cef234-af91-4a11-b33f-5fd6cf41219c",
+      "caption": "Fostering digital literacy programs for young learners.",
+      "createdAt": "2025-02-13T11:20:00.000Z",
+      "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
+      "organizationId": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5e"
+    },
+    {
+      "id": "a44d75a0-267f-4429-b03c-a26cc4ec56dc",
+      "caption": "Developing a community-based environmental awareness campaign.",
+      "createdAt": "2025-02-16T08:50:00.000Z",
+      "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+      "organizationId": "cd3e4f5b-6a7c-8d9e-0f1a-2b3c4d5e6f7a"
+    },
+    {
+      "id": "f3da248b-ee18-4197-bd0b-de5480c010ee",
+      "caption": "Introducing an inclusive sports initiative for children with disabilities.",
+      "createdAt": "2025-02-18T16:30:00.000Z",
+      "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
+      "organizationId": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f"
+    },
+    {
+      "id": "885bee36-2751-4d78-bfd4-7ededdd89a0f",
+      "caption": "Building a solar-powered school in rural Africa.",
+      "createdAt": "2025-02-19T10:15:00.000Z",
+      "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
+      "organizationId": "cd3e4f5b-6a7c-8d9e-0f1a-2b3c4d5e6f7a"
+    },
+    {
+      "id": "ecaeed44-d0b2-4559-bad6-ab6f49362325",
+      "caption": "Launching an initiative for ocean conservation awareness.",
+      "createdAt": "2025-02-20T14:45:00.000Z",
+      "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
+      "organizationId": "cd3e4f5b-6a7c-8d9e-0f1a-2b3c4d5e6f7a"
+    },
+    {
+      "id": "d3288d60-11c7-4401-ac70-f36f289c385f",
+      "caption": "Providing mental health support for teenagers.",
+      "createdAt": "2025-02-21T09:30:00.000Z",
+      "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
+      "organizationId": "cd3e4f5b-6a7c-8d9e-0f1a-2b3c4d5e6f7a"
+    },
+    {
+      "id": "2022fe3e-846e-48de-8a27-230fda85e495",
+      "caption": "Providing food relief programs in disaster-prone areas.",
+      "createdAt": "2025-02-22T16:00:00.000Z",
+      "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
+      "organizationId": "cd3e4f5b-6a7c-8d9e-0f1a-2b3c4d5e6f7a"
+    },
+    {
+      "id": "17f0e29a-f7a2-435e-8dc1-2e52c6b25b6c",
+      "caption": "Setting up free WiFi access in underprivileged communities.",
+      "createdAt": "2025-02-23T12:10:00.000Z",
+      "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
+      "organizationId": "cd3e4f5b-6a7c-8d9e-0f1a-2b3c4d5e6f7a"
+    }
+  ]
+  
