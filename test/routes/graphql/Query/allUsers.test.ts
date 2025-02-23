@@ -11,10 +11,9 @@ import {
 } from "../documentNodes";
 
 suite("Query field allUsers", () => {
-	let adminAuthToken: string | null;
+	let adminAuthToken: string;
 	let regularUserAuthToken: string;
 	let regularUserId: string;
-	let regularUser2AuthToken: string;
 
 	// Setup: Create admin and regular user tokens
 	beforeAll(async () => {
@@ -123,6 +122,7 @@ suite("Query field allUsers", () => {
 		});
 
 		test("returns error when authenticated user is deleted but token is still valid", async () => {
+			// const regularUser2AuthToken = createAndDeleteUser(adminAuthToken)
 			//user2
 			// Create and sign in as regular user
 			const createUser2Result = await mercuriusClient.mutate(
@@ -145,7 +145,7 @@ suite("Query field allUsers", () => {
 
 			assertToBeNonNullish(createUser2Result.data?.createUser);
 			const regularUser2Id = createUser2Result.data.createUser.user?.id;
-			regularUser2AuthToken =
+			const regularUser2AuthToken =
 				createUser2Result.data.createUser.authenticationToken || "";
 
 			if (regularUser2Id) {
@@ -160,7 +160,6 @@ suite("Query field allUsers", () => {
 					},
 				});
 			}
-
 			const result = await mercuriusClient.query(Query_allUsers, {
 				headers: {
 					authorization: `bearer ${regularUser2AuthToken}`,
@@ -275,67 +274,15 @@ suite("Query field allUsers", () => {
 				2,
 			);
 		});
-
-		test("returns error for cursor of non-existing user", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					first: 5,
-					after:
-						"eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9",
-				},
-			});
-
-			expect(result.data?.allUsers).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-						}),
-					}),
-				]),
-			);
-		});
-
-		test("returns error for cursor of non-existing user using last", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					last: 5,
-					before:
-						"eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9",
-				},
-			});
-
-			expect(result.data?.allUsers).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["before"],
-								}),
-							]),
-						}),
-					}),
-				]),
-			);
-		});
 	});
 
 	suite("Name Search", () => {
 		test("filters users by name search", async () => {
 			const uniqueName = `Test${faker.string.alphanumeric(10)}`;
+			let userId: string | undefined;
 
 			// Create a user with unique name
-			await mercuriusClient.mutate(Mutation_createUser, {
+			const createResult = await mercuriusClient.mutate(Mutation_createUser, {
 				headers: {
 					authorization: `bearer ${adminAuthToken}`,
 				},
@@ -349,6 +296,8 @@ suite("Query field allUsers", () => {
 					},
 				},
 			});
+
+			userId = createResult.data?.createUser?.user?.id;
 
 			const result = await mercuriusClient.query(Query_allUsers, {
 				headers: {
@@ -367,6 +316,20 @@ suite("Query field allUsers", () => {
 				throw new Error("Failed to find user with unique name");
 			}
 			expect(result.data.allUsers.edges[0].node.name).toBe(uniqueName);
+
+			// Cleanup
+			if (userId) {
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							id: userId,
+						},
+					},
+				});
+			}
 		});
 
 		test("returns empty result for non-matching name search", async () => {
@@ -485,6 +448,59 @@ suite("Query field allUsers", () => {
 					expect.objectContaining({
 						extensions: expect.objectContaining({
 							code: "invalid_arguments",
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("returns error for cursor of non-existing user", async () => {
+			const result = await mercuriusClient.query(Query_allUsers, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					first: 5,
+					after:
+						"eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9",
+				},
+			});
+
+			expect(result.data?.allUsers).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("returns error for cursor of non-existing user using last", async () => {
+			const result = await mercuriusClient.query(Query_allUsers, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					last: 5,
+					before:
+						"eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9",
+				},
+			});
+
+			expect(result.data?.allUsers).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["before"],
+								}),
+							]),
 						}),
 					}),
 				]),
