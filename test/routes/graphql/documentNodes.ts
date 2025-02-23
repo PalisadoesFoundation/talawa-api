@@ -466,8 +466,8 @@ export const Mutation_createTag = gql(`
   }`);
 
 export const Query_organizations = gql(`
-	query Query_organizations($input: QueryOrganizationInput) {
-		organizations(input: $input) {
+	query Query_organizations {
+		organizations {
 			id
       avatarURL
       name
