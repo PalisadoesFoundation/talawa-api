@@ -7,31 +7,226 @@ sidebar_position: 4
 
 This section covers important tests to validate the operation of the API.
 
-### Sample Database Login Credentials
+## The `tests/` Directory
+
+The `tests/` directory contains the code for performing api tests against Talawa API. The tests in this directory and its various subdirectories must follow the practices of black box testing and most of them should be written to be able to run concurrently.
+
+1. Tests for files in the `src/` directory must only be placed in the equivalent subdirectory under the `tests/` directory.
+2. Test files must have a `.test.ts` extension.
+
+The rest of this page will assist you in being an active contributor to the code base.
+
+## Testing Philosophy
+
+Black box testing in this context means we test Talawa API from the perspective of a client making requests to it. This also means that we must only communicate with Talawa API during the tests with its publicly exposed interface.
+
+In the context of the rest api interfaces exposed by Talawa API it means making standard HTTP calls using methods like GET, POST, PATCH, PUT, DELETE etc., and asserting against the HTTP responses.
+
+In the context of the graphql api interfaces exposed by Talawa API it means triggering standard graphql query, mutation and subscription operations against the graphql api endpoint(over HTTP POST method for our use case) and asserting against the graphql responses.
+
+### Directory Structure
+
+The `tests/server.ts` file exports the Talawa API server instance that can be imported and used in different api tests. This Talawa API server instance is shared between api tests.
+
+There aren't any other strict structure requirements for the this directory.
+
+### Future Considerations
+
+In the future there might be a requirement to run some tests sequentially. When that moment arrives separating sequential and parallel tests into separate directories and using separate vitest configuration for them would be the best idea.
+
+### Writing Reliable Concurrent Tests
+
+Here are the guidelines for writing non-flaky tests that are able to run concurrently or in parallel:
+
+1. All tests must set up their own data to get the application to their desired state. Tests must not assume that the data they need to act on can be dervied from other tests or could pre-exist.
+
+2. All tests must perform write operations only on data associated to them. Tests must not in any way perform write operations on data that isn't associated to them because it could lead to disruption of other tests. The best way to ensure this is to introduce uniqueness to the data created within tests through the usage of cryptographic identifier generators like uuid, cuid, nanoid etc.
+
+3. All tests must either assert against data associated to them or they must change their assertion logic to something that suits asserting against random data.
+
+Example test suites 1 and 2 depicting the violations and followage of these guidelines:
+
+#### Guideline Violation Example
+
+This example show a violation of the guidelines.
+
+```typescript
+// Test suite 1
+suite.concurrent("flaky concurrent tests", async () => {
+  test.concurrent("create user test", async () => {
+    const userData = {
+      id: "1",
+      name: "user1",
+    };
+    const createdUsers = await fetch.post("/users", {
+      body: [userData],
+    });
+    expect(createdUsers[0]).toEqual(userData);
+  });
+
+  test.concurrent("get user test", async () => {
+    const user = await fetch.get("/users/1");
+    expect(user).toEqual({
+      id: "1",
+      name: "user1",
+    });
+  });
+
+  test.concurrent("update user test", async () => {
+    const updatedUser = await fetch.update("/user/1", {
+      body: {
+        name: "updatedUser1",
+      },
+    });
+    expect(updatedUser).toEqual({
+      id: "1",
+      name: "updatedUser1",
+    });
+  });
+
+  test.concurrent("delete user test", async () => {
+    const deletedUser = await fetch.delete("/user/1");
+    expect(deletedUser).toEqual({
+      id: "1",
+      name: "user1",
+    });
+  });
+
+  test.concurrent("get users test", async () => {
+    await fetch.post("/users", {
+      body: [
+        {
+          id: "2",
+          name: "user2",
+        },
+        {
+          id: "3",
+          name: "user3",
+        },
+        {
+          id: "4",
+          name: "user4",
+        },
+      ],
+    });
+    const users = await fetch.get("/users");
+    expect(users).toHaveLength(3);
+  });
+});
+```
+
+#### Guideline Compliance Example
+
+This example shows compliance with the guidelines.
+
+```typescript
+// Test suite 2
+suite.concurrent("non-flaky concurrent tests", async () => {
+  test.concurrent("create user test", async () => {
+    const userData = {
+      id: randomIdGenerator(),
+      name: `name${randomIdGenerator()}`,
+    };
+    const createdUsers = await fetch.post("/users", {
+      body: [userData],
+    });
+    expect(createdUsers[0]).toEqual(userData);
+  });
+
+  test.concurrent("get user test", async () => {
+    const userData = {
+      id: randomIdGenerator(),
+      name: `name${randomIdGenerator()}`,
+    };
+    await fetch.post("/users", {
+      body: [userData],
+    });
+    const user = await fetch.get(`/users/${userData.id}`);
+    expect(user).toEqual(userData);
+  });
+
+  test.concurrent("update user test", async () => {
+    const userData = {
+      id: randomIdGenerator(),
+      name: `name${randomIdGenerator()}`,
+    };
+    await fetch.post("/users", {
+      body: [userData],
+    });
+    const newName = `newName${randomIdGenerator()}`;
+    const updatedUser = await fetch.update(`/users/${userData.id}`, {
+      body: {
+        name: newName,
+      },
+    });
+    expect(updatedUser).toEqual({
+      id: userData.id,
+      name: newName,
+    });
+  });
+
+  test.concurrent("delete user test", async () => {
+    const userData = {
+      id: randomIdGenerator(),
+      name: `name${randomIdGenerator()}`,
+    };
+    await fetch.post("/users", {
+      body: [userData],
+    });
+    const deletedUser = await fetch.delete(`/users/${userData.id}`);
+    expect(deletedUser).toEqual(userData);
+  });
+
+  test.concurrent("get users test", async () => {
+    const userDataList = [
+      {
+        id: randomIdGenerator(),
+        name: `name${randomIdGenerator()}`,
+      },
+      {
+        id: randomIdGenerator(),
+        name: `name${randomIdGenerator()}`,
+      },
+      {
+        id: randomIdGenerator(),
+        name: `name${randomIdGenerator()}`,
+      },
+    ];
+    await fetch.post("/users", {
+      body: userDataList,
+    });
+    const users = await fetch.get("/users");
+    expect(users).length.greaterThanOrEqual(3);
+  });
+});
+```
+
+## Sample DB Login Credentials
 
 If the API:
+
 1. is running with an unmodified `.env` file copied from `envFiles/.env.devcontainer` and;
 2. the API sample database is loaded;
-then you can use these login credentials to access the API via various clients.
+   then you can use these login credentials to access the API via various clients.
 
-| Email                              | Password | User Type      | Joined Organization  |
-| -----------------------------------| -------- | ---------------| -------------------- |
-| administrator@email.com            | password | Administrator  | N/A                  |
-| testsuperadmin@example.com         | Pass@123 | Administrator  | N/A                  |
-| testadmin1@example.com             | Pass@123 | Administrator  | N/A                  |
-| testadmin2@example.com             | Pass@123 | Administrator  | N/A                  |
-| testadmin3@example.com             | Pass@123 | Administrator  | N/A                  |
-| testuser1@example.com              | Pass@123 | Regular        | N/A                  |
-| testuser2@example.com              | Pass@123 | Regular        | N/A                  |
-| testuser3@example.com              | Pass@123 | Regular        | N/A                  |
-| testuser4@example.com              | Pass@123 | Regular        | N/A                  |
-| testuser5@example.com              | Pass@123 | Regular        | N/A                  |
-| testuser6@example.com              | Pass@123 | Regular        | N/A                  |
-| testuser7@example.com              | Pass@123 | Regular        | N/A                  |
-| testuser8@example.com              | Pass@123 | Regular        | N/A                  |
-| testuser9@example.com              | Pass@123 | Regular        | N/A                  |
-| testuser10@example.com             | Pass@123 | Regular        | N/A                  |
-| testuser11@example.com             | Pass@123 | Regular        | N/A                  |
+| Email                      | Password | User Type     | Joined Organization |
+| -------------------------- | -------- | ------------- | ------------------- |
+| administrator@email.com    | password | Administrator | N/A                 |
+| testsuperadmin@example.com | Pass@123 | Administrator | N/A                 |
+| testadmin1@example.com     | Pass@123 | Administrator | N/A                 |
+| testadmin2@example.com     | Pass@123 | Administrator | N/A                 |
+| testadmin3@example.com     | Pass@123 | Administrator | N/A                 |
+| testuser1@example.com      | Pass@123 | Regular       | N/A                 |
+| testuser2@example.com      | Pass@123 | Regular       | N/A                 |
+| testuser3@example.com      | Pass@123 | Regular       | N/A                 |
+| testuser4@example.com      | Pass@123 | Regular       | N/A                 |
+| testuser5@example.com      | Pass@123 | Regular       | N/A                 |
+| testuser6@example.com      | Pass@123 | Regular       | N/A                 |
+| testuser7@example.com      | Pass@123 | Regular       | N/A                 |
+| testuser8@example.com      | Pass@123 | Regular       | N/A                 |
+| testuser9@example.com      | Pass@123 | Regular       | N/A                 |
+| testuser10@example.com     | Pass@123 | Regular       | N/A                 |
+| testuser11@example.com     | Pass@123 | Regular       | N/A                 |
 
 ## Accessing the API
 
@@ -69,7 +264,7 @@ The url for accessing the GraphQL Playground is:
 http://127.0.0.1:4000/graphiql
 ```
 
-#### Programmatic Queries With GraphiQL
+#### Programmatic Queries With GraphQL
 
 The graphQL endpoint for handling `queries` and `mutations` is this:
 
@@ -116,130 +311,7 @@ Replace `<IPv4 Address>` with the actual IP address you copied in step 2.
 
 **Note**: In the Talawa app, type the endpoint URL in the field labeled `Enter Community URL`.
 
-## Database Management
-
-This section covers easy ways for developers to validate their work
-
-### CloudBeaver
-
-CloudBeaver is a lightweight web application designed for comprehensive data management. It allows you to work with various data sources, including SQL, NoSQL, and cloud databases, all through a single secure cloud solution accessible via a browser.
-
-#### Accessing the PostgreSQL Database using CloudBeaver
-
-1. Open your preferred browser and navigate to:
-   ```bash
-   http://127.0.0.1:8978/
-   ```
-2. Log in to the CloudBeaver UI using the following credentials (these credentials can be modified in the `.env.devcontainer` file by changing the `CLOUDBEAVER_ADMIN_NAME` and `CLOUDBEAVER_ADMIN_PASSWORD` variables):
-   ```
-   Username: talawa
-   Password: password
-   ```
-3. You should now see the CloudBeaver UI. Click on the "New Connection" button and select `PostgreSQL` from the list of available connections.
-4. Fill in the connection details as follows:
-   ```
-   Name: talawa
-   Host: postgres
-   Port: 5432
-   Database: talawa
-   Username: talawa
-   Password: password
-   ```
-   - **Note:** The host name should match the one specified in the Docker Compose file and credentials should match those specified in the `.env.development` file.
-5. Check the `Save credentials for all users with access` option to avoid entering the credentials each time.
-6. Check the following boxes in the Database list:
-   ```sql
-   show all databases
-   show template databases
-   show unavailable databases
-   show database statistics
-   ```
-7. Click `Create` to save the connection.
-8. You should now see the `PostgreSql@postgres` connection in the list of available connections. Click on the connection to open the database.
-9. Navigate to `PostgreSql@postgres > Databases > talawa > Schemas > public > Tables` to view the available schemas.
-
-#### Accessing the PostgreSQL Test Database using CloudBeaver
-
-1. Click on the `New Connection` button and select `PostgreSQL` from the list of available connections.
-2. Fill in the connection details as follows:
-
-   ```
-   Name: talawa
-   Host: postgrestest
-   Port: 5432
-   Database: talawa
-   Username: talawa
-   Password: password
-   ```
-
-   - **Note:** The host name should match the one specified in the Docker Compose file and credentials should match those specified in the `.env.development` file.
-
-3. Check the `Save credentials for all users with access` option to avoid entering the credentials each time.
-4. Check the following boxes in the Database list:
-   ```sql
-   show all databases
-   show template databases
-   show unavailable databases
-   show database statistics
-   ```
-5. Click `Create` to save the connection.
-6. You should now see the `PostgreSql@postgres-test` connection in the list of available connections. Click on the connection to open the database.
-7. Navigate to `PostgreSql@postgres-test > Databases > talawa > Schemas > public > Tables` to view the available tables.
-
-## Object Storage Management
-
-MinIO is a free, open-source object storage server that's compatible with Amazon S3. It's designed for large-scale data storage and can run on-premises or in the cloud.
-
-### Accessing MinIO - (Production Environments)
-
-1. Open your preferred browser and navigate to:
-   ```bash
-   http://127.0.0.1:9001/
-   ```
-2. Log in to the MinIO UI using the following credentials(these credentials can be modified in the env files by changing the `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD` variables):
-   - Username: `talawa`
-   - Password: `password`
-3. You should now see the MinIO UI. Click on the `Login` button to access the MinIO dashboard.
-4. You can now view the available buckets and objects in the MinIO dashboard.
-
-### Accessing MinIO - (Development Environments)
-
-1. Open your preferred browser and navigate to:
-   ```bash
-   http://127.0.0.1:9003/
-   ```
-2. Log in to the MinIO UI using the following credentials(these credentials can be modified in the `.env.devcontainer` file by changing the `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD` variables):
-   - Username: `talawa`
-   - Password: `password`
-3. You should now see the MinIO UI. Click on the `Login` button to access the MinIO dashboard.
-4. You can now view the available buckets and objects in the MinIO dashboard.
-
-## Resetting Docker
-
-**NOTE:** This applies only to Talawa API developers.
-
-Sometimes you may want to start all over again from scratch. These steps will reset your development docker environment.
-
-1. From the repository's root directory, use this command to shutdown the dev container.
-   ```bash
-   docker compose down
-   ```
-1. **WARNING:** These commands will stop **ALL** your Docker processes and delete their volumes. This applies not only to the Talawa API instances, but everything. Use with extreme caution.
-   ```bash
-   docker stop $(docker ps -q)
-   docker rm $(docker ps -a -q)
-   docker rmi $(docker images -q)
-   docker volume prune -f
-   ```
-1. Restart the Docker dev containers to resume your development work.
-   ```bash
-   devcontainer build --workspace-folder .
-   devcontainer up --workspace-folder .
-   ```
-
-Now you can resume your development work.
-
-## Testing The API
+## Interactive Testing
 
 Use the `API_BASE_URL` URL configured in the `.env` file. As the endpoint uses GraphQL, the complete URL will be `API_BASE_URL/graphql`
 
@@ -515,7 +587,7 @@ Use the following GraphQL **query** to query organization data:
 Use the following GraphQL **query** to query user data including a list of organizations the user is a member of:
 
 ```graphql
-  query {
+query {
   user(input: { id: "user-id" }) {
     name
     emailAddress
@@ -583,3 +655,127 @@ Use the following GraphQL **query** to query user data including a list of organ
 }
 ```
 
+## Database Management
+
+This section covers easy ways for developers to validate their work by examining the database.
+
+We use CloudBeaver which is a lightweight web application designed for comprehensive data management. It allows you to work with various data sources, including SQL, NoSQL, and cloud databases, all through a single secure cloud solution accessible via a browser.
+
+### Interactive Production DB Access
+
+1. Open your preferred browser and navigate to:
+   ```bash
+   http://127.0.0.1:8978/
+   ```
+2. Log in to the CloudBeaver UI using the following credentials (these credentials can be modified in the `.env.devcontainer` file by changing the `CLOUDBEAVER_ADMIN_NAME` and `CLOUDBEAVER_ADMIN_PASSWORD` variables):
+   ```
+   Username: talawa
+   Password: password
+   ```
+3. You should now see the CloudBeaver UI. Click on the "New Connection" button and select `PostgreSQL` from the list of available connections.
+4. Fill in the connection details as follows:
+   ```
+   Name: talawa
+   Host: postgres
+   Port: 5432
+   Database: talawa
+   Username: talawa
+   Password: password
+   ```
+   - **Note:** The host name should match the one specified in the Docker Compose file and credentials should match those specified in the `.env.development` file.
+5. Check the `Save credentials for all users with access` option to avoid entering the credentials each time.
+6. Check the following boxes in the Database list:
+   ```sql
+   show all databases
+   show template databases
+   show unavailable databases
+   show database statistics
+   ```
+7. Click `Create` to save the connection.
+8. You should now see the `PostgreSql@postgres` connection in the list of available connections. Click on the connection to open the database.
+9. Navigate to `PostgreSql@postgres > Databases > talawa > Schemas > public > Tables` to view the available schemas.
+
+### Interactive Test DB Access
+
+1. Click on the `New Connection` button and select `PostgreSQL` from the list of available connections.
+2. Fill in the connection details as follows:
+
+   ```
+   Name: talawa
+   Host: postgrestest
+   Port: 5432
+   Database: talawa
+   Username: talawa
+   Password: password
+   ```
+
+   - **Note:** The host name should match the one specified in the Docker Compose file and credentials should match those specified in the `.env.development` file.
+
+3. Check the `Save credentials for all users with access` option to avoid entering the credentials each time.
+4. Check the following boxes in the Database list:
+   ```sql
+   show all databases
+   show template databases
+   show unavailable databases
+   show database statistics
+   ```
+5. Click `Create` to save the connection.
+6. You should now see the `PostgreSql@postgres-test` connection in the list of available connections. Click on the connection to open the database.
+7. Navigate to `PostgreSql@postgres-test > Databases > talawa > Schemas > public > Tables` to view the available tables.
+
+## Object Storage Management
+
+We use MinIO, a free, open-source object storage server that's compatible with Amazon S3. It's designed for large-scale data storage and can run on-premises or in the cloud.
+
+### MinIO Access in Production
+
+This is how you access MinIO in production environments.
+
+1. Open your preferred browser and navigate to:
+   ```bash
+   http://127.0.0.1:9001/
+   ```
+2. Log in to the MinIO UI using the following credentials(these credentials can be modified in the env files by changing the `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD` variables):
+   - Username: `talawa`
+   - Password: `password`
+3. You should now see the MinIO UI. Click on the `Login` button to access the MinIO dashboard.
+4. You can now view the available buckets and objects in the MinIO dashboard.
+
+### MinIO Access in Development
+
+This is how you access MinIO in development environments.
+
+1. Open your preferred browser and navigate to:
+   ```bash
+   http://127.0.0.1:9003/
+   ```
+2. Log in to the MinIO UI using the following credentials(these credentials can be modified in the `.env.devcontainer` file by changing the `MINIO_ROOT_USER` and `MINIO_ROOT_PASSWORD` variables):
+   - Username: `talawa`
+   - Password: `password`
+3. You should now see the MinIO UI. Click on the `Login` button to access the MinIO dashboard.
+4. You can now view the available buckets and objects in the MinIO dashboard.
+
+## Resetting Docker
+
+**NOTE:** This applies only to Talawa API developers.
+
+Sometimes you may want to start all over again from scratch. These steps will reset your development docker environment.
+
+1. From the repository's root directory, use this command to shutdown the dev container.
+   ```bash
+   docker compose down
+   ```
+1. **WARNING:** These commands will stop **ALL** your Docker processes and delete their volumes. This applies not only to the Talawa API instances, but everything. Use with extreme caution.
+   ```bash
+   docker stop $(docker ps -q)
+   docker rm $(docker ps -a -q)
+   docker rmi $(docker images -q)
+   docker volume prune -f
+   ```
+1. Restart the Docker dev containers to resume your development work.
+   ```bash
+   devcontainer build --workspace-folder .
+   devcontainer up --workspace-folder .
+   ```
+
+Now you can resume your development work.
