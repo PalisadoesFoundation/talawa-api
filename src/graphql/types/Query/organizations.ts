@@ -10,7 +10,11 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Define type for organization model
 type OrganizationType = InferSelectModel<typeof organizationsTable>;
-export const organizationsTableQueryResolver = async (_parent: unknown, args: { input?: any }, ctx: any) => {
+export const organizationsTableQueryResolver = async (
+	_parent: unknown,
+	args: { input?: any },
+	ctx: any,
+) => {
 	try {
 		if (args.input) {
 			const {
@@ -114,7 +118,7 @@ builder.queryField("organizations", (t) =>
 						if (!organization) {
 							throw new TalawaGraphQLError({
 								extensions: {
-									code: "arguments_associated_resources_not_found",  
+									code: "arguments_associated_resources_not_found",
 									issues: [{ argumentPath: ["input", "id"] }],
 								},
 							});
