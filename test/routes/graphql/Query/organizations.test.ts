@@ -32,7 +32,12 @@ vi.mock("../client", () => ({
 			const input = variables?.input;
 
 			// Invalid UUID scenario
-			if (input?.id && !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(input.id)) {
+			if (
+				input?.id &&
+				!/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+					input.id,
+				)
+			) {
 				return {
 					data: {
 						organizations: null,
