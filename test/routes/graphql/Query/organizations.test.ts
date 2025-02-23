@@ -103,9 +103,8 @@ suite("Query field organizations", () => {
 			expect(result.data.organizations?.[0]).toEqual(
 				expect.objectContaining({
 					id: knownOrganizationId,
-				})
+				}),
 			);
-			
 		});
 
 		test("returns multiple organizations (max 20) when no ID is provided", async () => {
@@ -120,9 +119,8 @@ suite("Query field organizations", () => {
 			expect(result.data.organizations?.[0]).toEqual(
 				expect.objectContaining({
 					id: expect.any(String),
-				})
+				}),
 			);
-			
 		});
 	});
 
