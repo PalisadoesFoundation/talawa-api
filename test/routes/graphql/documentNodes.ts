@@ -243,14 +243,6 @@ export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
     }
 }`);
 
-// export const Query_allUsers = 
-//     gql(`query Query_allUsers($first $after $last $before $name){
-//         allUsers($first $after $last $before $name){
-//             pageInfo
-//             edges
-//         }
-//     }`)
-
 export const Query_allUsers = gql(`
     query Query_allUsers(
       $first: Int,
