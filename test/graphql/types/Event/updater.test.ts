@@ -1,11 +1,13 @@
 import type { FastifyInstance } from "fastify";
 import { describe, expect, it } from "vitest";
 import { type Mock, vi } from "vitest";
+import type { z } from "zod";
+import type { userRoleEnum } from "~/src/drizzle/enums/userRole";
 import type { PubSub } from "../../../../src/graphql/pubsub";
 import { resolveEventUpdater } from "../../../../src/graphql/types/Event/updater";
 
 // Define types for the user object structure
-type UserRole = "administrator" | "regular";
+type UserRole = z.infer<typeof userRoleEnum>;
 type UserObject = {
 	id: string;
 	role: UserRole;
