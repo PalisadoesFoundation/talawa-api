@@ -4,13 +4,13 @@ import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationDeleteAgendaItemInput,
-	mutationDeleteAgendaItemInputSchema,
+	MutationDeleteAgendaItemInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteAgendaItemInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeleteAgendaItemArgumentsSchema = z.object({
-	input: mutationDeleteAgendaItemInputSchema,
+	input: MutationDeleteAgendaItemInputSchema,
 });
 
 builder.mutationField("deleteAgendaItem", (t) =>
@@ -153,7 +153,6 @@ builder.mutationField("deleteAgendaItem", (t) =>
 					},
 				});
 			}
-
 			return deletedAgendaItem;
 		},
 		type: AgendaItem,

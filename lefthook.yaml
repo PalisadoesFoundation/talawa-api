@@ -30,5 +30,9 @@ pre-commit:
         pnpm fix_code_quality
         git add {staged_files}
     8_check_type_errors:
-      run: pnpm check_type_errors
+      run: pnpm check_type_errors     
+    9_check_tests:
+      run: |
+        set -e
+        pnpm check_tests   
   piped: true

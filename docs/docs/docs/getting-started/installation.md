@@ -34,8 +34,8 @@ You will need to configure the API to work correctly.
 | `API_COMMUNITY_X_URL`                  | URL to the community's X (formerly Twitter) page, used for linking and integrating social media presence.             |
 | `API_COMMUNITY_YOUTUBE_URL`            | URL to the community's YouTube channel, used for linking and integrating video content.                               |
 | `API_JWT_SECRET`                       | Secret key for JWT(JSON Web Token) generation and validation, used for securing API authentication and authorization. |
-| `API_MINIO_SECRET_KEY`                 | Secret key for MinIO, used for securing access to MinIO object storage.                                               |
-| `API_POSTGRES_PASSWORD`                | Password for the PostgreSQL database, used for database authentication and security.                                  |
+| `API_MINIO_SECRET_KEY`                 | Secret key for MinIO, used for securing access to MinIO object storage. **NOTE:** Must match `MINIO_ROOT_PASSWORD`    |
+| `API_POSTGRES_PASSWORD`                | Password for the PostgreSQL database, used for database authentication and security. **NOTE:** Must match `POSTGRES_PASSWORD` |
 | `CADDY_TALAWA_API_DOMAIN_NAME`         | Domain name for the Talawa API, used for configuring and routing API traffic.                                         |
 | `CADDY_TALAWA_API_EMAIL`               | Email address for the Talawa API, used for SSL certificate registration and notifications.                            |
 | `MINIO_ROOT_PASSWORD`                  | Root password for MinIO, used for securing administrative access to MinIO object storage.                             |
@@ -136,6 +136,62 @@ Your new 64-character JWT secret will be displayed on the screen.
 1. Copy this secret
 2. Add it to the `API_JWT_SECRET` value in the `.env` file.
 
+##### Update the API_ADMINISTRATOR_USER Credentials
+
+You will need to update the `.env` file with the following information. 
+1. `API_ADMINISTRATOR_USER_NAME` is the name of the primary administrator person.
+2. `API_ADMINISTRATOR_USER_EMAIL_ADDRESS` is the email address of the primary administrator. This will be required for logins.
+3. `API_ADMINISTRATOR_USER_PASSWORD` is plain text and is used for logins.
+
+##### Update the MINIO Credentials
+
+You will need to update the `.env` file with the following information.
+1. `MINIO_ROOT_PASSWORD` is a plain text password of your choosing.
+1. `API_MINIO_SECRET_KEY` - **NOTE:** must match `MINIO_ROOT_PASSWORD`.
+
+
+##### Update the PostgreSQL Credentials
+
+You will need to update the `.env` file with the following information. The passwords are in plain text and must match.
+1. `API_POSTGRES_PASSWORD` - **NOTE:** Must match `POSTGRES_PASSWORD`
+2. `POSTGRES_PASSWORD`
+
+##### Update the API_BASE_URL Value
+
+You will need to update the `.env` file with the following information. This value uses the expected defaults.
+
+```
+http://127.0.0.1:4000
+```
+
+##### Update the CADDY Configuration
+
+You will need to update the `.env` file with the following information. This value uses the expected defaults.
+1. `CADDY_TALAWA_API_DOMAIN_NAME` can be set to `localhost`
+2. `CADDY_TALAWA_API_EMAIL` can be set to a suitable email address
+
+##### Update the Social Media URLs
+
+You will need to update the `.env` file with the following information. 
+
+```
+API_COMMUNITY_FACEBOOK_URL
+API_COMMUNITY_GITHUB_URL
+API_COMMUNITY_INSTAGRAM_URL
+API_COMMUNITY_LINKEDIN_URL
+API_COMMUNITY_REDDIT_URL
+API_COMMUNITY_SLACK_URL
+API_COMMUNITY_WEBSITE_URL
+API_COMMUNITY_X_URL
+API_COMMUNITY_YOUTUBE_URL
+```
+##### Update the Name of the Parent Organization / Community
+
+You will need to update the `.env` file with the following information. 
+```
+API_COMMUNITY_NAME
+```
+
 #### Start the App
 
 1. Start the server by running the following command:
@@ -206,16 +262,14 @@ These steps are specific to Linux. You will need to modify them accordingly for 
       ```bash
       cp envFiles/.env.devcontainer .env
       ```
-1. Install `pnpm` using `codepack`
-   ```bash
-   corepack install -g pnpm
-   ```
+1. Install Node.js
+   1. Linux
+       1. Install `node` from the [Node Source website](https://github.com/nodesource/distributions)
+   1. Windows / Mac / Linux
+       1. Install `node` from the [Node website](https://nodejs.org)
+1. Install `pnpm` from the [pnpm website](https://pnpm.io/installation)
 1. Linux / MacOS Only
-   1. Setup `pnpm` to be automatically configured on all future terminal session logins using your `~/.bashrc` file.
-      ```bash
-      pnpm setup
-      ```
-   2. Enable `pnpm` for your current terminal session.
+   1. Enable `pnpm` for your current terminal session.
       ```
       source ~/.bashrc
       ```
