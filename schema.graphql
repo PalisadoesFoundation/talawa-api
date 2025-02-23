@@ -2892,9 +2892,10 @@ type Query {
   """Query field to read a user."""
   user(input: QueryUserInput!): User
   
-  """Query field to read multiple users with an optional limit."""
+  """Query field to read multiple users.  
+  If no input is provided, all users will be returned. Consider adding filters for better performance."""
   users(input: QueryUsersInput): [User]!
-  
+
 
   """Query field to read a venue."""
   venue(input: QueryVenueInput!): Venue
@@ -2999,10 +3000,16 @@ input QueryUserInput {
   id: String!
 }
 
-""""""  
+"""
+Input type for querying multiple users.
+
+Currently, only an optional limit is supported, which defines the maximum number
+of users returned. This input type can be extended in the future to support
+additional filters such as pagination, roles, or email verification status.
+"""
 input QueryUsersInput {
-  """Optional limit for the number of users to return."""  
-  limit: Int  
+  """Optional limit for the number of users to return. Defaults to 20 with a max of 100."""
+  limit: Int
 }
 
 """"""

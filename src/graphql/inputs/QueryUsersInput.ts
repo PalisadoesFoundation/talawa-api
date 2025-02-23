@@ -1,9 +1,8 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 
-// ✅ Define schema with optional input (only limit)
 export const queryUsersInputSchema = z.object({
-	limit: z.number().int().positive().optional(), // Optional limit
+	limit: z.number().int().positive().optional(),
 });
 
 // ✅ Define GraphQL Input Type
@@ -14,7 +13,7 @@ export const QueryUsersInput = builder
 		fields: (t) => ({
 			limit: t.int({
 				description: "Number of users to return",
-				required: false, // ✅ Makes `limit` optional
+				required: false,
 			}),
 		}),
 	});

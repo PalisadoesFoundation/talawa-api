@@ -243,33 +243,31 @@ export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
     }
 }`);
 
-export const Query_users = gql(`
-    query Query_users($input: QueryUsersInput) {
-      users(input: $input) {
-        id
-        name
-        emailAddress
-        mobilePhoneNumber
-        birthDate
-        addressLine1
-        addressLine2
-        city
-        state
-        postalCode
-        countryCode
-        workPhoneNumber
-        homePhoneNumber
-        maritalStatus
-        educationGrade
-        employmentStatus
-        natalSex
-        role
-        description
-        isEmailAddressVerified
-        createdAt
-      }
+export const Query_users = gql(`query Query_users($input: QueryUsersInput) {
+    users(input: $input) {
+      id
+      name
+      emailAddress
+      mobilePhoneNumber
+      birthDate
+      addressLine1
+      addressLine2
+      city
+      state
+      postalCode
+      countryCode
+      workPhoneNumber
+      homePhoneNumber
+      maritalStatus
+      educationGrade
+      employmentStatus
+      natalSex
+      role
+      description
+      isEmailAddressVerified
+      createdAt
     }
-  `);
+  }`);
 
 export const Query_user_creator =
 	gql(`query Query_user_creator($input: QueryUserInput!) {

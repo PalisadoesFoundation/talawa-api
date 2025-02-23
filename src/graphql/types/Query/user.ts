@@ -11,12 +11,10 @@ import {
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-// Schema for validating user query arguments
 const queryUserArgumentsSchema = z.object({
 	input: queryUserInputSchema,
 });
 
-// Query to fetch a single user
 builder.queryField("user", (t) =>
 	t.field({
 		args: {
@@ -28,7 +26,6 @@ builder.queryField("user", (t) =>
 		},
 		description: "Query field to read a single user.",
 		resolve: async (_parent, args, ctx) => {
-			// Validate input arguments
 			const {
 				data: parsedArgs,
 				error,
@@ -67,12 +64,10 @@ builder.queryField("user", (t) =>
 	}),
 );
 
-// ✅ Schema for multiple users (with optional input)
 const queryUsersArgumentsSchema = z.object({
 	input: queryUsersInputSchema.optional(),
 });
 
-// ✅ Query to fetch multiple users with optional limit
 builder.queryField("users", (t) =>
 	t.field({
 		args: {
@@ -102,10 +97,8 @@ builder.queryField("users", (t) =>
 				});
 			}
 
-			// ✅ Extract limit (if provided), otherwise default to 100
-			const limit = parsedArgs.input?.limit ?? 100;
+			const limit = Math.min(parsedArgs.input?.limit ?? 100, 500);
 
-			// ✅ Fetch users with optional limit
 			const users = await ctx.drizzleClient.query.usersTable.findMany({
 				limit,
 			});

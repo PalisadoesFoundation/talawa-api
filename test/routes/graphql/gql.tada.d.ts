@@ -166,7 +166,18 @@ export type introspection_types = {
     'QueryTagFolderInput': { kind: 'INPUT_OBJECT'; name: 'QueryTagFolderInput'; isOneOf: false; inputFields: [{ name: 'id'; type: { kind: 'NON_NULL'; name: never; ofType: { kind: 'SCALAR'; name: 'String'; ofType: null; }; }; defaultValue: null }]; };
     'QueryTagInput': { kind: 'INPUT_OBJECT'; name: 'QueryTagInput'; isOneOf: false; inputFields: [{ name: 'id'; type: { kind: 'NON_NULL'; name: never; ofType: { kind: 'SCALAR'; name: 'String'; ofType: null; }; }; defaultValue: null }]; };
     'QueryUserInput': { kind: 'INPUT_OBJECT'; name: 'QueryUserInput'; isOneOf: false; inputFields: [{ name: 'id'; type: { kind: 'NON_NULL'; name: never; ofType: { kind: 'SCALAR'; name: 'String'; ofType: null; }; }; defaultValue: null }]; };
-    'QueryUsersInput': { kind: 'INPUT_OBJECT'; name: 'QueryUsersInput'; isOneOf: false; inputFields: [{ name: 'limit'; type: { kind: 'SCALAR'; name: 'Int'; ofType: null; }; defaultValue: null }]; };
+        /** Input type for the users query */
+   'QueryUsersInput': { 
+     kind: 'INPUT_OBJECT';
+     name: 'QueryUsersInput';
+     isOneOf: false;
+      /** @param limit - Optional parameter to limit the number of users returned */
+     inputFields: [{ 
+       name: 'limit';
+       type: { kind: 'SCALAR'; name: 'Int'; ofType: null; };
+       defaultValue: null 
+     }];
+    };
     'QueryVenueInput': { kind: 'INPUT_OBJECT'; name: 'QueryVenueInput'; isOneOf: false; inputFields: [{ name: 'id'; type: { kind: 'NON_NULL'; name: never; ofType: { kind: 'SCALAR'; name: 'String'; ofType: null; }; }; defaultValue: null }]; };
     'String': unknown;
     'Subscription': { kind: 'OBJECT'; name: 'Subscription'; fields: { 'chatMessageCreate': { name: 'chatMessageCreate'; type: { kind: 'OBJECT'; name: 'ChatMessage'; ofType: null; } }; }; };
@@ -204,16 +215,16 @@ export type introspection_types = {
  */
 export type introspection = {
   name: never;
-  query: 'Query';
-  mutation: 'Mutation';
-  subscription: 'Subscription';
+  query: "Query";
+  mutation: "Mutation";
+  subscription: "Subscription";
   types: introspection_types;
 };
 
-import * as gqlTada from 'gql.tada';
+import * as gqlTada from "gql.tada";
 
-declare module 'gql.tada' {
+declare module "gql.tada" {
   interface setupSchema {
-    introspection: introspection
+    introspection: introspection;
   }
 }
