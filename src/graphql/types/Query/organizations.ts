@@ -10,6 +10,60 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Define type for organization model
 type OrganizationType = InferSelectModel<typeof organizationsTable>;
+export const organizationsTableQueryResolver = async (_parent: unknown, args: { input?: any }, ctx: any) => {
+	try {
+		if (args.input) {
+			const {
+				data: parsedInput,
+				error,
+				success,
+			} = queryOrganizationInputSchema.safeParse(args.input);
+
+			if (!success) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: error.issues.map((issue) => ({
+							argumentPath: issue.path,
+							message: issue.message,
+						})),
+					},
+				});
+			}
+
+			if (parsedInput?.id) {
+				const organization =
+					await ctx.drizzleClient.query.organizationsTable.findFirst({
+						where: (fields: any, operators: any) =>
+							operators.eq(fields.id, parsedInput.id),
+					});
+
+				if (!organization) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [{ argumentPath: ["input", "id"] }],
+						},
+					});
+				}
+
+				return [organization];
+			}
+		}
+
+		return await ctx.drizzleClient.query.organizationsTable.findMany({
+			limit: 20,
+		});
+	} catch (error) {
+		console.error("Error in organizations query:", error);
+
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthorized_action",
+			},
+		});
+	}
+};
 
 builder.queryField("organizations", (t) =>
 	t.field({
@@ -60,7 +114,7 @@ builder.queryField("organizations", (t) =>
 						if (!organization) {
 							throw new TalawaGraphQLError({
 								extensions: {
-									code: "arguments_associated_resources_not_found",
+									code: "arguments_associated_resources_not_found",  
 									issues: [{ argumentPath: ["input", "id"] }],
 								},
 							});
