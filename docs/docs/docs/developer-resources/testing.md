@@ -48,7 +48,7 @@ Example test suites 1 and 2 depicting the violations and followage of these guid
 
 #### Guideline Violation Example
 
-This example show a violation of the guidelines by using **non-randomized** data.
+This example show a violation of the guidelines.
 
 ```typescript
 // Test suite 1
@@ -117,7 +117,7 @@ suite.concurrent("flaky concurrent tests", async () => {
 
 #### Guideline Compliance Example
 
-This example shows compliance with the guidelines  by using **randomized** data.
+This example shows compliance with the guidelines.
 
 ```typescript
 // Test suite 2
@@ -200,6 +200,20 @@ suite.concurrent("non-flaky concurrent tests", async () => {
   });
 });
 ```
+
+## Test DB Usage
+
+Here is some important information about how the test DB is used both for your tests and the CI/CD pipeline.
+
+1. The `postgres-test` database is strictly meant for testing in all environments. The environment variable value of `API_POSTGRES_HOST` is overwritten from `postgres` to `postgres-test` in all environments where tests are run as shown in `/test/server.ts`.
+1. The `postgres` service is not enabled in the CI environment as can be seen in the `COMPOSE_PROFILES` environment variable in `envFiles/.env.ci`. Only the `postgres_test` service is enabled in the CI environment.
+1. We use two database containers for `postgres` and `postgres_test`, not two databases in a single container because the latter goes against the philosophy of containerization.
+1. The `test/` folder has an environment variables schema defined in `test/envConfigSchema.ts`. To access `API_POSTGRES_TEST_HOST` you just pass the schema to `env-schema`.
+1. We don't use `postgres_test` in the `.env.ci` file because the CI/CD pipeline isn't limited to testing. We did this to be future proof.
+
+## Environment Variables
+
+If you need to overwrite the environment variables, you have to allow passing those environment variables as arguments as in the createServer function in the `src/createServer.ts` file. This is how `API_POSTGRES_HOST` and `API_MINIO_END_POINT` are overwritten in the tests as explained previously.
 
 ## Sample DB Login Credentials
 
