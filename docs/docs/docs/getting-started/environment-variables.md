@@ -11,6 +11,15 @@ Listed below are all the environment variables utilized by different workflows w
 
 > Environment variables should be explicitly provided to the container that they're being used for. This is because with changes in implicit environment variables docker cannot know exactly which compose container services should be rebuilt to reflect those changes. There are two ways of doing that, the first way is explicitly typing out each of those environment variables in the `environment` field of the compose container service and the second way is to create separate environment variable files for storing environment variables for each compose container service.
 
+## Our `NODE_ENV` Variable Philosophy
+
+The `NODE_ENV` variable is extremely sparsely used.
+
+1. It should not be touched. It exists only to make other javascript tools **always** run with their production environment capabilities no matter the environment.
+2. If a capability is to be controlled it must be done explicitly using an environment variable specific to that capability. For example the `API_IS_GRAPHIQL` and `API_IS_PINO_PRETTY` variables below are meant for enabling/disabling the `graphiql` web explorer and pretty logging by pino logger. We didn't use `NODE_ENV` for these because these functionalities should be individually configurable in all environments and not be controlled using a single `NODE_ENV` environment variable.
+
+In an environment where one capability is needed but the other is not, using a single environment variable to control all of them at once wouldn't work.
+
 ## talawa api (standalone)
 
 At runtime, talawa api requires certain environment variables to be defined in its execution context. Some of these environment variables must be provided by you and some are optional to be provided because they might be using a default value or their requirement is dependent on the environment in which talawa api is running.
