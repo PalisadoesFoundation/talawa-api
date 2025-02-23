@@ -19,8 +19,6 @@ services:
       dockerfile: ./docker/api.Containerfile
       # https://docs.docker.com/reference/compose-file/build/#target
       target: production
-    
-    entrypoint: ["/bin/sh", "-c", "replaceJwt.sh"]
     # https://docs.docker.com/reference/compose-file/services/#depends_on
     depends_on:
       minio:
