@@ -1,0 +1,59 @@
+[
+    {
+      "id": "8e3bae34-955b-4f55-9118-e03e56c5faeb",
+      "createdAt": "2025-02-12T14:10:00.000Z",
+      "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+      "postId": "2778f4a2-a6f1-45cc-857f-727ca942899d",
+      "type": "up_vote"
+    },
+    {
+      "id": "abe50392-5b74-4edc-a933-7e98f1106999",
+      "createdAt": "2025-02-12T14:12:00.000Z",
+      "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
+      "postId": "98cef234-af91-4a11-b33f-5fd6cf41219c",
+      "type": "down_vote"
+    },
+    {
+      "id": "7491184e-d12a-4d19-a955-78a08b2fa058",
+      "createdAt": "2025-02-13T10:30:00.000Z",
+      "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+      "postId": "a44d75a0-267f-4429-b03c-a26cc4ec56dc",
+      "type": "up_vote"
+    },
+    {
+      "id": "cca57ea7-2c98-4bb7-8d76-a01a8bfbfaf4",
+      "createdAt": "2025-02-13T10:35:00.000Z",
+      "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+      "postId": "f3da248b-ee18-4197-bd0b-de5480c010ee",
+      "type": "down_vote"
+    },
+    {
+      "id": "f5644877-31a8-443f-bd21-c79269c9f859",
+      "createdAt": "2025-02-14T08:45:00.000Z",
+      "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
+      "postId": "885bee36-2751-4d78-bfd4-7ededdd89a0f",
+      "type": "up_vote"
+    },
+    {
+      "id": "da8e8ab7-3521-4596-992d-c2de4e60bb71",
+      "createdAt": "2025-02-14T08:50:00.000Z",
+      "creatorId": "66378abd-8500-8f17-1cf2-990d00000003",
+      "postId": "ecaeed44-d0b2-4559-bad6-ab6f49362325",
+      "type": "down_vote"
+    },
+    {
+      "id": "2ca3cced-6dfc-4f66-b79e-c18b4477080e",
+      "createdAt": "2025-02-15T09:30:00.000Z",
+      "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
+      "postId": "d3288d60-11c7-4401-ac70-f36f289c385f",
+      "type": "up_vote"
+    },
+    {
+      "id": "29c8d791-8aac-4a73-a16c-84696366d42e",
+      "createdAt": "2025-02-15T09:35:00.000Z",
+      "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
+      "postId": "2022fe3e-846e-48de-8a27-230fda85e495",
+      "type": "down_vote"
+    }
+]
+  
