@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import {
 	askUserToContinue,
 	disconnect,
+	emptyMinioBucket,
 	ensureAdministratorExists,
 	formatDatabase,
 	pingDB,
@@ -32,6 +33,15 @@ export async function main(): Promise<void> {
 			);
 			console.error("\n\x1b[33mRolled back to previous state\x1b[0m");
 			console.error("\n\x1b[33mPreserving administrator access\x1b[0m");
+		}
+		try {
+			await emptyMinioBucket();
+			console.log("\x1b[32mSuccess:\x1b[0m Bucket formatted successfully\n");
+		} catch (error: unknown) {
+			console.error(
+				"\n\x1b[31mError: Bucket formatting failed\n\x1b[0m",
+				error,
+			);
 		}
 		try {
 			await ensureAdministratorExists();

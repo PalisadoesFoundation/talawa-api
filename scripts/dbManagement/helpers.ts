@@ -25,7 +25,7 @@ const envConfig = envSchema<EnvConfig>({
 
 // Get the directory name of the current module
 export const dirname: string = path.dirname(fileURLToPath(import.meta.url));
-
+export const bucketName: string = envConfig.MINIO_ROOT_USER || "";
 // Create a new database client
 export const queryClient = postgres({
 	host: envConfig.API_POSTGRES_HOST,
@@ -134,6 +134,41 @@ export async function ensureAdministratorExists(): Promise<boolean> {
 	});
 
 	return true;
+}
+
+export async function emptyMinioBucket(): Promise<boolean> {
+	try {
+		// List all objects in the bucket.
+		const objectsList: string[] = await new Promise<string[]>(
+			(resolve, reject) => {
+				const objects: string[] = [];
+				const stream = minioClient.listObjects(bucketName, "", true);
+				stream.on(
+					"data",
+					(obj: {
+						name: string;
+					}) => {
+						objects.push(obj.name);
+					},
+				);
+				stream.on("error", (err: Error) => {
+					console.error("Error listing objects in bucket:", err);
+					reject(err);
+				});
+				stream.on("end", () => resolve(objects));
+			},
+		);
+
+		// If there are objects, remove them all using removeObjects.
+		if (objectsList.length > 0) {
+			await minioClient.removeObjects(bucketName, objectsList);
+		}
+
+		return true;
+	} catch (error: unknown) {
+		console.error("Error emptying bucket:", error);
+		return false;
+	}
 }
 
 /**
