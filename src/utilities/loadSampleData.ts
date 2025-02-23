@@ -1,7 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import dotenv from "dotenv";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import inquirer from "inquirer";
@@ -9,7 +8,6 @@ import { Client as MinioClient } from "minio";
 import postgres from "postgres";
 import * as schema from "../drizzle/schema";
 
-dotenv.config();
 
 const dirname: string = path.dirname(fileURLToPath(import.meta.url));
 

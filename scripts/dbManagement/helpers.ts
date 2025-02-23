@@ -7,6 +7,7 @@ import { sql } from "drizzle-orm";
 import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/postgres-js";
 import envSchema from "env-schema";
+import { Client as MinioClient } from "minio";
 import postgres from "postgres";
 import * as schema from "src/drizzle/schema";
 import {
@@ -33,6 +34,15 @@ export const queryClient = postgres({
 	username: envConfig.API_POSTGRES_USER || "",
 	password: envConfig.API_POSTGRES_PASSWORD || "",
 	ssl: envConfig.API_POSTGRES_SSL_MODE === "allow",
+});
+
+//Create a bucket client
+const minioClient = new MinioClient({
+	accessKey: envConfig.API_MINIO_ACCESS_KEY || "",
+	endPoint: envConfig.API_MINIO_END_POINT || "minio",
+	port: Number(envConfig.API_MINIO_PORT),
+	secretKey: envConfig.API_MINIO_SECRET_KEY || "",
+	useSSL: envConfig.API_MINIO_USE_SSL === true,
 });
 
 export const db = drizzle(queryClient, { schema });
@@ -339,6 +349,124 @@ export async function insertCollections(
 					);
 					break;
 				}
+				case "posts": {
+					const posts = JSON.parse(fileContent).map(
+						(post: { createdAt: string | number | Date }) => ({
+							...post,
+							createdAt: parseDate(post.createdAt),
+						}),
+					) as (typeof schema.postsTable.$inferInsert)[];
+					await checkAndInsertData(
+						schema.postsTable,
+						posts,
+						schema.postsTable.id,
+						1000,
+					);
+					console.log(
+						"\x1b[35mAdded: Posts table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+				case "post_votes": {
+					const post_votes = JSON.parse(fileContent).map(
+						(post_vote: { createdAt: string | number | Date }) => ({
+							...post_vote,
+							createdAt: parseDate(post_vote.createdAt),
+						}),
+					) as (typeof schema.postVotesTable.$inferInsert)[];
+					await checkAndInsertData(
+						schema.postVotesTable,
+						post_votes,
+						schema.postVotesTable.id,
+						1000,
+					);
+					console.log(
+						"\x1b[35mAdded: Post_votes table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+				case "post_attachments": {
+					const post_attachments = JSON.parse(fileContent).map(
+						(post_attachment: { createdAt: string | number | Date }) => ({
+							...post_attachment,
+							createdAt: parseDate(post_attachment.createdAt),
+						}),
+					) as (typeof schema.postAttachmentsTable.$inferInsert)[];
+					try{
+						// Post Attachements are not unique. So they are inserted without checking for duplicates.
+						await db.insert(schema.postAttachmentsTable).values(post_attachments);
+					}catch{
+						throw new Error("\x1b[31mError inserting post_attachments data\x1b[0m");
+					}
+					// Handle file uploads to Minio.
+					await Promise.all(
+						post_attachments.map(async (attachment) => {
+							try {
+								const fileExtension = attachment.mimeType.split("/").pop();
+								const filePath = path.resolve(
+									dirname,
+									`./sample_data/images/${attachment.name}.${fileExtension}`,
+								);
+								const fileData = await fs.readFile(filePath);
+								await minioClient.putObject(
+									"talawa",
+									attachment.name,
+									fileData,
+									undefined,
+									{
+										"content-type": attachment.mimeType,
+									},
+								);
+							} catch (error) {
+								console.error(
+									`Failed to upload attachment ${attachment.name}:`,
+									error,
+								);
+								throw error;
+							}
+						}),
+					);
+					console.log(
+						"\x1b[35mAdded: Post_attachments table data and uploaded files (Duplicates Allowed)\x1b[0m",
+					);
+					break;
+				}
+				case "comments": {
+					const comments = JSON.parse(fileContent).map(
+						(comment: { createdAt: string | number | Date }) => ({
+							...comment,
+							createdAt: parseDate(comment.createdAt),
+						}),
+					) as (typeof schema.commentsTable.$inferInsert)[];
+					await checkAndInsertData(
+						schema.commentsTable,
+						comments,
+						schema.commentsTable.id,
+						1000,
+					);
+					console.log(
+						"\x1b[35mAdded: Comments table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+				case "comment_votes": {
+					const comment_votes = JSON.parse(fileContent).map(
+						(comment_vote: { createdAt: string | number | Date }) => ({
+							...comment_vote,
+							createdAt: parseDate(comment_vote.createdAt),
+						}),
+					) as (typeof schema.commentVotesTable.$inferInsert)[];
+					await checkAndInsertData(
+						schema.commentVotesTable,
+						comment_votes,
+						schema.commentVotesTable.id,
+						1000,
+					);
+					console.log(
+						"\x1b[35mAdded: Comment_votes table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
 
 				default:
 					console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
@@ -371,12 +499,17 @@ export function parseDate(date: string | number | Date): Date | null {
 export async function checkDataSize(stage: string): Promise<boolean> {
 	try {
 		const tables = [
+			{ name: "users", table: schema.usersTable },
+			{ name: "organizations", table: schema.organizationsTable },
 			{
 				name: "organization_memberships",
 				table: schema.organizationMembershipsTable,
 			},
-			{ name: "organizations", table: schema.organizationsTable },
-			{ name: "users", table: schema.usersTable },
+			{ name: "posts", table: schema.postsTable },
+			{ name: "post_votes", table: schema.postVotesTable },
+			{ name: "post_attachments", table: schema.postAttachmentsTable },
+			{ name: "comments", table: schema.commentsTable },
+			{ name: "comment_votes", table: schema.commentVotesTable },
 		];
 
 		console.log(`\nRecord Counts ${stage} Import:\n`);
