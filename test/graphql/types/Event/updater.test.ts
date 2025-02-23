@@ -40,7 +40,7 @@ const MockEvent = {
 const drizzleClientMock = {
 	query: {
 		usersTable: {
-			findFirst: vi.fn(),
+			findFirst: vi.fn().mockImplementation(() => Promise.resolve(undefined)),
 		},
 	},
 } as unknown as FastifyInstance["drizzleClient"] & MockDrizzleClient;
@@ -86,7 +86,9 @@ describe("resolveEventUpdater", async () => {
 	});
 
 	it("throws an unauthenticated error if the current user is not found", async () => {
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue(undefined);
+		drizzleClientMock.query.usersTable.findFirst.mockImplementation(() =>
+			Promise.resolve(undefined),
+		);
 
 		await expect(
 			resolveEventUpdater(MockEvent, {}, authenticatedContext),
