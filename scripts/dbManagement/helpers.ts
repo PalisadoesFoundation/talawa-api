@@ -39,7 +39,7 @@ export const queryClient = postgres({
 //Create a bucket client
 const minioClient = new MinioClient({
 	accessKey: envConfig.API_MINIO_ACCESS_KEY || "",
-	endPoint: envConfig.API_MINIO_END_POINT || "minio",
+	endPoint: envConfig.API_MINIO_END_POINT || "",
 	port: Number(envConfig.API_MINIO_PORT),
 	secretKey: envConfig.API_MINIO_SECRET_KEY || "",
 	useSSL: envConfig.API_MINIO_USE_SSL === true,
@@ -450,7 +450,7 @@ export async function insertCollections(
 								);
 								const fileData = await fs.readFile(filePath);
 								await minioClient.putObject(
-									"talawa",
+									bucketName,
 									attachment.name,
 									fileData,
 									undefined,
