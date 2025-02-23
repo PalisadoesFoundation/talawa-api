@@ -2588,6 +2588,7 @@ type Organization {
   venues(after: String, before: String, first: Int, last: Int): OrganizationVenuesConnection
 }
 
+
 """"""
 type OrganizationAdvertisementsConnection {
   edges: [OrganizationAdvertisementsConnectionEdge]
@@ -2891,8 +2892,9 @@ type Query {
   """Query field to read a user."""
   user(input: QueryUserInput!): User
   
-  """Query field to read multiple users."""
-  users(input: QueryUsersInput!): [User]!
+  """Query field to read multiple users with an optional limit."""
+  users(input: QueryUsersInput): [User]!
+  
 
   """Query field to read a venue."""
   venue(input: QueryVenueInput!): Venue
@@ -2995,6 +2997,12 @@ input QueryTagInput {
 input QueryUserInput {
   """Global id of the user."""
   id: String!
+}
+
+""""""  
+input QueryUsersInput {
+  """Optional limit for the number of users to return."""  
+  limit: Int  
 }
 
 """"""

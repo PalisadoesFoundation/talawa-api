@@ -179,31 +179,77 @@ suite("Query field user", () => {
 		);
 	});
 });
+
 suite("Query field users", () => {
 	test("returns an array of users when users exist", async () => {
-		const administratorUserSignInResult = await mercuriusClient.query(
-			Query_signIn,
-			{
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 				},
 			},
-		);
+		});
 
-		assertToBeNonNullish(
-			administratorUserSignInResult.data.signIn?.authenticationToken,
-		);
+		assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
 
 		const usersResult = await mercuriusClient.query(Query_users, {
 			headers: {
-				authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+				authorization: `bearer ${adminSignIn.data.signIn.authenticationToken}`,
 			},
 		});
 
 		expect(usersResult.errors).toBeUndefined();
-		expect(usersResult.data.users).toBeInstanceOf(Array);
+		expect(Array.isArray(usersResult.data.users)).toBeTruthy();
+		expect(usersResult.data.users.length).toBeGreaterThan(0);
 	});
+
+	suite(
+		"results in a graphql error with 'invalid_arguments' extensions code in the 'errors' field if",
+		() => {
+			test("pagination arguments are invalid", async () => {
+				const adminSignIn = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				});
+
+				assertToBeNonNullish(adminSignIn.data.signIn?.authenticationToken);
+
+				const usersResult = await mercuriusClient.query(Query_users, {
+					variables: {
+						input: {
+							limit: -1, // Invalid limit
+						},
+					},
+					headers: {
+						authorization: `bearer ${adminSignIn.data.signIn.authenticationToken}`,
+					},
+				});
+
+				expect(usersResult.data.users).toEqual(null);
+				expect(usersResult.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+								issues: expect.arrayContaining([
+									{
+										argumentPath: ["input", "limit"],
+										message: expect.any(String),
+									},
+								]),
+							}),
+							message: expect.any(String),
+							path: ["users"],
+						}),
+					]),
+				);
+			});
+		},
+	);
 });

@@ -79,5 +79,6 @@ import "./QuerySignInInput";
 import "./QueryTagFolderInput";
 import "./QueryTagInput";
 import "./QueryUserInput";
+import "./QueryUsersInput";
 import "./QueryVenueInput";
 import "./SubscriptionChatMessageCreateInput";

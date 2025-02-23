@@ -4,6 +4,10 @@ import {
 	QueryUserInput,
 	queryUserInputSchema,
 } from "~/src/graphql/inputs/QueryUserInput";
+import {
+	QueryUsersInput,
+	queryUsersInputSchema,
+} from "~/src/graphql/inputs/QueryUsersInput";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -63,30 +67,22 @@ builder.queryField("user", (t) =>
 	}),
 );
 
+// ✅ Schema for multiple users (with optional input)
 const queryUsersArgumentsSchema = z.object({
-	input: queryUserInputSchema.optional(),
+	input: queryUsersInputSchema.optional(),
 });
 
+// ✅ Query to fetch multiple users with optional limit
 builder.queryField("users", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
 				description: "Optional filters for querying users.",
 				required: false,
-				type: QueryUserInput,
-			}),
-			first: t.arg({
-				description: "Number of users to return",
-				required: false,
-				type: "Int",
-			}),
-			after: t.arg({
-				description: "Cursor for pagination",
-				required: false,
-				type: "String",
+				type: QueryUsersInput,
 			}),
 		},
-		description: "Query field to read all users with optional filtering.",
+		description: "Query field to read multiple users with an optional limit.",
 		resolve: async (_parent, args, ctx) => {
 			const {
 				data: parsedArgs,
@@ -106,12 +102,13 @@ builder.queryField("users", (t) =>
 				});
 			}
 
-			const users = parsedArgs.input
-				? await ctx.drizzleClient.query.usersTable.findMany({
-						where: (fields, operators) =>
-							operators.eq(fields.id, parsedArgs.input?.id ?? ""),
-					})
-				: await ctx.drizzleClient.query.usersTable.findMany();
+			// ✅ Extract limit (if provided), otherwise default to 100
+			const limit = parsedArgs.input?.limit ?? 100;
+
+			// ✅ Fetch users with optional limit
+			const users = await ctx.drizzleClient.query.usersTable.findMany({
+				limit,
+			});
 
 			return users;
 		},
