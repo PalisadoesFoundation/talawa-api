@@ -1,13 +1,10 @@
 import { suite, test, expect, vi, beforeEach } from "vitest";
-
-let mainModule: typeof import("scripts/dbManagement/addSampleData");
-let helpers: typeof import("scripts/dbManagement/helpers");
+import * as mainModule from "scripts/dbManagement/addSampleData";
+import * as helpers from "scripts/dbManagement/helpers";
 
 suite("addSampleData main function tests", () => {
   beforeEach(async () => {
     vi.resetModules();
-    helpers = await import("scripts/dbManagement/helpers");
-    mainModule = await import("scripts/dbManagement/addSampleData");
   });
 
 
