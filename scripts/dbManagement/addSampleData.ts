@@ -7,7 +7,15 @@ import {
 	pingDB,
 } from "./helpers";
 
-type Collection = "users" | "organizations" | "organization_memberships" | "posts" | "post_votes" | "post_attachments" | "comments" | "comment_votes";
+type Collection =
+	| "users"
+	| "organizations"
+	| "organization_memberships"
+	| "posts"
+	| "post_votes"
+	| "post_attachments"
+	| "comments"
+	| "comment_votes";
 
 export async function main(): Promise<void> {
 	const collections: Collection[] = [
