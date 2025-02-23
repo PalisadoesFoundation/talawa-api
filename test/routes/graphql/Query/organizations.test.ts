@@ -9,18 +9,31 @@ import type {
 import { mercuriusClient } from "../client";
 import { Query_organizations } from "../documentNodes";
 
+// Define TypeScript interfaces for the GraphQL response
+interface Organization {
+	id: string;
+	// Add other relevant fields here, e.g., name, description, etc.
+}
+
+interface QueryResult {
+	data: {
+		organizations: Organization[] | null;
+	};
+	errors?: TalawaGraphQLFormattedError[];
+}
+
 suite("Query field organizations", () => {
 	suite(
 		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.organizations" field if`,
 		() => {
 			test("input validation fails with invalid ID format", async () => {
-				const result = await mercuriusClient.query(Query_organizations, {
+				const result = (await mercuriusClient.query(Query_organizations, {
 					variables: {
 						input: {
 							id: "invalid-id-format",
 						},
 					},
-				});
+				})) as QueryResult;
 
 				expect(result.data.organizations).toEqual(null);
 				expect(result.errors).toEqual(
@@ -51,13 +64,13 @@ suite("Query field organizations", () => {
 		() => {
 			test("organization with provided ID does not exist", async () => {
 				const nonExistentId = faker.string.ulid();
-				const result = await mercuriusClient.query(Query_organizations, {
+				const result = (await mercuriusClient.query(Query_organizations, {
 					variables: {
 						input: {
 							id: nonExistentId,
 						},
 					},
-				});
+				})) as QueryResult;
 
 				expect(result.data.organizations).toEqual(null);
 				expect(result.errors).toEqual(
@@ -87,37 +100,37 @@ suite("Query field organizations", () => {
 
 	suite("successfully returns organizations data", () => {
 		test("returns a single organization when ID is provided", async () => {
-			// Assuming we have a known organization ID in the test database
 			const knownOrganizationId = "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5f"; // Replace with actual test data
-			const result = await mercuriusClient.query(Query_organizations, {
+			const result = (await mercuriusClient.query(Query_organizations, {
 				variables: {
 					input: {
 						id: knownOrganizationId,
 					},
 				},
-			});
+			})) as QueryResult;
 
 			expect(result.errors).toBeUndefined();
-			expect(result.data.organizations).toHaveLength(1);
+			expect(Array.isArray(result.data.organizations)).toBe(true);
 			expect(result.data.organizations).not.toBeNull();
+			expect(result.data.organizations?.length).toBe(1);
 			expect(result.data.organizations?.[0]).toEqual(
-				expect.objectContaining({
+				expect.objectContaining<Organization>({
 					id: knownOrganizationId,
 				}),
 			);
 		});
 
 		test("returns multiple organizations (max 20) when no ID is provided", async () => {
-			const result = await mercuriusClient.query(Query_organizations, {
+			const result = (await mercuriusClient.query(Query_organizations, {
 				variables: {},
-			});
+			})) as QueryResult;
 
 			expect(result.errors).toBeUndefined();
 			expect(Array.isArray(result.data.organizations)).toBe(true);
 			expect(result.data.organizations).not.toBeNull();
 			expect(result.data.organizations?.length).toBeLessThanOrEqual(20);
 			expect(result.data.organizations?.[0]).toEqual(
-				expect.objectContaining({
+				expect.objectContaining<Organization>({
 					id: expect.any(String),
 				}),
 			);
@@ -126,13 +139,12 @@ suite("Query field organizations", () => {
 
 	suite("handles unauthorized access", () => {
 		test("returns unauthorized_action error when user lacks permissions", async () => {
-			// Simulate an unauthorized request (implementation depends on your auth setup)
-			const result = await mercuriusClient.query(Query_organizations, {
+			const result = (await mercuriusClient.query(Query_organizations, {
 				headers: {
 					authorization: "bearer invalid_token",
 				},
 				variables: {},
-			});
+			})) as QueryResult;
 
 			expect(result.data.organizations).toEqual(null);
 			expect(result.errors).toEqual(
