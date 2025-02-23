@@ -21,10 +21,6 @@ export default defineConfig({
 		// teardownTimeout: 10000
 
 		hookTimeout: 30000, // 30 seconds for hooks
-		poolOptions: {
-			threads: {
-				singleThread: true,
-			},
-		},
+		pool: "threads",
 	},
 });
