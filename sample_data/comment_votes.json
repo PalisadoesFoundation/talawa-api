@@ -1,0 +1,59 @@
+[
+    {
+      "id": "a3990b3f-00f4-49a5-898f-ecea9de497a5",
+      "commentId": "14be44b7-cb4e-4d94-a115-16016674b02a",
+      "createdAt": "2025-02-10T12:20:00.000Z",
+      "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+      "type": "up_vote"
+    },
+    {
+      "id": "327fc011-fa70-49cf-84ab-64747a8ca4fc",
+      "commentId": "ac01b0f6-7bf0-4463-a3e1-95131da20bb5",
+      "createdAt": "2025-02-10T12:25:00.000Z",
+      "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
+      "type": "down_vote"
+    },
+    {
+      "id": "63c8d09c-cbc5-41fc-8e10-5bcf1c51dc74",
+      "commentId": "53960440-f930-4958-8bff-f7390e4f6e78",
+      "createdAt": "2025-02-09T10:30:00.000Z",
+      "creatorId": "66378abd-8500-8f17-1cf2-990d00000003",
+      "type": "up_vote"
+    },
+    {
+      "id": "303c1abb-7d96-4c24-bc60-27f3532a86ee",
+      "commentId": "1fe6f748-7f14-48a3-a9ba-fa4f2cd3ddbc",
+      "createdAt": "2025-02-09T10:35:00.000Z",
+      "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+      "type": "down_vote"
+    },
+    {
+      "id": "b2007dcf-6e33-4697-add1-593623c828cd",
+      "commentId": "8b681992-8670-43bf-b1f8-67cd82dc4e06",
+      "createdAt": "2025-02-08T08:55:00.000Z",
+      "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
+      "type": "up_vote"
+    },
+    {
+      "id": "b74c0222-aef5-4c33-8468-1b775b6c8c56",
+      "commentId": "17efa258-03cf-4535-addb-2a496f4795ea",
+      "createdAt": "2025-02-08T09:00:00.000Z",
+      "creatorId": "67378abd-8500-8f17-1cf2-990d00000004",
+      "type": "down_vote"
+    },
+    {
+      "id": "b2edacc1-bf22-40b0-899f-d0791e80c7e6",
+      "commentId": "4fbcce27-b64b-4455-87c5-93f8e19997d2",
+      "createdAt": "2025-02-07T09:45:00.000Z",
+      "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
+      "type": "up_vote"
+    },
+    {
+      "id": "7820b237-5df6-42ea-ba7e-41d9c452d2e5",
+      "commentId": "ba206aeb-ffe6-49fd-8599-eac9c367bdda",
+      "createdAt": "2025-02-07T09:50:00.000Z",
+      "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+      "type": "down_vote"
+    }
+  ]
+  
