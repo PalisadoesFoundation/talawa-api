@@ -122,7 +122,6 @@ suite("Query field allUsers", () => {
 		});
 
 		test("returns error when authenticated user is deleted but token is still valid", async () => {
-			// const regularUser2AuthToken = createAndDeleteUser(adminAuthToken)
 			//user2
 			// Create and sign in as regular user
 			const createUser2Result = await mercuriusClient.mutate(
