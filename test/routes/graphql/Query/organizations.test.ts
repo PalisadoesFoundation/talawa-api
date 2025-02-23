@@ -3,8 +3,8 @@ import { expect, suite, test } from "vitest";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	InvalidArgumentsExtensions,
-	UnauthorizedActionExtensions,
 	TalawaGraphQLFormattedError,
+	UnauthorizedActionExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { mercuriusClient } from "../client";
 import { Query_organizations } from "../documentNodes";
@@ -88,7 +88,7 @@ suite("Query field organizations", () => {
 	suite("successfully returns organizations data", () => {
 		test("returns a single organization when ID is provided", async () => {
 			// Assuming we have a known organization ID in the test database
-			const knownOrganizationId = "known-org-id"; // Replace with actual test data
+			const knownOrganizationId = ""; // Replace with actual test data
 			const result = await mercuriusClient.query(Query_organizations, {
 				variables: {
 					input: {
@@ -100,12 +100,12 @@ suite("Query field organizations", () => {
 			expect(result.errors).toBeUndefined();
 			expect(result.data.organizations).toHaveLength(1);
 			expect(result.data.organizations).not.toBeNull();
-			expect(result.data.organizations![0]).toEqual(
+			expect(result.data.organizations?.[0]).toEqual(
 				expect.objectContaining({
 					id: knownOrganizationId,
-					// Add other expected organization fields
-				}),
+				})
 			);
+			
 		});
 
 		test("returns multiple organizations (max 20) when no ID is provided", async () => {
@@ -116,13 +116,13 @@ suite("Query field organizations", () => {
 			expect(result.errors).toBeUndefined();
 			expect(Array.isArray(result.data.organizations)).toBe(true);
 			expect(result.data.organizations).not.toBeNull();
-			expect(result.data.organizations!.length).toBeLessThanOrEqual(20);
-			expect(result.data.organizations && result.data.organizations[0]).toEqual(
+			expect(result.data.organizations?.length).toBeLessThanOrEqual(20);
+			expect(result.data.organizations?.[0]).toEqual(
 				expect.objectContaining({
 					id: expect.any(String),
-					// Add other expected organization fields
-				}),
+				})
 			);
+			
 		});
 	});
 
