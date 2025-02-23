@@ -164,7 +164,7 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * More information can be found at: {@link https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client}
 	 */
-	MINIO_ROOT_USER: Type.String(),
+	MINIO_ROOT_USER: Type.Optional(Type.String({ minLength: 1 })),
 	/**
 	 * More information can be found at: {@link https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client}
 	 */

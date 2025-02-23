@@ -109,9 +109,11 @@ export async function ensureAdministratorExists(): Promise<boolean> {
 				.update(schema.usersTable)
 				.set({ role: "administrator" })
 				.where(sql`email_address = ${email}`);
-			console.log("Role Change: Updated user role to administrator");
+			console.log(
+				"\x1b[33mRole Change: Updated user role to administrator\x1b[0m\n",
+			);
 		} else {
-			console.log("\x1b[33mFound: Administrator user already exists\x1b[0m \n");
+			console.log("\x1b[32mFound:\x1b[0m Administrator user already exists");
 		}
 		return true;
 	}
