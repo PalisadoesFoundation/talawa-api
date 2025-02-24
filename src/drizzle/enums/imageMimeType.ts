@@ -6,6 +6,7 @@ import { z } from "zod";
 export const imageMimeTypeEnum = z.enum([
 	"image/avif",
 	"image/jpeg",
+	"image/jpg",
 	"image/png",
 	"image/webp",
 ]);

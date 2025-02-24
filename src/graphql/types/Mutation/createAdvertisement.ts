@@ -12,6 +12,8 @@ import {
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+//This file contains the logic for the createAdvertisement mutation.It Handles input validation, database insertion, file uploads to MinIO, and metadata storage for the createAdvertisement mutation.
+
 const mutationCreateAdvertisementArgumentsSchema = z.object({
 	input: mutationCreateAdvertisementInputSchema.transform(async (arg, ctx) => {
 		let attachments:
@@ -19,7 +21,7 @@ const mutationCreateAdvertisementArgumentsSchema = z.object({
 					mimetype: z.infer<typeof advertisementAttachmentMimeTypeEnum>;
 			  })[]
 			| undefined;
-
+		console.log("Raw attachments:", arg.attachments);
 		if (arg.attachments !== undefined) {
 			const rawAttachments = await Promise.all(arg.attachments);
 			const { data, error, success } = advertisementAttachmentMimeTypeEnum
@@ -64,6 +66,7 @@ builder.mutationField("createAdvertisement", (t) =>
 		},
 		description: "Mutation field to create an advertisement.",
 		resolve: async (_parent, args, ctx) => {
+			// Authentication Check
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -161,7 +164,7 @@ builder.mutationField("createAdvertisement", (t) =>
 					},
 				});
 			}
-
+			//Prevents unauthorized users from creating advertisements
 			const currentUserOrganizationMembership =
 				existingOrganization.membershipsWhereOrganization[0];
 

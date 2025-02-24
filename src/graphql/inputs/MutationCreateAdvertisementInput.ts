@@ -4,6 +4,8 @@ import { advertisementsTableInsertSchema } from "~/src/drizzle/tables/advertisem
 import { builder } from "~/src/graphql/builder";
 import { AdvertisementType } from "~/src/graphql/enums/AdvertisementType";
 
+//This file defines the input for the createAdvertisement mutation. It uses a Zod schema to validate and transform incoming data and then exposes it as a GraphQL input type.
+
 export const mutationCreateAdvertisementInputSchema =
 	advertisementsTableInsertSchema
 		.pick({

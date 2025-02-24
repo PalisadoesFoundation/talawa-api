@@ -15,7 +15,7 @@ import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
 /**
- * Drizzle orm postgres table definition for advertisements.
+ * These file define how data is stored in your PostgreSQL database using Drizzle ORM.
  */
 export const advertisementsTable = pgTable(
 	"advertisements",

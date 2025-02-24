@@ -2029,6 +2029,9 @@ input MutationSignUpInput {
 
 """"""
 input MutationUpdateAdvertisementInput {
+  """Attachments of the advertisement."""
+  attachments: [Upload!]
+
   """Custom information about the advertisement."""
   description: String
 
@@ -2835,6 +2838,12 @@ type Query {
   """Query field to read an advertisement."""
   advertisement(input: QueryAdvertisementInput!): Advertisement
 
+  """Query field to read multiple advertisements for an organization."""
+  advertisementsByOrg(
+    """Input for fetching advertisements by organization ID"""
+    input: QueryAdvertisementsByOrgInput!
+  ): [Advertisement!]
+
   """Query field to read an agenda folder."""
   agendaFolder(input: QueryAgendaFolderInput!): AgendaFolder
 
@@ -2902,6 +2911,10 @@ type Query {
 input QueryAdvertisementInput {
   """Global id of the advertisement."""
   id: String!
+}
+
+input QueryAdvertisementsByOrgInput {
+  organizationId: String!
 }
 
 """"""
