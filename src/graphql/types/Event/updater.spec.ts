@@ -19,7 +19,9 @@ const MockEvent = {
 const drizzleClientMock = {
 	query: {
 		usersTable: {
-			findFirst: vi.fn().mockImplementation(() => Promise.resolve(null)) as vi.Mock<() => Promise<null>>,
+			findFirst: vi.fn().mockImplementation(() => Promise.resolve(null)) as vi.Mock<
+				() => Promise<null>
+			>,
 		},
 	},
 } as unknown as FastifyInstance["drizzleClient"];
