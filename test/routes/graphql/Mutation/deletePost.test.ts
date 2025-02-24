@@ -198,7 +198,6 @@ suite("Mutation field deletePost", () => {
 		"when a non-admin member attempts to delete another user's post",
 		() => {
 			test("should return an error with unauthorized_action_on_arguments_associated_resources extensions code", async () => {
-				// Create organization and post as admin.
 				const createOrgResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
