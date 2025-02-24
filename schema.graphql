@@ -2728,6 +2728,20 @@ A field whose value conforms to the standard E.164 format as specified in: https
 """
 scalar PhoneNumber
 
+type Plugin {
+  """Creator of the plugin"""
+  pluginCreatedBy: String
+
+  """Description of the plugin"""
+  pluginDesc: String
+
+  """Name of the plugin"""
+  pluginName: String
+
+  """List of organization IDs where plugin is not installed"""
+  uninstalledOrgs: [String!]
+}
+
 type Post {
   """Array of attachments."""
   attachments: [PostAttachment!]
@@ -2870,6 +2884,10 @@ type Query {
 
   """Query field to read an organization."""
   organization(input: QueryOrganizationInput!): Organization
+  plugin(input: QueryPluginInput!): Plugin
+
+  """Fetch all available plugins"""
+  plugins: [Plugin!]
 
   """Query field to read a post."""
   post(input: QueryPostInput!): Post
@@ -2959,6 +2977,11 @@ input QueryFundInput {
 input QueryOrganizationInput {
   """Global id of the organization."""
   id: String!
+}
+
+input QueryPluginInput {
+  """Name of the plugin to query"""
+  pluginName: String!
 }
 
 """"""
