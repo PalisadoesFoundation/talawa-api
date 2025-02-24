@@ -24,6 +24,7 @@
     "graphql": "^16.10.0",
     "graphql-scalars": "^1.24.0",
     "graphql-upload-minimal": "^1.6.1",
+    "inquirer": "^12.4.2",
     "mercurius": "^16.0.1",
     "mercurius-upload": "^8.0.0",
     "minio": "^8.0.4",
