@@ -43,7 +43,7 @@ ENV BASH_ENV=/etc/profile.d/fnm.sh
 RUN echo "source /etc/profile.d/fnm.sh" >> /home/talawa/.bashrc
 USER talawa
 # Installs fnm.
-RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell 
+RUN curl -fsSL --proto '=https' --tlsv1.2 https://fnm.vercel.app/install | bash -s -- --skip-shell 
 ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 WORKDIR /home/talawa/api
   
