@@ -41,6 +41,12 @@ importers:
       close-with-grace:
         specifier: ^2.2.0
         version: 2.2.0
+<<<<<<< HEAD
+=======
+      dotenv:
+        specifier: ^16.4.7
+        version: 16.4.7
+>>>>>>> 8b14b49030487fe20bdfd09aca2025a6eb432c4d
       drizzle-orm:
         specifier: ^0.39.1
         version: 0.39.2(postgres@3.4.5)
