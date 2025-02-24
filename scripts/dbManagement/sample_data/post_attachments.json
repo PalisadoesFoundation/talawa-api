@@ -1,0 +1,51 @@
+[
+    {
+      "id": "8a0aff46-6f59-4626-9005-6528fdcab7e8",
+      "createdAt": "2025-02-10T12:10:00.000Z",
+      "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+      "postId": "2778f4a2-a6f1-45cc-857f-727ca942899d",
+      "mimeType": "image/webp",
+      "name": "DALL·E_talawa_1"
+    },
+    {
+      "id": "e1bba4bb-5edd-40fd-9baf-741647d26ec0",
+      "createdAt": "2025-02-10T12:11:00.000Z",
+      "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+      "postId": "98cef234-af91-4a11-b33f-5fd6cf41219c",
+      "mimeType": "image/webp",
+      "name": "DALL·E_talawa_2"
+    },
+    {
+      "id": "5065ab3d-51bd-4c6e-b3e3-389af5610cc3",
+      "createdAt": "2025-02-10T12:20:00.000Z",
+      "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
+      "postId": "a44d75a0-267f-4429-b03c-a26cc4ec56dc",
+      "mimeType": "image/webp",
+      "name": "DALL·E_talawa_3"
+    },
+    {
+      "id": "ea15240d-269d-4c94-8f7c-fa4723bd3413",
+      "createdAt": "2025-02-10T12:21:00.000Z",
+      "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
+      "postId": "f3da248b-ee18-4197-bd0b-de5480c010ee",
+      "mimeType": "image/webp",
+      "name": "DALL·E_talawa_4"
+    },
+    {
+      "id": "c898e282-29e4-4f0c-abb3-0829c6091575",
+      "createdAt": "2025-02-10T12:30:00.000Z",
+      "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+      "postId": "885bee36-2751-4d78-bfd4-7ededdd89a0f",
+      "mimeType": "image/webp",
+      "name": "DALL·E_talawa_5"
+    },
+    {
+      "id": "685b4d55-9627-474d-a8d8-d36aaf34a93d",
+      "createdAt": "2025-02-10T12:31:00.000Z",
+      "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+      "postId": "ecaeed44-d0b2-4559-bad6-ab6f49362325",
+      "mimeType": "image/webp",
+      "name": "DALL·E_talawa_6"
+    }
+  ]
+  
