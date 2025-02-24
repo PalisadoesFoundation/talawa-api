@@ -326,29 +326,29 @@ suite("Mutation field deletePost", () => {
 				});
 			};
 
-			// Cast our fakeTransaction to the correct type.
-			server.drizzleClient.transaction =
-				fakeTransaction as typeof server.drizzleClient.transaction;
+			try {
+				server.drizzleClient.transaction =
+					fakeTransaction as typeof server.drizzleClient.transaction;
 
-			const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
-				headers: { authorization: `bearer ${adminauthToken}` },
-				variables: { input: { id: postId } },
-			});
+				const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
+					headers: { authorization: `bearer ${adminauthToken}` },
+					variables: { input: { id: postId } },
+				});
 
-			// Restore the original transaction method.
-			server.drizzleClient.transaction = originalTransaction;
-
-			expect(deleteResult.data?.deletePost ?? null).toBeNull();
-			expect(deleteResult.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unexpected",
+				expect(deleteResult.data?.deletePost ?? null).toBeNull();
+				expect(deleteResult.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unexpected",
+							}),
+							path: ["deletePost"],
 						}),
-						path: ["deletePost"],
-					}),
-				]),
-			);
+					]),
+				);
+			} finally {
+				server.drizzleClient.transaction = originalTransaction;
+			}
 		});
 	});
 
@@ -392,22 +392,24 @@ suite("Mutation field deletePost", () => {
 			assertToBeNonNullish(postId);
 
 			const originalRemoveObjects = server.minio.client.removeObjects;
-			server.minio.client.removeObjects = async () => {
-				throw new Error("Minio removal error");
-			};
+			try {
+				server.minio.client.removeObjects = async () => {
+					throw new Error("Minio removal error");
+				};
 
-			const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
-				headers: { authorization: `bearer ${adminauthToken}` },
-				variables: { input: { id: postId } },
-			});
+				const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
+					headers: { authorization: `bearer ${adminauthToken}` },
+					variables: { input: { id: postId } },
+				});
 
-			server.minio.client.removeObjects = originalRemoveObjects;
-
-			expect(deleteResult.data?.deletePost ?? null).toBeNull();
-			expect(deleteResult.errors).toBeDefined();
-			expect(deleteResult.errors?.[0]?.message).toContain(
-				"Minio removal error",
-			);
+				expect(deleteResult.data?.deletePost ?? null).toBeNull();
+				expect(deleteResult.errors).toBeDefined();
+				expect(deleteResult.errors?.[0]?.message).toContain(
+					"Minio removal error",
+				);
+			} finally {
+				server.minio.client.removeObjects = originalRemoveObjects;
+			}
 		});
 	});
 
