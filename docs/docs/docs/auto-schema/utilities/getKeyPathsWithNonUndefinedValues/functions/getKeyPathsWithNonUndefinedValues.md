@@ -6,7 +6,7 @@
 
 > **getKeyPathsWithNonUndefinedValues**\<`T`\>(`__namedParameters`): `Paths`\<`T`\>[]
 
-Defined in: [src/utilities/getKeyPathsWithNonUndefinedValues.ts:54](https://github.com/Suyash878/talawa-api/blob/dcefc5853f313fc5e9e097849457ef0d144bcf61/src/utilities/getKeyPathsWithNonUndefinedValues.ts#L54)
+Defined in: [src/utilities/getKeyPathsWithNonUndefinedValues.ts:54](https://github.com/Suyash878/talawa-api/blob/dd80c416ddd46afdb07c628dc824194bc09930cc/src/utilities/getKeyPathsWithNonUndefinedValues.ts#L54)
 
 This function takes in a javascript object and a list of key paths within that object as arguments and outputs all paths amongst those key paths that correspond to a non-undefined value.
 
