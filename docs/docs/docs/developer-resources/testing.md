@@ -24,6 +24,35 @@ In the context of the rest api interfaces exposed by Talawa API it means making 
 
 In the context of the graphql api interfaces exposed by Talawa API it means triggering standard graphql query, mutation and subscription operations against the graphql api endpoint(over HTTP POST method for our use case) and asserting against the graphql responses.
 
+### Unit Tests vs Integration Testing
+
+The current codebase has the simplest implementation for graphql which is doing everything within resolvers. It is good for now because it lets the project move fast, break things and quickly iterate on changes. When a stable api is reached, then the project can be architected into something that is more suited to unit tests.
+
+We started implementing integration tests because for the current requirements the best kind of testing is to ensure that the graphql operations return what they are expected to return when talawa clients make those operations.
+
+The GraphQL schema cannot be tested without running the graphql server itself because it is an internal implementation detail of the graphql engine. The old approach, when the API used a MongoDB backend, only tested the resolvers which does not account for this.
+
+The end users will be interacting with the graphql schema and not the typescript graphql resolvers. So, the tests should be written in a way that asserts against the runtime behavior of that graphql schema.
+
+This does mean that code coverage is not possible because vitest cannot know what typescript module paths are being traversed inside the tests because at runtime those typescript modules are compiled into node.js(v8) internal implementation of byte code.
+
+#### Integration Testing
+
+Based on this design, we only do integration testing for GraphQL queries and mutations in these folders.
+
+1. `src/Graphql/mutation`
+1. `src/Graphql/query`
+
+**NOTE:** No unit testing is done in these folders.
+
+#### Unit Testing
+
+We only do unit testing the return type of the Graphql types resolver in these folders.
+
+1. `src/graphql/types/*`
+
+**NOTE:** No integration testing is done in these folders.
+
 ### Directory Structure
 
 The `tests/server.ts` file exports the Talawa API server instance that can be imported and used in different api tests. This Talawa API server instance is shared between api tests.
