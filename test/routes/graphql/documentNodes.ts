@@ -526,3 +526,33 @@ export const Mutation_deleteAgendaItem = gql(`
     }
   }
 `);
+
+export const Mutation_deletePost = gql(`
+  mutation Mutation_deletePost($input: MutationDeletePostInput!) {
+    deletePost(input: $input) {
+      id
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);
+
+// For the purpose of this test, we assume you have a mutation for creating a post.
+export const Mutation_createPost = gql(`
+  mutation Mutation_createPost($input: MutationCreatePostInput!) {
+    createPost(input: $input) {
+      id
+      caption
+      pinnedAt
+      organization {
+        id
+      }
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);

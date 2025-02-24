@@ -68,5 +68,9 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ createAgendaItem: { id: string; name: string | null; description: string | null; duration: string | null; type: "general" | "note" | "scripture" | "song" | null; } | null; }, { input: { type: "general" | "note" | "scripture" | "song"; name: string; key?: string | null | undefined; folderId: string; duration?: string | null | undefined; description?: string | null | undefined; }; }, void>;
     "\n  mutation Mutation_deleteAgendaItem($input: MutationDeleteAgendaItemInput!) {\n    deleteAgendaItem(input: $input) {\n      id\n      name\n    }\n  }\n":
       TadaDocumentNode<{ deleteAgendaItem: { id: string; name: string | null; } | null; }, { input: { id: string; }; }, void>;
+    "\n  mutation Mutation_deletePost($input: MutationDeletePostInput!) {\n    deletePost(input: $input) {\n      id\n      attachments {\n        mimeType\n        url\n      }\n    }\n  }\n":
+      TadaDocumentNode<{ deletePost: { id: string; attachments: { mimeType: string | null; url: string | null; }[] | null; } | null; }, { input: { id: string; }; }, void>;
+    "\n  mutation Mutation_createPost($input: MutationCreatePostInput!) {\n    createPost(input: $input) {\n      id\n      caption\n      pinnedAt\n      organization {\n        id\n      }\n      attachments {\n        mimeType\n        url\n      }\n    }\n  }\n":
+      TadaDocumentNode<{ createPost: { id: string; caption: string | null; pinnedAt: string | null; organization: { id: string; } | null; attachments: { mimeType: string | null; url: string | null; }[] | null; } | null; }, { input: { organizationId: string; isPinned?: boolean | null | undefined; caption: string; attachments?: unknown[] | null | undefined; }; }, void>;
   }
 }
