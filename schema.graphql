@@ -2841,6 +2841,9 @@ type Query {
   """Query field to read an agenda item."""
   agendaItem(input: QueryAgendaItemInput!): AgendaItem
 
+  """Query field to read all Users."""
+  allUsers(after: String, before: String, first: Int, last: Int, name: String): QueryAllUsersConnection
+
   """Query field to read a chat."""
   chat(input: QueryChatInput!): Chat
 
@@ -2911,6 +2914,16 @@ input QueryAgendaFolderInput {
 input QueryAgendaItemInput {
   """Global id of the agenda item."""
   id: String!
+}
+
+type QueryAllUsersConnection {
+  edges: [QueryAllUsersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type QueryAllUsersConnectionEdge {
+  cursor: String!
+  node: User
 }
 
 """"""
