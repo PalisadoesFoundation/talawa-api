@@ -413,21 +413,11 @@ suite("Mutation field deletePost", () => {
 
 	suite("when the client is authorized and the post exists", () => {
 		test("should delete the post and return the deleted post data", async () => {
-			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
-				},
-			});
-			assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
-			const adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
 			const createOrganizationResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
 					headers: {
-						authorization: `bearer ${adminAuthToken}`,
+						authorization: `bearer ${adminauthToken}`,
 					},
 					variables: {
 						input: {
@@ -451,7 +441,7 @@ suite("Mutation field deletePost", () => {
 				Mutation_createPost,
 				{
 					headers: {
-						authorization: `bearer ${adminAuthToken}`,
+						authorization: `bearer ${adminauthToken}`,
 					},
 					variables: {
 						input: {
@@ -466,7 +456,7 @@ suite("Mutation field deletePost", () => {
 			assertToBeNonNullish(postId);
 
 			const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
+				headers: { authorization: `bearer ${adminauthToken}` },
 				variables: { input: { id: postId } },
 			});
 			assertToBeNonNullish(deleteResult.data.deletePost);
