@@ -2890,7 +2890,7 @@ type Query {
   plugin(input: QueryPluginInput!): Plugin
 
   """Fetch all available plugins"""
-  plugins: [Plugin!]
+  plugins(after: String, before: String, first: Int, last: Int): [Plugin!]
 
   """Query field to read a post."""
   post(input: QueryPostInput!): Post

@@ -7,6 +7,12 @@ import pluginsData from "../Plugins/pluginData.json" assert { type: "json" };
 builder.queryField("plugins", (t) =>
 	t.field({
 		type: [PluginRef],
+		args: {
+			after: t.arg.string(),
+			before: t.arg.string(),
+			first: t.arg.int(),
+			last: t.arg.int(),
+		},
 		description: "Fetch all available plugins",
 		resolve: async (_parent, _args, ctx) => {
 			try {
@@ -32,6 +38,10 @@ builder.queryField("plugins", (t) =>
 			}
 		},
 	}),
+);
+
+const pluginCache = new Map(
+	pluginsData.map((plugin) => [plugin.pluginName.toLowerCase(), plugin]),
 );
 
 builder.queryField("plugin", (t) =>
@@ -68,9 +78,7 @@ builder.queryField("plugin", (t) =>
 					});
 				}
 
-				const plugin = pluginsData.find(
-					(p) => p.pluginName.toLowerCase() === input.pluginName.toLowerCase(),
-				);
+				const plugin = pluginCache.get(input.pluginName.toLowerCase());
 
 				if (!plugin) {
 					throw new TalawaGraphQLError({
