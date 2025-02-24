@@ -18,6 +18,7 @@ export const Mutation_createUser =
             addressLine2
             birthDate
             city
+            id
             countryCode
             createdAt
             description
@@ -25,7 +26,6 @@ export const Mutation_createUser =
             emailAddress
             employmentStatus
             homePhoneNumber
-            id
             isEmailAddressVerified
             maritalStatus
             mobilePhoneNumber
@@ -242,6 +242,57 @@ export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
         workPhoneNumber
     }
 }`);
+
+export const Query_allUsers = gql(`
+    query Query_allUsers(
+      $first: Int,
+      $after: String,
+      $last: Int,
+      $before: String,
+      $name: String
+    ) {
+      allUsers(
+        first: $first,
+        after: $after,
+        last: $last,
+        before: $before,
+        name: $name
+      ) {
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+        edges {
+          cursor
+          node {
+            id
+            name
+            emailAddress
+            role
+            createdAt
+            isEmailAddressVerified
+            addressLine1
+            addressLine2
+            birthDate
+            city
+            countryCode
+            description
+            educationGrade
+            employmentStatus
+            homePhoneNumber
+            maritalStatus
+            mobilePhoneNumber
+            natalSex
+            postalCode
+            state
+            workPhoneNumber
+          }
+        }
+      }
+    }
+  `);
 
 export const Query_user_creator =
 	gql(`query Query_user_creator($input: QueryUserInput!) {

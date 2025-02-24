@@ -7,6 +7,16 @@ sidebar_position: 1
 
 Welcome to the Talawa-API developer resources.
 
+## Design Philosophy
+
+Coming Soon
+
+### Authentication
+
+We have kept the authentication system very minimal so that a proper authentication system can be put in place later on. We feel that some kind of typescript based authentication library that can integrate with the current database schema or a self hosted service with its own database is needed.
+
+For this reason, the authentication system needs to be detached from the GraphQL schema and be handled using REST APIs using something like Better Auth: https://github.com/better-auth/better-auth 
+
 ## Important Directories
 
 Review these important locations before you start your coding journey.
