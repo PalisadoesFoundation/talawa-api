@@ -195,7 +195,7 @@ suite("Mutation field deletePost", () => {
 	});
 
 	suite(
-		"when a non-admin member attempts to delete another user's post",
+		"when a non-admin member deletes another's post",
 		() => {
 			test("should return an error with unauthorized_action_on_arguments_associated_resources extensions code", async () => {
 				// Create organization and post as admin.
