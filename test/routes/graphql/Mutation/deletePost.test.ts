@@ -100,7 +100,6 @@ suite("Mutation field deletePost", () => {
 			);
 			const existingOrganizationId =
 				createOrganizationResult.data?.createOrganization?.id;
-			console.log("existingOrganizationId", existingOrganizationId);
 			assertToBeNonNullish(existingOrganizationId);
 
 			const createPostResult = await mercuriusClient.mutate(
@@ -119,19 +118,16 @@ suite("Mutation field deletePost", () => {
 				},
 			);
 			const postId = createPostResult.data?.createPost?.id;
-			console.log("postId", postId);
 			assertToBeNonNullish(postId);
 
 			const { authToken: regularAuthToken } =
 				await createRegularUserUsingAdmin();
-			console.log("regularAuthToken", regularAuthToken);
 
 			// Attempt to delete the post as the regular user.
 			const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
 				headers: { authorization: `bearer ${regularAuthToken}` },
 				variables: { input: { id: postId } },
 			});
-			console.log("deleteResult", deleteResult);
 
 			expect(deleteResult.data?.deletePost).toBeNull();
 			expect(deleteResult.errors).toEqual(
@@ -199,7 +195,7 @@ suite("Mutation field deletePost", () => {
 	});
 
 	suite(
-		"when the client is a member of the organization with non-admin role and is not the creator",
+		"when a non-admin member attempts to delete another user's post",
 		() => {
 			test("should return an error with unauthorized_action_on_arguments_associated_resources extensions code", async () => {
 				// Create organization and post as admin.
@@ -242,7 +238,6 @@ suite("Mutation field deletePost", () => {
 
 				const { authToken: regularAuthToken, userId: regularUserId } =
 					await createRegularUserUsingAdmin();
-				console.log("regularUserId", regularUserId);
 
 				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 					headers: { authorization: `bearer ${adminauthToken}` },
@@ -428,7 +423,6 @@ suite("Mutation field deletePost", () => {
 			});
 			assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
 			const adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
-			console.log("adminAuthToken", adminAuthToken);
 			const createOrganizationResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -451,7 +445,6 @@ suite("Mutation field deletePost", () => {
 			);
 			const existingOrganizationId =
 				createOrganizationResult.data?.createOrganization?.id;
-			console.log("existingOrganizationId", existingOrganizationId);
 			assertToBeNonNullish(existingOrganizationId);
 
 			const createPostResult = await mercuriusClient.mutate(
@@ -470,7 +463,6 @@ suite("Mutation field deletePost", () => {
 				},
 			);
 			const postId = createPostResult.data?.createPost?.id;
-			console.log("postId", postId);
 			assertToBeNonNullish(postId);
 
 			const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
