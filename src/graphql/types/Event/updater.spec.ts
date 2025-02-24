@@ -19,7 +19,7 @@ const MockEvent = {
 const drizzleClientMock = {
 	query: {
 		usersTable: {
-			findFirst: vi.fn() as jest.Mock,
+			findFirst: vi.fn().mockImplementation(() => Promise.resolve(null)) as vi.Mock<any, Promise<any>>,
 		},
 	},
 } as unknown as FastifyInstance["drizzleClient"];
