@@ -74,8 +74,8 @@ export const minioClient = fastifyPlugin(async (fastify) => {
 		client,
 		config: {
 			endPoint: fastify.envConfig.API_MINIO_END_POINT,
-			port: fastify.envConfig.API_MINIO_PORT,
-		  },
+			port: fastify.envConfig.API_MINIO_PORT
+		}
 	});
 }, {});
 

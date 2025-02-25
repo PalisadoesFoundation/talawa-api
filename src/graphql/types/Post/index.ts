@@ -8,3 +8,4 @@ import "./organization";
 import "./updater";
 import "./upVoters";
 import "./upVotesCount";
+import "./UploadUrlResponse";

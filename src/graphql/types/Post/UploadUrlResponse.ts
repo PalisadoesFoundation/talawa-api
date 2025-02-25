@@ -15,4 +15,3 @@ UploadUrlResponse.implement({
     fileUrl: t.exposeString("fileUrl"),
   }),
 });
-    
