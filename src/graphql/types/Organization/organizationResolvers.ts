@@ -8,7 +8,7 @@ const organizationConnectionListArgumentsSchema = z.object({
 	skip: z.number().min(0).default(0),
 });
 
-builder.queryField("organizationConnectionList", (t) =>
+export const organizationConnectionList = builder.queryField("organizationConnectionList", (t) =>
 	t.field({
 		args: {
 			first: t.arg({ type: "Int", required: false }),
