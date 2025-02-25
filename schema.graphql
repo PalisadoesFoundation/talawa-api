@@ -1420,6 +1420,9 @@ type Mutation {
   """Mutation field to update an organization membership."""
   updateOrganizationMembership(input: MutationUpdateOrganizationMembershipInput!): Organization
 
+  """Toggle plugin installation status for an organization"""
+  updatePluginStatus(orgId: String!, pluginId: String!): Plugin
+
   """Mutation field to update a post."""
   updatePost(input: MutationUpdatePostInput!): Post
 
@@ -2729,6 +2732,9 @@ A field whose value conforms to the standard E.164 format as specified in: https
 scalar PhoneNumber
 
 type Plugin {
+  """Unique identifier for the plugin"""
+  id: String
+
   """Creator of the plugin"""
   pluginCreatedBy: String
 
@@ -2738,7 +2744,7 @@ type Plugin {
   """Name of the plugin"""
   pluginName: String
 
-  """List of organization IDs where plugin is not installed"""
+  """List of organization IDs where the plugin is not installed"""
   uninstalledOrgs: [String!]
 }
 
@@ -2885,12 +2891,12 @@ type Query {
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Fetch all available plugins"""
+  getPlugins: [Plugin!]
+
   """Query field to read an organization."""
   organization(input: QueryOrganizationInput!): Organization
   plugin(input: QueryPluginInput!): Plugin
-
-  """Fetch all available plugins"""
-  plugins(after: String, before: String, first: Int, last: Int): [Plugin!]
 
   """Query field to read a post."""
   post(input: QueryPostInput!): Post
@@ -2993,6 +2999,9 @@ input QueryOrganizationInput {
 }
 
 input QueryPluginInput {
+  """ID of the plugin to query"""
+  id: String
+
   """Name of the plugin to query"""
   pluginName: String!
 }

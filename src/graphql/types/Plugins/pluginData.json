@@ -1,26 +1,30 @@
 [
 	{
+		"id": "c1f8a0b3-9d4e-4a7b-b6f5-1a2d3c4e5f6g",
 		"pluginName": "Posts",
 		"pluginCreatedBy": "Talawa Team",
 		"pluginDesc": "Allow users to create, comment and like and share the content in the form of Pictures and Videos.",
-		"uninstalledOrgs": ["62ccfccd3eb7fd2a30f41601"]
+		"uninstalledOrgs": ["ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5e"]
 	},
 	{
+		"id": "d2e9b1a4-7c5f-4d3b-8e6f-2g3h4i5j6k7l",
 		"pluginName": "Events",
 		"pluginCreatedBy": "Talawa Team",
-		"pluginDesc": "Allow users to register and attend for new events with a inbuilt calendar to keep track of daily events.",
-		"uninstalledOrgs": ["62ccfccd3eb7fd2a30f41601"]
+		"pluginDesc": "Allow users to register and attend for new events with an inbuilt calendar to keep track of daily events.",
+		"uninstalledOrgs": ["ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5e"]
 	},
 	{
+		"id": "e3f0c2d5-8g6h-4i7j-9k8l-3m4n5o6p7q8r",
 		"pluginName": "Donation",
 		"pluginCreatedBy": "Talawa Team",
-		"pluginDesc": "Enables members of the organization to do one time or reccurinng donations to an organization",
-		"uninstalledOrgs": ["62ccfccd3eb7fd2a30f41601"]
+		"pluginDesc": "Enables members of the organization to do one-time or recurring donations to an organization.",
+		"uninstalledOrgs": ["ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5e"]
 	},
 	{
+		"id": "f4g1h3i6-9j8k-4l7m-0n9o-5p6q7r8s9t0u",
 		"pluginName": "Chats",
 		"pluginCreatedBy": "Talawa Team",
 		"pluginDesc": "User can share messages with other users in a chat user interface.",
-		"uninstalledOrgs": ["62ccfccd3eb7fd2a30f41601"]
+		"uninstalledOrgs": []
 	}
 ]
