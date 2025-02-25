@@ -1288,6 +1288,10 @@ type Mutation {
   """Mutation field to create a post vote."""
   createPostVote(input: MutationCreatePostVoteInput!): Post
 
+  """Mutation field to create a PresignedUrl."""
+  createPresignedUrl(fileName: String!, fileType: String!): UploadUrlResponse!
+
+
   """Mutation field to create a tag."""
   createTag(input: MutationCreateTagInput!): Tag
 
@@ -1481,6 +1485,8 @@ input MutationCreateAgendaFolderInput {
   """
   parentFolderId: ID
 }
+
+
 
 """"""
 input MutationCreateAgendaItemInput {
@@ -2811,6 +2817,12 @@ type PostDownVotersConnection {
 type PostDownVotersConnectionEdge {
   cursor: String!
   node: User
+}
+
+""""""
+type UploadUrlResponse {
+  presignedUrl: String!
+  fileUrl: String!
 }
 
 """"""
