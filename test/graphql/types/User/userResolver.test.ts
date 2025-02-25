@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
+import "~/src/graphql/types/User/userResolvers";
 
 // Mock the required imports to ensure coverage
 vi.mock("~/src/graphql/builder", () => ({
