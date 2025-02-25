@@ -16,7 +16,12 @@ vi.mock("~/src/graphql/types/User/User", () => ({
 }));
 
 vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
-	TalawaGraphQLError: class MockError extends Error {},
+	TalawaGraphQLError: class MockError extends Error {
+		constructor(options: { extensions: any; message?: string }) {
+			super(options.message);
+			this.extensions = options.extensions;
+		}
+	},
 }));
 
 vi.mock("~/src/drizzleClient", () => ({
@@ -39,7 +44,10 @@ describe("User Resolvers", () => {
 
 	test("should handle invalid arguments", () => {
 		try {
-			throw new TalawaGraphQLError("Invalid arguments");
+			throw new TalawaGraphQLError({
+				extensions: { code: "invalid_arguments", issues: [] },
+				message: "Invalid arguments",
+			});
 		} catch (error) {
 			expect(error).toBeInstanceOf(TalawaGraphQLError);
 		}
