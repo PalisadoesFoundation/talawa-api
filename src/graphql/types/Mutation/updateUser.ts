@@ -128,8 +128,7 @@ builder.mutationField("updateUser", (t) =>
 
 			if (
 				currentUser.role !== "administrator" &&
-				parsedArgs.input.role !== undefined &&
-				parsedArgs.input.role !== existingUser.role
+				parsedArgs.input.id !== currentUserId
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {

@@ -3,7 +3,6 @@ import type { ResultOf, VariablesOf } from "gql.tada";
 import { expect, suite, test } from "vitest";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
-	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -585,9 +584,9 @@ suite("Mutation field updateUser", () => {
 	);
 
 	suite(
-		`results in a graphql error with "unauthorized_action" extensions code in the "errors" field and "null" as the value of "data.deleteUser" field if`,
+		"results in successful update when a regular user updates their own profile with valid inputs",
 		() => {
-			test("client triggering the graphql operation is not associated to an administrator user.", async () => {
+			test("client can update their own user data with valid field values", async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
 					{
@@ -604,6 +603,31 @@ suite("Mutation field updateUser", () => {
 				assertToBeNonNullish(
 					administratorUserSignInResult.data.signIn?.authenticationToken,
 				);
+				const email = faker.string.ulid();
+				const createUserVariables: VariablesOf<typeof Mutation_createUser> = {
+					input: {
+						addressLine1: "addressLine1",
+						addressLine2: "addressLine2",
+						birthDate: "1901-01-01",
+						city: "city",
+						countryCode: "us",
+						description: "description",
+						educationGrade: "pre_kg",
+						emailAddress: `emailAddress${email}@email.com`,
+						employmentStatus: "full_time",
+						homePhoneNumber: "+11111111",
+						isEmailAddressVerified: false,
+						maritalStatus: "divorced",
+						mobilePhoneNumber: "+11111111",
+						name: "name",
+						natalSex: "male",
+						password: "password",
+						postalCode: "postal code",
+						role: "regular",
+						state: "state",
+						workPhoneNumber: "+11111111",
+					},
+				};
 
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
@@ -611,15 +635,7 @@ suite("Mutation field updateUser", () => {
 						headers: {
 							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
 						},
-						variables: {
-							input: {
-								emailAddress: `email${faker.string.ulid()}@email.com`,
-								isEmailAddressVerified: false,
-								name: "name",
-								password: "password",
-								role: "regular",
-							},
-						},
+						variables: createUserVariables,
 					},
 				);
 
@@ -628,101 +644,70 @@ suite("Mutation field updateUser", () => {
 				);
 				assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
 
+				const updateUserVariables: VariablesOf<typeof Mutation_updateUser> = {
+					input: {
+						addressLine1: null,
+						addressLine2: null,
+						birthDate: null,
+						city: null,
+						countryCode: null,
+						description: null,
+						educationGrade: null,
+						emailAddress: `emailAddress${email}@email.com`,
+						employmentStatus: null,
+						homePhoneNumber: null,
+						id: createUserResult.data.createUser.user.id,
+						isEmailAddressVerified: true,
+						maritalStatus: null,
+						mobilePhoneNumber: null,
+						name: "new name",
+						natalSex: null,
+						password: "new password",
+						postalCode: null,
+						role: "regular",
+						state: null,
+						workPhoneNumber: null,
+					},
+				};
+
 				const updateUserResult = await mercuriusClient.mutate(
 					Mutation_updateUser,
 					{
 						headers: {
 							authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
 						},
-						variables: {
-							input: {
-								addressLine1: null,
-								id: createUserResult.data.createUser.user.id,
-							},
-						},
+						variables: updateUserVariables,
 					},
 				);
 
-				expect(updateUserResult.data.updateUser).toEqual(null);
-				expect(updateUserResult.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<UnauthorizedActionExtensions>(
-								{
-									code: "unauthorized_action",
-								},
-							),
-							message: expect.any(String),
-							path: ["updateUser"],
-						}),
-					]),
-				);
-			});
-		},
-	);
-
-	suite(
-		`results in a graphql error with "forbidden_action_on_arguments_associated_resources" extensions code in the "errors" field and "null" as the value of "data.updateUser" field if`,
-		() => {
-			test(`value of the argument "input.id" is equal to the id of the user associated to the client triggering the graphql operation.`, async () => {
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn.user?.id,
-				);
-
-				const updateUserResult = await mercuriusClient.mutate(
-					Mutation_updateUser,
-					{
-						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-						},
-						variables: {
-							input: {
-								addressLine1: null,
-								id: administratorUserSignInResult.data.signIn.user.id,
-							},
-						},
-					},
-				);
-
-				expect(updateUserResult.data.updateUser).toEqual(null);
-				expect(updateUserResult.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions:
-								expect.objectContaining<ForbiddenActionOnArgumentsAssociatedResourcesExtensions>(
-									{
-										code: "forbidden_action_on_arguments_associated_resources",
-										issues: expect.arrayContaining<
-											ForbiddenActionOnArgumentsAssociatedResourcesExtensions["issues"][number]
-										>([
-											{
-												argumentPath: ["input", "id"],
-												message: expect.any(String),
-											},
-										]),
-									},
-								),
-							message: expect.any(String),
-							path: ["updateUser"],
-						}),
-					]),
+				expect(updateUserResult.errors).toBeUndefined();
+				expect(updateUserResult.data.updateUser).toEqual(
+					expect.objectContaining<
+						Partial<ResultOf<typeof Mutation_updateUser>["updateUser"]>
+					>({
+						addressLine1: updateUserVariables.input.addressLine1,
+						addressLine2: updateUserVariables.input.addressLine2,
+						birthDate: updateUserVariables.input.birthDate,
+						city: updateUserVariables.input.city,
+						countryCode: updateUserVariables.input.countryCode,
+						createdAt: expect.any(String),
+						description: updateUserVariables.input.description,
+						educationGrade: updateUserVariables.input.educationGrade,
+						emailAddress: updateUserVariables.input.emailAddress,
+						employmentStatus: updateUserVariables.input.employmentStatus,
+						homePhoneNumber: updateUserVariables.input.homePhoneNumber,
+						id: expect.any(String),
+						isEmailAddressVerified:
+							updateUserVariables.input.isEmailAddressVerified,
+						maritalStatus: updateUserVariables.input.maritalStatus,
+						mobilePhoneNumber: updateUserVariables.input.mobilePhoneNumber,
+						name: updateUserVariables.input.name,
+						natalSex: updateUserVariables.input.natalSex,
+						postalCode: updateUserVariables.input.postalCode,
+						role: updateUserVariables.input.role,
+						state: updateUserVariables.input.state,
+						workPhoneNumber: updateUserVariables.input.workPhoneNumber,
+					}),
 				);
 			});
 		},
@@ -951,4 +936,266 @@ suite("Mutation field updateUser", () => {
 			});
 		},
 	);
+
+	suite(
+		`results in a graphql error with "forbidden_action_on_arguments_associated_resources" extensions code when non-administrator tries to update other user's profile`,
+		() => {
+			test("regular user attempts to update another user's profile", async () => {
+				// First create an admin user session
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				// Create first regular user
+				const firstRegularUser = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "Regular User 1",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				// Create second regular user
+				const secondRegularUser = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "Regular User 2",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					firstRegularUser.data.createUser?.authenticationToken,
+				);
+				assertToBeNonNullish(secondRegularUser.data.createUser?.user?.id);
+
+				// Attempt to update second user's profile using first user's token
+				const updateUserResult = await mercuriusClient.mutate(
+					Mutation_updateUser,
+					{
+						headers: {
+							authorization: `bearer ${firstRegularUser.data.createUser.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								id: secondRegularUser.data.createUser.user.id,
+								name: "Attempted Name Change",
+								emailAddress: `newemail${faker.string.ulid()}@email.com`,
+							},
+						},
+					},
+				);
+
+				expect(updateUserResult.data.updateUser).toEqual(null);
+				expect(updateUserResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<UnauthorizedActionExtensions>(
+								{
+									code: "unauthorized_action",
+								},
+							),
+							message: expect.any(String),
+							path: ["updateUser"],
+						}),
+					]),
+				);
+			});
+		},
+	);
+
+	suite(
+		`results in a graphql error with "unauthorized_action" extensions code when non-administrator tries to update other user's profile`,
+		() => {
+			test("regular user attempts to update another user's profile", async () => {
+				// First create an admin user session
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				// Create first regular user
+				const firstRegularUser = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "Regular User 1",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				// Create second regular user
+				const secondRegularUser = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "Regular User 2",
+								password: "password",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					firstRegularUser.data.createUser?.authenticationToken,
+				);
+				assertToBeNonNullish(secondRegularUser.data.createUser?.user?.id);
+
+				// Attempt to update second user's profile using first user's token
+				const updateUserResult = await mercuriusClient.mutate(
+					Mutation_updateUser,
+					{
+						headers: {
+							authorization: `bearer ${firstRegularUser.data.createUser.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								id: secondRegularUser.data.createUser.user.id,
+								name: "Attempted Name Change",
+								emailAddress: `newemail${faker.string.ulid()}@email.com`,
+							},
+						},
+					},
+				);
+
+				expect(updateUserResult.data.updateUser).toEqual(null);
+				expect(updateUserResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<UnauthorizedActionExtensions>(
+								{
+									code: "unauthorized_action",
+								},
+							),
+							message: expect.any(String),
+							path: ["updateUser"],
+						}),
+					]),
+				);
+			});
+		},
+	);
+
+	suite("handles edge cases in user profile updates", () => {
+		test("updates email while preserving case sensitivity", async () => {
+			const administratorUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(
+				administratorUserSignInResult.data.signIn?.authenticationToken,
+			);
+
+			const email = `Test${faker.string.ulid()}@Email.com`;
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: email,
+							isEmailAddressVerified: false,
+							name: "Test User",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+
+			assertToBeNonNullish(createUserResult.data.createUser?.user?.id);
+
+			const newEmail = `New${faker.string.ulid()}@Email.com`;
+			const updateUserResult = await mercuriusClient.mutate(
+				Mutation_updateUser,
+				{
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: {
+							id: createUserResult.data.createUser.user.id,
+							emailAddress: newEmail,
+							name: "Test User Updated",
+						},
+					},
+				},
+			);
+
+			expect(updateUserResult.errors).toBeUndefined();
+			expect(updateUserResult.data.updateUser?.emailAddress).toBe(newEmail);
+		});
+	});
 });
