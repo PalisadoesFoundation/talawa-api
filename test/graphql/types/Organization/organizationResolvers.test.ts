@@ -2,6 +2,12 @@ import { describe, expect, test, vi } from "vitest";
 import "~/src/graphql/types/Organization/organizationResolvers";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+// Define a proper type for extensions
+interface TalawaGraphQLErrorExtensions {
+	code: string;
+	issues: any[];
+}
+
 // Mock dependencies
 vi.mock("~/src/graphql/builder", () => ({
 	builder: {
@@ -17,7 +23,9 @@ vi.mock("~/src/graphql/types/Organization/Organization", () => ({
 
 vi.mock("~/src/utilities/TalawaGraphQLError", () => ({
 	TalawaGraphQLError: class MockError extends Error {
-		constructor(options: { extensions: any; message?: string }) {
+		extensions: TalawaGraphQLErrorExtensions;
+
+		constructor(options: { extensions: TalawaGraphQLErrorExtensions; message?: string }) {
 			super(options.message);
 			this.extensions = options.extensions;
 		}
