@@ -313,7 +313,6 @@ suite("Mutation field deleteAgendaItem", () => {
 		test("Returns an error if the user is present in the token but not in the database", async () => {
 			// create a user
 			const regularUser = await createRegularUserUsingAdmin();
-			testCleanupFunctions.push(regularUser.cleanup);
 			// delete the user
 			await server.drizzleClient
 				.delete(usersTable)
@@ -347,7 +346,7 @@ suite("Mutation field deleteAgendaItem", () => {
 		});
 		test("Returns an error when a non-admin, non-organization member tries to delete an agenda item", async () => {
 			const regularUser = await createRegularUserUsingAdmin();
-			testCleanupFunctions.push(regularUser.cleanup);
+
 			// create a agendaItem
 			const agendaItem = await createTestAgendaItem();
 			testCleanupFunctions.push(agendaItem.cleanup);
