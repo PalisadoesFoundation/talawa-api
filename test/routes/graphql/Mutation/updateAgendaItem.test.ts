@@ -13,28 +13,21 @@ import type {
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createAgendaFolder,
 	Mutation_createAgendaItem,
 	Mutation_createEvent,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
-	Mutation_createUser,
 	Mutation_deleteAgendaItem,
 	Mutation_deleteEvent,
 	Mutation_deleteOrganization,
 	Mutation_deleteOrganizationMembership,
-	Mutation_deleteUser,
 	Mutation_updateAgendaItem,
 	Query_signIn,
 } from "../documentNodes";
-
 // Helper Types
-interface TestUser {
-	authToken: string;
-	userId: string;
-	cleanup: () => Promise<void>;
-}
 interface TestAgendaItem {
 	agendaItemId: string;
 	orgId: string;
@@ -102,49 +95,6 @@ async function getAdminAuthTokenAndId(): Promise<{
 			`Failed to get admin authentication token: ${error instanceof Error ? error.message : "Unknown error"}`,
 		);
 	}
-}
-
-async function createRegularUser(): Promise<TestUser> {
-	const { cachedAdminToken: adminAuthToken } = await getAdminAuthTokenAndId();
-
-	const userResult = await mercuriusClient.mutate(Mutation_createUser, {
-		headers: {
-			authorization: `bearer ${adminAuthToken}`,
-		},
-		variables: {
-			input: {
-				emailAddress: `email${faker.string.uuid()}@test.com`,
-				password: "password123",
-				role: "regular",
-				name: "Test User",
-				isEmailAddressVerified: false,
-			},
-		},
-	});
-
-	// Assert data exists
-	assertToBeNonNullish(userResult.data);
-	// Assert createUser exists
-	assertToBeNonNullish(userResult.data.createUser);
-	// Assert user exists and has id
-	assertToBeNonNullish(userResult.data.createUser.user);
-	assertToBeNonNullish(userResult.data.createUser.user.id);
-	// Assert authenticationToken exists
-	assertToBeNonNullish(userResult.data.createUser.authenticationToken);
-
-	const userId = userResult.data.createUser.user.id;
-	const authToken = userResult.data.createUser.authenticationToken;
-
-	return {
-		authToken,
-		userId,
-		cleanup: async () => {
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${adminAuthToken}` },
-				variables: { input: { id: userId } },
-			});
-		},
-	};
 }
 
 async function createTestAgendaItem(): Promise<TestAgendaItem> {
@@ -367,8 +317,7 @@ suite("Mutation updateAgendaItem", () => {
 
 		test("Returns an error when the user is present in the token but not found in the database", async () => {
 			// create a regular user
-			const regularUser = await createRegularUser();
-			testCleanupFunctions.push(regularUser.cleanup);
+			const regularUser = await createRegularUserUsingAdmin();
 			// get the user's auth token
 			const { authToken } = regularUser;
 			// delete the user
@@ -407,8 +356,7 @@ suite("Mutation updateAgendaItem", () => {
 
 		test("Returns an error when a non-admin, non-organization member tries to update an agenda item", async () => {
 			// create a regular user
-			const regularUser = await createRegularUser();
-			testCleanupFunctions.push(regularUser.cleanup);
+			const regularUser = await createRegularUserUsingAdmin();
 			// get the user's auth token
 			const { authToken } = regularUser;
 			// create an agenda item
@@ -449,8 +397,7 @@ suite("Mutation updateAgendaItem", () => {
 
 		test("Returns an error when a regular member of the organization tries to update an agenda item", async () => {
 			// create a regular user
-			const regularUser = await createRegularUser();
-			testCleanupFunctions.push(regularUser.cleanup);
+			const regularUser = await createRegularUserUsingAdmin();
 			// get the user's auth token
 			const { authToken } = regularUser;
 			// create an agenda item
@@ -498,8 +445,7 @@ suite("Mutation updateAgendaItem", () => {
 
 		test("Successfully updates the agenda item when an organization admin tries to update it", async () => {
 			// create a regular user
-			const regularUser = await createRegularUser();
-			testCleanupFunctions.push(regularUser.cleanup);
+			const regularUser = await createRegularUserUsingAdmin();
 			// get the user's auth token
 			const { authToken } = regularUser;
 			// get admin auth token
@@ -595,8 +541,7 @@ suite("Mutation updateAgendaItem", () => {
 		});
 		test("Returns an error when id and folderId are not valid UUIDs", async () => {
 			// create a regular user
-			const regularUser = await createRegularUser();
-			testCleanupFunctions.push(regularUser.cleanup);
+			const regularUser = await createRegularUserUsingAdmin();
 			// get the user's auth token
 			const { authToken } = regularUser;
 
@@ -638,8 +583,7 @@ suite("Mutation updateAgendaItem", () => {
 		});
 		test("Returns an error when only id is provided", async () => {
 			// create a regular user
-			const regularUser = await createRegularUser();
-			testCleanupFunctions.push(regularUser.cleanup);
+			const regularUser = await createRegularUserUsingAdmin();
 			// get the user's auth token
 			const { authToken } = regularUser;
 
@@ -696,8 +640,8 @@ suite("Mutation updateAgendaItem", () => {
 		});
 		test("Returns an error when the type is note and duration is provided", async () => {
 			// create regular user
-			const regularUser = await createRegularUser();
-			testCleanupFunctions.push(regularUser.cleanup);
+			const regularUser = await createRegularUserUsingAdmin();
+
 			// get the user's auth token
 			const { authToken } = regularUser;
 			// create an agenda item
@@ -749,8 +693,8 @@ suite("Mutation updateAgendaItem", () => {
 		});
 		test("Returns an error when the type is note and key is provided", async () => {
 			// create regular user
-			const regularUser = await createRegularUser();
-			testCleanupFunctions.push(regularUser.cleanup);
+			const regularUser = await createRegularUserUsingAdmin();
+
 			// get the user's auth token
 			const { authToken } = regularUser;
 			// create an agenda item
@@ -801,8 +745,8 @@ suite("Mutation updateAgendaItem", () => {
 		});
 		test("Returns an error when the type is general and key is provided", async () => {
 			// create regular user
-			const regularUser = await createRegularUser();
-			testCleanupFunctions.push(regularUser.cleanup);
+			const regularUser = await createRegularUserUsingAdmin();
+
 			// get the user's auth token
 			const { authToken } = regularUser;
 			// create an agenda item
@@ -853,8 +797,8 @@ suite("Mutation updateAgendaItem", () => {
 		});
 		test("Returns an error when the type is scripture and key is provided", async () => {
 			// create regular user
-			const regularUser = await createRegularUser();
-			testCleanupFunctions.push(regularUser.cleanup);
+			const regularUser = await createRegularUserUsingAdmin();
+
 			// get the user's auth token
 			const { authToken } = regularUser;
 			// create an agenda item
@@ -921,8 +865,7 @@ suite("Mutation updateAgendaItem", () => {
 		});
 		test("Returns an error when the agenda item does not exist", async () => {
 			// create regular user
-			const regularUser = await createRegularUser();
-			testCleanupFunctions.push(regularUser.cleanup);
+			const regularUser = await createRegularUserUsingAdmin();
 			// get the user's auth token
 			const { authToken } = regularUser;
 			// try to update the agenda item
@@ -959,8 +902,8 @@ suite("Mutation updateAgendaItem", () => {
 		});
 		test("Returns an error when the agenda folder does not exist", async () => {
 			// create regular user
-			const regularUser = await createRegularUser();
-			testCleanupFunctions.push(regularUser.cleanup);
+			const regularUser = await createRegularUserUsingAdmin();
+
 			// get the user's auth token
 			const { authToken } = regularUser;
 			// create an agenda item
@@ -1001,7 +944,7 @@ suite("Mutation updateAgendaItem", () => {
 		});
 		test("Returns an error when the agenda folder does not belong to the agenda item's event", async () => {
 			// create regular user
-			const regularUser = await createRegularUser();
+			const regularUser = await createRegularUserUsingAdmin();
 			// create two agendaItems and use the folder of the first agenda item for the second agenda item
 			const agendaItem1 = await createTestAgendaItem();
 			testCleanupFunctions.push(agendaItem1.cleanup);
@@ -1048,7 +991,7 @@ suite("Mutation updateAgendaItem", () => {
 
 		test("Returns an error when the agenda folder cannot be a folder for agenda items", async () => {
 			// create regular user
-			const regularUser = await createRegularUser();
+			const regularUser = await createRegularUserUsingAdmin();
 			// create an agendaItem and use the folder of the agenda item for the event
 			const agendaItem = await createTestAgendaItem();
 			testCleanupFunctions.push(agendaItem.cleanup);
