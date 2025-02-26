@@ -8,8 +8,14 @@ suite("Mutation field createPresignedUrl", () => {
   suite("when the client is not authenticated", () => {
     test("should return an error with unauthenticated extensions code", async () => {
       const result = await mercuriusClient.mutate(Mutation_createPresignedUrl, {
-        variables: { fileName: "testfile.txt", fileType: "text/plain" },
+        variables: { 
+          input: {
+            fileName: "testfile.txt",
+            fileType: "text/plain"
+          }
+        },
       });
+      console.log(result);
       expect(result.data?.createPresignedUrl).toBeNull();
       expect(result.errors).toEqual(
         expect.arrayContaining([
@@ -45,10 +51,16 @@ suite("Mutation field createPresignedUrl", () => {
       });
       assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
       const authToken = signInResult.data.signIn.authenticationToken;
+      console.log(authToken);
 
       const result = await mercuriusClient.mutate(Mutation_createPresignedUrl, {
         headers: { authorization: `bearer ${authToken}` },
-        variables: { fileName: "testfile.txt", fileType: "text/plain" },
+        variables: { 
+          input: {  // Wrap these in an input object
+            fileName: "testfile.txt", 
+            fileType: "text/plain" 
+          }
+        },
       });
 
       expect(result.data?.createPresignedUrl).toEqual(
@@ -87,7 +99,12 @@ suite("Mutation field createPresignedUrl", () => {
 
       const result = await mercuriusClient.mutate(Mutation_createPresignedUrl, {
         headers: { authorization: `bearer ${authToken}` },
-        variables: { fileName: "testfile.txt", fileType: "text/plain" },
+        variables: { 
+          input: {
+            fileName: "testfile.txt",
+            fileType: "text/plain"
+          }
+        },
       });
 
       expect(result.data?.createPresignedUrl).toBeNull();

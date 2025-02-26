@@ -2,11 +2,24 @@ import { builder } from "../../builder";
 import { UploadUrlResponse } from "../../types/Post/UploadUrlResponse";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+
+const MutationCreatePresignedUrlInput = builder.inputType(
+	"MutationCreatePresignedUrlInput",
+	{
+		fields: (t) => ({
+			fileName: t.string({ required: true }),
+			fileType: t.string({ required: true }),
+		}),
+	},
+);
+
 builder.mutationField("createPresignedUrl", (t) =>
 	t.field({
 		args: {
-			fileName: t.arg.string({ required: true }),
-			fileType: t.arg.string({ required: true }),
+			input: t.arg({
+				required: true,
+				type: MutationCreatePresignedUrlInput,
+			}),
 		},
 		description:
 			"Mutation field to create a presigned URL for uploading a file.",
@@ -18,7 +31,7 @@ builder.mutationField("createPresignedUrl", (t) =>
 					},
 				});
 			}
-			const { fileName } = args;
+			const { fileName } = args.input;
 			const bucketName = ctx.minio.bucketName;
 			const objectName = `uploads/${Date.now()}-${fileName}`;
 
@@ -54,4 +67,3 @@ builder.mutationField("createPresignedUrl", (t) =>
 		type: UploadUrlResponse,
 	}),
 );
-

@@ -1289,7 +1289,7 @@ type Mutation {
   createPostVote(input: MutationCreatePostVoteInput!): Post
 
   """Mutation field to create a PresignedUrl."""
-  createPresignedUrl(fileName: String!, fileType: String!): UploadUrlResponse!
+  createPresignedUrl(input: MutationCreatePresignedUrlInput): UploadUrlResponse!
 
 
   """Mutation field to create a tag."""
@@ -1705,6 +1705,15 @@ input MutationCreatePostVoteInput {
 
   """Type of the vote."""
   type: PostVoteType!
+}
+
+""""""
+input MutationCreatePresignedUrlInput {
+  """Name of the file."""
+  fileName: String!
+
+  """Type of the file."""
+  fileType: String!
 }
 
 """"""
