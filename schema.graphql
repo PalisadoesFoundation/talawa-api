@@ -1288,9 +1288,8 @@ type Mutation {
   """Mutation field to create a post vote."""
   createPostVote(input: MutationCreatePostVoteInput!): Post
 
-  """Mutation field to create a PresignedUrl."""
-  createPresignedUrl(input: MutationCreatePresignedUrlInput): UploadUrlResponse!
-
+  """Mutation field to create a presigned URL for uploading a file."""
+  createPresignedUrl(input: MutationCreatePresignedUrlInput!): UploadUrlResponse
 
   """Mutation field to create a tag."""
   createTag(input: MutationCreateTagInput!): Tag
@@ -1485,8 +1484,6 @@ input MutationCreateAgendaFolderInput {
   """
   parentFolderId: ID
 }
-
-
 
 """"""
 input MutationCreateAgendaItemInput {
@@ -1707,12 +1704,8 @@ input MutationCreatePostVoteInput {
   type: PostVoteType!
 }
 
-""""""
 input MutationCreatePresignedUrlInput {
-  """Name of the file."""
   fileName: String!
-
-  """Type of the file."""
   fileType: String!
 }
 
@@ -2829,12 +2822,6 @@ type PostDownVotersConnectionEdge {
 }
 
 """"""
-type UploadUrlResponse {
-  presignedUrl: String!
-  fileUrl: String!
-}
-
-""""""
 type PostUpVotersConnection {
   edges: [PostUpVotersConnectionEdge]
   pageInfo: PageInfo!
@@ -3152,6 +3139,12 @@ type TagFolderTagsConnectionEdge {
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
+
+"""UploadUrlResponse"""
+type UploadUrlResponse {
+  fileUrl: String
+  presignedUrl: String
+}
 
 type User {
   """Address line 1 of the user's address."""
