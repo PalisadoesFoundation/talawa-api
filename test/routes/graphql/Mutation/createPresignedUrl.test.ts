@@ -15,7 +15,6 @@ suite("Mutation field createPresignedUrl", () => {
 					},
 				},
 			});
-			console.log(result);
 			expect(result.data?.createPresignedUrl).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
@@ -50,7 +49,6 @@ suite("Mutation field createPresignedUrl", () => {
 			});
 			assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
 			const authToken = signInResult.data.signIn.authenticationToken;
-			console.log(authToken);
 
 			const result = await mercuriusClient.mutate(Mutation_createPresignedUrl, {
 				headers: { authorization: `bearer ${authToken}` },
