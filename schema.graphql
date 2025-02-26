@@ -1710,6 +1710,10 @@ input MutationCreatePresignedUrlInput {
 
 """Type of the file."""
   fileType: String!
+
+"""Global identifier of the associated organization."""
+  organizationId: ID!
+
 }
 
 """"""

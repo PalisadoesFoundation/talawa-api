@@ -8,6 +8,7 @@ const MutationCreatePresignedUrlInput = builder.inputType(
 		fields: (t) => ({
 			fileName: t.string({ required: true }),
 			fileType: t.string({ required: true }),
+			organizationId: t.id({ required: true }),
 		}),
 	},
 );
@@ -30,6 +31,54 @@ builder.mutationField("createPresignedUrl", (t) =>
 					},
 				});
 			}
+			const currentUserId = ctx.currentClient.user.id;
+
+			const [currentUser, existingOrganization] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.organizationsTable.findFirst({
+					columns: {
+						countryCode: true,
+					},
+					with: {
+						membershipsWhereOrganization: {
+							columns: {
+								role: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.memberId, currentUserId),
+						},
+					},
+					where: (fields, operators) =>
+						operators.eq(fields.id, args.input.organizationId),
+				}),
+			]);
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
+
+			if (existingOrganization === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "organizationId"],
+							},
+						],
+					},
+				});
+			}
+
 			const { fileName } = args.input;
 			const bucketName = ctx.minio.bucketName;
 			const objectName = `uploads/${Date.now()}-${fileName}`;
@@ -42,7 +91,6 @@ builder.mutationField("createPresignedUrl", (t) =>
 						.catch(reject);
 				});
 
-				// Construct the final file URL
 				const fileUrl = `http://${ctx.minio.config.endPoint}:${ctx.minio.config.port}/${bucketName}/${objectName}`;
 
 				return { presignedUrl, fileUrl };
