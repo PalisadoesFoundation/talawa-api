@@ -218,22 +218,60 @@ describe("Venue Resolver - Updater Field", () => {
 		);
 	});
 
-	it("should handle undefined organization membership role", async () => {
-		const mockUser = {
+	it("should throw unexpected error if updater user does not exist", async () => {
+		const currentUser = {
 			id: "user-123",
-			role: "member",
-			organizationMembershipsWhereMember: [{ role: undefined }],
+			role: "administrator",
+			organizationMembershipsWhereMember: [],
 		};
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValueOnce(mockUser);
+
+		mockVenue.updaterId = "updater-456";
+		(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+			.mockResolvedValueOnce(currentUser)
+			.mockResolvedValueOnce(undefined);
 
 		await expect(async () => {
 			await resolveUpdater(mockVenue, {}, ctx);
 		}).rejects.toThrow(
 			new TalawaGraphQLError({
-				extensions: { code: "unauthorized_action" },
+				extensions: { code: "unexpected" },
 			}),
 		);
+	});
+
+	it("should query the database with the correct organizationId filter", async () => {
+		const mockUser = {
+			id: "user-123",
+			role: "administrator",
+			organizationMembershipsWhereMember: [
+				{ role: "administrator", organizationId: mockVenue.organizationId },
+			],
+		};
+
+		// Mock implementation to verify if organizationId filter is used
+		(
+			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockImplementation(({ with: withClause }) => {
+			expect(withClause).toBeDefined();
+
+			const mockFields = { organizationId: "org-123" };
+			const mockOperators = { eq: vi.fn((a, b) => ({ [a]: b })) };
+
+			// Verify the inner where clause inside withClause
+			const innerWhereResult =
+				withClause.organizationMembershipsWhereMember.where(
+					mockFields,
+					mockOperators,
+				);
+			expect(innerWhereResult).toEqual(
+				expect.objectContaining({
+					[mockFields.organizationId]: mockVenue.organizationId, // Ensure organizationId filter is applied
+				}),
+			);
+			return Promise.resolve(mockUser);
+		});
+
+		const result = await resolveUpdater(mockVenue, {}, ctx);
+		expect(result).toEqual(mockUser);
 	});
 });
