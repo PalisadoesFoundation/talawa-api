@@ -68,8 +68,14 @@ export async function askUserToContinue(question: string): Promise<boolean> {
 export async function formatDatabase(): Promise<boolean> {
 	const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
 
-	type TableRow = { tablename: string };
+	if (!adminEmail) {
+		throw new Error(
+			"Missing adminEmail environment variable. Aborting to prevent accidental deletion of all users.",
+		);
+	}
 
+	type TableRow = { tablename: string };
+	const USERS_TABLE = "users";
 	try {
 		await db.transaction(async (tx) => {
 			const tables: TableRow[] = await tx.execute(sql`
@@ -78,7 +84,7 @@ export async function formatDatabase(): Promise<boolean> {
 		`);
 			const tableNames = tables
 				.map((row) => row.tablename)
-				.filter((name) => name !== "users");
+				.filter((name) => name !== USERS_TABLE);
 
 			if (tableNames.length > 0) {
 				await tx.execute(sql`
@@ -91,9 +97,9 @@ export async function formatDatabase(): Promise<boolean> {
 			}
 
 			await tx.execute(sql`
-		  DELETE FROM "users"
-		  WHERE "email_address" != ${adminEmail};
-		`);
+				DELETE FROM ${sql.identifier(USERS_TABLE)}
+				WHERE email != ${adminEmail};
+			  `);
 		});
 
 		return true;

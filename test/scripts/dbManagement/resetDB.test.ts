@@ -32,7 +32,7 @@ suite("resetData main function tests", () => {
 		);
 	});
 
-	test("should log errors for failing formatDatabase, emptyMinioBucket, and ensureAdministratorExists, but not throw", async () => {
+	test("should log errors for failing formatDatabase, emptyMinioBucket but not throw", async () => {
 		// Arrange: simulate user confirming and pingDB succeeding.
 		vi.spyOn(helpers, "askUserToContinue").mockResolvedValue(true);
 		vi.spyOn(helpers, "pingDB").mockResolvedValue(true);
@@ -66,20 +66,8 @@ suite("resetData main function tests", () => {
 			expect.stringContaining("Rolled back to previous state"),
 		);
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			expect.stringContaining("Preserving administrator access"),
-		);
-		expect(consoleErrorSpy).toHaveBeenCalledWith(
 			expect.stringContaining("Error: Bucket formatting failed"),
 			expect.any(Error),
-		);
-		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			expect.stringContaining("Error: Administrator creation failed"),
-			expect.any(Error),
-		);
-		expect(consoleErrorSpy).toHaveBeenCalledWith(
-			expect.stringContaining(
-				"Administrator access may be lost, try reformatting DB to restore access",
-			),
 		);
 	});
 

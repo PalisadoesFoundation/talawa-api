@@ -38,9 +38,6 @@ suite("addSampleData main function tests", () => {
 			expect.stringContaining("Database connected successfully"),
 		);
 		expect(consoleLogSpy).toHaveBeenCalledWith(
-			expect.stringContaining("Administrator setup complete"),
-		);
-		expect(consoleLogSpy).toHaveBeenCalledWith(
 			expect.stringContaining("Sample Data added to the database"),
 		);
 	});
@@ -57,7 +54,7 @@ suite("addSampleData main function tests", () => {
 	});
 
 	test("should throw an error when insertCollections fails", async () => {
-		// Arrange: pingDB and ensureAdministratorExists succeed, but insertCollections fails.
+		// Arrange: pingDB succeed, but insertCollections fails.
 		vi.spyOn(helpers, "pingDB").mockResolvedValue(true);
 		const errorMsg = "insert error";
 		vi.spyOn(helpers, "insertCollections").mockRejectedValue(
