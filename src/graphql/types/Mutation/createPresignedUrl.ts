@@ -1,7 +1,6 @@
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { builder } from "../../builder";
 import { UploadUrlResponse } from "../../types/Post/UploadUrlResponse";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
 
 const MutationCreatePresignedUrlInput = builder.inputType(
 	"MutationCreatePresignedUrlInput",
