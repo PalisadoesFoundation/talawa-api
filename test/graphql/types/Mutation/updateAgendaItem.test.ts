@@ -69,9 +69,9 @@ const authenticatedContext: TestContext = {
 		bucketName: "talawa",
 		client: {} as MinioClient, // minimal mock that satisfies the type
 		config: {
-			endPoint: "minio", 
-			port: 9000 
-		  }
+			endPoint: "minio",
+			port: 9000,
+		},
 	},
 	pubsub: {
 		publish: vi.fn(),

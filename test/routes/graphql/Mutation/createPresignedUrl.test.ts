@@ -104,7 +104,6 @@ suite("Mutation field createPresignedUrl", () => {
 					},
 				},
 			});
-			//test
 			expect(result.data?.createPresignedUrl).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
