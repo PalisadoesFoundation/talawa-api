@@ -74,12 +74,22 @@ export const drizzleClient = fastifyPlugin(async (fastify) => {
 				"Successfully applied the drizzle migrations to the postgres database.",
 			);
 		} catch (error) {
-			throw new Error(
-				"Failed to apply the drizzle migrations to the postgres database.",
-				{
-					cause: error,
-				},
-			);
+			if (
+				(error as { code: string }).code === "42P06" ||
+				(error as { code: string }).code === "42P07"
+			) {
+				fastify.log.info(
+					{ error },
+					"Schema or relation already exists, skipping migration step.",
+				);
+			} else {
+				throw new Error(
+					"Failed to apply the drizzle migrations to the postgres database.",
+					{
+						cause: error,
+					},
+				);
+			}
 		}
 	}
 

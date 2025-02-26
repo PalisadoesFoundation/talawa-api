@@ -40,6 +40,7 @@ export {
 	communitiesTable,
 	communitiesTableRelations,
 } from "./tables/communities";
+export { customFieldsTable } from "./tables/customFields";
 export {
 	eventAttachmentsTable,
 	eventAttachmentsTableRelations,

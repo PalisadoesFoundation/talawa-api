@@ -8,6 +8,7 @@ import { actionCategoriesTable } from "./actionCategories";
 import { actionsTable } from "./actions";
 import { advertisementsTable } from "./advertisements";
 import { chatsTable } from "./chats";
+import { customFieldsTable } from "./customFields";
 import { eventsTable } from "./events";
 import { familiesTable } from "./families";
 import { fundsTable } from "./funds";
@@ -204,6 +205,12 @@ export const organizationsTableRelations = relations(
 		 */
 		venuesWhereOrganization: many(venuesTable, {
 			relationName: "organizations.id:venues.organization_id",
+		}),
+		/**
+		 * One to many relationship from `organizations` table to `custom_fields` table.
+		 */
+		customFields: many(customFieldsTable, {
+			relationName: "custom_fields.organization_id:organizations.id",
 		}),
 	}),
 );

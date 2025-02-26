@@ -15,3 +15,4 @@ import "./tags";
 import "./updatedAt";
 import "./updater";
 import "./venues";
+import "./OrganizationCustomField";
