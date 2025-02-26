@@ -2,7 +2,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
-import { hash } from "@node-rs/argon2";
 import { sql } from "drizzle-orm";
 import type { AnyPgColumn, PgTable } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -15,7 +14,6 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "src/envConfigSchema";
-import { uuidv7 } from "uuidv7";
 
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
