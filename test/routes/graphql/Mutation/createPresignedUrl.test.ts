@@ -40,7 +40,6 @@ suite("Mutation field createPresignedUrl", () => {
         return "https://example.com/presigned-url";
       };
 
-      // Sign in as an authenticated user.
       const signInResult = await mercuriusClient.query(Query_signIn, {
         variables: {
           input: {
@@ -56,7 +55,7 @@ suite("Mutation field createPresignedUrl", () => {
       const result = await mercuriusClient.mutate(Mutation_createPresignedUrl, {
         headers: { authorization: `bearer ${authToken}` },
         variables: { 
-          input: {  // Wrap these in an input object
+          input: {  
             fileName: "testfile.txt", 
             fileType: "text/plain" 
           }
@@ -72,7 +71,6 @@ suite("Mutation field createPresignedUrl", () => {
         })
       );
 
-      // Restore the original presignedPutObject method.
       server.minio.client.presignedPutObject = originalPresignedPutObject;
     });
   });
@@ -120,7 +118,6 @@ suite("Mutation field createPresignedUrl", () => {
         ])
       );
 
-      // Restore the original presignedPutObject method.
       server.minio.client.presignedPutObject = originalPresignedPutObject;
     });
   });
