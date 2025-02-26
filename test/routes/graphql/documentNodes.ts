@@ -590,7 +590,6 @@ export const Mutation_deletePost = gql(`
   }
 `);
 
-// For the purpose of this test, we assume you have a mutation for creating a post.
 export const Mutation_createPost = gql(`
   mutation Mutation_createPost($input: MutationCreatePostInput!) {
     createPost(input: $input) {

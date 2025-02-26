@@ -1705,8 +1705,13 @@ input MutationCreatePostVoteInput {
 }
 
 input MutationCreatePresignedUrlInput {
+"""name of the file to be uploaded."""
   fileName: String!
+
+"""type of the file to be uploaded."""
   fileType: String!
+
+""" organization id of the organization to which the file belongs."""
   organizationId: ID!
 }
 
@@ -3143,7 +3148,10 @@ scalar Upload
 
 """UploadUrlResponse"""
 type UploadUrlResponse {
+"""URL to upload the file to."""
   fileUrl: String
+
+"""Presigned URL to upload the file to."""
   presignedUrl: String
 }
 
