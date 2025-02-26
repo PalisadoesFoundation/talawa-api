@@ -1,11 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-	disconnect,
-	ensureAdministratorExists,
-	insertCollections,
-	pingDB,
-} from "./helpers";
+import { disconnect, insertCollections, pingDB } from "./helpers";
 
 type Collection =
 	| "users"
@@ -35,16 +30,6 @@ export async function main(): Promise<void> {
 	} catch (error: unknown) {
 		throw new Error(`Database connection failed: ${error}`);
 	}
-	try {
-		await ensureAdministratorExists();
-		console.log("\x1b[32mSuccess:\x1b[0m Administrator setup complete\n");
-	} catch (error: unknown) {
-		console.error("\nError: Administrator creation failed", error);
-		throw new Error(
-			"\n\x1b[31mAdministrator access may be lost, try reimporting sample DB to restore access\x1b[0m\n",
-		);
-	}
-
 	try {
 		await insertCollections(collections);
 		console.log("\n\x1b[32mSuccess:\x1b[0m Sample Data added to the database");

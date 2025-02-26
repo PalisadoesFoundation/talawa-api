@@ -68,74 +68,40 @@ export async function askUserToContinue(question: string): Promise<boolean> {
  * Clears all tables in the database.
  */
 export async function formatDatabase(): Promise<boolean> {
+	const adminEmail = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+
 	type TableRow = { tablename: string };
 
 	try {
 		await db.transaction(async (tx) => {
 			const tables: TableRow[] = await tx.execute(sql`
-                SELECT tablename FROM pg_catalog.pg_tables 
-                WHERE schemaname = 'public'
-            `);
-			const tableNames = tables.map((row) => sql.identifier(row.tablename));
+		  SELECT tablename FROM pg_catalog.pg_tables
+		  WHERE schemaname = 'public'
+		`);
+			const tableNames = tables
+				.map((row) => row.tablename)
+				.filter((name) => name !== "users");
 
 			if (tableNames.length > 0) {
-				await tx.execute(
-					sql`TRUNCATE TABLE ${sql.join(tableNames, sql`, `)} RESTART IDENTITY CASCADE;`,
-				);
+				await tx.execute(sql`
+			TRUNCATE TABLE ${sql.join(
+				tableNames.map((table) => sql.identifier(table)),
+				sql`, `,
+			)}
+			RESTART IDENTITY CASCADE;
+		  `);
 			}
+
+			await tx.execute(sql`
+		  DELETE FROM "users"
+		  WHERE "email_address" != ${adminEmail};
+		`);
 		});
 
 		return true;
 	} catch (error) {
 		return false;
 	}
-}
-
-export async function ensureAdministratorExists(): Promise<boolean> {
-	const email = envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
-
-	if (!email) {
-		throw new Error("API_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.");
-	}
-
-	const existingUser = await db.query.usersTable.findFirst({
-		columns: { id: true, role: true },
-		where: (fields, operators) => operators.eq(fields.emailAddress, email),
-	});
-
-	if (existingUser) {
-		if (existingUser.role !== "administrator") {
-			await db
-				.update(schema.usersTable)
-				.set({ role: "administrator" })
-				.where(sql`email_address = ${email}`);
-			console.log(
-				"\x1b[33mRole Change: Updated user role to administrator\x1b[0m\n",
-			);
-		} else {
-			console.log("\x1b[32mFound:\x1b[0m Administrator user already exists");
-		}
-		return true;
-	}
-
-	const userId = uuidv7();
-	const password = envConfig.API_ADMINISTRATOR_USER_PASSWORD;
-	if (!password) {
-		throw new Error("API_ADMINISTRATOR_USER_PASSWORD is not defined.");
-	}
-	const passwordHash = await hash(password);
-
-	await db.insert(schema.usersTable).values({
-		id: userId,
-		emailAddress: email,
-		name: envConfig.API_ADMINISTRATOR_USER_NAME || "",
-		passwordHash,
-		role: "administrator",
-		isEmailAddressVerified: true,
-		creatorId: userId,
-	});
-
-	return true;
 }
 
 export async function emptyMinioBucket(): Promise<boolean> {

@@ -43,9 +43,6 @@ suite("resetData main function tests", () => {
 		vi.spyOn(helpers, "emptyMinioBucket").mockRejectedValue(
 			new Error("minio error"),
 		);
-		vi.spyOn(helpers, "ensureAdministratorExists").mockRejectedValue(
-			new Error("admin error"),
-		);
 
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
@@ -92,7 +89,6 @@ suite("resetData main function tests", () => {
 		vi.spyOn(helpers, "pingDB").mockResolvedValue(true);
 		vi.spyOn(helpers, "formatDatabase").mockResolvedValue(true);
 		vi.spyOn(helpers, "emptyMinioBucket").mockResolvedValue(true);
-		vi.spyOn(helpers, "ensureAdministratorExists").mockResolvedValue(true);
 
 		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
@@ -108,9 +104,6 @@ suite("resetData main function tests", () => {
 		);
 		expect(consoleLogSpy).toHaveBeenCalledWith(
 			expect.stringContaining("Bucket formatted successfully"),
-		);
-		expect(consoleLogSpy).toHaveBeenCalledWith(
-			expect.stringContaining("Administrator access restored"),
 		);
 	});
 });
