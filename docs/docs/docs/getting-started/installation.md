@@ -312,7 +312,6 @@ devcontainer up --workspace-folder .
 ```
 ...
 ...
-...
 {"outcome":"success","containerId":"81306766f2aeeb851c8ebb844702d39ad2adc09419508b736ef2ee5a03eb8e34","composeProjectName":"talawa","remoteUser":"talawa","remoteWorkspaceFolder":"/home/talawa/api"}
 ```
 
@@ -339,7 +338,7 @@ After a successful installation, use these commands to start the dev container.
 2. Detached Mode
 
    ```
-   docker exec talawa-api-1 /bin/bash -c 'nohup pnpm run start_development_server > /devnull 2>&1 &'
+   docker exec talawa-api-1 /bin/bash -c 'nohup pnpm run start_development_server > /dev/null 2>&1 &'
    ```
 
 #### Importing Sample Data
