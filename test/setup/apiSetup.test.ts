@@ -2,7 +2,6 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
-import { afterEach, describe, expect, it, vi } from "vitest";
 import {
 	apiSetup,
 	checkEnvFile,
@@ -10,7 +9,8 @@ import {
 	setup,
 	validatePort,
 	validateURL,
-} from "~/src/setup/setup";
+} from "scripts/setup/setup";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
 

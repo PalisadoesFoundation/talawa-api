@@ -1,6 +1,6 @@
 import fs from "node:fs";
+import { updateEnvVariable } from "scripts/setup/updateEnvVariable";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { updateEnvVariable } from "~/src/setup/updateEnvVariable";
 
 vi.mock("fs");
 

@@ -41,6 +41,23 @@ You will need to configure the API to work correctly.
 | `MINIO_ROOT_PASSWORD`                  | Root password for MinIO, used for securing administrative access to MinIO object storage.                             |
 | `POSTGRES_PASSWORD`                    | Password for the PostgreSQL database (Docker Compose), used for database authentication and security.                 |
 
+## Running the Setup Script
+To configure the .env file, run one of the following commands in your project’s root directory:
+
+```
+npm run setup
+```
+or
+```
+pnpm tsx setup.ts
+```
+
+The script will ask whether you’re in CI mode (CI=true) or non-CI (CI=false) mode. Choose:
+
+1. CI=false for local/development environments.
+2. CI=true for testing or continuous integration pipelines.
+3. It will also ask whether you want to use recommended defaults. Answer “yes” to quickly accept safe defaults or “no” to provide custom inputs. Once the prompts finish, your .env file will be generated or updated.
+
 ## Prerequisities
 
 You must follow these steps before continuing.

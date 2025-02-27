@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
+import { minioSetup, setup } from "scripts/setup/setup";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { minioSetup, setup } from "~/src/setup/setup";
 
 vi.mock("inquirer");
 

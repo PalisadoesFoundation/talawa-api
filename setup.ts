@@ -1,4 +1,4 @@
-import { setup } from "~/src/setup/setup";
+import { setup } from "scripts/setup/setup";
 
 setup().catch((err) => {
 	console.error(`Setup failed: ${err.message}`);

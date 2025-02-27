@@ -1,13 +1,13 @@
 import fs from "node:fs";
 import inquirer from "inquirer";
-import { afterEach, describe, expect, it, vi } from "vitest";
 import {
 	cloudbeaverSetup,
 	setup,
 	validateCloudBeaverAdmin,
 	validateCloudBeaverPassword,
 	validateCloudBeaverURL,
-} from "~/src/setup/setup";
+} from "scripts/setup/setup";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
 
