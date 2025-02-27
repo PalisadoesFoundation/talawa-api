@@ -142,10 +142,12 @@ describe("Chat.updater resolver", () => {
 	});
 
 	it("returns null when updaterId is null", async () => {
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
-			...mockCurrentUser,
-			role: "administrator",
-		});
+		drizzleClientMock.query.usersTable.findFirst.mockImplementation(() =>
+			Promise.resolve({
+				...mockCurrentUser,
+				role: "administrator" as UserRole,
+			}),
+		);
 
 		const parentWithNullUpdater = { ...mockParent, updaterId: null };
 
@@ -180,22 +182,6 @@ describe("Chat.updater resolver", () => {
 		expect(result).toEqual(currentUserWithPermissions);
 	});
 
-	it("returns updater user when found", async () => {
-		// First findFirst call for current user
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce({
-			...mockCurrentUser,
-			role: "administrator",
-		});
-
-		// Second findFirst call for updater user
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce(
-			mockUpdaterUser,
-		);
-
-		const result = await resolveUpdater(mockParent, {}, authenticatedContext);
-		expect(result).toEqual(mockUpdaterUser);
-	});
-
 	it("throws unexpected error when updaterId exists but user is not found", async () => {
 		// Mock implementation for findFirst
 		// First call returns current user with admin role
@@ -224,59 +210,53 @@ describe("Chat.updater resolver", () => {
 		expect(mockLogger.error).toHaveBeenCalled();
 	});
 
-	it("returns updater when user is global admin", async () => {
-		// First findFirst call for current user
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce({
-			...mockCurrentUser,
-			role: "administrator" as UserRole,
-		});
-
-		// Second findFirst call for updater user
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce(
-			mockUpdaterUser,
-		);
-
-		const result = await resolveUpdater(mockParent, {}, authenticatedContext);
-		expect(result).toEqual(mockUpdaterUser);
-	});
-
-	it("returns updater when user is an organization administrator", async () => {
-		// Mock implementation for findFirst
-		// First call returns current user with org admin role
-		// Second call returns updater user
-		drizzleClientMock.query.usersTable.findFirst
-			.mockImplementationOnce(() =>
-				Promise.resolve({
+	describe("admin role authorization", () => {
+		const adminRoles = [
+			{
+				scenario: "global admin",
+				user: {
+					...mockCurrentUser,
+					role: "administrator" as UserRole,
+				},
+			},
+			{
+				scenario: "organization admin",
+				user: {
 					...mockCurrentUser,
 					role: "regular" as UserRole,
 					organizationMembershipsWhereMember: [
 						{ role: "administrator" as OrganizationMembershipRole },
 					],
-				}),
-			)
-			.mockImplementationOnce(() => Promise.resolve(mockUpdaterUser));
-
-		const result = await resolveUpdater(mockParent, {}, authenticatedContext);
-		expect(result).toEqual(mockUpdaterUser);
-	});
-
-	it("returns updater when user is a chat administrator", async () => {
-		// Mock implementation for findFirst
-		// First call returns current user with chat admin role
-		// Second call returns updater user
-		drizzleClientMock.query.usersTable.findFirst
-			.mockImplementationOnce(() =>
-				Promise.resolve({
+				},
+			},
+			{
+				scenario: "chat admin",
+				user: {
 					...mockCurrentUser,
 					role: "regular" as UserRole,
 					chatMembershipsWhereMember: [
 						{ role: "administrator" as ChatMembershipRole },
 					],
-				}),
-			)
-			.mockImplementationOnce(() => Promise.resolve(mockUpdaterUser));
+				},
+			},
+		];
 
-		const result = await resolveUpdater(mockParent, {}, authenticatedContext);
-		expect(result).toEqual(mockUpdaterUser);
+		for (const { scenario, user } of adminRoles) {
+			it(`returns updater when user is a ${scenario}`, async () => {
+				// Mock implementation for findFirst
+				// First call returns current user with appropriate admin role
+				// Second call returns updater user
+				drizzleClientMock.query.usersTable.findFirst
+					.mockImplementationOnce(() => Promise.resolve(user))
+					.mockImplementationOnce(() => Promise.resolve(mockUpdaterUser));
+
+				const result = await resolveUpdater(
+					mockParent,
+					{},
+					authenticatedContext,
+				);
+				expect(result).toEqual(mockUpdaterUser);
+			});
+		}
 	});
 });
