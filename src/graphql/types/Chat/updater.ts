@@ -3,9 +3,9 @@ import { usersTable } from "~/src/drizzle/schema";
 import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
 import type { chatsTable } from "~/src/drizzle/tables/chats";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
-import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
+import { User } from "~/src/graphql/types/User/User";
 import { Chat } from "./Chat";
 
 type ChatsTable = typeof chatsTable.$inferSelect;
@@ -37,10 +37,7 @@ export const resolveUpdater = async (
 				columns: {
 					role: true,
 				},
-				where: eq(
-					organizationMembershipsTable.organizationId,
-					parent.organizationId,
-				),
+				where: eq(organizationMembershipsTable.organizationId, parent.organizationId),
 			},
 		},
 		where: eq(usersTable.id, currentUserId),
@@ -56,11 +53,11 @@ export const resolveUpdater = async (
 
 	const currentUserOrganizationMembership =
 		currentUser.organizationMembershipsWhereMember[0];
-	const currentUserChatMembership = currentUser.chatMembershipsWhereMember[0];
+	const currentUserChatMembership =
+		currentUser.chatMembershipsWhereMember[0];
 
 	const isGlobalAdmin = currentUser.role === "administrator";
-	const isOrgAdmin =
-		currentUserOrganizationMembership?.role === "administrator";
+	const isOrgAdmin = currentUserOrganizationMembership?.role === "administrator";
 	const isChatAdmin = currentUserChatMembership?.role === "administrator";
 
 	if (!isGlobalAdmin && !isOrgAdmin && !isChatAdmin) {
@@ -87,13 +84,13 @@ export const resolveUpdater = async (
 
 	// Updater id existing but the associated user not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 	if (existingUser === undefined) {
-		ctx.log.error(
-			"Postgres select operation returned an empty array for a chat's updater id that isn't null.",
-		);
+		const errorMessage = `Updater with ID ${updaterId} not found despite being referenced in chat ${parent.id}`;
+		ctx.log.error(errorMessage);
 
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unexpected",
+				message: errorMessage,
 			},
 		});
 	}
