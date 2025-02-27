@@ -19,4 +19,5 @@ import "./tag";
 import "./tagFolder";
 import "./user";
 import "./venue";
+import "./plugin";
 import "./allUsers";
