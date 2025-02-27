@@ -16,6 +16,9 @@
 /.env-*
 /.env_*
 
+# Ignore the deploy compose file
+/compose.deploy.yaml
+
 # Ignore upload directories
 cert/**
 certs/**
