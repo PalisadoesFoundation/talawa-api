@@ -44,10 +44,13 @@ You will need to configure the API to work correctly.
 ## Running the Setup Script
 To configure the .env file, run one of the following commands in your project’s root directory:
 
+
 ```bash
 npm run setup
 ```
+
 or
+
 ```bash
 pnpm tsx setup.ts
 ```
