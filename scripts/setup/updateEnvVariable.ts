@@ -5,6 +5,20 @@ import fs from "node:fs";
  * @param config - An object containing key-value pairs where the keys are the environment variable names and
  * the values are the new values for those variables.
  */
+
+function quoteIfNeeded(value: string | number): string {
+	const stringValue = String(value);
+	if (
+		typeof value === "string" &&
+		(stringValue.includes(" ") ||
+			stringValue.includes('"') ||
+			stringValue.includes("'"))
+	) {
+		return `"${stringValue.replace(/"/g, '\\"')}"`;
+	}
+	return String(value);
+}
+
 export function updateEnvVariable(config: {
 	[key: string]: string | number;
 }): void {
@@ -23,16 +37,19 @@ export function updateEnvVariable(config: {
 		let updatedContent: string = existingContent;
 
 		for (const key in config) {
-			const value = config[key];
+			const value = config[key] as string | number;
 			const regex = new RegExp(
 				`^${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}=.*`,
 				"gm",
 			);
 
 			if (regex.test(updatedContent)) {
-				updatedContent = updatedContent.replace(regex, `${key}=${value}`);
+				updatedContent = updatedContent.replace(
+					regex,
+					`${key}=${quoteIfNeeded(value)}`,
+				);
 			} else {
-				updatedContent += `\n${key}=${value}`;
+				updatedContent += `\n${key}=${quoteIfNeeded(value)}`;
 			}
 
 			process.env[key] = String(value);

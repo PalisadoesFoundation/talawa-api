@@ -37,7 +37,7 @@ async function promptConfirm(
 	name: string,
 	message: string,
 	defaultValue?: boolean,
-): Promise<string> {
+): Promise<boolean> {
 	const { [name]: result } = await inquirer.prompt([
 		{ type: "confirm", name, message, default: defaultValue },
 	]);
@@ -445,10 +445,23 @@ export async function minioSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 				validatePort,
 			);
 
-			if (answers.MINIO_API_MAPPED_PORT === answers.MINIO_CONSOLE_MAPPED_PORT) {
-				throw new Error(
-					"Port conflict detected: MinIO API and Console ports must be different",
-				);
+			let portConflict = true;
+			while (portConflict && answers.CI === "false") {
+				if (
+					answers.MINIO_API_MAPPED_PORT === answers.MINIO_CONSOLE_MAPPED_PORT
+				) {
+					console.warn(
+						"⚠️ Port conflict detected: MinIO API and Console ports must be different.",
+					);
+					answers.MINIO_CONSOLE_MAPPED_PORT = await promptInput(
+						"MINIO_CONSOLE_MAPPED_PORT",
+						"Please enter a different Minio console mapped port:",
+						String(Number(answers.MINIO_API_MAPPED_PORT) + 1), // Suggest next available port
+						validatePort,
+					);
+				} else {
+					portConflict = false;
+				}
 			}
 		}
 

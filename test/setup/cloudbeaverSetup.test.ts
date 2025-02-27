@@ -120,6 +120,9 @@ describe("CloudBeaver Validation", () => {
 			expect(validateCloudBeaverURL("ftp://127.0.0.1")).toBe(
 				"URL must use HTTP or HTTPS protocol",
 			);
+			expect(validateCloudBeaverURL("http://127.0.0.1:99999")).toBe(
+				"Invalid URL format",
+			);
 			expect(validateCloudBeaverURL("http://127.0.0.1:8978")).toBe(true);
 			expect(validateCloudBeaverURL("https://localhost:8978")).toBe(true);
 		});

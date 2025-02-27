@@ -79,34 +79,38 @@ describe("Setup -> minioSetup", () => {
 			expect(process.env[key]).toBe(value);
 		}
 	});
-	it("should detect port conflicts between API and Console ports", async () => {
-		const inputAnswers = { CI: "false" };
-
-		const mockResponses = [
-			{ MINIO_BROWSER: "on" },
-			{ MINIO_API_MAPPED_HOST_IP: "127.0.0.1" },
-			{ MINIO_API_MAPPED_PORT: "9000" },
-			{ MINIO_CONSOLE_MAPPED_HOST_IP: "127.0.0.1" },
-			{ MINIO_CONSOLE_MAPPED_PORT: "9000" },
-		];
+	it("should handle port conflict between API and Console ports by prompting for a new port", async () => {
+		process.env.CI = "false";
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
-		for (const response of mockResponses) {
-			promptMock.mockResolvedValueOnce(response);
-		}
 
-		const processExitSpy = vi
-			.spyOn(process, "exit")
-			.mockImplementation((code) => {
-				throw new Error(`process.exit called with ${code}`);
-			});
+		promptMock
+			.mockResolvedValueOnce({ MINIO_BROWSER: "on" })
+			.mockResolvedValueOnce({ MINIO_API_MAPPED_HOST_IP: "127.0.0.1" })
+			.mockResolvedValueOnce({ MINIO_API_MAPPED_PORT: "9000" })
+			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_HOST_IP: "127.0.0.1" })
+			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_PORT: "9000" }) // Conflict: same as API port
+			// Response for the re-prompt after conflict detection
+			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_PORT: "9001" })
+			.mockResolvedValueOnce({ MINIO_ROOT_USER: "talawa" })
+			.mockResolvedValueOnce({ MINIO_ROOT_PASSWORD: "password" });
 
-		await expect(minioSetup(inputAnswers)).rejects.toThrow(
-			/process\.exit called with 1/,
+		const consoleWarnSpy = vi.spyOn(console, "warn");
+
+		const answers: Record<string, string> = { CI: "false" };
+		await minioSetup(answers);
+
+		// Verify port conflict was resolved
+		expect(answers.MINIO_API_MAPPED_PORT).toBe("9000");
+		expect(answers.MINIO_CONSOLE_MAPPED_PORT).toBe("9001");
+
+		// Verify warning message was shown
+		expect(consoleWarnSpy).toHaveBeenCalledWith(
+			"⚠️ Port conflict detected: MinIO API and Console ports must be different.",
 		);
 
-		expect(processExitSpy).toHaveBeenCalledWith(1);
-		processExitSpy.mockRestore();
+		// Verify inquirer was called the correct number of times (including the extra prompt)
+		expect(promptMock).toHaveBeenCalledTimes(8);
 	});
 	it("should handle prompt errors correctly", async () => {
 		const processExitSpy = vi
