@@ -4,6 +4,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "strict": true,
+    "jsx": "react",
     "noImplicitAny": true,
     "strictNullChecks": true
   },
