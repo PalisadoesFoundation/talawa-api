@@ -113,29 +113,6 @@ builder.mutationField("updateUser", (t) =>
 				});
 			}
 
-			if (currentUser.role !== "administrator") {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-					},
-				});
-			}
-
-			if (parsedArgs.input.id === currentUserId) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "forbidden_action_on_arguments_associated_resources",
-						issues: [
-							{
-								argumentPath: ["input", "id"],
-								message:
-									"You cannot update the user record associated to you with this action.",
-							},
-						],
-					},
-				});
-			}
-
 			if (existingUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -145,6 +122,19 @@ builder.mutationField("updateUser", (t) =>
 								argumentPath: ["input", "id"],
 							},
 						],
+					},
+				});
+			}
+
+			if (
+				currentUser.role !== "administrator" &&
+				parsedArgs.input.id !== currentUserId
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action",
+						message:
+							"Unable to change user role without administrator privileges.",
 					},
 				});
 			}
