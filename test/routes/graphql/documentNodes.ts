@@ -569,6 +569,17 @@ export const Mutation_createAgendaItem = gql(`
   }
 `);
 
+export const Mutation_updateAgendaItem = gql(`
+  mutation Mutation_updateAgendaItem($input: MutationUpdateAgendaItemInput!) {
+    updateAgendaItem(input: $input) {
+      id
+      name
+      description
+      duration
+      type
+    }
+  }
+`);
 export const Mutation_deleteAgendaItem = gql(`
   mutation Mutation_deleteAgendaItem($input: MutationDeleteAgendaItemInput!) {
     deleteAgendaItem(input: $input) {
