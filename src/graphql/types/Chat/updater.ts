@@ -3,9 +3,9 @@ import { usersTable } from "~/src/drizzle/schema";
 import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
 import type { chatsTable } from "~/src/drizzle/tables/chats";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { User } from "~/src/graphql/types/User/User";
 import { Chat } from "./Chat";
 
 type ChatsTable = typeof chatsTable.$inferSelect;
@@ -37,7 +37,10 @@ export const resolveUpdater = async (
 				columns: {
 					role: true,
 				},
-				where: eq(organizationMembershipsTable.organizationId, parent.organizationId),
+				where: eq(
+					organizationMembershipsTable.organizationId,
+					parent.organizationId,
+				),
 			},
 		},
 		where: eq(usersTable.id, currentUserId),
@@ -53,11 +56,11 @@ export const resolveUpdater = async (
 
 	const currentUserOrganizationMembership =
 		currentUser.organizationMembershipsWhereMember[0];
-	const currentUserChatMembership =
-		currentUser.chatMembershipsWhereMember[0];
+	const currentUserChatMembership = currentUser.chatMembershipsWhereMember[0];
 
 	const isGlobalAdmin = currentUser.role === "administrator";
-	const isOrgAdmin = currentUserOrganizationMembership?.role === "administrator";
+	const isOrgAdmin =
+		currentUserOrganizationMembership?.role === "administrator";
 	const isChatAdmin = currentUserChatMembership?.role === "administrator";
 
 	if (!isGlobalAdmin && !isOrgAdmin && !isChatAdmin) {
