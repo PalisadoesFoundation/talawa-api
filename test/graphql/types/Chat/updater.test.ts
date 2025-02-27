@@ -27,9 +27,7 @@ type MockUser = {
 type MockDrizzleClient = {
 	query: {
 		usersTable: {
-			findFirst: Mock<
-				(params?: unknown) => Promise<MockUser | undefined>
-			>;
+			findFirst: Mock<(params?: unknown) => Promise<MockUser | undefined>>;
 		};
 	};
 };
@@ -147,7 +145,11 @@ describe("Chat.updater resolver", () => {
 
 		const parentWithNullUpdater = { ...mockParent, updaterId: null };
 
-		const result = await resolveUpdater(parentWithNullUpdater, {}, authenticatedContext);
+		const result = await resolveUpdater(
+			parentWithNullUpdater,
+			{},
+			authenticatedContext,
+		);
 		expect(result).toBeNull();
 	});
 
@@ -156,12 +158,21 @@ describe("Chat.updater resolver", () => {
 			...mockCurrentUser,
 			role: "administrator" as UserRole,
 		};
-		
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue(currentUserWithPermissions);
 
-		const parentWithCurrentUserAsUpdater = { ...mockParent, updaterId: "user_1" };
+		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue(
+			currentUserWithPermissions,
+		);
 
-		const result = await resolveUpdater(parentWithCurrentUserAsUpdater, {}, authenticatedContext);
+		const parentWithCurrentUserAsUpdater = {
+			...mockParent,
+			updaterId: "user_1",
+		};
+
+		const result = await resolveUpdater(
+			parentWithCurrentUserAsUpdater,
+			{},
+			authenticatedContext,
+		);
 		expect(result).toEqual(currentUserWithPermissions);
 	});
 
@@ -173,7 +184,9 @@ describe("Chat.updater resolver", () => {
 		});
 
 		// Second findFirst call for updater user
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce(mockUpdaterUser);
+		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUpdaterUser,
+		);
 
 		const result = await resolveUpdater(mockParent, {}, authenticatedContext);
 		expect(result).toEqual(mockUpdaterUser);
@@ -187,7 +200,9 @@ describe("Chat.updater resolver", () => {
 		});
 
 		// Second findFirst call for updater user returns undefined
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce(undefined);
+		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce(
+			undefined,
+		);
 
 		await expect(
 			resolveUpdater(mockParent, {}, authenticatedContext),
@@ -207,7 +222,9 @@ describe("Chat.updater resolver", () => {
 		});
 
 		// Second findFirst call for updater user
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce(mockUpdaterUser);
+		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUpdaterUser,
+		);
 
 		const result = await resolveUpdater(mockParent, {}, authenticatedContext);
 		expect(result).toEqual(mockUpdaterUser);
@@ -218,11 +235,15 @@ describe("Chat.updater resolver", () => {
 		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce({
 			...mockCurrentUser,
 			role: "regular" as UserRole,
-			organizationMembershipsWhereMember: [{ role: "administrator" as OrganizationMembershipRole }],
+			organizationMembershipsWhereMember: [
+				{ role: "administrator" as OrganizationMembershipRole },
+			],
 		});
 
 		// Second findFirst call for updater user
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce(mockUpdaterUser);
+		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUpdaterUser,
+		);
 
 		const result = await resolveUpdater(mockParent, {}, authenticatedContext);
 		expect(result).toEqual(mockUpdaterUser);
@@ -233,11 +254,15 @@ describe("Chat.updater resolver", () => {
 		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce({
 			...mockCurrentUser,
 			role: "regular" as UserRole,
-			chatMembershipsWhereMember: [{ role: "administrator" as ChatMembershipRole }],
+			chatMembershipsWhereMember: [
+				{ role: "administrator" as ChatMembershipRole },
+			],
 		});
 
 		// Second findFirst call for updater user
-		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce(mockUpdaterUser);
+		drizzleClientMock.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUpdaterUser,
+		);
 
 		const result = await resolveUpdater(mockParent, {}, authenticatedContext);
 		expect(result).toEqual(mockUpdaterUser);
