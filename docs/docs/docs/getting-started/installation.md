@@ -307,18 +307,13 @@ devcontainer build --workspace-folder .
 devcontainer up --workspace-folder .
 ```
 
-12. When the startup is complete, the last line of out put should look like this:
+12. When the container installation is complete, the last line of out put should look like this:
 
 ```
 ...
 ...
 ...
-[19:53:14.113] INFO (166): Server listening at http://127.0.0.1:4000
-[19:53:14.113] INFO (166): Server listening at http://172.23.0.3:4000
-[19:53:14.113] INFO (166): Server listening at http://172.20.0.2:4000
-[19:53:14.113] INFO (166): Server listening at http://172.19.0.3:4000
-[19:53:14.113] INFO (166): Server listening at http://172.21.0.3:4000
-[19:53:14.113] INFO (166): Server listening at http://172.22.0.4:4000
+{"outcome":"success","containerId":"81306766f2aeeb851c8ebb844702d39ad2adc09419508b736ef2ee5a03eb8e34","composeProjectName":"talawa","remoteUser":"talawa","remoteWorkspaceFolder":"/home/talawa/api"}
 ```
 
 All done!
@@ -333,12 +328,19 @@ docker compose down
 
 #### CLI Startup (Development)
 
-After a successful installation, use these commands in sequence to start the dev container.
+After a successful installation, use these commands to start the dev container.
 
-```
-devcontainer build --workspace-folder .
-devcontainer up --workspace-folder .
-```
+1. Attached Mode
+
+   ```
+   docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
+   ```
+
+2. Detached Mode
+
+   ```
+   docker exec talawa-api-1 /bin/bash -c 'nohup pnpm run start_development_server > /devnull 2>&1 &'
+   ```
 
 #### Importing Sample Data
 
