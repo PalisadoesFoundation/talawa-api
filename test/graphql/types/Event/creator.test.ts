@@ -1,4 +1,5 @@
-import { vi } from "vitest";
+import { createMockGraphQLContext } from "test/MockContext/MockContextCreator";
+import type { vi } from "vitest";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
 import type { Event as EventType } from "~/src/graphql/types/Event/Event";
@@ -6,20 +7,20 @@ import { eventCreatorResolver } from "~/src/graphql/types/Event/creator";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 //function to return mock GraphqlContext
-const createMockContext = () => {
-	const mockContext = {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "user-123", isAdmin: true },
-		} as CurrentClient,
-		drizzleClient: { query: { usersTable: { findFirst: vi.fn() } } },
-		envConfig: { API_BASE_URL: "mock url" },
-		jwt: { sign: vi.fn() },
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
-	};
-	return mockContext as unknown as GraphQLContext;
-};
+// const createMockContext = () => {
+// 	const mockContext = {
+// 		currentClient: {
+// 			isAuthenticated: true,
+// 			user: { id: "user-123", isAdmin: true },
+// 		} as CurrentClient,
+// 		drizzleClient: { query: { usersTable: { findFirst: vi.fn() } } },
+// 		envConfig: { API_BASE_URL: "mock url" },
+// 		jwt: { sign: vi.fn() },
+// 		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+// 		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
+// 	};
+// 	return mockContext as unknown as GraphQLContext;
+// };
 //mock current user details
 type MockUser = {
 	id: string;
@@ -35,7 +36,7 @@ describe("Event Creator Resolver -Test ", () => {
 	let mockEvent: EventType;
 
 	beforeEach(() => {
-		ctx = createMockContext();
+		ctx = createMockGraphQLContext(true,"user-123");
 		mockEvent = {
 			id: "550e8400-e29b-41d4-a716-446655440000",
 			name: "Annual General Meeting",
