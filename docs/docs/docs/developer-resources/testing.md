@@ -2,7 +2,7 @@
 id: testing
 title: Testing & Validation
 slug: /developer-resources/testing
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 This section covers important tests to validate the operation of the API.
