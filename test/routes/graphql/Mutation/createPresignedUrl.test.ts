@@ -60,7 +60,6 @@ suite("Mutation field createPresignedUrl", () => {
 			assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
 			const authToken = signInResult.data.signIn.authenticationToken;
 
-			// Create an organization so organizationId is valid.
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
