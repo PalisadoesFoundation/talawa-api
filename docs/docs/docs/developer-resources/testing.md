@@ -819,6 +819,7 @@ Sometimes you may want to start all over again from scratch. These steps will re
    ```bash
    devcontainer build --workspace-folder .
    devcontainer up --workspace-folder .
+   docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
    ```
 
 Now you can resume your development work.
