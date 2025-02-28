@@ -22,6 +22,19 @@ export const createMockMinioClient = (): Partial<MinioClient> => ({
 			versionId: null,
 		}),
 	),
-	getObject: vi.fn(async () => new Readable()),
+	getObject: vi.fn(async (bucketName, objectName) => {
+		if (bucketName !== "talawa" || !objectName) {
+			throw new Error("Object not found");
+		}
+
+		const stream = new Readable({
+			read() {
+				this.push("mock file content");
+				this.push(null); // Indicate end of stream
+			},
+		});
+
+		return stream;
+	}),
 	removeObject: vi.fn(async () => Promise.resolve()),
 });

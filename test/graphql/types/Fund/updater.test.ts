@@ -22,7 +22,6 @@ describe("Fund Resolver - Updater Field", () => {
 		};
 
 		ctx = createMockGraphQLContext(true, "user123");
-		console.log("ctx", ctx);
 		vi.clearAllMocks();
 	});
 

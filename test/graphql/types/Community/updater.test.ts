@@ -43,7 +43,6 @@ describe("Community Resolver - Updater Field", () => {
 		};
 
 		ctx = createMockGraphQLContext(true, "123");
-		console.log(ctx);
 	});
 
 	it("should return null when updaterId is null", async () => {
