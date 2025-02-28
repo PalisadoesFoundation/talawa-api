@@ -307,7 +307,7 @@ devcontainer build --workspace-folder .
 devcontainer up --workspace-folder .
 ```
 
-12. When the container installation is complete, the last line of out put should look like this:
+12. When the container installation is complete, the last line of output should look like this:
 
 ```
 ...
@@ -339,7 +339,7 @@ After a successful installation, use these commands to start the dev container.
 
 #### CLI Shutdown (Development)
 
-Use the command `docker compose` command to cleanly shutdown the dev container
+Use the command `docker compose` command to cleanly shut down the dev container
 
 ```
 docker compose down
