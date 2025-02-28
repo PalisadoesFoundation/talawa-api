@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { describe, expect, it, vi } from "vitest";
 import type { PubSub } from "../../pubsub";
 import { resolveEventUpdater } from "./updater";
+
 const MockEvent = {
 	createdAt: new Date(),
 	creatorId: "user_1",
@@ -18,10 +19,13 @@ const MockEvent = {
 const drizzleClientMock = {
 	query: {
 		usersTable: {
-			findFirst: vi.fn(),
+			findFirst: vi.fn().mockImplementation(() => Promise.resolve(null)) as vi.Mock<
+				() => Promise<null>
+			>,
 		},
 	},
 } as unknown as FastifyInstance["drizzleClient"];
+
 
 const authenticatedContext = {
 	currentClient: {
@@ -62,9 +66,9 @@ describe("resolveEventUpdater", async () => {
 			}),
 		);
 	});
+
 	it("throws an unauthenticated error if the current user is not found", async () => {
-		// @ts-ignore
-		drizzleClientMock.query.usersTable.findFirst.mockReturnValue(undefined);
+		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue(undefined);
 
 		await expect(
 			resolveEventUpdater(MockEvent, {}, authenticatedContext),
@@ -74,9 +78,9 @@ describe("resolveEventUpdater", async () => {
 			}),
 		);
 	});
+
 	it("throws unauthorized_action error if current user is not administrator", async () => {
-		// @ts-ignore
-		drizzleClientMock.query.usersTable.findFirst.mockReturnValue({
+		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
 			role: "regular",
 			organizationMembershipsWhereMember: [{}],
 		});
@@ -93,9 +97,9 @@ describe("resolveEventUpdater", async () => {
 			}),
 		);
 	});
+
 	it("should return user as null if event (parent) has no updaterId ", async () => {
-		//@ts-ignore
-		drizzleClientMock.query.usersTable.findFirst.mockReturnValue({
+		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue({
 			role: "administrator",
 			organizationMembershipsWhereMember: [{ role: "administrator" }],
 		});
@@ -103,7 +107,7 @@ describe("resolveEventUpdater", async () => {
 		const eventWithoutUpdater = {
 			...MockEvent,
 			updaterId: null,
-		}; // event with no updater id
+		};
 
 		const result = await resolveEventUpdater(
 			eventWithoutUpdater,
@@ -112,15 +116,14 @@ describe("resolveEventUpdater", async () => {
 		);
 		expect(result).toBeNull();
 	});
+
 	it("returns the currentUser if user is global administrator and event has updaterId", async () => {
-		// not mocking all the values of the user
 		const MockUser = {
-			id: "updater_1", // user with the id same as MockEvent.updaterId
+			id: "updater_1",
 			role: "administrator",
 			organizationMembershipsWhereMember: [{ role: "regular" }],
 		};
-		// @ts-ignore
-		drizzleClientMock.query.usersTable.findFirst.mockReturnValue(MockUser);
+		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue(MockUser);
 
 		const result = await resolveEventUpdater(
 			MockEvent,
@@ -129,16 +132,15 @@ describe("resolveEventUpdater", async () => {
 		);
 		expect(result).toEqual(MockUser);
 	});
+
 	it("return currentUser if user is not the global administrator but organization administrator and event has updaterId", async () => {
-		// not mocking all the values of the user
 		const MockUser = {
-			id: "updater_1", // id matches with Event.updaterId
+			id: "updater_1",
 			role: "regular",
 			organizationMembershipsWhereMember: [{ role: "administrator" }],
 		};
-		// @ts-ignore
-		drizzleClientMock.query.usersTable.findFirst.mockReturnValue(MockUser);
-		expect(
+		drizzleClientMock.query.usersTable.findFirst.mockResolvedValue(MockUser);
+		await expect(
 			resolveEventUpdater(MockEvent, {}, authenticatedContext),
 		).resolves.toEqual(MockUser);
 	});
@@ -149,15 +151,12 @@ describe("resolveEventUpdater", async () => {
 			role: "administrator",
 			organizationMembershipsWhereMember: [{ role: "administrator" }],
 		};
-		// user which updated the event
 		const mockUpdaterUser = {
 			id: "updater_1",
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
 		};
-		// The first call returns the current user, and the second returns the updater user
 		drizzleClientMock.query.usersTable.findFirst
-			// @ts-ignore
 			.mockResolvedValueOnce(mockCurrentUser)
 			.mockResolvedValueOnce(mockUpdaterUser);
 
@@ -173,11 +172,10 @@ describe("resolveEventUpdater", async () => {
 		const mockCurrentUser = {
 			id: "user_1",
 			role: "administrator",
-			organizationMembershipsWhereMember: [{ role: "administrator " }],
+			organizationMembershipsWhereMember: [{ role: "administrator" }],
 		};
 
 		drizzleClientMock.query.usersTable.findFirst
-			// @ts-ignore
 			.mockResolvedValueOnce(mockCurrentUser)
 			.mockResolvedValueOnce(undefined);
 
