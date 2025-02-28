@@ -317,19 +317,11 @@ devcontainer up --workspace-folder .
 
 All done!
 
-#### CLI Shutdown (Development)
-
-Use the command `docker compose` command to cleanly shutdown the dev container
-
-```
-docker compose down
-```
-
 #### CLI Startup (Development)
 
 After a successful installation, use these commands to start the dev container.
 
-1. Attached Mode
+1. To run in attached Mode
 
    ```
    devcontainer build --workspace-folder .
@@ -337,13 +329,21 @@ After a successful installation, use these commands to start the dev container.
    docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
    ```
 
-2. Detached Mode
+2. To run in detached Mode
 
    ```
    devcontainer build --workspace-folder .
    devcontainer up --workspace-folder .
    docker exec talawa-api-1 /bin/bash -c 'nohup pnpm run start_development_server > /dev/null 2>&1 &'
    ```
+
+#### CLI Shutdown (Development)
+
+Use the command `docker compose` command to cleanly shutdown the dev container
+
+```
+docker compose down
+```
 
 #### Importing Sample Data
 
