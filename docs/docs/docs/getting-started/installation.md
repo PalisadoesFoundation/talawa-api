@@ -332,12 +332,16 @@ After a successful installation, use these commands to start the dev container.
 1. Attached Mode
 
    ```
+   devcontainer build --workspace-folder .
+   devcontainer up --workspace-folder .
    docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
    ```
 
 2. Detached Mode
 
    ```
+   devcontainer build --workspace-folder .
+   devcontainer up --workspace-folder .
    docker exec talawa-api-1 /bin/bash -c 'nohup pnpm run start_development_server > /dev/null 2>&1 &'
    ```
 
