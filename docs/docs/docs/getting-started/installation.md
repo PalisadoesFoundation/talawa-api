@@ -307,7 +307,7 @@ devcontainer build --workspace-folder .
 devcontainer up --workspace-folder .
 ```
 
-12. When the container installation is complete, the last line of output should look like this:
+12. When the container installation is complete, the last lines of output should look like this:
 
 ```
 ...
