@@ -81,7 +81,7 @@ builder.mutationField("createPresignedUrl", (t) =>
 
 			const { fileName } = args.input;
 			const bucketName = ctx.minio.bucketName;
-			const objectName = `uploads/${Date.now()}-${fileName}`;
+			const objectName = `uploads/${Date.now()}-${crypto.randomUUID()}-${fileName}`;
 
 			try {
 				const presignedUrl: string = await new Promise((resolve, reject) => {
@@ -93,7 +93,7 @@ builder.mutationField("createPresignedUrl", (t) =>
 
 				const fileUrl = `http://${ctx.minio.config.endPoint}:${ctx.minio.config.port}/${bucketName}/${objectName}`;
 
-				return { presignedUrl, fileUrl };
+				return { presignedUrl, fileUrl, objectName };
 			} catch (error: unknown) {
 				if (error instanceof Error) {
 					throw new TalawaGraphQLError({

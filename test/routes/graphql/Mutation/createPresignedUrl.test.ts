@@ -48,7 +48,7 @@ suite("Mutation field createPresignedUrl", () => {
 	});
 
 	suite("when the presigned URL is generated successfully", () => {
-		test("should return a presignedUrl and fileUrl", async () => {
+		test("should return a presignedUrl, fileUrl, and objectName", async () => {
 			const originalPresignedPutObject = server.minio.client.presignedPutObject;
 			server.minio.client.presignedPutObject = async (
 				bucket: string,
@@ -57,6 +57,10 @@ suite("Mutation field createPresignedUrl", () => {
 			): Promise<string> => {
 				return "https://example.com/presigned-url";
 			};
+			assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
+			const authToken = signInResult.data.signIn.authenticationToken;
+
+			// Create an organization so organizationId is valid.
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -66,11 +70,11 @@ suite("Mutation field createPresignedUrl", () => {
 							name: "presigned-url-org",
 							description: "Organization for presigned URL test",
 							countryCode: "us",
-							state: "test",
-							city: "test",
-							postalCode: "12345",
-							addressLine1: "Address 1",
-							addressLine2: "Address 2",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "123 Main St",
+							addressLine2: "Suite 100",
 						},
 					},
 				},
@@ -95,10 +99,11 @@ suite("Mutation field createPresignedUrl", () => {
 					fileUrl: expect.stringContaining(
 						`http://${server.minio.config.endPoint}:${server.minio.config.port}/${server.minio.bucketName}/uploads/`,
 					),
+					objectName: expect.stringMatching(
+						/^uploads\/\d+-[0-9a-fA-F-]+-testfile\.txt$/,
+					),
 				}),
 			);
-
-			// Restore the original presignedPutObject.
 			server.minio.client.presignedPutObject = originalPresignedPutObject;
 		});
 	});
@@ -133,7 +138,6 @@ suite("Mutation field createPresignedUrl", () => {
 
 	suite("when the current user does not exist", () => {
 		test("should return an error with unauthenticated extensions code", async () => {
-			// Step 1: Sign in as admin.
 			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {

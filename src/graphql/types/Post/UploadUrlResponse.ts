@@ -3,6 +3,7 @@ import { builder } from "../../builder";
 export interface UploadUrlResponse {
 	presignedUrl: string;
 	fileUrl: string;
+	objectName: string;
 }
 
 export const UploadUrlResponse =
@@ -13,5 +14,6 @@ UploadUrlResponse.implement({
 	fields: (t) => ({
 		presignedUrl: t.exposeString("presignedUrl"),
 		fileUrl: t.exposeString("fileUrl"),
+		objectName: t.exposeString("objectName"),
 	}),
 });

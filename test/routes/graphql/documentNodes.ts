@@ -612,6 +612,7 @@ export const Mutation_createPresignedUrl = gql(`
     createPresignedUrl(input: $input) {
       fileUrl
       presignedUrl
+      objectName
     }
   }
 `);
