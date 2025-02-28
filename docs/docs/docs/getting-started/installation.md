@@ -295,19 +295,19 @@ These steps are specific to Linux. You will need to modify them accordingly for 
 devcontainer build --workspace-folder .
 ```
 
-10. When the build is complete, the last line of the output should be:
+1. When the build is complete, the last line of the output should be:
 
 ```
 {"outcome":"success","imageName":"talawa-api"}
 ```
 
-11. Start the docker devcontainer
+1. Start the docker devcontainer
 
 ```
 devcontainer up --workspace-folder .
 ```
 
-12. When the container installation is complete, the last lines of output should look like this:
+1. When the container installation is complete, the last lines of output should look like this:
 
 ```
 ...
