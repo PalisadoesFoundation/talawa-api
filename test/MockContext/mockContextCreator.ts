@@ -8,20 +8,20 @@ import type { FastifyInstance } from "fastify";
 import type { Client as MinioClient } from "minio";
 import { createMockLogger } from "test/utilities/mockLogger";
 import { createMockMinioClient } from "test/MockContext/mocks/mockMinioClient";
-import { createMockPubSub } from "./mocks/minioMockClient";
+import { createMockPubSub } from "./mocks/pubSubMock";
 import { createMockDrizzleClient } from "./mocks/drizzleClientMock";
 import { vi } from "vitest";
 
 
 /**
- * ✅ Mock for an **unauthenticated user**.
+ *  Mock for an **unauthenticated user**.
  */
 const unauthenticatedClient: CurrentClient = {
 	isAuthenticated: false,
 };
 
 /**
- * ✅ Mock for an **authenticated user**.
+ *  Mock for an **authenticated user**.
  */
 const authenticatedClient = (userId: string): CurrentClient => ({
 	isAuthenticated: true,
@@ -38,6 +38,8 @@ const authenticatedClient = (userId: string): CurrentClient => ({
  * @param userId - The user ID (only for authenticated users).
  * @returns A fully mocked GraphQL context object.
  */
+
+
 export function createMockGraphQLContext(
 	isAuthenticated = true,
 	userId = "user123",
@@ -63,3 +65,4 @@ export function createMockGraphQLContext(
 
 	return { ...explicitContext, ...implicitContext };
 }
+

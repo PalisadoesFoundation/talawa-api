@@ -1,6 +1,7 @@
-import { vi } from "vitest";
+import { createMockGraphQLContext } from "test/MockContext/mockContextCreator";
+import type { vi } from "vitest";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
+import type { GraphQLContext } from "~/src/graphql/context";
 import type { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
 import { updatedAtResolver } from "~/src/graphql/types/FundCampaign/updatedAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -19,31 +20,11 @@ const mockFundCampaign: FundCampaign = {
 	startAt: new Date("2024-02-01T00:00:00Z"),
 };
 
-const createMockContext = () => {
-	const mockContext = {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "user-123" },
-		} as CurrentClient,
-		drizzleClient: {
-			query: {
-				usersTable: { findFirst: vi.fn() },
-				fundsTable: { findFirst: vi.fn() },
-			},
-		},
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		envConfig: { API_BASE_URL: "mock url" },
-		jwt: { sign: vi.fn() },
-		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
-	};
-	return mockContext as unknown as GraphQLContext;
-};
-
 describe("updatedAtResolver", () => {
 	let ctx: GraphQLContext;
 
 	beforeEach(() => {
-		ctx = createMockContext();
+		ctx = createMockGraphQLContext(true, "user-123");
 	});
 
 	it("should throw unauthenticated error if user is not logged in", async () => {

@@ -1,24 +1,10 @@
+import { createMockGraphQLContext } from "test/MockContext/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
 import { vi } from "vitest";
-import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
+import type { GraphQLContext } from "~/src/graphql/context";
 import type { Organization as OrganizationType } from "~/src/graphql/types/Organization/Organization";
 import { OrganizationCreatorResolver } from "~/src/graphql/types/Organization/creator";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
-const createMockContext = () => {
-	const mockContext = {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "user-123", isAdmin: true },
-		} as CurrentClient,
-		drizzleClient: { query: { usersTable: { findFirst: vi.fn() } } },
-		envConfig: { API_BASE_URL: "mock url" },
-		jwt: { sign: vi.fn() },
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
-	};
-	return mockContext as unknown as GraphQLContext;
-};
 
 type MockUser = {
 	id: string;
@@ -34,7 +20,7 @@ describe("Organization Creator Resolver Tests", () => {
 	let mockOrganization: OrganizationType;
 
 	beforeEach(() => {
-		ctx = createMockContext();
+		ctx = createMockGraphQLContext(true, "user-123");
 		mockOrganization = {
 			id: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
 			name: "Test Organization",
