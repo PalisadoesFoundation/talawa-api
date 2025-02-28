@@ -6,6 +6,10 @@ declare module "fastify" {
 		minio: {
 			bucketName: "talawa";
 			client: MinioClient;
+			config: {
+				endPoint: string;
+				port: number;
+			};
 		};
 	}
 }
@@ -68,6 +72,10 @@ export const minioClient = fastifyPlugin(async (fastify) => {
 	fastify.decorate("minio", {
 		bucketName: "talawa",
 		client,
+		config: {
+			endPoint: fastify.envConfig.API_MINIO_END_POINT,
+			port: fastify.envConfig.API_MINIO_PORT,
+		},
 	});
 }, {});
 

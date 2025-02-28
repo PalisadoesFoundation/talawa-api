@@ -15,6 +15,7 @@ import "./createOrganization";
 import "./createOrganizationMembership";
 import "./createPost";
 import "./createPostVote";
+import "./createPresignedUrl";
 import "./createTag";
 import "./createTagFolder";
 import "./createUser";
