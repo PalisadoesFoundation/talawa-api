@@ -1,24 +1,10 @@
+import { createMockGraphQLContext } from "test/MockContext/mockContextCreator";
 import { vi } from "vitest";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
+import type { GraphQLContext } from "~/src/graphql/context";
 import type { Advertisement as AdvertisementType } from "~/src/graphql/types/Advertisement/Advertisement";
 import { advertisementUpdatedAtResolver } from "~/src/graphql/types/Advertisement/updatedAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
-const createMockContext = () => {
-	const mockContext = {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "user-123", isAdmin: true },
-		} as CurrentClient,
-		drizzleClient: { query: { usersTable: { findFirst: vi.fn() } } },
-		envConfig: { API_BASE_URL: "mock url" },
-		jwt: { sign: vi.fn() },
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
-	};
-	return mockContext as unknown as GraphQLContext;
-};
 
 type MockUser = {
 	id: string;
@@ -35,7 +21,7 @@ describe("Advertisement Updated At Resolver Tests", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		ctx = createMockContext();
+		ctx = createMockGraphQLContext(true, "user-123");
 		mockAdvertisement = {
 			id: "adv-123",
 			organizationId: "org-456",

@@ -1,50 +1,15 @@
-import type { FastifyBaseLogger } from "fastify";
-import type { Client as MinioClient } from "minio";
+import { createMockGraphQLContext } from "test/MockContext/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Community } from "~/src/graphql/types/Community/Community";
 import { CommunityResolver } from "~/src/graphql/types/Community/Community";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../../../src/graphql/context";
-import { createMockLogger } from "../../../utilities/mockLogger";
 
 type DeepPartial<T> = Partial<T>;
 
-type PubSubEvents = {
-	COMMUNITY_CREATED: { id: string };
-	POST_CREATED: { id: string };
-};
-
-interface TestContext extends Omit<GraphQLContext, "log"> {
-	drizzleClient: {
-		query: {
-			usersTable: {
-				findFirst: ReturnType<typeof vi.fn>;
-			};
-		};
-	} & GraphQLContext["drizzleClient"];
-	log: FastifyBaseLogger;
-}
-
-const createMockPubSub = () => ({
-	publish: vi.fn().mockImplementation(
-		(
-			event: {
-				topic: keyof PubSubEvents;
-				payload: PubSubEvents[keyof PubSubEvents];
-			},
-			callback?: () => void,
-		) => {
-			if (callback) callback();
-			return;
-		},
-	),
-	subscribe: vi.fn(),
-	asyncIterator: vi.fn(),
-});
-
 describe("Community Resolver - Updater Field", () => {
-	let ctx: TestContext;
+	let ctx: GraphQLContext;
 	let mockUser: DeepPartial<User>;
 	let mockCommunity: Community;
 
@@ -77,39 +42,7 @@ describe("Community Resolver - Updater Field", () => {
 			youtubeURL: null,
 		};
 
-		const mockLogger = createMockLogger();
-
-		ctx = {
-			drizzleClient: {
-				query: {
-					usersTable: {
-						findFirst: vi.fn().mockResolvedValue(mockUser),
-					},
-				},
-			} as unknown as TestContext["drizzleClient"],
-			log: mockLogger,
-			pubsub: createMockPubSub(),
-			envConfig: {
-				API_BASE_URL: "http://localhost:3000",
-			},
-			jwt: {
-				sign: vi.fn().mockReturnValue("mock-token"),
-			},
-			minio: {
-				bucketName: "talawa",
-				client: {
-					listBuckets: vi.fn(),
-					putObject: vi.fn(),
-					getObject: vi.fn(),
-				} as unknown as MinioClient,
-			},
-			currentClient: {
-				isAuthenticated: true,
-				user: {
-					id: "123", // Ensure this is always set
-				},
-			},
-		};
+		ctx = createMockGraphQLContext(true, "123");
 	});
 
 	it("should return null when updaterId is null", async () => {
@@ -148,7 +81,7 @@ describe("Community Resolver - Updater Field", () => {
 			updatedAt: null,
 		};
 
-		ctx.drizzleClient.query.usersTable.findFirst
+		(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
 			.mockResolvedValueOnce(mockUser)
 			.mockResolvedValueOnce(updaterUser);
 
@@ -171,7 +104,7 @@ describe("Community Resolver - Updater Field", () => {
 			updatedAt: null,
 		};
 
-		ctx.drizzleClient.query.usersTable.findFirst
+		(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
 			.mockResolvedValueOnce(mockUser)
 			.mockResolvedValueOnce(updaterUser);
 
@@ -185,7 +118,7 @@ describe("Community Resolver - Updater Field", () => {
 	it("should handle database errors gracefully", async () => {
 		const dbError = new Error("Database connection failed");
 
-		ctx.drizzleClient.query.usersTable.findFirst
+		(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
 			.mockRejectedValueOnce(dbError)
 			.mockResolvedValueOnce(mockUser);
 
@@ -213,7 +146,7 @@ describe("Community Resolver - Updater Field", () => {
 			name: "Jane Smith",
 		};
 
-		ctx.drizzleClient.query.usersTable.findFirst
+		(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
 			.mockResolvedValueOnce(mockUser)
 			.mockResolvedValueOnce(differentUser);
 		const result = await CommunityResolver.updater(
@@ -236,7 +169,9 @@ describe("Community Resolver - Updater Field", () => {
 	});
 
 	it("should log warning and throw error when updater is not found", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
+		(
+			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue(undefined);
 
 		const testCommunity = {
 			...mockCommunity,
@@ -262,9 +197,9 @@ describe("Community Resolver - Updater Field", () => {
 
 	it("should handle database timeout errors", async () => {
 		const timeoutError = new Error("Database timeout");
-		ctx.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
-			timeoutError,
-		);
+		(
+			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockRejectedValue(timeoutError);
 
 		await expect(
 			CommunityResolver.updater(mockCommunity, {}, ctx),

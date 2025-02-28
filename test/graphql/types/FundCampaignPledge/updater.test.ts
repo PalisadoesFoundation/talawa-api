@@ -1,44 +1,11 @@
+import { createMockGraphQLContext } from "test/MockContext/mockContextCreator";
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import type {
-	ExplicitGraphQLContext,
-	ImplicitMercuriusContext,
-} from "~/src/graphql/context";
 import { resolveUpdater } from "~/src/graphql/types/FundCampaignPledge/updater";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
+const mockCtx = createMockGraphQLContext(true, "user123");
 
-const mockDrizzleClient = {
-	query: {
-		usersTable: {
-			findFirst: vi.fn(),
-		},
-		fundCampaignsTable: {
-			findFirst: vi.fn(),
-		},
-	},
-	_: vi.fn(),
-	$with: vi.fn(),
-	$count: vi.fn(),
-	with: vi.fn(),
-	select: vi.fn(),
-	insert: vi.fn(),
-	update: vi.fn(),
-	delete: vi.fn(),
-};
-
-const mockCtx = {
-	currentClient: {
-		isAuthenticated: true as const,
-		user: { id: "user123", role: "member" },
-	},
-	drizzleClient: mockDrizzleClient,
-	log: { error: vi.fn() },
-	envConfig: {},
-	jwt: {},
-	miniots: {},
-	minio: {},
-} as unknown as ContextType;
+const mockDrizzleClient = mockCtx.drizzleClient;
 
 const mockFundCampaignPledge = {
 	amount: 100,
@@ -67,7 +34,9 @@ describe("resolveUpdater", () => {
 			resolveUpdater(mockFundCampaignPledge, {}, unauthenticatedCtx),
 		).rejects.toThrow(TalawaGraphQLError);
 
-		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
+		(
+			mockDrizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue(undefined);
 
 		await expect(
 			resolveUpdater(mockFundCampaignPledge, {}, mockCtx),
@@ -75,13 +44,19 @@ describe("resolveUpdater", () => {
 	});
 
 	test("throws an unexpected error if campaign does not exist", async () => {
-		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
+		(
+			mockCtx.drizzleClient.query.usersTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
 			id: "user123",
 			role: "administrator",
 		});
-		mockDrizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue(
-			undefined,
-		);
+		(
+			mockDrizzleClient.query.fundCampaignsTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue(undefined);
 
 		await expect(
 			resolveUpdater(mockFundCampaignPledge, {}, mockCtx),
@@ -92,11 +67,17 @@ describe("resolveUpdater", () => {
 	});
 
 	test("throws an unauthorized error if user is not an administrator", async () => {
-		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
+		(
+			mockDrizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
 			id: "user123",
 			role: "member",
 		});
-		mockDrizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
+		(
+			mockDrizzleClient.query.fundCampaignsTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
 			fund: {
 				organization: { membershipsWhereOrganization: [{ role: "member" }] },
 			},
@@ -114,11 +95,17 @@ describe("resolveUpdater", () => {
 	});
 
 	test("returns null if updaterId is null", async () => {
-		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
+		(
+			mockDrizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
 			id: "user123",
 			role: "administrator",
 		});
-		mockDrizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
+		(
+			mockDrizzleClient.query.fundCampaignsTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
 			fund: {
 				organization: {
 					membershipsWhereOrganization: [{ role: "administrator" }],
@@ -135,11 +122,17 @@ describe("resolveUpdater", () => {
 	});
 
 	test("returns current user if they are the updater", async () => {
-		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
+		(
+			mockDrizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
 			id: "user123",
 			role: "administrator",
 		});
-		mockDrizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
+		(
+			mockDrizzleClient.query.fundCampaignsTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
 			fund: {
 				organization: {
 					membershipsWhereOrganization: [{ role: "administrator" }],
@@ -156,10 +149,14 @@ describe("resolveUpdater", () => {
 	});
 
 	test("throws unexpected error if updater user does not exist", async () => {
-		mockDrizzleClient.query.usersTable.findFirst
+		(mockDrizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
 			.mockResolvedValueOnce({ id: "user123", role: "administrator" })
 			.mockResolvedValueOnce(undefined);
-		mockDrizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
+		(
+			mockDrizzleClient.query.fundCampaignsTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
 			fund: {
 				organization: {
 					membershipsWhereOrganization: [{ role: "administrator" }],
@@ -176,10 +173,14 @@ describe("resolveUpdater", () => {
 	});
 
 	test("returns the existing user if updaterId is set and user exists", async () => {
-		mockDrizzleClient.query.usersTable.findFirst
+		(mockDrizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
 			.mockResolvedValueOnce({ id: "user123", role: "administrator" })
 			.mockResolvedValueOnce({ id: "user456", role: "member" });
-		mockDrizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
+		(
+			mockDrizzleClient.query.fundCampaignsTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
 			fund: {
 				organization: {
 					membershipsWhereOrganization: [{ role: "administrator" }],
@@ -192,38 +193,37 @@ describe("resolveUpdater", () => {
 	});
 
 	test("ensures usersTable query is called with correct user ID", async () => {
-		mockDrizzleClient.query.usersTable.findFirst.mockImplementation(
-			({ where }) => {
-				return (
-					where({ id: "user123" }, { eq: (a: string, b: string) => a === b }) &&
-					Promise.resolve({ id: "user123" })
-				);
-			},
-		);
+		(
+			mockDrizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockImplementation(({ where }) => {
+			return (
+				where({ id: "user123" }, { eq: (a: string, b: string) => a === b }) &&
+				Promise.resolve({ id: "user123" })
+			);
+		});
 		await resolveUpdater(mockFundCampaignPledge, {}, mockCtx);
 		expect(mockDrizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
 	});
 
 	test("ensures fundCampaignsTable membership check uses correct member ID", async () => {
-		mockDrizzleClient.query.fundCampaignsTable.findFirst.mockImplementation(
-			({ where }) => {
-				return (
-					where(
-						{ id: "campaign1" },
-						{ eq: (a: string, b: string) => a === b },
-					) &&
-					Promise.resolve({
-						fund: {
-							organization: {
-								membershipsWhereOrganization: [
-									{ role: "administrator", memberId: "user123" },
-								],
-							},
+		(
+			mockDrizzleClient.query.fundCampaignsTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockImplementation(({ where }) => {
+			return (
+				where({ id: "campaign1" }, { eq: (a: string, b: string) => a === b }) &&
+				Promise.resolve({
+					fund: {
+						organization: {
+							membershipsWhereOrganization: [
+								{ role: "administrator", memberId: "user123" },
+							],
 						},
-					})
-				);
-			},
-		);
+					},
+				})
+			);
+		});
 		await resolveUpdater(mockFundCampaignPledge, {}, mockCtx);
 		expect(
 			mockDrizzleClient.query.fundCampaignsTable.findFirst,
@@ -231,12 +231,18 @@ describe("resolveUpdater", () => {
 	});
 
 	test("allows user with organization membership role to proceed", async () => {
-		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
+		(
+			mockDrizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
 			id: "user123",
 			role: "member",
 		});
 
-		mockDrizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
+		(
+			mockDrizzleClient.query.fundCampaignsTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
 			currencyCode: "USD",
 			fund: {
 				isTaxDeductible: true,
@@ -253,12 +259,18 @@ describe("resolveUpdater", () => {
 	});
 
 	test("ensures where condition is applied correctly for membershipsWhereOrganization", async () => {
-		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
+		(
+			mockDrizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
 			id: "user123",
 			role: "member",
 		});
 
-		mockDrizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
+		(
+			mockDrizzleClient.query.fundCampaignsTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockResolvedValue({
 			currencyCode: "USD",
 			fund: {
 				isTaxDeductible: true,
@@ -271,8 +283,11 @@ describe("resolveUpdater", () => {
 
 		await resolveUpdater(mockFundCampaignPledge, {}, mockCtx);
 
-		const callArgs =
-			mockDrizzleClient.query.fundCampaignsTable.findFirst.mock.calls[0]?.[0];
+		const callArgs = (
+			mockDrizzleClient.query.fundCampaignsTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mock.calls[0]?.[0];
 		const whereFn =
 			callArgs?.with?.fund?.with?.organization?.with
 				?.membershipsWhereOrganization?.where;
