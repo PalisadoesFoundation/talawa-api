@@ -21,7 +21,7 @@ describe("Advertisement Updated At Resolver Tests", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		ctx = createMockGraphQLContext(true,"user-123");
+		ctx = createMockGraphQLContext(true, "user-123");
 		mockAdvertisement = {
 			id: "adv-123",
 			organizationId: "org-456",

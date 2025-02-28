@@ -1,17 +1,15 @@
-
-import type {
-    CurrentClient,
-    ExplicitGraphQLContext,
-    GraphQLContext,
-} from "~/src/graphql/context";
 import type { FastifyInstance } from "fastify";
 import type { Client as MinioClient } from "minio";
-import { createMockLogger } from "test/utilities/mockLogger";
 import { createMockMinioClient } from "test/MockContext/mocks/mockMinioClient";
-import { createMockPubSub } from "./mocks/pubSubMock";
-import { createMockDrizzleClient } from "./mocks/drizzleClientMock";
+import { createMockLogger } from "test/utilities/mockLogger";
 import { vi } from "vitest";
-
+import type {
+	CurrentClient,
+	ExplicitGraphQLContext,
+	GraphQLContext,
+} from "~/src/graphql/context";
+import { createMockDrizzleClient } from "./mocks/drizzleClientMock";
+import { createMockPubSub } from "./mocks/pubSubMock";
 
 /**
  *  Mock for an **unauthenticated user**.
@@ -28,7 +26,6 @@ const authenticatedClient = (userId: string): CurrentClient => ({
 	user: { id: userId },
 });
 
-
 /**
  * @usage make sure the params are passed properly and userId is passed as per your usage in the code 
  * @example createMockGraphQLContext(true/false,"user123")
@@ -39,7 +36,6 @@ const authenticatedClient = (userId: string): CurrentClient => ({
  * @returns A fully mocked GraphQL context object.
  */
 
-
 export function createMockGraphQLContext(
 	isAuthenticated = true,
 	userId = "user123",
@@ -49,8 +45,8 @@ export function createMockGraphQLContext(
 			? authenticatedClient(userId)
 			: unauthenticatedClient,
 		drizzleClient:
-			createMockDrizzleClient() as unknown as FastifyInstance["drizzleClient"], 
-            // Deliberate type assertion due to limited usage by types resolvers of drizzle client operations in mock testing 
+			createMockDrizzleClient() as unknown as FastifyInstance["drizzleClient"],
+		// Deliberate type assertion due to limited usage by types resolvers of drizzle client operations in mock testing
 
 		envConfig: { API_BASE_URL: "http://localhost:4000" }, // Fake API base URL
 		jwt: { sign: vi.fn().mockReturnValue("mocked.jwt.token") }, //  Mock JWT sign
@@ -65,4 +61,3 @@ export function createMockGraphQLContext(
 
 	return { ...explicitContext, ...implicitContext };
 }
-

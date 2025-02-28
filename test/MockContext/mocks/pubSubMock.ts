@@ -4,7 +4,7 @@ import type { PubSub } from "~/src/graphql/pubsub";
 
 export function createMockPubSub(): PubSub {
 	return {
-		publish: vi.fn(), 
+		publish: vi.fn(),
 		subscribe: vi.fn().mockResolvedValue(
 			Object.assign(
 				new Readable({
@@ -12,6 +12,6 @@ export function createMockPubSub(): PubSub {
 				}),
 				{ [Symbol.asyncIterator]: async function* () {} },
 			),
-		), 
+		),
 	};
 }
