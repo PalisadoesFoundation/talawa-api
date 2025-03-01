@@ -493,7 +493,7 @@ type Fund {
   """Date time at the time the fund was created."""
   createdAt: DateTime
 
-  """User who created the fund."""
+  """User who created the Fund."""
   creator: User
 
   """Global identifier of the fund."""
@@ -2716,6 +2716,10 @@ type OrganizationVenuesConnectionEdge {
   node: Venue
 }
 
+input OueryAllUsersWhereInput {
+  name: String
+}
+
 type PageInfo {
   endCursor: String
   hasNextPage: Boolean!
@@ -3284,10 +3288,6 @@ type UserOrganizationsWhereMemberConnectionEdge {
 enum UserRole {
   administrator
   regular
-}
-
-input OueryAllUsersWhereInput {
-  name: String
 }
 
 type Venue {

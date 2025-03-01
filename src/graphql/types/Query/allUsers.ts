@@ -16,51 +16,57 @@ import { builder } from "~/src/graphql/builder";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
-	defaultGraphQLConnectionArgumentsSchema,
+	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
 	createGraphQLConnectionWithWhereSchema,
+	type defaultGraphQLConnectionArgumentsSchema,
 	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
-	ParsedDefaultGraphQLConnectionArgumentsWithWhere,
 } from "~/src/utilities/defaultGraphQLConnection";
 
 // Define the where schema for user filtering
-const userWhereSchema = z.object({
-	name: z.string().min(1).optional(),
-  }).optional();
-  
-  // Create a connection arguments schema with the where clause
-  const allUsersArgumentsSchema = createGraphQLConnectionWithWhereSchema(userWhereSchema)
-	.transform((arg, ctx) => {
+const userWhereSchema = z
+	.object({
+		name: z.string().min(1).optional(),
+	})
+	.optional();
 
-	  // First transform using the connection with where transformer
-	  const transformedArg = transformGraphQLConnectionArgumentsWithWhere(
+// Create a connection arguments schema with the where clause
+const allUsersArgumentsSchema = createGraphQLConnectionWithWhereSchema(
+	userWhereSchema,
+).transform((arg, ctx) => {
+	// First transform using the connection with where transformer
+	const transformedArg = transformGraphQLConnectionArgumentsWithWhere(
 		// Type assertion to match the expected type
-		{ ...arg, where: arg.where || {} } as z.infer<typeof defaultGraphQLConnectionArgumentsSchema> & { where: unknown },
-		ctx
-	  );
-	  
-	  let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
-	  try {
+		{ ...arg, where: arg.where || {} } as z.infer<
+			typeof defaultGraphQLConnectionArgumentsSchema
+		> & { where: unknown },
+		ctx,
+	);
+
+	let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+	try {
 		if (transformedArg.cursor !== undefined) {
-		  cursor = cursorSchema.parse(
-			JSON.parse(Buffer.from(transformedArg.cursor, "base64url").toString("utf-8")),
-		  );
+			cursor = cursorSchema.parse(
+				JSON.parse(
+					Buffer.from(transformedArg.cursor, "base64url").toString("utf-8"),
+				),
+			);
 		}
-	  } catch (error) {
+	} catch (error) {
 		ctx.addIssue({
-		  code: "custom",
-		  message: "Not a valid cursor.",
-		  path: [transformedArg.isInversed ? "before" : "after"],
+			code: "custom",
+			message: "Not a valid cursor.",
+			path: [transformedArg.isInversed ? "before" : "after"],
 		});
-	  }
-  
-	  return {
+	}
+
+	return {
 		cursor,
 		isInversed: transformedArg.isInversed,
 		limit: transformedArg.limit,
 		where: transformedArg.where || {}, // Default to empty object if where is undefined
-	  };
-	});
+	};
+});
 
 const cursorSchema = z
 	.object({
@@ -87,7 +93,6 @@ builder.queryField("allUsers", (t) =>
 		},
 		description: "Query field to read all Users.",
 		resolve: async (_parent, args, ctx) => {
-
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -101,7 +106,7 @@ builder.queryField("allUsers", (t) =>
 				error,
 				success,
 			} = allUsersArgumentsSchema.safeParse(args);
-			
+
 			if (!success) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -139,7 +144,11 @@ builder.queryField("allUsers", (t) =>
 				});
 			}
 
-			const { cursor, isInversed, limit, where } = parsedArgs as ParsedDefaultGraphQLConnectionArgumentsWithWhere<{createdAt: Date, id: string} , { name?: string | null }>;
+			const { cursor, isInversed, limit, where } =
+				parsedArgs as ParsedDefaultGraphQLConnectionArgumentsWithWhere<
+					{ createdAt: Date; id: string },
+					{ name?: string | null }
+				>;
 
 			const orderBy = isInversed
 				? [asc(usersTable.createdAt), asc(usersTable.id)]
