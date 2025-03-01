@@ -1,0 +1,230 @@
+name: ${COMPOSE_PROJECT_NAME:?error}
+# https://docs.docker.com/reference/compose-file/networks/
+networks:
+  api:
+  minio:
+  postgres:
+# https://docs.docker.com/reference/compose-file/services
+services:
+  api:
+    # https://docs.docker.com/reference/compose-file/build/
+    build:
+      # https://docs.docker.com/reference/compose-file/build/#args
+      args:
+        - API_GID=${API_GID:?error}
+        - API_UID=${API_UID:?error}
+      # https://docs.docker.com/reference/compose-file/build/#context
+      context: ./
+      # https://docs.docker.com/reference/compose-file/build/#dockerfile
+      dockerfile: ./docker/api.Containerfile
+      # https://docs.docker.com/reference/compose-file/build/#target
+      target: production
+    # https://docs.docker.com/reference/compose-file/services/#depends_on
+    depends_on:
+      minio:
+        condition: service_healthy
+        # Should be set to false when a third party minio service could be used in the api service and the `minio` compose profile is disabled.
+        required: false
+      postgres:
+        condition: service_healthy
+        # Should be set to false when a third party postgres service could be used in the api service the and the `postgres` compose profile is disabled.
+        required: false
+    # https://docs.docker.com/compose/environment-variables/
+    # https://docs.docker.com/reference/compose-file/services/#environment
+    environment:
+      - API_ADMINISTRATOR_USER_EMAIL_ADDRESS=${API_ADMINISTRATOR_USER_EMAIL_ADDRESS:?error}
+      - API_ADMINISTRATOR_USER_NAME=${API_ADMINISTRATOR_USER_NAME:?error}
+      - API_ADMINISTRATOR_USER_PASSWORD=${API_ADMINISTRATOR_USER_PASSWORD:?error}
+      - API_BASE_URL=${API_BASE_URL:?error}
+      - API_COMMUNITY_FACEBOOK_URL=${API_COMMUNITY_FACEBOOK_URL:?error}
+      - API_COMMUNITY_GITHUB_URL=${API_COMMUNITY_GITHUB_URL:?error}
+      - API_COMMUNITY_INACTIVITY_TIMEOUT_DURATION=${API_COMMUNITY_INACTIVITY_TIMEOUT_DURATION:?error}
+      - API_COMMUNITY_INSTAGRAM_URL=${API_COMMUNITY_INSTAGRAM_URL:?error}
+      - API_COMMUNITY_LINKEDIN_URL=${API_COMMUNITY_LINKEDIN_URL:?error}
+      - API_COMMUNITY_NAME=${API_COMMUNITY_NAME:?error}
+      - API_COMMUNITY_REDDIT_URL=${API_COMMUNITY_REDDIT_URL:?error}
+      - API_COMMUNITY_SLACK_URL=${API_COMMUNITY_SLACK_URL:?error}
+      - API_COMMUNITY_WEBSITE_URL=${API_COMMUNITY_WEBSITE_URL:?error}
+      - API_COMMUNITY_X_URL=${API_COMMUNITY_X_URL:?error}
+      - API_COMMUNITY_YOUTUBE_URL=${API_COMMUNITY_YOUTUBE_URL:?error}
+      - API_HOST=${API_HOST:?error}
+      - API_IS_APPLY_DRIZZLE_MIGRATIONS=${API_IS_APPLY_DRIZZLE_MIGRATIONS:?error}
+      - API_IS_GRAPHIQL=${API_IS_GRAPHIQL:?error}
+      - API_IS_PINO_PRETTY=${API_IS_PINO_PRETTY:?error}
+      - API_JWT_EXPIRES_IN=${API_JWT_EXPIRES_IN:?error}
+      - API_JWT_SECRET=${API_JWT_SECRET:?error}
+      - API_LOG_LEVEL=${API_LOG_LEVEL:?error}
+      - API_MINIO_ACCESS_KEY=${API_MINIO_ACCESS_KEY:?error}
+      - API_MINIO_END_POINT=${API_MINIO_END_POINT:?error}
+      - API_MINIO_PORT=${API_MINIO_PORT:?error}
+      - API_MINIO_SECRET_KEY=${API_MINIO_SECRET_KEY:?error}
+      - API_MINIO_USE_SSL=${API_MINIO_USE_SSL:?error}
+      - API_PORT=${API_PORT:?error}
+      - API_POSTGRES_DATABASE=${API_POSTGRES_DATABASE:?error}
+      - API_POSTGRES_HOST=${API_POSTGRES_HOST:?error}
+      - API_POSTGRES_PASSWORD=${API_POSTGRES_PASSWORD:?error}
+      - API_POSTGRES_PORT=${API_POSTGRES_PORT:?error}
+      - API_POSTGRES_SSL_MODE=${API_POSTGRES_SSL_MODE:?error}
+      - API_POSTGRES_USER=${API_POSTGRES_USER:?error}
+      - CI=${CI:?error}
+      - NODE_ENV=${NODE_ENV:?error}
+    # https://docs.docker.com/reference/compose-file/build/#using-build-and-image
+    # https://docs.docker.com/reference/compose-file/build/#publishing-built-images
+    # https://docs.docker.com/reference/compose-file/services/#image
+    # image: ghcr.io/talawa/api:latest
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      test: ["CMD-SHELL", "node /home/talawa/api/docker/apiHealthcheck.js"]
+      timeout: 10s
+    # https://docs.docker.com/reference/compose-file/services/#init
+    # https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals
+    init: true
+    # https://docs.docker.com/reference/compose-file/services/#networks
+    networks:
+      - api
+      - minio
+      - postgres
+    # https://docs.docker.com/reference/compose-file/services/#ports
+    ports:
+      - host_ip: ${API_MAPPED_HOST_IP:?error}
+        name: api
+        published: ${API_MAPPED_PORT:?error}
+        target: ${API_PORT}
+    # https://docs.docker.com/reference/compose-file/services/#profiles
+    profiles:
+      - api
+    # https://docs.docker.com/reference/compose-file/services/#restart
+    restart: unless-stopped
+  caddy:
+    # https://docs.docker.com/reference/compose-file/services/#depends_on
+    depends_on:
+      api:
+        condition: service_healthy
+        required: true
+    # https://docs.docker.com/compose/environment-variables/
+    # https://docs.docker.com/reference/compose-file/services/#environment
+    environment:
+      - CADDY_TALAWA_API_DOMAIN_NAME=${CADDY_TALAWA_API_DOMAIN_NAME:?error}
+      - CADDY_TALAWA_API_EMAIL=${CADDY_TALAWA_API_EMAIL:?error}
+      - CADDY_TALAWA_API_HOST=${CADDY_TALAWA_API_HOST:?error}
+      - CADDY_TALAWA_API_PORT=${CADDY_TALAWA_API_PORT:?error}
+    # https://caddyserver.com/docs/install#docker
+    # https://hub.docker.com/_/caddy
+    image: caddy:2.8.4-alpine
+    # https://docs.docker.com/reference/compose-file/services/#networks
+    networks:
+      - api
+    # https://docs.docker.com/reference/compose-file/services/#ports
+    ports:
+      - name: caddy_http
+        published: ${CADDY_HTTP_MAPPED_PORT:?error}
+        target: 80
+      - name: caddy_https
+        published: ${CADDY_HTTPS_MAPPED_PORT:?error}
+        target: 443
+      - name: caddy_http3
+        protocol: udp
+        published: ${CADDY_HTTP3_MAPPED_PORT:?error}
+        target: 443
+    # https://docs.docker.com/reference/compose-file/services/#profiles
+    profiles:
+      - caddy
+    # https://docs.docker.com/reference/compose-file/services/#restart
+    restart: unless-stopped
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - source: caddy_config
+        target: /config
+        type: volume
+      - source: caddy_data
+        target: /data
+        type: volume
+      - source: ./docker/Caddyfile
+        target: /etc/caddy/Caddyfile
+        type: bind
+  minio:
+    # https://docs.docker.com/compose/environment-variables/
+    # https://docs.docker.com/reference/compose-file/services/#environment
+    environment:
+      - MINIO_BROWSER=${MINIO_BROWSER:?error}
+        # https://min.io/docs/minio/linux/reference/minio-server/settings/root-credentials.html#envvar.MINIO_ROOT_PASSWORD
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:?error}
+        # https://min.io/docs/minio/linux/reference/minio-server/settings/root-credentials.html#root-user
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:?error}
+    # https://docs.docker.com/reference/compose-file/services/#command
+    command: server /data --console-address ":9001"
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      # https://github.com/minio/minio/issues/18373
+      # https://min.io/docs/minio/linux/reference/minio-mc/mc-ready.html
+      test: ["CMD-SHELL", "mc ready local"]
+      timeout: 10s
+    # https://docs.docker.com/reference/compose-file/services/#image
+    # https://hub.docker.com/r/minio/minio
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    # https://docs.docker.com/reference/compose-file/services/#networks
+    networks:
+      - minio
+    # https://docs.docker.com/reference/compose-file/services/#profiles
+    profiles:
+      - minio
+    # https://docs.docker.com/reference/compose-file/services/#restart
+    restart: unless-stopped
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - source: minio_data
+        target: /data
+        type: volume
+  postgres:
+    # https://docs.docker.com/compose/environment-variables/
+    # https://docs.docker.com/reference/compose-file/services/#environment
+    environment:
+      # https://github.com/docker-library/docs/blob/master/postgres/README.md#postgres_db
+      - POSTGRES_DB=${POSTGRES_DB:?error}
+        # https://github.com/docker-library/docs/blob/master/postgres/README.md#postgres_password
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?error}
+        # https://github.com/docker-library/docs/blob/master/postgres/README.md#postgres_user
+      - POSTGRES_USER=${POSTGRES_USER:?error}
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      # https://stackoverflow.com/questions/60193781/postgres-with-docker-compose-gives-fatal-role-root-does-not-exist-error
+      # https://www.postgresql.org/docs/current/app-pg-isready.html
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      timeout: 10s
+    # https://docs.docker.com/reference/compose-file/services/#image
+    # https://hub.docker.com/_/postgres
+    image: postgres:17.2-alpine3.21
+    # https://docs.docker.com/reference/compose-file/services/#networks
+    networks:
+      - postgres
+    # https://docs.docker.com/reference/compose-file/services/#profiles
+    profiles:
+      - postgres
+    # https://docs.docker.com/reference/compose-file/services/#restart
+    restart: unless-stopped
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - source: postgres_data
+        target: /var/lib/postgresql/data
+        type: volume
+# https://docs.docker.com/reference/compose-file/volumes/
+volumes:
+  caddy_config:
+  caddy_data:
+  minio_data:
+  postgres_data:

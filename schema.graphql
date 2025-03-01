@@ -493,7 +493,7 @@ type Fund {
   """Date time at the time the fund was created."""
   createdAt: DateTime
 
-  """User who created the fund."""
+  """User who created the Fund."""
   creator: User
 
   """Global identifier of the fund."""
