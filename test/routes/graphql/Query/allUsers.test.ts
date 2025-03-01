@@ -304,7 +304,7 @@ suite("Query field allUsers", () => {
 				},
 				variables: {
 					first: 5,
-					where: {name: uniqueName}
+					where: { name: uniqueName },
 				},
 			});
 
@@ -338,7 +338,9 @@ suite("Query field allUsers", () => {
 				},
 				variables: {
 					first: 5,
-					where: {name: `NonExistentUserName${faker.string.alphanumeric(10)}`}
+					where: {
+						name: `NonExistentUserName${faker.string.alphanumeric(10)}`,
+					},
 				},
 			});
 
@@ -353,7 +355,9 @@ suite("Query field allUsers", () => {
 				},
 				variables: {
 					last: 5,
-					where: {name: `NonExistentUserName${faker.string.alphanumeric(10)}`}
+					where: {
+						name: `NonExistentUserName${faker.string.alphanumeric(10)}`,
+					},
 				},
 			});
 
@@ -370,7 +374,7 @@ suite("Query field allUsers", () => {
 				},
 				variables: {
 					first: 5,
-					where : {name: ""}
+					where: { name: "" },
 				},
 			});
 
@@ -462,7 +466,7 @@ suite("Query field allUsers", () => {
 				variables: {
 					first: 5,
 					after:
-						"eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9"
+						"eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9",
 				},
 			});
 

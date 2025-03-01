@@ -243,14 +243,13 @@ export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
     }
 }`);
 
-
 export const Query_allUsers = gql(`
   query Query_allUsers(
     $first: Int,
     $after: String,
     $last: Int,
     $before: String,
-    $where: OueryAllUsersWhereInput
+    $where: QueryAllUsersWhereInput
   ) {
     allUsers(
       first: $first,

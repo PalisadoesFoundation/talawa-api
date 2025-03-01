@@ -83,7 +83,7 @@ builder.queryField("allUsers", (t) =>
 		type: User,
 		args: {
 			where: t.arg({
-				type: builder.inputType("OueryAllUsersWhereInput", {
+				type: builder.inputType("QueryAllUsersWhereInput", {
 					fields: (t) => ({
 						name: t.string({ required: false }),
 					}),
