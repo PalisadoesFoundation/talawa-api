@@ -501,7 +501,7 @@ type Fund {
   """Date time at the time the fund was created."""
   createdAt: DateTime
 
-  """User who created the fund."""
+  """User who created the Fund."""
   creator: User
 
   """Global identifier of the fund."""
@@ -1301,6 +1301,9 @@ type Mutation {
   """Mutation field to create a post vote."""
   createPostVote(input: MutationCreatePostVoteInput!): Post
 
+  """Mutation field to create a presigned URL for uploading a file."""
+  createPresignedUrl(input: MutationCreatePresignedUrlInput!): UploadUrlResponse
+
   """Mutation field to create a tag."""
   createTag(input: MutationCreateTagInput!): Tag
 
@@ -1712,6 +1715,12 @@ input MutationCreatePostVoteInput {
 
   """Type of the vote."""
   type: PostVoteType!
+}
+
+input MutationCreatePresignedUrlInput {
+  fileName: String!
+  fileType: String!
+  organizationId: ID!
 }
 
 """"""
@@ -3148,6 +3157,13 @@ type TagFolderTagsConnectionEdge {
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
+
+"""UploadUrlResponse"""
+type UploadUrlResponse {
+  fileUrl: String
+  objectName: String
+  presignedUrl: String
+}
 
 type User {
   """Address line 1 of the user's address."""
