@@ -27,11 +27,11 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2
       '@pothos/core':
-        specifier: ^4.3.0
-        version: 4.3.0(graphql@16.10.0)
+        specifier: ^4.5.0
+        version: 4.5.0(graphql@16.10.0)
       '@pothos/plugin-relay':
         specifier: ^4.3.0
-        version: 4.3.0(@pothos/core@4.3.0(graphql@16.10.0))(graphql@16.10.0)
+        version: 4.3.0(@pothos/core@4.5.0(graphql@16.10.0))(graphql@16.10.0)
       '@sinclair/typebox':
         specifier: ^0.34.15
         version: 0.34.16
@@ -1132,8 +1132,8 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@pothos/core@4.3.0':
-    resolution: {integrity: sha512-i4nyI8wSCjxdHUomqQ2K3FH0Glklomfv4tJNifQVU9lPtQKoKaS69VxGv+fru0HAZzb1eC1XPEPN3XPCYcvZ7Q==}
+  '@pothos/core@4.5.0':
+    resolution: {integrity: sha512-OBktnbaTkcS3pZMGCC2375tNSypsvVRP2SJSjN0VW9MXlJFP9+2lZTNeKyGFndTH5QLbxoLUe3nUSVdkBHMLzA==}
     peerDependencies:
       graphql: '>=16.6.0'
 
@@ -3705,13 +3705,13 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@pothos/core@4.3.0(graphql@16.10.0)':
+  '@pothos/core@4.5.0(graphql@16.10.0)':
     dependencies:
       graphql: 16.10.0
 
-  '@pothos/plugin-relay@4.3.0(@pothos/core@4.3.0(graphql@16.10.0))(graphql@16.10.0)':
+  '@pothos/plugin-relay@4.3.0(@pothos/core@4.5.0(graphql@16.10.0))(graphql@16.10.0)':
     dependencies:
-      '@pothos/core': 4.3.0(graphql@16.10.0)
+      '@pothos/core': 4.5.0(graphql@16.10.0)
       graphql: 16.10.0
 
   '@rollup/rollup-android-arm-eabi@4.34.5':
