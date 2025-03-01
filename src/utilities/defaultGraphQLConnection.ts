@@ -5,7 +5,7 @@ import { z } from "zod";
  */
 export type ParsedDefaultGraphQLConnectionArguments<Cursor = string> = {
 	/**
-	 *
+	 * The cursor representing the position in the connection.
 	 */
 	cursor?: Cursor | undefined;
 	/**
@@ -20,6 +20,18 @@ export type ParsedDefaultGraphQLConnectionArguments<Cursor = string> = {
 	 */
 	isInversed: boolean;
 };
+
+/**
+ * Type of the object containing the parsed default arguments of a graphql connection with where filtering.
+ * Extends the base connection arguments with a generic where type.
+ */
+export type ParsedDefaultGraphQLConnectionArgumentsWithWhere<Cursor = string, Where = unknown> = 
+	ParsedDefaultGraphQLConnectionArguments<Cursor> & {
+		/**
+		 * The where filter criteria to apply to the connection.
+		 */
+		where: Where;
+	};
 
 /**
  * Zod schema to parse the default graphql connection arguments and transform them to make them easier to work with.
@@ -47,6 +59,9 @@ export const defaultGraphQLConnectionArgumentsSchema = z.object({
 		.transform((arg) => (arg === null ? undefined : arg)),
 });
 
+/**
+ * Transform function for the basic connection arguments.
+ */
 export const transformDefaultGraphQLConnectionArguments = <
 	Arg extends z.infer<typeof defaultGraphQLConnectionArgumentsSchema>,
 >(
@@ -117,6 +132,48 @@ export const transformDefaultGraphQLConnectionArguments = <
 	return {
 		...transformedArg,
 		...customArg,
+	};
+};
+
+/**
+ * Helper function to create a schema for connection arguments with a where clause.
+ * Extends the default connection arguments schema with a custom where schema.
+ * 
+ * @param whereSchema The Zod schema for the where clause
+ * @returns A Zod schema for connection arguments with the where clause
+ */
+export const createGraphQLConnectionWithWhereSchema = <T extends z.ZodType>(whereSchema: T) => {
+	return defaultGraphQLConnectionArgumentsSchema.extend({
+		where: whereSchema.default({}).nullable(),
+	});
+};
+
+/**
+ * Transform function for connection arguments with a where clause.
+ * Extends the base transformation with where handling.
+ * 
+ * @param arg The arguments to transform
+ * @param ctx The Zod refinement context
+ * @returns The transformed arguments with where clause
+ */
+	export const transformGraphQLConnectionArgumentsWithWhere = <
+		Arg extends z.infer<typeof defaultGraphQLConnectionArgumentsSchema> & { where: unknown },
+	Where = Arg['where'],
+>(
+	arg: Arg,
+	ctx: z.RefinementCtx,
+) => {
+	// First transform the connection arguments without where
+	const { where, ...connectionArgs } = arg;
+	const transformedConnectionArgs = transformDefaultGraphQLConnectionArguments(
+		connectionArgs as Arg,
+		ctx
+	);
+
+	// Now add the where clause to the result
+	return {
+		...transformedConnectionArgs,
+		where,
 	};
 };
 

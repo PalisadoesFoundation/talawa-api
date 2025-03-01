@@ -2842,7 +2842,7 @@ type Query {
   agendaItem(input: QueryAgendaItemInput!): AgendaItem
 
   """Query field to read all Users."""
-  allUsers(after: String, before: String, first: Int, last: Int, name: String): QueryAllUsersConnection
+  allUsers(after: String, before: String, first: Int, last: Int, where: OueryAllUsersWhereInput): QueryAllUsersConnection
 
   """Query field to read a chat."""
   chat(input: QueryChatInput!): Chat
@@ -3284,6 +3284,10 @@ type UserOrganizationsWhereMemberConnectionEdge {
 enum UserRole {
   administrator
   regular
+}
+
+input OueryAllUsersWhereInput {
+  name: String
 }
 
 type Venue {

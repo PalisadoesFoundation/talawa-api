@@ -303,8 +303,8 @@ suite("Query field allUsers", () => {
 					authorization: `bearer ${adminAuthToken}`,
 				},
 				variables: {
-					name: uniqueName,
 					first: 5,
+					where: {name: uniqueName}
 				},
 			});
 
@@ -337,8 +337,8 @@ suite("Query field allUsers", () => {
 					authorization: `bearer ${adminAuthToken}`,
 				},
 				variables: {
-					name: `NonExistentUserName${faker.string.alphanumeric(10)}`,
 					first: 5,
+					where: {name: `NonExistentUserName${faker.string.alphanumeric(10)}`}
 				},
 			});
 
@@ -352,8 +352,8 @@ suite("Query field allUsers", () => {
 					authorization: `bearer ${adminAuthToken}`,
 				},
 				variables: {
-					name: `NonExistentUserName${faker.string.alphanumeric(10)}`,
 					last: 5,
+					where: {name: `NonExistentUserName${faker.string.alphanumeric(10)}`}
 				},
 			});
 
@@ -369,7 +369,8 @@ suite("Query field allUsers", () => {
 					authorization: `bearer ${adminAuthToken}`,
 				},
 				variables: {
-					name: "",
+					first: 5,
+					where : {name: ""}
 				},
 			});
 
@@ -461,7 +462,7 @@ suite("Query field allUsers", () => {
 				variables: {
 					first: 5,
 					after:
-						"eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9",
+						"eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9"
 				},
 			});
 
