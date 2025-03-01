@@ -107,7 +107,7 @@ suite("Mutation field createPresignedUrl", () => {
 		});
 	});
 
-	suite("when the organizationId is invalid  ", () => {
+	suite("when the organizationId is invalid", () => {
 		test("should return a error with resources_not_found extension code ", async () => {
 			const result = await mercuriusClient.mutate(Mutation_createPresignedUrl, {
 				headers: { authorization: `bearer ${authToken}` },
