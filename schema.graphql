@@ -2899,6 +2899,9 @@ type Query {
   """Query field to read an organization."""
   organization(input: QueryOrganizationInput!): Organization
 
+  """Query to fetch all organizations. Returns up to 20 organizations."""
+  organizations: [Organization!]
+
   """Query field to read a post."""
   post(input: QueryPostInput!): Post
   postsByOrganization(input: GetPostsByOrgInput!): [Post!]
@@ -2913,9 +2916,6 @@ type Query {
 
   """Query field to read a tag."""
   tag(input: QueryTagInput!): Tag
-  
-  """Query field to read all organizations before registering."""
-  organizations: [Organization]
 
   """Query field to read a tag folder."""
   tagFolder(input: QueryTagFolderInput!): TagFolder
