@@ -2913,6 +2913,9 @@ type Query {
 
   """Query field to read a tag."""
   tag(input: QueryTagInput!): Tag
+  
+  """Query field to read all organizations before registering."""
+  organizations: [Organization]
 
   """Query field to read a tag folder."""
   tagFolder(input: QueryTagFolderInput!): TagFolder

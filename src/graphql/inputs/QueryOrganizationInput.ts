@@ -3,7 +3,14 @@ import { organizationsTableInsertSchema } from "~/src/drizzle/tables/organizatio
 import { builder } from "~/src/graphql/builder";
 
 export const queryOrganizationInputSchema = z.object({
-	id: organizationsTableInsertSchema.shape.id.unwrap(),
+	id: organizationsTableInsertSchema.shape.id
+		.unwrap()
+		.nullable()
+		.optional()
+		.transform((val) => {
+			if (val == null) throw new Error("id is required");
+			return val;
+		}),
 });
 
 export const QueryOrganizationInput = builder
