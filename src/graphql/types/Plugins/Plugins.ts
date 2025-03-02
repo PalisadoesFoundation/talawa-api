@@ -1,5 +1,6 @@
 import { z } from "zod";
 // src/graphql/types/Plugin/Plugin.ts
+
 import { builder } from "~/src/graphql/builder";
 
 // Define the Plugin type
