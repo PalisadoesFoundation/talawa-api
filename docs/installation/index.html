@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.7.0">
 <title data-rh="true">Installation | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://docs-api.talawa.io/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://docs-api.talawa.io/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/installation"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Installation | Talawa API Documentation"><meta data-rh="true" name="description" content="This document provides instructions on how to set up and start a running instance of talawa-api on your local system. The instructions are written to be followed in sequence so make sure to go through each of them step by step without skipping any sections."><meta data-rh="true" property="og:description" content="This document provides instructions on how to set up and start a running instance of talawa-api on your local system. The instructions are written to be followed in sequence so make sure to go through each of them step by step without skipping any sections."><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/installation"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/installation" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/installation" hreflang="x-default"><link rel="stylesheet" href="/assets/css/styles.3de45663.css">
-<script src="/assets/js/runtime~main.7bda9fbc.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.bfef3d40.js" defer="defer"></script>
 <script src="/assets/js/main.0198aede.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -181,22 +181,29 @@
 <h3 class="anchor anchorWithStickyNavbar_WZUO" id="setup-using-the-cli">Setup: Using the CLI<a href="#setup-using-the-cli" class="hash-link" aria-label="Direct link to Setup: Using the CLI" title="Direct link to Setup: Using the CLI">​</a></h3>
 <p>These steps are specific to Linux. You will need to modify them accordingly for other operating systems</p>
 <ol>
-<li>Install <code>docker</code> and ensure that the daemon is running.</li>
-<li>This process does not require the installation of PostgresSQL. If you have installed postgres on your system, make sure that it is not running.</li>
-<li>Windows Only<!-- -->
+<li>
+<p>Install <code>docker</code> and ensure that the daemon is running.</p>
+</li>
+<li>
+<p>This process does not require the installation of PostgresSQL. If you have installed postgres on your system, make sure that it is not running.</p>
+</li>
+<li>
+<p>Windows Only</p>
 <ol>
 <li>Make sure you clone the <code>talawa-api</code> repository to a <code>WSL</code> subdirectory.</li>
 <li>Run all the following commands from the repository root in that subdirectory.</li>
 </ol>
 </li>
-<li>Create the <code>.env</code> file by copying the template from the <code>envFiles/</code> directory.<!-- -->
+<li>
+<p>Create the <code>.env</code> file by copying the template from the <code>envFiles/</code> directory.</p>
 <ol>
 <li><strong>DO NOT EDIT EITHER FILE!</strong>
 <div class="language-bash codeBlockContainer_Mfmy theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_m1J7"><pre tabindex="0" class="prism-code language-bash codeBlock_LtNB thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_SFzs"><span class="token-line" style="color:#393A34"><span class="token plain">cp envFiles/.env.devcontainer .env</span><br></span></code></pre><div class="buttonGroup_un5i"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_DH0f" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_aMKT"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_Vefd"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
 </li>
 </ol>
 </li>
-<li>Install Node.js<!-- -->
+<li>
+<p>Install Node.js</p>
 <ol>
 <li>Linux<!-- -->
 <ol>
@@ -210,41 +217,50 @@
 </li>
 </ol>
 </li>
-<li>Install <code>pnpm</code> from the <a href="https://pnpm.io/installation" target="_blank" rel="noopener noreferrer">pnpm website</a></li>
-<li>Linux / MacOS Only<!-- -->
+<li>
+<p>Install <code>pnpm</code> from the <a href="https://pnpm.io/installation" target="_blank" rel="noopener noreferrer">pnpm website</a></p>
+</li>
+<li>
+<p>Linux / MacOS Only</p>
 <ol>
 <li>Enable <code>pnpm</code> for your current terminal session.<!-- -->
 <div class="codeBlockContainer_Mfmy theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_m1J7"><pre tabindex="0" class="prism-code language-text codeBlock_LtNB thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_SFzs"><span class="token-line" style="color:#393A34"><span class="token plain">source ~/.bashrc</span><br></span></code></pre><div class="buttonGroup_un5i"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_DH0f" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_aMKT"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_Vefd"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
 </li>
 </ol>
 </li>
-<li>Install the <code>pnpm</code> packages<!-- -->
+<li>
+<p>Install the <code>pnpm</code> packages</p>
 <div class="language-bash codeBlockContainer_Mfmy theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_m1J7"><pre tabindex="0" class="prism-code language-bash codeBlock_LtNB thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_SFzs"><span class="token-line" style="color:#393A34"><span class="token plain">pnpm install</span><br></span></code></pre><div class="buttonGroup_un5i"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_DH0f" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_aMKT"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_Vefd"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
 </li>
-<li>Install the <code>devcontainers/cli</code> package<!-- -->
+<li>
+<p>Install the <code>devcontainers/cli</code> package</p>
 <div class="codeBlockContainer_Mfmy theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_m1J7"><pre tabindex="0" class="prism-code language-text codeBlock_LtNB thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_SFzs"><span class="token-line" style="color:#393A34"><span class="token plain">pnpm install -g @devcontainers/cli</span><br></span></code></pre><div class="buttonGroup_un5i"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_DH0f" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_aMKT"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_Vefd"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
 </li>
-<li>You will now need to make your user a part of the <code>docker</code> operating system group or else you will get <code>permission denied</code> messages when starting docker later. <code>$USER</code> is a universal representation of your username. You don&#x27;t need to change this in the command below.<!-- -->
+<li>
+<p>You will now need to make your user a part of the <code>docker</code> operating system group or else you will get <code>permission denied</code> messages when starting docker later. <code>$USER</code> is a universal representation of your username. You don&#x27;t need to change this in the command below.</p>
 <div class="codeBlockContainer_Mfmy theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_m1J7"><pre tabindex="0" class="prism-code language-text codeBlock_LtNB thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_SFzs"><span class="token-line" style="color:#393A34"><span class="token plain">sudo usermod -a -G docker $USER</span><br></span></code></pre><div class="buttonGroup_un5i"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_DH0f" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_aMKT"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_Vefd"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
 </li>
-<li>You will only become a part of the <code>docker</code> group on your next login. You don&#x27;t have to logout, just start another session on the CLI using the <code>su</code> command.<!-- -->
+<li>
+<p>You will only become a part of the <code>docker</code> group on your next login. You don&#x27;t have to logout, just start another session on the CLI using the <code>su</code> command.</p>
 <div class="codeBlockContainer_Mfmy theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_m1J7"><pre tabindex="0" class="prism-code language-text codeBlock_LtNB thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_SFzs"><span class="token-line" style="color:#393A34"><span class="token plain">sudo su $USER -</span><br></span></code></pre><div class="buttonGroup_un5i"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_DH0f" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_aMKT"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_Vefd"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
 </li>
-<li>Build the docker devcontainer</li>
-</ol>
+<li>
+<p>Build the docker devcontainer</p>
 <div class="codeBlockContainer_Mfmy theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_m1J7"><pre tabindex="0" class="prism-code language-text codeBlock_LtNB thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_SFzs"><span class="token-line" style="color:#393A34"><span class="token plain">devcontainer build --workspace-folder .</span><br></span></code></pre><div class="buttonGroup_un5i"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_DH0f" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_aMKT"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_Vefd"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<ol>
-<li>When the build is complete, the last line of the output should be:</li>
-</ol>
+</li>
+<li>
+<p>When the build is complete, the last line of the output should be:</p>
 <div class="codeBlockContainer_Mfmy theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_m1J7"><pre tabindex="0" class="prism-code language-text codeBlock_LtNB thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_SFzs"><span class="token-line" style="color:#393A34"><span class="token plain">{&quot;outcome&quot;:&quot;success&quot;,&quot;imageName&quot;:&quot;talawa-api&quot;}</span><br></span></code></pre><div class="buttonGroup_un5i"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_DH0f" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_aMKT"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_Vefd"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<ol>
-<li>Start the docker devcontainer</li>
-</ol>
+</li>
+<li>
+<p>Start the docker devcontainer</p>
 <div class="codeBlockContainer_Mfmy theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_m1J7"><pre tabindex="0" class="prism-code language-text codeBlock_LtNB thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_SFzs"><span class="token-line" style="color:#393A34"><span class="token plain">devcontainer up --workspace-folder .</span><br></span></code></pre><div class="buttonGroup_un5i"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_DH0f" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_aMKT"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_Vefd"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<ol>
-<li>When the container installation is complete, the last lines of output should look like this:</li>
+</li>
+<li>
+<p>When the container installation is complete, the last lines of output should look like this:</p>
+<div class="codeBlockContainer_Mfmy theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_m1J7"><pre tabindex="0" class="prism-code language-text codeBlock_LtNB thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_SFzs"><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">{&quot;outcome&quot;:&quot;success&quot;,   &quot;containerId&quot;:&quot;81306766f2aeeb851c8ebb844702d39ad2adc09419508b736ef2ee5a03eb8e34&quot;,   &quot;composeProjectName&quot;:&quot;talawa&quot;,&quot;remoteUser&quot;:&quot;talawa&quot;,&quot;remoteWorkspaceFolder&quot;:&quot;/home/talawa/api&quot;}</span><br></span></code></pre><div class="buttonGroup_un5i"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_DH0f" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_aMKT"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_Vefd"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+</li>
 </ol>
-<div class="codeBlockContainer_Mfmy theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_m1J7"><pre tabindex="0" class="prism-code language-text codeBlock_LtNB thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_SFzs"><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">{&quot;outcome&quot;:&quot;success&quot;,&quot;containerId&quot;:&quot;81306766f2aeeb851c8ebb844702d39ad2adc09419508b736ef2ee5a03eb8e34&quot;,&quot;composeProjectName&quot;:&quot;talawa&quot;,&quot;remoteUser&quot;:&quot;talawa&quot;,&quot;remoteWorkspaceFolder&quot;:&quot;/home/talawa/api&quot;}</span><br></span></code></pre><div class="buttonGroup_un5i"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_DH0f" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_aMKT"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_Vefd"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
 <p>All done!</p>
 <h4 class="anchor anchorWithStickyNavbar_WZUO" id="cli-startup-development">CLI Startup (Development)<a href="#cli-startup-development" class="hash-link" aria-label="Direct link to CLI Startup (Development)" title="Direct link to CLI Startup (Development)">​</a></h4>
 <p>After a successful installation, use these commands to start the dev container.</p>
