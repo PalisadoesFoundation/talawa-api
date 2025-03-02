@@ -2867,7 +2867,7 @@ type Query {
   agendaItem(input: QueryAgendaItemInput!): AgendaItem
 
   """Query field to read all Users."""
-  allUsers(after: String, before: String, first: Int, last: Int, name: String): QueryAllUsersConnection
+  allUsers(after: String, before: String, first: Int, last: Int, where: QueryAllUsersWhereInput): QueryAllUsersConnection
 
   """Query field to read a chat."""
   chat(input: QueryChatInput!): Chat
@@ -2898,6 +2898,9 @@ type Query {
 
   """Query field to read an organization."""
   organization(input: QueryOrganizationInput!): Organization
+
+  """Query to fetch all organizations. Returns up to 20 organizations."""
+  organizations: [Organization!]
 
   """Query field to read a post."""
   post(input: QueryPostInput!): Post
@@ -2950,6 +2953,10 @@ type QueryAllUsersConnection {
 type QueryAllUsersConnectionEdge {
   cursor: String!
   node: User
+}
+
+input QueryAllUsersWhereInput {
+  name: String
 }
 
 """"""

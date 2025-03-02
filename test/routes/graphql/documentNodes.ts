@@ -244,55 +244,55 @@ export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
 }`);
 
 export const Query_allUsers = gql(`
-    query Query_allUsers(
-      $first: Int,
-      $after: String,
-      $last: Int,
-      $before: String,
-      $name: String
+  query Query_allUsers(
+    $first: Int,
+    $after: String,
+    $last: Int,
+    $before: String,
+    $where: QueryAllUsersWhereInput
+  ) {
+    allUsers(
+      first: $first,
+      after: $after,
+      last: $last,
+      before: $before,
+      where: $where
     ) {
-      allUsers(
-        first: $first,
-        after: $after,
-        last: $last,
-        before: $before,
-        name: $name
-      ) {
-        pageInfo {
-          hasNextPage
-          hasPreviousPage
-          startCursor
-          endCursor
-        }
-        edges {
-          cursor
-          node {
-            id
-            name
-            emailAddress
-            role
-            createdAt
-            isEmailAddressVerified
-            addressLine1
-            addressLine2
-            birthDate
-            city
-            countryCode
-            description
-            educationGrade
-            employmentStatus
-            homePhoneNumber
-            maritalStatus
-            mobilePhoneNumber
-            natalSex
-            postalCode
-            state
-            workPhoneNumber
-          }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      edges {
+        cursor
+        node {
+          id
+          name
+          emailAddress
+          role
+          createdAt
+          isEmailAddressVerified
+          addressLine1
+          addressLine2
+          birthDate
+          city
+          countryCode
+          description
+          educationGrade
+          employmentStatus
+          homePhoneNumber
+          maritalStatus
+          mobilePhoneNumber
+          natalSex
+          postalCode
+          state
+          workPhoneNumber
         }
       }
     }
-  `);
+  }
+`);
 
 export const Query_user_creator =
 	gql(`query Query_user_creator($input: QueryUserInput!) {
@@ -515,6 +515,19 @@ export const Mutation_createTag = gql(`
         }
     }
   }`);
+
+export const Query_organizations = gql(`
+	query Query_organizations {
+		organizations {
+			id
+      avatarURL
+      name
+      city
+      state
+      countryCode
+		}
+	}
+`);
 
 export const Query_organization = gql(`
     query Organization($input: QueryOrganizationInput!, $first: Int!) {
