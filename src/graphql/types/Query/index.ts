@@ -21,3 +21,5 @@ import "./user";
 import "./venue";
 import "./plugin";
 import "./allUsers";
+
+import "./organizations";

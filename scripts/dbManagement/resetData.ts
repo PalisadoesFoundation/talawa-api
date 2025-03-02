@@ -4,7 +4,6 @@ import {
 	askUserToContinue,
 	disconnect,
 	emptyMinioBucket,
-	ensureAdministratorExists,
 	formatDatabase,
 	pingDB,
 } from "./helpers";
@@ -26,13 +25,13 @@ export async function main(): Promise<void> {
 		try {
 			await formatDatabase();
 			console.log("\n\x1b[32mSuccess:\x1b[0m Database formatted successfully");
+			console.log("\x1b[32mSuccess:\x1b[0m Administrator preserved\n");
 		} catch (error: unknown) {
 			console.error(
 				"\n\x1b[31mError: Database formatting failed\n\x1b[0m",
 				error,
 			);
 			console.error("\n\x1b[33mRolled back to previous state\x1b[0m");
-			console.error("\n\x1b[33mPreserving administrator access\x1b[0m");
 		}
 		try {
 			await emptyMinioBucket();
@@ -41,15 +40,6 @@ export async function main(): Promise<void> {
 			console.error(
 				"\n\x1b[31mError: Bucket formatting failed\n\x1b[0m",
 				error,
-			);
-		}
-		try {
-			await ensureAdministratorExists();
-			console.log("\x1b[32mSuccess:\x1b[0m Administrator access restored\n");
-		} catch (error: unknown) {
-			console.error("\nError: Administrator creation failed", error);
-			console.error(
-				"\n\x1b[31mAdministrator access may be lost, try reformatting DB to restore access\x1b[0m\n",
 			);
 		}
 	} else {

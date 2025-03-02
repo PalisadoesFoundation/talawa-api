@@ -303,8 +303,8 @@ suite("Query field allUsers", () => {
 					authorization: `bearer ${adminAuthToken}`,
 				},
 				variables: {
-					name: uniqueName,
 					first: 5,
+					where: { name: uniqueName },
 				},
 			});
 
@@ -337,8 +337,10 @@ suite("Query field allUsers", () => {
 					authorization: `bearer ${adminAuthToken}`,
 				},
 				variables: {
-					name: `NonExistentUserName${faker.string.alphanumeric(10)}`,
 					first: 5,
+					where: {
+						name: `NonExistentUserName${faker.string.alphanumeric(10)}`,
+					},
 				},
 			});
 
@@ -352,8 +354,10 @@ suite("Query field allUsers", () => {
 					authorization: `bearer ${adminAuthToken}`,
 				},
 				variables: {
-					name: `NonExistentUserName${faker.string.alphanumeric(10)}`,
 					last: 5,
+					where: {
+						name: `NonExistentUserName${faker.string.alphanumeric(10)}`,
+					},
 				},
 			});
 
@@ -369,7 +373,8 @@ suite("Query field allUsers", () => {
 					authorization: `bearer ${adminAuthToken}`,
 				},
 				variables: {
-					name: "",
+					first: 5,
+					where: { name: "" },
 				},
 			});
 
