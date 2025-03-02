@@ -6,7 +6,7 @@ const docsDir = path.resolve(
 );
 
 const debug = process.env.DEBUG === "true";
-//
+//test
 function replaceLinks(dir) {
 	try {
 		const files = fs.readdirSync(dir);
