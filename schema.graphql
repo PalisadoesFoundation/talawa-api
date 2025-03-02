@@ -611,6 +611,18 @@ type FundCampaignsConnectionEdge {
   node: FundCampaign
 }
 
+ """Represents a membership in an organization."""
+type OrganizationMembership {
+    """Global identifier of the membership."""
+    id: ID!
+
+    """The organization the membership is associated with."""
+    organization: Organization!
+
+    """The user who is a member of the organization."""
+    user: User!
+  }
+
 """
 Possible variants of the two-letter language code defined in ISO 639-1, part of the ISO 639 standard published by the International Organization for Standardization (ISO), to represent natural languages.
 """
@@ -1282,6 +1294,16 @@ type Mutation {
   """Mutation field to create an organization membership."""
   createOrganizationMembership(input: MutationCreateOrganizationMembershipInput!): Organization
 
+
+ """Mutation field to send a membership request to an organization."""
+    sendMembershipRequest(input: MutationSendMembershipRequestInput!): OrganizationMembership
+
+    """Mutation field to join a public organization."""
+    joinPublicOrganization(input: MutationJoinPublicOrganizationInput!): OrganizationMembership
+
+    """Mutation field to cancel a pending membership request."""
+    cancelMembershipRequest(input: MutationCancelMembershipRequestInput!): OrganizationMembership
+
   """Mutation field to create a post."""
   createPost(input: MutationCreatePostInput!): Post
 
@@ -1438,6 +1460,7 @@ type Mutation {
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
 }
+
 
 """"""
 input MutationCreateAdvertisementInput {
@@ -2084,6 +2107,25 @@ input MutationUpdateAgendaItemInput {
   """Name of the agenda item."""
   name: String
 }
+
+
+"""Input type for sending a membership request to an organization."""
+  input MutationSendMembershipRequestInput {
+    """Global identifier of the organization to request membership for."""
+    organizationId: ID!
+  }
+
+  """Input type for joining a public organization."""
+  input MutationJoinPublicOrganizationInput {
+    """Global identifier of the public organization to join."""
+    organizationId: ID!
+  }
+
+  """Input type for canceling a membership request."""
+  input MutationCancelMembershipRequestInput {
+    """Global identifier of the membership request to cancel."""
+    membershipRequestId: ID!
+  }
 
 """"""
 input MutationUpdateChatInput {
@@ -2840,9 +2882,6 @@ type Query {
 
   """Query field to read an agenda item."""
   agendaItem(input: QueryAgendaItemInput!): AgendaItem
-
-  """Query field to read all Users."""
-  allUsers(after: String, before: String, first: Int, last: Int, name: String): QueryAllUsersConnection
 
   """Query field to read a chat."""
   chat(input: QueryChatInput!): Chat

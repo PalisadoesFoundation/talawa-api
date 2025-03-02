@@ -59,6 +59,7 @@ import "./updateFundCampaign";
 import "./updateFundCampaignPledge";
 import "./updateOrganization";
 import "./updateOrganizationMembership";
+import "./joinPublicOrganization";
 import "./updatePost";
 import "./updatePostVote";
 import "./updateTag";
