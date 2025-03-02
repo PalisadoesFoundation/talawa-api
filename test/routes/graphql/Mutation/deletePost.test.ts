@@ -1,317 +1,471 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { z } from "zod";
-import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
-import { mutationDeletePostInputSchema } from "~/src/graphql/inputs/MutationDeletePostInput";
-import { deletePostResolver } from "~/src/graphql/types/Mutation/deletePost";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { faker } from "@faker-js/faker";
+import { expect, suite, test } from "vitest";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
+import {
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_createPost,
+	Mutation_deleteCurrentUser,
+	Mutation_deletePost,
+	Query_signIn,
+} from "../documentNodes";
 
-/** Represents a successfully deleted post returned by the resolver */
-interface DeletedPost {
-	id: string;
-	content: string;
-}
-
-/** Mock transaction interface for testing database operations */
-interface FakeTx {
-	delete: <T = DeletedPost>() => {
-		where: () => {
-			returning: () => Promise<T[]>;
-		};
-	};
-}
-
-/** Schema for validating mutation arguments, matching the resolver's expectations */
-const mutationDeletePostArgumentsSchema = z.object({
-	input: mutationDeletePostInputSchema,
+const signInResult = await mercuriusClient.query(Query_signIn, {
+	variables: {
+		input: {
+			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+		},
+	},
 });
+assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
+const adminauthToken = signInResult.data.signIn.authenticationToken;
 
-// Helper to create a full mock GraphQLContext with dummy values
-const createMockContext = (
-	overrides: Partial<GraphQLContext> = {},
-): GraphQLContext => {
-	return {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "user1" },
-		} as CurrentClient,
-		drizzleClient: {
-			query: {
-				usersTable: { findFirst: vi.fn() },
-				postsTable: { findFirst: vi.fn() },
-			},
-			transaction: vi.fn(),
-		},
-		minio: {
-			client: { removeObjects: vi.fn(() => Promise.resolve()) },
-			bucketName: "test-bucket",
-		},
-		envConfig: { API_BASE_URL: "http://localhost" },
-		jwt: { sign: vi.fn() },
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		...overrides,
-	} as GraphQLContext;
-};
+suite("Mutation field deletePost", () => {
+	suite("when the client is not authenticated", () => {
+		test("should return an error with unauthenticated extensions code", async () => {
+			const result = await mercuriusClient.mutate(Mutation_deletePost, {
+				variables: {
+					input: {
+						id: faker.string.uuid(),
+					},
+				},
+			});
 
-const testPostId = "123e4567-e89b-12d3-a456-426614174000";
-const validArgs = { input: { id: testPostId } };
-
-const invalidArgs = { input: {} } as unknown as z.infer<
-	typeof mutationDeletePostArgumentsSchema
->;
-
-function createFakeTransaction(
-	returningData: unknown[],
-	shouldFail = false,
-): (fn: (tx: FakeTx) => Promise<unknown>) => Promise<unknown> {
-	return vi.fn(
-		async (fn: (tx: FakeTx) => Promise<unknown>): Promise<unknown> => {
-			if (shouldFail) {
-				throw new Error("Transaction failed");
-			}
-			const fakeTx: FakeTx = {
-				delete: vi.fn().mockReturnValue({
-					where: vi.fn().mockReturnValue({
-						returning: vi.fn().mockResolvedValue(returningData),
+			expect(result.data?.deletePost).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
+						}),
+						path: ["deletePost"],
 					}),
-				}),
-			};
-			return await fn(fakeTx);
+				]),
+			);
+		});
+	});
+
+	suite("when the specified post does not exist", () => {
+		test("should return an error with arguments_associated_resources_not_found extensions code", async () => {
+			const randomPostId = faker.string.uuid();
+
+			const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
+				headers: {
+					authorization: `bearer ${adminauthToken}`,
+				},
+				variables: {
+					input: { id: randomPostId },
+				},
+			});
+
+			expect(deleteResult.data?.deletePost).toBeNull();
+			expect(deleteResult.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
+						}),
+						path: ["deletePost"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("when the client is not authorized to delete the post", () => {
+		test("should return an error with unauthorized_action_on_arguments_associated_resources extensions code", async () => {
+			const createOrganizationResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: {
+						authorization: `bearer ${adminauthToken}`,
+					},
+					variables: {
+						input: {
+							name: "test",
+							description: "test",
+							countryCode: "us",
+							state: "test",
+							city: "test",
+							postalCode: "test",
+							addressLine1: "test",
+							addressLine2: "test",
+						},
+					},
+				},
+			);
+			const existingOrganizationId =
+				createOrganizationResult.data?.createOrganization?.id;
+			assertToBeNonNullish(existingOrganizationId);
+
+			const createPostResult = await mercuriusClient.mutate(
+				Mutation_createPost,
+				{
+					headers: {
+						authorization: `bearer ${adminauthToken}`,
+					},
+					variables: {
+						input: {
+							caption: "Unauthorized deletion test",
+							organizationId: existingOrganizationId,
+							isPinned: false,
+						},
+					},
+				},
+			);
+			const postId = createPostResult.data?.createPost?.id;
+			assertToBeNonNullish(postId);
+
+			const { authToken: regularAuthToken } =
+				await createRegularUserUsingAdmin();
+
+			// Attempt to delete the post as the regular user.
+			const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
+				headers: { authorization: `bearer ${regularAuthToken}` },
+				variables: { input: { id: postId } },
+			});
+
+			expect(deleteResult.data?.deletePost).toBeNull();
+			expect(deleteResult.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthorized_action_on_arguments_associated_resources",
+						}),
+						path: ["deletePost"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("when the arguments are invalid", () => {
+		test("should return an error with invalid_arguments extensions code", async () => {
+			const result = await mercuriusClient.mutate(Mutation_deletePost, {
+				headers: { authorization: `bearer ${adminauthToken}` },
+				variables: {
+					input: { id: "invalid-uuid" },
+				},
+			});
+
+			expect(result.data?.deletePost ?? null).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+						path: ["deletePost"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("when the current user does not exist in the database", () => {
+		test("should return an error with unauthenticated extensions code", async () => {
+			const { authToken } = await createRegularUserUsingAdmin();
+
+			await mercuriusClient.mutate(Mutation_deleteCurrentUser, {
+				headers: { authorization: `bearer ${authToken}` },
+			});
+
+			const randomPostId = faker.string.uuid();
+			const result = await mercuriusClient.mutate(Mutation_deletePost, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: randomPostId } },
+			});
+
+			expect(result.data?.deletePost ?? null).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
+						}),
+						path: ["deletePost"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite(
+		"when a non-admin member attempts to delete another user's post",
+		() => {
+			test("should return an error with unauthorized_action_on_arguments_associated_resources extensions code", async () => {
+				const createOrgResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `bearer ${adminauthToken}` },
+						variables: {
+							input: {
+								name: "test-membership",
+								description: "test-membership",
+								countryCode: "us",
+								state: "test",
+								city: "test",
+								postalCode: "test",
+								addressLine1: "test",
+								addressLine2: "test",
+							},
+						},
+					},
+				);
+				const orgId = createOrgResult.data?.createOrganization?.id;
+				assertToBeNonNullish(orgId);
+
+				const createPostResult = await mercuriusClient.mutate(
+					Mutation_createPost,
+					{
+						headers: { authorization: `bearer ${adminauthToken}` },
+						variables: {
+							input: {
+								caption: "Test membership unauthorized deletion",
+								organizationId: orgId,
+								isPinned: false,
+							},
+						},
+					},
+				);
+				const postId = createPostResult.data?.createPost?.id;
+				assertToBeNonNullish(postId);
+
+				const { authToken: regularAuthToken, userId: regularUserId } =
+					await createRegularUserUsingAdmin();
+
+				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+					headers: { authorization: `bearer ${adminauthToken}` },
+					variables: {
+						input: {
+							role: "regular",
+							organizationId: orgId,
+							memberId: regularUserId,
+						},
+					},
+				});
+
+				// Attempt to delete the post as the regular user.
+				const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
+					headers: { authorization: `bearer ${regularAuthToken}` },
+					variables: { input: { id: postId } },
+				});
+
+				expect(deleteResult.data?.deletePost).toBeNull();
+				expect(deleteResult.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unauthorized_action_on_arguments_associated_resources",
+							}),
+							path: ["deletePost"],
+						}),
+					]),
+				);
+			});
 		},
 	);
-}
 
-describe("deletePostResolver", () => {
-	let ctx: GraphQLContext;
+	suite("when the deletion transaction returns no deleted post", () => {
+		test("should return an error with unexpected extensions code", async () => {
+			// Create organization and post as admin.
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminauthToken}` },
+					variables: {
+						input: {
+							name: "test-transaction",
+							description: "test-transaction",
+							countryCode: "us",
+							state: "test",
+							city: "test",
+							postalCode: "test",
+							addressLine1: "test",
+							addressLine2: "test",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
 
-	beforeEach(() => {
-		ctx = createMockContext();
-	});
+			const createPostResult = await mercuriusClient.mutate(
+				Mutation_createPost,
+				{
+					headers: { authorization: `bearer ${adminauthToken}` },
+					variables: {
+						input: {
+							caption: "Test deletion transaction",
+							organizationId: orgId,
+							isPinned: false,
+						},
+					},
+				},
+			);
+			const postId = createPostResult.data?.createPost?.id;
+			assertToBeNonNullish(postId);
 
-	it("should throw an unauthenticated error if the client is not authenticated", async () => {
-		ctx.currentClient.isAuthenticated = false;
-		await expect(
-			deletePostResolver(null, validArgs, ctx),
-		).rejects.toHaveProperty("extensions.code", "unauthenticated");
-	});
+			const originalTransaction = server.drizzleClient.transaction;
+			const fakeTransaction = async <T>(
+				fn: (tx: unknown) => Promise<T>,
+			): Promise<T> => {
+				return await fn({
+					delete: () => ({
+						where: () => ({
+							returning: async () => {
+								return [];
+							},
+						}),
+					}),
+				});
+			};
 
-	it("should throw an invalid_arguments error if the input arguments are invalid", async () => {
-		await expect(
-			deletePostResolver(null, invalidArgs, ctx),
-		).rejects.toHaveProperty("extensions.code", "invalid_arguments");
-	});
+			try {
+				server.drizzleClient.transaction =
+					fakeTransaction as typeof server.drizzleClient.transaction;
 
-	it("should throw an unauthenticated error if the current user is not found", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockResolvedValue(undefined);
-		ctx.drizzleClient.query.postsTable.findFirst = vi.fn().mockResolvedValue({
-			creatorId: "user1",
-			attachmentsWherePost: [],
-			organization: { membershipsWhereOrganization: [] },
-		});
-		await expect(
-			deletePostResolver(null, validArgs, ctx),
-		).rejects.toHaveProperty("extensions.code", "unauthenticated");
-	});
+				const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
+					headers: { authorization: `bearer ${adminauthToken}` },
+					variables: { input: { id: postId } },
+				});
 
-	it("should throw an arguments_associated_resources_not_found error if the post is not found", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockResolvedValue({ role: "administrator" });
-		ctx.drizzleClient.query.postsTable.findFirst = vi
-			.fn()
-			.mockResolvedValue(undefined);
-		await expect(
-			deletePostResolver(null, validArgs, ctx),
-		).rejects.toHaveProperty(
-			"extensions.code",
-			"arguments_associated_resources_not_found",
-		);
-	});
-
-	it("should throw an unauthorized_action_on_arguments_associated_resources error for an unauthorized non-admin user", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockResolvedValue({ role: "user" });
-		ctx.drizzleClient.query.postsTable.findFirst = vi.fn().mockResolvedValue({
-			creatorId: "someoneElse",
-			attachmentsWherePost: [],
-			organization: { membershipsWhereOrganization: [] },
-		});
-		await expect(
-			deletePostResolver(null, validArgs, ctx),
-		).rejects.toHaveProperty(
-			"extensions.code",
-			"unauthorized_action_on_arguments_associated_resources",
-		);
-	});
-
-	it("should throw an unexpected error if the deletion returns no post", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockResolvedValue({ role: "administrator" });
-		ctx.drizzleClient.query.postsTable.findFirst = vi.fn().mockResolvedValue({
-			creatorId: "user1",
-			attachmentsWherePost: [{ name: "file1" }],
-			organization: { membershipsWhereOrganization: [] },
-		});
-
-		ctx.drizzleClient.transaction = createFakeTransaction(
-			[],
-		) as unknown as typeof ctx.drizzleClient.transaction;
-
-		await expect(
-			deletePostResolver(null, validArgs, ctx),
-		).rejects.toHaveProperty("extensions.code", "unexpected");
-	});
-
-	it("should successfully delete a post for an admin user", async () => {
-		const deletedPost: DeletedPost = { id: "post1", content: "some content" };
-		const attachments = [{ name: "file1" }, { name: "file2" }];
-
-		ctx.drizzleClient.transaction = createFakeTransaction([
-			deletedPost,
-		]) as unknown as typeof ctx.drizzleClient.transaction;
-
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockResolvedValue({ role: "administrator" });
-		ctx.drizzleClient.query.postsTable.findFirst = vi.fn().mockResolvedValue({
-			creatorId: "someoneElse",
-			attachmentsWherePost: attachments,
-			organization: { membershipsWhereOrganization: [] },
-		});
-		const removeObjectsSpy = vi.fn().mockResolvedValue(undefined);
-		ctx.minio.client.removeObjects = removeObjectsSpy;
-		const result = await deletePostResolver(null, validArgs, ctx);
-		const expectedDeletedPost = { ...deletedPost, attachments };
-		expect(result).toEqual(expectedDeletedPost);
-		expect(removeObjectsSpy).toHaveBeenCalledWith(
-			"test-bucket",
-			attachments.map((att) => att.name),
-		);
-	});
-
-	it("should successfully delete a post for a non-admin user with organization admin membership", async () => {
-		const deletedPost: DeletedPost = { id: "post1", content: "some content" };
-		const attachments = [{ name: "file1" }];
-
-		ctx.drizzleClient.transaction = createFakeTransaction([
-			deletedPost,
-		]) as unknown as typeof ctx.drizzleClient.transaction;
-
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockResolvedValue({ role: "user" });
-		ctx.drizzleClient.query.postsTable.findFirst = vi.fn().mockResolvedValue({
-			creatorId: "otherUser",
-			attachmentsWherePost: attachments,
-			organization: {
-				membershipsWhereOrganization: [{ role: "administrator" }],
-			},
-		});
-
-		const removeObjectsSpy = vi.fn().mockResolvedValue(undefined);
-		ctx.minio.client.removeObjects = removeObjectsSpy;
-
-		const result = await deletePostResolver(null, validArgs, ctx);
-		expect(result).toEqual(Object.assign(deletedPost, { attachments }));
-		expect(removeObjectsSpy).toHaveBeenCalledWith(
-			"test-bucket",
-			attachments.map((att) => att.name),
-		);
-	});
-
-	it("should call usersTable.findFirst with correct eq condition using currentUserId", async () => {
-		const findFirstSpy = vi.fn().mockResolvedValue({ role: "administrator" });
-		ctx.drizzleClient.query.usersTable.findFirst = findFirstSpy;
-
-		ctx.drizzleClient.query.postsTable.findFirst = vi.fn().mockResolvedValue({
-			creatorId: "user1",
-			attachmentsWherePost: [],
-			organization: { membershipsWhereOrganization: [] },
-		});
-
-		ctx.drizzleClient.transaction = createFakeTransaction([
-			{ id: testPostId, content: "dummy content" },
-		]) as unknown as typeof ctx.drizzleClient.transaction;
-
-		await deletePostResolver(null, validArgs, ctx);
-
-		expect(findFirstSpy).toHaveBeenCalled();
-
-		expect(findFirstSpy.mock.calls.length).toBeGreaterThan(0);
-		const firstCall = findFirstSpy.mock.calls[0];
-		if (!firstCall) {
-			throw new Error("Expected findFirst to be called at least once");
-		}
-		const optionsPassed = firstCall[0];
-		expect(typeof optionsPassed.where).toBe("function");
-
-		const fakeFields = { id: "user1" };
-		const eqMock = vi.fn((a, b) => `eq(${a},${b})`);
-		const fakeOperators = { eq: eqMock };
-
-		const conditionResult = optionsPassed.where(fakeFields, fakeOperators);
-
-		expect(eqMock).toHaveBeenCalledWith(
-			fakeFields.id,
-			ctx.currentClient.user?.id,
-		);
-		expect(conditionResult).toEqual("eq(user1,user1)");
-	});
-
-	it("should throw unauthorized error for non-admin user when organization membership is defined but not admin and post creator is not current user", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockResolvedValue({ role: "user" });
-		ctx.drizzleClient.query.postsTable.findFirst = vi.fn().mockResolvedValue({
-			creatorId: "otherUser",
-			attachmentsWherePost: [],
-			organization: {
-				membershipsWhereOrganization: [{ role: "user" }],
-			},
-		});
-
-		await expect(
-			deletePostResolver(null, validArgs, ctx),
-		).rejects.toHaveProperty(
-			"extensions.code",
-			"unauthorized_action_on_arguments_associated_resources",
-		);
-	});
-
-	it("should succeed on first delete and fail with 'unexpected' error on subsequent attempts due to race condition", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
-			.mockResolvedValue({ role: "administrator" });
-		ctx.drizzleClient.query.postsTable.findFirst = vi.fn().mockResolvedValue({
-			creatorId: "user1",
-			attachmentsWherePost: [],
-			organization: { membershipsWhereOrganization: [] },
-		});
-
-		let firstCheck = true;
-		ctx.drizzleClient.transaction = vi.fn(async (fn) => {
-			if (firstCheck) {
-				firstCheck = false;
-				return { id: "post1" };
+				expect(deleteResult.data?.deletePost ?? null).toBeNull();
+				expect(deleteResult.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unexpected",
+							}),
+							path: ["deletePost"],
+						}),
+					]),
+				);
+			} finally {
+				server.drizzleClient.transaction = originalTransaction;
 			}
-			throw new TalawaGraphQLError({
-				extensions: { code: "unexpected" },
-				message: "Post already deleted",
+		});
+	});
+
+	suite("when minio removal fails", () => {
+		test("should bubble up an error from the minio removal and not delete the post", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminauthToken}` },
+					variables: {
+						input: {
+							name: "test-minio-failure",
+							description: "test-minio-failure",
+							countryCode: "us",
+							state: "test",
+							city: "test",
+							postalCode: "test",
+							addressLine1: "test",
+							addressLine2: "test",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const createPostResult = await mercuriusClient.mutate(
+				Mutation_createPost,
+				{
+					headers: { authorization: `bearer ${adminauthToken}` },
+					variables: {
+						input: {
+							caption: "Test minio failure",
+							organizationId: orgId,
+							isPinned: false,
+						},
+					},
+				},
+			);
+			const postId = createPostResult.data?.createPost?.id;
+			assertToBeNonNullish(postId);
+
+			const originalRemoveObjects = server.minio.client.removeObjects;
+			try {
+				server.minio.client.removeObjects = async () => {
+					throw new Error("Minio removal error");
+				};
+
+				const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
+					headers: { authorization: `bearer ${adminauthToken}` },
+					variables: { input: { id: postId } },
+				});
+
+				expect(deleteResult.data?.deletePost ?? null).toBeNull();
+				expect(deleteResult.errors).toBeDefined();
+				expect(deleteResult.errors?.[0]?.message).toContain(
+					"Minio removal error",
+				);
+			} finally {
+				server.minio.client.removeObjects = originalRemoveObjects;
+			}
+		});
+	});
+
+	suite("when the client is authorized and the post exists", () => {
+		test("should delete the post and return the deleted post data", async () => {
+			const createOrganizationResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: {
+						authorization: `bearer ${adminauthToken}`,
+					},
+					variables: {
+						input: {
+							name: "test-2",
+							description: "test-2",
+							countryCode: "us",
+							state: "test-2",
+							city: "test-2",
+							postalCode: "test-2",
+							addressLine1: "test-2",
+							addressLine2: "test-2",
+						},
+					},
+				},
+			);
+			const existingOrganizationId =
+				createOrganizationResult.data?.createOrganization?.id;
+			assertToBeNonNullish(existingOrganizationId);
+
+			const createPostResult = await mercuriusClient.mutate(
+				Mutation_createPost,
+				{
+					headers: {
+						authorization: `bearer ${adminauthToken}`,
+					},
+					variables: {
+						input: {
+							caption: "Unauthorized deletion test",
+							organizationId: existingOrganizationId,
+							isPinned: false,
+						},
+					},
+				},
+			);
+			const postId = createPostResult.data?.createPost?.id;
+			assertToBeNonNullish(postId);
+
+			const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
+				headers: { authorization: `bearer ${adminauthToken}` },
+				variables: { input: { id: postId } },
 			});
-		}) as unknown as typeof ctx.drizzleClient.transaction;
+			assertToBeNonNullish(deleteResult.data.deletePost);
 
-		await expect(
-			deletePostResolver(null, validArgs, ctx),
-		).resolves.toBeDefined();
-
-		await expect(deletePostResolver(null, validArgs, ctx)).rejects.toThrow(
-			"Post already deleted",
-		);
-		await expect(
-			deletePostResolver(null, validArgs, ctx),
-		).rejects.toHaveProperty("extensions.code", "unexpected");
+			expect(deleteResult.data.deletePost.id).toEqual(postId);
+			expect(Array.isArray(deleteResult.data.deletePost.attachments)).toBe(
+				true,
+			);
+		});
 	});
 });

@@ -569,11 +569,61 @@ export const Mutation_createAgendaItem = gql(`
   }
 `);
 
+export const Mutation_updateAgendaItem = gql(`
+  mutation Mutation_updateAgendaItem($input: MutationUpdateAgendaItemInput!) {
+    updateAgendaItem(input: $input) {
+      id
+      name
+      description
+      duration
+      type
+    }
+  }
+`);
 export const Mutation_deleteAgendaItem = gql(`
   mutation Mutation_deleteAgendaItem($input: MutationDeleteAgendaItemInput!) {
     deleteAgendaItem(input: $input) {
       id
       name
+    }
+  }
+`);
+
+export const Mutation_deletePost = gql(`
+  mutation Mutation_deletePost($input: MutationDeletePostInput!) {
+    deletePost(input: $input) {
+      id
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);
+
+export const Mutation_createPost = gql(`
+  mutation Mutation_createPost($input: MutationCreatePostInput!) {
+    createPost(input: $input) {
+      id
+      caption
+      pinnedAt
+      organization {
+        id
+      }
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);
+
+export const Mutation_createPresignedUrl = gql(`
+  mutation Mutation_createPresignedUrl($input: MutationCreatePresignedUrlInput!) {
+    createPresignedUrl(input: $input) {
+      fileUrl
+      presignedUrl
+      objectName
     }
   }
 `);
