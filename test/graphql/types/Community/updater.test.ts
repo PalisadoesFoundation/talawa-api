@@ -102,6 +102,10 @@ describe("Community Resolver - Updater Field", () => {
 					putObject: vi.fn(),
 					getObject: vi.fn(),
 				} as unknown as MinioClient,
+				config: {
+					endPoint: "minio",
+					port: 9000,
+				},
 			},
 			currentClient: {
 				isAuthenticated: true,
