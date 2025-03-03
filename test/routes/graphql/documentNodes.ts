@@ -244,55 +244,55 @@ export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
 }`);
 
 export const Query_allUsers = gql(`
-    query Query_allUsers(
-      $first: Int,
-      $after: String,
-      $last: Int,
-      $before: String,
-      $name: String
+  query Query_allUsers(
+    $first: Int,
+    $after: String,
+    $last: Int,
+    $before: String,
+    $where: QueryAllUsersWhereInput
+  ) {
+    allUsers(
+      first: $first,
+      after: $after,
+      last: $last,
+      before: $before,
+      where: $where
     ) {
-      allUsers(
-        first: $first,
-        after: $after,
-        last: $last,
-        before: $before,
-        name: $name
-      ) {
-        pageInfo {
-          hasNextPage
-          hasPreviousPage
-          startCursor
-          endCursor
-        }
-        edges {
-          cursor
-          node {
-            id
-            name
-            emailAddress
-            role
-            createdAt
-            isEmailAddressVerified
-            addressLine1
-            addressLine2
-            birthDate
-            city
-            countryCode
-            description
-            educationGrade
-            employmentStatus
-            homePhoneNumber
-            maritalStatus
-            mobilePhoneNumber
-            natalSex
-            postalCode
-            state
-            workPhoneNumber
-          }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      edges {
+        cursor
+        node {
+          id
+          name
+          emailAddress
+          role
+          createdAt
+          isEmailAddressVerified
+          addressLine1
+          addressLine2
+          birthDate
+          city
+          countryCode
+          description
+          educationGrade
+          employmentStatus
+          homePhoneNumber
+          maritalStatus
+          mobilePhoneNumber
+          natalSex
+          postalCode
+          state
+          workPhoneNumber
         }
       }
     }
-  `);
+  }
+`);
 
 export const Query_user_creator =
 	gql(`query Query_user_creator($input: QueryUserInput!) {
@@ -516,6 +516,19 @@ export const Mutation_createTag = gql(`
     }
   }`);
 
+export const Query_organizations = gql(`
+	query Query_organizations {
+		organizations {
+			id
+      avatarURL
+      name
+      city
+      state
+      countryCode
+		}
+	}
+`);
+
 export const Query_organization = gql(`
     query Organization($input: QueryOrganizationInput!, $first: Int!) {
       organization(input: $input) {
@@ -569,6 +582,17 @@ export const Mutation_createAgendaItem = gql(`
   }
 `);
 
+export const Mutation_updateAgendaItem = gql(`
+  mutation Mutation_updateAgendaItem($input: MutationUpdateAgendaItemInput!) {
+    updateAgendaItem(input: $input) {
+      id
+      name
+      description
+      duration
+      type
+    }
+  }
+`);
 export const Mutation_deleteAgendaItem = gql(`
   mutation Mutation_deleteAgendaItem($input: MutationDeleteAgendaItemInput!) {
     deleteAgendaItem(input: $input) {
@@ -590,7 +614,6 @@ export const Mutation_deletePost = gql(`
   }
 `);
 
-// For the purpose of this test, we assume you have a mutation for creating a post.
 export const Mutation_createPost = gql(`
   mutation Mutation_createPost($input: MutationCreatePostInput!) {
     createPost(input: $input) {
@@ -604,6 +627,16 @@ export const Mutation_createPost = gql(`
         mimeType
         url
       }
+    }
+  }
+`);
+
+export const Mutation_createPresignedUrl = gql(`
+  mutation Mutation_createPresignedUrl($input: MutationCreatePresignedUrlInput!) {
+    createPresignedUrl(input: $input) {
+      fileUrl
+      presignedUrl
+      objectName
     }
   }
 `);

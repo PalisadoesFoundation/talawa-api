@@ -16,41 +16,57 @@ import { builder } from "~/src/graphql/builder";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
-	defaultGraphQLConnectionArgumentsSchema,
-	transformDefaultGraphQLConnectionArguments,
+	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
+	createGraphQLConnectionWithWhereSchema,
+	type defaultGraphQLConnectionArgumentsSchema,
+	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 
-// Extend the default connection arguments to include name search
-const allUsersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
-	.extend({
-		name: z.string().min(1).optional().nullish(),
+// Define the where schema for user filtering
+const userWhereSchema = z
+	.object({
+		name: z.string().min(1).optional(),
 	})
-	.transform(transformDefaultGraphQLConnectionArguments)
-	.transform((arg, ctx) => {
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+	.optional();
 
-		try {
-			if (arg.cursor !== undefined) {
-				cursor = cursorSchema.parse(
-					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
-				);
-			}
-		} catch (error) {
-			ctx.addIssue({
-				code: "custom",
-				message: "Not a valid cursor.",
-				path: [arg.isInversed ? "before" : "after"],
-			});
+// Create a connection arguments schema with the where clause
+const allUsersArgumentsSchema = createGraphQLConnectionWithWhereSchema(
+	userWhereSchema,
+).transform((arg, ctx) => {
+	// First transform using the connection with where transformer
+	const transformedArg = transformGraphQLConnectionArgumentsWithWhere(
+		// Type assertion to match the expected type
+		{ ...arg, where: arg.where || {} } as z.infer<
+			typeof defaultGraphQLConnectionArgumentsSchema
+		> & { where: unknown },
+		ctx,
+	);
+
+	let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+	try {
+		if (transformedArg.cursor !== undefined) {
+			cursor = cursorSchema.parse(
+				JSON.parse(
+					Buffer.from(transformedArg.cursor, "base64url").toString("utf-8"),
+				),
+			);
 		}
+	} catch (error) {
+		ctx.addIssue({
+			code: "custom",
+			message: "Not a valid cursor.",
+			path: [transformedArg.isInversed ? "before" : "after"],
+		});
+	}
 
-		return {
-			cursor,
-			isInversed: arg.isInversed,
-			limit: arg.limit,
-			name: arg.name,
-		};
-	});
+	return {
+		cursor,
+		isInversed: transformedArg.isInversed,
+		limit: transformedArg.limit,
+		where: transformedArg.where || {}, // Default to empty object if where is undefined
+	};
+});
 
 const cursorSchema = z
 	.object({
@@ -66,7 +82,14 @@ builder.queryField("allUsers", (t) =>
 	t.connection({
 		type: User,
 		args: {
-			name: t.arg.string({ required: false }),
+			where: t.arg({
+				type: builder.inputType("QueryAllUsersWhereInput", {
+					fields: (t) => ({
+						name: t.string({ required: false }),
+					}),
+				}),
+				required: false,
+			}),
 		},
 		description: "Query field to read all Users.",
 		resolve: async (_parent, args, ctx) => {
@@ -121,22 +144,26 @@ builder.queryField("allUsers", (t) =>
 				});
 			}
 
-			const { cursor, isInversed, limit, name } = parsedArgs;
+			const { cursor, isInversed, limit, where } =
+				parsedArgs as ParsedDefaultGraphQLConnectionArgumentsWithWhere<
+					{ createdAt: Date; id: string },
+					{ name?: string | null }
+				>;
 
 			const orderBy = isInversed
 				? [asc(usersTable.createdAt), asc(usersTable.id)]
 				: [desc(usersTable.createdAt), desc(usersTable.id)];
 
-			let where: SQL | undefined;
+			let queryWhere: SQL | undefined;
 
-			// Add name search condition if provided
-			const nameCondition = name
-				? ilike(usersTable.name, `%${name}%`)
+			// Add name search condition if provided in where
+			const nameCondition = where?.name
+				? ilike(usersTable.name, `%${where.name}%`)
 				: undefined;
 
 			if (isInversed) {
 				if (cursor !== undefined) {
-					where = and(
+					queryWhere = and(
 						exists(
 							ctx.drizzleClient
 								.select()
@@ -158,11 +185,11 @@ builder.queryField("allUsers", (t) =>
 						nameCondition,
 					);
 				} else {
-					where = nameCondition;
+					queryWhere = nameCondition;
 				}
 			} else {
 				if (cursor !== undefined) {
-					where = and(
+					queryWhere = and(
 						exists(
 							ctx.drizzleClient
 								.select()
@@ -184,14 +211,14 @@ builder.queryField("allUsers", (t) =>
 						nameCondition,
 					);
 				} else {
-					where = nameCondition;
+					queryWhere = nameCondition;
 				}
 			}
 
 			const users = await ctx.drizzleClient.query.usersTable.findMany({
 				limit,
 				orderBy,
-				where,
+				where: queryWhere,
 			});
 
 			if (cursor !== undefined && users.length === 0) {

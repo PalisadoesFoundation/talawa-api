@@ -20,4 +20,6 @@ import "./tagFolder";
 import "./user";
 import "./venue";
 import "./allUsers";
+import "./organizations";
 import "./ActionItem";
+

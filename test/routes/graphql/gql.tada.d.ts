@@ -2,6 +2,7 @@
 /* prettier-ignore */
 
 export type introspection_types = {
+
   'Advertisement': { kind: 'OBJECT'; name: 'Advertisement'; fields: { 'attachments': { name: 'attachments'; type: { kind: 'LIST'; name: never; ofType: { kind: 'NON_NULL'; name: never; ofType: { kind: 'OBJECT'; name: 'AdvertisementAttachment'; ofType: null; }; }; } }; 'createdAt': { name: 'createdAt'; type: { kind: 'SCALAR'; name: 'DateTime'; ofType: null; } }; 'creator': { name: 'creator'; type: { kind: 'OBJECT'; name: 'User'; ofType: null; } }; 'description': { name: 'description'; type: { kind: 'SCALAR'; name: 'String'; ofType: null; } }; 'endAt': { name: 'endAt'; type: { kind: 'SCALAR'; name: 'DateTime'; ofType: null; } }; 'id': { name: 'id'; type: { kind: 'NON_NULL'; name: never; ofType: { kind: 'SCALAR'; name: 'ID'; ofType: null; }; } }; 'name': { name: 'name'; type: { kind: 'SCALAR'; name: 'String'; ofType: null; } }; 'organization': { name: 'organization'; type: { kind: 'OBJECT'; name: 'Organization'; ofType: null; } }; 'startAt': { name: 'startAt'; type: { kind: 'SCALAR'; name: 'DateTime'; ofType: null; } }; 'type': { name: 'type'; type: { kind: 'ENUM'; name: 'AdvertisementType'; ofType: null; } }; 'updatedAt': { name: 'updatedAt'; type: { kind: 'SCALAR'; name: 'DateTime'; ofType: null; } }; 'updater': { name: 'updater'; type: { kind: 'OBJECT'; name: 'User'; ofType: null; } }; }; };
   'AdvertisementAttachment': { kind: 'OBJECT'; name: 'AdvertisementAttachment'; fields: { 'mimeType': { name: 'mimeType'; type: { kind: 'SCALAR'; name: 'String'; ofType: null; } }; 'url': { name: 'url'; type: { kind: 'SCALAR'; name: 'String'; ofType: null; } }; }; };
   'AdvertisementType': { name: 'AdvertisementType'; enumValues: 'banner' | 'menu' | 'pop_up'; };
@@ -193,6 +194,7 @@ export type introspection_types = {
   'VenueAttachment': { kind: 'OBJECT'; name: 'VenueAttachment'; fields: { 'mimeType': { name: 'mimeType'; type: { kind: 'SCALAR'; name: 'String'; ofType: null; } }; 'url': { name: 'url'; type: { kind: 'SCALAR'; name: 'String'; ofType: null; } }; }; };
   'VenueEventsConnection': { kind: 'OBJECT'; name: 'VenueEventsConnection'; fields: { 'edges': { name: 'edges'; type: { kind: 'LIST'; name: never; ofType: { kind: 'OBJECT'; name: 'VenueEventsConnectionEdge'; ofType: null; }; } }; 'pageInfo': { name: 'pageInfo'; type: { kind: 'NON_NULL'; name: never; ofType: { kind: 'OBJECT'; name: 'PageInfo'; ofType: null; }; } }; }; };
   'VenueEventsConnectionEdge': { kind: 'OBJECT'; name: 'VenueEventsConnectionEdge'; fields: { 'cursor': { name: 'cursor'; type: { kind: 'NON_NULL'; name: never; ofType: { kind: 'SCALAR'; name: 'String'; ofType: null; }; } }; 'node': { name: 'node'; type: { kind: 'OBJECT'; name: 'Event'; ofType: null; } }; }; };
+
 };
 
 /** An IntrospectionQuery representation of your schema.
