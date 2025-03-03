@@ -69,21 +69,22 @@ builder.queryField("signIn", (t) =>
 					},
 				});
 			}
-
-			if (
-				!(await verify(existingUser.passwordHash, parsedArgs.input.password))
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{
-								argumentPath: ["input", "password"],
-								message: "This password is invalid.",
-							},
-						],
-					},
-				});
+			if (existingUser.passwordHash) {
+				if (
+					!(await verify(existingUser.passwordHash, parsedArgs.input.password))
+				) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "password"],
+									message: "This password is invalid.",
+								},
+							],
+						},
+					});
+				}
 			}
 
 			if (existingUser.role === "regular") {

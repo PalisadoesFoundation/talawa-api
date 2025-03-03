@@ -6,7 +6,7 @@
 
 > **UnauthenticatedExtensions**: `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:93](https://github.com/PalisadoesFoundation/talawa-api/blob/f1b6ec0d386e11c6dc4f3cf8bb763223ff502e1e/src/utilities/TalawaGraphQLError.ts#L93)
+Defined in: [src/utilities/TalawaGraphQLError.ts:93](https://github.com/PalisadoesFoundation/talawa-api/blob/4f56a5331bd7a5f784e82913103662f37b427f3e/src/utilities/TalawaGraphQLError.ts#L93)
 
 When the client must be authenticated to perform an action.
 

@@ -6,4 +6,4 @@
 
 > `const` **queryAgendaFolderInputSchema**: `ZodObject`\<\{ `id`: `any`; \}, `"strip"`, `ZodTypeAny`, \{ `[key: string]`: `any`;  `id`: `unknown`; \}, \{ `[key: string]`: `any`;  `id`: `unknown`; \}\>
 
-Defined in: [src/graphql/inputs/QueryAgendaFolderInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/f1b6ec0d386e11c6dc4f3cf8bb763223ff502e1e/src/graphql/inputs/QueryAgendaFolderInput.ts#L5)
+Defined in: [src/graphql/inputs/QueryAgendaFolderInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/4f56a5331bd7a5f784e82913103662f37b427f3e/src/graphql/inputs/QueryAgendaFolderInput.ts#L5)
