@@ -4,15 +4,15 @@
 
 # Interface: UploadUrlResponse
 
-Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:3](https://github.com/Suyash878/talawa-api/blob/2164956a3cfab8e53ec86349b53a841816d69cde/src/graphql/types/Post/UploadUrlResponse.ts#L3)
-
 ## Properties
 
 ### fileUrl
 
 > **fileUrl**: `string`
 
-Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/Suyash878/talawa-api/blob/2164956a3cfab8e53ec86349b53a841816d69cde/src/graphql/types/Post/UploadUrlResponse.ts#L5)
+#### Defined in
+
+[src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/types/Post/UploadUrlResponse.ts#L5)
 
 ***
 
@@ -20,7 +20,9 @@ Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/S
 
 > **objectName**: `string`
 
-Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:6](https://github.com/Suyash878/talawa-api/blob/2164956a3cfab8e53ec86349b53a841816d69cde/src/graphql/types/Post/UploadUrlResponse.ts#L6)
+#### Defined in
+
+[src/graphql/types/Post/UploadUrlResponse.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/types/Post/UploadUrlResponse.ts#L6)
 
 ***
 
@@ -28,4 +30,6 @@ Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:6](https://github.com/S
 
 > **presignedUrl**: `string`
 
-Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:4](https://github.com/Suyash878/talawa-api/blob/2164956a3cfab8e53ec86349b53a841816d69cde/src/graphql/types/Post/UploadUrlResponse.ts#L4)
+#### Defined in
+
+[src/graphql/types/Post/UploadUrlResponse.ts:4](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/types/Post/UploadUrlResponse.ts#L4)

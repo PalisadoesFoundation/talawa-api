@@ -14,6 +14,7 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "src/envConfigSchema";
+import { v4 as uuidv4 } from "uuid";
 
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
@@ -479,6 +480,143 @@ export async function insertCollections(
 					break;
 				}
 
+				case "action_items": {
+					const validUsers = await db.query.usersTable.findMany({
+						columns: { id: true },
+					});
+					const validUserIds = new Set(validUsers.map((user) => user.id));
+
+					const action_items = JSON.parse(fileContent).map(
+						(action_item: {
+							id: string;
+							isCompleted: boolean;
+							assignedAt: string | number | Date;
+							completionAt: string | number | Date;
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+							preCompletionNotes: string;
+							postCompletionNotes: string;
+							organizationId: string;
+							categoryId: string;
+							eventId: string;
+							assigneeId: string;
+							creatorId: string;
+							updaterId: string;
+						}) => {
+							const assignedAtDate = parseDate(action_item.assignedAt);
+							const completionAtDate = parseDate(action_item.completionAt);
+							const createdAtDate = parseDate(action_item.createdAt);
+							const updatedAtDate = action_item.updatedAt
+								? parseDate(action_item.updatedAt)
+								: null;
+
+							const anyValidUserId =
+								validUserIds.size > 0 ? Array.from(validUserIds)[0] : null;
+
+							if (!anyValidUserId) {
+								throw new Error("No valid users found in the database");
+							}
+
+							return {
+								...action_item,
+								id: action_item.id.length === 36 ? action_item.id : uuidv4(),
+								organizationId:
+									action_item.organizationId.length === 36
+										? action_item.organizationId
+										: uuidv4(),
+								categoryId: null,
+								eventId:
+									action_item.eventId.length === 36
+										? action_item.eventId
+										: uuidv4(),
+								assigneeId: validUserIds.has(action_item.assigneeId)
+									? action_item.assigneeId
+									: anyValidUserId,
+								creatorId: validUserIds.has(action_item.creatorId)
+									? action_item.creatorId
+									: anyValidUserId,
+								updaterId: validUserIds.has(action_item.updaterId)
+									? action_item.updaterId
+									: anyValidUserId,
+								assignedAt: assignedAtDate,
+								completionAt: completionAtDate,
+								createdAt: createdAtDate,
+								updatedAt: updatedAtDate,
+							};
+						},
+					) as (typeof schema.actionsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.actionsTable,
+						action_items,
+						schema.actionsTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Action Items table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+				case "events": {
+					const events = JSON.parse(fileContent).map(
+						(event: {
+							id: string;
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+							startAt: string | number | Date;
+							endAt: string | number | Date;
+						}) => ({
+							...event,
+							createdAt: parseDate(event.createdAt),
+							updatedAt: parseDate(event.updatedAt),
+							startAt: parseDate(event.startAt),
+							endAt: parseDate(event.endAt),
+						}),
+					) as (typeof schema.eventsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.eventsTable,
+						events,
+						schema.eventsTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Events table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
+				case "action_categories": {
+					const actionCategories = JSON.parse(fileContent).map(
+						(category: {
+							id: string;
+							name: string;
+							organizationId: string;
+							creatorId: string;
+							createdAt: string;
+							updatedAt: string;
+						}) => ({
+							...category,
+							createdAt: new Date(category.createdAt), // Convert to Date object
+							updatedAt: new Date(category.updatedAt), // Convert to Date object
+						}),
+					) as (typeof schema.actionCategoriesTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.actionCategoriesTable,
+						actionCategories,
+						schema.actionCategoriesTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Action Categories table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
 				default:
 					console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
 					break;
@@ -521,6 +659,8 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "post_attachments", table: schema.postAttachmentsTable },
 			{ name: "comments", table: schema.commentsTable },
 			{ name: "comment_votes", table: schema.commentVotesTable },
+			{ name: "action_items", table: schema.actionsTable },
+			{ name: "events", table: schema.eventsTable },
 		];
 
 		console.log(`\nRecord Counts ${stage} Import:\n`);

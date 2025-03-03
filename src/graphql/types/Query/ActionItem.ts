@@ -3,142 +3,163 @@ import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItems/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
-	QueryActionItemInput,
-	queryActionItemInputSchema,
+	QueryActionItemsByOrganizationInput,
+	queryActionItemsByOrgInputSchema,
 } from "../../inputs/QueryActionItemInput";
 
-const queryActionItemArgumentsSchema = z.object({
-	input: queryActionItemInputSchema,
+const queryActionItemsByOrganizationArgumentsSchema = z.object({
+	input: queryActionItemsByOrgInputSchema,
 });
 
-builder.queryField("actionItem", (t) =>
-	t.field({
-		args: {
-			input: t.arg({
-				description: "Input parameters to fetch an action item.",
-				required: true,
-				type: QueryActionItemInput,
-			}),
-		},
-		description: "Query field to fetch a specific action item by ID.",
-		resolve: async (_parent, args, ctx) => {
-			if (!ctx.currentClient.isAuthenticated) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
-
-			const {
-				data: parsedArgs,
-				error,
-				success,
-			} = queryActionItemArgumentsSchema.safeParse(args);
-
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-				});
-			}
-
-			const currentUserId = ctx.currentClient.user.id;
-
-			const [currentUser, existingActionItem] = await Promise.all([
-				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+/**
+ * GraphQL Query: Fetches all ActionItems by organizationId.
+ */
+export const actionItemsByOrganization = builder.queryField(
+	"actionItemsByOrganization",
+	(t) =>
+		t.field({
+			args: {
+				input: t.arg({
+					description:
+						"Input parameters to fetch action items by organizationId.",
+					required: true,
+					type: QueryActionItemsByOrganizationInput,
 				}),
-				ctx.drizzleClient.query.actionsTable.findFirst({
-					with: {
-						assignee: true,
-						category: true,
-						creator: true,
-						event: true,
-						organization: {
-							columns: {
-								countryCode: true,
-							},
-							with: {
-								membershipsWhereOrganization: {
-									columns: {
-										role: true,
+			},
+			description:
+				"Query field to fetch all action items linked to a specific organization.",
+			resolve: async (_parent, args, ctx) => {
+				// Check if the user is authenticated
+				if (!ctx.currentClient.isAuthenticated) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthenticated",
+						},
+					});
+				}
+
+				// Validate query arguments
+				const {
+					data: parsedArgs,
+					error,
+					success,
+				} = queryActionItemsByOrganizationArgumentsSchema.safeParse(args);
+
+				if (!success) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: error.issues.map((issue) => ({
+								argumentPath: issue.path,
+								message: issue.message,
+							})),
+						},
+					});
+				}
+
+				const currentUserId = ctx.currentClient.user.id;
+
+				// Fetch the current user and action items by organizationId
+				const [currentUser, actionItems] = await Promise.all([
+					ctx.drizzleClient.query.usersTable.findFirst({
+						columns: {
+							role: true,
+						},
+						where: (fields, operators) =>
+							operators.eq(fields.id, currentUserId),
+					}),
+					ctx.drizzleClient.query.actionsTable.findMany({
+						with: {
+							assignee: true,
+							category: true,
+							creator: true,
+							event: true,
+							organization: {
+								columns: {
+									countryCode: true,
+								},
+								with: {
+									membershipsWhereOrganization: {
+										columns: {
+											role: true,
+										},
+										where: (fields, operators) =>
+											operators.eq(fields.memberId, currentUserId),
 									},
-									where: (fields, operators) =>
-										operators.eq(fields.memberId, currentUserId),
 								},
 							},
 						},
-					},
-					where: (fields, operators) => {
-						if (!parsedArgs.input.id) {
-							throw new TalawaGraphQLError({
-								message: "ActionItem ID is required but was not provided.",
-								extensions: {
-									code: "invalid_arguments",
-									issues: [
-										{
-											argumentPath: ["input", "id"],
-											message: "ID must be a non-empty string",
-										},
-									],
+						where: (fields, operators) => {
+							if (!parsedArgs.input.organizationId) {
+								throw new TalawaGraphQLError({
+									message: "Organization ID is required but was not provided.",
+									extensions: {
+										code: "invalid_arguments",
+										issues: [
+											{
+												argumentPath: ["input", "organizationId"],
+												message: "organizationId must be a non-empty string",
+											},
+										],
+									},
+								});
+							}
+							return operators.eq(
+								fields.organizationId,
+								parsedArgs.input.organizationId,
+							);
+						},
+					}),
+				]);
+
+				// Validate if the user exists
+				if (currentUser === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthenticated",
+						},
+					});
+				}
+
+				// If no action items found, return an empty array
+				if (!actionItems.length) {
+					return [];
+				}
+
+				// Check if the user is authorized to view these action items
+				const currentUserOrganizationMembership =
+					actionItems.length > 0
+						? actionItems[0]?.organization?.membershipsWhereOrganization?.[0]
+						: undefined;
+
+				if (!currentUserOrganizationMembership) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action_on_arguments_associated_resources",
+							issues: [{ argumentPath: ["input", "organizationId"] }],
+						},
+					});
+				}
+
+				if (
+					currentUser.role !== "administrator" &&
+					currentUserOrganizationMembership === undefined
+				) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action_on_arguments_associated_resources",
+							issues: [
+								{
+									argumentPath: ["input", "organizationId"],
 								},
-							});
-						}
-						return operators.eq(fields.id, parsedArgs.input.id);
-					},
-				}),
-			]);
-			if (currentUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
+							],
+						},
+					});
+				}
 
-			if (existingActionItem === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "id"],
-							},
-						],
-					},
-				});
-			}
-
-			const currentUserOrganizationMembership =
-				existingActionItem.organization.membershipsWhereOrganization[0];
-
-			if (
-				currentUser.role !== "administrator" &&
-				currentUserOrganizationMembership === undefined
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action_on_arguments_associated_resources",
-						issues: [
-							{
-								argumentPath: ["input", "id"],
-							},
-						],
-					},
-				});
-			}
-
-			return existingActionItem;
-		},
-		type: ActionItem,
-	}),
+				// Return all action items for the given organization
+				return actionItems;
+			},
+			type: [ActionItem], // Returns an array of ActionItems
+		}),
 );

@@ -3,22 +3,24 @@ import { actionsTableInsertSchema } from "~/src/drizzle/tables/actions"; // ✅ 
 import { builder } from "~/src/graphql/builder";
 
 /**
- * Defines the Zod validation schema for querying an ActionItem.
+ * Defines the Zod validation schema for querying ActionItems by organizationId.
  */
-export const queryActionItemInputSchema = z.object({
-	id: actionsTableInsertSchema.shape.id, // ✅ Extracts the ID schema correctly
+export const queryActionItemsByOrgInputSchema = z.object({
+	organizationId: actionsTableInsertSchema.shape.organizationId,
 });
 
 /**
- * GraphQL Input Type for querying ActionItem by ID.
+ * GraphQL Input Type for querying ActionItems by organizationId.
  */
-export const QueryActionItemInput = builder
-	.inputRef<z.infer<typeof queryActionItemInputSchema>>("QueryActionItemInput")
+export const QueryActionItemsByOrganizationInput = builder
+	.inputRef<z.infer<typeof queryActionItemsByOrgInputSchema>>(
+		"QueryActionItemsByOrganizationInput",
+	)
 	.implement({
-		description: "Input schema for querying an ActionItem by ID.",
+		description: "Input schema for querying ActionItems by organizationId.",
 		fields: (t) => ({
-			id: t.string({
-				description: "Global ID of the action item.",
+			organizationId: t.string({
+				description: "ID of the organization to fetch associated action items.",
 				required: true,
 			}),
 		}),

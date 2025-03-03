@@ -6,8 +6,6 @@
 
 > **ParsedDefaultGraphQLConnectionArguments**\<`Cursor`\>: `object`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:6](https://github.com/Suyash878/talawa-api/blob/2164956a3cfab8e53ec86349b53a841816d69cde/src/utilities/defaultGraphQLConnection.ts#L6)
-
 Type of the object containing the parsed default arguments of a graphql connection.
 
 ## Type Parameters
@@ -19,6 +17,8 @@ Type of the object containing the parsed default arguments of a graphql connecti
 ### cursor?
 
 > `optional` **cursor**: `Cursor`
+
+The cursor representing the position in the connection.
 
 ### isInversed
 
@@ -37,3 +37,7 @@ An example would be scrolling on twitter's home page(assuming they're using grap
 > **limit**: `number`
 
 The amount of graphql connection edges to return in a single graphql connection operation.
+
+## Defined in
+
+[src/utilities/defaultGraphQLConnection.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/utilities/defaultGraphQLConnection.ts#L6)

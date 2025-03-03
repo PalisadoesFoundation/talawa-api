@@ -19,6 +19,12 @@ ActionItem.implement({
 			description: "Timestamp when the action item was assigned.",
 			type: "DateTime",
 		}),
+		updatedAt: t.expose("updatedAt", {
+			description: "Timestamp when the action item was last updated.",
+			type: "DateTime",
+			nullable: true, // Ensure this is explicitly marked
+		}),
+
 		completionAt: t.expose("completionAt", {
 			description: "Timestamp when the action item was completed.",
 			type: "DateTime",

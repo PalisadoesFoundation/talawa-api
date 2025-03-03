@@ -6,8 +6,6 @@
 
 > **updatedAtResolver**(`parent`, `args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: [src/graphql/types/FundCampaign/updatedAt.ts:19](https://github.com/Suyash878/talawa-api/blob/2164956a3cfab8e53ec86349b53a841816d69cde/src/graphql/types/FundCampaign/updatedAt.ts#L19)
-
 Resolver for the updatedAt field of FundCampaign type.
 Validates user authentication and authorization before returning the last update timestamp.
 Only administrators and organization admins have access to this field.
@@ -91,3 +89,7 @@ With code 'unauthorized_action' if user lacks required permissions
 ## Throws
 
 With code 'unexpected' for database or other runtime errors
+
+## Defined in
+
+[src/graphql/types/FundCampaign/updatedAt.ts:19](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/types/FundCampaign/updatedAt.ts#L19)

@@ -38,7 +38,7 @@ type ActionItem {
   """Notes added before completing the action item."""
   preCompletionNotes: String
 
-  """Date time at the time the action item was last updated."""
+  """Timestamp when the action item was last updated."""
   updatedAt: DateTime
 
   """The ID of the user who last updated this action item."""
@@ -2930,11 +2930,21 @@ enum PostVoteType {
 }
 
 type Query {
-  """Query field to fetch a specific action item by ID."""
-  actionItem(
-    """Input parameters to fetch an action item."""
-    input: QueryActionItemInput!
-  ): ActionItem
+  """
+  Query field to fetch all action item categories linked to a specific organization.
+  """
+  actionCategoriesByOrganization(
+    """Input parameters to fetch action item categories by organizationId."""
+    input: QueryActionCategoriesByOrganizationInput!
+  ): [ActionItemCategory!]
+
+  """
+  Query field to fetch all action items linked to a specific organization.
+  """
+  actionItemsByOrganization(
+    """Input parameters to fetch action items by organizationId."""
+    input: QueryActionItemsByOrganizationInput!
+  ): [ActionItem!]
 
   """Query field to read an advertisement."""
   advertisement(input: QueryAdvertisementInput!): Advertisement
@@ -3006,10 +3016,14 @@ type Query {
   venue(input: QueryVenueInput!): Venue
 }
 
-"""Input schema for querying an ActionItem by ID."""
-input QueryActionItemInput {
-  """Global ID of the action item."""
-  id: String!
+input QueryActionCategoriesByOrganizationInput {
+  organizationId: String!
+}
+
+"""Input schema for querying ActionItems by organizationId."""
+input QueryActionItemsByOrganizationInput {
+  """ID of the organization to fetch associated action items."""
+  organizationId: String!
 }
 
 """"""

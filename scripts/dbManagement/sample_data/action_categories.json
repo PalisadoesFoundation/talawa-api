@@ -1,0 +1,30 @@
+[
+    {
+      "id": "1a2b3c4d-5678-9101-1121-314151617181",
+      "name": "Urgent Tasks",
+      "organizationId": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5f",
+      "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
+      "isDisabled": false,
+      "createdAt": "2024-03-01T12:00:00.000Z",
+      "updatedAt": "2024-03-05T15:30:00.000Z"
+    },
+    {
+      "id": "2b3c4d5e-6789-1011-1213-415161718192",
+      "name": "Low Priority",
+      "organizationId": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5f",
+      "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
+      "isDisabled": true,
+      "createdAt": "2024-02-15T09:45:00.000Z",
+      "updatedAt": "2024-02-20T10:15:00.000Z"
+    },
+    {
+      "id": "3c4d5e6f-7890-1112-1314-516171819203",
+      "name": "General Tasks",
+      "organizationId": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5f",
+      "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
+      "isDisabled": false,
+      "createdAt": "2024-01-10T08:30:00.000Z",
+      "updatedAt": "2024-01-12T14:20:00.000Z"
+    }
+  ]
+  

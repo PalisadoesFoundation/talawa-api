@@ -6,18 +6,20 @@
 
 > **default**(`instance`, `opts`): `Promise`\<`void`\>
 
-Defined in: [src/plugins/seedInitialData.ts:179](https://github.com/Suyash878/talawa-api/blob/2164956a3cfab8e53ec86349b53a841816d69cde/src/plugins/seedInitialData.ts#L179)
-
 ## Parameters
 
 ### instance
 
-`FastifyInstance`\<`RawServerDefault`, `IncomingMessage`, `ServerResponse`\<`IncomingMessage`\>, `FastifyBaseLogger`, `FastifyTypeProviderDefault`\>
+`FastifyInstance`\<`IncomingMessage`, `ServerResponse`\>
 
 ### opts
 
-`Record`
+`Record`\<`never`, `never`\>
 
 ## Returns
 
 `Promise`\<`void`\>
+
+## Defined in
+
+[src/plugins/seedInitialData.ts:179](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/plugins/seedInitialData.ts#L179)

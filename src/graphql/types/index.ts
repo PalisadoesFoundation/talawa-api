@@ -1,3 +1,4 @@
+import "./ActionItemCategory/index";
 import "./ActionItems/index";
 import "./Advertisement/index";
 import "./AdvertisementAttachment/index";

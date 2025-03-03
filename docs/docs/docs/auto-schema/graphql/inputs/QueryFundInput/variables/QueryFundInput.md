@@ -6,4 +6,6 @@
 
 > `const` **QueryFundInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, `any`\>
 
-Defined in: [src/graphql/inputs/QueryFundInput.ts:9](https://github.com/Suyash878/talawa-api/blob/2164956a3cfab8e53ec86349b53a841816d69cde/src/graphql/inputs/QueryFundInput.ts#L9)
+## Defined in
+
+[src/graphql/inputs/QueryFundInput.ts:9](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/inputs/QueryFundInput.ts#L9)

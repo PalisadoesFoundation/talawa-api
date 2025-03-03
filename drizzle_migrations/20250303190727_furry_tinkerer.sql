@@ -1,0 +1,1 @@
+ALTER TABLE "action_categories" ALTER COLUMN "is_disabled" SET DEFAULT false;

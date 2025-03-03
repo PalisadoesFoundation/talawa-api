@@ -33,8 +33,6 @@ export const actionCategoriesTable = pgTable(
 
 		id: uuid("id").primaryKey().$default(uuidv7),
 
-		isDisabled: boolean("is_disabled").notNull(),
-
 		name: text("name", {}).notNull(),
 
 		organizationId: uuid("organization_id")
@@ -43,6 +41,8 @@ export const actionCategoriesTable = pgTable(
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
+
+		isDisabled: boolean("is_disabled").notNull().default(false), // ✅ Added isDisabled field
 
 		updatedAt: timestamp("updated_at", {
 			mode: "date",

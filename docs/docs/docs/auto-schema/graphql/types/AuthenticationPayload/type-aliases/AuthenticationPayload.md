@@ -6,8 +6,6 @@
 
 > **AuthenticationPayload**: `object`
 
-Defined in: [src/graphql/types/AuthenticationPayload.ts:5](https://github.com/Suyash878/talawa-api/blob/2164956a3cfab8e53ec86349b53a841816d69cde/src/graphql/types/AuthenticationPayload.ts#L5)
-
 ## Type declaration
 
 ### authenticationToken
@@ -17,3 +15,7 @@ Defined in: [src/graphql/types/AuthenticationPayload.ts:5](https://github.com/Su
 ### user
 
 > **user**: [`User`](../../User/User/type-aliases/User.md)
+
+## Defined in
+
+[src/graphql/types/AuthenticationPayload.ts:5](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/types/AuthenticationPayload.ts#L5)

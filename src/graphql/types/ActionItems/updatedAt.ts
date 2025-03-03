@@ -1,6 +1,5 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { ActionItem } from "./ActionItem";
 import type { ActionItem as ActionItemType } from "./ActionItem";
 
 export const actionItemUpdatedAtResolver = async (
@@ -80,13 +79,3 @@ export const actionItemUpdatedAtResolver = async (
 		});
 	}
 };
-
-ActionItem.implement({
-	fields: (t) => ({
-		updatedAt: t.field({
-			description: "Date time at the time the action item was last updated.",
-			resolve: actionItemUpdatedAtResolver,
-			type: "DateTime",
-		}),
-	}),
-});
