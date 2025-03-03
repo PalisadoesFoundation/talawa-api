@@ -23,15 +23,6 @@ ActionItem.implement({
 			description: "Timestamp when the action item was completed.",
 			type: "DateTime",
 		}),
-		createdAt: t.expose("createdAt", {
-			description: "Timestamp when the action item was created.",
-			type: "DateTime",
-		}),
-		updatedAt: t.expose("updatedAt", {
-			description: "Timestamp when the action item was last updated.",
-			type: "DateTime",
-			nullable: true,
-		}),
 		preCompletionNotes: t.exposeString("preCompletionNotes", {
 			description: "Notes added before completing the action item.",
 			nullable: true,

@@ -1,0 +1,122 @@
+[
+    {
+      "id": "4a25a8e7-b7b0-4b38-9def-0b0801e53f9d",
+      "name": "Tech Conference 2025",
+      "description": "This is a description for Tech Conference 2025.",
+      "organizationId": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5e",
+      "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
+      "updaterId": "67378abd-8500-8f17-1cf2-990d00000007",
+      "createdAt": "2024-06-19 08:11:48.888371",
+      "updatedAt": "2024-06-24 08:11:48.888371",
+      "startAt": "2025-03-22 08:11:48.888388",
+      "endAt": "2025-03-22 17:11:48.888388"
+    },
+    {
+      "id": "dedf24d2-b4a9-43ee-977f-8b3e5aed6f50",
+      "name": "Startup Pitch Event",
+      "description": "This is a description for Startup Pitch Event.",
+      "organizationId": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+      "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
+      "updaterId": "6589387e-2caa-9d8d-6908-74850000000a",
+      "createdAt": "2024-07-19 08:11:48.888698",
+      "updatedAt": "2024-07-29 08:11:48.888698",
+      "startAt": "2025-03-11 08:11:48.888711",
+      "endAt": "2025-03-12 18:11:48.888711"
+    },
+    {
+      "id": "695d6ea0-8234-45fe-b4be-fd65edd26449",
+      "name": "Community Clean-Up",
+      "description": "This is a description for Community Clean-Up.",
+      "organizationId": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+      "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
+      "updaterId": "67378abd-8500-8f17-1cf2-990d00000007",
+      "createdAt": "2024-10-29 08:11:48.888770",
+      "updatedAt": "2024-11-02 08:11:48.888770",
+      "startAt": "2025-03-09 08:11:48.888774",
+      "endAt": "2025-03-11 21:11:48.888774"
+    },
+    {
+      "id": "e86e4c87-1d84-425b-b3f6-9a5cd1a2716f",
+      "name": "Annual General Meeting",
+      "description": "This is a description for Annual General Meeting.",
+      "organizationId": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+      "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
+      "updaterId": "67378abd-8500-8f17-1cf2-990d00000007",
+      "createdAt": "2024-10-09 08:11:48.888863",
+      "updatedAt": "2024-11-03 08:11:48.888863",
+      "startAt": "2025-03-09 08:11:48.888867",
+      "endAt": "2025-03-09 21:11:48.888867"
+    },
+    {
+      "id": "cfd5b554-b6c3-43ce-a473-5b9b68681163",
+      "name": "Leadership Summit",
+      "description": "This is a description for Leadership Summit.",
+      "organizationId": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+      "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
+      "updaterId": "67378abd-8500-8f17-1cf2-990d00000007",
+      "createdAt": "2024-09-25 08:11:48.889014",
+      "updatedAt": "2024-10-22 08:11:48.889014",
+      "startAt": "2025-04-01 08:11:48.889018",
+      "endAt": "2025-04-02 11:11:48.889018"
+    },
+    {
+      "id": "a407c612-a2a6-4395-afc5-1600a6e439a1",
+      "name": "Charity Fundraiser",
+      "description": "This is a description for Charity Fundraiser.",
+      "organizationId": "ab1c2d3e-4f5b-6a7c-8d9e-0f1a2b3c4d5e",
+      "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
+      "updaterId": "67378abd-8500-8f17-1cf2-990d00000007",
+      "createdAt": "2024-11-21 08:11:48.889397",
+      "updatedAt": "2024-12-05 08:11:48.889397",
+      "startAt": "2025-03-09 08:11:48.889411",
+      "endAt": "2025-03-11 20:11:48.889411"
+    },
+    {
+      "id": "2eba0085-645a-4497-b1bd-eb24b3e45d94",
+      "name": "Cultural Fest",
+      "description": "This is a description for Cultural Fest.",
+      "organizationId": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+      "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
+      "updaterId": "67378abd-8500-8f17-1cf2-990d00000007",
+      "createdAt": "2024-04-07 08:11:48.889763",
+      "updatedAt": "2024-05-02 08:11:48.889763",
+      "startAt": "2025-03-16 08:11:48.889778",
+      "endAt": "2025-03-16 13:11:48.889778"
+    },
+    {
+      "id": "152a0416-1ae0-4e89-a519-4339861e18fd",
+      "name": "Leadership Summit",
+      "description": "This is a description for Leadership Summit.",
+      "organizationId": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+      "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+      "updaterId": "67378abd-8500-8f17-1cf2-990d00000007",
+      "createdAt": "2025-02-02 08:11:48.889864",
+      "updatedAt": "2025-02-07 08:11:48.889864",
+      "startAt": "2025-04-01 08:11:48.889881",
+      "endAt": "2025-04-04 03:11:48.889881"
+    },
+    {
+      "id": "9602acae-ded0-4dbe-a6a7-abb0f449ae19",
+      "name": "Tech Conference 2025",
+      "description": "This is a description for Tech Conference 2025.",
+      "organizationId": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+      "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
+      "updaterId": "67378abd-8500-8f17-1cf2-990d00000007",
+      "createdAt": "2024-06-21 08:11:48.889938",
+      "updatedAt": "2024-07-20 08:11:48.889938",
+      "startAt": "2025-03-16 08:11:48.889946",
+      "endAt": "2025-03-17 03:11:48.889946"
+    },
+    {
+      "id": "3b21f487-b1cf-4e6c-81c3-d2109b39353f",
+      "name": "Startup Pitch Event",
+      "description": "This is a description for Startup Pitch Event.",
+      "organizationId": "bc2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+      "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
+      "updaterId": "6589387e-2caa-9d8d-6908-74850000000a",
+      "createdAt": "2024-05-02 08:11:48.889973",
+      "updatedAt": "2024-05-20 08:11:48.889973",
+      "startAt": "2025-03-18 08:11:48.889981",
+      "endAt": "2025-03-18 13:11:48.889981"
+    }
+   ]
