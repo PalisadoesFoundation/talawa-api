@@ -1,4 +1,5 @@
-import type { z } from "zod";
+import type { FileUpload } from "graphql-upload-minimal";
+import { z } from "zod";
 import { advertisementsTableInsertSchema } from "~/src/drizzle/tables/advertisements";
 import { builder } from "~/src/graphql/builder";
 import { AdvertisementType } from "~/src/graphql/enums/AdvertisementType";
@@ -6,18 +7,28 @@ import { isNotNullish } from "~/src/utilities/isNotNullish";
 
 export const mutationUpdateAdvertisementInputSchema =
 	advertisementsTableInsertSchema
-		.pick({
-			description: true,
-		})
+		.partial()
 		.extend({
 			endAt: advertisementsTableInsertSchema.shape.endAt.optional(),
-			id: advertisementsTableInsertSchema.shape.id.unwrap(),
 			name: advertisementsTableInsertSchema.shape.name.optional(),
 			startAt: advertisementsTableInsertSchema.shape.startAt.optional(),
 			type: advertisementsTableInsertSchema.shape.type.optional(),
+			id: advertisementsTableInsertSchema.shape.id.unwrap(),
+			attachments: z
+				.custom<Promise<FileUpload>>()
+				.array()
+				.min(1)
+				.max(20)
+				.optional(),
 		})
-		.superRefine(({ id, ...remainingArg }, ctx) => {
-			if (!Object.values(remainingArg).some((value) => value !== undefined)) {
+		.superRefine(({ attachments, ...remainingArgs }, ctx) => {
+			if (Array.isArray(attachments) && attachments.length === 0) {
+				attachments = undefined;
+			}
+			if (
+				!Object.values(remainingArgs).some((value) => value !== undefined) &&
+				attachments === undefined
+			) {
 				ctx.addIssue({
 					code: "custom",
 					message: "At least one optional argument must be provided.",
@@ -25,13 +36,13 @@ export const mutationUpdateAdvertisementInputSchema =
 			}
 
 			if (
-				isNotNullish(remainingArg.endAt) &&
-				isNotNullish(remainingArg.startAt) &&
-				remainingArg.endAt <= remainingArg.startAt
+				isNotNullish(remainingArgs.endAt) &&
+				isNotNullish(remainingArgs.startAt) &&
+				remainingArgs.endAt <= remainingArgs.startAt
 			) {
 				ctx.addIssue({
 					code: "custom",
-					message: `Must be greater than the value: ${remainingArg.startAt.toISOString()}.`,
+					message: ` Must be greater than the value: ${remainingArgs.startAt.toISOString()}.`,
 					path: ["endAt"],
 				});
 			}
@@ -44,6 +55,10 @@ export const MutationUpdateAdvertisementInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
+			attachments: t.field({
+				description: "Attachments of the advertisement.",
+				type: t.listRef("Upload"),
+			}),
 			description: t.string({
 				description: "Custom information about the advertisement.",
 			}),

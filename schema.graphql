@@ -2051,6 +2051,9 @@ input MutationSignUpInput {
 
 """"""
 input MutationUpdateAdvertisementInput {
+  """Attachments of the advertisement."""
+  attachments: [Upload!]
+
   """Custom information about the advertisement."""
   description: String
 

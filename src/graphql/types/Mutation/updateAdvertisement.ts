@@ -1,5 +1,9 @@
 import { eq } from "drizzle-orm";
+import type { FileUpload } from "graphql-upload-minimal";
+import { ulid } from "ulidx";
 import { z } from "zod";
+import { advertisementAttachmentMimeTypeEnum } from "~/src/drizzle/enums/advertisementAttachmentMimeType";
+import { advertisementAttachmentsTable } from "~/src/drizzle/schema";
 import { advertisementsTable } from "~/src/drizzle/tables/advertisements";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -10,7 +14,41 @@ import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateAdvertisementArgumentsSchema = z.object({
-	input: mutationUpdateAdvertisementInputSchema,
+	input: mutationUpdateAdvertisementInputSchema.transform(async (arg, ctx) => {
+		let attachments:
+			| (FileUpload & {
+					mimetype: z.infer<typeof advertisementAttachmentMimeTypeEnum>;
+			  })[]
+			| undefined;
+		if (arg.attachments !== undefined) {
+			const rawAttachments = await Promise.all(arg.attachments);
+			const { data, error, success } = advertisementAttachmentMimeTypeEnum
+				.array()
+				.safeParse(rawAttachments.map((attachment) => attachment.mimetype));
+
+			if (!success) {
+				for (const issue of error.issues) {
+					if (typeof issue.path[0] === "number") {
+						ctx.addIssue({
+							code: "custom",
+							path: ["attachments", issue.path[0]],
+							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype}" is not allowed.`,
+						});
+					}
+				}
+			} else {
+				attachments = rawAttachments.map((attachment, index) =>
+					Object.assign(attachment, {
+						mimetype: data[index],
+					}),
+				);
+			}
+		}
+		return {
+			...arg,
+			attachments,
+		};
+	}),
 });
 
 builder.mutationField("updateAdvertisement", (t) =>
@@ -36,7 +74,7 @@ builder.mutationField("updateAdvertisement", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationUpdateAdvertisementArgumentsSchema.safeParse(args);
+			} = await mutationUpdateAdvertisementArgumentsSchema.safeParseAsync(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -51,7 +89,6 @@ builder.mutationField("updateAdvertisement", (t) =>
 			}
 
 			const currentUserId = ctx.currentClient.user.id;
-
 			const [currentUser, existingAdvertisement] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
@@ -196,7 +233,6 @@ builder.mutationField("updateAdvertisement", (t) =>
 					},
 				});
 			}
-
 			const [updatedAdvertisement] = await ctx.drizzleClient
 				.update(advertisementsTable)
 				.set({
@@ -210,8 +246,10 @@ builder.mutationField("updateAdvertisement", (t) =>
 				.where(eq(advertisementsTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Updated advertisement not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
 			if (updatedAdvertisement === undefined) {
+				ctx.log.error(
+					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+				);
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",
@@ -219,9 +257,40 @@ builder.mutationField("updateAdvertisement", (t) =>
 				});
 			}
 
-			return Object.assign(updatedAdvertisement, {
-				attachments: existingAdvertisement.attachmentsWhereAdvertisement,
-			});
+			if (parsedArgs.input.attachments !== undefined) {
+				const attachments = parsedArgs.input.attachments;
+				const updatedAdvertisementAttachments = await ctx.drizzleClient
+					.insert(advertisementAttachmentsTable)
+					.values(
+						attachments.map((attachment) => ({
+							advertisementId: updatedAdvertisement.id,
+							creatorId: currentUserId,
+							mimeType: attachment.mimetype,
+							name: ulid(),
+						})),
+					)
+					.onConflictDoNothing()
+					.returning();
+
+				if (Array.isArray(updatedAdvertisementAttachments)) {
+					await Promise.all(
+						updatedAdvertisementAttachments.map((attachment, index) => {
+							if (attachments[index] !== undefined) {
+								return ctx.minio.client.putObject(
+									ctx.minio.bucketName,
+									attachment.name,
+									attachments[index].createReadStream(),
+									undefined,
+									{
+										"content-type": attachments[index].mimetype,
+									},
+								);
+							}
+						}),
+					);
+				}
+			}
+			return updatedAdvertisement as Advertisement;
 		},
 		type: Advertisement,
 	}),
