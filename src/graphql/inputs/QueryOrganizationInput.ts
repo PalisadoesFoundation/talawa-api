@@ -28,30 +28,35 @@ export const QueryOrganizationInput = builder
 		}),
 	});
 
-		export const MembersRoleWhereInput = builder.inputType("MembersRoleWhereInput", {
-			description: "Filter criteria for member roles",
-			fields: (t) => ({
-			  equal: t.field({
+export const MembersRoleWhereInput = builder.inputType(
+	"MembersRoleWhereInput",
+	{
+		description: "Filter criteria for member roles",
+		fields: (t) => ({
+			equal: t.field({
 				type: OrganizationMembershipRole,
 				description: "Role equals this value",
 				required: false,
-			  }),
-			  notEqual: t.field({
+			}),
+			notEqual: t.field({
 				type: OrganizationMembershipRole,
 				description: "Role does not equal this value",
 				required: false,
-			  }),
 			}),
-		  });
-	
-export const MembersWhereInput = builder.inputRef("MembersWhereInput").implement({
+		}),
+	},
+);
+
+export const MembersWhereInput = builder
+	.inputRef("MembersWhereInput")
+	.implement({
 		description: "Filter criteria for organization members",
 		fields: (t) => ({
 			role: t.field({
-			  type: MembersRoleWhereInput,
-			  description: "Filter members by role",
-			  required: false,
+				type: MembersRoleWhereInput,
+				description: "Filter members by role",
+				required: false,
 			}),
-		  // Add other filter fields here	
+			// Add other filter fields here
 		}),
-	  });
+	});

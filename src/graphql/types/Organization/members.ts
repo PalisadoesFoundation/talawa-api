@@ -1,5 +1,17 @@
-import { type SQL, and, asc, desc, eq, exists, gt, lt, ne, or } from "drizzle-orm";
+import {
+	type SQL,
+	and,
+	asc,
+	desc,
+	eq,
+	exists,
+	gt,
+	lt,
+	ne,
+	or,
+} from "drizzle-orm";
 import { z } from "zod";
+import { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organizationMembershipRole";
 import {
 	organizationMembershipsTable,
 	organizationMembershipsTableInsertSchema,
@@ -7,21 +19,20 @@ import {
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
+	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
 	createGraphQLConnectionWithWhereSchema,
-	defaultGraphQLConnectionArgumentsSchema,
-	ParsedDefaultGraphQLConnectionArgumentsWithWhere,
+	type defaultGraphQLConnectionArgumentsSchema,
 	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { Organization } from "./Organization";
-import { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organizationMembershipRole";
 import { MembersWhereInput } from "../../inputs/QueryOrganizationInput";
+import { Organization } from "./Organization";
 
-type UserRole = z.infer<typeof organizationMembershipRoleEnum>
+type UserRole = z.infer<typeof organizationMembershipRoleEnum>;
 const membersRoleWhereInputSchema = z.object({
 	equal: organizationMembershipRoleEnum.optional(),
 	notEqual: organizationMembershipRoleEnum.optional(),
-  });
+});
 
 const organizationMembersWhereSchema = z
 	.object({
@@ -79,21 +90,19 @@ const cursorSchema = organizationMembershipsTableInsertSchema
 		memberId: arg.memberId,
 	}));
 
-
-
 Organization.implement({
 	fields: (t) => ({
 		members: t.connection(
 			{
 				description:
 					"GraphQL connection to traverse through the users that are members of the organization.",
-					args: {
-						where: t.arg({
-						  type: MembersWhereInput,
-						  description: "Filter criteria for organization members",
-						  required: false,
-						}),
-					  },
+				args: {
+					where: t.arg({
+						type: MembersWhereInput,
+						description: "Filter criteria for organization members",
+						required: false,
+					}),
+				},
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
@@ -163,10 +172,11 @@ Organization.implement({
 						});
 					}
 
-					const { cursor, isInversed, limit, where } = parsedArgs as ParsedDefaultGraphQLConnectionArgumentsWithWhere<
-						{ createdAt: Date; memberId: string },
-						{ role?: {equal: UserRole, notEqual: UserRole} }
-					>;
+					const { cursor, isInversed, limit, where } =
+						parsedArgs as ParsedDefaultGraphQLConnectionArgumentsWithWhere<
+							{ createdAt: Date; memberId: string },
+							{ role?: { equal: UserRole; notEqual: UserRole } }
+						>;
 
 					const orderBy = isInversed
 						? [
@@ -180,17 +190,22 @@ Organization.implement({
 
 					let queryWhere: SQL | undefined;
 
-					// Extract role filter conditions
 					const roleFilter = where?.role
-					? and(
-						where.role.equal
-						  ? eq(organizationMembershipsTable.role, where.role.equal as UserRole)
-						  : undefined,
-						where.role.notEqual
-						  ? ne(organizationMembershipsTable.role, where.role.notEqual as UserRole)
-						  : undefined
-					  )
-					: undefined;
+						? and(
+								where.role.equal
+									? eq(
+											organizationMembershipsTable.role,
+											where.role.equal as UserRole,
+										)
+									: undefined,
+								where.role.notEqual
+									? ne(
+											organizationMembershipsTable.role,
+											where.role.notEqual as UserRole,
+										)
+									: undefined,
+							)
+						: undefined;
 
 					if (isInversed) {
 						if (cursor !== undefined) {
@@ -227,15 +242,13 @@ Organization.implement({
 									),
 									gt(organizationMembershipsTable.createdAt, cursor.createdAt),
 								),
-								roleFilter
+								roleFilter,
 							);
 						} else {
-							queryWhere = and(eq(
-								organizationMembershipsTable.organizationId,
-								parent.id,
-							),
-							roleFilter
-						);
+							queryWhere = and(
+								eq(organizationMembershipsTable.organizationId, parent.id),
+								roleFilter,
+							);
 						}
 					} else {
 						if (cursor !== undefined) {
@@ -273,15 +286,13 @@ Organization.implement({
 									),
 									lt(organizationMembershipsTable.createdAt, cursor.createdAt),
 								),
-								roleFilter
+								roleFilter,
 							);
 						} else {
-							queryWhere = and(eq(
-								organizationMembershipsTable.organizationId,
-								parent.id,
-							),
-							roleFilter
-						);
+							queryWhere = and(
+								eq(organizationMembershipsTable.organizationId, parent.id),
+								roleFilter,
+							);
 						}
 					}
 

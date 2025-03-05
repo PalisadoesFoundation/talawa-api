@@ -1252,7 +1252,7 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
-"""Filter criteria for member roles (either equal or notEqual, not both)"""
+"""Filter criteria for member roles"""
 input MembersRoleWhereInput {
   """Role equals this value"""
   equal: OrganizationMembershipRole
