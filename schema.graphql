@@ -1252,6 +1252,21 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
+"""Filter criteria for member roles (either equal or notEqual, not both)"""
+input MembersRoleWhereInput {
+  """Role equals this value"""
+  equal: OrganizationMembershipRole
+
+  """Role does not equal this value"""
+  notEqual: OrganizationMembershipRole
+}
+
+"""Filter criteria for organization members"""
+input MembersWhereInput {
+  """Filter members by role"""
+  role: MembersRoleWhereInput
+}
+
 type Mutation {
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
@@ -2564,7 +2579,15 @@ type Organization {
   """
   GraphQL connection to traverse through the users that are members of the organization.
   """
-  members(after: String, before: String, first: Int, last: Int): OrganizationMembersConnection
+  members(
+    after: String
+    before: String
+    first: Int
+    last: Int
+
+    """Filter criteria for organization members"""
+    where: MembersWhereInput
+  ): OrganizationMembersConnection
 
   """Name of the organization."""
   name: String
