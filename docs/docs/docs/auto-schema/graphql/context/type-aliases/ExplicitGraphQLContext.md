@@ -50,4 +50,4 @@ Type of the transport protocol agnostic explicit context object that is merged w
 
 ## Defined in
 
-[src/graphql/context.ts:41](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/context.ts#L41)
+[src/graphql/context.ts:41](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/graphql/context.ts#L41)

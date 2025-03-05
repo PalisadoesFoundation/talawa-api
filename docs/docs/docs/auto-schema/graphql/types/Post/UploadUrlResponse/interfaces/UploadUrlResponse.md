@@ -12,7 +12,7 @@
 
 #### Defined in
 
-[src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/types/Post/UploadUrlResponse.ts#L5)
+[src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/graphql/types/Post/UploadUrlResponse.ts#L5)
 
 ***
 
@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[src/graphql/types/Post/UploadUrlResponse.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/types/Post/UploadUrlResponse.ts#L6)
+[src/graphql/types/Post/UploadUrlResponse.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/graphql/types/Post/UploadUrlResponse.ts#L6)
 
 ***
 
@@ -32,4 +32,4 @@
 
 #### Defined in
 
-[src/graphql/types/Post/UploadUrlResponse.ts:4](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/types/Post/UploadUrlResponse.ts#L4)
+[src/graphql/types/Post/UploadUrlResponse.ts:4](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/graphql/types/Post/UploadUrlResponse.ts#L4)

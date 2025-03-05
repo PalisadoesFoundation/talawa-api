@@ -480,84 +480,6 @@ export async function insertCollections(
 					break;
 				}
 
-				case "action_items": {
-					const validUsers = await db.query.usersTable.findMany({
-						columns: { id: true },
-					});
-					const validUserIds = new Set(validUsers.map((user) => user.id));
-
-					const action_items = JSON.parse(fileContent).map(
-						(action_item: {
-							id: string;
-							isCompleted: boolean;
-							assignedAt: string | number | Date;
-							completionAt: string | number | Date;
-							createdAt: string | number | Date;
-							updatedAt: string | number | Date;
-							preCompletionNotes: string;
-							postCompletionNotes: string;
-							organizationId: string;
-							categoryId: string;
-							eventId: string;
-							assigneeId: string;
-							creatorId: string;
-							updaterId: string;
-						}) => {
-							const assignedAtDate = parseDate(action_item.assignedAt);
-							const completionAtDate = parseDate(action_item.completionAt);
-							const createdAtDate = parseDate(action_item.createdAt);
-							const updatedAtDate = action_item.updatedAt
-								? parseDate(action_item.updatedAt)
-								: null;
-
-							const anyValidUserId =
-								validUserIds.size > 0 ? Array.from(validUserIds)[0] : null;
-
-							if (!anyValidUserId) {
-								throw new Error("No valid users found in the database");
-							}
-
-							return {
-								...action_item,
-								id: action_item.id.length === 36 ? action_item.id : uuidv4(),
-								organizationId:
-									action_item.organizationId.length === 36
-										? action_item.organizationId
-										: uuidv4(),
-								categoryId: null,
-								eventId:
-									action_item.eventId.length === 36
-										? action_item.eventId
-										: uuidv4(),
-								assigneeId: validUserIds.has(action_item.assigneeId)
-									? action_item.assigneeId
-									: anyValidUserId,
-								creatorId: validUserIds.has(action_item.creatorId)
-									? action_item.creatorId
-									: anyValidUserId,
-								updaterId: validUserIds.has(action_item.updaterId)
-									? action_item.updaterId
-									: anyValidUserId,
-								assignedAt: assignedAtDate,
-								completionAt: completionAtDate,
-								createdAt: createdAtDate,
-								updatedAt: updatedAtDate,
-							};
-						},
-					) as (typeof schema.actionsTable.$inferInsert)[];
-
-					await checkAndInsertData(
-						schema.actionsTable,
-						action_items,
-						schema.actionsTable.id,
-						1000,
-					);
-
-					console.log(
-						"\x1b[35mAdded: Action Items table data (skipping duplicates)\x1b[0m",
-					);
-					break;
-				}
 				case "events": {
 					const events = JSON.parse(fileContent).map(
 						(event: {
@@ -588,19 +510,69 @@ export async function insertCollections(
 					break;
 				}
 
+				case "action_items": {
+					const action_items = JSON.parse(fileContent).map(
+						(action_item: {
+							id: string;
+							isCompleted: boolean;
+							assignedAt: string | number | Date;
+							completionAt: string | number | Date;
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+							preCompletionNotes: string;
+							postCompletionNotes: string;
+							organizationId: string;
+							categoryId: string;
+							eventId: string | null;
+							assigneeId: string;
+							creatorId: string;
+							updaterId: string;
+						}) => ({
+							...action_item,
+							id: action_item.id.length === 36 ? action_item.id : uuidv4(),
+							assignedAt: parseDate(action_item.assignedAt),
+							completionAt: parseDate(action_item.completionAt),
+							createdAt: parseDate(action_item.createdAt),
+							updatedAt: action_item.updatedAt
+								? parseDate(action_item.updatedAt)
+								: null,
+							categoryId:
+								action_item.categoryId && action_item.categoryId.length === 36
+									? action_item.categoryId
+									: null,
+							eventId:
+								action_item.eventId && action_item.eventId.length === 36
+									? action_item.eventId
+									: null,
+						}),
+					) as (typeof schema.actionsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.actionsTable,
+						action_items,
+						schema.actionsTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Action Items table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
 				case "action_categories": {
 					const actionCategories = JSON.parse(fileContent).map(
 						(category: {
-							id: string;
-							name: string;
-							organizationId: string;
-							creatorId: string;
-							createdAt: string;
-							updatedAt: string;
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
 						}) => ({
 							...category,
-							createdAt: new Date(category.createdAt), // Convert to Date object
-							updatedAt: new Date(category.updatedAt), // Convert to Date object
+							createdAt: category.createdAt
+								? new Date(category.createdAt)
+								: new Date(),
+							updatedAt: category.updatedAt
+								? new Date(category.updatedAt)
+								: new Date(),
 						}),
 					) as (typeof schema.actionCategoriesTable.$inferInsert)[];
 

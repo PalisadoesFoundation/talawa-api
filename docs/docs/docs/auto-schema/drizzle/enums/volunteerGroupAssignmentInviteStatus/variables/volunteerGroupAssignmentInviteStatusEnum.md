@@ -10,4 +10,4 @@ Possible variants of the status of the assignment of a user in an event's volunt
 
 ## Defined in
 
-[src/drizzle/enums/volunteerGroupAssignmentInviteStatus.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/drizzle/enums/volunteerGroupAssignmentInviteStatus.ts#L6)
+[src/drizzle/enums/volunteerGroupAssignmentInviteStatus.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/drizzle/enums/volunteerGroupAssignmentInviteStatus.ts#L6)

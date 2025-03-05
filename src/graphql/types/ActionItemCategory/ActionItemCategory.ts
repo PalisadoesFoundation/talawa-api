@@ -1,7 +1,8 @@
 import type { InferSelectModel } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
+import { z } from "zod";
 import type { actionCategoriesTable } from "~/src/drizzle/tables/actionCategories";
 import { builder } from "~/src/graphql/builder";
-
 export type ActionItemCategory = InferSelectModel<typeof actionCategoriesTable>;
 
 export const ActionItemCategory =
@@ -36,3 +37,46 @@ ActionItemCategory.implement({
 		}),
 	}),
 });
+
+const categoriesByIdsInputSchema = z.object({
+	ids: z.array(z.string().uuid()).min(1),
+});
+
+builder.queryField("categoriesByIds", (t) =>
+	t.field({
+		type: [ActionItemCategory],
+		args: {
+			input: t.arg({
+				type: builder.inputType("CategoriesByIdsInput", {
+					fields: (t) => ({
+						ids: t.field({
+							type: ["ID"],
+							required: true,
+						}),
+					}),
+				}),
+				required: true,
+			}),
+		},
+		description: "Fetch multiple action item categories by their IDs.",
+		resolve: async (_parent, args, ctx) => {
+			if (!ctx.currentClient.isAuthenticated) {
+				throw new Error("Unauthenticated");
+			}
+
+			const parsedArgs = categoriesByIdsInputSchema.safeParse(args.input);
+			if (!parsedArgs.success) {
+				throw new Error("Invalid arguments");
+			}
+
+			const categoryIds = parsedArgs.data.ids;
+
+			const categories =
+				await ctx.drizzleClient.query.actionCategoriesTable.findMany({
+					where: (fields, operators) => inArray(fields.id, categoryIds),
+				});
+
+			return categories;
+		},
+	}),
+);

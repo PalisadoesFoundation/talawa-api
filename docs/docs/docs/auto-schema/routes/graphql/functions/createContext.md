@@ -20,4 +20,4 @@ This function is used to create the explicit context passed to the graphql resol
 
 ## Defined in
 
-[src/routes/graphql.ts:50](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/routes/graphql.ts#L50)
+[src/routes/graphql.ts:50](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/routes/graphql.ts#L50)

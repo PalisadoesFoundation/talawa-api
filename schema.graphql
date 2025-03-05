@@ -260,6 +260,10 @@ The `BigInt` scalar type represents non-fractional signed whole numeric values.
 """
 scalar BigInt
 
+input CategoriesByIdsInput {
+  ids: [ID!]!
+}
+
 type Chat {
   """Mime type of the avatar of the chat."""
   avatarMimeType: String
@@ -475,6 +479,14 @@ type Community {
   youtubeURL: String
 }
 
+input CreateActionItemInput {
+  assigneeId: ID!
+  categoryId: ID!
+  eventId: ID
+  organizationId: ID!
+  preCompletionNotes: String
+}
+
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -565,6 +577,10 @@ type EventVenuesConnection {
 type EventVenuesConnectionEdge {
   cursor: String!
   node: Venue
+}
+
+input EventsByOrganizationIdInput {
+  organizationId: ID!
 }
 
 type Fund {
@@ -1326,6 +1342,9 @@ enum Iso4217CurrencyCode {
 }
 
 type Mutation {
+  """Mutation field to create an action item."""
+  createActionItem(input: CreateActionItemInput!): ActionItem
+
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
 
@@ -1391,6 +1410,12 @@ type Mutation {
 
   """Mutation field to create a venue booking."""
   createVenueBooking(input: MutationCreateVenueBookingInput!): Venue
+
+  """Mutation field to delete an action item."""
+  deleteActionItem(
+    """Delete an action item"""
+    input: MutationDeleteActionItemInput!
+  ): ActionItem
 
   """Mutation field to delete an advertisement."""
   deleteAdvertisement(input: MutationDeleteAdvertisementInput!): Advertisement
@@ -1460,6 +1485,12 @@ type Mutation {
 
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
+
+  """Mutation to update an action item"""
+  updateActionItem(
+    """Update an action item"""
+    input: MutationUpdateActionItemInput!
+  ): ActionItem
 
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
@@ -1917,6 +1948,12 @@ input MutationCreateVenueInput {
   organizationId: ID!
 }
 
+"""Input for deleting an action item."""
+input MutationDeleteActionItemInput {
+  """Global identifier of the action item."""
+  id: ID!
+}
+
 """"""
 input MutationDeleteAdvertisementInput {
   """Global identifier of the advertisement."""
@@ -2120,6 +2157,26 @@ input MutationSignUpInput {
   The phone number to use to communicate with the user while they're at work.
   """
   workPhoneNumber: PhoneNumber
+}
+
+input MutationUpdateActionItemInput {
+  """Identifier for the assignee of the action item."""
+  assigneeId: ID
+
+  """Category identifier for the action item."""
+  categoryId: ID
+
+  """Global identifier of the action item."""
+  id: ID!
+
+  """Completion status of the action item."""
+  isCompleted: Boolean!
+
+  """Post completion notes for the action item."""
+  postCompletionNotes: String
+
+  """Pre completion notes for the action item."""
+  preCompletionNotes: String
 }
 
 """"""
@@ -2958,6 +3015,9 @@ type Query {
   """Query field to read all Users."""
   allUsers(after: String, before: String, first: Int, last: Int, where: QueryAllUsersWhereInput): QueryAllUsersConnection
 
+  """Fetch multiple action item categories by their IDs."""
+  categoriesByIds(input: CategoriesByIdsInput!): [ActionItemCategory!]
+
   """Query field to read a chat."""
   chat(input: QueryChatInput!): Chat
 
@@ -2975,6 +3035,12 @@ type Query {
 
   """Query field to read an event."""
   event(input: QueryEventInput!): Event
+
+  """Fetch multiple events by their IDs."""
+  eventsByIds(input: QueryEventsByIdsInput!): [Event!]
+
+  """Fetch all events that belong to a given organization."""
+  eventsByOrganizationId(input: EventsByOrganizationIdInput!): [Event!]
 
   """Query field to read a fund."""
   fund(input: QueryFundInput!): Fund
@@ -3011,6 +3077,12 @@ type Query {
 
   """Query field to read a user."""
   user(input: QueryUserInput!): User
+
+  """Fetch multiple users by their IDs."""
+  usersByIds(input: UsersByIdsInput!): [User!]
+
+  """Fetch all users that belong to a given organization."""
+  usersByOrganizationId(organizationId: ID!): [User!]
 
   """Query field to read a venue."""
   venue(input: QueryVenueInput!): Venue
@@ -3080,6 +3152,10 @@ input QueryCommentInput {
 input QueryEventInput {
   """Global id of the event."""
   id: String!
+}
+
+input QueryEventsByIdsInput {
+  ids: [ID!]!
 }
 
 """"""
@@ -3423,6 +3499,10 @@ type UserOrganizationsWhereMemberConnectionEdge {
 enum UserRole {
   administrator
   regular
+}
+
+input UsersByIdsInput {
+  ids: [ID!]!
 }
 
 type Venue {

@@ -10,4 +10,4 @@ Possible variants of the currency code defined in ISO 4217 standard published by
 
 ## Defined in
 
-[src/drizzle/enums/iso4217CurrencyCode.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/drizzle/enums/iso4217CurrencyCode.ts#L6)
+[src/drizzle/enums/iso4217CurrencyCode.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/drizzle/enums/iso4217CurrencyCode.ts#L6)

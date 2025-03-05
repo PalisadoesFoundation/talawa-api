@@ -10,4 +10,4 @@ This is the pothos schema builder used for talawa api's code first graphql imple
 
 ## Defined in
 
-[src/graphql/builder.ts:9](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/builder.ts#L9)
+[src/graphql/builder.ts:9](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/graphql/builder.ts#L9)

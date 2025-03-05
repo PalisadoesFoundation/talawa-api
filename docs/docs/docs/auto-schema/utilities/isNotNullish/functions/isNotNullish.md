@@ -36,4 +36,4 @@ function print(str: string | null) {
 
 ## Defined in
 
-[src/utilities/isNotNullish.ts:12](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/utilities/isNotNullish.ts#L12)
+[src/utilities/isNotNullish.ts:12](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/utilities/isNotNullish.ts#L12)

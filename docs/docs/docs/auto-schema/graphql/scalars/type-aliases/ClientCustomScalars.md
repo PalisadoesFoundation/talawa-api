@@ -32,4 +32,4 @@ Map of custom scalar types used in talawa api used to annotate the type of those
 
 ## Defined in
 
-[src/graphql/scalars/index.ts:30](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/scalars/index.ts#L30)
+[src/graphql/scalars/index.ts:30](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/graphql/scalars/index.ts#L30)

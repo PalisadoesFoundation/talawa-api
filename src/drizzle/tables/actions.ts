@@ -7,7 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod"; // ✅ Import drizzle-zod for schema generation
+import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { actionCategoriesTable } from "./actionCategories";
 import { eventsTable } from "./events";

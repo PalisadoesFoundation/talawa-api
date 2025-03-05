@@ -8,4 +8,4 @@
 
 ## Defined in
 
-[src/graphql/inputs/MutationCreateVenueBookingInput.ts:5](https://github.com/NishantSinghhhhh/talawa-api/blob/05ae6a4794762096d917a90a3af0db22b7c47392/src/graphql/inputs/MutationCreateVenueBookingInput.ts#L5)
+[src/graphql/inputs/MutationCreateVenueBookingInput.ts:5](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/graphql/inputs/MutationCreateVenueBookingInput.ts#L5)
