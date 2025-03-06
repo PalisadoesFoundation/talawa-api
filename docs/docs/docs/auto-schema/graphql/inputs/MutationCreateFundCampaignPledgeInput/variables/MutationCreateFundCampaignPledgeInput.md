@@ -6,4 +6,4 @@
 
 > `const` **MutationCreateFundCampaignPledgeInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `amount`: `any`; `campaignId`: `any`; `pledgerId`: `any`; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateFundCampaignPledgeInput.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/4f56a5331bd7a5f784e82913103662f37b427f3e/src/graphql/inputs/MutationCreateFundCampaignPledgeInput.ts#L13)
+Defined in: [src/graphql/inputs/MutationCreateFundCampaignPledgeInput.ts:13](https://github.com/PurnenduMIshra129th/talawa-api/blob/4369c9351f5b76f958b297b25ab2b17196210af9/src/graphql/inputs/MutationCreateFundCampaignPledgeInput.ts#L13)

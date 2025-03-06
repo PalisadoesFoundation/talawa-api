@@ -6,4 +6,4 @@
 
 > `const` **PostVoteType**: `EnumRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, `"down_vote"` \| `"up_vote"`, `"down_vote"` \| `"up_vote"`\>
 
-Defined in: [src/graphql/enums/PostVoteType.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/4f56a5331bd7a5f784e82913103662f37b427f3e/src/graphql/enums/PostVoteType.ts#L4)
+Defined in: [src/graphql/enums/PostVoteType.ts:4](https://github.com/PurnenduMIshra129th/talawa-api/blob/4369c9351f5b76f958b297b25ab2b17196210af9/src/graphql/enums/PostVoteType.ts#L4)
