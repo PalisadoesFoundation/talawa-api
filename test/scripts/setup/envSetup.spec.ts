@@ -43,7 +43,6 @@ describe("checkEnvFile", () => {
 
 describe("initializeEnvFile", () => {
 	const mockEnvContent = "KEY1=VAL1\nKEY2=VAL2";
-	const envFileName = ".env";
 	const backupEnvFile = ".env.backup";
 	const devEnvFile = "envFiles/.env.devcontainer";
 

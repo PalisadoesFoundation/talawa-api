@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import inquirer from "inquirer";
-import { administratorEmail } from "scripts/setup/setup";
-import { validateEmail } from "scripts/setup/setup";
+import { administratorEmail, validateEmail } from "scripts/setup/setup";
 import * as SetupModule from "scripts/setup/setup";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

@@ -80,7 +80,10 @@ describe("Setup -> cloudbeaverSetup", () => {
 		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".env.backup", ".env");
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
-		vi.clearAllMocks();
+		processExitSpy.mockRestore();
+		fsExistsSyncSpy.mockRestore();
+		fsCopyFileSyncSpy.mockRestore();
+		consoleErrorSpy.mockRestore();
 	});
 });
 
