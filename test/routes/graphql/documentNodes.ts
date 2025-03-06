@@ -652,52 +652,79 @@ export const Mutation_createChat = gql(`
 `);
 
 export const Mutation_createChatMessage = gql(`
-  mutation CreateChatMessage($input: MutationCreateChatMessageInput!) {
-    createChatMessage(input: $input) {
-      body
-      id
-      updatedAt
+ mutation CreateChatMessage($input: MutationCreateChatMessageInput!) {
+  createChatMessage(input: $input) {
+    id
+    body
+    chat{
       createdAt
-    }
-  }
-`);
-
-export const Mutation_updateChatMessage = gql(`
-  mutation UpdateChatMessage($input: MutationUpdateChatMessageInput!) {
-    updateChatMessage(input: $input) {
       id
-      body
-      createdAt
-      updatedAt
+      creator{
+        id
+        name
+      }
     }
-  }
-`);
-
-export const Query_getChatById = gql(`
-  query GetChatById($id: QueryChatInput!) {
-    chat(input: $id) {
+    parentMessage{
+      id
+    }
+    createdAt
+    updatedAt
+    chat {
+      id
+      name
+    }
+    creator {
       id
       name
     }
   }
+}
+
 `);
 
-export const Query_getChatMessages = gql(`
-  query GetChatMessages($chatId:QueryChatMessageInput!) {
-    chatMessage(input: $chatId) {
+export const Mutation_updateChatMessage = gql(`
+  mutation UpdateChatMessage($input: MutationUpdateChatMessageInput!) {
+  updateChatMessage(input: $input) {
+    id
+    body
+    chat{
       id
-      body
+      creator{
+        id
+        name
+      }
       createdAt
+      updatedAt
     }
+    parentMessage{
+      id
+    }
+    createdAt
+    updatedAt
+    chat {
+      id
+      name
+    }
+    creator {
+      id
+      name
+      }
   }
+}
+
 `);
 
 export const Mutation_createChatMembership = gql(`
   mutation CreateChatMembership($input: MutationCreateChatMembershipInput!) {
-    createChatMembership(input: $input) {
+  createChatMembership(input: $input) {
+    id
+    createdAt
+    creator{
       id
-      createdAt
-      updatedAt
+      name
     }
+    updatedAt
   }
+}
+
 `);
