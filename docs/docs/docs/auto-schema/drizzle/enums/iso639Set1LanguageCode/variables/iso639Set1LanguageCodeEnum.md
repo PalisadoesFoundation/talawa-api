@@ -6,6 +6,6 @@
 
 > `const` **iso639Set1LanguageCodeEnum**: `ZodEnum`\<\[`"aa"`, `"ab"`, `"ae"`, `"af"`, `"ak"`, `"am"`, `"an"`, `"ar"`, `"as"`, `"av"`, `"ay"`, `"az"`, `"ba"`, `"be"`, `"bg"`, `"bi"`, `"bm"`, `"bn"`, `"bo"`, `"br"`, `"bs"`, `"ca"`, `"ce"`, `"ch"`, `"co"`, `"cr"`, `"cs"`, `"cu"`, `"cv"`\]\>
 
-Defined in: [src/drizzle/enums/iso639Set1LanguageCode.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/be5955174726b793a9d0896706e81c3e939858bf/src/drizzle/enums/iso639Set1LanguageCode.ts#L6)
+Defined in: [src/drizzle/enums/iso639Set1LanguageCode.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/1251c45d69620e1317cb8632c6decbdb7edbdb06/src/drizzle/enums/iso639Set1LanguageCode.ts#L6)
 
 Possible variants of the two-letter language code defined in ISO 639-1, part of the ISO 639 standard published by the International Organization for Standardization (ISO), to represent natural languages. More information at this link: [https://en.wikipedia.org/wiki/List\_of\_ISO\_639\_language\_codes](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes).

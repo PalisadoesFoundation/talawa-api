@@ -6,7 +6,7 @@
 
 > **InvalidArgumentsExtensions**: `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:121](https://github.com/PalisadoesFoundation/talawa-api/blob/be5955174726b793a9d0896706e81c3e939858bf/src/utilities/TalawaGraphQLError.ts#L121)
+Defined in: [src/utilities/TalawaGraphQLError.ts:121](https://github.com/PalisadoesFoundation/talawa-api/blob/1251c45d69620e1317cb8632c6decbdb7edbdb06/src/utilities/TalawaGraphQLError.ts#L121)
 
 When the client provides invalid arguments in a graphql operation.
 

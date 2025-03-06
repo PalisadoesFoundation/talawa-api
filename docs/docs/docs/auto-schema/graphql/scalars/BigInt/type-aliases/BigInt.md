@@ -6,7 +6,7 @@
 
 > **\_BigInt**: `object`
 
-Defined in: [src/graphql/scalars/BigInt.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/be5955174726b793a9d0896706e81c3e939858bf/src/graphql/scalars/BigInt.ts#L12)
+Defined in: [src/graphql/scalars/BigInt.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/1251c45d69620e1317cb8632c6decbdb7edbdb06/src/graphql/scalars/BigInt.ts#L12)
 
 `BigInt` scalar type for pothos schema.
 
