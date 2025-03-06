@@ -15,11 +15,7 @@
     "@sinclair/typebox": "^0.34.15",
     "ajv-formats": "^3.0.1",
     "close-with-grace": "^2.2.0",
-<<<<<<< HEAD
     "dotenv": "^16.4.7",
-=======
-    "dotenv": "^16.0.3",
->>>>>>> 8547a42c99c7a44be459745d0018a2deccfb1f66
     "drizzle-orm": "^0.39.1",
     "drizzle-zod": "0.6.1",
     "env-schema": "^6.0.1",
