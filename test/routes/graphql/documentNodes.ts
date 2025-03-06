@@ -640,3 +640,64 @@ export const Mutation_createPresignedUrl = gql(`
     }
   }
 `);
+
+export const Mutation_createChat = gql(`
+  mutation CreateChat($input: MutationCreateChatInput!) {
+    createChat(input: $input) {
+      id
+      name
+      
+    }
+  }
+`);
+
+export const Mutation_createChatMessage = gql(`
+  mutation CreateChatMessage($input: MutationCreateChatMessageInput!) {
+    createChatMessage(input: $input) {
+      body
+      id
+      updatedAt
+      createdAt
+    }
+  }
+`);
+
+export const Mutation_updateChatMessage = gql(`
+  mutation UpdateChatMessage($input: MutationUpdateChatMessageInput!) {
+    updateChatMessage(input: $input) {
+      id
+      body
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Query_getChatById = gql(`
+  query GetChatById($id: QueryChatInput!) {
+    chat(input: $id) {
+      id
+      name
+    }
+  }
+`);
+
+export const Query_getChatMessages = gql(`
+  query GetChatMessages($chatId:QueryChatMessageInput!) {
+    chatMessage(input: $chatId) {
+      id
+      body
+      createdAt
+    }
+  }
+`);
+
+export const Mutation_createChatMembership = gql(`
+  mutation CreateChatMembership($input: MutationCreateChatMembershipInput!) {
+    createChatMembership(input: $input) {
+      id
+      createdAt
+      updatedAt
+    }
+  }
+`);

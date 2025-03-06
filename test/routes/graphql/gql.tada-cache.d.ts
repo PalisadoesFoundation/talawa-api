@@ -80,5 +80,17 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ createPost: { id: string; caption: string | null; pinnedAt: string | null; organization: { id: string; } | null; attachments: { mimeType: string | null; url: string | null; }[] | null; } | null; }, { input: { organizationId: string; isPinned?: boolean | null | undefined; caption: string; attachments?: unknown[] | null | undefined; }; }, void>;
     "\n  mutation Mutation_createPresignedUrl($input: MutationCreatePresignedUrlInput!) {\n    createPresignedUrl(input: $input) {\n      fileUrl\n      presignedUrl\n      objectName\n    }\n  }\n":
       TadaDocumentNode<{ createPresignedUrl: { fileUrl: string | null; presignedUrl: string | null; objectName: string | null; } | null; }, { input: { organizationId: string; fileType: string; fileName: string; }; }, void>;
+    "\n  mutation CreateChat($input: MutationCreateChatInput!) {\n    createChat(input: $input) {\n      id\n      name\n      \n    }\n  }\n":
+      TadaDocumentNode<{ createChat: { id: string; name: string | null; } | null; }, { input: { organizationId: string; name: string; description?: string | null | undefined; avatar?: unknown; }; }, void>;
+    "\n  mutation CreateChatMessage($input: MutationCreateChatMessageInput!) {\n    createChatMessage(input: $input) {\n      body\n      id\n      updatedAt\n      createdAt\n    }\n  }\n":
+      TadaDocumentNode<{ createChatMessage: { body: string | null; id: string; updatedAt: string | null; createdAt: string | null; } | null; }, { input: { parentMessageId?: string | null | undefined; chatId: string; body: string; }; }, void>;
+    "\n  mutation UpdateChatMessage($input: MutationUpdateChatMessageInput!) {\n    updateChatMessage(input: $input) {\n      id\n      body\n      createdAt\n      updatedAt\n    }\n  }\n":
+      TadaDocumentNode<{ updateChatMessage: { id: string; body: string | null; createdAt: string | null; updatedAt: string | null; } | null; }, { input: { id: string; body: string; }; }, void>;
+    "\n  query GetChatById($id: QueryChatInput!) {\n    chat(input: $id) {\n      id\n      name\n    }\n  }\n":
+      TadaDocumentNode<{ chat: { id: string; name: string | null; } | null; }, { id: { id: string; }; }, void>;
+    "\n  query GetChatMessages($chatId:QueryChatMessageInput!) {\n    chatMessage(input: $chatId) {\n      id\n      body\n      createdAt\n    }\n  }\n":
+      TadaDocumentNode<{ chatMessage: { id: string; body: string | null; createdAt: string | null; } | null; }, { chatId: { id: string; }; }, void>;
+    "\n  mutation CreateChatMembership($input: MutationCreateChatMembershipInput!) {\n    createChatMembership(input: $input) {\n      id\n      createdAt\n      updatedAt\n    }\n  }\n":
+      TadaDocumentNode<{ createChatMembership: { id: string; createdAt: string | null; updatedAt: string | null; } | null; }, { input: { role?: "administrator" | "regular" | null | undefined; memberId: string; chatId: string; }; }, void>;
   }
 }

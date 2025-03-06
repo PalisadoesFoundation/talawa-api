@@ -32,7 +32,7 @@ export const MutationCreateChatMessageInput = builder
 			}),
 			parentMessageId: t.id({
 				description: "Global identifier of the associated parent message.",
-				required: true,
+				required: false, //message could be either a reply or a standAlone message
 			}),
 		}),
 	});

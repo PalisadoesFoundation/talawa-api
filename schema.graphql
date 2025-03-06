@@ -1559,7 +1559,7 @@ input MutationCreateChatMessageInput {
   chatId: ID!
 
   """Global identifier of the associated parent message."""
-  parentMessageId: ID!
+  parentMessageId: ID
 }
 
 """"""
