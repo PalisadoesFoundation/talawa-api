@@ -18,10 +18,11 @@ describe("Setup", () => {
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "false" },
-			{ useDefaultApi: "true" },
 			{ useDefaultMinio: "true" },
 			{ useDefaultCloudbeaver: "true" },
 			{ useDefaultPostgres: "true" },
+			{ useDefaultCaddy: "true" },
+			{ useDefaultApi: "true" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 
@@ -57,6 +58,13 @@ describe("Setup", () => {
 			CLOUDBEAVER_MAPPED_PORT: "8978",
 			CLOUDBEAVER_SERVER_NAME: "Talawa CloudBeaver Server",
 			CLOUDBEAVER_SERVER_URL: "http://127.0.0.1:8978",
+			CADDY_HTTP_MAPPED_PORT: "80",
+			CADDY_HTTPS_MAPPED_PORT: "443",
+			CADDY_HTTP3_MAPPED_PORT: "443",
+			CADDY_TALAWA_API_DOMAIN_NAME: "localhost",
+			CADDY_TALAWA_API_EMAIL: "talawa@email.com",
+			CADDY_TALAWA_API_HOST: "api",
+			CADDY_TALAWA_API_PORT: "4000",
 		};
 
 		dotenv.config({ path: ".env" });
@@ -70,9 +78,10 @@ describe("Setup", () => {
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "true" },
-			{ useDefaultApi: "true" },
 			{ useDefaultMinio: "true" },
 			{ useDefaultPostgres: "true" },
+			{ useDefaultCaddy: "true" },
+			{ useDefaultApi: "true" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 
@@ -108,6 +117,13 @@ describe("Setup", () => {
 			CI: "true",
 			MINIO_ROOT_PASSWORD: "password",
 			MINIO_ROOT_USER: "talawa",
+			CADDY_HTTP_MAPPED_PORT: "80",
+			CADDY_HTTPS_MAPPED_PORT: "443",
+			CADDY_HTTP3_MAPPED_PORT: "443",
+			CADDY_TALAWA_API_DOMAIN_NAME: "localhost",
+			CADDY_TALAWA_API_EMAIL: "talawa@email.com",
+			CADDY_TALAWA_API_HOST: "api",
+			CADDY_TALAWA_API_PORT: "4000",
 			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
 		};
 

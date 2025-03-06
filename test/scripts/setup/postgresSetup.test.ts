@@ -43,7 +43,6 @@ describe("Setup -> postgresSetup", () => {
 		const mockResponses = [
 			{ envReconfigure: "true" },
 			{ CI: "false" },
-			{ useDefaultApi: "true" },
 			{ useDefaultMinio: "true" },
 			{ useDefaultCloudbeaver: "true" },
 			{ useDefaultPostgres: false },
@@ -52,6 +51,8 @@ describe("Setup -> postgresSetup", () => {
 			{ POSTGRES_MAPPED_PORT: "5433" },
 			{ POSTGRES_PASSWORD: "myPassword" },
 			{ POSTGRES_USER: "myUser" },
+			{ useDefaultCaddy: "true" },
+			{ useDefaultApi: "true" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@postgres.com" },
 		];
 

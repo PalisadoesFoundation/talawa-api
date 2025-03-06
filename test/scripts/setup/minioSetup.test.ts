@@ -44,7 +44,6 @@ describe("Setup -> minioSetup", () => {
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "false" },
-			{ useDefaultApi: true },
 			{ useDefaultMinio: false },
 			{ MINIO_BROWSER: "on" },
 			{ MINIO_API_MAPPED_HOST_IP: "1.2.3.4" },
@@ -55,6 +54,8 @@ describe("Setup -> minioSetup", () => {
 			{ MINIO_ROOT_USER: "mocked-user" },
 			{ useDefaultCloudbeaver: true },
 			{ useDefaultPostgres: true },
+			{ useDefaultCaddy: "true" },
+			{ useDefaultApi: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 

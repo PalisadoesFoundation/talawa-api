@@ -23,7 +23,6 @@ describe("Setup -> cloudbeaverSetup", () => {
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ CI: "false" },
-			{ useDefaultApi: true },
 			{ useDefaultMinio: true },
 			{ useDefaultCloudbeaver: false },
 			{ CLOUDBEAVER_ADMIN_NAME: "mocked-admin" },
@@ -33,6 +32,8 @@ describe("Setup -> cloudbeaverSetup", () => {
 			{ CLOUDBEAVER_SERVER_NAME: "Mocked Server" },
 			{ CLOUDBEAVER_SERVER_URL: "https://127.0.0.1:8080" },
 			{ useDefaultPostgres: true },
+			{ useDefaultCaddy: true },
+			{ useDefaultApi: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 

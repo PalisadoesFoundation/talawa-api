@@ -298,6 +298,15 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"password",
 		);
 
+		while (answers.API_MINIO_SECRET_KEY !== process.env.MINIO_ROOT_PASSWORD) {
+			console.warn("⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD.");
+			answers.API_MINIO_SECRET_KEY = await promptInput(
+				"API_MINIO_SECRET_KEY",
+				"Minio secret key:",
+				"password",
+			);
+		}
+
 		answers.API_MINIO_TEST_END_POINT = await promptInput(
 			"API_MINIO_TEST_END_POINT",
 			"Minio test endpoint:",
@@ -328,6 +337,15 @@ export async function apiSetup(answers: SetupAnswers): Promise<SetupAnswers> {
 			"Postgres password:",
 			"password",
 		);
+
+		while (answers.API_POSTGRES_PASSWORD !== process.env.POSTGRES_PASSWORD) {
+			console.warn("⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD.");
+			answers.API_POSTGRES_PASSWORD = await promptInput(
+				"API_POSTGRES_PASSWORD",
+				"Postgres password:",
+				"password",
+			);
+		}
 
 		answers.API_POSTGRES_PORT = await promptInput(
 			"API_POSTGRES_PORT",
@@ -526,6 +544,60 @@ export async function postgresSetup(
 	}
 }
 
+export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
+	try {
+		answers.CADDY_HTTP_MAPPED_PORT = await promptInput(
+			"CADDY_HTTP_MAPPED_PORT",
+			"Caddy HTTP mapped port:",
+			"80",
+			validatePort,
+		);
+
+		answers.CADDY_HTTPS_MAPPED_PORT = await promptInput(
+			"CADDY_HTTPS_MAPPED_PORT",
+			"Caddy HTTPS mapped port:",
+			"443",
+			validatePort,
+		);
+
+		answers.CADDY_HTTP3_MAPPED_PORT = await promptInput(
+			"CADDY_HTTP3_MAPPED_PORT",
+			"Caddy HTTP3 mapped port:",
+			"443",
+			validatePort,
+		);
+
+		answers.CADDY_TALAWA_API_DOMAIN_NAME = await promptInput(
+			"CADDY_TALAWA_API_DOMAIN_NAME",
+			"Caddy Talawa API domain name:",
+			"localhost",
+		);
+
+		answers.CADDY_TALAWA_API_EMAIL = await promptInput(
+			"CADDY_TALAWA_API_EMAIL",
+			"Caddy Talawa API email:",
+			"talawa@email.com",
+			validateEmail,
+		);
+
+		answers.CADDY_TALAWA_API_HOST = await promptInput(
+			"CADDY_TALAWA_API_HOST",
+			"Caddy Talawa API host:",
+			"api",
+		);
+
+		answers.CADDY_TALAWA_API_PORT = await promptInput(
+			"CADDY_TALAWA_API_PORT",
+			"Caddy Talawa API port:",
+			"4000",
+			validatePort,
+		);
+	} catch (err) {
+		handlePromptError(err);
+	}
+	return answers;
+}
+
 export async function setup(): Promise<SetupAnswers> {
 	let answers: SetupAnswers = {};
 	if (checkEnvFile()) {
@@ -552,16 +624,6 @@ export async function setup(): Promise<SetupAnswers> {
 
 	answers = await setCI(answers);
 	initializeEnvFile(answers);
-
-	const useDefaultApi = await promptConfirm(
-		"useDefaultApi",
-		"Use recommended default API settings? (Y)/N",
-		true,
-	);
-
-	if (!useDefaultApi) {
-		answers = await apiSetup(answers);
-	}
 
 	const useDefaultMinio = await promptConfirm(
 		"useDefaultMinio",
@@ -591,6 +653,25 @@ export async function setup(): Promise<SetupAnswers> {
 	);
 	if (!useDefaultPostgres) {
 		answers = await postgresSetup(answers);
+	}
+
+	const useDefaultCaddy = await promptConfirm(
+		"useDefaultCaddy",
+		"Use recommended default Caddy settings? (Y)/N",
+		true,
+	);
+	if (!useDefaultCaddy) {
+		answers = await caddySetup(answers);
+	}
+
+	const useDefaultApi = await promptConfirm(
+		"useDefaultApi",
+		"Use recommended default API settings? (Y)/N",
+		true,
+	);
+
+	if (!useDefaultApi) {
+		answers = await apiSetup(answers);
 	}
 
 	answers = await administratorEmail(answers);

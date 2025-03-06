@@ -10,12 +10,15 @@ import {
 	validatePort,
 	validateURL,
 } from "scripts/setup/setup";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
 
 describe("Setup -> apiSetup", () => {
 	const originalEnv = { ...process.env };
+	beforeAll(() => {
+		dotenv.config({ path: ".env" });
+	});
 
 	afterEach(() => {
 		process.env = { ...originalEnv };
@@ -25,9 +28,14 @@ describe("Setup -> apiSetup", () => {
 	const isEnvConfigured = checkEnvFile();
 
 	it("should prompt the user for API configuration and update environment variables", async () => {
+		process.env.MINIO_ROOT_PASSWORD = "password";
+		process.env.POSTGRES_PASSWORD = "password";
 		const mockResponses = [
 			...(isEnvConfigured ? [{ envReconfigure: true }] : []),
 			{ CI: "true" },
+			{ useDefaultMinio: true },
+			{ useDefaultPostgres: true },
+			{ useDefaultCaddy: true },
 			{ useDefaultApi: false },
 			{ API_BASE_URL: "http://localhost:5000" },
 			{ API_HOST: "127.0.0.1" },
@@ -41,18 +49,16 @@ describe("Setup -> apiSetup", () => {
 			{ API_MINIO_ACCESS_KEY: "mocked-access-key" },
 			{ API_MINIO_END_POINT: "mocked-endpoint" },
 			{ API_MINIO_PORT: "9001" },
-			{ API_MINIO_SECRET_KEY: "mocked-secret-key" },
+			{ API_MINIO_SECRET_KEY: "password" },
 			{ API_MINIO_TEST_END_POINT: "mocked-test-endpoint" },
 			{ API_MINIO_USE_SSL: "true" },
 			{ API_POSTGRES_DATABASE: "mocked-database" },
 			{ API_POSTGRES_HOST: "mocked-host" },
-			{ API_POSTGRES_PASSWORD: "mocked-password" },
+			{ API_POSTGRES_PASSWORD: "password" },
 			{ API_POSTGRES_PORT: "5433" },
 			{ API_POSTGRES_SSL_MODE: "true" },
 			{ API_POSTGRES_TEST_HOST: "mocked-test-host" },
 			{ API_POSTGRES_USER: "mocked-user" },
-			{ useDefaultMinio: true },
-			{ useDefaultPostgres: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 
@@ -63,7 +69,6 @@ describe("Setup -> apiSetup", () => {
 		}
 
 		const answers = await setup();
-		dotenv.config({ path: ".env" });
 
 		const expectedEnv = {
 			API_BASE_URL: "http://localhost:5000",
@@ -78,12 +83,12 @@ describe("Setup -> apiSetup", () => {
 			API_MINIO_ACCESS_KEY: "mocked-access-key",
 			API_MINIO_END_POINT: "mocked-endpoint",
 			API_MINIO_PORT: "9001",
-			API_MINIO_SECRET_KEY: "mocked-secret-key",
+			API_MINIO_SECRET_KEY: "password",
 			API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
 			API_MINIO_USE_SSL: "true",
 			API_POSTGRES_DATABASE: "mocked-database",
 			API_POSTGRES_HOST: "mocked-host",
-			API_POSTGRES_PASSWORD: "mocked-password",
+			API_POSTGRES_PASSWORD: "password",
 			API_POSTGRES_PORT: "5433",
 			API_POSTGRES_SSL_MODE: "true",
 			API_POSTGRES_TEST_HOST: "mocked-test-host",
@@ -118,6 +123,56 @@ describe("Setup -> apiSetup", () => {
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();
+	});
+
+	it("should prompt the user until mandatory parameters match", async () => {
+		process.env.POSTGRES_PASSWORD = "password";
+		process.env.MINIO_ROOT_PASSWORD = "password";
+
+		const promptMock = vi.spyOn(inquirer, "prompt");
+
+		// First response is incorrect, second response is correct
+		promptMock
+			.mockResolvedValueOnce({ API_BASE_URL: "http://localhost:5000" })
+			.mockResolvedValueOnce({ API_HOST: "127.0.0.1" })
+			.mockResolvedValueOnce({ API_PORT: "5000" })
+			.mockResolvedValueOnce({ API_IS_APPLY_DRIZZLE_MIGRATIONS: "true" })
+			.mockResolvedValueOnce({ API_IS_GRAPHIQL: "true" })
+			.mockResolvedValueOnce({ API_IS_PINO_PRETTY: "false" })
+			.mockResolvedValueOnce({ API_JWT_EXPIRES_IN: "3600000" })
+			.mockResolvedValueOnce({ API_JWT_SECRET: "mocked-secret" })
+			.mockResolvedValueOnce({ API_LOG_LEVEL: "info" })
+			.mockResolvedValueOnce({ API_MINIO_ACCESS_KEY: "mocked-access-key" })
+			.mockResolvedValueOnce({ API_MINIO_END_POINT: "mocked-test-endpoint" })
+			.mockResolvedValueOnce({ API_MINIO_PORT: "9001" })
+			.mockResolvedValueOnce({ API_MINIO_SECRET_KEY: "mocked-secret-key" })
+			.mockResolvedValueOnce({ API_MINIO_SECRET_KEY: "password" })
+			.mockResolvedValueOnce({
+				API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
+			})
+			.mockResolvedValueOnce({ API_MINIO_USE_SSL: "true" })
+			.mockResolvedValueOnce({ API_POSTGRES_DATABASE: "mocked-database" })
+			.mockResolvedValueOnce({ API_POSTGRES_HOST: "mocked-host" })
+			.mockResolvedValueOnce({ API_POSTGRES_PASSWORD: "postgres-password" })
+			.mockResolvedValueOnce({ API_POSTGRES_PASSWORD: "password" })
+			.mockResolvedValueOnce({ API_POSTGRES_PORT: "5433" })
+			.mockResolvedValueOnce({ API_POSTGRES_SSL_MODE: "true" })
+			.mockResolvedValueOnce({ API_POSTGRES_TEST_HOST: "mocked-test-host" })
+			.mockResolvedValueOnce({ API_POSTGRES_USER: "mocked-user" });
+		const consoleWarnSpy = vi.spyOn(console, "warn");
+
+		let answers: Record<string, string> = {};
+		answers = await apiSetup(answers);
+
+		// Verify user is prompted twice because first attempt was incorrect
+		expect(promptMock).toHaveBeenCalledTimes(24);
+		expect(answers.API_POSTGRES_PASSWORD).toBe("password");
+
+		// Verify warning message was shown
+		expect(consoleWarnSpy.mock.calls).toEqual([
+			["⚠️ API_MINIO_SECRET_KEY must match MINIO_ROOT_PASSWORD."],
+			["⚠️ API_POSTGRES_PASSWORD must match POSTGRES_PASSWORD."],
+		]);
 	});
 });
 describe("validateURL", () => {
