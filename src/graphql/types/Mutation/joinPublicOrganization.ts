@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
@@ -9,9 +8,6 @@ import {
 import { OrganizationMembershipObject } from "~/src/graphql/types/Organization/OrganizationMembership";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-// Use the correct import path for OrganizationMembership type
-// If it's a GraphQL type referenced from builder, we don't need to import it
-// Alternative: import { OrganizationMembership } from "~/src/graphql/types/OrganizationMembership";
 const mutationJoinPublicOrganizationArgumentsSchema = z.object({
 	input: joinPublicOrganizationInputSchema,
 });
@@ -27,7 +23,7 @@ builder.mutationField("joinPublicOrganization", (t) =>
 		},
 		description: "Mutation field to join a public organization.",
 		resolve: async (_parent, args, ctx) => {
-			//  Ensure user is authenticated
+			// Ensure user is authenticated
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: { code: "unauthenticated" },
@@ -55,7 +51,7 @@ builder.mutationField("joinPublicOrganization", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			//  Check if organization exists
+			// Check if organization exists
 			const organization =
 				await ctx.drizzleClient.query.organizationsTable.findFirst({
 					where: (fields, operators) =>
@@ -71,7 +67,7 @@ builder.mutationField("joinPublicOrganization", (t) =>
 				});
 			}
 
-			//  Check if organization requires user registration before joining
+			// Check if organization requires user registration before joining
 			if (organization.userRegistrationRequired) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -82,43 +78,46 @@ builder.mutationField("joinPublicOrganization", (t) =>
 				});
 			}
 
-			// Check if the user is already a member
-			const existingMembership =
-				await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
-					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.memberId, currentUserId),
-							operators.eq(
-								fields.organizationId,
-								parsedArgs.input.organizationId,
+			// Begin a transaction
+			const newMemberships = await ctx.drizzleClient.transaction(async (tx) => {
+				// Check if the user is already a member (within the transaction)
+				const existingMembership =
+					await tx.query.organizationMembershipsTable.findFirst({
+						where: (fields, operators) =>
+							operators.and(
+								operators.eq(fields.memberId, currentUserId),
+								operators.eq(
+									fields.organizationId,
+									parsedArgs.input.organizationId,
+								),
 							),
-						),
-				});
+					});
 
-			if (existingMembership) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{
-								argumentPath: ["input", "organizationId"],
-								message: "User is already a member of this organization",
-							},
-						],
-					},
-				});
-			}
+				if (existingMembership) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "organizationId"],
+									message: "User is already a member of this organization",
+								},
+							],
+						},
+					});
+				}
 
-			// Create new membership
-			const newMemberships = await ctx.drizzleClient
-				.insert(organizationMembershipsTable)
-				.values({
-					memberId: currentUserId,
-					organizationId: parsedArgs.input.organizationId,
-					role: "regular",
-					creatorId: currentUserId,
-				})
-				.returning();
+				// Create the new membership inside the transaction
+				return await tx
+					.insert(organizationMembershipsTable)
+					.values({
+						memberId: currentUserId,
+						organizationId: parsedArgs.input.organizationId,
+						role: "regular",
+						creatorId: currentUserId,
+					})
+					.returning();
+			});
 
 			// Ensure membership creation was successful
 			if (newMemberships.length === 0) {

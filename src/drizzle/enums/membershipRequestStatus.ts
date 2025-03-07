@@ -1,13 +1,16 @@
-import { z } from "zod";
+import { builder } from "~/src/graphql/builder";
 
-/**
- * Possible statuses of a membership request.
- */
-export const membershipRequestStatusEnum = z.enum([
+export const MembershipRequestStatusEnum = builder.enumType(
+	"DrizzleMembershipRequestStatus",
+	{
+		values: ["pending", "approved", "rejected"] as const,
+		description: "Possible statuses for a membership request.",
+	},
+);
+
+// Export enum values separately for Drizzle compatibility
+export const MembershipRequestStatusValues = [
 	"pending",
 	"approved",
 	"rejected",
-]);
-
-export const membershipRequestStatusEnumValues =
-	membershipRequestStatusEnum.options;
+] as const;

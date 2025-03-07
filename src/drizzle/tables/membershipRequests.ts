@@ -1,16 +1,7 @@
 import { relations } from "drizzle-orm";
-import {
-	pgTable,
-	primaryKey,
-	text,
-	timestamp,
-	unique,
-	uuid,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-// import { membershipRequestStatusEnumValues } from "~/src/drizzle/enums/membershipRequestStatus";
-import { membershipRequestStatusEnumValues } from "~/src/drizzle/enums/membershipRequestStatus";
-
+import { MembershipRequestStatusValues } from "~/src/drizzle/enums/membershipRequestStatus";
 import { organizationMembershipsTable } from "./organizationMemberships";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
@@ -18,37 +9,47 @@ import { usersTable } from "./users";
 /**
  * Drizzle ORM PostgreSQL table definition for membership requests.
  */
-export const membershipRequestsTable = pgTable("membership_requests", {
-	membershipRequestId: uuid("membership_request_id") // ✅ Unique Request ID
-		.defaultRandom()
-		.primaryKey(), // ✅ Primary key for unique requests
+export const membershipRequestsTable = pgTable(
+	"membership_requests",
+	{
+		membershipRequestId: uuid("membership_request_id")
+			.defaultRandom()
+			.primaryKey(),
+		userId: uuid("user_id")
+			.notNull()
+			.references(() => usersTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
-	userId: uuid("user_id")
-		.notNull()
-		.references(() => usersTable.id, {
-			onDelete: "cascade",
-			onUpdate: "cascade",
-		}),
+		organizationId: uuid("organization_id")
+			.notNull()
+			.references(() => organizationsTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
-	organizationId: uuid("organization_id")
-		.notNull()
-		.references(() => organizationsTable.id, {
-			onDelete: "cascade",
-			onUpdate: "cascade",
-		}),
+		status: text("status", { enum: MembershipRequestStatusValues })
+			.notNull()
+			.default("pending"),
 
-	status: text("status", { enum: membershipRequestStatusEnumValues })
-		.notNull()
-		.default("pending"),
-
-	createdAt: timestamp("created_at", {
-		mode: "date",
-		precision: 3,
-		withTimezone: true,
-	})
-		.notNull()
-		.defaultNow(),
-});
+		createdAt: timestamp("created_at", {
+			mode: "date",
+			precision: 3,
+			withTimezone: true,
+		})
+			.notNull()
+			.defaultNow(),
+	},
+	(table) => {
+		return {
+			uniqueUserOrganization: unique("unique_user_org").on(
+				table.userId,
+				table.organizationId,
+			),
+		};
+	},
+);
 
 /**
  * Relations for membership_requests table.
@@ -62,7 +63,7 @@ export const membershipRequestsTableRelations = relations(
 		user: one(usersTable, {
 			fields: [membershipRequestsTable.userId],
 			references: [usersTable.id],
-			relationName: "membership_requests.user_id:users.id",
+			relationName: "membership_requests_user_id:users.id",
 		}),
 
 		/**
@@ -88,7 +89,7 @@ export const membershipRequestsTableRelations = relations(
 				organizationMembershipsTable.organizationId,
 			],
 			relationName:
-				"membership_requests.user_id+organization_id:organization_memberships.member_id+organization_id",
+				"membership_requests_user_id+organization_id:organization_memberships.member_id+organization_id",
 		}),
 	}),
 );

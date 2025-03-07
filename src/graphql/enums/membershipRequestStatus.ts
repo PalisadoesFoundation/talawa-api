@@ -1,4 +1,4 @@
-import { membershipRequestStatusEnumValues } from "~/src/drizzle/enums/membershipRequestStatus";
+import { MembershipRequestStatusValues } from "~/src/drizzle/enums/membershipRequestStatus";
 import { builder } from "~/src/graphql/builder";
 
 export const MembershipRequestStatusEnum = builder.enumType(
@@ -6,7 +6,7 @@ export const MembershipRequestStatusEnum = builder.enumType(
 	{
 		description: "Possible statuses of a membership request.",
 		values: Object.fromEntries(
-			membershipRequestStatusEnumValues.map((status) => [
+			MembershipRequestStatusValues.map((status) => [
 				status,
 				{ value: status },
 			]),

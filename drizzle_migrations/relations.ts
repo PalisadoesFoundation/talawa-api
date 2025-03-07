@@ -276,7 +276,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 		relationName: "volunteerGroupAssignments_updaterId_users_id",
 	}),
 	membershipRequests_userId: many(membershipRequests, {
-		relationName: "membership_requests.user_id:users.id",
+		relationName: "membership_requests_user_id:users.id",
 	}),
 }));
 
@@ -941,7 +941,7 @@ export const membershipRequestsRelations = relations(
 		user: one(users, {
 			fields: [membershipRequests.userId],
 			references: [users.id],
-			relationName: "membership_requests.user_id:users.id",
+			relationName: "membership_requests_user_id:users.id",
 		}),
 		organization: one(organizations, {
 			fields: [membershipRequests.organizationId],
@@ -955,7 +955,7 @@ export const membershipRequestsRelations = relations(
 				organizationMemberships.organizationId,
 			],
 			relationName:
-				"membership_requests.user_id+organization_id:organization_memberships.member_id+organization_id",
+				"membership_requests_user_id+organization_id:organization_memberships.member_id+organization_id",
 		}),
 	}),
 );

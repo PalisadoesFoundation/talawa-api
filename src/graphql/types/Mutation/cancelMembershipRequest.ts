@@ -6,10 +6,9 @@ import {
 	MutationCancelMembershipRequestInput,
 	cancelMembershipRequestInputSchema,
 } from "~/src/graphql/inputs/MutationCancelMembershipRequestInput";
-import { CancelMembershipResponse } from "~/src/graphql/types/Organization/CancelMembershipResponse"; // Updated to use new response type
+import { CancelMembershipResponse } from "~/src/graphql/types/Organization/CancelMembershipResponse";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-// Input schema for canceling the membership request
 const mutationCancelMembershipRequestArgumentsSchema = z.object({
 	input: cancelMembershipRequestInputSchema,
 });
@@ -53,15 +52,16 @@ builder.mutationField("cancelMembershipRequest", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
+			// ✅ Check if the membership request exists
 			const membershipRequest =
 				await ctx.drizzleClient.query.membershipRequestsTable.findFirst({
 					where: (fields, operators) =>
 						operators.and(
 							operators.eq(
-								fields.membershipRequestId, // ✅ Corrected to camelCase
+								fields.membershipRequestId,
 								parsedArgs.input.membershipRequestId,
 							),
-							operators.eq(fields.userId, currentUserId), // ✅ Corrected to camelCase
+							operators.eq(fields.userId, currentUserId),
 						),
 				});
 
@@ -75,29 +75,38 @@ builder.mutationField("cancelMembershipRequest", (t) =>
 				});
 			}
 
+			// ✅ Ensure the request is in a 'pending' status before canceling
+			if (membershipRequest.status !== "pending") {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action",
+						message: "You can only cancel a pending membership request.",
+					},
+				});
+			}
+
+			// ✅ Proceed with deleting the request if status is 'pending'
 			const deletedRequest = await ctx.drizzleClient
 				.delete(membershipRequestsTable)
 				.where(
 					eq(
-						membershipRequestsTable.membershipRequestId, // ✅ Corrected to camelCase
+						membershipRequestsTable.membershipRequestId,
 						parsedArgs.input.membershipRequestId,
 					),
 				)
 				.returning();
 
-			// ✅ Ensure the request was deleted successfully
 			if (deletedRequest.length === 0) {
 				throw new TalawaGraphQLError({
 					extensions: { code: "unexpected" },
 				});
 			}
 
-			// ✅ Return success message with CancelMembershipResponse type
 			return {
 				success: true,
 				message: "Membership request canceled successfully.",
 			};
 		},
-		type: CancelMembershipResponse, // Use the updated response type
+		type: CancelMembershipResponse,
 	}),
 );

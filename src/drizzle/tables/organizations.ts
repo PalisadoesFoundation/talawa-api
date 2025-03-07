@@ -113,12 +113,9 @@ export const organizationsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
-		// /**
-		//  * Whether user registration is required to join the organization.
-		// //  */
-		// userRegistrationRequired: boolean("user_registration_required").default(
-		// 	false,
-		// ),
+		/**
+		 * Whether user registration is required to join the organization.
+		 */
 		userRegistrationRequired: boolean("user_registration_required").default(
 			false,
 		),
