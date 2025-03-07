@@ -24,19 +24,24 @@ declare module "fastify" {
  * const buckets = await fastify.minio.client.listBuckets();
  */
 export const minioClient = fastifyPlugin(async (fastify) => {
-	
 	let ClientClass = MinioClient;
-	if (process.env.NODE_ENV !== 'production') {
+	if (process.env.NODE_ENV !== "production") {
 		ClientClass = class extends MinioClient {
-		  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		  protected override getRequestOptions(opts: any) {
-			const requestOptions = super.getRequestOptions(opts);
-			requestOptions.headers.host = 'localhost:9000';
-			return requestOptions;
-		  }
-		}
-	  }
-
+			protected override getRequestOptions(opts: {
+				region?: string;
+				method: string;
+				bucketName?: string;
+				objectName?: string;
+				queryParams?: { [key: string]: string };
+				customHeaders?: { [key: string]: string };
+			}) {
+				const options = { ...opts, region: opts.region || "us-east-1" };
+				const requestOptions = super.getRequestOptions(options);
+				requestOptions.headers.host = "localhost:9000";
+				return requestOptions;
+			}
+		};
+	}
 
 	const client = new ClientClass({
 		accessKey: fastify.envConfig.API_MINIO_ACCESS_KEY,
