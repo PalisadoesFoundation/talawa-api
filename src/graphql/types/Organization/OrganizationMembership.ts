@@ -5,7 +5,7 @@ export type OrganizationMembershipType = {
 	memberId: string;
 	organizationId: string;
 	role: string;
-	// creatorId: string | null;
+	creatorId: string | null;
 }; // Define GraphQL object reference with a new name
 export const OrganizationMembershipObject =
 	builder.objectRef<OrganizationMembershipType>("OrganizationMembershipObject");
@@ -23,8 +23,8 @@ OrganizationMembershipObject.implement({
 		role: t.exposeString("role", {
 			description: "Role of the member in the organization.",
 		}),
-		// creatorId: t.exposeString("creatorId", {
-		// 	description: "User ID who created the membership.",
-		// }),
+		creatorId: t.exposeString("creatorId", {
+			description: "User ID who created the membership.",
+		}),
 	}),
 });

@@ -1,9 +1,9 @@
 import type { z } from "zod";
-import { organizationMembershipsTableInsertSchema } from "~/src/drizzle/tables/organizationMemberships";
+import { membershipRequestsTableInsertSchema } from "~/src/drizzle/tables/membershipRequests";
 import { builder } from "~/src/graphql/builder";
 
 export const sendMembershipRequestInputSchema =
-	organizationMembershipsTableInsertSchema.pick({
+	membershipRequestsTableInsertSchema.pick({
 		organizationId: true,
 	});
 

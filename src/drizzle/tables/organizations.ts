@@ -1,5 +1,12 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+	boolean,
+	index,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
@@ -106,6 +113,15 @@ export const organizationsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
+		// /**
+		//  * Whether user registration is required to join the organization.
+		// //  */
+		// userRegistrationRequired: boolean("user_registration_required").default(
+		// 	false,
+		// ),
+		userRegistrationRequired: boolean("user_registration_required").default(
+			false,
+		),
 	},
 	(self) => [
 		index().on(self.creatorId),
@@ -219,5 +235,6 @@ export const organizationsTableInsertSchema = createInsertSchema(
 		name: (schema) => schema.min(1).max(256),
 		postalCode: (schema) => schema.min(1).max(32).optional(),
 		state: (schema) => schema.min(1).max(64).optional(),
+		userRegistrationRequired: (schema) => schema.optional(),
 	},
 );

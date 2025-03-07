@@ -63,6 +63,12 @@ export {
 	organizationMembershipsTable,
 	organizationMembershipsTableRelations,
 } from "./tables/organizationMemberships";
+
+export {
+	membershipRequestsTable,
+	membershipRequestsTableRelations,
+} from "./tables/membershipRequests";
+
 export {
 	organizationsTable,
 	organizationsTableRelations,

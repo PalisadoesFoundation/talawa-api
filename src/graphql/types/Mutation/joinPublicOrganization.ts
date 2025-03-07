@@ -27,14 +27,14 @@ builder.mutationField("joinPublicOrganization", (t) =>
 		},
 		description: "Mutation field to join a public organization.",
 		resolve: async (_parent, args, ctx) => {
-			// ✅ Ensure user is authenticated
+			//  Ensure user is authenticated
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: { code: "unauthenticated" },
 				});
 			}
 
-			// ✅ Validate input schema
+			// Validate input schema
 			const {
 				data: parsedArgs,
 				error,
@@ -55,7 +55,7 @@ builder.mutationField("joinPublicOrganization", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			// ✅ Check if organization exists
+			//  Check if organization exists
 			const organization =
 				await ctx.drizzleClient.query.organizationsTable.findFirst({
 					where: (fields, operators) =>
@@ -71,7 +71,18 @@ builder.mutationField("joinPublicOrganization", (t) =>
 				});
 			}
 
-			// ✅ Check if the user is already a member
+			//  Check if organization requires user registration before joining
+			if (organization.userRegistrationRequired) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action",
+						message:
+							"This organization requires user registration before joining.",
+					},
+				});
+			}
+
+			// Check if the user is already a member
 			const existingMembership =
 				await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
 					where: (fields, operators) =>
@@ -98,23 +109,23 @@ builder.mutationField("joinPublicOrganization", (t) =>
 				});
 			}
 
-			// ✅ Create new membership
+			// Create new membership
 			const newMemberships = await ctx.drizzleClient
 				.insert(organizationMembershipsTable)
 				.values({
 					memberId: currentUserId,
 					organizationId: parsedArgs.input.organizationId,
 					role: "regular",
-					// creatorId: currentUserId,
+					creatorId: currentUserId,
 				})
 				.returning();
 
-			// ✅ Ensure membership creation was successful
+			// Ensure membership creation was successful
 			if (newMemberships.length === 0) {
 				throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
 			}
 
-			// ✅ Return created membership
+			// Return created membership
 			return newMemberships[0];
 		},
 		type: OrganizationMembershipObject,

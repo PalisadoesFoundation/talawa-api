@@ -60,6 +60,8 @@ import "./updateFundCampaignPledge";
 import "./updateOrganization";
 import "./updateOrganizationMembership";
 import "./joinPublicOrganization";
+import "./sendMembershipRequest";
+import "./cancelMembershipRequest";
 import "./updatePost";
 import "./updatePostVote";
 import "./updateTag";

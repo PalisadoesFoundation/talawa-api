@@ -67,7 +67,7 @@
 		"ghcr.io/devcontainers/features/github-cli": {}
 	},
 	"init": true,
-	"initializeCommand": "wsl cp -n ./envFiles/.env.devcontainer ./.env",
+	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.devcontainer ./.env || true'",
 	"name": "talawa_api",
 	"overrideCommand": true,
 	"postCreateCommand": "sudo chown talawa:talawa ./.pnpm-store ./node_modules && fnm install && fnm use && corepack enable npm && corepack enable && corepack install && pnpm install && pnpm start_development_server",
