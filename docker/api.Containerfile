@@ -32,11 +32,18 @@ RUN groupmod -n talawa vscode \
 && touch /commandhistory/.bash_history \
 && chown -R talawa /commandhistory \
 && echo "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" >> /home/talawa/.bashrc
+# Create a global profile script that both login and non-interactive shells load
+RUN echo '#!/bin/sh' > /etc/profile.d/fnm.sh \
+    && echo 'export PATH="/home/talawa/.local/share/fnm:$PATH"' >> /etc/profile.d/fnm.sh \
+    && echo 'eval "$(fnm env --corepack-enabled --resolve-engines --use-on-cd --version-file-strategy=recursive)"' >> /etc/profile.d/fnm.sh \
+    && chmod +x /etc/profile.d/fnm.sh
+# Ensure non-interactive bash sessions load the script
+ENV BASH_ENV=/etc/profile.d/fnm.sh
+# Also, have the talawa login shell source it explicitly by appending to its .bashrc
+RUN echo "source /etc/profile.d/fnm.sh" >> /home/talawa/.bashrc
 USER talawa
 # Installs fnm.
-RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell \ 
-# Appends the fnm configuration to `/home/talawa/.bashrc` file.
-&& echo eval \"\$\(fnm env --corepack-enabled --resolve-engines --use-on-cd --version-file-strategy=recursive\)\" >> /home/talawa/.bashrc
+RUN curl -fsSL --proto '=https' --tlsv1.2 https://fnm.vercel.app/install | bash -s -- --skip-shell 
 ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 WORKDIR /home/talawa/api
   

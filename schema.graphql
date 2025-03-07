@@ -243,8 +243,17 @@ enum AgendaItemType {
   song
 }
 
-"""
-"""
+
+input AttachmentInput {
+  """Mime type of the attachment."""
+  mimeType: String!
+
+  """URL of the attachment."""
+  url: String!
+}
+
+""""""
+
 type AuthenticationPayload {
   """
   This is the authentication token using which a user can sign in to talawa.
@@ -739,9 +748,8 @@ type Fund {
   """
   createdAt: DateTime
 
-  """
-  User who created the fund.
-  """
+
+  """User who created the Fund."""
   creator: User
 
   """
@@ -920,6 +928,11 @@ type FundCampaignsConnection {
 type FundCampaignsConnectionEdge {
   cursor: String!
   node: FundCampaign
+}
+
+input GetPostsByOrgInput {
+  organizationId: String!
+  sortOrder: String
 }
 
 """
@@ -1644,9 +1657,12 @@ type Mutation {
   """
   createPostVote(input: MutationCreatePostVoteInput!): Post
 
-  """
-  Mutation field to create a tag.
-  """
+
+  """Mutation field to create a presigned URL for uploading a file."""
+  createPresignedUrl(input: MutationCreatePresignedUrlInput!): UploadUrlResponse
+
+  """Mutation field to create a tag."""
+
   createTag(input: MutationCreateTagInput!): Tag
 
   """
@@ -2347,8 +2363,15 @@ input MutationCreatePostVoteInput {
   type: PostVoteType!
 }
 
-"""
-"""
+
+input MutationCreatePresignedUrlInput {
+  fileName: String!
+  fileType: String!
+  organizationId: ID!
+}
+
+""""""
+
 input MutationCreateTagFolderInput {
   """
   Name of the tag.
@@ -3389,12 +3412,14 @@ input MutationUpdateOrganizationMembershipInput {
   role: OrganizationMembershipRole
 }
 
-"""
-"""
+
+"""Input for updating a post."""
 input MutationUpdatePostInput {
-  """
-  Caption about the post.
-  """
+  """Array of attachments (mimeType and URL)."""
+  attachments: [AttachmentInput!]
+
+  """Caption about the post."""
+
   caption: String
 
   """
@@ -4178,16 +4203,10 @@ type Query {
   """
   agendaItem(input: QueryAgendaItemInput!): AgendaItem
 
-  """
-  Query field to read all Users.
-  """
-  allUsers(
-    after: String
-    before: String
-    first: Int
-    last: Int
-    name: String
-  ): QueryAllUsersConnection
+
+  """Query field to read all Users."""
+  allUsers(after: String, before: String, first: Int, last: Int, where: QueryAllUsersWhereInput): QueryAllUsersConnection
+
 
   """
   Query field to read a chat.
@@ -4239,10 +4258,14 @@ type Query {
   """
   organization(input: QueryOrganizationInput!): Organization
 
-  """
-  Query field to read a post.
-  """
+
+  """Query to fetch all organizations. Returns up to 20 organizations."""
+  organizations: [Organization!]
+
+  """Query field to read a post."""
+
   post(input: QueryPostInput!): Post
+  postsByOrganization(input: GetPostsByOrgInput!): [Post!]
 
   """
   Query field to renew the authentication token of an authenticated client for signing in to talawa.
@@ -4312,8 +4335,13 @@ type QueryAllUsersConnectionEdge {
   node: User
 }
 
-"""
-"""
+
+input QueryAllUsersWhereInput {
+  name: String
+}
+
+""""""
+
 input QueryChatInput {
   """
   Global id of the chat.
@@ -4619,6 +4647,13 @@ type TagFolderTagsConnectionEdge {
 The `Upload` scalar type represents a file upload.
 """
 scalar Upload
+
+"""UploadUrlResponse"""
+type UploadUrlResponse {
+  fileUrl: String
+  objectName: String
+  presignedUrl: String
+}
 
 type User {
   """

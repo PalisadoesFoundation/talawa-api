@@ -11,9 +11,9 @@ This section covers how Talawa API operates
 
 Before you begin, here are some important summaries of the technologies used.
 
-### API Administrators
+### Administrators
 
-The role of API Administrators is defined in the [Talawa Core Concepts page](https://docs.talawa.io/docs/introduction/core-concepts).
+The role of Administrators is defined in the [Talawa Core Concepts page](https://docs.talawa.io/docs/introduction/core-concepts).
 
 This section explains how they are managed in the database.
 
@@ -32,6 +32,8 @@ Therefore. Make sure to configure the API's `.env` file with these parameters.
 API_ADMINISTRATOR_USER_EMAIL_ADDRESS
 API_ADMINISTRATOR_USER_PASSWORD
 ```
+
+**Note:** The user configured with these parameters is an administrator with no other privileges. The parameters were created to ensure the app always starts with an administrator who can login.
 
 ### Docker Development Containers (devcontainers)
 
