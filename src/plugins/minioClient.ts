@@ -24,7 +24,21 @@ declare module "fastify" {
  * const buckets = await fastify.minio.client.listBuckets();
  */
 export const minioClient = fastifyPlugin(async (fastify) => {
-	const client = new MinioClient({
+	
+	let ClientClass = MinioClient;
+	if (process.env.NODE_ENV !== 'production') {
+		ClientClass = class extends MinioClient {
+		  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+		  protected override getRequestOptions(opts: any) {
+			const requestOptions = super.getRequestOptions(opts);
+			requestOptions.headers.host = 'localhost:9000';
+			return requestOptions;
+		  }
+		}
+	  }
+
+
+	const client = new ClientClass({
 		accessKey: fastify.envConfig.API_MINIO_ACCESS_KEY,
 		endPoint: fastify.envConfig.API_MINIO_END_POINT,
 		port: fastify.envConfig.API_MINIO_PORT,

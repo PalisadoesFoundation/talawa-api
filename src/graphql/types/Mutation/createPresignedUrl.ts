@@ -91,7 +91,7 @@ builder.mutationField("createPresignedUrl", (t) =>
 						.catch(reject);
 				});
 
-				const fileUrl = `http://${ctx.minio.config.endPoint}:${ctx.minio.config.port}/${bucketName}/${objectName}`;
+				const fileUrl = `http://localhost:${ctx.minio.config.port}/${bucketName}/${objectName}`;
 
 				return { presignedUrl, fileUrl, objectName };
 			} catch (error: unknown) {

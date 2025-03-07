@@ -96,7 +96,7 @@ suite("Mutation field createPresignedUrl", () => {
 				expect.objectContaining({
 					presignedUrl: "https://example.com/presigned-url",
 					fileUrl: expect.stringContaining(
-						`http://${server.minio.config.endPoint}:${server.minio.config.port}/${server.minio.bucketName}/uploads/`,
+						`http://localhost:${server.minio.config.port}/${server.minio.bucketName}/uploads/`,
 					),
 					objectName: expect.stringMatching(
 						/^uploads\/\d+-[0-9a-fA-F-]+-testfile\.txt$/,
