@@ -1,25 +1,23 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { builder } from "../../builder";
-import { UploadUrlResponse } from "../../types/Post/UploadUrlResponse";
+import { GetUrlResponse } from "../../types/Post/GetUrlResponse";
 
-const MutationCreatePresignedUrlInput = builder.inputType(
-	"MutationCreatePresignedUrlInput",
+const MutationCreateGetfileUrlInput = builder.inputType(
+	"MutationCreateGetfileUrlInput",
 	{
 		fields: (t) => ({
-			fileName: t.string({ required: true }),
-			fileType: t.string({ required: true }),
 			organizationId: t.id({ required: true }),
 			objectName: t.string({ required: false }),
 		}),
 	},
 );
 
-builder.mutationField("createPresignedUrl", (t) =>
+builder.mutationField("createGetfileUrl", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
 				required: true,
-				type: MutationCreatePresignedUrlInput,
+				type: MutationCreateGetfileUrlInput,
 			}),
 		},
 		description:
@@ -80,23 +78,32 @@ builder.mutationField("createPresignedUrl", (t) =>
 				});
 			}
 
-			const { fileName } = args.input;
 			const bucketName = ctx.minio.bucketName;
-			const objectName =
-				args.input.objectName ||
-				`uploads/${Date.now()}-${crypto.randomUUID()}-${fileName}`;
+			const objectName = args.input.objectName;
+
+			if (!objectName) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "objectName"],
+								message: "Object name is required",
+							},
+						],
+					},
+				});
+			}
 
 			try {
 				const presignedUrl: string = await new Promise((resolve, reject) => {
 					ctx.minio.client
-						.presignedPutObject(bucketName, objectName, 60)
+						.presignedGetObject(bucketName, objectName, 60)
 						.then(resolve)
 						.catch(reject);
 				});
 
-				const fileUrl = `http://${ctx.minio.config.endPoint}:${ctx.minio.config.port}/${bucketName}/${objectName}`;
-
-				return { presignedUrl, fileUrl, objectName };
+				return { presignedUrl };
 			} catch (error: unknown) {
 				if (error instanceof Error) {
 					throw new TalawaGraphQLError({
@@ -114,6 +121,6 @@ builder.mutationField("createPresignedUrl", (t) =>
 				});
 			}
 		},
-		type: UploadUrlResponse,
+		type: GetUrlResponse,
 	}),
 );

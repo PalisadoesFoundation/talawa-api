@@ -624,6 +624,11 @@ input GetPostsByOrgInput {
   sortOrder: String
 }
 
+"""GetUrlResponse"""
+type GetUrlResponse {
+  presignedUrl: String
+}
+
 """
 Possible variants of the two-letter language code defined in ISO 639-1, part of the ISO 639 standard published by the International Organization for Standardization (ISO), to represent natural languages.
 """
@@ -1289,6 +1294,9 @@ type Mutation {
   """Mutation field to create a fund campaign pledge."""
   createFundCampaignPledge(input: MutationCreateFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Mutation field to create a presigned URL for uploading a file."""
+  createGetfileUrl(input: MutationCreateGetfileUrlInput!): GetUrlResponse
+
   """Mutation field to create an organization."""
   createOrganization(input: MutationCreateOrganizationInput!): Organization
 
@@ -1649,6 +1657,11 @@ input MutationCreateFundInput {
   organizationId: ID!
 }
 
+input MutationCreateGetfileUrlInput {
+  objectName: String
+  organizationId: ID!
+}
+
 """"""
 input MutationCreateOrganizationInput {
   """Address line 1 of the organization's address."""
@@ -1720,8 +1733,8 @@ input MutationCreatePostVoteInput {
 input MutationCreatePresignedUrlInput {
   fileName: String!
   fileType: String!
-  organizationId: ID!
   objectName: String
+  organizationId: ID!
 }
 
 """"""
