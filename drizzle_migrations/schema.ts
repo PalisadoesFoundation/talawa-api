@@ -2086,6 +2086,8 @@ export const membershipRequests = pgTable(
 			columns: [table.membershipRequestId],
 			name: "membership_requests_membership_request_id_pk",
 		}),
+
+		unique("unique_user_org").on(table.userId, table.organizationId),
 	],
 );
 

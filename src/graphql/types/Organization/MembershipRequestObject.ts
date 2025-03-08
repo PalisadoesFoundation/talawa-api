@@ -3,10 +3,19 @@ import { builder } from "~/src/graphql/builder";
 import { MembershipRequestStatusEnum } from "~/src/graphql/enums/membershipRequestStatus";
 
 export type MembershipRequestType = {
+	/** Unique identifier for the membership request */
 	membershipRequestId: string;
+
+	/** ID of the user who requested membership */
 	userId: string;
+
+	/** ID of the organization the user is requesting to join */
 	organizationId: string;
+
+	/** Status of the membership request (e.g., pending, approved, rejected) */
 	status: (typeof MembershipRequestStatusValues)[number];
+
+	/** Timestamp when the membership request was created */
 	createdAt: Date;
 };
 

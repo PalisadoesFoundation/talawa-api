@@ -24,14 +24,12 @@ builder.mutationField("sendMembershipRequest", (t) =>
 		description:
 			"Mutation field to send a membership request to an organization.",
 		resolve: async (_parent, args, ctx) => {
-			// ✅ Ensure user is authenticated
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: { code: "unauthenticated" },
 				});
 			}
 
-			// ✅ Validate input schema
 			const {
 				data: parsedArgs,
 				error,
@@ -52,7 +50,6 @@ builder.mutationField("sendMembershipRequest", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			// ✅ Check if organization exists
 			const organization =
 				await ctx.drizzleClient.query.organizationsTable.findFirst({
 					where: (fields, operators) =>
@@ -68,18 +65,6 @@ builder.mutationField("sendMembershipRequest", (t) =>
 				});
 			}
 
-			// ✅ Check if the organization requires user registration
-			if (organization.userRegistrationRequired) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "forbidden_action",
-						message:
-							"This organization requires user registration before joining.",
-					},
-				});
-			}
-
-			// ✅ Check if the user has already sent a request
 			const existingRequest =
 				await ctx.drizzleClient.query.membershipRequestsTable.findFirst({
 					where: (fields, operators) =>
@@ -107,22 +92,29 @@ builder.mutationField("sendMembershipRequest", (t) =>
 				});
 			}
 
-			// ✅ Create new membership request
-			const newRequest = await ctx.drizzleClient
-				.insert(membershipRequestsTable)
-				.values({
-					userId: currentUserId,
-					organizationId: parsedArgs.input.organizationId,
-				})
-				.returning();
+			if (organization.userRegistrationRequired) {
+				const newRequest = await ctx.drizzleClient
+					.insert(membershipRequestsTable)
+					.values({
+						userId: currentUserId,
+						organizationId: parsedArgs.input.organizationId,
+					})
+					.returning();
 
-			// ✅ Ensure request creation was successful
-			if (newRequest.length === 0) {
-				throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
+				if (newRequest.length === 0) {
+					throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
+				}
+
+				return newRequest[0];
 			}
 
-			// ✅ Return created membership request
-			return newRequest[0];
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "forbidden_action",
+					message:
+						"This organization does not require registration, automatic approval logic should be handled here.",
+				},
+			});
 		},
 		type: MembershipRequestObject,
 	}),

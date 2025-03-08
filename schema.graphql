@@ -148,29 +148,24 @@ type AgendaFolder {
   updater: User
 }
 
-"""
-"""
+
 type AgendaFolderChildFoldersConnection {
   edges: [AgendaFolderChildFoldersConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
+
 type AgendaFolderChildFoldersConnectionEdge {
   cursor: String!
   node: AgendaFolder
 }
 
-"""
-"""
 type AgendaFolderItemsConnection {
   edges: [AgendaFolderItemsConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
+
 type AgendaFolderItemsConnectionEdge {
   cursor: String!
   node: AgendaItem
@@ -252,16 +247,12 @@ input AttachmentInput {
   url: String!
 }
 
-""""""
 
 type AuthenticationPayload {
   """
   This is the authentication token using which a user can sign in to talawa.
   """
   authenticationToken: String
-
-  """
-  """
   user: User
 }
 
@@ -342,15 +333,13 @@ type Chat {
   updater: User
 }
 
-"""
-"""
+
 type ChatMembersConnection {
   edges: [ChatMembersConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
+
 type ChatMembersConnectionEdge {
   cursor: String!
   node: User
@@ -401,15 +390,12 @@ type ChatMessage {
   updatedAt: DateTime
 }
 
-"""
-"""
 type ChatMessagesConnection {
   edges: [ChatMessagesConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
+
 type ChatMessagesConnectionEdge {
   cursor: String!
   node: ChatMessage
@@ -477,29 +463,24 @@ type Comment {
   updatedAt: DateTime
 }
 
-"""
-"""
+
 type CommentDownVotersConnection {
   edges: [CommentDownVotersConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
+
 type CommentDownVotersConnectionEdge {
   cursor: String!
   node: User
 }
 
-"""
-"""
 type CommentUpVotersConnection {
   edges: [CommentUpVotersConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
+
 type CommentUpVotersConnectionEdge {
   cursor: String!
   node: User
@@ -692,15 +673,13 @@ type Event {
   ): EventVenuesConnection
 }
 
-"""
-"""
+
 type EventAgendaFoldersConnection {
   edges: [EventAgendaFoldersConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
+
 type EventAgendaFoldersConnectionEdge {
   cursor: String!
   node: AgendaFolder
@@ -718,15 +697,13 @@ type EventAttachment {
   url: String
 }
 
-"""
-"""
+
 type EventVenuesConnection {
   edges: [EventVenuesConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
+
 type EventVenuesConnectionEdge {
   cursor: String!
   node: Venue
@@ -902,29 +879,25 @@ type FundCampaignPledge {
   updater: User
 }
 
-"""
-"""
+
 type FundCampaignPledgesConnection {
   edges: [FundCampaignPledgesConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
+
 type FundCampaignPledgesConnectionEdge {
   cursor: String!
   node: FundCampaignPledge
 }
 
-"""
-"""
+
 type FundCampaignsConnection {
   edges: [FundCampaignsConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
+
 type FundCampaignsConnectionEdge {
   cursor: String!
   node: FundCampaign
@@ -1958,7 +1931,7 @@ input MutationCancelMembershipRequestInput {
   """
   membershipRequestId: ID!
 }
-"""
+
 input MutationCreateAdvertisementInput {
   """
   Attachments of the advertisement.
@@ -1996,8 +1969,7 @@ input MutationCreateAdvertisementInput {
   type: AdvertisementType!
 }
 
-"""
-"""
+
 input MutationCreateAgendaFolderInput {
   """
   Global identifier of the event the agenda folder is associated to.
@@ -2020,8 +1992,6 @@ input MutationCreateAgendaFolderInput {
   parentFolderId: ID
 }
 
-"""
-"""
 input MutationCreateAgendaItemInput {
   """
   Custom information about the agenda item.
@@ -2054,8 +2024,6 @@ input MutationCreateAgendaItemInput {
   type: AgendaItemType!
 }
 
-"""
-"""
 input MutationCreateChatInput {
   """
   Avatar of the chat.
@@ -2078,8 +2046,6 @@ input MutationCreateChatInput {
   organizationId: ID!
 }
 
-"""
-"""
 input MutationCreateChatMembershipInput {
   """
   Global identifier of the associated chat.
@@ -2097,8 +2063,7 @@ input MutationCreateChatMembershipInput {
   role: ChatMembershipRole
 }
 
-"""
-"""
+
 input MutationCreateChatMessageInput {
   """
   Body of the chat message.
@@ -2116,8 +2081,6 @@ input MutationCreateChatMessageInput {
   parentMessageId: ID!
 }
 
-"""
-"""
 input MutationCreateCommentInput {
   """
   Body of the comment.
@@ -2130,8 +2093,6 @@ input MutationCreateCommentInput {
   postId: ID!
 }
 
-"""
-"""
 input MutationCreateCommentVoteInput {
   """
   Global identifier of the comment that is voted.
@@ -2144,8 +2105,7 @@ input MutationCreateCommentVoteInput {
   type: CommentVoteType!
 }
 
-"""
-"""
+
 input MutationCreateEventInput {
   """
   Attachments of the event.
@@ -2178,8 +2138,7 @@ input MutationCreateEventInput {
   startAt: DateTime!
 }
 
-"""
-"""
+
 input MutationCreateFundCampaignInput {
   """
   Currency code of the fund campaign.
@@ -2212,8 +2171,6 @@ input MutationCreateFundCampaignInput {
   startAt: DateTime!
 }
 
-"""
-"""
 input MutationCreateFundCampaignPledgeInput {
   """
   The amount of pledged money.
@@ -2236,8 +2193,6 @@ input MutationCreateFundCampaignPledgeInput {
   pledgerId: ID!
 }
 
-"""
-"""
 input MutationCreateFundInput {
   """
   Boolean to tell if the fund is tax deductible.
@@ -2255,8 +2210,6 @@ input MutationCreateFundInput {
   organizationId: ID!
 }
 
-"""
-"""
 input MutationCreateOrganizationInput {
   """
   Address line 1 of the organization's address.
@@ -2304,8 +2257,6 @@ input MutationCreateOrganizationInput {
   state: String
 }
 
-"""
-"""
 input MutationCreateOrganizationMembershipInput {
   """
   Global identifier of the associated user.
@@ -2323,8 +2274,6 @@ input MutationCreateOrganizationMembershipInput {
   role: OrganizationMembershipRole
 }
 
-"""
-"""
 input MutationCreatePostInput {
   """
   Attachments of the post.
@@ -2347,8 +2296,6 @@ input MutationCreatePostInput {
   organizationId: ID!
 }
 
-"""
-"""
 input MutationCreatePostVoteInput {
   """
   Global identifier of the post that is voted.
@@ -2368,7 +2315,6 @@ input MutationCreatePresignedUrlInput {
   organizationId: ID!
 }
 
-""""""
 
 input MutationCreateTagFolderInput {
   """
@@ -2387,8 +2333,6 @@ input MutationCreateTagFolderInput {
   parentFolderId: ID
 }
 
-"""
-"""
 input MutationCreateTagInput {
   """
   Global identifier of the associated tag folder.
@@ -2406,8 +2350,6 @@ input MutationCreateTagInput {
   organizationId: ID!
 }
 
-"""
-"""
 input MutationCreateUserInput {
   """
   Address line 1 of the user's address.
@@ -2520,8 +2462,6 @@ input MutationCreateUserInput {
   workPhoneNumber: PhoneNumber
 }
 
-"""
-"""
 input MutationCreateVenueBookingInput {
   """
   Global identifier of the event that the venue is to be booked for.
@@ -2534,8 +2474,6 @@ input MutationCreateVenueBookingInput {
   venueId: ID!
 }
 
-"""
-"""
 input MutationCreateVenueInput {
   """
   Attachments of the venue.
@@ -2558,8 +2496,6 @@ input MutationCreateVenueInput {
   organizationId: ID!
 }
 
-"""
-"""
 input MutationDeleteAdvertisementInput {
   """
   Global identifier of the advertisement.
@@ -2567,8 +2503,6 @@ input MutationDeleteAdvertisementInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteAgendaFolderInput {
   """
   Global identifier of the agenda folder.
@@ -2576,8 +2510,6 @@ input MutationDeleteAgendaFolderInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteAgendaItemInput {
   """
   Global identifier of the agenda item.
@@ -2585,8 +2517,7 @@ input MutationDeleteAgendaItemInput {
   id: ID!
 }
 
-"""
-"""
+
 input MutationDeleteChatInput {
   """
   Global identifier of the chat.
@@ -2594,8 +2525,6 @@ input MutationDeleteChatInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteChatMembershipInput {
   """
   Global identifier of the associated chat.
@@ -2608,8 +2537,6 @@ input MutationDeleteChatMembershipInput {
   memberId: ID!
 }
 
-"""
-"""
 input MutationDeleteChatMessageInput {
   """
   Global identifier of the chat message.
@@ -2617,8 +2544,6 @@ input MutationDeleteChatMessageInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteCommentInput {
   """
   Global identifier of the comment.
@@ -2626,8 +2551,6 @@ input MutationDeleteCommentInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteCommentVoteInput {
   """
   Global identifier of the comment that is voted.
@@ -2640,8 +2563,6 @@ input MutationDeleteCommentVoteInput {
   creatorId: ID!
 }
 
-"""
-"""
 input MutationDeleteEventInput {
   """
   Global identifier of the event.
@@ -2649,8 +2570,6 @@ input MutationDeleteEventInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteFundCampaignInput {
   """
   Global identifier of the fund campaign.
@@ -2658,8 +2577,6 @@ input MutationDeleteFundCampaignInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteFundCampaignPledgeInput {
   """
   Global identifier of the fund campaign pledge.
@@ -2667,8 +2584,6 @@ input MutationDeleteFundCampaignPledgeInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteFundInput {
   """
   Global identifier of the fund.
@@ -2676,8 +2591,6 @@ input MutationDeleteFundInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteOrganizationInput {
   """
   Global identifier of the organization.
@@ -2685,8 +2598,6 @@ input MutationDeleteOrganizationInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteOrganizationMembershipInput {
   """
   Global identifier of the associated user.
@@ -2699,8 +2610,6 @@ input MutationDeleteOrganizationMembershipInput {
   organizationId: ID!
 }
 
-"""
-"""
 input MutationDeletePostInput {
   """
   Global identifier of the post.
@@ -2708,8 +2617,6 @@ input MutationDeletePostInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeletePostVoteInput {
   """
   Global identifier of the user who voted.
@@ -2722,8 +2629,6 @@ input MutationDeletePostVoteInput {
   postId: ID!
 }
 
-"""
-"""
 input MutationDeleteTagFolderInput {
   """
   Global identifier of the tag folder.
@@ -2731,8 +2636,6 @@ input MutationDeleteTagFolderInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteTagInput {
   """
   Global identifier of the tag.
@@ -2740,8 +2643,6 @@ input MutationDeleteTagInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteUserInput {
   """
   Global identifier of the user.
@@ -2749,8 +2650,6 @@ input MutationDeleteUserInput {
   id: ID!
 }
 
-"""
-"""
 input MutationDeleteVenueBookingInput {
   """
   Global identifier of the event that the venue is booked for.
@@ -2763,8 +2662,6 @@ input MutationDeleteVenueBookingInput {
   venueId: ID!
 }
 
-"""
-"""
 input MutationDeleteVenueInput {
   """
   Global identifier of the venue.
@@ -2792,8 +2689,6 @@ input MutationSendMembershipRequestInput {
   organizationId: ID!
 }
 
-"""
-"""
 input MutationSignUpInput {
   """
   Address line 1 of the user's address.
@@ -2891,8 +2786,6 @@ input MutationSignUpInput {
   workPhoneNumber: PhoneNumber
 }
 
-"""
-"""
 input MutationUpdateAdvertisementInput {
   """
   Custom information about the advertisement.
@@ -2925,8 +2818,6 @@ input MutationUpdateAdvertisementInput {
   type: AdvertisementType
 }
 
-"""
-"""
 input MutationUpdateAgendaFolderInput {
   """
   Global identifier of the agenda folder.
@@ -2944,8 +2835,6 @@ input MutationUpdateAgendaFolderInput {
   parentFolderId: ID
 }
 
-"""
-"""
 input MutationUpdateAgendaItemInput {
   """
   Custom information about the agenda item.
@@ -2978,8 +2867,6 @@ input MutationUpdateAgendaItemInput {
   name: String
 }
 
-"""
-"""
 input MutationUpdateChatInput {
   """
   Avatar of the chat.
@@ -3002,8 +2889,6 @@ input MutationUpdateChatInput {
   name: String
 }
 
-"""
-"""
 input MutationUpdateChatMembershipInput {
   """
   Global identifier of the associated chat.
@@ -3021,8 +2906,6 @@ input MutationUpdateChatMembershipInput {
   role: ChatMembershipRole!
 }
 
-"""
-"""
 input MutationUpdateChatMessageInput {
   """
   Body of the chat message.
@@ -3035,8 +2918,6 @@ input MutationUpdateChatMessageInput {
   id: ID!
 }
 
-"""
-"""
 input MutationUpdateCommentInput {
   """
   Body of the comment.
@@ -3049,8 +2930,6 @@ input MutationUpdateCommentInput {
   id: ID!
 }
 
-"""
-"""
 input MutationUpdateCommentVoteInput {
   """
   Global identifier of the comment that is voted.
@@ -3063,8 +2942,6 @@ input MutationUpdateCommentVoteInput {
   type: CommentVoteType!
 }
 
-"""
-"""
 input MutationUpdateCommunityInput {
   """
   URL to the facebook account of the community.
@@ -3127,8 +3004,6 @@ input MutationUpdateCommunityInput {
   youtubeURL: String
 }
 
-"""
-"""
 input MutationUpdateCurrentUserInput {
   """
   Address line 1 of the user's address.
@@ -3231,8 +3106,6 @@ input MutationUpdateCurrentUserInput {
   workPhoneNumber: PhoneNumber
 }
 
-"""
-"""
 input MutationUpdateEventInput {
   """
   Custom information about the event.
@@ -3260,8 +3133,6 @@ input MutationUpdateEventInput {
   startAt: DateTime
 }
 
-"""
-"""
 input MutationUpdateFundCampaignInput {
   """
   Date time at the time the fund campaign ends at.
@@ -3289,8 +3160,6 @@ input MutationUpdateFundCampaignInput {
   startAt: DateTime
 }
 
-"""
-"""
 input MutationUpdateFundCampaignPledgeInput {
   """
   The amount of pledged money.
@@ -3308,8 +3177,6 @@ input MutationUpdateFundCampaignPledgeInput {
   note: String
 }
 
-"""
-"""
 input MutationUpdateFundInput {
   """
   Global identifier of the associated organization.
@@ -3327,8 +3194,6 @@ input MutationUpdateFundInput {
   name: String
 }
 
-"""
-"""
 input MutationUpdateOrganizationInput {
   """
   Address line 1 of the organization's address.
@@ -3381,8 +3246,6 @@ input MutationUpdateOrganizationInput {
   state: String
 }
 
-"""
-"""
 input MutationUpdateOrganizationMembershipInput {
   """
   Global identifier of the associated user.
@@ -3421,8 +3284,6 @@ input MutationUpdatePostInput {
   isPinned: Boolean
 }
 
-"""
-"""
 input MutationUpdatePostVoteInput {
   """
   Global identifier of the voted post.
@@ -3435,8 +3296,6 @@ input MutationUpdatePostVoteInput {
   type: PostVoteType!
 }
 
-"""
-"""
 input MutationUpdateTagFolderInput {
   """
   Global identifier of the tag folder.
@@ -3454,8 +3313,6 @@ input MutationUpdateTagFolderInput {
   parentFolderId: ID
 }
 
-"""
-"""
 input MutationUpdateTagInput {
   """
   Global identifier of associated tag folder.
@@ -3473,8 +3330,6 @@ input MutationUpdateTagInput {
   name: String
 }
 
-"""
-"""
 input MutationUpdateUserInput {
   """
   Address line 1 of the user's address.
@@ -3592,8 +3447,6 @@ input MutationUpdateUserInput {
   workPhoneNumber: PhoneNumber
 }
 
-"""
-"""
 input MutationUpdateVenueInput {
   """
   Custom information about the venue.
@@ -3798,71 +3651,51 @@ type Organization {
   ): OrganizationVenuesConnection
 }
 
-"""
-"""
 type OrganizationAdvertisementsConnection {
   edges: [OrganizationAdvertisementsConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type OrganizationAdvertisementsConnectionEdge {
   cursor: String!
   node: Advertisement
 }
 
-"""
-"""
 type OrganizationChatsConnection {
   edges: [OrganizationChatsConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type OrganizationChatsConnectionEdge {
   cursor: String!
   node: Chat
 }
 
-"""
-"""
 type OrganizationEventsConnection {
   edges: [OrganizationEventsConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type OrganizationEventsConnectionEdge {
   cursor: String!
   node: Event
 }
 
-"""
-"""
 type OrganizationFundsConnection {
   edges: [OrganizationFundsConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type OrganizationFundsConnectionEdge {
   cursor: String!
   node: Fund
 }
 
-"""
-"""
 type OrganizationMembersConnection {
   edges: [OrganizationMembersConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type OrganizationMembersConnectionEdge {
   cursor: String!
   node: User
@@ -3939,71 +3772,51 @@ enum OrganizationMembershipRole {
   regular
 }
 
-"""
-"""
 type OrganizationPinnedPostsConnection {
   edges: [OrganizationPinnedPostsConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type OrganizationPinnedPostsConnectionEdge {
   cursor: String!
   node: Post
 }
 
-"""
-"""
 type OrganizationPostsConnection {
   edges: [OrganizationPostsConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type OrganizationPostsConnectionEdge {
   cursor: String!
   node: Post
 }
 
-"""
-"""
 type OrganizationTagFoldersConnection {
   edges: [OrganizationTagFoldersConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type OrganizationTagFoldersConnectionEdge {
   cursor: String!
   node: TagFolder
 }
 
-"""
-"""
 type OrganizationTagsConnection {
   edges: [OrganizationTagsConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type OrganizationTagsConnectionEdge {
   cursor: String!
   node: Tag
 }
 
-"""
-"""
 type OrganizationVenuesConnection {
   edges: [OrganizationVenuesConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type OrganizationVenuesConnectionEdge {
   cursor: String!
   node: Venue
@@ -4125,43 +3938,31 @@ type PostAttachment {
   url: String
 }
 
-"""
-"""
 type PostCommentsConnection {
   edges: [PostCommentsConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type PostCommentsConnectionEdge {
   cursor: String!
   node: Comment
 }
 
-"""
-"""
 type PostDownVotersConnection {
   edges: [PostDownVotersConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type PostDownVotersConnectionEdge {
   cursor: String!
   node: User
 }
 
-"""
-"""
 type PostUpVotersConnection {
   edges: [PostUpVotersConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type PostUpVotersConnectionEdge {
   cursor: String!
   node: User
@@ -4286,8 +4087,7 @@ type Query {
   venue(input: QueryVenueInput!): Venue
 }
 
-"""
-"""
+
 input QueryAdvertisementInput {
   """
   Global id of the advertisement.
@@ -4295,8 +4095,6 @@ input QueryAdvertisementInput {
   id: String!
 }
 
-"""
-"""
 input QueryAgendaFolderInput {
   """
   Global id of the agenda folder.
@@ -4304,8 +4102,6 @@ input QueryAgendaFolderInput {
   id: String!
 }
 
-"""
-"""
 input QueryAgendaItemInput {
   """
   Global id of the agenda item.
@@ -4328,7 +4124,7 @@ input QueryAllUsersWhereInput {
   name: String
 }
 
-""""""
+
 
 input QueryChatInput {
   """
@@ -4337,8 +4133,6 @@ input QueryChatInput {
   id: String!
 }
 
-"""
-"""
 input QueryChatMessageInput {
   """
   Global id of the chat message.
@@ -4346,8 +4140,6 @@ input QueryChatMessageInput {
   id: String!
 }
 
-"""
-"""
 input QueryCommentInput {
   """
   Global id of the comment.
@@ -4355,8 +4147,6 @@ input QueryCommentInput {
   id: String!
 }
 
-"""
-"""
 input QueryEventInput {
   """
   Global id of the event.
@@ -4364,8 +4154,6 @@ input QueryEventInput {
   id: String!
 }
 
-"""
-"""
 input QueryFundCampaignInput {
   """
   Global id of the fund campaign.
@@ -4373,8 +4161,6 @@ input QueryFundCampaignInput {
   id: String!
 }
 
-"""
-"""
 input QueryFundCampaignPledgeInput {
   """
   Global id of the fund campaign pledge.
@@ -4382,8 +4168,6 @@ input QueryFundCampaignPledgeInput {
   id: String!
 }
 
-"""
-"""
 input QueryFundInput {
   """
   Global id of the fund.
@@ -4391,8 +4175,6 @@ input QueryFundInput {
   id: String!
 }
 
-"""
-"""
 input QueryOrganizationInput {
   """
   Global id of the organization.
@@ -4400,8 +4182,6 @@ input QueryOrganizationInput {
   id: String!
 }
 
-"""
-"""
 input QueryPostInput {
   """
   Global id of the post.
@@ -4409,8 +4189,6 @@ input QueryPostInput {
   id: String!
 }
 
-"""
-"""
 input QuerySignInInput {
   """
   Email address of the user.
@@ -4423,8 +4201,6 @@ input QuerySignInInput {
   password: String!
 }
 
-"""
-"""
 input QueryTagFolderInput {
   """
   Global id of the tag folder.
@@ -4432,8 +4208,6 @@ input QueryTagFolderInput {
   id: String!
 }
 
-"""
-"""
 input QueryTagInput {
   """
   Global id of the tag.
@@ -4441,8 +4215,6 @@ input QueryTagInput {
   id: String!
 }
 
-"""
-"""
 input QueryUserInput {
   """
   Global id of the user.
@@ -4450,8 +4222,6 @@ input QueryUserInput {
   id: String!
 }
 
-"""
-"""
 input QueryVenueInput {
   """
   Global id of the venue.
@@ -4466,8 +4236,6 @@ type Subscription {
   chatMessageCreate(input: SubscriptionChatMessageCreateInput!): ChatMessage
 }
 
-"""
-"""
 input SubscriptionChatMessageCreateInput {
   """
   Global identifier of the chat.
@@ -4527,15 +4295,11 @@ type Tag {
   updater: User
 }
 
-"""
-"""
 type TagAssigneesConnection {
   edges: [TagAssigneesConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type TagAssigneesConnectionEdge {
   cursor: String!
   node: User
@@ -4603,29 +4367,21 @@ type TagFolder {
   updater: User
 }
 
-"""
-"""
 type TagFolderChildFoldersConnection {
   edges: [TagFolderChildFoldersConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type TagFolderChildFoldersConnectionEdge {
   cursor: String!
   node: TagFolder
 }
 
-"""
-"""
 type TagFolderTagsConnection {
   edges: [TagFolderTagsConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type TagFolderTagsConnectionEdge {
   cursor: String!
   node: Tag
@@ -4842,15 +4598,11 @@ enum UserNatalSex {
   male
 }
 
-"""
-"""
 type UserOrganizationsWhereMemberConnection {
   edges: [UserOrganizationsWhereMemberConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type UserOrganizationsWhereMemberConnectionEdge {
   cursor: String!
   node: Organization
@@ -4933,15 +4685,11 @@ type VenueAttachment {
   url: String
 }
 
-"""
-"""
 type VenueEventsConnection {
   edges: [VenueEventsConnectionEdge]
   pageInfo: PageInfo!
 }
 
-"""
-"""
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
