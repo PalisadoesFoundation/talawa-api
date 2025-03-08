@@ -1657,8 +1657,12 @@ input MutationCreateFundInput {
   organizationId: ID!
 }
 
+"""Input for getting a presigned URL for file download"""
 input MutationCreateGetfileUrlInput {
+  """Name of the object to be downloaded"""
   objectName: String
+
+  """ID of the organization the file belongs to"""
   organizationId: ID!
 }
 
@@ -1730,10 +1734,18 @@ input MutationCreatePostVoteInput {
   type: PostVoteType!
 }
 
+"""Input for creating a presigned URL for file upload"""
 input MutationCreatePresignedUrlInput {
+  """Name of the file to be uploaded"""
   fileName: String!
+
+  """MIME type of the file"""
   fileType: String!
+
+  """Custom object name for the file (optional)"""
   objectName: String
+
+  """ID of the organization the file belongs to"""
   organizationId: ID!
 }
 

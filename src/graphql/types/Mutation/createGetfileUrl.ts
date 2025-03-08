@@ -1,10 +1,7 @@
+import { MutationCreateGetfileUrlInput } from "~/src/graphql/inputs/MutationCreateGetfileUrlInput";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { builder } from "../../builder";
 import { GetUrlResponse } from "../../types/Post/GetUrlResponse";
-import {
-    MutationCreateGetfileUrlInput, 
-  } from "~/src/graphql/inputs/MutationCreateGetfileUrlInput";
-  
 
 builder.mutationField("createGetfileUrl", (t) =>
 	t.field({

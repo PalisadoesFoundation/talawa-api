@@ -641,8 +641,8 @@ export const Mutation_createPresignedUrl = gql(`
   }
 `);
 
-export const Mutation_createGetUrl = gql(`
-  mutation Mutation_createGetUrl($input: MutationCreateGetfileUrlInput!) {
+export const Mutation_createGetfileUrl = gql(`
+  mutation Mutation_createGetfileUrl($input: MutationCreateGetfileUrlInput!) {
     createGetfileUrl(input: $input) {
       presignedUrl
     }

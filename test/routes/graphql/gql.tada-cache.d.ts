@@ -80,7 +80,7 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ createPost: { id: string; caption: string | null; pinnedAt: string | null; organization: { id: string; } | null; attachments: { mimeType: string | null; url: string | null; }[] | null; } | null; }, { input: { organizationId: string; isPinned?: boolean | null | undefined; caption: string; attachments?: unknown[] | null | undefined; }; }, void>;
     "\n  mutation Mutation_createPresignedUrl($input: MutationCreatePresignedUrlInput!) {\n    createPresignedUrl(input: $input) {\n      fileUrl\n      presignedUrl\n      objectName\n    }\n  }\n":
       TadaDocumentNode<{ createPresignedUrl: { fileUrl: string | null; presignedUrl: string | null; objectName: string | null; } | null; }, { input: { organizationId: string; objectName?: string | null | undefined; fileType: string; fileName: string; }; }, void>;
-    "\n  mutation Mutation_createGetUrl($input: MutationCreateGetfileUrlInput!) {\n    createGetfileUrl(input: $input) {\n      presignedUrl\n    }\n  }\n":
+    "\n  mutation Mutation_createGetfileUrl($input: MutationCreateGetfileUrlInput!) {\n    createGetfileUrl(input: $input) {\n      presignedUrl\n    }\n  }\n":
       TadaDocumentNode<{ createGetfileUrl: { presignedUrl: string | null; } | null; }, { input: { organizationId: string; objectName?: string | null | undefined; }; }, void>;
   }
 }
