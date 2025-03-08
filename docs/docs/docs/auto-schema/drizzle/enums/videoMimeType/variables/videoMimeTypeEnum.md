@@ -6,6 +6,6 @@
 
 > `const` **videoMimeTypeEnum**: `ZodEnum`\<\[`"video/mp4"`, `"video/webm"`\]\>
 
-Defined in: [src/drizzle/enums/videoMimeType.ts:6](https://github.com/PurnenduMIshra129th/talawa-api/blob/4369c9351f5b76f958b297b25ab2b17196210af9/src/drizzle/enums/videoMimeType.ts#L6)
+Defined in: [src/drizzle/enums/videoMimeType.ts:6](https://github.com/PurnenduMIshra129th/talawa-api/blob/8bb4483f6aa0d175e00d3d589e36182f9c58a66a/src/drizzle/enums/videoMimeType.ts#L6)
 
 Possible variants of the type of a video.
