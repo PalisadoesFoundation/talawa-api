@@ -6,7 +6,7 @@
 
 > **plugins**(`fastify`): `Promise`\<`void`\>
 
-Defined in: [src/plugins/index.ts:6](https://github.com/Suyash878/talawa-api/blob/2164956a3cfab8e53ec86349b53a841816d69cde/src/plugins/index.ts#L6)
+Defined in: [src/plugins/index.ts:6](https://github.com/PratapRathi/talawa-api/blob/8547a42c99c7a44be459745d0018a2deccfb1f66/src/plugins/index.ts#L6)
 
 ## Parameters
 
