@@ -6,8 +6,6 @@ import {
   } from "~/src/graphql/inputs/MutationCreateGetfileUrlInput";
   
 
- 
-
 builder.mutationField("createGetfileUrl", (t) =>
 	t.field({
 		args: {
