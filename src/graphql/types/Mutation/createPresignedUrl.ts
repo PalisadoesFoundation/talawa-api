@@ -9,6 +9,7 @@ const MutationCreatePresignedUrlInput = builder.inputType(
 			fileName: t.string({ required: true }),
 			fileType: t.string({ required: true }),
 			organizationId: t.id({ required: true }),
+			objectName: t.string({ required: false }), 
 		}),
 	},
 );
@@ -81,7 +82,7 @@ builder.mutationField("createPresignedUrl", (t) =>
 
 			const { fileName } = args.input;
 			const bucketName = ctx.minio.bucketName;
-			const objectName = `uploads/${Date.now()}-${crypto.randomUUID()}-${fileName}`;
+			const objectName = args.input.objectName || `uploads/${Date.now()}-${crypto.randomUUID()}-${fileName}`;
 
 			try {
 				const presignedUrl: string = await new Promise((resolve, reject) => {

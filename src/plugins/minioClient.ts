@@ -25,6 +25,8 @@ declare module "fastify" {
  */
 export const minioClient = fastifyPlugin(async (fastify) => {
 	let ClientClass = MinioClient;
+
+	
 	if (process.env.NODE_ENV !== "production") {
 		ClientClass = class extends MinioClient {
 			protected override getRequestOptions(opts: {

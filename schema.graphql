@@ -1721,6 +1721,7 @@ input MutationCreatePresignedUrlInput {
   fileName: String!
   fileType: String!
   organizationId: ID!
+  objectName: String
 }
 
 """"""
