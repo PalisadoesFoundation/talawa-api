@@ -1,18 +1,10 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { builder } from "../../builder";
 import { UploadUrlResponse } from "../../types/Post/UploadUrlResponse";
+import { 
+	MutationCreatePresignedUrlInput,
+  } from "~/src/graphql/inputs/MutationCreatePresignedUrlInput";
 
-const MutationCreatePresignedUrlInput = builder.inputType(
-	"MutationCreatePresignedUrlInput",
-	{
-		fields: (t) => ({
-			fileName: t.string({ required: true }),
-			fileType: t.string({ required: true }),
-			organizationId: t.id({ required: true }),
-			objectName: t.string({ required: false }),
-		}),
-	},
-);
 
 builder.mutationField("createPresignedUrl", (t) =>
 	t.field({
