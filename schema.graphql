@@ -1958,8 +1958,6 @@ input MutationCancelMembershipRequestInput {
   """
   membershipRequestId: ID!
 }
-
-"""
 """
 input MutationCreateAdvertisementInput {
   """
@@ -2795,16 +2793,6 @@ input MutationSendMembershipRequestInput {
 }
 
 """
-"""
-Input type for canceling a membership request.
-"""
-input MutationCancelMembershipRequestInput {
-  """
-  Global identifier of the membership request.
-  """
-  membershipRequestId: ID!
-}
-
 """
 input MutationSignUpInput {
   """
