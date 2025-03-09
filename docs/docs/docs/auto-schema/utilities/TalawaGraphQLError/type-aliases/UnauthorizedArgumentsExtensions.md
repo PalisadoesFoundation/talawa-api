@@ -6,7 +6,7 @@
 
 > **UnauthorizedArgumentsExtensions**: `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:181](https://github.com/Suyash878/talawa-api/blob/2164956a3cfab8e53ec86349b53a841816d69cde/src/utilities/TalawaGraphQLError.ts#L181)
+Defined in: [src/utilities/TalawaGraphQLError.ts:181](https://github.com/PalisadoesFoundation/talawa-api/blob/1251c45d69620e1317cb8632c6decbdb7edbdb06/src/utilities/TalawaGraphQLError.ts#L181)
 
 When the client is not authorized to perform an action with certain arguments.
 
