@@ -52,8 +52,8 @@ check_approval() {
 }
 
 # Number of times to retry and how many seconds to wait between retries
-MAX_RETRIES=5
-RETRY_DELAY=10
+MAX_RETRIES=10
+RETRY_DELAY=30
 attempt=1
 
 while [ $attempt -le $MAX_RETRIES ]; do
