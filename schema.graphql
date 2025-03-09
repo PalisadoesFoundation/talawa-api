@@ -1536,6 +1536,7 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
+
 """
 Possible statuses of a membership request.
 """
@@ -1543,6 +1544,21 @@ enum MembershipRequestStatus {
   approved
   pending
   rejected
+}
+"""Filter criteria for member roles"""
+input MembersRoleWhereInput {
+  """Role equals this value"""
+  equal: OrganizationMembershipRole
+
+  """Role does not equal this value"""
+  notEqual: OrganizationMembershipRole
+}
+
+"""Filter criteria for organization members"""
+input MembersWhereInput {
+  """Filter members by role"""
+  role: MembersRoleWhereInput
+
 }
 
 type Mutation {
@@ -3563,6 +3579,11 @@ type Organization {
     before: String
     first: Int
     last: Int
+
+
+    """Filter criteria for organization members"""
+    where: MembersWhereInput
+
   ): OrganizationMembersConnection
 
   """
