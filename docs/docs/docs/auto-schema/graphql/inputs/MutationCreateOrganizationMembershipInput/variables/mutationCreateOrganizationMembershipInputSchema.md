@@ -6,4 +6,4 @@
 
 > `const` **mutationCreateOrganizationMembershipInputSchema**: `ZodObject`\<`extendShape`\<`Pick`\<\{\}, `never`\>, \{ `role`: `any`; \}\>, `"strip"`, `ZodTypeAny`, \{ `[key: string]`: `any`;  `role`: `unknown`; \}, \{ `[key: string]`: `any`;  `role`: `unknown`; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts:6](https://github.com/PratapRathi/talawa-api/blob/8547a42c99c7a44be459745d0018a2deccfb1f66/src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts#L6)
+Defined in: [src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts:6](https://github.com/PratapRathi/talawa-api/blob/d256975b8804135eeae09572d0d303ebdab3b3d4/src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts#L6)

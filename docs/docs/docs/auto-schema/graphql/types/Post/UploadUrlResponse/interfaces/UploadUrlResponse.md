@@ -4,7 +4,7 @@
 
 # Interface: UploadUrlResponse
 
-Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:3](https://github.com/PratapRathi/talawa-api/blob/8547a42c99c7a44be459745d0018a2deccfb1f66/src/graphql/types/Post/UploadUrlResponse.ts#L3)
+Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:3](https://github.com/PratapRathi/talawa-api/blob/d256975b8804135eeae09572d0d303ebdab3b3d4/src/graphql/types/Post/UploadUrlResponse.ts#L3)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:3](https://github.com/P
 
 > **fileUrl**: `string`
 
-Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/PratapRathi/talawa-api/blob/8547a42c99c7a44be459745d0018a2deccfb1f66/src/graphql/types/Post/UploadUrlResponse.ts#L5)
+Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/PratapRathi/talawa-api/blob/d256975b8804135eeae09572d0d303ebdab3b3d4/src/graphql/types/Post/UploadUrlResponse.ts#L5)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/P
 
 > **objectName**: `string`
 
-Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:6](https://github.com/PratapRathi/talawa-api/blob/8547a42c99c7a44be459745d0018a2deccfb1f66/src/graphql/types/Post/UploadUrlResponse.ts#L6)
+Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:6](https://github.com/PratapRathi/talawa-api/blob/d256975b8804135eeae09572d0d303ebdab3b3d4/src/graphql/types/Post/UploadUrlResponse.ts#L6)
 
 ***
 
@@ -28,4 +28,4 @@ Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:6](https://github.com/P
 
 > **presignedUrl**: `string`
 
-Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:4](https://github.com/PratapRathi/talawa-api/blob/8547a42c99c7a44be459745d0018a2deccfb1f66/src/graphql/types/Post/UploadUrlResponse.ts#L4)
+Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:4](https://github.com/PratapRathi/talawa-api/blob/d256975b8804135eeae09572d0d303ebdab3b3d4/src/graphql/types/Post/UploadUrlResponse.ts#L4)

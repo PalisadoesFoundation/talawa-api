@@ -6,7 +6,7 @@
 
 > **DefaultGraphQLConnection**\<`NodeType`\>: `object`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:207](https://github.com/PratapRathi/talawa-api/blob/8547a42c99c7a44be459745d0018a2deccfb1f66/src/utilities/defaultGraphQLConnection.ts#L207)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:207](https://github.com/PratapRathi/talawa-api/blob/d256975b8804135eeae09572d0d303ebdab3b3d4/src/utilities/defaultGraphQLConnection.ts#L207)
 
 This is typescript type of a base graphql connection object. This connection object can be extended to create a custom connnection object as long as the new connection object adheres to the default type of this base connection object.
 

@@ -6,6 +6,6 @@
 
 > `const` **postVoteTypeEnum**: `ZodEnum`\<\[`"down_vote"`, `"up_vote"`\]\>
 
-Defined in: [src/drizzle/enums/postVoteType.ts:6](https://github.com/PratapRathi/talawa-api/blob/8547a42c99c7a44be459745d0018a2deccfb1f66/src/drizzle/enums/postVoteType.ts#L6)
+Defined in: [src/drizzle/enums/postVoteType.ts:6](https://github.com/PratapRathi/talawa-api/blob/d256975b8804135eeae09572d0d303ebdab3b3d4/src/drizzle/enums/postVoteType.ts#L6)
 
 Possible variants of the type of a vote on a post.

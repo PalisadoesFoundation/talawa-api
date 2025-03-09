@@ -6,7 +6,7 @@
 
 > **CommunityResolvers**: `object`
 
-Defined in: [src/graphql/types/Community/Community.ts:11](https://github.com/PratapRathi/talawa-api/blob/8547a42c99c7a44be459745d0018a2deccfb1f66/src/graphql/types/Community/Community.ts#L11)
+Defined in: [src/graphql/types/Community/Community.ts:11](https://github.com/PratapRathi/talawa-api/blob/d256975b8804135eeae09572d0d303ebdab3b3d4/src/graphql/types/Community/Community.ts#L11)
 
 ## Type declaration
 
