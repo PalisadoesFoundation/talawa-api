@@ -4,8 +4,7 @@ import { AppUserProfile, Event, Organization, Post, User } from "../models";
 import { faker } from "@faker-js/faker";
 import type mongoose from "mongoose";
 import { SampleData } from "../models/SampleData";
-
-/* eslint-disable */
+import type { InterfaceAppUserProfile } from "../models/AppUserProfile";
 
 /**
  * Generates user data for a given organization and user type.
@@ -17,7 +16,10 @@ import { SampleData } from "../models/SampleData";
 export const generateUserData = async (
   organizationId: string,
   userType: string,
-) => {
+): Promise<{
+  user: InterfaceUser & mongoose.Document;
+  appUserProfile: InterfaceAppUserProfile & mongoose.Document;
+}> => {
   const gender: "male" | "female" = faker.helpers.arrayElement([
     "male",
     "female",
@@ -144,7 +146,9 @@ export const generateEventData = async (
 export const generatePostData = async (
   users: InterfaceUser[],
   organizationId: string,
-): Promise<InterfacePost & mongoose.Document<any, any, InterfacePost>> => {
+): Promise<
+  InterfacePost & mongoose.Document<unknown, unknown, InterfacePost>
+> => {
   const post = new Post({
     status: "ACTIVE",
     likedBy: [],
@@ -183,7 +187,9 @@ const createPosts = async (
   numPosts: number,
   users: InterfaceUser[],
   organizationId: string,
-): Promise<(InterfacePost & mongoose.Document<any, any, InterfacePost>)[]> => {
+): Promise<
+  (InterfacePost & mongoose.Document<unknown, unknown, InterfacePost>)[]
+> => {
   const posts = [];
   for (let i = 0; i < numPosts; i++) {
     const post = await generatePostData(users, organizationId);
@@ -226,7 +232,7 @@ export const createSampleOrganization = async (): Promise<void> => {
 
   const creatorAppProfile = userData.appUserProfile;
 
-  interface Address {
+  interface InterfaceAddress {
     city: string;
     countryCode: string;
     dependentLocality: string;
@@ -237,7 +243,7 @@ export const createSampleOrganization = async (): Promise<void> => {
     state: string;
   }
 
-  const address: Address = {
+  const address: InterfaceAddress = {
     city: faker.location.city(),
     countryCode: faker.location.countryCode(),
     dependentLocality: faker.location.secondaryAddress(),
@@ -278,7 +284,6 @@ export const createSampleOrganization = async (): Promise<void> => {
     const newUserData = await generateUserData(_id, userType);
 
     const newUser = newUserData.user;
-    const newUserAppProfile = newUserData.appUserProfile;
 
     organization.members.push(newUser._id);
 
