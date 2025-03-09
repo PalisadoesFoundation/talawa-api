@@ -1,7 +1,6 @@
 import type { PaginateModel, PopulatedDoc, Types } from "mongoose";
 import mongoose from "mongoose";
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { Schema, model, models } = mongoose;
+const { Schema: mongoSchema, model, models } = mongoose;
 import mongoosePaginate from "mongoose-paginate-v2";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceOrganization } from "./Organization";
@@ -38,16 +37,16 @@ export interface InterfaceAppUserProfile {
  * @param token - Access token associated with the user profile.
  */
 
-const appUserSchema = new Schema(
+const appUserSchema = new mongoSchema(
   {
     userId: {
-      type: Schema.Types.ObjectId,
+      type: mongoSchema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     adminFor: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoSchema.Types.ObjectId,
         ref: "Organization",
       },
     ],
@@ -58,31 +57,31 @@ const appUserSchema = new Schema(
     },
     createdOrganizations: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoSchema.Types.ObjectId,
         ref: "Organization",
       },
     ],
     createdEvents: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoSchema.Types.ObjectId,
         ref: "Event",
       },
     ],
     eventAdmin: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoSchema.Types.ObjectId,
         ref: "Event",
       },
     ],
     pledges: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoSchema.Types.ObjectId,
         ref: "FundraisingCampaignPledge",
       },
     ],
     campaigns: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoSchema.Types.ObjectId,
         ref: "FundraisingCampaign",
       },
     ],
