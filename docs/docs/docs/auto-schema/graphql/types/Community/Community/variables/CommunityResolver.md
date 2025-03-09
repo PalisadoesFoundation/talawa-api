@@ -6,4 +6,4 @@
 
 > `const` **CommunityResolver**: [`CommunityResolvers`](../type-aliases/CommunityResolvers.md)
 
-Defined in: [src/graphql/types/Community/Community.ts:19](https://github.com/syedali237/talawa-api/blob/8c6154f4daaa502448d207545feda14b4d146e99/src/graphql/types/Community/Community.ts#L19)
+Defined in: [src/graphql/types/Community/Community.ts:19](https://github.com/syedali237/talawa-api/blob/1ea81b2cbc70edeabb13ce54739da6a490530cde/src/graphql/types/Community/Community.ts#L19)

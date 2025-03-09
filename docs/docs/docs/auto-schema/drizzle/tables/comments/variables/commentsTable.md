@@ -6,6 +6,6 @@
 
 > `const` **commentsTable**: `PgTableWithColumns`\<\{\}\>
 
-Defined in: [src/drizzle/tables/comments.ts:12](https://github.com/syedali237/talawa-api/blob/8c6154f4daaa502448d207545feda14b4d146e99/src/drizzle/tables/comments.ts#L12)
+Defined in: [src/drizzle/tables/comments.ts:12](https://github.com/syedali237/talawa-api/blob/1ea81b2cbc70edeabb13ce54739da6a490530cde/src/drizzle/tables/comments.ts#L12)
 
 Drizzle orm postgres table definition for comments.

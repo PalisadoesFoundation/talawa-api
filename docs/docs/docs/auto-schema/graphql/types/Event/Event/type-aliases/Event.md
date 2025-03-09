@@ -6,7 +6,7 @@
 
 > **Event**: *typeof* `eventsTable.$inferSelect` & `object`
 
-Defined in: [src/graphql/types/Event/Event.ts:8](https://github.com/syedali237/talawa-api/blob/8c6154f4daaa502448d207545feda14b4d146e99/src/graphql/types/Event/Event.ts#L8)
+Defined in: [src/graphql/types/Event/Event.ts:8](https://github.com/syedali237/talawa-api/blob/1ea81b2cbc70edeabb13ce54739da6a490530cde/src/graphql/types/Event/Event.ts#L8)
 
 ## Type declaration
 
