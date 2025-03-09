@@ -550,22 +550,6 @@ export const types = gql`
     currPageNo: Int
   }
 
-  # For Plugins
-  type Plugin {
-    _id: ID!
-    pluginName: String!
-    pluginCreatedBy: String!
-    pluginDesc: String!
-    uninstalledOrgs: [ID!]
-  }
-
-  type PluginField {
-    key: String!
-    value: String!
-    status: Status!
-    createdAt: DateTime!
-  }
-
   type Post {
     _id: ID
     text: String!
@@ -660,7 +644,6 @@ export const types = gql`
     membershipRequests: [MembershipRequest]
     registeredEvents: [Event]
     eventsAttended: [Event]
-    pluginCreationAllowed: Boolean!
     tagsAssignedWith(
       after: String
       before: String
@@ -679,7 +662,6 @@ export const types = gql`
     eventAdmin: [Event]
     pledges: [FundraisingCampaignPledge]
     campaigns: [FundraisingCampaign]
-    pluginCreationAllowed: Boolean!
     isSuperAdmin: Boolean!
     appLanguageCode: String!
   }

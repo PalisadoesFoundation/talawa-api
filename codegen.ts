@@ -85,10 +85,6 @@ const config: CodegenConfig = {
 
           Organization: "../models/Organization#InterfaceOrganization",
 
-          Plugin: "../models/Plugin#InterfacePlugin",
-
-          PluginField: "../models/PluginField#InterfacePluginField",
-
           Post: "../models/Post#InterfacePost",
 
           RecurrenceRule: "../models/RecurrenceRule#InterfaceRecurrenceRule",

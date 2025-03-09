@@ -33,7 +33,6 @@ type AdditionalUserFields = {
   role?: string;
   userType?: string;
   appLanguageCode?: string;
-  pluginCreationAllowed?: boolean;
   adminApproved?: boolean;
   adminFor?: mongoose.Types.ObjectId[];
   memberOf?: mongoose.Types.ObjectId[];

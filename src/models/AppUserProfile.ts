@@ -19,7 +19,6 @@ export interface InterfaceAppUserProfile {
   eventAdmin: PopulatedDoc<InterfaceEvent & Document>[];
   pledges: PopulatedDoc<InterfaceFundraisingCampaignPledges & Document>[];
   campaigns: PopulatedDoc<InterfaceFundraisingCampaign & Document>[];
-  pluginCreationAllowed: boolean;
   token: string | undefined;
   tokenVersion: number;
   isSuperAdmin: boolean;
@@ -34,7 +33,6 @@ export interface InterfaceAppUserProfile {
  * @param eventAdmin - Array of events where the user is an admin.
  * @param pledges - Array of pledges associated with the user.
  * @param campaigns - Array of campaigns associated with the user.
- * @param pluginCreationAllowed - Flag indicating if user is allowed to create plugins.
  * @param tokenVersion - Token version for authentication.
  * @param isSuperAdmin - Flag indicating if the user is a super admin.
  * @param token - Access token associated with the user profile.
@@ -88,11 +86,6 @@ const appUserSchema = new Schema(
         ref: "FundraisingCampaign",
       },
     ],
-    pluginCreationAllowed: {
-      type: Boolean,
-      required: true,
-      default: true,
-    },
     tokenVersion: {
       type: Number,
       required: true,
@@ -112,6 +105,7 @@ const appUserSchema = new Schema(
     timestamps: true,
   },
 );
+// Add mongoose paginate to the schema
 appUserSchema.plugin(mongoosePaginate);
 const appUserProfileModel = (): PaginateModel<InterfaceAppUserProfile> =>
   model<InterfaceAppUserProfile, PaginateModel<InterfaceAppUserProfile>>(

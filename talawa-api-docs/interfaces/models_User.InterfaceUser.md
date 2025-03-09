@@ -33,7 +33,6 @@ This is an interface that represents a database(MongoDB) document for User.
 - [organizationsBlockedBy](models_User.InterfaceUser.md#organizationsblockedby)
 - [password](models_User.InterfaceUser.md#password)
 - [phone](models_User.InterfaceUser.md#phone)
-- [pluginCreationAllowed](models_User.InterfaceUser.md#plugincreationallowed)
 - [registeredEvents](models_User.InterfaceUser.md#registeredevents)
 - [status](models_User.InterfaceUser.md#status)
 - [token](models_User.InterfaceUser.md#token)

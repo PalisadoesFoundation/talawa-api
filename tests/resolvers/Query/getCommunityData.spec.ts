@@ -4,13 +4,11 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { Community } from "../../../src/models";
 import { connect, disconnect } from "../../helpers/db";
-import { createTestPlugin } from "../../helpers/plugins";
 
 let MONGOOSE_INSTANCE: typeof mongoose;
 
 beforeAll(async () => {
   MONGOOSE_INSTANCE = await connect();
-  await createTestPlugin();
 });
 
 afterAll(async () => {

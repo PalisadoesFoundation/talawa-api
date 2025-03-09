@@ -16,7 +16,6 @@ const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 import { WebSocketServer } from "ws";
 import app from "./app";
 import { logIssues } from "./checks";
-import loadPlugins from "./config/plugins/loadPlugins";
 import * as database from "./db";
 import authDirectiveTransformer from "./directives/directiveTransformer/authDirectiveTransformer";
 import roleDirectiveTransformer from "./directives/directiveTransformer/roleDirectiveTransformer";
@@ -150,4 +149,3 @@ async function startServer(): Promise<void> {
 }
 
 startServer();
-loadPlugins();

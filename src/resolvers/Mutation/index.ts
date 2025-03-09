@@ -11,7 +11,6 @@ import { addUserToUserFamily } from "./addUserToUserFamily";
 import { addPeopleToUserTag } from "./addPeopleToUserTag";
 import { assignUserTag } from "./assignUserTag";
 import { assignToUserTags } from "./assignToUserTags";
-import { blockPluginCreationBySuperadmin } from "./blockPluginCreationBySuperadmin";
 import { blockUser } from "./blockUser";
 import { cancelMembershipRequest } from "./cancelMembershipRequest";
 import { checkIn } from "./checkIn";
@@ -34,7 +33,6 @@ import { createEventVolunteerGroup } from "./createEventVolunteerGroup";
 import { createFundraisingCampaignPledge } from "./createFundraisingCampaignPledge";
 import { createMember } from "./createMember";
 import { createOrganization } from "./createOrganization";
-import { createPlugin } from "./createPlugin";
 import { createPost } from "./createPost";
 import { createSampleOrganization } from "./createSampleOrganization";
 import { createUserFamily } from "./createUserFamily";
@@ -109,7 +107,6 @@ import { updateFundraisingCampaignPledge } from "./updateFundCampaignPledge";
 import { updateFundraisingCampaign } from "./updateFundraisingCampaign";
 import { updateLanguage } from "./updateLanguage";
 import { updateOrganization } from "./updateOrganization";
-import { updatePluginStatus } from "./updatePluginStatus";
 import { updateSessionTimeout } from "./updateSessionTimeout";
 import { updateUserPassword } from "./updateUserPassword";
 import { updateUserProfile } from "./updateUserProfile";
@@ -139,7 +136,6 @@ export const Mutation: MutationResolvers = {
   removeUserFamily,
   removeUserFromUserFamily,
   createUserFamily,
-  blockPluginCreationBySuperadmin,
   blockUser,
   cancelMembershipRequest,
   updateUserRoleInOrganization,
@@ -160,7 +156,6 @@ export const Mutation: MutationResolvers = {
   createFundraisingCampaign,
   createOrganization,
   createNote,
-  createPlugin,
   createPost,
   createSampleOrganization,
   createActionItemCategory,
@@ -232,7 +227,6 @@ export const Mutation: MutationResolvers = {
   updateEventVolunteerGroup,
   updateLanguage,
   updateOrganization,
-  updatePluginStatus,
   updateSessionTimeout,
   updateUserProfile,
   updateUserPassword,

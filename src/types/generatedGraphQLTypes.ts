@@ -27,8 +27,6 @@ import type { InterfaceMembershipRequest as InterfaceMembershipRequestModel } fr
 import type { InterfaceMessage as InterfaceMessageModel } from '../models/Message';
 import type { InterfaceNote as InterfaceNoteModel } from '../models/Note';
 import type { InterfaceOrganization as InterfaceOrganizationModel } from '../models/Organization';
-import type { InterfacePlugin as InterfacePluginModel } from '../models/Plugin';
-import type { InterfacePluginField as InterfacePluginFieldModel } from '../models/PluginField';
 import type { InterfacePost as InterfacePostModel } from '../models/Post';
 import type { InterfaceRecurrenceRule as InterfaceRecurrenceRuleModel } from '../models/RecurrenceRule';
 import type { InterfaceOrganizationTagUser as InterfaceOrganizationTagUserModel } from '../models/OrganizationTagUser';
@@ -248,7 +246,6 @@ export type AppUserProfile = {
   eventAdmin?: Maybe<Array<Maybe<Event>>>;
   isSuperAdmin: Scalars['Boolean']['output'];
   pledges?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
-  pluginCreationAllowed: Scalars['Boolean']['output'];
   userId: User;
 };
 
@@ -1238,7 +1235,6 @@ export type Mutation = {
   addUserToUserFamily: UserFamily;
   assignToUserTags?: Maybe<UserTag>;
   assignUserTag?: Maybe<User>;
-  blockPluginCreationBySuperadmin: AppUserProfile;
   blockUser: User;
   cancelMembershipRequest: MembershipRequest;
   checkIn: CheckIn;
@@ -1262,7 +1258,6 @@ export type Mutation = {
   createMember: CreateMemberPayload;
   createNote: Note;
   createOrganization: Organization;
-  createPlugin: Plugin;
   createPost?: Maybe<Post>;
   createSampleOrganization: Scalars['Boolean']['output'];
   createUserFamily: UserFamily;
@@ -1343,7 +1338,6 @@ export type Mutation = {
   updateLanguage: User;
   updateNote: Note;
   updateOrganization: Organization;
-  updatePluginStatus: Plugin;
   updatePost: Post;
   updateSessionTimeout: Scalars['Boolean']['output'];
   updateUserPassword: UserData;
@@ -1429,12 +1423,6 @@ export type MutationAssignToUserTagsArgs = {
 
 export type MutationAssignUserTagArgs = {
   input: ToggleUserTagAssignInput;
-};
-
-
-export type MutationBlockPluginCreationBySuperadminArgs = {
-  blockUser: Scalars['Boolean']['input'];
-  userId: Scalars['ID']['input'];
 };
 
 
@@ -1562,14 +1550,6 @@ export type MutationCreateNoteArgs = {
 export type MutationCreateOrganizationArgs = {
   data?: InputMaybe<OrganizationInput>;
   file?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type MutationCreatePluginArgs = {
-  pluginCreatedBy: Scalars['String']['input'];
-  pluginDesc: Scalars['String']['input'];
-  pluginName: Scalars['String']['input'];
-  uninstalledOrgs?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 
@@ -1970,12 +1950,6 @@ export type MutationUpdateOrganizationArgs = {
 };
 
 
-export type MutationUpdatePluginStatusArgs = {
-  id: Scalars['ID']['input'];
-  orgId: Scalars['ID']['input'];
-};
-
-
 export type MutationUpdatePostArgs = {
   data?: InputMaybe<PostUpdateInput>;
   id: Scalars['ID']['input'];
@@ -2220,36 +2194,6 @@ export type PledgeWhereInput = {
   name_contains?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type Plugin = {
-  __typename?: 'Plugin';
-  _id: Scalars['ID']['output'];
-  pluginCreatedBy: Scalars['String']['output'];
-  pluginDesc: Scalars['String']['output'];
-  pluginName: Scalars['String']['output'];
-  uninstalledOrgs?: Maybe<Array<Scalars['ID']['output']>>;
-};
-
-export type PluginField = {
-  __typename?: 'PluginField';
-  createdAt: Scalars['DateTime']['output'];
-  key: Scalars['String']['output'];
-  status: Status;
-  value: Scalars['String']['output'];
-};
-
-export type PluginFieldInput = {
-  key: Scalars['String']['input'];
-  value: Scalars['String']['input'];
-};
-
-export type PluginInput = {
-  fields?: InputMaybe<Array<InputMaybe<PluginFieldInput>>>;
-  orgId: Scalars['ID']['input'];
-  pluginKey?: InputMaybe<Scalars['String']['input']>;
-  pluginName: Scalars['String']['input'];
-  pluginType?: InputMaybe<Type>;
-};
-
 export type Post = {
   __typename?: 'Post';
   _id?: Maybe<Scalars['ID']['output']>;
@@ -2347,7 +2291,6 @@ export type Query = {
   actionItemsByEvent?: Maybe<Array<Maybe<ActionItem>>>;
   actionItemsByOrganization?: Maybe<Array<Maybe<ActionItem>>>;
   actionItemsByUser?: Maybe<Array<Maybe<ActionItem>>>;
-  adminPlugin?: Maybe<Array<Maybe<Plugin>>>;
   advertisementsConnection?: Maybe<AdvertisementsConnection>;
   agendaCategory: AgendaCategory;
   agendaItemByEvent?: Maybe<Array<Maybe<AgendaItem>>>;
@@ -2382,7 +2325,6 @@ export type Query = {
   getGroupChatsByUserId?: Maybe<Array<Maybe<Chat>>>;
   getNoteById: Note;
   getPledgesByUserId?: Maybe<Array<Maybe<FundraisingCampaignPledge>>>;
-  getPlugins?: Maybe<Array<Maybe<Plugin>>>;
   getRecurringEvents?: Maybe<Array<Maybe<Event>>>;
   getUnreadChatsByUserId?: Maybe<Array<Maybe<Chat>>>;
   getUserTag?: Maybe<UserTag>;
@@ -2398,7 +2340,6 @@ export type Query = {
   organizations?: Maybe<Array<Maybe<Organization>>>;
   organizationsConnection: Array<Maybe<Organization>>;
   organizationsMemberConnection: UserConnection;
-  plugin?: Maybe<Array<Maybe<Plugin>>>;
   post?: Maybe<Post>;
   registeredEventsByUser?: Maybe<Array<Maybe<Event>>>;
   registrantsByEvent?: Maybe<Array<Maybe<User>>>;
@@ -2435,11 +2376,6 @@ export type QueryActionItemsByUserArgs = {
   orderBy?: InputMaybe<ActionItemsOrderByInput>;
   userId: Scalars['ID']['input'];
   where?: InputMaybe<ActionItemWhereInput>;
-};
-
-
-export type QueryAdminPluginArgs = {
-  orgId: Scalars['ID']['input'];
 };
 
 
@@ -2696,11 +2632,6 @@ export type QueryOrganizationsMemberConnectionArgs = {
 };
 
 
-export type QueryPluginArgs = {
-  orgId: Scalars['ID']['input'];
-};
-
-
 export type QueryPostArgs = {
   id: Scalars['ID']['input'];
 };
@@ -2828,7 +2759,6 @@ export type Status =
 export type Subscription = {
   __typename?: 'Subscription';
   messageSentToChat?: Maybe<ChatMessage>;
-  onPluginUpdate?: Maybe<Plugin>;
 };
 
 
@@ -3057,7 +2987,6 @@ export type User = {
   membershipRequests?: Maybe<Array<Maybe<MembershipRequest>>>;
   organizationsBlockedBy?: Maybe<Array<Maybe<Organization>>>;
   phone?: Maybe<UserPhone>;
-  pluginCreationAllowed: Scalars['Boolean']['output'];
   posts?: Maybe<PostsConnection>;
   registeredEvents?: Maybe<Array<Maybe<Event>>>;
   tagsAssignedWith?: Maybe<UserTagsConnection>;
@@ -3650,10 +3579,6 @@ export type ResolversTypes = {
   PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']['output']>;
   PledgeOrderByInput: PledgeOrderByInput;
   PledgeWhereInput: PledgeWhereInput;
-  Plugin: ResolverTypeWrapper<InterfacePluginModel>;
-  PluginField: ResolverTypeWrapper<InterfacePluginFieldModel>;
-  PluginFieldInput: PluginFieldInput;
-  PluginInput: PluginInput;
   PositiveInt: ResolverTypeWrapper<Scalars['PositiveInt']['output']>;
   Post: ResolverTypeWrapper<InterfacePostModel>;
   PostEdge: ResolverTypeWrapper<Omit<PostEdge, 'node'> & { node: ResolversTypes['Post'] }>;
@@ -3870,10 +3795,6 @@ export type ResolversParentTypes = {
   PageInfo: PageInfo;
   PhoneNumber: Scalars['PhoneNumber']['output'];
   PledgeWhereInput: PledgeWhereInput;
-  Plugin: InterfacePluginModel;
-  PluginField: InterfacePluginFieldModel;
-  PluginFieldInput: PluginFieldInput;
-  PluginInput: PluginInput;
   PositiveInt: Scalars['PositiveInt']['output'];
   Post: InterfacePostModel;
   PostEdge: Omit<PostEdge, 'node'> & { node: ResolversParentTypes['Post'] };
@@ -4108,7 +4029,6 @@ export type AppUserProfileResolvers<ContextType = any, ParentType extends Resolv
   eventAdmin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   isSuperAdmin?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   pledges?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType>;
-  pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   userId?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -4591,7 +4511,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   addUserToUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationAddUserToUserFamilyArgs, 'familyId' | 'userId'>>;
   assignToUserTags?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<MutationAssignToUserTagsArgs, 'input'>>;
   assignUserTag?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAssignUserTagArgs, 'input'>>;
-  blockPluginCreationBySuperadmin?: Resolver<ResolversTypes['AppUserProfile'], ParentType, ContextType, RequireFields<MutationBlockPluginCreationBySuperadminArgs, 'blockUser' | 'userId'>>;
   blockUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockUserArgs, 'organizationId' | 'userId'>>;
   cancelMembershipRequest?: Resolver<ResolversTypes['MembershipRequest'], ParentType, ContextType, RequireFields<MutationCancelMembershipRequestArgs, 'membershipRequestId'>>;
   checkIn?: Resolver<ResolversTypes['CheckIn'], ParentType, ContextType, RequireFields<MutationCheckInArgs, 'data'>>;
@@ -4615,7 +4534,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createMember?: Resolver<ResolversTypes['CreateMemberPayload'], ParentType, ContextType, RequireFields<MutationCreateMemberArgs, 'input'>>;
   createNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationCreateNoteArgs, 'data'>>;
   createOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, Partial<MutationCreateOrganizationArgs>>;
-  createPlugin?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationCreatePluginArgs, 'pluginCreatedBy' | 'pluginDesc' | 'pluginName'>>;
   createPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
   createSampleOrganization?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   createUserFamily?: Resolver<ResolversTypes['UserFamily'], ParentType, ContextType, RequireFields<MutationCreateUserFamilyArgs, 'data'>>;
@@ -4696,7 +4614,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   updateLanguage?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateLanguageArgs, 'languageCode'>>;
   updateNote?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<MutationUpdateNoteArgs, 'data' | 'id'>>;
   updateOrganization?: Resolver<ResolversTypes['Organization'], ParentType, ContextType, RequireFields<MutationUpdateOrganizationArgs, 'id'>>;
-  updatePluginStatus?: Resolver<ResolversTypes['Plugin'], ParentType, ContextType, RequireFields<MutationUpdatePluginStatusArgs, 'id' | 'orgId'>>;
   updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'id'>>;
   updateSessionTimeout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateSessionTimeoutArgs, 'timeout'>>;
   updateUserPassword?: Resolver<ResolversTypes['UserData'], ParentType, ContextType, RequireFields<MutationUpdateUserPasswordArgs, 'data'>>;
@@ -4794,23 +4711,6 @@ export interface PhoneNumberScalarConfig extends GraphQLScalarTypeConfig<Resolve
   name: 'PhoneNumber';
 }
 
-export type PluginResolvers<ContextType = any, ParentType extends ResolversParentTypes['Plugin'] = ResolversParentTypes['Plugin']> = {
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  pluginCreatedBy?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  pluginDesc?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  pluginName?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  uninstalledOrgs?: Resolver<Maybe<Array<ResolversTypes['ID']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type PluginFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['PluginField'] = ResolversParentTypes['PluginField']> = {
-  createdAt?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
-  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export interface PositiveIntScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['PositiveInt'], any> {
   name: 'PositiveInt';
 }
@@ -4855,7 +4755,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   actionItemsByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByEventArgs, 'eventId'>>;
   actionItemsByOrganization?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByOrganizationArgs, 'organizationId'>>;
   actionItemsByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['ActionItem']>>>, ParentType, ContextType, RequireFields<QueryActionItemsByUserArgs, 'userId'>>;
-  adminPlugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryAdminPluginArgs, 'orgId'>>;
   advertisementsConnection?: Resolver<Maybe<ResolversTypes['AdvertisementsConnection']>, ParentType, ContextType, Partial<QueryAdvertisementsConnectionArgs>>;
   agendaCategory?: Resolver<ResolversTypes['AgendaCategory'], ParentType, ContextType, RequireFields<QueryAgendaCategoryArgs, 'id'>>;
   agendaItemByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['AgendaItem']>>>, ParentType, ContextType, RequireFields<QueryAgendaItemByEventArgs, 'relatedEventId'>>;
@@ -4890,7 +4789,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getGroupChatsByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   getNoteById?: Resolver<ResolversTypes['Note'], ParentType, ContextType, RequireFields<QueryGetNoteByIdArgs, 'id'>>;
   getPledgesByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['FundraisingCampaignPledge']>>>, ParentType, ContextType, RequireFields<QueryGetPledgesByUserIdArgs, 'userId'>>;
-  getPlugins?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType>;
   getRecurringEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, RequireFields<QueryGetRecurringEventsArgs, 'baseRecurringEventId'>>;
   getUnreadChatsByUserId?: Resolver<Maybe<Array<Maybe<ResolversTypes['Chat']>>>, ParentType, ContextType>;
   getUserTag?: Resolver<Maybe<ResolversTypes['UserTag']>, ParentType, ContextType, RequireFields<QueryGetUserTagArgs, 'id'>>;
@@ -4906,7 +4804,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   organizations?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType, Partial<QueryOrganizationsArgs>>;
   organizationsConnection?: Resolver<Array<Maybe<ResolversTypes['Organization']>>, ParentType, ContextType, Partial<QueryOrganizationsConnectionArgs>>;
   organizationsMemberConnection?: Resolver<ResolversTypes['UserConnection'], ParentType, ContextType, RequireFields<QueryOrganizationsMemberConnectionArgs, 'orgId'>>;
-  plugin?: Resolver<Maybe<Array<Maybe<ResolversTypes['Plugin']>>>, ParentType, ContextType, RequireFields<QueryPluginArgs, 'orgId'>>;
   post?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostArgs, 'id'>>;
   registeredEventsByUser?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, Partial<QueryRegisteredEventsByUserArgs>>;
   registrantsByEvent?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, RequireFields<QueryRegistrantsByEventArgs, 'id'>>;
@@ -4947,7 +4844,6 @@ export type SocialMediaUrlsResolvers<ContextType = any, ParentType extends Resol
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   messageSentToChat?: SubscriptionResolver<Maybe<ResolversTypes['ChatMessage']>, "messageSentToChat", ParentType, ContextType, RequireFields<SubscriptionMessageSentToChatArgs, 'userId'>>;
-  onPluginUpdate?: SubscriptionResolver<Maybe<ResolversTypes['Plugin']>, "onPluginUpdate", ParentType, ContextType>;
 };
 
 export interface TimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Time'], any> {
@@ -5007,7 +4903,6 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   membershipRequests?: Resolver<Maybe<Array<Maybe<ResolversTypes['MembershipRequest']>>>, ParentType, ContextType>;
   organizationsBlockedBy?: Resolver<Maybe<Array<Maybe<ResolversTypes['Organization']>>>, ParentType, ContextType>;
   phone?: Resolver<Maybe<ResolversTypes['UserPhone']>, ParentType, ContextType>;
-  pluginCreationAllowed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   posts?: Resolver<Maybe<ResolversTypes['PostsConnection']>, ParentType, ContextType, Partial<UserPostsArgs>>;
   registeredEvents?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
   tagsAssignedWith?: Resolver<Maybe<ResolversTypes['UserTagsConnection']>, ParentType, ContextType, Partial<UserTagsAssignedWithArgs>>;
@@ -5219,8 +5114,6 @@ export type Resolvers<ContextType = any> = {
   OtpData?: OtpDataResolvers<ContextType>;
   PageInfo?: PageInfoResolvers<ContextType>;
   PhoneNumber?: GraphQLScalarType;
-  Plugin?: PluginResolvers<ContextType>;
-  PluginField?: PluginFieldResolvers<ContextType>;
   PositiveInt?: GraphQLScalarType;
   Post?: PostResolvers<ContextType>;
   PostEdge?: PostEdgeResolvers<ContextType>;

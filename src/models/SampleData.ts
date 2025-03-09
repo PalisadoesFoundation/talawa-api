@@ -15,7 +15,6 @@ export interface InterfaceSampleData extends Document {
     | "Event"
     | "Venue"
     | "User"
-    | "Plugin"
     | "AppUserProfile";
 }
 
@@ -31,15 +30,7 @@ const sampleDataSchema = new Schema<InterfaceSampleData>({
   collectionName: {
     type: String,
     required: true,
-    enum: [
-      "Organization",
-      "Post",
-      "Event",
-      "Venue",
-      "User",
-      "AppUserProfile",
-      "Plugin",
-    ],
+    enum: ["Organization", "Post", "Event", "Venue", "User", "AppUserProfile"],
   },
 });
 

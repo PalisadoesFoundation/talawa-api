@@ -2,7 +2,6 @@ import {
   AppUserProfile,
   Event,
   Organization,
-  Plugin,
   Post,
   Venue,
   SampleData,
@@ -29,7 +28,6 @@ export async function removeSampleOrganization(): Promise<void> {
       Event,
       User,
       Venue,
-      Plugin,
       AppUserProfile,
     };
 

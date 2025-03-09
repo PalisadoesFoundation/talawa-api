@@ -176,7 +176,6 @@ type AppUserProfile {
   eventAdmin: [Event]
   isSuperAdmin: Boolean!
   pledges: [FundraisingCampaignPledge]
-  pluginCreationAllowed: Boolean!
   userId: User!
 }
 
@@ -1151,7 +1150,6 @@ type Mutation {
   addUserToUserFamily(familyId: ID!, userId: ID!): UserFamily!
   assignToUserTags(input: TagActionsInput!): UserTag
   assignUserTag(input: ToggleUserTagAssignInput!): User
-  blockPluginCreationBySuperadmin(blockUser: Boolean!, userId: ID!): AppUserProfile!
   blockUser(organizationId: ID!, userId: ID!): User!
   cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
   checkIn(data: CheckInCheckOutInput!): CheckIn!
@@ -1175,7 +1173,6 @@ type Mutation {
   createMember(input: UserAndOrganizationInput!): CreateMemberPayload!
   createNote(data: NoteInput!): Note!
   createOrganization(data: OrganizationInput, file: String): Organization!
-  createPlugin(pluginCreatedBy: String!, pluginDesc: String!, pluginName: String!, uninstalledOrgs: [ID!]): Plugin!
   createPost(data: PostInput!, file: String): Post
   createSampleOrganization: Boolean!
   createUserFamily(data: createUserFamilyInput!): UserFamily!
@@ -1256,7 +1253,6 @@ type Mutation {
   updateLanguage(languageCode: String!): User!
   updateNote(data: UpdateNoteInput!, id: ID!): Note!
   updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
-  updatePluginStatus(id: ID!, orgId: ID!): Plugin!
   updatePost(data: PostUpdateInput, id: ID!): Post!
   updateSessionTimeout(timeout: Int!): Boolean!
   updateUserPassword(data: UpdateUserPasswordInput!): UserData!
@@ -1432,34 +1428,6 @@ input PledgeWhereInput {
   name_contains: String
 }
 
-type Plugin {
-  _id: ID!
-  pluginCreatedBy: String!
-  pluginDesc: String!
-  pluginName: String!
-  uninstalledOrgs: [ID!]
-}
-
-type PluginField {
-  createdAt: DateTime!
-  key: String!
-  status: Status!
-  value: String!
-}
-
-input PluginFieldInput {
-  key: String!
-  value: String!
-}
-
-input PluginInput {
-  fields: [PluginFieldInput]
-  orgId: ID!
-  pluginKey: String
-  pluginName: String!
-  pluginType: Type
-}
-
 scalar PositiveInt
 
 type Post {
@@ -1555,7 +1523,6 @@ type Query {
   actionItemsByEvent(eventId: ID!): [ActionItem]
   actionItemsByOrganization(eventId: ID, orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
   actionItemsByUser(orderBy: ActionItemsOrderByInput, userId: ID!, where: ActionItemWhereInput): [ActionItem]
-  adminPlugin(orgId: ID!): [Plugin]
   advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
   agendaCategory(id: ID!): AgendaCategory!
   agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
@@ -1590,7 +1557,6 @@ type Query {
   getGroupChatsByUserId: [Chat]
   getNoteById(id: ID!): Note!
   getPledgesByUserId(orderBy: PledgeOrderByInput, userId: ID!, where: PledgeWhereInput): [FundraisingCampaignPledge]
-  getPlugins: [Plugin]
   getRecurringEvents(baseRecurringEventId: ID!): [Event]
   getUnreadChatsByUserId: [Chat]
   getUserTag(id: ID!): UserTag
@@ -1606,7 +1572,6 @@ type Query {
   organizations(first: Int, id: ID, orderBy: OrganizationOrderByInput, skip: Int, where: MembershipRequestsWhereInput): [Organization]
   organizationsConnection(first: Int, orderBy: OrganizationOrderByInput, skip: Int, where: OrganizationWhereInput): [Organization]!
   organizationsMemberConnection(first: Int, orderBy: UserOrderByInput, orgId: ID!, skip: Int, where: UserWhereInput): UserConnection!
-  plugin(orgId: ID!): [Plugin]
   post(id: ID!): Post
   registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
   registrantsByEvent(id: ID!): [User]
@@ -1700,7 +1665,6 @@ enum Status {
 
 type Subscription {
   messageSentToChat(userId: ID!): ChatMessage
-  onPluginUpdate: Plugin
 }
 
 input TagActionsInput {
@@ -1926,7 +1890,6 @@ type User {
   membershipRequests: [MembershipRequest]
   organizationsBlockedBy: [Organization]
   phone: UserPhone
-  pluginCreationAllowed: Boolean!
   posts(after: String, before: String, first: PositiveInt, last: PositiveInt): PostsConnection
   registeredEvents: [Event]
   tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
