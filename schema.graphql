@@ -1739,9 +1739,6 @@ input MutationCreatePresignedUrlInput {
   """Name of the file to be uploaded"""
   fileName: String!
 
-  """MIME type of the file"""
-  fileType: String!
-
   """Custom object name for the file (optional)"""
   objectName: String
 
@@ -3193,7 +3190,6 @@ scalar Upload
 
 """UploadUrlResponse"""
 type UploadUrlResponse {
-  fileUrl: String
   objectName: String
   presignedUrl: String
 }

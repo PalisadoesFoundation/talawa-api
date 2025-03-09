@@ -1,10 +1,7 @@
+import { MutationCreatePresignedUrlInput } from "~/src/graphql/inputs/MutationCreatePresignedUrlInput";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { builder } from "../../builder";
 import { UploadUrlResponse } from "../../types/Post/UploadUrlResponse";
-import { 
-	MutationCreatePresignedUrlInput,
-  } from "~/src/graphql/inputs/MutationCreatePresignedUrlInput";
-
 
 builder.mutationField("createPresignedUrl", (t) =>
 	t.field({
@@ -76,7 +73,7 @@ builder.mutationField("createPresignedUrl", (t) =>
 			const bucketName = ctx.minio.bucketName;
 			const objectName =
 				args.input.objectName ||
-				`uploads/${Date.now()}-${crypto.randomUUID()}-${fileName}`;
+				`uploads/${args.input.organizationId}/${Date.now()}-${crypto.randomUUID()}-${fileName}`;
 
 			try {
 				const presignedUrl: string = await new Promise((resolve, reject) => {
@@ -86,9 +83,7 @@ builder.mutationField("createPresignedUrl", (t) =>
 						.catch(reject);
 				});
 
-				const fileUrl = `http://${ctx.minio.config.endPoint}:${ctx.minio.config.port}/${bucketName}/${objectName}`;
-
-				return { presignedUrl, fileUrl, objectName };
+				return { presignedUrl, objectName };
 			} catch (error: unknown) {
 				if (error instanceof Error) {
 					throw new TalawaGraphQLError({
