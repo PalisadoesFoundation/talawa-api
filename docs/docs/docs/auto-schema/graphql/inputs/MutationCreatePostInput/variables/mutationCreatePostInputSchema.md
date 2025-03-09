@@ -6,4 +6,4 @@
 
 > `const` **mutationCreatePostInputSchema**: `ZodObject`\<`extendShape`\<`Pick`\<\{ `caption`: `ZodArray`\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<..., "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, `"many"`\>; \}, `"caption"`\>, \{ `attachments`: `ZodOptional`\<`ZodArray`\<`ZodType`\<`Promise`\<`FileUpload`\>, `ZodTypeDef`, `Promise`\<`FileUpload`\>\>, `"many"`\>\>; `isPinned`: `ZodOptional`\<`ZodBoolean`\>; \}\>, `"strip"`, `ZodTypeAny`, \{ `attachments`: `Promise`\<`FileUpload`\>[]; `caption`: `unknown`[]; `isPinned`: `boolean`; \}, \{ `attachments`: `Promise`\<`FileUpload`\>[]; `caption`: `unknown`[]; `isPinned`: `boolean`; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreatePostInput.ts:6](https://github.com/syedali237/talawa-api/blob/98bc58250f2ff99b91cd3ae158cc2ad171f7d560/src/graphql/inputs/MutationCreatePostInput.ts#L6)
+Defined in: [src/graphql/inputs/MutationCreatePostInput.ts:6](https://github.com/syedali237/talawa-api/blob/aa4e819f67def774740606c7a534dc013cdfe393/src/graphql/inputs/MutationCreatePostInput.ts#L6)

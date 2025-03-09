@@ -20,11 +20,7 @@ check_approval() {
   echo "$response"
   echo ""
 
-
-  latest_reviews=$(echo "$response" | jq -c '[.[]] | group_by(.user.login) | map(max_by(.submitted_at))') || {
-    echo "Error: Failed to process reviews JSON"
-    exit 1
-  }
+  latest_reviews=$(echo "$response" | jq -c '[.[]]')
 
   if [ "$latest_reviews" = "null" ] || [ -z "$latest_reviews" ]; then
     echo "Error: Invalid reviews data"
@@ -36,9 +32,11 @@ check_approval() {
   echo ""
 
   echo "Step 2: Checking approval status of 'coderabbitai[bot]'..."
-  
-  approval_state=$(echo "$latest_reviews" \
-  | jq -r '[.[] | select(.user.login == "coderabbitai[bot]" and .state == "APPROVED")] | length')
+
+approval_state=$(
+  echo "$latest_reviews" \
+  | jq -r '[ .[] | select(.user.login == "coderabbitai[bot]" and .state == "APPROVED") ] | length'
+)
 
   echo "Debug: Found $approval_state approvals from 'coderabbitai[bot]' for commit ID $GITHUB_SHA."
   echo ""

@@ -6,4 +6,4 @@
 
 > `const` **mutationCreateFundCampaignInputSchema**: `ZodEffects`\<`ZodObject`\<`Pick`\<\{ `name`: `ZodArray`\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<..., "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, `"many"`\>; \}, `"name"`\>, `"strip"`, `ZodTypeAny`, \{ `name`: `unknown`[]; \}, \{ `name`: `unknown`[]; \}\>, \{ `name`: `unknown`[]; \}, \{ `name`: `unknown`[]; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateFundCampaignInput.ts:6](https://github.com/syedali237/talawa-api/blob/98bc58250f2ff99b91cd3ae158cc2ad171f7d560/src/graphql/inputs/MutationCreateFundCampaignInput.ts#L6)
+Defined in: [src/graphql/inputs/MutationCreateFundCampaignInput.ts:6](https://github.com/syedali237/talawa-api/blob/aa4e819f67def774740606c7a534dc013cdfe393/src/graphql/inputs/MutationCreateFundCampaignInput.ts#L6)
