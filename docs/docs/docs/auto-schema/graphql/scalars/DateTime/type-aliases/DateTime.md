@@ -6,7 +6,7 @@
 
 > **DateTime**: `object`
 
-Defined in: [src/graphql/scalars/DateTime.ts:12](https://github.com/PratapRathi/talawa-api/blob/d256975b8804135eeae09572d0d303ebdab3b3d4/src/graphql/scalars/DateTime.ts#L12)
+Defined in: [src/graphql/scalars/DateTime.ts:12](https://github.com/PratapRathi/talawa-api/blob/72aae1e3507e4dd8ad32a69696c05d569e0ed095/src/graphql/scalars/DateTime.ts#L12)
 
 `DateTime` scalar type for pothos schema.
 

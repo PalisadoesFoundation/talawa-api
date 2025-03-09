@@ -6,7 +6,7 @@
 
 > **ExplicitGraphQLContext**: `object`
 
-Defined in: [src/graphql/context.ts:41](https://github.com/PratapRathi/talawa-api/blob/d256975b8804135eeae09572d0d303ebdab3b3d4/src/graphql/context.ts#L41)
+Defined in: [src/graphql/context.ts:41](https://github.com/PratapRathi/talawa-api/blob/72aae1e3507e4dd8ad32a69696c05d569e0ed095/src/graphql/context.ts#L41)
 
 Type of the transport protocol agnostic explicit context object that is merged with the implcit mercurius context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
 

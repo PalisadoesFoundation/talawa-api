@@ -6,7 +6,7 @@
 
 > **minioClient**(`fastify`): `Promise`\<`void`\>
 
-Defined in: [src/plugins/minioClient.ts:26](https://github.com/PratapRathi/talawa-api/blob/d256975b8804135eeae09572d0d303ebdab3b3d4/src/plugins/minioClient.ts#L26)
+Defined in: [src/plugins/minioClient.ts:26](https://github.com/PratapRathi/talawa-api/blob/72aae1e3507e4dd8ad32a69696c05d569e0ed095/src/plugins/minioClient.ts#L26)
 
 Integrates the talawa minio bucket name and a minio client instance on the namespaces `minio.bucketName` and `minio.client` respectively on the global fastify instance.
 
