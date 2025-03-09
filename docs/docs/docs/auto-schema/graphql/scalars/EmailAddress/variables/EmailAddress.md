@@ -6,7 +6,7 @@
 
 > `const` **EmailAddress**: `ScalarRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../type-aliases/CustomScalars.md); \}\>, `string`, `string`, `string`\>
 
-Defined in: [src/graphql/scalars/EmailAddress.ts:9](https://github.com/PalisadoesFoundation/talawa-api/blob/1251c45d69620e1317cb8632c6decbdb7edbdb06/src/graphql/scalars/EmailAddress.ts#L9)
+Defined in: [src/graphql/scalars/EmailAddress.ts:9](https://github.com/PratapRathi/talawa-api/blob/8be1a1231af103d298d6621405c956dc45d3a73a/src/graphql/scalars/EmailAddress.ts#L9)
 
 A custom scalar type for validating email addresses according to RFC 5322.
 This ensures that all email fields in the schema are properly validated.

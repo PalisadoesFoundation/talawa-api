@@ -6,6 +6,6 @@
 
 > `const` **userRoleEnum**: `ZodEnum`\<\[`"administrator"`, `"regular"`\]\>
 
-Defined in: [src/drizzle/enums/userRole.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/1251c45d69620e1317cb8632c6decbdb7edbdb06/src/drizzle/enums/userRole.ts#L6)
+Defined in: [src/drizzle/enums/userRole.ts:6](https://github.com/PratapRathi/talawa-api/blob/8be1a1231af103d298d6621405c956dc45d3a73a/src/drizzle/enums/userRole.ts#L6)
 
 Possible variants of the role assigned to a user.
