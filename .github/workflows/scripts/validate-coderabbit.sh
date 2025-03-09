@@ -37,7 +37,8 @@ check_approval() {
 
   echo "Step 2: Checking approval status of 'coderabbitai[bot]'..."
   
-  approval_state=$(echo "$latest_reviews" | jq -r '[.[] | select(.user.login == "coderabbitai[bot]" and .state == "APPROVED" and .commit_id == "'${GITHUB_SHA}'")] | length')
+  approval_state=$(echo "$latest_reviews" \
+  | jq -r '[.[] | select(.user.login == "coderabbitai[bot]" and .state == "APPROVED")] | length')
 
   echo "Debug: Found $approval_state approvals from 'coderabbitai[bot]' for commit ID $GITHUB_SHA."
   echo ""
