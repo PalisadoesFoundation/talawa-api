@@ -6,4 +6,4 @@
 
 > `const` **MutationCreateOrganizationMembershipInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, `any`\>
 
-Defined in: [src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/1251c45d69620e1317cb8632c6decbdb7edbdb06/src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts#L16)
+Defined in: [src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts:16](https://github.com/syedali237/talawa-api/blob/8be1a1231af103d298d6621405c956dc45d3a73a/src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts#L16)

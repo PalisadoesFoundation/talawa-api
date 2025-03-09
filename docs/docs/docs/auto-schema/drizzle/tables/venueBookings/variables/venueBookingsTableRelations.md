@@ -6,4 +6,4 @@
 
 > `const` **venueBookingsTableRelations**: `Relations`\<`"venue_bookings"`, \{ `creator`: `One`\<`"users"`, `false`\>; `event`: `One`\<`"events"`, `true`\>; `venue`: `One`\<`"venues"`, `true`\>; \}\>
 
-Defined in: [src/drizzle/tables/venueBookings.ts:67](https://github.com/PalisadoesFoundation/talawa-api/blob/1251c45d69620e1317cb8632c6decbdb7edbdb06/src/drizzle/tables/venueBookings.ts#L67)
+Defined in: [src/drizzle/tables/venueBookings.ts:67](https://github.com/syedali237/talawa-api/blob/8be1a1231af103d298d6621405c956dc45d3a73a/src/drizzle/tables/venueBookings.ts#L67)
