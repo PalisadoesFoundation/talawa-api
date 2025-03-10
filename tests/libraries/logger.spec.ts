@@ -80,4 +80,18 @@ describe("logger functions", () => {
       );
     }
   });
+
+  it("testing printf format function", () => {
+    const printfMock = vi.mocked(format.printf);
+
+    // Test the printf format function was called
+    expect(format.printf).toHaveBeenCalledWith(expect.any(Function));
+
+    // Mock the getTracingId function result
+    vi.mock("./../../src/libraries/requestTracing", () => ({
+      getTracingId: vi.fn().mockReturnValue("trace-123"),
+    }));
+
+    expect(printfMock).toHaveBeenCalledTimes(2); // Called for both colorized and non-colorized
+  });
 });
