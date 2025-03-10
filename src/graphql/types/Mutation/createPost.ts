@@ -1,7 +1,5 @@
-import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
 import { z } from "zod";
-import { postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
 import { postAttachmentsTable } from "~/src/drizzle/tables/postAttachments";
 import { postsTable } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
@@ -14,44 +12,8 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 
 const mutationCreatePostArgumentsSchema = z.object({
-	input: mutationCreatePostInputSchema.transform(async (arg, ctx) => {
-		let attachments:
-			| (FileUpload & {
-					mimetype: z.infer<typeof postAttachmentMimeTypeEnum>;
-			  })[]
-			| undefined;
-
-		if (arg.attachments !== undefined) {
-			const rawAttachments = await Promise.all(arg.attachments);
-			const { data, error, success } = postAttachmentMimeTypeEnum
-				.array()
-				.safeParse(rawAttachments.map((attachment) => attachment.mimetype));
-
-			if (!success) {
-				for (const issue of error.issues) {
-					// `issue.path[0]` would correspond to the numeric index of the attachment within `arg.attachments` array which contains the invalid mime type.
-					if (typeof issue.path[0] === "number") {
-						ctx.addIssue({
-							code: "custom",
-							path: ["attachments", issue.path[0]],
-							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype}" is not allowed.`,
-						});
-					}
-				}
-			} else {
-				attachments = rawAttachments.map((attachment, index) =>
-					Object.assign(attachment, {
-						mimetype: data[index],
-					}),
-				);
-			}
-		}
-
-		return {
-			...arg,
-			attachments,
-		};
-	}),
+	input: mutationCreatePostInputSchema,
+	// No need for transform - attachments are already properly structured
 });
 
 builder.mutationField("createPost", (t) =>
@@ -213,25 +175,11 @@ builder.mutationField("createPost", (t) =>
 								mimeType: attachment.mimetype,
 								name: ulid(),
 								postId: createdPost.id,
+								objectName: attachment.objectName, 
+								fileHash: attachment.fileHash, 
 							})),
 						)
 						.returning();
-
-					await Promise.all(
-						createdPostAttachments.map((attachment, index) => {
-							if (attachments[index] !== undefined) {
-								return ctx.minio.client.putObject(
-									ctx.minio.bucketName,
-									attachment.name,
-									attachments[index].createReadStream(),
-									undefined,
-									{
-										"content-type": attachment.mimeType,
-									},
-								);
-							}
-						}),
-					);
 
 					return Object.assign(createdPost, {
 						attachments: createdPostAttachments,
