@@ -57,7 +57,6 @@ export const membershipRequestsTable = pgTable(
 				table.organizationId,
 			),
 
-			// Added indexes for better query performance
 			idxMembershipRequestsUser: index("idx_membership_requests_user").on(
 				table.userId,
 			),
