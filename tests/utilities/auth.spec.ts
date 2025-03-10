@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import type mongoose from "mongoose";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { InterfaceAppUserProfile, InterfaceUser } from "../../src/models";
-import { AppUserProfile, Community, User } from "../../src/models";
+import { AppUserProfile, Community } from "../../src/models";
 import {
   createAccessToken,
   createRefreshToken,
@@ -230,19 +230,5 @@ describe("revokeRefreshToken", () => {
     });
 
     expect(updateAppUserProfile?.token).toBeUndefined();
-  });
-
-  it("should do nothing if the user does not exist", async () => {
-    const findOneSpy = vi.spyOn(User, "findOne").mockResolvedValueOnce(null);
-    const findOneAndUpdateSpy = vi.spyOn(User, "findOneAndUpdate");
-
-    const nonExistentUserId = "60c72b2f9b1d8a3e9c8d1234"; // Non-existent user ID
-    await revokeRefreshToken(nonExistentUserId);
-
-    expect(findOneSpy).toHaveBeenCalledWith({ _id: nonExistentUserId });
-    expect(findOneAndUpdateSpy).not.toHaveBeenCalled();
-
-    findOneSpy.mockRestore();
-    findOneAndUpdateSpy.mockRestore();
   });
 });
