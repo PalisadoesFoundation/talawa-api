@@ -87,10 +87,21 @@ describe("logger functions", () => {
     // Test the printf format function was called
     expect(format.printf).toHaveBeenCalledWith(expect.any(Function));
 
-    // Mock the getTracingId function result
-    vi.mock("./../../src/libraries/requestTracing", () => ({
-      getTracingId: vi.fn().mockReturnValue("trace-123"),
-    }));
+    // Extract the formatter function that was passed to printf
+    const formatterFn = printfMock.mock.calls[0][0];
+
+    // Mock info object with timestamp and message
+    const mockInfo = {
+      timestamp: "2023-01-01 12:00:00",
+      message: "Test message",
+      level: "info",
+      trace_id: "trace-123",
+    };
+
+    // Test that the formatter function uses the provided info correctly
+    const result = formatterFn(mockInfo);
+    expect(result).toContain("trace-123");
+    expect(result).toContain("Test message");
 
     expect(printfMock).toHaveBeenCalledTimes(2); // Called for both colorized and non-colorized
   });
