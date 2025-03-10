@@ -1,13 +1,15 @@
 import { z } from "zod";
 import { postsTableInsertSchema } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
-import { postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
+import { mimeTypeMapping, postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
 
 // Create GraphQL enum type for attachment mime types
 const PostAttachmentMimeType = builder.enumType("PostAttachmentMimeType", {
-  values: postAttachmentMimeTypeEnum.options as [string, ...string[]],
-  description: "MIME types supported for post attachments",
-});
+	values: Object.fromEntries(
+	  Object.entries(mimeTypeMapping).map(([key, value]) => [key, { value }])
+	),
+	description: "MIME types supported for post attachments",
+  });
 
 // First, create the FileMetadata input type
 export const FileMetadataInput = builder.inputType("FileMetadataInput", {

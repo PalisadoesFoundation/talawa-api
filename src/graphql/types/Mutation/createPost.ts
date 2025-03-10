@@ -13,7 +13,6 @@ import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWi
 
 const mutationCreatePostArgumentsSchema = z.object({
 	input: mutationCreatePostInputSchema,
-	// No need for transform - attachments are already properly structured
 });
 
 builder.mutationField("createPost", (t) =>
@@ -151,8 +150,6 @@ builder.mutationField("createPost", (t) =>
 						organizationId: parsedArgs.input.organizationId,
 					})
 					.returning();
-
-				// Inserted post not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
 				if (createdPost === undefined) {
 					ctx.log.error(
 						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
