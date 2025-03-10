@@ -59,6 +59,11 @@ export const defaultGraphQLConnectionArgumentsSchema = z.object({
 		.max(32)
 		.nullish()
 		.transform((arg) => (arg === null ? undefined : arg)),
+	where: z.object({
+			name_starts_with: z.string().optional(),
+			description_starts_with: z.string().optional(),
+		  }).optional(),
+	isInversed: z.boolean().optional().default(false)
 });
 
 /**
@@ -72,7 +77,7 @@ export const transformDefaultGraphQLConnectionArguments = <
 ) => {
 	const transformedArg: ParsedDefaultGraphQLConnectionArguments = {
 		cursor: undefined,
-		isInversed: false,
+		isInversed: arg.isInversed?? false,
 		limit: 0,
 	};
 
@@ -281,7 +286,7 @@ export const transformToDefaultGraphQLConnection = <
 		// If the cursor is `undefined` it means that the connection is at the very beginning and there are no edges after it.
 		connection.pageInfo.hasNextPage = cursor !== undefined;
 
-		for (const rawNode of rawNodes.reverse()) {
+		for (const rawNode of rawNodes) {
 			connection.edges.push({
 				cursor: createCursor(rawNode),
 				node: createNode(rawNode),

@@ -1857,6 +1857,9 @@ input MutationCreateVenueInput {
 
   """Global identifier of the associated organization."""
   organizationId: ID!
+
+  "Capacity of a venue"
+  capacity: Int!
 }
 
 """"""
@@ -2633,7 +2636,11 @@ type Organization {
   """
   GraphQL connection to traverse through the venues belonging to the organization.
   """
-  venues(after: String, before: String, first: Int, last: Int): OrganizationVenuesConnection
+  venues(after: String, before: String, first: Int, last: Int, where: VenuesWhereInput , isInversed: Boolean): OrganizationVenuesConnection
+}
+input VenuesWhereInput {
+  name_contains: String
+  description_contains: String
 }
 
 """"""

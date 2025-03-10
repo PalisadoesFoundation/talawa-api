@@ -190,6 +190,7 @@ builder.mutationField("createVenue", (t) =>
 						description: parsedArgs.input.description,
 						name: parsedArgs.input.name,
 						organizationId: parsedArgs.input.organizationId,
+						capacity: parsedArgs.input.capacity
 					})
 					.returning();
 
@@ -207,6 +208,7 @@ builder.mutationField("createVenue", (t) =>
 				}
 
 				if (parsedArgs.input.attachments !== undefined) {
+					
 					const attachments = parsedArgs.input.attachments;
 
 					const createdVenueAttachments = await tx

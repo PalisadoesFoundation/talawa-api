@@ -1,11 +1,13 @@
 import { relations, sql } from "drizzle-orm";
 import {
 	index,
+	integer,
 	pgTable,
 	text,
 	timestamp,
 	uniqueIndex,
 	uuid,
+	check
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
@@ -58,6 +60,10 @@ export const venuesTable = pgTable(
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
+			/*
+			Capacity of the venue
+			*/
+		capacity: integer('capacity').notNull(),
 		/**
 		 * Date time at the time the venue was last updated.
 		 */
@@ -76,13 +82,17 @@ export const venuesTable = pgTable(
 			onUpdate: "cascade",
 		}),
 	},
-	(self) => [
-		index().on(self.createdAt),
-		index().on(self.creatorId),
-		index().on(self.name),
-		index().on(self.organizationId),
-		uniqueIndex().on(self.name, self.organizationId),
-	],
+	(self) => ({
+		capacityCheck: check("capacity_check", sql`${self.capacity} >= 1`), 
+	
+		indexes: [
+		  index("created_at_idx").on(self.createdAt),
+		  index("creator_id_idx").on(self.creatorId),
+		  index("name_idx").on(self.name),
+		  index("organization_id_idx").on(self.organizationId),
+		  uniqueIndex("unique_venue_name_per_org").on(self.name, self.organizationId),
+		],
+	  })
 );
 
 export const venuesTableRelations = relations(venuesTable, ({ many, one }) => ({

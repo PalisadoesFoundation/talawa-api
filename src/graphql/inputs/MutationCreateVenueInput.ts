@@ -16,6 +16,7 @@ export const mutationCreateVenueInputSchema = venuesTableInsertSchema
 			.min(1)
 			.max(20)
 			.optional(),
+		capacity: z.number().min(1)
 	});
 
 export const MutationCreateVenueInput = builder
@@ -40,5 +41,9 @@ export const MutationCreateVenueInput = builder
 				description: "Global identifier of the associated organization.",
 				required: true,
 			}),
+			capacity: t.int({
+				description: "Capacity of a venue.",
+				required: true
+			})
 		}),
 	});

@@ -28,6 +28,11 @@ Venue.implement({
 		}),
 		name: t.exposeString("name", {
 			description: "Name of the venue.",
+			nullable: false
 		}),
+		capacity: t.exposeInt('capacity',{
+			description: "Capacity of a venue.",
+			nullable: false
+		})
 	}),
 });
