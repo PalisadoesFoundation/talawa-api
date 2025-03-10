@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// Define a mapping between valid GraphQL enum names and actual MIME types
 export const mimeTypeMapping = {
   IMAGE_AVIF: "image/avif",
   IMAGE_JPEG: "image/jpeg",
@@ -10,7 +9,6 @@ export const mimeTypeMapping = {
   VIDEO_WEBM: "video/webm"
 };
 
-// For database use
 export const postAttachmentMimeTypeEnum = z.enum([
   "image/avif",
   "image/jpeg",
@@ -20,5 +18,4 @@ export const postAttachmentMimeTypeEnum = z.enum([
   "video/webm"
 ]);
 
-// For GraphQL schema
 export const graphqlMimeTypeEnum = Object.keys(mimeTypeMapping);

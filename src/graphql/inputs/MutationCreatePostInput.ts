@@ -3,7 +3,7 @@ import { postsTableInsertSchema } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
 import { mimeTypeMapping, postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
 
-// Create GraphQL enum type for attachment mime types
+
 const PostAttachmentMimeType = builder.enumType("PostAttachmentMimeType", {
 	values: Object.fromEntries(
 	  Object.entries(mimeTypeMapping).map(([key, value]) => [key, { value }])
@@ -11,8 +11,8 @@ const PostAttachmentMimeType = builder.enumType("PostAttachmentMimeType", {
 	description: "MIME types supported for post attachments",
   });
 
-// First, create the FileMetadata input type
-export const FileMetadataInput = builder.inputType("FileMetadataInput", {
+
+  export const FileMetadataInput = builder.inputType("FileMetadataInput", {
   description: "Metadata for files uploaded via presigned URL",
   fields: (t) => ({
     mimetype: t.field({
@@ -31,7 +31,7 @@ export const FileMetadataInput = builder.inputType("FileMetadataInput", {
   }),
 });
 
-// Define Zod schema for validation
+
 const fileMetadataSchema = z.object({
   mimetype: postAttachmentMimeTypeEnum,
   objectName: z.string().min(1),
@@ -52,7 +52,7 @@ export const mutationCreatePostInputSchema = postsTableInsertSchema
     isPinned: z.boolean().optional(),
   });
 
-// Then create the main input type, referencing the FileMetadataInput
+
 export const MutationCreatePostInput = builder.inputType("MutationCreatePostInput", {
   description: "Input for creating a new post",
   fields: (t) => ({

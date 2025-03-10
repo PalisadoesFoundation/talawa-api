@@ -12,7 +12,6 @@ PostAttachment.implement({
     mimeType: t.exposeString("mimeType", {
       description: "Mime type of the attachment.",
     }),
-    // Add these fields:
     objectName: t.exposeString("objectName", {
       description: "Object name used when creating presigned URLs.",
       nullable: true,
@@ -24,6 +23,5 @@ PostAttachment.implement({
     name: t.exposeString("name", {
       description: "Identifier name of the attachment.",
     }),
-    // Any other fields you want to expose...
   }),
 });
