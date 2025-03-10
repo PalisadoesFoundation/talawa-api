@@ -72,7 +72,7 @@
     "type": "git",
     "url": "https://github.com/PalisadoesFoundation/talawa-api"
   },
-  "scripts": {
+ "scripts": {
     "apply_drizzle_migrations": "drizzle-kit migrate",
     "apply_drizzle_test_migrations": "drizzle-kit migrate --config=./test/drizzle.config.ts",
     "build_production": "swc ./src/ --ignore \"**/*.spec.ts,**/*.test.ts\" --out-dir ./dist/ --strip-leading-paths",
@@ -84,8 +84,8 @@
     "drop_drizzle_migrations": "drizzle-kit drop",
     "enable_git_hooks": "lefthook install",
     "fix_code_quality": "biome check --error-on-warnings --write",
-    "postgenerate-docs" : "find docs/docs/docs/auto-schema -name 'README.md' -delete",
-    "generate:docs" : "typedoc && pnpm run postgenerate-docs && node fix-readme-links.js",
+    "postgenerate-docs": "find docs/docs/docs/auto-schema -name 'README.md' -delete",
+    "generate:docs": "typedoc && pnpm run postgenerate-docs && node fix-readme-links.js",
     "generate_drizzle_migrations": "drizzle-kit generate",
     "generate_graphql_sdl_file": "tsx ./scripts/generateGraphQLSDLFile.ts",
     "generate_gql_tada": "gql.tada generate-output && gql.tada turbo --fail-on-warn",
@@ -97,10 +97,10 @@
     "check_tests": "vitest run",
     "start_development_server": "tsx watch ./src/index.ts",
     "start_development_server_with_debugger": "tsx watch --inspect=${API_DEBUGGER_HOST:-127.0.0.1}:${API_DEBUGGER_PORT:-9229} ./src/index.ts",
-    "start_production_server": "pnpm build_production && node ./dist/index.js",
-    "start_production_server_with_debugger": "pnpm build_production && node --inspect=${API_DEBUGGER_HOST:-127.0.0.1}:${API_DEBUGGER_PORT:-9229} ./dist/index.js",
+    "start_production_server": "pnpm build_production && pnpm push_drizzle_schema && node ./dist/index.js",
+    "start_production_server_with_debugger": "pnpm build_production && pnpm push_drizzle_schema && node --inspect=${API_DEBUGGER_HOST:-127.0.0.1}:${API_DEBUGGER_PORT:-9229} ./dist/index.js",
     "upgrade_drizzle_metadata": "drizzle-kit up"
-  },
+},
   "type": "module",
   "version": "1.0.0"
 }
