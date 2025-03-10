@@ -7,7 +7,6 @@
     "membershipRequests": [],
     "organizationsBlockedBy": [],
     "status": "ACTIVE",
-    "pluginCreationAllowed": true,
     "firstName": "Default",
     "lastName": "Admin",
     "email": "defaultadmin@example.com",

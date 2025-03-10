@@ -386,19 +386,6 @@ export const inputs = gql`
     email: EmailAddress!
   }
 
-  input PluginFieldInput {
-    key: String!
-    value: String!
-  }
-
-  input PluginInput {
-    orgId: ID!
-    pluginName: String!
-    pluginKey: String
-    pluginType: Type
-    fields: [PluginFieldInput]
-  }
-
   input PostInput {
     _id: ID
     text: String!

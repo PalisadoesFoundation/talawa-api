@@ -1,7 +1,6 @@
 import type { Model, Document } from "mongoose";
 import mongoose from "mongoose";
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { Schema, model, models } = mongoose;
+const { Schema: mongoSchema, model, models } = mongoose;
 import { createLoggingMiddleware } from "../libraries/dbLogger";
 
 /**
@@ -15,7 +14,6 @@ export interface InterfaceSampleData extends Document {
     | "Event"
     | "Venue"
     | "User"
-    | "Plugin"
     | "AppUserProfile";
 }
 
@@ -23,7 +21,7 @@ export interface InterfaceSampleData extends Document {
  * Mongoose schema for sample data.
  * Defines the structure of the sample data document stored in MongoDB.
  */
-const sampleDataSchema = new Schema<InterfaceSampleData>({
+const sampleDataSchema = new mongoSchema<InterfaceSampleData>({
   documentId: {
     type: String,
     required: true,
@@ -31,15 +29,7 @@ const sampleDataSchema = new Schema<InterfaceSampleData>({
   collectionName: {
     type: String,
     required: true,
-    enum: [
-      "Organization",
-      "Post",
-      "Event",
-      "Venue",
-      "User",
-      "AppUserProfile",
-      "Plugin",
-    ],
+    enum: ["Organization", "Post", "Event", "Venue", "User", "AppUserProfile"],
   },
 });
 

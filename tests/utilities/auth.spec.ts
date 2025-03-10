@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import type mongoose from "mongoose";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { InterfaceAppUserProfile, InterfaceUser } from "../../src/models";
 import { AppUserProfile, Community } from "../../src/models";
 import {
@@ -12,6 +12,7 @@ import { connect, disconnect } from "../helpers/db";
 import type { TestUserType } from "../helpers/user";
 import { createTestUserFunc } from "../helpers/user";
 import type { TestAppUserProfileType } from "../helpers/userAndOrg";
+import { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from "@constants";
 
 let user: TestUserType;
 let appUserProfile: TestAppUserProfileType;
@@ -111,6 +112,44 @@ describe("createAccessToken", () => {
     );
     expect((decodedToken as InterfaceJwtTokenPayload).email).toBe(user?.email);
   });
+  it("should use the correct expiration time in the token", async () => {
+    const jwtSignSpy = vi.spyOn(jwt, "sign");
+
+    await createAccessToken(
+      user ? user.toObject() : ({} as InterfaceUser),
+      appUserProfile
+        ? appUserProfile.toObject()
+        : ({} as InterfaceAppUserProfile),
+    );
+
+    expect(jwtSignSpy).toHaveBeenCalledWith(
+      expect.any(Object),
+      ACCESS_TOKEN_SECRET,
+      expect.objectContaining({
+        expiresIn: "40m",
+      }),
+    );
+
+    jwtSignSpy.mockRestore();
+  });
+  it("should use ACCESS_TOKEN_SECRET for signing the token", async () => {
+    const jwtSignSpy = vi.spyOn(jwt, "sign");
+
+    await createAccessToken(
+      user ? user.toObject() : ({} as InterfaceUser),
+      appUserProfile
+        ? appUserProfile.toObject()
+        : ({} as InterfaceAppUserProfile),
+    );
+
+    expect(jwtSignSpy).toHaveBeenCalledWith(
+      expect.any(Object),
+      ACCESS_TOKEN_SECRET,
+      expect.any(Object),
+    );
+
+    jwtSignSpy.mockRestore();
+  });
 });
 
 describe("createRefreshToken", () => {
@@ -139,6 +178,45 @@ describe("createRefreshToken", () => {
       user?.lastName,
     );
     expect((decodedToken as InterfaceJwtTokenPayload).email).toBe(user?.email);
+  });
+  it("should use the correct expiration time in the refresh token", () => {
+    const jwtSignSpy = vi.spyOn(jwt, "sign");
+
+    createRefreshToken(
+      user ? user.toObject() : ({} as InterfaceUser),
+      appUserProfile
+        ? appUserProfile.toObject()
+        : ({} as InterfaceAppUserProfile),
+    );
+
+    expect(jwtSignSpy).toHaveBeenCalledWith(
+      expect.any(Object),
+      REFRESH_TOKEN_SECRET,
+      expect.objectContaining({
+        expiresIn: "30d",
+      }),
+    );
+
+    jwtSignSpy.mockRestore();
+  });
+
+  it("should use REFRESH_TOKEN_SECRET for signing the token", () => {
+    const jwtSignSpy = vi.spyOn(jwt, "sign");
+
+    createRefreshToken(
+      user ? user.toObject() : ({} as InterfaceUser),
+      appUserProfile
+        ? appUserProfile.toObject()
+        : ({} as InterfaceAppUserProfile),
+    );
+
+    expect(jwtSignSpy).toHaveBeenCalledWith(
+      expect.any(Object),
+      REFRESH_TOKEN_SECRET,
+      expect.any(Object),
+    );
+
+    jwtSignSpy.mockRestore();
   });
 });
 

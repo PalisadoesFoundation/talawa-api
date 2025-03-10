@@ -1,11 +1,9 @@
 import { faker } from "@faker-js/faker";
 import type mongoose from "mongoose";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { Plugin } from "../../src/models";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   generateEventData as generateEventDataFn,
   generatePostData,
-  generateRandomPlugins,
   generateUserData,
 } from "../../src/utilities/createSampleOrganizationUtil";
 
@@ -115,38 +113,5 @@ describe("generatePostData function", () => {
     expect(post.creatorId).toEqual(expect.any(Object));
     expect(post.organization).toEqual(expect.any(Object));
     expect(post.createdAt).toEqual(expect.any(Date));
-  });
-
-  describe("generateRandomPlugins function", () => {
-    beforeEach(async () => {
-      // Clear the plugins collection before each test
-      await Plugin.deleteMany({});
-    });
-    it("should generate and save the specified number of plugins with correct properties", async () => {
-      const numberOfPlugins = 5;
-      const usersData = [
-        await generateUserData(faker.database.mongodbObjectId(), "USER"),
-      ];
-      const users = usersData.map((user) => user.user);
-
-      const pluginPromises = await generateRandomPlugins(
-        numberOfPlugins,
-        users.map((user) => user._id.toString()),
-      );
-
-      expect(Array.isArray(pluginPromises)).toBe(true);
-      expect(pluginPromises.length).toBe(numberOfPlugins);
-
-      await Promise.all(pluginPromises);
-
-      const plugins = await Plugin.find();
-      expect(plugins.length).toBe(numberOfPlugins);
-
-      plugins.forEach((plugin) => {
-        expect(plugin.pluginName).toEqual(expect.any(String));
-        expect(plugin.pluginCreatedBy).toEqual(expect.any(String));
-        expect(plugin.pluginDesc).toEqual(expect.any(String));
-      });
-    });
   });
 });

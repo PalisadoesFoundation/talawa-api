@@ -239,12 +239,6 @@ export const ORGANIZATION_IMAGE_NOT_FOUND_ERROR = Object.freeze({
   MESSAGE: "organizationImage.notFound",
   PARAM: "organizationImage",
 });
-export const PLUGIN_NOT_FOUND = Object.freeze({
-  DESC: "Plugin not found",
-  CODE: "plugin.notFound",
-  MESSAGE: "plugin.notFound",
-  PARAM: "plugin",
-});
 export const POST_NOT_FOUND_ERROR = Object.freeze({
   DESC: "Post not found",
   CODE: "post.notFound",

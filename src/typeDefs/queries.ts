@@ -5,8 +5,6 @@ import { gql } from "graphql-tag";
 // Place fields alphabetically to ensure easier lookup and navigation.
 export const queries = gql`
   type Query {
-    adminPlugin(orgId: ID!): [Plugin]
-
     actionItemsByEvent(eventId: ID!): [ActionItem]
 
     actionItemsByOrganization(
@@ -138,8 +136,6 @@ export const queries = gql`
 
     getlanguage(lang_code: String!): [Translation]
 
-    getPlugins: [Plugin]
-
     getVenueByOrgId(
       orgId: ID!
       where: VenueWhereInput
@@ -194,8 +190,6 @@ export const queries = gql`
       skip: Int
       orderBy: UserOrderByInput
     ): UserConnection! @auth
-
-    plugin(orgId: ID!): [Plugin]
 
     post(id: ID!): Post
 

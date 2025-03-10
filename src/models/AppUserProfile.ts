@@ -1,7 +1,6 @@
 import type { PaginateModel, PopulatedDoc, Types } from "mongoose";
 import mongoose from "mongoose";
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const { Schema, model, models } = mongoose;
+const { Schema: mongoSchema, model, models } = mongoose;
 import mongoosePaginate from "mongoose-paginate-v2";
 import type { InterfaceEvent } from "./Event";
 import type { InterfaceOrganization } from "./Organization";
@@ -19,7 +18,6 @@ export interface InterfaceAppUserProfile {
   eventAdmin: PopulatedDoc<InterfaceEvent & Document>[];
   pledges: PopulatedDoc<InterfaceFundraisingCampaignPledges & Document>[];
   campaigns: PopulatedDoc<InterfaceFundraisingCampaign & Document>[];
-  pluginCreationAllowed: boolean;
   token: string | undefined;
   tokenVersion: number;
   isSuperAdmin: boolean;
@@ -34,22 +32,21 @@ export interface InterfaceAppUserProfile {
  * @param eventAdmin - Array of events where the user is an admin.
  * @param pledges - Array of pledges associated with the user.
  * @param campaigns - Array of campaigns associated with the user.
- * @param pluginCreationAllowed - Flag indicating if user is allowed to create plugins.
  * @param tokenVersion - Token version for authentication.
  * @param isSuperAdmin - Flag indicating if the user is a super admin.
  * @param token - Access token associated with the user profile.
  */
 
-const appUserSchema = new Schema(
+const appUserSchema = new mongoSchema(
   {
     userId: {
-      type: Schema.Types.ObjectId,
+      type: mongoSchema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     adminFor: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoSchema.Types.ObjectId,
         ref: "Organization",
       },
     ],
@@ -60,39 +57,34 @@ const appUserSchema = new Schema(
     },
     createdOrganizations: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoSchema.Types.ObjectId,
         ref: "Organization",
       },
     ],
     createdEvents: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoSchema.Types.ObjectId,
         ref: "Event",
       },
     ],
     eventAdmin: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoSchema.Types.ObjectId,
         ref: "Event",
       },
     ],
     pledges: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoSchema.Types.ObjectId,
         ref: "FundraisingCampaignPledge",
       },
     ],
     campaigns: [
       {
-        type: Schema.Types.ObjectId,
+        type: mongoSchema.Types.ObjectId,
         ref: "FundraisingCampaign",
       },
     ],
-    pluginCreationAllowed: {
-      type: Boolean,
-      required: true,
-      default: true,
-    },
     tokenVersion: {
       type: Number,
       required: true,
@@ -112,6 +104,7 @@ const appUserSchema = new Schema(
     timestamps: true,
   },
 );
+// Add mongoose paginate to the schema
 appUserSchema.plugin(mongoosePaginate);
 const appUserProfileModel = (): PaginateModel<InterfaceAppUserProfile> =>
   model<InterfaceAppUserProfile, PaginateModel<InterfaceAppUserProfile>>(

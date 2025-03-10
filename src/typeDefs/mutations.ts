@@ -51,11 +51,6 @@ export const mutations = gql`
 
     assignUserTag(input: ToggleUserTagAssignInput!): User @auth
 
-    blockPluginCreationBySuperadmin(
-      userId: ID!
-      blockUser: Boolean!
-    ): AppUserProfile! @auth @role(requires: SUPERADMIN)
-
     blockUser(organizationId: ID!, userId: ID!): User! @auth
 
     cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest! @auth
@@ -119,13 +114,6 @@ export const mutations = gql`
       @role(requires: SUPERADMIN)
 
     createNote(data: NoteInput!): Note! @auth
-
-    createPlugin(
-      pluginName: String!
-      pluginCreatedBy: String!
-      pluginDesc: String!
-      uninstalledOrgs: [ID!]
-    ): Plugin!
 
     createAdvertisement(
       input: CreateAdvertisementInput!
@@ -338,8 +326,6 @@ export const mutations = gql`
     ): Organization! @auth
 
     updateNote(id: ID!, data: UpdateNoteInput!): Note! @auth
-
-    updatePluginStatus(id: ID!, orgId: ID!): Plugin!
 
     updateSessionTimeout(timeout: Int!): Boolean! @auth
 

@@ -1,9 +1,7 @@
 import "dotenv/config";
-import type mongoose from "mongoose";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import type { Response } from "express";
 import { connect, disconnect } from "../../helpers/db";
-
 import {
   afterAll,
   afterEach,
@@ -73,6 +71,23 @@ afterAll(async () => {
 describe("controllers -> post -> createPost", () => {
   afterEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("should import mongoose correctly", async () => {
+    expect(mongoose).toBeDefined();
+    expect(typeof mongoose).toBe("object");
+    expect(mongoose.Types).toBeDefined();
+    expect(mongoose.Types.ObjectId).toBeDefined();
+  });
+
+  it("should verify createPost function structure", async () => {
+    expect(createPost).toBeDefined();
+    expect(typeof createPost).toBe("function");
+
+    const functionString = createPost.toString();
+    expect(functionString).toContain("async");
+    expect(functionString).toContain("req");
+    expect(functionString).toContain("res");
   });
 
   it("should throw NotFoundError if no user exists with _id === userId", async () => {

@@ -81,7 +81,6 @@ const resolvers: Resolvers = {
 const resolversComposition = {
   "Mutation.addFeedback": [currentUserExists()],
   "Mutation.addOrganizationImage": [currentUserExists()],
-  "Mutation.blockPluginCreationBySuperadmin": [currentUserExists()],
   "Mutation.createComment": [currentUserExists()],
   "Mutation.createChat": [currentUserExists()],
   "Mutation.createOrganization": [currentUserExists()],

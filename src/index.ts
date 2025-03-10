@@ -16,7 +16,6 @@ const dirname: string = path.dirname(new URL(import.meta.url).pathname);
 import { WebSocketServer } from "ws";
 import app from "./app";
 import { logIssues } from "./checks";
-import loadPlugins from "./config/plugins/loadPlugins";
 import * as database from "./db";
 import authDirectiveTransformer from "./directives/directiveTransformer/authDirectiveTransformer";
 import roleDirectiveTransformer from "./directives/directiveTransformer/roleDirectiveTransformer";
@@ -99,8 +98,7 @@ const wsServer = new WebSocketServer({
 // Hand in the schema we just created and have the
 // WebSocketServer start listening.
 const serverCleanup = useServer(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  { schema, context: (_ctx, _msg, _args) => ({ pubsub }) },
+  { schema, context: () => ({ pubsub }) },
   wsServer,
 );
 let serverHost = "localhost";
@@ -150,4 +148,3 @@ async function startServer(): Promise<void> {
 }
 
 startServer();
-loadPlugins();

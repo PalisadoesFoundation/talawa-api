@@ -31,7 +31,6 @@ import { getDonationByOrgIdConnection } from "./getDonationByOrgIdConnection";
 import { getFundById } from "./getFundById";
 import { getFundraisingCampaigns } from "./getFundraisingCampaigns";
 import { getPledgesByUserId } from "./getPledgesByUserId";
-import { getPlugins } from "./getPlugins";
 import { getlanguage } from "./getlanguage";
 import { getUserTag } from "./getUserTag";
 import { me } from "./me";
@@ -90,7 +89,6 @@ export const Query: QueryResolvers = {
   getAllNotesForAgendaItem,
   getNoteById,
   getlanguage,
-  getPlugins,
   getRecurringEvents,
   getUserTag,
   isSampleOrganization,
