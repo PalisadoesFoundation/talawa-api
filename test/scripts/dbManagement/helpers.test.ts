@@ -269,3 +269,37 @@ suite("formatDatabase integration test", () => {
 		expect(result).toBe(true);
 	});
 });
+
+suite.concurrent("disconnect integration test", () => {
+	test.concurrent(
+		"should return true when queryClient.end resolves",
+		async () => {
+			const queryClient = Reflect.get(helpers, "queryClient");
+			const originalEnd = queryClient.end;
+
+			queryClient.end = async () => Promise.resolve();
+
+			const result = await helpers.disconnect();
+			expect(result).toBe(true);
+
+			queryClient.end = originalEnd;
+		},
+	);
+
+	test.concurrent(
+		"should throw error when queryClient.end rejects",
+		async () => {
+			const queryClient = Reflect.get(helpers, "queryClient");
+			const originalEnd = queryClient.end;
+
+			queryClient.end = async () =>
+				Promise.reject(new Error("disconnect failed"));
+
+			await expect(helpers.disconnect()).rejects.toThrow(
+				/Error disconnecting from the database:/,
+			);
+
+			queryClient.end = originalEnd;
+		},
+	);
+});
