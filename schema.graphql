@@ -3247,9 +3247,9 @@ scalar Upload
 
 """UploadUrlResponse"""
 type UploadUrlResponse {
-  exists: Boolean
   objectName: String
   presignedUrl: String
+  requiresUpload: Boolean
 }
 
 type User {

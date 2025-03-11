@@ -69,24 +69,25 @@ builder.mutationField("createPresignedUrl", (t) =>
 				});
 			}
 
-			const existingFile = await ctx.drizzleClient.query.postAttachmentsTable.findFirst({
-				where: (fields, operators) => operators.eq(fields.fileHash, args.input.fileHash),
-			  });
-			  
-			  if (existingFile) {
-				// File already exists, return its objectName without generating a URL
+			const existingFile =
+				await ctx.drizzleClient.query.postAttachmentsTable.findFirst({
+					where: (fields, operators) =>
+						operators.eq(fields.fileHash, args.input.fileHash),
+				});
+
+			if (existingFile) {
 				return {
-				  presignedUrl: null, // No need for a URL
-				  objectName: existingFile.objectName,
-				  exists: true // Add the missing property
+					presignedUrl: null,
+					objectName: existingFile.objectName,
+					requiresUpload: false,
 				};
-			  }
+			}
 
 			const { fileName } = args.input;
 			const bucketName = ctx.minio.bucketName;
 			const objectName =
 				args.input.objectName ||
-				`uploads/${args.input.organizationId}/${Date.now()}-${crypto.randomUUID()}-${fileName}`;
+				`uploads/${args.input.organizationId}/${Date.now()}-${args.input.fileHash}-${fileName}`;
 
 			try {
 				const presignedUrl: string = await new Promise((resolve, reject) => {
@@ -96,7 +97,7 @@ builder.mutationField("createPresignedUrl", (t) =>
 						.catch(reject);
 				});
 
-				return { presignedUrl, objectName , exists: false};
+				return { presignedUrl, objectName, requiresUpload: true };
 			} catch (error: unknown) {
 				if (error instanceof Error) {
 					throw new TalawaGraphQLError({
