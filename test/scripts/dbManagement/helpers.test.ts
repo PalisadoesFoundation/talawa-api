@@ -1,34 +1,34 @@
 import fs from "node:fs/promises";
 import readline from "node:readline";
+import envSchema from "env-schema";
 import * as schema from "src/drizzle/schema";
-import type { EnvConfig } from "src/envConfigSchema";
+import { type TestEnvConfig, testEnvConfigSchema } from "test/envConfigSchema";
 import { beforeEach, expect, suite, test, vi } from "vitest";
+import { envSchemaAjv } from "~/src/envConfigSchema";
+
+const testEnvConfig = envSchema<TestEnvConfig>({
+	ajv: envSchemaAjv,
+	dotenv: true,
+	schema: testEnvConfigSchema,
+});
 
 vi.mock("env-schema", async (importOriginal) => {
-	const actual = await importOriginal();
+	const actual = (await importOriginal()) as typeof import("env-schema");
 	return {
-		...(actual as Record<string, unknown>),
-		default: vi.fn(
-			(): Partial<EnvConfig> => ({
+		...actual,
+		default: vi.fn((opts) => {
+			const realEnv = actual.default(opts);
+			return {
+				...realEnv,
 				API_POSTGRES_HOST: "postgres-test",
-				API_POSTGRES_PORT: 5432,
-				API_POSTGRES_PASSWORD: "password",
-				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "administrator@email.com",
-				API_ADMINISTRATOR_USER_PASSWORD: "password",
-				API_POSTGRES_SSL_MODE: undefined,
-
 				API_MINIO_END_POINT: "minio-test",
-				API_MINIO_ACCESS_KEY: "talawa",
-				API_MINIO_SECRET_KEY: "password",
-				API_MINIO_USE_SSL: false,
-				API_MINIO_PORT: 9000,
-				MINIO_ROOT_USER: "talawa",
-			}),
-		),
+			};
+		}),
 	};
 });
 
 import * as helpers from "scripts/dbManagement/helpers";
+
 suite.concurrent("parseDate", () => {
 	beforeEach(() => {
 		vi.resetModules();
