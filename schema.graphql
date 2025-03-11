@@ -1763,6 +1763,9 @@ input MutationCreatePostVoteInput {
 
 """Input for creating a presigned URL for file upload"""
 input MutationCreatePresignedUrlInput {
+  """Hash of the file for deduplication check"""
+  fileHash: String!
+
   """Name of the file to be uploaded"""
   fileName: String!
 
@@ -3244,6 +3247,7 @@ scalar Upload
 
 """UploadUrlResponse"""
 type UploadUrlResponse {
+  exists: Boolean
   objectName: String
   presignedUrl: String
 }

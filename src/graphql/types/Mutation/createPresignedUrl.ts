@@ -69,6 +69,19 @@ builder.mutationField("createPresignedUrl", (t) =>
 				});
 			}
 
+			const existingFile = await ctx.drizzleClient.query.postAttachmentsTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.fileHash, args.input.fileHash),
+			  });
+			  
+			  if (existingFile) {
+				// File already exists, return its objectName without generating a URL
+				return {
+				  presignedUrl: null, // No need for a URL
+				  objectName: existingFile.objectName,
+				  exists: true // Add the missing property
+				};
+			  }
+
 			const { fileName } = args.input;
 			const bucketName = ctx.minio.bucketName;
 			const objectName =
@@ -83,7 +96,7 @@ builder.mutationField("createPresignedUrl", (t) =>
 						.catch(reject);
 				});
 
-				return { presignedUrl, objectName };
+				return { presignedUrl, objectName , exists: false};
 			} catch (error: unknown) {
 				if (error instanceof Error) {
 					throw new TalawaGraphQLError({

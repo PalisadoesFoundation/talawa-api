@@ -5,6 +5,8 @@ export const mutationCreatePresignedUrlInputSchema = z.object({
 	fileName: z.string(),
 	organizationId: z.string(),
 	objectName: z.string().optional(),
+	fileHash: z.string(),
+
 });
 
 export const MutationCreatePresignedUrlInput = builder
@@ -25,6 +27,10 @@ export const MutationCreatePresignedUrlInput = builder
 			objectName: t.string({
 				description: "Custom object name for the file (optional)",
 				required: false,
+			}),
+			fileHash: t.string({
+				description: "Hash of the file for deduplication check",
+				required: true,
 			}),
 		}),
 	});
