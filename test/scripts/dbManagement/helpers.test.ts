@@ -1,9 +1,35 @@
 import fs from "node:fs/promises";
 import readline from "node:readline";
-import * as helpers from "scripts/dbManagement/helpers";
 import * as schema from "src/drizzle/schema";
 import { beforeEach, expect, suite, test, vi } from "vitest";
+import type { EnvConfig } from "src/envConfigSchema";
 
+vi.mock("env-schema", async (importOriginal) => {
+	const actual = await importOriginal();
+	return {
+		...(actual as Record<string, unknown>),
+		default: vi.fn(
+			(): Partial<EnvConfig> => ({
+				API_POSTGRES_HOST: "postgres-test",
+				API_POSTGRES_PORT: 5432,
+				API_POSTGRES_PASSWORD: "password",
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "administrator@email.com",
+				API_ADMINISTRATOR_USER_PASSWORD: "password",
+				API_POSTGRES_SSL_MODE: undefined,
+
+				API_MINIO_END_POINT: "minio-test",
+				API_MINIO_ACCESS_KEY: "talawa",
+				API_MINIO_SECRET_KEY: "password",
+				API_MINIO_USE_SSL: false,
+				API_MINIO_PORT: 9000,
+				MINIO_ROOT_USER: "talawa"
+				
+			}),
+		),
+	};
+});
+
+import * as helpers from "scripts/dbManagement/helpers";
 suite.concurrent("parseDate", () => {
 	beforeEach(() => {
 		vi.resetModules();

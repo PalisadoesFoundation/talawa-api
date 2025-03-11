@@ -229,10 +229,12 @@ export async function insertCollections(
 	collections: string[],
 ): Promise<boolean> {
 	try {
+		
 		await checkDataSize("Before");
 
 		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
 			envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+			console.log("yeh rhi",API_ADMINISTRATOR_USER_EMAIL_ADDRESS);
 		if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
 			throw new Error(
 				"\x1b[31mAPI_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.\x1b[0m",
