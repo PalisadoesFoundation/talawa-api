@@ -399,16 +399,12 @@ export async function insertCollections(
 							createdAt: parseDate(post_attachment.createdAt),
 						}),
 					) as (typeof schema.postAttachmentsTable.$inferInsert)[];
-					try {
-						// Post Attachements are not unique. So they are inserted without checking for duplicates.
-						await db
-							.insert(schema.postAttachmentsTable)
-							.values(post_attachments);
-					} catch {
-						throw new Error(
-							"\x1b[31mError inserting post_attachments data\x1b[0m",
-						);
-					}
+					await checkAndInsertData(
+						schema.postAttachmentsTable,
+						post_attachments,
+						schema.postAttachmentsTable.id,
+						1000,
+					);
 					// Handle file uploads to Minio.
 					await Promise.all(
 						post_attachments.map(async (attachment) => {
