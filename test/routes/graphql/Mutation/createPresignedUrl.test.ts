@@ -92,15 +92,15 @@ suite("Mutation field createPresignedUrl", () => {
 				},
 			});
 
-			expect(result.data?.createPresignedUrl).toEqual(
-				expect.objectContaining({
-					presignedUrl: "https://example.com/presigned-url",
-					objectName: expect.stringMatching(
-						/^uploads\/[0-9a-f-]+\/\d+-[0-9a-f-]+-testfile\.txt$/i,
-					),
-					requiresUpload: true,
-				}),
-			);
+			expect(result.data?.createPresignedUrl).toMatchObject({
+				presignedUrl: "https://example.com/presigned-url",
+				requiresUpload: true,
+			  });
+			  
+			  assertToBeNonNullish(result.data?.createPresignedUrl);
+			  expect(result.data.createPresignedUrl.objectName).toMatch(
+				/^uploads\/[0-9a-f-]+\/\d+-test-hash-2-testfile\.txt$/i
+			  );
 			server.minio.client.presignedPutObject = originalPresignedPutObject;
 		});
 	});
