@@ -642,9 +642,16 @@ export const Mutation_createPost = gql(`
 export const Mutation_createPresignedUrl = gql(`
   mutation Mutation_createPresignedUrl($input: MutationCreatePresignedUrlInput!) {
     createPresignedUrl(input: $input) {
-      fileUrl
       presignedUrl
       objectName
+    }
+  }
+`);
+
+export const Mutation_createGetfileUrl = gql(`
+  mutation Mutation_createGetfileUrl($input: MutationCreateGetfileUrlInput!) {
+    createGetfileUrl(input: $input) {
+      presignedUrl
     }
   }
 `);
