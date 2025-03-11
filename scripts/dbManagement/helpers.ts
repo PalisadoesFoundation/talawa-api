@@ -229,7 +229,6 @@ export async function insertCollections(
 	collections: string[],
 ): Promise<boolean> {
 	try {
-
 		await checkDataSize("Before");
 
 		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
