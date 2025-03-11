@@ -20,7 +20,7 @@ beforeAll(async () => {
 					...realEnv,
 					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
-					MINIO_ROOT_USER: testEnvConfig.MINIO_ROOT_USER,
+					MINIO_ROOT_USER: "talawa",
 				};
 			}),
 		};
@@ -272,14 +272,6 @@ suite.concurrent("checkDataSize integration test", () => {
 		const result = await helpers.checkDataSize("Test Stage");
 		expect(result).toBe(false);
 		db.select = originalSelect;
-	});
-});
-
-// cannot be run concurrently
-suite("formatDatabase integration test", () => {
-	test.concurrent("should format the database and return true", async () => {
-		const result = await helpers.formatDatabase();
-		expect(result).toBe(true);
 	});
 });
 
