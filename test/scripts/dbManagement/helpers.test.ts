@@ -20,7 +20,7 @@ beforeAll(async () => {
 					...realEnv,
 					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
 					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
-					MINIO_ROOT_USER: "talawa",
+					MINIO_ROOT_USER: testEnvConfig.MINIO_ROOT_USER,
 				};
 			}),
 		};

@@ -23,5 +23,9 @@ export const server = await createServer({
 		 * This makes the server test instance connect to the postgres test database.
 		 */
 		API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+		/**
+		 * This makes the server test instance use minio bucket.
+		 */
+		MINIO_ROOT_USER: testEnvConfig.MINIO_ROOT_USER,
 	},
 });
