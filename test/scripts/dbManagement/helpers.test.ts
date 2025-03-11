@@ -1,11 +1,11 @@
 import fs from "node:fs/promises";
 import readline from "node:readline";
-import * as helpers from "scripts/dbManagement/helpers";
 import * as schema from "src/drizzle/schema";
 import type { TestEnvConfig } from "test/envConfigSchema";
-import { beforeAll, beforeEach, expect, suite, test, vi } from "vitest";
+import { beforeAll, expect, suite, test, vi } from "vitest";
 
 let testEnvConfig: TestEnvConfig;
+let helpers: typeof import("scripts/dbManagement/helpers");
 
 beforeAll(async () => {
 	const module = await import("test/envConfigSchema");
@@ -25,13 +25,11 @@ beforeAll(async () => {
 			}),
 		};
 	});
+	vi.resetModules();
+	helpers = await import("scripts/dbManagement/helpers");
 });
 
 suite.concurrent("parseDate", () => {
-	beforeEach(() => {
-		vi.resetModules();
-	});
-
 	test.concurrent(
 		"should return a valid Date object for a valid date string",
 		async () => {
@@ -75,10 +73,6 @@ suite.concurrent("parseDate", () => {
 });
 
 suite.concurrent("askUserToContinue", () => {
-	beforeEach(() => {
-		vi.restoreAllMocks();
-	});
-
 	test.concurrent("should resolve to true when user inputs 'y'", async () => {
 		const fakeInterface = {
 			question: (query: string, callback: (answer: string) => void) => {
@@ -136,10 +130,6 @@ const overrideDbExecute = (newExecute: () => Promise<unknown>): void => {
 };
 
 suite.concurrent("pingDB", () => {
-	beforeEach(() => {
-		vi.resetModules();
-	});
-
 	test.concurrent("should return true when db.execute resolves", async () => {
 		overrideDbExecute(() => Promise.resolve());
 		const result = await helpers.pingDB();
