@@ -27,6 +27,7 @@ beforeAll(async () => {
 	});
 	vi.resetModules();
 	helpers = await import("scripts/dbManagement/helpers");
+	console.log("Bucket:", process.env.MINIO_ROOT_USER);
 });
 
 suite.concurrent("parseDate", () => {

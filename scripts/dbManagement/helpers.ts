@@ -229,7 +229,7 @@ export async function insertCollections(
 	collections: string[],
 ): Promise<boolean> {
 	try {
-		console.log(envConfig.API_POSTGRES_HOST, "milgya");
+
 		await checkDataSize("Before");
 
 		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
