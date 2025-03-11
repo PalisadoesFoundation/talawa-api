@@ -12,7 +12,6 @@ beforeAll(async () => {
 	testEnvConfig = module.testEnvConfig;
 	vi.doMock("env-schema", async (importOriginal) => {
 		const actual = (await importOriginal()) as typeof import("env-schema");
-
 		return {
 			...actual,
 			default: vi.fn((opts) => {
@@ -27,7 +26,8 @@ beforeAll(async () => {
 	});
 	vi.resetModules();
 	helpers = await import("scripts/dbManagement/helpers");
-	console.log("Bucket:", process.env.MINIO_ROOT_USER);
+	await vi.importActual("env-schema");
+	console.log("Complete:", process.env);
 });
 
 suite.concurrent("parseDate", () => {
