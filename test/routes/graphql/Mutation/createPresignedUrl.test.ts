@@ -98,6 +98,7 @@ suite("Mutation field createPresignedUrl", () => {
 					objectName: expect.stringMatching(
 						/^uploads\/[0-9a-f-]+\/\d+-[0-9a-f-]+-testfile\.txt$/i,
 					),
+					requiresUpload: true,
 				}),
 			);
 			server.minio.client.presignedPutObject = originalPresignedPutObject;
