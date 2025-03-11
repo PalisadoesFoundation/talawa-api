@@ -1,3 +1,7 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.test' });
+
+
 import { reset } from "drizzle-seed";
 import type { GlobalSetupContext } from "vitest/node";
 import * as schema from "~/src/drizzle/schema";
@@ -17,3 +21,4 @@ export const teardown = async () => {
 	await reset(server.drizzleClient, schema);
 	await server.close();
 };
+

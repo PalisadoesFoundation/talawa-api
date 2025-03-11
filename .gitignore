@@ -504,7 +504,7 @@ dlldata.c
 BenchmarkDotNet.Artifacts/
 
 # .NET Core
-project.lock.json
+# project.lock.json
 project.fragment.lock.json
 artifacts/
 
@@ -835,7 +835,7 @@ FodyWeavers.xsd
 # custom
 .ignore  
 .pnpm-store          
-package-lock.json
+#package-lock.json
 yarn.lock
 /test/routes/graphql/gql.tada.d.ts
 

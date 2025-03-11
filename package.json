@@ -34,22 +34,27 @@
   "description": "talawa-api is a backend repository written using Node.js and graphql for generating APIs for the talawa flutter app.",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@docusaurus/tsconfig": "^3.7.0",
     "@faker-js/faker": "^9.4.0",
     "@swc/cli": "0.6.0",
     "@swc/core": "^1.11.5",
     "@types/node": "^22.13.8",
     "@types/uuid": "^10.0.0",
     "@vitest/coverage-v8": "^3.0.3",
-    "drizzle-kit": "^0.30.4",
+    "dotenv": "^16.4.7",
+    "drizzle-kit": "^0.19.1",
     "drizzle-seed": "^0.3.1",
     "gql.tada": "^1.8.10",
+    "jest": "^29.7.0",
     "lefthook": "^1.10.10",
     "mercurius-integration-testing": "^9.0.1",
+    "mongodb-memory-server": "^10.1.4",
     "pino-pretty": "^13.0.0",
+    "supertest": "^7.0.0",
     "tsx": "^4.19.2",
     "typescript": "^5.8.2",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.0.3"
+    "vitest": "^3.0.5"
   },
   "engines": {
     "node": "23.7.0"
@@ -66,7 +71,7 @@
   "name": "talawa-api",
   "packageManager": "pnpm@10.2.1",
   "repository": {
-    "type": "git",
+    "type": "module",
     "url": "https://github.com/PalisadoesFoundation/talawa-api"
   },
   "scripts": {
@@ -94,8 +99,15 @@
     "start_development_server_with_debugger": "tsx watch --inspect=${API_DEBUGGER_HOST:-127.0.0.1}:${API_DEBUGGER_PORT:-9229} ./src/index.ts",
     "start_production_server": "pnpm build_production && node ./dist/index.js",
     "start_production_server_with_debugger": "pnpm build_production && node --inspect=${API_DEBUGGER_HOST:-127.0.0.1}:${API_DEBUGGER_PORT:-9229} ./dist/index.js",
-    "upgrade_drizzle_metadata": "drizzle-kit up"
+    "upgrade_drizzle_metadata": "drizzle-kit up",
+    "dev": "node server.js",
+    "target": "ESNext"
+
   },
-  "type": "module",
-  "version": "1.0.0"
+  
+  "version": "1.0.0",
+  "module": "ESNext",
+   "type": "module"
+
+
 }

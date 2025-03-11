@@ -8,7 +8,8 @@ services:
     # https://docs.docker.com/reference/compose-file/build/
     build:
       # https://docs.docker.com/reference/compose-file/build/#target
-      target: non_production
+          context: .
+          dockerfile: Dockerfile
     command: pnpm run_tests
     # https://docs.docker.com/reference/compose-file/services/#depends_on
     depends_on:

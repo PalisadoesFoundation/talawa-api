@@ -796,5 +796,5 @@ FodyWeavers.xsd
 .git
 .ignore
 .pnpm-store
-package-lock.json
+# package-lock.json
 yarn.lock

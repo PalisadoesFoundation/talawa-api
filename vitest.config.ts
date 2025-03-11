@@ -8,6 +8,11 @@ export default defineConfig({
 			provider: "v8", // or 'istanbul' if you prefer
 			reporter: ["text", "lcov", "html"],
 		},
+
+		env: {
+			API_MINIO_TEST_END_POINT: process.env.API_MINIO_TEST_END_POINT,
+			API_POSTGRES_TEST_HOST: process.env.API_POSTGRES_TEST_HOST,
+		  },
 		// https://vitest.dev/config/#fileparallelism
 		// fileParallelism: true,
 

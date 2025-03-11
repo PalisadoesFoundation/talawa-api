@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import closeWithGrace from "close-with-grace";
 import { createServer } from "./createServer";
 
