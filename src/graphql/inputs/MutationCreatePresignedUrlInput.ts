@@ -6,7 +6,6 @@ export const mutationCreatePresignedUrlInputSchema = z.object({
 	organizationId: z.string(),
 	objectName: z.string().optional(),
 	fileHash: z.string(),
-
 });
 
 export const MutationCreatePresignedUrlInput = builder
