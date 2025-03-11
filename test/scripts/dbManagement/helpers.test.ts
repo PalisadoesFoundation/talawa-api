@@ -106,3 +106,29 @@ suite.concurrent("askUserToContinue", () => {
 	});
 });
 
+
+const overrideDbExecute = (newExecute: () => Promise<unknown>): void => {
+	Reflect.set(helpers.db, "execute", newExecute);
+};
+
+suite.concurrent("pingDB", () => {
+	beforeEach(() => {
+		// Reset modules if needed. This ensures a fresh instance for each test.
+		vi.resetModules();
+	});
+
+	test.concurrent("should return true when db.execute resolves", async () => {
+		// Override execute to simulate a successful query.
+		overrideDbExecute(() => Promise.resolve());
+		const result = await helpers.pingDB();
+		expect(result).toBe(true);
+	});
+
+	test.concurrent("should throw error when db.execute rejects", async () => {
+		// Override execute to simulate a failure.
+		overrideDbExecute(() => Promise.reject(new Error("connection failed")));
+		await expect(helpers.pingDB()).rejects.toThrow(
+			"Unable to connect to the database.",
+		);
+	});
+});
