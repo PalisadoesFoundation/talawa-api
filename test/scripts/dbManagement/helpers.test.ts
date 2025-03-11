@@ -106,7 +106,6 @@ suite.concurrent("askUserToContinue", () => {
 	});
 });
 
-
 const overrideDbExecute = (newExecute: () => Promise<unknown>): void => {
 	Reflect.set(helpers.db, "execute", newExecute);
 };
