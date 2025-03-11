@@ -1,12 +1,10 @@
-import type { FastifyInstance } from "fastify";
 import { beforeEach, describe, expect, it } from "vitest";
-import { type Mock, vi } from "vitest";
 import type { z } from "zod";
 import type { chatMembershipRoleEnum } from "~/src/drizzle/enums/chatMembershipRole";
 import type { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organizationMembershipRole";
 import type { userRoleEnum } from "~/src/drizzle/enums/userRole";
-import type { PubSub } from "../../../../src/graphql/pubsub";
 import { resolveUpdater } from "../../../../src/graphql/types/Chat/updater";
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 
 // Infer types from the zod enums
 type UserRole = z.infer<typeof userRoleEnum>;
@@ -22,14 +20,6 @@ type MockUser = {
 	organizationMembershipsWhereMember: Array<{
 		role: OrganizationMembershipRole;
 	}>;
-};
-
-type MockDrizzleClient = {
-	query: {
-		usersTable: {
-			findFirst: Mock<(params?: unknown) => Promise<MockUser | undefined>>;
-		};
-	};
 };
 
 const mockCurrentUser: MockUser = {
@@ -59,44 +49,24 @@ const mockParent = {
 	updaterId: "updater_1",
 };
 
-const drizzleClientMock = {
-	query: {
-		usersTable: {
-			findFirst: vi.fn().mockImplementation(() => Promise.resolve(undefined)),
-		},
-	},
-} as unknown as FastifyInstance["drizzleClient"] & MockDrizzleClient;
+describe("Chat.updatedAt resolver", () => {
+	let authenticatedContext: ReturnType<
+		typeof createMockGraphQLContext
+	>["context"];
+	let unauthenticatedContext: ReturnType<
+		typeof createMockGraphQLContext
+	>["context"];
+	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
-const mockLogger = {
-	error: vi.fn(),
-} as unknown as FastifyInstance["log"];
-
-const authenticatedContext = {
-	currentClient: {
-		isAuthenticated: true as const,
-		user: {
-			id: "user_1",
-		},
-	},
-	drizzleClient: drizzleClientMock,
-	envConfig: { API_BASE_URL: "API_BASE" },
-	log: mockLogger,
-	minio: {} as unknown as FastifyInstance["minio"],
-	jwt: {
-		sign: vi.fn(),
-	},
-	pubsub: {} as unknown as PubSub,
-};
-
-const unauthenticatedContext = {
-	...authenticatedContext,
-	currentClient: {
-		isAuthenticated: false as const,
-	},
-};
-
-describe("Chat.updater resolver", () => {
-	beforeEach(() => vi.resetAllMocks());
+	beforeEach(() => {
+		const { context, mocks: newMocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		authenticatedContext = context;
+		unauthenticatedContext = createMockGraphQLContext(false).context;
+		mocks = newMocks;
+	});
 
 	it("throws unauthenticated error when user is not authenticated", async () => {
 		await expect(
@@ -109,7 +79,7 @@ describe("Chat.updater resolver", () => {
 	});
 
 	it("throws unauthenticated error when user is not found", async () => {
-		drizzleClientMock.query.usersTable.findFirst.mockImplementation(() =>
+		mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(() =>
 			Promise.resolve(undefined),
 		);
 
@@ -123,7 +93,7 @@ describe("Chat.updater resolver", () => {
 	});
 
 	it("throws unauthorized error when user lacks permissions", async () => {
-		drizzleClientMock.query.usersTable.findFirst.mockImplementation(() =>
+		mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(() =>
 			Promise.resolve({
 				...mockCurrentUser,
 				role: "regular" as UserRole,
@@ -142,7 +112,7 @@ describe("Chat.updater resolver", () => {
 	});
 
 	it("returns null when updaterId is null", async () => {
-		drizzleClientMock.query.usersTable.findFirst.mockImplementation(() =>
+		mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(() =>
 			Promise.resolve({
 				...mockCurrentUser,
 				role: "administrator" as UserRole,
@@ -165,13 +135,13 @@ describe("Chat.updater resolver", () => {
 			role: "administrator" as UserRole,
 		};
 
-		drizzleClientMock.query.usersTable.findFirst.mockImplementation(() =>
+		mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(() =>
 			Promise.resolve(currentUserWithPermissions),
 		);
 
 		const parentWithCurrentUserAsUpdater = {
 			...mockParent,
-			updaterId: "user_1",
+			updaterId: "user-123",
 		};
 
 		const result = await resolveUpdater(
@@ -186,7 +156,7 @@ describe("Chat.updater resolver", () => {
 		// Mock implementation for findFirst
 		// First call returns current user with admin role
 		// Second call returns undefined (updater not found)
-		drizzleClientMock.query.usersTable.findFirst
+		mocks.drizzleClient.query.usersTable.findFirst
 			.mockImplementationOnce(() =>
 				Promise.resolve({
 					...mockCurrentUser,
@@ -207,7 +177,7 @@ describe("Chat.updater resolver", () => {
 				}),
 			}),
 		);
-		expect(mockLogger.error).toHaveBeenCalled();
+		expect(authenticatedContext.log.error).toHaveBeenCalled()
 	});
 
 	describe("admin role authorization", () => {
@@ -246,7 +216,7 @@ describe("Chat.updater resolver", () => {
 				// Mock implementation for findFirst
 				// First call returns current user with appropriate admin role
 				// Second call returns updater user
-				drizzleClientMock.query.usersTable.findFirst
+				mocks.drizzleClient.query.usersTable.findFirst
 					.mockImplementationOnce(() => Promise.resolve(user))
 					.mockImplementationOnce(() => Promise.resolve(mockUpdaterUser));
 

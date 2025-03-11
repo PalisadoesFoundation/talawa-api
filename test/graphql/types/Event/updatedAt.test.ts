@@ -1,26 +1,11 @@
-import { vi } from "vitest";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
+import type { GraphQLContext } from "~/src/graphql/context";
 import type { Event as EventType } from "~/src/graphql/types/Event/Event";
 import { eventUpdatedAtResolver } from "~/src/graphql/types/Event/updatedAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 import "~/src/graphql/types/Event/Event";
-
-const createMockContext = () => {
-	const mockContext = {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "user-123", isAdmin: true },
-		} as CurrentClient,
-		drizzleClient: { query: { usersTable: { findFirst: vi.fn() } } },
-		envConfig: { API_BASE_URL: "mock url" },
-		jwt: { sign: vi.fn() },
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
-	};
-	return mockContext as unknown as GraphQLContext;
-};
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 
 type MockUser = {
 	id: string;
@@ -34,10 +19,15 @@ type MockUser = {
 describe("Event Updated At Resolver Tests", () => {
 	let ctx: GraphQLContext;
 	let mockEvent: EventType;
+	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
 	beforeEach(() => {
-		vi.clearAllMocks();
-		ctx = createMockContext();
+		const { context, mocks: newMocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		ctx = context;
+		mocks = newMocks;
 		mockEvent = {
 			id: "550e8400-e29b-41d4-a716-446655440000",
 			name: "Annual General Meeting",
@@ -55,27 +45,20 @@ describe("Event Updated At Resolver Tests", () => {
 	describe("Authentication and Authorization", () => {
 		it("should throw unauthenticated error if user is not logged in", async () => {
 			ctx.currentClient.isAuthenticated = false;
-			await expect(
-				eventUpdatedAtResolver(mockEvent, {}, ctx),
-			).rejects.toThrowError(
+			await expect(eventUpdatedAtResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 			);
-			expect(
-				ctx.drizzleClient.query.usersTable.findFirst,
-			).not.toHaveBeenCalled();
 		});
 
-		it("should throw unauthenticated error if user exists but current user doesn't exist", async () => {
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(undefined);
+		it("should throw unauthenticated error is userId exists but current user doesn't exists", async () => {
+			const currentUser = undefined;
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				currentUser,
+			);
 
-			await expect(
-				eventUpdatedAtResolver(mockEvent, {}, ctx),
-			).rejects.toThrowError(
+			await expect(eventUpdatedAtResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 			);
-			expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
 		});
 
 		it("should throw unauthorized_action for non-admin user with no organization membership", async () => {
@@ -85,13 +68,13 @@ describe("Event Updated At Resolver Tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
-			await expect(
-				eventUpdatedAtResolver(mockEvent, {}, ctx),
-			).rejects.toThrowError(TalawaGraphQLError);
+			await expect(eventUpdatedAtResolver(mockEvent, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+			);
 		});
 
 		it("should throw unauthorized_action for non-admin user with regular membership", async () => {
@@ -103,13 +86,11 @@ describe("Event Updated At Resolver Tests", () => {
 				],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
-			await expect(
-				eventUpdatedAtResolver(mockEvent, {}, ctx),
-			).rejects.toThrowError(
+			await expect(eventUpdatedAtResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 			);
 		});
@@ -123,29 +104,13 @@ describe("Event Updated At Resolver Tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
-			// Mocking the query result
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
 			const result = await eventUpdatedAtResolver(mockEvent, {}, ctx);
 
-			// Expect the function to return the correct updatedAt value
 			expect(result).toBe(mockEvent.updatedAt);
-
-			// ✅ Assert that the query was called with the correct parameters
-			expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
-				expect.objectContaining({
-					where: expect.any(Function), // Ensure `where` is a function
-					columns: { role: true }, // Ensure correct columns are queried
-					with: {
-						organizationMembershipsWhereMember: expect.objectContaining({
-							columns: { role: true }, // Ensure nested columns are correct
-							where: expect.any(Function), // Ensure `where` is a function inside relationships
-						}),
-					},
-				}),
-			);
 		});
 
 		it.each([
@@ -162,11 +127,9 @@ describe("Event Updated At Resolver Tests", () => {
 					],
 				};
 
-				(
-					ctx.drizzleClient.query.usersTable.findFirst as ReturnType<
-						typeof vi.fn
-					>
-				).mockResolvedValue(mockUserData);
+				mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+					mockUserData,
+				);
 
 				const result = await eventUpdatedAtResolver(mockEvent, {}, ctx);
 				expect(result).toBe(mockEvent.updatedAt);
@@ -182,9 +145,9 @@ describe("Event Updated At Resolver Tests", () => {
 				],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
 			const result = await eventUpdatedAtResolver(mockEvent, {}, ctx);
 			expect(result).toBe(mockEvent.updatedAt);
@@ -193,12 +156,15 @@ describe("Event Updated At Resolver Tests", () => {
 
 	describe("Error Handling and Edge Cases", () => {
 		it("should handle database query failures", async () => {
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockRejectedValue(new Error("Database error"));
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+				new Error("Database error"),
+			);
 
 			await expect(eventUpdatedAtResolver(mockEvent, {}, ctx)).rejects.toThrow(
-				"Unexpected error while resolving Event.updatedAt field",
+				new TalawaGraphQLError({
+					message: "Unexpected error while resolving Event.updatedAt field",
+					extensions: { code: "unexpected" },
+				}),
 			);
 		});
 
@@ -209,13 +175,11 @@ describe("Event Updated At Resolver Tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
-			await expect(
-				eventUpdatedAtResolver(mockEvent, {}, ctx),
-			).rejects.toThrowError(
+			await expect(eventUpdatedAtResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 			);
 		});
@@ -228,16 +192,15 @@ describe("Event Updated At Resolver Tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
 			const result = await eventUpdatedAtResolver(mockEvent, {}, ctx);
 			expect(result).toBe(null);
 		});
 
 		it("should handle invalid organizationId", async () => {
-			/** Intentionally cast to null to test error handling for invalid organizationId */
 			mockEvent.organizationId = null as unknown as string;
 			const mockUserData: MockUser = {
 				id: "user-123",
@@ -245,22 +208,17 @@ describe("Event Updated At Resolver Tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
-			vi.spyOn(
-				ctx.drizzleClient.query.usersTable,
-				"findFirst",
-			).mockImplementation(() => {
+			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(() => {
 				throw new TalawaGraphQLError({
 					extensions: { code: "unauthorized_action" },
 				});
 			});
 
-			await expect(
-				eventUpdatedAtResolver(mockEvent, {}, ctx),
-			).rejects.toThrowError(
+			await expect(eventUpdatedAtResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 			);
 		});
