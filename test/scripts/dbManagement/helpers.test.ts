@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import readline from "node:readline";
 import * as schema from "src/drizzle/schema";
-import { beforeEach, expect, suite, test, vi } from "vitest";
 import type { EnvConfig } from "src/envConfigSchema";
+import { beforeEach, expect, suite, test, vi } from "vitest";
 
 vi.mock("env-schema", async (importOriginal) => {
 	const actual = await importOriginal();
@@ -22,8 +22,7 @@ vi.mock("env-schema", async (importOriginal) => {
 				API_MINIO_SECRET_KEY: "password",
 				API_MINIO_USE_SSL: false,
 				API_MINIO_PORT: 9000,
-				MINIO_ROOT_USER: "talawa"
-				
+				MINIO_ROOT_USER: "talawa",
 			}),
 		),
 	};
