@@ -14,6 +14,8 @@ export const testEnvConfigSchema = Type.Object({
 	 * More information at this link: {@link https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNECT-HOST}
 	 */
 	API_POSTGRES_TEST_HOST: envConfigSchema.properties.API_POSTGRES_HOST,
+
+	MINIO_ROOT_USER: envConfigSchema.properties.MINIO_ROOT_USER,
 });
 export const testEnvConfig = envSchema<TestEnvConfig>({
 	ajv: envSchemaAjv,
