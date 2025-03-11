@@ -1,7 +1,7 @@
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { resolveUpdatedAt } from "../../../../src/graphql/types/Chat/updatedAt";
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 
 const mockParent = {
 	id: "chat_1",

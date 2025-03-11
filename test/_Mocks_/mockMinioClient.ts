@@ -65,4 +65,3 @@ export const createMockMinioClient = (): MockMinioClient => {
 		client: mockClient,
 	};
 };
-

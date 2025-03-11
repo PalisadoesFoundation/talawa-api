@@ -1,8 +1,8 @@
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { z } from "zod";
 import type { userRoleEnum } from "~/src/drizzle/enums/userRole";
 import { resolveEventUpdater } from "../../../../src/graphql/types/Event/updater";
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 
 // Define types for the user object structure
 type UserRole = z.infer<typeof userRoleEnum>;

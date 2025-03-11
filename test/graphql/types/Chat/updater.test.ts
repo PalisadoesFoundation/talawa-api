@@ -1,10 +1,10 @@
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { z } from "zod";
 import type { chatMembershipRoleEnum } from "~/src/drizzle/enums/chatMembershipRole";
 import type { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organizationMembershipRole";
 import type { userRoleEnum } from "~/src/drizzle/enums/userRole";
 import { resolveUpdater } from "../../../../src/graphql/types/Chat/updater";
-import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 
 // Infer types from the zod enums
 type UserRole = z.infer<typeof userRoleEnum>;
@@ -177,7 +177,7 @@ describe("Chat.updatedAt resolver", () => {
 				}),
 			}),
 		);
-		expect(authenticatedContext.log.error).toHaveBeenCalled()
+		expect(authenticatedContext.log.error).toHaveBeenCalled();
 	});
 
 	describe("admin role authorization", () => {

@@ -1,4 +1,3 @@
-
 import { type Mock, vi } from "vitest";
 import * as drizzleSchema from "~/src/drizzle/schema";
 
@@ -42,6 +41,3 @@ export function createMockDrizzleClient() {
 		query: queryTables,
 	};
 }
-
-
-
