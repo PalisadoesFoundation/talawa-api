@@ -22,7 +22,7 @@ export const postAttachmentsTable = pgTable(
 			.notNull()
 			.defaultNow(),
 		/**
-		 * Primary unique identifier of the post.
+		 * Primary unique identifier of the post attachment.
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
 
