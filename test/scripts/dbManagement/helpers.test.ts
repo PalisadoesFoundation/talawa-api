@@ -1,5 +1,7 @@
+import fs from "node:fs/promises";
 import readline from "node:readline";
 import * as helpers from "scripts/dbManagement/helpers";
+import * as schema from "src/drizzle/schema";
 import { beforeEach, expect, suite, test, vi } from "vitest";
 
 suite.concurrent("parseDate", () => {
@@ -112,22 +114,158 @@ const overrideDbExecute = (newExecute: () => Promise<unknown>): void => {
 
 suite.concurrent("pingDB", () => {
 	beforeEach(() => {
-		// Reset modules if needed. This ensures a fresh instance for each test.
 		vi.resetModules();
 	});
 
 	test.concurrent("should return true when db.execute resolves", async () => {
-		// Override execute to simulate a successful query.
 		overrideDbExecute(() => Promise.resolve());
 		const result = await helpers.pingDB();
 		expect(result).toBe(true);
 	});
 
 	test.concurrent("should throw error when db.execute rejects", async () => {
-		// Override execute to simulate a failure.
 		overrideDbExecute(() => Promise.reject(new Error("connection failed")));
 		await expect(helpers.pingDB()).rejects.toThrow(
 			"Unable to connect to the database.",
 		);
+	});
+});
+
+suite.concurrent("listSampleData", () => {
+	test.concurrent(
+		"should list sample data files and return true using the original sample_data",
+		async () => {
+			const result = await helpers.listSampleData();
+			expect(result).toBe(true);
+		},
+	);
+
+	test.concurrent(
+		"should handle an error while listing sample data",
+		async () => {
+			vi.spyOn(fs, "readdir").mockRejectedValue(
+				new Error("Failed to read directory"),
+			);
+
+			await expect(helpers.listSampleData()).rejects.toThrow(
+				"Error listing sample data: Error: Failed to read directory",
+			);
+
+			vi.restoreAllMocks();
+		},
+	);
+});
+
+suite.concurrent("emptyMinioBucket", () => {
+	test.concurrent("should empty the Minio bucket and return true", async () => {
+		const result = await helpers.emptyMinioBucket();
+		expect(result).toBe(true);
+	});
+	test.concurrent("should return false if listing objects fails", async () => {
+		const minioClient = Reflect.get(helpers, "minioClient");
+		const originalListObjects = minioClient.listObjects;
+		minioClient.listObjects = () => {
+			const { Readable } = require("node:stream");
+			const stream = new Readable({ read() {} });
+			process.nextTick(() => {
+				stream.emit("error", new Error("Failed to list objects"));
+				stream.push(null);
+			});
+			return stream;
+		};
+
+		const result = await helpers.emptyMinioBucket();
+		expect(result).toBe(false);
+
+		minioClient.listObjects = originalListObjects;
+	});
+});
+
+suite.concurrent("checkAndInsertData", () => {
+	test.concurrent("should return false when given no rows", async () => {
+		const result = await helpers.checkAndInsertData(
+			schema.usersTable,
+			[],
+			schema.usersTable.id,
+			1000,
+		);
+		expect(result).toBe(false);
+	});
+
+	test.concurrent("should throw error if transaction fails", async () => {
+		// Override db.transaction to simulate a failure.
+		const db = Reflect.get(helpers, "db");
+		const originalTransaction = db.transaction;
+		db.transaction = async () => {
+			throw new Error("Transaction failed");
+		};
+
+		await expect(
+			helpers.checkAndInsertData(
+				schema.usersTable,
+				[{ id: 1 }],
+				schema.usersTable.id,
+				1000,
+			),
+		).rejects.toThrow("Transaction failed");
+
+		db.transaction = originalTransaction;
+	});
+});
+
+suite.concurrent("insertCollections", () => {
+	test.concurrent(
+		"should insert collection data (for a valid collection) and return true",
+		async () => {
+			const result = await helpers.insertCollections([
+				"users",
+				"organizations",
+				"organization_memberships",
+				"posts",
+				"post_votes",
+				"post_attachments",
+				"comments",
+				"comment_votes",
+			]);
+			expect(result).toBe(true);
+		},
+	);
+
+	test.concurrent(
+		"should throw error for an invalid collection name",
+		async () => {
+			await expect(
+				helpers.insertCollections(["invalid_collection"]),
+			).rejects.toThrow(/Error adding data to tables:/);
+		},
+	);
+});
+
+suite.concurrent("checkDataSize integration test", () => {
+	test.concurrent(
+		"should return a boolean indicating record existence",
+		async () => {
+			const result = await helpers.checkDataSize("Test Stage");
+			expect(typeof result).toBe("boolean");
+		},
+	);
+	test.concurrent("should return false if db query fails", async () => {
+		const db = Reflect.get(helpers, "db");
+		const originalSelect = db.select;
+		db.select = () => {
+			throw new Error("Query failed");
+		};
+
+		const result = await helpers.checkDataSize("Test Stage");
+		expect(result).toBe(false);
+		db.select = originalSelect;
+	});
+});
+
+// cannot be run concurrently
+suite("formatDatabase integration test", () => {
+	test.concurrent("should format the database and return true", async () => {
+		const result = await helpers.formatDatabase();
+		expect(result).toBe(true);
 	});
 });

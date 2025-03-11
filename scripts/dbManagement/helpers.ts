@@ -35,7 +35,7 @@ export const queryClient = postgres({
 });
 
 //Create a bucket client
-const minioClient = new MinioClient({
+export const minioClient = new MinioClient({
 	accessKey: envConfig.API_MINIO_ACCESS_KEY || "",
 	endPoint: envConfig.API_MINIO_END_POINT || "",
 	port: Number(envConfig.API_MINIO_PORT),
@@ -98,7 +98,7 @@ export async function formatDatabase(): Promise<boolean> {
 
 			await tx.execute(sql`
 				DELETE FROM ${sql.identifier(USERS_TABLE)}
-				WHERE email != ${adminEmail};
+				WHERE email_address != ${adminEmail};
 			  `);
 		});
 
