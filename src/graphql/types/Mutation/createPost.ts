@@ -172,8 +172,8 @@ builder.mutationField("createPost", (t) =>
 								mimeType: attachment.mimetype,
 								name: ulid(),
 								postId: createdPost.id,
-								objectName: attachment.objectName, 
-								fileHash: attachment.fileHash, 
+								objectName: attachment.objectName,
+								fileHash: attachment.fileHash,
 							})),
 						)
 						.returning();

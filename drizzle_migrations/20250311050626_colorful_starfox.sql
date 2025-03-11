@@ -1,0 +1,2 @@
+CREATE INDEX "post_attachments_file_hash_index" ON "post_attachments" USING btree ("file_hash");--> statement-breakpoint
+CREATE INDEX "post_attachments_object_name_index" ON "post_attachments" USING btree ("object_name");

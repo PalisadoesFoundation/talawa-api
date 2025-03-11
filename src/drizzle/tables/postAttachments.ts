@@ -48,15 +48,15 @@ export const postAttachmentsTable = pgTable(
 		 */
 		name: text("name", {}).notNull(),
 
-		 /**
-         * Object name used when creating presigned URLs.
-         */
-		 objectName: text("object_name"),
-        
-		 /**
-		  * File hash for deduplication purposes.
-		  */
-		 fileHash: text("file_hash"),
+		/**
+		 * Object name used when creating presigned URLs.
+		 */
+		objectName: text("object_name"),
+
+		/**
+		 * File hash for deduplication purposes.
+		 */
+		fileHash: text("file_hash"),
 
 		/**
 		 * Foreign key reference to the id of the user who last updated the attachment.
@@ -80,6 +80,8 @@ export const postAttachmentsTable = pgTable(
 		index().on(self.createdAt),
 		index().on(self.creatorId),
 		index().on(self.postId),
+		index().on(self.fileHash),
+		index().on(self.objectName),
 	],
 );
 

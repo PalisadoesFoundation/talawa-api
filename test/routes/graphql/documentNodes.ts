@@ -633,7 +633,9 @@ export const Mutation_createPost = gql(`
       }
       attachments {
         mimeType
-        url
+        objectName
+        fileHash
+        name
       }
     }
   }
