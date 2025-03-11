@@ -1,33 +1,31 @@
 import fs from "node:fs/promises";
 import readline from "node:readline";
-import envSchema from "env-schema";
-import * as schema from "src/drizzle/schema";
-import { type TestEnvConfig, testEnvConfigSchema } from "test/envConfigSchema";
-import { beforeEach, expect, suite, test, vi } from "vitest";
-import { envSchemaAjv } from "~/src/envConfigSchema";
-
-const testEnvConfig = envSchema<TestEnvConfig>({
-	ajv: envSchemaAjv,
-	dotenv: true,
-	schema: testEnvConfigSchema,
-});
-
-vi.mock("env-schema", async (importOriginal) => {
-	const actual = (await importOriginal()) as typeof import("env-schema");
-	return {
-		...actual,
-		default: vi.fn((opts) => {
-			const realEnv = actual.default(opts);
-			return {
-				...realEnv,
-				API_POSTGRES_HOST: "postgres-test",
-				API_MINIO_END_POINT: "minio-test",
-			};
-		}),
-	};
-});
-
 import * as helpers from "scripts/dbManagement/helpers";
+import * as schema from "src/drizzle/schema";
+import type { TestEnvConfig } from "test/envConfigSchema";
+import { beforeAll, beforeEach, expect, suite, test, vi } from "vitest";
+
+let testEnvConfig: TestEnvConfig;
+
+beforeAll(async () => {
+	const module = await import("test/envConfigSchema");
+	testEnvConfig = module.testEnvConfig;
+	vi.doMock("env-schema", async (importOriginal) => {
+		const actual = (await importOriginal()) as typeof import("env-schema");
+
+		return {
+			...actual,
+			default: vi.fn((opts) => {
+				const realEnv = actual.default(opts);
+				return {
+					...realEnv,
+					API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+					API_MINIO_END_POINT: testEnvConfig.API_MINIO_TEST_END_POINT,
+				};
+			}),
+		};
+	});
+});
 
 suite.concurrent("parseDate", () => {
 	beforeEach(() => {
@@ -295,36 +293,30 @@ suite("formatDatabase integration test", () => {
 	});
 });
 
-suite.concurrent("disconnect integration test", () => {
-	test.concurrent(
-		"should return true when queryClient.end resolves",
-		async () => {
-			const queryClient = Reflect.get(helpers, "queryClient");
-			const originalEnd = queryClient.end;
+suite("disconnect integration test", () => {
+	test("should return true when queryClient.end resolves", async () => {
+		const queryClient = Reflect.get(helpers, "queryClient");
+		const originalEnd = queryClient.end;
 
-			queryClient.end = async () => Promise.resolve();
+		queryClient.end = async () => Promise.resolve();
 
-			const result = await helpers.disconnect();
-			expect(result).toBe(true);
+		const result = await helpers.disconnect();
+		expect(result).toBe(true);
 
-			queryClient.end = originalEnd;
-		},
-	);
+		queryClient.end = originalEnd;
+	});
 
-	test.concurrent(
-		"should throw error when queryClient.end rejects",
-		async () => {
-			const queryClient = Reflect.get(helpers, "queryClient");
-			const originalEnd = queryClient.end;
+	test("should throw error when queryClient.end rejects", async () => {
+		const queryClient = Reflect.get(helpers, "queryClient");
+		const originalEnd = queryClient.end;
 
-			queryClient.end = async () =>
-				Promise.reject(new Error("disconnect failed"));
+		queryClient.end = async () =>
+			Promise.reject(new Error("disconnect failed"));
 
-			await expect(helpers.disconnect()).rejects.toThrow(
-				/Error disconnecting from the database:/,
-			);
+		await expect(helpers.disconnect()).rejects.toThrow(
+			/Error disconnecting from the database:/,
+		);
 
-			queryClient.end = originalEnd;
-		},
-	);
+		queryClient.end = originalEnd;
+	});
 });
