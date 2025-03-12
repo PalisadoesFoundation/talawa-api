@@ -211,7 +211,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			const isRequestAllowed = await leakyBucket(
 				fastify,
 				key,
-				fastify.envConfig.API_RATE_LIMIT_BUKCET_CAPACITY,
+				fastify.envConfig.API_RATE_LIMIT_BUCKET_CAPACITY,
 				fastify.envConfig.API_RATE_LIMIT_REFILL_RATE,
 				complexity.complexity,
 			);

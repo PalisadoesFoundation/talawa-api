@@ -256,12 +256,16 @@ export const envConfigSchema = Type.Object({
 	API_GRAPHQL_MUTATION_BASE_COST: Type.Number({
 		minimum: 0,
 	}),
-	//  max cost of user's bucket
-	API_RATE_LIMIT_BUKCET_CAPACITY: Type.Number({
+	/**
+	 * Maximum capacity of a user's request bucket for rate limiting.
+	 */
+	API_RATE_LIMIT_BUCKET_CAPACITY: Type.Number({
 		minimum: 0,
 	}),
 
-	// refill rate of user's bucket per second
+	/**
++ * Rate at which a user's request bucket refills per second for rate limiting.
++ */
 	API_RATE_LIMIT_REFILL_RATE: Type.Number({
 		minimum: 0,
 	}),
