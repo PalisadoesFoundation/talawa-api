@@ -61,7 +61,7 @@ There aren't any other strict structure requirements for the this directory.
 
 ### Mock GraphQL Context Factory Function
 
-#### In Directory `test/MockContext/*`
+#### In Directory `test/_Mocks_/mockContextCreator`
 
 #### **Purpose**
 
@@ -72,7 +72,7 @@ The `createMockGraphQLContext` function provides a **fully mocked GraphQL contex
 #### **Importing the Mock Context**
 
 ```ts
-import { createMockGraphQLContext } from "test/MockContext/mockContextCreator";
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator";
 ```
 
 #### **Creating a Mock Context**

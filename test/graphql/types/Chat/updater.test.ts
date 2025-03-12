@@ -49,7 +49,7 @@ const mockParent = {
 	updaterId: "updater_1",
 };
 
-describe("Chat.updatedAt resolver", () => {
+describe("Chat.updater resolver", () => {
 	let authenticatedContext: ReturnType<
 		typeof createMockGraphQLContext
 	>["context"];

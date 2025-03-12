@@ -16,7 +16,7 @@ type MockUser = {
 	}>;
 };
 
-describe("Event Updated At Resolver Tests", () => {
+describe("Event UpdatedAt Resolver Tests", () => {
 	let ctx: GraphQLContext;
 	let mockEvent: EventType;
 	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];

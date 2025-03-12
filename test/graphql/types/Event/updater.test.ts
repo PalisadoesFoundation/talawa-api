@@ -25,7 +25,7 @@ const MockEvent = {
 	updaterId: "updater_1",
 };
 
-describe("Chat.updatedAt resolver", () => {
+describe("Event updater resolver - Tests", () => {
 	let authenticatedContext: ReturnType<
 		typeof createMockGraphQLContext
 	>["context"];
