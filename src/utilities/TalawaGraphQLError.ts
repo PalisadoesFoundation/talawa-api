@@ -225,7 +225,7 @@ export const defaultTalawaGraphQLErrorMessages: {
 		"You are not authorized to perform this action on the resources associated to the provided arguments.",
 	unauthorized_arguments:
 		"You are not authorized to perform this action with the provided arguments.",
-	unexpected: "Something went wrong. Please try again later.",	
+	unexpected: "Something went wrong. Please try again later.",
 };
 
 /**

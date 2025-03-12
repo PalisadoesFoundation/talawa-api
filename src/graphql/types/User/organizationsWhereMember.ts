@@ -11,8 +11,8 @@ import {
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { User } from "./User";
 import envConfig from "~/src/utilities/graphqLimits";
+import { User } from "./User";
 
 const organizationsWhereMemberArgumentsSchema =
 	defaultGraphQLConnectionArgumentsSchema
@@ -249,35 +249,33 @@ User.implement({
 						rawNodes: organizationMemberships,
 					});
 				},
-				complexity : (args)=>{
+				complexity: (args) => {
 					return {
-						field :  envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-						multiplier : args.first || args.last || 1
-						
-					}
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: args.first || args.last || 1,
+					};
 				},
 				type: Organization,
 			},
 			{
-				
 				edgesField: {
-					complexity : {
-						field : envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-						multiplier : 1
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
 					},
 				},
 				description: "",
 			},
-			
+
 			{
 				nodeField: {
-					complexity : {
-						field : envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-						multiplier : 1
-					},	
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
 				},
 				description: "",
-			},			
+			},
 		),
 	}),
 });

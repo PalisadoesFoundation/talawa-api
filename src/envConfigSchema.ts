@@ -241,28 +241,28 @@ export const envConfigSchema = Type.Object({
 		minimum: 0,
 	}),
 	//  cost of scalar field
-	API_GRAPHQL_SCALAR_FIELD_COST : Type.Number({
+	API_GRAPHQL_SCALAR_FIELD_COST: Type.Number({
 		minimum: 0,
 	}),
 	// cost of object field
-	API_GRAPHQL_OBJECT_FIELD_COST :  Type.Number({
+	API_GRAPHQL_OBJECT_FIELD_COST: Type.Number({
 		minimum: 0,
 	}),
 	// cost of list field
-	API_GRAPHQL_LIST_FIELD_COST : Type.Number({
+	API_GRAPHQL_LIST_FIELD_COST: Type.Number({
 		minimum: 0,
 	}),
 	// base cost of mutation
-	API_GRAPHQL_MUTATION_BASE_COST : Type.Number({
+	API_GRAPHQL_MUTATION_BASE_COST: Type.Number({
 		minimum: 0,
 	}),
 	//  max cost of user's bucket
-	API_RATE_LIMIT_BUKCET_CAPACITY : Type.Number({
+	API_RATE_LIMIT_BUKCET_CAPACITY: Type.Number({
 		minimum: 0,
 	}),
 
 	// refill rate of user's bucket per second
-	API_RATE_LIMIT_REFILL_RATE : Type.Number({
+	API_RATE_LIMIT_REFILL_RATE: Type.Number({
 		minimum: 0,
 	}),
 });
@@ -283,4 +283,3 @@ export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
 		return ajvInstance;
 	},
 };
-

@@ -109,7 +109,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		fastify.currentRequest = request;
 	});
 
-
 	// More information at this link: https://mercurius.dev/#/docs/api/options?id=mercurius
 	await fastify.register(mercurius, {
 		context: (request, reply) =>
@@ -198,7 +197,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			if (!ip) {
 				throw new Error("IP is not available");
 			}
-			
 
 			// Generate a rate limiting key based on user ID (if available) or IP address
 			// This allows different rate limits for authenticated vs unauthenticated users

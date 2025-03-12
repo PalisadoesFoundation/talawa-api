@@ -1,6 +1,6 @@
+import { type Static, Type } from "@sinclair/typebox";
 import { envSchema } from "env-schema";
 import { envConfigSchema, envSchemaAjv } from "../envConfigSchema";
-import { type Static, Type } from "@sinclair/typebox";
 
 const schema = Type.Pick(envConfigSchema, [
 	"API_GRAPHQL_SCALAR_FIELD_COST",
