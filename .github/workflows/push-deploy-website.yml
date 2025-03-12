@@ -25,7 +25,7 @@ jobs:
   Deploy-Docusaurus:
     name: Deploy https://docs-api.talawa.io website
     runs-on: ubuntu-latest
-    # Run only if the develop-postgres branch and not dependabot
+    # Run only if not dependabot
     if: ${{ github.actor != 'dependabot[bot]' }}
     environment:
       # This "name" has to be the repos' branch that contains
