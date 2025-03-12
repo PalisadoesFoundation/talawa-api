@@ -189,7 +189,12 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			}
 
 			if (!ip) {
-				throw new Error("IP is not available");
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unexpected",
+					},
+					message: "IP address is not available for rate limiting",
+				});
 			}
 
 			// Generate a rate limiting key based on user ID (if available) or IP address
