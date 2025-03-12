@@ -73,6 +73,12 @@ services:
       - API_POSTGRES_USER=${API_POSTGRES_USER:?error}
       - API_REDIS_HOST=${API_REDIS_HOST:?error}
       - API_REDIS_PORT=${API_REDIS_PORT:?error}
+      - API_GRAPHQL_SCALAR_FIELD_COST=${API_GRAPHQL_SCALAR_FIELD_COST:?error}
+      - API_GRAPHQL_OBJECT_FIELD_COST=${API_GRAPHQL_OBJECT_FIELD_COST:?error}
+      - API_GRAPHQL_LIST_FIELD_COST=${API_GRAPHQL_LIST_FIELD_COST:?error}
+      - API_GRAPHQL_MUTATION_BASE_COST=${API_GRAPHQL_MUTATION_BASE_COST:?error}
+      - API_RATE_LIMIT_BUCKET_CAPACITY=${API_RATE_LIMIT_BUCKET_CAPACITY:?error}
+      - API_RATE_LIMIT_REFILL_RATE=${API_RATE_LIMIT_REFILL_RATE:?error}
       - CI=${CI:?error}
       - NODE_ENV=${NODE_ENV:?error}
     # https://docs.docker.com/reference/compose-file/build/#using-build-and-image
