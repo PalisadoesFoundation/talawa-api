@@ -199,7 +199,7 @@ describe("Event updater resolver - Tests", () => {
 
 	it("throws unexpected error when the updaterId user does not exist", async () => {
 		const mockCurrentUser: UserObject = {
-			id: "user_1",
+			id: "user-123",
 			role: "administrator",
 			organizationMembershipsWhereMember: [{ role: "administrator" }],
 		};

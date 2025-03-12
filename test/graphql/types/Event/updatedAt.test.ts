@@ -202,25 +202,21 @@ describe("Event UpdatedAt Resolver Tests", () => {
 
 		it("should handle invalid organizationId", async () => {
 			mockEvent.organizationId = null as unknown as string;
-			const mockUserData: MockUser = {
-				id: "user-123",
-				role: "administrator",
-				organizationMembershipsWhereMember: [],
-			};
-
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockUserData,
-			);
-
+		
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(() => {
 				throw new TalawaGraphQLError({
+					message: "Unauthorized action", // Include a message for clarity
 					extensions: { code: "unauthorized_action" },
 				});
 			});
-
+		
 			await expect(eventUpdatedAtResolver(mockEvent, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
+				expect.objectContaining({
+					message: "Unauthorized action", // Ensure the message is checked
+					extensions: { code: "unauthorized_action" },
+				})
 			);
 		});
+		
 	});
 });

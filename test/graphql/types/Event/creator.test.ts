@@ -90,22 +90,6 @@ describe("Event Creator Resolver -Test ", () => {
 				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 			);
 		});
-		//additional test case --need review
-		// it("should throw unauthorized_action for admin with no organization Membership", async () => {
-		// 	const mockUserData: MockUser = {
-		// 		id: "user-123",
-		// 		role: "administrator",
-		// 		organizationMembershipsWhereMember: [],
-		// 	};
-
-		// 	(
-		// 		ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		// 	).mockResolvedValue(mockUserData);
-
-		// 	await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
-		// 		new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
-		// 	);
-		// });
 	});
 
 	it("should return null for null creatorId", async () => {
