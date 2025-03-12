@@ -50,7 +50,7 @@ describe("Event UpdatedAt Resolver Tests", () => {
 			);
 		});
 
-		it("should throw unauthenticated error is userId exists but current user doesn't exists", async () => {
+		it("should throw unauthenticated error if userId exists but current user doesn't exists", async () => {
 			const currentUser = undefined;
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				currentUser,
@@ -202,21 +202,20 @@ describe("Event UpdatedAt Resolver Tests", () => {
 
 		it("should handle invalid organizationId", async () => {
 			mockEvent.organizationId = null as unknown as string;
-		
+
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(() => {
 				throw new TalawaGraphQLError({
 					message: "Unauthorized action", // Include a message for clarity
 					extensions: { code: "unauthorized_action" },
 				});
 			});
-		
+
 			await expect(eventUpdatedAtResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				expect.objectContaining({
 					message: "Unauthorized action", // Ensure the message is checked
 					extensions: { code: "unauthorized_action" },
-				})
+				}),
 			);
 		});
-		
 	});
 });
