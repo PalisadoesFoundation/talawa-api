@@ -105,9 +105,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		 */
 		maxFileSize: 10485760,
 	});
-	fastify.addHook("onRequest", async (request) => {
-		fastify.currentRequest = request;
-	});
 
 	// More information at this link: https://mercurius.dev/#/docs/api/options?id=mercurius
 	await fastify.register(mercurius, {
@@ -154,6 +151,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				schema: schema,
 				variables: variables,
 			});
+			const request = document.reply.request;
 
 			// Find the operation definition node to determine if this is a query, mutation, or subscription
 			const operationDefinition = context.definitions.find(
@@ -171,19 +169,14 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			}
 
 			// Get the IP address of the client making the request
-			const ip = fastify.currentRequest?.ip;
-
-			// Ensure the request object is available
-			if (!fastify.currentRequest) {
-				throw new Error("Request is not available");
-			}
+			const ip = request.ip;
 
 			// Verify the JWT token to get the user information
 			// This is used to identify the user for rate limiting purposes
 			let currentClient: CurrentClient;
 			try {
 				const jwtPayload =
-					await fastify.currentRequest.jwtVerify<ExplicitAuthenticationTokenPayload>();
+					await request.jwtVerify<ExplicitAuthenticationTokenPayload>();
 				currentClient = {
 					isAuthenticated: true,
 					user: jwtPayload.user,

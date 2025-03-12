@@ -21,7 +21,6 @@ declare module "fastify" {
 		 * Parsed configuration environment variables used by talawa api.
 		 */
 		envConfig: EnvConfig;
-		currentRequest: FastifyRequest | null;
 	}
 }
 
@@ -65,7 +64,6 @@ export const createServer = async (options?: {
 	// THE FASTIFY PLUGIN LOAD ORDER MATTERS, PLUGINS MIGHT BE DEPENDENT ON OTHER PLUGINS ALREADY BEING REGISTERED. THEREFORE THE ORDER OF REGISTRATION MUST BE MAINTAINED UNLESS THE DEVELOPER KNOWS WHAT THEY'RE DOING.
 
 	fastify.decorate("envConfig", envConfig);
-	fastify.decorate("currentRequest", null);
 	// More information at this link: https://github.com/fastify/fastify-rate-limit
 	fastify.register(fastifyRateLimit, {});
 
