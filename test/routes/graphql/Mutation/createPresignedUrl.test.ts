@@ -30,7 +30,6 @@ suite("Mutation field createPresignedUrl", () => {
 				variables: {
 					input: {
 						fileName: "testfile.txt",
-						fileType: "text/plain",
 						organizationId: faker.string.uuid(),
 					},
 				},
@@ -48,7 +47,7 @@ suite("Mutation field createPresignedUrl", () => {
 	});
 
 	suite("when the presigned URL is generated successfully", () => {
-		test("should return a presignedUrl, fileUrl, and objectName", async () => {
+		test("should return a presignedUrl and objectName", async () => {
 			const originalPresignedPutObject = server.minio.client.presignedPutObject;
 			server.minio.client.presignedPutObject = async (
 				bucket: string,
@@ -86,7 +85,6 @@ suite("Mutation field createPresignedUrl", () => {
 				variables: {
 					input: {
 						fileName: "testfile.txt",
-						fileType: "text/plain",
 						organizationId: orgId,
 					},
 				},
@@ -95,11 +93,8 @@ suite("Mutation field createPresignedUrl", () => {
 			expect(result.data?.createPresignedUrl).toEqual(
 				expect.objectContaining({
 					presignedUrl: "https://example.com/presigned-url",
-					fileUrl: expect.stringContaining(
-						`http://${server.minio.config.endPoint}:${server.minio.config.port}/${server.minio.bucketName}/uploads/`,
-					),
 					objectName: expect.stringMatching(
-						/^uploads\/\d+-[0-9a-fA-F-]+-testfile\.txt$/,
+						/^uploads\/[0-9a-f-]+\/\d+-[0-9a-f-]+-testfile\.txt$/i,
 					),
 				}),
 			);
@@ -114,7 +109,6 @@ suite("Mutation field createPresignedUrl", () => {
 				variables: {
 					input: {
 						fileName: "testfile.txt",
-						fileType: "text/plain",
 						organizationId: faker.string.uuid(),
 					},
 				},
@@ -202,7 +196,6 @@ suite("Mutation field createPresignedUrl", () => {
 				variables: {
 					input: {
 						fileName: "testfile.txt",
-						fileType: "text/plain",
 						organizationId: orgId,
 					},
 				},
@@ -253,7 +246,6 @@ suite("Mutation field createPresignedUrl", () => {
 				variables: {
 					input: {
 						fileName: "testfile.txt",
-						fileType: "text/plain",
 						organizationId: orgId,
 					},
 				},
@@ -308,7 +300,6 @@ suite("Mutation field createPresignedUrl", () => {
 				variables: {
 					input: {
 						fileName: "testfile.txt",
-						fileType: "text/plain",
 						organizationId: orgId,
 					},
 				},

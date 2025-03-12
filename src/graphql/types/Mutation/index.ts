@@ -13,6 +13,7 @@ import "./createEvent";
 import "./createFund";
 import "./createFundCampaign";
 import "./createFundCampaignPledge";
+import "./createGetfileUrl";
 import "./createOrganization";
 import "./createOrganizationMembership";
 import "./createPost";

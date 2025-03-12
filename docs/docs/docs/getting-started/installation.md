@@ -291,29 +291,29 @@ These steps are specific to Linux. You will need to modify them accordingly for 
    ```
 1. Build the docker devcontainer
 
-```
-devcontainer build --workspace-folder .
-```
+   ```
+   devcontainer build --workspace-folder .
+   ```
 
 1. When the build is complete, the last line of the output should be:
 
-```
-{"outcome":"success","imageName":"talawa-api"}
-```
+   ```
+   {"outcome":"success","imageName":"talawa-api"}
+   ```
 
 1. Start the docker devcontainer
 
-```
-devcontainer up --workspace-folder .
-```
+   ```
+   devcontainer up --workspace-folder .
+   ```
 
 1. When the container installation is complete, the last lines of output should look like this:
 
-```
-...
-...
-{"outcome":"success","containerId":"81306766f2aeeb851c8ebb844702d39ad2adc09419508b736ef2ee5a03eb8e34","composeProjectName":"talawa","remoteUser":"talawa","remoteWorkspaceFolder":"/home/talawa/api"}
-```
+   ```
+   ...
+   ...
+   {"outcome":"success",   "containerId":"81306766f2aeeb851c8ebb844702d39ad2adc09419508b736ef2ee5a03eb8e34",   "composeProjectName":"talawa","remoteUser":"talawa","remoteWorkspaceFolder":"/home/talawa/api"}
+   ```
 
 All done!
 

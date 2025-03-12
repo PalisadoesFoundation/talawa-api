@@ -639,6 +639,11 @@ input GetPostsByOrgInput {
   sortOrder: String
 }
 
+"""GetUrlResponse"""
+type GetUrlResponse {
+  presignedUrl: String
+}
+
 """
 Possible variants of the two-letter language code defined in ISO 639-1, part of the ISO 639 standard published by the International Organization for Standardization (ISO), to represent natural languages.
 """
@@ -1267,6 +1272,21 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
+"""Filter criteria for member roles"""
+input MembersRoleWhereInput {
+  """Role equals this value"""
+  equal: OrganizationMembershipRole
+
+  """Role does not equal this value"""
+  notEqual: OrganizationMembershipRole
+}
+
+"""Filter criteria for organization members"""
+input MembersWhereInput {
+  """Filter members by role"""
+  role: MembersRoleWhereInput
+}
+
 type Mutation {
   """Mutation field to block a user from an organization."""
   blockUser(organizationId: String!, userId: String!): Boolean
@@ -1306,6 +1326,9 @@ type Mutation {
 
   """Mutation field to create a fund campaign pledge."""
   createFundCampaignPledge(input: MutationCreateFundCampaignPledgeInput!): FundCampaignPledge
+
+  """Mutation field to create a presigned URL for uploading a file."""
+  createGetfileUrl(input: MutationCreateGetfileUrlInput!): GetUrlResponse
 
   """Mutation field to create an organization."""
   createOrganization(input: MutationCreateOrganizationInput!): Organization
@@ -1679,6 +1702,15 @@ input MutationCreateFundInput {
   organizationId: ID!
 }
 
+"""Input for getting a presigned URL for file download"""
+input MutationCreateGetfileUrlInput {
+  """Name of the object to be downloaded"""
+  objectName: String
+
+  """ID of the organization the file belongs to"""
+  organizationId: ID!
+}
+
 """"""
 input MutationCreateOrganizationInput {
   """Address line 1 of the organization's address."""
@@ -1747,9 +1779,15 @@ input MutationCreatePostVoteInput {
   type: PostVoteType!
 }
 
+"""Input for creating a presigned URL for file upload"""
 input MutationCreatePresignedUrlInput {
+  """Name of the file to be uploaded"""
   fileName: String!
-  fileType: String!
+
+  """Custom object name for the file (optional)"""
+  objectName: String
+
+  """ID of the organization the file belongs to"""
   organizationId: ID!
 }
 
@@ -2606,7 +2644,15 @@ type Organization {
   """
   GraphQL connection to traverse through the users that are members of the organization.
   """
-  members(after: String, before: String, first: Int, last: Int): OrganizationMembersConnection
+  members(
+    after: String
+    before: String
+    first: Int
+    last: Int
+
+    """Filter criteria for organization members"""
+    where: MembersWhereInput
+  ): OrganizationMembersConnection
 
   """Name of the organization."""
   name: String
@@ -2951,6 +2997,9 @@ type Query {
   """Query field to read an organization."""
   organization(input: QueryOrganizationInput!): Organization
 
+  """Query to fetch all organizations. Returns up to 20 organizations."""
+  organizations: [Organization!]
+
   """Query field to read a post."""
   post(input: QueryPostInput!): Post
   postsByOrganization(input: GetPostsByOrgInput!): [Post!]
@@ -3216,7 +3265,6 @@ scalar Upload
 
 """UploadUrlResponse"""
 type UploadUrlResponse {
-  fileUrl: String
   objectName: String
   presignedUrl: String
 }

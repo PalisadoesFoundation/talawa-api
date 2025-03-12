@@ -3,15 +3,15 @@ pre-commit:
     1_upgrade_drizzle_metadata:
       run: |
         set -e
-        pnpm upgrade_drizzle_metadata
+        pnpm run upgrade_drizzle_metadata
         git add ./drizzle_migrations
     2_generate_drizzle_migrations:
       run: |
         set -e
-        pnpm generate_drizzle_migrations
+        pnpm run generate_drizzle_migrations
         git add ./drizzle_migrations
     3_check_drizzle_migrations:
-      run: pnpm check_drizzle_migrations
+      run: pnpm run check_drizzle_migrations
     4_generate_graphql_sdl_file:
       run: |
         set -e
@@ -35,4 +35,10 @@ pre-commit:
       run: |
         set -e
         pnpm check_tests   
+    9_generate_docs:
+      run: |
+        set -e
+        pnpm generate:docs
+        git add ./docs/docs/docs/auto-schema
+
   piped: true
