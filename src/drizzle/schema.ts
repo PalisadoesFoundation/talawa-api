@@ -23,6 +23,10 @@ export {
 	agendaFoldersTableRelations,
 } from "./tables/agendaFolders";
 export {
+	blockedUsersTable,
+	blockedUsersTableRelations,
+} from "./tables/blockedUsers";
+export {
 	chatMembershipsTable,
 	chatMembershipsTableRelations,
 } from "./tables/chatMemberships";

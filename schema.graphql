@@ -187,6 +187,21 @@ The `BigInt` scalar type represents non-fractional signed whole numeric values.
 """
 scalar BigInt
 
+"""Represents a user blocked by an organization."""
+type BlockedUser {
+  """Timestamp when the user was blocked."""
+  createdAt: Date
+
+  """Unique identifier of the blocked user."""
+  id: ID
+
+  """Organization that blocked the user."""
+  organization: Organization
+
+  """User who has been blocked."""
+  user: User
+}
+
 type Chat {
   """Mime type of the avatar of the chat."""
   avatarMimeType: String
@@ -1253,6 +1268,9 @@ enum Iso4217CurrencyCode {
 }
 
 type Mutation {
+  """Mutation field to block a user from an organization."""
+  blockUser(organizationId: String!, userId: String!): Boolean
+
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
 
@@ -1388,6 +1406,9 @@ type Mutation {
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
 
+  """Mutation field to unblock a user from an organization."""
+  unblockUser(organizationId: String!, userId: String!): Boolean
+
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
 
@@ -1453,6 +1474,15 @@ type Mutation {
 
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
+}
+
+"""Input to block a user from an organization"""
+input MutationBlockUserInput {
+  """Global identifier of the organization."""
+  organizationId: ID!
+
+  """Global identifier of the user to block."""
+  userId: ID!
 }
 
 """"""
@@ -2049,6 +2079,15 @@ input MutationSignUpInput {
   workPhoneNumber: PhoneNumber
 }
 
+"""Input to unblock a user from an organization"""
+input MutationUnblockUserInput {
+  """Global identifier of the organization."""
+  organizationId: ID!
+
+  """Global identifier of the user to unblock."""
+  userId: ID!
+}
+
 """"""
 input MutationUpdateAdvertisementInput {
   """Custom information about the advertisement."""
@@ -2528,6 +2567,9 @@ type Organization {
   """URL to the avatar of the organization."""
   avatarURL: String
 
+  """GraphQL connection to retrieve blocked users of the organization."""
+  blockedUsers(after: String, before: String, first: Int, last: Int): OrganizationBlockedUsersConnection
+
   """
   GraphQL connection to traverse through the chats belonging to the organization.
   """
@@ -2623,6 +2665,16 @@ type OrganizationAdvertisementsConnection {
 type OrganizationAdvertisementsConnectionEdge {
   cursor: String!
   node: Advertisement
+}
+
+type OrganizationBlockedUsersConnection {
+  edges: [OrganizationBlockedUsersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type OrganizationBlockedUsersConnectionEdge {
+  cursor: String!
+  node: User
 }
 
 """"""

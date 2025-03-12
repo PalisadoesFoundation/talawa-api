@@ -1,6 +1,7 @@
 import "./Organization";
 import "./advertisements";
 import "./avatarURL";
+import "./blockedUsers";
 import "./chats";
 import "./creator";
 import "./events";
