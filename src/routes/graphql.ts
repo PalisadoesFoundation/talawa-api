@@ -9,6 +9,7 @@ import type {
 	ExplicitGraphQLContext,
 } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
+import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 import leakyBucket from "../utilities/leakyBucket";
 
 /**
@@ -212,7 +213,9 @@ export const graphql = fastifyPlugin(async (fastify) => {
 
 			// If the request exceeds rate limits, reject it
 			if (!isRequestAllowed) {
-				throw new Error("Too many requests");
+				throw new TalawaGraphQLError({
+					extensions: { code: "too_many_requests" },
+				});
 			}
 		},
 	);
