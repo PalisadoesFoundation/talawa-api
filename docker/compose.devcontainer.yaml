@@ -161,6 +161,12 @@ services:
       - source: postgres_test_data
         target: /var/lib/postgresql/data
         type: volume
+  redis:
+    ports:
+    - host_ip: ${REDIS_MAPPED_HOST_IP:?error}
+      name: redis
+      published: ${REDIS_MAPPED_PORT:?error}
+      target: 6379
 # https://docs.docker.com/reference/compose-file/volumes/
 volumes:
   api_bash_history:
@@ -169,3 +175,6 @@ volumes:
   cloudbeaver_data:
   minio_test_data:
   postgres_test_data:
+  
+
+

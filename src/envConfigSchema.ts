@@ -233,6 +233,35 @@ export const envConfigSchema = Type.Object({
 	 * More information at this link: {@link https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNECT-USER}
 	 */
 	API_POSTGRES_USER: Type.String(),
+	API_REDIS_HOST: Type.String({
+		minLength: 1,
+	}),
+	API_REDIS_PORT: Type.Number({
+		maximum: 65535,
+		minimum: 0,
+	}),
+	// base cost of each field in the graphql schema
+	API_GRAPHQL_SCALAR_FIELD_COST : Type.Number({
+		minimum: 0,
+	}),
+	API_GRAPHQL_OBJECT_FIELD_COST :  Type.Number({
+		minimum: 0,
+	}),
+	API_GRAPHQL_LIST_FIELD_COST : Type.Number({
+		minimum: 0,
+	}),
+	API_GRAPHQL_MUTATION_BASE_COST : Type.Number({
+		minimum: 0,
+	}),
+	//  max cost of user's bucket
+	API_RATE_LIMIT_BUKCET_CAPACITY : Type.Number({
+		minimum: 0,
+	}),
+
+	// refill rate of user's bucket per second
+	API_RATE_LIMIT_REFILL_RATE : Type.Number({
+		minimum: 0,
+	}),
 });
 
 /**
@@ -251,3 +280,4 @@ export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
 		return ajvInstance;
 	},
 };
+

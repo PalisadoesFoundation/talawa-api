@@ -1,4 +1,5 @@
 import fastifyCors from "@fastify/cors";
+import fastifyRedis from "@fastify/redis"
 import fastifyHelmet from "@fastify/helmet";
 import { fastifyJwt } from "@fastify/jwt";
 import fastifyRateLimit from "@fastify/rate-limit";
@@ -20,6 +21,7 @@ declare module "fastify" {
 		 * Parsed configuration environment variables used by talawa api.
 		 */
 		envConfig: EnvConfig;
+		currentRequest : FastifyRequest | null
 	}
 }
 
@@ -63,7 +65,7 @@ export const createServer = async (options?: {
 	// THE FASTIFY PLUGIN LOAD ORDER MATTERS, PLUGINS MIGHT BE DEPENDENT ON OTHER PLUGINS ALREADY BEING REGISTERED. THEREFORE THE ORDER OF REGISTRATION MUST BE MAINTAINED UNLESS THE DEVELOPER KNOWS WHAT THEY'RE DOING.
 
 	fastify.decorate("envConfig", envConfig);
-
+	fastify.decorate("currentRequest", null)
 	// More information at this link: https://github.com/fastify/fastify-rate-limit
 	fastify.register(fastifyRateLimit, {});
 
@@ -76,14 +78,19 @@ export const createServer = async (options?: {
 		contentSecurityPolicy: !fastify.envConfig.API_IS_GRAPHIQL,
 	});
 
+	fastify.register(fastifyRedis,{
+		host : fastify.envConfig.API_REDIS_HOST,
+		port : fastify.envConfig.API_REDIS_PORT,
+	})
+
 	// More information at this link: https://github.com/fastify/fastify-jwt
 	fastify.register(fastifyJwt, {
 		secret: fastify.envConfig.API_JWT_SECRET,
 		sign: {
 			expiresIn: fastify.envConfig.API_JWT_EXPIRES_IN,
 		},
-	});
-
+	});	
+	
 	fastify.register(plugins, {});
 
 	fastify.register(routes, {});

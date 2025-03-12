@@ -5,6 +5,7 @@ import {
 	queryUserInputSchema,
 } from "~/src/graphql/inputs/QueryUserInput";
 import { User } from "~/src/graphql/types/User/User";
+import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryUserArgumentsSchema = z.object({
@@ -20,6 +21,7 @@ builder.queryField("user", (t) =>
 				type: QueryUserInput,
 			}),
 		},
+		complexity : envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read a user.",
 		resolve: async (_parent, args, ctx) => {
 			const {
