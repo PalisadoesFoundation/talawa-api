@@ -25,6 +25,7 @@ services:
     environment:
       - API_MINIO_TEST_END_POINT=${API_MINIO_TEST_END_POINT:?error}
       - API_POSTGRES_TEST_HOST=${API_POSTGRES_TEST_HOST:?error}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:?error}
     # https://docs.docker.com/reference/dockerfile/#healthcheck
     # https://docs.docker.com/reference/compose-file/services/#healthcheck
     healthcheck:
