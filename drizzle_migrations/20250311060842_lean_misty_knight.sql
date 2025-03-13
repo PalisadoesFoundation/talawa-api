@@ -275,6 +275,7 @@ CREATE TABLE "organizations" (
 --> statement-breakpoint
 CREATE TABLE "post_attachments" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
 	"creator_id" uuid,
 	"post_id" uuid NOT NULL,
 	"mime_type" text NOT NULL,
