@@ -1,9 +1,10 @@
-import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, gt, ilike, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
 	organizationMembershipsTable,
 	organizationMembershipsTableInsertSchema,
 } from "~/src/drizzle/tables/organizationMemberships";
+import { organizationsTable } from "~/src/drizzle/tables/organizations";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
@@ -15,10 +16,12 @@ import { User } from "./User";
 
 const organizationsWhereMemberArgumentsSchema =
 	defaultGraphQLConnectionArgumentsSchema
+		.extend({
+			filter: z.string().optional(),
+		})
 		.transform(transformDefaultGraphQLConnectionArguments)
 		.transform((arg, ctx) => {
-			let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
-
+			let cursor: z.infer<typeof cursorSchema> | undefined;
 			try {
 				if (arg.cursor !== undefined) {
 					cursor = cursorSchema.parse(
@@ -37,6 +40,7 @@ const organizationsWhereMemberArgumentsSchema =
 				cursor,
 				isInversed: arg.isInversed,
 				limit: arg.limit,
+				filter: arg.filter,
 			};
 		});
 
@@ -54,208 +58,163 @@ const cursorSchema = organizationMembershipsTableInsertSchema
 
 User.implement({
 	fields: (t) => ({
-		organizationsWhereMember: t.connection(
-			{
-				description:
-					"GraphQL connection to traverse through the organizations the user is a member of.",
-				resolve: async (parent, args, ctx) => {
-					if (!ctx.currentClient.isAuthenticated) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthenticated",
-							},
-						});
-					}
+		organizationsWhereMember: t.connection({
+			description:
+				"GraphQL connection to traverse through the organizations the user is a member of.",
+			args: {
+				filter: t.arg.string({ required: false }),
+			},
+			resolve: async (parent, args, ctx) => {
+				if (!ctx.currentClient.isAuthenticated) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthenticated",
+						},
+					});
+				}
 
-					const {
-						data: parsedArgs,
-						error,
-						success,
-					} = organizationsWhereMemberArgumentsSchema.safeParse(args);
+				const {
+					data: parsedArgs,
+					error,
+					success,
+				} = organizationsWhereMemberArgumentsSchema.safeParse(args);
 
-					if (!success) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "invalid_arguments",
-								issues: error.issues.map((issue) => ({
-									argumentPath: issue.path,
-									message: issue.message,
-								})),
-							},
-						});
-					}
+				if (!success) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: error.issues.map((issue) => ({
+								argumentPath: issue.path,
+								message: issue.message,
+							})),
+						},
+					});
+				}
 
-					const currentUserId = ctx.currentClient.user.id;
+				const currentUserId = ctx.currentClient.user.id;
+				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+					where: (fields, ops) => ops.eq(fields.id, currentUserId),
+				});
+				if (!currentUser) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthenticated",
+						},
+					});
+				}
+				if (
+					currentUser.role !== "administrator" &&
+					currentUserId !== parent.id
+				) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action",
+						},
+					});
+				}
 
-					const currentUser =
-						await ctx.drizzleClient.query.usersTable.findFirst({
-							where: (fields, operators) =>
-								operators.eq(fields.id, currentUserId),
-						});
+				const { cursor, isInversed, limit, filter } = parsedArgs;
 
-					if (currentUser === undefined) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthenticated",
-							},
-						});
-					}
+				const orderBy = isInversed
+					? [
+							asc(organizationMembershipsTable.createdAt),
+							asc(organizationMembershipsTable.organizationId),
+						]
+					: [
+							desc(organizationMembershipsTable.createdAt),
+							desc(organizationMembershipsTable.organizationId),
+						];
 
-					if (
-						currentUser.role !== "administrator" &&
-						currentUserId !== parent.id
-					) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthorized_action",
-							},
-						});
-					}
+				// A direct JOIN on organizationMemberships -> organizations.
 
-					const { cursor, isInversed, limit } = parsedArgs;
+				const baseQuery = ctx.drizzleClient
+					.select({
+						membershipCreatedAt: organizationMembershipsTable.createdAt,
+						membershipOrganizationId:
+							organizationMembershipsTable.organizationId,
+						organization: organizationsTable, // We'll retrieve all org columns
+					})
+					.from(organizationMembershipsTable)
+					.innerJoin(
+						organizationsTable,
+						eq(
+							organizationMembershipsTable.organizationId,
+							organizationsTable.id,
+						),
+					)
+					.where(
+						and(
+							eq(organizationMembershipsTable.memberId, parent.id),
 
-					const orderBy = isInversed
-						? [
-								asc(organizationMembershipsTable.createdAt),
-								asc(organizationMembershipsTable.organizationId),
-							]
-						: [
-								desc(organizationMembershipsTable.createdAt),
-								desc(organizationMembershipsTable.organizationId),
-							];
+							filter
+								? ilike(organizationsTable.name, `%${filter}%`)
+								: sql`TRUE`,
 
-					let where: SQL | undefined;
-
-					if (isInversed) {
-						if (cursor !== undefined) {
-							where = and(
-								exists(
-									ctx.drizzleClient
-										.select()
-										.from(organizationMembershipsTable)
-										.where(
+							cursor
+								? isInversed
+									? // BACKWARD
+										or(
+											// same createdAt + orgId > cursor.orgId
 											and(
 												eq(
 													organizationMembershipsTable.createdAt,
 													cursor.createdAt,
 												),
-												eq(organizationMembershipsTable.memberId, parent.id),
-												eq(
+												gt(
 													organizationMembershipsTable.organizationId,
 													cursor.organizationId,
 												),
 											),
-										),
-								),
-								eq(organizationMembershipsTable.memberId, parent.id),
-								or(
-									and(
-										eq(
-											organizationMembershipsTable.createdAt,
-											cursor.createdAt,
-										),
-										gt(
-											organizationMembershipsTable.organizationId,
-											cursor.organizationId,
-										),
-									),
-									gt(organizationMembershipsTable.createdAt, cursor.createdAt),
-								),
-							);
-						} else {
-							where = eq(organizationMembershipsTable.memberId, parent.id);
-						}
-					} else {
-						if (cursor !== undefined) {
-							where = and(
-								exists(
-									ctx.drizzleClient
-										.select()
-										.from(organizationMembershipsTable)
-										.where(
+											// or createdAt > cursor.createdAt
+											gt(
+												organizationMembershipsTable.createdAt,
+												cursor.createdAt,
+											),
+										)
+									: // FORWARD
+										or(
+											// same createdAt + orgId < cursor.orgId
 											and(
 												eq(
 													organizationMembershipsTable.createdAt,
 													cursor.createdAt,
 												),
-												eq(organizationMembershipsTable.memberId, parent.id),
-												eq(
-													organizationMembershipsTable.memberId,
+												lt(
+													organizationMembershipsTable.organizationId,
 													cursor.organizationId,
 												),
 											),
-										),
-								),
-								eq(organizationMembershipsTable.organizationId, parent.id),
-								or(
-									and(
-										eq(
-											organizationMembershipsTable.createdAt,
-											cursor.createdAt,
-										),
-										lt(
-											organizationMembershipsTable.organizationId,
-											cursor.organizationId,
-										),
-									),
-									lt(organizationMembershipsTable.createdAt, cursor.createdAt),
-								),
-							);
-						} else {
-							where = eq(organizationMembershipsTable.memberId, parent.id);
-						}
-					}
+											// or createdAt < cursor.createdAt
+											lt(
+												organizationMembershipsTable.createdAt,
+												cursor.createdAt,
+											),
+										)
+								: sql`TRUE`, // no cursor => no additional condition
+						),
+					)
+					.limit(limit ?? 10)
+					.orderBy(...orderBy);
 
-					const organizationMemberships =
-						await ctx.drizzleClient.query.organizationMembershipsTable.findMany(
-							{
-								columns: {
-									createdAt: true,
-									organizationId: true,
-								},
-								limit,
-								orderBy,
-								with: {
-									organization: true,
-								},
-								where,
-							},
-						);
+				const records = await baseQuery;
 
-					if (cursor !== undefined && organizationMemberships.length === 0) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "arguments_associated_resources_not_found",
-								issues: [
-									{
-										argumentPath: [isInversed ? "before" : "after"],
-									},
-								],
-							},
-						});
-					}
+				return transformToDefaultGraphQLConnection({
+					createCursor: (row) =>
+						Buffer.from(
+							JSON.stringify({
+								createdAt: row.membershipCreatedAt.toISOString(),
+								organizationId: row.membershipOrganizationId,
+							}),
+						).toString("base64url"),
 
-					return transformToDefaultGraphQLConnection({
-						createCursor: (membership) =>
-							Buffer.from(
-								JSON.stringify({
-									createdAt: membership.createdAt.toISOString(),
-									organizationId: membership.organizationId,
-								}),
-							).toString("base64url"),
-						createNode: (membership) => membership.organization,
-						parsedArgs,
-						rawNodes: organizationMemberships,
-					});
-				},
-				type: Organization,
+					createNode: (row) => row.organization,
+
+					parsedArgs,
+
+					rawNodes: records,
+				});
 			},
-			{
-				description: "",
-			},
-			{
-				description: "",
-			},
-		),
+			type: Organization,
+		}),
 	}),
 });

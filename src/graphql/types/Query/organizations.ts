@@ -1,4 +1,5 @@
 import type { InferSelectModel } from "drizzle-orm";
+import { ilike, sql } from "drizzle-orm";
 import type { organizationsTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
@@ -9,13 +10,17 @@ type OrganizationType = InferSelectModel<typeof organizationsTable>;
 builder.queryField("organizations", (t) =>
 	t.field({
 		description:
-			"Query to fetch all organizations. Returns up to 20 organizations.",
-
-		resolve: async (_parent, args, ctx): Promise<OrganizationType[]> => {
+			"Query to fetch all organizations with optional filtering. Returns up to 20 organizations.",
+		args: {
+			filter: t.arg.string({ required: false }),
+		},
+		resolve: async (_parent, { filter }, ctx): Promise<OrganizationType[]> => {
 			try {
-				// Fetch organizations (limit 20)
+				// Fetch organizations with optional filtering
 				const organizations =
 					await ctx.drizzleClient.query.organizationsTable.findMany({
+						where: (fields) =>
+							filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
 						limit: 20,
 					});
 

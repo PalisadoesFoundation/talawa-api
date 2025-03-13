@@ -1,3 +1,4 @@
+import { and, ilike, sql } from "drizzle-orm";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { User } from "~/src/graphql/types/User/User";
 
@@ -6,11 +7,16 @@ User.implement({
 		createdOrganizations: t.field({
 			type: [Organization],
 			description: "Organizations created by the user",
-			resolve: async (parent, _args, ctx) => {
-				// Query the organizations table where the creator_id equals the user's id.
+			args: {
+				filter: t.arg.string({ required: false }),
+			},
+			resolve: async (parent, { filter }, ctx) => {
 				return await ctx.drizzleClient.query.organizationsTable.findMany({
 					where: (fields, operators) =>
-						operators.eq(fields.creatorId, parent.id),
+						and(
+							operators.eq(fields.creatorId, parent.id),
+							filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
+						),
 				});
 			},
 		}),
