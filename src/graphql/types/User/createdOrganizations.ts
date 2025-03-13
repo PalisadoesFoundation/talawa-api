@@ -19,6 +19,7 @@ User.implement({
 								filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
 							),
 						limit: 20,
+						offset: 0,
 					});
 				} catch (error) {
 					console.error("Error fetching created organizations:", error);
