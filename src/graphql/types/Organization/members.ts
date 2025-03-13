@@ -1,5 +1,17 @@
-import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
+import {
+	type SQL,
+	and,
+	asc,
+	desc,
+	eq,
+	exists,
+	gt,
+	lt,
+	ne,
+	or,
+} from "drizzle-orm";
 import { z } from "zod";
+import { organizationMembershipRoleEnum } from "~/src/drizzle/enums/organizationMembershipRole";
 import {
 	organizationMembershipsTable,
 	organizationMembershipsTableInsertSchema,
@@ -7,37 +19,64 @@ import {
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
-	defaultGraphQLConnectionArgumentsSchema,
-	transformDefaultGraphQLConnectionArguments,
+	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
+	createGraphQLConnectionWithWhereSchema,
+	type defaultGraphQLConnectionArgumentsSchema,
+	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
+import { MembersWhereInput } from "../../inputs/QueryOrganizationInput";
 import { Organization } from "./Organization";
 
-const membersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
-	.transform(transformDefaultGraphQLConnectionArguments)
-	.transform((arg, ctx) => {
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+type UserRole = z.infer<typeof organizationMembershipRoleEnum>;
+const membersRoleWhereInputSchema = z.object({
+	equal: organizationMembershipRoleEnum.optional(),
+	notEqual: organizationMembershipRoleEnum.optional(),
+});
 
-		try {
-			if (arg.cursor !== undefined) {
-				cursor = cursorSchema.parse(
-					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
-				);
-			}
-		} catch (error) {
-			ctx.addIssue({
-				code: "custom",
-				message: "Not a valid cursor.",
-				path: [arg.isInversed ? "before" : "after"],
-			});
+const organizationMembersWhereSchema = z
+	.object({
+		role: membersRoleWhereInputSchema.optional(),
+	})
+	.optional();
+
+// Create a connection arguments schema with the where clause
+const membersArgumentsSchema = createGraphQLConnectionWithWhereSchema(
+	organizationMembersWhereSchema,
+).transform((arg, ctx) => {
+	// First transform using the connection with where transformer
+	const transformedArg = transformGraphQLConnectionArgumentsWithWhere(
+		// Type assertion to match the expected type
+		{ ...arg, where: arg.where || {} } as z.infer<
+			typeof defaultGraphQLConnectionArgumentsSchema
+		> & { where: unknown },
+		ctx,
+	);
+
+	let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+	try {
+		if (transformedArg.cursor !== undefined) {
+			cursor = cursorSchema.parse(
+				JSON.parse(
+					Buffer.from(transformedArg.cursor, "base64url").toString("utf-8"),
+				),
+			);
 		}
+	} catch (error) {
+		ctx.addIssue({
+			code: "custom",
+			message: "Not a valid cursor.",
+			path: [transformedArg.isInversed ? "before" : "after"],
+		});
+	}
 
-		return {
-			cursor,
-			isInversed: arg.isInversed,
-			limit: arg.limit,
-		};
-	});
+	return {
+		cursor,
+		isInversed: transformedArg.isInversed,
+		limit: transformedArg.limit,
+		where: transformedArg.where || {}, // Default to empty object if where is undefined
+	};
+});
 
 const cursorSchema = organizationMembershipsTableInsertSchema
 	.pick({
@@ -57,6 +96,13 @@ Organization.implement({
 			{
 				description:
 					"GraphQL connection to traverse through the users that are members of the organization.",
+				args: {
+					where: t.arg({
+						type: MembersWhereInput,
+						description: "Filter criteria for organization members",
+						required: false,
+					}),
+				},
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
@@ -126,7 +172,11 @@ Organization.implement({
 						});
 					}
 
-					const { cursor, isInversed, limit } = parsedArgs;
+					const { cursor, isInversed, limit, where } =
+						parsedArgs as ParsedDefaultGraphQLConnectionArgumentsWithWhere<
+							{ createdAt: Date; memberId: string },
+							{ role?: { equal: UserRole; notEqual: UserRole } }
+						>;
 
 					const orderBy = isInversed
 						? [
@@ -138,11 +188,28 @@ Organization.implement({
 								desc(organizationMembershipsTable.memberId),
 							];
 
-					let where: SQL | undefined;
+					let queryWhere: SQL | undefined;
+
+					const roleFilter = where?.role
+						? and(
+								where.role.equal
+									? eq(
+											organizationMembershipsTable.role,
+											where.role.equal as UserRole,
+										)
+									: undefined,
+								where.role.notEqual
+									? ne(
+											organizationMembershipsTable.role,
+											where.role.notEqual as UserRole,
+										)
+									: undefined,
+							)
+						: undefined;
 
 					if (isInversed) {
 						if (cursor !== undefined) {
-							where = and(
+							queryWhere = and(
 								exists(
 									ctx.drizzleClient
 										.select()
@@ -175,16 +242,17 @@ Organization.implement({
 									),
 									gt(organizationMembershipsTable.createdAt, cursor.createdAt),
 								),
+								roleFilter,
 							);
 						} else {
-							where = eq(
-								organizationMembershipsTable.organizationId,
-								parent.id,
+							queryWhere = and(
+								eq(organizationMembershipsTable.organizationId, parent.id),
+								roleFilter,
 							);
 						}
 					} else {
 						if (cursor !== undefined) {
-							where = and(
+							queryWhere = and(
 								exists(
 									ctx.drizzleClient
 										.select()
@@ -218,11 +286,12 @@ Organization.implement({
 									),
 									lt(organizationMembershipsTable.createdAt, cursor.createdAt),
 								),
+								roleFilter,
 							);
 						} else {
-							where = eq(
-								organizationMembershipsTable.organizationId,
-								parent.id,
+							queryWhere = and(
+								eq(organizationMembershipsTable.organizationId, parent.id),
+								roleFilter,
 							);
 						}
 					}
@@ -239,7 +308,7 @@ Organization.implement({
 								with: {
 									member: true,
 								},
-								where,
+								where: queryWhere,
 							},
 						);
 
