@@ -31,14 +31,13 @@ describe("resolveOrganizations", () => {
 	});
 
 	test("throws an unauthenticated error if user is not authenticated", async () => {
-	
 		const unauthenticatedCtx = {
 			...baseMockCtx,
 			currentClient: { isAuthenticated: false },
 		} as unknown as ContextType;
 
 		await expect(
-			resolveOrganizations(null, { filter: null }, unauthenticatedCtx)
+			resolveOrganizations(null, { filter: null }, unauthenticatedCtx),
 		).rejects.toThrow(TalawaGraphQLError);
 	});
 
@@ -49,15 +48,20 @@ describe("resolveOrganizations", () => {
 		];
 		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue(orgs);
 
-		const result = await resolveOrganizations(null, { filter: null }, baseMockCtx);
+		const result = await resolveOrganizations(
+			null,
+			{ filter: null },
+			baseMockCtx,
+		);
 		expect(result).toEqual(orgs);
 
-		
-		expect(mockDrizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith(
+		expect(
+			mockDrizzleClient.query.organizationsTable.findMany,
+		).toHaveBeenCalledWith(
 			expect.objectContaining({
 				limit: 20,
 				offset: 0,
-			})
+			}),
 		);
 	});
 
@@ -66,28 +70,40 @@ describe("resolveOrganizations", () => {
 		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue(orgs);
 		const filterValue = "Filtered";
 
-		const result = await resolveOrganizations(null, { filter: filterValue }, baseMockCtx);
+		const result = await resolveOrganizations(
+			null,
+			{ filter: filterValue },
+			baseMockCtx,
+		);
 		expect(result).toEqual(orgs);
 
-
-		expect(mockDrizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith(
+		expect(
+			mockDrizzleClient.query.organizationsTable.findMany,
+		).toHaveBeenCalledWith(
 			expect.objectContaining({
 				limit: 20,
 				offset: 0,
-			})
+			}),
 		);
 
-		const whereArg = mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0]?.where;
+		const whereArg =
+			mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0]
+				?.where;
 		expect(typeof whereArg).toBe("function");
 	});
 
 	test("logs error and throws error if findMany fails", async () => {
 		const errorMsg = new Error("Database error");
-		mockDrizzleClient.query.organizationsTable.findMany.mockRejectedValue(errorMsg);
-
-		await expect(resolveOrganizations(null, { filter: null }, baseMockCtx)).rejects.toThrow(
-			"An error occurred while fetching organizations."
+		mockDrizzleClient.query.organizationsTable.findMany.mockRejectedValue(
+			errorMsg,
 		);
-		expect(baseMockCtx.log.error).toHaveBeenCalledWith("Error in organizations query:", errorMsg);
+
+		await expect(
+			resolveOrganizations(null, { filter: null }, baseMockCtx),
+		).rejects.toThrow("An error occurred while fetching organizations.");
+		expect(baseMockCtx.log.error).toHaveBeenCalledWith(
+			"Error in organizations query:",
+			errorMsg,
+		);
 	});
 });
