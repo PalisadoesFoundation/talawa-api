@@ -1,3 +1,4 @@
+import { and, ilike, sql } from "drizzle-orm";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import type {
 	ExplicitGraphQLContext,
@@ -6,7 +7,6 @@ import type {
 import type { User } from "~/src/graphql/types/User/User";
 import { resolveCreatedOrganizations } from "~/src/graphql/types/User/createdOrganizations";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
 
 const mockDrizzleClient = {
@@ -112,5 +112,75 @@ describe("resolveCreatedOrganizations", () => {
 			"Error fetching created organizations:",
 			errorMsg,
 		);
+	});
+
+	test("where clause lambda returns ilike condition when filter is provided", async () => {
+		const filterValue = "Filtered";
+
+		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue([]);
+
+		await resolveCreatedOrganizations(
+			mockUserParent,
+			{ filter: filterValue },
+			baseMockCtx,
+		);
+
+		const findManyArgs =
+			mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0];
+		expect(typeof findManyArgs.where).toBe("function");
+
+		const dummyFields = {
+			creatorId: sql`dummyCreatorId`,
+			name: sql`dummyName`,
+		};
+		const dummyOperators = {
+			eq: vi.fn((field, value) => `eq(${field},${value})`),
+			ilike: vi.fn((field, value) => `dummy_ilike(${field},${value})`),
+		};
+
+		const condition = findManyArgs.where(dummyFields, dummyOperators);
+
+		expect(dummyOperators.eq).toHaveBeenCalledWith(
+			dummyFields.creatorId,
+			mockUserParent.id,
+		);
+
+		const eqResult = dummyOperators.eq.mock.results[0]?.value;
+		const expectedCondition = and(
+			eqResult,
+			ilike(dummyFields.name, `%${filterValue}%`),
+		);
+		expect(condition).toEqual(expectedCondition);
+	});
+
+	test("where clause lambda returns sql TRUE condition when filter is not provided", async () => {
+		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue([]);
+
+		await resolveCreatedOrganizations(
+			mockUserParent,
+			{ filter: null },
+			baseMockCtx,
+		);
+
+		const findManyArgs =
+			mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0];
+		expect(typeof findManyArgs.where).toBe("function");
+
+		const dummyFields = { creatorId: "dummyCreatorId", name: "dummyName" };
+		const dummyOperators = {
+			eq: vi.fn((field, value) => `eq(${field},${value})`),
+			ilike: vi.fn((field, value) => `dummy_ilike(${field},${value})`),
+		};
+
+		const condition = findManyArgs.where(dummyFields, dummyOperators);
+
+		expect(dummyOperators.eq).toHaveBeenCalledWith(
+			dummyFields.creatorId,
+			mockUserParent.id,
+		);
+
+		const eqResult = dummyOperators.eq.mock.results[0]?.value;
+		const expectedCondition = and(eqResult, sql`TRUE`);
+		expect(condition).toEqual(expectedCondition);
 	});
 });
