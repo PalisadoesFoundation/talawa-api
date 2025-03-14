@@ -397,10 +397,6 @@ This applies to users running Talawa API in dev containers.
    ```bash
     docker exec talawa-api-1 /bin/bash -c 'pnpm run add:sample_data && exit'
    ```
-4. Then exit
-   ```bash
-    exit
-   ```
    Refer to the next section for login information.
 
 ### Sample Data Users
