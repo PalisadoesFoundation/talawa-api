@@ -211,7 +211,7 @@ export const resolveOrganizationsWhereMember = async (
 		.limit(limit ?? 10)
 		.orderBy(...orderBy);
 
-	const records: OrganizationMembershipRawNode[] = await baseQuery;
+	const records: OrganizationMembershipRawNode[] = await baseQuery.execute();
 
 	// Transform the raw nodes into a connection.
 	return transformToDefaultGraphQLConnection<

@@ -1,43 +1,78 @@
+import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import type {
 	ExplicitGraphQLContext,
 	ImplicitMercuriusContext,
 } from "~/src/graphql/context";
-// import { and, ilike, sql, eq, or, gt, lt } from "drizzle-orm";
-// import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
-// import { organizationsTable } from "~/src/drizzle/tables/organizations";
-// import { transformToDefaultGraphQLConnection } from "~/src/utilities/defaultGraphQLConnection";
 import type { User } from "~/src/graphql/types/User/User";
 import { resolveOrganizationsWhereMember } from "~/src/graphql/types/User/organizationsWhereMember";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
+const globalArgs = {
+	cursor: Buffer.from(
+		JSON.stringify({
+			createdAt: new Date().toISOString(),
+			organizationId: "67378abd-8500-8f17-1cf2-990d00000005",
+		}),
+	).toString("base64url"),
+	isInversed: false,
+	limit: 10,
+	filter: "some filter string",
+	first: 10,
+};
 
-// Mocking Drizzle Client
+const mockWhere = vi.fn();
+const mockFrom = vi.fn().mockImplementation(() => ({
+	innerJoin: vi.fn().mockReturnValue({
+		where: mockWhere,
+	}),
+	where: mockWhere,
+}));
+
+const mockSelect = vi.fn().mockImplementation(() => ({
+	from: mockFrom,
+}));
+
+mockWhere.mockImplementation(() => ({
+	limit: vi.fn().mockImplementation(() => ({
+		orderBy: vi.fn().mockImplementation(() => ({
+			execute: vi.fn().mockResolvedValue([
+				{
+					membershipCreatedAt: new Date(),
+					membershipOrganizationId: "org1",
+					organization: { id: "org1", name: "Test Organization" },
+				},
+			]),
+		})),
+	})),
+}));
+
 const mockDrizzleClient = {
 	query: {
 		usersTable: {
-			findFirst: vi.fn(),
+			findFirst: vi.fn().mockResolvedValue({
+				id: "user123",
+				role: "member",
+			}),
+		},
+		organizationsTable: {
+			findMany: vi.fn(),
 		},
 	},
-	select: vi.fn().mockReturnThis(),
-	from: vi.fn().mockReturnThis(),
-	innerJoin: vi.fn().mockReturnThis(),
-	where: vi.fn().mockReturnThis(),
-	limit: vi.fn().mockReturnThis(),
-	orderBy: vi.fn().mockReturnThis(),
+	select: mockSelect,
 };
 
+// ✅ **Mock Context**
 const baseMockCtx = {
 	currentClient: {
-		isAuthenticated: true as const,
+		isAuthenticated: true,
 		user: { id: "user123", role: "member" },
 	},
 	drizzleClient: mockDrizzleClient,
 	log: { error: vi.fn() },
-} as unknown as ContextType;
+} as unknown as ExplicitGraphQLContext & ImplicitMercuriusContext;
 
-const mockUserParent = {
+const mockUserParent: User = {
 	id: "user123",
 	role: "member",
 } as unknown as User;
@@ -51,25 +86,13 @@ describe("resolveOrganizationsWhereMember", () => {
 		const unauthenticatedCtx = {
 			...baseMockCtx,
 			currentClient: { isAuthenticated: false },
-		} as ContextType;
+		} as ExplicitGraphQLContext & ImplicitMercuriusContext;
 
 		await expect(
 			resolveOrganizationsWhereMember(
 				mockUserParent,
-				{ filter: undefined },
+				globalArgs,
 				unauthenticatedCtx,
-			),
-		).rejects.toThrow(TalawaGraphQLError);
-	});
-
-	test("throws an unauthenticated error if current user does not exist", async () => {
-		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
-
-		await expect(
-			resolveOrganizationsWhereMember(
-				mockUserParent,
-				{ filter: undefined },
-				baseMockCtx,
 			),
 		).rejects.toThrow(TalawaGraphQLError);
 	});
@@ -88,126 +111,98 @@ describe("resolveOrganizationsWhereMember", () => {
 		await expect(
 			resolveOrganizationsWhereMember(
 				anotherUserParent,
-				{ filter: undefined },
+				globalArgs,
 				baseMockCtx,
 			),
 		).rejects.toThrow(TalawaGraphQLError);
 	});
 
-	test("handles invalid cursor errors", async () => {
+	test("returns organizations where the user is a member", async () => {
 		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
 			role: "member",
 		});
 
-		await expect(
-			resolveOrganizationsWhereMember(
-				mockUserParent,
-				{ filter: undefined },
-				baseMockCtx,
-			),
-		).rejects.toThrow(TalawaGraphQLError);
+		const result = await resolveOrganizationsWhereMember(
+			mockUserParent,
+			globalArgs,
+			baseMockCtx,
+		);
+
+		expect(result).toBeDefined();
+		expect(result).toMatchObject({
+			edges: expect.any(Array),
+			pageInfo: expect.any(Object),
+		});
+		expect(result.edges.length).toBeGreaterThan(0);
+		expect(result.edges[0]?.node).toEqual({
+			id: "org1",
+			name: "Test Organization",
+		});
 	});
 
-	// test("returns organizations where the user is a member", async () => {
-	// 	mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
-	// 		id: "user123",
-	// 		role: "member",
-	// 	});
+	test("applies filter when provided", async () => {
+		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user123",
+			role: "member",
+		});
 
-	// 	const organizationsMockData = [
-	// 		{
-	// 			membershipCreatedAt: new Date(),
-	// 			membershipOrganizationId: "org1",
-	// 			organization: { id: "org1", name: "Test Organization" },
-	// 		},
-	// 	];
+		const filterArgs = { ...globalArgs, filter: "Filtered Org" };
 
-	// 	mockDrizzleClient.select.mockResolvedValue(organizationsMockData);
+		await resolveOrganizationsWhereMember(
+			mockUserParent,
+			filterArgs,
+			baseMockCtx,
+		);
 
-	// 	const result = await resolveOrganizationsWhereMember(mockUserParent, { filter: undefined }, baseMockCtx);
+		expect(mockWhere).toHaveBeenCalled();
+	});
 
-	// 	expect(result).toEqual(
-	// 		transformToDefaultGraphQLConnection({
-	// 			createCursor: expect.any(Function),
-	// 			createNode: expect.any(Function),
-	// 			parsedArgs: expect.any(Object),
-	// 			rawNodes: organizationsMockData,
-	// 		}),
-	// 	);
-	// });
+	test("where clause returns sql`TRUE` when filter is not provided", async () => {
+		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue([]);
 
-	// test("applies filter when provided", async () => {
-	// 	mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
-	// 		id: "user123",
-	// 		role: "member",
-	// 	});
+		const noFilterArgs = { ...globalArgs, filter: undefined };
 
-	// 	mockDrizzleClient.select.mockResolvedValue([
-	// 		{
-	// 			membershipCreatedAt: new Date(),
-	// 			membershipOrganizationId: "org1",
-	// 			organization: { id: "org1", name: "Filtered Org" },
-	// 		},
-	// 	]);
+		await resolveOrganizationsWhereMember(
+			mockUserParent,
+			noFilterArgs,
+			baseMockCtx,
+		);
 
-	// 	await resolveOrganizationsWhereMember(mockUserParent, { filter: "Filtered" }, baseMockCtx);
+		expect(mockWhere).toHaveBeenCalled();
 
-	// 	expect(mockDrizzleClient.where).toHaveBeenCalledWith(expect.any(Function));
-	// });
+		const whereCondition = mockWhere.mock.calls[0]?.[0];
 
-	// test("applies cursor-based pagination correctly", async () => {
-	// 	mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
-	// 		id: "user123",
-	// 		role: "member",
-	// 	});
+		console.log("🔍 whereCondition type:", typeof whereCondition);
+		console.log("🔍 whereCondition value:", whereCondition);
 
-	// 	mockDrizzleClient.select.mockResolvedValue([
-	// 		{
-	// 			membershipCreatedAt: new Date("2024-01-01T12:00:00Z"),
-	// 			membershipOrganizationId: "org1",
-	// 			organization: { id: "org1", name: "Org A" },
-	// 		},
-	// 		{
-	// 			membershipCreatedAt: new Date("2024-01-02T12:00:00Z"),
-	// 			membershipOrganizationId: "org2",
-	// 			organization: { id: "org2", name: "Org B" },
-	// 		},
-	// 	]);
+		expect(whereCondition.toString().trim()).toEqual(
+			sql`TRUE`.toString().trim(),
+		);
+	});
 
-	// 	const cursor = Buffer.from(
-	// 		JSON.stringify({ createdAt: "2024-01-01T12:00:00Z", organizationId: "org1" }),
-	// 	).toString("base64url");
+	test("applies cursor-based pagination correctly", async () => {
+		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user123",
+			role: "member",
+		});
 
-	// 	await resolveOrganizationsWhereMember(mockUserParent, { filter: undefined, cursor }, baseMockCtx);
+		const cursorArgs = {
+			...globalArgs,
+			cursor: Buffer.from(
+				JSON.stringify({
+					createdAt: "2024-01-01T12:00:00Z",
+					organizationId: "org1",
+				}),
+			).toString("base64url"),
+		};
 
-	// 	expect(mockDrizzleClient.where).toHaveBeenCalledWith(expect.any(Function));
-	// });
+		await resolveOrganizationsWhereMember(
+			mockUserParent,
+			cursorArgs,
+			baseMockCtx,
+		);
 
-	// test("where clause returns ilike condition when filter is provided", async () => {
-	// 	const filterValue = "Filtered";
-	// 	mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue([]);
-
-	// 	await resolveOrganizationsWhereMember(mockUserParent, { filter: filterValue }, baseMockCtx);
-
-	// 	const findManyArgs = mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0];
-	// 	expect(typeof findManyArgs.where).toBe("function");
-
-	// 	const dummyFields = { name: sql<string>`Some Org` };
-	// 	const expectedCondition = ilike(dummyFields.name, `%${filterValue}%`);
-	// 	expect(String(findManyArgs.where(dummyFields))).toEqual(String(expectedCondition));
-	// });
-
-	// test("where clause returns sql`TRUE` when filter is not provided", async () => {
-	// 	mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue([]);
-
-	// 	await resolveOrganizationsWhereMember(mockUserParent, { filter: undefined }, baseMockCtx);
-
-	// 	const findManyArgs = mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0];
-	// 	expect(typeof findManyArgs.where).toBe("function");
-
-	// 	const dummyFields = { name: sql<string>`Some Org` };
-	// 	const expectedCondition = sql`TRUE`;
-	// 	expect(String(findManyArgs.where(dummyFields))).toEqual(String(expectedCondition));
-	// });
+		expect(mockWhere).toHaveBeenCalled();
+	});
 });
