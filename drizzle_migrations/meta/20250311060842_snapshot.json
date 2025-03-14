@@ -1,5 +1,5 @@
 {
-  "id": "e5fe635f-2302-4a95-86e6-16508bb68c63",
+  "id": "41d3c6f8-89e8-438f-bd91-4802134c00ad",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -4083,6 +4083,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
         },
         "creator_id": {
           "name": "creator_id",
