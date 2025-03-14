@@ -250,24 +250,37 @@ User.implement({
 				};
 			},
 		},
-		{
-			edgesField: {
-				complexity: {
-					field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-					multiplier: 1,
-				},
-			},
-			description: "",
-		},
-
-		{
-			nodeField: {
-				complexity: {
-					field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-					multiplier: 1,
-				},
-			},
-			description: "",
-		},),
+  organizationsWhereMember: t.connection({
+    description:
+      "GraphQL connection to traverse through the organizations the user is a member of.",
+    args: {
+      filter: t.arg.string({ required: false }),
+    },
+    resolve: resolveOrganizationsWhereMember,
+    type: Organization,
+    complexity: (args) => {
+      return {
+        field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+        multiplier: args.first || args.last || 1,
+      };
+    },
+  }, {
+    edgesField: {
+      complexity: {
+        field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+        multiplier: 1,
+      },
+    },
+    description: "",
+  },
+  {
+    nodeField: {
+      complexity: {
+        field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+        multiplier: 1,
+      },
+    },
+    description: "",
+  }),
 	}),
 });
