@@ -1,48 +1,48 @@
-import { type SQL, and, asc, desc, eq, gt, lt, ilike } from "drizzle-orm"
-import type { z } from "zod"
+import { type SQL, and, asc, desc, eq, gt, lt, ilike } from "drizzle-orm";
+import type { z } from "zod";
 import {
   venuesTable,
   venuesTableInsertSchema,
-} from "~/src/drizzle/tables/venues"
-import { Venue } from "~/src/graphql/types/Venue/Venue"
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError"
+} from "~/src/drizzle/tables/venues";
+import { Venue } from "~/src/graphql/types/Venue/Venue";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
   defaultGraphQLConnectionArgumentsSchema,
   transformDefaultGraphQLConnectionArguments,
   transformToDefaultGraphQLConnection,
-} from "~/src/utilities/defaultGraphQLConnection"
-import { Organization } from "./Organization"
-import { QueryVenuesInput } from "../../inputs/QueryVenuesInput"
+} from "~/src/utilities/defaultGraphQLConnection";
+import { Organization } from "./Organization";
+import { QueryVenuesInput } from "../../inputs/QueryVenuesInput";
 
 const venuesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
   .transform(transformDefaultGraphQLConnectionArguments)
   .transform((arg, ctx) => {
-    let cursor: z.infer<typeof cursorSchema> | undefined = undefined
+    let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
 
     try {
       if (arg.cursor !== undefined) {
         cursor = cursorSchema.parse(
           JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8"))
-        )
+        );
       }
     } catch (error) {
       ctx.addIssue({
         code: "custom",
         message: "Not a valid cursor.",
         path: [arg.isInversed ? "before" : "after"],
-      })
+      });
     }
 
     return {
       cursor,
       isInversed: arg.isInversed,
       limit: arg.limit,
-    }
-  })
+    };
+  });
 
 const cursorSchema = venuesTableInsertSchema.pick({
   name: true,
-})
+});
 
 Organization.implement({
   fields: (t) => ({
@@ -66,14 +66,14 @@ Organization.implement({
             extensions: {
               code: "unauthenticated",
             },
-          })
+          });
         }
 
         const {
           data: parsedArgs,
           error,
           success,
-        } = venuesArgumentsSchema.safeParse(args)
+        } = venuesArgumentsSchema.safeParse(args);
 
         if (!success) {
           throw new TalawaGraphQLError({
@@ -84,11 +84,11 @@ Organization.implement({
                 message: issue.message,
               })),
             },
-          })
+          });
         }
 
-        console.log("parsedArgs", parsedArgs)
-        const currentUserId = ctx.currentClient.user.id
+        console.log("parsedArgs", parsedArgs);
+        const currentUserId = ctx.currentClient.user.id;
 
         const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
           columns: {
@@ -104,18 +104,18 @@ Organization.implement({
             },
           },
           where: (fields, operators) => operators.eq(fields.id, currentUserId),
-        })
+        });
 
         if (currentUser === undefined) {
           throw new TalawaGraphQLError({
             extensions: {
               code: "unauthenticated",
             },
-          })
+          });
         }
 
         const currentUserOrganizationMembership =
-          currentUser.organizationMembershipsWhereMember[0]
+          currentUser.organizationMembershipsWhereMember[0];
 
         if (
           currentUser.role !== "administrator" &&
@@ -126,24 +126,24 @@ Organization.implement({
             extensions: {
               code: "unauthorized_action",
             },
-          })
+          });
         }
 
-        const { cursor, isInversed, limit } = parsedArgs
+        const { cursor, isInversed, limit } = parsedArgs;
 
         const orderBy = isInversed
           ? [desc(venuesTable.capacity)]
-          : [asc(venuesTable.capacity)]
+          : [asc(venuesTable.capacity)];
 
         // Base where clause: Filter by organization ID
-        let where: SQL | undefined = eq(venuesTable.organizationId, parent.id)
+        let where: SQL | undefined = eq(venuesTable.organizationId, parent.id);
 
         // Add cursor-based filtering
         if (cursor !== undefined) {
           if (isInversed) {
-            where = and(where, lt(venuesTable.name, cursor.name))
+            where = and(where, lt(venuesTable.name, cursor.name));
           } else {
-            where = and(where, gt(venuesTable.name, cursor.name))
+            where = and(where, gt(venuesTable.name, cursor.name));
           }
         }
 
@@ -153,7 +153,7 @@ Organization.implement({
             where = and(
               where,
               ilike(venuesTable.name, `%${args.where.name_contains}%`)
-            )
+            );
           }
           if (args.where.description_contains) {
             where = and(
@@ -162,7 +162,7 @@ Organization.implement({
                 venuesTable.description,
                 `%${args.where.description_contains}%`
               )
-            )
+            );
           }
         }
 
@@ -173,7 +173,7 @@ Organization.implement({
             attachmentsWhereVenue: true,
           },
           where,
-        })
+        });
 
         if (cursor !== undefined && venues.length === 0) {
           throw new TalawaGraphQLError({
@@ -185,7 +185,7 @@ Organization.implement({
                 },
               ],
             },
-          })
+          });
         }
 
         return transformToDefaultGraphQLConnection({
@@ -201,9 +201,9 @@ Organization.implement({
             }),
           parsedArgs,
           rawNodes: venues,
-        })
+        });
       },
       type: Venue,
     }),
   }),
-})
+});

@@ -8,24 +8,24 @@ import type { FileUpload } from "graphql-upload-minimal";
 import {
   MutationUpdateVenueInput,
   mutationUpdateVenueInputSchema,
-} from "~/src/graphql/inputs/MutationUpdateVenueInput"
-import { Venue } from "~/src/graphql/types/Venue/Venue"
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError"
-import { isNotNullish } from "~/src/utilities/isNotNullish"
-import { venueAttachmentsTable } from "~/src/drizzle/schema"
+} from "~/src/graphql/inputs/MutationUpdateVenueInput";
+import { Venue } from "~/src/graphql/types/Venue/Venue";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { venueAttachmentsTable } from "~/src/drizzle/schema";
 const mutationUpdateVenueArgumentsSchema = z.object({
   input: mutationUpdateVenueInputSchema.transform(async (arg, ctx) => {
     let attachments:
       | (FileUpload & {
-          mimetype: z.infer<typeof venueAttachmentMimeTypeEnum>
+          mimetype: z.infer<typeof venueAttachmentMimeTypeEnum>;
         })[]
-      | undefined
+      | undefined;
 
     if (arg.attachments !== undefined) {
-      const rawAttachments = await Promise.all(arg.attachments)
+      const rawAttachments = await Promise.all(arg.attachments);
       const { data, error, success } = venueAttachmentMimeTypeEnum
         .array()
-        .safeParse(rawAttachments.map((attachment) => attachment.mimetype))
+        .safeParse(rawAttachments.map((attachment) => attachment.mimetype));
 
       if (!success) {
         for (const issue of error.issues) {
@@ -37,7 +37,7 @@ const mutationUpdateVenueArgumentsSchema = z.object({
               message: `Mime type "${
                 rawAttachments[issue.path[0]]?.mimetype
               }" is not allowed.`,
-            })
+            });
           }
         }
       } else {
@@ -45,16 +45,16 @@ const mutationUpdateVenueArgumentsSchema = z.object({
           Object.assign(attachment, {
             mimetype: data[index],
           })
-        )
+        );
       }
     }
 
     return {
       ...arg,
       attachments,
-    }
+    };
   }),
-})
+});
 
 builder.mutationField("updateVenue", (t) =>
   t.field({
@@ -72,14 +72,14 @@ builder.mutationField("updateVenue", (t) =>
           extensions: {
             code: "unauthenticated",
           },
-        })
+        });
       }
 
       const {
         data: parsedArgs,
         error,
         success,
-      } = await mutationUpdateVenueArgumentsSchema.safeParseAsync(args)
+      } = await mutationUpdateVenueArgumentsSchema.safeParseAsync(args);
 
       if (!success) {
         throw new TalawaGraphQLError({
@@ -90,10 +90,10 @@ builder.mutationField("updateVenue", (t) =>
               message: issue.message,
             })),
           },
-        })
+        });
       }
 
-      const currentUserId = ctx.currentClient.user.id
+      const currentUserId = ctx.currentClient.user.id;
 
       const [currentUser, existingVenue] = await Promise.all([
         ctx.drizzleClient.query.usersTable.findFirst({
@@ -126,14 +126,14 @@ builder.mutationField("updateVenue", (t) =>
           where: (fields, operators) =>
             operators.eq(fields.id, parsedArgs.input.id),
         }),
-      ])
+      ]);
 
       if (currentUser === undefined) {
         throw new TalawaGraphQLError({
           extensions: {
             code: "unauthenticated",
           },
-        })
+        });
       }
 
       if (existingVenue === undefined) {
@@ -146,7 +146,7 @@ builder.mutationField("updateVenue", (t) =>
               },
             ],
           },
-        })
+        });
       }
 
       if (isNotNullish(parsedArgs.input.name)) {
@@ -165,7 +165,7 @@ builder.mutationField("updateVenue", (t) =>
                 operators.eq(fields.name, parsedArgs.input.name as string), //  Same name
                 operators.ne(fields.id, parsedArgs.input.id) // Exclude current venue
               ),
-          })
+          });
 
         if (existingVenueWithName) {
           throw new TalawaGraphQLError({
@@ -178,12 +178,12 @@ builder.mutationField("updateVenue", (t) =>
                 },
               ],
             },
-          })
+          });
         }
       }
 
       const currentUserOrganizationMembership =
-        existingVenue.organization.membershipsWhereOrganization[0]
+        existingVenue.organization.membershipsWhereOrganization[0];
 
       if (
         currentUser.role !== "administrator" &&
@@ -199,7 +199,7 @@ builder.mutationField("updateVenue", (t) =>
               },
             ],
           },
-        })
+        });
       }
 
       const [updatedVenue] = await ctx.drizzleClient
@@ -211,31 +211,31 @@ builder.mutationField("updateVenue", (t) =>
           capacity: parsedArgs.input.capacity,
         })
         .where(eq(venuesTable.id, parsedArgs.input.id))
-        .returning()
+        .returning();
       // Updated venue not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
       if (!updatedVenue) {
         throw new TalawaGraphQLError({
           extensions: {
             code: "unexpected",
           },
-        })
+        });
       }
 
       const existingAttachments =
         await ctx.drizzleClient.query.venueAttachmentsTable.findMany({
           where: (fields, operators) =>
             operators.eq(fields.venueId, updatedVenue.id),
-        })
+        });
       if (parsedArgs.input.attachments) {
-        const attachments = parsedArgs.input.attachments
+        const attachments = parsedArgs.input.attachments;
         // Update the attachment
         if (existingAttachments?.[0]?.name && attachments[0]) {
-          const attachment = attachments[0]
+          const attachment = attachments[0];
           // delete old attachment from minio
           await ctx.minio.client.removeObject(
             ctx.minio.bucketName,
             existingAttachments[0].name
-          )
+          );
 
           // add new attachment to minio and update attachment record in db
           const updatedVenueAttachments = await ctx.drizzleClient
@@ -247,7 +247,7 @@ builder.mutationField("updateVenue", (t) =>
               updaterId: currentUserId,
             })
             .where(eq(venueAttachmentsTable.venueId, parsedArgs.input.id))
-            .returning()
+            .returning();
 
           await Promise.all(
             updatedVenueAttachments.map((attachment, index) => {
@@ -260,10 +260,10 @@ builder.mutationField("updateVenue", (t) =>
                   {
                     "content-type": attachment.mimeType,
                   }
-                )
+                );
               }
             })
-          )
+          );
         } else {
           // add new attachment
           const newAttachments = await ctx.drizzleClient
@@ -277,7 +277,7 @@ builder.mutationField("updateVenue", (t) =>
                 venueId: parsedArgs.input.id,
               }))
             )
-            .returning()
+            .returning();
 
           await Promise.all(
             newAttachments.map(async (attachment, index) => {
@@ -290,10 +290,10 @@ builder.mutationField("updateVenue", (t) =>
                   {
                     "content-type": attachment.mimeType,
                   }
-                )
+                );
               }
             })
-          )
+          );
         }
       } else if (existingAttachments?.length) {
         // delete old attachment from minio and remove it's record from the db
@@ -301,20 +301,20 @@ builder.mutationField("updateVenue", (t) =>
           await ctx.minio.client.removeObject(
             ctx.minio.bucketName,
             existingAttachments[0].name
-          )
+          );
           await ctx.drizzleClient
             .delete(venueAttachmentsTable)
-            .where(eq(venueAttachmentsTable.venueId, parsedArgs.input.id))
+            .where(eq(venueAttachmentsTable.venueId, parsedArgs.input.id));
         }
       }
       const updatedAttachments =
         await ctx.drizzleClient.query.venueAttachmentsTable.findMany({
           where: (fields, operators) =>
             operators.eq(fields.venueId, updatedVenue.id),
-        })
+        });
 
-      return Object.assign(updatedVenue, { attachments: updatedAttachments })
+      return Object.assign(updatedVenue, { attachments: updatedAttachments });
     },
     type: Venue,
   })
-)
+);

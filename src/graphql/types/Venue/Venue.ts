@@ -1,15 +1,15 @@
-import type { venuesTable } from "~/src/drizzle/tables/venues"
-import { builder } from "~/src/graphql/builder"
+import type { venuesTable } from "~/src/drizzle/tables/venues";
+import { builder } from "~/src/graphql/builder";
 import {
   VenueAttachment,
   type VenueAttachment as VenueAttachmentType,
-} from "~/src/graphql/types/VenueAttachment/VenueAttachment"
+} from "~/src/graphql/types/VenueAttachment/VenueAttachment";
 
 export type Venue = typeof venuesTable.$inferSelect & {
-  attachments: VenueAttachmentType[] | null
-}
+  attachments: VenueAttachmentType[] | null;
+};
 
-export const Venue = builder.objectRef<Venue>("Venue")
+export const Venue = builder.objectRef<Venue>("Venue");
 
 Venue.implement({
   description:
@@ -35,4 +35,4 @@ Venue.implement({
       nullable: false,
     }),
   }),
-})
+});

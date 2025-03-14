@@ -1,30 +1,30 @@
-import type { FileUpload } from "graphql-upload-minimal"
-import { ulid } from "ulidx"
-import { z } from "zod"
-import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType"
-import { venueAttachmentsTable } from "~/src/drizzle/tables/venueAttachments"
-import { venuesTable } from "~/src/drizzle/tables/venues"
-import { builder } from "~/src/graphql/builder"
+import type { FileUpload } from "graphql-upload-minimal";
+import { ulid } from "ulidx";
+import { z } from "zod";
+import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
+import { venueAttachmentsTable } from "~/src/drizzle/tables/venueAttachments";
+import { venuesTable } from "~/src/drizzle/tables/venues";
+import { builder } from "~/src/graphql/builder";
 import {
   MutationCreateVenueInput,
   mutationCreateVenueInputSchema,
-} from "~/src/graphql/inputs/MutationCreateVenueInput"
-import { Venue } from "~/src/graphql/types/Venue/Venue"
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError"
+} from "~/src/graphql/inputs/MutationCreateVenueInput";
+import { Venue } from "~/src/graphql/types/Venue/Venue";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateVenueArgumentsSchema = z.object({
   input: mutationCreateVenueInputSchema.transform(async (arg, ctx) => {
     let attachments:
       | (FileUpload & {
-          mimetype: z.infer<typeof venueAttachmentMimeTypeEnum>
+          mimetype: z.infer<typeof venueAttachmentMimeTypeEnum>;
         })[]
-      | undefined
+      | undefined;
 
     if (arg.attachments !== undefined) {
-      const rawAttachments = await Promise.all(arg.attachments)
+      const rawAttachments = await Promise.all(arg.attachments);
       const { data, error, success } = venueAttachmentMimeTypeEnum
         .array()
-        .safeParse(rawAttachments.map((attachment) => attachment.mimetype))
+        .safeParse(rawAttachments.map((attachment) => attachment.mimetype));
 
       if (!success) {
         for (const issue of error.issues) {
@@ -36,7 +36,7 @@ const mutationCreateVenueArgumentsSchema = z.object({
               message: `Mime type "${
                 rawAttachments[issue.path[0]]?.mimetype
               }" is not allowed.`,
-            })
+            });
           }
         }
       } else {
@@ -44,16 +44,16 @@ const mutationCreateVenueArgumentsSchema = z.object({
           Object.assign(attachment, {
             mimetype: data[index],
           })
-        )
+        );
       }
     }
 
     return {
       ...arg,
       attachments,
-    }
+    };
   }),
-})
+});
 
 builder.mutationField("createVenue", (t) =>
   t.field({
@@ -71,14 +71,14 @@ builder.mutationField("createVenue", (t) =>
           extensions: {
             code: "unauthenticated",
           },
-        })
+        });
       }
 
       const {
         data: parsedArgs,
         error,
         success,
-      } = await mutationCreateVenueArgumentsSchema.safeParseAsync(args)
+      } = await mutationCreateVenueArgumentsSchema.safeParseAsync(args);
 
       if (!success) {
         throw new TalawaGraphQLError({
@@ -89,10 +89,10 @@ builder.mutationField("createVenue", (t) =>
               message: issue.message,
             })),
           },
-        })
+        });
       }
 
-      const currentUserId = ctx.currentClient.user.id
+      const currentUserId = ctx.currentClient.user.id;
 
       const [currentUser, existingOrganization] = await Promise.all([
         ctx.drizzleClient.query.usersTable.findFirst({
@@ -124,14 +124,14 @@ builder.mutationField("createVenue", (t) =>
           where: (fields, operators) =>
             operators.eq(fields.id, parsedArgs.input.organizationId),
         }),
-      ])
+      ]);
 
       if (currentUser === undefined) {
         throw new TalawaGraphQLError({
           extensions: {
             code: "unauthenticated",
           },
-        })
+        });
       }
 
       if (existingOrganization === undefined) {
@@ -144,11 +144,11 @@ builder.mutationField("createVenue", (t) =>
               },
             ],
           },
-        })
+        });
       }
 
       const existingVenueWithName =
-        existingOrganization.venuesWhereOrganization[0]
+        existingOrganization.venuesWhereOrganization[0];
 
       if (existingVenueWithName !== undefined) {
         throw new TalawaGraphQLError({
@@ -161,11 +161,11 @@ builder.mutationField("createVenue", (t) =>
               },
             ],
           },
-        })
+        });
       }
 
       const currentUserOrganizationMembership =
-        existingOrganization.membershipsWhereOrganization[0]
+        existingOrganization.membershipsWhereOrganization[0];
 
       if (
         currentUser.role !== "administrator" &&
@@ -181,7 +181,7 @@ builder.mutationField("createVenue", (t) =>
               },
             ],
           },
-        })
+        });
       }
 
       return await ctx.drizzleClient.transaction(async (tx) => {
@@ -194,23 +194,23 @@ builder.mutationField("createVenue", (t) =>
             organizationId: parsedArgs.input.organizationId,
             capacity: parsedArgs.input.capacity,
           })
-          .returning()
+          .returning();
 
         // Inserted venue not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
         if (createdVenue === undefined) {
           ctx.log.error(
             "Postgres insert operation unexpectedly returned an empty array instead of throwing an error."
-          )
+          );
 
           throw new TalawaGraphQLError({
             extensions: {
               code: "unexpected",
             },
-          })
+          });
         }
 
         if (parsedArgs.input.attachments !== undefined) {
-          const attachments = parsedArgs.input.attachments
+          const attachments = parsedArgs.input.attachments;
 
           const createdVenueAttachments = await tx
             .insert(venueAttachmentsTable)
@@ -222,7 +222,7 @@ builder.mutationField("createVenue", (t) =>
                 venueId: createdVenue.id,
               }))
             )
-            .returning()
+            .returning();
 
           await Promise.all(
             createdVenueAttachments.map((attachment, index) => {
@@ -235,21 +235,21 @@ builder.mutationField("createVenue", (t) =>
                   {
                     "content-type": attachment.mimeType,
                   }
-                )
+                );
               }
             })
-          )
+          );
 
           return Object.assign(createdVenue, {
             attachments: createdVenueAttachments,
-          })
+          });
         }
 
         return Object.assign(createdVenue, {
           attachments: [],
-        })
-      })
+        });
+      });
     },
     type: Venue,
   })
-)
+);
