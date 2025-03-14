@@ -173,9 +173,6 @@ describe("resolveOrganizationsWhereMember", () => {
 
 		const whereCondition = mockWhere.mock.calls[0]?.[0];
 
-		console.log("🔍 whereCondition type:", typeof whereCondition);
-		console.log("🔍 whereCondition value:", whereCondition);
-
 		expect(whereCondition.toString().trim()).toEqual(
 			sql`TRUE`.toString().trim(),
 		);
