@@ -1,7 +1,42 @@
-import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
+import {
+	mimeTypeMapping,
+	postAttachmentMimeTypeEnum,
+} from "~/src/drizzle/enums/postAttachmentMimeType";
 import { postsTableInsertSchema } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
+
+const PostAttachmentMimeType = builder.enumType("PostAttachmentMimeType", {
+	values: Object.fromEntries(
+		Object.entries(mimeTypeMapping).map(([key, value]) => [key, { value }]),
+	),
+	description: "MIME types supported for post attachments",
+});
+
+export const FileMetadataInput = builder.inputType("FileMetadataInput", {
+	description: "Metadata for files uploaded via presigned URL",
+	fields: (t) => ({
+		mimetype: t.field({
+			description: "MIME type of the file",
+			type: PostAttachmentMimeType,
+			required: true,
+		}),
+		objectName: t.string({
+			description: "Object name used in storage",
+			required: true,
+		}),
+		fileHash: t.string({
+			description: "Hash of the file for deduplication",
+			required: true,
+		}),
+	}),
+});
+
+const fileMetadataSchema = z.object({
+	mimetype: postAttachmentMimeTypeEnum,
+	objectName: z.string().min(1),
+	fileHash: z.string().min(1),
+});
 
 export const mutationCreatePostInputSchema = postsTableInsertSchema
 	.pick({
@@ -9,25 +44,19 @@ export const mutationCreatePostInputSchema = postsTableInsertSchema
 		organizationId: true,
 	})
 	.extend({
-		attachments: z
-			.custom<Promise<FileUpload>>()
-			.array()
-			.min(1)
-			.max(20)
-			.optional(),
+		attachments: z.array(fileMetadataSchema).min(1).max(20).optional(),
 		isPinned: z.boolean().optional(),
 	});
 
-export const MutationCreatePostInput = builder
-	.inputRef<z.infer<typeof mutationCreatePostInputSchema>>(
-		"MutationCreatePostInput",
-	)
-	.implement({
-		description: "",
+export const MutationCreatePostInput = builder.inputType(
+	"MutationCreatePostInput",
+	{
+		description: "Input for creating a new post",
 		fields: (t) => ({
 			attachments: t.field({
-				description: "Attachments of the post.",
-				type: t.listRef("Upload"),
+				description: "Metadata for files already uploaded via presigned URL",
+				type: [FileMetadataInput],
+				required: false,
 			}),
 			caption: t.string({
 				description: "Caption about the post.",
@@ -42,4 +71,5 @@ export const MutationCreatePostInput = builder
 				required: true,
 			}),
 		}),
-	});
+	},
+);

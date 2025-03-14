@@ -1,8 +1,9 @@
 import { builder } from "../../builder";
 
 export interface UploadUrlResponse {
-	presignedUrl: string;
-	objectName: string;
+	presignedUrl: string | null;
+	objectName: string | null;
+	requiresUpload: boolean;
 }
 
 export const UploadUrlResponse =
@@ -11,7 +12,12 @@ export const UploadUrlResponse =
 UploadUrlResponse.implement({
 	description: "UploadUrlResponse",
 	fields: (t) => ({
-		presignedUrl: t.exposeString("presignedUrl"),
-		objectName: t.exposeString("objectName"),
+		presignedUrl: t.exposeString("presignedUrl", {
+			nullable: true,
+		}),
+		objectName: t.exposeString("objectName", {
+			nullable: true,
+		}),
+		requiresUpload: t.exposeBoolean("requiresUpload"),
 	}),
 });
