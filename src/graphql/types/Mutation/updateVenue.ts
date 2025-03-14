@@ -251,7 +251,7 @@ builder.mutationField("updateVenue", (t) =>
 
           await Promise.all(
             updatedVenueAttachments.map((attachment, index) => {
-              if (attachments[index] != undefined) {
+              if (attachments[index] !== undefined) {
                 ctx.minio.client.putObject(
                   ctx.minio.bucketName,
                   attachment.name,
