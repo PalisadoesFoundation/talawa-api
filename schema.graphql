@@ -509,6 +509,18 @@ type EventVenuesConnectionEdge {
   node: Venue
 }
 
+"""Metadata for files uploaded via presigned URL"""
+input FileMetadataInput {
+  """Hash of the file for deduplication"""
+  fileHash: String!
+
+  """MIME type of the file"""
+  mimetype: PostAttachmentMimeType!
+
+  """Object name used in storage"""
+  objectName: String!
+}
+
 type Fund {
   """GraphQL connection to traverse through the campaigns for the fund."""
   campaigns(after: String, before: String, first: Int, last: Int): FundCampaignsConnection
@@ -1753,10 +1765,10 @@ input MutationCreateOrganizationMembershipInput {
   role: OrganizationMembershipRole
 }
 
-""""""
+"""Input for creating a new post"""
 input MutationCreatePostInput {
-  """Attachments of the post."""
-  attachments: [Upload!]
+  """Metadata for files already uploaded via presigned URL"""
+  attachments: [FileMetadataInput!]
 
   """Caption about the post."""
   caption: String!
@@ -1781,6 +1793,9 @@ input MutationCreatePostVoteInput {
 
 """Input for creating a presigned URL for file upload"""
 input MutationCreatePresignedUrlInput {
+  """Hash of the file for deduplication check"""
+  fileHash: String!
+
   """Name of the file to be uploaded"""
   fileName: String!
 
@@ -2905,11 +2920,30 @@ type Post {
 }
 
 type PostAttachment {
+  """File hash for deduplication purposes."""
+  fileHash: String
+
   """Mime type of the attachment."""
   mimeType: String
 
+  """Identifier name of the attachment."""
+  name: String
+
+  """Object name used when creating presigned URLs."""
+  objectName: String
+
   """URL to the attachment."""
   url: String
+}
+
+"""MIME types supported for post attachments"""
+enum PostAttachmentMimeType {
+  IMAGE_AVIF
+  IMAGE_JPEG
+  IMAGE_PNG
+  IMAGE_WEBP
+  VIDEO_MP4
+  VIDEO_WEBM
 }
 
 """"""
@@ -3267,6 +3301,7 @@ scalar Upload
 type UploadUrlResponse {
   objectName: String
   presignedUrl: String
+  requiresUpload: Boolean
 }
 
 type User {
