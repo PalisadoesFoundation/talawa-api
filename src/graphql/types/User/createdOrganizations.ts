@@ -1,5 +1,8 @@
-import type { ExplicitGraphQLContext, ImplicitMercuriusContext } from "~/src/graphql/context";
 import { and, ilike, sql } from "drizzle-orm";
+import type {
+	ExplicitGraphQLContext,
+	ImplicitMercuriusContext,
+} from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { User } from "~/src/graphql/types/User/User";
 
@@ -21,7 +24,7 @@ export const resolveCreatedOrganizations = async (
 			where: (fields, operators) =>
 				and(
 					operators.eq(fields.creatorId, parent.id),
-					filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`
+					filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
 				),
 			limit: 20,
 			offset: 0,

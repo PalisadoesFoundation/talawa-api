@@ -5,6 +5,10 @@ import {
 	organizationMembershipsTableInsertSchema,
 } from "~/src/drizzle/tables/organizationMemberships";
 import { organizationsTable } from "~/src/drizzle/tables/organizations";
+import type {
+	ExplicitGraphQLContext,
+	ImplicitMercuriusContext,
+} from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
@@ -13,7 +17,6 @@ import {
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import { User } from "./User";
-import type { ExplicitGraphQLContext, ImplicitMercuriusContext } from "~/src/graphql/context";
 
 interface OrganizationMembershipRawNode {
 	membershipCreatedAt: Date;
@@ -21,9 +24,7 @@ interface OrganizationMembershipRawNode {
 	organization: Organization;
 }
 
-
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
-
 
 const cursorSchema = organizationMembershipsTableInsertSchema
 	.pick({
@@ -37,48 +38,53 @@ const cursorSchema = organizationMembershipsTableInsertSchema
 		organizationId: arg.organizationId,
 	}));
 
-
-const organizationsWhereMemberArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
-	.extend({
-		filter: z.string().optional(),
-	})
-	.transform(transformDefaultGraphQLConnectionArguments)
-	.transform((arg, ctx) => {
-		let cursorObj: z.infer<typeof cursorSchema> | undefined;
-		try {
-			if (arg.cursor !== undefined) {
-				cursorObj = cursorSchema.parse(
-					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8"))
-				);
+const organizationsWhereMemberArgumentsSchema =
+	defaultGraphQLConnectionArgumentsSchema
+		.extend({
+			filter: z.string().optional(),
+		})
+		.transform(transformDefaultGraphQLConnectionArguments)
+		.transform((arg, ctx) => {
+			let cursorObj: z.infer<typeof cursorSchema> | undefined;
+			try {
+				if (arg.cursor !== undefined) {
+					cursorObj = cursorSchema.parse(
+						JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
+					);
+				}
+			} catch (error) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Not a valid cursor.",
+					path: [arg.isInversed ? "before" : "after"],
+				});
 			}
-		} catch (error) {
-			ctx.addIssue({
-				code: "custom",
-				message: "Not a valid cursor.",
-				path: [arg.isInversed ? "before" : "after"],
-			});
-		}
-		return {
-			cursor: cursorObj
-				? Buffer.from(
-						JSON.stringify({
-							createdAt: cursorObj.createdAt.toISOString(),
-							organizationId: cursorObj.organizationId,
-						})
-				  ).toString("base64url")
-				: undefined,
-			isInversed: arg.isInversed,
-			limit: arg.limit,
-			filter: arg.filter,
-		};
-	});
+			return {
+				cursor: cursorObj
+					? Buffer.from(
+							JSON.stringify({
+								createdAt: cursorObj.createdAt.toISOString(),
+								organizationId: cursorObj.organizationId,
+							}),
+						).toString("base64url")
+					: undefined,
+				isInversed: arg.isInversed,
+				limit: arg.limit,
+				filter: arg.filter,
+			};
+		});
 
 export const resolveOrganizationsWhereMember = async (
 	parent: User,
 	args: { filter?: string | null },
-	ctx: ContextType
+	ctx: ContextType,
 ): Promise<
-	ReturnType<typeof transformToDefaultGraphQLConnection<OrganizationMembershipRawNode, Organization>>
+	ReturnType<
+		typeof transformToDefaultGraphQLConnection<
+			OrganizationMembershipRawNode,
+			Organization
+		>
+	>
 > => {
 	if (!ctx.currentClient.isAuthenticated) {
 		throw new TalawaGraphQLError({
@@ -121,11 +127,11 @@ export const resolveOrganizationsWhereMember = async (
 		? [
 				asc(organizationMembershipsTable.createdAt),
 				asc(organizationMembershipsTable.organizationId),
-		  ]
+			]
 		: [
 				desc(organizationMembershipsTable.createdAt),
 				desc(organizationMembershipsTable.organizationId),
-		  ];
+			];
 
 	const baseQuery = ctx.drizzleClient
 		.select({
@@ -136,99 +142,95 @@ export const resolveOrganizationsWhereMember = async (
 		.from(organizationMembershipsTable)
 		.innerJoin(
 			organizationsTable,
-			eq(
-				organizationMembershipsTable.organizationId,
-				organizationsTable.id
-			)
+			eq(organizationMembershipsTable.organizationId, organizationsTable.id),
 		)
 		.where(
 			and(
 				eq(organizationMembershipsTable.memberId, parent.id),
 				filter ? ilike(organizationsTable.name, `%${filter}%`) : sql`TRUE`,
 				cursor
-					?
-					  isInversed
+					? isInversed
 						? or(
 								and(
 									eq(
 										organizationMembershipsTable.createdAt,
-										
+
 										new Date(
 											JSON.parse(
-												Buffer.from(cursor, "base64url").toString("utf-8")
-											).createdAt
-										)
+												Buffer.from(cursor, "base64url").toString("utf-8"),
+											).createdAt,
+										),
 									),
 									gt(
 										organizationMembershipsTable.organizationId,
 										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8")
-										).organizationId
-									)
-							  ),
-							
+											Buffer.from(cursor, "base64url").toString("utf-8"),
+										).organizationId,
+									),
+								),
+
 								gt(
 									organizationMembershipsTable.createdAt,
 									new Date(
 										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8")
-										).createdAt
-									)
-								)
-						  )
+											Buffer.from(cursor, "base64url").toString("utf-8"),
+										).createdAt,
+									),
+								),
+							)
 						: or(
-								
 								and(
 									eq(
 										organizationMembershipsTable.createdAt,
 										new Date(
 											JSON.parse(
-												Buffer.from(cursor, "base64url").toString("utf-8")
-											).createdAt
-										)
+												Buffer.from(cursor, "base64url").toString("utf-8"),
+											).createdAt,
+										),
 									),
 									lt(
 										organizationMembershipsTable.organizationId,
 										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8")
-										).organizationId
-									)
-							  ),
-								
+											Buffer.from(cursor, "base64url").toString("utf-8"),
+										).organizationId,
+									),
+								),
+
 								lt(
 									organizationMembershipsTable.createdAt,
 									new Date(
 										JSON.parse(
-											Buffer.from(cursor, "base64url").toString("utf-8")
-										).createdAt
-									)
-								)
-						  )
-					: sql`TRUE`
-			)
+											Buffer.from(cursor, "base64url").toString("utf-8"),
+										).createdAt,
+									),
+								),
+							)
+					: sql`TRUE`,
+			),
 		)
 		.limit(limit ?? 10)
 		.orderBy(...orderBy);
 
-	
 	const records: OrganizationMembershipRawNode[] = await baseQuery;
 
 	// Transform the raw nodes into a connection.
-	return transformToDefaultGraphQLConnection<OrganizationMembershipRawNode, Organization>({
+	return transformToDefaultGraphQLConnection<
+		OrganizationMembershipRawNode,
+		Organization
+	>({
 		createCursor: (row) =>
 			Buffer.from(
 				JSON.stringify({
 					createdAt: row.membershipCreatedAt.toISOString(),
 					organizationId: row.membershipOrganizationId,
-				})
+				}),
 			).toString("base64url"),
-	
+
 		createNode: (row) => row.organization,
 		parsedArgs,
 		rawNodes: records,
 	});
 };
-
 
 User.implement({
 	fields: (t) => ({

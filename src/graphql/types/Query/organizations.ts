@@ -2,8 +2,11 @@ import type { InferSelectModel } from "drizzle-orm";
 import { ilike, sql } from "drizzle-orm";
 import type { organizationsTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
+import type {
+	ExplicitGraphQLContext,
+	ImplicitMercuriusContext,
+} from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import type { ExplicitGraphQLContext, ImplicitMercuriusContext } from "~/src/graphql/context";
 
 // Define type for organization model
 type OrganizationType = InferSelectModel<typeof organizationsTable>;
@@ -26,11 +29,12 @@ export const resolveOrganizations = async (
 ): Promise<OrganizationType[]> => {
 	const { filter } = args;
 	try {
-		const organizations = await ctx.drizzleClient.query.organizationsTable.findMany({
-			where: (fields) =>
-				filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
-			limit: 20,
-		});
+		const organizations =
+			await ctx.drizzleClient.query.organizationsTable.findMany({
+				where: (fields) =>
+					filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
+				limit: 20,
+			});
 		return organizations;
 	} catch (error) {
 		ctx.log.error("Error in organizations query:", error);
