@@ -1,5 +1,11 @@
 import { relations } from "drizzle-orm";
-import { index, pgTable, timestamp, uuid, uniqueIndex } from "drizzle-orm/pg-core";
+import {
+	index,
+	pgTable,
+	timestamp,
+	uniqueIndex,
+	uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { organizationsTable } from "./organizations";

@@ -193,7 +193,7 @@ type BlockedUser {
   createdAt: Date
 
   """Unique identifier of the blocked user."""
-  id: ID
+  id: ID!
 
   """Organization that blocked the user."""
   organization: Organization
