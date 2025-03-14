@@ -280,6 +280,8 @@ CREATE TABLE "post_attachments" (
 	"post_id" uuid NOT NULL,
 	"mime_type" text NOT NULL,
 	"name" text NOT NULL,
+	"object_name" text,
+	"file_hash" text,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
@@ -629,6 +631,8 @@ CREATE INDEX "organizations_updater_id_index" ON "organizations" USING btree ("u
 CREATE INDEX "post_attachments_created_at_index" ON "post_attachments" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "post_attachments_creator_id_index" ON "post_attachments" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "post_attachments_post_id_index" ON "post_attachments" USING btree ("post_id");--> statement-breakpoint
+CREATE INDEX "post_attachments_file_hash_index" ON "post_attachments" USING btree ("file_hash");--> statement-breakpoint
+CREATE INDEX "post_attachments_object_name_index" ON "post_attachments" USING btree ("object_name");--> statement-breakpoint
 CREATE INDEX "post_votes_creator_id_index" ON "post_votes" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "post_votes_post_id_index" ON "post_votes" USING btree ("post_id");--> statement-breakpoint
 CREATE INDEX "post_votes_type_index" ON "post_votes" USING btree ("type");--> statement-breakpoint

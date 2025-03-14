@@ -12,5 +12,16 @@ PostAttachment.implement({
 		mimeType: t.exposeString("mimeType", {
 			description: "Mime type of the attachment.",
 		}),
+		objectName: t.exposeString("objectName", {
+			description: "Object name used when creating presigned URLs.",
+			nullable: true,
+		}),
+		fileHash: t.exposeString("fileHash", {
+			description: "File hash for deduplication purposes.",
+			nullable: true,
+		}),
+		name: t.exposeString("name", {
+			description: "Identifier name of the attachment.",
+		}),
 	}),
 });
