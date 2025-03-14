@@ -3,8 +3,9 @@ import type {
 	ExplicitGraphQLContext,
 	ImplicitMercuriusContext,
 } from "~/src/graphql/context";
-import { resolveOrganizations } from "~/src/graphql/types/Query/organizations";
+import { resolveCreatedOrganizations } from "~/src/graphql/types/User/createdOrganizations";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import type { User } from "~/src/graphql/types/User/User";
 
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
 
@@ -16,6 +17,7 @@ const mockDrizzleClient = {
 	},
 };
 
+
 const baseMockCtx = {
 	currentClient: {
 		isAuthenticated: true as const,
@@ -25,20 +27,23 @@ const baseMockCtx = {
 	log: { error: vi.fn() },
 } as unknown as ContextType;
 
-describe("resolveOrganizations", () => {
+
+const mockUserParent: User = ({ id: "user123", role: "member" } as unknown) as User;
+
+describe("resolveCreatedOrganizations", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 
 	test("throws an unauthenticated error if user is not authenticated", async () => {
-	
+		
 		const unauthenticatedCtx = {
 			...baseMockCtx,
 			currentClient: { isAuthenticated: false },
 		} as unknown as ContextType;
 
 		await expect(
-			resolveOrganizations(null, { filter: null }, unauthenticatedCtx)
+			resolveCreatedOrganizations(mockUserParent, { filter: null }, unauthenticatedCtx)
 		).rejects.toThrow(TalawaGraphQLError);
 	});
 
@@ -49,7 +54,11 @@ describe("resolveOrganizations", () => {
 		];
 		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue(orgs);
 
-		const result = await resolveOrganizations(null, { filter: null }, baseMockCtx);
+		const result = await resolveCreatedOrganizations(
+			mockUserParent,
+			{ filter: null },
+			baseMockCtx
+		);
 		expect(result).toEqual(orgs);
 
 		
@@ -66,28 +75,31 @@ describe("resolveOrganizations", () => {
 		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue(orgs);
 		const filterValue = "Filtered";
 
-		const result = await resolveOrganizations(null, { filter: filterValue }, baseMockCtx);
+		const result = await resolveCreatedOrganizations(
+			mockUserParent,
+			{ filter: filterValue },
+			baseMockCtx
+		);
 		expect(result).toEqual(orgs);
 
-
-		expect(mockDrizzleClient.query.organizationsTable.findMany).toHaveBeenCalledWith(
-			expect.objectContaining({
-				limit: 20,
-				offset: 0,
-			})
-		);
-
-		const whereArg = mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0]?.where;
-		expect(typeof whereArg).toBe("function");
+		
+		const findManyArgs = mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0];
+		expect(findManyArgs.limit).toBe(20);
+		expect(findManyArgs.offset).toBe(0);
+		expect(typeof findManyArgs.where).toBe("function");
 	});
 
 	test("logs error and throws error if findMany fails", async () => {
 		const errorMsg = new Error("Database error");
 		mockDrizzleClient.query.organizationsTable.findMany.mockRejectedValue(errorMsg);
 
-		await expect(resolveOrganizations(null, { filter: null }, baseMockCtx)).rejects.toThrow(
-			"An error occurred while fetching organizations."
+		await expect(
+			resolveCreatedOrganizations(mockUserParent, { filter: null }, baseMockCtx)
+		).rejects.toThrow("Failed to retrieve organizations created by the user");
+
+		expect(baseMockCtx.log.error).toHaveBeenCalledWith(
+			"Error fetching created organizations:",
+			errorMsg
 		);
-		expect(baseMockCtx.log.error).toHaveBeenCalledWith("Error in organizations query:", errorMsg);
 	});
 });
