@@ -250,6 +250,8 @@ services:
       - source: redis_data
         target: /data
         type: volume
+    profiles:
+      - redis
 
 # https://docs.docker.com/reference/compose-file/volumes/
 volumes:

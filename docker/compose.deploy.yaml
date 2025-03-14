@@ -253,6 +253,8 @@ services:
       - source: redis_data
         target: /data
         type: volume
+    profiles:
+      - redis
 
 volumes:
   caddy_config:

@@ -102,3 +102,18 @@ services:
       - postgres_test
     # https://docs.docker.com/reference/compose-file/services/#restart
     restart: unless-stopped
+  
+  redis-test:
+    image: redis:8.0-M02-alpine
+    health-check:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 10s
+    networks:
+      - redis_test
+    restart: unless-stopped
+    profiles:
+      - redis_test

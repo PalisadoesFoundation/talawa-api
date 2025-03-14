@@ -168,6 +168,16 @@ services:
       published: ${REDIS_MAPPED_PORT:?error}
       target: 6379
 # https://docs.docker.com/reference/compose-file/volumes/
+  redis-test:
+    ports:
+    - host_ip: ${REDIS_MAPPED_HOST_IP:?error}
+      name: redis
+      published: ${REDIS_TEST_MAPPED_PORT:?error}
+      target: 6379
+    volumes:
+      - source: redis_test_data
+        target: /data
+        type: volume
 volumes:
   api_bash_history:
   api_node_modules:
@@ -175,6 +185,8 @@ volumes:
   cloudbeaver_data:
   minio_test_data:
   postgres_test_data:
+  redis_test_data:
+
   
 
 
