@@ -1,4 +1,4 @@
-import { type SQL, and, asc, desc, eq, gt, lt, ilike } from "drizzle-orm";
+import { type SQL, and, asc, desc, eq, gt, ilike, lt } from "drizzle-orm";
 import type { z } from "zod";
 import {
   venuesTable,
@@ -11,8 +11,8 @@ import {
   transformDefaultGraphQLConnectionArguments,
   transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { Organization } from "./Organization";
 import { QueryVenuesInput } from "../../inputs/QueryVenuesInput";
+import { Organization } from "./Organization";
 
 const venuesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
   .transform(transformDefaultGraphQLConnectionArguments)
@@ -42,6 +42,7 @@ const venuesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 
 const cursorSchema = venuesTableInsertSchema.pick({
   name: true,
+  capacity: true,
 });
 
 Organization.implement({
@@ -60,7 +61,6 @@ Organization.implement({
         }),
       },
       resolve: async (parent, args, ctx) => {
-        // console.log("args from backend yoooo", args);
         if (!ctx.currentClient.isAuthenticated) {
           throw new TalawaGraphQLError({
             extensions: {
@@ -87,7 +87,6 @@ Organization.implement({
           });
         }
 
-        console.log("parsedArgs", parsedArgs);
         const currentUserId = ctx.currentClient.user.id;
 
         const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
@@ -141,9 +140,9 @@ Organization.implement({
         // Add cursor-based filtering
         if (cursor !== undefined) {
           if (isInversed) {
-            where = and(where, lt(venuesTable.name, cursor.name));
+            where = and(where, lt(venuesTable.capacity, cursor.capacity));
           } else {
-            where = and(where, gt(venuesTable.name, cursor.name));
+            where = and(where, gt(venuesTable.capacity, cursor.capacity));
           }
         }
 
@@ -193,6 +192,7 @@ Organization.implement({
             Buffer.from(
               JSON.stringify({
                 name: venue.name,
+                capacity: venue.capacity,
               })
             ).toString("base64url"),
           createNode: ({ attachmentsWhereVenue, ...venue }) =>

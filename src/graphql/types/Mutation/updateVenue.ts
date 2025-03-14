@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
-import { z } from "zod";
-import { ulid } from "ulidx";
-import { venuesTable } from "~/src/drizzle/tables/venues";
-import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
-import { builder } from "~/src/graphql/builder";
 import type { FileUpload } from "graphql-upload-minimal";
+import { ulid } from "ulidx";
+import { z } from "zod";
+import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
+import { venueAttachmentsTable } from "~/src/drizzle/schema";
+import { venuesTable } from "~/src/drizzle/tables/venues";
+import { builder } from "~/src/graphql/builder";
 import {
   MutationUpdateVenueInput,
   mutationUpdateVenueInputSchema,
@@ -12,7 +13,6 @@ import {
 import { Venue } from "~/src/graphql/types/Venue/Venue";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-import { venueAttachmentsTable } from "~/src/drizzle/schema";
 const mutationUpdateVenueArgumentsSchema = z.object({
   input: mutationUpdateVenueInputSchema.transform(async (arg, ctx) => {
     let attachments:

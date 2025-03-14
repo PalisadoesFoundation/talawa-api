@@ -1,5 +1,5 @@
-import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
+import type { FileUpload } from "graphql-upload-minimal";
 import { venuesTableInsertSchema } from "~/src/drizzle/tables/venues";
 import { builder } from "~/src/graphql/builder";
 
