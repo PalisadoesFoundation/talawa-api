@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 import type { Organization as OrganizationType } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 vi.mock("~/src/graphql/types/Organization/Organization", () => ({
 	Organization: {
@@ -71,7 +71,7 @@ describe("Organization.blockedUsers Field", () => {
 
 	const getResolver = () => {
 		const implementCall = (Organization.implement as Mock).mock.calls[0];
-		const fieldsFunction = implementCall![0].fields;
+		const fieldsFunction = implementCall?.[0].fields;
 		const fields = fieldsFunction({});
 		return fields.blockedUsers.resolve;
 	};
@@ -81,9 +81,7 @@ describe("Organization.blockedUsers Field", () => {
 			const resolver = getResolver();
 			mockContext.currentClient.isAuthenticated = false;
 
-			await expect(
-				resolver(mockOrganization, {}, mockContext),
-			).rejects.toThrow(
+			await expect(resolver(mockOrganization, {}, mockContext)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 			);
 		});
@@ -122,7 +120,9 @@ describe("Organization.blockedUsers Field", () => {
 			).toString("base64url");
 			const args = { after: cursor };
 
-			mockContext.drizzleClient.query.blockedUsersTable.findMany.mockResolvedValue([]);
+			mockContext.drizzleClient.query.blockedUsersTable.findMany.mockResolvedValue(
+				[],
+			);
 
 			await expect(
 				resolver(mockOrganization, args, mockContext),
@@ -139,15 +139,21 @@ describe("Organization.blockedUsers Field", () => {
 
 	describe("Query Execution", () => {
 		type ConnectionResult = {
-			edges: Array<{ node: any }>;
+			edges: Array<{ node: Record<string, unknown> }>;
 			pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean };
 		};
 
 		it("should return empty connection when no blocked users exist", async () => {
 			const resolver = getResolver();
-			mockContext.drizzleClient.query.blockedUsersTable.findMany.mockResolvedValue([]);
+			mockContext.drizzleClient.query.blockedUsersTable.findMany.mockResolvedValue(
+				[],
+			);
 
-			const result = await resolver(mockOrganization, {}, mockContext) as ConnectionResult;
+			const result = (await resolver(
+				mockOrganization,
+				{},
+				mockContext,
+			)) as ConnectionResult;
 			expect(result.edges).toHaveLength(0);
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
@@ -173,15 +179,31 @@ describe("Organization.blockedUsers Field", () => {
 					},
 				},
 			];
-			mockContext.drizzleClient.query.blockedUsersTable.findMany.mockResolvedValue(blockedUsers);
+			mockContext.drizzleClient.query.blockedUsersTable.findMany.mockResolvedValue(
+				blockedUsers,
+			);
 
-			const result = await resolver(mockOrganization, { first: 10 }, mockContext) as ConnectionResult;
+			const result = (await resolver(
+				mockOrganization,
+				{ first: 10 },
+				mockContext,
+			)) as ConnectionResult;
 			expect(result.edges).toHaveLength(2);
 
-			// @ts-ignore - We know these exist based on the previous assertion
-			expect(result.edges[0].node).toEqual(blockedUsers[0].user);
-			// @ts-ignore - We know these exist based on the previous assertion
-			expect(result.edges[1].node).toEqual(blockedUsers[1].user);
+			expect(result.edges).toEqual([
+				expect.objectContaining({
+					node: expect.objectContaining({
+						id: "user-2",
+						name: "Blocked User 1",
+					}),
+				}),
+				expect.objectContaining({
+					node: expect.objectContaining({
+						id: "user-3",
+						name: "Blocked User 2",
+					}),
+				}),
+			]);
 
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
@@ -199,16 +221,29 @@ describe("Organization.blockedUsers Field", () => {
 					},
 				},
 			];
-			mockContext.drizzleClient.query.blockedUsersTable.findMany.mockResolvedValue(blockedUsers);
+			mockContext.drizzleClient.query.blockedUsersTable.findMany.mockResolvedValue(
+				blockedUsers,
+			);
 
-			const result = await resolver(mockOrganization, { first: 1 }, mockContext) as ConnectionResult;
+			const result = (await resolver(
+				mockOrganization,
+				{ first: 1 },
+				mockContext,
+			)) as ConnectionResult;
 			expect(result.edges).toHaveLength(1);
 
-			// @ts-ignore - We know this exists based on the previous assertion
-			expect(result.edges[0].node).toEqual(blockedUsers[0].user);
+			expect(result.edges).toEqual([
+				expect.objectContaining({
+					node: expect.objectContaining({
+						id: "user-2",
+						name: "Blocked User 1",
+					}),
+				}),
+			]);
 
-			// Verify that the limit was passed to the query
-			expect(mockContext.drizzleClient.query.blockedUsersTable.findMany).toHaveBeenCalledWith(
+			expect(
+				mockContext.drizzleClient.query.blockedUsersTable.findMany,
+			).toHaveBeenCalledWith(
 				expect.objectContaining({
 					limit: 1,
 				}),
@@ -235,15 +270,29 @@ describe("Organization.blockedUsers Field", () => {
 				}),
 			).toString("base64url");
 
-			mockContext.drizzleClient.query.blockedUsersTable.findMany.mockResolvedValue(blockedUsers);
+			mockContext.drizzleClient.query.blockedUsersTable.findMany.mockResolvedValue(
+				blockedUsers,
+			);
 
-			const result = await resolver(mockOrganization, { first: 10, after: cursor }, mockContext) as ConnectionResult;
+			const result = (await resolver(
+				mockOrganization,
+				{ first: 10, after: cursor },
+				mockContext,
+			)) as ConnectionResult;
 			expect(result.edges).toHaveLength(1);
 
-			// @ts-ignore - We know this exists based on the previous assertion
-			expect(result.edges[0].node).toEqual(blockedUsers[0].user);
+			expect(result.edges).toEqual([
+				expect.objectContaining({
+					node: expect.objectContaining({
+						id: "user-3",
+						name: "Blocked User 2",
+					}),
+				}),
+			]);
 
-			expect(mockContext.drizzleClient.query.blockedUsersTable.findMany).toHaveBeenCalledWith(
+			expect(
+				mockContext.drizzleClient.query.blockedUsersTable.findMany,
+			).toHaveBeenCalledWith(
 				expect.objectContaining({
 					where: expect.anything(),
 				}),
@@ -270,17 +319,31 @@ describe("Organization.blockedUsers Field", () => {
 				}),
 			).toString("base64url");
 
-			mockContext.drizzleClient.query.blockedUsersTable.findMany.mockResolvedValue(blockedUsers);
+			mockContext.drizzleClient.query.blockedUsersTable.findMany.mockResolvedValue(
+				blockedUsers,
+			);
 
-			const result = await resolver(mockOrganization, { last: 10, before: cursor }, mockContext) as ConnectionResult;
+			const result = (await resolver(
+				mockOrganization,
+				{ last: 10, before: cursor },
+				mockContext,
+			)) as ConnectionResult;
 			expect(result.edges).toHaveLength(1);
 
-			// @ts-ignore - We know this exists based on the previous assertion
-			expect(result.edges[0].node).toEqual(blockedUsers[0].user);
-
-			expect(mockContext.drizzleClient.query.blockedUsersTable.findMany).toHaveBeenCalledWith(
+			expect(result.edges).toEqual([
 				expect.objectContaining({
-					orderBy: expect.anything(), 
+					node: expect.objectContaining({
+						id: "user-2",
+						name: "Blocked User 1",
+					}),
+				}),
+			]);
+
+			expect(
+				mockContext.drizzleClient.query.blockedUsersTable.findMany,
+			).toHaveBeenCalledWith(
+				expect.objectContaining({
+					orderBy: expect.anything(),
 				}),
 			);
 		});

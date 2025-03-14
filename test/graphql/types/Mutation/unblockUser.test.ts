@@ -1,14 +1,6 @@
-import {
-	type Mock,
-	beforeEach,
-	describe,
-	expect,
-	it,
-	vi,
-} from "vitest";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { type Mock, beforeEach, describe, expect, it, vi } from "vitest";
 import { builder } from "~/src/graphql/builder";
-
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 vi.mock("~/src/graphql/builder", () => ({
 	builder: {
@@ -87,10 +79,9 @@ describe("unblockUser Mutation", () => {
 		vi.clearAllMocks();
 	});
 
-
 	const getResolver = () => {
 		const mutationFieldCall = (builder.mutationField as Mock).mock.calls[0];
-		const fieldConfig = mutationFieldCall![1]({});
+		const fieldConfig = mutationFieldCall?.[1]({});
 		return fieldConfig.resolve;
 	};
 
@@ -99,9 +90,7 @@ describe("unblockUser Mutation", () => {
 			const resolver = getResolver();
 			mockContext.currentClient.isAuthenticated = false;
 
-			await expect(
-				resolver(null, defaultArgs, mockContext),
-			).rejects.toThrow(
+			await expect(resolver(null, defaultArgs, mockContext)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 			);
 		});
@@ -112,9 +101,7 @@ describe("unblockUser Mutation", () => {
 			const resolver = getResolver();
 			const args = { ...defaultArgs, organizationId: "" };
 
-			await expect(
-				resolver(null, args, mockContext),
-			).rejects.toThrow(
+			await expect(resolver(null, args, mockContext)).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",
@@ -132,9 +119,7 @@ describe("unblockUser Mutation", () => {
 			const resolver = getResolver();
 			const args = { ...defaultArgs, userId: "" };
 
-			await expect(
-				resolver(null, args, mockContext),
-			).rejects.toThrow(
+			await expect(resolver(null, args, mockContext)).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",
@@ -152,17 +137,20 @@ describe("unblockUser Mutation", () => {
 	describe("Resource Validation", () => {
 		it("should throw arguments_associated_resources_not_found if organization does not exist", async () => {
 			const resolver = getResolver();
-			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(null);
+			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
+				null,
+			);
 
-			await expect(
-				resolver(null, defaultArgs, mockContext),
-			).rejects.toThrow(
+			await expect(resolver(null, defaultArgs, mockContext)).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
 						issues: expect.arrayContaining([
 							expect.objectContaining({
-								argumentPath: expect.arrayContaining(["input", "organizationId"]),
+								argumentPath: expect.arrayContaining([
+									"input",
+									"organizationId",
+								]),
 							}),
 						]),
 					},
@@ -172,15 +160,17 @@ describe("unblockUser Mutation", () => {
 
 		it("should throw arguments_associated_resources_not_found if user does not exist", async () => {
 			const resolver = getResolver();
-			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue({
-				id: "org-1",
-				name: "Test Organization",
-			});
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue(null);
+			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
+				{
+					id: "org-1",
+					name: "Test Organization",
+				},
+			);
+			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				null,
+			);
 
-			await expect(
-				resolver(null, defaultArgs, mockContext),
-			).rejects.toThrow(
+			await expect(resolver(null, defaultArgs, mockContext)).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -198,28 +188,31 @@ describe("unblockUser Mutation", () => {
 	describe("Authorization", () => {
 		it("should throw unauthorized_action if current user is not an admin of the organization", async () => {
 			const resolver = getResolver();
-			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue({
-				id: "org-1",
-				name: "Test Organization",
-			});
+			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
+				{
+					id: "org-1",
+					name: "Test Organization",
+				},
+			);
 			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 				id: "user-1",
 				name: "Test User",
 			});
-			mockContext.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue({
-				id: "membership-1",
-				organizationId: "org-1",
-				memberId: "admin-user-1",
-				role: "regular",
-			});
+			mockContext.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
+				{
+					id: "membership-1",
+					organizationId: "org-1",
+					memberId: "admin-user-1",
+					role: "regular",
+				},
+			);
 
-			await expect(
-				resolver(null, defaultArgs, mockContext),
-			).rejects.toThrow(
+			await expect(resolver(null, defaultArgs, mockContext)).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action",
-						message: "You must be an admin of this organization to unblock users.",
+						message:
+							"You must be an admin of this organization to unblock users.",
 					},
 				}),
 			);
@@ -227,23 +220,26 @@ describe("unblockUser Mutation", () => {
 
 		it("should throw unauthorized_action if current user is not a member of the organization", async () => {
 			const resolver = getResolver();
-			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue({
-				id: "org-1",
-				name: "Test Organization",
-			});
+			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
+				{
+					id: "org-1",
+					name: "Test Organization",
+				},
+			);
 			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 				id: "user-1",
 				name: "Test User",
 			});
-			mockContext.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(null);
+			mockContext.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
+				null,
+			);
 
-			await expect(
-				resolver(null, defaultArgs, mockContext),
-			).rejects.toThrow(
+			await expect(resolver(null, defaultArgs, mockContext)).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action",
-						message: "You must be an admin of this organization to unblock users.",
+						message:
+							"You must be an admin of this organization to unblock users.",
 					},
 				}),
 			);
@@ -252,35 +248,40 @@ describe("unblockUser Mutation", () => {
 
 	describe("Business Logic Validation", () => {
 		beforeEach(() => {
-			
-			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue({
-				id: "org-1",
-				name: "Test Organization",
-			});
+			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
+				{
+					id: "org-1",
+					name: "Test Organization",
+				},
+			);
 			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 				id: "user-1",
 				name: "Test User",
 			});
-			mockContext.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue({
-				id: "membership-admin",
-				organizationId: "org-1",
-				memberId: "admin-user-1",
-				role: "administrator",
-			});
-			mockContext.drizzleClient.query.blockedUsersTable.findFirst.mockResolvedValue({
-				id: "block-1",
-				organizationId: "org-1",
-				userId: "user-1",
-			});
+			mockContext.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
+				{
+					id: "membership-admin",
+					organizationId: "org-1",
+					memberId: "admin-user-1",
+					role: "administrator",
+				},
+			);
+			mockContext.drizzleClient.query.blockedUsersTable.findFirst.mockResolvedValue(
+				{
+					id: "block-1",
+					organizationId: "org-1",
+					userId: "user-1",
+				},
+			);
 		});
 
 		it("should throw forbidden_action if user is not blocked", async () => {
 			const resolver = getResolver();
-			mockContext.drizzleClient.query.blockedUsersTable.findFirst.mockResolvedValue(null);
+			mockContext.drizzleClient.query.blockedUsersTable.findFirst.mockResolvedValue(
+				null,
+			);
 
-			await expect(
-				resolver(null, defaultArgs, mockContext),
-			).rejects.toThrow(
+			await expect(resolver(null, defaultArgs, mockContext)).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: {
 						code: "forbidden_action",
@@ -292,13 +293,15 @@ describe("unblockUser Mutation", () => {
 
 		it("should successfully unblock a user", async () => {
 			const resolver = getResolver();
-			mockContext.drizzleClient.transaction.mockImplementation(async (callback) => {
-				return await callback({
-					delete: () => ({
-						where: () => Promise.resolve(true),
-					}),
-				});
-			});
+			mockContext.drizzleClient.transaction.mockImplementation(
+				async (callback) => {
+					return await callback({
+						delete: () => ({
+							where: () => Promise.resolve(true),
+						}),
+					});
+				},
+			);
 
 			const result = await resolver(null, defaultArgs, mockContext);
 			expect(result).toBe(true);

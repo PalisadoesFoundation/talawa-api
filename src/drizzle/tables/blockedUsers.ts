@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { index, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, pgTable, timestamp, uuid, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { organizationsTable } from "./organizations";
@@ -24,7 +24,10 @@ export const blockedUsersTable = pgTable(
 			.defaultNow(),
 	},
 	(self) => [
-		uniqueIndex("blocked_users_org_user_unique").on(self.organizationId, self.userId),
+		uniqueIndex("blocked_users_org_user_unique").on(
+			self.organizationId,
+			self.userId,
+		),
 		index("blocked_users_organization_id_idx").on(self.organizationId),
 		index("blocked_users_user_id_idx").on(self.userId),
 	],
