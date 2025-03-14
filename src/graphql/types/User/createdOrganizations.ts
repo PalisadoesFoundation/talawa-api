@@ -5,6 +5,7 @@ import type {
 } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { User } from "~/src/graphql/types/User/User";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
 
@@ -17,6 +18,14 @@ export const resolveCreatedOrganizations = async (
 	args: CreatedOrganizationsArgs,
 	ctx: ContextType,
 ): Promise<Organization[]> => {
+	if (!ctx.currentClient.isAuthenticated) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthenticated",
+			},
+		});
+	}
+
 	const { filter } = args;
 
 	try {

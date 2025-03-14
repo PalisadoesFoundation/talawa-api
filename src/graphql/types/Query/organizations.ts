@@ -7,7 +7,7 @@ import type {
 	ImplicitMercuriusContext,
 } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 // Define type for organization model
 type OrganizationType = InferSelectModel<typeof organizationsTable>;
 
@@ -27,6 +27,13 @@ export const resolveOrganizations = async (
 	args: OrganizationsArgs,
 	ctx: ContextType,
 ): Promise<OrganizationType[]> => {
+	if (!ctx.currentClient.isAuthenticated) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthenticated",
+			},
+		});
+	}
 	const { filter } = args;
 	try {
 		const organizations =
@@ -34,6 +41,7 @@ export const resolveOrganizations = async (
 				where: (fields) =>
 					filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
 				limit: 20,
+				offset: 0,
 			});
 		return organizations;
 	} catch (error) {
