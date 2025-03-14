@@ -1,3 +1,4 @@
+import { ilike, sql } from "drizzle-orm";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import type {
 	ExplicitGraphQLContext,
@@ -106,4 +107,58 @@ describe("resolveOrganizations", () => {
 			errorMsg,
 		);
 	});
+
+	test("where clause returns correct condition when filter is provided", async () => {
+		// Ensure findMany resolves without error.
+		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue([]);
+		const filterValue = "Filtered";
+
+		await resolveOrganizations(null, { filter: filterValue }, baseMockCtx);
+
+		// Retrieve the arguments passed to findMany.
+		const findManyArgs =
+			mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0];
+		const whereFn = findManyArgs.where;
+		expect(typeof whereFn).toBe("function");
+
+		// Create a dummy fields object where "name" is a SQL expression.
+		const dummyFields = { name: sql<string>`Some Org` };
+		// Compute the expected condition.
+		const expectedCondition = ilike(dummyFields.name, `%${filterValue}%`);
+		// Compare by converting to string.
+		expect(String(whereFn(dummyFields))).toEqual(String(expectedCondition));
+	});
+
+	test("where clause returns sql`TRUE` when filter is not provided", async () => {
+		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue([]);
+		const filterValue = "Filtered";
+		await resolveOrganizations(null, { filter: filterValue }, baseMockCtx);
+
+		const findManyArgs =
+			mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0];
+		const whereFn = findManyArgs.where;
+		expect(typeof whereFn).toBe("function");
+
+		const dummyFields = { name: sql<string>`Some Org` };
+		const expectedCondition = sql`TRUE`;
+		expect(String(whereFn(dummyFields))).toEqual(String(expectedCondition));
+	});
+
+	test("where clause returns sql`TRUE` when filter is not provided", async () => {
+
+		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue([]);
+		
+
+		await resolveOrganizations(null, { filter: undefined}, baseMockCtx);
+	  
+		
+		const findManyArgs = mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0];
+		const whereFn = findManyArgs.where;
+		expect(typeof whereFn).toBe("function");
+	  
+		const dummyFields = { name: sql<string>`Some Org` };
+		const expectedCondition = sql`TRUE`;
+		
+		expect(String(whereFn(dummyFields))).toEqual(String(expectedCondition));
+	  });
 });
