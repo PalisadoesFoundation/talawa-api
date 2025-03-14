@@ -1,4 +1,4 @@
-import { expect, suite, test, vi } from "vitest"
+import { expect, suite, test, vi } from "vitest";
 import {
   type ParsedDefaultGraphQLConnectionArguments,
   defaultGraphQLConnectionArgumentsSchema,

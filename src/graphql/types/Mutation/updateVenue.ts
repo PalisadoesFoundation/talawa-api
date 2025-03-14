@@ -1,10 +1,10 @@
-import { eq } from "drizzle-orm"
-import { z } from "zod"
-import { ulid } from "ulidx"
-import { venuesTable } from "~/src/drizzle/tables/venues"
-import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType"
-import { builder } from "~/src/graphql/builder"
-import type { FileUpload } from "graphql-upload-minimal"
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+import { ulid } from "ulidx";
+import { venuesTable } from "~/src/drizzle/tables/venues";
+import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
+import { builder } from "~/src/graphql/builder";
+import type { FileUpload } from "graphql-upload-minimal";
 import {
   MutationUpdateVenueInput,
   mutationUpdateVenueInputSchema,
@@ -258,8 +258,8 @@ builder.mutationField("updateVenue", (t) =>
                   attachments[index].createReadStream(),
                   undefined,
                   {
-										"content-type": attachment.mimeType,
-									},
+                    "content-type": attachment.mimeType,
+                  }
                 )
               }
             })
