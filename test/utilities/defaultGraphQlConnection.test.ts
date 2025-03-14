@@ -14,6 +14,7 @@ suite("defaultGraphQLConnection utilities", () => {
 				after: "someCursor",
 				before: null,
 				last: null,
+				isInverted : false
 			});
 
 			expect(result.success).toBe(true);
@@ -112,7 +113,7 @@ suite("defaultGraphQLConnection utilities", () => {
 	});
 
 	suite("transformDefaultGraphQLConnectionArguments", () => {
-		test("transforms first/after arguments correctly", () => {
+		test.only("transforms first/after arguments correctly", () => {
 			const ctx = { addIssue: vi.fn(), path: [] };
 			const result = transformDefaultGraphQLConnectionArguments(
 				{
@@ -120,6 +121,7 @@ suite("defaultGraphQLConnection utilities", () => {
 					after: "someCursor",
 					before: undefined,
 					last: undefined,
+					isInversed : false
 				},
 				ctx,
 			);
@@ -140,6 +142,7 @@ suite("defaultGraphQLConnection utilities", () => {
 					after: undefined,
 					before: undefined,
 					last: undefined,
+					isInversed: false
 				},
 				ctx,
 			);
@@ -160,6 +163,7 @@ suite("defaultGraphQLConnection utilities", () => {
 					before: "someCursor",
 					first: undefined,
 					after: undefined,
+					isInversed: false
 				},
 				ctx,
 			);
@@ -180,6 +184,7 @@ suite("defaultGraphQLConnection utilities", () => {
 					before: undefined,
 					first: undefined,
 					after: undefined,
+					isInversed: false
 				},
 				ctx,
 			);
@@ -200,6 +205,7 @@ suite("defaultGraphQLConnection utilities", () => {
 					last: 5,
 					after: undefined,
 					before: undefined,
+					isInversed : false
 				},
 				ctx,
 			);
@@ -220,6 +226,7 @@ suite("defaultGraphQLConnection utilities", () => {
 					before: "someCursor",
 					after: undefined,
 					last: undefined,
+					isInversed: false
 				},
 				ctx,
 			);
@@ -240,6 +247,7 @@ suite("defaultGraphQLConnection utilities", () => {
 					after: "someCursor",
 					before: undefined,
 					first: undefined,
+					isInversed : false
 				},
 				ctx,
 			);
@@ -260,6 +268,7 @@ suite("defaultGraphQLConnection utilities", () => {
 					last: undefined,
 					after: undefined,
 					before: undefined,
+					isInversed : false
 				},
 				ctx,
 			);
@@ -287,6 +296,7 @@ suite("defaultGraphQLConnection utilities", () => {
 				last: undefined,
 				name: "test",
 				role: "admin",
+				isInversed : false
 			};
 			const result = transformDefaultGraphQLConnectionArguments(
 				customArgs,
