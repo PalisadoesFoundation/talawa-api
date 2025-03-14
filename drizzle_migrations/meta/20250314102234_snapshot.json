@@ -1,5 +1,5 @@
 {
-  "id": "e5fe635f-2302-4a95-86e6-16508bb68c63",
+  "id": "c2b2c756-0f3e-408b-93c2-76587a855525",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -4084,6 +4084,12 @@
           "notNull": true,
           "default": "now()"
         },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
         "creator_id": {
           "name": "creator_id",
           "type": "uuid",
@@ -4107,6 +4113,18 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "object_name": {
+          "name": "object_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "file_hash": {
+          "name": "file_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "updated_at": {
           "name": "updated_at",
@@ -4157,6 +4175,36 @@
           "columns": [
             {
               "expression": "post_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "post_attachments_file_hash_index": {
+          "name": "post_attachments_file_hash_index",
+          "columns": [
+            {
+              "expression": "file_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "post_attachments_object_name_index": {
+          "name": "post_attachments_object_name_index",
+          "columns": [
+            {
+              "expression": "object_name",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

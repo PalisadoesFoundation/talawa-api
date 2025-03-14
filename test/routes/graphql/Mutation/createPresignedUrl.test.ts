@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -30,8 +30,8 @@ suite("Mutation field createPresignedUrl", () => {
 				variables: {
 					input: {
 						fileName: "testfile.txt",
-						fileType: "text/plain",
 						organizationId: faker.string.uuid(),
+						fileHash: "test-hash",
 					},
 				},
 			});
@@ -48,7 +48,7 @@ suite("Mutation field createPresignedUrl", () => {
 	});
 
 	suite("when the presigned URL is generated successfully", () => {
-		test("should return a presignedUrl, fileUrl, and objectName", async () => {
+		test("should return a presignedUrl and objectName", async () => {
 			const originalPresignedPutObject = server.minio.client.presignedPutObject;
 			server.minio.client.presignedPutObject = async (
 				bucket: string,
@@ -86,22 +86,20 @@ suite("Mutation field createPresignedUrl", () => {
 				variables: {
 					input: {
 						fileName: "testfile.txt",
-						fileType: "text/plain",
 						organizationId: orgId,
+						fileHash: "test-hash-2",
 					},
 				},
 			});
 
-			expect(result.data?.createPresignedUrl).toEqual(
-				expect.objectContaining({
-					presignedUrl: "https://example.com/presigned-url",
-					fileUrl: expect.stringContaining(
-						`http://${server.minio.config.endPoint}:${server.minio.config.port}/${server.minio.bucketName}/uploads/`,
-					),
-					objectName: expect.stringMatching(
-						/^uploads\/\d+-[0-9a-fA-F-]+-testfile\.txt$/,
-					),
-				}),
+			expect(result.data?.createPresignedUrl).toMatchObject({
+				presignedUrl: "https://example.com/presigned-url",
+				requiresUpload: true,
+			});
+
+			assertToBeNonNullish(result.data?.createPresignedUrl);
+			expect(result.data.createPresignedUrl.objectName).toMatch(
+				/^uploads\/[0-9a-f-]+\/\d+-test-hash-2-testfile\.txt$/i,
 			);
 			server.minio.client.presignedPutObject = originalPresignedPutObject;
 		});
@@ -114,8 +112,8 @@ suite("Mutation field createPresignedUrl", () => {
 				variables: {
 					input: {
 						fileName: "testfile.txt",
-						fileType: "text/plain",
 						organizationId: faker.string.uuid(),
+						fileHash: "test-hash-3",
 					},
 				},
 			});
@@ -202,8 +200,8 @@ suite("Mutation field createPresignedUrl", () => {
 				variables: {
 					input: {
 						fileName: "testfile.txt",
-						fileType: "text/plain",
 						organizationId: orgId,
+						fileHash: "test-hash-4",
 					},
 				},
 			});
@@ -253,8 +251,8 @@ suite("Mutation field createPresignedUrl", () => {
 				variables: {
 					input: {
 						fileName: "testfile.txt",
-						fileType: "text/plain",
 						organizationId: orgId,
+						fileHash: "test-hash-5",
 					},
 				},
 			});
@@ -272,6 +270,71 @@ suite("Mutation field createPresignedUrl", () => {
 						path: ["createPresignedUrl"],
 					}),
 				]),
+			);
+		});
+	});
+	suite("when the file already exists in postAttachmentsTable", () => {
+		test("should return the existing file details without generating a presigned URL", async () => {
+			const signInResult = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			assertToBeNonNullish(signInResult.data.signIn);
+			const authToken = signInResult.data.signIn.authenticationToken;
+			assertToBeNonNullish(authToken);
+
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Existing File Org",
+							description: "Organization for testing existing file branch",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "500 Test Blvd",
+							addressLine2: "Suite 50",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+			const originalFindFirst =
+				server.drizzleClient.query.postAttachmentsTable.findFirst;
+			server.drizzleClient.query.postAttachmentsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({
+					objectName: "existing-object-name",
+					fileHash: "test-file-hash",
+				});
+			const result = await mercuriusClient.mutate(Mutation_createPresignedUrl, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						fileName: "testfile.txt",
+						organizationId: orgId,
+						fileHash: "test-file-hash",
+						objectName: "",
+					},
+				},
+			});
+			server.drizzleClient.query.postAttachmentsTable.findFirst =
+				originalFindFirst;
+
+			expect(result.data?.createPresignedUrl).toEqual(
+				expect.objectContaining({
+					presignedUrl: null,
+					objectName: "existing-object-name",
+					requiresUpload: false,
+				}),
 			);
 		});
 	});
@@ -308,8 +371,8 @@ suite("Mutation field createPresignedUrl", () => {
 				variables: {
 					input: {
 						fileName: "testfile.txt",
-						fileType: "text/plain",
 						organizationId: orgId,
+						fileHash: "test-hash-6",
 					},
 				},
 			});

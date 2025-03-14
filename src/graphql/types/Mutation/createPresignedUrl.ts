@@ -1,17 +1,7 @@
+import { MutationCreatePresignedUrlInput } from "~/src/graphql/inputs/MutationCreatePresignedUrlInput";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { builder } from "../../builder";
 import { UploadUrlResponse } from "../../types/Post/UploadUrlResponse";
-
-const MutationCreatePresignedUrlInput = builder.inputType(
-	"MutationCreatePresignedUrlInput",
-	{
-		fields: (t) => ({
-			fileName: t.string({ required: true }),
-			fileType: t.string({ required: true }),
-			organizationId: t.id({ required: true }),
-		}),
-	},
-);
 
 builder.mutationField("createPresignedUrl", (t) =>
 	t.field({
@@ -79,9 +69,25 @@ builder.mutationField("createPresignedUrl", (t) =>
 				});
 			}
 
+			const existingFile =
+				await ctx.drizzleClient.query.postAttachmentsTable.findFirst({
+					where: (fields, operators) =>
+						operators.eq(fields.fileHash, args.input.fileHash),
+				});
+
+			if (existingFile) {
+				return {
+					presignedUrl: null,
+					objectName: existingFile.objectName,
+					requiresUpload: false,
+				};
+			}
+
 			const { fileName } = args.input;
 			const bucketName = ctx.minio.bucketName;
-			const objectName = `uploads/${Date.now()}-${crypto.randomUUID()}-${fileName}`;
+			const objectName =
+				args.input.objectName ||
+				`uploads/${args.input.organizationId}/${Date.now()}-${args.input.fileHash}-${fileName}`;
 
 			try {
 				const presignedUrl: string = await new Promise((resolve, reject) => {
@@ -91,9 +97,7 @@ builder.mutationField("createPresignedUrl", (t) =>
 						.catch(reject);
 				});
 
-				const fileUrl = `http://${ctx.minio.config.endPoint}:${ctx.minio.config.port}/${bucketName}/${objectName}`;
-
-				return { presignedUrl, fileUrl, objectName };
+				return { presignedUrl, objectName, requiresUpload: true };
 			} catch (error: unknown) {
 				if (error instanceof Error) {
 					throw new TalawaGraphQLError({
