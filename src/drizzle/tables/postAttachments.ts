@@ -1,10 +1,10 @@
 import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { uuidv7 } from "uuidv7";
 import { postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
 import { postsTable } from "./posts";
 import { usersTable } from "./users";
-
 /**
  * Drizzle orm postgres table definition for post attachments.
  */
@@ -21,6 +21,11 @@ export const postAttachmentsTable = pgTable(
 		})
 			.notNull()
 			.defaultNow(),
+		/**
+		 * Primary unique identifier of the post attachment.
+		 */
+		id: uuid("id").primaryKey().$default(uuidv7),
+
 		/**
 		 * Foreign key reference to the id of the user who created the attachment.
 		 */
