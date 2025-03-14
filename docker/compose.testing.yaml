@@ -102,10 +102,9 @@ services:
       - postgres_test
     # https://docs.docker.com/reference/compose-file/services/#restart
     restart: unless-stopped
-  
   redis-test:
     image: redis:8.0-M02-alpine
-    health-check:
+    healthcheck:
       interval: 10s
       retries: 3
       start_interval: 1s
