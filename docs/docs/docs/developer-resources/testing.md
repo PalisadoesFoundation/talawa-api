@@ -809,6 +809,12 @@ docker exec -it talawa-api-1 /bin/bash -c 'pnpm generate_drizzle_migrations'
 docker exec -it talawa-api-1 /bin/bash -c 'pnpm apply_drizzle_migrations'
 ```
 
+#### 6. Validation (Access Updated Tables)
+
+```bash
+docker restart talawa-cloudbeaver-1
+```
+
 Note: Migrations are applied to postgres-test-1 while running tests for first time, to Re-run tests with updated tables, follow same steps for postgres-test-1.
 
 ## Object Storage Management
