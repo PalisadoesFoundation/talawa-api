@@ -59,6 +59,130 @@ The `tests/server.ts` file exports the Talawa API server instance that can be im
 
 There aren't any other strict structure requirements for the this directory.
 
+### Mock GraphQL Context Factory Function
+
+#### In Directory `test/_Mocks_/mockContextCreator`
+
+#### **Purpose**
+
+The `createMockGraphQLContext` function provides a **fully mocked GraphQL context** for unit and integration testing of GraphQL resolvers. It ensures that resolvers can be tested **without needing a real database, MinIO storage, or authentication service** and works as a centralized mocking mechanism.
+
+#### **Usage**
+
+#### **Importing the Mock Context**
+
+```ts
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator";
+```
+
+#### **Creating a Mock Context**
+
+##### **For an Unauthenticated User**
+
+```ts
+const { context, mocks } = createMockGraphQLContext({ isAuthenticated: false });
+```
+
+`context.currentClient.isAuthenticated` will be `false`.
+
+##### **For an Authenticated User**
+
+```ts
+const { context, mocks } = createMockGraphQLContext({
+  isAuthenticated: true,
+  userId: "user123",
+});
+```
+
+`context.currentClient.user.id` will be `"user123"`.
+
+---
+
+#### **Components in Mock Context**
+
+The mock context provides the following:
+
+| Component       | Description                                                           |
+| --------------- | --------------------------------------------------------------------- |
+| `currentClient` | Simulates authenticated/unauthenticated users.                        |
+| `drizzleClient` | Mocked database client (`createMockDrizzleClient`).                   |
+| `envConfig`     | Mocked environment variables (`API_BASE_URL`).                        |
+| `jwt.sign`      | Mocked JWT generator (`vi.fn()` returning a test token).              |
+| `log`           | Mocked logger (`createMockLogger`).                                   |
+| `minio`         | Mocked MinIO client for object storage (`createMockMinioClient`).     |
+| `pubsub`        | Mocked pub-sub system for GraphQL subscriptions (`createMockPubSub`). |
+
+---
+
+#### **Return Value**
+
+The function returns an object with two properties:
+
+| Property  | Description                                                         |
+| --------- | ------------------------------------------------------------------- |
+| `context` | The complete mocked GraphQL context to pass to resolvers            |
+| `mocks`   | Direct access to individual mock instances for setting expectations |
+
+---
+
+### **How Contributors Should Use It**
+
+#### **Unit Testing Resolvers** (With exposed mocks for verification)
+
+```ts
+test("should return user data", async () => {
+  // Create context with mocks
+  const { context, mocks } = createMockGraphQLContext({
+    isAuthenticated: true,
+    userId: "user123",
+  });
+
+  // Configure mock behavior if needed
+  mocks.drizzleClient.query.mockResolvedValue([
+    { id: "user123", name: "Test User" },
+  ]);
+
+  // Call your resolver
+  const result = await userResolver({}, {}, context);
+
+  // Verify results
+  expect(result.id).toBe("user123");
+
+  // Verify interactions with dependencies
+  expect(mocks.drizzleClient.query).toHaveBeenCalledWith(
+    expect.stringContaining("SELECT"),
+    expect.arrayContaining(["user123"])
+  );
+});
+```
+
+---
+
+### **Key Benefits**
+
+- **Exposed Mocks** – Direct access to mock instances for setting expectations and verifying calls.
+- **Type Safety** – Proper TypeScript typing for all mocked components.
+- **Scalable** – Any future changes in `GraphQLContext` can be updated in one place, ensuring a single source of truth.
+
+### **Simplified Call Signature**
+
+The function supports both simple and object-based parameter styles:
+
+```ts
+// Legacy style (still supported)
+const { context, mocks } = createMockGraphQLContext(true, "user123");
+
+// New object-based style (recommended)
+const { context, mocks } = createMockGraphQLContext({
+  isAuthenticated: true,
+  userId: "user123",
+});
+```
+
+### **Future Considerations**
+
+In the future, there might be a requirement to run some tests sequentially. When that moment arrives, separating sequential and parallel tests into separate directories and using separate Vitest configuration for them would be the best idea.
+
 ### Future Considerations
 
 In the future there might be a requirement to run some tests sequentially. When that moment arrives separating sequential and parallel tests into separate directories and using separate vitest configuration for them would be the best idea.
