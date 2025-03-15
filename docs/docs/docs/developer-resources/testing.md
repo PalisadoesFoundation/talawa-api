@@ -892,7 +892,7 @@ We use CloudBeaver which is a lightweight web application designed for comprehen
 
 ### Modifying Tables (CLI)
 
-To modify the database schema, you can add new tables or update existing ones within the `src/tables` directory.Make sure containers are running and Follow the steps below to apply the changes properly:
+To modify the database schema, you can add new tables or update existing ones within the `src/drizzle/tables` directory.Make sure containers are running and Follow the steps below to apply the changes properly:
 
 #### 1. Remove Old Tables
 
