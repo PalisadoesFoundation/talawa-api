@@ -1,5 +1,5 @@
 {
-  "id": "c2b2c756-0f3e-408b-93c2-76587a855525",
+  "id": "df22c0bf-4cd7-4683-9dce-b3f50dca9697",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -5683,6 +5683,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "capacity": {
+          "name": "capacity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp (3) with time zone",
@@ -5696,89 +5702,7 @@
           "notNull": false
         }
       },
-      "indexes": {
-        "venues_created_at_index": {
-          "name": "venues_created_at_index",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "venues_creator_id_index": {
-          "name": "venues_creator_id_index",
-          "columns": [
-            {
-              "expression": "creator_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "venues_name_index": {
-          "name": "venues_name_index",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "venues_organization_id_index": {
-          "name": "venues_organization_id_index",
-          "columns": [
-            {
-              "expression": "organization_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "venues_name_organization_id_index": {
-          "name": "venues_name_organization_id_index",
-          "columns": [
-            {
-              "expression": "name",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "organization_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "venues_creator_id_users_id_fk": {
           "name": "venues_creator_id_users_id_fk",
@@ -5823,7 +5747,12 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "capacity_check": {
+          "name": "capacity_check",
+          "value": "\"venues\".\"capacity\" >= 1"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.volunteer_group_assignments": {

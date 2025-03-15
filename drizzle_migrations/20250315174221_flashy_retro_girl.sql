@@ -393,8 +393,10 @@ CREATE TABLE "venues" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
+	"capacity" integer NOT NULL,
 	"updated_at" timestamp (3) with time zone,
-	"updater_id" uuid
+	"updater_id" uuid,
+	CONSTRAINT "capacity_check" CHECK ("venues"."capacity" >= 1)
 );
 --> statement-breakpoint
 CREATE TABLE "volunteer_group_assignments" (
@@ -664,11 +666,6 @@ CREATE INDEX "venue_bookings_created_at_index" ON "venue_bookings" USING btree (
 CREATE INDEX "venue_bookings_creator_id_index" ON "venue_bookings" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "venue_bookings_event_id_index" ON "venue_bookings" USING btree ("event_id");--> statement-breakpoint
 CREATE INDEX "venue_bookings_venue_id_index" ON "venue_bookings" USING btree ("venue_id");--> statement-breakpoint
-CREATE INDEX "venues_created_at_index" ON "venues" USING btree ("created_at");--> statement-breakpoint
-CREATE INDEX "venues_creator_id_index" ON "venues" USING btree ("creator_id");--> statement-breakpoint
-CREATE INDEX "venues_name_index" ON "venues" USING btree ("name");--> statement-breakpoint
-CREATE INDEX "venues_organization_id_index" ON "venues" USING btree ("organization_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "venues_name_organization_id_index" ON "venues" USING btree ("name","organization_id");--> statement-breakpoint
 CREATE INDEX "volunteer_group_assignments_created_at_index" ON "volunteer_group_assignments" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "volunteer_group_assignments_creator_id_index" ON "volunteer_group_assignments" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "volunteer_group_assignments_group_id_index" ON "volunteer_group_assignments" USING btree ("group_id");--> statement-breakpoint
