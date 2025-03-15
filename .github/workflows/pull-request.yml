@@ -54,11 +54,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v45
-
+        
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -117,68 +113,68 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
-      - id: changed_files
-        name: Get changed files
-        uses: tj-actions/changed-files@v45.0.4
-        with:
-          files: |
-            .coderabbit.yaml
-            Caddyfile
-            codegen.ts
-            Dockerfile*
-            docker-compose*
-            drizzle_migrations/**
-            .dockerignore
-            .env.sample
-            .env_test
-            eslint.config.mjs
-            envFiles/**
-            .gitignore
-            init-mongo.sh
-            .prettierignore
-            .prettierrc.json
-            .pylintrc
-            .github/**
-            biome.jsonc
-            drizzle_migrations/**
-            renovate.json
-            requirements.txt
-            schema.graphql
-            CODEOWNERS
-            LICENSE
-            tsconfig.json
-            vitest.config.ts
-            pnpm-lock.yaml
-            package.json
-            package-lock.json
-            .nojekyll
-            docs/docusaurus.config.ts
-            docs/sidebar*
-            setup.ts
-            src/graphql/types/Mutation/**
-            src/graphql/types/Query/**
-            tsconfig.build.json
-            vite.config.mts
-            CNAME
-            CODE_OF_CONDUCT.md
-            CODE_STYLE.md
-            CONTRIBUTING.md
-            DOCUMENTATION.md
-            INSTALLATION.md
-            ISSUE_GUIDELINES.md
-            PR_GUIDELINES.md
-            README.md
-      - env:
-          CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
-        if: steps.changed_files.outputs.any_changed == 'true' || steps.changed_files.outputs.any_deleted == 'true'
-        name: Show changed files
-        run: |
-          echo "Unauthorized changes were made in the following files:"
-          for FILE in ${CHANGED_FILES}; do
-            echo "$FILE"
-          done
-          echo "To override this, apply the 'ignore-sensitive-files-pr' label"
-          exit 1
+      # - id: changed_files
+      #   name: Get changed files
+      #   uses: tj-actions/changed-files@v45.0.4
+      #   with:
+      #     files: |
+      #       .coderabbit.yaml
+      #       Caddyfile
+      #       codegen.ts
+      #       Dockerfile*
+      #       docker-compose*
+      #       drizzle_migrations/**
+      #       .dockerignore
+      #       .env.sample
+      #       .env_test
+      #       eslint.config.mjs
+      #       envFiles/**
+      #       .gitignore
+      #       init-mongo.sh
+      #       .prettierignore
+      #       .prettierrc.json
+      #       .pylintrc
+      #       .github/**
+      #       biome.jsonc
+      #       drizzle_migrations/**
+      #       renovate.json
+      #       requirements.txt
+      #       schema.graphql
+      #       CODEOWNERS
+      #       LICENSE
+      #       tsconfig.json
+      #       vitest.config.ts
+      #       pnpm-lock.yaml
+      #       package.json
+      #       package-lock.json
+      #       .nojekyll
+      #       docs/docusaurus.config.ts
+      #       docs/sidebar*
+      #       setup.ts
+      #       src/graphql/types/Mutation/**
+      #       src/graphql/types/Query/**
+      #       tsconfig.build.json
+      #       vite.config.mts
+      #       CNAME
+      #       CODE_OF_CONDUCT.md
+      #       CODE_STYLE.md
+      #       CONTRIBUTING.md
+      #       DOCUMENTATION.md
+      #       INSTALLATION.md
+      #       ISSUE_GUIDELINES.md
+      #       PR_GUIDELINES.md
+      #       README.md
+      # - env:
+      #     CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
+      #   if: steps.changed_files.outputs.any_changed == 'true' || steps.changed_files.outputs.any_deleted == 'true'
+      #   name: Show changed files
+      #   run: |
+      #     echo "Unauthorized changes were made in the following files:"
+      #     for FILE in ${CHANGED_FILES}; do
+      #       echo "$FILE"
+      #     done
+      #     echo "To override this, apply the 'ignore-sensitive-files-pr' label"
+      #     exit 1
 
   Run-Tests:
     name: Run tests for talawa api
