@@ -172,13 +172,10 @@ jobs:
             PR_GUIDELINES.md
             README.md
           )
-          
           CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
           DELETED_FILES=$(git diff --name-only --diff-filter=D ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-          
           SENSITIVE_CHANGED=false
           ALL_CHANGED_FILES=""
-          
           for PATTERN in "${SENSITIVE_FILES[@]}"; do
             for FILE in $CHANGED_FILES $DELETED_FILES; do
               if [[ "$FILE" == "$PATTERN" || "$FILE" =~ $PATTERN ]]; then
@@ -187,7 +184,6 @@ jobs:
               fi
             done
           done
-          
           echo "all_changed_files=$ALL_CHANGED_FILES" >> $GITHUB_OUTPUT
           echo "any_changed=$SENSITIVE_CHANGED" >> $GITHUB_OUTPUT
           echo "any_deleted=$([ -n "$DELETED_FILES" ] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
