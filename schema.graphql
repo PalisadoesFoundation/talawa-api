@@ -2875,6 +2875,9 @@ type PostAttachment {
   """File hash for deduplication purposes."""
   fileHash: String
 
+  """Global identifier of the attachment."""
+  id: ID!
+
   """Mime type of the attachment."""
   mimeType: String
 
