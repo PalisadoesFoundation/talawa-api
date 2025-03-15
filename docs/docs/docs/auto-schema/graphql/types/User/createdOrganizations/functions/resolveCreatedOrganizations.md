@@ -6,7 +6,7 @@
 
 > **resolveCreatedOrganizations**(`parent`, `args`, `ctx`): `Promise`\<`object`[]\>
 
-Defined in: [src/graphql/types/User/createdOrganizations.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/9f305099d404e8f36dd8bdadb150fba1e7235da9/src/graphql/types/User/createdOrganizations.ts#L16)
+Defined in: [src/graphql/types/User/createdOrganizations.ts:16](https://github.com/PalisadoesFoundation/talawa-api/blob/720213b8973f1ef622d2c99f376ffc6c960847d1/src/graphql/types/User/createdOrganizations.ts#L16)
 
 ## Parameters
 

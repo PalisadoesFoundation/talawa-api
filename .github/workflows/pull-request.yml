@@ -144,7 +144,6 @@ jobs:
             .pylintrc
             ".github/**"
             biome.jsonc
-            "drizzle_migrations/**"
             renovate.json
             requirements.txt
             schema.graphql
@@ -182,7 +181,7 @@ jobs:
           
           for PATTERN in "${SENSITIVE_FILES[@]}"; do
             for FILE in $CHANGED_FILES $DELETED_FILES; do
-              if [[ $FILE == $PATTERN || $FILE =~ $PATTERN ]]; then
+              if [[ "$FILE" == "$PATTERN" || "$FILE" =~ $PATTERN ]]; then
                 ALL_CHANGED_FILES+="$FILE "
                 SENSITIVE_CHANGED=true
               fi

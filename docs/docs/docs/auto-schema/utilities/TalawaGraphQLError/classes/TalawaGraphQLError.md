@@ -4,7 +4,7 @@
 
 # Class: TalawaGraphQLError
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:260](https://github.com/PalisadoesFoundation/talawa-api/blob/9f305099d404e8f36dd8bdadb150fba1e7235da9/src/utilities/TalawaGraphQLError.ts#L260)
+Defined in: [src/utilities/TalawaGraphQLError.ts:260](https://github.com/PalisadoesFoundation/talawa-api/blob/720213b8973f1ef622d2c99f376ffc6c960847d1/src/utilities/TalawaGraphQLError.ts#L260)
 
 This class extends the `GraphQLError` class and is used to create graphql error instances with strict typescript assertion on providing the error metadata within the `extensions` field. This assertion prevents talawa api contributers from returning arbitrary, undocumented errors to the talawa api graphql clients.
 
@@ -48,7 +48,7 @@ export const user = async (parent, args, ctx) => {
 
 > **new TalawaGraphQLError**(`__namedParameters`): [`TalawaGraphQLError`](TalawaGraphQLError.md)
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:261](https://github.com/PalisadoesFoundation/talawa-api/blob/9f305099d404e8f36dd8bdadb150fba1e7235da9/src/utilities/TalawaGraphQLError.ts#L261)
+Defined in: [src/utilities/TalawaGraphQLError.ts:261](https://github.com/PalisadoesFoundation/talawa-api/blob/720213b8973f1ef622d2c99f376ffc6c960847d1/src/utilities/TalawaGraphQLError.ts#L261)
 
 #### Parameters
 
