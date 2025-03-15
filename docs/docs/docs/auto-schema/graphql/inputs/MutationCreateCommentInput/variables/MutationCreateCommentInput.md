@@ -6,4 +6,4 @@
 
 > `const` **MutationCreateCommentInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `body`: `object`[]; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateCommentInput.ts:10](https://github.com/syedali237/talawa-api/blob/2d0d513d5268a339b8dac6b4711f8e71e79fc0e4/src/graphql/inputs/MutationCreateCommentInput.ts#L10)
+Defined in: [src/graphql/inputs/MutationCreateCommentInput.ts:10](https://github.com/PalisadoesFoundation/talawa-api/blob/9f305099d404e8f36dd8bdadb150fba1e7235da9/src/graphql/inputs/MutationCreateCommentInput.ts#L10)

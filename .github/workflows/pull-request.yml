@@ -54,10 +54,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v45
+        run: |
+          echo "all_changed_files=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')" >> $GITHUB_OUTPUT
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -117,30 +120,31 @@ jobs:
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
       - id: changed_files
         name: Get changed files
-        uses: tj-actions/changed-files@v45.0.4
-        with:
-          files: |
+        run: |
+          SENSITIVE_FILES=(
             .coderabbit.yaml
             Caddyfile
             codegen.ts
-            Dockerfile*
-            docker-compose*
-            drizzle_migrations/**
+            "Dockerfile*"
+            "docker-compose*"
+            "drizzle_migrations/**"
             .dockerignore
             .env.sample
             .env_test
             eslint.config.mjs
-            envFiles/**
+            "envFiles/**"
             .gitignore
             init-mongo.sh
             .prettierignore
             .prettierrc.json
             .pylintrc
-            .github/**
+            ".github/**"
             biome.jsonc
-            drizzle_migrations/**
+            "drizzle_migrations/**"
             renovate.json
             requirements.txt
             schema.graphql
@@ -153,10 +157,10 @@ jobs:
             package-lock.json
             .nojekyll
             docs/docusaurus.config.ts
-            docs/sidebar*
+            "docs/sidebar*"
             setup.ts
-            src/graphql/types/Mutation/**
-            src/graphql/types/Query/**
+            "src/graphql/types/Mutation/**"
+            "src/graphql/types/Query/**"
             tsconfig.build.json
             vite.config.mts
             CNAME
@@ -168,6 +172,27 @@ jobs:
             ISSUE_GUIDELINES.md
             PR_GUIDELINES.md
             README.md
+          )
+          
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          DELETED_FILES=$(git diff --name-only --diff-filter=D ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          
+          SENSITIVE_CHANGED=false
+          ALL_CHANGED_FILES=""
+          
+          for PATTERN in "${SENSITIVE_FILES[@]}"; do
+            for FILE in $CHANGED_FILES $DELETED_FILES; do
+              if [[ $FILE == $PATTERN || $FILE =~ $PATTERN ]]; then
+                ALL_CHANGED_FILES+="$FILE "
+                SENSITIVE_CHANGED=true
+              fi
+            done
+          done
+          
+          echo "all_changed_files=$ALL_CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "any_changed=$SENSITIVE_CHANGED" >> $GITHUB_OUTPUT
+          echo "any_deleted=$([ -n "$DELETED_FILES" ] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+
       - env:
           CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
         if: steps.changed_files.outputs.any_changed == 'true' || steps.changed_files.outputs.any_deleted == 'true'
