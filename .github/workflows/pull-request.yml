@@ -334,7 +334,6 @@ jobs:
           source venv/bin/activate
           python .github/workflows/scripts/check_docstrings.py --directories .github
 
-
   # Import-Sample-Data:
   #   name: Import Sample Data
   #   runs-on: ubuntu-latest
@@ -351,5 +350,3 @@ jobs:
   #         image: talawa_api
   #         options: --env-file ./envFiles/.env.ci
   #         run: pnpm run import:sample-data
-
-

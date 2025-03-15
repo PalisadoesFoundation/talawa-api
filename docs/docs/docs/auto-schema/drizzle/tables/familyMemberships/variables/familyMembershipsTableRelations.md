@@ -6,4 +6,4 @@
 
 > `const` **familyMembershipsTableRelations**: `Relations`\<`"family_memberships"`, \{ `creator`: `One`\<`"users"`, `false`\>; `family`: `One`\<`"families"`, `true`\>; `member`: `One`\<`"users"`, `true`\>; `updater`: `One`\<`"users"`, `false`\>; \}\>
 
-Defined in: [src/drizzle/tables/familyMemberships.ts:72](https://github.com/PalisadoesFoundation/talawa-api/blob/720213b8973f1ef622d2c99f376ffc6c960847d1/src/drizzle/tables/familyMemberships.ts#L72)
+Defined in: [src/drizzle/tables/familyMemberships.ts:72](https://github.com/PalisadoesFoundation/talawa-api/blob/37e2d6abe1cabaa02f97a3c6c418b81e8fcb5a13/src/drizzle/tables/familyMemberships.ts#L72)

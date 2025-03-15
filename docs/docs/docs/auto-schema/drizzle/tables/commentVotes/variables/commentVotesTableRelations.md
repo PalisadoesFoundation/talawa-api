@@ -6,4 +6,4 @@
 
 > `const` **commentVotesTableRelations**: `Relations`\<`"comment_votes"`, \{ `comment`: `One`\<`"comments"`, `true`\>; `creator`: `One`\<`"users"`, `false`\>; \}\>
 
-Defined in: [src/drizzle/tables/commentVotes.ts:77](https://github.com/PalisadoesFoundation/talawa-api/blob/720213b8973f1ef622d2c99f376ffc6c960847d1/src/drizzle/tables/commentVotes.ts#L77)
+Defined in: [src/drizzle/tables/commentVotes.ts:77](https://github.com/PalisadoesFoundation/talawa-api/blob/37e2d6abe1cabaa02f97a3c6c418b81e8fcb5a13/src/drizzle/tables/commentVotes.ts#L77)
