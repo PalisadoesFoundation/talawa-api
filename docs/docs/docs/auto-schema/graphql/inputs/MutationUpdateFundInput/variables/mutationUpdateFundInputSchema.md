@@ -6,4 +6,4 @@
 
 > `const` **mutationUpdateFundInputSchema**: `ZodEffects`\<`ZodObject`\<\{ `id`: `any`; `isTaxDeductible`: `any`; `name`: `ZodOptional`\<`ZodArray`\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<..., "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, `"many"`\>\>; \}, `"strip"`, `ZodTypeAny`, \{ `[key: string]`: `any`;  `id`: `unknown`; `isTaxDeductible`: `unknown`; `name`: `unknown`; \}, \{ `[key: string]`: `any`;  `id`: `unknown`; `isTaxDeductible`: `unknown`; `name`: `unknown`; \}\>, \{ `[key: string]`: `any`;  `id`: `unknown`; `isTaxDeductible`: `unknown`; `name`: `unknown`; \}, \{ `[key: string]`: `any`;  `id`: `unknown`; `isTaxDeductible`: `unknown`; `name`: `unknown`; \}\>
 
-Defined in: src/graphql/inputs/MutationUpdateFundInput.ts:5
+Defined in: [src/graphql/inputs/MutationUpdateFundInput.ts:5](https://github.com/syedali237/talawa-api/blob/2d0d513d5268a339b8dac6b4711f8e71e79fc0e4/src/graphql/inputs/MutationUpdateFundInput.ts#L5)
