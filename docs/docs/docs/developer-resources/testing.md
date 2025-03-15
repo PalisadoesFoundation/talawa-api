@@ -766,6 +766,51 @@ We use CloudBeaver which is a lightweight web application designed for comprehen
 6. You should now see the `PostgreSql@postgres-test` connection in the list of available connections. Click on the connection to open the database.
 7. Navigate to `PostgreSql@postgres-test > Databases > talawa > Schemas > public > Tables` to view the available tables.
 
+### Modifying Tables (CLI)
+
+To modify the database schema, you can add new tables or update existing ones within the `src/tables` directory.Make sure containers are running and Follow the steps below to apply the changes properly:
+
+#### 1. Remove Old Tables
+
+```bash
+docker exec -it talawa-postgres-1 psql -U talawa -d talawa -c "
+DO \$\$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public')
+    LOOP
+        EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+    END LOOP;
+END \$\$;"
+```
+
+#### 2. Remove Old Schema
+
+```bash
+docker exec -it talawa-postgres-1 psql -U talawa -d talawa -c "DROP SCHEMA IF EXISTS drizzle CASCADE;"
+```
+
+#### 3. Remove Old Drizzle Migrations
+
+```bash
+docker exec -it talawa-api-1 /bin/bash -c 'pnpm drop_drizzle_migrations'
+```
+
+#### 4. Generate New Drizzle Migrations
+
+```bash
+docker exec -it talawa-api-1 /bin/bash -c 'pnpm generate_drizzle_migrations'
+```
+
+#### 5. Apply Migrations to the Database
+
+```bash
+docker exec -it talawa-api-1 /bin/bash -c 'pnpm apply_drizzle_migrations'
+```
+
+Note: Migrations are applied to postgres-test-1 while running tests for first time, to Re-run tests with updated tables, follow same steps for postgres-test-1.
+
 ## Object Storage Management
 
 We use MinIO, a free, open-source object storage server that's compatible with Amazon S3. It's designed for large-scale data storage and can run on-premises or in the cloud.
