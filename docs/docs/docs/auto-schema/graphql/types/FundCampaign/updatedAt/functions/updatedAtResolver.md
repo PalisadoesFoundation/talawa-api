@@ -6,7 +6,7 @@
 
 > **updatedAtResolver**(`parent`, `args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: src/graphql/types/FundCampaign/updatedAt.ts:19
+Defined in: [src/graphql/types/FundCampaign/updatedAt.ts:19](https://github.com/syedali237/talawa-api/blob/2d0d513d5268a339b8dac6b4711f8e71e79fc0e4/src/graphql/types/FundCampaign/updatedAt.ts#L19)
 
 Resolver for the updatedAt field of FundCampaign type.
 Validates user authentication and authorization before returning the last update timestamp.

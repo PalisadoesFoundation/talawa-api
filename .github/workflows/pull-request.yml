@@ -68,7 +68,6 @@ jobs:
         run: |
           python .github/workflows/scripts/biome_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
-
       - name: Run Code Coverage Disable Check
         run: |
           python .github/workflows/scripts/code_coverage_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
@@ -116,75 +115,82 @@ jobs:
     needs: [Code-Quality-Checks]
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout this repository
-      uses: actions/checkout@v4.2.2
-    - id: changed_files
-      name: Get changed files
-      uses: tj-actions/changed-files@v45.0.4
-      with:
-        files: |
-          .coderabbit.yaml
-          Caddyfile
-          codegen.ts
-          Dockerfile*
-          docker-compose*
-          drizzle_migrations/**
-          .dockerignore
-          .env.sample
-          .env_test
-          eslint.config.mjs
-          envFiles/**
-          .gitignore
-          init-mongo.sh
-          .prettierignore
-          .prettierrc.json
-          .pylintrc
-          .github/**
-          biome.jsonc
-          drizzle_migrations/**
-          renovate.json
-          requirements.txt
-          schema.graphql
-          CODEOWNERS
-          LICENSE
-          tsconfig.json
-          vitest.config.ts
-          pnpm-lock.yaml
-          package.json
-          package-lock.json
-          .nojekyll
-          docs/docusaurus.config.ts
-          docs/sidebar*
-          setup.ts
-          src/graphql/types/Mutation/**
-          src/graphql/types/Query/**
-          tsconfig.build.json
-          vite.config.mts
-          CNAME
-          CODE_OF_CONDUCT.md
-          CODE_STYLE.md
-          CONTRIBUTING.md
-          DOCUMENTATION.md
-          INSTALLATION.md
-          ISSUE_GUIDELINES.md
-          PR_GUIDELINES.md
-          README.md          
-    - env:
-        CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
-      if: steps.changed_files.outputs.any_changed == 'true' || steps.changed_files.outputs.any_deleted == 'true'
-      name: Show changed files
-      run: |
-        echo "Unauthorized changes were made in the following files:"
-        for FILE in ${CHANGED_FILES}; do
-          echo "$FILE"
-        done
-        echo "To override this, apply the 'ignore-sensitive-files-pr' label"
-        exit 1
- 
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - id: changed_files
+        name: Get changed files
+        uses: tj-actions/changed-files@v45.0.4
+        with:
+          files: |
+            .coderabbit.yaml
+            Caddyfile
+            codegen.ts
+            Dockerfile*
+            docker-compose*
+            drizzle_migrations/**
+            .dockerignore
+            .env.sample
+            .env_test
+            eslint.config.mjs
+            envFiles/**
+            .gitignore
+            init-mongo.sh
+            .prettierignore
+            .prettierrc.json
+            .pylintrc
+            .github/**
+            biome.jsonc
+            drizzle_migrations/**
+            renovate.json
+            requirements.txt
+            schema.graphql
+            CODEOWNERS
+            LICENSE
+            tsconfig.json
+            vitest.config.ts
+            pnpm-lock.yaml
+            package.json
+            package-lock.json
+            .nojekyll
+            docs/docusaurus.config.ts
+            docs/sidebar*
+            setup.ts
+            src/graphql/types/Mutation/**
+            src/graphql/types/Query/**
+            tsconfig.build.json
+            vite.config.mts
+            CNAME
+            CODE_OF_CONDUCT.md
+            CODE_STYLE.md
+            CONTRIBUTING.md
+            DOCUMENTATION.md
+            INSTALLATION.md
+            ISSUE_GUIDELINES.md
+            PR_GUIDELINES.md
+            README.md
+      - env:
+          CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
+        if: steps.changed_files.outputs.any_changed == 'true' || steps.changed_files.outputs.any_deleted == 'true'
+        name: Show changed files
+        run: |
+          echo "Unauthorized changes were made in the following files:"
+          for FILE in ${CHANGED_FILES}; do
+            echo "$FILE"
+          done
+          echo "To override this, apply the 'ignore-sensitive-files-pr' label"
+          exit 1
+
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada]
+    needs:
+      [
+        Code-Quality-Checks,
+        python_checks,
+        check_type_errors,
+        check_drizzle_migrations,
+        check_gql_tada,
+      ]
     env:
       CODECOV_UNIQUE_NAME: ${{github.workflow}}-${{github.ref_name}}
     steps:
@@ -252,6 +258,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
 
   Python-Compliance:
     name: Check Python Code Style
@@ -302,7 +309,6 @@ jobs:
         run: |
           source venv/bin/activate
           python .github/workflows/scripts/check_docstrings.py --directories .github
-
 
   # Import-Sample-Data:
   #   name: Import Sample Data
