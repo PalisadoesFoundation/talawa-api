@@ -2,6 +2,7 @@
 networks:
   minio_test:
   postgres_test:
+  redis_test:
 # https://docs.docker.com/reference/compose-file/services
 services:
   api:
@@ -25,6 +26,7 @@ services:
     environment:
       - API_MINIO_TEST_END_POINT=${API_MINIO_TEST_END_POINT:?error}
       - API_POSTGRES_TEST_HOST=${API_POSTGRES_TEST_HOST:?error}
+      - API_REDIS_TEST_HOST=${API_REDIS_TEST_HOST:?error}
       - MINIO_ROOT_USER=${MINIO_ROOT_USER:?error}
     # https://docs.docker.com/reference/dockerfile/#healthcheck
     # https://docs.docker.com/reference/compose-file/services/#healthcheck
@@ -34,6 +36,7 @@ services:
     networks:
       - minio_test
       - postgres_test
+      - redis_test
     # https://docs.docker.com/reference/compose-file/services/#restart
     restart: no
   # https://github.com/minio/minio/issues/13025
@@ -102,3 +105,17 @@ services:
       - postgres_test
     # https://docs.docker.com/reference/compose-file/services/#restart
     restart: unless-stopped
+  redis-test:
+    image: redis:8.0-M02-alpine
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 10s
+    networks:
+      - redis_test
+    restart: unless-stopped
+    profiles:
+      - redis_test

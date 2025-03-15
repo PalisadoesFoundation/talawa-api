@@ -1,9 +1,9 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { Organization } from "./Organization";
 import type { Organization as Organizationtype } from "./Organization";
-
 export const OrganizationCreatorResolver = async (
 	parent: Organizationtype,
 	_args: unknown,
@@ -101,6 +101,7 @@ Organization.implement({
 			description: "User who created the organization.",
 			resolve: OrganizationCreatorResolver,
 			type: User,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		}),
 	}),
 });

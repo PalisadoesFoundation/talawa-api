@@ -16,6 +16,7 @@ import {
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
+import envConfig from "~/src/utilities/graphqLimits";
 import { User } from "./User";
 
 interface OrganizationMembershipRawNode {
@@ -234,14 +235,40 @@ export const resolveOrganizationsWhereMember = async (
 
 User.implement({
 	fields: (t) => ({
-		organizationsWhereMember: t.connection({
-			description:
-				"GraphQL connection to traverse through the organizations the user is a member of.",
-			args: {
-				filter: t.arg.string({ required: false }),
+		organizationsWhereMember: t.connection(
+			{
+				description:
+					"GraphQL connection to traverse through the organizations the user is a member of.",
+				args: {
+					filter: t.arg.string({ required: false }),
+				},
+				resolve: resolveOrganizationsWhereMember,
+				type: Organization,
+				complexity: (args) => {
+					return {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: args.first || args.last || 1,
+					};
+				},
 			},
-			resolve: resolveOrganizationsWhereMember,
-			type: Organization,
-		}),
+			{
+				edgesField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
+				description: "",
+			},
+			{
+				nodeField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
+				description: "",
+			},
+		),
 	}),
 });
