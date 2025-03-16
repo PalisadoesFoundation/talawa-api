@@ -36,7 +36,7 @@ export async function validateAgendaFolder(
 					{
 						argumentPath: ["input", "folderId"],
 						message:
-							"This agenda folder does not belong to the event to the agenda item.",
+							"This agenda folder does not belong to the event of the agenda item.",
 					},
 				],
 			},
