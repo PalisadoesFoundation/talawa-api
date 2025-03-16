@@ -480,14 +480,13 @@ type Community {
 }
 
 input CreateActionItemInput {
+  assignedAt: String
+  assigneeId: ID!
   categoryId: ID!
-  assigneeId: ID
-  preCompletionNotes: String
-  organizationId: ID!
   eventId: ID
-  assignedAt: String  
+  organizationId: ID!
+  preCompletionNotes: String
 }
-
 
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
@@ -1360,6 +1359,10 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
+input MarkActionItemAsPendingInput {
+  id: ID!
+}
+
 """Filter criteria for member roles"""
 input MembersRoleWhereInput {
   """Role equals this value"""
@@ -1519,6 +1522,9 @@ type Mutation {
 
   """Mutation field to delete a venue booking."""
   deleteVenueBooking(input: MutationDeleteVenueBookingInput!): Venue
+
+  """Mutation to mark a completed action item as pending"""
+  markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
 
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
@@ -3136,8 +3142,10 @@ type Query {
   """Query field to read an organization."""
   organization(input: QueryOrganizationInput!): Organization
 
-  """Query to fetch all organizations. Returns up to 20 organizations."""
-  organizations: [Organization!]
+  """
+  Query to fetch all organizations with optional filtering. Returns up to 20 organizations.
+  """
+  organizations(filter: String): [Organization!]
 
   """Query field to read a post."""
   post(input: QueryPostInput!): Post
@@ -3454,6 +3462,9 @@ type User {
   """Date time at the time the user was created."""
   createdAt: DateTime
 
+  """Organizations created by the user"""
+  createdOrganizations(filter: String): [Organization!]
+
   """User who created the user."""
   creator: User
 
@@ -3498,7 +3509,7 @@ type User {
   """
   GraphQL connection to traverse through the organizations the user is a member of.
   """
-  organizationsWhereMember(after: String, before: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
+  organizationsWhereMember(after: String, before: String, filter: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
 
   """Postal code of the user."""
   postalCode: String

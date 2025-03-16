@@ -6,11 +6,8 @@
 
 > **ArgumentsAssociatedResourcesNotFoundExtensions**: `object`
 
-<<<<<<< HEAD
-=======
-Defined in: [src/utilities/TalawaGraphQLError.ts:32](https://github.com/PalisadoesFoundation/talawa-api/blob/37e2d6abe1cabaa02f97a3c6c418b81e8fcb5a13/src/utilities/TalawaGraphQLError.ts#L32)
+Defined in: [src/utilities/TalawaGraphQLError.ts:32](https://github.com/NishantSinghhhhh/talawa-api/blob/69de67039e23da5433da6bf054785223c86c0ed1/src/utilities/TalawaGraphQLError.ts#L32)
 
->>>>>>> develop-postgres
 When resources associated to the provided graphql arguments cannot be not found.
 
 ## Type declaration
@@ -43,7 +40,3 @@ throw new TalawaGraphQLError({
 	},
 });
 ```
-
-## Defined in
-
-[src/utilities/TalawaGraphQLError.ts:32](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/utilities/TalawaGraphQLError.ts#L32)

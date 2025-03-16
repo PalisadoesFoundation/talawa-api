@@ -6,6 +6,4 @@
 
 > **ActionItemCategory**: `InferSelectModel`\<*typeof* [`actionCategoriesTable`](../../../../../drizzle/tables/actionCategories/variables/actionCategoriesTable.md)\>
 
-## Defined in
-
-[src/graphql/types/ActionItemCategory/ActionItemCategory.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/graphql/types/ActionItemCategory/ActionItemCategory.ts#L6)
+Defined in: [src/graphql/types/ActionItemCategory/ActionItemCategory.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/69de67039e23da5433da6bf054785223c86c0ed1/src/graphql/types/ActionItemCategory/ActionItemCategory.ts#L6)

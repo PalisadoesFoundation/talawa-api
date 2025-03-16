@@ -4,12 +4,6 @@
 
 # Variable: mutationCreateOrganizationMembershipInputSchema
 
-> `const` **mutationCreateOrganizationMembershipInputSchema**: `ZodObject`\<`extendShape`\<`Pick`\<\{\}, `never`\>, \{ `role`: `any`; \}\>, `"strip"`, \{ `[key: string]`: `any`;  `role`: `unknown`; \}, \{ `[key: string]`: `any`;  `role`: `unknown`; \}\>
+> `const` **mutationCreateOrganizationMembershipInputSchema**: `ZodObject`\<`extendShape`\<`Pick`\<\{\}, `never`\>, \{ `role`: `any`; \}\>, `"strip"`, `ZodTypeAny`, \{ `[key: string]`: `any`;  `role`: `unknown`; \}, \{ `[key: string]`: `any`;  `role`: `unknown`; \}\>
 
-<<<<<<< HEAD
-## Defined in
-
-[src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts#L6)
-=======
-Defined in: [src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/37e2d6abe1cabaa02f97a3c6c418b81e8fcb5a13/src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts#L6)
->>>>>>> develop-postgres
+Defined in: [src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/69de67039e23da5433da6bf054785223c86c0ed1/src/graphql/inputs/MutationCreateOrganizationMembershipInput.ts#L6)

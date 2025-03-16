@@ -50,9 +50,6 @@ importers:
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
-      drizzle-orm:
-        specifier: ^0.39.1
-        version: 0.39.3(postgres@3.4.5)
       drizzle-zod:
         specifier: 0.6.1
         version: 0.6.1(drizzle-orm@0.39.3(postgres@3.4.5))(zod@3.24.1)
@@ -121,8 +118,11 @@ importers:
         specifier: ^3.0.3
         version: 3.0.7(vitest@3.0.7(@types/node@22.13.8)(tsx@4.19.3)(yaml@2.7.0))
       drizzle-kit:
-        specifier: ^0.30.4
+        specifier: ^0.30.5
         version: 0.30.5
+      drizzle-orm:
+        specifier: ^0.39.3
+        version: 0.39.3(postgres@3.4.5)
       drizzle-seed:
         specifier: ^0.3.1
         version: 0.3.1(drizzle-orm@0.39.3(postgres@3.4.5))
@@ -896,6 +896,7 @@ packages:
     peerDependenciesMeta:
       '@types/node':
         optional: true
+
   '@ioredis/commands@1.2.0':
     resolution: {integrity: sha512-Sx1pU8EM64o2BrqNpEO1CNLtKQwyhuXuqyfH7oGKCk+1a33d2r5saW8zNwm3j6BTExtjrv2BxTgzzkMwts6vGg==}
 
@@ -3751,6 +3752,7 @@ snapshots:
   '@inquirer/type@3.0.4(@types/node@22.13.8)':
     optionalDependencies:
       '@types/node': 22.13.8
+
   '@ioredis/commands@1.2.0': {}
 
   '@isaacs/cliui@8.0.2':

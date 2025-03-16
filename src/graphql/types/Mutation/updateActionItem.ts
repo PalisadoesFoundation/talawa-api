@@ -219,7 +219,6 @@ builder.mutationField("updateActionItem", (t) =>
 	}),
 );
 
-
 builder.mutationField("markActionItemAsPending", (t) =>
 	t.field({
 		type: ActionItem,
@@ -244,9 +243,10 @@ builder.mutationField("markActionItemAsPending", (t) =>
 			const { input } = args;
 
 			// Fetch the existing action item.
-			const existingActionItem = await ctx.drizzleClient.query.actionsTable.findFirst({
-				where: (fields, { eq }) => eq(fields.id, input.id),
-			});
+			const existingActionItem =
+				await ctx.drizzleClient.query.actionsTable.findFirst({
+					where: (fields, { eq }) => eq(fields.id, input.id),
+				});
 
 			if (!existingActionItem) {
 				throw new TalawaGraphQLError({
@@ -260,17 +260,19 @@ builder.mutationField("markActionItemAsPending", (t) =>
 
 			if (!existingActionItem.isCompleted) {
 				throw new TalawaGraphQLError({
-				  message: "The action item is already pending.",
-				  extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: [
-					  { argumentPath: ["input", "id"], message: "The action item is already pending." }
-					],
-				  },
+					message: "The action item is already pending.",
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+								message: "The action item is already pending.",
+							},
+						],
+					},
 				});
-			  }
-			  
-			  
+			}
+
 			const [updatedActionItem] = await ctx.drizzleClient
 				.update(actionsTable)
 				.set({

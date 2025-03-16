@@ -6,25 +6,18 @@
 
 > **default**(`instance`, `opts`): `Promise`\<`void`\>
 
-<<<<<<< HEAD
-=======
-Defined in: [src/plugins/seedInitialData.ts:179](https://github.com/PalisadoesFoundation/talawa-api/blob/37e2d6abe1cabaa02f97a3c6c418b81e8fcb5a13/src/plugins/seedInitialData.ts#L179)
+Defined in: [src/plugins/seedInitialData.ts:179](https://github.com/NishantSinghhhhh/talawa-api/blob/69de67039e23da5433da6bf054785223c86c0ed1/src/plugins/seedInitialData.ts#L179)
 
->>>>>>> develop-postgres
 ## Parameters
 
 ### instance
 
-`FastifyInstance`\<`IncomingMessage`, `ServerResponse`\>
+`FastifyInstance`\<`RawServerDefault`, `IncomingMessage`, `ServerResponse`\<`IncomingMessage`\>, `FastifyBaseLogger`, `FastifyTypeProviderDefault`\>
 
 ### opts
 
-`Record`\<`never`, `never`\>
+`Record`
 
 ## Returns
 
 `Promise`\<`void`\>
-
-## Defined in
-
-[src/plugins/seedInitialData.ts:179](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/plugins/seedInitialData.ts#L179)

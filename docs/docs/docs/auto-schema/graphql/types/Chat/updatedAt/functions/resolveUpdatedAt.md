@@ -6,11 +6,8 @@
 
 > **resolveUpdatedAt**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
 
-<<<<<<< HEAD
-=======
-Defined in: [src/graphql/types/Chat/updatedAt.ts:11](https://github.com/PalisadoesFoundation/talawa-api/blob/37e2d6abe1cabaa02f97a3c6c418b81e8fcb5a13/src/graphql/types/Chat/updatedAt.ts#L11)
+Defined in: [src/graphql/types/Chat/updatedAt.ts:11](https://github.com/NishantSinghhhhh/talawa-api/blob/69de67039e23da5433da6bf054785223c86c0ed1/src/graphql/types/Chat/updatedAt.ts#L11)
 
->>>>>>> develop-postgres
 ## Parameters
 
 ### parent
@@ -66,7 +63,3 @@ Defined in: [src/graphql/types/Chat/updatedAt.ts:11](https://github.com/Palisado
 ## Returns
 
 `Promise`\<`Date`\>
-
-## Defined in
-
-[src/graphql/types/Chat/updatedAt.ts:11](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/graphql/types/Chat/updatedAt.ts#L11)

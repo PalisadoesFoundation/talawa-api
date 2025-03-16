@@ -7,7 +7,7 @@ export const ActionItem = builder.objectRef<ActionItem>("ActionItem");
 
 ActionItem.implement({
 	description:
-		"Represents an action item assigned to users, linked to events, categories, and organizations.",
+		"Represents an action item assigned to users, linked to events, categories, and organizations .",
 	fields: (t) => ({
 		id: t.exposeID("id", {
 			description: "Unique identifier for the action item.",

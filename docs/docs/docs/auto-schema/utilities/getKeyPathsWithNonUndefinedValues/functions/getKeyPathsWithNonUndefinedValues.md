@@ -6,11 +6,8 @@
 
 > **getKeyPathsWithNonUndefinedValues**\<`T`\>(`__namedParameters`): `Paths`\<`T`\>[]
 
-<<<<<<< HEAD
-=======
-Defined in: [src/utilities/getKeyPathsWithNonUndefinedValues.ts:54](https://github.com/PalisadoesFoundation/talawa-api/blob/37e2d6abe1cabaa02f97a3c6c418b81e8fcb5a13/src/utilities/getKeyPathsWithNonUndefinedValues.ts#L54)
+Defined in: [src/utilities/getKeyPathsWithNonUndefinedValues.ts:54](https://github.com/NishantSinghhhhh/talawa-api/blob/69de67039e23da5433da6bf054785223c86c0ed1/src/utilities/getKeyPathsWithNonUndefinedValues.ts#L54)
 
->>>>>>> develop-postgres
 This function takes in a javascript object and a list of key paths within that object as arguments and outputs all paths amongst those key paths that correspond to a non-undefined value.
 
 ## Type Parameters
@@ -80,7 +77,3 @@ const keyPaths = getKeyPathsWithNonUndefinedValues([
 	["field12", 3, "field13"]
 ]);
 ```
-
-## Defined in
-
-[src/utilities/getKeyPathsWithNonUndefinedValues.ts:54](https://github.com/NishantSinghhhhh/talawa-api/blob/ff0f1d6ae21d3428519b64e42fe3bfdff573cb6e/src/utilities/getKeyPathsWithNonUndefinedValues.ts#L54)
