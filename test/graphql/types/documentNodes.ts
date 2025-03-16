@@ -530,15 +530,23 @@ export const Query_organizations = gql(`
 `);
 
 export const Query_organization = gql(`
-    query Organization($input: QueryOrganizationInput!, $first: Int!) {
+    query Organization($input: QueryOrganizationInput!, $first: Int, $after: String,$last: Int, $before: String, $where: MembersWhereInput) {
       organization(input: $input) {
         id
         name
-        members(first: $first) {
+        members(first: $first, after: $after, last: $last, before: $before, where: $where) {
+          pageInfo {
+          endCursor
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          }
           edges {
+          cursor
             node {
               id
               name
+              role
             }
           }
         }
@@ -625,7 +633,9 @@ export const Mutation_createPost = gql(`
       }
       attachments {
         mimeType
-        url
+        objectName
+        fileHash
+        name
       }
     }
   }
@@ -634,9 +644,17 @@ export const Mutation_createPost = gql(`
 export const Mutation_createPresignedUrl = gql(`
   mutation Mutation_createPresignedUrl($input: MutationCreatePresignedUrlInput!) {
     createPresignedUrl(input: $input) {
-      fileUrl
       presignedUrl
       objectName
+      requiresUpload   
+       }
+  }
+`);
+
+export const Mutation_createGetfileUrl = gql(`
+  mutation Mutation_createGetfileUrl($input: MutationCreateGetfileUrlInput!) {
+    createGetfileUrl(input: $input) {
+      presignedUrl
     }
   }
 `);

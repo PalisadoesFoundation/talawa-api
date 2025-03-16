@@ -36,7 +36,7 @@ export const queryClient = postgres({
 });
 
 //Create a bucket client
-const minioClient = new MinioClient({
+export const minioClient = new MinioClient({
 	accessKey: envConfig.API_MINIO_ACCESS_KEY || "",
 	endPoint: envConfig.API_MINIO_END_POINT || "",
 	port: Number(envConfig.API_MINIO_PORT),
@@ -99,7 +99,7 @@ export async function formatDatabase(): Promise<boolean> {
 
 			await tx.execute(sql`
 				DELETE FROM ${sql.identifier(USERS_TABLE)}
-				WHERE email != ${adminEmail};
+				WHERE email_address != ${adminEmail};
 			  `);
 		});
 
@@ -234,6 +234,7 @@ export async function insertCollections(
 
 		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
 			envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+
 		if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
 			throw new Error(
 				"\x1b[31mAPI_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.\x1b[0m",
@@ -400,16 +401,12 @@ export async function insertCollections(
 							createdAt: parseDate(post_attachment.createdAt),
 						}),
 					) as (typeof schema.postAttachmentsTable.$inferInsert)[];
-					try {
-						// Post Attachements are not unique. So they are inserted without checking for duplicates.
-						await db
-							.insert(schema.postAttachmentsTable)
-							.values(post_attachments);
-					} catch {
-						throw new Error(
-							"\x1b[31mError inserting post_attachments data\x1b[0m",
-						);
-					}
+					await checkAndInsertData(
+						schema.postAttachmentsTable,
+						post_attachments,
+						schema.postAttachmentsTable.id,
+						1000,
+					);
 					// Handle file uploads to Minio.
 					await Promise.all(
 						post_attachments.map(async (attachment) => {

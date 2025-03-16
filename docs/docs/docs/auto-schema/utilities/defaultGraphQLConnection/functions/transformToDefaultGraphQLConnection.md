@@ -6,6 +6,11 @@
 
 > **transformToDefaultGraphQLConnection**\<`RawNode`, `Node`, `Cursor`\>(`__namedParameters`): [`DefaultGraphQLConnection`](../type-aliases/DefaultGraphQLConnection.md)\<`Node`\>
 
+<<<<<<< HEAD
+=======
+Defined in: [src/utilities/defaultGraphQLConnection.ts:246](https://github.com/PalisadoesFoundation/talawa-api/blob/37e2d6abe1cabaa02f97a3c6c418b81e8fcb5a13/src/utilities/defaultGraphQLConnection.ts#L246)
+
+>>>>>>> develop-postgres
 This function is used to transform an array of objects to a standard graphql connection object.
 
 ## Type Parameters
