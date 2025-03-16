@@ -13,6 +13,7 @@ const mutationCreateActionItemArgumentsSchema = z.object({
 		preCompletionNotes: z.string().optional(),
 		eventId: z.string().uuid().optional(),
 		organizationId: z.string().uuid(),
+		assignedAt: z.string().optional(), // 🆕 Added assignedAt field
 	}),
 });
 
@@ -29,6 +30,7 @@ builder.mutationField("createActionItem", (t) =>
 						preCompletionNotes: t.field({ type: "String" }),
 						eventId: t.field({ type: "ID" }),
 						organizationId: t.field({ type: "ID", required: true }),
+						assignedAt: t.field({ type: "String" }), // 🆕 Added assignedAt field
 					}),
 				}),
 			}),
@@ -134,7 +136,9 @@ builder.mutationField("createActionItem", (t) =>
 					creatorId: currentUserId,
 					categoryId: parsedArgs.input.categoryId,
 					assigneeId: parsedArgs.input.assigneeId,
-					assignedAt: new Date(),
+					assignedAt: parsedArgs.input.assignedAt // 🆕 Using provided assignedAt date
+						? new Date(parsedArgs.input.assignedAt)
+						: new Date(), // Default to current date if not provided
 					completionAt: new Date(),
 					preCompletionNotes: parsedArgs.input.preCompletionNotes ?? null,
 					postCompletionNotes: null,

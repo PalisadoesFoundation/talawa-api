@@ -218,3 +218,77 @@ builder.mutationField("updateActionItem", (t) =>
 		type: ActionItem,
 	}),
 );
+
+
+builder.mutationField("markActionItemAsPending", (t) =>
+	t.field({
+		type: ActionItem,
+		args: {
+			input: t.arg({
+				required: true,
+				type: builder.inputType("MarkActionItemAsPendingInput", {
+					fields: (t) => ({
+						id: t.field({ type: "ID", required: true }),
+					}),
+				}),
+			}),
+		},
+		description: "Mutation to mark a completed action item as pending",
+		resolve: async (_parent, args, ctx) => {
+			if (!ctx.currentClient.isAuthenticated) {
+				throw new TalawaGraphQLError({
+					extensions: { code: "unauthenticated" },
+				});
+			}
+
+			const { input } = args;
+
+			// Fetch the existing action item.
+			const existingActionItem = await ctx.drizzleClient.query.actionsTable.findFirst({
+				where: (fields, { eq }) => eq(fields.id, input.id),
+			});
+
+			if (!existingActionItem) {
+				throw new TalawaGraphQLError({
+					message: "The specified action item does not exist.",
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [{ argumentPath: ["input", "id"] }],
+					},
+				});
+			}
+
+			if (!existingActionItem.isCompleted) {
+				throw new TalawaGraphQLError({
+				  message: "The action item is already pending.",
+				  extensions: {
+					code: "forbidden_action_on_arguments_associated_resources",
+					issues: [
+					  { argumentPath: ["input", "id"], message: "The action item is already pending." }
+					],
+				  },
+				});
+			  }
+			  
+			  
+			const [updatedActionItem] = await ctx.drizzleClient
+				.update(actionsTable)
+				.set({
+					isCompleted: false,
+					postCompletionNotes: null,
+					updaterId: ctx.currentClient.user.id,
+					updatedAt: new Date(),
+				})
+				.where(eq(actionsTable.id, input.id))
+				.returning();
+
+			if (!updatedActionItem) {
+				throw new TalawaGraphQLError({
+					extensions: { code: "unexpected" },
+				});
+			}
+
+			return updatedActionItem;
+		},
+	}),
+);

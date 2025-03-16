@@ -34,7 +34,7 @@ export const actionsTable = pgTable(
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
-		}).notNull(),
+		}),
 		createdAt: timestamp("created_at", {
 			mode: "date",
 			precision: 3,
