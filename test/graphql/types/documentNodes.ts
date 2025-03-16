@@ -633,7 +633,9 @@ export const Mutation_createPost = gql(`
       }
       attachments {
         mimeType
-        url
+        objectName
+        fileHash
+        name
       }
     }
   }
@@ -642,9 +644,17 @@ export const Mutation_createPost = gql(`
 export const Mutation_createPresignedUrl = gql(`
   mutation Mutation_createPresignedUrl($input: MutationCreatePresignedUrlInput!) {
     createPresignedUrl(input: $input) {
-      fileUrl
       presignedUrl
       objectName
+      requiresUpload   
+       }
+  }
+`);
+
+export const Mutation_createGetfileUrl = gql(`
+  mutation Mutation_createGetfileUrl($input: MutationCreateGetfileUrlInput!) {
+    createGetfileUrl(input: $input) {
+      presignedUrl
     }
   }
 `);

@@ -1,25 +1,10 @@
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
 import { vi } from "vitest";
-import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
+import type { GraphQLContext } from "~/src/graphql/context";
 import type { Organization as OrganizationType } from "~/src/graphql/types/Organization/Organization";
 import { OrganizationCreatorResolver } from "~/src/graphql/types/Organization/creator";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
-const createMockContext = () => {
-	const mockContext = {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "user-123", isAdmin: true },
-		} as CurrentClient,
-		drizzleClient: { query: { usersTable: { findFirst: vi.fn() } } },
-		envConfig: { API_BASE_URL: "mock url" },
-		jwt: { sign: vi.fn() },
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
-	};
-	return mockContext as unknown as GraphQLContext;
-};
-
 type MockUser = {
 	id: string;
 	role: string;
@@ -30,11 +15,17 @@ type MockUser = {
 };
 
 describe("Organization Creator Resolver Tests", () => {
-	let ctx: GraphQLContext;
 	let mockOrganization: OrganizationType;
+	let ctx: GraphQLContext;
+	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
 	beforeEach(() => {
-		ctx = createMockContext();
+		const { context, mocks: newMocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		ctx = context;
+		mocks = newMocks;
 		mockOrganization = {
 			id: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
 			name: "Test Organization",
@@ -72,9 +63,9 @@ describe("Organization Creator Resolver Tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
 			await expect(
 				OrganizationCreatorResolver(mockOrganization, {}, ctx),
@@ -92,9 +83,9 @@ describe("Organization Creator Resolver Tests", () => {
 				],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
 			await expect(
 				OrganizationCreatorResolver(mockOrganization, {}, ctx),
@@ -110,7 +101,7 @@ describe("Organization Creator Resolver Tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
-			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+			mocks.drizzleClient.query.usersTable.findFirst
 				.mockResolvedValueOnce(mockUserData)
 				.mockResolvedValueOnce({ id: mockOrganization.creatorId });
 
@@ -131,7 +122,7 @@ describe("Organization Creator Resolver Tests", () => {
 				],
 			};
 
-			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+			mocks.drizzleClient.query.usersTable.findFirst
 				.mockResolvedValueOnce(mockUserData)
 				.mockResolvedValueOnce({ id: mockOrganization.creatorId });
 
@@ -155,9 +146,9 @@ describe("Organization Creator Resolver Tests", () => {
 				],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
 			const result = await OrganizationCreatorResolver(
 				mockOrganization,
@@ -175,8 +166,7 @@ describe("Organization Creator Resolver Tests", () => {
 					{ role: "administrator", organizationId: mockOrganization.id },
 				],
 			};
-
-			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+			mocks.drizzleClient.query.usersTable.findFirst
 				.mockResolvedValueOnce(mockUserData)
 				.mockResolvedValueOnce(undefined);
 
@@ -191,9 +181,9 @@ describe("Organization Creator Resolver Tests", () => {
 
 	describe("Error Handling", () => {
 		it("should handle database connection error", async () => {
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockRejectedValue(new Error("Database connection failed"));
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+				new Error("Database connection failed"),
+			);
 
 			await expect(
 				OrganizationCreatorResolver(mockOrganization, {}, ctx),
@@ -207,9 +197,9 @@ describe("Organization Creator Resolver Tests", () => {
 		});
 
 		it("should handle database timeout error", async () => {
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockRejectedValue(new Error("Query timeout"));
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+				new Error("Query timeout"),
+			);
 
 			await expect(
 				OrganizationCreatorResolver(mockOrganization, {}, ctx),
@@ -233,7 +223,7 @@ describe("Organization Creator Resolver Tests", () => {
 				],
 			};
 
-			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+			mocks.drizzleClient.query.usersTable.findFirst
 				.mockResolvedValueOnce(mockUserData)
 				.mockResolvedValueOnce(undefined);
 
@@ -250,7 +240,7 @@ describe("Organization Creator Resolver Tests", () => {
 
 		it("should query organization memberships with correct organizationId filter", async () => {
 			const findFirstSpy = vi.fn();
-			ctx.drizzleClient.query.usersTable.findFirst = findFirstSpy;
+			mocks.drizzleClient.query.usersTable.findFirst = findFirstSpy;
 
 			try {
 				await OrganizationCreatorResolver(mockOrganization, {}, ctx);
@@ -275,9 +265,9 @@ describe("Organization Creator Resolver Tests", () => {
 		});
 
 		it("should throw unauthenticated error if current user is not found in database", async () => {
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(undefined);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				undefined,
+			);
 
 			await expect(
 				OrganizationCreatorResolver(mockOrganization, {}, ctx),
@@ -288,7 +278,7 @@ describe("Organization Creator Resolver Tests", () => {
 
 		it("should query users with correct ID filter", async () => {
 			const findFirstSpy = vi.fn();
-			ctx.drizzleClient.query.usersTable.findFirst = findFirstSpy;
+			mocks.drizzleClient.query.usersTable.findFirst = findFirstSpy;
 
 			const currentUserId = ctx.currentClient?.user?.id;
 			expect(currentUserId).toBeDefined();
@@ -321,7 +311,7 @@ describe("Organization Creator Resolver Tests", () => {
 			};
 
 			const findFirstSpy = vi.fn().mockResolvedValueOnce(mockUserData);
-			ctx.drizzleClient.query.usersTable.findFirst = findFirstSpy;
+			mocks.drizzleClient.query.usersTable.findFirst = findFirstSpy;
 
 			try {
 				await OrganizationCreatorResolver(mockOrganization, {}, ctx);
@@ -353,7 +343,7 @@ describe("Organization Creator Resolver Tests", () => {
 				],
 			};
 
-			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+			mocks.drizzleClient.query.usersTable.findFirst
 				.mockResolvedValueOnce(mockUserData)
 				.mockRejectedValueOnce(
 					new Error("Database error during concurrent access"),

@@ -233,6 +233,42 @@ export const envConfigSchema = Type.Object({
 	 * More information at this link: {@link https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNECT-USER}
 	 */
 	API_POSTGRES_USER: Type.String(),
+	API_REDIS_HOST: Type.String({
+		minLength: 1,
+	}),
+	API_REDIS_PORT: Type.Number({
+		maximum: 65535,
+		minimum: 0,
+	}),
+	//  cost of scalar field
+	API_GRAPHQL_SCALAR_FIELD_COST: Type.Number({
+		minimum: 0,
+	}),
+	// cost of object field
+	API_GRAPHQL_OBJECT_FIELD_COST: Type.Number({
+		minimum: 0,
+	}),
+	// cost of list field
+	API_GRAPHQL_LIST_FIELD_COST: Type.Number({
+		minimum: 0,
+	}),
+	// base cost of mutation
+	API_GRAPHQL_MUTATION_BASE_COST: Type.Number({
+		minimum: 0,
+	}),
+	/**
+	 * Maximum capacity of a user's request bucket for rate limiting.
+	 */
+	API_RATE_LIMIT_BUCKET_CAPACITY: Type.Number({
+		minimum: 0,
+	}),
+
+	/**
++ * Rate at which a user's request bucket refills per second for rate limiting.
++ */
+	API_RATE_LIMIT_REFILL_RATE: Type.Number({
+		minimum: 0,
+	}),
 });
 
 /**

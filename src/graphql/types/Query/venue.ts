@@ -6,6 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryVenueInput";
 import { Venue } from "~/src/graphql/types/Venue/Venue";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 
 const queryVenueArgumentsSchema = z.object({
 	input: queryVenueInputSchema,
@@ -20,6 +21,7 @@ builder.queryField("venue", (t) =>
 				type: QueryVenueInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read a venue.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

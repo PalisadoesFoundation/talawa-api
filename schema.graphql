@@ -709,6 +709,18 @@ type EventVenuesConnectionEdge {
   node: Venue
 }
 
+"""Metadata for files uploaded via presigned URL"""
+input FileMetadataInput {
+  """Hash of the file for deduplication"""
+  fileHash: String!
+
+  """MIME type of the file"""
+  mimetype: PostAttachmentMimeType!
+
+  """Object name used in storage"""
+  objectName: String!
+}
+
 type Fund {
   """
   GraphQL connection to traverse through the campaigns for the fund.
@@ -906,6 +918,11 @@ type FundCampaignsConnectionEdge {
 input GetPostsByOrgInput {
   organizationId: String!
   sortOrder: String
+}
+
+"""GetUrlResponse"""
+type GetUrlResponse {
+  presignedUrl: String
 }
 
 """
@@ -1617,12 +1634,11 @@ type Mutation {
   """
   createFundCampaign(input: MutationCreateFundCampaignInput!): FundCampaign
 
-  """
-  Mutation field to create a fund campaign pledge.
-  """
-  createFundCampaignPledge(
-    input: MutationCreateFundCampaignPledgeInput!
-  ): FundCampaignPledge
+  """Mutation field to create a fund campaign pledge."""
+  createFundCampaignPledge(input: MutationCreateFundCampaignPledgeInput!): FundCampaignPledge
+
+  """Mutation field to create a presigned URL for uploading a file."""
+  createGetfileUrl(input: MutationCreateGetfileUrlInput!): GetUrlResponse
 
   """
   Mutation field to create an organization.
@@ -2226,6 +2242,16 @@ input MutationCreateFundInput {
   organizationId: ID!
 }
 
+"""Input for getting a presigned URL for file download"""
+input MutationCreateGetfileUrlInput {
+  """Name of the object to be downloaded"""
+  objectName: String
+
+  """ID of the organization the file belongs to"""
+  organizationId: ID!
+}
+
+""""""
 input MutationCreateOrganizationInput {
   """
   Address line 1 of the organization's address.
@@ -2290,11 +2316,10 @@ input MutationCreateOrganizationMembershipInput {
   role: OrganizationMembershipRole
 }
 
+"""Input for creating a new post"""
 input MutationCreatePostInput {
-  """
-  Attachments of the post.
-  """
-  attachments: [Upload!]
+  """Metadata for files already uploaded via presigned URL"""
+  attachments: [FileMetadataInput!]
 
   """
   Caption about the post.
@@ -2324,10 +2349,18 @@ input MutationCreatePostVoteInput {
   type: PostVoteType!
 }
 
-
+"""Input for creating a presigned URL for file upload"""
 input MutationCreatePresignedUrlInput {
+  """Hash of the file for deduplication check"""
+  fileHash: String!
+
+  """Name of the file to be uploaded"""
   fileName: String!
-  fileType: String!
+
+  """Custom object name for the file (optional)"""
+  objectName: String
+
+  """ID of the organization the file belongs to"""
   organizationId: ID!
 }
 
@@ -3948,17 +3981,35 @@ type Post {
 }
 
 type PostAttachment {
+  """File hash for deduplication purposes."""
+  fileHash: String
+
   """
   Mime type of the attachment.
   """
   mimeType: String
 
-  """
-  URL to the attachment.
-  """
+  """Identifier name of the attachment."""
+  name: String
+
+  """Object name used when creating presigned URLs."""
+  objectName: String
+
+  """URL to the attachment."""
   url: String
 }
 
+"""MIME types supported for post attachments"""
+enum PostAttachmentMimeType {
+  IMAGE_AVIF
+  IMAGE_JPEG
+  IMAGE_PNG
+  IMAGE_WEBP
+  VIDEO_MP4
+  VIDEO_WEBM
+}
+
+""""""
 type PostCommentsConnection {
   edges: [PostCommentsConnectionEdge]
   pageInfo: PageInfo!
@@ -4415,9 +4466,9 @@ scalar Upload
 
 """UploadUrlResponse"""
 type UploadUrlResponse {
-  fileUrl: String
   objectName: String
   presignedUrl: String
+  requiresUpload: Boolean
 }
 
 type User {
