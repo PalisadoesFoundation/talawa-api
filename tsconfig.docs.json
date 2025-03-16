@@ -1,0 +1,25 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"noImplicitAny": false,
+		"skipLibCheck": true,
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
+		"strict": false,
+		"allowJs": true,
+		"checkJs": false
+	},
+	"include": ["src/**/*"],
+	"exclude": [
+		"node_modules",
+		"src/vite-env.d.ts",
+		"**/*.spec.ts",
+		"**/*.test.ts",
+		"**/*.spec.tsx",
+		"**/*.test.tsx",
+		"**/__tests__/**",
+		"**/__mocks__/**",
+		"**/README.md"
+	]
+}

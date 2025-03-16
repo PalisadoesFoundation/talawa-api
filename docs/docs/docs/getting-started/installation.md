@@ -41,6 +41,38 @@ You will need to configure the API to work correctly.
 | `MINIO_ROOT_PASSWORD`                  | Root password for MinIO, used for securing administrative access to MinIO object storage.                             |
 | `POSTGRES_PASSWORD`                    | Password for the PostgreSQL database (Docker Compose), used for database authentication and security.                 |
 
+## Running the Setup Script
+To configure the .env file, run one of the following commands in your project’s root directory:
+
+
+```bash
+npm run setup
+```
+
+or
+
+```bash
+pnpm tsx setup.ts
+```
+
+The script will ask whether you're in CI mode (CI=true) or non-CI (CI=false) mode. Choose:
+
+1. CI=false for local/development environments:
+   - Uses configuration from `.env.devcontainer`
+   - Includes complete interactive setup with all configuration options
+   - Sets up CloudBeaver for database management
+   - Configures all Minio and PostgreSQL extended options
+   - Best for developers working on the application locally
+
+2. CI=true for testing or continuous integration pipelines:
+   - Uses configuration from `.env.ci`
+   - Streamlined setup with minimal configuration
+   - Excludes CloudBeaver-related settings
+   - Contains only essential database and storage options
+   - Best for automated testing environments or CI/CD pipelines
+
+3. It will also ask whether you want to use recommended defaults. Answer "yes" to quickly accept safe defaults or "no" to provide custom inputs. Once the prompts finish, your .env file will be generated or updated.
+
 ## Prerequisities
 
 You must follow these steps before continuing.
@@ -291,53 +323,54 @@ These steps are specific to Linux. You will need to modify them accordingly for 
    ```
 1. Build the docker devcontainer
 
-```
-devcontainer build --workspace-folder .
-```
+   ```
+   devcontainer build --workspace-folder .
+   ```
 
-10. When the build is complete, the last line of the output should be:
+1. When the build is complete, the last line of the output should be:
 
-```
-{"outcome":"success","imageName":"talawa-api"}
-```
+   ```
+   {"outcome":"success","imageName":"talawa-api"}
+   ```
 
-11. Start the docker devcontainer
+1. Start the docker devcontainer
 
-```
-devcontainer up --workspace-folder .
-```
+   ```
+   devcontainer up --workspace-folder .
+   ```
 
-12. When the startup is complete, the last line of out put should look like this:
+1. When the container installation is complete, the last lines of output should look like this:
 
-```
-...
-...
-...
-[19:53:14.113] INFO (166): Server listening at http://127.0.0.1:4000
-[19:53:14.113] INFO (166): Server listening at http://172.23.0.3:4000
-[19:53:14.113] INFO (166): Server listening at http://172.20.0.2:4000
-[19:53:14.113] INFO (166): Server listening at http://172.19.0.3:4000
-[19:53:14.113] INFO (166): Server listening at http://172.21.0.3:4000
-[19:53:14.113] INFO (166): Server listening at http://172.22.0.4:4000
-```
+   ```
+   ...
+   ...
+   {"outcome":"success",   "containerId":"81306766f2aeeb851c8ebb844702d39ad2adc09419508b736ef2ee5a03eb8e34",   "composeProjectName":"talawa","remoteUser":"talawa","remoteWorkspaceFolder":"/home/talawa/api"}
+   ```
 
 All done!
 
+#### CLI Startup (Development)
+
+After a successful installation, use these commands to start the dev container.
+
+1. To run in attached Mode
+
+   ```
+   docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
+   ```
+
+2. To run in detached Mode
+
+   ```
+   docker exec talawa-api-1 /bin/bash -c 'nohup pnpm run start_development_server > /dev/null 2>&1 &'
+   ```
+
 #### CLI Shutdown (Development)
 
-Use the command `docker compose` command to cleanly shutdown the dev container
+Use the command `docker compose` command to cleanly shut down the dev container
 
 ```
 docker compose down
-```
-
-#### CLI Startup (Development)
-
-After a successful installation, use these commands in sequence to start the dev container.
-
-```
-devcontainer build --workspace-folder .
-devcontainer up --workspace-folder .
 ```
 
 #### Importing Sample Data
@@ -395,10 +428,6 @@ This applies to users running Talawa API in dev containers.
 2. Run the following command to import sample data into the database:
    ```bash
     docker exec talawa-api-1 /bin/bash -c 'pnpm run add:sample_data && exit'
-   ```
-4. Then exit
-   ```bash
-    exit
    ```
    Refer to the next section for login information.
 

@@ -494,6 +494,18 @@ type EventVenuesConnectionEdge {
   node: Venue
 }
 
+"""Metadata for files uploaded via presigned URL"""
+input FileMetadataInput {
+  """Hash of the file for deduplication"""
+  fileHash: String!
+
+  """MIME type of the file"""
+  mimetype: PostAttachmentMimeType!
+
+  """Object name used in storage"""
+  objectName: String!
+}
+
 type Fund {
   """GraphQL connection to traverse through the campaigns for the fund."""
   campaigns(after: String, before: String, first: Int, last: Int): FundCampaignsConnection
@@ -501,7 +513,7 @@ type Fund {
   """Date time at the time the fund was created."""
   createdAt: DateTime
 
-  """User who created the fund."""
+  """User who created the Fund."""
   creator: User
 
   """Global identifier of the fund."""
@@ -622,6 +634,11 @@ type FundCampaignsConnectionEdge {
 input GetPostsByOrgInput {
   organizationId: String!
   sortOrder: String
+}
+
+"""GetUrlResponse"""
+type GetUrlResponse {
+  presignedUrl: String
 }
 
 """
@@ -1252,6 +1269,21 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
+"""Filter criteria for member roles"""
+input MembersRoleWhereInput {
+  """Role equals this value"""
+  equal: OrganizationMembershipRole
+
+  """Role does not equal this value"""
+  notEqual: OrganizationMembershipRole
+}
+
+"""Filter criteria for organization members"""
+input MembersWhereInput {
+  """Filter members by role"""
+  role: MembersRoleWhereInput
+}
+
 type Mutation {
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
@@ -1289,6 +1321,9 @@ type Mutation {
   """Mutation field to create a fund campaign pledge."""
   createFundCampaignPledge(input: MutationCreateFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Mutation field to create a presigned URL for uploading a file."""
+  createGetfileUrl(input: MutationCreateGetfileUrlInput!): GetUrlResponse
+
   """Mutation field to create an organization."""
   createOrganization(input: MutationCreateOrganizationInput!): Organization
 
@@ -1300,6 +1335,9 @@ type Mutation {
 
   """Mutation field to create a post vote."""
   createPostVote(input: MutationCreatePostVoteInput!): Post
+
+  """Mutation field to create a presigned URL for uploading a file."""
+  createPresignedUrl(input: MutationCreatePresignedUrlInput!): UploadUrlResponse
 
   """Mutation field to create a tag."""
   createTag(input: MutationCreateTagInput!): Tag
@@ -1646,6 +1684,15 @@ input MutationCreateFundInput {
   organizationId: ID!
 }
 
+"""Input for getting a presigned URL for file download"""
+input MutationCreateGetfileUrlInput {
+  """Name of the object to be downloaded"""
+  objectName: String
+
+  """ID of the organization the file belongs to"""
+  organizationId: ID!
+}
+
 """"""
 input MutationCreateOrganizationInput {
   """Address line 1 of the organization's address."""
@@ -1688,10 +1735,10 @@ input MutationCreateOrganizationMembershipInput {
   role: OrganizationMembershipRole
 }
 
-""""""
+"""Input for creating a new post"""
 input MutationCreatePostInput {
-  """Attachments of the post."""
-  attachments: [Upload!]
+  """Metadata for files already uploaded via presigned URL"""
+  attachments: [FileMetadataInput!]
 
   """Caption about the post."""
   caption: String!
@@ -1712,6 +1759,21 @@ input MutationCreatePostVoteInput {
 
   """Type of the vote."""
   type: PostVoteType!
+}
+
+"""Input for creating a presigned URL for file upload"""
+input MutationCreatePresignedUrlInput {
+  """Hash of the file for deduplication check"""
+  fileHash: String!
+
+  """Name of the file to be uploaded"""
+  fileName: String!
+
+  """Custom object name for the file (optional)"""
+  objectName: String
+
+  """ID of the organization the file belongs to"""
+  organizationId: ID!
 }
 
 """"""
@@ -2555,7 +2617,15 @@ type Organization {
   """
   GraphQL connection to traverse through the users that are members of the organization.
   """
-  members(after: String, before: String, first: Int, last: Int): OrganizationMembersConnection
+  members(
+    after: String
+    before: String
+    first: Int
+    last: Int
+
+    """Filter criteria for organization members"""
+    where: MembersWhereInput
+  ): OrganizationMembersConnection
 
   """Name of the organization."""
   name: String
@@ -2798,11 +2868,30 @@ type Post {
 }
 
 type PostAttachment {
+  """File hash for deduplication purposes."""
+  fileHash: String
+
   """Mime type of the attachment."""
   mimeType: String
 
+  """Identifier name of the attachment."""
+  name: String
+
+  """Object name used when creating presigned URLs."""
+  objectName: String
+
   """URL to the attachment."""
   url: String
+}
+
+"""MIME types supported for post attachments"""
+enum PostAttachmentMimeType {
+  IMAGE_AVIF
+  IMAGE_JPEG
+  IMAGE_PNG
+  IMAGE_WEBP
+  VIDEO_MP4
+  VIDEO_WEBM
 }
 
 """"""
@@ -2858,7 +2947,7 @@ type Query {
   agendaItem(input: QueryAgendaItemInput!): AgendaItem
 
   """Query field to read all Users."""
-  allUsers(after: String, before: String, first: Int, last: Int, name: String): QueryAllUsersConnection
+  allUsers(after: String, before: String, first: Int, last: Int, where: QueryAllUsersWhereInput): QueryAllUsersConnection
 
   """Query field to read a chat."""
   chat(input: QueryChatInput!): Chat
@@ -2889,6 +2978,9 @@ type Query {
 
   """Query field to read an organization."""
   organization(input: QueryOrganizationInput!): Organization
+
+  """Query to fetch all organizations. Returns up to 20 organizations."""
+  organizations: [Organization!]
 
   """Query field to read a post."""
   post(input: QueryPostInput!): Post
@@ -2941,6 +3033,10 @@ type QueryAllUsersConnection {
 type QueryAllUsersConnectionEdge {
   cursor: String!
   node: User
+}
+
+input QueryAllUsersWhereInput {
+  name: String
 }
 
 """"""
@@ -3148,6 +3244,13 @@ type TagFolderTagsConnectionEdge {
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
+
+"""UploadUrlResponse"""
+type UploadUrlResponse {
+  objectName: String
+  presignedUrl: String
+  requiresUpload: Boolean
+}
 
 type User {
   """Address line 1 of the user's address."""
