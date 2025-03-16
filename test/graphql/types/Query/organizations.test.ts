@@ -5,7 +5,6 @@ import type {
 	ImplicitMercuriusContext,
 } from "~/src/graphql/context";
 import { resolveOrganizations } from "~/src/graphql/types/Query/organizations";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
 
@@ -30,7 +29,7 @@ describe("resolveOrganizations", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
-	
+
 	test("returns organizations array if user is not authenticated", async () => {
 		const unauthenticatedCtx = {
 			...baseMockCtx,
