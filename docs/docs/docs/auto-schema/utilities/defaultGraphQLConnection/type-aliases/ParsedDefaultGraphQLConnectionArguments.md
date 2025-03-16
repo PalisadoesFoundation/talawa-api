@@ -6,7 +6,7 @@
 
 > **ParsedDefaultGraphQLConnectionArguments**\<`Cursor`\>: `object`
 
-Defined in: src/utilities/defaultGraphQLConnection.ts:6
+Defined in: [src/utilities/defaultGraphQLConnection.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/37e2d6abe1cabaa02f97a3c6c418b81e8fcb5a13/src/utilities/defaultGraphQLConnection.ts#L6)
 
 Type of the object containing the parsed default arguments of a graphql connection.
 

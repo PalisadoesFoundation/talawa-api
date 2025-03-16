@@ -41,6 +41,38 @@ You will need to configure the API to work correctly.
 | `MINIO_ROOT_PASSWORD`                  | Root password for MinIO, used for securing administrative access to MinIO object storage.                             |
 | `POSTGRES_PASSWORD`                    | Password for the PostgreSQL database (Docker Compose), used for database authentication and security.                 |
 
+## Running the Setup Script
+To configure the .env file, run one of the following commands in your project’s root directory:
+
+
+```bash
+npm run setup
+```
+
+or
+
+```bash
+pnpm tsx setup.ts
+```
+
+The script will ask whether you're in CI mode (CI=true) or non-CI (CI=false) mode. Choose:
+
+1. CI=false for local/development environments:
+   - Uses configuration from `.env.devcontainer`
+   - Includes complete interactive setup with all configuration options
+   - Sets up CloudBeaver for database management
+   - Configures all Minio and PostgreSQL extended options
+   - Best for developers working on the application locally
+
+2. CI=true for testing or continuous integration pipelines:
+   - Uses configuration from `.env.ci`
+   - Streamlined setup with minimal configuration
+   - Excludes CloudBeaver-related settings
+   - Contains only essential database and storage options
+   - Best for automated testing environments or CI/CD pipelines
+
+3. It will also ask whether you want to use recommended defaults. Answer "yes" to quickly accept safe defaults or "no" to provide custom inputs. Once the prompts finish, your .env file will be generated or updated.
+
 ## Prerequisities
 
 You must follow these steps before continuing.
