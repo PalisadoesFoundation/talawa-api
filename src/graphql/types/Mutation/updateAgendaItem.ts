@@ -9,6 +9,7 @@ import {
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { validateAgendaFolder } from "~/src/utilities/validateAgendaFolder";
 
 const mutationUpdateAgendaItemArgumentsSchema = z.object({
 	input: MutationUpdateAgendaItemInputSchema,
@@ -165,61 +166,11 @@ builder.mutationField("updateAgendaItem", (t) =>
 			}
 
 			if (isNotNullish(parsedArgs.input.folderId)) {
-				const folderId = parsedArgs.input.folderId;
-
-				const existingAgendaFolder =
-					await ctx.drizzleClient.query.agendaFoldersTable.findFirst({
-						columns: {
-							eventId: true,
-							isAgendaItemFolder: true,
-						},
-						where: (fields, operators) => operators.eq(fields.id, folderId),
-					});
-
-				if (existingAgendaFolder === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [
-								{
-									argumentPath: ["input", "folderId"],
-								},
-							],
-						},
-					});
-				}
-
-				if (
-					existingAgendaFolder.eventId !== existingAgendaItem.folder.eventId
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "folderId"],
-									message:
-										"This agenda folder does not belong to the event to the agenda item.",
-								},
-							],
-						},
-					});
-				}
-
-				if (!existingAgendaFolder.isAgendaItemFolder) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "folderId"],
-									message:
-										"This agenda folder cannot be a folder to agenda items.",
-								},
-							],
-						},
-					});
-				}
+				await validateAgendaFolder(
+					ctx.drizzleClient,
+					parsedArgs.input.folderId,
+					existingAgendaItem.folder.eventId,
+				);
 			}
 
 			const currentUserOrganizationMembership =

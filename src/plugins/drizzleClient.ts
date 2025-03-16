@@ -87,3 +87,4 @@ export const drizzleClient = fastifyPlugin(async (fastify) => {
 });
 
 export default drizzleClient;
+export type DrizzleClient = PostgresJsDatabase<typeof drizzleSchema>;
