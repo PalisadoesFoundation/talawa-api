@@ -30,8 +30,8 @@ describe("resolveOrganizations", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
-
-	test("do not throws an unauthenticated error if user is not authenticated", async () => {
+	
+	test("returns organizations array if user is not authenticated", async () => {
 		const unauthenticatedCtx = {
 			...baseMockCtx,
 			currentClient: { isAuthenticated: false },
