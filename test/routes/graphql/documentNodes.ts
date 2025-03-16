@@ -616,7 +616,10 @@ export const Mutation_deletePost = gql(`
       id
       attachments {
         mimeType
-        url
+        fileHash
+        name
+        objectName
+        id
       }
     }
   }
