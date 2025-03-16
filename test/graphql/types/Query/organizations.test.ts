@@ -31,15 +31,33 @@ describe("resolveOrganizations", () => {
 		vi.clearAllMocks();
 	});
 
-	test("throws an unauthenticated error if user is not authenticated", async () => {
+	test("do not throws an unauthenticated error if user is not authenticated", async () => {
 		const unauthenticatedCtx = {
 			...baseMockCtx,
 			currentClient: { isAuthenticated: false },
 		} as unknown as ContextType;
 
-		await expect(
-			resolveOrganizations(null, { filter: null }, unauthenticatedCtx),
-		).rejects.toThrow(TalawaGraphQLError);
+		const orgs = [
+			{ id: "org1", name: "Organization 1" },
+			{ id: "org2", name: "Organization 2" },
+		];
+		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue(orgs);
+
+		const result = await resolveOrganizations(
+			null,
+			{ filter: null },
+			unauthenticatedCtx,
+		);
+		expect(result).toEqual(orgs);
+
+		expect(
+			mockDrizzleClient.query.organizationsTable.findMany,
+		).toHaveBeenCalledWith(
+			expect.objectContaining({
+				limit: 20,
+				offset: 0,
+			}),
+		);
 	});
 
 	test("returns organizations array on successful query", async () => {
