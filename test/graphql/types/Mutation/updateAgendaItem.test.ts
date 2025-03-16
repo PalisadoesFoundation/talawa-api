@@ -978,7 +978,7 @@ suite("Mutation updateAgendaItem", () => {
 								expect.objectContaining({
 									argumentPath: expect.arrayContaining(["input", "folderId"]),
 									message: expect.stringContaining(
-										"This agenda folder does not belong to the event to the agenda item.",
+										"This agenda folder does not belong to the event of the agenda item.",
 									),
 								}),
 							]),
