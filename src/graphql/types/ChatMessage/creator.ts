@@ -1,11 +1,13 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { ChatMessage } from "./ChatMessage";
 
 ChatMessage.implement({
 	fields: (t) => ({
 		creator: t.field({
 			description: "User who created the chat message.",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (parent.creatorId === null) {
 					return null;
