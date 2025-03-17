@@ -82,7 +82,7 @@ export const transformDefaultGraphQLConnectionArguments = <
 		isInversed: arg.isInversed ?? false,
 		limit: 0,
 	};
-
+   console.log("value of isInversed from transformDefault...");
 	const { after, before, first, last, ...customArg } = arg;
 
 	if (first !== undefined) {
@@ -110,6 +110,7 @@ export const transformDefaultGraphQLConnectionArguments = <
 			transformedArg.cursor = after;
 		}
 	} else if (last !== undefined) {
+		console.log("here")
 		if (after !== undefined) {
 			ctx.addIssue({
 				code: "custom",
@@ -117,7 +118,7 @@ export const transformDefaultGraphQLConnectionArguments = <
 				path: ["after"],
 			});
 		}
-
+ console.log('after here ')
 		transformedArg.isInversed = true;
 		// The limit is increased by 1 to check for the existence of previous connection edge by fetching one additional raw node in the connection resolver and providing this information in the field `hasPreviousPage` of the connection object's `pageInfo` field.
 		transformedArg.limit = last + 1;
@@ -137,7 +138,7 @@ export const transformDefaultGraphQLConnectionArguments = <
 			path: ["last"],
 		});
 	}
-
+console.log('transformed.isInversed', transformedArg.isInversed)
 	return {
 		...transformedArg,
 		...customArg,
