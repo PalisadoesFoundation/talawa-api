@@ -4120,8 +4120,11 @@ type Query {
   organization(input: QueryOrganizationInput!): Organization
 
 
-  """Query to fetch all organizations. Returns up to 20 organizations."""
-  organizations: [Organization!]
+  """
+  Query to fetch all organizations with optional filtering. Returns up to 20 organizations.
+  """
+  organizations(filter: String): [Organization!]
+
 
   """Query field to read a post."""
 
@@ -4512,9 +4515,12 @@ type User {
   """
   createdAt: DateTime
 
-  """
-  User who created the user.
-  """
+
+  """Organizations created by the user"""
+  createdOrganizations(filter: String): [Organization!]
+
+  """User who created the user."""
+
   creator: User
 
   """
@@ -4580,12 +4586,9 @@ type User {
   """
   GraphQL connection to traverse through the organizations the user is a member of.
   """
-  organizationsWhereMember(
-    after: String
-    before: String
-    first: Int
-    last: Int
-  ): UserOrganizationsWhereMemberConnection
+
+  organizationsWhereMember(after: String, before: String, filter: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
+
 
   """
   Postal code of the user.
