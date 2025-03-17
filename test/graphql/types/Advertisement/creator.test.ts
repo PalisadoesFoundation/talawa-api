@@ -5,7 +5,6 @@ import type { Advertisement as AdvertisementType } from "~/src/graphql/types/Adv
 import { advertisementCreator } from "~/src/graphql/types/Advertisement/creator";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-// Define user type for testing
 type UserType = {
 	id: string;
 	role: string;
@@ -13,8 +12,8 @@ type UserType = {
 		role: string;
 		organizationId: string;
 	}>;
-	createdAt?: Date; // Optional
-	updatedAt?: Date | null; // Optional
+	createdAt?: Date;
+	updatedAt?: Date | null;
 };
 
 describe("Advertisement Resolver - Creator Field", () => {
@@ -82,7 +81,7 @@ describe("Advertisement Resolver - Creator Field", () => {
 			await advertisementCreator(mockAdvertisement, {}, ctx);
 		}).rejects.toThrow(
 			new TalawaGraphQLError({
-				message: "You must be authenticated to perform this action.", // Updated message
+				message: "You must be authenticated to perform this action.",
 				extensions: { code: "unauthenticated" },
 			}),
 		);
@@ -95,7 +94,7 @@ describe("Advertisement Resolver - Creator Field", () => {
 			await advertisementCreator(mockAdvertisement, {}, ctx);
 		}).rejects.toThrow(
 			new TalawaGraphQLError({
-				message: "You must be authenticated to perform this action.", // Updated message
+				message: "You must be authenticated to perform this action.",
 				extensions: { code: "unauthenticated" },
 			}),
 		);
@@ -123,7 +122,7 @@ describe("Advertisement Resolver - Creator Field", () => {
 		});
 
 		const result = await advertisementCreator(mockAdvertisement, {}, ctx);
-		expect(result?.id).toBe("user-123"); // Updated assertion
+		expect(result?.id).toBe("user-123");
 	});
 
 	it("should allow access if user is an organization administrator", async () => {
@@ -136,14 +135,14 @@ describe("Advertisement Resolver - Creator Field", () => {
 		});
 
 		const result = await advertisementCreator(mockAdvertisement, {}, ctx);
-		expect(result?.id).toBe("user-123"); // Updated assertion
+		expect(result?.id).toBe("user-123");
 	});
 
 	it("should allow access to own advertisement", async () => {
 		// Mock the current user as the memberUser
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			...memberUser,
-			id: "user-123", // Current user ID must match ctx
+			id: "user-123",
 			organizationMembershipsWhereMember: [
 				{ role: "administrator", organizationId: "org-123" },
 			],
@@ -151,7 +150,7 @@ describe("Advertisement Resolver - Creator Field", () => {
 
 		//The creator is the current user, it skips the second call
 		const result = await advertisementCreator(
-			{ ...mockAdvertisement, creatorId: "user-123" }, // Match creatorId to current user
+			{ ...mockAdvertisement, creatorId: "user-123" },
 			{},
 			ctx,
 		);
@@ -174,22 +173,18 @@ describe("Advertisement Resolver - Creator Field", () => {
 	});
 
 	it("should throw an error if the creator does not exist", async () => {
-		// Mock the current user as admin so that the second part of the code runs
-
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			...adminUser,
 			id: "user-123",
 		});
 
-		// Mock the missing creator
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
 			...adminUser,
 			id: "user-123",
-		}); // Current user
+		});
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 			undefined,
-		); // Missing creator
-
+		);
 		// The resolver calls findFirst 2 times in this scenario. First for the current user, and second for the creator user id, since the current user has the right permissions
 		await expect(async () => {
 			await advertisementCreator(mockAdvertisement, {}, ctx);
@@ -200,30 +195,3 @@ describe("Advertisement Resolver - Creator Field", () => {
 		);
 	});
 });
-
-// it("should throw unauthorized error if the user is not an administrator", async () => {
-//   // Mock current user with non-admin role and membership
-//   const nonAdminUser = {
-//     ...mockUser,
-//     role: "member",
-//     organizationMembershipsWhereMember: [{
-//       role: "member",
-//       organizationId: mockAdvertisement.organizationId
-//     }]
-//   };
-
-//   ctx.drizzleClient.query.usersTable.findFirst
-//     .mockResolvedValueOnce(nonAdminUser) // Current user lookup
-//     .mockResolvedValueOnce({ id: "456" }); // Creator lookup
-
-//   await expect(async () => {
-//     await resolveCreator(
-//       { ...mockAdvertisement, creatorId: "456" },
-//       {},
-//       ctx
-//     );
-//   }).rejects.toThrow(new TalawaGraphQLError({
-//     message: "User is not authorized",
-//     extensions: { code: "unauthorized_action" }
-//   }));
-// });

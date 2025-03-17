@@ -83,8 +83,7 @@ describe("AgendaItem Resolver - Updater Field", () => {
 	});
 
 	it("should throw unexpected error if updater user does not exist", async () => {
-		// Arrange:
-		// 1. Mock the current user as authenticated and authorized.
+		// Mock the current user as authenticated and authorized.
 		mocks.drizzleClient.query.usersTable.findFirst
 			.mockResolvedValueOnce({
 				id: "user-123",
@@ -100,17 +99,16 @@ describe("AgendaItem Resolver - Updater Field", () => {
 			},
 		});
 
-		// 2. Set the updater ID in the mockAgendaItem to a different user.
+		// the updater ID in the mockAgendaItem to a different user.
 		mockAgendaItem.updaterId = "user-456";
 
-		// Act & Assert: Call the function and assert the correct error is thrown
+		// Call the function and assert the correct error is thrown
 		await expect(resolveUpdater(mockAgendaItem, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "unexpected" },
 			}),
 		);
 
-		// Verify error logging was called
 		expect(ctx.log.error).toHaveBeenCalledWith(
 			"Postgres select operation returned an empty array for an agenda item's updater id that isn't null.",
 		);
@@ -133,12 +131,10 @@ describe("AgendaItem Resolver - Updater Field", () => {
 			resolveUpdater(mockAgendaItem, {}, ctx),
 		).resolves.toBeDefined();
 
-		// Should return null if updaterId is null in AgendaItem
 		mockAgendaItem.updaterId = null;
 		const result_1 = await resolveUpdater(mockAgendaItem, {}, ctx);
 		expect(result_1).toBeNull();
 
-		// Should return currentUser if updaterId==currentUser.id  in AgendaItem
 		mockAgendaItem.updaterId = "user-123";
 		const result_2 = await resolveUpdater(mockAgendaItem, {}, ctx);
 		expect(result_2).toEqual({
@@ -146,7 +142,6 @@ describe("AgendaItem Resolver - Updater Field", () => {
 			role: "administrator",
 		});
 
-		// updaterId exist but updaterId==currentUser.id
 		mockAgendaItem.updaterId = "user-456";
 		const result_3 = await resolveUpdater(mockAgendaItem, {}, ctx);
 		expect(result_3).toEqual({
@@ -156,8 +151,6 @@ describe("AgendaItem Resolver - Updater Field", () => {
 	});
 
 	it("should throw unexpected error if updater is not current user and updater does not exist", async () => {
-		// Arrange:
-		// 1. Mock the current user as authenticated.
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user-123",
 			role: "administrator",
@@ -167,11 +160,9 @@ describe("AgendaItem Resolver - Updater Field", () => {
 			role: "administrator",
 		});
 
-		// 2. Have the second user lookup return 'undefined', simulating a missing updater.
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 			undefined,
-		); // This simulates the missing "updater"
-
+		);
 		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
 			event: {
 				organization: {
@@ -180,10 +171,8 @@ describe("AgendaItem Resolver - Updater Field", () => {
 			},
 		});
 
-		// Act: Set the updater ID to a different user
 		mockAgendaItem.updaterId = "user-456";
 
-		// Assert: Expect the "unexpected" error to be thrown.
 		await expect(resolveUpdater(mockAgendaItem, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "unexpected" },

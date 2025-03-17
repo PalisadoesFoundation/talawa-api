@@ -39,6 +39,9 @@ const resolveUpdater = async (
 ) => {
 	const currentUser = await authenticateUser(ctx);
 	const currentUserId = ctx.currentClient.user?.id;
+	if (parent.updaterId === null) {
+		return null;
+	}
 
 	const currentUserOrganizationMembership =
 		currentUser.organizationMembershipsWhereMember?.[0];
@@ -55,9 +58,6 @@ const resolveUpdater = async (
 		});
 	}
 
-	if (parent.updaterId === null) {
-		return null;
-	}
 	if (parent.updaterId === currentUserId) {
 		return currentUser;
 	}

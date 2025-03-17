@@ -8,9 +8,6 @@ export const communityUpdater = async (
 	_args: unknown,
 	ctx: GraphQLContext,
 ) => {
-	if (parent.updaterId === null) {
-		return null;
-	}
 	if (!ctx.currentClient.isAuthenticated) {
 		throw new TalawaGraphQLError({
 			extensions: {
@@ -41,6 +38,9 @@ export const communityUpdater = async (
 		});
 	}
 
+	if (parent.updaterId === null) {
+		return null;
+	}
 	if (parent.updaterId === currentUserId) {
 		return currentUser;
 	}

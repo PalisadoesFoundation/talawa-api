@@ -1,5 +1,3 @@
-import type { FastifyBaseLogger } from "fastify";
-import type { Client as MinioClient } from "minio";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Community } from "~/src/graphql/types/Community/Community";
@@ -7,7 +5,6 @@ import { communityUpdater } from "~/src/graphql/types/Community/updater";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../../../src/graphql/context";
-import { createMockLogger } from "../../../utilities/mockLogger";
 
 const createMockUser = (overrides?: Partial<User>): Partial<User> => ({
 	id: "123",
@@ -90,7 +87,7 @@ describe("Community Resolver - Updater Field", () => {
 
 		await expect(
 			communityUpdater(communityWithNullUpdater, {}, ctx),
-		).resolves.toBeNull(); // ✅ Expect null instead of error
+		).resolves.toBeNull();
 	});
 
 	it("should return the current user if updaterId matches the authenticated user", async () => {
