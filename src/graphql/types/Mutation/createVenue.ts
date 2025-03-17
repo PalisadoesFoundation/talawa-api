@@ -11,7 +11,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreateVenueInput";
 import { Venue } from "~/src/graphql/types/Venue/Venue";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationCreateVenueArgumentsSchema = z.object({
 	input: mutationCreateVenueInputSchema.transform(async (arg, ctx) => {
 		let attachments:
@@ -62,6 +62,7 @@ builder.mutationField("createVenue", (t) =>
 				type: MutationCreateVenueInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create a venue.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

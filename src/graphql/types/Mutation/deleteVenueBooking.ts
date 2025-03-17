@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteVenueBookingInput";
 import { Venue } from "~/src/graphql/types/Venue/Venue";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteVenueBookingArgumentsSchema = z.object({
 	input: mutationDeleteVenueBookingInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deleteVenueBooking", (t) =>
 				type: MutationDeleteVenueBookingInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete a venue booking.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

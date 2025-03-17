@@ -9,6 +9,7 @@ import { Chat } from "~/src/graphql/types/Chat/Chat";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
+import envConfig from "~/src/utilities/graphqLimits";
 interface ChatMembershipDatabaseRecord {
 	id: string;
 	chatId: string;
@@ -361,6 +362,7 @@ builder.mutationField("createChatMembership", (t) =>
 				type: MutationCreateChatMembershipInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create a chat membership.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

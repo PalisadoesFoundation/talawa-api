@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteTagFolderInput";
 import { TagFolder } from "~/src/graphql/types/TagFolder/TagFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteTagFolderArgumentsSchema = z.object({
 	input: mutationDeleteTagFolderInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deleteTagFolder", (t) =>
 				type: MutationDeleteTagFolderInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete a tagFolder.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

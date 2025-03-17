@@ -8,8 +8,8 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteChatMessageInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-
 const mutationDeleteChatMessageArgumentsSchema = z.object({
 	input: mutationDeleteChatMessageInputSchema,
 });
@@ -144,6 +144,7 @@ builder.mutationField("deleteChatMessage", (t) =>
 				type: MutationDeleteChatMessageInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete a chat message.",
 		resolve: deleteChatMessageResolver,
 		type: ChatMessage,

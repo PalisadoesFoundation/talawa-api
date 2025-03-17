@@ -8,8 +8,8 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-
 const mutationUpdateEventArgumentsSchema = z.object({
 	input: mutationUpdateEventInputSchema,
 });
@@ -23,6 +23,7 @@ builder.mutationField("updateEvent", (t) =>
 				type: MutationUpdateEventInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update an event.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
