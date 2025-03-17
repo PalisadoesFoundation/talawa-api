@@ -1,11 +1,12 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { AgendaFolder } from "./AgendaFolder";
-
 AgendaFolder.implement({
 	fields: (t) => ({
 		parentFolder: t.field({
 			description:
 				"Agenda folder that is a parent folder to the agenda folder.",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (parent.parentFolderId === null) {
 					return null;
