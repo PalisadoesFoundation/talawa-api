@@ -661,3 +661,19 @@ export const Mutation_createGetfileUrl = gql(`
     }
   }
 `);
+
+export const Mutation_updatePost = gql(`
+  mutation Mutation_updatePost($input: MutationUpdatePostInput!) {
+    updatePost(input: $input) { 
+      id
+      pinnedAt
+      attachments {
+        mimeType
+        fileHash
+        name
+        objectName
+        id
+      }
+    }
+  }
+`);
