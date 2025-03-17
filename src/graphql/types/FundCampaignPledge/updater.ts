@@ -4,8 +4,8 @@ import type {
 } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { FundCampaignPledge } from "./FundCampaignPledge";
-
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
 
 export const resolveUpdater = async (
@@ -128,6 +128,7 @@ FundCampaignPledge.implement({
 		updater: t.field({
 			description: "User who last updated the fund campaign pledge.",
 			resolve: resolveUpdater,
+			complexity: envConfig.API_GRAPHQL_MUTATION_BASE_COST,
 			type: User,
 		}),
 	}),
