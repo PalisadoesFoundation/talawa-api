@@ -6,7 +6,7 @@
 
 > **routes**(`fastify`): `Promise`\<`void`\>
 
-Defined in: [src/routes/index.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/37e2d6abe1cabaa02f97a3c6c418b81e8fcb5a13/src/routes/index.ts#L13)
+Defined in: [src/routes/index.ts:13](https://github.com/PalisadoesFoundation/talawa-api/blob/f1b6ec0d386e11c6dc4f3cf8bb763223ff502e1e/src/routes/index.ts#L13)
 
 This fastify plugin function contains all talawa api routes within it.
 
