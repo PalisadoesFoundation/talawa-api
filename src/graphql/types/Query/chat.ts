@@ -6,7 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryChatInput";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const queryChatArgumentsSchema = z.object({
 	input: queryChatInputSchema,
 });
@@ -20,6 +20,7 @@ builder.queryField("chat", (t) =>
 				type: QueryChatInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read a chat.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

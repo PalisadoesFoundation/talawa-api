@@ -6,7 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryTagFolderInput";
 import { TagFolder } from "~/src/graphql/types/TagFolder/TagFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const queryTagFolderArgumentsSchema = z.object({
 	input: queryTagFolderInputSchema,
 });
@@ -20,6 +20,7 @@ builder.queryField("tagFolder", (t) =>
 				type: QueryTagFolderInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read a tag folder.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

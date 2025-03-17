@@ -6,7 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const queryOrganizationArgumentsSchema = z.object({
 	input: queryOrganizationInputSchema,
 });
@@ -20,6 +20,7 @@ builder.queryField("organization", (t) =>
 				type: QueryOrganizationInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read an organization.",
 		resolve: async (_parent, args, ctx) => {
 			const {

@@ -6,7 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryTagInput";
 import { Tag } from "~/src/graphql/types/Tag/Tag";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const queryTagArgumentsSchema = z.object({
 	input: queryTagInputSchema,
 });
@@ -20,6 +20,7 @@ builder.queryField("tag", (t) =>
 				type: QueryTagInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read a tag.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

@@ -7,8 +7,8 @@ import {
 } from "~/src/graphql/inputs/QuerySignInInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { CurrentClient } from "../../context";
-
 const querySignInArgumentsSchema = z.object({
 	input: querySignInInputSchema,
 });
@@ -22,6 +22,7 @@ builder.queryField("signIn", (t) =>
 				type: QuerySignInInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field for a client to sign in to talawa.",
 		resolve: async (_parent, args, ctx) => {
 			if (ctx.currentClient.isAuthenticated) {
