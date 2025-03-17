@@ -1,7 +1,7 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { FundCampaign } from "./FundCampaign";
-
 /**
  * Resolver for the updatedAt field of FundCampaign type.
  * Validates user authentication and authorization before returning the last update timestamp.
@@ -116,6 +116,7 @@ FundCampaign.implement({
 		updatedAt: t.field({
 			description: "Date time at the time the fund campaign was last updated.",
 			resolve: updatedAtResolver,
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			type: "DateTime",
 		}),
 	}),
