@@ -1,16 +1,16 @@
-import { expect, suite, test, vi } from "vitest";
 import { faker } from "@faker-js/faker";
+import { expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
-	Query_signIn,
 	Mutation_createOrganization,
 	Mutation_createPost,
-	Mutation_updatePost,
-	Mutation_deleteCurrentUser,
 	Mutation_createUser,
+	Mutation_deleteCurrentUser,
+	Mutation_updatePost,
+	Query_signIn,
 } from "../documentNodes";
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
@@ -23,7 +23,6 @@ const signInResult = await mercuriusClient.query(Query_signIn, {
 });
 const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
 assertToBeNonNullish(adminToken);
-
 
 suite("Mutation field updatePost", () => {
 	suite("when the client is not authenticated", () => {
@@ -142,7 +141,7 @@ suite("Mutation field updatePost", () => {
 				.fn()
 				.mockResolvedValue({
 					pinnedAt: null,
-					creatorId: "different-admin-id", 
+					creatorId: "different-admin-id",
 					attachmentsWherePost: [],
 					organization: {
 						membershipsWhereOrganization: [{ role: "administrator" }],
@@ -254,7 +253,6 @@ suite("Mutation field updatePost", () => {
 	);
 	suite("updatePost - pinnedAt update branch", () => {
 		test("should update pinnedAt to a new Date when isPinned is true and existingPost.pinnedAt is null", async () => {
-
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -314,13 +312,12 @@ suite("Mutation field updatePost", () => {
 
 	suite("when updatePost arguments fail validation", () => {
 		test("should return an error with invalid_arguments code", async () => {
-
 			const updateResult = await mercuriusClient.mutate(Mutation_updatePost, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					input: {
 						id: faker.string.uuid(),
-						caption: null, 
+						caption: null,
 					},
 				},
 			});
@@ -430,7 +427,7 @@ suite("Mutation field updatePost", () => {
 				.fn()
 				.mockResolvedValue({
 					pinnedAt: null,
-					creatorId: "different-creator-id", 
+					creatorId: "different-creator-id",
 					attachmentsWherePost: [],
 					organization: { membershipsWhereOrganization: [{ role: "member" }] },
 				});
@@ -463,7 +460,7 @@ suite("Mutation field updatePost", () => {
 		});
 	});
 
-        //An another test suite will be written here after the join button is implemented"
+	//An another test suite will be written here after the join button is implemented"
 
 	suite(
 		"when current user is organization admin but not the creator and tries to update caption",
@@ -725,5 +722,4 @@ suite("Mutation field updatePost", () => {
 			assertToBeNonNullish(regularUserToken);
 		});
 	});
-
 });

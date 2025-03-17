@@ -170,7 +170,7 @@ builder.mutationField("createPost", (t) =>
 							attachments.map((attachment) => ({
 								creatorId: currentUserId,
 								mimeType: attachment.mimetype,
-								id : uuidv7(),
+								id: uuidv7(),
 								name: attachment.name,
 								postId: createdPost.id,
 								objectName: attachment.objectName,
