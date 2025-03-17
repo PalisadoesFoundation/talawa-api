@@ -6,4 +6,4 @@
 
 > `const` **tagAssignmentsTableRelations**: `Relations`\<`"tag_assignments"`, \{ `assignee`: `One`\<`"users"`, `true`\>; `creator`: `One`\<`"users"`, `false`\>; `tag`: `One`\<`"tags"`, `true`\>; \}\>
 
-Defined in: [src/drizzle/tables/tagAssignments.ts:66](https://github.com/PalisadoesFoundation/talawa-api/blob/37e2d6abe1cabaa02f97a3c6c418b81e8fcb5a13/src/drizzle/tables/tagAssignments.ts#L66)
+Defined in: [src/drizzle/tables/tagAssignments.ts:66](https://github.com/PalisadoesFoundation/talawa-api/blob/f1b6ec0d386e11c6dc4f3cf8bb763223ff502e1e/src/drizzle/tables/tagAssignments.ts#L66)
