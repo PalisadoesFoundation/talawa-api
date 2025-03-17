@@ -6,4 +6,4 @@
 
 > `const` **volunteerGroupAssignmentsTableRelations**: `Relations`\<`"volunteer_group_assignments"`, \{ `assignee`: `One`\<`"users"`, `true`\>; `creator`: `One`\<`"users"`, `false`\>; `group`: `One`\<`"volunteer_groups"`, `true`\>; `updater`: `One`\<`"users"`, `false`\>; \}\>
 
-Defined in: [src/drizzle/tables/volunteerGroupAssignments.ts:71](https://github.com/PalisadoesFoundation/talawa-api/blob/37e2d6abe1cabaa02f97a3c6c418b81e8fcb5a13/src/drizzle/tables/volunteerGroupAssignments.ts#L71)
+Defined in: [src/drizzle/tables/volunteerGroupAssignments.ts:71](https://github.com/PalisadoesFoundation/talawa-api/blob/f1b6ec0d386e11c6dc4f3cf8bb763223ff502e1e/src/drizzle/tables/volunteerGroupAssignments.ts#L71)
