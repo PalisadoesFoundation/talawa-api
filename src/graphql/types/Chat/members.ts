@@ -11,8 +11,8 @@ import {
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
+import envConfig from "~/src/utilities/graphqLimits";
 import { Chat } from "./Chat";
-
 const membersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
@@ -57,6 +57,12 @@ Chat.implement({
 			{
 				description:
 					"GraphQL connection to traverse through the users that are members of the chat.",
+				complexity: (args) => {
+					return {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: args.first || args.last || 1,
+					};
+				},
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,
@@ -187,9 +193,21 @@ Chat.implement({
 				type: User,
 			},
 			{
+				edgesField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 			{
+				nodeField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 		),
