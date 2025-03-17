@@ -1,11 +1,12 @@
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Advertisement } from "./Advertisement";
-
+import envConfig from "~/src/utilities/graphqLimits";
 Advertisement.implement({
 	fields: (t) => ({
 		organization: t.field({
 			description: "Organization which the advertisement belongs to.",
+			complexity : envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				const existingOrganization =
 					await ctx.drizzleClient.query.organizationsTable.findFirst({

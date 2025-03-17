@@ -1,11 +1,12 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Advertisement } from "./Advertisement";
-
+import envConfig from "~/src/utilities/graphqLimits";
 Advertisement.implement({
 	fields: (t) => ({
 		creator: t.field({
 			description: "User who created the advertisement.",
+			complexity : envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
