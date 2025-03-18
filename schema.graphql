@@ -190,7 +190,7 @@ scalar BigInt
 """Represents a user blocked by an organization."""
 type BlockedUser {
   """Timestamp when the user was blocked."""
-  createdAt: Date
+  createdAt: DateTime
 
   """Unique identifier of the blocked user."""
   id: ID!
@@ -1300,9 +1300,10 @@ input MembersWhereInput {
 }
 
 type Mutation {
+type Mutation {
   """Mutation field to block a user from an organization."""
-  blockUser(organizationId: String!, userId: String!): Boolean
-
+  blockUser(organizationId: ID!, userId: ID!): Boolean
+}
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
 
@@ -2735,9 +2736,8 @@ type OrganizationBlockedUsersConnection {
 
 type OrganizationBlockedUsersConnectionEdge {
   cursor: String!
-  node: User
+  node: BlockedUser
 }
-
 """"""
 type OrganizationChatsConnection {
   edges: [OrganizationChatsConnectionEdge]
