@@ -6,7 +6,7 @@
 
 > `const` **mimeTypeMapping**: `object`
 
-Defined in: [src/drizzle/enums/postAttachmentMimeType.ts:3](https://github.com/PalisadoesFoundation/talawa-api/blob/f1b6ec0d386e11c6dc4f3cf8bb763223ff502e1e/src/drizzle/enums/postAttachmentMimeType.ts#L3)
+Defined in: [src/drizzle/enums/postAttachmentMimeType.ts:3](https://github.com/PurnenduMIshra129th/talawa-api/blob/121a22b3ddb398bf77a0d89bb0bf3c4462b4730c/src/drizzle/enums/postAttachmentMimeType.ts#L3)
 
 ## Type declaration
 
