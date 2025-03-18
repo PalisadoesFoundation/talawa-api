@@ -717,6 +717,9 @@ input FileMetadataInput {
   """MIME type of the file"""
   mimetype: PostAttachmentMimeType!
 
+  """Name of the file"""
+  name: String!
+
   """Object name used in storage"""
   objectName: String!
 }
@@ -3980,13 +3983,15 @@ type Post {
   updater: User
 }
 
+"""Attachment of the post."""
 type PostAttachment {
   """File hash for deduplication purposes."""
   fileHash: String
 
-  """
-  Mime type of the attachment.
-  """
+  """Global identifier of the attachment."""
+  id: ID!
+
+  """Mime type of the attachment."""
   mimeType: String
 
   """Identifier name of the attachment."""
@@ -3994,9 +3999,6 @@ type PostAttachment {
 
   """Object name used when creating presigned URLs."""
   objectName: String
-
-  """URL to the attachment."""
-  url: String
 }
 
 """MIME types supported for post attachments"""

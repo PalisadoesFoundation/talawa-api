@@ -6,4 +6,4 @@
 
 > `const` **mutationUpdateEventInputSchema**: `ZodEffects`\<`ZodObject`\<\{ `description`: `any`; `endAt`: `ZodOptional`\<`ZodTypeAny`\>; `id`: `any`; `name`: `ZodOptional`\<`ZodTypeAny`\>; `startAt`: `ZodOptional`\<`ZodTypeAny`\>; \}, `"strip"`, `ZodTypeAny`, \{ `[key: string]`: `any`;  `description`: `unknown`; `endAt`: `unknown`; `id`: `unknown`; `name`: `unknown`; `startAt`: `unknown`; \}, \{ `[key: string]`: `any`;  `description`: `unknown`; `endAt`: `unknown`; `id`: `unknown`; `name`: `unknown`; `startAt`: `unknown`; \}\>, \{ `[key: string]`: `any`;  `description`: `unknown`; `endAt`: `unknown`; `id`: `unknown`; `name`: `unknown`; `startAt`: `unknown`; \}, \{ `[key: string]`: `any`;  `description`: `unknown`; `endAt`: `unknown`; `id`: `unknown`; `name`: `unknown`; `startAt`: `unknown`; \}\>
 
-Defined in: [src/graphql/inputs/MutationUpdateEventInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/f1b6ec0d386e11c6dc4f3cf8bb763223ff502e1e/src/graphql/inputs/MutationUpdateEventInput.ts#L6)
+Defined in: src/graphql/inputs/MutationUpdateEventInput.ts:6
