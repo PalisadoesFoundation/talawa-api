@@ -1,310 +1,350 @@
-import { type Mock, beforeEach, describe, expect, it, vi } from "vitest";
-import { builder } from "~/src/graphql/builder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { faker } from "@faker-js/faker";
+import { expect, suite, test } from "vitest";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../../../routes/graphql/client";
+import { createRegularUserUsingAdmin } from "../../../routes/graphql/createRegularUserUsingAdmin";
+import {
+	Mutation_blockUser,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_createUser,
+	Mutation_unblockUser,
+	Query_signIn,
+} from "../../../routes/graphql/documentNodes";
 
-vi.mock("~/src/graphql/builder", () => ({
-	builder: {
-		mutationField: vi.fn().mockReturnValue({
-			args: {},
-			description: "",
-			resolve: vi.fn(),
-			type: "",
-		}),
+const signInResult = await mercuriusClient.query(Query_signIn, {
+	variables: {
+		input: {
+			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+		},
 	},
-}));
+});
+assertToBeNonNullish(signInResult.data?.signIn);
+const authToken = signInResult.data.signIn.authenticationToken;
+assertToBeNonNullish(authToken);
 
-import "~/src/graphql/types/Mutation/unblockUser";
-
-describe("unblockUser Mutation", () => {
-	let mockContext: {
-		currentClient: {
-			isAuthenticated: boolean;
-			user: {
-				id: string;
-			};
-		};
-		drizzleClient: {
-			query: {
-				organizationsTable: {
-					findFirst: Mock;
-				};
-				usersTable: {
-					findFirst: Mock;
-				};
-				organizationMembershipsTable: {
-					findFirst: Mock;
-				};
-				blockedUsersTable: {
-					findFirst: Mock;
-				};
-			};
-			transaction: Mock;
-			delete: Mock;
-		};
-	};
-
-	const defaultArgs = {
-		organizationId: "org-1",
-		userId: "user-1",
-	};
-
-	beforeEach(() => {
-		mockContext = {
-			currentClient: {
-				isAuthenticated: true,
-				user: {
-					id: "admin-user-1",
+suite("Mutation field unblockUser", () => {
+	suite("when the client is not authenticated", () => {
+		test("should return an error with unauthenticated extensions code", async () => {
+			const result = await mercuriusClient.mutate(Mutation_unblockUser, {
+				variables: {
+					organizationId: faker.string.uuid(),
+					userId: faker.string.uuid(),
 				},
-			},
-			drizzleClient: {
-				query: {
-					organizationsTable: {
-						findFirst: vi.fn(),
-					},
-					usersTable: {
-						findFirst: vi.fn(),
-					},
-					organizationMembershipsTable: {
-						findFirst: vi.fn(),
-					},
-					blockedUsersTable: {
-						findFirst: vi.fn(),
-					},
-				},
-				transaction: vi.fn(),
-				delete: vi.fn(),
-			},
-		};
-
-		vi.clearAllMocks();
-	});
-
-	const getResolver = () => {
-		const mutationFieldCall = (builder.mutationField as Mock).mock.calls[0];
-		const fieldConfig = mutationFieldCall?.[1]({});
-		return fieldConfig.resolve;
-	};
-
-	describe("Authentication", () => {
-		it("should throw unauthenticated error if user is not logged in", async () => {
-			const resolver = getResolver();
-			mockContext.currentClient.isAuthenticated = false;
-
-			await expect(resolver(null, defaultArgs, mockContext)).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
-			);
-		});
-	});
-
-	describe("Input Validation", () => {
-		it("should throw invalid_arguments error if organizationId is missing", async () => {
-			const resolver = getResolver();
-			const args = { ...defaultArgs, organizationId: "" };
-
-			await expect(resolver(null, args, mockContext)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: expect.arrayContaining(["organizationId"]),
-							}),
-						]),
-					},
-				}),
-			);
-		});
-
-		it("should throw invalid_arguments error if userId is missing", async () => {
-			const resolver = getResolver();
-			const args = { ...defaultArgs, userId: "" };
-
-			await expect(resolver(null, args, mockContext)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: expect.arrayContaining(["userId"]),
-							}),
-						]),
-					},
-				}),
-			);
-		});
-	});
-
-	describe("Resource Validation", () => {
-		it("should throw arguments_associated_resources_not_found if organization does not exist", async () => {
-			const resolver = getResolver();
-			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				null,
-			);
-
-			await expect(resolver(null, defaultArgs, mockContext)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: expect.arrayContaining([
-									"input",
-									"organizationId",
-								]),
-							}),
-						]),
-					},
-				}),
-			);
-		});
-
-		it("should throw arguments_associated_resources_not_found if user does not exist", async () => {
-			const resolver = getResolver();
-			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				{
-					id: "org-1",
-					name: "Test Organization",
-				},
-			);
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				null,
-			);
-
-			await expect(resolver(null, defaultArgs, mockContext)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: expect.arrayContaining(["input", "userId"]),
-							}),
-						]),
-					},
-				}),
-			);
-		});
-	});
-
-	describe("Authorization", () => {
-		it("should throw unauthorized_action if current user is not an admin of the organization", async () => {
-			const resolver = getResolver();
-			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				{
-					id: "org-1",
-					name: "Test Organization",
-				},
-			);
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				id: "user-1",
-				name: "Test User",
 			});
-			mockContext.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
-				{
-					id: "membership-1",
-					organizationId: "org-1",
-					memberId: "admin-user-1",
-					role: "regular",
-				},
-			);
-
-			await expect(resolver(null, defaultArgs, mockContext)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-						message:
-							"You must be an admin of this organization to unblock users.",
-					},
-				}),
-			);
-		});
-
-		it("should throw unauthorized_action if current user is not a member of the organization", async () => {
-			const resolver = getResolver();
-			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				{
-					id: "org-1",
-					name: "Test Organization",
-				},
-			);
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				id: "user-1",
-				name: "Test User",
-			});
-			mockContext.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
-				null,
-			);
-
-			await expect(resolver(null, defaultArgs, mockContext)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-						message:
-							"You must be an admin of this organization to unblock users.",
-					},
-				}),
+			expect(result.data?.unblockUser).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({ code: "unauthenticated" }),
+						path: ["unblockUser"],
+					}),
+				]),
 			);
 		});
 	});
 
-	describe("Business Logic Validation", () => {
-		beforeEach(() => {
-			mockContext.drizzleClient.query.organizationsTable.findFirst.mockResolvedValue(
-				{
-					id: "org-1",
-					name: "Test Organization",
+	suite("when the organization does not exist", () => {
+		test("should return an error with arguments_associated_resources_not_found extensions code", async () => {
+			const result = await mercuriusClient.mutate(Mutation_unblockUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					organizationId: faker.string.uuid(),
+					userId: faker.string.uuid(),
 				},
-			);
-			mockContext.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-				id: "user-1",
-				name: "Test User",
 			});
-			mockContext.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
-				{
-					id: "membership-admin",
-					organizationId: "org-1",
-					memberId: "admin-user-1",
-					role: "administrator",
-				},
-			);
-			mockContext.drizzleClient.query.blockedUsersTable.findFirst.mockResolvedValue(
-				{
-					id: "block-1",
-					organizationId: "org-1",
-					userId: "user-1",
-				},
-			);
-		});
-
-		it("should throw forbidden_action if user is not blocked", async () => {
-			const resolver = getResolver();
-			mockContext.drizzleClient.query.blockedUsersTable.findFirst.mockResolvedValue(
-				null,
-			);
-
-			await expect(resolver(null, defaultArgs, mockContext)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "forbidden_action",
-						message: "User is not blocked.",
-					},
-				}),
-			);
-		});
-
-		it("should successfully unblock a user", async () => {
-			const resolver = getResolver();
-			mockContext.drizzleClient.transaction.mockImplementation(
-				async (callback) => {
-					return await callback({
-						delete: () => ({
-							where: () => Promise.resolve(true),
+			expect(result.data?.unblockUser).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
 						}),
-					});
+						path: ["unblockUser"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("when the target user does not exist", () => {
+		test("should return an error with arguments_associated_resources_not_found extensions code", async () => {
+			// Create an organization first
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Unblock User Test Org ${faker.string.uuid()}`,
+							description: "Org to test unblock user",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "100 Test St",
+							addressLine2: "Suite 1",
+						},
+					},
 				},
 			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
 
-			const result = await resolver(null, defaultArgs, mockContext);
-			expect(result).toBe(true);
+			const result = await mercuriusClient.mutate(Mutation_unblockUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					organizationId: orgId,
+					userId: faker.string.uuid(),
+				},
+			});
+			expect(result.data?.unblockUser).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
+						}),
+						path: ["unblockUser"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("when the current user is not an admin", () => {
+		test("should return an error with unauthorized_action extensions code", async () => {
+			// Create a regular user
+			const { authToken: regularAuthToken, userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(regularAuthToken);
+			assertToBeNonNullish(userId);
+
+			// Create an organization
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Unblock User Auth Test Org ${faker.string.uuid()}`,
+							description: "Org to test unblock user auth",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "101 Test Ave",
+							addressLine2: "Suite 2",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Add the regular user to the organization
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: userId,
+					},
+				},
+			});
+
+			// Create another user to unblock
+			const { userId: targetUserId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(targetUserId);
+
+			// Add the target user to the organization
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: targetUserId,
+					},
+				},
+			});
+
+			const result = await mercuriusClient.mutate(Mutation_unblockUser, {
+				headers: { authorization: `bearer ${regularAuthToken}` },
+				variables: {
+					organizationId: orgId,
+					userId: targetUserId,
+				},
+			});
+			expect(result.data?.unblockUser).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthorized_action",
+						}),
+						path: ["unblockUser"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("when the target user is not blocked", () => {
+		test("should return an error with forbidden_action extensions code", async () => {
+			// Create an organization
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Unblock User Test Org ${faker.string.uuid()}`,
+							description: "Org to test unblock user",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "100 Test St",
+							addressLine2: "Suite 1",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Get admin user ID
+			assertToBeNonNullish(signInResult.data?.signIn);
+			assertToBeNonNullish(signInResult.data.signIn.user);
+			const adminId = signInResult.data.signIn.user.id;
+			assertToBeNonNullish(adminId);
+
+			// Add admin to the organization
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: adminId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create a regular user who is not blocked
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			// Add the user to the organization
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: userId,
+					},
+				},
+			});
+
+			// Try to unblock the user who is not blocked
+			const result = await mercuriusClient.mutate(Mutation_unblockUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					organizationId: orgId,
+					userId,
+				},
+			});
+			expect(result.data?.unblockUser).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "forbidden_action",
+						}),
+						path: ["unblockUser"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("when all conditions are met", () => {
+		test("should successfully unblock the user", async () => {
+			// Create an organization
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Unblock User Success Test Org ${faker.string.uuid()}`,
+							description: "Org to test successful unblock",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "104 Test Lane",
+							addressLine2: "Suite 5",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Get admin user ID
+			assertToBeNonNullish(signInResult.data?.signIn);
+			assertToBeNonNullish(signInResult.data.signIn.user);
+			const adminId = signInResult.data.signIn.user.id;
+			assertToBeNonNullish(adminId);
+
+			// Add admin to the organization
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: adminId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create a regular user to block and then unblock
+			const { userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId);
+
+			// Add the user to the organization
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: userId,
+					},
+				},
+			});
+
+			// Block the user first
+			await mercuriusClient.mutate(Mutation_blockUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					organizationId: orgId,
+					userId,
+				},
+			});
+
+			// Now unblock the user
+			const result = await mercuriusClient.mutate(Mutation_unblockUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					organizationId: orgId,
+					userId,
+				},
+			});
+			expect(result.data?.unblockUser).toBe(true);
+			expect(result.errors).toBeUndefined();
 		});
 	});
 });

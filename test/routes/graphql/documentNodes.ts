@@ -42,7 +42,7 @@ export const Mutation_createUser =
 export const Mutation_deleteCurrentUser =
 	gql(`mutation Mutation_deleteCurrentUser {
     deleteCurrentUser {
-        id  
+        id
     }
 }`);
 
@@ -69,7 +69,7 @@ export const Mutation_deleteUser =
         postalCode
         role
         state
-        workPhoneNumber    
+        workPhoneNumber
     }
 }`);
 
@@ -126,7 +126,7 @@ export const Mutation_updateCurrentUser =
         postalCode
         role
         state
-        workPhoneNumber    
+        workPhoneNumber
     }
 }`);
 
@@ -153,7 +153,7 @@ export const Mutation_updateUser =
         postalCode
         role
         state
-        workPhoneNumber    
+        workPhoneNumber
     }
 }`);
 
@@ -318,7 +318,7 @@ export const Query_user_creator =
             postalCode
             role
             state
-            workPhoneNumber 
+            workPhoneNumber
         }
     }
 }`);
@@ -354,7 +354,7 @@ export const Query_user_updater =
             postalCode
             role
             state
-            workPhoneNumber 
+            workPhoneNumber
         }
     }
 }`);
@@ -370,7 +370,7 @@ export const Query_fund = gql(`query Query_fund($input: QueryFundInput!) {
 export const Mutation_createOrganization =
 	gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
     createOrganization(input: $input) {
-      id 
+      id
       name
       countryCode
     }
@@ -530,23 +530,40 @@ export const Query_organizations = gql(`
 `);
 
 export const Query_organization = gql(`
-    query Organization($input: QueryOrganizationInput!, $first: Int, $after: String,$last: Int, $before: String, $where: MembersWhereInput) {
+    query Query_organization($input: QueryOrganizationInput!, $first: Int, $after: String, $last: Int, $before: String) {
       organization(input: $input) {
         id
         name
-        members(first: $first, after: $after, last: $last, before: $before, where: $where) {
+        members(first: $first, after: $after, last: $last, before: $before) {
           pageInfo {
-          endCursor
-          hasNextPage
-          hasPreviousPage
-          startCursor
+            endCursor
+            hasNextPage
+            hasPreviousPage
+            startCursor
           }
           edges {
-          cursor
+            cursor
             node {
               id
               name
+              emailAddress
               role
+            }
+          }
+        }
+        blockedUsers(first: $first, after: $after, last: $last, before: $before) {
+          pageInfo {
+            endCursor
+            hasNextPage
+            hasPreviousPage
+            startCursor
+          }
+          edges {
+            cursor
+            node {
+              id
+              name
+              emailAddress
             }
           }
         }
@@ -646,7 +663,7 @@ export const Mutation_createPresignedUrl = gql(`
     createPresignedUrl(input: $input) {
       presignedUrl
       objectName
-      requiresUpload   
+      requiresUpload
        }
   }
 `);
@@ -658,3 +675,11 @@ export const Mutation_createGetfileUrl = gql(`
     }
   }
 `);
+
+export const Mutation_blockUser = gql(`mutation Mutation_blockUser($organizationId: String!, $userId: String!) {
+    blockUser(organizationId: $organizationId, userId: $userId)
+}`);
+
+export const Mutation_unblockUser = gql(`mutation Mutation_unblockUser($organizationId: String!, $userId: String!) {
+    unblockUser(organizationId: $organizationId, userId: $userId)
+}`);
