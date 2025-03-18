@@ -5,19 +5,13 @@ import { communityUpdater } from "~/src/graphql/types/Community/updater";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../../../src/graphql/context";
+import { createMockUser, type DeepPartial } from "test/_Mocks_/mockUser";
 
-const createMockUser = (overrides?: Partial<User>): Partial<User> => ({
-	id: "123",
-	name: "John Doe",
-	role: "administrator",
-	createdAt: new Date(),
-	updatedAt: null,
-	...overrides,
-});
+
 
 describe("Community Resolver - Updater Field", () => {
 	let ctx: GraphQLContext;
-	let mockUser: Partial<User>;
+	let mockUser:DeepPartial<User>;
 	let mockCommunity: Community;
 	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
