@@ -562,8 +562,6 @@ export const Query_organization = gql(`
             cursor
             node {
               id
-              name
-              emailAddress
             }
           }
         }
