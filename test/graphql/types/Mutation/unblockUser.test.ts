@@ -2,13 +2,12 @@ import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
-import { mercuriusClient } from "../../../routes/graphql/client";
-import { createRegularUserUsingAdmin } from "../../../routes/graphql/createRegularUserUsingAdmin";
+import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_blockUser,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
-	Mutation_createUser,
 	Mutation_unblockUser,
 	Query_signIn,
 } from "../../../routes/graphql/documentNodes";

@@ -2,8 +2,8 @@ import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
-import { mercuriusClient } from "../../../routes/graphql/client";
-import { createRegularUserUsingAdmin } from "../../../routes/graphql/createRegularUserUsingAdmin";
+import { mercuriusClient } from "../../types/client";
+import { createRegularUserUsingAdmin } from "../../types/createRegularUserUsingAdmin";
 import {
 	Mutation_blockUser,
 	Mutation_createOrganization,
@@ -28,7 +28,6 @@ assertToBeNonNullish(authToken);
 suite("Organization.blockedUsers Field", () => {
 	suite("when the client is not authenticated", () => {
 		test("should return an error with unauthenticated extensions code", async () => {
-			// Create an organization first
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -50,7 +49,6 @@ suite("Organization.blockedUsers Field", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			// Query without authentication
 			const result = await mercuriusClient.query(Query_organization, {
 				variables: {
 					input: {
@@ -74,7 +72,6 @@ suite("Organization.blockedUsers Field", () => {
 
 	suite("when there are no blocked users", () => {
 		test("should return an empty connection", async () => {
-			// Create an organization
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -96,13 +93,11 @@ suite("Organization.blockedUsers Field", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			// Get admin user ID
 			assertToBeNonNullish(signInResult.data?.signIn);
 			assertToBeNonNullish(signInResult.data.signIn.user);
 			const adminId = signInResult.data.signIn.user.id;
 			assertToBeNonNullish(adminId);
 
-			// Add admin to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -114,7 +109,6 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			// Query the organization's blocked users
 			const result = await mercuriusClient.query(Query_organization, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -125,8 +119,14 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			expect(result.data?.organization?.blockedUsers?.edges).toHaveLength(0);
-			expect(result.data?.organization?.blockedUsers?.pageInfo).toEqual({
+			const blockedUsers = result.data?.organization?.blockedUsers as {
+				edges: Array<{ node: { id: string } }>;
+				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+			};
+			assertToBeNonNullish(blockedUsers);
+
+			expect(blockedUsers.edges).toHaveLength(0);
+			expect(blockedUsers.pageInfo).toEqual({
 				hasNextPage: false,
 				hasPreviousPage: false,
 				startCursor: null,
@@ -137,7 +137,6 @@ suite("Organization.blockedUsers Field", () => {
 
 	suite("when there are blocked users", () => {
 		test("should return the blocked users in the connection", async () => {
-			// Create an organization
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -159,13 +158,11 @@ suite("Organization.blockedUsers Field", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			// Get admin user ID
 			assertToBeNonNullish(signInResult.data?.signIn);
 			assertToBeNonNullish(signInResult.data.signIn.user);
 			const adminId = signInResult.data.signIn.user.id;
 			assertToBeNonNullish(adminId);
 
-			// Add admin to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -177,13 +174,11 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			// Create users to block
 			const { userId: userId1 } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId1);
 			const { userId: userId2 } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId2);
 
-			// Add users to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -204,7 +199,6 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			// Block the users
 			await mercuriusClient.mutate(Mutation_blockUser, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -221,7 +215,6 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			// Query the organization's blocked users
 			const result = await mercuriusClient.query(Query_organization, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -232,8 +225,14 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			expect(result.data?.organization?.blockedUsers?.edges).toHaveLength(2);
-			expect(result.data?.organization?.blockedUsers?.edges).toEqual(
+			const blockedUsers = result.data?.organization?.blockedUsers as {
+				edges: Array<{ node: { id: string } }>;
+				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+			};
+			assertToBeNonNullish(blockedUsers);
+
+			expect(blockedUsers.edges).toHaveLength(2);
+			expect(blockedUsers.edges).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
 						node: expect.objectContaining({
@@ -247,7 +246,7 @@ suite("Organization.blockedUsers Field", () => {
 					}),
 				]),
 			);
-			expect(result.data?.organization?.blockedUsers?.pageInfo).toEqual({
+			expect(blockedUsers.pageInfo).toEqual({
 				hasNextPage: false,
 				hasPreviousPage: false,
 				startCursor: expect.any(String),
@@ -258,7 +257,6 @@ suite("Organization.blockedUsers Field", () => {
 
 	suite("when pagination is used", () => {
 		test("should respect the 'first' parameter", async () => {
-			// Create an organization
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -280,13 +278,11 @@ suite("Organization.blockedUsers Field", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			// Get admin user ID
 			assertToBeNonNullish(signInResult.data?.signIn);
 			assertToBeNonNullish(signInResult.data.signIn.user);
 			const adminId = signInResult.data.signIn.user.id;
 			assertToBeNonNullish(adminId);
 
-			// Add admin to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -298,127 +294,6 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			// Create users to block
-			const { userId: userId1 } = await createRegularUserUsingAdmin();
-			assertToBeNonNullish(userId1);
-			const { userId: userId2 } = await createRegularUserUsingAdmin();
-			assertToBeNonNullish(userId2);
-			const { userId: userId3 } = await createRegularUserUsingAdmin();
-			assertToBeNonNullish(userId3);
-
-			// Add users to the organization
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						memberId: userId1,
-					},
-				},
-			});
-
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						memberId: userId2,
-					},
-				},
-			});
-
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						memberId: userId3,
-					},
-				},
-			});
-
-			// Block the users
-			await mercuriusClient.mutate(Mutation_blockUser, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					organizationId: orgId,
-					userId: userId1,
-				},
-			});
-
-			await mercuriusClient.mutate(Mutation_blockUser, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					organizationId: orgId,
-					userId: userId2,
-				},
-			});
-
-			await mercuriusClient.mutate(Mutation_blockUser, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					organizationId: orgId,
-					userId: userId3,
-				},
-			});
-
-			// Query with first=2
-			const result = await mercuriusClient.query(Query_organization, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						id: orgId,
-					},
-					first: 2,
-				},
-			});
-
-			expect(result.data?.organization?.blockedUsers?.edges).toHaveLength(2);
-			expect(result.data?.organization?.blockedUsers?.pageInfo.hasNextPage).toBe(true);
-		});
-
-		test("should handle cursor-based pagination", async () => {
-			// Create an organization
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							name: `Cursor Pagination Org ${faker.string.uuid()}`,
-							description: "Org for cursor pagination testing",
-							countryCode: "us",
-							state: "CA",
-							city: "San Francisco",
-							postalCode: "94101",
-							addressLine1: "100 Test St",
-							addressLine2: "Suite 1",
-						},
-					},
-				},
-			);
-			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
-
-			// Get admin user ID
-			assertToBeNonNullish(signInResult.data?.signIn);
-			assertToBeNonNullish(signInResult.data.signIn.user);
-			const adminId = signInResult.data.signIn.user.id;
-			assertToBeNonNullish(adminId);
-
-			// Add admin to the organization
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						organizationId: orgId,
-						memberId: adminId,
-						role: "administrator",
-					},
-				},
-			});
-
-			// Create users to block
 			const { userId: userId1 } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId1);
 			const { userId: userId2 } = await createRegularUserUsingAdmin();
@@ -428,7 +303,6 @@ suite("Organization.blockedUsers Field", () => {
 			const { userId: userId4 } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId4);
 
-			// Add users to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -469,7 +343,6 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			// Block the users
 			await mercuriusClient.mutate(Mutation_blockUser, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -502,47 +375,195 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			// Query first page
-			const firstPageResult = await mercuriusClient.query(Query_organization, {
+			const result = await mercuriusClient.query(Query_organization, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
 						id: orgId,
 					},
-					first: 2,
+					first: 3,
 				},
 			});
 
-			const blockedUsersEdges = firstPageResult.data?.organization?.blockedUsers?.edges;
-			assertToBeNonNullish(blockedUsersEdges);
-			expect(blockedUsersEdges).toHaveLength(2);
-			expect(firstPageResult.data?.organization?.blockedUsers?.pageInfo.hasNextPage).toBe(true);
-			const endCursor = firstPageResult.data?.organization?.blockedUsers?.pageInfo.endCursor;
-			assertToBeNonNullish(endCursor);
+			const blockedUsers = result.data?.organization?.blockedUsers as {
+				edges: Array<{ node: { id: string } }>;
+				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+			};
+			assertToBeNonNullish(blockedUsers);
 
-			// Query second page
+			expect(blockedUsers.edges).toHaveLength(3);
+			expect(blockedUsers.pageInfo.hasNextPage).toBe(true);
+		});
+
+		test("should handle cursor-based pagination", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Cursor Pagination Org ${faker.string.uuid()}`,
+							description: "Org for cursor pagination testing",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "100 Test St",
+							addressLine2: "Suite 1",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			assertToBeNonNullish(signInResult.data?.signIn);
+			assertToBeNonNullish(signInResult.data.signIn.user);
+			const adminId = signInResult.data.signIn.user.id;
+			assertToBeNonNullish(adminId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: adminId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const { userId: userId1 } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId1);
+			const { userId: userId2 } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId2);
+			const { userId: userId3 } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId3);
+			const { userId: userId4 } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userId4);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: userId1,
+					},
+				},
+			});
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: userId2,
+					},
+				},
+			});
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: userId3,
+					},
+				},
+			});
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: userId4,
+					},
+				},
+			});
+
+			await mercuriusClient.mutate(Mutation_blockUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					organizationId: orgId,
+					userId: userId1,
+				},
+			});
+
+			await mercuriusClient.mutate(Mutation_blockUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					organizationId: orgId,
+					userId: userId2,
+				},
+			});
+
+			await mercuriusClient.mutate(Mutation_blockUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					organizationId: orgId,
+					userId: userId3,
+				},
+			});
+
+			await mercuriusClient.mutate(Mutation_blockUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					organizationId: orgId,
+					userId: userId4,
+				},
+			});
+
+			const result = await mercuriusClient.query(Query_organization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						id: orgId,
+					},
+					first: 3,
+				},
+			});
+
+			const blockedUsers = result.data?.organization?.blockedUsers as {
+				edges: Array<{ node: { id: string }; cursor: string }>;
+				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+			};
+			assertToBeNonNullish(blockedUsers);
+			expect(blockedUsers.edges).toHaveLength(3);
+			expect(blockedUsers.pageInfo.hasNextPage).toBe(true);
+
+			expect(blockedUsers.edges.length).toBeGreaterThan(0);
+
+			const lastIndex = blockedUsers.edges.length - 1;
+			const lastEdge = blockedUsers.edges[lastIndex];
+			assertToBeNonNullish(lastEdge);
+			const lastEdgeCursor = lastEdge.cursor;
+			assertToBeNonNullish(lastEdgeCursor);
+
 			const secondPageResult = await mercuriusClient.query(Query_organization, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
 						id: orgId,
 					},
-					first: 2,
-					after: endCursor,
+					first: 10,
+					after: lastEdgeCursor,
 				},
 			});
 
-			const secondPageEdges = secondPageResult.data?.organization?.blockedUsers?.edges;
-			assertToBeNonNullish(secondPageEdges);
-			expect(secondPageEdges).toHaveLength(2);
-			expect(secondPageResult.data?.organization?.blockedUsers?.pageInfo.hasNextPage).toBe(false);
-			expect(secondPageResult.data?.organization?.blockedUsers?.pageInfo.hasPreviousPage).toBe(true);
+			const secondPageBlockedUsers = secondPageResult.data?.organization?.blockedUsers as {
+				edges: Array<{ node: { id: string } }>;
+				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+			};
+			assertToBeNonNullish(secondPageBlockedUsers);
+			expect(secondPageBlockedUsers.edges).toHaveLength(1);
+			expect(secondPageBlockedUsers.pageInfo.hasNextPage).toBe(false);
+			expect(secondPageBlockedUsers.pageInfo.hasPreviousPage).toBe(true);
 		});
 	});
 
 	suite("when a user is unblocked", () => {
 		test("should no longer appear in the blocked users list", async () => {
-			// Create an organization
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -564,13 +585,11 @@ suite("Organization.blockedUsers Field", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			// Get admin user ID
 			assertToBeNonNullish(signInResult.data?.signIn);
 			assertToBeNonNullish(signInResult.data.signIn.user);
 			const adminId = signInResult.data.signIn.user.id;
 			assertToBeNonNullish(adminId);
 
-			// Add admin to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -582,13 +601,11 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			// Create users to block
 			const { userId: userId1 } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId1);
 			const { userId: userId2 } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId2);
 
-			// Add users to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -609,7 +626,6 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			// Block both users
 			await mercuriusClient.mutate(Mutation_blockUser, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -626,7 +642,6 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			// Verify both users are blocked
 			const beforeResult = await mercuriusClient.query(Query_organization, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -637,11 +652,14 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			const beforeEdges = beforeResult.data?.organization?.blockedUsers?.edges;
-			assertToBeNonNullish(beforeEdges);
-			expect(beforeEdges).toHaveLength(2);
+			const beforeBlockedUsers = beforeResult.data?.organization?.blockedUsers as {
+				edges: Array<{ node: { id: string } }>;
+				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+			};
+			assertToBeNonNullish(beforeBlockedUsers);
 
-			// Unblock one user
+			expect(beforeBlockedUsers.edges).toHaveLength(2);
+
 			await mercuriusClient.mutate(Mutation_unblockUser, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -650,7 +668,6 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			// Verify only one user remains blocked
 			const afterResult = await mercuriusClient.query(Query_organization, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -661,11 +678,15 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			const afterEdges = afterResult.data?.organization?.blockedUsers?.edges;
-			assertToBeNonNullish(afterEdges);
-			expect(afterEdges).toHaveLength(1);
+			const afterBlockedUsers = afterResult.data?.organization?.blockedUsers as {
+				edges: Array<{ node: { id: string } }>;
+				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+			};
+			assertToBeNonNullish(afterBlockedUsers);
 
-			const node = afterEdges[0]?.node;
+			expect(afterBlockedUsers.edges).toHaveLength(1);
+
+			const node = afterBlockedUsers.edges[0]?.node;
 			assertToBeNonNullish(node);
 			expect(node.id).toBe(userId2);
 		});

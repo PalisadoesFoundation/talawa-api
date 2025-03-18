@@ -6,4 +6,4 @@
 
 > **AgendaFolder**: *typeof* `agendaFoldersTable.$inferSelect`
 
-Defined in: src/graphql/types/AgendaFolder/AgendaFolder.ts:4
+Defined in: [src/graphql/types/AgendaFolder/AgendaFolder.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/f1b6ec0d386e11c6dc4f3cf8bb763223ff502e1e/src/graphql/types/AgendaFolder/AgendaFolder.ts#L4)

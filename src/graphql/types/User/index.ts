@@ -21,3 +21,4 @@ import "./state";
 import "./updatedAt";
 import "./updater";
 import "./workPhoneNumber";
+import "./createdOrganizations";

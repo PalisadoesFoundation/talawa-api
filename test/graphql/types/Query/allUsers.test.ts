@@ -14,6 +14,8 @@ suite("Query field allUsers", () => {
 	let adminAuthToken: string;
 	let regularUserAuthToken: string;
 	let regularUserId: string;
+	let regularUser2Id: string;
+	let regularUser3Id: string;
 
 	// Setup: Create admin and regular user tokens
 	beforeAll(async () => {
@@ -58,6 +60,56 @@ suite("Query field allUsers", () => {
 		regularUserId = createUserResult.data.createUser.user?.id;
 		regularUserAuthToken =
 			createUserResult.data.createUser.authenticationToken || "";
+
+		// Create and sign in as regular user
+		const createUser2Result = await mercuriusClient.mutate(
+			Mutation_createUser,
+			{
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						emailAddress: `${faker.string.ulid()}@test.com`,
+						isEmailAddressVerified: false,
+						name: "Regular User2",
+						password: "password123",
+						role: "regular",
+					},
+				},
+			},
+		);
+		if (!createUser2Result.data?.createUser?.user?.id) {
+			throw new Error(
+				"Failed to create regular user: Create user mutation response did not contain user ID",
+			);
+		}
+		regularUser2Id = createUser2Result.data.createUser.user?.id;
+
+		// Create and sign in as regular user
+		const createUser3Result = await mercuriusClient.mutate(
+			Mutation_createUser,
+			{
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						emailAddress: `${faker.string.ulid()}@test.com`,
+						isEmailAddressVerified: false,
+						name: "Regular User3",
+						password: "password123",
+						role: "regular",
+					},
+				},
+			},
+		);
+		if (!createUser3Result.data?.createUser?.user?.id) {
+			throw new Error(
+				"Failed to create regular user: Create user mutation response did not contain user ID",
+			);
+		}
+		regularUser3Id = createUser3Result.data.createUser.user?.id;
 	});
 
 	// Cleanup
@@ -70,6 +122,30 @@ suite("Query field allUsers", () => {
 				variables: {
 					input: {
 						id: regularUserId,
+					},
+				},
+			});
+		}
+		if (regularUser2Id) {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						id: regularUser2Id,
+					},
+				},
+			});
+		}
+		if (regularUser3Id) {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						id: regularUser3Id,
 					},
 				},
 			});

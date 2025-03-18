@@ -1,4 +1,4 @@
-// https://containers.dev/implementors/json_reference/
+ // https://containers.dev/implementors/json_reference/
 // https://github.com/orgs/devcontainers/discussions/4
 {
 	"$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",

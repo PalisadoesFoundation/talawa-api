@@ -2,8 +2,8 @@ import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
-import { mercuriusClient } from "../../../routes/graphql/client";
-import { createRegularUserUsingAdmin } from "../../../routes/graphql/createRegularUserUsingAdmin";
+import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_blockUser,
 	Mutation_createOrganization,
@@ -70,7 +70,6 @@ suite("Mutation field blockUser", () => {
 
 	suite("when the target user does not exist", () => {
 		test("should return an error with arguments_associated_resources_not_found extensions code", async () => {
-			// Create an organization first
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -115,12 +114,10 @@ suite("Mutation field blockUser", () => {
 
 	suite("when the current user is not an admin", () => {
 		test("should return an error with unauthorized_action extensions code", async () => {
-			// Create a regular user
 			const { authToken: regularAuthToken, userId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(regularAuthToken);
 			assertToBeNonNullish(userId);
 
-			// Create an organization
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -142,7 +139,6 @@ suite("Mutation field blockUser", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			// Add the regular user to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -153,11 +149,9 @@ suite("Mutation field blockUser", () => {
 				},
 			});
 
-			// Create another user to block
 			const { userId: targetUserId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(targetUserId);
 
-			// Add the target user to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -191,7 +185,6 @@ suite("Mutation field blockUser", () => {
 
 	suite("when the target user is already blocked", () => {
 		test("should return an error with forbidden_action extensions code", async () => {
-			// Create an organization
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -213,13 +206,11 @@ suite("Mutation field blockUser", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			// Get admin user ID
 			assertToBeNonNullish(signInResult.data?.signIn);
 			assertToBeNonNullish(signInResult.data.signIn.user);
 			const adminId = signInResult.data.signIn.user.id;
 			assertToBeNonNullish(adminId);
 
-			// Add admin to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -231,11 +222,9 @@ suite("Mutation field blockUser", () => {
 				},
 			});
 
-			// Create a regular user to block
 			const { userId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId);
 
-			// Add the user to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -246,7 +235,6 @@ suite("Mutation field blockUser", () => {
 				},
 			});
 
-			// Block the user first
 			await mercuriusClient.mutate(Mutation_blockUser, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -255,7 +243,6 @@ suite("Mutation field blockUser", () => {
 				},
 			});
 
-			// Try to block the same user again
 			const result = await mercuriusClient.mutate(Mutation_blockUser, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -279,7 +266,6 @@ suite("Mutation field blockUser", () => {
 
 	suite("when the target user is not a member", () => {
 		test("should return an error with forbidden_action extensions code", async () => {
-			// Create an organization
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -301,13 +287,11 @@ suite("Mutation field blockUser", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			// Get admin user ID
 			assertToBeNonNullish(signInResult.data?.signIn);
 			assertToBeNonNullish(signInResult.data.signIn.user);
 			const adminId = signInResult.data.signIn.user.id;
 			assertToBeNonNullish(adminId);
 
-			// Add admin to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -319,7 +303,6 @@ suite("Mutation field blockUser", () => {
 				},
 			});
 
-			// Create a regular user who is not a member
 			const { userId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId);
 
@@ -346,7 +329,6 @@ suite("Mutation field blockUser", () => {
 
 	suite("when the current user tries to block themselves", () => {
 		test("should return an error with forbidden_action extensions code", async () => {
-			// Create an organization
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -368,13 +350,11 @@ suite("Mutation field blockUser", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			// Get the current user's ID
 			assertToBeNonNullish(signInResult.data?.signIn);
 			assertToBeNonNullish(signInResult.data.signIn.user);
 			const currentUserId = signInResult.data.signIn.user.id;
 			assertToBeNonNullish(currentUserId);
 
-			// Add the admin to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -386,7 +366,6 @@ suite("Mutation field blockUser", () => {
 				},
 			});
 
-			// Try to block self
 			const result = await mercuriusClient.mutate(Mutation_blockUser, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -410,7 +389,6 @@ suite("Mutation field blockUser", () => {
 
 	suite("when the target user is an admin", () => {
 		test("should return an error with forbidden_action extensions code", async () => {
-			// Create an organization
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -432,7 +410,6 @@ suite("Mutation field blockUser", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			// Create another admin user
 			const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
 				headers: {
 					authorization: `bearer ${authToken}`,
@@ -450,13 +427,11 @@ suite("Mutation field blockUser", () => {
 			assertToBeNonNullish(createUserResult.data?.createUser?.user?.id);
 			const adminUserId = createUserResult.data.createUser.user.id;
 
-			// Get current admin user ID
 			assertToBeNonNullish(signInResult.data?.signIn);
 			assertToBeNonNullish(signInResult.data.signIn.user);
 			const currentAdminId = signInResult.data.signIn.user.id;
 			assertToBeNonNullish(currentAdminId);
 
-			// Add both admins to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -479,7 +454,6 @@ suite("Mutation field blockUser", () => {
 				},
 			});
 
-			// Try to block the admin
 			const result = await mercuriusClient.mutate(Mutation_blockUser, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -503,7 +477,6 @@ suite("Mutation field blockUser", () => {
 
 	suite("when all conditions are met", () => {
 		test("should successfully block the user", async () => {
-			// Create an organization
 			const createOrgResult = await mercuriusClient.mutate(
 				Mutation_createOrganization,
 				{
@@ -525,13 +498,11 @@ suite("Mutation field blockUser", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			// Get admin user ID
 			assertToBeNonNullish(signInResult.data?.signIn);
 			assertToBeNonNullish(signInResult.data.signIn.user);
 			const adminId = signInResult.data.signIn.user.id;
 			assertToBeNonNullish(adminId);
 
-			// Add admin to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -543,11 +514,9 @@ suite("Mutation field blockUser", () => {
 				},
 			});
 
-			// Create a regular user to block
 			const { userId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userId);
 
-			// Add the user to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -558,7 +527,6 @@ suite("Mutation field blockUser", () => {
 				},
 			});
 
-			// Block the user
 			const result = await mercuriusClient.mutate(Mutation_blockUser, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {

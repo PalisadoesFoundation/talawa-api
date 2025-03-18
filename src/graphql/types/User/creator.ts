@@ -1,4 +1,5 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { User } from "./User";
 
 User.implement({
@@ -70,6 +71,7 @@ User.implement({
 
 				return existingUser;
 			},
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			type: User,
 		}),
 	}),
