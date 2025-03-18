@@ -2736,9 +2736,8 @@ type OrganizationBlockedUsersConnection {
 
 type OrganizationBlockedUsersConnectionEdge {
   cursor: String!
-  node: User
+  node: BlockedUser
 }
-
 """"""
 type OrganizationChatsConnection {
   edges: [OrganizationChatsConnectionEdge]
