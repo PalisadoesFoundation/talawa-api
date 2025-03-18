@@ -677,11 +677,11 @@ export const Mutation_createGetfileUrl = gql(`
 `);
 
 export const Mutation_blockUser =
-	gql(`mutation Mutation_blockUser($organizationId: String!, $userId: String!) {
+	gql(`mutation Mutation_blockUser($organizationId: ID!, $userId: ID!) {
     blockUser(organizationId: $organizationId, userId: $userId)
 }`);
 
 export const Mutation_unblockUser =
-	gql(`mutation Mutation_unblockUser($organizationId: String!, $userId: String!) {
+	gql(`mutation Mutation_unblockUser($organizationId: ID!, $userId: ID!) {
     unblockUser(organizationId: $organizationId, userId: $userId)
 }`);
