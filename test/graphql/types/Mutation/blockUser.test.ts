@@ -1,9 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
-import { server } from "../../../server";
-import { mercuriusClient } from "../client";
-import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_blockUser,
 	Mutation_createOrganization,
@@ -11,6 +8,9 @@ import {
 	Mutation_createUser,
 	Query_signIn,
 } from "../../../routes/graphql/documentNodes";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -114,7 +114,8 @@ suite("Mutation field blockUser", () => {
 
 	suite("when the current user is not an admin", () => {
 		test("should return an error with unauthorized_action extensions code", async () => {
-			const { authToken: regularAuthToken, userId } = await createRegularUserUsingAdmin();
+			const { authToken: regularAuthToken, userId } =
+				await createRegularUserUsingAdmin();
 			assertToBeNonNullish(regularAuthToken);
 			assertToBeNonNullish(userId);
 
@@ -410,20 +411,23 @@ suite("Mutation field blockUser", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						emailAddress: `email${faker.string.ulid()}@email.com`,
-						isEmailAddressVerified: false,
-						name: "Admin User",
-						password: "password",
-						role: "administrator",
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: {
+						authorization: `bearer ${authToken}`,
+					},
+					variables: {
+						input: {
+							emailAddress: `email${faker.string.ulid()}@email.com`,
+							isEmailAddressVerified: false,
+							name: "Admin User",
+							password: "password",
+							role: "administrator",
+						},
 					},
 				},
-			});
+			);
 			assertToBeNonNullish(createUserResult.data?.createUser?.user?.id);
 			const adminUserId = createUserResult.data.createUser.user.id;
 

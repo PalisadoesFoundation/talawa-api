@@ -1,9 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
-import { server } from "../../../server";
-import { mercuriusClient } from "../../types/client";
-import { createRegularUserUsingAdmin } from "../../types/createRegularUserUsingAdmin";
 import {
 	Mutation_blockUser,
 	Mutation_createOrganization,
@@ -12,6 +9,9 @@ import {
 	Query_organization,
 	Query_signIn,
 } from "../../../routes/graphql/documentNodes";
+import { server } from "../../../server";
+import { mercuriusClient } from "../../types/client";
+import { createRegularUserUsingAdmin } from "../../types/createRegularUserUsingAdmin";
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -121,7 +121,12 @@ suite("Organization.blockedUsers Field", () => {
 
 			const blockedUsers = result.data?.organization?.blockedUsers as {
 				edges: Array<{ node: { id: string } }>;
-				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+				pageInfo: {
+					hasNextPage: boolean;
+					hasPreviousPage: boolean;
+					startCursor: string | null;
+					endCursor: string | null;
+				};
 			};
 			assertToBeNonNullish(blockedUsers);
 
@@ -227,7 +232,12 @@ suite("Organization.blockedUsers Field", () => {
 
 			const blockedUsers = result.data?.organization?.blockedUsers as {
 				edges: Array<{ node: { id: string } }>;
-				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+				pageInfo: {
+					hasNextPage: boolean;
+					hasPreviousPage: boolean;
+					startCursor: string | null;
+					endCursor: string | null;
+				};
 			};
 			assertToBeNonNullish(blockedUsers);
 
@@ -387,7 +397,12 @@ suite("Organization.blockedUsers Field", () => {
 
 			const blockedUsers = result.data?.organization?.blockedUsers as {
 				edges: Array<{ node: { id: string } }>;
-				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+				pageInfo: {
+					hasNextPage: boolean;
+					hasPreviousPage: boolean;
+					startCursor: string | null;
+					endCursor: string | null;
+				};
 			};
 			assertToBeNonNullish(blockedUsers);
 
@@ -526,7 +541,12 @@ suite("Organization.blockedUsers Field", () => {
 
 			const blockedUsers = result.data?.organization?.blockedUsers as {
 				edges: Array<{ node: { id: string }; cursor: string }>;
-				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+				pageInfo: {
+					hasNextPage: boolean;
+					hasPreviousPage: boolean;
+					startCursor: string | null;
+					endCursor: string | null;
+				};
 			};
 			assertToBeNonNullish(blockedUsers);
 			expect(blockedUsers.edges).toHaveLength(3);
@@ -551,9 +571,15 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			const secondPageBlockedUsers = secondPageResult.data?.organization?.blockedUsers as {
+			const secondPageBlockedUsers = secondPageResult.data?.organization
+				?.blockedUsers as {
 				edges: Array<{ node: { id: string } }>;
-				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+				pageInfo: {
+					hasNextPage: boolean;
+					hasPreviousPage: boolean;
+					startCursor: string | null;
+					endCursor: string | null;
+				};
 			};
 			assertToBeNonNullish(secondPageBlockedUsers);
 			expect(secondPageBlockedUsers.edges).toHaveLength(1);
@@ -652,9 +678,15 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			const beforeBlockedUsers = beforeResult.data?.organization?.blockedUsers as {
+			const beforeBlockedUsers = beforeResult.data?.organization
+				?.blockedUsers as {
 				edges: Array<{ node: { id: string } }>;
-				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+				pageInfo: {
+					hasNextPage: boolean;
+					hasPreviousPage: boolean;
+					startCursor: string | null;
+					endCursor: string | null;
+				};
 			};
 			assertToBeNonNullish(beforeBlockedUsers);
 
@@ -678,9 +710,15 @@ suite("Organization.blockedUsers Field", () => {
 				},
 			});
 
-			const afterBlockedUsers = afterResult.data?.organization?.blockedUsers as {
+			const afterBlockedUsers = afterResult.data?.organization
+				?.blockedUsers as {
 				edges: Array<{ node: { id: string } }>;
-				pageInfo: { hasNextPage: boolean; hasPreviousPage: boolean; startCursor: string | null; endCursor: string | null };
+				pageInfo: {
+					hasNextPage: boolean;
+					hasPreviousPage: boolean;
+					startCursor: string | null;
+					endCursor: string | null;
+				};
 			};
 			assertToBeNonNullish(afterBlockedUsers);
 
