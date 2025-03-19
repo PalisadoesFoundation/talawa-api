@@ -260,6 +260,10 @@ export const envConfigSchema = Type.Object({
 	API_GRAPHQL_MUTATION_BASE_COST: Type.Number({
 		minimum: 0,
 	}),
+	// base cost of subscription
+	API_GRAPHQL_SUBSCRIPTION_BASE_COST: Type.Number({
+		minimum: 0,
+	}),
 	/**
 	 * Maximum capacity of a user's request bucket for rate limiting.
 	 */

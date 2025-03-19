@@ -5,6 +5,7 @@ import {
 	subscriptionChatMessageCreateInputSchema,
 } from "~/src/graphql/inputs/SubscriptionChatMessageCreateInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
+import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const subscriptionChatMessageCreateArgumentsSchema = z.object({
@@ -20,6 +21,7 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 				type: SubscriptionChatMessageCreateInput,
 			}),
 		},
+		complexity : envConfig.API_GRAPHQL_SUBSCRIPTION_BASE_COST,
 		description:
 			"Subscription field to subscribe to the event of creation of a message in a chat.",
 		subscribe: async (_parent, args, ctx) => {

@@ -261,6 +261,10 @@ This environment variable specifies the cost of retrieving list fields in GraphQ
 
 This environment variable defines the base cost of executing a GraphQL mutation. Mutations typically modify data, making them more expensive than queries.
 
+### API_GRAPHQL_SUBSCRIPTION_BASE_COST
+
+This environment variable defines the base cost of initiating and maintaining a GraphQL subscription. Subscriptions enable real-time data streaming and are inherently resource-intensive due to persistent connections (e.g., WebSocket), event listeners, and continuous data updates.
+
 ### API_RATE_LIMIT_BUCKET_CAPACITY
 
 This environment variable defines the maximum capacity of the leaky bucket used for rate limiting based on GraphQL query cost analysis. The bucket holds tokens that represent available request capacity.
