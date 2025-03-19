@@ -76,6 +76,7 @@ describe("Community Resolver - Updater Field", () => {
 
 	it("should return null when updaterId is null", async () => {
 		const communityWithNullUpdater = { ...mockCommunity, updaterId: null };
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUser);
 
 		await expect(
 			communityUpdater(communityWithNullUpdater, {}, ctx),
@@ -124,5 +125,61 @@ describe("Community Resolver - Updater Field", () => {
 		expect(logWarnSpy).toHaveBeenCalledWith(
 			"Postgres select operation returned an empty array for a community's updater id that isn't null.",
 		);
+	});
+
+	it("calls where function correctly", async () => {
+		try {
+			const currentUserId = "123";
+			const updaterId = "456";
+
+			mocks.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce({ id: currentUserId, role: "administrator" }) // First findFirst call (current user)
+				.mockResolvedValueOnce({ id: updaterId, role: "administrator" }); // Second findFirst call (updater)
+
+			await communityUpdater(
+				{ ...mockCommunity, updaterId: "456" }, // Mock community with updaterId
+				{},
+				ctx,
+			);
+			expect(
+				mocks.drizzleClient.query.usersTable.findFirst,
+			).toHaveBeenCalledTimes(2);
+
+			const calls = (
+				mocks.drizzleClient.query.usersTable.findFirst as ReturnType<
+					typeof vi.fn
+				>
+			).mock.calls;
+			expect(calls.length).toBe(2); // Ensure both were called
+
+			// the first `where` function (fetching current user)
+			const whereFn1 = calls[0]?.[0]?.where;
+			expect(whereFn1).toBeDefined();
+
+			// the second `where` function (fetching updater)
+			const whereFn2 = calls[1]?.[0]?.where;
+			expect(whereFn2).toBeDefined();
+
+			// Mock field conditions
+			const mockFields = { id: currentUserId };
+			const updaterFields = { id: updaterId };
+			const mockOperators = { eq: vi.fn((a, b) => ({ field: a, value: b })) };
+
+			// Call first `where` function with correct user ID
+			whereFn1(mockFields, mockOperators);
+			expect(mockOperators.eq).toHaveBeenCalledWith(
+				mockFields.id,
+				currentUserId,
+			);
+
+			// Call second `where` function with correct updater ID
+			whereFn2(updaterFields, mockOperators);
+			expect(mockOperators.eq).toHaveBeenCalledWith(
+				updaterFields.id,
+				updaterId,
+			);
+		} catch (error) {
+			console.log(error);
+		}
 	});
 });

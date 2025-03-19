@@ -164,8 +164,6 @@ describe("resolveUpdater", () => {
 	test("ensures usersTable query is called with correct user ID", async () => {
 		(mocks.drizzleClient.query.usersTable.findFirst as Mock).mockImplementation(
 			({ where }) => {
-				console.log("Mock called with where:", where); // Debugging output
-
 				// Ensure `where` is a function and execute it
 				if (typeof where === "function") {
 					const fakeQueryInput = { id: "user123" };
@@ -190,10 +188,9 @@ describe("resolveUpdater", () => {
 			console.error("Caught error:", error); // Debugging output
 		}
 
-		// Validate that `where` is a function and works correctly
 		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
 			expect.objectContaining({
-				where: expect.any(Function), // Ensuring it's a function
+				where: expect.any(Function),
 			}),
 		);
 	});
@@ -212,8 +209,19 @@ describe("resolveUpdater", () => {
 			updaterId: currentUserId,
 		} as FundCampaignPledge;
 
-		const result = await resolveUpdater(mockPledge, {}, ctx);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user123",
+			role: "administrator",
+		});
 
+		mocks.drizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
+			fund: {
+				organization: {
+					membershipsWhereOrganization: [{ role: "administrator" }],
+				},
+			},
+		});
+		const result = await resolveUpdater(mockPledge, {}, ctx);
 		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
 			{
 				where: expect.any(Function),
@@ -245,7 +253,7 @@ describe("resolveUpdater", () => {
 
 		expect(result).toEqual({
 			id: currentUserId,
-			role: "member",
+			role: "administrator",
 		});
 	});
 
@@ -379,7 +387,7 @@ describe("resolveUpdater", () => {
 		).mock.calls;
 
 		if (calls.length > 0) {
-			const callArgs = calls[0]?.[0]; // ✅ Safe to access
+			const callArgs = calls[0]?.[0];
 
 			const whereFn =
 				callArgs?.with?.fund?.with?.organization?.with
