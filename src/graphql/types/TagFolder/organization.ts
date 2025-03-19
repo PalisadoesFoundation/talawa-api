@@ -1,11 +1,13 @@
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { TagFolder } from "./TagFolder";
+import envConfig from "~/src/utilities/graphqLimits";
 
 TagFolder.implement({
 	fields: (t) => ({
 		organization: t.field({
 			description: "Organization which the tag folder belongs to.",
+			complexity : envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				const existingOrganization =
 					await ctx.drizzleClient.query.organizationsTable.findFirst({
