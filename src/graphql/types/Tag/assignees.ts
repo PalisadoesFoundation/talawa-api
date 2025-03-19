@@ -12,7 +12,7 @@ import {
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import { Tag } from "./Tag";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const assigneesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
@@ -57,6 +57,12 @@ Tag.implement({
 			{
 				description:
 					"GraphQL connection to traverse through the users that are assignees of the tag.",
+					complexity: (args) => {
+										return {
+											field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+											multiplier: args.first || args.last || 1,
+										};
+									},
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,
@@ -189,9 +195,21 @@ Tag.implement({
 				type: User,
 			},
 			{
+				edgesField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 			{
+				nodeField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 		),

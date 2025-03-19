@@ -3,7 +3,7 @@ import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Tag } from "./Tag";
 import type { Tag as TagType } from "./Tag";
-
+import envConfig from "~/src/utilities/graphqLimits";
 export const resolveUpdater = async (
 	parent: TagType,
 	_args: Record<string, never>,
@@ -89,6 +89,7 @@ Tag.implement({
 	fields: (t) => ({
 		updater: t.field({
 			description: "User who last updated the tag.",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: resolveUpdater,
 			type: User,
 		}),
