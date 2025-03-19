@@ -257,6 +257,10 @@ This environment variable sets the cost of resolving object fields in a GraphQL 
 
 This environment variable specifies the cost of retrieving list fields in GraphQL queries. Lists contain multiple items, making them more resource-intensive than scalar fields.
 
+### API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST
+
+This environment variable defines the cost for list fields that do not implement pagination in GraphQL queries. Non-paginated lists risk returning unbounded data, increasing server load and response times, especially for large datasets.
+
 ### API_GRAPHQL_MUTATION_BASE_COST
 
 This environment variable defines the base cost of executing a GraphQL mutation. Mutations typically modify data, making them more expensive than queries.
