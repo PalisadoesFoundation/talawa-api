@@ -1,4 +1,4 @@
-import { ulid } from "ulidx";
+import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { postAttachmentsTable } from "~/src/drizzle/tables/postAttachments";
 import { postsTable } from "~/src/drizzle/tables/posts";
@@ -171,7 +171,8 @@ builder.mutationField("createPost", (t) =>
 							attachments.map((attachment) => ({
 								creatorId: currentUserId,
 								mimeType: attachment.mimetype,
-								name: ulid(),
+								id: uuidv7(),
+								name: attachment.name,
 								postId: createdPost.id,
 								objectName: attachment.objectName,
 								fileHash: attachment.fileHash,

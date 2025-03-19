@@ -146,9 +146,9 @@ builder.mutationField("deletePost", (t) =>
 
 				await ctx.minio.client.removeObjects(
 					ctx.minio.bucketName,
-					existingPost.attachmentsWherePost.map(
-						(attachment) => attachment.name,
-					),
+					existingPost.attachmentsWherePost
+						.map((attachment) => attachment.objectName)
+						.filter((name): name is string => name !== null),
 				);
 
 				return Object.assign(deletedPost, {

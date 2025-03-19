@@ -1,179 +1,361 @@
-import { ilike, sql } from "drizzle-orm";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { faker } from "@faker-js/faker";
+import { assertToBeNonNullish } from "test/helpers";
+import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import type {
-	ExplicitGraphQLContext,
-	ImplicitMercuriusContext,
-} from "~/src/graphql/context";
-import { resolveOrganizations } from "~/src/graphql/types/Query/organizations";
+	TalawaGraphQLFormattedError,
+	UnauthenticatedExtensions,
+} from "~/src/utilities/TalawaGraphQLError";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_createUser,
+	Mutation_deleteOrganization,
+	Mutation_deleteOrganizationMembership,
+	Mutation_deleteUser,
+	Query_organizations,
+	Query_signIn,
+} from "../documentNodes";
 
-type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
+suite("Query field organizations", () => {
+	let adminAuth = "";
+	let regularUser1Email = "";
+	let regularUser1Id = "";
+	let regularUser1Auth = "";
+	let regularUser2Email = "";
+	let regularUser3Email = "";
+	let regularUser2Id = "";
+	let regularUser3Id = "";
+	let regularUser2Auth = "";
+	let regularUser3Auth = "";
+	let org1Id = "";
+	let org2Id = "";
 
-const mockDrizzleClient = {
-	query: {
-		organizationsTable: {
-			findMany: vi.fn(),
+	beforeAll(async () => {
+		// Sign in as administrator
+		const administratorUserSignInResult = await mercuriusClient.query(
+			Query_signIn,
+			{
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(
+			administratorUserSignInResult.data.signIn?.authenticationToken,
+		);
+		adminAuth = administratorUserSignInResult.data.signIn.authenticationToken;
+
+		// Create regular user 1
+		regularUser1Email = `email${faker.string.ulid()}@email.com`;
+		const createUser1Result = await mercuriusClient.mutate(
+			Mutation_createUser,
+			{
+				headers: {
+					authorization: `bearer ${adminAuth}`,
+				},
+				variables: {
+					input: {
+						emailAddress: regularUser1Email,
+						isEmailAddressVerified: false,
+						name: "Regular User 1",
+						password: "password",
+						role: "regular",
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(createUser1Result.data.createUser?.user?.id);
+		regularUser1Id = createUser1Result.data.createUser.user.id;
+
+		// Create regular user 2
+		regularUser2Email = `email${faker.string.ulid()}@email.com`;
+		const createUser2Result = await mercuriusClient.mutate(
+			Mutation_createUser,
+			{
+				headers: {
+					authorization: `bearer ${adminAuth}`,
+				},
+				variables: {
+					input: {
+						emailAddress: regularUser2Email,
+						isEmailAddressVerified: false,
+						name: "Regular User 2",
+						password: "password",
+						role: "regular",
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(createUser2Result.data.createUser?.user?.id);
+		regularUser2Id = createUser2Result.data.createUser.user.id;
+
+		// Create regular user 3
+		regularUser3Email = `email${faker.string.ulid()}@email.com`;
+		const createUser3Result = await mercuriusClient.mutate(
+			Mutation_createUser,
+			{
+				headers: {
+					authorization: `bearer ${adminAuth}`,
+				},
+				variables: {
+					input: {
+						emailAddress: regularUser3Email,
+						isEmailAddressVerified: false,
+						name: "Regular User 3",
+						password: "password",
+						role: "regular",
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(createUser3Result.data.createUser?.user?.id);
+		regularUser3Id = createUser3Result.data.createUser.user.id;
+
+		// Sign in as regular users
+		const user1SignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: regularUser1Email,
+					password: "password",
+				},
+			},
+		});
+		assertToBeNonNullish(user1SignInResult.data.signIn?.authenticationToken);
+		regularUser1Auth = user1SignInResult.data.signIn.authenticationToken;
+
+		const user2SignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: regularUser2Email,
+					password: "password",
+				},
+			},
+		});
+		assertToBeNonNullish(user2SignInResult.data.signIn?.authenticationToken);
+		regularUser2Auth = user2SignInResult.data.signIn.authenticationToken;
+
+		const user3SignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: regularUser3Email,
+					password: "password",
+				},
+			},
+		});
+		assertToBeNonNullish(user3SignInResult.data.signIn?.authenticationToken);
+		regularUser3Auth = user3SignInResult.data.signIn.authenticationToken;
+
+		// delete user 3
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: {
+				authorization: `bearer ${adminAuth}`,
+			},
+			variables: {
+				input: {
+					id: regularUser3Id,
+				},
+			},
+		});
+
+		// Create organizations
+		const org1Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: {
+					authorization: `bearer ${adminAuth}`,
+				},
+				variables: {
+					input: {
+						countryCode: "us",
+						name: `Test Organization 1 ${faker.string.alphanumeric(8)}`,
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(org1Result.data?.createOrganization);
+		org1Id = org1Result.data.createOrganization.id;
+
+		const org2Result = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: {
+					authorization: `bearer ${adminAuth}`,
+				},
+				variables: {
+					input: {
+						countryCode: "ca",
+						name: `Test Organization 2 ${faker.string.alphanumeric(8)}`,
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(org2Result.data?.createOrganization);
+		org2Id = org2Result.data.createOrganization.id;
+
+		// Make regular user 1 an admin of organization 1
+		const orgMembership = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: {
+					authorization: `bearer ${adminAuth}`,
+				},
+				variables: {
+					input: {
+						memberId: regularUser1Id,
+						organizationId: org1Id,
+						role: "administrator",
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(orgMembership.data?.createOrganizationMembership);
+	});
+
+	afterAll(async () => {
+		// Clean up organization memberships
+		await mercuriusClient.mutate(Mutation_deleteOrganizationMembership, {
+			headers: {
+				authorization: `bearer ${adminAuth}`,
+			},
+			variables: {
+				input: {
+					organizationId: org1Id,
+					memberId: regularUser1Id,
+				},
+			},
+		});
+
+		// Clean up organizations
+		await mercuriusClient.mutate(Mutation_deleteOrganization, {
+			headers: {
+				authorization: `bearer ${adminAuth}`,
+			},
+			variables: {
+				input: {
+					id: org1Id,
+				},
+			},
+		});
+
+		await mercuriusClient.mutate(Mutation_deleteOrganization, {
+			headers: {
+				authorization: `bearer ${adminAuth}`,
+			},
+			variables: {
+				input: {
+					id: org2Id,
+				},
+			},
+		});
+
+		// Clean up users
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: {
+				authorization: `bearer ${adminAuth}`,
+			},
+			variables: {
+				input: {
+					id: regularUser1Id,
+				},
+			},
+		});
+
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: {
+				authorization: `bearer ${adminAuth}`,
+			},
+			variables: {
+				input: {
+					id: regularUser2Id,
+				},
+			},
+		});
+	});
+
+	suite(
+		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.organizations" field if`,
+		() => {
+			test("client triggering the graphql operation is not authenticated.", async () => {
+				const result = await mercuriusClient.query(Query_organizations, {
+					variables: {},
+				});
+
+				expect(result.data.organizations).toEqual(null);
+				expect(result.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<UnauthenticatedExtensions>({
+								code: "unauthenticated",
+							}),
+							message: expect.any(String),
+							path: ["organizations"],
+						}),
+					]),
+				);
+			});
+
+			test("client triggering the graphql operation is not authenticated delete user.", async () => {
+				const result = await mercuriusClient.query(Query_organizations, {
+					headers: {
+						authorization: `bearer ${regularUser3Auth}`,
+					},
+					variables: {},
+				});
+
+				expect(result.data.organizations).toEqual(null);
+			});
 		},
-	},
-};
+	);
 
-const baseMockCtx = {
-	currentClient: {
-		isAuthenticated: true as const,
-		user: { id: "user123", role: "member" },
-	},
-	drizzleClient: mockDrizzleClient,
-	log: { error: vi.fn() },
-} as unknown as ContextType;
+	test("administrator can access all organizations without filter", async () => {
+		const result = await mercuriusClient.query(Query_organizations, {
+			headers: {
+				authorization: `bearer ${adminAuth}`,
+			},
+			variables: {},
+		});
 
-describe("resolveOrganizations", () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
+		expect(result.errors).toBeUndefined();
+		expect(result.data.organizations?.length).toBeGreaterThan(1);
 	});
 
-	test("returns organizations array if user is not authenticated", async () => {
-		const unauthenticatedCtx = {
-			...baseMockCtx,
-			currentClient: { isAuthenticated: false },
-		} as unknown as ContextType;
+	test("regular user who is an organization admin can only access organizations they administer", async () => {
+		const result = await mercuriusClient.query(Query_organizations, {
+			headers: {
+				authorization: `bearer ${regularUser1Auth}`,
+			},
+			variables: {},
+		});
 
-		const orgs = [
-			{ id: "org1", name: "Organization 1" },
-			{ id: "org2", name: "Organization 2" },
-		];
-		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue(orgs);
-
-		const result = await resolveOrganizations(
-			null,
-			{ filter: null },
-			unauthenticatedCtx,
+		expect(result.errors).toBeUndefined();
+		expect(result.data.organizations).toHaveLength(1);
+		expect(result.data.organizations).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					id: org1Id,
+				}),
+			]),
 		);
-		expect(result).toEqual(orgs);
-
+		// Should not contain org2
 		expect(
-			mockDrizzleClient.query.organizationsTable.findMany,
-		).toHaveBeenCalledWith(
-			expect.objectContaining({
-				limit: 20,
-				offset: 0,
-			}),
-		);
+			result.data?.organizations?.find((org) => org.id === org2Id),
+		).toBeUndefined();
 	});
 
-	test("returns organizations array on successful query", async () => {
-		const orgs = [
-			{ id: "org1", name: "Organization 1" },
-			{ id: "org2", name: "Organization 2" },
-		];
-		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue(orgs);
+	test("regular user with no admin privileges can see all organizations", async () => {
+		const result = await mercuriusClient.query(Query_organizations, {
+			headers: {
+				authorization: `bearer ${regularUser2Auth}`,
+			},
+			variables: {},
+		});
 
-		const result = await resolveOrganizations(
-			null,
-			{ filter: null },
-			baseMockCtx,
-		);
-		expect(result).toEqual(orgs);
-
-		expect(
-			mockDrizzleClient.query.organizationsTable.findMany,
-		).toHaveBeenCalledWith(
-			expect.objectContaining({
-				limit: 20,
-				offset: 0,
-			}),
-		);
-	});
-
-	test("applies filter when provided", async () => {
-		const orgs = [{ id: "org1", name: "Filtered Organization" }];
-		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue(orgs);
-		const filterValue = "Filtered";
-
-		const result = await resolveOrganizations(
-			null,
-			{ filter: filterValue },
-			baseMockCtx,
-		);
-		expect(result).toEqual(orgs);
-
-		expect(
-			mockDrizzleClient.query.organizationsTable.findMany,
-		).toHaveBeenCalledWith(
-			expect.objectContaining({
-				limit: 20,
-				offset: 0,
-			}),
-		);
-
-		const whereArg =
-			mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0]
-				?.where;
-		expect(typeof whereArg).toBe("function");
-	});
-
-	test("logs error and throws error if findMany fails", async () => {
-		const errorMsg = new Error("Database error");
-		mockDrizzleClient.query.organizationsTable.findMany.mockRejectedValue(
-			errorMsg,
-		);
-
-		await expect(
-			resolveOrganizations(null, { filter: null }, baseMockCtx),
-		).rejects.toThrow("An error occurred while fetching organizations.");
-		expect(baseMockCtx.log.error).toHaveBeenCalledWith(
-			"Error in organizations query:",
-			errorMsg,
-		);
-	});
-
-	test("where clause returns correct condition when filter is provided", async () => {
-		// Ensure findMany resolves without error.
-		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue([]);
-		const filterValue = "Filtered";
-
-		await resolveOrganizations(null, { filter: filterValue }, baseMockCtx);
-
-		// Retrieve the arguments passed to findMany.
-		const findManyArgs =
-			mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0];
-		const whereFn = findManyArgs.where;
-		expect(typeof whereFn).toBe("function");
-
-		// Create a dummy fields object where "name" is a SQL expression.
-		const dummyFields = { name: sql<string>`Some Org` };
-		// Compute the expected condition.
-		const expectedCondition = ilike(dummyFields.name, `%${filterValue}%`);
-		// Compare by converting to string.
-		expect(String(whereFn(dummyFields))).toEqual(String(expectedCondition));
-	});
-
-	test("where clause returns sql`TRUE` when filter is not provided", async () => {
-		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue([]);
-		const filterValue = "Filtered";
-		await resolveOrganizations(null, { filter: filterValue }, baseMockCtx);
-
-		const findManyArgs =
-			mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0];
-		const whereFn = findManyArgs.where;
-		expect(typeof whereFn).toBe("function");
-
-		const dummyFields = { name: sql<string>`Some Org` };
-		const expectedCondition = sql`TRUE`;
-		expect(String(whereFn(dummyFields))).toEqual(String(expectedCondition));
-	});
-
-	test("where clause returns sql`TRUE` when filter is not provided", async () => {
-		mockDrizzleClient.query.organizationsTable.findMany.mockResolvedValue([]);
-
-		await resolveOrganizations(null, { filter: undefined }, baseMockCtx);
-
-		const findManyArgs =
-			mockDrizzleClient.query.organizationsTable.findMany.mock.calls[0]?.[0];
-		const whereFn = findManyArgs.where;
-		expect(typeof whereFn).toBe("function");
-
-		const dummyFields = { name: sql<string>`Some Org` };
-		const expectedCondition = sql`TRUE`;
-
-		expect(String(whereFn(dummyFields))).toEqual(String(expectedCondition));
+		expect(result.errors).toBeUndefined();
+		expect(result.data.organizations?.length).toBeGreaterThan(1);
 	});
 });

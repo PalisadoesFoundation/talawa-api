@@ -1,437 +1,645 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { GraphQLContext } from "~/src/graphql/context";
-import { updateChatMessageResolver } from "~/src/graphql/types/Mutation/updateChatMessage";
-import type { User } from "~/src/graphql/types/User/User";
+import { faker } from "@faker-js/faker";
+import { expect, suite, test, vi } from "vitest";
+import type {
+	TalawaGraphQLFormattedError,
+	UnauthenticatedExtensions,
+} from "~/src/utilities/TalawaGraphQLError";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createChat,
+	Mutation_createChatMessage,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_createUser,
+	Mutation_deleteUser,
+	Mutation_updateChatMessage,
+	Query_signIn,
+} from "../documentNodes";
 
-interface ChatMessage {
-	id: string;
-	creatorId: string;
-	body: string;
-	chat?: {
-		organization: {
-			membershipsWhereOrganization: { role: string; memberId?: string }[];
-		};
-		chatMembershipsWhereChat: { role: string }[];
-	};
-}
-
-const createMockContext = (
-	overrides: Partial<GraphQLContext> = {},
-): GraphQLContext => {
-	return {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "11111111-1111-1111-1111-111111111111" } as NonNullable<
-				GraphQLContext["currentClient"]["user"]
-			>,
-		},
-		drizzleClient: {
-			query: {
-				usersTable: { findFirst: vi.fn() },
-				chatMessagesTable: { findFirst: vi.fn() },
-			},
-			update: vi.fn(),
-			transaction: vi.fn(), // if needed in other tests
-		},
-		minio: {
-			client: { removeObjects: vi.fn(() => Promise.resolve()) },
-			bucketName: "talawa",
-		},
-		envConfig: { API_BASE_URL: "http://localhost" },
-		jwt: { sign: vi.fn() },
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		...overrides,
-	} as GraphQLContext;
-};
-
-function mockUsersTableFindFirst(
-	ctx: GraphQLContext,
-	returnValue: Partial<User> = {},
-): void {
-	ctx.drizzleClient.query.usersTable.findFirst = vi.fn().mockResolvedValue({
-		role: "user",
-		id: "11111111-1111-1111-1111-111111111111",
-		...returnValue,
-	});
-}
-
-function mockChatMessagesTableFindFirst(
-	ctx: GraphQLContext,
-	returnValue: Partial<ChatMessage> = {},
-): void {
-	ctx.drizzleClient.query.chatMessagesTable.findFirst = vi
-		.fn()
-		.mockResolvedValue({
-			creatorId: "22222222-2222-2222-2222-222222222222",
-			chat: {
-				organization: { membershipsWhereOrganization: [] },
-				chatMembershipsWhereChat: [],
-			},
-			...returnValue,
-		});
-}
-// Create a schema for the mutation arguments, matching the resolver's expectations.
-
-let args: { input: { id: string; body: string } };
-
-describe("updateChatMessage mutation", () => {
-	let ctx: GraphQLContext;
-
-	beforeEach(() => {
-		// Reset the context before each test.
-		ctx = createMockContext();
-		args = {
-			input: {
-				id: "11111111-1111-1111-1111-111111111111",
-				body: "Updated chat message body",
-			},
-		};
-	});
-
-	it("throws an unauthenticated error when the client is not authenticated", async () => {
-		ctx.currentClient.isAuthenticated = false;
-		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
-			expect.objectContaining({
-				extensions: expect.objectContaining({ code: "unauthenticated" }),
-			}),
-		);
-	});
-
-	it("throws an invalid_arguments error when input validation fails", async () => {
-		// Provide an invalid id format to trigger validation error.
-		const invalidArgs = {
-			input: { id: "invalid-uuid", body: "Updated chat message body" },
-		};
-		await expect(
-			updateChatMessageResolver({}, invalidArgs, ctx),
-		).rejects.toThrowError(
-			expect.objectContaining({
-				extensions: expect.objectContaining({ code: "invalid_arguments" }),
-			}),
-		);
-	});
-
-	it("throws an arguments_associated_resources_not_found error if chat message is not found", async () => {
-		mockUsersTableFindFirst(ctx);
-
-		(
-			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
-				typeof vi.fn
-			>
-		).mockResolvedValue(undefined);
-
-		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
-			expect.objectContaining({
-				extensions: expect.objectContaining({
-					code: "arguments_associated_resources_not_found",
-				}),
-			}),
-		);
-	});
-
-	it("throws an unauthorized error if the current user is not allowed to update the message", async () => {
-		mockUsersTableFindFirst(ctx);
-		mockChatMessagesTableFindFirst(ctx);
-
-		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
-			expect.objectContaining({
-				extensions: expect.objectContaining({
-					code: "unauthorized_action_on_arguments_associated_resources",
-				}),
-			}),
-		);
-	});
-
-	it("throws an unexpected error if the update operation returns undefined", async () => {
-		(ctx.currentClient.user as NonNullable<typeof ctx.currentClient.user>).id =
-			"11111111-1111-1111-1111-111111111111";
-		mockUsersTableFindFirst(ctx, {
-			role: "administrator",
-			id: "11111111-1111-1111-1111-111111111111",
-		});
-		mockChatMessagesTableFindFirst(ctx, {
-			creatorId: "11111111-1111-1111-1111-111111111111",
-			chat: {
-				organization: {
-					membershipsWhereOrganization: [{ role: "administrator" }],
-				},
-				chatMembershipsWhereChat: [{ role: "member" }],
-			},
-		});
-
-		const returningMock = vi.fn().mockResolvedValue([]);
-		(ctx.drizzleClient.update as ReturnType<typeof vi.fn>).mockReturnValue({
-			set: vi.fn().mockReturnThis(),
-			where: vi.fn().mockReturnThis(),
-			returning: returningMock,
-		});
-		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
-			expect.objectContaining({
-				extensions: expect.objectContaining({ code: "unexpected" }),
-			}),
-		);
-	});
-
-	it("successfully updates and returns the updated chat message", async () => {
-		(ctx.currentClient.user as NonNullable<typeof ctx.currentClient.user>).id =
-			"11111111-1111-1111-1111-111111111111";
-		mockUsersTableFindFirst(ctx, {
-			role: "administrator",
-			id: "11111111-1111-1111-1111-111111111111",
-		});
-		mockChatMessagesTableFindFirst(ctx, {
-			creatorId: "11111111-1111-1111-1111-111111111111",
-			chat: {
-				organization: {
-					membershipsWhereOrganization: [{ role: "administrator" }],
-				},
-				chatMembershipsWhereChat: [{ role: "member" }],
-			},
-		});
-
-		const updatedChatMessage: ChatMessage = {
-			id: args.input.id,
-			creatorId: ctx.currentClient.user?.id ?? "",
-			body: args.input.body,
-		};
-
-		const returningMock = vi.fn().mockResolvedValue([updatedChatMessage]);
-		(ctx.drizzleClient.update as ReturnType<typeof vi.fn>).mockReturnValue({
-			set: vi.fn().mockReturnThis(),
-			where: vi.fn().mockReturnThis(),
-			returning: returningMock,
-		});
-
-		const result = await updateChatMessageResolver({}, args, ctx);
-		expect(result).toEqual(updatedChatMessage);
-		expect(returningMock).toHaveBeenCalled();
-	});
-
-	it("throws an unauthorized error if the user is not a member of the organization", async () => {
-		(ctx.currentClient.user as NonNullable<typeof ctx.currentClient.user>).id =
-			"regularUserId";
-		mockUsersTableFindFirst(ctx, { id: "regularUserId" });
-		mockChatMessagesTableFindFirst(ctx, {
-			creatorId: "someOtherUserId",
-			chat: {
-				organization: { membershipsWhereOrganization: [] },
-				chatMembershipsWhereChat: [],
-			},
-		});
-		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
-			expect.objectContaining({
-				extensions: expect.objectContaining({
-					code: "unauthorized_action_on_arguments_associated_resources",
-				}),
-			}),
-		);
-	});
-
-	it("throws an unauthorized error if the user is not a member of the chat", async () => {
-		(ctx.currentClient.user as NonNullable<typeof ctx.currentClient.user>).id =
-			"regularUserId";
-
-		mockUsersTableFindFirst(ctx, { id: "regularUserId" });
-
-		mockChatMessagesTableFindFirst(ctx, {
-			creatorId: "someOtherUserId",
-			chat: {
-				organization: {
-					membershipsWhereOrganization: [
-						{ role: "member", memberId: "someOrgMember" },
-					],
-				},
-				chatMembershipsWhereChat: [],
-			},
-		});
-		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
-			expect.objectContaining({
-				extensions: expect.objectContaining({
-					code: "unauthorized_action_on_arguments_associated_resources",
-				}),
-			}),
-		);
-	});
-
-	it("executes inline where functions in queries", async () => {
-		const eqSpy = vi.fn((a, b) => a === b);
-		const dummyOperators = { eq: eqSpy };
-
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockImplementation(
-			(options: {
-				where: (
-					value: { id: string },
-					operators: { eq: (a: unknown, b: unknown) => boolean },
-				) => void;
-			}) => {
-				options.where({ id: ctx.currentClient.user?.id ?? "" }, dummyOperators);
-				return Promise.resolve({
-					role: "administrator",
-					id: ctx.currentClient.user?.id ?? "",
-				});
-			},
-		);
-
-		(
-			ctx.drizzleClient.query.chatMessagesTable.findFirst as ReturnType<
-				typeof vi.fn
-			>
-		).mockImplementation((options) => {
-			options.where({ id: args.input.id }, dummyOperators);
-
-			options.with.chat.with.chatMembershipsWhereChat.where(
-				{ memberId: ctx.currentClient.user?.id ?? "" },
-				dummyOperators,
-			);
-
-			options.with.chat.with.organization.with.membershipsWhereOrganization.where(
-				{ memberId: ctx.currentClient.user?.id ?? "" },
-				dummyOperators,
-			);
-
-			return Promise.resolve({
-				creatorId: ctx.currentClient.user?.id ?? "",
-				chat: {
-					organization: {
-						membershipsWhereOrganization: [{ role: "administrator" }],
+suite("Mutation field updateChatMessage", () => {
+	suite(
+		`results in a graphql error with \"unauthenticated\" extensions code in the \"errors\" field and \"null\" as the value of \"data.updateChatMessage\" field if`,
+		() => {
+			test("client triggering the graphql operation is not authenticated.", async () => {
+				const updateChatMessageResult = await mercuriusClient.mutate(
+					Mutation_updateChatMessage,
+					{
+						variables: {
+							input: {
+								id: faker.string.uuid(),
+								body: "Updated message",
+							},
+						},
 					},
-					chatMembershipsWhereChat: [{ role: "member" }],
+				);
+
+				expect(updateChatMessageResult.data.updateChatMessage).toEqual(null);
+				expect(updateChatMessageResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions: expect.objectContaining<UnauthenticatedExtensions>({
+								code: "unauthenticated",
+							}),
+							message: expect.any(String),
+							path: ["updateChatMessage"],
+						}),
+					]),
+				);
+			});
+
+			test("client triggering the GraphQL operation has no existing user associated to their authentication context.", async () => {
+				// Sign in as Administrator
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				// Create a new user
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+								isEmailAddressVerified: false,
+								name: "Test User",
+								password: "TestPassword123",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createUserResult.data.createUser?.authenticationToken,
+				);
+				assertToBeNonNullish(createUserResult.data.createUser.user?.id);
+
+				const userToken = createUserResult.data.createUser.authenticationToken;
+				const userId = createUserResult.data.createUser.user.id;
+
+				// Delete the user
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						input: { id: userId },
+					},
+				});
+
+				// Try performing an action with the deleted user's token
+				const updateChatMessageResult = await mercuriusClient.mutate(
+					Mutation_updateChatMessage,
+					{
+						headers: {
+							authorization: `bearer ${userToken}`,
+						},
+						variables: {
+							input: {
+								id: faker.string.uuid(),
+								body: "Updated Message",
+							},
+						},
+					},
+				);
+
+				// Expect an authentication error because the user is deleted
+				expect(updateChatMessageResult.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unauthenticated",
+							}),
+							message: expect.any(String),
+							path: ["updateChatMessage"],
+						}),
+					]),
+				);
+			});
+		},
+	);
+
+	suite(
+		`returns an error with "unauthorized_action_on_arguments_associated_resources" 
+      if the user is not part of the chat`,
+		() => {
+			test("returns an authorization error if user has a non-admin org membership but is not in the chat", async () => {
+				// Sign in as Administrator
+				const administratorUserSignInResult = await mercuriusClient.query(
+					Query_signIn,
+					{
+						variables: {
+							input: {
+								emailAddress:
+									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					administratorUserSignInResult.data.signIn?.authenticationToken,
+				);
+
+				const adminToken =
+					administratorUserSignInResult.data.signIn.authenticationToken;
+
+				// Create a non-admin user
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
+						headers: {
+							authorization: `bearer ${adminToken}`,
+						},
+						variables: {
+							input: {
+								emailAddress: `email${faker.string.ulid()}@test.com`,
+								isEmailAddressVerified: true,
+								name: "Regular User",
+								password: "TestPassword123",
+								role: "regular",
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createUserResult.data.createUser?.authenticationToken,
+				);
+				assertToBeNonNullish(createUserResult.data.createUser.user?.id);
+
+				const regularUserToken =
+					createUserResult.data.createUser.authenticationToken;
+				const regularUserId = createUserResult.data.createUser.user.id;
+
+				const organizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								name: `Test Org ${faker.string.uuid()}`,
+								addressLine1: "123 Main St",
+								city: "New York",
+								countryCode: "us",
+								description: "Test Description",
+							},
+						},
+					},
+				);
+
+				const organizationId = organizationResult.data?.createOrganization?.id;
+				assertToBeNonNullish(organizationId);
+
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganizationMembership,
+					{
+						headers: {
+							authorization: `bearer ${adminToken}`,
+						},
+						variables: {
+							input: {
+								organizationId, // Reuse the same ID
+								memberId: regularUserId,
+								role: "regular", // Non-admin role
+							},
+						},
+					},
+				);
+
+				assertToBeNonNullish(
+					createOrganizationResult.data?.createOrganizationMembership?.id,
+				);
+
+				// Create a chat in the same organization
+				const createChatResult = await mercuriusClient.mutate(
+					Mutation_createChat,
+					{
+						headers: {
+							authorization: `bearer ${adminToken}`,
+						},
+						variables: {
+							input: {
+								name: `Test Chat ${faker.string.uuid()}`,
+								description: "Test chat description",
+								organizationId, // Ensure this matches
+							},
+						},
+					},
+				);
+
+				const chatId = createChatResult.data?.createChat?.id;
+				assertToBeNonNullish(chatId);
+
+				// Create a chat message as the administrator
+				const createMessageResult = await mercuriusClient.mutate(
+					Mutation_createChatMessage,
+					{
+						headers: {
+							authorization: `bearer ${adminToken}`,
+						},
+						variables: {
+							input: {
+								chatId,
+								body: "Original Message",
+							},
+						},
+					},
+				);
+
+				const messageId = createMessageResult.data?.createChatMessage?.id;
+				assertToBeNonNullish(messageId);
+
+				// Attempt to update the message as the regular user (who is in the org but NOT in the chat)
+				const updateChatMessageResult = await mercuriusClient.mutate(
+					Mutation_updateChatMessage,
+					{
+						headers: {
+							authorization: `bearer ${regularUserToken}`,
+						},
+						variables: {
+							input: {
+								id: messageId,
+								body: "Unauthorized Update",
+							},
+						},
+					},
+				);
+
+				// Expect an authorization error due to missing chat membership
+				expect(updateChatMessageResult.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unauthorized_action_on_arguments_associated_resources",
+							}),
+							message:
+								"You are not authorized to perform this action on the resources associated to the provided arguments.",
+						}),
+					]),
+				);
+			});
+		},
+	);
+
+	test(`returns "arguments_associated_resources_not_found" error when trying to update a non-existing message`, async () => {
+		const userSignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const userToken = userSignInResult.data?.signIn?.authenticationToken;
+		if (!userToken) throw new Error("User authentication failed");
+
+		const updateChatMessageResult = await mercuriusClient.mutate(
+			Mutation_updateChatMessage,
+			{
+				headers: { authorization: `bearer ${userToken}` },
+				variables: {
+					input: {
+						id: faker.string.uuid(), // Random non-existing ID
+						body: "Updated message",
+					},
+				},
+			},
+		);
+
+		expect(updateChatMessageResult.data.updateChatMessage).toBeNull();
+		expect(updateChatMessageResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					message: expect.any(String), // Ensure message exists
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "id"],
+							}),
+						]),
+					}),
+					path: ["updateChatMessage"],
+				}),
+			]),
+		);
+	});
+
+	test(`returns an "invalid_arguments" error when the message body is empty`, async () => {
+		const userSignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		const userToken = userSignInResult.data?.signIn?.authenticationToken;
+		if (!userToken) throw new Error("User authentication failed");
+
+		const updateChatMessageResult = await mercuriusClient.mutate(
+			Mutation_updateChatMessage,
+			{
+				headers: { authorization: `bearer ${userToken}` },
+				variables: {
+					input: {
+						id: faker.string.uuid(),
+						body: "", // Empty message body
+					},
+				},
+			},
+		);
+
+		expect(updateChatMessageResult.data.updateChatMessage).toBeNull();
+		expect(updateChatMessageResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+					message: expect.any(String),
+					path: ["updateChatMessage"],
+				}),
+			]),
+		);
+	});
+
+	test(`returns an "unexpected" error if updatedMessage is undefined (unexpected case)`, async () => {
+		// Sign in as an administrator
+		const userSignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		const userData = userSignInResult.data?.signIn;
+		assertToBeNonNullish(userData?.authenticationToken);
+		assertToBeNonNullish(userData?.user?.id);
+
+		const userToken = userData.authenticationToken;
+		const userId = userData.user.id;
+
+		// Create an organization
+		const organizationResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${userToken}` },
+				variables: {
+					input: {
+						name: `Test Org ${faker.string.uuid()}`,
+						addressLine1: "123 Main St",
+						city: "New York",
+						countryCode: "us",
+						description: "Test Description",
+					},
+				},
+			},
+		);
+
+		const organizationId = organizationResult.data?.createOrganization?.id;
+		assertToBeNonNullish(organizationId);
+
+		// Add user to the organization
+		const orgMembershipResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: { authorization: `bearer ${userToken}` },
+				variables: {
+					input: {
+						organizationId,
+						memberId: userId,
+						role: "administrator",
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(
+			orgMembershipResult.data?.createOrganizationMembership?.id,
+		);
+
+		// Create a chat
+		const createChatResult = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: {
+				input: {
+					name: faker.string.uuid(),
+					description: "Test chat description",
+					organizationId,
+				},
+			},
+		});
+		const chatId = createChatResult.data?.createChat?.id;
+		assertToBeNonNullish(chatId);
+
+		// Create a chat message
+		const createMessageResult = await mercuriusClient.mutate(
+			Mutation_createChatMessage,
+			{
+				headers: { authorization: `bearer ${userToken}` },
+				variables: { input: { chatId, body: "Test Message" } },
+			},
+		);
+		const messageId = createMessageResult.data?.createChatMessage?.id;
+		assertToBeNonNullish(messageId);
+
+		// Mock the database update operation to simulate returning undefined
+		// Save the original update method
+		const originalUpdate = server.drizzleClient.update;
+
+		// Mock the update method to return an empty array when returning() is called
+		server.drizzleClient.update = vi.fn().mockImplementation(() => {
+			return {
+				set: () => ({
+					where: () => ({
+						returning: () => Promise.resolve([]), // Empty array causes updatedChatMessage to be undefined
+					}),
+				}),
+			};
+		});
+
+		try {
+			// Attempt to update the message which will trigger the mock
+			const updateChatMessageResult = await mercuriusClient.mutate(
+				Mutation_updateChatMessage,
+				{
+					headers: { authorization: `bearer ${userToken}` },
+					variables: {
+						input: {
+							id: messageId,
+							body: "Updated Message Content",
+						},
+					},
+				},
+			);
+
+			// Ensure `errors` exists before checking its length
+			expect(updateChatMessageResult.errors).toBeDefined();
+
+			// If `errors` is defined, ensure it contains at least one error
+			if (updateChatMessageResult.errors) {
+				expect(updateChatMessageResult.errors.length).toBeGreaterThan(0);
+				expect(updateChatMessageResult.errors[0]?.extensions?.code).toBe(
+					"unexpected",
+				);
+			} else {
+				throw new Error("Expected an error response but received none.");
+			}
+		} finally {
+			// Restore the original update method
+			server.drizzleClient.update = originalUpdate;
+		}
+	});
+
+	test("ensures message content with updatedChatMessage returned , updated correctly", async () => {
+		try {
+			// Sign in as an administrator
+			const userSignInResult = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
 				},
 			});
-		});
 
-		const updatedChatMessage = {
-			id: args.input.id,
-			creatorId: ctx.currentClient.user?.id ?? "",
-			body: args.input.body,
-		};
-		const returningMock = vi.fn().mockResolvedValue([updatedChatMessage]);
-		(ctx.drizzleClient.update as ReturnType<typeof vi.fn>).mockReturnValue({
-			set: vi.fn().mockReturnThis(),
-			where: vi.fn().mockReturnThis(),
-			returning: returningMock,
-		});
+			const userData = userSignInResult.data?.signIn;
+			if (!userData || !userData.authenticationToken || !userData.user?.id) {
+				throw new Error("User authentication failed");
+			}
 
-		const result = await updateChatMessageResolver({}, args, ctx);
-		expect(result).toEqual(updatedChatMessage);
-		expect(eqSpy).toHaveBeenCalledTimes(4);
-	});
+			const userToken = userData.authenticationToken;
+			const userId = userData.user.id;
 
-	it("throws an unauthorized error if currentUserOrganizationMembership and currentUserChatMembership are undefined", async () => {
-		mockUsersTableFindFirst(ctx, {
-			id: "11111111-1111-1111-1111-111111111111",
-		});
-		mockChatMessagesTableFindFirst(ctx, {
-			creatorId: "11111111-1111-1111-1111-111111111111",
-			chat: {
-				organization: {
-					membershipsWhereOrganization: [],
+			// Create an organization
+			const organizationResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${userToken}` },
+					variables: {
+						input: {
+							name: `Test Org ${faker.string.uuid()}`,
+							addressLine1: "123 Main St",
+							city: "New York",
+							countryCode: "us",
+							description: "Test Description",
+						},
+					},
 				},
-				chatMembershipsWhereChat: [],
-			},
-		});
-		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
-			expect.objectContaining({
-				extensions: expect.objectContaining({
-					code: "unauthorized_action_on_arguments_associated_resources",
-				}),
-			}),
-		);
-	});
+			);
 
-	it("throws an unauthenticated error if the current user is not found in the users table", async () => {
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(undefined);
+			const organizationId = organizationResult.data?.createOrganization?.id;
+			assertToBeNonNullish(organizationId);
 
-		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
-			expect.objectContaining({
-				extensions: expect.objectContaining({ code: "unauthenticated" }),
-			}),
-		);
-	});
-
-	it("throws an unauthorized error if the current user is not the creator of the chat message", async () => {
-		mockUsersTableFindFirst(ctx, {
-			id: "11111111-1111-1111-1111-111111111111",
-		});
-		mockChatMessagesTableFindFirst(ctx, {
-			creatorId: "11111111-1111-1111-1111-111111111111",
-			chat: {
-				organization: {
-					membershipsWhereOrganization: [],
+			// Add user to the organization
+			const orgMembershipResult = await mercuriusClient.mutate(
+				Mutation_createOrganizationMembership,
+				{
+					headers: { authorization: `bearer ${userToken}` },
+					variables: {
+						input: {
+							organizationId,
+							memberId: userId,
+							role: "administrator",
+						},
+					},
 				},
-				chatMembershipsWhereChat: [],
-			},
-		});
-		await expect(updateChatMessageResolver({}, args, ctx)).rejects.toThrowError(
-			expect.objectContaining({
-				extensions: expect.objectContaining({
-					code: "unauthorized_action_on_arguments_associated_resources",
-				}),
-			}),
-		);
-	});
-});
+			);
 
-// Define a minimal type for the builder used in the schema wiring.
-interface BuilderType {
-	field: (config: unknown) => unknown;
-	arg: (config: unknown) => unknown;
-}
+			assertToBeNonNullish(
+				orgMembershipResult.data?.createOrganizationMembership?.id,
+			);
 
-describe("GraphQL schema wiring", () => {
-	let mutationFieldSpy: ReturnType<typeof vi.spyOn>;
-	let localBuilder: typeof import("~/src/graphql/builder").builder;
-	let localUpdateResolver: typeof updateChatMessageResolver;
+			// Create a chat (Required to get a valid `chatId`)
+			const createChatResult = await mercuriusClient.mutate(
+				Mutation_createChat,
+				{
+					headers: { authorization: `bearer ${userToken}` },
+					variables: {
+						input: {
+							name: faker.string.uuid(),
+							description: "Test chat description",
+							organizationId,
+						},
+					},
+				},
+			);
 
-	beforeEach(async () => {
-		vi.resetModules();
-		const builderModule = await import("~/src/graphql/builder");
-		localBuilder = builderModule.builder;
-		mutationFieldSpy = vi.spyOn(localBuilder, "mutationField");
+			const chatId = createChatResult.data?.createChat?.id;
+			assertToBeNonNullish(chatId);
 
-		const mod = await import("~/src/graphql/types/Mutation/updateChatMessage");
-		localUpdateResolver = mod.updateChatMessageResolver;
-	});
+			// Create a chat message
+			const createChatMessageResult = await mercuriusClient.mutate(
+				Mutation_createChatMessage,
+				{
+					headers: { authorization: `bearer ${userToken}` },
+					variables: {
+						input: {
+							chatId,
+							body: "Original Message",
+						},
+					},
+				},
+			);
 
-	afterEach(() => {
-		mutationFieldSpy.mockRestore();
-	});
+			const chatMessage = createChatMessageResult.data?.createChatMessage;
+			assertToBeNonNullish(chatMessage);
 
-	it("should register updateChatMessage mutation correctly", () => {
-		expect(mutationFieldSpy).toHaveBeenCalledWith(
-			"updateChatMessage",
-			expect.any(Function),
-		);
+			const chatMessageId = chatMessage.id;
 
-		const calls = mutationFieldSpy.mock.calls.filter(
-			(call) => call[0] === "updateChatMessage",
-		);
-		expect(calls.length).toBeGreaterThan(0);
-		const callback = calls[0]?.[1] as (t: BuilderType) => unknown;
-		if (!callback) {
-			throw new Error("Callback not found in mutation field calls");
+			// Update the chat message
+			const updateChatMessageResult = await mercuriusClient.mutate(
+				Mutation_updateChatMessage,
+				{
+					headers: { authorization: `bearer ${userToken}` },
+					variables: {
+						input: {
+							id: chatMessageId,
+							body: "Updated Message",
+						},
+					},
+				},
+			);
+
+			const updatedMessage = updateChatMessageResult.data?.updateChatMessage;
+			assertToBeNonNullish(updatedMessage);
+
+			expect(updatedMessage).toMatchObject({
+				id: chatMessageId,
+				body: "Updated Message",
+			});
+
+			// Ensures `updatedAt` is updated correctly
+			const updatedAt = updatedMessage.updatedAt;
+			assertToBeNonNullish(updatedAt);
+
+			expect(new Date(updatedAt).getTime());
+		} catch (error) {
+			console.error("Test failed:", error);
+			throw error;
 		}
-
-		const dummyT: BuilderType = {
-			field: vi.fn().mockImplementation((config) => config),
-			arg: vi.fn().mockImplementation((config) => config),
-		};
-
-		const fieldConfig = callback(dummyT) as { args: Record<string, unknown> };
-
-		expect(dummyT.field).toHaveBeenCalledWith(
-			expect.objectContaining({
-				type: expect.anything(),
-				description: "Mutation field to update a chat message.",
-				args: expect.any(Object),
-				resolve: localUpdateResolver,
-			}),
-		);
-
-		expect(fieldConfig.args).toHaveProperty("input");
 	});
 });
