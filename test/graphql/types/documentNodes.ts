@@ -677,3 +677,81 @@ export const Mutation_updatePost = gql(`
     }
   }
 `);
+
+export const Mutation_createChat = gql(`
+  mutation Mutation_createChat($input: MutationCreateChatInput!) {
+    createChat(input: $input) {
+      id
+      name
+    }
+  }
+`);
+
+export const Mutation_createChatMessage = gql(`
+ mutation Mutation_createChatMessage($input: MutationCreateChatMessageInput!) {
+  createChatMessage(input: $input) {
+    id
+    body
+    createdAt
+    updatedAt
+    parentMessage {
+      id
+    }
+    chat {
+      id
+      name
+      createdAt
+      creator {
+        id
+        name
+      }
+    }
+    creator {
+      id
+      name
+    }
+  }
+}
+`);
+
+export const Mutation_updateChatMessage = gql(`
+  mutation Mutation_updateChatMessage($input: MutationUpdateChatMessageInput!) {
+  updateChatMessage(input: $input) {
+    id
+    body
+    createdAt
+    updatedAt
+    parentMessage {
+      id
+    }
+    chat {
+      id
+      name
+      createdAt
+      updatedAt
+      creator {
+        id
+        name
+      }
+    }
+    creator {
+      id
+      name
+    }
+  }
+}
+`);
+
+export const Mutation_createChatMembership = gql(`
+  mutation Mutation_createChatMembership($input: MutationCreateChatMembershipInput!) {
+  createChatMembership(input: $input) {
+    id
+    createdAt
+    updatedAt
+    creator {
+      id
+      name
+    }
+  }
+}
+`);
