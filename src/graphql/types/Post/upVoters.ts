@@ -24,7 +24,7 @@ import {
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import { Post } from "./Post";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const upVotersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
@@ -67,6 +67,12 @@ Post.implement({
 			{
 				description:
 					"GraphQL connection to traverse through the user that up voted the post.",
+					complexity: (args) => {
+														return {
+															field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+															multiplier: args.first || args.last || 1,
+														};
+													},
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,
@@ -216,9 +222,21 @@ Post.implement({
 				type: User,
 			},
 			{
+				edgesField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 			{
+				nodeField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 		),

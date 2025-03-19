@@ -1,10 +1,12 @@
 import { and, count, eq } from "drizzle-orm";
 import { commentsTable } from "~/src/drizzle/tables/comments";
 import { Post } from "./Post";
+import envConfig from "~/src/utilities/graphqLimits";
 
 Post.implement({
 	fields: (t) => ({
 		commentsCount: t.field({
+			complexity : envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			description: "Total number of comments created under the post.",
 			resolve: async (parent, _args, ctx) => {
 				const [commentsCount] = await ctx.drizzleClient

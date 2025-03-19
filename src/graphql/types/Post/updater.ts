@@ -3,6 +3,7 @@ import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Post } from "./Post";
 import type { Post as PostType } from "./Post";
+import envConfig from "~/src/utilities/graphqLimits";
 
 export const resolveUpdater = async (
 	parent: PostType,
@@ -88,6 +89,7 @@ Post.implement({
 	fields: (t) => ({
 		updater: t.field({
 			description: "User who last updated the post.",
+			complexity : envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: resolveUpdater,
 			type: User,
 		}),
