@@ -72,6 +72,7 @@ export const advertisementUpdatedAtResolver = async (
 			throw error;
 		}
 		ctx.log.error(error);
+		console.log(error);
 		throw new TalawaGraphQLError({
 			message: "Internal server error",
 			extensions: {

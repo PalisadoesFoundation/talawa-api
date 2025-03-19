@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Advertisement as AdvertisementType } from "~/src/graphql/types/Advertisement/Advertisement";
 import { advertisementCreator } from "~/src/graphql/types/Advertisement/creator";
@@ -173,11 +173,6 @@ describe("Advertisement Resolver - Creator Field", () => {
 	});
 
 	it("should throw an error if the creator does not exist", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			...adminUser,
-			id: "user-123",
-		});
-
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
 			...adminUser,
 			id: "user-123",
@@ -192,6 +187,62 @@ describe("Advertisement Resolver - Creator Field", () => {
 			new TalawaGraphQLError({
 				extensions: { code: "unexpected" },
 			}),
+		);
+	});
+
+	it("calls where function correctly", async () => {
+		const currentUserId = "user-123";
+		const creatorId = "member-123";
+		const organizationId = "org-123";
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			...adminUser,
+			id: currentUserId,
+		});
+
+		await advertisementCreator(mockAdvertisement, {}, ctx);
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledTimes(2);
+
+		const calls = (
+			mocks.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mock.calls;
+		expect(calls.length).toBe(2); // Ensure both calls happened
+
+		// Extract first `where` function (fetching current user)
+		const whereFn1 = calls[0]?.[0]?.where;
+		expect(whereFn1).toBeDefined();
+
+		// Extract second `where` function (fetching creator user)
+		const whereFn2 = calls[1]?.[0]?.where;
+		expect(whereFn2).toBeDefined();
+
+		// Mock field conditions
+		const mockFields = { id: currentUserId };
+		const creatorFields = { id: creatorId };
+		const mockOperators = { eq: vi.fn((a, b) => ({ field: a, value: b })) };
+
+		// Call first `where` function (current user)
+		whereFn1(mockFields, mockOperators);
+		expect(mockOperators.eq).toHaveBeenCalledWith(mockFields.id, currentUserId);
+
+		// Call second `where` function (creator user)
+		whereFn2(creatorFields, mockOperators);
+		expect(mockOperators.eq).toHaveBeenCalledWith(creatorFields.id, creatorId);
+
+		// Validate `organizationMembershipsWhereMember`
+		const withClause = calls[0]?.[0]?.with?.organizationMembershipsWhereMember;
+		expect(withClause).toBeDefined();
+		const whereFnOrg = withClause.where;
+		expect(whereFnOrg).toBeDefined();
+
+		// Call `where` for organizationMembershipsWhereMember
+		const mockOrgFields = { organizationId };
+		whereFnOrg(mockOrgFields, mockOperators);
+		expect(mockOperators.eq).toHaveBeenCalledWith(
+			mockOrgFields.organizationId,
+			organizationId,
 		);
 	});
 });
