@@ -42,6 +42,7 @@ describe("Organization Creator Resolver Tests", () => {
 			updaterId: null,
 			state: null,
 			postalCode: null,
+			userRegistrationRequired: false,
 		};
 	});
 
