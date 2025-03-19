@@ -8,8 +8,8 @@ import type {
 	ImplicitMercuriusContext,
 } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 
 // Define type for organization model
 type OrganizationType = InferSelectModel<typeof organizationsTable>;
