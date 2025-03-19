@@ -135,14 +135,10 @@ describe("Organization Resolver: Updater Field", () => {
 	});
 
 	describe("Edge Cases and Unexpected Scenarios", () => {
-		it("should throw an 'unexpected' error if `updaterId` exists but user does not", async () => {
+		it("should throw a forbidden_action error if current user is not found", async () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				undefined,
 			);
-
-			await expect(
-				OrganizationUpdater(mockOrganization, {}, ctx),
-			).rejects.toThrow(TalawaGraphQLError);
 
 			await expect(
 				OrganizationUpdater(mockOrganization, {}, ctx),
@@ -150,6 +146,7 @@ describe("Organization Resolver: Updater Field", () => {
 				new TalawaGraphQLError({ extensions: { code: "forbidden_action" } }),
 			);
 		});
+
 		it("should log a warning and throw an error if the updater user does not exist", async () => {
 			const mockCurrentUser = {
 				id: "user-123",

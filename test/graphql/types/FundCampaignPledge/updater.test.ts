@@ -306,8 +306,6 @@ describe("resolveUpdater", () => {
 		(
 			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
 		).mockImplementation(({ where }) => {
-			console.log("Executing WHERE clause in usersTable");
-
 			// Execute the `where` function
 			where(mockFields, mockOperators);
 
@@ -325,8 +323,6 @@ describe("resolveUpdater", () => {
 				typeof vi.fn
 			>
 		).mockImplementation(({ where }) => {
-			console.log("Executing WHERE clause in fundCampaignsTable");
-
 			// Execute the `where` function
 			where(mockFields, mockOperators);
 
@@ -405,8 +401,6 @@ describe("resolveUpdater", () => {
 					"user123",
 				);
 			}
-		} else {
-			console.error("Error: mock.calls is empty!");
 		}
 	});
 });

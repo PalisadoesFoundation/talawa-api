@@ -149,10 +149,6 @@ describe("AgendaItem Resolver - Updater Field", () => {
 	});
 
 	it("should throw unexpected error if updater is not current user and updater does not exist", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user-123",
-			role: "administrator",
-		});
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
 			id: "user-123",
 			role: "administrator",
