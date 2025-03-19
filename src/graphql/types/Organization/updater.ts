@@ -1,9 +1,13 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { Organization } from "./Organization";
 import type { GraphQLContext } from "../../context";
+import { Organization } from "./Organization";
 
-export const OrganizationUpdater =  async (parent:Organization, _args:unknown, ctx:GraphQLContext) => {
+export const OrganizationUpdater = async (
+	parent: Organization,
+	_args: unknown,
+	ctx: GraphQLContext,
+) => {
 	if (!ctx.currentClient.isAuthenticated) {
 		throw new TalawaGraphQLError({
 			extensions: {
@@ -60,11 +64,9 @@ export const OrganizationUpdater =  async (parent:Organization, _args:unknown, c
 
 	const updaterId = parent.updaterId;
 
-	const existingUser = await ctx.drizzleClient.query.usersTable.findFirst(
-		{
-			where: (fields, operators) => operators.eq(fields.id, updaterId),
-		},
-	);
+	const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
+		where: (fields, operators) => operators.eq(fields.id, updaterId),
+	});
 
 	// Updater id existing but the associated user not existing is either a business logic error which means that the corresponding data in the database is in a corrupted state or it is a rare race condition. It must be investigated and fixed as soon as possible to prevent further data corruption if the former case is true.
 	if (existingUser === undefined) {
@@ -80,12 +82,12 @@ export const OrganizationUpdater =  async (parent:Organization, _args:unknown, c
 	}
 
 	return existingUser;
-}
+};
 Organization.implement({
 	fields: (t) => ({
 		updater: t.field({
 			description: "User who last updated the organization.",
-			resolve:OrganizationUpdater,
+			resolve: OrganizationUpdater,
 			type: User,
 		}),
 	}),

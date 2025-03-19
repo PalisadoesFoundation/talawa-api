@@ -83,7 +83,6 @@ describe("AgendaItem Resolver - Updater Field", () => {
 	});
 
 	it("should throw unexpected error if updater user does not exist", async () => {
-		// Mock the current user as authenticated and authorized.
 		mocks.drizzleClient.query.usersTable.findFirst
 			.mockResolvedValueOnce({
 				id: "user-123",
@@ -102,7 +101,6 @@ describe("AgendaItem Resolver - Updater Field", () => {
 		// the updater ID in the mockAgendaItem to a different user.
 		mockAgendaItem.updaterId = "user-456";
 
-		// Call the function and assert the correct error is thrown
 		await expect(resolveUpdater(mockAgendaItem, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "unexpected" },

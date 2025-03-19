@@ -1,17 +1,15 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
+import { type DeepPartial, createMockUser } from "test/_Mocks_/mockUser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Community } from "~/src/graphql/types/Community/Community";
 import { communityUpdater } from "~/src/graphql/types/Community/updater";
 import type { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../../../src/graphql/context";
-import { createMockUser, type DeepPartial } from "test/_Mocks_/mockUser";
-
-
 
 describe("Community Resolver - Updater Field", () => {
 	let ctx: GraphQLContext;
-	let mockUser:DeepPartial<User>;
+	let mockUser: DeepPartial<User>;
 	let mockCommunity: Community;
 	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 

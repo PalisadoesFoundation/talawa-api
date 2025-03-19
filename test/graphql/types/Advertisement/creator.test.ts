@@ -21,7 +21,7 @@ describe("Advertisement Resolver - Creator Field", () => {
 	let mockAdvertisement: AdvertisementType;
 	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
-	// Define reusable mock users
+	//reusable mock users
 	const adminUser: UserType = {
 		id: "admin-123",
 		role: "administrator",
@@ -53,7 +53,7 @@ describe("Advertisement Resolver - Creator Field", () => {
 	beforeEach(() => {
 		const { context, mocks: newMocks } = createMockGraphQLContext(
 			true,
-			"user-123", // Set current user ID
+			"user-123",
 		);
 		ctx = context;
 		mocks = newMocks;
@@ -63,7 +63,7 @@ describe("Advertisement Resolver - Creator Field", () => {
 			name: "Test Advertisement",
 			createdAt: new Date(),
 			updatedAt: null,
-			creatorId: "member-123", // Set a creatorId
+			creatorId: "member-123",
 			updaterId: null,
 			description: "Test description",
 			endAt: new Date(),

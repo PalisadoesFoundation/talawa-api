@@ -34,7 +34,7 @@ const authenticateUser = async (ctx: GraphQLContext) => {
 
 const resolveUpdater = async (
 	parent: Fund,
-	_: unknown,
+	_: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	const currentUser = await authenticateUser(ctx);

@@ -18,7 +18,7 @@ import { FundCampaign } from "./FundCampaign";
 
 export const updatedAtResolver = async (
 	parent: FundCampaign,
-	args: unknown,
+	args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	try {

@@ -19,8 +19,8 @@ type QueryTables = {
 // Function to create table methods with default mocks
 function createTableMethods<T>(): TableMethods<T> {
 	return {
-		findFirst: vi.fn(() => Promise.resolve(undefined)),
-		findMany: vi.fn(() => Promise.resolve([])),
+		findFirst: vi.fn(),
+		findMany: vi.fn(),
 		insert: vi.fn(),
 		update: vi.fn(),
 		delete: vi.fn(),

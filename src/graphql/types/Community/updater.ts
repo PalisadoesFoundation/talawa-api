@@ -5,7 +5,7 @@ import { Community } from "./Community";
 
 export const communityUpdater = async (
 	parent: Community,
-	_args: unknown,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {

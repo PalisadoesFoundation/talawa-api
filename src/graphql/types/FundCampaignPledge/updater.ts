@@ -1,17 +1,12 @@
-import type {
-	ExplicitGraphQLContext,
-	ImplicitMercuriusContext,
-} from "~/src/graphql/context";
+import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { FundCampaignPledge } from "./FundCampaignPledge";
 
-type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
-
 export const resolveUpdater = async (
 	parent: FundCampaignPledge,
 	_args: Record<string, never>,
-	ctx: ContextType,
+	ctx: GraphQLContext,
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {
 		throw new TalawaGraphQLError({
@@ -22,7 +17,6 @@ export const resolveUpdater = async (
 	}
 
 	const currentUserId = ctx.currentClient.user.id;
-
 	const [currentUser, existingFundCampaign] = await Promise.all([
 		ctx.drizzleClient.query.usersTable.findFirst({
 			where: (fields, operators) => operators.eq(fields.id, currentUserId),
@@ -57,7 +51,6 @@ export const resolveUpdater = async (
 			where: (fields, operators) => operators.eq(fields.id, parent.campaignId),
 		}),
 	]);
-
 	if (currentUser === undefined) {
 		throw new TalawaGraphQLError({
 			extensions: {
@@ -65,12 +58,11 @@ export const resolveUpdater = async (
 			},
 		});
 	}
-
 	if (existingFundCampaign === undefined) {
 		ctx.log.error(
 			"Postgres select operation returned an empty array for a fund campaign pledge's campaign id that isn't null.",
 		);
-
+		console.log("heere");
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unexpected",
@@ -112,7 +104,6 @@ export const resolveUpdater = async (
 		ctx.log.error(
 			"Postgres select operation returned an empty array for a fund campaign pledge's updater id that isn't null.",
 		);
-
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unexpected",
