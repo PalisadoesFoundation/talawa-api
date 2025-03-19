@@ -1,5 +1,6 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { Organization } from "./Organization";
 
 /**
@@ -207,6 +208,7 @@ Organization.implement({
 	fields: (t) => ({
 		updater: t.field({
 			description: "User who last updated the organization.",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
