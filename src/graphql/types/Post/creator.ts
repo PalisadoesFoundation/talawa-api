@@ -1,13 +1,13 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { Post } from "./Post";
 import envConfig from "~/src/utilities/graphqLimits";
+import { Post } from "./Post";
 
 Post.implement({
 	fields: (t) => ({
 		creator: t.field({
 			description: "User who created the post.",
-			complexity : envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (parent.creatorId === null) {
 					return null;

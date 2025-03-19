@@ -3,8 +3,8 @@ import { postAttachmentsTable } from "~/src/drizzle/tables/postAttachments";
 import { postsTable } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
 import { Post, type Post as PostType } from "~/src/graphql/types/Post/Post";
-import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 
 const GetPostsByOrgInput = builder.inputType("GetPostsByOrgInput", {
 	fields: (t) => ({
@@ -19,7 +19,7 @@ builder.queryField("postsByOrganization", (t) =>
 		args: {
 			input: t.arg({ type: GetPostsByOrgInput, required: true }),
 		},
-		complexity : envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		resolve: async (_parent, { input }, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
