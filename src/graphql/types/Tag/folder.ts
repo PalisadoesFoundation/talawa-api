@@ -1,13 +1,13 @@
 import { TagFolder } from "~/src/graphql/types/TagFolder/TagFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { Tag } from "./Tag";
 import envConfig from "~/src/utilities/graphqLimits";
+import { Tag } from "./Tag";
 
 Tag.implement({
 	fields: (t) => ({
 		folder: t.field({
 			description: "Tag folder the tag is contained within.",
-			complexity :  envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

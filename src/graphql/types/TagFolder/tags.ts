@@ -8,8 +8,8 @@ import {
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-import { TagFolder } from "./TagFolder";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TagFolder } from "./TagFolder";
 const tagsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
@@ -46,12 +46,12 @@ TagFolder.implement({
 			{
 				description:
 					"GraphQL connection to traverse through the tags contained within the tag folder.",
-					complexity: (args) => {
-						return {
-							field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-							multiplier: args.first || args.last || 1,
-						};
-					},
+				complexity: (args) => {
+					return {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: args.first || args.last || 1,
+					};
+				},
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,

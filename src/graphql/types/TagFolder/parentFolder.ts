@@ -1,12 +1,12 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { TagFolder } from "./TagFolder";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TagFolder } from "./TagFolder";
 
 TagFolder.implement({
 	fields: (t) => ({
 		parentFolder: t.field({
 			description: "Tag folder the tag folder is contained within.",
-			complexity : envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (parent.parentFolderId === null) {
 					return null;
