@@ -56,12 +56,12 @@ export const postAttachmentsTable = pgTable(
 		/**
 		 * Object name used when creating presigned URLs.
 		 */
-		objectName: text("object_name"),
+		objectName: text("object_name", {}).notNull(),
 
 		/**
 		 * File hash for deduplication purposes.
 		 */
-		fileHash: text("file_hash"),
+		fileHash: text("file_hash", {}).notNull(),
 
 		/**
 		 * Foreign key reference to the id of the user who last updated the attachment.
