@@ -182,11 +182,7 @@ describe("resolveUpdater", () => {
 			},
 		);
 
-		try {
-			await resolveUpdater(mockFundCampaignPledge, {}, ctx);
-		} catch (error) {
-			console.error("Caught error:", error); // Debugging output
-		}
+		await resolveUpdater(mockFundCampaignPledge, {}, ctx);
 
 		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
 			expect.objectContaining({

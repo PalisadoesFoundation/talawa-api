@@ -1,10 +1,13 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { FundCampaignPledge } from "./FundCampaignPledge";
+import {
+	FundCampaignPledge,
+	type FundCampaignPledge as FundCampaignPledgeType,
+} from "./FundCampaignPledge";
 
 export const resolveUpdater = async (
-	parent: FundCampaignPledge,
+	parent: FundCampaignPledgeType,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {

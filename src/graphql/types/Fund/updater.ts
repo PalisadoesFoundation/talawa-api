@@ -1,7 +1,7 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { Fund } from "./Fund";
+import { Fund, type Fund as FundType } from "./Fund";
 
 const authenticateUser = async (ctx: GraphQLContext) => {
 	if (!ctx.currentClient.isAuthenticated) {
@@ -33,7 +33,7 @@ const authenticateUser = async (ctx: GraphQLContext) => {
 };
 
 const resolveUpdater = async (
-	parent: Fund,
+	parent: FundType,
 	_: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {

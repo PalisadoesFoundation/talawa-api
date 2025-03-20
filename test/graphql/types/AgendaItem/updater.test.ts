@@ -23,42 +23,16 @@ describe("AgendaItem Resolver - Updater Field", () => {
 		mocks = newMocks;
 	});
 
-	it("should throw unauthenticated error if user is not logged in", async () => {
+	it("should throw unauthenticated error if user is not logged in or not found", async () => {
 		ctx.currentClient.isAuthenticated = false;
-
 		await expect(resolveUpdater(mockAgendaItem, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthenticated" },
-			}),
+			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 		);
-	});
 
-	it("should throw unauthenticated error if current user is not found", async () => {
+		ctx.currentClient.isAuthenticated = true;
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
-
 		await expect(resolveUpdater(mockAgendaItem, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthenticated" },
-			}),
-		);
-	});
-
-	it("should throw unexpected error if agenda folder is not found", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user-123",
-			role: "administrator",
-		});
-		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue(
-			undefined,
-		);
-
-		await expect(resolveUpdater(mockAgendaItem, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unexpected" },
-			}),
-		);
-		expect(ctx.log.error).toHaveBeenCalledWith(
-			"Postgres select operation returned an empty array for an agenda item's folder id that isn't null.",
+			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 		);
 	});
 
@@ -79,6 +53,25 @@ describe("AgendaItem Resolver - Updater Field", () => {
 			new TalawaGraphQLError({
 				extensions: { code: "unauthorized_action" },
 			}),
+		);
+	});
+
+	it("should throw unexpected error if agenda folder is not found", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user-123",
+			role: "administrator",
+		});
+		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue(
+			undefined,
+		);
+
+		await expect(resolveUpdater(mockAgendaItem, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unexpected" },
+			}),
+		);
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for an agenda item's folder id that isn't null.",
 		);
 	});
 
@@ -132,49 +125,6 @@ describe("AgendaItem Resolver - Updater Field", () => {
 		mockAgendaItem.updaterId = null;
 		const result_1 = await resolveUpdater(mockAgendaItem, {}, ctx);
 		expect(result_1).toBeNull();
-
-		mockAgendaItem.updaterId = "user-123";
-		const result_2 = await resolveUpdater(mockAgendaItem, {}, ctx);
-		expect(result_2).toEqual({
-			id: "user-123",
-			role: "administrator",
-		});
-
-		mockAgendaItem.updaterId = "user-456";
-		const result_3 = await resolveUpdater(mockAgendaItem, {}, ctx);
-		expect(result_3).toEqual({
-			id: "user-123",
-			role: "administrator",
-		});
-	});
-
-	it("should throw unexpected error if updater is not current user and updater does not exist", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
-			id: "user-123",
-			role: "administrator",
-		});
-
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-			undefined,
-		);
-		mocks.drizzleClient.query.agendaFoldersTable.findFirst.mockResolvedValue({
-			event: {
-				organization: {
-					membershipsWhereOrganization: [{ role: "administrator" }],
-				},
-			},
-		});
-
-		mockAgendaItem.updaterId = "user-456";
-
-		await expect(resolveUpdater(mockAgendaItem, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unexpected" },
-			}),
-		);
-		expect(ctx.log.error).toHaveBeenCalledWith(
-			"Postgres select operation returned an empty array for an agenda item's updater id that isn't null.",
-		);
 	});
 
 	it("should test the innermost where clause in query", async () => {

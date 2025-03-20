@@ -1,11 +1,14 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { Organization } from "./Organization";
+import {
+	Organization,
+	type Organization as OrganizationType,
+} from "./Organization";
 
 export const OrganizationUpdater = async (
-	parent: Organization,
-	_args: unknown,
+	parent: OrganizationType,
+	_args: Record<string, unknown>,
 	ctx: GraphQLContext,
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {

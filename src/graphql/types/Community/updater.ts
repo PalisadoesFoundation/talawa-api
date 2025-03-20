@@ -1,10 +1,10 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { Community } from "./Community";
+import { Community, type Community as CommunityType } from "./Community";
 
 export const communityUpdater = async (
-	parent: Community,
+	parent: CommunityType,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {

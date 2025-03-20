@@ -1,11 +1,11 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { Venue } from "./Venue";
+import { Venue, type Venue as VenueType } from "./Venue";
 
 export const venueCreator = async (
-	parent: Venue,
-	_args: unknown,
+	parent: VenueType,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {

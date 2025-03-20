@@ -1,9 +1,12 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { Advertisement } from "./Advertisement";
+import {
+	Advertisement,
+	type Advertisement as AdvertisementType,
+} from "./Advertisement";
 export const advertisementCreator = async (
-	parent: Advertisement,
+	parent: AdvertisementType,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {

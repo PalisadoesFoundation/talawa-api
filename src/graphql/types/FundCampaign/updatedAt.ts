@@ -1,6 +1,9 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import { FundCampaign } from "./FundCampaign";
+import {
+	FundCampaign,
+	type FundCampaign as FundCampaignType,
+} from "./FundCampaign";
 
 /**
  * Resolver for the updatedAt field of FundCampaign type.
@@ -17,7 +20,7 @@ import { FundCampaign } from "./FundCampaign";
  */
 
 export const updatedAtResolver = async (
-	parent: FundCampaign,
+	parent: FundCampaignType,
 	args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
