@@ -1,3 +1,5 @@
+import "./ActionItem/index";
+import "./ActionItemCategory/index";
 import "./Advertisement/index";
 import "./AdvertisementAttachment/index";
 import "./AgendaFolder/index";

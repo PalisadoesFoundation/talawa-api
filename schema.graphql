@@ -1,3 +1,84 @@
+type ActionItem {
+  """Timestamp when the action item was assigned."""
+  assignedAt: DateTime
+
+  """The user assigned to this action item."""
+  assignee: User
+
+  """The ID of the user assigned to this action item."""
+  assigneeId: ID
+
+  """The ID of the category this action item belongs to."""
+  categoryId: ID
+
+  """Timestamp when the action item was completed."""
+  completionAt: DateTime
+
+  """Date time at the time the action item was created."""
+  createdAt: DateTime
+
+  """User who created the action item."""
+  creator: User
+
+  """The ID of the user who created this action item."""
+  creatorId: ID
+
+  """
+  Fetch the event associated with this action item, including attachments if available.
+  """
+  event: Event
+
+  """The ID of the associated event, if applicable."""
+  eventId: ID
+
+  """Unique identifier for the action item."""
+  id: ID
+
+  """Indicates whether the action item is completed."""
+  isCompleted: Boolean
+
+  """The ID of the organization the action item belongs to."""
+  organizationId: ID
+
+  """Notes added after completing the action item."""
+  postCompletionNotes: String
+
+  """Notes added before completing the action item."""
+  preCompletionNotes: String
+
+  """Timestamp when the action item was last updated."""
+  updatedAt: DateTime
+
+  """The ID of the user who last updated this action item."""
+  updaterId: ID
+}
+
+"""
+Represents a category for action items, including metadata such as creation and update timestamps.
+"""
+type ActionItemCategory {
+  """Timestamp when the category was created."""
+  createdAt: DateTime
+
+  """Identifier for the user who created this category."""
+  creatorId: ID
+
+  """Unique identifier for the action item category."""
+  id: ID
+
+  """Indicates whether the action item category is disabled."""
+  isDisabled: Boolean
+
+  """The name of the action item category."""
+  name: String
+
+  """Identifier for the organization this category belongs to."""
+  organizationId: ID
+
+  """Timestamp when the category was last updated."""
+  updatedAt: DateTime
+}
+
 type Advertisement {
   """Array of attachments."""
   attachments: [AdvertisementAttachment!]
@@ -194,6 +275,10 @@ type CancelMembershipResponse {
 
   """Indicates whether the membership request was successfully canceled."""
   success: Boolean
+}
+
+input CategoriesByIdsInput {
+  ids: [ID!]!
 }
 
 type Chat {
@@ -411,6 +496,15 @@ type Community {
   youtubeURL: String
 }
 
+input CreateActionItemInput {
+  assignedAt: String
+  assigneeId: ID!
+  categoryId: ID!
+  eventId: ID
+  organizationId: ID!
+  preCompletionNotes: String
+}
+
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -508,6 +602,10 @@ type EventVenuesConnection {
 type EventVenuesConnectionEdge {
   cursor: String!
   node: Venue
+}
+
+input EventsByOrganizationIdInput {
+  organizationId: ID!
 }
 
 """Metadata for files uploaded via presigned URL"""
@@ -1288,6 +1386,10 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
+input MarkActionItemAsPendingInput {
+  id: ID!
+}
+
 """Filter criteria for member roles"""
 input MembersRoleWhereInput {
   """Role equals this value"""
@@ -1334,6 +1436,9 @@ type Mutation {
     """Input to cancel a membership request"""
     input: MutationCancelMembershipRequestInput!
   ): CancelMembershipResponse
+
+  """Mutation field to create an action item."""
+  createActionItem(input: CreateActionItemInput!): ActionItem
 
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
@@ -1403,6 +1508,12 @@ type Mutation {
 
   """Mutation field to create a venue booking."""
   createVenueBooking(input: MutationCreateVenueBookingInput!): Venue
+
+  """Mutation field to delete an action item."""
+  deleteActionItem(
+    """Delete an action item"""
+    input: MutationDeleteActionItemInput!
+  ): ActionItem
 
   """Mutation field to delete an advertisement."""
   deleteAdvertisement(input: MutationDeleteAdvertisementInput!): Advertisement
@@ -1476,6 +1587,9 @@ type Mutation {
     input: MutationJoinPublicOrganizationInput!
   ): OrganizationMembershipObject
 
+  """Mutation to mark a completed action item as pending"""
+  markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
+
   """Mutation field to send a membership request to an organization."""
   sendMembershipRequest(
     """Input to send a membership request"""
@@ -1484,6 +1598,12 @@ type Mutation {
 
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
+
+  """Mutation to update an action item"""
+  updateActionItem(
+    """Update an action item"""
+    input: MutationUpdateActionItemInput!
+  ): ActionItem
 
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
@@ -1965,6 +2085,12 @@ input MutationCreateVenueInput {
   organizationId: ID!
 }
 
+"""Input for deleting an action item."""
+input MutationDeleteActionItemInput {
+  """Global identifier of the action item."""
+  id: ID!
+}
+
 """"""
 input MutationDeleteAdvertisementInput {
   """Global identifier of the advertisement."""
@@ -2180,6 +2306,26 @@ input MutationSignUpInput {
   The phone number to use to communicate with the user while they're at work.
   """
   workPhoneNumber: PhoneNumber
+}
+
+input MutationUpdateActionItemInput {
+  """Identifier for the assignee of the action item."""
+  assigneeId: ID
+
+  """Category identifier for the action item."""
+  categoryId: ID
+
+  """Global identifier of the action item."""
+  id: ID!
+
+  """Completion status of the action item."""
+  isCompleted: Boolean!
+
+  """Post completion notes for the action item."""
+  postCompletionNotes: String
+
+  """Pre completion notes for the action item."""
+  preCompletionNotes: String
 }
 
 """"""
@@ -3033,6 +3179,22 @@ enum PostVoteType {
 }
 
 type Query {
+  """
+  Query field to fetch all action item categories linked to a specific organization.
+  """
+  actionCategoriesByOrganization(
+    """Input parameters to fetch action item categories by organizationId."""
+    input: QueryActionCategoriesByOrganizationInput!
+  ): [ActionItemCategory!]
+
+  """
+  Query field to fetch all action items linked to a specific organization.
+  """
+  actionItemsByOrganization(
+    """Input parameters to fetch action items by organizationId."""
+    input: QueryActionItemsByOrganizationInput!
+  ): [ActionItem!]
+
   """Query field to read an advertisement."""
   advertisement(input: QueryAdvertisementInput!): Advertisement
 
@@ -3044,6 +3206,9 @@ type Query {
 
   """Query field to read all Users."""
   allUsers(after: String, before: String, first: Int, last: Int, where: QueryAllUsersWhereInput): QueryAllUsersConnection
+
+  """Fetch multiple action item categories by their IDs."""
+  categoriesByIds(input: CategoriesByIdsInput!): [ActionItemCategory!]
 
   """Query field to read a chat."""
   chat(input: QueryChatInput!): Chat
@@ -3062,6 +3227,12 @@ type Query {
 
   """Query field to read an event."""
   event(input: QueryEventInput!): Event
+
+  """Fetch multiple events by their IDs."""
+  eventsByIds(input: QueryEventsByIdsInput!): [Event!]
+
+  """Fetch all events that belong to a given organization."""
+  eventsByOrganizationId(input: EventsByOrganizationIdInput!): [Event!]
 
   """Query field to read a fund."""
   fund(input: QueryFundInput!): Fund
@@ -3101,8 +3272,24 @@ type Query {
   """Query field to read a user."""
   user(input: QueryUserInput!): User
 
+  """Fetch multiple users by their IDs."""
+  usersByIds(input: UsersByIdsInput!): [User!]
+
+  """Fetch all users that belong to a given organization."""
+  usersByOrganizationId(organizationId: ID!): [User!]
+
   """Query field to read a venue."""
   venue(input: QueryVenueInput!): Venue
+}
+
+input QueryActionCategoriesByOrganizationInput {
+  organizationId: String!
+}
+
+"""Input schema for querying ActionItems by organizationId."""
+input QueryActionItemsByOrganizationInput {
+  """ID of the organization to fetch associated action items."""
+  organizationId: String!
 }
 
 """"""
@@ -3159,6 +3346,10 @@ input QueryCommentInput {
 input QueryEventInput {
   """Global id of the event."""
   id: String!
+}
+
+input QueryEventsByIdsInput {
+  ids: [ID!]!
 }
 
 """"""
@@ -3505,6 +3696,10 @@ type UserOrganizationsWhereMemberConnectionEdge {
 enum UserRole {
   administrator
   regular
+}
+
+input UsersByIdsInput {
+  ids: [ID!]!
 }
 
 type Venue {
