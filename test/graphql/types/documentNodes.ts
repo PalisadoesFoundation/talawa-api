@@ -755,3 +755,14 @@ export const Mutation_createChatMembership = gql(`
   }
 }
 `);
+
+export const Mutation_joinPublicOrganization = gql(`
+  mutation Mutation_joinPublicOrganization($input: MutationJoinPublicOrganizationInput!) {
+    joinPublicOrganization(input: $input) {
+      memberId
+      organizationId
+      role
+      creatorId
+    }
+  }
+`);
