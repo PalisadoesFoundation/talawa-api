@@ -49,10 +49,10 @@ MembershipRequestObject.implement({
 			type: User,
 			description: "The user who requested membership",
 			resolve: async (parent, _args, ctx) => {
-			  return await ctx.drizzleClient.query.usersTable.findFirst({
-				where: (fields, operators) => operators.eq(fields.id, parent.userId)
-			  });
-			}
-		  }),
+				return await ctx.drizzleClient.query.usersTable.findFirst({
+					where: (fields, operators) => operators.eq(fields.id, parent.userId),
+				});
+			},
+		}),
 	}),
 });

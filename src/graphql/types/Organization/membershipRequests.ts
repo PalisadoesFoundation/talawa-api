@@ -1,10 +1,10 @@
+import { type SQL, and, desc, eq, ilike, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { and, eq, ilike, desc, inArray, type SQL } from "drizzle-orm";
-import { builder } from "~/src/graphql/builder";
 import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests";
-import { Organization } from "./Organization";
+import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { MembershipRequestObject } from "./MembershipRequestObject";
+import { Organization } from "./Organization";
 
 // Define arguments schema using Zod
 const membershipRequestsArgumentsSchema = z
@@ -19,7 +19,7 @@ const membershipRequestsArgumentsSchema = z
 					})
 					.optional(),
 			})
-			.optional(), 
+			.optional(),
 	})
 	.transform((args) => ({
 		skip: args.skip ?? 0,
@@ -49,7 +49,6 @@ const MembershipRequestWhereInput = builder.inputType(
 );
 
 // Define MembershipRequest interface
-
 
 // Add membershipRequests field to Organization type
 Organization.implement({
