@@ -10,6 +10,7 @@ type Collection =
 	| "post_votes"
 	| "post_attachments"
 	| "comments"
+	|"membership_requests"
 	| "comment_votes";
 
 export async function main(): Promise<void> {
@@ -21,6 +22,7 @@ export async function main(): Promise<void> {
 		"post_votes",
 		"post_attachments",
 		"comments",
+		"membership_requests",
 		"comment_votes",
 	];
 
