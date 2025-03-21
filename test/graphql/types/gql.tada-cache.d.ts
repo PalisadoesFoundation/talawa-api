@@ -92,5 +92,7 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ updateChatMessage: { id: string; body: string | null; createdAt: string | null; updatedAt: string | null; parentMessage: { id: string; } | null; chat: { id: string; name: string | null; createdAt: string | null; updatedAt: string | null; creator: { id: string; name: string | null; } | null; } | null; creator: { id: string; name: string | null; } | null; } | null; }, { input: { id: string; body: string; }; }, void>;
     "\n  mutation Mutation_createChatMembership($input: MutationCreateChatMembershipInput!) {\n  createChatMembership(input: $input) {\n    id\n    createdAt\n    updatedAt\n    creator {\n      id\n      name\n    }\n  }\n}\n":
       TadaDocumentNode<{ createChatMembership: { id: string; createdAt: string | null; updatedAt: string | null; creator: { id: string; name: string | null; } | null; } | null; }, { input: { role?: "administrator" | "regular" | null | undefined; memberId: string; chatId: string; }; }, void>;
+    "\n  mutation Mutation_joinPublicOrganization($input: MutationJoinPublicOrganizationInput!) {\n    joinPublicOrganization(input: $input) {\n      memberId\n      organizationId\n      role\n      creatorId\n    }\n  }\n":
+      TadaDocumentNode<{ joinPublicOrganization: { memberId: string | null; organizationId: string | null; role: string | null; creatorId: string | null; } | null; }, { input: { organizationId: string; }; }, void>;
   }
 }

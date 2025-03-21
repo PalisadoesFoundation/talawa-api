@@ -63,6 +63,7 @@ import "./updateOrganizationMembership";
 import "./joinPublicOrganization";
 import "./sendMembershipRequest";
 import "./cancelMembershipRequest";
+import "./rejectMembershipRequest";
 import "./updatePost";
 import "./updatePostVote";
 import "./updateTag";
