@@ -162,40 +162,40 @@ describe("resolveUpdater", () => {
 	});
 
 	test("ensures usersTable query is called with correct user ID", async () => {
-			(mocks.drizzleClient.query.usersTable.findFirst as Mock).mockImplementation(
-				({ where }) => {
-					// Ensure `where` is a function and execute it
-					if (typeof where === "function") {
-						const fakeQueryInput = { id: "user123" };
-						const fakeQueryOperators = {
-							eq: (columnValue: string, expectedValue: string) =>
-								columnValue === expectedValue,
-						};
-	
-						// Ensure the function behaves correctly
-						if (where(fakeQueryInput, fakeQueryOperators)) {
-							return Promise.resolve({ id: "user123" });
-						}
+		(mocks.drizzleClient.query.usersTable.findFirst as Mock).mockImplementation(
+			({ where }) => {
+				// Ensure `where` is a function and execute it
+				if (typeof where === "function") {
+					const fakeQueryInput = { id: "user123" };
+					const fakeQueryOperators = {
+						eq: (columnValue: string, expectedValue: string) =>
+							columnValue === expectedValue,
+					};
+
+					// Ensure the function behaves correctly
+					if (where(fakeQueryInput, fakeQueryOperators)) {
+						return Promise.resolve({ id: "user123" });
 					}
-	
-					return Promise.resolve(null);
+				}
+
+				return Promise.resolve(null);
+			},
+		);
+		mocks.drizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
+			fund: {
+				organization: {
+					membershipsWhereOrganization: [{ role: "administrator" }],
 				},
-			);
-			mocks.drizzleClient.query.fundCampaignsTable.findFirst.mockResolvedValue({
-				fund: {
-					organization: {
-						membershipsWhereOrganization: [{ role: "administrator" }],
-					},
-				},
-			});
-	
-			await resolveUpdater(mockFundCampaignPledge, {}, ctx);
-	
-			expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
-				expect.objectContaining({
-					where: expect.any(Function),
-				}),
-			);
+			},
+		});
+
+		await resolveUpdater(mockFundCampaignPledge, {}, ctx);
+
+		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: expect.any(Function),
+			}),
+		);
 	});
 
 	test("ensures fundCampaignsTable membership check uses correct member ID", async () => {
