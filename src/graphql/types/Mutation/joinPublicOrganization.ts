@@ -1,3 +1,4 @@
+import { GraphQLError } from "graphql"; // New import
 import { z } from "zod";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
@@ -50,6 +51,16 @@ builder.mutationField("joinPublicOrganization", (t) =>
 			}
 
 			const currentUserId = ctx.currentClient.user.id;
+
+			// Check if user exists in the database
+			const user = await ctx.drizzleClient.query.usersTable.findFirst({
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+			if (!user) {
+				throw new GraphQLError("User not found", {
+					extensions: { code: "unauthenticated" },
+				});
+			}
 
 			// Check if organization exists
 			const organization =
