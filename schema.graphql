@@ -1317,6 +1317,9 @@ type MembershipRequest {
   """Status of the membership request (e.g., pending, approved, rejected)."""
   status: MembershipRequestStatus
 
+  """The user who requested membership"""
+  user: User
+
   """ID of the user who requested membership."""
   userId: String
 }
@@ -1326,6 +1329,11 @@ enum MembershipRequestStatus {
   approved
   pending
   rejected
+}
+
+input MembershipRequestWhereInput {
+  """Filter criteria for user"""
+  user: UserWhereInput
 }
 
 type Mutation {
@@ -2707,6 +2715,18 @@ type Organization {
     where: MembersWhereInput
   ): OrganizationMembersConnection
 
+  """Membership requests for this organization"""
+  membershipRequests(
+    """Number of items to return"""
+    first: Int
+
+    """Number of items to skip"""
+    skip: Int
+
+    """Filter criteria for membership requests"""
+    where: MembershipRequestWhereInput
+  ): [MembershipRequest!]
+
   """Name of the organization."""
   name: String
 
@@ -3388,6 +3408,9 @@ type User {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
+  email: String
+
+  """Email address of the user."""
   emailAddress: EmailAddress
 
   """Employment status of the user."""
@@ -3505,6 +3528,11 @@ type UserOrganizationsWhereMemberConnectionEdge {
 enum UserRole {
   administrator
   regular
+}
+
+input UserWhereInput {
+  """Filter by first name containing this string"""
+  firstName_contains: String
 }
 
 type Venue {
