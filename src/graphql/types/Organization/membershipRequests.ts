@@ -48,7 +48,6 @@ const MembershipRequestWhereInput = builder.inputType(
 	},
 );
 
-
 // Add membershipRequests field to Organization type
 Organization.implement({
 	fields: (t) => ({
