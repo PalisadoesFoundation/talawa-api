@@ -586,7 +586,6 @@ export async function insertCollections(
 					break;
 				}
 
-
 				default:
 					console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
 					break;

@@ -241,9 +241,9 @@ export const envConfigSchema = Type.Object({
 		minimum: 0,
 	}),
 	API_REDIS_URI: Type.String({
-		format: 'uri', // optional if your validator supports URI format validation
-		pattern: '^redis://.*', // ensures the string starts with "redis://"
-	  }),
+		format: "uri",
+		pattern: "^redis://.*",
+	}),
 	//  cost of scalar field
 	API_GRAPHQL_SCALAR_FIELD_COST: Type.Number({
 		minimum: 0,

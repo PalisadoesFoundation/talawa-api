@@ -6,4 +6,4 @@
 
 > `const` **communitiesTableRelations**: `Relations`\<`"communities"`, \{ `updater`: `One`\<`"users"`, `false`\>; \}\>
 
-Defined in: src/drizzle/tables/communities.ts:99
+Defined in: [src/drizzle/tables/communities.ts:99](https://github.com/NishantSinghhhhh/talawa-api/blob/247632fc07d0e643f8a2b70ebda11c58da436773/src/drizzle/tables/communities.ts#L99)

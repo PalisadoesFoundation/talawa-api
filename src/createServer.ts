@@ -79,8 +79,7 @@ export const createServer = async (options?: {
 	fastify.register(fastifyRedis, {
 		url: fastify.envConfig.API_REDIS_URI,
 		closeClient: true,
-	  });
-	  
+	});
 
 	// More information at this link: https://github.com/fastify/fastify-jwt
 	fastify.register(fastifyJwt, {
