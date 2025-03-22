@@ -6,7 +6,7 @@
 
 > **objects**(`instance`, `opts`): `Promise`\<`void`\>
 
-Defined in: [src/routes/objects.ts:9](https://github.com/NishantSinghhhhh/talawa-api/blob/247632fc07d0e643f8a2b70ebda11c58da436773/src/routes/objects.ts#L9)
+Defined in: [src/routes/objects.ts:9](https://github.com/NishantSinghhhhh/talawa-api/blob/2aae942e3c09271511f0b08b62076f26547cb511/src/routes/objects.ts#L9)
 
 This fastify route plugin is used to initialize a `/objects/:name` endpoint on the fastify server for clients to fetch objects from the minio server.
 

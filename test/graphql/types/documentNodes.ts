@@ -766,3 +766,62 @@ export const Mutation_joinPublicOrganization = gql(`
     }
   }
 `);
+
+export const POSTGRES_CREATE_ACTION_ITEM_MUTATION = gql(`
+  mutation CreateActionItem($input: CreateActionItemInput!) {
+    createActionItem(input: $input) {
+      id
+      categoryId
+      assigneeId
+      assignedAt
+      completionAt
+      preCompletionNotes
+      postCompletionNotes
+      isCompleted
+      eventId
+      organizationId
+      creatorId
+      updaterId
+      updatedAt
+    }
+  }
+`);
+
+export const POSTGRES_EVENTS_BY_ORGANIZATION_ID = gql(`
+  query EventsByOrganizationId($input: EventsByOrganizationIdInput!) {
+    eventsByOrganizationId(input: $input) {
+      id
+      name
+      description
+    }
+  }
+`);
+
+export const UPDATE_ACTION_ITEM_MUTATION = gql(`
+  mutation UpdateActionItem($input: MutationUpdateActionItemInput!) {
+    updateActionItem(input: $input) {
+      id
+      isCompleted
+      postCompletionNotes
+      preCompletionNotes
+      categoryId
+      assigneeId
+      updaterId
+    }
+  }
+`);
+export const DELETE_ACTION_ITEM_MUTATION = gql(`
+  mutation DeleteActionItem($input: MutationDeleteActionItemInput!) {
+    deleteActionItem(input: $input) {
+      id
+      isCompleted
+      categoryId
+      assigneeId
+      organizationId
+      createdAt
+      updatedAt
+      postCompletionNotes
+      preCompletionNotes
+    }
+  }
+  `);

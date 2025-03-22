@@ -91,20 +91,6 @@ builder.mutationField("deleteActionItem", (t) =>
 				});
 			}
 
-			// const membership = existingActionItem.organization.membershipsWhereOrganization[0];
-			// if (currentUser.role !== "administrator" && (!membership || membership.role !== "administrator")) {
-			//   throw new TalawaGraphQLError({
-			//     message: "You are not authorized to delete this action item.",
-			//     extensions: {
-			//       code: "unauthorized_action_on_arguments_associated_resources",
-			//       issues: [
-			//         { argumentPath: ["input", "id"] },
-			//       ],
-			//     },
-			//   });
-			// }
-
-			// Delete the action item from the database
 			const [deletedActionItem] = await ctx.drizzleClient
 				.delete(actionsTable)
 				.where(eq(actionsTable.id, parsedArgs.input.id))
