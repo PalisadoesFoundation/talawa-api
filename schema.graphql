@@ -1814,6 +1814,11 @@ input MutationCreateOrganizationInput {
   """Custom information about the organization."""
   description: String
 
+  """
+  Flag to indicate if user registration is required to access the organization.
+  """
+  isUserRegistrationRequired: Boolean
+
   """Name of the organization."""
   name: String!
 
