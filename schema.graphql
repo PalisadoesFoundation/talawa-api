@@ -1,3 +1,11 @@
+type AcceptMembershipResponse {
+  """Success or error message"""
+  message: String
+
+  """Whether the operation was successful"""
+  success: Boolean
+}
+
 type Advertisement {
   """Array of attachments."""
   attachments: [AdvertisementAttachment!]
@@ -1337,6 +1345,12 @@ input MembershipRequestWhereInput {
 }
 
 type Mutation {
+  """Mutation field to accept a membership request by an admin."""
+  acceptMembershipRequest(
+    """Input to accept a membership request"""
+    input: MutationAcceptMembershipRequestInput!
+  ): AcceptMembershipResponse
+
   """Mutation field to cancel a membership request."""
   cancelMembershipRequest(
     """Input to cancel a membership request"""
@@ -1484,6 +1498,12 @@ type Mutation {
     input: MutationJoinPublicOrganizationInput!
   ): OrganizationMembershipObject
 
+  """Mutation field to reject a membership request by an admin."""
+  rejectMembershipRequest(
+    """Input to reject a membership request"""
+    input: MutationRejectMembershipRequestInput!
+  ): RejectMembershipResponse
+
   """Mutation field to send a membership request to an organization."""
   sendMembershipRequest(
     """Input to send a membership request"""
@@ -1558,6 +1578,11 @@ type Mutation {
 
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
+}
+
+input MutationAcceptMembershipRequestInput {
+  """ID of the membership request to accept"""
+  membershipRequestId: ID!
 }
 
 """Input type for canceling a membership request."""
@@ -2118,6 +2143,11 @@ input MutationDeleteVenueInput {
 input MutationJoinPublicOrganizationInput {
   """Global identifier of the organization."""
   organizationId: ID!
+}
+
+input MutationRejectMembershipRequestInput {
+  """ID of the membership request to reject"""
+  membershipRequestId: ID!
 }
 
 """Input type for sending a membership request."""
@@ -3242,6 +3272,14 @@ input QueryUserInput {
 input QueryVenueInput {
   """Global id of the venue."""
   id: String!
+}
+
+type RejectMembershipResponse {
+  """Success or error message"""
+  message: String
+
+  """Whether the operation was successful"""
+  success: Boolean
 }
 
 type Subscription {
