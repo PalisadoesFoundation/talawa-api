@@ -193,7 +193,7 @@ type BlockedUser {
   createdAt: DateTime
 
   """Unique identifier of the blocked user."""
-  id: ID!
+  id: ID
 
   """Organization that blocked the user."""
   organization: Organization
@@ -1303,9 +1303,6 @@ type Mutation {
   """Mutation field to block a user from an organization."""
   blockUser(organizationId: ID!, userId: ID!): Boolean
 
-  """Mutation field to unblock a user from an organization."""
-  unblockUser(organizationId: ID!, userId: ID!): Boolean
-
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
 
@@ -1443,6 +1440,9 @@ type Mutation {
 
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
+
+  """Mutation field to unblock a user from an organization."""
+  unblockUser(organizationId: ID!, userId: ID!): Boolean
 
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
@@ -2735,8 +2735,9 @@ type OrganizationBlockedUsersConnection {
 
 type OrganizationBlockedUsersConnectionEdge {
   cursor: String!
-  node: BlockedUser
+  node: User
 }
+
 """"""
 type OrganizationChatsConnection {
   edges: [OrganizationChatsConnectionEdge]
