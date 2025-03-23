@@ -6,6 +6,6 @@
 
 > `const` **imageMimeTypeEnum**: `ZodEnum`\<\[`"image/avif"`, `"image/jpeg"`, `"image/png"`, `"image/webp"`\]\>
 
-Defined in: [src/drizzle/enums/imageMimeType.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/2aae942e3c09271511f0b08b62076f26547cb511/src/drizzle/enums/imageMimeType.ts#L6)
+Defined in: [src/drizzle/enums/imageMimeType.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/92ff044a4e2bbc8719de2b33b4f8d7d0a9aa0174/src/drizzle/enums/imageMimeType.ts#L6)
 
 Possible variants of the type of an image.

@@ -31,6 +31,9 @@ suite("addSampleData main function tests", () => {
 			"post_attachments",
 			"comments",
 			"comment_votes",
+			"action_categories",
+			"events",
+			"action_items",
 		]);
 
 		// Verify that success messages are logged.

@@ -810,6 +810,7 @@ export const UPDATE_ACTION_ITEM_MUTATION = gql(`
     }
   }
 `);
+
 export const DELETE_ACTION_ITEM_MUTATION = gql(`
   mutation DeleteActionItem($input: MutationDeleteActionItemInput!) {
     deleteActionItem(input: $input) {

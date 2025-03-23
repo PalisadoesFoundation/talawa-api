@@ -6,7 +6,7 @@
 
 > `const` **OrganizationUpdaterResolver**: `object`
 
-Defined in: [src/graphql/types/Organization/updater.ts:108](https://github.com/NishantSinghhhhh/talawa-api/blob/2aae942e3c09271511f0b08b62076f26547cb511/src/graphql/types/Organization/updater.ts#L108)
+Defined in: [src/graphql/types/Organization/updater.ts:108](https://github.com/NishantSinghhhhh/talawa-api/blob/92ff044a4e2bbc8719de2b33b4f8d7d0a9aa0174/src/graphql/types/Organization/updater.ts#L108)
 
 ## Type declaration
 

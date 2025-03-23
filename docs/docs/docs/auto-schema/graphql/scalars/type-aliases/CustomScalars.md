@@ -6,7 +6,7 @@
 
 > **CustomScalars**: `object`
 
-Defined in: [src/graphql/scalars/index.ts:18](https://github.com/NishantSinghhhhh/talawa-api/blob/2aae942e3c09271511f0b08b62076f26547cb511/src/graphql/scalars/index.ts#L18)
+Defined in: [src/graphql/scalars/index.ts:18](https://github.com/NishantSinghhhhh/talawa-api/blob/92ff044a4e2bbc8719de2b33b4f8d7d0a9aa0174/src/graphql/scalars/index.ts#L18)
 
 Map of custom scalar types used in talawa api used to annotate the type of those scalars to the pothos schema builder intiializer for type-safe usage of those scalars in the pothos schema definitions.
 

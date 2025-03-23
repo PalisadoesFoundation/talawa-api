@@ -6,7 +6,7 @@
 
 > **ForbiddenActionOnArgumentsAssociatedResourcesExtensions**: `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:75](https://github.com/NishantSinghhhhh/talawa-api/blob/2aae942e3c09271511f0b08b62076f26547cb511/src/utilities/TalawaGraphQLError.ts#L75)
+Defined in: [src/utilities/TalawaGraphQLError.ts:75](https://github.com/NishantSinghhhhh/talawa-api/blob/92ff044a4e2bbc8719de2b33b4f8d7d0a9aa0174/src/utilities/TalawaGraphQLError.ts#L75)
 
 When the client tries to perform actions on resources associated to arguments that conflict with real world expectations of the application. One example would be a user trying to follow their own account on a social media application.
 
