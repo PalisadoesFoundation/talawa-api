@@ -259,7 +259,7 @@ vi.mock("../documentNodes", async () => {
 
 			if (document === actual.Mutation_unblockUser) {
 				const headers = options?.headers || {};
-				const hasAuthToken = headers.authorization?.startsWith("bearer·");
+				const hasAuthToken = headers.authorization?.startsWith("bearer");
 
 				if (!hasAuthToken) {
 					return {

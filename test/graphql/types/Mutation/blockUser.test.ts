@@ -185,7 +185,7 @@ beforeAll(async () => {
 			if (opName === "CreateOrganizationMembership") {
 				const orgId = options?.variables?.input?.organizationId;
 				const memberId = options?.variables?.input?.memberId;
-				const role = options?.variables?.input?.role || "member";
+				const role = options?.variables?.input?.role || "regular";
 
 				if (orgId && memberId) {
 					const key = `${orgId}:${memberId}`;
@@ -248,7 +248,6 @@ beforeAll(async () => {
 						],
 					};
 				}
-
 				const org = mockDb.organizations.get(orgId);
 				if (!org) {
 					return {
