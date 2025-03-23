@@ -6,7 +6,7 @@
 
 > **ImplicitMercuriusContext**: `object`
 
-Defined in: [src/graphql/context.ts:8](https://github.com/NishantSinghhhhh/talawa-api/blob/92ff044a4e2bbc8719de2b33b4f8d7d0a9aa0174/src/graphql/context.ts#L8)
+Defined in: [src/graphql/context.ts:8](https://github.com/NishantSinghhhhh/talawa-api/blob/b87b8a22e4088f1ea75d4769c10896977d674855/src/graphql/context.ts#L8)
 
 Type of the implicit context object passed by mercurius that is merged with the explicit context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
 

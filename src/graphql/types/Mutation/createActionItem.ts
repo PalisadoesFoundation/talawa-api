@@ -80,7 +80,6 @@ builder.mutationField("createActionItem", (t) =>
 				});
 			}
 
-			// **3. Check if the category exists**
 			const existingCategory =
 				await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
 					columns: { id: true },
@@ -97,7 +96,6 @@ builder.mutationField("createActionItem", (t) =>
 				});
 			}
 
-			// **4. Check if the assignee exists**
 			const existingAssignee =
 				await ctx.drizzleClient.query.usersTable.findFirst({
 					columns: { id: true },

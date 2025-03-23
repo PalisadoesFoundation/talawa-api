@@ -767,7 +767,7 @@ export const Mutation_joinPublicOrganization = gql(`
   }
 `);
 
-export const POSTGRES_CREATE_ACTION_ITEM_MUTATION = gql(`
+export const Mutation_createActionItem = gql(`
   mutation CreateActionItem($input: CreateActionItemInput!) {
     createActionItem(input: $input) {
       id
