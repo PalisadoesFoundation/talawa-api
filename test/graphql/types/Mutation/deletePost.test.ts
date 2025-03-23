@@ -123,7 +123,6 @@ suite("Mutation field deletePost", () => {
 			const { authToken: regularAuthToken } =
 				await createRegularUserUsingAdmin();
 
-			// Attempt to delete the post as the regular user.
 			const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
 				headers: { authorization: `bearer ${regularAuthToken}` },
 				variables: { input: { id: postId } },

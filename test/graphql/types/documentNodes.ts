@@ -529,6 +529,41 @@ export const Query_organizations = gql(`
 	}
 `);
 
+export const Query_blockedUsers = gql(`
+	query BlockedUsers(
+		$organizationId: String!
+		$first: Int
+		$after: String
+		$last: Int
+		$before: String
+	) {
+		organization(input:{id: $organizationId}) {
+			id
+			blockedUsers(
+				first: $first
+				after: $after
+				last: $last
+				before: $before
+			) {
+				edges {
+					cursor
+					node {
+						id
+						name
+						role
+					}
+				}
+				pageInfo {
+					hasNextPage
+					hasPreviousPage
+					startCursor
+					endCursor
+				}
+			}
+		}
+	}
+`);
+
 export const Query_organization = gql(`
     query Query_organization($input: QueryOrganizationInput!, $first: Int, $after: String, $last: Int, $before: String) {
       organization(input: $input) {
@@ -631,7 +666,10 @@ export const Mutation_deletePost = gql(`
       id
       attachments {
         mimeType
-        url
+        fileHash
+        name
+        objectName
+        id
       }
     }
   }
@@ -683,3 +721,108 @@ export const Mutation_unblockUser =
 	gql(`mutation Mutation_unblockUser($organizationId: ID!, $userId: ID!) {
     unblockUser(organizationId: $organizationId, userId: $userId)
 }`);
+
+export const Mutation_updatePost = gql(`
+  mutation Mutation_updatePost($input: MutationUpdatePostInput!) {
+    updatePost(input: $input) {
+      id
+      pinnedAt
+      attachments {
+        mimeType
+        fileHash
+        name
+        objectName
+        id
+      }
+    }
+  }
+`);
+
+export const Mutation_createChat = gql(`
+  mutation Mutation_createChat($input: MutationCreateChatInput!) {
+    createChat(input: $input) {
+      id
+      name
+    }
+  }
+`);
+
+export const Mutation_createChatMessage = gql(`
+ mutation Mutation_createChatMessage($input: MutationCreateChatMessageInput!) {
+  createChatMessage(input: $input) {
+    id
+    body
+    createdAt
+    updatedAt
+    parentMessage {
+      id
+    }
+    chat {
+      id
+      name
+      createdAt
+      creator {
+        id
+        name
+      }
+    }
+    creator {
+      id
+      name
+    }
+  }
+}
+`);
+
+export const Mutation_updateChatMessage = gql(`
+  mutation Mutation_updateChatMessage($input: MutationUpdateChatMessageInput!) {
+  updateChatMessage(input: $input) {
+    id
+    body
+    createdAt
+    updatedAt
+    parentMessage {
+      id
+    }
+    chat {
+      id
+      name
+      createdAt
+      updatedAt
+      creator {
+        id
+        name
+      }
+    }
+    creator {
+      id
+      name
+    }
+  }
+}
+`);
+
+export const Mutation_createChatMembership = gql(`
+  mutation Mutation_createChatMembership($input: MutationCreateChatMembershipInput!) {
+  createChatMembership(input: $input) {
+    id
+    createdAt
+    updatedAt
+    creator {
+      id
+      name
+    }
+  }
+}
+`);
+
+export const Mutation_joinPublicOrganization = gql(`
+  mutation Mutation_joinPublicOrganization($input: MutationJoinPublicOrganizationInput!) {
+    joinPublicOrganization(input: $input) {
+      memberId
+      organizationId
+      role
+      creatorId
+    }
+  }
+`);

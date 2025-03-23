@@ -20,6 +20,10 @@ PostAttachment.implement({
 			description: "File hash for deduplication purposes.",
 			nullable: true,
 		}),
+		id: t.exposeID("id", {
+			description: "Global identifier of the attachment.",
+			nullable: false,
+		}),
 		name: t.exposeString("name", {
 			description: "Identifier name of the attachment.",
 		}),

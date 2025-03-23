@@ -202,6 +202,15 @@ type BlockedUser {
   user: User
 }
 
+"""Response type for canceling a membership request."""
+type CancelMembershipResponse {
+  """A message providing more details about the cancellation status."""
+  message: String
+
+  """Indicates whether the membership request was successfully canceled."""
+  success: Boolean
+}
+
 type Chat {
   """Mime type of the avatar of the chat."""
   avatarMimeType: String
@@ -427,6 +436,13 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+"""Possible statuses for a membership request."""
+enum DrizzleMembershipRequestStatus {
+  approved
+  pending
+  rejected
+}
+
 """
 A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
 """
@@ -516,6 +532,9 @@ input FileMetadataInput {
 
   """MIME type of the file"""
   mimetype: PostAttachmentMimeType!
+
+  """Name of the file"""
+  name: String!
 
   """Object name used in storage"""
   objectName: String!
@@ -1299,9 +1318,40 @@ input MembersWhereInput {
   role: MembersRoleWhereInput
 }
 
+"""Represents a membership request to an organization."""
+type MembershipRequest {
+  """Timestamp when the request was created."""
+  createdAt: DateTime
+
+  """Unique ID for the membership request."""
+  membershipRequestId: ID
+
+  """ID of the organization."""
+  organizationId: String
+
+  """Status of the membership request (e.g., pending, approved, rejected)."""
+  status: MembershipRequestStatus
+
+  """ID of the user who requested membership."""
+  userId: String
+}
+
+"""Possible statuses of a membership request."""
+enum MembershipRequestStatus {
+  approved
+  pending
+  rejected
+}
+
 type Mutation {
   """Mutation field to block a user from an organization."""
   blockUser(organizationId: ID!, userId: ID!): Boolean
+
+  """Mutation field to cancel a membership request."""
+  cancelMembershipRequest(
+    """Input to cancel a membership request"""
+    input: MutationCancelMembershipRequestInput!
+  ): CancelMembershipResponse
 
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
@@ -1438,6 +1488,18 @@ type Mutation {
   """Mutation field to delete a venue booking."""
   deleteVenueBooking(input: MutationDeleteVenueBookingInput!): Venue
 
+  """Mutation field to join a public organization."""
+  joinPublicOrganization(
+    """Input to join a public organization"""
+    input: MutationJoinPublicOrganizationInput!
+  ): OrganizationMembershipObject
+
+  """Mutation field to send a membership request to an organization."""
+  sendMembershipRequest(
+    """Input to send a membership request"""
+    input: MutationSendMembershipRequestInput!
+  ): MembershipRequest
+
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
 
@@ -1518,6 +1580,12 @@ input MutationBlockUserInput {
 
   """Global identifier of the user to block."""
   userId: ID!
+}
+
+"""Input type for canceling a membership request."""
+input MutationCancelMembershipRequestInput {
+  """Global identifier of the membership request."""
+  membershipRequestId: ID!
 }
 
 """"""
@@ -1624,7 +1692,7 @@ input MutationCreateChatMessageInput {
   chatId: ID!
 
   """Global identifier of the associated parent message."""
-  parentMessageId: ID!
+  parentMessageId: ID
 }
 
 """"""
@@ -2066,6 +2134,18 @@ input MutationDeleteVenueBookingInput {
 input MutationDeleteVenueInput {
   """Global identifier of the venue."""
   id: ID!
+}
+
+"""Input type for joining a public organization."""
+input MutationJoinPublicOrganizationInput {
+  """Global identifier of the organization."""
+  organizationId: ID!
+}
+
+"""Input type for sending a membership request."""
+input MutationSendMembershipRequestInput {
+  """Global identifier of the organization."""
+  organizationId: ID!
 }
 
 """"""
@@ -2786,6 +2866,21 @@ type OrganizationMembersConnectionEdge {
   node: User
 }
 
+"""Represents a user's membership in an organization."""
+type OrganizationMembershipObject {
+  """User ID who created the membership."""
+  creatorId: String
+
+  """ID of the member."""
+  memberId: String
+
+  """ID of the organization."""
+  organizationId: String
+
+  """Role of the member in the organization."""
+  role: String
+}
+
 """
 Possible variants of the role assigned to a user within an organization.
 """
@@ -2919,9 +3014,13 @@ type Post {
   updater: User
 }
 
+"""Attachment of the post."""
 type PostAttachment {
   """File hash for deduplication purposes."""
   fileHash: String
+
+  """Global identifier of the attachment."""
+  id: ID!
 
   """Mime type of the attachment."""
   mimeType: String
@@ -2931,9 +3030,6 @@ type PostAttachment {
 
   """Object name used when creating presigned URLs."""
   objectName: String
-
-  """URL to the attachment."""
-  url: String
 }
 
 """MIME types supported for post attachments"""

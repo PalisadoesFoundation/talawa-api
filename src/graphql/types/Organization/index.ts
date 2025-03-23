@@ -16,3 +16,5 @@ import "./tags";
 import "./updatedAt";
 import "./updater";
 import "./venues";
+import "./CancelMembershipResponse";
+import "./MembershipRequestObject";

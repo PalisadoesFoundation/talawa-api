@@ -77,6 +77,13 @@ CREATE TABLE "agenda_items" (
 	"updater_id" uuid
 );
 --> statement-breakpoint
+CREATE TABLE "blocked_users" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"organization_id" uuid NOT NULL,
+	"user_id" uuid NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "chat_memberships" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
@@ -243,6 +250,15 @@ CREATE TABLE "funds" (
 	"updater_id" uuid
 );
 --> statement-breakpoint
+CREATE TABLE "membership_requests" (
+	"membership_request_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" uuid NOT NULL,
+	"organization_id" uuid NOT NULL,
+	"status" text DEFAULT 'pending' NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "unique_user_org" UNIQUE("user_id","organization_id")
+);
+--> statement-breakpoint
 CREATE TABLE "organization_memberships" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
@@ -270,6 +286,7 @@ CREATE TABLE "organizations" (
 	"state" text,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
+	"user_registration_required" boolean DEFAULT false,
 	CONSTRAINT "organizations_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
@@ -280,8 +297,8 @@ CREATE TABLE "post_attachments" (
 	"post_id" uuid NOT NULL,
 	"mime_type" text NOT NULL,
 	"name" text NOT NULL,
-	"object_name" text,
-	"file_hash" text,
+	"object_name" text NOT NULL,
+	"file_hash" text NOT NULL,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
@@ -442,6 +459,8 @@ ALTER TABLE "agenda_folders" ADD CONSTRAINT "agenda_folders_updater_id_users_id_
 ALTER TABLE "agenda_items" ADD CONSTRAINT "agenda_items_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "agenda_items" ADD CONSTRAINT "agenda_items_folder_id_agenda_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."agenda_folders"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "agenda_items" ADD CONSTRAINT "agenda_items_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "blocked_users" ADD CONSTRAINT "blocked_users_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "blocked_users" ADD CONSTRAINT "blocked_users_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "chat_memberships" ADD CONSTRAINT "chat_memberships_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "chat_memberships" ADD CONSTRAINT "chat_memberships_chat_id_chats_id_fk" FOREIGN KEY ("chat_id") REFERENCES "public"."chats"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "chat_memberships" ADD CONSTRAINT "chat_memberships_member_id_users_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
@@ -484,6 +503,8 @@ ALTER TABLE "fund_campaigns" ADD CONSTRAINT "fund_campaigns_updater_id_users_id_
 ALTER TABLE "funds" ADD CONSTRAINT "funds_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "funds" ADD CONSTRAINT "funds_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "funds" ADD CONSTRAINT "funds_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "membership_requests" ADD CONSTRAINT "membership_requests_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "membership_requests" ADD CONSTRAINT "membership_requests_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_member_id_users_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
@@ -559,6 +580,9 @@ CREATE INDEX "agenda_items_creator_id_index" ON "agenda_items" USING btree ("cre
 CREATE INDEX "agenda_items_folder_id_index" ON "agenda_items" USING btree ("folder_id");--> statement-breakpoint
 CREATE INDEX "agenda_items_name_index" ON "agenda_items" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "agenda_items_type_index" ON "agenda_items" USING btree ("type");--> statement-breakpoint
+CREATE UNIQUE INDEX "blocked_users_org_user_unique" ON "blocked_users" USING btree ("organization_id","user_id");--> statement-breakpoint
+CREATE INDEX "blocked_users_organization_id_idx" ON "blocked_users" USING btree ("organization_id");--> statement-breakpoint
+CREATE INDEX "blocked_users_user_id_idx" ON "blocked_users" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "chat_memberships_chat_id_index" ON "chat_memberships" USING btree ("chat_id");--> statement-breakpoint
 CREATE INDEX "chat_memberships_created_at_index" ON "chat_memberships" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "chat_memberships_creator_id_index" ON "chat_memberships" USING btree ("creator_id");--> statement-breakpoint
@@ -620,6 +644,8 @@ CREATE INDEX "funds_creator_id_index" ON "funds" USING btree ("creator_id");--> 
 CREATE INDEX "funds_name_index" ON "funds" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "funds_organization_id_index" ON "funds" USING btree ("organization_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "funds_name_organization_id_index" ON "funds" USING btree ("name","organization_id");--> statement-breakpoint
+CREATE INDEX "idx_membership_requests_user" ON "membership_requests" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "idx_membership_requests_org" ON "membership_requests" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "organization_memberships_created_at_index" ON "organization_memberships" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "organization_memberships_creator_id_index" ON "organization_memberships" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "organization_memberships_member_id_index" ON "organization_memberships" USING btree ("member_id");--> statement-breakpoint

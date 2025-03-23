@@ -631,7 +631,6 @@ export const Mutation_deletePost = gql(`
       id
       attachments {
         mimeType
-        url
       }
     }
   }
@@ -683,3 +682,39 @@ export const Mutation_unblockUser =
 	gql(`mutation Mutation_unblockUser($organizationId: ID!, $userId: ID!) {
     unblockUser(organizationId: $organizationId, userId: $userId)
 }`);
+
+
+export const Query_blockedUsers = gql(`
+  query BlockedUsers(
+    $organizationId: String!
+    $first: Int
+    $after: String
+    $last: Int
+    $before: String
+  ) {
+    organization(input:{id: $organizationId}) {
+      id
+      blockedUsers(
+        first: $first
+        after: $after
+        last: $last
+        before: $before
+      ) {
+        edges {
+          cursor
+          node {
+            id
+            name
+            role
+          }
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
+    }
+  }
+`);

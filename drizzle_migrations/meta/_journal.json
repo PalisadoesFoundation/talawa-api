@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1742623173033,
+      "tag": "20250322055933_dry_star_brand",
+      "breakpoints": true
+    }
+  ]
 }
