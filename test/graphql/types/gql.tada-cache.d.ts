@@ -104,5 +104,7 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ deleteActionItem: { id: string | null; isCompleted: boolean | null; categoryId: string | null; assigneeId: string | null; organizationId: string | null; createdAt: string | null; updatedAt: string | null; postCompletionNotes: string | null; preCompletionNotes: string | null; } | null; }, { input: { id: string; }; }, void>;
     "\n  query FetchActionCategoriesByOrganization($input: QueryActionCategoriesByOrganizationInput!) {\n    actionCategoriesByOrganization(input: $input) {\n      id\n      name\n      organizationId\n      creatorId\n      isDisabled\n      createdAt\n      updatedAt\n    }\n  }\n":
       TadaDocumentNode<{ actionCategoriesByOrganization: { id: string | null; name: string | null; organizationId: string | null; creatorId: string | null; isDisabled: boolean | null; createdAt: string | null; updatedAt: string | null; }[] | null; }, { input: { organizationId: string; }; }, void>;
+    "\n  query eventsByIds($input: QueryEventsByIdsInput!) {\n    eventsByIds(input: $input) {\n      id\n      name\n      description\n      startAt\n      endAt\n    }\n  }\n":
+      TadaDocumentNode<{ eventsByIds: { id: string; name: string | null; description: string | null; startAt: string | null; endAt: string | null; }[] | null; }, { input: { ids: string[]; }; }, void>;
   }
 }

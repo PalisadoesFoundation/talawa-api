@@ -6,6 +6,6 @@
 
 > `const` **schema**: `GraphQLSchema`
 
-Defined in: [src/graphql/schema.ts:12](https://github.com/NishantSinghhhhh/talawa-api/blob/80d33ad4356836957a519774ac35d2e1e92179d5/src/graphql/schema.ts#L12)
+Defined in: [src/graphql/schema.ts:12](https://github.com/NishantSinghhhhh/talawa-api/blob/d7e8fb10f99b66342acb17768b9755553b21ad54/src/graphql/schema.ts#L12)
 
 This is the executable graphql schema.

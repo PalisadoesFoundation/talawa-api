@@ -6,4 +6,4 @@
 
 > `const` **mutationUpdateCommentInputSchema**: `ZodEffects`\<`ZodObject`\<\{ `body`: `ZodOptional`\<`ZodArray`\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<..., "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, `"many"`\>\>; `id`: `any`; \}, `"strip"`, `ZodTypeAny`, \{ `[key: string]`: `any`;  `body`: `unknown`; `id`: `unknown`; \}, \{ `[key: string]`: `any`;  `body`: `unknown`; `id`: `unknown`; \}\>, \{ `[key: string]`: `any`;  `body`: `unknown`; `id`: `unknown`; \}, \{ `[key: string]`: `any`;  `body`: `unknown`; `id`: `unknown`; \}\>
 
-Defined in: [src/graphql/inputs/MutationUpdateCommentInput.ts:5](https://github.com/NishantSinghhhhh/talawa-api/blob/80d33ad4356836957a519774ac35d2e1e92179d5/src/graphql/inputs/MutationUpdateCommentInput.ts#L5)
+Defined in: [src/graphql/inputs/MutationUpdateCommentInput.ts:5](https://github.com/NishantSinghhhhh/talawa-api/blob/d7e8fb10f99b66342acb17768b9755553b21ad54/src/graphql/inputs/MutationUpdateCommentInput.ts#L5)

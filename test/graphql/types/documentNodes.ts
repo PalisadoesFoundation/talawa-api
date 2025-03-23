@@ -840,3 +840,15 @@ export const ACTION_ITEM_CATEGORY = gql(`
     }
   }
 `);
+
+export const Query_eventsByIds = gql(`
+  query eventsByIds($input: QueryEventsByIdsInput!) {
+    eventsByIds(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+    }
+  }
+`);
