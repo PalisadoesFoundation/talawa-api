@@ -6,7 +6,7 @@
 
 > **transformDefaultGraphQLConnectionArguments**\<`Arg`\>(`arg`, `ctx`): `object` & `Omit`\<`Arg`, `"first"` \| `"last"` \| `"before"` \| `"after"`\>
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:67](https://github.com/NishantSinghhhhh/talawa-api/blob/b87b8a22e4088f1ea75d4769c10896977d674855/src/utilities/defaultGraphQLConnection.ts#L67)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:67](https://github.com/NishantSinghhhhh/talawa-api/blob/80d33ad4356836957a519774ac35d2e1e92179d5/src/utilities/defaultGraphQLConnection.ts#L67)
 
 Transform function for the basic connection arguments.
 

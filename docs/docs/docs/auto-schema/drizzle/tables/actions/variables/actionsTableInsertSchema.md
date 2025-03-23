@@ -6,4 +6,4 @@
 
 > `const` **actionsTableInsertSchema**: `BuildSchema`\<`"insert"`, \{ `assignedAt`: `PgColumn`\<\{\}, \{\}, \{\}\>; `assigneeId`: `PgColumn`\<\{\}, \{\}, \{\}\>; `categoryId`: `PgColumn`\<\{\}, \{\}, \{\}\>; `completionAt`: `PgColumn`\<\{\}, \{\}, \{\}\>; `createdAt`: `PgColumn`\<\{\}, \{\}, \{\}\>; `creatorId`: `PgColumn`\<\{\}, \{\}, \{\}\>; `eventId`: `PgColumn`\<\{\}, \{\}, \{\}\>; `id`: `PgColumn`\<\{\}, \{\}, \{\}\>; `isCompleted`: `PgColumn`\<\{\}, \{\}, \{\}\>; `organizationId`: `PgColumn`\<\{\}, \{\}, \{\}\>; `postCompletionNotes`: `PgColumn`\<\{\}, \{\}, \{\}\>; `preCompletionNotes`: `PgColumn`\<\{\}, \{\}, \{\}\>; `updatedAt`: `PgColumn`\<\{\}, \{\}, \{\}\>; `updaterId`: `PgColumn`\<\{\}, \{\}, \{\}\>; \}, `undefined`\>
 
-Defined in: [src/drizzle/tables/actions.ts:120](https://github.com/NishantSinghhhhh/talawa-api/blob/b87b8a22e4088f1ea75d4769c10896977d674855/src/drizzle/tables/actions.ts#L120)
+Defined in: [src/drizzle/tables/actions.ts:120](https://github.com/NishantSinghhhhh/talawa-api/blob/80d33ad4356836957a519774ac35d2e1e92179d5/src/drizzle/tables/actions.ts#L120)

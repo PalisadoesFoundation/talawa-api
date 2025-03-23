@@ -826,3 +826,17 @@ export const DELETE_ACTION_ITEM_MUTATION = gql(`
     }
   }
   `);
+
+export const ACTION_ITEM_CATEGORY = gql(`
+  query FetchActionCategoriesByOrganization($input: QueryActionCategoriesByOrganizationInput!) {
+    actionCategoriesByOrganization(input: $input) {
+      id
+      name
+      organizationId
+      creatorId
+      isDisabled
+      createdAt
+      updatedAt
+    }
+  }
+`);

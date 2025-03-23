@@ -6,7 +6,7 @@
 
 > **UnauthorizedActionOnArgumentsAssociatedResourcesExtensions**: `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:158](https://github.com/NishantSinghhhhh/talawa-api/blob/b87b8a22e4088f1ea75d4769c10896977d674855/src/utilities/TalawaGraphQLError.ts#L158)
+Defined in: [src/utilities/TalawaGraphQLError.ts:158](https://github.com/NishantSinghhhhh/talawa-api/blob/80d33ad4356836957a519774ac35d2e1e92179d5/src/utilities/TalawaGraphQLError.ts#L158)
 
 When the client is not authorized to perform an action on a resource associated to an argument.
 
