@@ -683,7 +683,6 @@ export const Mutation_unblockUser =
     unblockUser(organizationId: $organizationId, userId: $userId)
 }`);
 
-
 export const Query_blockedUsers = gql(`
   query BlockedUsers(
     $organizationId: String!
