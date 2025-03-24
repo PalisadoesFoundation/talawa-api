@@ -5,7 +5,6 @@ import { builder } from "~/src/graphql/builder";
 export const mutationUpdateVenueInputSchema = venuesTableInsertSchema
 	.pick({
 		description: true,
-		name: true,
 		organizationId: true,
 	})
 	.extend({
