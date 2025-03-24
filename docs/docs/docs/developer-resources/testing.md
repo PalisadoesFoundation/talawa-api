@@ -179,13 +179,77 @@ const { context, mocks } = createMockGraphQLContext({
 });
 ```
 
+### GraphQL Resolver Type Safety Guidelines 
+
+####  Best Practices
+
+1. **Use Schema-Generated Types Only**  
+
+- Derive types from `context.ts` and GraphQL schema. Avoid custom types.
+
+2. **Stick to `GraphQLContext`**  
+
+- All resolvers must use `GraphQLContext` from `context.ts`.
+
+3. **Leverage Drizzle ORM Types**  
+
+- Use `typeof table.$inferSelect` for entity types. Never define manually.
+
+4. **only detach if needed for mock testing and ensure it follows correct typeSafety**
+
+---
+
+#### Correct Example
+
+```ts
+
+import { eq } from "drizzle-orm";
+import { eventsTable } from "~/src/drizzle/tables/events";
+import type { GraphQLContext } from "../../context";
+type EventsTable = typeof eventsTable.$inferSelect;
+export const resolver = async (
+  parent: EventsTable,
+  _args: Record<string, never>,
+  ctx: GraphQLContext,
+) => {
+  if (!ctx.currentClient.isAuthenticated) throw new Error("Authentication required");
+  return ctx.drizzleClient.query.usersTable.findFirst({
+    where: eq(ctx.usersTable.id, parent.updaterId),
+  });
+};
+
+```
+
+---
+
+#### Incorrect Example
+
+```ts
+
+import type { CustomContextType } from "../../customContext"; //  Custom context
+import type { EventType } from "../../types/Event"; //  Manual type
+export const resolver = async (
+  parent: EventType, //  Avoid this
+  _args: Record<string, never>,
+  ctx: CustomContextType, //  Avoid this
+) => { /* Inconsistent and error-prone */ };
+
+```
+
+---
+
+#### Key Rules
+-  Always use `GraphQLContext` from `context.ts`.  
+-  Use `typeof table.$inferSelect` for Drizzle entities.  
+-  Never define custom types for resolvers.
+
+This ensures type safety and consistency across your GraphQL resolvers. 
+
+
+
 ### **Future Considerations**
 
 In the future, there might be a requirement to run some tests sequentially. When that moment arrives, separating sequential and parallel tests into separate directories and using separate Vitest configuration for them would be the best idea.
-
-### Future Considerations
-
-In the future there might be a requirement to run some tests sequentially. When that moment arrives separating sequential and parallel tests into separate directories and using separate vitest configuration for them would be the best idea.
 
 ### Writing Reliable Concurrent Tests
 

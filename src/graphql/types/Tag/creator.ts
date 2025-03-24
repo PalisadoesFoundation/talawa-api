@@ -6,7 +6,7 @@ import type { Tag as TagType } from "./Tag";
 
 export const tagCreatorResolver = async (
 	parent: TagType,
-	_args: unknown,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {
