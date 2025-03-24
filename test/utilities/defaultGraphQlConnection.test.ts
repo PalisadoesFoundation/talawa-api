@@ -1,11 +1,13 @@
-import { expect, suite, test, vi } from "vitest";
+import { afterEach, expect, it, suite, test, vi } from "vitest";
+import { z } from "zod";
 import {
 	type ParsedDefaultGraphQLConnectionArguments,
+	createGraphQLConnectionWithWhereSchema,
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
+	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
 } from "../../src/utilities/defaultGraphQLConnection";
-
 suite("defaultGraphQLConnection utilities", () => {
 	suite("defaultGraphQLConnectionArgumentsSchema", () => {
 		test("returns valid schema output for first/after pattern", () => {
@@ -410,14 +412,14 @@ suite("defaultGraphQLConnection utilities", () => {
 				parsedArgs,
 				rawNodes: [...mockUsers],
 			});
-
+			console.log("result is", result);
 			expect(result.edges).toHaveLength(4); // Should drop the extra node
-			expect(result.edges[0]?.node.id).toBe("4"); // Backward, so reversed order
-			expect(result.edges[3]?.node.id).toBe("1");
+			expect(result.edges[0]?.node.id).toBe("1"); // Backward, so reversed order
+			expect(result.edges[3]?.node.id).toBe("4");
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(true);
-			expect(result.pageInfo.startCursor).toBe("1");
-			expect(result.pageInfo.endCursor).toBe("4");
+			expect(result.pageInfo.startCursor).toBe("4");
+			expect(result.pageInfo.endCursor).toBe("1");
 		});
 
 		test("transforms backward pagination with hasPreviousPage=false", () => {
@@ -437,8 +439,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges).toHaveLength(5);
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
-			expect(result.pageInfo.startCursor).toBe("1");
-			expect(result.pageInfo.endCursor).toBe("5");
+			expect(result.pageInfo.startCursor).toBe("5");
+			expect(result.pageInfo.endCursor).toBe("1");
 		});
 
 		test("transforms backward pagination with cursor (hasNextPage=true)", () => {
@@ -457,14 +459,14 @@ suite("defaultGraphQLConnection utilities", () => {
 				parsedArgs,
 				rawNodes: beforeCursorUsers,
 			});
-
+			console.log("result ", result.edges);
 			expect(result.edges).toHaveLength(2);
-			expect(result.edges[0]?.node.id).toBe("2");
-			expect(result.edges[1]?.node.id).toBe("1");
+			expect(result.edges[0]?.node.id).toBe("1");
+			expect(result.edges[1]?.node.id).toBe("2");
 			expect(result.pageInfo.hasNextPage).toBe(true);
 			expect(result.pageInfo.hasPreviousPage).toBe(true);
-			expect(result.pageInfo.startCursor).toBe("1");
-			expect(result.pageInfo.endCursor).toBe("2");
+			expect(result.pageInfo.startCursor).toBe("2");
+			expect(result.pageInfo.endCursor).toBe("1");
 		});
 
 		test("handles empty results", () => {
@@ -562,6 +564,137 @@ suite("defaultGraphQLConnection utilities", () => {
 			);
 			expect(decodedCursor).toHaveProperty("id", "1");
 			expect(decodedCursor).toHaveProperty("createdAt");
+		});
+	});
+	suite("createGraphQLConnectionWithWhereSchema", () => {
+		const testWhereSchema = z.object({
+			name_contains: z.string().optional(),
+			description_contains: z.string().optional(),
+		});
+
+		const extendedSchema =
+			createGraphQLConnectionWithWhereSchema(testWhereSchema);
+
+		test("should extend the base schema with a where clause", () => {
+			expect(extendedSchema.shape).toMatchObject({
+				...defaultGraphQLConnectionArgumentsSchema.shape,
+				where: expect.anything(),
+			});
+
+			const whereShape =
+				extendedSchema.shape.where._def.innerType._def.innerType.shape;
+			expect(whereShape).toMatchObject({
+				name_contains: expect.anything(),
+				description_contains: expect.anything(),
+			});
+		});
+
+		test("should set default where to empty object when not provided", async () => {
+			const zodSchemaMock = z.object({
+				name_contains: z.string().optional(),
+			});
+
+			const schema = createGraphQLConnectionWithWhereSchema(zodSchemaMock);
+
+			const parsed = schema.parse({ first: 10 }); // No where provided
+
+			expect(parsed.where).toEqual({}); // createGraphQLConnectionWithWhereSchema add's where = {}
+		});
+
+		test("should validate correct where clauses", () => {
+			const validInputs = [
+				{
+					first: 10,
+					where: { name_contains: "John Doe" }, // description_contains optional
+				},
+				{
+					first: 10,
+					where: { description_contains: "description" }, // name_contains optional
+				},
+			];
+
+			for (const input of validInputs) {
+				expect(() => extendedSchema.parse(input)).not.toThrow();
+			}
+		});
+
+		test("should handle empty where schema", () => {
+			const emptyWhereSchema = z.object({});
+			const emptyExtendedSchema =
+				createGraphQLConnectionWithWhereSchema(emptyWhereSchema);
+
+			const result = emptyExtendedSchema.parse({
+				first: 10,
+				where: {}, // valid with empty where schema
+			});
+
+			expect(result.where).toEqual({});
+		});
+	});
+
+	suite("transformGraphQLConnectionArgumentsWithWhere", () => {
+		// Mock refinement context for error handling
+		const mockCtx: z.RefinementCtx = {
+			addIssue: vi.fn(),
+			path: [],
+		};
+
+		afterEach(() => {
+			vi.clearAllMocks();
+		});
+
+		it("should transform basic connection arguments with where clause", () => {
+			const input = {
+				first: 10,
+				where: { name_contains: "test" },
+				isInversed: false,
+			};
+
+			const result = transformGraphQLConnectionArgumentsWithWhere(
+				input,
+				mockCtx,
+			);
+
+			expect(result).toEqual({
+				cursor: undefined,
+				isInversed: false,
+				limit: 11, // first + 1
+				where: { name_contains: "test" },
+			});
+			expect(mockCtx.addIssue).not.toHaveBeenCalled();
+		});
+
+		it("should handle inversed connection with where clause", () => {
+			const input = {
+				last: 5,
+				before: "cursor123",
+				where: { description_contains: "example" },
+				isInversed: true,
+			};
+
+			const result = transformGraphQLConnectionArgumentsWithWhere(
+				input,
+				mockCtx,
+			);
+
+			expect(result).toEqual({
+				cursor: "cursor123",
+				isInversed: true,
+				limit: 6, // last + 1
+				where: { description_contains: "example" },
+			});
+		});
+
+		it("should handle empty where clause", () => {
+			const input = {
+				first: 10,
+				where: {},
+				isInversed: true,
+			};
+
+			transformGraphQLConnectionArgumentsWithWhere(input, mockCtx);
+
+			expect(mockCtx.addIssue).not.toHaveBeenCalled();
 		});
 	});
 });

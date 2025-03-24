@@ -86,7 +86,6 @@ Organization.implement({
 						},
 					});
 				}
-
 				const currentUserId = ctx.currentClient.user.id;
 
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
@@ -129,7 +128,6 @@ Organization.implement({
 				}
 
 				const { cursor, isInversed, limit } = parsedArgs;
-
 				const orderBy = isInversed
 					? [desc(venuesTable.capacity)]
 					: [asc(venuesTable.capacity)];

@@ -79,10 +79,9 @@ export const transformDefaultGraphQLConnectionArguments = <
 ) => {
 	const transformedArg: ParsedDefaultGraphQLConnectionArguments = {
 		cursor: undefined,
-		isInversed: arg.isInversed ?? false,
+		isInversed: arg.isInversed,
 		limit: 0,
 	};
-	console.log("value of isInversed from transformDefault...");
 	const { after, before, first, last, ...customArg } = arg;
 
 	if (first !== undefined) {
@@ -282,8 +281,6 @@ export const transformToDefaultGraphQLConnection = <
 		} else {
 			connection.pageInfo.hasPreviousPage = false;
 		}
-		// Reverse the nodes if the traversal is inverted
-		rawNodes = isInversed ? [...rawNodes].reverse() : rawNodes;
 		// If the cursor is `undefined` it means that the connection is at the very beginning and there are no edges after it.
 		connection.pageInfo.hasNextPage = cursor !== undefined;
 
