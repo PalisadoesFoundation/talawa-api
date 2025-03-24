@@ -889,3 +889,23 @@ export const Query_eventsByOrganizationId = gql(`
     }
   }
 `);
+
+export const Query_actionItemsByOrganization = `
+query ActionItemsByOrganization($input: QueryActionItemsByOrganizationInput!) {
+  actionItemsByOrganization(input: $input) {
+    id
+    preCompletionNotes
+    isCompleted
+    assignedAt
+    completionAt
+    categoryId
+    assigneeId
+    creatorId
+    organizationId
+    updaterId
+    updatedAt
+    eventId
+    postCompletionNotes
+  }
+}
+`;
