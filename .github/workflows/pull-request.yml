@@ -20,6 +20,9 @@ env:
 
 jobs:
   Code-Quality-Checks:
+    env:
+      PWD: ${{ github.workspace }}
+      MONGO_URI: mongodb://localhost:27017/test
     name: Check for linting, formatting, and type errors
     runs-on: ubuntu-latest
     steps:
