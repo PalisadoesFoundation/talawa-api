@@ -6,7 +6,7 @@
 
 > **UnexpectedExtensions**: `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:198](https://github.com/NishantSinghhhhh/talawa-api/blob/c589e7bc1eb842c2fd40f1d8b61882c5c36978fe/src/utilities/TalawaGraphQLError.ts#L198)
+Defined in: [src/utilities/TalawaGraphQLError.ts:198](https://github.com/NishantSinghhhhh/talawa-api/blob/902a87c428b05018acbd37a72fd0f53e07960330/src/utilities/TalawaGraphQLError.ts#L198)
 
 When an error that doesn't fit one of the error types listed above occurs. One example would be a database request failure.
 

@@ -6,4 +6,4 @@
 
 > `const` **MutationUpdateAdvertisementInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, `any`\>
 
-Defined in: [src/graphql/inputs/MutationUpdateAdvertisementInput.ts:40](https://github.com/NishantSinghhhhh/talawa-api/blob/c589e7bc1eb842c2fd40f1d8b61882c5c36978fe/src/graphql/inputs/MutationUpdateAdvertisementInput.ts#L40)
+Defined in: [src/graphql/inputs/MutationUpdateAdvertisementInput.ts:40](https://github.com/NishantSinghhhhh/talawa-api/blob/902a87c428b05018acbd37a72fd0f53e07960330/src/graphql/inputs/MutationUpdateAdvertisementInput.ts#L40)

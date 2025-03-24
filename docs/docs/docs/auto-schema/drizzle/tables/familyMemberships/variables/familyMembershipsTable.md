@@ -6,4 +6,4 @@
 
 > `const` **familyMembershipsTable**: `PgTableWithColumns`\<\{\}\>
 
-Defined in: [src/drizzle/tables/familyMemberships.ts:14](https://github.com/NishantSinghhhhh/talawa-api/blob/c589e7bc1eb842c2fd40f1d8b61882c5c36978fe/src/drizzle/tables/familyMemberships.ts#L14)
+Defined in: [src/drizzle/tables/familyMemberships.ts:14](https://github.com/NishantSinghhhhh/talawa-api/blob/902a87c428b05018acbd37a72fd0f53e07960330/src/drizzle/tables/familyMemberships.ts#L14)

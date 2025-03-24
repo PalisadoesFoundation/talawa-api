@@ -6,6 +6,6 @@
 
 > `const` **membershipRequestsTableInsertSchema**: `BuildSchema`\<`"insert"`, \{ `createdAt`: `PgColumn`\<\{\}, \{\}, \{\}\>; `membershipRequestId`: `PgColumn`\<\{\}, \{\}, \{\}\>; `organizationId`: `PgColumn`\<\{\}, \{\}, \{\}\>; `status`: `PgColumn`\<\{\}, \{\}, \{\}\>; `userId`: `PgColumn`\<\{\}, \{\}, \{\}\>; \}, `undefined`\>
 
-Defined in: [src/drizzle/tables/membershipRequests.ts:116](https://github.com/NishantSinghhhhh/talawa-api/blob/c589e7bc1eb842c2fd40f1d8b61882c5c36978fe/src/drizzle/tables/membershipRequests.ts#L116)
+Defined in: [src/drizzle/tables/membershipRequests.ts:116](https://github.com/NishantSinghhhhh/talawa-api/blob/902a87c428b05018acbd37a72fd0f53e07960330/src/drizzle/tables/membershipRequests.ts#L116)
 
 Schema for inserting new membership requests.

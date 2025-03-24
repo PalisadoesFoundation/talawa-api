@@ -6,7 +6,7 @@
 
 > **resolveOrganizations**(`_parent`, `args`, `ctx`): `Promise`\<`object`[]\>
 
-Defined in: [src/graphql/types/Query/organizations.ts:27](https://github.com/NishantSinghhhhh/talawa-api/blob/c589e7bc1eb842c2fd40f1d8b61882c5c36978fe/src/graphql/types/Query/organizations.ts#L27)
+Defined in: [src/graphql/types/Query/organizations.ts:27](https://github.com/NishantSinghhhhh/talawa-api/blob/902a87c428b05018acbd37a72fd0f53e07960330/src/graphql/types/Query/organizations.ts#L27)
 
 Resolver to fetch organizations with optional filtering.
 

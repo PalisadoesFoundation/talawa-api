@@ -4,7 +4,7 @@
 
 # Interface: GetUrlResponse
 
-Defined in: [src/graphql/types/Post/GetUrlResponse.ts:3](https://github.com/NishantSinghhhhh/talawa-api/blob/c589e7bc1eb842c2fd40f1d8b61882c5c36978fe/src/graphql/types/Post/GetUrlResponse.ts#L3)
+Defined in: [src/graphql/types/Post/GetUrlResponse.ts:3](https://github.com/NishantSinghhhhh/talawa-api/blob/902a87c428b05018acbd37a72fd0f53e07960330/src/graphql/types/Post/GetUrlResponse.ts#L3)
 
 ## Properties
 
@@ -12,4 +12,4 @@ Defined in: [src/graphql/types/Post/GetUrlResponse.ts:3](https://github.com/Nish
 
 > **presignedUrl**: `string`
 
-Defined in: [src/graphql/types/Post/GetUrlResponse.ts:4](https://github.com/NishantSinghhhhh/talawa-api/blob/c589e7bc1eb842c2fd40f1d8b61882c5c36978fe/src/graphql/types/Post/GetUrlResponse.ts#L4)
+Defined in: [src/graphql/types/Post/GetUrlResponse.ts:4](https://github.com/NishantSinghhhhh/talawa-api/blob/902a87c428b05018acbd37a72fd0f53e07960330/src/graphql/types/Post/GetUrlResponse.ts#L4)
