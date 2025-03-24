@@ -1,3 +1,7 @@
+/**
+ * Resolver for querying organizations.
+ * @returns Array of organization objects
+ */
 import { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
 import { errors } from "../../libraries";
@@ -6,7 +10,7 @@ import { getSort } from "./helperFunctions/getSort";
 import { cacheOrganizations } from "../../services/OrganizationCache/cacheOrganizations";
 import { findOrganizationsInCache } from "../../services/OrganizationCache/findOrganizationsInCache";
 
-export const organizations = async (_parent, args) => {
+export const organizations: QueryResolvers["organizations"] = async (_parent, args) => {
   const sort = getSort(args.orderBy);
   if (args.id) {
     const cached = await findOrganizationsInCache([args.id]);
