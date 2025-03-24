@@ -5,7 +5,7 @@ import type { Advertisement as AdvertisementType } from "./Advertisement";
 
 export const advertisementUpdatedAtResolver = async (
 	parent: AdvertisementType,
-	_args: unknown,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	try {

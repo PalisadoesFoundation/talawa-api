@@ -1,438 +1,199 @@
-import type { FastifyBaseLogger } from "fastify";
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Organization } from "~/src/graphql/types/Organization/Organization";
-import { OrganizationUpdaterResolver } from "~/src/graphql/types/Organization/updater";
-import type { User } from "~/src/graphql/types/User/User";
+import { OrganizationUpdater } from "~/src/graphql/types/Organization/updater";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { createMockLogger } from "../../../utilities/mockLogger";
-interface OrganizationMembership {
-	role: "administrator" | "member" | "viewer";
-	joinDate?: string;
-}
-
-interface ExtendedUser extends User {
-	organizationMembershipsWhereMember: OrganizationMembership[];
-}
-
-interface BaseOrganization {
-	id: string;
-	name: string;
-	description: string | null;
-	createdAt: Date;
-	updatedAt: Date | null;
-	updaterId: string | null;
-}
-
-type TestOrganization = Organization & BaseOrganization;
-
-interface TestContext extends Omit<GraphQLContext, "log" | "currentClient"> {
-	log: FastifyBaseLogger;
-	currentClient: {
-		isAuthenticated: true;
-		user: { id: string };
-		token?: string;
-	};
-	drizzleClient: {
-		query: {
-			usersTable: {
-				findFirst: ReturnType<typeof vi.fn>;
-			};
-			organizationsTable: {
-				findFirst: ReturnType<typeof vi.fn>;
-			};
-		};
-	} & GraphQLContext["drizzleClient"];
-	jwt: {
-		sign: (payload: Record<string, unknown>) => string;
-	};
-}
 
 describe("Organization Resolver: Updater Field", () => {
-	let ctx: TestContext;
-	let mockUser: ExtendedUser;
-	let mockOrganization: TestOrganization;
-	const currentDate = new Date();
+	let ctx: GraphQLContext;
+	let mockOrganization: Organization;
+	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
 	beforeEach(() => {
-		mockUser = {
-			id: "123",
-			name: "John Doe",
-			role: "administrator",
-			createdAt: currentDate,
-			updatedAt: null,
-			organizationMembershipsWhereMember: [
-				{
-					role: "administrator",
-				},
-			],
-		} as ExtendedUser;
+		const { context, mocks: newMocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
 
 		mockOrganization = {
-			id: "org-123",
+			id: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
 			name: "Test Organization",
-			createdAt: currentDate,
-			updatedAt: null,
-			updaterId: "456",
-			description: "Test description",
-		} as TestOrganization;
+			description: "Test Description",
+			creatorId: "123e4567-e89b-12d3-a456-426614174000",
+			createdAt: new Date("2024-02-07T10:30:00.000Z"),
+			updatedAt: new Date("2024-02-07T12:00:00.000Z"),
+			addressLine1: null,
+			addressLine2: null,
+			avatarMimeType: null,
+			avatarName: null,
+			city: null,
+			countryCode: null,
+			updaterId: "123e4567-e89b-12d3-a456-426614174000",
+			state: null,
+			postalCode: null,
+		} as Organization;
 
-		const mockLogger = createMockLogger();
-
-		ctx = {
-			drizzleClient: {
-				query: {
-					usersTable: {
-						findFirst: vi.fn().mockResolvedValue(mockUser),
-					},
-					organizationsTable: {
-						findFirst: vi.fn().mockResolvedValue(mockOrganization),
-					},
-				},
-			} as unknown as TestContext["drizzleClient"],
-			log: mockLogger,
-			currentClient: {
-				isAuthenticated: true,
-				user: {
-					id: "123",
-				},
-				token: "sample-token",
-			},
-			jwt: {},
-		} as TestContext;
-
-		// Clear mocks to prevent test pollution
+		ctx = context;
+		mocks = newMocks;
 		vi.clearAllMocks();
 	});
 
-	describe("Authentication and Authorization", () => {
-		it("should throw unauthenticated error when user is not authenticated", async () => {
-			const unauthenticatedCtx = {
-				...ctx,
-				currentClient: {
-					...ctx.currentClient,
-					isAuthenticated: false as false,
-				},
-			};
-
+	describe("Authorization Checks", () => {
+		it("should throw unauthorized_action if user is not an administrator", async () => {
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-123",
+				role: "member",
+				organizationMembershipsWhereMember: [
+					{ role: "member", organizationId: mockOrganization.id },
+				],
+			});
 			await expect(
-				OrganizationUpdaterResolver.updater(
-					mockOrganization,
-					{},
-					unauthenticatedCtx,
-				),
+				OrganizationUpdater(mockOrganization, {}, ctx),
 			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unauthenticated" },
-				}),
+				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 			);
 		});
+	});
 
-		it("should throw unauthorized error when user is not an administrator", async () => {
-			const nonAdminUser = {
-				...mockUser,
+	describe("Updater Retrieval", () => {
+		it("should return null if `updaterId` is null", async () => {
+			mockOrganization.updaterId = null;
+
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+				id: "user-123",
+				role: "administrator",
 				organizationMembershipsWhereMember: [
-					{
-						role: "member",
-					},
+					{ role: "administrator", organizationId: mockOrganization.id },
+				],
+			});
+
+			await expect(
+				OrganizationUpdater(mockOrganization, {}, ctx),
+			).resolves.toBeNull();
+		});
+
+		it("should return the updater user if `updaterId` exists", async () => {
+			const updaterUser = {
+				id: "user-456",
+				name: "Jane Updater",
+				role: "regular",
+			};
+
+			// Ensure `updaterId` is correctly set in mockOrganization
+			mockOrganization.updaterId = "user-456";
+
+			// Mock current user (authenticated user)
+			const mockCurrentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [
+					{ role: "administrator", organizationId: mockOrganization.id },
 				],
 			};
-			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				nonAdminUser,
-			);
 
-			await expect(
-				OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unauthorized_action" },
-				}),
-			);
+			mocks.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce(mockCurrentUser) // First query: fetch current user
+				.mockResolvedValueOnce(updaterUser); // Second query: fetch updater user
+
+			const result = await OrganizationUpdater(mockOrganization, {}, ctx);
+
+			// Ensure the result is correctly returned
+			expect(result).toEqual(updaterUser);
+
+			// Ensure both database calls were made
+			expect(
+				mocks.drizzleClient.query.usersTable.findFirst,
+			).toHaveBeenCalledTimes(2);
 		});
 
-		it("should proceed with authentication check when user is authenticated", async () => {
-			const authenticatedCtx = {
-				...ctx,
-				currentClient: {
-					...ctx.currentClient,
-					isAuthenticated: true,
-				},
+		it("should return the current user if they are the updater", async () => {
+			// Mock organization where updaterId matches current user's ID
+			const mockOrg = {
+				...mockOrganization,
+				id: "org-123",
+				updaterId: "user-123",
 			};
 
-			await expect(
-				OrganizationUpdaterResolver.updater(
-					mockOrganization,
-					{},
-					authenticatedCtx,
-				),
-			).resolves.not.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "unauthenticated" },
-				}),
-			);
-		});
+			// Mock current user data
+			const mockCurrentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [
+					{ role: "administrator", organizationId: mockOrg.id },
+				],
+			};
 
-		it("should throw unauthorized_action error when currentUser is not found", async () => {
-			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockCurrentUser,
+			);
+
+			const result = await OrganizationUpdater(mockOrg, {}, ctx);
+
+			expect(result).toEqual(mockCurrentUser);
+		});
+	});
+
+	describe("Edge Cases and Unexpected Scenarios", () => {
+		it("should throw a forbidden_action error if current user is not found", async () => {
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				undefined,
 			);
 
-			// Log for debugging
-			ctx.log.debug("Unauthorized access attempt: currentUser is undefined.");
-
 			await expect(
-				OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
+				OrganizationUpdater(mockOrganization, {}, ctx),
 			).rejects.toThrow(
-				new TalawaGraphQLError({
-					message: "You are not authorized to perform this action.",
-					extensions: {
-						code: "unauthorized_action",
-						message: "User must have at least one organization membership",
-					},
-				}),
+				new TalawaGraphQLError({ extensions: { code: "forbidden_action" } }),
 			);
 		});
 
-		it("should throw unauthorized_action error when currentUser is null", async () => {
-			ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(null);
-
-			// Log for debugging
-			ctx.log.debug("Unauthorized access attempt: currentUser is null.");
-
-			await expect(
-				OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					message: "You are not authorized to perform this action.",
-					extensions: {
-						code: "unauthorized_action",
-						message: "User must have at least one organization membership",
-					},
-				}),
-			);
-		});
-
-		it("should not throw forbidden_action error when currentUser exists", async () => {
-			const result = await OrganizationUpdaterResolver.updater(
-				mockOrganization,
-				{},
-				ctx,
-			);
-
-			expect(result).toBeDefined();
-		});
-	});
-
-	describe("Updater Resolution", () => {
-		it("should return null when updaterId is null", async () => {
-			const nullUpdaterOrg: TestOrganization = {
-				...mockOrganization,
-				updaterId: null,
+		it("should log a warning and throw an error if the updater user does not exist", async () => {
+			const mockCurrentUser = {
+				id: "user-123",
+				role: "administrator",
+				organizationMembershipsWhereMember: [
+					{ role: "administrator", organizationId: mockOrganization.id },
+				],
 			};
 
-			const result = await OrganizationUpdaterResolver.updater(
-				nullUpdaterOrg,
-				{},
-				ctx,
-			);
+			mocks.drizzleClient.query.usersTable.findFirst
+				.mockResolvedValueOnce(mockCurrentUser)
+				.mockResolvedValueOnce(undefined);
 
-			expect(result).toBeNull();
-		});
-
-		it("should return current user when updaterId matches current user", async () => {
-			const currentUserOrg: TestOrganization = {
-				...mockOrganization,
-				updaterId: "123",
-			};
-
-			const result = await OrganizationUpdaterResolver.updater(
-				currentUserOrg,
-				{},
-				ctx,
-			);
-
-			expect(result).toEqual(mockUser);
-		});
-	});
-
-	describe("Error Handling", () => {
-		it("should handle database errors gracefully", async () => {
-			const dbError = new Error("Database connection failed");
-			ctx.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
-				dbError,
-			);
+			const logWarnSpy = vi.spyOn(ctx.log, "warn");
 
 			await expect(
-				OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
-			).rejects.toThrow(dbError);
-		});
-
-		it("should handle missing updater user scenarios appropriately", async () => {
-			const differentUpdaterOrg: TestOrganization = {
-				...mockOrganization,
-				updaterId: "non-existent-id",
-			};
-
-			ctx.drizzleClient.query.usersTable.findFirst
-				.mockResolvedValueOnce(mockUser) // First call returns current user
-				.mockResolvedValueOnce(undefined); // Second call returns undefined for updater
-
-			await expect(
-				OrganizationUpdaterResolver.updater(differentUpdaterOrg, {}, ctx),
+				OrganizationUpdater(mockOrganization, {}, ctx),
 			).rejects.toThrow(
 				new TalawaGraphQLError({
-					message: "Something went wrong. Please try again later.",
-					extensions: {
-						code: "unexpected",
-					},
+					extensions: { code: "unexpected" },
 				}),
 			);
 
-			expect(ctx.log.warn).toHaveBeenCalledWith(
-				`Postgres select operation returned an empty array for organization ${differentUpdaterOrg.id}'s updaterId (${differentUpdaterOrg.updaterId}) that isn't null.`,
+			expect(logWarnSpy).toHaveBeenCalledWith(
+				"Postgres select operation returned an empty array for a organization's updater id that isn't null.",
 			);
 		});
 	});
-
-	describe("Edge Cases", () => {
-		describe("Organization Membership Scenarios", () => {
-			it("should return unauthorized_action error when user has no organization memberships", async () => {
-				const userWithoutMemberships: ExtendedUser = {
-					...mockUser,
-					organizationMembershipsWhereMember: [],
-				};
-
-				ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-					userWithoutMemberships,
-				);
-
-				await expect(
-					OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
-				).rejects.toThrow(
-					new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action",
-							message: "User must have at least one organization membership",
-						},
-					}),
-				);
-			});
-
-			it("should handle membership with missing role field", async () => {
-				const userWithIncompleteData: ExtendedUser = {
-					...mockUser,
-					organizationMembershipsWhereMember: [{} as { role: "administrator" }],
-				};
-				ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-					userWithIncompleteData,
-				);
-
-				await expect(
-					OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
-				).rejects.toThrow(
-					new TalawaGraphQLError({
-						message: "You are not authorized to perform this action.",
-						extensions: { code: "unauthorized_action" },
-					}),
-				);
-			});
-
-			it("should handle membership with empty role string", async () => {
-				const userWithEmptyRole: ExtendedUser = {
-					...mockUser,
-					organizationMembershipsWhereMember: [{ role: "member" }],
-				};
-				ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-					userWithEmptyRole,
-				);
-
-				await expect(
-					OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
-				).rejects.toThrow(
-					new TalawaGraphQLError({
-						message: "You are not authorized to perform this action.",
-						extensions: { code: "unauthorized_action" },
-					}),
-				);
-			});
-
-			it("should handle multiple memberships with mixed roles", async () => {
-				// Create a user with administrator role as first membership
-				const userWithMixedRoles: ExtendedUser = {
-					...mockUser,
-					organizationMembershipsWhereMember: [{ role: "administrator" }],
-				};
-				ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-					userWithMixedRoles,
-				);
-
-				const result = await OrganizationUpdaterResolver.updater(
-					mockOrganization,
-					{},
-					ctx,
-				);
-
-				expect(result).toEqual(userWithMixedRoles);
-			});
-
-			it("should reject if user has no administrator role in any membership", async () => {
-				const userWithoutAdminRole: ExtendedUser = {
-					...mockUser,
-					organizationMembershipsWhereMember: [{ role: "member" }],
-				};
-				ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-					userWithoutAdminRole,
-				);
-
-				await expect(
-					OrganizationUpdaterResolver.updater(mockOrganization, {}, ctx),
-				).rejects.toThrow(
-					new TalawaGraphQLError({
-						message: "You are not authorized to perform this action.",
-						extensions: { code: "unauthorized_action" },
-					}),
-				);
-			});
-		});
-	});
-
-	// test/graphql/types/Organization/updater.test.ts
-
-	describe("Updater Resolution Tests", () => {
-		it.each([
-			{ updaterId: null, description: "null" },
-			{ updaterId: "", description: "empty string" },
-		])(
-			"should return null when updaterId is %s",
-			async ({ updaterId, description }) => {
-				const orgWithNoUpdater: TestOrganization = {
-					...mockOrganization,
-					updaterId,
-				};
-
-				const result = await OrganizationUpdaterResolver.updater(
-					orgWithNoUpdater,
-					{},
-					ctx,
-				);
-
-				expect(result).toBeNull();
-			},
-		);
-
-		it("should return current user when updaterId matches current user", async () => {
-			const currentUserOrg: TestOrganization = {
-				...mockOrganization,
-				updaterId: "123",
-			};
-
-			const result = await OrganizationUpdaterResolver.updater(
-				currentUserOrg,
-				{},
-				ctx,
+	describe("Authentication and Authorization", () => {
+		it("should throw an unauthenticated error when user is not authenticated", async () => {
+			const { context: unauthenticatedCtx } = createMockGraphQLContext(false);
+			await expect(
+				OrganizationUpdater(mockOrganization, {}, unauthenticatedCtx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 			);
+		});
 
-			expect(result).toEqual(mockUser);
+		it("should throw a forbidden_action error when user is not part of the organization", async () => {
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				undefined,
+			);
+			await expect(
+				OrganizationUpdater(mockOrganization, {}, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({ extensions: { code: "forbidden_action" } }),
+			);
 		});
 	});
 });
