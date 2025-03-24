@@ -34,7 +34,6 @@ const userWhereSchema = z
 const allUsersArgumentsSchema = createGraphQLConnectionWithWhereSchema(
 	userWhereSchema,
 ).transform((arg, ctx) => {
-	console.log("args from transform func is", arg);
 	// First transform using the connection with where transformer
 	const transformedArg = transformGraphQLConnectionArgumentsWithWhere(
 		// Type assertion to match the expected type
@@ -101,7 +100,6 @@ builder.queryField("allUsers", (t) =>
 					},
 				});
 			}
-			// console.log("args before", args);
 			const {
 				data: parsedArgs,
 				error,
@@ -119,7 +117,6 @@ builder.queryField("allUsers", (t) =>
 					},
 				});
 			}
-			// console.log("the paresed args are ", parsedArgs);
 
 			const currentUserId = ctx.currentClient.user.id;
 
@@ -224,7 +221,6 @@ builder.queryField("allUsers", (t) =>
 			});
 
 			if (cursor !== undefined && users.length === 0) {
-				console.log("error comming from here ", isInversed);
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",

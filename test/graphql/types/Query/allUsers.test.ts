@@ -4,525 +4,515 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
-	Mutation_createUser,
-	Mutation_deleteUser,
-	Query_allUsers,
-	Query_signIn,
+  Mutation_createUser,
+  Mutation_deleteUser,
+  Query_allUsers,
+  Query_signIn,
 } from "../documentNodes";
 
 suite("Query field allUsers", () => {
-	let adminAuthToken: string;
-	let regularUserAuthToken: string;
-	const regularUserIds: string[] = []; // Array to store IDs of created users
+  let adminAuthToken: string;
+  let regularUserAuthToken: string;
+  const regularUserIds: string[] = []; // Array to store IDs of created users
 
-	beforeAll(async () => {
-		// Sign in as admin
-		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
+  beforeAll(async () => {
+    // Sign in as admin
+    const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+      variables: {
+        input: {
+          emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+          password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+        },
+      },
+    });
 
-		if (!adminSignInResult.data?.signIn?.authenticationToken) {
-			throw new Error(
-				"Failed to get admin authentication token: Sign in response did not contain auth token",
-			);
-		}
-		adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
+    if (!adminSignInResult.data?.signIn?.authenticationToken) {
+      throw new Error(
+        "Failed to get admin authentication token: Sign in response did not contain auth token"
+      );
+    }
+    adminAuthToken = adminSignInResult.data.signIn.authenticationToken;
 
-		// Create 5 regular users
-		for (let i = 0; i < 5; i++) {
-			const createUserResult = await mercuriusClient.mutate(
-				Mutation_createUser,
-				{
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						input: {
-							emailAddress: `${faker.string.ulid()}@test.com`, // Unique email for each user
-							isEmailAddressVerified: false,
-							name: `Regular User ${i + 1}`, // Unique name for each user
-							password: "password123",
-							role: "regular",
-						},
-					},
-				},
-			);
+    // Create 5 regular users
+    for (let i = 0; i < 5; i++) {
+      const createUserResult = await mercuriusClient.mutate(
+        Mutation_createUser,
+        {
+          headers: {
+            authorization: `bearer ${adminAuthToken}`,
+          },
+          variables: {
+            input: {
+              emailAddress: `${faker.string.ulid()}@test.com`, // Unique email for each user
+              isEmailAddressVerified: false,
+              name: `Regular User ${i + 1}`, // Unique name for each user
+              password: "password123",
+              role: "regular",
+            },
+          },
+        }
+      );
 
-			if (!createUserResult.data?.createUser?.user?.id) {
-				throw new Error(
-					"Failed to create regular user: Create user mutation response did not contain user ID",
-				);
-			}
+      if (!createUserResult.data?.createUser?.user?.id) {
+        throw new Error(
+          "Failed to create regular user: Create user mutation response did not contain user ID"
+        );
+      }
 
-			// Store the user ID for cleanup
-			regularUserIds.push(createUserResult.data.createUser.user.id);
-			console.log("user id is ", createUserResult.data.createUser.user.id);
-			if (createUserResult.data.createUser.authenticationToken) {
-				regularUserAuthToken =
-					createUserResult.data.createUser?.authenticationToken;
-			}
-		}
-	});
+      // Store the user ID for cleanup
+      regularUserIds.push(createUserResult.data.createUser.user.id);
+      if (createUserResult.data.createUser.authenticationToken) {
+        regularUserAuthToken =
+          createUserResult.data.createUser?.authenticationToken;
+      }
+    }
+  });
 
-	// Cleanup: Delete all 5 users
-	afterAll(async () => {
-		for (const userId of regularUserIds) {
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						id: userId,
-					},
-				},
-			});
-		}
-	});
-	suite("Authentication and Authorization", () => {
-		test("returns error when user is not authenticated", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				variables: {
-					first: 5,
-				},
-			});
+  // Cleanup: Delete all 5 users
+  afterAll(async () => {
+    for (const userId of regularUserIds) {
+      await mercuriusClient.mutate(Mutation_deleteUser, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          input: {
+            id: userId,
+          },
+        },
+      });
+    }
+  });
+  suite("Authentication and Authorization", () => {
+    test("returns error when user is not authenticated", async () => {
+      const result = await mercuriusClient.query(Query_allUsers, {
+        variables: {
+          first: 5,
+        },
+      });
 
-			expect(result.data?.allUsers).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						message: expect.stringContaining(
-							"You must be authenticated to perform this action.",
-						),
-						extensions: expect.objectContaining({
-							code: "unauthenticated",
-						}),
-					}),
-				]),
-			);
-		});
+      expect(result.data?.allUsers).toBeNull();
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            message: expect.stringContaining(
+              "You must be authenticated to perform this action."
+            ),
+            extensions: expect.objectContaining({
+              code: "unauthenticated",
+            }),
+          }),
+        ])
+      );
+    });
 
-		test("returns error when authenticated user is not an administrator", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${regularUserAuthToken}`,
-				},
-				variables: {
-					first: 5,
-				},
-			});
+    test("returns error when authenticated user is not an administrator", async () => {
+      const result = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${regularUserAuthToken}`,
+        },
+        variables: {
+          first: 5,
+        },
+      });
 
-			expect(result.data?.allUsers).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unauthorized_action",
-						}),
-					}),
-				]),
-			);
-		});
+      expect(result.data?.allUsers).toBeNull();
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            extensions: expect.objectContaining({
+              code: "unauthorized_action",
+            }),
+          }),
+        ])
+      );
+    });
 
-		test("returns error when authenticated user is deleted but token is still valid", async () => {
-			//user2
-			// Create and sign in as regular user
-			const createUser2Result = await mercuriusClient.mutate(
-				Mutation_createUser,
-				{
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						input: {
-							emailAddress: `${faker.string.ulid()}2@test.com`,
-							isEmailAddressVerified: false,
-							name: "Regular User 2",
-							password: "password123",
-							role: "regular",
-						},
-					},
-				},
-			);
+    test("returns error when authenticated user is deleted but token is still valid", async () => {
+      //user2
+      // Create and sign in as regular user
+      const createUser2Result = await mercuriusClient.mutate(
+        Mutation_createUser,
+        {
+          headers: {
+            authorization: `bearer ${adminAuthToken}`,
+          },
+          variables: {
+            input: {
+              emailAddress: `${faker.string.ulid()}2@test.com`,
+              isEmailAddressVerified: false,
+              name: "Regular User 2",
+              password: "password123",
+              role: "regular",
+            },
+          },
+        }
+      );
 
-			assertToBeNonNullish(createUser2Result.data?.createUser);
-			const regularUser2Id = createUser2Result.data.createUser.user?.id;
-			const regularUser2AuthToken =
-				createUser2Result.data.createUser.authenticationToken || "";
+      assertToBeNonNullish(createUser2Result.data?.createUser);
+      const regularUser2Id = createUser2Result.data.createUser.user?.id;
+      const regularUser2AuthToken =
+        createUser2Result.data.createUser.authenticationToken || "";
 
-			if (regularUser2Id) {
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						input: {
-							id: regularUser2Id,
-						},
-					},
-				});
-			}
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${regularUser2AuthToken}`,
-				},
-				variables: {
-					first: 5,
-				},
-			});
+      if (regularUser2Id) {
+        await mercuriusClient.mutate(Mutation_deleteUser, {
+          headers: {
+            authorization: `bearer ${adminAuthToken}`,
+          },
+          variables: {
+            input: {
+              id: regularUser2Id,
+            },
+          },
+        });
+      }
+      const result = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${regularUser2AuthToken}`,
+        },
+        variables: {
+          first: 5,
+        },
+      });
 
-			expect(result.data?.allUsers).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unauthenticated",
-						}),
-					}),
-				]),
-			);
-		});
-	});
+      expect(result.data?.allUsers).toBeNull();
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            extensions: expect.objectContaining({
+              code: "unauthenticated",
+            }),
+          }),
+        ])
+      );
+    });
+  });
 
-	suite("Pagination", () => {
-		test("returns first page of results with default pagination", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					first: 10,
-				},
-			});
+  suite("Pagination", () => {
+    test("returns first page of results with default pagination", async () => {
+      const result = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          first: 10,
+        },
+      });
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.allUsers?.edges).toBeDefined();
-			expect(result.data?.allUsers?.pageInfo).toBeDefined();
-			expect(Array.isArray(result.data?.allUsers?.edges)).toBe(true);
-			expect(result.data?.allUsers?.edges?.length).toBeLessThanOrEqual(10);
-			expect(result.data?.allUsers?.pageInfo).toEqual(
-				expect.objectContaining({
-					hasNextPage: expect.any(Boolean),
-					hasPreviousPage: expect.any(Boolean),
-				}),
-			);
-		});
+      expect(result.errors).toBeUndefined();
+      expect(result.data?.allUsers?.edges).toBeDefined();
+      expect(result.data?.allUsers?.pageInfo).toBeDefined();
+      expect(Array.isArray(result.data?.allUsers?.edges)).toBe(true);
+      expect(result.data?.allUsers?.edges?.length).toBeLessThanOrEqual(10);
+      expect(result.data?.allUsers?.pageInfo).toEqual(
+        expect.objectContaining({
+          hasNextPage: expect.any(Boolean),
+          hasPreviousPage: expect.any(Boolean),
+        })
+      );
+    });
 
-		test("handles forward pagination with cursor", async () => {
-			// First page
-			const firstResult = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					first: 2,
-				},
-			});
-			// console.log("first user is ", firstResult.data.allUsers?.edges[0]);
-			// console.log("second user is ", firstResult.data.allUsers?.edges[2]);
-			if (!firstResult.data?.allUsers?.edges?.[1]) {
-				throw new Error("Failed to get first page of results");
-			}
-			//   console.log("first page result is ", firstResult.data);
-			const cursor = firstResult.data.allUsers.edges[1].cursor;
-			//   console.log("Cursor extracted from first page:", cursor);
-			// const decodedCursor = JSON.parse(
-			//   Buffer.from(cursor, "base64url").toString("utf-8")
-			// );
-			//   console.log("Decoded cursor:", decodedCursor);
-			// Next page
-			const nextResult = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					first: 2,
-					after: cursor,
-				},
-			});
-			// console.log("Next page result:", nextResult);
-			expect(nextResult.errors).toBeUndefined();
-			expect(nextResult.data?.allUsers?.edges).toBeDefined();
-			if (!nextResult.data?.allUsers?.edges?.[0]) {
-				throw new Error("Failed to get next page of results");
-			}
-			expect(nextResult.data.allUsers.edges[0].cursor).not.toBe(cursor);
-		});
+    test("handles forward pagination with cursor", async () => {
+      // First page
+      const firstResult = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          first: 2,
+        },
+      });
 
-		test("handles backward pagination with cursor", async () => {
-			// Get some initial data
-			const initialResult = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					first: 3,
-				},
-			});
+      if (!firstResult.data?.allUsers?.edges?.[1]) {
+        throw new Error("Failed to get first page of results");
+      }
+      const cursor = firstResult.data.allUsers.edges[1].cursor;
+      const nextResult = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          first: 2,
+          after: cursor,
+        },
+      });
+      expect(nextResult.errors).toBeUndefined();
+      expect(nextResult.data?.allUsers?.edges).toBeDefined();
+      if (!nextResult.data?.allUsers?.edges?.[0]) {
+        throw new Error("Failed to get next page of results");
+      }
+      expect(nextResult.data.allUsers.edges[0].cursor).not.toBe(cursor);
+    });
 
-			if (!initialResult.data?.allUsers?.edges?.[2]) {
-				throw new Error("Failed to get initial page of results");
-			}
-			const cursor = initialResult.data.allUsers.edges[2].cursor;
+    test("handles backward pagination with cursor", async () => {
+      // Get some initial data
+      const initialResult = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          first: 3,
+        },
+      });
 
-			// Get previous page
-			const previousResult = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					last: 2,
-					before: cursor,
-				},
-			});
+      if (!initialResult.data?.allUsers?.edges?.[2]) {
+        throw new Error("Failed to get initial page of results");
+      }
+      const cursor = initialResult.data.allUsers.edges[2].cursor;
 
-			expect(previousResult.errors).toBeUndefined();
-			expect(previousResult.data?.allUsers?.edges).toBeDefined();
-			expect(previousResult.data?.allUsers?.edges?.length).toBeLessThanOrEqual(
-				2,
-			);
-		});
-	});
+      // Get previous page
+      const previousResult = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          last: 2,
+          before: cursor,
+        },
+      });
 
-	suite("Name Search", () => {
-		test("filters users by name search", async () => {
-			const uniqueName = `Test${faker.string.alphanumeric(10)}`;
-			let userId: string | undefined;
+      expect(previousResult.errors).toBeUndefined();
+      expect(previousResult.data?.allUsers?.edges).toBeDefined();
+      expect(previousResult.data?.allUsers?.edges?.length).toBeLessThanOrEqual(
+        2
+      );
+    });
+  });
 
-			// Create a user with unique name
-			const createResult = await mercuriusClient.mutate(Mutation_createUser, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						emailAddress: `${faker.string.ulid()}@test.com`,
-						isEmailAddressVerified: false,
-						name: uniqueName,
-						password: "password123",
-						role: "regular",
-					},
-				},
-			});
+  suite("Name Search", () => {
+    test("filters users by name search", async () => {
+      const uniqueName = `Test${faker.string.alphanumeric(10)}`;
+      let userId: string | undefined;
 
-			userId = createResult.data?.createUser?.user?.id;
+      // Create a user with unique name
+      const createResult = await mercuriusClient.mutate(Mutation_createUser, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          input: {
+            emailAddress: `${faker.string.ulid()}@test.com`,
+            isEmailAddressVerified: false,
+            name: uniqueName,
+            password: "password123",
+            role: "regular",
+          },
+        },
+      });
 
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					first: 5,
-					where: { name: uniqueName },
-				},
-			});
+      userId = createResult.data?.createUser?.user?.id;
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.allUsers?.edges).toBeDefined();
-			expect(result.data?.allUsers?.edges?.length).toBeGreaterThan(0);
-			if (!result.data?.allUsers?.edges?.[0]?.node) {
-				throw new Error("Failed to find user with unique name");
-			}
-			expect(result.data.allUsers.edges[0].node.name).toBe(uniqueName);
+      const result = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          first: 5,
+          where: { name: uniqueName },
+        },
+      });
 
-			// Cleanup
-			if (userId) {
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						input: {
-							id: userId,
-						},
-					},
-				});
-			}
-		});
+      expect(result.errors).toBeUndefined();
+      expect(result.data?.allUsers?.edges).toBeDefined();
+      expect(result.data?.allUsers?.edges?.length).toBeGreaterThan(0);
+      if (!result.data?.allUsers?.edges?.[0]?.node) {
+        throw new Error("Failed to find user with unique name");
+      }
+      expect(result.data.allUsers.edges[0].node.name).toBe(uniqueName);
 
-		test("returns empty result for non-matching name search", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					first: 5,
-					where: {
-						name: `NonExistentUserName${faker.string.alphanumeric(10)}`,
-					},
-				},
-			});
+      // Cleanup
+      if (userId) {
+        await mercuriusClient.mutate(Mutation_deleteUser, {
+          headers: {
+            authorization: `bearer ${adminAuthToken}`,
+          },
+          variables: {
+            input: {
+              id: userId,
+            },
+          },
+        });
+      }
+    });
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.allUsers?.edges).toHaveLength(0);
-		});
+    test("returns empty result for non-matching name search", async () => {
+      const result = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          first: 5,
+          where: {
+            name: `NonExistentUserName${faker.string.alphanumeric(10)}`,
+          },
+        },
+      });
 
-		test("returns empty result for non-matching name search using last", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					last: 5,
-					where: {
-						name: `NonExistentUserName${faker.string.alphanumeric(10)}`,
-					},
-				},
-			});
+      expect(result.errors).toBeUndefined();
+      expect(result.data?.allUsers?.edges).toHaveLength(0);
+    });
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.allUsers?.edges).toHaveLength(0);
-		});
-	});
+    test("returns empty result for non-matching name search using last", async () => {
+      const result = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          last: 5,
+          where: {
+            name: `NonExistentUserName${faker.string.alphanumeric(10)}`,
+          },
+        },
+      });
 
-	suite("Input Validation", () => {
-		test("validates minimum name length", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					first: 5,
-					where: { name: "" },
-				},
-			});
+      expect(result.errors).toBeUndefined();
+      expect(result.data?.allUsers?.edges).toHaveLength(0);
+    });
+  });
 
-			expect(result.data?.allUsers).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-					}),
-				]),
-			);
-		});
+  suite("Input Validation", () => {
+    test("validates minimum name length", async () => {
+      const result = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          first: 5,
+          where: { name: "" },
+        },
+      });
 
-		test("validates pagination arguments", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					first: -1,
-				},
-			});
+      expect(result.data?.allUsers).toBeNull();
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            extensions: expect.objectContaining({
+              code: "invalid_arguments",
+            }),
+          }),
+        ])
+      );
+    });
 
-			expect(result.data?.allUsers).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-					}),
-				]),
-			);
-		});
+    test("validates pagination arguments", async () => {
+      const result = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          first: -1,
+        },
+      });
 
-		test("returns error for invalid cursor using first", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					first: 5,
-					after: "eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VD",
-				},
-			});
+      expect(result.data?.allUsers).toBeNull();
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            extensions: expect.objectContaining({
+              code: "invalid_arguments",
+            }),
+          }),
+        ])
+      );
+    });
 
-			expect(result.data?.allUsers).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-					}),
-				]),
-			);
-		});
+    test("returns error for invalid cursor using first", async () => {
+      const result = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          first: 5,
+          after: "eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VD",
+        },
+      });
 
-		test("returns error for invalid cursor using last", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					last: 5,
-					before: "eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VD",
-				},
-			});
+      expect(result.data?.allUsers).toBeNull();
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            extensions: expect.objectContaining({
+              code: "invalid_arguments",
+            }),
+          }),
+        ])
+      );
+    });
 
-			expect(result.data?.allUsers).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
-						}),
-					}),
-				]),
-			);
-		});
+    test("returns error for invalid cursor using last", async () => {
+      const result = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          last: 5,
+          before: "eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VD",
+        },
+      });
 
-		test("returns error for cursor of non-existing user", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					first: 5,
-					after:
-						"eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9",
-				},
-			});
+      expect(result.data?.allUsers).toBeNull();
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            extensions: expect.objectContaining({
+              code: "invalid_arguments",
+            }),
+          }),
+        ])
+      );
+    });
 
-			expect(result.data?.allUsers).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-						}),
-					}),
-				]),
-			);
-		});
+    test("returns error for cursor of non-existing user", async () => {
+      const result = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          first: 5,
+          after:
+            "eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9",
+        },
+      });
 
-		test("returns error for cursor of non-existing user using last", async () => {
-			const result = await mercuriusClient.query(Query_allUsers, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					last: 5,
-					before:
-						"eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9",
-					// isInversed: true
-				},
-			});
-			expect(result.data?.allUsers).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["before"],
-								}),
-							]),
-						}),
-					}),
-				]),
-			);
-		});
-	});
+      expect(result.data?.allUsers).toBeNull();
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            extensions: expect.objectContaining({
+              code: "arguments_associated_resources_not_found",
+            }),
+          }),
+        ])
+      );
+    });
+
+    test("returns error for cursor of non-existing user using last", async () => {
+      const result = await mercuriusClient.query(Query_allUsers, {
+        headers: {
+          authorization: `bearer ${adminAuthToken}`,
+        },
+        variables: {
+          last: 5,
+          before:
+            "eyJjcmVhdGVkQXQiOiIyMDI1LTAyLTA4VDEzOjM2OjQ4LjkxNVoiLCJpZCI6IjAxOTRlNWM2LWY1MTMtNzM1OS05ZTBiLTgyYzkxZWIxOTYwZiJ9",
+          // isInversed: true
+        },
+      });
+      expect(result.data?.allUsers).toBeNull();
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            extensions: expect.objectContaining({
+              code: "arguments_associated_resources_not_found",
+              issues: expect.arrayContaining([
+                expect.objectContaining({
+                  argumentPath: ["before"],
+                }),
+              ]),
+            }),
+          }),
+        ])
+      );
+    });
+  });
 });
