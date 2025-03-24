@@ -2,7 +2,7 @@
  * Resolver for querying organizations.
  * @returns Array of organization objects
  */
-import { QueryResolvers } from "../../types/generatedGraphQLTypes";
+import type { QueryResolvers } from "../../types/generatedGraphQLTypes";
 import { Organization } from "../../models";
 import { errors } from "../../libraries";
 import { ORGANIZATION_NOT_FOUND_ERROR } from "../../constants";
@@ -28,6 +28,6 @@ export const organizations: QueryResolvers["organizations"] = async (_parent, ar
     .sort(sort)
     .select("name description image _id")
     .lean();
-  await cacheOrganizations(orgs);
-  return orgs;
+    await cacheOrganizations(orgs);
+    return orgs;
 };
