@@ -13,7 +13,7 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-let globalAuth: { authToken: string; userId: string };
+let globalAuth:{ authToken: string; userId: string };
 
 async function globalSignInAndGetToken() {
 	const result = await mercuriusClient.query(Query_signIn, {
