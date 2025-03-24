@@ -1,54 +1,14 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Venue as VenueType } from "~/src/graphql/types/Venue/Venue";
 import { resolveUpdater } from "~/src/graphql/types/Venue/updater";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-interface CurrentClient {
-	isAuthenticated: boolean;
-	user?: {
-		id: string;
-		role: string;
-	};
-}
-
-// Create mock Fastify instance
-const mockApp = {
-	addHook: vi.fn(),
-	decorate: vi.fn(),
-	get: vi.fn(),
-	post: vi.fn(),
-} as unknown as FastifyInstance;
-
-// Create mock Fastify reply
-const mockReply = {
-	code: vi.fn(),
-	send: vi.fn(),
-	header: vi.fn(),
-} as unknown as FastifyReply;
-
-const createMockContext = () => {
-	const mockContext = {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "user-123", role: "administrator" },
-		} as CurrentClient,
-		drizzleClient: { query: { usersTable: { findFirst: vi.fn() } } },
-		envConfig: { API_BASE_URL: "mock url" },
-		jwt: { sign: vi.fn() },
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		app: mockApp,
-		reply: mockReply,
-		__currentQuery: "query { test }", // Mock GraphQL query string
-		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
-	};
-	return mockContext as unknown as GraphQLContext;
-};
-
 describe("Venue Resolver - Updater Field", () => {
 	let ctx: GraphQLContext;
 	let mockVenue: VenueType;
+	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
 	beforeEach(() => {
 		mockVenue = {
@@ -59,20 +19,18 @@ describe("Venue Resolver - Updater Field", () => {
 			organizationId: "org-123",
 		} as VenueType;
 
-		ctx = createMockContext();
+		const { context, mocks: newMocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		ctx = context;
+		mocks = newMocks;
 	});
 
 	it("should throw unauthenticated error if user is not logged in", async () => {
-		const testCtx = {
-			...ctx,
-			currentClient: {
-				isAuthenticated: false,
-				user: undefined,
-			},
-		} as unknown as GraphQLContext;
-
+		const { context: unauthenticatedCtx } = createMockGraphQLContext(false);
 		await expect(async () => {
-			await resolveUpdater(mockVenue, {}, testCtx);
+			await resolveUpdater(mockVenue, {}, unauthenticatedCtx);
 		}).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "unauthenticated" },
@@ -81,9 +39,7 @@ describe("Venue Resolver - Updater Field", () => {
 	});
 
 	it("should throw unauthenticated error if current user is not found", async () => {
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(undefined);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 
 		await expect(async () => {
 			await resolveUpdater(mockVenue, {}, ctx);
@@ -100,9 +56,9 @@ describe("Venue Resolver - Updater Field", () => {
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
 		};
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValueOnce(mockUser);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUser,
+		);
 
 		const result = await resolveUpdater(mockVenue, {}, ctx);
 		expect(result).toEqual(mockUser);
@@ -118,9 +74,9 @@ describe("Venue Resolver - Updater Field", () => {
 				},
 			],
 		};
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValueOnce(mockUser);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUser,
+		);
 
 		const result = await resolveUpdater(mockVenue, {}, ctx);
 		expect(result).toEqual(mockUser);
@@ -136,9 +92,9 @@ describe("Venue Resolver - Updater Field", () => {
 				},
 			],
 		};
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValueOnce(mockUser);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUser,
+		);
 
 		await expect(async () => {
 			await resolveUpdater(mockVenue, {}, ctx);
@@ -156,9 +112,9 @@ describe("Venue Resolver - Updater Field", () => {
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
 		};
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValueOnce(mockUser);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUser,
+		);
 
 		const result = await resolveUpdater(mockVenue, {}, ctx);
 		expect(result).toBeNull();
@@ -170,9 +126,9 @@ describe("Venue Resolver - Updater Field", () => {
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
 		};
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValueOnce(mockUser);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUser,
+		);
 
 		const result = await resolveUpdater(mockVenue, {}, ctx);
 		expect(result).toEqual(mockUser);
@@ -191,7 +147,8 @@ describe("Venue Resolver - Updater Field", () => {
 		};
 
 		mockVenue.updaterId = "updater-456";
-		(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+		mocks.drizzleClient.query.usersTable.findFirst
+
 			.mockResolvedValueOnce(currentUser)
 			.mockResolvedValueOnce(updaterUser);
 
@@ -205,9 +162,9 @@ describe("Venue Resolver - Updater Field", () => {
 			role: "member",
 			organizationMembershipsWhereMember: [],
 		};
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValueOnce(mockUser);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUser,
+		);
 
 		await expect(async () => {
 			await resolveUpdater(mockVenue, {}, ctx);
@@ -226,7 +183,8 @@ describe("Venue Resolver - Updater Field", () => {
 		};
 
 		mockVenue.updaterId = "updater-456";
-		(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+		mocks.drizzleClient.query.usersTable.findFirst
+
 			.mockResolvedValueOnce(currentUser)
 			.mockResolvedValueOnce(undefined);
 
@@ -250,7 +208,7 @@ describe("Venue Resolver - Updater Field", () => {
 
 		// Mock implementation to verify if organizationId filter is used
 		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+			mocks.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
 		).mockImplementation(({ with: withClause }) => {
 			expect(withClause).toBeDefined();
 

@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Advertisement as AdvertisementType } from "~/src/graphql/types/Advertisement/Advertisement";
 import { advertisementUpdatedAtResolver } from "~/src/graphql/types/Advertisement/updatedAt";
@@ -207,5 +207,61 @@ describe("Advertisement Updated At Resolver Tests", () => {
 				}),
 			);
 		});
+	});
+	it("calls where function correctly", async () => {
+		// Define mock user data
+		const currentUserId = "user-123";
+		const organizationId = mockAdvertisement.organizationId; // Ensure matching org ID
+
+		const mockUserData = {
+			id: currentUserId,
+			role: "member",
+			organizationMembershipsWhereMember: [
+				{
+					role: "administrator",
+					organizationId: mockAdvertisement.organizationId,
+				},
+			],
+		};
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
+		await advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx);
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledTimes(1);
+
+		// Extract calls correctly
+		const calls = (
+			mocks.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mock.calls;
+		expect(calls.length).toBe(1);
+
+		// Extract `where` function (fetching current user)
+		const whereFn = calls[0]?.[0]?.where;
+		expect(whereFn).toBeDefined();
+
+		// Mock field conditions
+		const mockFields = { id: currentUserId };
+		const mockOperators = { eq: vi.fn((a, b) => ({ field: a, value: b })) };
+
+		// Call `where` function (current user)
+		whereFn(mockFields, mockOperators);
+		expect(mockOperators.eq).toHaveBeenCalledWith(mockFields.id, currentUserId);
+
+		// Validate `organizationMembershipsWhereMember`
+		const withClause = calls[0]?.[0]?.with?.organizationMembershipsWhereMember;
+		expect(withClause).toBeDefined();
+		const whereFnOrg = withClause.where;
+		expect(whereFnOrg).toBeDefined();
+
+		// Call `where` for organizationMembershipsWhereMember
+		const mockOrgFields = { organizationId };
+		whereFnOrg(mockOrgFields, mockOperators);
+		expect(mockOperators.eq).toHaveBeenCalledWith(
+			mockOrgFields.organizationId,
+			organizationId,
+		);
 	});
 });

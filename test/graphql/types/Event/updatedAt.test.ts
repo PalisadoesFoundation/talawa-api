@@ -205,14 +205,14 @@ describe("Event UpdatedAt Resolver Tests", () => {
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(() => {
 				throw new TalawaGraphQLError({
-					message: "Unauthorized action", // Include a message for clarity
+					message: "Unauthorized action",
 					extensions: { code: "unauthorized_action" },
 				});
 			});
 
 			await expect(eventUpdatedAtResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				expect.objectContaining({
-					message: "Unauthorized action", // Ensure the message is checked
+					message: "Unauthorized action",
 					extensions: { code: "unauthorized_action" },
 				}),
 			);
