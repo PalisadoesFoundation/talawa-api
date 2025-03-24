@@ -2738,6 +2738,11 @@ type Organization {
   id: ID!
 
   """
+  Flag to indicate if user registration is required to join the organization.
+  """
+  isUserRegistrationRequired: Boolean
+
+  """
   GraphQL connection to traverse through the users that are members of the organization.
   """
   members(
