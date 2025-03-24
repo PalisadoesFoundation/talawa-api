@@ -6,4 +6,4 @@
 
 > `const` **UserEducationGrade**: `EnumRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, `"kg"` \| `"grade_1"` \| `"grade_2"` \| `"grade_3"` \| `"grade_4"` \| `"grade_5"` \| `"grade_6"` \| `"grade_7"` \| `"grade_8"` \| `"grade_9"` \| `"grade_10"` \| `"grade_11"` \| `"grade_12"` \| `"graduate"` \| `"no_grade"` \| `"pre_kg"`, `"kg"` \| `"grade_1"` \| `"grade_2"` \| `"grade_3"` \| `"grade_4"` \| `"grade_5"` \| `"grade_6"` \| `"grade_7"` \| `"grade_8"` \| `"grade_9"` \| `"grade_10"` \| `"grade_11"` \| `"grade_12"` \| `"graduate"` \| `"no_grade"` \| `"pre_kg"`\>
 
-Defined in: [src/graphql/enums/UserEducationGrade.ts:4](https://github.com/NishantSinghhhhh/talawa-api/blob/d7e8fb10f99b66342acb17768b9755553b21ad54/src/graphql/enums/UserEducationGrade.ts#L4)
+Defined in: [src/graphql/enums/UserEducationGrade.ts:4](https://github.com/NishantSinghhhhh/talawa-api/blob/392788fe2d27c588c46069b772af4fd307c1489d/src/graphql/enums/UserEducationGrade.ts#L4)

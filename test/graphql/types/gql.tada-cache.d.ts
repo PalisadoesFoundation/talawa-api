@@ -106,5 +106,11 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ actionCategoriesByOrganization: { id: string | null; name: string | null; organizationId: string | null; creatorId: string | null; isDisabled: boolean | null; createdAt: string | null; updatedAt: string | null; }[] | null; }, { input: { organizationId: string; }; }, void>;
     "\n  query eventsByIds($input: QueryEventsByIdsInput!) {\n    eventsByIds(input: $input) {\n      id\n      name\n      description\n      startAt\n      endAt\n    }\n  }\n":
       TadaDocumentNode<{ eventsByIds: { id: string; name: string | null; description: string | null; startAt: string | null; endAt: string | null; }[] | null; }, { input: { ids: string[]; }; }, void>;
+    "\n  query UsersByOrganizationId($organizationId: ID!) {\n    usersByOrganizationId(organizationId: $organizationId) {\n      id\n      name\n      emailAddress\n    }\n  }\n":
+      TadaDocumentNode<{ usersByOrganizationId: { id: string; name: string | null; emailAddress: string | null; }[] | null; }, { organizationId: string; }, void>;
+    "\n  query UsersByIds($input: UsersByIdsInput!) {\n    usersByIds(input: $input) {\n      id\n      name\n      emailAddress\n    }\n  }\n":
+      TadaDocumentNode<{ usersByIds: { id: string; name: string | null; emailAddress: string | null; }[] | null; }, { input: { ids: string[]; }; }, void>;
+    "\n query EventsByOrganizationId($input: EventsByOrganizationIdInput!) {\n    eventsByOrganizationId(input: $input) {\n      id\n      description\n      startAt\n      endAt\n      organization {\n        id\n      }\n      attachments {\n        mimeType\n      }\n    }\n  }\n":
+      TadaDocumentNode<{ eventsByOrganizationId: { id: string; description: string | null; startAt: string | null; endAt: string | null; organization: { id: string; } | null; attachments: { mimeType: string | null; }[] | null; }[] | null; }, { input: { organizationId: string; }; }, void>;
   }
 }

@@ -852,3 +852,40 @@ export const Query_eventsByIds = gql(`
     }
   }
 `);
+
+export const Query_usersByOrganizationId = gql(`
+  query UsersByOrganizationId($organizationId: ID!) {
+    usersByOrganizationId(organizationId: $organizationId) {
+      id
+      name
+      emailAddress
+    }
+  }
+`);
+
+export const Query_usersByIds = gql(`
+  query UsersByIds($input: UsersByIdsInput!) {
+    usersByIds(input: $input) {
+      id
+      name
+      emailAddress
+    }
+  }
+`);
+
+export const Query_eventsByOrganizationId = gql(`
+ query EventsByOrganizationId($input: EventsByOrganizationIdInput!) {
+    eventsByOrganizationId(input: $input) {
+      id
+      description
+      startAt
+      endAt
+      organization {
+        id
+      }
+      attachments {
+        mimeType
+      }
+    }
+  }
+`);
