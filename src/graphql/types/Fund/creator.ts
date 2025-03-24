@@ -6,7 +6,7 @@ import type { Fund as Fundtype } from "./Fund";
 
 export const FundCreatorResolver = async (
 	parent: Fundtype,
-	_args: unknown,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {
