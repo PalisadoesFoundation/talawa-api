@@ -1,75 +1,9 @@
 import type { communitiesTable } from "~/src/drizzle/tables/communities";
 import { builder } from "~/src/graphql/builder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import type { GraphQLContext } from "../../context";
-import type { User } from "../User/User";
 
 export type Community = typeof communitiesTable.$inferSelect;
 
 export const Community = builder.objectRef<Community>("Community");
-
-export type CommunityResolvers = {
-	updater: (
-		parent: Community,
-		_args: unknown,
-		context: GraphQLContext,
-	) => Promise<User | null>;
-};
-
-export const CommunityResolver: CommunityResolvers = {
-	updater: async (parent, _args, context) => {
-		try {
-			if (!context.currentClient.isAuthenticated) {
-				throw new TalawaGraphQLError({
-					message: "User is not authenticated",
-					extensions: { code: "unauthenticated" },
-				});
-			}
-			if (!parent.updaterId) {
-				return null;
-			}
-			const updaterId = parent.updaterId;
-
-			const existingUser =
-				await context.drizzleClient.query.usersTable.findFirst({
-					where: (users, { eq }) => eq(users.id, updaterId), // Must use updaterId here
-				});
-
-			if (existingUser === undefined) {
-				context.log.warn(`No user found for updaterId: ${updaterId}`);
-				throw new TalawaGraphQLError({
-					message: "Updater user not found",
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["updaterId"] }],
-					},
-				});
-			}
-
-			const updater = await context.drizzleClient.query.usersTable.findFirst({
-				where: (users, { eq, and, isNull }) =>
-					parent.updaterId ? eq(users.id, parent.updaterId) : isNull(users.id),
-			});
-
-			if (!updater) {
-				context.log.warn(`No user found for updaterId: ${parent.updaterId}`);
-				throw new TalawaGraphQLError({
-					message: "Updater user not found",
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["updaterId"] }],
-					},
-				});
-			}
-			return updater;
-		} catch (error) {
-			context.log.error("Database error in community updater resolver", {
-				error,
-			});
-			throw error;
-		}
-	},
-};
 
 Community.implement({
 	description:

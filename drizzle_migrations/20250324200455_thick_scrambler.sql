@@ -290,8 +290,8 @@ CREATE TABLE "post_attachments" (
 	"post_id" uuid NOT NULL,
 	"mime_type" text NOT NULL,
 	"name" text NOT NULL,
-	"object_name" text,
-	"file_hash" text,
+	"object_name" text NOT NULL,
+	"file_hash" text NOT NULL,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
