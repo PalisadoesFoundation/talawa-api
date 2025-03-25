@@ -1,4 +1,4 @@
-import { GraphQLError } from "graphql"; // New import
+import { GraphQLError } from "graphql";
 import { z } from "zod";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
@@ -24,14 +24,12 @@ builder.mutationField("joinPublicOrganization", (t) =>
 		},
 		description: "Mutation field to join a public organization.",
 		resolve: async (_parent, args, ctx) => {
-			// Ensure user is authenticated
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
-					extensions: { code: "unauthenticated" },
+					extensions: { code: "unauthenticated", message: "User must be authenticated" },
 				});
 			}
 
-			// Validate input schema
 			const {
 				data: parsedArgs,
 				error,
@@ -52,7 +50,7 @@ builder.mutationField("joinPublicOrganization", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			// Check if user exists in the database
+			// Check if user exists
 			const user = await ctx.drizzleClient.query.usersTable.findFirst({
 				where: (fields, operators) => operators.eq(fields.id, currentUserId),
 			});
@@ -78,65 +76,64 @@ builder.mutationField("joinPublicOrganization", (t) =>
 				});
 			}
 
-			// Check if organization requires user registration before joining
 			if (organization.userRegistrationRequired) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "forbidden_action",
-						message:
-							"This organization requires user registration before joining.",
+						message: "This organization requires user registration before joining.",
 					},
 				});
 			}
 
-			// Begin a transaction
-			const newMemberships = await ctx.drizzleClient.transaction(async (tx) => {
-				// Check if the user is already a member (within the transaction)
-				const existingMembership =
-					await tx.query.organizationMembershipsTable.findFirst({
-						where: (fields, operators) =>
-							operators.and(
-								operators.eq(fields.memberId, currentUserId),
-								operators.eq(
-									fields.organizationId,
-									parsedArgs.input.organizationId,
+			try {
+				const newMemberships = await ctx.drizzleClient.transaction(async (tx) => {
+					const existingMembership =
+						await tx.query.organizationMembershipsTable.findFirst({
+							where: (fields, operators) =>
+								operators.and(
+									operators.eq(fields.memberId, currentUserId),
+									operators.eq(
+										fields.organizationId,
+										parsedArgs.input.organizationId,
+									),
 								),
-							),
-					});
+						});
 
-				if (existingMembership) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "invalid_arguments",
-							issues: [
-								{
-									argumentPath: ["input", "organizationId"],
-									message: "User is already a member of this organization",
-								},
-							],
-						},
-					});
+					if (existingMembership) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["input", "organizationId"],
+										message: "User is already a member of this organization",
+									},
+								],
+							},
+						});
+					}
+
+					return await tx
+						.insert(organizationMembershipsTable)
+						.values({
+							memberId: currentUserId,
+							organizationId: parsedArgs.input.organizationId,
+							role: "regular",
+							creatorId: currentUserId,
+						})
+						.returning();
+				});
+
+				if (newMemberships.length === 0) {
+					throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
 				}
 
-				// Create the new membership inside the transaction
-				return await tx
-					.insert(organizationMembershipsTable)
-					.values({
-						memberId: currentUserId,
-						organizationId: parsedArgs.input.organizationId,
-						role: "regular",
-						creatorId: currentUserId,
-					})
-					.returning();
-			});
-
-			// Ensure membership creation was successful
-			if (newMemberships.length === 0) {
-				throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
+				return newMemberships[0];
+			} catch (error) {
+				throw new TalawaGraphQLError({
+					extensions: { code: "transaction_failed", message: "Failed to join organization" },
+				});
 			}
-
-			// Return created membership
-			return newMemberships[0];
 		},
 		type: OrganizationMembershipObject,
 	}),
