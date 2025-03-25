@@ -4,7 +4,7 @@
 
 # Interface: UploadUrlResponse
 
-Defined in: src/graphql/types/Post/UploadUrlResponse.ts:3
+Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:3](https://github.com/hustlernik/talawa-api/blob/6321c91e956d2ee44b2bb9c22c1b40aa4687c9c2/src/graphql/types/Post/UploadUrlResponse.ts#L3)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/graphql/types/Post/UploadUrlResponse.ts:3
 
 > **objectName**: `string`
 
-Defined in: src/graphql/types/Post/UploadUrlResponse.ts:5
+Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/hustlernik/talawa-api/blob/6321c91e956d2ee44b2bb9c22c1b40aa4687c9c2/src/graphql/types/Post/UploadUrlResponse.ts#L5)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/graphql/types/Post/UploadUrlResponse.ts:5
 
 > **presignedUrl**: `string`
 
-Defined in: src/graphql/types/Post/UploadUrlResponse.ts:4
+Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:4](https://github.com/hustlernik/talawa-api/blob/6321c91e956d2ee44b2bb9c22c1b40aa4687c9c2/src/graphql/types/Post/UploadUrlResponse.ts#L4)
 
 ***
 
@@ -28,4 +28,4 @@ Defined in: src/graphql/types/Post/UploadUrlResponse.ts:4
 
 > **requiresUpload**: `boolean`
 
-Defined in: src/graphql/types/Post/UploadUrlResponse.ts:6
+Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:6](https://github.com/hustlernik/talawa-api/blob/6321c91e956d2ee44b2bb9c22c1b40aa4687c9c2/src/graphql/types/Post/UploadUrlResponse.ts#L6)

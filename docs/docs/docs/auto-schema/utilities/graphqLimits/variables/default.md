@@ -6,7 +6,7 @@
 
 > `const` **default**: `object`
 
-Defined in: src/utilities/graphqLimits.ts:12
+Defined in: [src/utilities/graphqLimits.ts:12](https://github.com/hustlernik/talawa-api/blob/6321c91e956d2ee44b2bb9c22c1b40aa4687c9c2/src/utilities/graphqLimits.ts#L12)
 
 ## Type declaration
 

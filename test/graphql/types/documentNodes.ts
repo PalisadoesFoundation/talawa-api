@@ -565,38 +565,23 @@ export const Query_blockedUsers = gql(`
 `);
 
 export const Query_organization = gql(`
-    query Query_organization($input: QueryOrganizationInput!, $first: Int, $after: String, $last: Int, $before: String) {
+    query Organization($input: QueryOrganizationInput!, $first: Int, $after: String,$last: Int, $before: String, $where: MembersWhereInput) {
       organization(input: $input) {
         id
         name
-        members(first: $first, after: $after, last: $last, before: $before) {
+        members(first: $first, after: $after, last: $last, before: $before, where: $where) {
           pageInfo {
-            endCursor
-            hasNextPage
-            hasPreviousPage
-            startCursor
+          endCursor
+          hasNextPage
+          hasPreviousPage
+          startCursor
           }
           edges {
-            cursor
+          cursor
             node {
               id
               name
-              emailAddress
               role
-            }
-          }
-        }
-        blockedUsers(first: $first, after: $after, last: $last, before: $before) {
-          pageInfo {
-            endCursor
-            hasNextPage
-            hasPreviousPage
-            startCursor
-          }
-          edges {
-            cursor
-            node {
-              id
             }
           }
         }

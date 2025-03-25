@@ -190,7 +190,7 @@ scalar BigInt
 """Represents a user blocked by an organization."""
 type BlockedUser {
   """Timestamp when the user was blocked."""
-  createdAt: DateTime
+  createdAt: Date
 
   """Unique identifier of the blocked user."""
   id: ID
