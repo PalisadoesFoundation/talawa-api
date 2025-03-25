@@ -7,6 +7,8 @@ const server = await createServer();
 // Makes sure that the server is ready to start listening for requests.
 await server.ready();
 
+// this is a sample change to test the workflow
+
 // Makes sure that the server exits gracefully without pending tasks and memory leaks.
 closeWithGrace(async ({ err, signal }) => {
 	if (err !== undefined) {
