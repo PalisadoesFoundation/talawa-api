@@ -110,7 +110,7 @@ export const adminsCountResolver = async (
 	return result;
 };
 
-// Extends Organization with membersCount and adminsCount and isMember Fields
+// Extends Organization with membersCount and adminsCount
 Organization.implement({
 	fields: (t) => ({
 		membersCount: t.int({

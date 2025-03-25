@@ -1,5 +1,3 @@
-import { and, eq } from "drizzle-orm";
-import { organizationMembershipsTable } from "~/src/drizzle/schema";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
 import {
@@ -7,7 +5,7 @@ import {
 	type Organization as OrganizationType,
 } from "./Organization";
 
-// Extends Organization with membersCount and adminsCount and isMember Fields
+// Extends Organization isMember Fields
 Organization.implement({
 	fields: (t) => ({
 		isMember: t.field({
@@ -59,16 +57,7 @@ export const isMemberResolver = async (
 		});
 	}
 
-	const membership =
-		await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
-			columns: {
-				memberId: true,
-			},
-			where: and(
-				eq(organizationMembershipsTable.organizationId, parent.id),
-				eq(organizationMembershipsTable.memberId, currentUserId),
-			),
-		});
+	const membership = currentUser.organizationMembershipsWhereMember[0];
 
 	return membership !== undefined;
 };

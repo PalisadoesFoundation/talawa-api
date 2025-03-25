@@ -112,8 +112,8 @@ builder.queryField("organizations", (t) =>
 			"Query to fetch all organizations with optional filtering. If limit and offset are not provided, returns all organizations.",
 		args: {
 			filter: t.arg.string({ required: false }),
-			limit: t.arg.int({ required: false }), // Make limit optional
-			offset: t.arg.int({ required: false }), // Make offset optional
+			limit: t.arg.int({ required: false }),
+			offset: t.arg.int({ required: false }),
 		},
 		complexity: envConfig.API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST,
 		resolve: resolveOrganizations,

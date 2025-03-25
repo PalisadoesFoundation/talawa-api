@@ -45,18 +45,11 @@ describe("Organization members info Resolvers", () => {
 				extensions: { code: "unauthenticated" },
 			});
 		});
-		it("should throw unexpected error if user is not found", async () => {
+		it("should throw unauthenticated error if current user is not found", async () => {
 			const { context: mockContext, mocks } = createMockGraphQLContext(
 				true,
 				"user-123",
 			);
-			// const mockUserData = {
-			//   id: "user-123",
-			//   role: "administrator",
-			//   organizationMembershipsWhereMember: [
-			//     { role: "administrator", organizationId: mockParent.id },
-			//   ],
-			// };
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				undefined,
 			);
@@ -78,9 +71,9 @@ describe("Organization members info Resolvers", () => {
 				true,
 				"user-123",
 			);
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				mockUserData,
-			});
+			);
 			const whereMock = vi.fn().mockResolvedValue([{ total: 5 }]);
 			const fromMock = vi.fn().mockReturnValue({ where: whereMock });
 			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
@@ -144,9 +137,9 @@ describe("Organization members info Resolvers", () => {
 				true,
 				"user-123",
 			);
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				mockUserData,
-			});
+			);
 			const whereMock = vi.fn().mockResolvedValue([{ total: 3 }]);
 			const fromMock = vi.fn().mockReturnValue({ where: whereMock });
 			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
@@ -163,7 +156,7 @@ describe("Organization members info Resolvers", () => {
 				),
 			);
 		});
-		it("should throw unexpected error if user is not found", async () => {
+		it("should throw unauthenticated error if  current user is not found", async () => {
 			const { context: mockContext, mocks } = createMockGraphQLContext(
 				true,
 				"user-123",
@@ -189,9 +182,9 @@ describe("Organization members info Resolvers", () => {
 				true,
 				"user-123",
 			);
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				mockUserData,
-			});
+			);
 			const whereMock = vi.fn().mockResolvedValue([]);
 			const fromMock = vi.fn().mockReturnValue({ where: whereMock });
 			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
@@ -216,7 +209,7 @@ describe("Organization members info Resolvers", () => {
 				extensions: { code: "unauthenticated" },
 			});
 		});
-		it("should throw unexpected error if user is not found", async () => {
+		it("should throw unauthenticated error if current user is not found", async () => {
 			const { context: mockContext, mocks } = createMockGraphQLContext(
 				true,
 				"user-123",
@@ -242,9 +235,9 @@ describe("Organization members info Resolvers", () => {
 				true,
 				"user-123",
 			);
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				mockUserData,
-			});
+			);
 			mocks.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
 				{ memberId: "user-123" },
 			);
@@ -273,9 +266,9 @@ describe("Organization members info Resolvers", () => {
 				true,
 				"user-123",
 			);
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				mockUserData,
-			});
+			);
 			mocks.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
 				undefined,
 			);
