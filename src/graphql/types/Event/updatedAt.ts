@@ -5,7 +5,7 @@ import type { Event as EventType } from "./Event";
 
 export const eventUpdatedAtResolver = async (
 	parent: EventType,
-	_args: unknown,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	try {
