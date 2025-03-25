@@ -27,9 +27,6 @@ User.implement({
 		name: t.exposeString("name", {
 			description: "Name of the user.",
 		}),
-		email: t.exposeString("emailAddress", {
-			description: "Email address of the user.",
-		}),
 		role: t.expose("role", {
 			description: "Role assigned to the user in the application.",
 			type: UserRole,

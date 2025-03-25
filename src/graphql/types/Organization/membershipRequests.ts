@@ -9,7 +9,7 @@ import { Organization } from "./Organization";
 const membershipRequestsArgumentsSchema = z
 	.object({
 		skip: z.number().min(0).optional(),
-		first: z.number().min(0).optional(),
+		first: z.number().min(0).max(50).optional(),
 		where: z
 			.object({
 				user: z

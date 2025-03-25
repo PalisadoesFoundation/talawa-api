@@ -3456,9 +3456,6 @@ type User {
   educationGrade: UserEducationGrade
 
   """Email address of the user."""
-  email: String
-
-  """Email address of the user."""
   emailAddress: EmailAddress
 
   """Employment status of the user."""
