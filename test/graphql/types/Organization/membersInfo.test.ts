@@ -194,7 +194,7 @@ describe("Organization members info Resolvers", () => {
 		});
 	});
 
-	describe("isMember resolver", () => {
+	describe("isMemberResolver", () => {
 		it("should throw unauthenticated error when client is not authenticated", async () => {
 			const { context: mockContext } = createMockGraphQLContext();
 			mockContext.currentClient.isAuthenticated = false;
@@ -229,30 +229,32 @@ describe("Organization members info Resolvers", () => {
 			const mockUserData = {
 				id: "user-123",
 				role: "member",
-				organizationMembershipsWhereMember: [],
+				organizationMembershipsWhereMember: [{ role: "member" }],
 			};
+
 			const { context: mockContext, mocks } = createMockGraphQLContext(
 				true,
 				"user-123",
 			);
+
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				mockUserData,
-			);
-			mocks.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
-				{ memberId: "user-123" },
 			);
 
 			const result = await isMemberResolver(mockParent, {}, mockContext);
 
 			expect(result).toBe(true);
 			expect(
-				mocks.drizzleClient.query.organizationMembershipsTable.findFirst,
+				mocks.drizzleClient.query.usersTable.findFirst,
 			).toHaveBeenCalledWith({
-				columns: { memberId: true },
-				where: and(
-					eq(organizationMembershipsTable.organizationId, "org123"),
-					eq(organizationMembershipsTable.memberId, "user-123"),
-				),
+				columns: { role: true },
+				with: {
+					organizationMembershipsWhereMember: {
+						columns: { role: true },
+						where: expect.any(Function),
+					},
+				},
+				where: expect.any(Function),
 			});
 		});
 
@@ -262,28 +264,30 @@ describe("Organization members info Resolvers", () => {
 				role: "member",
 				organizationMembershipsWhereMember: [],
 			};
+
 			const { context: mockContext, mocks } = createMockGraphQLContext(
 				true,
 				"user-123",
 			);
+
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				mockUserData,
-			);
-			mocks.drizzleClient.query.organizationMembershipsTable.findFirst.mockResolvedValue(
-				undefined,
 			);
 
 			const result = await isMemberResolver(mockParent, {}, mockContext);
 
 			expect(result).toBe(false);
 			expect(
-				mocks.drizzleClient.query.organizationMembershipsTable.findFirst,
+				mocks.drizzleClient.query.usersTable.findFirst,
 			).toHaveBeenCalledWith({
-				columns: { memberId: true },
-				where: and(
-					eq(organizationMembershipsTable.organizationId, "org123"),
-					eq(organizationMembershipsTable.memberId, "user-123"),
-				),
+				columns: { role: true },
+				with: {
+					organizationMembershipsWhereMember: {
+						columns: { role: true },
+						where: expect.any(Function),
+					},
+				},
+				where: expect.any(Function),
 			});
 		});
 	});
