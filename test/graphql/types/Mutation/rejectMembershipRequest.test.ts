@@ -121,7 +121,7 @@ suite("rejectMembershipRequest", () => {
 					headers: { authorization: `bearer ${adminToken}` },
 					variables: {
 						input: {
-							name: "Membership reject Test Organizqation",
+							name: "Membership reject Test Organization",
 							description: "Organization requiring registration",
 							countryCode: "us",
 							state: "test",

@@ -8,8 +8,8 @@ import { Organization } from "./Organization";
 
 const membershipRequestsArgumentsSchema = z
 	.object({
-		skip: z.number().optional(),
-		first: z.number().optional(),
+		skip: z.number().min(0).optional(),
+		first: z.number().min(0).optional(),
 		where: z
 			.object({
 				user: z
@@ -83,6 +83,52 @@ Organization.implement({
 								argumentPath: issue.path,
 								message: issue.message,
 							})),
+						},
+					});
+				}
+
+				const currentUserId = ctx.currentClient.user.id;
+
+				const [currentUser, currentUserOrganizationMembership] =
+					await Promise.all([
+						ctx.drizzleClient.query.usersTable.findFirst({
+							columns: {
+								role: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.id, currentUserId),
+						}),
+						ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
+							columns: {
+								role: true,
+							},
+							where: (fields, operators) =>
+								operators.and(
+									operators.eq(fields.organizationId, parent.id),
+									operators.eq(fields.memberId, currentUserId),
+								),
+						}),
+					]);
+
+				if (currentUser === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthenticated",
+						},
+					});
+				}
+
+				if (
+					currentUser.role !== "administrator" &&
+					(currentUserOrganizationMembership === undefined ||
+						currentUserOrganizationMembership.role !== "administrator")
+				) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action_on_arguments_associated_resources",
+							message:
+								"You must be an organization admin or system admin to view membership requests.",
+							issues: [{ argumentPath: [] }],
 						},
 					});
 				}
