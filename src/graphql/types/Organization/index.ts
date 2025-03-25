@@ -19,4 +19,5 @@ import "./venues";
 import "./CancelMembershipResponse";
 import "./MembershipRequestObject";
 import "./membershipRequests";
-import "./membersCount";
+import "./membersInfo";
+import "./isMember";
