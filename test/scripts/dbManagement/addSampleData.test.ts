@@ -30,6 +30,7 @@ suite("addSampleData main function tests", () => {
 			"post_votes",
 			"post_attachments",
 			"comments",
+			"membership_requests",
 			"comment_votes",
 		]);
 

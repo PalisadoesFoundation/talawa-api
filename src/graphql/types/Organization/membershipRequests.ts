@@ -6,7 +6,6 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { MembershipRequestObject } from "./MembershipRequestObject";
 import { Organization } from "./Organization";
 
-// Define arguments schema using Zod
 const membershipRequestsArgumentsSchema = z
 	.object({
 		skip: z.number().optional(),
@@ -27,7 +26,6 @@ const membershipRequestsArgumentsSchema = z
 		where: args.where,
 	}));
 
-// Create input types for filtering
 const UserWhereInput = builder.inputType("UserWhereInput", {
 	fields: (t) => ({
 		firstName_contains: t.string({
@@ -100,7 +98,6 @@ Organization.implement({
 
 				// Add firstName filter if provided
 				if (firstName_contains) {
-					// Find matching users
 					const matchingUsers =
 						await ctx.drizzleClient.query.usersTable.findMany({
 							where: (fields) => ilike(fields.name, `%${firstName_contains}%`),

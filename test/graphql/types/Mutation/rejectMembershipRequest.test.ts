@@ -136,7 +136,6 @@ suite("rejectMembershipRequest", () => {
 			);
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
-			console.log("orgId: ", orgId);
 
 			const { authToken: userToken } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userToken);
