@@ -121,7 +121,7 @@ suite("rejectMembershipRequest", () => {
 					headers: { authorization: `bearer ${adminToken}` },
 					variables: {
 						input: {
-							name: "Membership Test Org",
+							name: "Membership reject Test Organizqation",
 							description: "Organization requiring registration",
 							countryCode: "us",
 							state: "test",
@@ -200,7 +200,7 @@ suite("rejectMembershipRequest", () => {
 					headers: { authorization: `bearer ${adminToken}` },
 					variables: {
 						input: {
-							name: "Membership Test",
+							name: "Membership reject Test-2",
 							description: "Organization registration",
 							countryCode: "us",
 							state: "test",
@@ -273,7 +273,7 @@ suite("rejectMembershipRequest", () => {
 						headers: { authorization: `bearer ${adminToken}` },
 						variables: {
 							input: {
-								name: "Membership Test error",
+								name: "Membership reject error",
 								description: "Organization error",
 								countryCode: "us",
 								state: "test",
@@ -362,7 +362,7 @@ suite("rejectMembershipRequest", () => {
 					headers: { authorization: `bearer ${adminToken}` },
 					variables: {
 						input: {
-							name: "Empty Update Test Org",
+							name: "Empty Update ",
 							description: "Test organization for empty update array",
 							countryCode: "us",
 							state: "test",
