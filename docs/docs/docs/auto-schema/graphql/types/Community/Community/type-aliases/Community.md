@@ -6,4 +6,4 @@
 
 > **Community**: *typeof* `communitiesTable.$inferSelect`
 
-Defined in: src/graphql/types/Community/Community.ts:7
+Defined in: src/graphql/types/Community/Community.ts:4

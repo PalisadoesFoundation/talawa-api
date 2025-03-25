@@ -16,7 +16,7 @@ Defined in: src/graphql/types/Event/updatedAt.ts:6
 
 ### \_args
 
-`unknown`
+`Record`\<`string`, `never`\>
 
 ### ctx
 

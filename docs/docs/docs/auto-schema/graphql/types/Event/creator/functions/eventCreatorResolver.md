@@ -16,7 +16,7 @@ Defined in: src/graphql/types/Event/creator.ts:7
 
 ### \_args
 
-`unknown`
+`Record`\<`string`, `never`\>
 
 ### ctx
 

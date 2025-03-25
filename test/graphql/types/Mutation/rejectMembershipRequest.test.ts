@@ -397,7 +397,6 @@ suite("rejectMembershipRequest", () => {
 			const membershipRequestId = membershipRequest.membershipRequestId;
 			assertToBeNonNullish(membershipRequestId);
 
-			// Mock the update method to return empty array
 			const originalUpdate = server.drizzleClient.update;
 			server.drizzleClient.update = vi.fn().mockReturnValue({
 				set: () => ({

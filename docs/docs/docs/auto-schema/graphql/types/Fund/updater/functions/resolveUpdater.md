@@ -46,7 +46,7 @@ Defined in: src/graphql/types/Fund/updater.ts:35
 
 ### \_
 
-`unknown`
+`Record`\<`string`, `never`\>
 
 ### ctx
 

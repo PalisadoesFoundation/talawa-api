@@ -46,7 +46,7 @@ Defined in: src/graphql/types/Fund/creator.ts:7
 
 ### \_args
 
-`unknown`
+`Record`\<`string`, `never`\>
 
 ### ctx
 

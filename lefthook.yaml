@@ -21,7 +21,7 @@ pre-commit:
       run: |
         set -e
         pnpm generate_gql_tada
-        git add ./test/routes/graphql/gql.tada-cache.d.ts
+        git add ./test/graphql/types/gql.tada-cache.d.ts
     6_check_gql_tada:
       run: pnpm check_gql_tada
     7_fix_code_quality:

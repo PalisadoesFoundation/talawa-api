@@ -94,5 +94,11 @@ declare module 'gql.tada' {
       TadaDocumentNode<{ createChatMembership: { id: string; createdAt: string | null; updatedAt: string | null; creator: { id: string; name: string | null; } | null; } | null; }, { input: { role?: "administrator" | "regular" | null | undefined; memberId: string; chatId: string; }; }, void>;
     "\n  mutation Mutation_joinPublicOrganization($input: MutationJoinPublicOrganizationInput!) {\n    joinPublicOrganization(input: $input) {\n      memberId\n      organizationId\n      role\n      creatorId\n    }\n  }\n":
       TadaDocumentNode<{ joinPublicOrganization: { memberId: string | null; organizationId: string | null; role: string | null; creatorId: string | null; } | null; }, { input: { organizationId: string; }; }, void>;
+    "\n  mutation Mutation_sendMembershipRequest($input: MutationSendMembershipRequestInput!) {\n  sendMembershipRequest(input: $input) {\n    organizationId\n    userId\n    status\n    createdAt\n    membershipRequestId\n    }\n  }\n":
+      TadaDocumentNode<{ sendMembershipRequest: { organizationId: string | null; userId: string | null; status: "pending" | "approved" | "rejected" | null; createdAt: string | null; membershipRequestId: string | null; } | null; }, { input: { organizationId: string; }; }, void>;
+    "\n  mutation Mutation_acceptMembershipRequest($input: MutationAcceptMembershipRequestInput!) {\n  acceptMembershipRequest(input: $input) {\n    success\n    message\n    }\n  }\n":
+      TadaDocumentNode<{ acceptMembershipRequest: { success: boolean | null; message: string | null; } | null; }, { input: { membershipRequestId: string; }; }, void>;
+    "\n  mutation Mutation_rejectMembershipRequest($input: MutationRejectMembershipRequestInput!) {\n  rejectMembershipRequest(input: $input) {\n    success\n    message\n    }\n  }\n":
+      TadaDocumentNode<{ rejectMembershipRequest: { success: boolean | null; message: string | null; } | null; }, { input: { membershipRequestId: string; }; }, void>;
   }
 }
