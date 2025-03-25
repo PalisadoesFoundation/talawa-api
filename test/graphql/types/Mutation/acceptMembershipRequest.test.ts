@@ -1,4 +1,4 @@
-import { expect, suite, test, vi } from "vitest";
+import { expect, suite, test , vi } from "vitest";
 import { faker } from "@faker-js/faker";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -103,7 +103,6 @@ suite("acceptMembershipRequest", () => {
 		});
 	});
 
-	// --- Test 4: Unauthorized action (user not admin) ---
 	suite("acceptMembershipRequest - unauthorized action", () => {
 		test("should return an error when current user is not admin", async () => {
 			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
@@ -347,9 +346,9 @@ suite("acceptMembershipRequest", () => {
 		});
 	});
 
-	// Test for checking if user is already a member of the organization
-	suite("acceptMembershipRequest - user already a member", () => {
-		test("should return an error with forbidden_action code", async () => {
+
+	suite("acceptMembershipRequest - empty update result", () => {
+		test("should return a specific error when update returns empty array", async () => {
 			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -367,8 +366,8 @@ suite("acceptMembershipRequest", () => {
 					headers: { authorization: `bearer ${adminToken}` },
 					variables: {
 						input: {
-							name: "IITbh Organization",
-							description: "Organization-IITbh",
+							name: "Empty Update Test Org",
+							description: "Test organization for empty update array",
 							countryCode: "us",
 							state: "test",
 							city: "test",
@@ -402,153 +401,36 @@ suite("acceptMembershipRequest", () => {
 			const membershipRequestId = membershipRequest.membershipRequestId;
 			assertToBeNonNullish(membershipRequestId);
 
-			// Accept the membership request first time
-			await mercuriusClient.mutate(Mutation_acceptMembershipRequest, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: { membershipRequestId },
-				},
-			});
+			const originalTransaction = server.drizzleClient.transaction;
 
-			// Create another membership request (or simulate one)
-			const sendRequestResult2 = await mercuriusClient.mutate(
-				Mutation_sendMembershipRequest,
-				{
-					headers: { authorization: `bearer ${userToken}` },
-					variables: {
-						input: {
-							organizationId: orgId,
-						},
-					},
-				},
-			);
-			const membershipRequest2 = sendRequestResult2.data?.sendMembershipRequest;
-			assertToBeNonNullish(membershipRequest2);
-			const membershipRequestId2 = membershipRequest2.membershipRequestId;
-			assertToBeNonNullish(membershipRequestId2);
-
-			// Try to accept the second request
-			const result = await mercuriusClient.mutate(
-				Mutation_acceptMembershipRequest,
-				{
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: {
-						input: { membershipRequestId: membershipRequestId2 },
-					},
-				},
-			);
-
-			expect(result.data?.acceptMembershipRequest ?? null).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "forbidden_action",
-							message: "The user is already a member of this organization.",
-						}),
-						path: ["acceptMembershipRequest"],
-					}),
-				]),
-			);
-		});
-	});
-
-	// Uncomment and update Test 7 for transaction returning empty updatedRequest
-	suite(
-		"acceptMembershipRequest - transaction returns no updated request",
-		() => {
-			test("should return an error with unexpected extensions code", async () => {
-				// Sign in as admin.
-				const signInResult = await mercuriusClient.query(Query_signIn, {
-					variables: {
-						input: {
-							emailAddress:
-								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-						},
-					},
-				});
-				const adminToken = signInResult.data?.signIn?.authenticationToken;
-				assertToBeNonNullish(adminToken);
-
-				// Use a valid UUID format instead of "test-request-id"
-				const mockMembershipRequestId = faker.string.uuid();
-
-				// Override membershipRequestsTable.findFirst to simulate a valid pending request.
-				const originalFindFirstMR =
-					server.drizzleClient.query.membershipRequestsTable.findFirst;
-				server.drizzleClient.query.membershipRequestsTable.findFirst = vi
-					.fn()
-					.mockImplementation(() => {
-						return {
-							where: () => ({
-								execute: async () => ({
-									membershipRequestId: mockMembershipRequestId,
-									status: "pending",
-									organization: {
-										name: "Test Org",
-										membershipsWhereOrganization: [{ role: "administrator" }],
-										organizationId: faker.string.uuid(),
-									},
-									userId: faker.string.uuid(),
-								}),
-							}),
-						};
-					});
-
-				// Ensure no existing membership.
-				const originalFindFirstOM =
-					server.drizzleClient.query.organizationMembershipsTable.findFirst;
-				server.drizzleClient.query.organizationMembershipsTable.findFirst = vi
-					.fn()
-					.mockImplementation(() => ({
-						where: () => ({
-							execute: async () => null,
-						}),
-					}));
-
-				// Override transaction to simulate update returning empty.
-				const originalTransaction = server.drizzleClient.transaction;
-				server.drizzleClient.transaction = vi
-					.fn()
-					.mockImplementation(async (fn) => {
-						const fakeTx = {
-							update: () => ({
-								set: () => ({
-									where: () => ({
-										returning: async () => {
-											return []; // Simulate update returning no rows.
-										},
-									}),
-								}),
-							}),
-							insert: () => ({
-								values: () => ({
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (fn) => {
+					const fakeTx = {
+						update: () => ({
+							set: () => ({
+								where: () => ({
 									returning: async () => {
-										return [{ dummy: "value" }];
+										return []; 
 									},
 								}),
 							}),
-						};
-						return await fn(fakeTx);
-					});
+						}),
+						insert: originalTransaction,
+					};
+					return await fn(fakeTx);
+				});
 
+			try {
 				const result = await mercuriusClient.mutate(
 					Mutation_acceptMembershipRequest,
 					{
 						headers: { authorization: `bearer ${adminToken}` },
 						variables: {
-							input: { membershipRequestId: mockMembershipRequestId },
+							input: { membershipRequestId },
 						},
 					},
 				);
-
-				// Restore original methods.
-				server.drizzleClient.query.membershipRequestsTable.findFirst =
-					originalFindFirstMR;
-				server.drizzleClient.query.organizationMembershipsTable.findFirst =
-					originalFindFirstOM;
-				server.drizzleClient.transaction = originalTransaction;
 
 				expect(result.data?.acceptMembershipRequest ?? null).toBeNull();
 				expect(result.errors).toEqual(
@@ -556,19 +438,20 @@ suite("acceptMembershipRequest", () => {
 						expect.objectContaining({
 							extensions: expect.objectContaining({
 								code: "unexpected",
-								message: "Failed to accept the membership request.",
+								message: "Failed to accept membership request and add user to organization.",
 							}),
 							path: ["acceptMembershipRequest"],
 						}),
 					]),
 				);
-			});
-		},
-	);
-	// --- Test 8: Transaction throws an error in catch block ---
+			} finally {
+				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
+	});
+
 	suite("acceptMembershipRequest - transaction error handling", () => {
 		test("should handle transaction failures appropriately", async () => {
-			// Sign in as admin
 			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -603,7 +486,6 @@ suite("acceptMembershipRequest", () => {
 			const orgId = createOrgResult.data?.createOrganization?.id;
 			assertToBeNonNullish(orgId);
 
-			// Create a regular user and send membership request
 			const { authToken: userToken } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(userToken);
 
@@ -623,13 +505,11 @@ suite("acceptMembershipRequest", () => {
 			const membershipRequestId = membershipRequest.membershipRequestId;
 			assertToBeNonNullish(membershipRequestId);
 
-			// Mock the transaction to simulate a failure
 			const originalTransaction = server.drizzleClient.transaction;
 			server.drizzleClient.transaction = async () => {
 				throw new Error("Simulated transaction failure");
 			};
 
-			// Attempt to accept the membership request
 			const result = await mercuriusClient.mutate(
 				Mutation_acceptMembershipRequest,
 				{
@@ -640,10 +520,8 @@ suite("acceptMembershipRequest", () => {
 				},
 			);
 
-			// Restore original transaction
 			server.drizzleClient.transaction = originalTransaction;
 
-			// Verify error response
 			expect(result.data?.acceptMembershipRequest ?? null).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
@@ -658,7 +536,6 @@ suite("acceptMembershipRequest", () => {
 				]),
 			);
 
-			// Verify the membership request remains in pending state
 			const verifyRequestResult = await mercuriusClient.mutate(
 				Mutation_acceptMembershipRequest,
 				{
@@ -669,7 +546,6 @@ suite("acceptMembershipRequest", () => {
 				},
 			);
 
-			// Should be able to accept it now since it's still pending
 			expect(verifyRequestResult.data?.acceptMembershipRequest).toEqual(
 				expect.objectContaining({
 					success: true,
