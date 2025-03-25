@@ -6,7 +6,7 @@ import { Event } from "./Event";
 import type { Event as EventType } from "./Event";
 export const eventCreatorResolver = async (
 	parent: EventType,
-	_args: unknown,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {

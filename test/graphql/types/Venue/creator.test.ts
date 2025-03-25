@@ -1,135 +1,15 @@
-import type { FastifyInstance, FastifyReply } from "fastify";
-import type { MercuriusContext } from "mercurius";
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { User } from "~/src/graphql/types/User/User";
+import type { Venue } from "~/src/graphql/types/Venue/Venue";
+import { venueCreator } from "~/src/graphql/types/Venue/creator";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-type ResolverContext = GraphQLContext & MercuriusContext;
-
-interface CurrentClient {
-	isAuthenticated: boolean;
-	user?: {
-		id: string;
-		role: string;
-	};
-}
-
-interface TestContext extends Partial<MercuriusContext> {
-	currentClient: CurrentClient;
-	drizzleClient: {
-		query: {
-			usersTable: {
-				findFirst: ReturnType<typeof vi.fn>;
-			};
-		};
-	};
-	log: {
-		error: ReturnType<typeof vi.fn>;
-	};
-	app: FastifyInstance;
-	reply: FastifyReply;
-	__currentQuery: string;
-}
-
-interface VenueParent {
-	id: string;
-	name: string;
-	description: string;
-	creatorId: string | null;
-	organizationId: string;
-}
-
-const resolveCreator = async (
-	parent: VenueParent,
-	_args: Record<string, never>,
-	ctx: ResolverContext,
-): Promise<typeof User | null> => {
-	if (!ctx.currentClient.isAuthenticated || !ctx.currentClient.user?.id) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthenticated",
-			},
-		});
-	}
-
-	const currentUserId = ctx.currentClient.user.id;
-
-	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		with: {
-			organizationMembershipsWhereMember: {
-				columns: {
-					role: true,
-				},
-				where: (fields, operators) =>
-					operators.eq(fields.organizationId, parent.organizationId),
-			},
-		},
-		where: (fields, operators) => operators.eq(fields.id, currentUserId),
-	});
-
-	if (!currentUser) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthenticated",
-			},
-		});
-	}
-
-	const currentUserOrganizationMembership =
-		currentUser.organizationMembershipsWhereMember[0];
-
-	if (
-		currentUser.role !== "administrator" &&
-		(!currentUserOrganizationMembership ||
-			currentUserOrganizationMembership.role !== "administrator")
-	) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthorized_action",
-			},
-		});
-	}
-
-	if (parent.creatorId === null) {
-		return null;
-	}
-
-	if (parent.creatorId === currentUserId) {
-		return currentUser as unknown as typeof User;
-	}
-
-	if (typeof parent.creatorId !== "string") {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unexpected",
-			},
-		});
-	}
-
-	const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		where: (fields, operators) =>
-			operators.eq(fields.id, parent.creatorId as string),
-	});
-
-	if (!existingUser) {
-		ctx.log.error(
-			"Postgres select operation returned an empty array for a venue's creator id that isn't null.",
-		);
-
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unexpected",
-			},
-		});
-	}
-
-	return existingUser as unknown as typeof User;
-};
 
 // Tests section
 describe("Venue Resolver - Creator Field", () => {
-	let ctx: TestContext;
-	let mockVenue: VenueParent;
+	let ctx: GraphQLContext;
+	let mockVenue: Venue;
+	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
 	beforeEach(() => {
 		mockVenue = {
@@ -138,58 +18,21 @@ describe("Venue Resolver - Creator Field", () => {
 			description: "Test Description",
 			creatorId: "user-123",
 			organizationId: "org-123",
-		};
+		} as Venue;
 
-		// Create mock Fastify instance
-		const mockApp = {
-			addHook: vi.fn(),
-			decorate: vi.fn(),
-			get: vi.fn(),
-			post: vi.fn(),
-		} as unknown as FastifyInstance;
-
-		// Create mock Fastify reply
-		const mockReply = {
-			code: vi.fn(),
-			send: vi.fn(),
-			header: vi.fn(),
-		} as unknown as FastifyReply;
-
-		ctx = {
-			currentClient: {
-				isAuthenticated: true,
-				user: {
-					id: "user-123",
-					role: "member",
-				},
-			},
-			drizzleClient: {
-				query: {
-					usersTable: {
-						findFirst: vi.fn(),
-					},
-				},
-			},
-			log: {
-				error: vi.fn(),
-			},
-			app: mockApp,
-			reply: mockReply,
-			__currentQuery: "query { test }", // Mock GraphQL query string
-		};
+		const { context, mocks: newMocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		ctx = context;
+		mocks = newMocks;
+		vi.clearAllMocks();
 	});
 
 	it("should throw unauthenticated error if user is not logged in", async () => {
-		const testCtx = {
-			...ctx,
-			currentClient: {
-				isAuthenticated: false,
-				user: undefined,
-			},
-		} as unknown as ResolverContext;
-
+		const { context: unauthenticatedCtx } = createMockGraphQLContext(false);
 		await expect(async () => {
-			await resolveCreator(mockVenue, {}, testCtx);
+			await venueCreator(mockVenue, {}, unauthenticatedCtx);
 		}).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "unauthenticated" },
@@ -198,16 +41,10 @@ describe("Venue Resolver - Creator Field", () => {
 	});
 
 	it("should throw unauthenticated error if user is not logged in", async () => {
-		const testCtx = {
-			...ctx,
-			currentClient: {
-				isAuthenticated: false,
-				user: undefined,
-			},
-		} as unknown as ResolverContext;
+		const { context: unauthenticatedCtx } = createMockGraphQLContext(false);
 
 		await expect(async () => {
-			await resolveCreator(mockVenue, {}, testCtx);
+			await venueCreator(mockVenue, {}, unauthenticatedCtx);
 		}).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "unauthenticated" },
@@ -216,10 +53,10 @@ describe("Venue Resolver - Creator Field", () => {
 	});
 
 	it("should throw unauthenticated error if current user is not found", async () => {
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 
 		await expect(async () => {
-			await resolveCreator(mockVenue, {}, ctx as unknown as ResolverContext);
+			await venueCreator(mockVenue, {}, ctx);
 		}).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "unauthenticated" },
@@ -233,15 +70,11 @@ describe("Venue Resolver - Creator Field", () => {
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
 		};
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 			mockUser,
 		);
 
-		const result = await resolveCreator(
-			mockVenue,
-			{},
-			ctx as unknown as ResolverContext,
-		);
+		const result = await venueCreator(mockVenue, {}, ctx);
 		expect(result).toEqual(mockUser);
 	});
 
@@ -255,15 +88,11 @@ describe("Venue Resolver - Creator Field", () => {
 				},
 			],
 		};
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 			mockUser,
 		);
 
-		const result = await resolveCreator(
-			mockVenue,
-			{},
-			ctx as unknown as ResolverContext,
-		);
+		const result = await venueCreator(mockVenue, {}, ctx);
 		expect(result).toEqual(mockUser);
 	});
 
@@ -277,12 +106,12 @@ describe("Venue Resolver - Creator Field", () => {
 				},
 			],
 		};
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 			mockUser,
 		);
 
 		await expect(async () => {
-			await resolveCreator(mockVenue, {}, ctx as unknown as ResolverContext);
+			await venueCreator(mockVenue, {}, ctx);
 		}).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "unauthorized_action" },
@@ -297,15 +126,11 @@ describe("Venue Resolver - Creator Field", () => {
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
 		};
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 			mockUser,
 		);
 
-		const result = await resolveCreator(
-			mockVenue,
-			{},
-			ctx as unknown as ResolverContext,
-		);
+		const result = await venueCreator(mockVenue, {}, ctx);
 		expect(result).toBeNull();
 	});
 
@@ -315,15 +140,11 @@ describe("Venue Resolver - Creator Field", () => {
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
 		};
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 			mockUser,
 		);
 
-		const result = await resolveCreator(
-			mockVenue,
-			{},
-			ctx as unknown as ResolverContext,
-		);
+		const result = await venueCreator(mockVenue, {}, ctx);
 		expect(result).toEqual(mockUser);
 	});
 
@@ -340,15 +161,11 @@ describe("Venue Resolver - Creator Field", () => {
 		};
 
 		mockVenue.creatorId = "creator-456";
-		ctx.drizzleClient.query.usersTable.findFirst
+		mocks.drizzleClient.query.usersTable.findFirst
 			.mockResolvedValueOnce(currentUser)
 			.mockResolvedValueOnce(creatorUser);
 
-		const result = await resolveCreator(
-			mockVenue,
-			{},
-			ctx as unknown as ResolverContext,
-		);
+		const result = await venueCreator(mockVenue, {}, ctx);
 		expect(result).toEqual(creatorUser);
 	});
 
@@ -358,12 +175,12 @@ describe("Venue Resolver - Creator Field", () => {
 			role: "member",
 			organizationMembershipsWhereMember: [],
 		};
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 			mockUser,
 		);
 
 		await expect(async () => {
-			await resolveCreator(mockVenue, {}, ctx as unknown as ResolverContext);
+			await venueCreator(mockVenue, {}, ctx);
 		}).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "unauthorized_action" },
@@ -377,16 +194,44 @@ describe("Venue Resolver - Creator Field", () => {
 			role: "member",
 			organizationMembershipsWhereMember: [{ role: undefined }],
 		};
-		ctx.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 			mockUser,
 		);
 
 		await expect(async () => {
-			await resolveCreator(mockVenue, {}, ctx as unknown as ResolverContext);
+			await venueCreator(mockVenue, {}, ctx);
 		}).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: { code: "unauthorized_action" },
 			}),
+		);
+	});
+	it("should log an error and throw an unexpected error if the creator does not exist in the database", async () => {
+		const mockCurrentUser = {
+			id: "user-123",
+			role: "administrator",
+			organizationMembershipsWhereMember: [
+				{ role: "administrator", organizationId: "org-123" },
+			],
+		};
+
+		// Set a creator ID that does not exist in the database
+		mockVenue.creatorId = "random-123";
+
+		mocks.drizzleClient.query.usersTable.findFirst
+			.mockResolvedValueOnce(mockCurrentUser) // First query: user exists
+			.mockResolvedValueOnce(undefined); // Second query: creator does NOT exist
+
+		const logErrorSpy = vi.spyOn(ctx.log, "error");
+
+		await expect(venueCreator(mockVenue, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: { code: "unexpected" },
+			}),
+		);
+
+		expect(logErrorSpy).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for a venue's creator id that isn't null.",
 		);
 	});
 });

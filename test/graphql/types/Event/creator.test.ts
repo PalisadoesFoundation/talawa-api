@@ -275,8 +275,6 @@ describe("Event Creator Resolver -Test ", () => {
 					extensions: { code: "unexpected" },
 				}),
 			);
-
-			// Verify error was logged
 			expect(ctx.log.error).toHaveBeenCalledWith(
 				"Postgres select operation returned an empty array for an event's creator id that isn't null.",
 			);
@@ -310,7 +308,6 @@ describe("Event Creator Resolver -Test ", () => {
 				}),
 			);
 
-			// Verify error was logged
 			expect(ctx.log.error).toHaveBeenCalled();
 		});
 	});
@@ -335,7 +332,7 @@ describe("Event Creator Resolver -Test ", () => {
 			const mockUserData: MockUser = {
 				id: "user-123",
 				role: "member",
-				organizationMembershipsWhereMember: [], // Test undefined case
+				organizationMembershipsWhereMember: [],
 			};
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(

@@ -6,7 +6,7 @@ import { Organization } from "./Organization";
 import type { Organization as Organizationtype } from "./Organization";
 export const OrganizationCreatorResolver = async (
 	parent: Organizationtype,
-	_args: unknown,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {

@@ -1,7 +1,11 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-import { FundCampaign } from "./FundCampaign";
+import {
+	FundCampaign,
+	type FundCampaign as FundCampaignType,
+} from "./FundCampaign";
+
 /**
  * Resolver for the updatedAt field of FundCampaign type.
  * Validates user authentication and authorization before returning the last update timestamp.
@@ -17,8 +21,8 @@ import { FundCampaign } from "./FundCampaign";
  */
 
 export const updatedAtResolver = async (
-	parent: FundCampaign,
-	args: unknown,
+	parent: FundCampaignType,
+	args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	try {
