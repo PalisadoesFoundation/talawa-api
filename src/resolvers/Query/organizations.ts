@@ -24,10 +24,10 @@ export const organizations: QueryResolvers["organizations"] = async (_parent, ar
     return org;
   }
   const filter = args.filter || "";
-  const orgs = await Organization.find({ name: { $regex: filter, $options: "i" } })
+  const orgs = await Organization.find({ name: { $regex: filter, $options: "i" }, isPublic: true })
     .sort(sort)
     .select("name description image _id")
     .lean();
-    await cacheOrganizations(orgs);
-    return orgs;
+  await cacheOrganizations(orgs);
+  return orgs;
 };
