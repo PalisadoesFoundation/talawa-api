@@ -1,8 +1,8 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { Community, type Community as CommunityType } from "./Community";
-import envConfig from "~/src/utilities/graphqLimits";
 
 export const communityUpdater = async (
 	parent: CommunityType,
@@ -73,7 +73,7 @@ Community.implement({
 		updater: t.field({
 			description: "User who last updated the community.",
 			resolve: communityUpdater,
-			complexity : envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			type: User,
 		}),
 	}),

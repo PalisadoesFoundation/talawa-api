@@ -1,8 +1,8 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { Venue, type Venue as VenueType } from "./Venue";
-import envConfig from "~/src/utilities/graphqLimits";
 export const venueCreator = async (
 	parent: VenueType,
 	_args: Record<string, never>,

@@ -1,11 +1,11 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import {
 	Organization,
 	type Organization as OrganizationType,
 } from "./Organization";
-import envConfig from "~/src/utilities/graphqLimits";
 export const OrganizationUpdater = async (
 	parent: OrganizationType,
 	_args: Record<string, unknown>,
