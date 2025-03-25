@@ -3580,7 +3580,7 @@ enum UserRole {
 
 input UserWhereInput {
   """Filter by first name containing this string"""
-  firstName_contains: String
+  name_contains: String
 }
 
 type Venue {

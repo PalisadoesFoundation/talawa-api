@@ -14,7 +14,7 @@ const membershipRequestsArgumentsSchema = z
 			.object({
 				user: z
 					.object({
-						firstName_contains: z.string().optional(),
+						name_contains: z.string().optional(),
 					})
 					.optional(),
 			})
@@ -28,7 +28,7 @@ const membershipRequestsArgumentsSchema = z
 
 const UserWhereInput = builder.inputType("UserWhereInput", {
 	fields: (t) => ({
-		firstName_contains: t.string({
+		name_contains: t.string({
 			description: "Filter by first name containing this string",
 		}),
 	}),
@@ -134,19 +134,17 @@ Organization.implement({
 				}
 
 				const { skip, first, where } = parsedArgs;
-				const firstName_contains = where?.user?.firstName_contains;
+				const name_contains = where?.user?.name_contains;
 
-				// Build base query for membership requests
 				let query: SQL<unknown> = eq(
 					membershipRequestsTable.organizationId,
 					parent.id,
 				);
 
-				// Add firstName filter if provided
-				if (firstName_contains) {
+				if (name_contains) {
 					const matchingUsers =
 						await ctx.drizzleClient.query.usersTable.findMany({
-							where: (fields) => ilike(fields.name, `%${firstName_contains}%`),
+							where: (fields) => ilike(fields.name, `%${name_contains}%`),
 							columns: { id: true },
 						});
 
@@ -162,7 +160,6 @@ Organization.implement({
 					}
 				}
 
-				// Fetch membership requests
 				const membershipRequests =
 					await ctx.drizzleClient.query.membershipRequestsTable.findMany({
 						where: query,
