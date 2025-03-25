@@ -1,5 +1,5 @@
 import "./Mutation";
-import "./acceptMembershipRequest"
+import "./acceptMembershipRequest";
 import "./createAdvertisement";
 import "./createAgendaFolder";
 import "./createAgendaItem";

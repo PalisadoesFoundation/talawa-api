@@ -48,7 +48,7 @@ Organization.implement({
 		}),
 		isUserRegistrationRequired: t.exposeBoolean("userRegistrationRequired", {
 			description:
-				"Flag to indicate if user registration is required to join the organization.",	
+				"Flag to indicate if user registration is required to join the organization.",
 		}),
 	}),
 });

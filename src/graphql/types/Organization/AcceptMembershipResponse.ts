@@ -6,12 +6,12 @@ export const AcceptMembershipResponse = builder.objectRef<{
 }>("AcceptMembershipResponse");
 
 AcceptMembershipResponse.implement({
-    fields: (t) => ({
-        success: t.exposeBoolean("success", {
-            description: "Whether the operation was successful",
-        }),
-        message: t.exposeString("message", {
-            description: "Success or error message",
-        }),
-    }),
+	fields: (t) => ({
+		success: t.exposeBoolean("success", {
+			description: "Whether the operation was successful",
+		}),
+		message: t.exposeString("message", {
+			description: "Success or error message",
+		}),
+	}),
 });

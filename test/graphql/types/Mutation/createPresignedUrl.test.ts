@@ -363,7 +363,7 @@ suite("Mutation field createPresignedUrl", () => {
 							postalCode: "12345",
 							addressLine1: "Address 1",
 							addressLine2: "Address 2",
-							isUserRegistrationRequired: false
+							isUserRegistrationRequired: false,
 						},
 					},
 				},
