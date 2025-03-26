@@ -64,7 +64,7 @@ jobs:
       # or else we'll get failures
       - name: Get changed files
         id: changed_files
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v46
         with:
           files: |
             **.ts
@@ -105,7 +105,7 @@ jobs:
       
       - name: Get Changed Unauthorized files
         id: changed-unauth-files
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v46
         with:
           files: |
             .github/**
@@ -160,7 +160,7 @@ jobs:
         
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v46
 
       - name: Echo number of changed files
         env: 
@@ -188,7 +188,7 @@ jobs:
 
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v45
+        uses: tj-actions/changed-files@v46
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -208,7 +208,7 @@ jobs:
 
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v45
+        uses: tj-actions/changed-files@v46
 
       - name: Set up Python
         uses: actions/setup-python@v5
