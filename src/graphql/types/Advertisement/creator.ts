@@ -1,5 +1,6 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import {
 	Advertisement,
@@ -90,6 +91,7 @@ Advertisement.implement({
 		creator: t.field({
 			description: "User who created the advertisement.",
 			resolve: advertisementCreator,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			type: User,
 		}),
 	}),

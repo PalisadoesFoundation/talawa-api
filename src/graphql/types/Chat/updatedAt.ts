@@ -4,6 +4,7 @@ import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
 import type { chatsTable } from "~/src/drizzle/tables/chats";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { Chat } from "./Chat";
 type ChatsTable = typeof chatsTable.$inferSelect;
@@ -71,6 +72,7 @@ Chat.implement({
 		updatedAt: t.field({
 			description: "Date time at the time the chat was last updated.",
 			resolve: resolveUpdatedAt,
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			type: "DateTime",
 		}),
 	}),

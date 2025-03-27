@@ -8,8 +8,8 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateTagInput";
 import { Tag } from "~/src/graphql/types/Tag/Tag";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-
 const mutationUpdateTagArgumentsSchema = z.object({
 	input: mutationUpdateTagInputSchema,
 });
@@ -23,6 +23,7 @@ builder.mutationField("updateTag", (t) =>
 				type: MutationUpdateTagInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update a tag.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

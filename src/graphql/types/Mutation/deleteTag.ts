@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteTagInput";
 import { Tag } from "~/src/graphql/types/Tag/Tag";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteTagArgumentsSchema = z.object({
 	input: mutationDeleteTagInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deleteTag", (t) =>
 				type: MutationDeleteTagInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete a tag.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

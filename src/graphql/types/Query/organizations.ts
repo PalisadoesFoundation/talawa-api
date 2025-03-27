@@ -9,6 +9,7 @@ import type {
 } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 
 // Define type for organization model
 type OrganizationType = InferSelectModel<typeof organizationsTable>;
@@ -117,6 +118,7 @@ builder.queryField("organizations", (t) =>
 		args: {
 			filter: t.arg.string({ required: false }),
 		},
+		complexity: envConfig.API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST,
 		resolve: resolveOrganizations,
 		type: [Organization],
 	}),

@@ -1,11 +1,11 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import {
 	FundCampaignPledge,
 	type FundCampaignPledge as FundCampaignPledgeType,
 } from "./FundCampaignPledge";
-
 export const resolveUpdater = async (
 	parent: FundCampaignPledgeType,
 	_args: Record<string, never>,
@@ -121,6 +121,7 @@ FundCampaignPledge.implement({
 		updater: t.field({
 			description: "User who last updated the fund campaign pledge.",
 			resolve: resolveUpdater,
+			complexity: envConfig.API_GRAPHQL_MUTATION_BASE_COST,
 			type: User,
 		}),
 	}),

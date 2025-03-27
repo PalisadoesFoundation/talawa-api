@@ -7,7 +7,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreateFundCampaignInput";
 import { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationCreateFundCampaignArgumentsSchema = z.object({
 	input: mutationCreateFundCampaignInputSchema,
 });
@@ -21,6 +21,7 @@ builder.mutationField("createFundCampaign", (t) =>
 				type: MutationCreateFundCampaignInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create a fund campaign.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

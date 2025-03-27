@@ -1,10 +1,11 @@
 import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 builder.queryField("renewAuthenticationToken", (t) =>
 	t.string({
 		description:
 			"Query field to renew the authentication token of an authenticated client for signing in to talawa.",
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		resolve: async (_parent, _args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({

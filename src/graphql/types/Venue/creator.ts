@@ -1,8 +1,8 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { Venue, type Venue as VenueType } from "./Venue";
-
 export const venueCreator = async (
 	parent: VenueType,
 	_args: Record<string, never>,
@@ -89,6 +89,7 @@ Venue.implement({
 			description: "User who created the venue.",
 			resolve: venueCreator,
 			type: User,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		}),
 	}),
 });

@@ -1,8 +1,8 @@
 import { MutationCreateGetfileUrlInput } from "~/src/graphql/inputs/MutationCreateGetfileUrlInput";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { builder } from "../../builder";
 import { GetUrlResponse } from "../../types/Post/GetUrlResponse";
-
 builder.mutationField("createGetfileUrl", (t) =>
 	t.field({
 		args: {
@@ -11,6 +11,7 @@ builder.mutationField("createGetfileUrl", (t) =>
 				type: MutationCreateGetfileUrlInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description:
 			"Mutation field to create a presigned URL for uploading a file.",
 		resolve: async (_parent, args, ctx) => {

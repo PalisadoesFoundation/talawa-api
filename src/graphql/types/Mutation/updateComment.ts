@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateCommentInput";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationUpdateCommentArgumentsSchema = z.object({
 	input: mutationUpdateCommentInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("updateComment", (t) =>
 				type: MutationUpdateCommentInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update a comment.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

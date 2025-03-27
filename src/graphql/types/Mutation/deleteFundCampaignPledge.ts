@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteFundCampaignPledgeInput";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteFundCampaignPledgeArgumentsSchema = z.object({
 	input: mutationDeleteFundCampaignPledgeInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deleteFundCampaignPledge", (t) =>
 				type: MutationDeleteFundCampaignPledgeInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete a fund campaign pledge.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

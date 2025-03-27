@@ -6,7 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryFundCampaignPledgeInput";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const queryFundCampaignPledgeArgumentsSchema = z.object({
 	input: queryFundCampaignPledgeInputSchema,
 });
@@ -20,6 +20,7 @@ builder.queryField("fundCampaignPledge", (t) =>
 				type: QueryFundCampaignPledgeInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read a fund campaign pledge.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

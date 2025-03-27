@@ -8,8 +8,8 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateChatMessageInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-
 // Create a schema for the mutation arguments:
 const mutationUpdateChatMessageArgumentsSchema = z.object({
 	input: mutationUpdateChatMessageInputSchema,
@@ -170,6 +170,7 @@ builder.mutationField("updateChatMessage", (t) =>
 				required: true,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		resolve: updateChatMessageResolver,
 	}),
 );

@@ -1,11 +1,11 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import {
 	Organization,
 	type Organization as OrganizationType,
 } from "./Organization";
-
 export const OrganizationUpdater = async (
 	parent: OrganizationType,
 	_args: Record<string, unknown>,
@@ -91,6 +91,7 @@ Organization.implement({
 		updater: t.field({
 			description: "User who last updated the organization.",
 			resolve: OrganizationUpdater,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			type: User,
 		}),
 	}),

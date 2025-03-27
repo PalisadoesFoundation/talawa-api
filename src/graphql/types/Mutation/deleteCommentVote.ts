@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteCommentVoteInput";
 import { Comment } from "~/src/graphql/types/Comment/Comment";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteCommentVoteArgumentsSchema = z.object({
 	input: mutationDeleteCommentVoteInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deleteCommentVote", (t) =>
 				type: MutationDeleteCommentVoteInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete a comment vote.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

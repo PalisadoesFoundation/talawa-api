@@ -1,10 +1,11 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { FundCampaign } from "./FundCampaign";
-
 FundCampaign.implement({
 	fields: (t) => ({
 		createdAt: t.field({
 			description: "Date time at the time the fund campaign was created.",
+			complexity: envConfig.API_GRAPHQL_SCALAR_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

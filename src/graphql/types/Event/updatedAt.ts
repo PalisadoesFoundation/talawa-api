@@ -1,4 +1,5 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { Event } from "./Event";
 import type { Event as EventType } from "./Event";
@@ -78,6 +79,7 @@ Event.implement({
 			description: "Date time at the time the event was last updated.",
 			resolve: eventUpdatedAtResolver,
 			type: "DateTime",
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 		}),
 	}),
 });
