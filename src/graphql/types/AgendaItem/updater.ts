@@ -1,9 +1,9 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { AgendaItem } from "./AgendaItem";
 import type { AgendaItem as AgendaItemType } from "./AgendaItem";
-
 export const resolveUpdater = async (
 	parent: AgendaItemType,
 	_args: Record<string, never>,
@@ -126,6 +126,7 @@ AgendaItem.implement({
 			description: "User who last updated the agenda item.",
 			resolve: resolveUpdater,
 			type: User,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		}),
 	}),
 });

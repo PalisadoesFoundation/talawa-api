@@ -12,7 +12,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 const mutationUpdateFundCampaignArgumentsSchema = z.object({
 	input: mutationUpdateFundCampaignInputSchema,
 });
-
+import envConfig from "~/src/utilities/graphqLimits";
 builder.mutationField("updateFundCampaign", (t) =>
 	t.field({
 		args: {
@@ -23,6 +23,7 @@ builder.mutationField("updateFundCampaign", (t) =>
 			}),
 		},
 		description: "Mutation field to update a fund campaign.",
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({

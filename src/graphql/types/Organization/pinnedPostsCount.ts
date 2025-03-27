@@ -1,6 +1,7 @@
 import { and, count, eq, ne, sql } from "drizzle-orm";
 import { postsTable } from "~/src/drizzle/tables/posts";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { Organization } from "./Organization";
 
 Organization.implement({
@@ -8,6 +9,7 @@ Organization.implement({
 		pinnedPostsCount: t.field({
 			description:
 				"Total number of pinned posts belonging to the organization.",
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

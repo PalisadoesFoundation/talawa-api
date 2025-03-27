@@ -12,8 +12,8 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateUserInput";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-
 const mutationUpdateUserArgumentsSchema = z.object({
 	input: mutationUpdateUserInputSchema.transform(async (arg, ctx) => {
 		let avatar:
@@ -58,6 +58,7 @@ builder.mutationField("updateUser", (t) =>
 				type: MutationUpdateUserInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update a user.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

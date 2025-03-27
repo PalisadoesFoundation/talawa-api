@@ -11,8 +11,8 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-
 const mutationUpdateOrganizationArgumentsSchema = z.object({
 	input: mutationUpdateOrganizationInputSchema.transform(async (arg, ctx) => {
 		let avatar:
@@ -57,6 +57,7 @@ builder.mutationField("updateOrganization", (t) =>
 				type: MutationUpdateOrganizationInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update a organization.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

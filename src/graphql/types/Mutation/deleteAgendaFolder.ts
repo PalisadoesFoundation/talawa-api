@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteAgendaFolderInput";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteAgendaFolderArgumentsSchema = z.object({
 	input: mutationDeleteAgendaFolderInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 				type: MutationDeleteAgendaFolderInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete an agenda folder.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

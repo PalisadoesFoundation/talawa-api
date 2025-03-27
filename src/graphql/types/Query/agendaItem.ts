@@ -6,7 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryAgendaItemInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const queryAgendaItemArgumentsSchema = z.object({
 	input: queryAgendaItemInputSchema,
 });
@@ -20,6 +20,7 @@ builder.queryField("agendaItem", (t) =>
 				type: QueryAgendaItemInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read an agenda item.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

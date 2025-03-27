@@ -1,4 +1,6 @@
 import "./Mutation";
+import "./blockUser";
+import "./unblockUser";
 import "./createAdvertisement";
 import "./createAgendaFolder";
 import "./createAgendaItem";

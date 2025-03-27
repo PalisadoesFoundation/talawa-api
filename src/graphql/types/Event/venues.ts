@@ -11,6 +11,7 @@ import {
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
+import envConfig from "~/src/utilities/graphqLimits";
 import { Event } from "./Event";
 
 const venuesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -193,12 +194,30 @@ Event.implement({
 						rawNodes: venueBookings,
 					});
 				},
+				complexity: (args) => {
+					return {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: args.first || args.last || 1,
+					};
+				},
 				type: Venue,
 			},
 			{
+				edgesField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 			{
+				nodeField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 		),

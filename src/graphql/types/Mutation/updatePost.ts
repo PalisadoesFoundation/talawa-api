@@ -9,7 +9,7 @@ import {
 import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationUpdatePostArgumentsSchema = z.object({
 	input: mutationUpdatePostInputSchema,
 });
@@ -23,6 +23,7 @@ builder.mutationField("updatePost", (t) =>
 				type: MutationUpdatePostInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update a post.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

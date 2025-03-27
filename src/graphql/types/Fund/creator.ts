@@ -1,5 +1,6 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { Fund } from "./Fund";
 import type { Fund as Fundtype } from "./Fund";
@@ -91,6 +92,7 @@ Fund.implement({
 			description: "User who created the Fund.",
 			resolve: FundCreatorResolver,
 			type: User,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		}),
 	}),
 });

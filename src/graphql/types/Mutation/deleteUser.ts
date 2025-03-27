@@ -6,7 +6,7 @@ import { MutationDeleteUserInput } from "~/src/graphql/inputs/MutationDeleteUser
 import { mutationDeleteUserInputSchema } from "~/src/graphql/inputs/MutationDeleteUserInput";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteUserArgumentsSchema = z.object({
 	input: mutationDeleteUserInputSchema,
 });
@@ -20,6 +20,7 @@ builder.mutationField("deleteUser", (t) =>
 				type: MutationDeleteUserInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete a user.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

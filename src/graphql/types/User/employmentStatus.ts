@@ -1,11 +1,12 @@
 import { UserEmploymentStatus } from "~/src/graphql/enums/UserEmploymentStatus";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { User } from "./User";
-
 User.implement({
 	fields: (t) => ({
 		employmentStatus: t.field({
 			description: "Employment status of the user.",
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

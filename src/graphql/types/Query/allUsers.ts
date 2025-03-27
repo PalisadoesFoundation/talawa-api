@@ -22,7 +22,7 @@ import {
 	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
-
+import envConfig from "~/src/utilities/graphqLimits";
 // Define the where schema for user filtering
 const userWhereSchema = z
 	.object({
@@ -79,173 +79,199 @@ const cursorSchema = z
 	}));
 
 builder.queryField("allUsers", (t) =>
-	t.connection({
-		type: User,
-		args: {
-			where: t.arg({
-				type: builder.inputType("QueryAllUsersWhereInput", {
-					fields: (t) => ({
-						name: t.string({ required: false }),
-					}),
-				}),
-				required: false,
-			}),
-		},
-		description: "Query field to read all Users.",
-		resolve: async (_parent, args, ctx) => {
-			if (!ctx.currentClient.isAuthenticated) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
-
-			const {
-				data: parsedArgs,
-				error,
-				success,
-			} = allUsersArgumentsSchema.safeParse(args);
-
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-				});
-			}
-
-			const currentUserId = ctx.currentClient.user.id;
-
-			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-				columns: {
-					role: true,
-				},
-				where: (fields, operators) => operators.eq(fields.id, currentUserId),
-			});
-
-			if (currentUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
-
-			if (currentUser.role !== "administrator") {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-					},
-				});
-			}
-
-			const { cursor, isInversed, limit, where } =
-				parsedArgs as ParsedDefaultGraphQLConnectionArgumentsWithWhere<
-					{ createdAt: Date; id: string },
-					{ name?: string | null }
-				>;
-
-			const orderBy = isInversed
-				? [asc(usersTable.createdAt), asc(usersTable.id)]
-				: [desc(usersTable.createdAt), desc(usersTable.id)];
-
-			let queryWhere: SQL | undefined;
-
-			// Add name search condition if provided in where
-			const nameCondition = where?.name
-				? ilike(usersTable.name, `%${where.name}%`)
-				: undefined;
-
-			if (isInversed) {
-				if (cursor !== undefined) {
-					queryWhere = and(
-						exists(
-							ctx.drizzleClient
-								.select()
-								.from(usersTable)
-								.where(
-									and(
-										eq(usersTable.createdAt, cursor.createdAt),
-										eq(usersTable.id, cursor.id),
-									),
-								),
-						),
-						or(
-							and(
-								eq(usersTable.createdAt, cursor.createdAt),
-								gt(usersTable.id, cursor.id),
-							),
-							gt(usersTable.createdAt, cursor.createdAt),
-						),
-						nameCondition,
-					);
-				} else {
-					queryWhere = nameCondition;
-				}
-			} else {
-				if (cursor !== undefined) {
-					queryWhere = and(
-						exists(
-							ctx.drizzleClient
-								.select()
-								.from(usersTable)
-								.where(
-									and(
-										eq(usersTable.createdAt, cursor.createdAt),
-										eq(usersTable.id, cursor.id),
-									),
-								),
-						),
-						or(
-							and(
-								eq(usersTable.createdAt, cursor.createdAt),
-								lt(usersTable.id, cursor.id),
-							),
-							lt(usersTable.createdAt, cursor.createdAt),
-						),
-						nameCondition,
-					);
-				} else {
-					queryWhere = nameCondition;
-				}
-			}
-
-			const users = await ctx.drizzleClient.query.usersTable.findMany({
-				limit,
-				orderBy,
-				where: queryWhere,
-			});
-
-			if (cursor !== undefined && users.length === 0) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: [isInversed ? "before" : "after"],
-							},
-						],
-					},
-				});
-			}
-
-			return transformToDefaultGraphQLConnection({
-				createCursor: (user) =>
-					Buffer.from(
-						JSON.stringify({
-							createdAt: user.createdAt.toISOString(),
-							id: user.id,
+	t.connection(
+		{
+			type: User,
+			args: {
+				where: t.arg({
+					type: builder.inputType("QueryAllUsersWhereInput", {
+						fields: (t) => ({
+							name: t.string({ required: false }),
 						}),
-					).toString("base64url"),
-				createNode: (user) => user,
-				parsedArgs,
-				rawNodes: users,
-			});
+					}),
+					required: false,
+				}),
+			},
+			description: "Query field to read all Users.",
+			resolve: async (_parent, args, ctx) => {
+				if (!ctx.currentClient.isAuthenticated) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthenticated",
+						},
+					});
+				}
+
+				const {
+					data: parsedArgs,
+					error,
+					success,
+				} = allUsersArgumentsSchema.safeParse(args);
+
+				if (!success) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: error.issues.map((issue) => ({
+								argumentPath: issue.path,
+								message: issue.message,
+							})),
+						},
+					});
+				}
+
+				const currentUserId = ctx.currentClient.user.id;
+
+				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				});
+
+				if (currentUser === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthenticated",
+						},
+					});
+				}
+
+				if (currentUser.role !== "administrator") {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action",
+						},
+					});
+				}
+
+				const { cursor, isInversed, limit, where } =
+					parsedArgs as ParsedDefaultGraphQLConnectionArgumentsWithWhere<
+						{ createdAt: Date; id: string },
+						{ name?: string | null }
+					>;
+
+				const orderBy = isInversed
+					? [asc(usersTable.createdAt), asc(usersTable.id)]
+					: [desc(usersTable.createdAt), desc(usersTable.id)];
+
+				let queryWhere: SQL | undefined;
+
+				// Add name search condition if provided in where
+				const nameCondition = where?.name
+					? ilike(usersTable.name, `%${where.name}%`)
+					: undefined;
+
+				if (isInversed) {
+					if (cursor !== undefined) {
+						queryWhere = and(
+							exists(
+								ctx.drizzleClient
+									.select()
+									.from(usersTable)
+									.where(
+										and(
+											eq(usersTable.createdAt, cursor.createdAt),
+											eq(usersTable.id, cursor.id),
+										),
+									),
+							),
+							or(
+								and(
+									eq(usersTable.createdAt, cursor.createdAt),
+									gt(usersTable.id, cursor.id),
+								),
+								gt(usersTable.createdAt, cursor.createdAt),
+							),
+							nameCondition,
+						);
+					} else {
+						queryWhere = nameCondition;
+					}
+				} else {
+					if (cursor !== undefined) {
+						queryWhere = and(
+							exists(
+								ctx.drizzleClient
+									.select()
+									.from(usersTable)
+									.where(
+										and(
+											eq(usersTable.createdAt, cursor.createdAt),
+											eq(usersTable.id, cursor.id),
+										),
+									),
+							),
+							or(
+								and(
+									eq(usersTable.createdAt, cursor.createdAt),
+									lt(usersTable.id, cursor.id),
+								),
+								lt(usersTable.createdAt, cursor.createdAt),
+							),
+							nameCondition,
+						);
+					} else {
+						queryWhere = nameCondition;
+					}
+				}
+
+				const users = await ctx.drizzleClient.query.usersTable.findMany({
+					limit,
+					orderBy,
+					where: queryWhere,
+				});
+
+				if (cursor !== undefined && users.length === 0) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [
+								{
+									argumentPath: [isInversed ? "before" : "after"],
+								},
+							],
+						},
+					});
+				}
+
+				return transformToDefaultGraphQLConnection({
+					createCursor: (user) =>
+						Buffer.from(
+							JSON.stringify({
+								createdAt: user.createdAt.toISOString(),
+								id: user.id,
+							}),
+						).toString("base64url"),
+					createNode: (user) => user,
+					parsedArgs,
+					rawNodes: users,
+				});
+			},
+			complexity: (args) => {
+				return {
+					field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+					multiplier: args.first || args.last || 1,
+				};
+			},
 		},
-	}),
+		{
+			edgesField: {
+				complexity: {
+					field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+					multiplier: 1,
+				},
+			},
+			description: "",
+		},
+		{
+			nodeField: {
+				complexity: {
+					field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+					multiplier: 1,
+				},
+			},
+			description: "",
+		},
+	),
 );

@@ -1,10 +1,11 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { ChatMessage } from "./ChatMessage";
-
 ChatMessage.implement({
 	fields: (t) => ({
 		parentMessage: t.field({
 			description: "Parent message of the chat message.",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (parent.parentMessageId === null) {
 					return null;

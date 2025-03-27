@@ -1,11 +1,13 @@
 import { Chat } from "~/src/graphql/types/Chat/Chat";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { ChatMessage } from "./ChatMessage";
 
 ChatMessage.implement({
 	fields: (t) => ({
 		chat: t.field({
 			description: "Chat which the chat message belongs to.",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				const existingChat = await ctx.drizzleClient.query.chatsTable.findFirst(
 					{

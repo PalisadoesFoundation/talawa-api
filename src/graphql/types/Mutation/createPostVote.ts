@@ -7,7 +7,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreatePostVoteInput";
 import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationCreatePostVoteArgumentsSchema = z.object({
 	input: mutationCreatePostVoteInputSchema,
 });
@@ -21,6 +21,7 @@ builder.mutationField("createPostVote", (t) =>
 				type: MutationCreatePostVoteInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create a post vote.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

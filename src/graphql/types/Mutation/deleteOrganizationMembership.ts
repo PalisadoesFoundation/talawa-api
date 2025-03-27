@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteOrganizationMembershipInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteOrganizationMembershipArgumentsSchema = z.object({
 	input: mutationDeleteOrganizationMembershipInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deleteOrganizationMembership", (t) =>
 				type: MutationDeleteOrganizationMembershipInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete an organization membership.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

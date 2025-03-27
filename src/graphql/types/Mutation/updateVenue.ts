@@ -8,8 +8,8 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateVenueInput";
 import { Venue } from "~/src/graphql/types/Venue/Venue";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-
 const mutationUpdateVenueArgumentsSchema = z.object({
 	input: mutationUpdateVenueInputSchema,
 });
@@ -23,6 +23,7 @@ builder.mutationField("updateVenue", (t) =>
 				type: MutationUpdateVenueInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update a venue.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

@@ -7,7 +7,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreateAgendaItemInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationCreateAgendaItemArgumentsSchema = z.object({
 	input: mutationCreateAgendaItemInputSchema,
 });
@@ -21,6 +21,7 @@ builder.mutationField("createAgendaItem", (t) =>
 				type: MutationCreateAgendaItemInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create an agenda item.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

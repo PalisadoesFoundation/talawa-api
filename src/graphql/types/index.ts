@@ -5,6 +5,7 @@ import "./AdvertisementAttachment/index";
 import "./AgendaFolder/index";
 import "./AgendaItem/index";
 import "./AuthenticationPayload";
+import "./BlockedUser";
 import "./Chat/index";
 import "./ChatMessage/index";
 import "./Comment/index";

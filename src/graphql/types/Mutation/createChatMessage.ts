@@ -7,7 +7,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreateChatMessageInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationCreateChatMessageArgumentsSchema = z.object({
 	input: mutationCreateChatMessageInputSchema,
 });
@@ -21,6 +21,7 @@ builder.mutationField("createChatMessage", (t) =>
 				type: MutationCreateChatMessageInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create a chat message.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

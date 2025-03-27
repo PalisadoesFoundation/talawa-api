@@ -10,8 +10,8 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateCommunityInput";
 import { Community } from "~/src/graphql/types/Community/Community";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-
 const mutationUpdateCommunityArgumentsSchema = z.object({
 	input: mutationUpdateCommunityInputSchema.transform(async (arg, ctx) => {
 		let logo:
@@ -59,6 +59,7 @@ builder.mutationField("updateCommunity", (t) =>
 				type: MutationUpdateCommunityInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update the community.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
