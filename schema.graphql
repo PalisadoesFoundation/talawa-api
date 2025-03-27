@@ -1365,6 +1365,7 @@ type Mutation {
     """Input to accept a membership request"""
     input: MutationAcceptMembershipRequestInput!
   ): AcceptMembershipResponse
+
   """Mutation field to block a user from an organization."""
   blockUser(organizationId: ID!, userId: ID!): Boolean
 
@@ -1603,6 +1604,8 @@ type Mutation {
 input MutationAcceptMembershipRequestInput {
   """ID of the membership request to accept"""
   membershipRequestId: ID!
+}
+
 """Input to block a user from an organization"""
 input MutationBlockUserInput {
   """Global identifier of the organization."""
@@ -3232,11 +3235,13 @@ input QueryAgendaItemInput {
   id: String!
 }
 
+""""""
 type QueryAllUsersConnection {
   edges: [QueryAllUsersConnectionEdge]
   pageInfo: PageInfo!
 }
 
+""""""
 type QueryAllUsersConnectionEdge {
   cursor: String!
   node: User
