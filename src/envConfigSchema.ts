@@ -244,7 +244,7 @@ export const envConfigSchema = Type.Object({
 	// 	format: "uri",
 	// 	pattern: "^redis://.*",
 	// }),
-	//  cost of scalar field without resolvers
+
 	API_GRAPHQL_SCALAR_FIELD_COST: Type.Number({
 		minimum: 0,
 	}),
@@ -303,5 +303,3 @@ export const envSchemaAjv: EnvSchemaOpt["ajv"] = {
 		return ajvInstance;
 	},
 };
-
-

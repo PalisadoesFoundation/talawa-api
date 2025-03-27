@@ -6,7 +6,7 @@
 
 > `const` **default**: `object`
 
-Defined in: [src/utilities/graphqLimits.ts:12](https://github.com/hustlernik/talawa-api/blob/6321c91e956d2ee44b2bb9c22c1b40aa4687c9c2/src/utilities/graphqLimits.ts#L12)
+Defined in: [src/utilities/graphqLimits.ts:15](https://github.com/NishantSinghhhhh/talawa-api/blob/cecfd40a68e5e0e9c8a0b8efd045a3c4381a2c01/src/utilities/graphqLimits.ts#L15)
 
 ## Type declaration
 
@@ -18,6 +18,10 @@ Defined in: [src/utilities/graphqLimits.ts:12](https://github.com/hustlernik/tal
 
 > **API\_GRAPHQL\_MUTATION\_BASE\_COST**: `number`
 
+### API\_GRAPHQL\_NON\_PAGINATED\_LIST\_FIELD\_COST
+
+> **API\_GRAPHQL\_NON\_PAGINATED\_LIST\_FIELD\_COST**: `number`
+
 ### API\_GRAPHQL\_OBJECT\_FIELD\_COST
 
 > **API\_GRAPHQL\_OBJECT\_FIELD\_COST**: `number`
@@ -25,3 +29,11 @@ Defined in: [src/utilities/graphqLimits.ts:12](https://github.com/hustlernik/tal
 ### API\_GRAPHQL\_SCALAR\_FIELD\_COST
 
 > **API\_GRAPHQL\_SCALAR\_FIELD\_COST**: `number`
+
+### API\_GRAPHQL\_SCALAR\_RESOLVER\_FIELD\_COST
+
+> **API\_GRAPHQL\_SCALAR\_RESOLVER\_FIELD\_COST**: `number`
+
+### API\_GRAPHQL\_SUBSCRIPTION\_BASE\_COST
+
+> **API\_GRAPHQL\_SUBSCRIPTION\_BASE\_COST**: `number`

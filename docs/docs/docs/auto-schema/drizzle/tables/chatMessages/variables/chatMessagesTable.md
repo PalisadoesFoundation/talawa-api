@@ -6,6 +6,6 @@
 
 > `const` **chatMessagesTable**: `PgTableWithColumns`\<\{\}\>
 
-Defined in: [src/drizzle/tables/chatMessages.ts:18](https://github.com/hustlernik/talawa-api/blob/6321c91e956d2ee44b2bb9c22c1b40aa4687c9c2/src/drizzle/tables/chatMessages.ts#L18)
+Defined in: [src/drizzle/tables/chatMessages.ts:18](https://github.com/NishantSinghhhhh/talawa-api/blob/cecfd40a68e5e0e9c8a0b8efd045a3c4381a2c01/src/drizzle/tables/chatMessages.ts#L18)
 
 Drizzle orm postgres table definition for chat messages.

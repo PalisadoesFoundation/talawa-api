@@ -1617,14 +1617,14 @@ type Mutation {
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
 
+  """Mutation field to unblock a user from an organization."""
+  unblockUser(organizationId: ID!, userId: ID!): Boolean
+
   """Mutation to update an action item"""
   updateActionItem(
     """Update an action item"""
     input: MutationUpdateActionItemInput!
   ): ActionItem
-
-  """Mutation field to unblock a user from an organization."""
-  unblockUser(organizationId: ID!, userId: ID!): Boolean
 
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
@@ -2338,6 +2338,15 @@ input MutationSignUpInput {
   workPhoneNumber: PhoneNumber
 }
 
+"""Input to unblock a user from an organization"""
+input MutationUnblockUserInput {
+  """Global identifier of the organization."""
+  organizationId: ID!
+
+  """Global identifier of the user to unblock."""
+  userId: ID!
+}
+
 input MutationUpdateActionItemInput {
   """Identifier for the assignee of the action item."""
   assigneeId: ID
@@ -2356,15 +2365,6 @@ input MutationUpdateActionItemInput {
 
   """Pre completion notes for the action item."""
   preCompletionNotes: String
-}
-
-"""Input to unblock a user from an organization"""
-input MutationUnblockUserInput {
-  """Global identifier of the organization."""
-  organizationId: ID!
-
-  """Global identifier of the user to unblock."""
-  userId: ID!
 }
 
 """"""
@@ -3362,11 +3362,13 @@ input QueryAgendaItemInput {
   id: String!
 }
 
+""""""
 type QueryAllUsersConnection {
   edges: [QueryAllUsersConnectionEdge]
   pageInfo: PageInfo!
 }
 
+""""""
 type QueryAllUsersConnectionEdge {
   cursor: String!
   node: User
