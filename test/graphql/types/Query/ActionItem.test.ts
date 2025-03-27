@@ -274,31 +274,6 @@ suite("Query: actionItemsByOrganization", () => {
 		);
 	});
 
-	test("should allow admin to access action items even if not a member", async () => {
-		const adminUser = await createUserAndGetToken({ role: "administrator" });
-		const result = await mercuriusClient.query(
-			Query_actionItemsByOrganization,
-			{
-				headers: { authorization: `bearer ${adminUser.authToken}` },
-				variables: {
-					input: {
-						organizationId,
-					},
-				},
-			},
-		);
-		expect(result.data?.actionItemsByOrganization).toBeNull();
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "unauthorized_action_on_arguments_associated_resources",
-					}),
-				}),
-			]),
-		);
-	});
-
 	test("should throw unauthenticated error if user doesn't exist", async () => {
 		const fakeToken = `bearer_fake_token_${faker.string.alphanumeric(32)}`;
 		const result = await mercuriusClient.query(

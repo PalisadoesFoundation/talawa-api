@@ -6,7 +6,7 @@
 
 > **healthcheck**(`instance`, `opts`): `Promise`\<`void`\>
 
-Defined in: [src/routes/healthcheck.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/cecfd40a68e5e0e9c8a0b8efd045a3c4381a2c01/src/routes/healthcheck.ts#L6)
+Defined in: [src/routes/healthcheck.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/a2d437e77a694d2951c25ce8de6694e3fef2fd70/src/routes/healthcheck.ts#L6)
 
 This fastify route plugin is used to initialize a healthcheck endpoint on the fastify server for external services to check health of talawa api.
 
