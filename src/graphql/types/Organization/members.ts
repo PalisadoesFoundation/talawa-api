@@ -25,9 +25,9 @@ import {
 	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
+import envConfig from "~/src/utilities/graphqLimits";
 import { MembersWhereInput } from "../../inputs/QueryOrganizationInput";
 import { Organization } from "./Organization";
-
 type UserRole = z.infer<typeof organizationMembershipRoleEnum>;
 const membersRoleWhereInputSchema = z.object({
 	equal: organizationMembershipRoleEnum.optional(),
@@ -96,6 +96,12 @@ Organization.implement({
 			{
 				description:
 					"GraphQL connection to traverse through the users that are members of the organization.",
+				complexity: (args) => {
+					return {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: args.first || args.last || 1,
+					};
+				},
 				args: {
 					where: t.arg({
 						type: MembersWhereInput,
@@ -342,9 +348,21 @@ Organization.implement({
 				type: User,
 			},
 			{
+				edgesField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 			{
+				nodeField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 		),

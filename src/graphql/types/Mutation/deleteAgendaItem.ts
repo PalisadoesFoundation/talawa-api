@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteAgendaItemInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteAgendaItemArgumentsSchema = z.object({
 	input: MutationDeleteAgendaItemInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deleteAgendaItem", (t) =>
 				type: MutationDeleteAgendaItemInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete an agenda item.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

@@ -7,8 +7,8 @@ import {
 } from "~/src/graphql/inputs/MutationCreateAgendaFolderInput";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-
 const mutationCreateAgendaFolderArgumentsSchema = z.object({
 	input: mutationCreateAgendaFolderInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("createAgendaFolder", (t) =>
 				type: MutationCreateAgendaFolderInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create an agenda folder.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

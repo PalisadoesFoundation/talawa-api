@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateAdvertisementInput";
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationUpdateAdvertisementArgumentsSchema = z.object({
 	input: mutationUpdateAdvertisementInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("updateAdvertisement", (t) =>
 				type: MutationUpdateAdvertisementInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update an advertisement.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

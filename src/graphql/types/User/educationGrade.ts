@@ -1,11 +1,13 @@
 import { UserEducationGrade } from "~/src/graphql/enums/UserEducationGrade";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { User } from "./User";
 
 User.implement({
 	fields: (t) => ({
 		educationGrade: t.field({
 			description: "Primary education grade of the user.",
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

@@ -240,8 +240,12 @@ export const envConfigSchema = Type.Object({
 		maximum: 65535,
 		minimum: 0,
 	}),
-	//  cost of scalar field
+	//  cost of scalar field without resolvers
 	API_GRAPHQL_SCALAR_FIELD_COST: Type.Number({
+		minimum: 0,
+	}),
+	// cost of scalar field with resolvers
+	API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST: Type.Number({
 		minimum: 0,
 	}),
 	// cost of object field
@@ -252,8 +256,16 @@ export const envConfigSchema = Type.Object({
 	API_GRAPHQL_LIST_FIELD_COST: Type.Number({
 		minimum: 0,
 	}),
+	// cost of non-paginated list field
+	API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST: Type.Number({
+		minimum: 0,
+	}),
 	// base cost of mutation
 	API_GRAPHQL_MUTATION_BASE_COST: Type.Number({
+		minimum: 0,
+	}),
+	// base cost of subscription
+	API_GRAPHQL_SUBSCRIPTION_BASE_COST: Type.Number({
 		minimum: 0,
 	}),
 	/**

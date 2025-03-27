@@ -245,6 +245,10 @@ This environment variable is used to configure the host ip of the redis server f
 
 This environment variable defines the cost assigned to scalar fields in GraphQL queries. Scalars are basic data types like String, Int, Boolean, etc.
 
+### API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST
+
+This environment variable defines the cost assigned to scalar fields with custom resolver logic in GraphQL queries. These scalars (e.g., String, Int, Boolean) may appear simple but require additional computation due to custom logic like data transformation, database lookups, or external API calls in their resolvers.
+
 ### API_GRAPHQL_OBJECT_FIELD_COST
 
 This environment variable sets the cost of resolving object fields in a GraphQL query. Object fields return nested data structures instead of primitive values.
@@ -253,9 +257,17 @@ This environment variable sets the cost of resolving object fields in a GraphQL 
 
 This environment variable specifies the cost of retrieving list fields in GraphQL queries. Lists contain multiple items, making them more resource-intensive than scalar fields.
 
+### API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST
+
+This environment variable defines the cost for list fields that do not implement pagination in GraphQL queries. Non-paginated lists risk returning unbounded data, increasing server load and response times, especially for large datasets.
+
 ### API_GRAPHQL_MUTATION_BASE_COST
 
 This environment variable defines the base cost of executing a GraphQL mutation. Mutations typically modify data, making them more expensive than queries.
+
+### API_GRAPHQL_SUBSCRIPTION_BASE_COST
+
+This environment variable defines the base cost of initiating and maintaining a GraphQL subscription. Subscriptions enable real-time data streaming and are inherently resource-intensive due to persistent connections (e.g., WebSocket), event listeners, and continuous data updates.
 
 ### API_RATE_LIMIT_BUCKET_CAPACITY
 

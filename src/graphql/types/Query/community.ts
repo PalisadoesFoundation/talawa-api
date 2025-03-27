@@ -1,10 +1,11 @@
 import { builder } from "~/src/graphql/builder";
 import { Community } from "~/src/graphql/types/Community/Community";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 builder.queryField("community", (t) =>
 	t.field({
 		description: "Query field to read the community.",
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		resolve: async (_parent, _args, ctx) => {
 			const community =
 				await ctx.drizzleClient.query.communitiesTable.findFirst({});

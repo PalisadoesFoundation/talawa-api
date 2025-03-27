@@ -1,5 +1,6 @@
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { AgendaFolder } from "./AgendaFolder";
 
 AgendaFolder.implement({
@@ -7,6 +8,7 @@ AgendaFolder.implement({
 		event: t.field({
 			description:
 				"Event for which the agenda folder contains agenda items constituting a part of the agenda.",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				const existingEvent =
 					await ctx.drizzleClient.query.eventsTable.findFirst({

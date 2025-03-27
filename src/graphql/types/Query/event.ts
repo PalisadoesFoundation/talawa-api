@@ -6,7 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const queryEventArgumentsSchema = z.object({
 	input: queryEventInputSchema,
 });
@@ -20,6 +20,7 @@ builder.queryField("event", (t) =>
 				type: QueryEventInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read an event.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
