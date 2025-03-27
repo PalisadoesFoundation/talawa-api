@@ -6,6 +6,7 @@ import type {
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
 
@@ -52,6 +53,7 @@ User.implement({
 			args: {
 				filter: t.arg.string({ required: false }),
 			},
+			complexity: envConfig.API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST,
 			resolve: resolveCreatedOrganizations,
 		}),
 	}),

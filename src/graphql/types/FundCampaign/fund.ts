@@ -1,11 +1,12 @@
 import { Fund } from "~/src/graphql/types/Fund/Fund";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { FundCampaign } from "./FundCampaign";
-
 FundCampaign.implement({
 	fields: (t) => ({
 		fund: t.field({
 			description: "Fund which the fund campaign belongs to.",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				const existingFund = await ctx.drizzleClient.query.fundsTable.findFirst(
 					{

@@ -19,7 +19,7 @@ reviews:
       - develop-postgres
       - develop
       - main
-  path_filters: 
+  path_filters:
     - '!**/docs/docs/**'
     - "!*.html"
     - "!*.md"

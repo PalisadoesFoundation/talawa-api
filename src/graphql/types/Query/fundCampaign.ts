@@ -6,7 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryFundCampaignInput";
 import { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const queryFundCampaignArgumentsSchema = z.object({
 	input: queryFundCampaignInputSchema,
 });
@@ -20,6 +20,7 @@ builder.queryField("fundCampaign", (t) =>
 				type: QueryFundCampaignInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read a fund campaign.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

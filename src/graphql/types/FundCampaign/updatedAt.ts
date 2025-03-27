@@ -1,4 +1,5 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import {
 	FundCampaign,
@@ -119,6 +120,7 @@ FundCampaign.implement({
 		updatedAt: t.field({
 			description: "Date time at the time the fund campaign was last updated.",
 			resolve: updatedAtResolver,
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			type: "DateTime",
 		}),
 	}),

@@ -1,7 +1,7 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { Event, type Event as EventType } from "./Event";
-
 export const eventCreatedAtResolver = async (
 	parent: EventType,
 	_args: Record<string, never>,
@@ -64,6 +64,7 @@ Event.implement({
 		createdAt: t.field({
 			description: "Date time at the time the event was created.",
 			resolve: eventCreatedAtResolver,
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			type: "DateTime",
 		}),
 	}),

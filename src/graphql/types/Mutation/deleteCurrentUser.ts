@@ -3,10 +3,11 @@ import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 builder.mutationField("deleteCurrentUser", (t) =>
 	t.field({
 		description: "Mutation field to delete the current user.",
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		resolve: async (_parent, _args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({

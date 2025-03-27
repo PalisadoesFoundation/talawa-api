@@ -13,9 +13,9 @@ import {
 } from "~/src/graphql/inputs/MutationSignUpInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import type { CurrentClient } from "../../context";
-
 const mutationSignUpArgumentsSchema = z.object({
 	input: mutationSignUpInputSchema.transform(async (arg, ctx) => {
 		let avatar:
@@ -60,6 +60,7 @@ builder.mutationField("signUp", (t) =>
 				type: MutationSignUpInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to sign up to talawa.",
 		resolve: async (_parent, args, ctx) => {
 			if (ctx.currentClient.isAuthenticated) {

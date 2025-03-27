@@ -1,10 +1,12 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { Tag } from "./Tag";
 
 Tag.implement({
 	fields: (t) => ({
 		updatedAt: t.field({
 			description: "Date time at the time the tag was last updated.",
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

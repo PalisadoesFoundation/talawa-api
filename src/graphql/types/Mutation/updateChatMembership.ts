@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateChatMembershipInput";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationUpdateChatMembershipArgumentsSchema = z.object({
 	input: mutationUpdateChatMembershipInputSchema,
 });
@@ -23,6 +23,7 @@ builder.mutationField("updateChatMembership", (t) =>
 			}),
 		},
 		description: "Mutation field to update a chat membership.",
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({

@@ -22,6 +22,7 @@ import {
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
+import envConfig from "~/src/utilities/graphqLimits";
 import { Organization } from "./Organization";
 
 const tagFoldersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
@@ -64,6 +65,12 @@ Organization.implement({
 			{
 				description:
 					"GraphQL connection to traverse through the tag folders belonging to the organization.",
+				complexity: (args) => {
+					return {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: args.first || args.last || 1,
+					};
+				},
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
@@ -244,9 +251,21 @@ Organization.implement({
 				type: TagFolder,
 			},
 			{
+				edgesField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 			{
+				nodeField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 		),
