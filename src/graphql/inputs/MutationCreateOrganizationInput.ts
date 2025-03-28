@@ -18,6 +18,7 @@ export const mutationCreateOrganizationInputSchema =
 		})
 		.extend({
 			avatar: z.custom<Promise<FileUpload>>().nullish(),
+			isUserRegistrationRequired: z.boolean().nullish(),
 		});
 
 export const MutationCreateOrganizationInput = builder
@@ -54,6 +55,10 @@ export const MutationCreateOrganizationInput = builder
 			}),
 			postalCode: t.string({
 				description: "Postal code of the organization.",
+			}),
+			isUserRegistrationRequired: t.boolean({
+				description:
+					"Flag to indicate if user registration is required to access the organization.",
 			}),
 			state: t.string({
 				description: "Name of the state the organization resides in.",

@@ -393,6 +393,27 @@ export async function insertCollections(
 					);
 					break;
 				}
+				case "membership_requests": {
+					const membership_requests = JSON.parse(fileContent).map(
+						(membership_request: { createdAt: string | number | Date }) => ({
+							...membership_request,
+							createdAt: parseDate(membership_request.createdAt),
+						}),
+					) as (typeof schema.membershipRequestsTable.$inferInsert)[];
+					await checkAndInsertData(
+						schema.membershipRequestsTable,
+						membership_requests,
+						[
+							schema.membershipRequestsTable.userId,
+							schema.membershipRequestsTable.organizationId,
+						],
+						1000,
+					);
+					console.log(
+						"\x1b[35mAdded: Membership_requests table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
 				case "post_attachments": {
 					const post_attachments = JSON.parse(fileContent).map(
 						(post_attachment: { createdAt: string | number | Date }) => ({
@@ -517,6 +538,7 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "post_votes", table: schema.postVotesTable },
 			{ name: "post_attachments", table: schema.postAttachmentsTable },
 			{ name: "comments", table: schema.commentsTable },
+			{ name: "membership_requests", table: schema.membershipRequestsTable },
 			{ name: "comment_votes", table: schema.commentVotesTable },
 		];
 
