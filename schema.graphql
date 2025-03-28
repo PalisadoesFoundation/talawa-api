@@ -3190,7 +3190,7 @@ type Query {
   """
   Query to fetch all organizations with optional filtering. Returns up to 20 organizations.
   """
-  organizations(filter: String): [Organization!]
+  organizations(filter: String, limit: Int, offset: Int): [Organization!]
 
   """Query field to read a post."""
   post(input: QueryPostInput!): Post
