@@ -1,12 +1,8 @@
-//Organizations.ts
 import type { InferSelectModel } from "drizzle-orm";
 import { and, ilike, sql } from "drizzle-orm";
 import type { organizationsTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
-import type {
-	ExplicitGraphQLContext,
-	ImplicitMercuriusContext,
-} from "~/src/graphql/context";
+import type { GraphQLContext } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
@@ -17,10 +13,9 @@ type OrganizationType = InferSelectModel<typeof organizationsTable>;
 // Define the expected arguments for the query.
 interface OrganizationsArgs {
 	filter?: string | null;
+	limit?: number | null;
+	offset?: number | null;
 }
-
-// Combine the explicit and implicit context types.
-type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
 
 /**
  * Resolver to fetch organizations with optional filtering.
@@ -28,7 +23,7 @@ type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
 export const resolveOrganizations = async (
 	_parent: unknown,
 	args: OrganizationsArgs,
-	ctx: ContextType,
+	ctx: GraphQLContext,
 ): Promise<OrganizationType[]> => {
 	if (!ctx.currentClient.isAuthenticated) {
 		throw new TalawaGraphQLError({
@@ -38,7 +33,7 @@ export const resolveOrganizations = async (
 		});
 	}
 
-	const { filter } = args;
+	const { filter, limit, offset } = args; // No default values to allow fetching all records
 	const currentUserId = ctx.currentClient.user.id;
 
 	try {
@@ -63,8 +58,8 @@ export const resolveOrganizations = async (
 			return ctx.drizzleClient.query.organizationsTable.findMany({
 				where: (fields) =>
 					filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
-				limit: 20,
-				offset: 0,
+				limit: limit ?? undefined, // Fetch all if limit is not provided
+				offset: offset ?? undefined, // No offset if not provided
 			});
 		}
 
@@ -93,8 +88,8 @@ export const resolveOrganizations = async (
 						filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
 						operators.inArray(fields.id, orgIds),
 					),
-				limit: 20,
-				offset: 0,
+				limit: limit ?? undefined, // Fetch all if limit is not provided
+				offset: offset ?? undefined, // No offset if not provided
 			});
 		}
 
@@ -102,8 +97,8 @@ export const resolveOrganizations = async (
 		return ctx.drizzleClient.query.organizationsTable.findMany({
 			where: (fields) =>
 				filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
-			limit: 20,
-			offset: 0,
+			limit: limit ?? undefined, // Fetch all if limit is not provided
+			offset: offset ?? undefined, // No offset if not provided
 		});
 	} catch (error) {
 		ctx.log.error("Error in organizations query:", error);
@@ -114,9 +109,11 @@ export const resolveOrganizations = async (
 builder.queryField("organizations", (t) =>
 	t.field({
 		description:
-			"Query to fetch all organizations with optional filtering. Returns up to 20 organizations.",
+			"Query to fetch all organizations with optional filtering. If limit and offset are not provided, returns all organizations.",
 		args: {
 			filter: t.arg.string({ required: false }),
+			limit: t.arg.int({ required: false }),
+			offset: t.arg.int({ required: false }),
 		},
 		complexity: envConfig.API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST,
 		resolve: resolveOrganizations,
