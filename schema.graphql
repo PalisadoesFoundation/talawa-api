@@ -2928,13 +2928,13 @@ type Organization {
   """Global identifier of the organization."""
   id: ID!
 
+  """Indicates whether the current user is a member of this organization."""
+  isMember: Boolean
+
   """
   Flag to indicate if user registration is required to join the organization.
   """
   isUserRegistrationRequired: Boolean
-
-  """Indicates whether the current user is a member of this organization."""
-  isMember: Boolean
 
   """
   GraphQL connection to traverse through the users that are members of the organization.
@@ -2949,6 +2949,9 @@ type Organization {
     where: MembersWhereInput
   ): OrganizationMembersConnection
 
+  """Total number of members in the organization."""
+  membersCount: Int
+
   """Membership requests for this organization"""
   membershipRequests(
     """Number of items to return"""
@@ -2960,9 +2963,6 @@ type Organization {
     """Filter criteria for membership requests"""
     where: MembershipRequestWhereInput
   ): [MembershipRequest!]
-
-  """Total number of members in the organization."""
-  membersCount: Int
 
   """Name of the organization."""
   name: String
