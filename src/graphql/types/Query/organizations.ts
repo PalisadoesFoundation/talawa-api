@@ -1,4 +1,3 @@
-//Organizations.ts
 import type { InferSelectModel } from "drizzle-orm";
 import { and, ilike, sql } from "drizzle-orm";
 import type { organizationsTable } from "~/src/drizzle/schema";
@@ -111,7 +110,7 @@ export const resolveOrganizations = async (
 builder.queryField("organizations", (t) =>
 	t.field({
 		description:
-			"Query to fetch all organizations with optional filtering. Returns up to 20 organizations.",
+			"Query to fetch all organizations with optional filtering. If limit and offset are not provided, returns all organizations.",
 		args: {
 			filter: t.arg.string({ required: false }),
 			limit: t.arg.int({ required: false }),
