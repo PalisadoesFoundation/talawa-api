@@ -39,5 +39,13 @@ export function createMockDrizzleClient() {
 
 	return {
 		query: queryTables,
+		select: vi.fn(() => ({
+			from: vi.fn(() => ({
+				where: vi.fn(() => Promise.resolve([])),
+				orderBy: vi.fn(() => ({
+					limit: vi.fn(() => Promise.resolve([])),
+				})),
+			})),
+		})),
 	};
 }
