@@ -2878,6 +2878,9 @@ type Organization {
   """Address line 2 of the organization's address."""
   addressLine2: String
 
+  """Total number of admins in the organization."""
+  adminsCount: Int
+
   """
   GraphQL connection to traverse through the advertisements belonging to the organization.
   """
@@ -2925,6 +2928,9 @@ type Organization {
   """Global identifier of the organization."""
   id: ID!
 
+  """Indicates whether the current user is a member of this organization."""
+  isMember: Boolean
+
   """
   Flag to indicate if user registration is required to join the organization.
   """
@@ -2942,6 +2948,9 @@ type Organization {
     """Filter criteria for organization members"""
     where: MembersWhereInput
   ): OrganizationMembersConnection
+
+  """Total number of members in the organization."""
+  membersCount: Int
 
   """Membership requests for this organization"""
   membershipRequests(
@@ -3359,9 +3368,9 @@ type Query {
   organization(input: QueryOrganizationInput!): Organization
 
   """
-  Query to fetch all organizations with optional filtering. Returns up to 20 organizations.
+  Query to fetch all organizations with optional filtering. If limit and offset are not provided, returns all organizations.
   """
-  organizations(filter: String): [Organization!]
+  organizations(filter: String, limit: Int, offset: Int): [Organization!]
 
   """Query field to read a post."""
   post(input: QueryPostInput!): Post
