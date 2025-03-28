@@ -1,3 +1,11 @@
+type AcceptMembershipResponse {
+  """Success or error message"""
+  message: String
+
+  """Whether the operation was successful"""
+  success: Boolean
+}
+
 type Advertisement {
   """Array of attachments."""
   attachments: [AdvertisementAttachment!]
@@ -1332,6 +1340,9 @@ type MembershipRequest {
   """Status of the membership request (e.g., pending, approved, rejected)."""
   status: MembershipRequestStatus
 
+  """The user who requested membership"""
+  user: User
+
   """ID of the user who requested membership."""
   userId: String
 }
@@ -1343,7 +1354,18 @@ enum MembershipRequestStatus {
   rejected
 }
 
+input MembershipRequestWhereInput {
+  """Filter criteria for user"""
+  user: UserWhereInput
+}
+
 type Mutation {
+  """Mutation field to accept a membership request by an admin."""
+  acceptMembershipRequest(
+    """Input to accept a membership request"""
+    input: MutationAcceptMembershipRequestInput!
+  ): AcceptMembershipResponse
+
   """Mutation field to block a user from an organization."""
   blockUser(organizationId: ID!, userId: ID!): Boolean
 
@@ -1494,6 +1516,12 @@ type Mutation {
     input: MutationJoinPublicOrganizationInput!
   ): OrganizationMembershipObject
 
+  """Mutation field to reject a membership request by an admin."""
+  rejectMembershipRequest(
+    """Input to reject a membership request"""
+    input: MutationRejectMembershipRequestInput!
+  ): RejectMembershipResponse
+
   """Mutation field to send a membership request to an organization."""
   sendMembershipRequest(
     """Input to send a membership request"""
@@ -1571,6 +1599,11 @@ type Mutation {
 
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
+}
+
+input MutationAcceptMembershipRequestInput {
+  """ID of the membership request to accept"""
+  membershipRequestId: ID!
 }
 
 """Input to block a user from an organization"""
@@ -1810,6 +1843,11 @@ input MutationCreateOrganizationInput {
 
   """Custom information about the organization."""
   description: String
+
+  """
+  Flag to indicate if user registration is required to access the organization.
+  """
+  isUserRegistrationRequired: Boolean
 
   """Name of the organization."""
   name: String!
@@ -2140,6 +2178,11 @@ input MutationDeleteVenueInput {
 input MutationJoinPublicOrganizationInput {
   """Global identifier of the organization."""
   organizationId: ID!
+}
+
+input MutationRejectMembershipRequestInput {
+  """ID of the membership request to reject"""
+  membershipRequestId: ID!
 }
 
 """Input type for sending a membership request."""
@@ -2737,6 +2780,11 @@ type Organization {
   id: ID!
 
   """
+  Flag to indicate if user registration is required to join the organization.
+  """
+  isUserRegistrationRequired: Boolean
+
+  """
   GraphQL connection to traverse through the users that are members of the organization.
   """
   members(
@@ -2748,6 +2796,18 @@ type Organization {
     """Filter criteria for organization members"""
     where: MembersWhereInput
   ): OrganizationMembersConnection
+
+  """Membership requests for this organization"""
+  membershipRequests(
+    """Number of items to return"""
+    first: Int
+
+    """Number of items to skip"""
+    skip: Int
+
+    """Filter criteria for membership requests"""
+    where: MembershipRequestWhereInput
+  ): [MembershipRequest!]
 
   """Name of the organization."""
   name: String
@@ -3175,11 +3235,13 @@ input QueryAgendaItemInput {
   id: String!
 }
 
+""""""
 type QueryAllUsersConnection {
   edges: [QueryAllUsersConnectionEdge]
   pageInfo: PageInfo!
 }
 
+""""""
 type QueryAllUsersConnectionEdge {
   cursor: String!
   node: User
@@ -3274,6 +3336,14 @@ input QueryUserInput {
 input QueryVenueInput {
   """Global id of the venue."""
   id: String!
+}
+
+type RejectMembershipResponse {
+  """Success or error message"""
+  message: String
+
+  """Whether the operation was successful"""
+  success: Boolean
 }
 
 type Subscription {
@@ -3557,6 +3627,11 @@ type UserOrganizationsWhereMemberConnectionEdge {
 enum UserRole {
   administrator
   regular
+}
+
+input UserWhereInput {
+  """Filter by first name containing this string"""
+  name_contains: String
 }
 
 type Venue {

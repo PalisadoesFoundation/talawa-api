@@ -18,3 +18,4 @@ import "./updater";
 import "./venues";
 import "./CancelMembershipResponse";
 import "./MembershipRequestObject";
+import "./membershipRequests";
