@@ -6,7 +6,7 @@
 
 > **\_EmailAddress**: `object`
 
-Defined in: [src/graphql/scalars/EmailAddress.ts:21](https://github.com/NishantSinghhhhh/talawa-api/blob/097322c0353ac6926bd36bdd4ea38c52c0dfde5d/src/graphql/scalars/EmailAddress.ts#L21)
+Defined in: [src/graphql/scalars/EmailAddress.ts:21](https://github.com/NishantSinghhhhh/talawa-api/blob/eec373445d0a4b36c011832ad5010e69e112315d/src/graphql/scalars/EmailAddress.ts#L21)
 
 `EmailAddress` scalar type for pothos schema.
 The underscore prefix indicates this is an internal type definition.
