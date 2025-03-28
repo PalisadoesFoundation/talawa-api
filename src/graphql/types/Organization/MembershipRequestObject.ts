@@ -1,6 +1,7 @@
 import type { MembershipRequestStatusValues } from "~/src/drizzle/enums/membershipRequestStatus";
 import { builder } from "~/src/graphql/builder";
 import { MembershipRequestStatusEnum } from "~/src/graphql/enums/membershipRequestStatus";
+import { User } from "~/src/graphql/types/User/User";
 
 export type MembershipRequestType = {
 	/** Unique identifier for the membership request */
@@ -43,6 +44,15 @@ MembershipRequestObject.implement({
 		createdAt: t.expose("createdAt", {
 			type: "DateTime",
 			description: "Timestamp when the request was created.",
+		}),
+		user: t.field({
+			type: User,
+			description: "The user who requested membership",
+			resolve: async (parent, _args, ctx) => {
+				return await ctx.drizzleClient.query.usersTable.findFirst({
+					where: (fields, operators) => operators.eq(fields.id, parent.userId),
+				});
+			},
 		}),
 	}),
 });

@@ -373,6 +373,7 @@ export const Mutation_createOrganization =
       id
       name
       countryCode
+      isUserRegistrationRequired
     }
   }`);
 
@@ -954,3 +955,33 @@ query ActionItemsByOrganization($input: QueryActionItemsByOrganizationInput!) {
   }
 }
 `;
+
+export const Mutation_sendMembershipRequest = gql(`
+  mutation Mutation_sendMembershipRequest($input: MutationSendMembershipRequestInput!) {
+  sendMembershipRequest(input: $input) {
+    organizationId
+    userId
+    status
+    createdAt
+    membershipRequestId
+    }
+  }
+`);
+
+export const Mutation_acceptMembershipRequest = gql(`
+  mutation Mutation_acceptMembershipRequest($input: MutationAcceptMembershipRequestInput!) {
+  acceptMembershipRequest(input: $input) {
+    success
+    message
+    }
+  }
+`);
+
+export const Mutation_rejectMembershipRequest = gql(`
+  mutation Mutation_rejectMembershipRequest($input: MutationRejectMembershipRequestInput!) {
+  rejectMembershipRequest(input: $input) {
+    success
+    message
+    }
+  }
+`);

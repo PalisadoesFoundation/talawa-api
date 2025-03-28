@@ -6,6 +6,6 @@
 
 > `const` **iso4217CurrencyCodeEnum**: `ZodEnum`\<\[`"AED"`, `"AFN"`, `"ALL"`, `"AMD"`, `"ANG"`, `"AOA"`, `"ARS"`, `"AUD"`, `"AWG"`, `"AZN"`, `"BAM"`, `"BBD"`, `"BDT"`, `"BGN"`, `"BHD"`, `"BIF"`, `"BMD"`, `"BND"`, `"BOB"`, `"BOV"`, `"BRL"`, `"BSD"`, `"BTN"`, `"BWP"`, `"BYN"`\]\>
 
-Defined in: [src/drizzle/enums/iso4217CurrencyCode.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/a2d437e77a694d2951c25ce8de6694e3fef2fd70/src/drizzle/enums/iso4217CurrencyCode.ts#L6)
+Defined in: [src/drizzle/enums/iso4217CurrencyCode.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/097322c0353ac6926bd36bdd4ea38c52c0dfde5d/src/drizzle/enums/iso4217CurrencyCode.ts#L6)
 
 Possible variants of the currency code defined in ISO 4217 standard published by the International Organization for Standardization (ISO) which defines alpha codes and numeric codes for the representation of currencies and provides information about the relationships between individual currencies and their minor units. More information at this link: [https://en.wikipedia.org/wiki/ISO\_4217#Active\_codes\_(list\_one)](https://en.wikipedia.org/wiki/ISO_4217#Active_codes_(list_one)).

@@ -153,6 +153,8 @@ builder.mutationField("createOrganization", (t) =>
 						name: parsedArgs.input.name,
 						postalCode: parsedArgs.input.postalCode,
 						state: parsedArgs.input.state,
+						userRegistrationRequired:
+							parsedArgs.input.isUserRegistrationRequired,
 					})
 					.returning();
 
