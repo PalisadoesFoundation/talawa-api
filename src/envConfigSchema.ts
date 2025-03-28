@@ -240,7 +240,11 @@ export const envConfigSchema = Type.Object({
 		maximum: 65535,
 		minimum: 0,
 	}),
-	//  cost of scalar field without resolvers
+	// API_REDIS_URI: Type.String({
+	// 	format: "uri",
+	// 	pattern: "^redis://.*",
+	// }),
+
 	API_GRAPHQL_SCALAR_FIELD_COST: Type.Number({
 		minimum: 0,
 	}),
