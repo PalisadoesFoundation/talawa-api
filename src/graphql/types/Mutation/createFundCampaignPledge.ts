@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationCreateFundCampaignPledgeInput";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationCreateFundCampaignPledgeArgumentsSchema = z.object({
 	input: mutationCreateFundCampaignPledgeInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 				type: MutationCreateFundCampaignPledgeInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create a fund campaign pledge.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

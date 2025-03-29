@@ -1,6 +1,10 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-import { FundCampaign } from "./FundCampaign";
+import {
+	FundCampaign,
+	type FundCampaign as FundCampaignType,
+} from "./FundCampaign";
 
 /**
  * Resolver for the updatedAt field of FundCampaign type.
@@ -17,8 +21,8 @@ import { FundCampaign } from "./FundCampaign";
  */
 
 export const updatedAtResolver = async (
-	parent: FundCampaign,
-	args: unknown,
+	parent: FundCampaignType,
+	args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	try {
@@ -116,6 +120,7 @@ FundCampaign.implement({
 		updatedAt: t.field({
 			description: "Date time at the time the fund campaign was last updated.",
 			resolve: updatedAtResolver,
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			type: "DateTime",
 		}),
 	}),

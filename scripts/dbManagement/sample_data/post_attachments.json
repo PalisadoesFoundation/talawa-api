@@ -5,7 +5,9 @@
       "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
       "postId": "2778f4a2-a6f1-45cc-857f-727ca942899d",
       "mimeType": "image/webp",
-      "name": "DALL·E_talawa_1"
+      "name": "DALL·E_talawa_1",
+      "objectName": "upload/talawa_attachment_1",
+      "fileHash":"ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"
     },
     {
       "id": "e1bba4bb-5edd-40fd-9baf-741647d26ec0",
@@ -13,7 +15,9 @@
       "creatorId": "0194e194-c6b3-7802-b074-362efea24dbc",
       "postId": "98cef234-af91-4a11-b33f-5fd6cf41219c",
       "mimeType": "image/webp",
-      "name": "DALL·E_talawa_2"
+      "name": "DALL·E_talawa_2",
+      "objectName": "upload/talawa_attachment_2",
+      "fileHash":"3e23e8160039594a33894f6564e2b1348bbd7a0088d42c4acb73eeaed59c009d"
     },
     {
       "id": "5065ab3d-51bd-4c6e-b3e3-389af5610cc3",
@@ -21,7 +25,9 @@
       "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
       "postId": "a44d75a0-267f-4429-b03c-a26cc4ec56dc",
       "mimeType": "image/webp",
-      "name": "DALL·E_talawa_3"
+      "name": "DALL·E_talawa_3",
+      "objectName": "upload/talawa_attachment_3",
+      "fileHash":"3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d"
     },
     {
       "id": "ea15240d-269d-4c94-8f7c-fa4723bd3413",
@@ -29,7 +35,9 @@
       "creatorId": "65378abd-8500-8f17-1cf2-990d00000002",
       "postId": "f3da248b-ee18-4197-bd0b-de5480c010ee",
       "mimeType": "image/webp",
-      "name": "DALL·E_talawa_4"
+      "name": "DALL·E_talawa_4",
+      "objectName": "upload/talawa_attachment_4",
+      "fileHash":"3e23e8160039594a33894f6563e1b1348bbd7a0088d42c4acb73eeaed59c009d"
     },
     {
       "id": "c898e282-29e4-4f0c-abb3-0829c6091575",
@@ -37,7 +45,9 @@
       "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
       "postId": "885bee36-2751-4d78-bfd4-7ededdd89a0f",
       "mimeType": "image/webp",
-      "name": "DALL·E_talawa_5"
+      "name": "DALL·E_talawa_5",
+      "objectName": "upload/talawa_attachment_5",
+      "fileHash":"3e23e8160039594a33844f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d"
     },
     {
       "id": "685b4d55-9627-474d-a8d8-d36aaf34a93d",
@@ -45,7 +55,9 @@
       "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
       "postId": "ecaeed44-d0b2-4559-bad6-ab6f49362325",
       "mimeType": "image/webp",
-      "name": "DALL·E_talawa_6"
+      "name": "DALL·E_talawa_6",
+      "objectName": "upload/talawa_attachment_6",
+      "fileHash":"3e23e8160029594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d"
     }
   ]
   

@@ -1,24 +1,9 @@
-import { vi } from "vitest";
-import { beforeEach, describe, expect, it } from "vitest";
-import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { GraphQLContext } from "~/src/graphql/context";
 import type { Advertisement as AdvertisementType } from "~/src/graphql/types/Advertisement/Advertisement";
 import { advertisementUpdatedAtResolver } from "~/src/graphql/types/Advertisement/updatedAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
-const createMockContext = () => {
-	const mockContext = {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "user-123", isAdmin: true },
-		} as CurrentClient,
-		drizzleClient: { query: { usersTable: { findFirst: vi.fn() } } },
-		envConfig: { API_BASE_URL: "mock url" },
-		jwt: { sign: vi.fn() },
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
-	};
-	return mockContext as unknown as GraphQLContext;
-};
 
 type MockUser = {
 	id: string;
@@ -32,10 +17,15 @@ type MockUser = {
 describe("Advertisement Updated At Resolver Tests", () => {
 	let ctx: GraphQLContext;
 	let mockAdvertisement: AdvertisementType;
+	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
 	beforeEach(() => {
-		vi.clearAllMocks();
-		ctx = createMockContext();
+		const { context, mocks: newMocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		ctx = context;
+		mocks = newMocks;
 		mockAdvertisement = {
 			id: "adv-123",
 			organizationId: "org-456",
@@ -57,16 +47,16 @@ describe("Advertisement Updated At Resolver Tests", () => {
 		});
 
 		it("should throw unauthenticated error if user exists but current user doesn't exist", async () => {
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(undefined);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				undefined,
+			);
 
 			await expect(
 				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
 			).rejects.toThrowError(
 				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 			);
-			expect(ctx.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
+			expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
 		});
 
 		it("should throw unauthorized_action for non-admin user with no organization membership", async () => {
@@ -76,9 +66,9 @@ describe("Advertisement Updated At Resolver Tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
 			await expect(
 				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
@@ -94,9 +84,9 @@ describe("Advertisement Updated At Resolver Tests", () => {
 				],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
 			await expect(
 				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
@@ -113,9 +103,9 @@ describe("Advertisement Updated At Resolver Tests", () => {
 				role: "administrator",
 				organizationMembershipsWhereMember: [],
 			};
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
 			const result = await advertisementUpdatedAtResolver(
 				mockAdvertisement,
@@ -136,9 +126,9 @@ describe("Advertisement Updated At Resolver Tests", () => {
 					},
 				],
 			};
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
 			const result = await advertisementUpdatedAtResolver(
 				mockAdvertisement,
@@ -151,9 +141,9 @@ describe("Advertisement Updated At Resolver Tests", () => {
 
 	describe("Error Handling", () => {
 		it("should handle database query failures", async () => {
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockRejectedValue(new Error("Database error"));
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+				new Error("Database error"),
+			);
 
 			await expect(
 				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
@@ -165,9 +155,7 @@ describe("Advertisement Updated At Resolver Tests", () => {
 			);
 		});
 		it("should handle case-sensitive role checks", async () => {
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue({
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 				role: "Administrator",
 				organizationMembershipsWhereMember: [],
 			});
@@ -181,7 +169,7 @@ describe("Advertisement Updated At Resolver Tests", () => {
 			);
 		});
 		it("should throw data_integrity_error if advertisement has no updatedAt value", async () => {
-			mockAdvertisement.updatedAt = null; // 🚨 Missing updatedAt
+			mockAdvertisement.updatedAt = null;
 			const mockUserData: MockUser = {
 				id: "user-123",
 				role: "member",
@@ -192,9 +180,9 @@ describe("Advertisement Updated At Resolver Tests", () => {
 					},
 				],
 			};
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
 			await expect(
 				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
@@ -207,10 +195,9 @@ describe("Advertisement Updated At Resolver Tests", () => {
 		});
 
 		it("should throw unexpected error if database query returns null values", async () => {
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(null); // 🚨 Query returned null
-
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				null as unknown as Record<string, unknown>,
+			);
 			await expect(
 				advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx),
 			).rejects.toThrowError(
@@ -220,5 +207,61 @@ describe("Advertisement Updated At Resolver Tests", () => {
 				}),
 			);
 		});
+	});
+	it("calls where function correctly", async () => {
+		// Define mock user data
+		const currentUserId = "user-123";
+		const organizationId = mockAdvertisement.organizationId; // Ensure matching org ID
+
+		const mockUserData = {
+			id: currentUserId,
+			role: "member",
+			organizationMembershipsWhereMember: [
+				{
+					role: "administrator",
+					organizationId: mockAdvertisement.organizationId,
+				},
+			],
+		};
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
+		await advertisementUpdatedAtResolver(mockAdvertisement, {}, ctx);
+
+		expect(
+			mocks.drizzleClient.query.usersTable.findFirst,
+		).toHaveBeenCalledTimes(1);
+
+		// Extract calls correctly
+		const calls = (
+			mocks.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mock.calls;
+		expect(calls.length).toBe(1);
+
+		// Extract `where` function (fetching current user)
+		const whereFn = calls[0]?.[0]?.where;
+		expect(whereFn).toBeDefined();
+
+		// Mock field conditions
+		const mockFields = { id: currentUserId };
+		const mockOperators = { eq: vi.fn((a, b) => ({ field: a, value: b })) };
+
+		// Call `where` function (current user)
+		whereFn(mockFields, mockOperators);
+		expect(mockOperators.eq).toHaveBeenCalledWith(mockFields.id, currentUserId);
+
+		// Validate `organizationMembershipsWhereMember`
+		const withClause = calls[0]?.[0]?.with?.organizationMembershipsWhereMember;
+		expect(withClause).toBeDefined();
+		const whereFnOrg = withClause.where;
+		expect(whereFnOrg).toBeDefined();
+
+		// Call `where` for organizationMembershipsWhereMember
+		const mockOrgFields = { organizationId };
+		whereFnOrg(mockOrgFields, mockOperators);
+		expect(mockOperators.eq).toHaveBeenCalledWith(
+			mockOrgFields.organizationId,
+			organizationId,
+		);
 	});
 });

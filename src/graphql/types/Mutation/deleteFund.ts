@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteFundInput";
 import { Fund } from "~/src/graphql/types/Fund/Fund";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteFundArgumentsSchema = z.object({
 	input: mutationDeleteFundInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deleteFund", (t) =>
 				type: MutationDeleteFundInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete a fund.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

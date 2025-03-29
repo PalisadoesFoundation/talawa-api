@@ -46,5 +46,9 @@ Organization.implement({
 		state: t.exposeString("state", {
 			description: "Name of the state the organization exists in.",
 		}),
+		isUserRegistrationRequired: t.exposeBoolean("userRegistrationRequired", {
+			description:
+				"Flag to indicate if user registration is required to join the organization.",
+		}),
 	}),
 });

@@ -1,11 +1,12 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { FundCampaignPledge } from "./FundCampaignPledge";
-
 FundCampaignPledge.implement({
 	fields: (t) => ({
 		pledger: t.field({
 			description: "User on whose behalf the fund campaign pledge is created.",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

@@ -8,7 +8,7 @@ import {
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationCreateOrganizationMembershipArgumentsSchema = z.object({
 	input: mutationCreateOrganizationMembershipInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("createOrganizationMembership", (t) =>
 				type: MutationCreateOrganizationMembershipInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create an organization membership.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

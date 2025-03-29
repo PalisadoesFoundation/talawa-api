@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteAdvertisementInput";
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteAdvertisementArgumentsSchema = z.object({
 	input: mutationDeleteAdvertisementInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deleteAdvertisement", (t) =>
 				type: MutationDeleteAdvertisementInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete an advertisement.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

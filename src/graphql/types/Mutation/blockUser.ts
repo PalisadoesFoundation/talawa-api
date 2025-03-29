@@ -11,8 +11,8 @@ const mutationBlockUserArgumentsSchema = z.object({
 builder.mutationField("blockUser", (t) =>
 	t.field({
 		args: {
-			organizationId: t.arg.string({ required: true }),
-			userId: t.arg.string({ required: true }),
+			organizationId: t.arg.id({ required: true }),
+			userId: t.arg.id({ required: true }),
 		},
 		description: "Mutation field to block a user from an organization.",
 		resolve: async (_parent, args, ctx) => {

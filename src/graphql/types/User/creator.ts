@@ -1,10 +1,12 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { User } from "./User";
 
 User.implement({
 	fields: (t) => ({
 		creator: t.field({
 			description: "User who created the user.",
+
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -70,6 +72,7 @@ User.implement({
 
 				return existingUser;
 			},
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			type: User,
 		}),
 	}),

@@ -6,7 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryPostInput";
 import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const queryPostArgumentsSchema = z.object({
 	input: queryPostInputSchema,
 });
@@ -20,6 +20,7 @@ builder.queryField("post", (t) =>
 				type: QueryPostInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read a post.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

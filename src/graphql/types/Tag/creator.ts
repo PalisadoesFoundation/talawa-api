@@ -1,12 +1,13 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { Tag } from "./Tag";
 import type { Tag as TagType } from "./Tag";
 
 export const tagCreatorResolver = async (
 	parent: TagType,
-	_args: unknown,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {
@@ -101,6 +102,7 @@ Tag.implement({
 	fields: (t) => ({
 		creator: t.field({
 			description: "User who created the tag.",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: tagCreatorResolver,
 			type: User,
 		}),

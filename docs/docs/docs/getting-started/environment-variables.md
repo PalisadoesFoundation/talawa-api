@@ -223,6 +223,60 @@ This environment variable is used to configure the host ip of the postgres serve
 
 - More information can be found at [this](https://github.com/porsager/postgres?tab=readme-ov-file##environmental-variables) link.
 
+### API_REDIS_HOST
+
+This environment variable is used to configure the host ip of the redis server for talawa api's redis client to connect with.
+
+- More information can be found at [this](https://github.com/redis/redis) link.
+
+### API_REDIS_PORT
+
+This environment variable is used to configure the host port of the redis server for talawa api's redis client to connect with.
+
+- More information can be found at [this](https://github.com/redis/redis) link.
+
+### API_REDIS_TEST_HOST
+
+This environment variable is used to configure the host ip of the redis server for talawa api's redis client to connect with.
+
+- More information can be found at [this](https://github.com/redis/redis) link.
+
+### API_GRAPHQL_SCALAR_FIELD_COST
+
+This environment variable defines the cost assigned to scalar fields in GraphQL queries. Scalars are basic data types like String, Int, Boolean, etc.
+
+### API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST
+
+This environment variable defines the cost assigned to scalar fields with custom resolver logic in GraphQL queries. These scalars (e.g., String, Int, Boolean) may appear simple but require additional computation due to custom logic like data transformation, database lookups, or external API calls in their resolvers.
+
+### API_GRAPHQL_OBJECT_FIELD_COST
+
+This environment variable sets the cost of resolving object fields in a GraphQL query. Object fields return nested data structures instead of primitive values.
+
+### API_GRAPHQL_LIST_FIELD_COST
+
+This environment variable specifies the cost of retrieving list fields in GraphQL queries. Lists contain multiple items, making them more resource-intensive than scalar fields.
+
+### API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST
+
+This environment variable defines the cost for list fields that do not implement pagination in GraphQL queries. Non-paginated lists risk returning unbounded data, increasing server load and response times, especially for large datasets.
+
+### API_GRAPHQL_MUTATION_BASE_COST
+
+This environment variable defines the base cost of executing a GraphQL mutation. Mutations typically modify data, making them more expensive than queries.
+
+### API_GRAPHQL_SUBSCRIPTION_BASE_COST
+
+This environment variable defines the base cost of initiating and maintaining a GraphQL subscription. Subscriptions enable real-time data streaming and are inherently resource-intensive due to persistent connections (e.g., WebSocket), event listeners, and continuous data updates.
+
+### API_RATE_LIMIT_BUCKET_CAPACITY
+
+This environment variable defines the maximum capacity of the leaky bucket used for rate limiting based on GraphQL query cost analysis. The bucket holds tokens that represent available request capacity.
+
+### API_RATE_LIMIT_REFILL_RATE
+
+This environment variable specifies the number of tokens added to the leaky bucket per second. This determines how quickly users can regain the ability to make GraphQL requests after hitting the rate limit.
+
 ### CI
 
 This environment variable is used to enable or disable certain features in vitest that are supposed to only run in continous integration environments.
@@ -467,11 +521,48 @@ Listed below is a subset of environment variables that are accepted by the `post
 
 More information could be found at [this](https://github.com/docker-library/docs/blob/master/postgres/README.md##environment-variables) link.
 
+### POSTGRES_MAPPED_HOST_IP
+
+This environment variable is used to configure the host ip that can access the host port mapped with the container service port on which postgres listens to at runtime.
+
+- More information can be found at [this](https://docs.docker.com/engine/network/##published-ports) link.
+
 ### POSTGRES_TEST_MAPPED_PORT
 
 This environment variable is used to configure the host port to map with the container service port on which postgres test listens to at runtime.
 
 - More information can be found at [this](https://docs.docker.com/engine/network/##published-ports) link.
+
+## redis (Container)
+
+Listed below is a subset of environment variables that are accepted by the `redis` container service.
+
+More information could be found at [this](https://github.com/redis/redis) link.
+
+### REDIS_MAPPED_HOST_IP
+
+This environment variable is used to configure the host ip that can access the host port mapped with the container service port on which redis listens to at runtime.
+
+- More information can be found at [this](https://docs.docker.com/engine/network/##published-ports) link.
+
+### REDIS_MAPPED_PORT
+
+This environment variable is used to configure the host port to map with the container service port on which redis listens to at runtime.
+
+- More information can be found at [this](https://docs.docker.com/engine/network/##published-ports) link.
+
+## redis-test (Container)
+
+Listed below is a subset of environment variables that are accepted by the `redis-test` container service.
+
+More information could be found at [this](https://github.com/redis/redis) link.
+
+### REDIS_TEST_MAPPED_PORT
+
+This environment variable is used to configure the host port to map with the container service port on which redis test listens to at runtime.
+
+- More information can be found at [this](https://docs.docker.com/engine/network/##published-ports) link.
+
 
 ## docker compose
 
@@ -483,7 +574,7 @@ This environment variable is used to configure what docker compose configuration
 
 ### COMPOSE_PROFILES
 
-This environment variable is used to enable or disable container services to be run by docker compose. Possible values are `api`, `caddy`, `cloudbeaver`, `minio`, `minio_test`, `postgres` and `postgres-test`.
+This environment variable is used to enable or disable container services to be run by docker compose. Possible values are `api`, `caddy`, `cloudbeaver`, `minio`, `minio_test`, `postgres`, `postgres_test`, `redis` and `redis_test`.
 
 - More information can be found at [this](https://docs.docker.com/compose/environment-variables/envvars/##compose_profiles) link.
 

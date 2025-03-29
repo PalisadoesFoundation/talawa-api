@@ -198,7 +198,9 @@ export type UnauthorizedArgumentsExtensions = {
 export type UnexpectedExtensions = {
 	code: "unexpected";
 };
-
+export type TooManyRequestsExtensions = {
+	code: "too_many_requests";
+};
 export type TalawaGraphQLErrorExtensions =
 	| ArgumentsAssociatedResourcesNotFoundExtensions
 	| ForbiddenActionExtensions
@@ -208,7 +210,8 @@ export type TalawaGraphQLErrorExtensions =
 	| UnauthorizedActionExtensions
 	| UnauthorizedActionOnArgumentsAssociatedResourcesExtensions
 	| UnauthorizedArgumentsExtensions
-	| UnexpectedExtensions;
+	| UnexpectedExtensions
+	| TooManyRequestsExtensions;
 
 export const defaultTalawaGraphQLErrorMessages: {
 	[Key in TalawaGraphQLErrorExtensions["code"]]: string;
@@ -226,6 +229,7 @@ export const defaultTalawaGraphQLErrorMessages: {
 	unauthorized_arguments:
 		"You are not authorized to perform this action with the provided arguments.",
 	unexpected: "Something went wrong. Please try again later.",
+	too_many_requests: "Too many requests. Please try again later.",
 };
 
 /**

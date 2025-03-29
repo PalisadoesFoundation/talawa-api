@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeletePostInput";
 import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeletePostArgumentsSchema = z.object({
 	input: mutationDeletePostInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deletePost", (t) =>
 				type: MutationDeletePostInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete a post.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
@@ -145,9 +146,9 @@ builder.mutationField("deletePost", (t) =>
 
 				await ctx.minio.client.removeObjects(
 					ctx.minio.bucketName,
-					existingPost.attachmentsWherePost.map(
-						(attachment) => attachment.name,
-					),
+					existingPost.attachmentsWherePost
+						.map((attachment) => attachment.objectName)
+						.filter((name): name is string => name !== null),
 				);
 
 				return Object.assign(deletedPost, {

@@ -8,8 +8,8 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateTagFolderInput";
 import { TagFolder } from "~/src/graphql/types/TagFolder/TagFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-
 const mutationUpdateTagFolderArgumentsSchema = z.object({
 	input: mutationUpdateTagFolderInputSchema,
 });
@@ -23,6 +23,7 @@ builder.mutationField("updateTagFolder", (t) =>
 				type: MutationUpdateTagFolderInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update a tag folder.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

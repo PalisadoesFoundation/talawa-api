@@ -1,12 +1,12 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { Event } from "./Event";
 import type { Event as EventType } from "./Event";
-
 export const eventCreatorResolver = async (
 	parent: EventType,
-	_args: unknown,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	if (!ctx.currentClient.isAuthenticated) {
@@ -102,6 +102,7 @@ Event.implement({
 	fields: (t) => ({
 		creator: t.field({
 			description: "User who created the event.",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: eventCreatorResolver,
 			type: User,
 		}),

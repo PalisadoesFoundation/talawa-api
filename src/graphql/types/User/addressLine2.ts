@@ -1,10 +1,12 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { User } from "./User";
 
 User.implement({
 	fields: (t) => ({
 		addressLine2: t.field({
 			description: "Address line 2 of the user's address.",
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({

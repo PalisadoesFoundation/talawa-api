@@ -14,6 +14,7 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "src/envConfigSchema";
+import { v4 as uuidv4 } from "uuid";
 
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
@@ -35,7 +36,7 @@ export const queryClient = postgres({
 });
 
 //Create a bucket client
-const minioClient = new MinioClient({
+export const minioClient = new MinioClient({
 	accessKey: envConfig.API_MINIO_ACCESS_KEY || "",
 	endPoint: envConfig.API_MINIO_END_POINT || "",
 	port: Number(envConfig.API_MINIO_PORT),
@@ -98,7 +99,7 @@ export async function formatDatabase(): Promise<boolean> {
 
 			await tx.execute(sql`
 				DELETE FROM ${sql.identifier(USERS_TABLE)}
-				WHERE email != ${adminEmail};
+				WHERE email_address != ${adminEmail};
 			  `);
 		});
 
@@ -233,6 +234,7 @@ export async function insertCollections(
 
 		const API_ADMINISTRATOR_USER_EMAIL_ADDRESS =
 			envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+
 		if (!API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
 			throw new Error(
 				"\x1b[31mAPI_ADMINISTRATOR_USER_EMAIL_ADDRESS is not defined.\x1b[0m",
@@ -392,6 +394,27 @@ export async function insertCollections(
 					);
 					break;
 				}
+				case "membership_requests": {
+					const membership_requests = JSON.parse(fileContent).map(
+						(membership_request: { createdAt: string | number | Date }) => ({
+							...membership_request,
+							createdAt: parseDate(membership_request.createdAt),
+						}),
+					) as (typeof schema.membershipRequestsTable.$inferInsert)[];
+					await checkAndInsertData(
+						schema.membershipRequestsTable,
+						membership_requests,
+						[
+							schema.membershipRequestsTable.userId,
+							schema.membershipRequestsTable.organizationId,
+						],
+						1000,
+					);
+					console.log(
+						"\x1b[35mAdded: Membership_requests table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
 				case "post_attachments": {
 					const post_attachments = JSON.parse(fileContent).map(
 						(post_attachment: { createdAt: string | number | Date }) => ({
@@ -399,16 +422,12 @@ export async function insertCollections(
 							createdAt: parseDate(post_attachment.createdAt),
 						}),
 					) as (typeof schema.postAttachmentsTable.$inferInsert)[];
-					try {
-						// Post Attachements are not unique. So they are inserted without checking for duplicates.
-						await db
-							.insert(schema.postAttachmentsTable)
-							.values(post_attachments);
-					} catch {
-						throw new Error(
-							"\x1b[31mError inserting post_attachments data\x1b[0m",
-						);
-					}
+					await checkAndInsertData(
+						schema.postAttachmentsTable,
+						post_attachments,
+						schema.postAttachmentsTable.id,
+						1000,
+					);
 					// Handle file uploads to Minio.
 					await Promise.all(
 						post_attachments.map(async (attachment) => {
@@ -479,6 +498,115 @@ export async function insertCollections(
 					break;
 				}
 
+				case "events": {
+					const events = JSON.parse(fileContent).map(
+						(event: {
+							id: string;
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+							startAt: string | number | Date;
+							endAt: string | number | Date;
+						}) => ({
+							...event,
+							createdAt: parseDate(event.createdAt),
+							updatedAt: parseDate(event.updatedAt),
+							startAt: parseDate(event.startAt),
+							endAt: parseDate(event.endAt),
+						}),
+					) as (typeof schema.eventsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.eventsTable,
+						events,
+						schema.eventsTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Events table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
+				case "action_categories": {
+					const actionCategories = JSON.parse(fileContent).map(
+						(category: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...category,
+							createdAt: category.createdAt
+								? new Date(category.createdAt)
+								: new Date(),
+							updatedAt: category.updatedAt
+								? new Date(category.updatedAt)
+								: new Date(),
+						}),
+					) as (typeof schema.actionCategoriesTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.actionCategoriesTable,
+						actionCategories,
+						schema.actionCategoriesTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Action Categories table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
+				case "action_items": {
+					const action_items = JSON.parse(fileContent).map(
+						(action_item: {
+							id: string;
+							isCompleted: boolean;
+							assignedAt: string | number | Date;
+							completionAt: string | number | Date;
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+							preCompletionNotes: string;
+							postCompletionNotes: string;
+							organizationId: string;
+							categoryId: string;
+							eventId: string | null;
+							assigneeId: string;
+							creatorId: string;
+							updaterId: string;
+						}) => ({
+							...action_item,
+							id: action_item.id.length === 36 ? action_item.id : uuidv4(),
+							assignedAt: parseDate(action_item.assignedAt),
+							completionAt: parseDate(action_item.completionAt),
+							createdAt: parseDate(action_item.createdAt),
+							updatedAt: action_item.updatedAt
+								? parseDate(action_item.updatedAt)
+								: null,
+							categoryId:
+								action_item.categoryId && action_item.categoryId.length === 36
+									? action_item.categoryId
+									: null,
+							eventId:
+								action_item.eventId && action_item.eventId.length === 36
+									? action_item.eventId
+									: null,
+						}),
+					) as (typeof schema.actionsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.actionsTable,
+						action_items,
+						schema.actionsTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Action Items table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
 				default:
 					console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
 					break;
@@ -520,7 +648,10 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "post_votes", table: schema.postVotesTable },
 			{ name: "post_attachments", table: schema.postAttachmentsTable },
 			{ name: "comments", table: schema.commentsTable },
+			{ name: "membership_requests", table: schema.membershipRequestsTable },
 			{ name: "comment_votes", table: schema.commentVotesTable },
+			{ name: "action_items", table: schema.actionsTable },
+			{ name: "events", table: schema.eventsTable },
 		];
 
 		console.log(`\nRecord Counts ${stage} Import:\n`);

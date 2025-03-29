@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeletePostVoteInput";
 import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeletePostVoteArgumentsSchema = z.object({
 	input: mutationDeletePostVoteInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deletePostVote", (t) =>
 				type: MutationDeletePostVoteInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete a post vote.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

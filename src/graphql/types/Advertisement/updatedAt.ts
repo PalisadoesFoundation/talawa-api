@@ -1,11 +1,11 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { Advertisement } from "./Advertisement";
 import type { Advertisement as AdvertisementType } from "./Advertisement";
-
 export const advertisementUpdatedAtResolver = async (
 	parent: AdvertisementType,
-	_args: unknown,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	try {
@@ -85,6 +85,7 @@ Advertisement.implement({
 	fields: (t) => ({
 		updatedAt: t.field({
 			description: "Date time at the time the advertisement was last updated.",
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: advertisementUpdatedAtResolver,
 			type: "DateTime",
 		}),

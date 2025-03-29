@@ -1,0 +1,1 @@
+ALTER TABLE "actions" ALTER COLUMN "completion_at" DROP NOT NULL;

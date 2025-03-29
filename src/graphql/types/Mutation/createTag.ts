@@ -7,8 +7,8 @@ import {
 } from "~/src/graphql/inputs/MutationCreateTagInput";
 import { Tag } from "~/src/graphql/types/Tag/Tag";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-
 const mutationCreateTagArgumentsSchema = z.object({
 	input: mutationCreateTagInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("createTag", (t) =>
 				type: MutationCreateTagInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create a tag.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

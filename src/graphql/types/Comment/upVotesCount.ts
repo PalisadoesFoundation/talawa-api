@@ -1,7 +1,7 @@
 import { and, count, eq } from "drizzle-orm";
 import { commentVotesTable } from "~/src/drizzle/tables/commentVotes";
+import envConfig from "~/src/utilities/graphqLimits";
 import { Comment } from "./Comment";
-
 Comment.implement({
 	fields: (t) => ({
 		upVotesCount: t.field({
@@ -25,6 +25,7 @@ Comment.implement({
 
 				return commentVote.count;
 			},
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			type: "Int",
 		}),
 	}),

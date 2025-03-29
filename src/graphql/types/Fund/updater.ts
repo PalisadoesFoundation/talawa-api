@@ -1,7 +1,8 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-import { Fund } from "./Fund";
+import { Fund, type Fund as FundType } from "./Fund";
 
 const authenticateUser = async (ctx: GraphQLContext) => {
 	if (!ctx.currentClient.isAuthenticated) {
@@ -33,12 +34,15 @@ const authenticateUser = async (ctx: GraphQLContext) => {
 };
 
 const resolveUpdater = async (
-	parent: Fund,
-	_: unknown,
+	parent: FundType,
+	_: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	const currentUser = await authenticateUser(ctx);
 	const currentUserId = ctx.currentClient.user?.id;
+	if (parent.updaterId === null) {
+		return null;
+	}
 
 	const currentUserOrganizationMembership =
 		currentUser.organizationMembershipsWhereMember?.[0];
@@ -55,9 +59,6 @@ const resolveUpdater = async (
 		});
 	}
 
-	if (parent.updaterId === null) {
-		return null;
-	}
 	if (parent.updaterId === currentUserId) {
 		return currentUser;
 	}
@@ -88,6 +89,7 @@ Fund.implement({
 			description: "User who last updated the fund.",
 			resolve: resolveUpdater,
 			type: User,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		}),
 	}),
 });

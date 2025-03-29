@@ -6,7 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryAdvertisementInput";
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const queryAdvertisementArgumentsSchema = z.object({
 	input: queryAdvertisementInputSchema,
 });
@@ -20,6 +20,7 @@ builder.queryField("advertisement", (t) =>
 				type: QueryAdvertisementInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read an advertisement.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

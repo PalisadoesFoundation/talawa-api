@@ -10,8 +10,8 @@ import {
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
+import envConfig from "~/src/utilities/graphqLimits";
 import { AgendaFolder } from "./AgendaFolder";
-
 const childFoldersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
@@ -52,6 +52,7 @@ AgendaFolder.implement({
 			{
 				description:
 					"GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.",
+
 				resolve: async (parent, args, ctx) => {
 					const {
 						data: parsedArgs,
@@ -169,11 +170,29 @@ AgendaFolder.implement({
 					});
 				},
 				type: AgendaFolder,
+				complexity: (args) => {
+					return {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: args.first || args.last || 1,
+					};
+				},
 			},
 			{
+				edgesField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 			{
+				nodeField: {
+					complexity: {
+						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+						multiplier: 1,
+					},
+				},
 				description: "",
 			},
 		),

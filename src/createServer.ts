@@ -2,6 +2,7 @@ import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
 import { fastifyJwt } from "@fastify/jwt";
 import fastifyRateLimit from "@fastify/rate-limit";
+import fastifyRedis from "@fastify/redis";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import envSchema from "env-schema";
 import Fastify from "fastify";
@@ -63,7 +64,6 @@ export const createServer = async (options?: {
 	// THE FASTIFY PLUGIN LOAD ORDER MATTERS, PLUGINS MIGHT BE DEPENDENT ON OTHER PLUGINS ALREADY BEING REGISTERED. THEREFORE THE ORDER OF REGISTRATION MUST BE MAINTAINED UNLESS THE DEVELOPER KNOWS WHAT THEY'RE DOING.
 
 	fastify.decorate("envConfig", envConfig);
-
 	// More information at this link: https://github.com/fastify/fastify-rate-limit
 	fastify.register(fastifyRateLimit, {});
 
@@ -75,6 +75,17 @@ export const createServer = async (options?: {
 		// This field needs to be `false` for mercurius graphiql web client to work.
 		contentSecurityPolicy: !fastify.envConfig.API_IS_GRAPHIQL,
 	});
+
+	fastify.register(fastifyRedis, {
+		host: fastify.envConfig.API_REDIS_HOST,
+		port: fastify.envConfig.API_REDIS_PORT,
+		closeClient: true,
+	});
+
+	// fastify.register(fastifyRedis, {
+	// 	url: fastify.envConfig.API_REDIS_URI,
+	// 	closeClient: true,
+	// });
 
 	// More information at this link: https://github.com/fastify/fastify-jwt
 	fastify.register(fastifyJwt, {

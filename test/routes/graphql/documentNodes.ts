@@ -2,7 +2,7 @@
 
 import { initGraphQLTada } from "gql.tada";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
-import type { introspection } from "./gql.tada";
+import type { introspection } from "./../../../test/graphql/types/gql.tada";
 
 const gql = initGraphQLTada<{
 	introspection: introspection;
@@ -42,7 +42,7 @@ export const Mutation_createUser =
 export const Mutation_deleteCurrentUser =
 	gql(`mutation Mutation_deleteCurrentUser {
     deleteCurrentUser {
-        id  
+        id
     }
 }`);
 
@@ -69,7 +69,7 @@ export const Mutation_deleteUser =
         postalCode
         role
         state
-        workPhoneNumber    
+        workPhoneNumber
     }
 }`);
 
@@ -126,7 +126,7 @@ export const Mutation_updateCurrentUser =
         postalCode
         role
         state
-        workPhoneNumber    
+        workPhoneNumber
     }
 }`);
 
@@ -153,7 +153,7 @@ export const Mutation_updateUser =
         postalCode
         role
         state
-        workPhoneNumber    
+        workPhoneNumber
     }
 }`);
 
@@ -318,7 +318,7 @@ export const Query_user_creator =
             postalCode
             role
             state
-            workPhoneNumber 
+            workPhoneNumber
         }
     }
 }`);
@@ -354,7 +354,7 @@ export const Query_user_updater =
             postalCode
             role
             state
-            workPhoneNumber 
+            workPhoneNumber
         }
     }
 }`);
@@ -370,7 +370,7 @@ export const Query_fund = gql(`query Query_fund($input: QueryFundInput!) {
 export const Mutation_createOrganization =
 	gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
     createOrganization(input: $input) {
-      id 
+      id
       name
       countryCode
     }
@@ -516,16 +516,52 @@ export const Mutation_createTag = gql(`
     }
   }`);
 
+export const Query_organizations = gql(`
+	query Query_organizations {
+		organizations {
+			id
+      avatarURL
+      name
+      city
+      state
+      countryCode
+		}
+	}
+`);
+
 export const Query_organization = gql(`
-    query Organization($input: QueryOrganizationInput!, $first: Int!) {
+    query Query_organization($input: QueryOrganizationInput!, $first: Int, $after: String, $last: Int, $before: String) {
       organization(input: $input) {
         id
         name
-        members(first: $first) {
+        members(first: $first, after: $after, last: $last, before: $before) {
+          pageInfo {
+            endCursor
+            hasNextPage
+            hasPreviousPage
+            startCursor
+          }
           edges {
+            cursor
             node {
               id
               name
+              emailAddress
+              role
+            }
+          }
+        }
+        blockedUsers(first: $first, after: $after, last: $last, before: $before) {
+          pageInfo {
+            endCursor
+            hasNextPage
+            hasPreviousPage
+            startCursor
+          }
+          edges {
+            cursor
+            node {
+              id
             }
           }
         }
@@ -595,7 +631,6 @@ export const Mutation_deletePost = gql(`
       id
       attachments {
         mimeType
-        url
       }
     }
   }
@@ -612,7 +647,9 @@ export const Mutation_createPost = gql(`
       }
       attachments {
         mimeType
-        url
+        objectName
+        fileHash
+        name
       }
     }
   }
@@ -621,9 +658,62 @@ export const Mutation_createPost = gql(`
 export const Mutation_createPresignedUrl = gql(`
   mutation Mutation_createPresignedUrl($input: MutationCreatePresignedUrlInput!) {
     createPresignedUrl(input: $input) {
-      fileUrl
       presignedUrl
       objectName
+      requiresUpload
+       }
+  }
+`);
+
+export const Mutation_createGetfileUrl = gql(`
+  mutation Mutation_createGetfileUrl($input: MutationCreateGetfileUrlInput!) {
+    createGetfileUrl(input: $input) {
+      presignedUrl
+    }
+  }
+`);
+
+export const Mutation_blockUser =
+	gql(`mutation Mutation_blockUser($organizationId: ID!, $userId: ID!) {
+    blockUser(organizationId: $organizationId, userId: $userId)
+}`);
+
+export const Mutation_unblockUser =
+	gql(`mutation Mutation_unblockUser($organizationId: ID!, $userId: ID!) {
+    unblockUser(organizationId: $organizationId, userId: $userId)
+}`);
+
+export const Query_blockedUsers = gql(`
+  query BlockedUsers(
+    $organizationId: String!
+    $first: Int
+    $after: String
+    $last: Int
+    $before: String
+  ) {
+    organization(input:{id: $organizationId}) {
+      id
+      blockedUsers(
+        first: $first
+        after: $after
+        last: $last
+        before: $before
+      ) {
+        edges {
+          cursor
+          node {
+            id
+            name
+            role
+          }
+        }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+      }
     }
   }
 `);

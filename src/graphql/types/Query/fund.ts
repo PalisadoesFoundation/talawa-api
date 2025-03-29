@@ -6,7 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryFundInput";
 import { Fund } from "~/src/graphql/types/Fund/Fund";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const queryFundArgumentsSchema = z.object({
 	input: queryFundInputSchema,
 });
@@ -20,6 +20,7 @@ builder.queryField("fund", (t) =>
 				type: QueryFundInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read a fund.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

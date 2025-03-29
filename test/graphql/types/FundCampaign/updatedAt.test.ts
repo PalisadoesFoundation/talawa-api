@@ -1,6 +1,6 @@
-import { vi } from "vitest";
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
+import type { GraphQLContext } from "~/src/graphql/context";
 import type { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
 import { updatedAtResolver } from "~/src/graphql/types/FundCampaign/updatedAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -19,31 +19,17 @@ const mockFundCampaign: FundCampaign = {
 	startAt: new Date("2024-02-01T00:00:00Z"),
 };
 
-const createMockContext = () => {
-	const mockContext = {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "user-123" },
-		} as CurrentClient,
-		drizzleClient: {
-			query: {
-				usersTable: { findFirst: vi.fn() },
-				fundsTable: { findFirst: vi.fn() },
-			},
-		},
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		envConfig: { API_BASE_URL: "mock url" },
-		jwt: { sign: vi.fn() },
-		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
-	};
-	return mockContext as unknown as GraphQLContext;
-};
-
 describe("updatedAtResolver", () => {
 	let ctx: GraphQLContext;
+	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
 	beforeEach(() => {
-		ctx = createMockContext();
+		const { context, mocks: newMocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		ctx = context;
+		mocks = newMocks;
 	});
 
 	it("should throw unauthenticated error if user is not logged in", async () => {
@@ -54,21 +40,17 @@ describe("updatedAtResolver", () => {
 	});
 
 	it("should throw unauthenticated error if current user does not exist", async () => {
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(undefined);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(undefined);
 		await expect(updatedAtResolver(mockFundCampaign, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 		);
 	});
 
 	it("should throw unexpected error if fund does not exist", async () => {
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue({ role: "member" });
-		(
-			ctx.drizzleClient.query.fundsTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(undefined);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			role: "member",
+		});
+		mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValue(undefined);
 		await expect(updatedAtResolver(mockFundCampaign, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
@@ -84,12 +66,8 @@ describe("updatedAtResolver", () => {
 				membershipsWhereOrganization: [],
 			},
 		};
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(mockUser);
-		(
-			ctx.drizzleClient.query.fundsTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(mockFund);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUser);
+		mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValue(mockFund);
 		await expect(updatedAtResolver(mockFundCampaign, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 		);
@@ -104,12 +82,8 @@ describe("updatedAtResolver", () => {
 				membershipsWhereOrganization: [],
 			},
 		};
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(mockUser);
-		(
-			ctx.drizzleClient.query.fundsTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(mockFund);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUser);
+		mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValue(mockFund);
 		const result = await updatedAtResolver(mockFundCampaign, {}, ctx);
 		expect(result).toEqual(mockFundCampaign.updatedAt);
 	});
@@ -123,20 +97,16 @@ describe("updatedAtResolver", () => {
 				membershipsWhereOrganization: [{ role: "administrator" }],
 			},
 		};
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(mockUser);
-		(
-			ctx.drizzleClient.query.fundsTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(mockFund);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUser);
+		mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValue(mockFund);
 		const result = await updatedAtResolver(mockFundCampaign, {}, ctx);
 		expect(result).toEqual(mockFundCampaign.updatedAt);
 	});
 
 	it("should handle database connection error", async () => {
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockRejectedValue(new Error("ECONNREFUSED"));
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			new Error("ECONNREFUSED"),
+		);
 		await expect(updatedAtResolver(mockFundCampaign, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
@@ -144,9 +114,9 @@ describe("updatedAtResolver", () => {
 	});
 
 	it("should handle database timeout error", async () => {
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockRejectedValue(new Error("Query timeout"));
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			new Error("Query timeout"),
+		);
 		await expect(updatedAtResolver(mockFundCampaign, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
@@ -154,9 +124,9 @@ describe("updatedAtResolver", () => {
 	});
 
 	it("should handle database constraint violation", async () => {
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockRejectedValue(new Error("violates foreign key constraint"));
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			new Error("violates foreign key constraint"),
+		);
 		await expect(updatedAtResolver(mockFundCampaign, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
@@ -164,9 +134,9 @@ describe("updatedAtResolver", () => {
 	});
 
 	it("should handle database query syntax error", async () => {
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockRejectedValue(new Error("syntax error in SQL statement"));
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			new Error("syntax error in SQL statement"),
+		);
 		await expect(updatedAtResolver(mockFundCampaign, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
 		);
@@ -174,9 +144,9 @@ describe("updatedAtResolver", () => {
 	});
 
 	it("should handle concurrent updates to the same fund", async () => {
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockRejectedValueOnce(new Error("Database lock timeout"));
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
+			new Error("Database lock timeout"),
+		);
 
 		await expect(updatedAtResolver(mockFundCampaign, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
@@ -185,9 +155,7 @@ describe("updatedAtResolver", () => {
 	});
 
 	it("should handle database error during concurrent access", async () => {
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockRejectedValueOnce(
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
 			new Error("Database error during concurrent access"),
 		);
 
@@ -202,9 +170,9 @@ describe("updatedAtResolver", () => {
 			message: "Custom error",
 			extensions: { code: "unexpected" },
 		});
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockRejectedValue(originalError);
+		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
+			originalError,
+		);
 		await expect(updatedAtResolver(mockFundCampaign, {}, ctx)).rejects.toThrow(
 			originalError,
 		);
@@ -220,12 +188,8 @@ describe("updatedAtResolver", () => {
 				membershipsWhereOrganization: [],
 			},
 		};
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(mockUser);
-		(
-			ctx.drizzleClient.query.fundsTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(mockFund);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUser);
+		mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValue(mockFund);
 		await expect(updatedAtResolver(mockFundCampaign, {}, ctx)).rejects.toThrow(
 			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 		);

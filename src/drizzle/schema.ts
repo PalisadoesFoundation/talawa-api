@@ -53,6 +53,10 @@ export {
 	eventAttendancesTableRelations,
 } from "./tables/eventAttendances";
 export { eventsTable, eventsTableRelations } from "./tables/events";
+export {
+	membershipRequestsTable,
+	membershipRequestsTableRelations,
+} from "./tables/membershipRequests";
 export { familiesTable, familiesTableRelations } from "./tables/families";
 export {
 	familyMembershipsTable,

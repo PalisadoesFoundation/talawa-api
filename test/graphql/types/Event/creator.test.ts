@@ -1,25 +1,10 @@
-import { vi } from "vitest";
+import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it } from "vitest";
-import type { CurrentClient, GraphQLContext } from "~/src/graphql/context";
+import type { GraphQLContext } from "~/src/graphql/context";
 import type { Event as EventType } from "~/src/graphql/types/Event/Event";
 import { eventCreatorResolver } from "~/src/graphql/types/Event/creator";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-//function to return mock GraphqlContext
-const createMockContext = () => {
-	const mockContext = {
-		currentClient: {
-			isAuthenticated: true,
-			user: { id: "user-123", isAdmin: true },
-		} as CurrentClient,
-		drizzleClient: { query: { usersTable: { findFirst: vi.fn() } } },
-		envConfig: { API_BASE_URL: "mock url" },
-		jwt: { sign: vi.fn() },
-		log: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-		minio: { presignedUrl: vi.fn(), putObject: vi.fn(), getObject: vi.fn() },
-	};
-	return mockContext as unknown as GraphQLContext;
-};
 //mock current user details
 type MockUser = {
 	id: string;
@@ -33,9 +18,15 @@ type MockUser = {
 describe("Event Creator Resolver -Test ", () => {
 	let ctx: GraphQLContext;
 	let mockEvent: EventType;
+	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
 
 	beforeEach(() => {
-		ctx = createMockContext();
+		const { context, mocks: newMocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		ctx = context;
+		mocks = newMocks;
 		mockEvent = {
 			id: "550e8400-e29b-41d4-a716-446655440000",
 			name: "Annual General Meeting",
@@ -60,9 +51,9 @@ describe("Event Creator Resolver -Test ", () => {
 
 		it("should throw unauthenticated error is userId exists but current user doesn't exists", async () => {
 			const currentUser = undefined;
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(currentUser);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				currentUser,
+			);
 
 			await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
@@ -75,10 +66,9 @@ describe("Event Creator Resolver -Test ", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
-
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 			await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 			);
@@ -92,30 +82,14 @@ describe("Event Creator Resolver -Test ", () => {
 				],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockUserData,
+			);
 
 			await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 			);
 		});
-		//additional test case --need review
-		// it("should throw unauthorized_action for admin with no organization Membership", async () => {
-		// 	const mockUserData: MockUser = {
-		// 		id: "user-123",
-		// 		role: "administrator",
-		// 		organizationMembershipsWhereMember: [],
-		// 	};
-
-		// 	(
-		// 		ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		// 	).mockResolvedValue(mockUserData);
-
-		// 	await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
-		// 		new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
-		// 	);
-		// });
 	});
 
 	it("should return null for null creatorId", async () => {
@@ -128,9 +102,9 @@ describe("Event Creator Resolver -Test ", () => {
 			],
 		};
 
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(mockUserData);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
 
 		const result = await eventCreatorResolver(mockEvent, {}, ctx);
 		expect(result).toBeNull();
@@ -144,10 +118,9 @@ describe("Event Creator Resolver -Test ", () => {
 			organizationMembershipsWhereMember: [],
 		};
 
-		(
-			ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-		).mockResolvedValue(mockUserData);
-
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
 		const result = await eventCreatorResolver(mockEvent, {}, ctx);
 		expect(result).toEqual(
 			expect.objectContaining({
@@ -172,8 +145,11 @@ describe("Event Creator Resolver -Test ", () => {
 			organizationMembershipsWhereMember: [],
 		};
 
-		const findFirst = ctx.drizzleClient.query.usersTable
-			.findFirst as ReturnType<typeof vi.fn>;
+		const findFirst =
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockCurrentUser,
+			);
+
 		findFirst
 			.mockResolvedValueOnce(mockCurrentUser)
 			.mockResolvedValueOnce(mockCreator);
@@ -196,8 +172,10 @@ describe("Event Creator Resolver -Test ", () => {
 			],
 		};
 
-		const findFirst = ctx.drizzleClient.query.usersTable
-			.findFirst as ReturnType<typeof vi.fn>;
+		const findFirst =
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+				mockCurrentUser,
+			);
 		findFirst
 			.mockResolvedValueOnce(mockCurrentUser)
 			.mockResolvedValueOnce(undefined);
@@ -210,9 +188,9 @@ describe("Event Creator Resolver -Test ", () => {
 	describe("Database Query Errors", () => {
 		it("should handle database connection error", async () => {
 			// Simulate database connection error for first findFirst call
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockRejectedValueOnce(new Error("ECONNREFUSED"));
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
+				new Error("ECONNREFUSED"),
+			);
 
 			await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({
@@ -226,9 +204,9 @@ describe("Event Creator Resolver -Test ", () => {
 
 		it("should handle database timeout error", async () => {
 			// Simulate database timeout for first findFirst call
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockRejectedValueOnce(new Error("Query timeout"));
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
+				new Error("Query timeout"),
+			);
 
 			await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({
@@ -242,9 +220,9 @@ describe("Event Creator Resolver -Test ", () => {
 
 		it("should handle database constraint violation", async () => {
 			// Simulate database constraint error
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockRejectedValueOnce(new Error("violates foreign key constraint"));
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
+				new Error("violates foreign key constraint"),
+			);
 
 			await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({
@@ -258,9 +236,9 @@ describe("Event Creator Resolver -Test ", () => {
 
 		it("should handle database query syntax error", async () => {
 			// Simulate database syntax error
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockRejectedValueOnce(new Error("syntax error in SQL statement"));
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
+				new Error("syntax error in SQL statement"),
+			);
 
 			await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({
@@ -287,7 +265,7 @@ describe("Event Creator Resolver -Test ", () => {
 			};
 
 			// First call returns the current user successfully
-			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+			mocks.drizzleClient.query.usersTable.findFirst
 				.mockResolvedValueOnce(mockUserData)
 				// Second call (for creator) returns undefined, simulating concurrent deletion
 				.mockResolvedValueOnce(undefined);
@@ -297,8 +275,6 @@ describe("Event Creator Resolver -Test ", () => {
 					extensions: { code: "unexpected" },
 				}),
 			);
-
-			// Verify error was logged
 			expect(ctx.log.error).toHaveBeenCalledWith(
 				"Postgres select operation returned an empty array for an event's creator id that isn't null.",
 			);
@@ -317,7 +293,8 @@ describe("Event Creator Resolver -Test ", () => {
 			};
 
 			// First call succeeds
-			(ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>)
+
+			mocks.drizzleClient.query.usersTable.findFirst
 				.mockResolvedValueOnce(mockUserData)
 				// Second call fails with database error
 				.mockRejectedValueOnce(
@@ -331,7 +308,6 @@ describe("Event Creator Resolver -Test ", () => {
 				}),
 			);
 
-			// Verify error was logged
 			expect(ctx.log.error).toHaveBeenCalled();
 		});
 	});
@@ -342,9 +318,9 @@ describe("Event Creator Resolver -Test ", () => {
 				extensions: { code: "unexpected" },
 			});
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockRejectedValueOnce(originalError);
+			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
+				originalError,
+			);
 
 			await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				originalError,
@@ -356,12 +332,12 @@ describe("Event Creator Resolver -Test ", () => {
 			const mockUserData: MockUser = {
 				id: "user-123",
 				role: "member",
-				organizationMembershipsWhereMember: [], // Test undefined case
+				organizationMembershipsWhereMember: [],
 			};
 
-			(
-				ctx.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
-			).mockResolvedValueOnce(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+				mockUserData,
+			);
 
 			await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
