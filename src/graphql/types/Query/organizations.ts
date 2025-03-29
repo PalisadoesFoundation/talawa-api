@@ -25,15 +25,17 @@ export const resolveOrganizations = async (
 	args: OrganizationsArgs,
 	ctx: GraphQLContext,
 ): Promise<OrganizationType[]> => {
+	const { filter, limit, offset } = args;
 	if (!ctx.currentClient.isAuthenticated) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthenticated",
-			},
+		//for initial signUp process user will not be authenticated.
+		return ctx.drizzleClient.query.organizationsTable.findMany({
+			where: (fields) =>
+				filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
+			limit: limit ?? undefined, // Limit the number of results for unauthenticated users
+			offset: offset ?? undefined,
 		});
 	}
 
-	const { filter, limit, offset } = args; // No default values to allow fetching all records
 	const currentUserId = ctx.currentClient.user.id;
 
 	try {
