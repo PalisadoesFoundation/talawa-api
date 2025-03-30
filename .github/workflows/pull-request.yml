@@ -330,19 +330,39 @@ jobs:
           source venv/bin/activate
           python .github/workflows/scripts/check_docstrings.py --directories .github
 
-  # Import-Sample-Data:
-  #   name: Import Sample Data
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout this repository
-  #       uses: actions/checkout@v4.2.2
-  #     - name: Create .env file for talawa api testing environment
-  #       run: cp ./envFiles/.env.ci ./.env
-  #     - name: Build talawa api non production environment docker image
-  #       run: docker compose build
-  #     - name: Run import:sample-data
-  #       uses: addnab/docker-run-action@v3
-  #       with:
-  #         image: talawa_api
-  #         options: --env-file ./envFiles/.env.ci
-  #         run: pnpm run import:sample-data
+  Count-Changed-Files:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Checks if number of files changed is acceptable
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          # Get the base branch ref
+          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+
+          # Count all changed files
+          ALL_CHANGED_FILES_COUNT=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | wc -l | tr -d ' ')
+          echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
+
+      - name: Echo number of changed files
+        env: 
+          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
+        run: |
+          echo "Number of files changed: $CHANGED_FILES_COUNT"
+
+      - name: Check if the number of changed files is less than 100
+        if: steps.changed-files.outputs.all_changed_files_count > 100
+        env: 
+          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
+        run: |
+          echo "Error: Too many files (greater than 100) changed in the pull request."
+          echo "Possible issues:"
+          echo "- Contributor may be merging into an incorrect branch."
+          echo "- Source branch may be incorrect please use develop as source branch."
+          exit 1
