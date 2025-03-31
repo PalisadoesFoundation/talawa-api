@@ -6,7 +6,7 @@
 
 > **default**(`fastify`, `key`, `capacity`, `refillRate`, `cost`): `Promise`\<`boolean`\>
 
-Defined in: [src/utilities/leakyBucket.ts:13](https://github.com/PurnenduMIshra129th/talawa-api/blob/121a22b3ddb398bf77a0d89bb0bf3c4462b4730c/src/utilities/leakyBucket.ts#L13)
+Defined in: src/utilities/leakyBucket.ts:13
 
 Implements a leaky bucket rate limiter.
 

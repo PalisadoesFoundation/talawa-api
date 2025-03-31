@@ -370,10 +370,12 @@ suite("Mutation field createPost", () => {
 						| "VIDEO_WEBM";
 					objectName: string;
 					fileHash: string;
+					name: string;
 				} = {
 					mimetype: "IMAGE_JPEG",
 					objectName: "fake-object-name",
 					fileHash: "fake-file-hash",
+					name: "fake-name",
 				};
 				const createOrgResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
@@ -414,8 +416,14 @@ suite("Mutation field createPost", () => {
 							expect.objectContaining({
 								mimeType: "image/jpeg",
 								objectName: fakeAttachment.objectName,
+								name: fakeAttachment.name,
+								fileHash: fakeAttachment.fileHash,
 							}),
 						]),
+						organization: expect.objectContaining({
+							id: expect.any(String),
+						}),
+						pinnedAt: null,
 					}),
 				);
 			});

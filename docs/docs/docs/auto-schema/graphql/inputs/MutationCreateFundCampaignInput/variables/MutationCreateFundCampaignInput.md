@@ -6,4 +6,4 @@
 
 > `const` **MutationCreateFundCampaignInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `name`: `object`[]; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateFundCampaignInput.ts:26](https://github.com/PurnenduMIshra129th/talawa-api/blob/121a22b3ddb398bf77a0d89bb0bf3c4462b4730c/src/graphql/inputs/MutationCreateFundCampaignInput.ts#L26)
+Defined in: src/graphql/inputs/MutationCreateFundCampaignInput.ts:26

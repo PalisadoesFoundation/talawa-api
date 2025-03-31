@@ -25,6 +25,10 @@ export const FileMetadataInput = builder.inputType("FileMetadataInput", {
 			description: "Object name used in storage",
 			required: true,
 		}),
+		name: t.string({
+			description: "Name of the file",
+			required: true,
+		}),
 		fileHash: t.string({
 			description: "Hash of the file for deduplication",
 			required: true,
@@ -36,6 +40,7 @@ const fileMetadataSchema = z.object({
 	mimetype: postAttachmentMimeTypeEnum,
 	objectName: z.string().min(1),
 	fileHash: z.string().min(1),
+	name: z.string().min(1),
 });
 
 export const mutationCreatePostInputSchema = postsTableInsertSchema

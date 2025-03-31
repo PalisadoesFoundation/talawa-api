@@ -616,7 +616,10 @@ export const Mutation_deletePost = gql(`
       id
       attachments {
         mimeType
-        url
+        fileHash
+        name
+        objectName
+        id
       }
     }
   }
@@ -655,6 +658,22 @@ export const Mutation_createGetfileUrl = gql(`
   mutation Mutation_createGetfileUrl($input: MutationCreateGetfileUrlInput!) {
     createGetfileUrl(input: $input) {
       presignedUrl
+    }
+  }
+`);
+
+export const Mutation_updatePost = gql(`
+  mutation Mutation_updatePost($input: MutationUpdatePostInput!) {
+    updatePost(input: $input) { 
+      id
+      pinnedAt
+      attachments {
+        mimeType
+        fileHash
+        name
+        objectName
+        id
+      }
     }
   }
 `);

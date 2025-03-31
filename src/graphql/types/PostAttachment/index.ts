@@ -1,2 +1,1 @@
 import "./PostAttachment";
-import "./url";

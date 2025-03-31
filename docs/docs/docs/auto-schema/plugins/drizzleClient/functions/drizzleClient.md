@@ -6,7 +6,7 @@
 
 > **drizzleClient**(`fastify`): `Promise`\<`void`\>
 
-Defined in: [src/plugins/drizzleClient.ts:22](https://github.com/PurnenduMIshra129th/talawa-api/blob/121a22b3ddb398bf77a0d89bb0bf3c4462b4730c/src/plugins/drizzleClient.ts#L22)
+Defined in: src/plugins/drizzleClient.ts:22
 
 Integrates a drizzle client instance on a namespace `drizzleClient` on the global fastify instance.
 

@@ -6,7 +6,7 @@
 
 > **resolveCreator**(`parent`, `_args`, `ctx`): `Promise`\<`User`\>
 
-Defined in: [src/graphql/types/Advertisement/Advertisement.ts:37](https://github.com/PurnenduMIshra129th/talawa-api/blob/121a22b3ddb398bf77a0d89bb0bf3c4462b4730c/src/graphql/types/Advertisement/Advertisement.ts#L37)
+Defined in: src/graphql/types/Advertisement/Advertisement.ts:37
 
 ## Parameters
 
