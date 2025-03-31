@@ -1,3 +1,4 @@
+import type { IncomingHttpHeaders } from "node:http";
 import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
 import { fastifyJwt } from "@fastify/jwt";
@@ -11,10 +12,9 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "./envConfigSchema";
+import { auth } from "./lib/auth";
 import plugins from "./plugins/index";
 import routes from "./routes/index";
-import { IncomingHttpHeaders } from "http";
-import { auth } from "./lib/auth";
 
 // Currently fastify provides typescript integration through the usage of ambient typescript declarations where the type of global fastify instance is extended with our custom types. This approach is not sustainable for implementing scoped and encapsulated business logic which is meant to be the main advantage of fastify plugins. The fastify team is aware of this problem and is currently looking for a more elegant approach for typescript integration. More information can be found at this link: https://github.com/fastify/fastify/issues/5061
 declare module "fastify" {
