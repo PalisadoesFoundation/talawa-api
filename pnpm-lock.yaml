@@ -95,6 +95,9 @@ importers:
       ulidx:
         specifier: ^2.4.1
         version: 2.4.1
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
       uuidv7:
         specifier: ^1.0.2
         version: 1.0.2
@@ -3142,6 +3145,10 @@ packages:
   util@0.12.5:
     resolution: {integrity: sha512-kZf/K6hEIrWHI6XqOFUiiMa+79wE/D8Q+NCNAWclkyg3b4d2k7s0QGepNjiABc+aR3N1PAyHL7p6UcLY6LmrnA==}
 
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   uuidv7@1.0.2:
     resolution: {integrity: sha512-8JQkH4ooXnm1JCIhqTMbtmdnYEn6oKukBxHn1Ic9878jMkL7daTI7anTExfY18VRCX7tcdn5quzvCb6EWrR8PA==}
     hasBin: true
@@ -3856,7 +3863,11 @@ snapshots:
 
   '@inquirer/type@3.0.5(@types/node@22.13.10)':
     optionalDependencies:
+<<<<<<< HEAD
       '@types/node': 22.13.10
+=======
+      '@types/node': 22.13.8
+>>>>>>> eec373445 (No mongo action items (#3385))
 
   '@ioredis/commands@1.2.0': {}
 
@@ -6025,6 +6036,8 @@ snapshots:
       is-generator-function: 1.1.0
       is-typed-array: 1.1.15
       which-typed-array: 1.1.19
+
+  uuid@11.1.0: {}
 
   uuidv7@1.0.2: {}
 

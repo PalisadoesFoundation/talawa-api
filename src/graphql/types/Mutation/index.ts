@@ -74,3 +74,6 @@ import "./updateTagFolder";
 import "./updateUser";
 import "./updateVenue";
 import "./createPresignedUrl";
+import "./deleteActionItem";
+import "./updateActionItem";
+import "./createActionItem";
