@@ -1,92 +1,3 @@
-type AcceptMembershipResponse {
-  """Success or error message"""
-  message: String
-
-  """Whether the operation was successful"""
-  success: Boolean
-}
-
-type ActionItem {
-  """Timestamp when the action item was assigned."""
-  assignedAt: DateTime
-
-  """The user assigned to this action item."""
-  assignee: User
-
-  """The ID of the user assigned to this action item."""
-  assigneeId: ID
-
-  """The ID of the category this action item belongs to."""
-  categoryId: ID
-
-  """Timestamp when the action item was completed."""
-  completionAt: DateTime
-
-  """Date time at the time the action item was created."""
-  createdAt: DateTime
-
-  """User who created the action item."""
-  creator: User
-
-  """The ID of the user who created this action item."""
-  creatorId: ID
-
-  """
-  Fetch the event associated with this action item, including attachments if available.
-  """
-  event: Event
-
-  """The ID of the associated event, if applicable."""
-  eventId: ID
-
-  """Unique identifier for the action item."""
-  id: ID
-
-  """Indicates whether the action item is completed."""
-  isCompleted: Boolean
-
-  """The ID of the organization the action item belongs to."""
-  organizationId: ID
-
-  """Notes added after completing the action item."""
-  postCompletionNotes: String
-
-  """Notes added before completing the action item."""
-  preCompletionNotes: String
-
-  """Timestamp when the action item was last updated."""
-  updatedAt: DateTime
-
-  """The ID of the user who last updated this action item."""
-  updaterId: ID
-}
-
-"""
-Represents a category for action items, including metadata such as creation and update timestamps.
-"""
-type ActionItemCategory {
-  """Timestamp when the category was created."""
-  createdAt: DateTime
-
-  """Identifier for the user who created this category."""
-  creatorId: ID
-
-  """Unique identifier for the action item category."""
-  id: ID
-
-  """Indicates whether the action item category is disabled."""
-  isDisabled: Boolean
-
-  """The name of the action item category."""
-  name: String
-
-  """Identifier for the organization this category belongs to."""
-  organizationId: ID
-
-  """Timestamp when the category was last updated."""
-  updatedAt: DateTime
-}
-
 type Advertisement {
   """Array of attachments."""
   attachments: [AdvertisementAttachment!]
@@ -276,21 +187,6 @@ The `BigInt` scalar type represents non-fractional signed whole numeric values.
 """
 scalar BigInt
 
-"""Represents a user blocked by an organization."""
-type BlockedUser {
-  """Timestamp when the user was blocked."""
-  createdAt: Date
-
-  """Unique identifier of the blocked user."""
-  id: ID
-
-  """Organization that blocked the user."""
-  organization: Organization
-
-  """User who has been blocked."""
-  user: User
-}
-
 """Response type for canceling a membership request."""
 type CancelMembershipResponse {
   """A message providing more details about the cancellation status."""
@@ -298,10 +194,6 @@ type CancelMembershipResponse {
 
   """Indicates whether the membership request was successfully canceled."""
   success: Boolean
-}
-
-input CategoriesByIdsInput {
-  ids: [ID!]!
 }
 
 type Chat {
@@ -519,15 +411,6 @@ type Community {
   youtubeURL: String
 }
 
-input CreateActionItemInput {
-  assignedAt: String
-  assigneeId: ID!
-  categoryId: ID!
-  eventId: ID
-  organizationId: ID!
-  preCompletionNotes: String
-}
-
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -627,10 +510,6 @@ type EventVenuesConnectionEdge {
   node: Venue
 }
 
-input EventsByOrganizationIdInput {
-  organizationId: ID!
-}
-
 """Metadata for files uploaded via presigned URL"""
 input FileMetadataInput {
   """Hash of the file for deduplication"""
@@ -638,9 +517,6 @@ input FileMetadataInput {
 
   """MIME type of the file"""
   mimetype: PostAttachmentMimeType!
-
-  """Name of the file"""
-  name: String!
 
   """Object name used in storage"""
   objectName: String!
@@ -1409,10 +1285,6 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
-input MarkActionItemAsPendingInput {
-  id: ID!
-}
-
 """Filter criteria for member roles"""
 input MembersRoleWhereInput {
   """Role equals this value"""
@@ -1442,9 +1314,6 @@ type MembershipRequest {
   """Status of the membership request (e.g., pending, approved, rejected)."""
   status: MembershipRequestStatus
 
-  """The user who requested membership"""
-  user: User
-
   """ID of the user who requested membership."""
   userId: String
 }
@@ -1456,29 +1325,12 @@ enum MembershipRequestStatus {
   rejected
 }
 
-input MembershipRequestWhereInput {
-  """Filter criteria for user"""
-  user: UserWhereInput
-}
-
 type Mutation {
-  """Mutation field to accept a membership request by an admin."""
-  acceptMembershipRequest(
-    """Input to accept a membership request"""
-    input: MutationAcceptMembershipRequestInput!
-  ): AcceptMembershipResponse
-
-  """Mutation field to block a user from an organization."""
-  blockUser(organizationId: ID!, userId: ID!): Boolean
-
   """Mutation field to cancel a membership request."""
   cancelMembershipRequest(
     """Input to cancel a membership request"""
     input: MutationCancelMembershipRequestInput!
   ): CancelMembershipResponse
-
-  """Mutation field to create an action item."""
-  createActionItem(input: CreateActionItemInput!): ActionItem
 
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
@@ -1548,12 +1400,6 @@ type Mutation {
 
   """Mutation field to create a venue booking."""
   createVenueBooking(input: MutationCreateVenueBookingInput!): Venue
-
-  """Mutation field to delete an action item."""
-  deleteActionItem(
-    """Delete an action item"""
-    input: MutationDeleteActionItemInput!
-  ): ActionItem
 
   """Mutation field to delete an advertisement."""
   deleteAdvertisement(input: MutationDeleteAdvertisementInput!): Advertisement
@@ -1627,15 +1473,6 @@ type Mutation {
     input: MutationJoinPublicOrganizationInput!
   ): OrganizationMembershipObject
 
-  """Mutation to mark a completed action item as pending"""
-  markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
-
-  """Mutation field to reject a membership request by an admin."""
-  rejectMembershipRequest(
-    """Input to reject a membership request"""
-    input: MutationRejectMembershipRequestInput!
-  ): RejectMembershipResponse
-
   """Mutation field to send a membership request to an organization."""
   sendMembershipRequest(
     """Input to send a membership request"""
@@ -1644,15 +1481,6 @@ type Mutation {
 
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
-
-  """Mutation field to unblock a user from an organization."""
-  unblockUser(organizationId: ID!, userId: ID!): Boolean
-
-  """Mutation to update an action item"""
-  updateActionItem(
-    """Update an action item"""
-    input: MutationUpdateActionItemInput!
-  ): ActionItem
 
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
@@ -1719,20 +1547,6 @@ type Mutation {
 
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
-}
-
-input MutationAcceptMembershipRequestInput {
-  """ID of the membership request to accept"""
-  membershipRequestId: ID!
-}
-
-"""Input to block a user from an organization"""
-input MutationBlockUserInput {
-  """Global identifier of the organization."""
-  organizationId: ID!
-
-  """Global identifier of the user to block."""
-  userId: ID!
 }
 
 """Input type for canceling a membership request."""
@@ -1845,7 +1659,7 @@ input MutationCreateChatMessageInput {
   chatId: ID!
 
   """Global identifier of the associated parent message."""
-  parentMessageId: ID
+  parentMessageId: ID!
 }
 
 """"""
@@ -1963,11 +1777,6 @@ input MutationCreateOrganizationInput {
 
   """Custom information about the organization."""
   description: String
-
-  """
-  Flag to indicate if user registration is required to access the organization.
-  """
-  isUserRegistrationRequired: Boolean
 
   """Name of the organization."""
   name: String!
@@ -2153,12 +1962,6 @@ input MutationCreateVenueInput {
   organizationId: ID!
 }
 
-"""Input for deleting an action item."""
-input MutationDeleteActionItemInput {
-  """Global identifier of the action item."""
-  id: ID!
-}
-
 """"""
 input MutationDeleteAdvertisementInput {
   """Global identifier of the advertisement."""
@@ -2306,11 +2109,6 @@ input MutationJoinPublicOrganizationInput {
   organizationId: ID!
 }
 
-input MutationRejectMembershipRequestInput {
-  """ID of the membership request to reject"""
-  membershipRequestId: ID!
-}
-
 """Input type for sending a membership request."""
 input MutationSendMembershipRequestInput {
   """Global identifier of the organization."""
@@ -2379,35 +2177,6 @@ input MutationSignUpInput {
   The phone number to use to communicate with the user while they're at work.
   """
   workPhoneNumber: PhoneNumber
-}
-
-"""Input to unblock a user from an organization"""
-input MutationUnblockUserInput {
-  """Global identifier of the organization."""
-  organizationId: ID!
-
-  """Global identifier of the user to unblock."""
-  userId: ID!
-}
-
-input MutationUpdateActionItemInput {
-  """Identifier for the assignee of the action item."""
-  assigneeId: ID
-
-  """Category identifier for the action item."""
-  categoryId: ID
-
-  """Global identifier of the action item."""
-  id: ID!
-
-  """Completion status of the action item."""
-  isCompleted: Boolean!
-
-  """Post completion notes for the action item."""
-  postCompletionNotes: String
-
-  """Pre completion notes for the action item."""
-  preCompletionNotes: String
 }
 
 """"""
@@ -2878,9 +2647,6 @@ type Organization {
   """Address line 2 of the organization's address."""
   addressLine2: String
 
-  """Total number of admins in the organization."""
-  adminsCount: Int
-
   """
   GraphQL connection to traverse through the advertisements belonging to the organization.
   """
@@ -2891,9 +2657,6 @@ type Organization {
 
   """URL to the avatar of the organization."""
   avatarURL: String
-
-  """GraphQL connection to retrieve blocked users of the organization."""
-  blockedUsers(after: String, before: String, first: Int, last: Int): OrganizationBlockedUsersConnection
 
   """
   GraphQL connection to traverse through the chats belonging to the organization.
@@ -2928,14 +2691,6 @@ type Organization {
   """Global identifier of the organization."""
   id: ID!
 
-  """Indicates whether the current user is a member of this organization."""
-  isMember: Boolean
-
-  """
-  Flag to indicate if user registration is required to join the organization.
-  """
-  isUserRegistrationRequired: Boolean
-
   """
   GraphQL connection to traverse through the users that are members of the organization.
   """
@@ -2948,21 +2703,6 @@ type Organization {
     """Filter criteria for organization members"""
     where: MembersWhereInput
   ): OrganizationMembersConnection
-
-  """Total number of members in the organization."""
-  membersCount: Int
-
-  """Membership requests for this organization"""
-  membershipRequests(
-    """Number of items to return"""
-    first: Int
-
-    """Number of items to skip"""
-    skip: Int
-
-    """Filter criteria for membership requests"""
-    where: MembershipRequestWhereInput
-  ): [MembershipRequest!]
 
   """Name of the organization."""
   name: String
@@ -3021,16 +2761,6 @@ type OrganizationAdvertisementsConnection {
 type OrganizationAdvertisementsConnectionEdge {
   cursor: String!
   node: Advertisement
-}
-
-type OrganizationBlockedUsersConnection {
-  edges: [OrganizationBlockedUsersConnectionEdge]
-  pageInfo: PageInfo!
-}
-
-type OrganizationBlockedUsersConnectionEdge {
-  cursor: String!
-  node: User
 }
 
 """"""
@@ -3229,13 +2959,9 @@ type Post {
   updater: User
 }
 
-"""Attachment of the post."""
 type PostAttachment {
   """File hash for deduplication purposes."""
   fileHash: String
-
-  """Global identifier of the attachment."""
-  id: ID!
 
   """Mime type of the attachment."""
   mimeType: String
@@ -3245,6 +2971,9 @@ type PostAttachment {
 
   """Object name used when creating presigned URLs."""
   objectName: String
+
+  """URL to the attachment."""
+  url: String
 }
 
 """MIME types supported for post attachments"""
@@ -3300,22 +3029,6 @@ enum PostVoteType {
 }
 
 type Query {
-  """
-  Query field to fetch all action item categories linked to a specific organization.
-  """
-  actionCategoriesByOrganization(
-    """Input parameters to fetch action item categories by organizationId."""
-    input: QueryActionCategoriesByOrganizationInput!
-  ): [ActionItemCategory!]
-
-  """
-  Query field to fetch all action items linked to a specific organization.
-  """
-  actionItemsByOrganization(
-    """Input parameters to fetch action items by organizationId."""
-    input: QueryActionItemsByOrganizationInput!
-  ): [ActionItem!]
-
   """Query field to read an advertisement."""
   advertisement(input: QueryAdvertisementInput!): Advertisement
 
@@ -3327,9 +3040,6 @@ type Query {
 
   """Query field to read all Users."""
   allUsers(after: String, before: String, first: Int, last: Int, where: QueryAllUsersWhereInput): QueryAllUsersConnection
-
-  """Fetch multiple action item categories by their IDs."""
-  categoriesByIds(input: CategoriesByIdsInput!): [ActionItemCategory!]
 
   """Query field to read a chat."""
   chat(input: QueryChatInput!): Chat
@@ -3349,12 +3059,6 @@ type Query {
   """Query field to read an event."""
   event(input: QueryEventInput!): Event
 
-  """Fetch multiple events by their IDs."""
-  eventsByIds(input: QueryEventsByIdsInput!): [Event!]
-
-  """Fetch all events that belong to a given organization."""
-  eventsByOrganizationId(input: EventsByOrganizationIdInput!): [Event!]
-
   """Query field to read a fund."""
   fund(input: QueryFundInput!): Fund
 
@@ -3368,9 +3072,9 @@ type Query {
   organization(input: QueryOrganizationInput!): Organization
 
   """
-  Query to fetch all organizations with optional filtering. If limit and offset are not provided, returns all organizations.
+  Query to fetch all organizations with optional filtering. Returns up to 20 organizations.
   """
-  organizations(filter: String, limit: Int, offset: Int): [Organization!]
+  organizations(filter: String): [Organization!]
 
   """Query field to read a post."""
   post(input: QueryPostInput!): Post
@@ -3393,24 +3097,8 @@ type Query {
   """Query field to read a user."""
   user(input: QueryUserInput!): User
 
-  """Fetch multiple users by their IDs."""
-  usersByIds(input: UsersByIdsInput!): [User!]
-
-  """Fetch all users that belong to a given organization."""
-  usersByOrganizationId(organizationId: ID!): [User!]
-
   """Query field to read a venue."""
   venue(input: QueryVenueInput!): Venue
-}
-
-input QueryActionCategoriesByOrganizationInput {
-  organizationId: String!
-}
-
-"""Input schema for querying ActionItems by organizationId."""
-input QueryActionItemsByOrganizationInput {
-  """ID of the organization to fetch associated action items."""
-  organizationId: String!
 }
 
 """"""
@@ -3431,13 +3119,11 @@ input QueryAgendaItemInput {
   id: String!
 }
 
-""""""
 type QueryAllUsersConnection {
   edges: [QueryAllUsersConnectionEdge]
   pageInfo: PageInfo!
 }
 
-""""""
 type QueryAllUsersConnectionEdge {
   cursor: String!
   node: User
@@ -3469,10 +3155,6 @@ input QueryCommentInput {
 input QueryEventInput {
   """Global id of the event."""
   id: String!
-}
-
-input QueryEventsByIdsInput {
-  ids: [ID!]!
 }
 
 """"""
@@ -3536,14 +3218,6 @@ input QueryUserInput {
 input QueryVenueInput {
   """Global id of the venue."""
   id: String!
-}
-
-type RejectMembershipResponse {
-  """Success or error message"""
-  message: String
-
-  """Whether the operation was successful"""
-  success: Boolean
 }
 
 type Subscription {
@@ -3827,15 +3501,6 @@ type UserOrganizationsWhereMemberConnectionEdge {
 enum UserRole {
   administrator
   regular
-}
-
-input UserWhereInput {
-  """Filter by first name containing this string"""
-  name_contains: String
-}
-
-input UsersByIdsInput {
-  ids: [ID!]!
 }
 
 type Venue {

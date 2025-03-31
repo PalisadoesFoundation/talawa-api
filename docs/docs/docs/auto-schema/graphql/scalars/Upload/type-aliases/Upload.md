@@ -6,7 +6,7 @@
 
 > **Upload**: `object`
 
-Defined in: [src/graphql/scalars/Upload.ts:17](https://github.com/PurnenduMIshra129th/talawa-api/blob/8bb4483f6aa0d175e00d3d589e36182f9c58a66a/src/graphql/scalars/Upload.ts#L17)
+Defined in: [src/graphql/scalars/Upload.ts:17](https://github.com/PurnenduMIshra129th/talawa-api/blob/121a22b3ddb398bf77a0d89bb0bf3c4462b4730c/src/graphql/scalars/Upload.ts#L17)
 
 `Upload` scalar type for pothos schema.
 

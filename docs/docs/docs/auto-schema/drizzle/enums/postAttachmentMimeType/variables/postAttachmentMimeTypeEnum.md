@@ -6,6 +6,4 @@
 
 > `const` **postAttachmentMimeTypeEnum**: `ZodEnum`\<\[`"image/avif"`, `"image/jpeg"`, `"image/png"`, `"image/webp"`, `"video/mp4"`, `"video/webm"`\]\>
 
-Defined in: [src/drizzle/enums/postAttachmentMimeType.ts:8](https://github.com/PurnenduMIshra129th/talawa-api/blob/8bb4483f6aa0d175e00d3d589e36182f9c58a66a/src/drizzle/enums/postAttachmentMimeType.ts#L8)
-
-Possible variants of the type of an attachement of a post.
+Defined in: [src/drizzle/enums/postAttachmentMimeType.ts:12](https://github.com/PurnenduMIshra129th/talawa-api/blob/121a22b3ddb398bf77a0d89bb0bf3c4462b4730c/src/drizzle/enums/postAttachmentMimeType.ts#L12)

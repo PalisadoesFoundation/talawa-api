@@ -6,4 +6,4 @@
 
 > `const` **joinPublicOrganizationInputSchema**: `ZodObject`\<`Pick`\<\{\}, `never`\>, `"strip"`, `ZodTypeAny`, \{\}, \{\}\>
 
-Defined in: [src/graphql/inputs/MutationJoinPublicOrganizationInput.ts:5](https://github.com/NishantSinghhhhh/talawa-api/blob/097322c0353ac6926bd36bdd4ea38c52c0dfde5d/src/graphql/inputs/MutationJoinPublicOrganizationInput.ts#L5)
+Defined in: [src/graphql/inputs/MutationJoinPublicOrganizationInput.ts:5](https://github.com/PurnenduMIshra129th/talawa-api/blob/121a22b3ddb398bf77a0d89bb0bf3c4462b4730c/src/graphql/inputs/MutationJoinPublicOrganizationInput.ts#L5)

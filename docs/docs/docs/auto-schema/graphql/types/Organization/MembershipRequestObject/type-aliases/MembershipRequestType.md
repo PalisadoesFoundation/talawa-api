@@ -6,7 +6,7 @@
 
 > **MembershipRequestType**: `object`
 
-Defined in: [src/graphql/types/Organization/MembershipRequestObject.ts:6](https://github.com/NishantSinghhhhh/talawa-api/blob/097322c0353ac6926bd36bdd4ea38c52c0dfde5d/src/graphql/types/Organization/MembershipRequestObject.ts#L6)
+Defined in: [src/graphql/types/Organization/MembershipRequestObject.ts:5](https://github.com/PurnenduMIshra129th/talawa-api/blob/121a22b3ddb398bf77a0d89bb0bf3c4462b4730c/src/graphql/types/Organization/MembershipRequestObject.ts#L5)
 
 ## Type declaration
 
