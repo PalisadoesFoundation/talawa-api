@@ -484,7 +484,7 @@ suite("Mutation field deletePost", () => {
 								{
 									mimetype: "IMAGE_PNG",
 									objectName: "test-object-5",
-									fileHash: "test-hash-5",
+									fileHash: "test-hash-5gt",
 									name: "test.png",
 								},
 							],
