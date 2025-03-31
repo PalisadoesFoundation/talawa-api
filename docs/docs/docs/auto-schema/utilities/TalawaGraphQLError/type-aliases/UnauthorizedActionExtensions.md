@@ -6,7 +6,7 @@
 
 > **UnauthorizedActionExtensions**: `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:139](https://github.com/NishantSinghhhhh/talawa-api/blob/097322c0353ac6926bd36bdd4ea38c52c0dfde5d/src/utilities/TalawaGraphQLError.ts#L139)
+Defined in: [src/utilities/TalawaGraphQLError.ts:139](https://github.com/PalisadoesFoundation/talawa-api/blob/4f56a5331bd7a5f784e82913103662f37b427f3e/src/utilities/TalawaGraphQLError.ts#L139)
 
 When the client is not authorized to perform an action.
 

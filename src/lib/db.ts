@@ -3,12 +3,13 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 dotenv.config();
 const DATABASE_URL = `postgres://${process.env.API_POSTGRES_USER}:${process.env.API_POSTGRES_PASSWORD}@${process.env.API_POSTGRES_HOST}:${process.env.API_POSTGRES_PORT}/${process.env.API_POSTGRES_DATABASE}`;
+console.log("🔗 Database URL:", DATABASE_URL.replace(/:[^:]+@/, ":*****@"));
 const client = postgres(DATABASE_URL, {
 	prepare: false,
-	// debug: (connection, query, params) => {
-	// 	console.log("Running SQL Query:", query);
-	// 	console.log("📌 Query Parameters:", params);
-	// },
+	debug: (connection, query, params) => {
+		console.log("🛠 Running SQL Query:", query);
+		// console.log("📌 Query Parameters:", params);
+	},
 });
 
 // Connect Drizzle ORM

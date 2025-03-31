@@ -6,7 +6,7 @@
 
 > **deleteChatMessageResolver**(`_parent`, `args`, `ctx`): `Promise`\<\{ `body`: `string`; `chatId`: `string`; `createdAt`: `Date`; `creatorId`: `string`; `id`: `string`; `parentMessageId`: `string`; `updatedAt`: `Date`; \}\>
 
-Defined in: [src/graphql/types/Mutation/deleteChatMessage.ts:17](https://github.com/NishantSinghhhhh/talawa-api/blob/097322c0353ac6926bd36bdd4ea38c52c0dfde5d/src/graphql/types/Mutation/deleteChatMessage.ts#L17)
+Defined in: [src/graphql/types/Mutation/deleteChatMessage.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/4f56a5331bd7a5f784e82913103662f37b427f3e/src/graphql/types/Mutation/deleteChatMessage.ts#L17)
 
 ## Parameters
 
