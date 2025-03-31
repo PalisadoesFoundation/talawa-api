@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test , vi } from "vitest";
+import { expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -7,8 +7,8 @@ import {
 	Mutation_createOrganization,
 	Mutation_createPost,
 	Mutation_deleteCurrentUser,
-	Query_signIn,
 	Mutation_joinPublicOrganization,
+	Query_signIn,
 } from "../documentNodes";
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
@@ -375,13 +375,11 @@ suite("Mutation field createPost", () => {
 
 	suite("when the client is authenticated but not an administrator", () => {
 		test("should return an error with unauthorized_arguments extensions code when setting isPinned", async () => {
-			// Create a regular non-admin user
 			const { authToken: regularAuthToken } = await import(
 				"../createRegularUserUsingAdmin"
 			).then((module) => module.createRegularUserUsingAdmin());
 			assertToBeNonNullish(regularAuthToken);
 
-			// Admin creates an organization
 			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -433,7 +431,6 @@ suite("Mutation field createPost", () => {
 			);
 			expect(joinResult.data?.joinPublicOrganization?.role).toBe("regular");
 
-			// Regular user tries to create a post with isPinned=true
 			const result = await mercuriusClient.mutate(Mutation_createPost, {
 				headers: { authorization: `bearer ${regularAuthToken}` },
 				variables: {
@@ -474,79 +471,81 @@ suite("Mutation field createPost", () => {
 
 	suite("when the database insert operation unexpectedly fails", () => {
 		test("should return an error with unexpected extensions code", async () => {
-		  const createOrgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-			  headers: { authorization: `bearer ${authToken}` },
-			  variables: {
-				input: {
-				  name: "Error Test Org",
-				  description: "Organization for testing unexpected errors",
-				  countryCode: "us",
-				  state: "CA",
-				  city: "San Francisco",
-				  postalCode: "94101",
-				  addressLine1: "123 Error St",
-				  addressLine2: "Suite 404",
-				},
-			  },
-			},
-		  );
-		  const orgId = createOrgResult.data?.createOrganization?.id;
-		  assertToBeNonNullish(orgId);
-		  
-		  // Mock the transaction to simulate the error
-		  const originalTransaction = server.drizzleClient.transaction;
-		  server.drizzleClient.transaction = vi.fn().mockImplementation(async (callback) => {
-			// Create a mock transaction object with an insert method that returns empty array
-			const mockTx = {
-			  insert: () => ({
-				values: () => ({
-				  returning: async () => [],
-				}),
-			  }),
-			};
-			
-			// Call the callback with our mock transaction
-			return await callback(mockTx);
-		  });
-		  
-		  try {
-			const result = await mercuriusClient.mutate(Mutation_createPost, {
-			  headers: { authorization: `bearer ${authToken}` },
-			  variables: {
-				input: {
-				  caption: "Post that should fail",
-				  organizationId: orgId,
-				  attachments: [
-					{
-					  mimetype: "IMAGE_PNG",
-					  objectName: "test-object-name-error",
-					  name: "test-image.png",
-					  fileHash: "test-file-hash-error",
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Error Test Org",
+							description: "Organization for testing unexpected errors",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "123 Error St",
+							addressLine2: "Suite 404",
+						},
 					},
-				  ],
 				},
-			  },
-			});
-			
-			expect(result.data?.createPost).toBeNull();
-			expect(result.errors).toEqual(
-			  expect.arrayContaining([
-				expect.objectContaining({
-				  extensions: expect.objectContaining({
-					code: "unexpected",
-				  }),
-				  path: ["createPost"],
-				}),
-			  ]),
 			);
-		  } finally {
-			// Restore the original function
-			server.drizzleClient.transaction = originalTransaction;
-		  }
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Mock the transaction to simulate the error
+			const originalTransaction = server.drizzleClient.transaction;
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (callback) => {
+					// Create a mock transaction object with an insert method that returns empty array
+					const mockTx = {
+						insert: () => ({
+							values: () => ({
+								returning: async () => [],
+							}),
+						}),
+					};
+
+					// Call the callback with our mock transaction
+					return await callback(mockTx);
+				});
+
+			try {
+				const result = await mercuriusClient.mutate(Mutation_createPost, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							caption: "Post that should fail",
+							organizationId: orgId,
+							attachments: [
+								{
+									mimetype: "IMAGE_PNG",
+									objectName: "test-object-name-error",
+									name: "test-image.png",
+									fileHash: "test-file-hash-error",
+								},
+							],
+						},
+					},
+				});
+
+				expect(result.data?.createPost).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unexpected",
+							}),
+							path: ["createPost"],
+						}),
+					]),
+				);
+			} finally {
+				// Restore the original function
+				server.drizzleClient.transaction = originalTransaction;
+			}
 		});
-	  });
+	});
 
 	suite(
 		"when the client is authorized and the post is created successfully",

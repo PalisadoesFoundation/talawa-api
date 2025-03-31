@@ -9,7 +9,6 @@ import {
 	Mutation_createPost,
 	Mutation_createUser,
 	Mutation_deleteCurrentUser,
-	Mutation_joinPublicOrganization,
 	Mutation_updatePost,
 	Query_signIn,
 } from "../documentNodes";
@@ -193,9 +192,8 @@ suite("Mutation field updatePost", () => {
 		"when non-admin user (member) attempts update and is not the creator",
 		() => {
 			test("should return an error with unauthorized_action_on_arguments_associated_resources", async () => {
-				const { authToken: regularAuthToken, userId } = await import(
-					"../createRegularUserUsingAdmin"
-				).then((module) => module.createRegularUserUsingAdmin());
+				const { authToken: regularAuthToken, userId } =
+					await createRegularUserUsingAdmin();
 				assertToBeNonNullish(regularAuthToken);
 				assertToBeNonNullish(userId);
 
@@ -367,6 +365,114 @@ suite("Mutation field updatePost", () => {
 			);
 		});
 	});
+	suite("when update operation unexpectedly returns empty array", () => {
+		test("should return an error with unexpected extensions code", async () => {
+			// Create an organization for testing
+			const orgName = `Unexpected-Error-Org-${faker.string.alphanumeric(8)}`;
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							name: orgName,
+							description:
+								"Organization for testing unexpected errors in update",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "789 Error St",
+							addressLine2: "Suite 500",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Create post that we'll try to update
+			const createPostResult = await mercuriusClient.mutate(
+				Mutation_createPost,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							caption: "Post for unexpected error test",
+							organizationId: orgId,
+							attachments: [
+								{
+									mimetype: "IMAGE_PNG",
+									objectName: "unexpected-test-object",
+									name: "unexpected-test.png",
+									fileHash: "unexpected-test-hash",
+								},
+							],
+						},
+					},
+				},
+			);
+			const postId = createPostResult.data?.createPost?.id;
+			assertToBeNonNullish(postId);
+
+			// Mock the transaction to simulate the update returning an empty array
+			const originalTransaction = server.drizzleClient.transaction;
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (callback) => {
+					// Create a mock transaction that returns an empty array from update operation
+					const mockTx = {
+						update: () => ({
+							set: () => ({
+								where: () => ({
+									returning: async () => [], // Empty array simulates the unexpected condition
+								}),
+							}),
+						}),
+						// Include other methods that might be needed during the transaction
+						delete: () => ({
+							where: () => Promise.resolve(),
+						}),
+						insert: () => ({
+							values: () => ({
+								returning: async () => [],
+							}),
+						}),
+					};
+
+					return await callback(mockTx);
+				});
+
+			try {
+				// Attempt to update the post with the mocked transaction
+				const updateResult = await mercuriusClient.mutate(Mutation_updatePost, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							id: postId,
+							caption: "This should trigger an unexpected error",
+						},
+					},
+				});
+
+				// Verify the error response
+				expect(updateResult.data?.updatePost).toBeNull();
+				expect(updateResult.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unexpected",
+							}),
+							path: ["updatePost"],
+						}),
+					]),
+				);
+			} finally {
+				// Restore the original transaction function
+				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
+	});
 
 	suite("when the current user does not exist", () => {
 		test("should return an error with unauthenticated extensions code", async () => {
@@ -489,111 +595,207 @@ suite("Mutation field updatePost", () => {
 		"when regular member tries to update isPinned attribute on their own post",
 		() => {
 			test("should return an error with unauthorized_arguments code", async () => {
-
-				const { authToken: regularUserToken, userId } =
+				const { authToken: regularAuthToken, userId } =
 					await createRegularUserUsingAdmin();
-				assertToBeNonNullish(regularUserToken);
+				assertToBeNonNullish(regularAuthToken);
 				assertToBeNonNullish(userId);
 
+				const orgName = `isPinned-Test-Org-${faker.string.alphanumeric(8)}`;
 				const createOrgResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: { authorization: `bearer ${adminToken}` },
 						variables: {
 							input: {
-								name: "isPinned Test Org",
-								description: "Organization for isPinned test",
+								name: orgName,
+								description: "Organization for testing isPinned permissions",
 								countryCode: "us",
-								state: "ca",
+								state: "CA",
 								city: "San Francisco",
 								postalCode: "94101",
 								addressLine1: "123 Main St",
-								isUserRegistrationRequired: false,
+								addressLine2: "Suite 100",
 							},
 						},
 					},
 				);
 				const orgId = createOrgResult.data?.createOrganization?.id;
 				assertToBeNonNullish(orgId);
-				console.log("orgId", orgId);
 
-				// 4. Have the regular user join the organization
-				const joinResult = await mercuriusClient.mutate(
-					Mutation_joinPublicOrganization,
-					{
-						headers: { authorization: `bearer ${regularUserToken}` },
-						variables: {
-							input: {
-								organizationId: orgId,
+				const originalFindFirst =
+					server.drizzleClient.query.postsTable.findFirst;
+
+				server.drizzleClient.query.postsTable.findFirst = vi
+					.fn()
+					.mockResolvedValue({
+						pinnedAt: null,
+						creatorId: userId,
+						attachmentsWherePost: [],
+						organization: {
+							membershipsWhereOrganization: [{ role: "member" }],
+						},
+					});
+
+				try {
+					const updateResult = await mercuriusClient.mutate(
+						Mutation_updatePost,
+						{
+							headers: { authorization: `bearer ${regularAuthToken}` },
+							variables: {
+								input: {
+									id: faker.string.uuid(),
+									caption: "Updated regular user post",
+									isPinned: true,
+								},
 							},
 						},
-					},
-				);
-				expect(joinResult.data?.joinPublicOrganization).toBeDefined();
-				expect(joinResult.data?.joinPublicOrganization?.organizationId).toBe(
-					orgId,
-				);
-				expect(joinResult.data?.joinPublicOrganization?.role).toBe("regular");
+					);
 
-				// 5. Create a post as the regular user
-				const createPostResult = await mercuriusClient.mutate(
-					Mutation_createPost,
-					{
-						headers: { authorization: `bearer ${regularUserToken}` },
-						variables: {
-							input: {
-								caption: "Regular user post",
-								organizationId: orgId,
-								isPinned: false,
-								attachments: [
-									{
-										mimetype: "IMAGE_PNG",
-										objectName: "test-object-name-isPinned",
-										name: "test-image.png",
-										fileHash: "test-file-hash-isPinned",
-									},
-								],
-							},
-						},
-					},
-				);
-				const postId = createPostResult.data?.createPost?.id;
-				assertToBeNonNullish(postId);
-
-				// 6. Try to update the post's isPinned status as the regular user
-				const updateResult = await mercuriusClient.mutate(Mutation_updatePost, {
-					headers: { authorization: `bearer ${regularUserToken}` },
-					variables: {
-						input: {
-							id: postId,
-							isPinned: true, // Regular members should not be able to pin posts
-						},
-					},
-				});
-
-				// 7. Check for the expected error
-				expect(updateResult.data?.updatePost ?? null).toBeNull();
-				expect(updateResult.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "unauthorized_arguments",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["input", "isPinned"],
-									}),
-								]),
+					expect(updateResult.data?.updatePost).toBeNull();
+					expect(updateResult.errors).toEqual(
+						expect.arrayContaining([
+							expect.objectContaining({
+								extensions: expect.objectContaining({
+									code: "unauthorized_arguments",
+									issues: expect.arrayContaining([
+										expect.objectContaining({
+											argumentPath: ["input", "isPinned"],
+										}),
+									]),
+								}),
+								path: ["updatePost"],
 							}),
-							path: ["updatePost"],
-						}),
-					]),
-				);
+						]),
+					);
+				} finally {
+					server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
+				}
 			});
 		},
 	);
 
-	//An another test suite will be written here after the join button is implemented"
+	suite("when updating post attachments", () => {
+		test("should replace existing attachments with new ones", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							name: "Attachment Update Test Org",
+							description: "Organization for testing attachment updates",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "789 Tech St",
+							addressLine2: "Suite 300",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
 
+			const initialAttachments = [
+				{
+					mimetype: "IMAGE_PNG" as const,
+					objectName: "initial-object-name-1",
+					name: "initial-image1.png",
+					fileHash: "initial-file-hash-1",
+				},
+				{
+					mimetype: "IMAGE_JPEG" as const,
+					objectName: "initial-object-name-2",
+					name: "initial-image2.jpg",
+					fileHash: "initial-file-hash-2",
+				},
+			];
+
+			const createPostResult = await mercuriusClient.mutate(
+				Mutation_createPost,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							caption: "Post with attachments to update",
+							organizationId: orgId,
+							attachments: initialAttachments,
+						},
+					},
+				},
+			);
+			const postId = createPostResult.data?.createPost?.id;
+			assertToBeNonNullish(postId);
+
+			const attachments = createPostResult.data?.createPost?.attachments;
+			assertToBeNonNullish(attachments);
+			expect(attachments).toHaveLength(2);
+			expect(attachments[0]?.name).toBe("initial-image1.png");
+			expect(attachments[1]?.name).toBe("initial-image2.jpg");
+
+			const newAttachments = [
+				{
+					mimetype: "IMAGE_PNG" as const,
+					objectName: "new-object-name-1",
+					name: "new-image1.png",
+					fileHash: "new-file-hash-1",
+				},
+				{
+					mimetype: "IMAGE_JPEG" as const,
+					objectName: "new-object-name-2",
+					name: "new-image2.jpg",
+					fileHash: "new-file-hash-2",
+				},
+				{
+					mimetype: "IMAGE_PNG" as const,
+					objectName: "new-object-name-3",
+					name: "new-document.png",
+					fileHash: "new-file-hash-3",
+				},
+			];
+
+			const updateResult = await mercuriusClient.mutate(Mutation_updatePost, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						id: postId,
+						caption: "Updated post with new attachments",
+						attachments: newAttachments,
+					},
+				},
+			});
+
+			expect(updateResult.errors).toBeUndefined();
+			const updatedPost = updateResult.data?.updatePost;
+			assertToBeNonNullish(updatedPost);
+
+			expect(updatedPost.caption).toBe("Updated post with new attachments");
+			expect(updatedPost.attachments).toHaveLength(3);
+			expect(updatedPost.attachments).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						name: "new-image1.png",
+						objectName: "new-object-name-1",
+						fileHash: "new-file-hash-1",
+						mimeType: "image/png",
+					}),
+					expect.objectContaining({
+						name: "new-image2.jpg",
+						objectName: "new-object-name-2",
+						fileHash: "new-file-hash-2",
+						mimeType: "image/jpeg",
+					}),
+					expect.objectContaining({
+						name: "new-document.png",
+						objectName: "new-object-name-3",
+						fileHash: "new-file-hash-3",
+						mimeType: "image/png",
+					}),
+				]),
+			);
+		});
+	});
 	suite(
 		"when current user is organization admin but not the creator and tries to update caption",
 		() => {
@@ -616,7 +818,6 @@ suite("Mutation field updatePost", () => {
 					adminSignInResult.data?.signIn?.authenticationToken ?? null;
 				assertToBeNonNullish(adminToken);
 
-				// Create an organization
 				const createOrgResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
@@ -841,41 +1042,6 @@ suite("Mutation field updatePost", () => {
 			const userIdToUse = userId || newUserId;
 			assertToBeNonNullish(userToken);
 			assertToBeNonNullish(userIdToUse);
-		});
-	});
-
-	suite("when regular member tries to update isPinned attribute", () => {
-		test("should return an error with unauthorized_arguments code", async () => {
-			const email = `testuser-${faker.string.ulid()}@example.com`;
-			const createUserResult = await mercuriusClient.mutate(
-				Mutation_createUser,
-				{
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: {
-						input: {
-							emailAddress: email,
-							isEmailAddressVerified: true,
-							name: "Test Regular User",
-							password: "password123",
-							role: "regular",
-						},
-					},
-				},
-			);
-
-			const userId = createUserResult.data?.createUser?.user?.id;
-			assertToBeNonNullish(userId);
-			const userSignInResult = await mercuriusClient.query(Query_signIn, {
-				variables: {
-					input: {
-						emailAddress: email,
-						password: "password123",
-					},
-				},
-			});
-			const regularUserToken =
-				userSignInResult.data?.signIn?.authenticationToken;
-			assertToBeNonNullish(regularUserToken);
 		});
 	});
 });

@@ -113,6 +113,14 @@ suite("Mutation field deletePost", () => {
 							caption: "Unauthorized deletion test",
 							organizationId: existingOrganizationId,
 							isPinned: false,
+							attachments: [
+								{
+									mimetype: "IMAGE_PNG",
+									objectName: "test-object",
+									fileHash: "test-hash",
+									name: "test.png",
+								},
+							],
 						},
 					},
 				},
@@ -227,6 +235,14 @@ suite("Mutation field deletePost", () => {
 								caption: "Test membership unauthorized deletion",
 								organizationId: orgId,
 								isPinned: false,
+								attachments: [
+									{
+										mimetype: "IMAGE_PNG",
+										objectName: "test-object-2",
+										fileHash: "test-hash-2",
+										name: "test.png",
+									},
+								],
 							},
 						},
 					},
@@ -302,6 +318,14 @@ suite("Mutation field deletePost", () => {
 							caption: "Test deletion transaction",
 							organizationId: orgId,
 							isPinned: false,
+							attachments: [
+								{
+									mimetype: "IMAGE_PNG",
+									objectName: "test-object-3",
+									fileHash: "test-hash-3",
+									name: "test.png",
+								},
+							],
 						},
 					},
 				},
@@ -382,6 +406,14 @@ suite("Mutation field deletePost", () => {
 							caption: "Test minio failure",
 							organizationId: orgId,
 							isPinned: false,
+							attachments: [
+								{
+									mimetype: "IMAGE_PNG",
+									objectName: "test-object-4",
+									fileHash: "test-hash-4",
+									name: "test.png",
+								},
+							],
 						},
 					},
 				},
@@ -448,6 +480,14 @@ suite("Mutation field deletePost", () => {
 							caption: "Unauthorized deletion test",
 							organizationId: existingOrganizationId,
 							isPinned: false,
+							attachments: [
+								{
+									mimetype: "IMAGE_PNG",
+									objectName: "test-object-5",
+									fileHash: "test-hash-5",
+									name: "test.png",
+								},
+							],
 						},
 					},
 				},

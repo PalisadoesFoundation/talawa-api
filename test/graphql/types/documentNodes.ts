@@ -713,6 +713,7 @@ export const Mutation_updatePost = gql(`
     updatePost(input: $input) {
       id
       pinnedAt
+      caption
       attachments {
         mimeType            
         fileHash
@@ -722,7 +723,7 @@ export const Mutation_updatePost = gql(`
       }
     }
   }
-`)
+`);
 
 export const Mutation_createChat = gql(`
   mutation Mutation_createChat($input: MutationCreateChatInput!) {
