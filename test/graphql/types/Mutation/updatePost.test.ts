@@ -9,6 +9,7 @@ import {
 	Mutation_createPost,
 	Mutation_createUser,
 	Mutation_deleteCurrentUser,
+	Mutation_joinPublicOrganization,
 	Mutation_updatePost,
 	Query_signIn,
 } from "../documentNodes";
@@ -128,6 +129,14 @@ suite("Mutation field updatePost", () => {
 						input: {
 							caption: "Original Caption",
 							organizationId: orgId,
+							attachments: [
+								{
+									mimetype: "IMAGE_PNG",
+									objectName: "test-object-name-7",
+									name: "test-image.png-7",
+									fileHash: "test-file-hash-7",
+								},
+							],
 						},
 					},
 				},
@@ -154,6 +163,7 @@ suite("Mutation field updatePost", () => {
 					input: {
 						id: postId,
 						caption: "Updated Caption",
+						isPinned: true,
 					},
 				},
 			});
@@ -218,6 +228,14 @@ suite("Mutation field updatePost", () => {
 							input: {
 								caption: "Original Caption",
 								organizationId: orgId,
+								attachments: [
+									{
+										mimetype: "IMAGE_PNG",
+										objectName: "test-object-name-3",
+										name: "test-image.png-3",
+										fileHash: "test-file-hash-3",
+									},
+								],
 							},
 						},
 					},
@@ -283,6 +301,14 @@ suite("Mutation field updatePost", () => {
 							caption: "Post to update pin",
 							organizationId: orgId,
 							isPinned: false,
+							attachments: [
+								{
+									mimetype: "IMAGE_PNG",
+									objectName: "test-object-name-4",
+									name: "test-image.png-4",
+									fileHash: "test-file-hash-4",
+								},
+							],
 						},
 					},
 				},
@@ -459,6 +485,112 @@ suite("Mutation field updatePost", () => {
 			);
 		});
 	});
+	suite(
+		"when regular member tries to update isPinned attribute on their own post",
+		() => {
+			test("should return an error with unauthorized_arguments code", async () => {
+
+				const { authToken: regularUserToken, userId } =
+					await createRegularUserUsingAdmin();
+				assertToBeNonNullish(regularUserToken);
+				assertToBeNonNullish(userId);
+
+				const createOrgResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: {
+							input: {
+								name: "isPinned Test Org",
+								description: "Organization for isPinned test",
+								countryCode: "us",
+								state: "ca",
+								city: "San Francisco",
+								postalCode: "94101",
+								addressLine1: "123 Main St",
+								isUserRegistrationRequired: false,
+							},
+						},
+					},
+				);
+				const orgId = createOrgResult.data?.createOrganization?.id;
+				assertToBeNonNullish(orgId);
+				console.log("orgId", orgId);
+
+				// 4. Have the regular user join the organization
+				const joinResult = await mercuriusClient.mutate(
+					Mutation_joinPublicOrganization,
+					{
+						headers: { authorization: `bearer ${regularUserToken}` },
+						variables: {
+							input: {
+								organizationId: orgId,
+							},
+						},
+					},
+				);
+				expect(joinResult.data?.joinPublicOrganization).toBeDefined();
+				expect(joinResult.data?.joinPublicOrganization?.organizationId).toBe(
+					orgId,
+				);
+				expect(joinResult.data?.joinPublicOrganization?.role).toBe("regular");
+
+				// 5. Create a post as the regular user
+				const createPostResult = await mercuriusClient.mutate(
+					Mutation_createPost,
+					{
+						headers: { authorization: `bearer ${regularUserToken}` },
+						variables: {
+							input: {
+								caption: "Regular user post",
+								organizationId: orgId,
+								isPinned: false,
+								attachments: [
+									{
+										mimetype: "IMAGE_PNG",
+										objectName: "test-object-name-isPinned",
+										name: "test-image.png",
+										fileHash: "test-file-hash-isPinned",
+									},
+								],
+							},
+						},
+					},
+				);
+				const postId = createPostResult.data?.createPost?.id;
+				assertToBeNonNullish(postId);
+
+				// 6. Try to update the post's isPinned status as the regular user
+				const updateResult = await mercuriusClient.mutate(Mutation_updatePost, {
+					headers: { authorization: `bearer ${regularUserToken}` },
+					variables: {
+						input: {
+							id: postId,
+							isPinned: true, // Regular members should not be able to pin posts
+						},
+					},
+				});
+
+				// 7. Check for the expected error
+				expect(updateResult.data?.updatePost ?? null).toBeNull();
+				expect(updateResult.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unauthorized_arguments",
+								issues: expect.arrayContaining([
+									expect.objectContaining({
+										argumentPath: ["input", "isPinned"],
+									}),
+								]),
+							}),
+							path: ["updatePost"],
+						}),
+					]),
+				);
+			});
+		},
+	);
 
 	//An another test suite will be written here after the join button is implemented"
 
@@ -513,6 +645,14 @@ suite("Mutation field updatePost", () => {
 							input: {
 								caption: "Original Caption",
 								organizationId: orgId,
+								attachments: [
+									{
+										mimetype: "IMAGE_PNG",
+										objectName: "test-object-name",
+										name: "test-image.png",
+										fileHash: "test-file-hash",
+									},
+								],
 							},
 						},
 					},
@@ -546,6 +686,14 @@ suite("Mutation field updatePost", () => {
 								input: {
 									id: postId,
 									caption: "Updated Caption",
+									attachments: [
+										{
+											mimetype: "IMAGE_PNG",
+											objectName: "test-object-name-1",
+											name: "test-image.png",
+											fileHash: "test-file-hash-1",
+										},
+									],
 								},
 							},
 						},
@@ -605,6 +753,14 @@ suite("Mutation field updatePost", () => {
 							caption: "Post to unpin",
 							organizationId: orgId,
 							isPinned: true,
+							attachments: [
+								{
+									mimetype: "IMAGE_PNG",
+									objectName: "test-object-name",
+									name: "test-image.png",
+									fileHash: "test-file-hash",
+								},
+							],
 						},
 					},
 				},
