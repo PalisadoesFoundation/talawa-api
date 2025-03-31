@@ -6,4 +6,4 @@
 
 > `const` **mutationCreateAgendaFolderInputSchema**: `ZodObject`\<`Pick`\<\{ `name`: `ZodArray`\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<..., "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, `"many"`\>; \}, `"name"`\>, `"strip"`, `ZodTypeAny`, \{ `name`: `unknown`[]; \}, \{ `name`: `unknown`[]; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateAgendaFolderInput.ts:5](https://github.com/PurnenduMIshra129th/talawa-api/blob/4369c9351f5b76f958b297b25ab2b17196210af9/src/graphql/inputs/MutationCreateAgendaFolderInput.ts#L5)
+Defined in: [src/graphql/inputs/MutationCreateAgendaFolderInput.ts:5](https://github.com/PurnenduMIshra129th/talawa-api/blob/8bb4483f6aa0d175e00d3d589e36182f9c58a66a/src/graphql/inputs/MutationCreateAgendaFolderInput.ts#L5)
