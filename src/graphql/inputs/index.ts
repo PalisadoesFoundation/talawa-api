@@ -1,3 +1,5 @@
+import "./MutationBlockUserInput";
+import "./MutationUnblockUserInput";
 import "./MutationCreateAdvertisementInput";
 import "./MutationCreateAgendaFolderInput";
 import "./MutationCreateAgendaItemInput";
