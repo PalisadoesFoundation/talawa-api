@@ -2,6 +2,22 @@ import dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 dotenv.config();
+dotenv.config();
+// Validate required environment variables
+const requiredEnvVars = [
+  'API_POSTGRES_USER',
+  'API_POSTGRES_PASSWORD',
+  'API_POSTGRES_HOST',
+  'API_POSTGRES_PORT',
+  'API_POSTGRES_DATABASE'
+];
+
+requiredEnvVars.forEach(varName => {
+  if (!process.env[varName]) {
+    throw new Error(`Missing required environment variable: ${varName}`);
+  }
+});
+
 const DATABASE_URL = `postgres://${process.env.API_POSTGRES_USER}:${process.env.API_POSTGRES_PASSWORD}@${process.env.API_POSTGRES_HOST}:${process.env.API_POSTGRES_PORT}/${process.env.API_POSTGRES_DATABASE}`;
 const client = postgres(DATABASE_URL, {
 	prepare: false,
