@@ -16,4 +16,17 @@ const client = postgres(DATABASE_URL, {
 });
 
 // Connect Drizzle ORM
+// Connect Drizzle ORM
 export const db = drizzle(client);
+
+// Handle application shutdown
+const shutdownHandler = async () => {
+  console.log('Closing database connections...');
+  await client.end();
+  console.log('Database connections closed.');
+  process.exit(0);
+};
+
+// Listen for termination signals
+process.on('SIGINT', shutdownHandler);
+process.on('SIGTERM', shutdownHandler);
