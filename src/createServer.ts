@@ -107,7 +107,7 @@ export const createServer = async (options?: {
 	});
 	fastify.all("/api/auth/*", async (req, reply) => {
 		// Convert FastifyRequest to Fetch API Request
-		console.log(`✅ Route hit: ${req.method} ${req.url}`);
+		fastify.log.debug(`Auth route hit: ${req.method} ${req.url}`);
 		const headers: Record<string, string> = {};
 		for (const [key, value] of Object.entries(
 			req.headers as IncomingHttpHeaders,
