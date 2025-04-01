@@ -55,14 +55,14 @@ export const auth = betterAuth({
 						const user = newSession.user;
 						const session = newSession.session;
 
-						return ctx.json({
+						return {
 							statusCode: "10000",
 							message: "Success",
 							data: {
 								token: session.token,
 								id: user.id,
 							},
-						});
+						};
 					}
 				} catch (error: unknown) {
 					console.log(error);
@@ -89,7 +89,7 @@ export const auth = betterAuth({
 							.where(eq(usersTable.id, user.id));
 
 						const userDetails = userDetailsResult[0];
-						return ctx.json({
+						return {
 							statusCode: "10000",
 							message: "Success",
 							data: {
@@ -101,7 +101,7 @@ export const auth = betterAuth({
 								countryCode: userDetails?.countryCode,
 								avatarName: userDetails?.avatarName,
 							},
-						});
+						};
 					}
 				} catch (error: unknown) {
 					console.log(error);
@@ -114,5 +114,7 @@ export const auth = betterAuth({
 			}
 		}),
 	},
-	trustedOrigins: ["http://localhost:4321"],
+	trustedOrigins: [
+		process.env.CLINT_BASE_URL ? process.env.CLINT_BASE_URL : "",
+	],
 });
