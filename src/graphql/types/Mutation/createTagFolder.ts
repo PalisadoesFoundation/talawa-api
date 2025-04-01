@@ -9,6 +9,7 @@ import { TagFolder } from "~/src/graphql/types/TagFolder/TagFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateTagFolderArgumentsSchema = z.object({
 	input: mutationCreateTagFolderInputSchema,
 });
@@ -32,6 +33,8 @@ builder.mutationField("createTagFolder", (t) =>
 					},
 				});
 			}
+
+			args.input.name = sanitizeText(args.input.name ?? "");
 
 			const {
 				data: parsedArgs,

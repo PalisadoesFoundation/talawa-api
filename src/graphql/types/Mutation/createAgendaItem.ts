@@ -8,6 +8,7 @@ import {
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateAgendaItemArgumentsSchema = z.object({
 	input: mutationCreateAgendaItemInputSchema,
 });
@@ -30,6 +31,12 @@ builder.mutationField("createAgendaItem", (t) =>
 						code: "unauthenticated",
 					},
 				});
+			}
+
+			const fieldstoSanitize = ["name", "description"] as const;
+
+			for (const field of fieldstoSanitize) {
+				args.input[field] = sanitizeText(args.input[field] ?? "");
 			}
 
 			const {

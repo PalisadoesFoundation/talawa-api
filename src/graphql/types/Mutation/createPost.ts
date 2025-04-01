@@ -11,6 +11,7 @@ import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreatePostArgumentsSchema = z.object({
 	input: mutationCreatePostInputSchema,
 });
@@ -33,6 +34,14 @@ builder.mutationField("createPost", (t) =>
 						code: "unauthenticated",
 					},
 				});
+			}
+
+			args.input.caption = sanitizeText(args.input.caption ?? "");
+			if (args.input.attachments) {
+				for (const attachment of args.input.attachments) {
+					attachment.objectName = sanitizeText(attachment.objectName ?? "");
+					attachment.name = sanitizeText(attachment.name ?? "");
+				}
 			}
 
 			const {

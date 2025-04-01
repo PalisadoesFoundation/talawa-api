@@ -5,6 +5,7 @@ import { actionsTable } from "~/src/drizzle/tables/actions";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { sanitizeText } from "~/src/utilities/sanitization";
 
 const mutationCreateActionItemArgumentsSchema = z.object({
 	input: z.object({
@@ -42,6 +43,10 @@ builder.mutationField("createActionItem", (t) =>
 					extensions: { code: "unauthenticated" },
 				});
 			}
+
+			args.input.preCompletionNotes = sanitizeText(
+				args.input.preCompletionNotes ?? "",
+			);
 
 			const parsedArgs = mutationCreateActionItemArgumentsSchema.parse(args);
 			const currentUserId = ctx.currentClient.user.id;

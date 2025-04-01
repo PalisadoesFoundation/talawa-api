@@ -12,6 +12,7 @@ import {
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { sanitizeText } from "~/src/utilities/sanitization";
 
 const mutationCreateAdvertisementArgumentsSchema = z.object({
 	input: mutationCreateAdvertisementInputSchema.transform(async (arg, ctx) => {
@@ -72,6 +73,12 @@ builder.mutationField("createAdvertisement", (t) =>
 						code: "unauthenticated",
 					},
 				});
+			}
+
+			const fieldsToSanitize = ["description", "name"] as const;
+
+			for (const field of fieldsToSanitize) {
+				args.input[field] = sanitizeText(args.input[field] ?? "");
 			}
 
 			const {

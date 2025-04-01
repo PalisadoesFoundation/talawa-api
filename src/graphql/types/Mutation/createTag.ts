@@ -9,6 +9,7 @@ import { Tag } from "~/src/graphql/types/Tag/Tag";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateTagArgumentsSchema = z.object({
 	input: mutationCreateTagInputSchema,
 });
@@ -32,6 +33,8 @@ builder.mutationField("createTag", (t) =>
 					},
 				});
 			}
+
+			args.input.name = sanitizeText(args.input.name ?? "");
 
 			const {
 				data: parsedArgs,

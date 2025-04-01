@@ -12,6 +12,7 @@ import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateOrganizationArgumentsSchema = z.object({
 	input: mutationCreateOrganizationInputSchema.transform(async (arg, ctx) => {
 		let avatar:
@@ -67,6 +68,19 @@ builder.mutationField("createOrganization", (t) =>
 				});
 			}
 
+			const fieldsToSanitize = [
+				"addressLine1",
+				"addressLine2",
+				"city",
+				"description",
+				"name",
+				"postalCode",
+				"state",
+			] as const;
+
+			for (const field of fieldsToSanitize) {
+				args.input[field] = sanitizeText(args.input[field] ?? "");
+			}
 			const {
 				data: parsedArgs,
 				error,

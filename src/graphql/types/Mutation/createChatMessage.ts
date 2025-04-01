@@ -8,6 +8,7 @@ import {
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateChatMessageArgumentsSchema = z.object({
 	input: mutationCreateChatMessageInputSchema,
 });
@@ -31,6 +32,8 @@ builder.mutationField("createChatMessage", (t) =>
 					},
 				});
 			}
+
+			args.input.body = sanitizeText(args.input.body ?? "");
 
 			const {
 				success,

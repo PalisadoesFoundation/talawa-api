@@ -12,6 +12,7 @@ import { Chat } from "~/src/graphql/types/Chat/Chat";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateChatArgumentsSchema = z.object({
 	input: mutationCreateChatInputSchema.transform(async (arg, ctx) => {
 		let avatar:
@@ -65,6 +66,12 @@ builder.mutationField("createChat", (t) =>
 						code: "unauthenticated",
 					},
 				});
+			}
+
+			const fieldstoSanitize = ["name", "description"] as const;
+
+			for (const field of fieldstoSanitize) {
+				args.input[field] = sanitizeText(args.input[field] ?? "");
 			}
 
 			const {

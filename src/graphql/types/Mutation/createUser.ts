@@ -13,6 +13,7 @@ import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { sanitizeEmail, sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateUserArgumentsSchema = z.object({
 	input: mutationCreateUserInputSchema.transform(async (arg, ctx) => {
 		let avatar:
@@ -67,6 +68,19 @@ builder.mutationField("createUser", (t) =>
 					},
 				});
 			}
+
+			const fieldstoSanitize = [
+				"city",
+				"description",
+				"name",
+				"state",
+			] as const;
+
+			for (const field of fieldstoSanitize) {
+				args.input[field] = sanitizeText(args.input[field] ?? "");
+			}
+
+			args.input.emailAddress = sanitizeEmail(args.input.emailAddress ?? "");
 
 			const {
 				data: parsedArgs,

@@ -12,6 +12,7 @@ import {
 import { Venue } from "~/src/graphql/types/Venue/Venue";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateVenueArgumentsSchema = z.object({
 	input: mutationCreateVenueInputSchema.transform(async (arg, ctx) => {
 		let attachments:
@@ -71,6 +72,12 @@ builder.mutationField("createVenue", (t) =>
 						code: "unauthenticated",
 					},
 				});
+			}
+
+			const fieldstoSanitize = ["description", "name"] as const;
+
+			for (const field of fieldstoSanitize) {
+				args.input[field] = sanitizeText(args.input[field] ?? "");
 			}
 
 			const {

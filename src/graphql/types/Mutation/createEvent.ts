@@ -12,6 +12,7 @@ import {
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
 		let attachments:
@@ -72,7 +73,10 @@ builder.mutationField("createEvent", (t) =>
 					},
 				});
 			}
-
+			const fieldstoSanitize = ["description", "name"] as const;
+			for (const field of fieldstoSanitize) {
+				args.input[field] = sanitizeText(args.input[field] ?? "");
+			}
 			const {
 				data: parsedArgs,
 				error,

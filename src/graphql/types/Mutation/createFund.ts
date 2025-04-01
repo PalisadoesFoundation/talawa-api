@@ -8,6 +8,7 @@ import {
 import { Fund } from "~/src/graphql/types/Fund/Fund";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateFundArgumentsSchema = z.object({
 	input: mutationCreateFundInputSchema,
 });
@@ -31,6 +32,8 @@ builder.mutationField("createFund", (t) =>
 					},
 				});
 			}
+
+			args.input.name = sanitizeText(args.input.name ?? "");
 
 			const {
 				data: parsedArgs,

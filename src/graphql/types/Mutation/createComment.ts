@@ -8,6 +8,7 @@ import {
 import { Comment } from "~/src/graphql/types/Comment/Comment";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateCommentArgumentsSchema = z.object({
 	input: mutationCreateCommentInputSchema,
 });
@@ -31,6 +32,8 @@ builder.mutationField("createComment", (t) =>
 					},
 				});
 			}
+
+			args.input.body = sanitizeText(args.input.body ?? "");
 
 			const {
 				data: parsedArgs,

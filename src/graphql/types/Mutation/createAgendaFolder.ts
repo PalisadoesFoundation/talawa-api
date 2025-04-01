@@ -9,6 +9,7 @@ import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateAgendaFolderArgumentsSchema = z.object({
 	input: mutationCreateAgendaFolderInputSchema,
 });
@@ -32,6 +33,8 @@ builder.mutationField("createAgendaFolder", (t) =>
 					},
 				});
 			}
+
+			args.input.name = sanitizeText(args.input.name ?? "");
 
 			const {
 				data: parsedArgs,

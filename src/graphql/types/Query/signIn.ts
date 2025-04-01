@@ -9,6 +9,7 @@ import {
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { sanitizeEmail, sanitizeText } from "~/src/utilities/sanitization";
 import type { CurrentClient } from "../../context";
 const querySignInArgumentsSchema = z.object({
 	input: querySignInInputSchema,
@@ -26,7 +27,6 @@ builder.queryField("signIn", (t) =>
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field for a client to sign in to talawa.",
 		resolve: async (_parent, args, ctx) => {
-			console.log(ctx);
 			if (ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -34,6 +34,10 @@ builder.queryField("signIn", (t) =>
 					},
 				});
 			}
+			const sanitizedEmail = sanitizeEmail(args.input.emailAddress);
+			const sanitizedPassword = sanitizeText(args.input.password);
+			args.input.emailAddress = sanitizedEmail;
+			args.input.password = sanitizedPassword;
 
 			const {
 				data: parsedArgs,
@@ -71,9 +75,7 @@ builder.queryField("signIn", (t) =>
 				});
 			}
 
-			if (
-				!(await verify(existingUser.passwordHash, parsedArgs.input.password))
-			) {
+			if (!(await verify(existingUser.passwordHash, sanitizedPassword))) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",
@@ -99,12 +101,9 @@ builder.queryField("signIn", (t) =>
 					});
 
 				const isAdmin = adminMemberships.length > 0;
-				console.log("***");
-				console.log(isAdmin);
 				if (isAdmin) {
 					existingUser.role = "administrator";
 				}
-				console.log(existingUser);
 			}
 
 			// TODO: The following code is necessary for continuing the expected graph traversal for unauthenticated clients that triggered this operation because of absence of an authentication context for those clients. This should be removed when authentication flows are seperated from the graphql implementation.

@@ -9,6 +9,7 @@ import {
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { sanitizeText } from "~/src/utilities/sanitization";
 const mutationCreateFundCampaignPledgeArgumentsSchema = z.object({
 	input: mutationCreateFundCampaignPledgeInputSchema,
 });
@@ -32,6 +33,8 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 					},
 				});
 			}
+
+			args.input.note = sanitizeText(args.input.note ?? "");
 
 			const {
 				data: parsedArgs,
