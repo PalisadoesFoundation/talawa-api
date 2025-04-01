@@ -40,7 +40,7 @@ const client = postgres(DATABASE_URL, {
 });
 
 // Connect Drizzle ORM
-// Connect Drizzle ORM
+export const db = drizzle(client);
 export const db = drizzle(client);
 
 // Handle application shutdown
