@@ -141,7 +141,7 @@ export const usersTable = pgTable(
 		/**
 		 * Boolean to tell whether the user has verified their email or not.
 		 */
-		isEmailAddressVerified: boolean("is_email_address_verified").notNull(),
+		isEmailAddressVerified: boolean("is_email_address_verified").default(false),
 		/**
 		 * Marital status of the user.
 		 */
@@ -171,7 +171,7 @@ export const usersTable = pgTable(
 		/**
 		 * Cryptographic hash of the password of the user to sign in to the application.
 		 */
-		passwordHash: text("password_hash").notNull(),
+		passwordHash: text("password_hash"),
 		/**
 		 * Postal code of the user.
 		 */
@@ -181,7 +181,7 @@ export const usersTable = pgTable(
 		 */
 		role: text("role", {
 			enum: userRoleEnum.options,
-		}).notNull(),
+		}).default("regular"),
 		/**
 		 * Name of the state the user resides in within their country.
 		 */

@@ -13,6 +13,8 @@ import {
 } from "./envConfigSchema";
 import plugins from "./plugins/index";
 import routes from "./routes/index";
+import { IncomingHttpHeaders } from "http";
+import { auth } from "./lib/auth";
 
 // Currently fastify provides typescript integration through the usage of ambient typescript declarations where the type of global fastify instance is extended with our custom types. This approach is not sustainable for implementing scoped and encapsulated business logic which is meant to be the main advantage of fastify plugins. The fastify team is aware of this problem and is currently looking for a more elegant approach for typescript integration. More information can be found at this link: https://github.com/fastify/fastify/issues/5061
 declare module "fastify" {
@@ -68,7 +70,16 @@ export const createServer = async (options?: {
 	fastify.register(fastifyRateLimit, {});
 
 	// More information at this link: https://github.com/fastify/fastify-cors
-	fastify.register(fastifyCors, {});
+	fastify.register(fastifyCors, {
+		origin: "http://localhost:4321", // Allow only your frontend origin
+		credentials: true, // Allow sending cookies and authentication headers
+		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
+		allowedHeaders: [
+			"Content-Type",
+			"Authorization",
+			"apollo-require-preflight",
+		], // Allowed headers
+	});
 
 	// More information at this link: https://github.com/fastify/fastify-helmet
 	fastify.register(fastifyHelmet, {
@@ -93,6 +104,37 @@ export const createServer = async (options?: {
 		sign: {
 			expiresIn: fastify.envConfig.API_JWT_EXPIRES_IN,
 		},
+	});
+	fastify.all("/api/auth/*", async (req, reply) => {
+		// Convert FastifyRequest to Fetch API Request
+		console.log(`✅ Route hit: ${req.method} ${req.url}`);
+		const headers: Record<string, string> = {};
+		for (const [key, value] of Object.entries(
+			req.headers as IncomingHttpHeaders,
+		)) {
+			if (value) {
+				headers[key] = Array.isArray(value) ? value.join(", ") : value;
+			}
+		}
+
+		const fetchRequest = new Request(
+			`${req.protocol}://${req.hostname}${req.url}`,
+			{
+				method: req.method,
+				headers,
+				body:
+					req.method !== "GET" && req.method !== "HEAD"
+						? JSON.stringify(req.body)
+						: undefined,
+			},
+		);
+		// Handle authentication
+		const response = await auth.handler(fetchRequest);
+
+		// Send response back to Fastify
+		reply.status(response.status);
+		response.headers.forEach((value, key) => reply.header(key, value));
+		reply.send(await response.text());
 	});
 
 	fastify.register(plugins, {});

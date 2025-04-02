@@ -109,3 +109,6 @@ export {
 	volunteerGroupsTable,
 	volunteerGroupsTableRelations,
 } from "./tables/volunteerGroups";
+export { sessionTable } from "./tables/session";
+export { verificationTable } from "./tables/verification";
+export { accountTable } from "./tables/account";
