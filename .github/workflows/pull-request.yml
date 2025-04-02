@@ -361,37 +361,42 @@ jobs:
         run: cp envFiles/.env.devcontainer .env
       - name: Bring up devcontainer
         run: devcontainer up --workspace-folder .
-      - name: Install dependencies
+      - name: Wait for Devcontainer to be ready
+        run: |
+          echo "Waiting for devcontainer services to be ready..."
+          sleep 10
+      - name: Verify Running Containers
+        run: docker ps
+      - name: Install dependencies inside the container
         run: docker exec talawa-api-1 /bin/bash -c 'pnpm install'
       - name: Start development server in container
-        run: docker exec talawa-api-1 /bin/bash -c 'nohup pnpm run start_development_server > /dev/null 2>&1 &'
+        run: |
+          echo "Starting the development server..."
+          docker exec -d talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
+          sleep 5
       - name: Wait for GraphQL endpoint to become available
         run: |
           echo "Waiting for the GraphQL endpoint to become available..."
-          for i in {1..30}; do
+          for i in {1..60}; do
             # Check if container exists first
             if ! docker ps | grep -q talawa-api-1; then
               echo "Container talawa-api-1 not found. Waiting..."
               sleep 2
               continue
             fi
-            
-            # Make sure curl is installed
-            docker exec talawa-api-1 which curl >/dev/null 2>&1 || docker exec talawa-api-1 apt-get update && docker exec talawa-api-1 apt-get install -y curl >/dev/null 2>&1
-            
-            # Try the health check - use 127.0.0.1 instead of localhost
-            RESPONSE=$(docker exec talawa-api-1 curl -s -X POST http://127.0.0.1:4000/graphql 2>/dev/null || echo "Connection failed")
-            
-            if echo "$RESPONSE" | grep -q '{"data":null,"errors":\[{"message":"Unknown query"}]}'; then
-              echo "GraphQL endpoint is available and returning the expected response!"
+            docker exec talawa-api-1 which curl >/dev/null 2>&1 || {
+              docker exec talawa-api-1 apt-get update && docker exec talawa-api-1 apt-get install -y curl
+            }
+            RESPONSE=$(docker exec talawa-api-1 curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' 2>/dev/null || echo "Connection failed")
+            if echo "$RESPONSE" | grep -q '__typename'; then
+              echo "GraphQL endpoint is available!"
               exit 0
             fi
-            
-            echo "GraphQL endpoint not ready or returning unexpected response. Retrying in 2 seconds..."
-            echo "Current response: $RESPONSE"
+            echo "GraphQL endpoint not ready. Retrying in 2 seconds..."
             sleep 2
           done
           echo "GraphQL endpoint did not become available within the expected time."
           exit 1
       - name: Cleanup - Free ports by stopping containers
         run: docker compose down
+
