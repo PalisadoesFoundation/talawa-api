@@ -6,7 +6,7 @@
 
 > **resolveUpdatedAt**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: [src/graphql/types/Chat/updatedAt.ts:12](https://github.com/NishantSinghhhhh/talawa-api/blob/097322c0353ac6926bd36bdd4ea38c52c0dfde5d/src/graphql/types/Chat/updatedAt.ts#L12)
+Defined in: src/graphql/types/Chat/updatedAt.ts:12
 
 ## Parameters
 
