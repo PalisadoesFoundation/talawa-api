@@ -375,6 +375,7 @@ jobs:
           docker exec -d talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
           sleep 5
       - name: Wait for GraphQL endpoint to become available
+        if: always()
         run: |
           echo "Waiting for the GraphQL endpoint to become available..."
           for i in {1..60}; do
