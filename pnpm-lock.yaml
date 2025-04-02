@@ -58,7 +58,7 @@ importers:
         version: 0.39.3(kysely@0.27.6)(postgres@3.4.5)
       drizzle-zod:
         specifier: 0.6.1
-        version: 0.6.1(drizzle-orm@0.39.3(postgres@3.4.5))(zod@3.24.2)
+        version: 0.6.1(drizzle-orm@0.39.3(kysely@0.27.6)(postgres@3.4.5))(zod@3.24.2)
       env-schema:
         specifier: ^6.0.1
         version: 6.0.1
@@ -3994,7 +3994,7 @@ snapshots:
 
   '@hexagon/base64@1.1.28': {}
 
-  '@inquirer/checkbox@4.1.2(@types/node@22.13.8)':
+  '@inquirer/checkbox@4.1.2(@types/node@22.13.17)':
     dependencies:
       '@inquirer/core': 10.1.7(@types/node@22.13.17)
       '@inquirer/figures': 1.0.10
@@ -4755,7 +4755,7 @@ snapshots:
       kysely: 0.27.6
       nanostores: 0.11.4
       valibot: 1.0.0-beta.15(typescript@5.7.3)
-      zod: 3.24.1
+      zod: 3.24.2
     transitivePeerDependencies:
       - typescript
 
@@ -4945,9 +4945,9 @@ snapshots:
     optionalDependencies:
       drizzle-orm: 0.39.3(kysely@0.27.6)(postgres@3.4.5)
 
-  drizzle-zod@0.6.1(drizzle-orm@0.39.3(kysely@0.27.6)(postgres@3.4.5))(zod@3.24.1):
+  drizzle-zod@0.6.1(drizzle-orm@0.39.3(kysely@0.27.6)(postgres@3.4.5))(zod@3.24.2):
     dependencies:
-      drizzle-orm: 0.39.3(postgres@3.4.5)
+      drizzle-orm: 0.39.3(kysely@0.27.6)(postgres@3.4.5)
       zod: 3.24.2
 
   dunder-proto@1.0.1:
@@ -5295,7 +5295,7 @@ snapshots:
 
   gel@2.0.1:
     dependencies:
-      '@petamoriken/float16': 3.9.2
+      '@petamoriken/float16': 3.9.1
       debug: 4.4.0
       env-paths: 3.0.0
       semver: 7.7.1
@@ -6324,7 +6324,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.7.3
 
-  vite-node@3.0.7(@types/node@22.13.8)(tsx@4.19.3)(yaml@2.7.0):
+  vite-node@3.0.7(@types/node@22.13.17)(tsx@4.19.3)(yaml@2.7.1):
     dependencies:
       cac: 6.7.14
       debug: 4.4.0

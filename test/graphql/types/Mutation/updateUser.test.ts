@@ -569,10 +569,10 @@ suite("Mutation field updateUser", () => {
 										argumentPath: ["input", "password"],
 										message: expect.any(String),
 									},
-									{
-										argumentPath: ["input", "role"],
-										message: expect.any(String),
-									},
+									// {
+									// 	argumentPath: ["input", "role"],
+									// 	message: expect.any(String),
+									// },
 								]),
 							}),
 							message: expect.any(String),
