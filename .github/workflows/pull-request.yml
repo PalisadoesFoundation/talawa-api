@@ -371,7 +371,7 @@ jobs:
         run: docker exec talawa-api-1 /bin/bash -c 'pnpm install'
       - name: Start server and monitor logs
         run: |
-          docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server | tee /app/server.log' &
+          docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server &
           sleep 10
       - name: Wait for GraphQL endpoint to become available
         if: always()
