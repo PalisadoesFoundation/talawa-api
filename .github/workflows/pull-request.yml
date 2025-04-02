@@ -348,3 +348,37 @@ jobs:
           echo "- Contributor may be merging into an incorrect branch."
           echo "- Source branch may be incorrect please use develop as source branch."
           exit 1
+
+  Check-App-Startup:
+    name: Check App Startup and Health
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+      - name: Install Devcontainer CLI
+        run: npm install -g @devcontainers/cli
+      - name: Copy devcontainer environment file
+        run: cp envFiles/.env.devcontainer .env
+      - name: Bring up devcontainer
+        run: devcontainer up --workspace-folder .
+      - name: Install dependencies
+        run: docker exec talawa-api-1 /bin/bash -c 'pnpm install'
+      - name: Start development server in container
+        run: docker exec talawa-api-1 /bin/bash -c 'nohup pnpm run start_development_server > /dev/null 2>&1 &'
+      - name: Wait for GraphQL endpoint to become available
+        run: |
+          echo "Waiting for the GraphQL endpoint to become available..."
+          for i in {1..30}; do
+            RESPONSE=$(docker exec talawa-api-1 curl -s -X POST http://localhost:4000/graphql)
+            if echo "$RESPONSE" | grep -q '{"data":null,"errors":\[{"message":"Unknown query"}\]}'; then
+              echo "GraphQL endpoint is available and returning the expected response!"
+              exit 0
+            fi
+            echo "GraphQL endpoint not ready or returning unexpected response. Retrying in 2 seconds..."
+            echo "Current response: $RESPONSE"
+            sleep 2
+          done
+          echo "GraphQL endpoint did not become available within the expected time."
+          exit 1
+      - name: Cleanup - Free ports by stopping containers
+        run: docker compose down
