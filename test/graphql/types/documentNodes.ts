@@ -713,11 +713,12 @@ export const Mutation_updatePost = gql(`
     updatePost(input: $input) {
       id
       pinnedAt
+      caption
       attachments {
-        mimeType
+        mimeType            
         fileHash
         name
-        objectName
+        objectName          
         id
       }
     }

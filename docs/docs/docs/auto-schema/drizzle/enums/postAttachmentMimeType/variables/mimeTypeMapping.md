@@ -6,30 +6,30 @@
 
 > `const` **mimeTypeMapping**: `object`
 
-Defined in: [src/drizzle/enums/postAttachmentMimeType.ts:3](https://github.com/NishantSinghhhhh/talawa-api/blob/097322c0353ac6926bd36bdd4ea38c52c0dfde5d/src/drizzle/enums/postAttachmentMimeType.ts#L3)
+Defined in: src/drizzle/enums/postAttachmentMimeType.ts:3
 
 ## Type declaration
 
 ### IMAGE\_AVIF
 
-> **IMAGE\_AVIF**: `string` = `"image/avif"`
+> `readonly` **IMAGE\_AVIF**: `"image/avif"` = `"image/avif"`
 
 ### IMAGE\_JPEG
 
-> **IMAGE\_JPEG**: `string` = `"image/jpeg"`
+> `readonly` **IMAGE\_JPEG**: `"image/jpeg"` = `"image/jpeg"`
 
 ### IMAGE\_PNG
 
-> **IMAGE\_PNG**: `string` = `"image/png"`
+> `readonly` **IMAGE\_PNG**: `"image/png"` = `"image/png"`
 
 ### IMAGE\_WEBP
 
-> **IMAGE\_WEBP**: `string` = `"image/webp"`
+> `readonly` **IMAGE\_WEBP**: `"image/webp"` = `"image/webp"`
 
 ### VIDEO\_MP4
 
-> **VIDEO\_MP4**: `string` = `"video/mp4"`
+> `readonly` **VIDEO\_MP4**: `"video/mp4"` = `"video/mp4"`
 
 ### VIDEO\_WEBM
 
-> **VIDEO\_WEBM**: `string` = `"video/webm"`
+> `readonly` **VIDEO\_WEBM**: `"video/webm"` = `"video/webm"`

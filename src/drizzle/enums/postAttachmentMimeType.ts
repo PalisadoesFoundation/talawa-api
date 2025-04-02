@@ -7,7 +7,7 @@ export const mimeTypeMapping = {
 	IMAGE_WEBP: "image/webp",
 	VIDEO_MP4: "video/mp4",
 	VIDEO_WEBM: "video/webm",
-};
+} as const;
 
 export const postAttachmentMimeTypeEnum = z.enum([
 	"image/avif",
