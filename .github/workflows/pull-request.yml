@@ -400,4 +400,3 @@ jobs:
           exit 1
       - name: Cleanup - Free ports by stopping containers
         run: docker compose down
-
