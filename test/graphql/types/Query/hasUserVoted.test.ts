@@ -1,9 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { afterEach, expect, suite, test } from "vitest";
+import { expect, suite, test } from "vitest";
 import { usersTable } from "~/src/drizzle/schema";
 import type {
-	ArgumentsAssociatedResourcesNotFoundExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
@@ -260,20 +259,17 @@ suite("Query: hasUserVoted", () => {
 			// create a post
 			const { postId } = await createPost(adminAuthToken);
 			// create a post vote
-			const creatPostVoteResult = await mercuriusClient.mutate(
-				Mutation_createPostVote,
-				{
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: {
-						input: {
-							postId: postId,
-							type: "down_vote",
-						},
+			await mercuriusClient.mutate(Mutation_createPostVote, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
+				variables: {
+					input: {
+						postId: postId,
+						type: "down_vote",
 					},
 				},
-			);
+			});
 			const { authToken } = await createRegularUser();
 			const hasUserVotedResponse = await mercuriusClient.query(
 				Query_hasUserVoted,
