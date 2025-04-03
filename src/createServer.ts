@@ -71,7 +71,7 @@ export const createServer = async (options?: {
 
 	// More information at this link: https://github.com/fastify/fastify-cors
 	fastify.register(fastifyCors, {
-		origin: "http://localhost:4321", // Allow only your frontend origin
+		origin: fastify.envConfig.API_CORS_ORIGIN || "http://localhost:4321", // Allow only your frontend origin
 		credentials: true, // Allow sending cookies and authentication headers
 		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
 		allowedHeaders: [
@@ -128,13 +128,32 @@ export const createServer = async (options?: {
 						: undefined,
 			},
 		);
-		// Handle authentication
-		const response = await auth.handler(fetchRequest);
 
-		// Send response back to Fastify
-		reply.status(response.status);
-		response.headers.forEach((value, key) => reply.header(key, value));
-		reply.send(await response.text());
+		try {
+			// Handle authentication
+			const response = await auth.handler(fetchRequest);
+			
+			// Send response back to Fastify
+			reply.status(response.status);
+			response.headers.forEach((value, key) => reply.header(key, value));
+			
+			// Check content type to handle JSON appropriately
+			const contentType = response.headers.get('content-type');
+			if (contentType && contentType.includes('application/json')) {
+				const jsonData = await response.json();
+				return reply.send(jsonData);
+			} else {
+				return reply.send(await response.text());
+			}
+		} catch (error) {
+			fastify.log.error(`Authentication error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			return reply.status(500).send({ 
+				statusCode: "10001",
+				message: "Authentication service error",
+				error: "Internal server error"
+			});
+		}
+
 	});
 
 	fastify.register(plugins, {});

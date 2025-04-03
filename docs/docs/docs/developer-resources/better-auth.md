@@ -16,6 +16,8 @@ API_POSTGRES_PASSWORD=<your_db_password>
 API_POSTGRES_HOST=<your_db_host>
 API_POSTGRES_PORT=<your_db_port>
 API_POSTGRES_DATABASE=<your_db_name>
+API_CORS_ORIGIN = <your client URL>
+NODE_ENV=<Production or development or test>
 ```
 
 ---
