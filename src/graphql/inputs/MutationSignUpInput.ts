@@ -25,6 +25,7 @@ export const mutationSignUpInputSchema = usersTableInsertSchema
 	.extend({
 		avatar: z.custom<Promise<FileUpload>>().nullish(),
 		password: z.string().min(1).max(64),
+		selectedOrganization: z.string().uuid(),
 	});
 
 export const MutationSignUpInput = builder
@@ -105,6 +106,11 @@ export const MutationSignUpInput = builder
 				description:
 					"The phone number to use to communicate with the user while they're at work.",
 				type: "PhoneNumber",
+			}),
+			selectedOrganization: t.field({
+				description: "The organization the user is signing up for",
+				required: true,
+				type: "ID",
 			}),
 		}),
 	});

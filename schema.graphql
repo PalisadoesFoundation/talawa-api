@@ -2364,6 +2364,9 @@ input MutationSignUpInput {
   """Postal code of the user."""
   postalCode: String
 
+  """The organization the user is signing up for"""
+  selectedOrganization: ID!
+
   """Name of the state the user resides in."""
   state: String
 
