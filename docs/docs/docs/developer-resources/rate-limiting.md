@@ -2,7 +2,7 @@
 id: rate-limiting
 title: Rate Limiting
 slug: /developer-resources/rate-limiting
-sidebar_position: 6
+sidebar_position: 5
 ---
 
 # Rate Limiting in GraphQL API
