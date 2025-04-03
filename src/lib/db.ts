@@ -5,7 +5,7 @@ dotenv.config();
 
 const DATABASE_URL = `postgres://${process.env.API_POSTGRES_USER}:${process.env.API_POSTGRES_PASSWORD}@${process.env.API_POSTGRES_HOST}:${process.env.API_POSTGRES_PORT}/${process.env.API_POSTGRES_DATABASE}`;
 
-let client;
+let client: postgres.Sql;
 
 try {
 	client = postgres(DATABASE_URL, {

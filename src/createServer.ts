@@ -132,28 +132,27 @@ export const createServer = async (options?: {
 		try {
 			// Handle authentication
 			const response = await auth.handler(fetchRequest);
-			
+
 			// Send response back to Fastify
 			reply.status(response.status);
 			response.headers.forEach((value, key) => reply.header(key, value));
-			
+
 			// Check content type to handle JSON appropriately
-			const contentType = response.headers.get('content-type');
-			if (contentType && contentType.includes('application/json')) {
+			const contentType = response.headers.get("content-type");
+			if (contentType?.includes("application/json")) {
 				const jsonData = await response.json();
 				return reply.send(jsonData);
-			} else {
-				return reply.send(await response.text());
 			}
 		} catch (error) {
-			fastify.log.error(`Authentication error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-			return reply.status(500).send({ 
+			fastify.log.error(
+				`Authentication error: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+			return reply.status(500).send({
 				statusCode: "10001",
 				message: "Authentication service error",
-				error: "Internal server error"
+				error: "Internal server error",
 			});
 		}
-
 	});
 
 	fastify.register(plugins, {});

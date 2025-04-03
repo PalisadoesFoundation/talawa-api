@@ -285,7 +285,7 @@ export const envConfigSchema = Type.Object({
 	API_RATE_LIMIT_REFILL_RATE: Type.Number({
 		minimum: 0,
 	}),
-	
+
 	BETTER_AUTH_SECRET: Type.String({
 		minLength: 32, // Ensure a reasonable minimum length for security
 	}),
