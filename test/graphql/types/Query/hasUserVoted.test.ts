@@ -225,9 +225,9 @@ suite("Query: hasUserVoted", () => {
 		test("return error if post vote does not exist", async () => {
 			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
 			// create a post
-			console.log("second");
+
 			const { postId } = await createTestPost(cachedAdminUserId);
-			console.log("first");
+
 			const hasUserVotedResponse = await mercuriusClient.query(
 				Query_hasUserVoted,
 				{
@@ -356,7 +356,6 @@ suite("Query: hasUserVoted", () => {
 // function to create a post using the auth token
 
 const createTestPost = async (creatorId: string) => {
-	console.log("flksjalkfja");
 	const [organizationRow] = await server.drizzleClient
 		.insert(organizationsTable)
 		.values({
@@ -365,7 +364,6 @@ const createTestPost = async (creatorId: string) => {
 			userRegistrationRequired: false,
 		})
 		.returning({ id: organizationsTable.id });
-	console.log("idhar tak chal rha");
 	const organizationId = organizationRow?.id;
 	if (!organizationId) throw new Error("Failed to create organization.");
 	await server.drizzleClient.insert(organizationMembershipsTable).values({
