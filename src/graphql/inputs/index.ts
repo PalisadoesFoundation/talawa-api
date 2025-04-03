@@ -86,4 +86,4 @@ import "./QueryTagInput";
 import "./QueryUserInput";
 import "./QueryVenueInput";
 import "./SubscriptionChatMessageCreateInput";
-import  "./QueryHasUserVotedInput"
+import "./QueryHasUserVotedInput";

@@ -10,4 +10,4 @@ import "./upVoters";
 import "./upVotesCount";
 import "./sorting";
 import "./UploadUrlResponse";
-import './hasUserVoted'
+import "./hasUserVoted";

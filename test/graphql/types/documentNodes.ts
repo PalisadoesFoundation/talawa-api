@@ -987,7 +987,6 @@ export const Mutation_rejectMembershipRequest = gql(`
   }
 `);
 
-
 export const Query_hasUserVoted = gql(`
   query Query_hasUserVoted($input: QueryHasUserVotedInput!) {
     hasUserVoted(input: $input)
@@ -997,10 +996,10 @@ export const Query_hasUserVoted = gql(`
   }
 `);
 
-export const Mutation_createPostVote=gql(`
+export const Mutation_createPostVote = gql(`
   mutation Mutation_createPostVote($input:MutationCreatePostVoteInput!){
     createPostVote(input : $input){
       id
       caption
     }
-  }`)
+  }`);

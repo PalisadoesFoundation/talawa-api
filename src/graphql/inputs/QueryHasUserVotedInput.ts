@@ -7,7 +7,9 @@ export const queryHasUserVoteInputSchema = postVotesTableInsertSchema.pick({
 });
 
 export const QueryHasUserVotedInput = builder
-	.inputRef<z.infer<typeof queryHasUserVoteInputSchema>>("QueryHasUserVotedInput")
+	.inputRef<z.infer<typeof queryHasUserVoteInputSchema>>(
+		"QueryHasUserVotedInput",
+	)
 	.implement({
 		description: "",
 		fields: (t) => ({

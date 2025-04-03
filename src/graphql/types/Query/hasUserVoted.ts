@@ -109,9 +109,7 @@ builder.queryField("hasUserVoted", (t) =>
 			}
 			const currentUserOrganizationMembership =
 				existingPostVote.post.organization.membershipsWhereOrganization[0];
-			if (
-				currentUserOrganizationMembership === undefined
-			) {
+			if (currentUserOrganizationMembership === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",
@@ -124,7 +122,7 @@ builder.queryField("hasUserVoted", (t) =>
 				});
 			}
 			return {
-				type : existingPostVote.type,
+				type: existingPostVote.type,
 			};
 		},
 		type: hasUserVoted,
