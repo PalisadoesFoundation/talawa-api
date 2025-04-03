@@ -1,7 +1,12 @@
 import { faker } from "@faker-js/faker";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { expect, suite, test } from "vitest";
-import { usersTable } from "~/src/drizzle/schema";
+import {
+	organizationMembershipsTable,
+	organizationsTable,
+	postsTable,
+	usersTable,
+} from "~/src/drizzle/schema";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -10,8 +15,6 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
-	Mutation_createOrganization,
-	Mutation_createPost,
 	Mutation_createPostVote,
 	Mutation_createUser,
 	Mutation_deleteUser,
@@ -22,12 +25,19 @@ import {
 /**
  * Helper function to get admin auth token with proper error handling
  * @throws {Error} If admin credentials are invalid or missing
- * @returns {Promise<string>} Admin authentication token
+ * @returns {Promise<{
+ * cachedAdminToken: string;
+ * cachedAdminUserId: string;
+ * }>} Admin authentication token and user ID
  */
+let cachedAdminUserId: string | null = null;
 let cachedAdminToken: string | null = null;
-async function getAdminAuthToken(): Promise<string> {
-	if (cachedAdminToken) {
-		return cachedAdminToken;
+async function getAdminAuthToken(): Promise<{
+	cachedAdminToken: string;
+	cachedAdminUserId: string;
+}> {
+	if (cachedAdminToken && cachedAdminUserId) {
+		return { cachedAdminToken, cachedAdminUserId };
 	}
 
 	try {
@@ -60,8 +70,13 @@ async function getAdminAuthToken(): Promise<string> {
 				"Admin authentication succeeded but no token was returned",
 			);
 		}
+		assertToBeNonNullish(adminSignInResult.data.signIn.user);
 		cachedAdminToken = adminSignInResult.data.signIn.authenticationToken;
-		return cachedAdminToken;
+		cachedAdminUserId = adminSignInResult.data.signIn.user.id;
+		return {
+			cachedAdminToken,
+			cachedAdminUserId,
+		};
 	} catch (error) {
 		// Wrap and rethrow with more context
 		throw new Error(
@@ -77,7 +92,7 @@ interface TestUser {
 }
 
 async function createRegularUser(): Promise<TestUser> {
-	const adminAuthToken = await getAdminAuthToken();
+	const { cachedAdminToken: adminAuthToken } = await getAdminAuthToken();
 
 	const userResult = await mercuriusClient.mutate(Mutation_createUser, {
 		headers: {
@@ -208,14 +223,16 @@ suite("Query: hasUserVoted", () => {
 	});
 	suite("Resource validation tests", () => {
 		test("return error if post vote does not exist", async () => {
-			const adminAuthToken = await getAdminAuthToken();
+			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
 			// create a post
-			const { postId } = await createPost(adminAuthToken);
+			console.log("second");
+			const { postId } = await createTestPost(cachedAdminUserId);
+			console.log("first");
 			const hasUserVotedResponse = await mercuriusClient.query(
 				Query_hasUserVoted,
 				{
 					headers: {
-						authorization: `bearer ${adminAuthToken}`,
+						authorization: `bearer ${cachedAdminToken}`,
 					},
 					variables: {
 						input: {
@@ -232,7 +249,7 @@ suite("Query: hasUserVoted", () => {
 	});
 	suite("Input Validation Tests", () => {
 		test("returns error with 'invalid_argument' code if postId is not a valid UUID", async () => {
-			const adminAuthToken = await getAdminAuthToken();
+			const { cachedAdminToken: adminAuthToken } = await getAdminAuthToken();
 			const hasUserVotedResponse = await mercuriusClient.query(
 				Query_hasUserVoted,
 				{
@@ -255,13 +272,14 @@ suite("Query: hasUserVoted", () => {
 
 	suite("Authentication Tests", () => {
 		test("returns error if user is not a member of the organization", async () => {
-			const adminAuthToken = await getAdminAuthToken();
+			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
 			// create a post
-			const { postId } = await createPost(adminAuthToken);
-			// create a post vote
+			const { postId, organizationId } =
+				await createTestPost(cachedAdminUserId);
+
 			await mercuriusClient.mutate(Mutation_createPostVote, {
 				headers: {
-					authorization: `bearer ${adminAuthToken}`,
+					authorization: `bearer ${cachedAdminToken}`,
 				},
 				variables: {
 					input: {
@@ -270,12 +288,20 @@ suite("Query: hasUserVoted", () => {
 					},
 				},
 			});
-			const { authToken } = await createRegularUser();
+			await server.drizzleClient
+				.delete(organizationMembershipsTable)
+				.where(
+					and(
+						eq(organizationMembershipsTable.memberId, cachedAdminUserId),
+						eq(organizationMembershipsTable.organizationId, organizationId),
+					),
+				);
+
 			const hasUserVotedResponse = await mercuriusClient.query(
 				Query_hasUserVoted,
 				{
 					headers: {
-						authorization: `bearer ${authToken}`,
+						authorization: `bearer ${cachedAdminToken}`,
 					},
 					variables: {
 						input: {
@@ -284,6 +310,7 @@ suite("Query: hasUserVoted", () => {
 					},
 				},
 			);
+			console.log(JSON.stringify(hasUserVotedResponse, null, 2));
 			expect(hasUserVotedResponse.data.hasUserVoted).toEqual(null);
 			expect(hasUserVotedResponse.errors?.[0]?.extensions?.code).toBe(
 				"unauthorized_action_on_arguments_associated_resources",
@@ -291,13 +318,13 @@ suite("Query: hasUserVoted", () => {
 		});
 
 		test("allows access if user is a member of the organization", async () => {
-			const adminAuthToken = await getAdminAuthToken();
+			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
 			// create a post
-			const { postId } = await createPost(adminAuthToken);
+			const { postId } = await createTestPost(cachedAdminUserId);
 			// create a post vote
 			await mercuriusClient.mutate(Mutation_createPostVote, {
 				headers: {
-					authorization: `bearer ${adminAuthToken}`,
+					authorization: `bearer ${cachedAdminToken}`,
 				},
 				variables: {
 					input: {
@@ -311,7 +338,7 @@ suite("Query: hasUserVoted", () => {
 				Query_hasUserVoted,
 				{
 					headers: {
-						authorization: `bearer ${adminAuthToken}`,
+						authorization: `bearer ${cachedAdminToken}`,
 					},
 					variables: {
 						input: {
@@ -320,7 +347,6 @@ suite("Query: hasUserVoted", () => {
 					},
 				},
 			);
-
 			expect(hasUserVotedResponse.data.hasUserVoted).not.toEqual(null);
 			expect(hasUserVotedResponse.errors).toEqual(undefined);
 			expect(hasUserVotedResponse.data.hasUserVoted?.type).toEqual("down_vote");
@@ -330,43 +356,35 @@ suite("Query: hasUserVoted", () => {
 
 // function to create a post using the auth token
 
-async function createPost(authToken: string) {
-	const createOrganizationResult = await mercuriusClient.mutate(
-		Mutation_createOrganization,
-		{
-			headers: {
-				authorization: `bearer ${authToken}`,
-			},
-			variables: {
-				input: {
-					name: "Test Organization",
-				},
-			},
-		},
-	);
-	assertToBeNonNullish(createOrganizationResult.data);
-	assertToBeNonNullish(createOrganizationResult.data.createOrganization);
-	expect(createOrganizationResult.data.createOrganization?.name).not.toBeNull();
-	expect(createOrganizationResult.data.createOrganization?.id).not.toBeNull();
-	const postResult = await mercuriusClient.mutate(Mutation_createPost, {
-		headers: {
-			authorization: `bearer ${authToken}`,
-		},
-		variables: {
-			input: {
-				organizationId: createOrganizationResult.data.createOrganization.id,
-				caption: "Test Post",
-				attachments: [],
-			},
-		},
+const createTestPost = async (creatorId: string) => {
+	console.log("flksjalkfja");
+	const [organizationRow] = await server.drizzleClient
+		.insert(organizationsTable)
+		.values({
+			name: faker.company.name(),
+			countryCode: "us",
+			userRegistrationRequired: false,
+		})
+		.returning({ id: organizationsTable.id });
+	console.log("idhar tak chal rha");
+	const organizationId = organizationRow?.id;
+	if (!organizationId) throw new Error("Failed to create organization.");
+	await server.drizzleClient.insert(organizationMembershipsTable).values({
+		organizationId,
+		memberId: creatorId,
+		role: "administrator",
 	});
+	const [postRow] = await server.drizzleClient
+		.insert(postsTable)
+		.values({
+			caption: faker.lorem.paragraph(),
+			creatorId,
+			organizationId,
+		})
+		.returning({ id: postsTable.id });
 
-	assertToBeNonNullish(postResult.data);
-	assertToBeNonNullish(postResult.data.createPost);
-	expect(postResult.data.createPost?.id).not.toBeNull();
-	expect(postResult.data.createPost?.caption).not.toBeNull();
-	return {
-		orgId: createOrganizationResult.data.createOrganization.id,
-		postId: postResult.data.createPost.id,
-	};
-}
+	const postId = postRow?.id;
+	if (!postId) throw new Error("Failed to create post.");
+
+	return { postId, organizationId };
+};
