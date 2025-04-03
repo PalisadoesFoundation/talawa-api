@@ -4,7 +4,7 @@ import { builder } from "~/src/graphql/builder";
 import { PostVoteType } from "../../enums/PostVoteType";
 export const HasUserVoted = builder.objectRef<{
 	type: z.infer<typeof postVoteTypeEnum>;
-}>("hasUserVoted");
+}>("HasUserVoted");
 
 HasUserVoted.implement({
 	fields: (t) => ({
