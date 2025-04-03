@@ -310,7 +310,6 @@ suite("Query: hasUserVoted", () => {
 					},
 				},
 			);
-			console.log(JSON.stringify(hasUserVotedResponse, null, 2));
 			expect(hasUserVotedResponse.data.hasUserVoted).toEqual(null);
 			expect(hasUserVotedResponse.errors?.[0]?.extensions?.code).toBe(
 				"unauthorized_action_on_arguments_associated_resources",
