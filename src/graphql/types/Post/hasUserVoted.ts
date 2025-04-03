@@ -2,11 +2,11 @@ import type { z } from "zod";
 import type { postVoteTypeEnum } from "~/src/drizzle/enums/postVoteType";
 import { builder } from "~/src/graphql/builder";
 import { PostVoteType } from "../../enums/PostVoteType";
-export const hasUserVoted = builder.objectRef<{
+export const HasUserVoted = builder.objectRef<{
 	type: z.infer<typeof postVoteTypeEnum>;
 }>("hasUserVoted");
 
-hasUserVoted.implement({
+HasUserVoted.implement({
 	fields: (t) => ({
 		type: t.expose("type", {
 			type: PostVoteType,

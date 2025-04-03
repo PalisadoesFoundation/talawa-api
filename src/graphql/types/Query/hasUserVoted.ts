@@ -1,15 +1,15 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
-import { hasUserVoted } from "~/src/graphql/types/Post/hasUserVoted";
+import { HasUserVoted } from "~/src/graphql/types/Post/hasUserVoted";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	QueryHasUserVotedInput,
-	queryHasUserVoteInputSchema,
+	queryHasUserVotedInputSchema,
 } from "../../inputs/QueryHasUserVotedInput";
 
 const queryHasUserVotedArgumentsSchema = z.object({
-	input: queryHasUserVoteInputSchema,
+	input: queryHasUserVotedInputSchema,
 });
 
 builder.queryField("hasUserVoted", (t) =>
@@ -125,6 +125,6 @@ builder.queryField("hasUserVoted", (t) =>
 				type: existingPostVote.type,
 			};
 		},
-		type: hasUserVoted,
+		type: HasUserVoted,
 	}),
 );

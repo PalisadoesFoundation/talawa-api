@@ -3488,7 +3488,7 @@ input QueryFundInput {
   id: String!
 }
 
-""""""
+"""Input type for checking if a user has voted on a specific post"""
 input QueryHasUserVotedInput {
   """ID of the post that is voted."""
   postId: String!
