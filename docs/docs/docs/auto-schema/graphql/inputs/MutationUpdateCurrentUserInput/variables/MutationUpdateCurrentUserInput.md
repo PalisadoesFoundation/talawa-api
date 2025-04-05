@@ -6,4 +6,4 @@
 
 > `const` **MutationUpdateCurrentUserInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `avatar`: `Promise`\<`FileUpload`\>; `emailAddress`: `any`; `name`: `any`; `password`: `string`; \}\>
 
-Defined in: src/graphql/inputs/MutationUpdateCurrentUserInput.ts:37
+Defined in: [src/graphql/inputs/MutationUpdateCurrentUserInput.ts:37](https://github.com/NishantSinghhhhh/talawa-api/blob/3b12506812825c5581bdb63c64252031697d198c/src/graphql/inputs/MutationUpdateCurrentUserInput.ts#L37)

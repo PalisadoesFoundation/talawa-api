@@ -1,0 +1,38 @@
+                   List of relations
+ Schema |            Name             | Type  | Owner  
+--------+-----------------------------+-------+--------
+ public | advertisement_attachments   | table | talawa
+ public | advertisements              | table | talawa
+ public | agenda_folders              | table | talawa
+ public | agenda_items                | table | talawa
+ public | chat_memberships            | table | talawa
+ public | chat_messages               | table | talawa
+ public | chats                       | table | talawa
+ public | comment_votes               | table | talawa
+ public | comments                    | table | talawa
+ public | communities                 | table | talawa
+ public | event_attachments           | table | talawa
+ public | event_attendances           | table | talawa
+ public | events                      | table | talawa
+ public | families                    | table | talawa
+ public | family_memberships          | table | talawa
+ public | fund_campaign_pledges       | table | talawa
+ public | fund_campaigns              | table | talawa
+ public | funds                       | table | talawa
+ public | membership_requests         | table | talawa
+ public | organization_memberships    | table | talawa
+ public | organizations               | table | talawa
+ public | post_attachments            | table | talawa
+ public | post_votes                  | table | talawa
+ public | posts                       | table | talawa
+ public | tag_assignments             | table | talawa
+ public | tag_folders                 | table | talawa
+ public | tags                        | table | talawa
+ public | users                       | table | talawa
+ public | venue_attachments           | table | talawa
+ public | venue_bookings              | table | talawa
+ public | venues                      | table | talawa
+ public | volunteer_group_assignments | table | talawa
+ public | volunteer_groups            | table | talawa
+(33 rows)
+

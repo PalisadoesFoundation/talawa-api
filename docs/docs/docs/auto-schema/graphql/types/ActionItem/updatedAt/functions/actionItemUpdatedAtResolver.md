@@ -6,7 +6,7 @@
 
 > **actionItemUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: src/graphql/types/ActionItem/updatedAt.ts:5
+Defined in: [src/graphql/types/ActionItem/updatedAt.ts:5](https://github.com/NishantSinghhhhh/talawa-api/blob/3b12506812825c5581bdb63c64252031697d198c/src/graphql/types/ActionItem/updatedAt.ts#L5)
 
 ## Parameters
 

@@ -6,4 +6,4 @@
 
 > `const` **MutationUpdateCommunityInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `logo`: `Promise`\<`FileUpload`\>; `name`: `any`; \}\>
 
-Defined in: src/graphql/inputs/MutationUpdateCommunityInput.ts:24
+Defined in: [src/graphql/inputs/MutationUpdateCommunityInput.ts:24](https://github.com/NishantSinghhhhh/talawa-api/blob/3b12506812825c5581bdb63c64252031697d198c/src/graphql/inputs/MutationUpdateCommunityInput.ts#L24)

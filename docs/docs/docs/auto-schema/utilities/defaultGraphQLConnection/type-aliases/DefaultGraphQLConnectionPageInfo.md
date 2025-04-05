@@ -6,7 +6,7 @@
 
 > **DefaultGraphQLConnectionPageInfo**: `object`
 
-Defined in: src/utilities/defaultGraphQLConnection.ts:197
+Defined in: [src/utilities/defaultGraphQLConnection.ts:197](https://github.com/NishantSinghhhhh/talawa-api/blob/3b12506812825c5581bdb63c64252031697d198c/src/utilities/defaultGraphQLConnection.ts#L197)
 
 This is typescript type of a base graphql connection page info object. This connection page info object can be extended to create a custom connnection page info object as long as the new connection object adheres to the default type of this base connection object.
 

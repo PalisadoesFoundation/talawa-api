@@ -6,7 +6,7 @@
 
 > **isMemberResolver**(`parent`, `_args`, `ctx`): `Promise`\<`boolean`\>
 
-Defined in: src/graphql/types/Organization/isMember.ts:20
+Defined in: [src/graphql/types/Organization/isMember.ts:20](https://github.com/NishantSinghhhhh/talawa-api/blob/3b12506812825c5581bdb63c64252031697d198c/src/graphql/types/Organization/isMember.ts#L20)
 
 ## Parameters
 
