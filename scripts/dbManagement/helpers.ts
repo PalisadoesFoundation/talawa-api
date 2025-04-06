@@ -652,6 +652,7 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "comment_votes", table: schema.commentVotesTable },
 			{ name: "action_items", table: schema.actionsTable },
 			{ name: "events", table: schema.eventsTable },
+			{ name: "action_categories", table: schema.actionCategoriesTable },
 		];
 
 		console.log(`\nRecord Counts ${stage} Import:\n`);
