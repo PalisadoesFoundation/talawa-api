@@ -4,21 +4,11 @@
 
 # Type Alias: UnauthorizedArgumentsExtensions
 
-> **UnauthorizedArgumentsExtensions**: `object`
+> **UnauthorizedArgumentsExtensions** = `object`
 
-Defined in: src/utilities/TalawaGraphQLError.ts:181
+Defined in: [src/utilities/TalawaGraphQLError.ts:181](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L181)
 
 When the client is not authorized to perform an action with certain arguments.
-
-## Type declaration
-
-### code
-
-> **code**: `"unauthorized_arguments"`
-
-### issues
-
-> **issues**: `object`[]
 
 ## Example
 
@@ -35,3 +25,23 @@ throw new TalawaGraphQLError({
 	},
 });
 ```
+
+## Properties
+
+### code
+
+> **code**: `"unauthorized_arguments"`
+
+Defined in: [src/utilities/TalawaGraphQLError.ts:185](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L185)
+
+***
+
+### issues
+
+> **issues**: `object`[]
+
+Defined in: [src/utilities/TalawaGraphQLError.ts:182](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L182)
+
+#### argumentPath
+
+> **argumentPath**: (`string` \| `number`)[]

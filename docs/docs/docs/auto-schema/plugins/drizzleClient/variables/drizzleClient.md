@@ -2,11 +2,11 @@
 
 ***
 
-# Function: drizzleClient()
+# Variable: drizzleClient()
 
-> **drizzleClient**(`fastify`): `Promise`\<`void`\>
+> `const` **drizzleClient**: (`fastify`) => `Promise`\<`void`\>
 
-Defined in: src/plugins/drizzleClient.ts:22
+Defined in: [src/plugins/drizzleClient.ts:22](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/plugins/drizzleClient.ts#L22)
 
 Integrates a drizzle client instance on a namespace `drizzleClient` on the global fastify instance.
 

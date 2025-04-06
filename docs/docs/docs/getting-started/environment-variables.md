@@ -563,6 +563,21 @@ This environment variable is used to configure the host port to map with the con
 
 - More information can be found at [this](https://docs.docker.com/engine/network/##published-ports) link.
 
+### `API_CORS_ORIGIN`
+
+This environment variable is used to specify the allowed origin(s) for Cross-Origin Resource Sharing (CORS). It defines which domains are permitted to interact with the API by sending requests from a different origin.
+
+- **Usage Example:**
+  ```bash
+  API_CORS_ORIGIN=http://example.com
+
+### `BETTER_AUTH_SECRET`
+
+This environment variable is used to define the secret key for signing and verifying authentication tokens in the Better Auth system. It is essential for ensuring the security and integrity of user sessions.
+
+- **Usage Example:**
+  ```bash
+  BETTER_AUTH_SECRET=your_super_secret_key_here
 
 ## docker compose
 

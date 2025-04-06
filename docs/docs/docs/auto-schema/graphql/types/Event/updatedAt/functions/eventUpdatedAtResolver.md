@@ -6,7 +6,7 @@
 
 > **eventUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: src/graphql/types/Event/updatedAt.ts:7
+Defined in: [src/graphql/types/Event/updatedAt.ts:7](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/graphql/types/Event/updatedAt.ts#L7)
 
 ## Parameters
 

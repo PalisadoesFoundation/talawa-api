@@ -70,6 +70,8 @@ describe("Setup", () => {
 		dotenv.config({ path: ".env" });
 
 		for (const [key, value] of Object.entries(expectedEnv)) {
+			console.log(key, process.env[key], value);
+
 			expect(process.env[key]).toBe(value);
 		}
 	});

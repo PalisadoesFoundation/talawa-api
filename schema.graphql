@@ -773,6 +773,11 @@ type GetUrlResponse {
   presignedUrl: String
 }
 
+type HasUserVoted {
+  """Type of the post vote"""
+  type: PostVoteType!
+}
+
 """
 Possible variants of the two-letter language code defined in ISO 639-1, part of the ISO 639 standard published by the International Organization for Standardization (ISO), to represent natural languages.
 """
@@ -3360,7 +3365,7 @@ type Query {
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
   """Query field to read a post vote."""
-  hasUserVoted(input: QueryHasUserVotedInput!): hasUserVoted
+  hasUserVoted(input: QueryHasUserVotedInput!): HasUserVoted
 
   """Query field to read an organization."""
   organization(input: QueryOrganizationInput!): Organization
@@ -3894,9 +3899,4 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
-}
-
-type hasUserVoted {
-  """Type of the post vote"""
-  type: PostVoteType!
 }

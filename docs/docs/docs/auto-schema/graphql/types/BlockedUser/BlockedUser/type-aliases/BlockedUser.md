@@ -4,24 +4,38 @@
 
 # Type Alias: BlockedUser
 
-> **BlockedUser**: `object`
+> **BlockedUser** = `object`
 
-Defined in: src/graphql/types/BlockedUser/BlockedUser.ts:5
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:5](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/graphql/types/BlockedUser/BlockedUser.ts#L5)
 
-## Type declaration
+## Properties
 
 ### createdAt
 
 > **createdAt**: `Date`
 
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:9](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/graphql/types/BlockedUser/BlockedUser.ts#L9)
+
+***
+
 ### id
 
 > **id**: `string`
+
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:6](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/graphql/types/BlockedUser/BlockedUser.ts#L6)
+
+***
 
 ### organization
 
 > **organization**: [`Organization`](../../../Organization/Organization/type-aliases/Organization.md)
 
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:7](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/graphql/types/BlockedUser/BlockedUser.ts#L7)
+
+***
+
 ### user
 
 > **user**: [`User`](../../../User/User/type-aliases/User.md)
+
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:8](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/graphql/types/BlockedUser/BlockedUser.ts#L8)

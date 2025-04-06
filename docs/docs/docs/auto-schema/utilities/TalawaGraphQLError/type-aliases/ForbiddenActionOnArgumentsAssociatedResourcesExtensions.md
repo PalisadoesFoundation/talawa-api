@@ -4,21 +4,11 @@
 
 # Type Alias: ForbiddenActionOnArgumentsAssociatedResourcesExtensions
 
-> **ForbiddenActionOnArgumentsAssociatedResourcesExtensions**: `object`
+> **ForbiddenActionOnArgumentsAssociatedResourcesExtensions** = `object`
 
-Defined in: src/utilities/TalawaGraphQLError.ts:75
+Defined in: [src/utilities/TalawaGraphQLError.ts:75](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L75)
 
 When the client tries to perform actions on resources associated to arguments that conflict with real world expectations of the application. One example would be a user trying to follow their own account on a social media application.
-
-## Type declaration
-
-### code
-
-> **code**: `"forbidden_action_on_arguments_associated_resources"`
-
-### issues
-
-> **issues**: `object`[]
 
 ## Example
 
@@ -39,3 +29,27 @@ throw new TalawaGraphQLError({
 	},
 });
 ```
+
+## Properties
+
+### code
+
+> **code**: `"forbidden_action_on_arguments_associated_resources"`
+
+Defined in: [src/utilities/TalawaGraphQLError.ts:76](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L76)
+
+***
+
+### issues
+
+> **issues**: `object`[]
+
+Defined in: [src/utilities/TalawaGraphQLError.ts:77](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L77)
+
+#### argumentPath
+
+> **argumentPath**: (`string` \| `number`)[]
+
+#### message
+
+> **message**: `string`

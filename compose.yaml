@@ -84,6 +84,8 @@ services:
       - API_RATE_LIMIT_REFILL_RATE=${API_RATE_LIMIT_REFILL_RATE:?error}
       - CI=${CI:?error}
       - NODE_ENV=${NODE_ENV:?error}
+      - API_CORS_ORIGIN=${API_CORS_ORIGIN:?error}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:?error}
     # https://docs.docker.com/reference/compose-file/build/#using-build-and-image
     # https://docs.docker.com/reference/compose-file/build/#publishing-built-images
     # https://docs.docker.com/reference/compose-file/services/#image 

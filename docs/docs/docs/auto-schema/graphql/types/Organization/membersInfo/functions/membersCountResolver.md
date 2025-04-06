@@ -6,7 +6,7 @@
 
 > **membersCountResolver**(`parent`, `_args`, `ctx`): `Promise`\<`number`\>
 
-Defined in: src/graphql/types/Organization/membersInfo.ts:10
+Defined in: [src/graphql/types/Organization/membersInfo.ts:10](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/graphql/types/Organization/membersInfo.ts#L10)
 
 ## Parameters
 

@@ -4,17 +4,11 @@
 
 # Type Alias: ForbiddenActionExtensions
 
-> **ForbiddenActionExtensions**: `object`
+> **ForbiddenActionExtensions** = `object`
 
-Defined in: src/utilities/TalawaGraphQLError.ts:51
+Defined in: [src/utilities/TalawaGraphQLError.ts:51](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L51)
 
 When the client tries to perform an action that conflicts with real world expectations of the application.
-
-## Type declaration
-
-### code
-
-> **code**: `"forbidden_action"`
 
 ## Example
 
@@ -27,3 +21,11 @@ throw new TalawaGraphQLError(
 	},
 );
 ```
+
+## Properties
+
+### code
+
+> **code**: `"forbidden_action"`
+
+Defined in: [src/utilities/TalawaGraphQLError.ts:52](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L52)
