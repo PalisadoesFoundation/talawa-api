@@ -511,6 +511,12 @@ type Community {
   youtubeURL: String
 }
 
+input CreateActionItemCategoryInput {
+  isDisabled: Boolean
+  name: String!
+  organizationId: ID!
+}
+
 input CreateActionItemInput {
   assignedAt: String
   assigneeId: ID!
@@ -771,6 +777,11 @@ input GetPostsByOrgInput {
 """GetUrlResponse"""
 type GetUrlResponse {
   presignedUrl: String
+}
+
+type HasUserVoted {
+  """Type of the post vote"""
+  type: PostVoteType!
 }
 
 """
@@ -1472,6 +1483,9 @@ type Mutation {
   """Mutation field to create an action item."""
   createActionItem(input: CreateActionItemInput!): ActionItem
 
+  """Mutation field to create a new Action Item Category."""
+  createActionItemCategory(input: CreateActionItemCategoryInput!): ActionItemCategory
+
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
 
@@ -1645,6 +1659,9 @@ type Mutation {
     """Update an action item"""
     input: MutationUpdateActionItemInput!
   ): ActionItem
+
+  """Mutation field to update an existing Action Item Category."""
+  updateActionItemCategory(input: UpdateActionItemCategoryInput!): ActionItemCategory
 
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
@@ -3360,7 +3377,7 @@ type Query {
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
   """Query field to read a post vote."""
-  hasUserVoted(input: QueryHasUserVotedInput!): hasUserVoted
+  hasUserVoted(input: QueryHasUserVotedInput!): HasUserVoted
 
   """Query field to read an organization."""
   organization(input: QueryOrganizationInput!): Organization
@@ -3666,6 +3683,12 @@ type TagFolderTagsConnectionEdge {
   node: Tag
 }
 
+input UpdateActionItemCategoryInput {
+  categoryId: ID!
+  isDisabled: Boolean
+  name: String
+}
+
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
 
@@ -3894,9 +3917,4 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
-}
-
-type hasUserVoted {
-  """Type of the post vote"""
-  type: PostVoteType!
 }
