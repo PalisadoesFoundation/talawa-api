@@ -502,36 +502,35 @@ export async function insertCollections(
 					const now = new Date();
 					const events = JSON.parse(fileContent).map(
 						(
-						  event: {
-							id: string;
-							createdAt: string | number | Date;
-							updatedAt: string | number | Date;
-							startAt: string | number | Date;
-							endAt: string | number | Date;
-						  },
-						  index: number
+							event: {
+								id: string;
+								createdAt: string | number | Date;
+								updatedAt: string | number | Date;
+								startAt: string | number | Date;
+								endAt: string | number | Date;
+							},
+							index: number,
 						) => {
-						  
-						  const start = new Date(
-							now.getFullYear(),
-							now.getMonth(),
-							now.getDate() + index,
-							9,
-							0,
-							0
-						  );
-			
-						  const end = new Date(start.getTime() + 2 * 24 * 60 * 60 * 1000);
-						  
-						  return {
-							...event,
-							createdAt: start,   
-							startAt: start,    
-							endAt: end,        
-							updatedAt: null
-						  };
-						}
-					  ) as (typeof schema.eventsTable.$inferInsert)[];
+							const start = new Date(
+								now.getFullYear(),
+								now.getMonth(),
+								now.getDate() + index,
+								9,
+								0,
+								0,
+							);
+
+							const end = new Date(start.getTime() + 2 * 24 * 60 * 60 * 1000);
+
+							return {
+								...event,
+								createdAt: start,
+								startAt: start,
+								endAt: end,
+								updatedAt: null,
+							};
+						},
+					) as (typeof schema.eventsTable.$inferInsert)[];
 
 					await checkAndInsertData(
 						schema.eventsTable,
