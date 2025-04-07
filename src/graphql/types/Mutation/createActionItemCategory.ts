@@ -98,7 +98,6 @@ builder.mutationField("createActionItemCategory", (t) =>
 				});
 			}
 
-			// 9. Insert the new category
 			const [createdCategory] = await ctx.drizzleClient
 				.insert(actionCategoriesTable)
 				.values({
