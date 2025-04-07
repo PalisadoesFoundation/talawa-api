@@ -352,6 +352,7 @@ jobs:
   Check-App-Startup:
     name: Check App Startup and Health
     runs-on: ubuntu-latest
+    needs: [Run-Tests]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.2.2
