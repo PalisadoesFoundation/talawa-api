@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: read
-      contents: read
     steps:
       - name: Check CodeRabbit approval using GitHub Script
         uses: actions/github-script@v7
@@ -24,19 +23,10 @@ jobs:
               pull_number: context.payload.pull_request.number
             });
 
-            // Debug: Log all reviews to see what's coming in
-            console.log('All reviews:', JSON.stringify(reviews.map(r => ({
-              user: r.user.login,
-              state: r.state,
-              submitted_at: r.submitted_at
-            })), null, 2));
-
-            // Filter reviews by the exact bot name "coderabbitai[bot]"
+            // Filter reviews by a user whose login includes "coderabbit" (case-insensitive)
             const codeRabbitReviews = reviews.filter(review =>
-              review.user.login === 'coderabbitai[bot]'
+              review.user.login.toLowerCase().includes('coderabbit')
             );
-
-            console.log('CodeRabbit reviews found:', codeRabbitReviews.length);
 
             // Fail if no CodeRabbit reviews are found
             if (codeRabbitReviews.length === 0) {
@@ -47,8 +37,6 @@ jobs:
             // Sort reviews by submission time in descending order
             codeRabbitReviews.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at));
             const latestReview = codeRabbitReviews[0];
-
-            console.log('Latest CodeRabbit review state:', latestReview.state);
 
             // Check if the latest CodeRabbit review is "APPROVED"
             if (latestReview.state !== 'APPROVED') {
