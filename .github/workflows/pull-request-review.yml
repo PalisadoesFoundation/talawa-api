@@ -24,10 +24,23 @@ jobs:
               pull_number: context.payload.pull_request.number
             });
 
-            // Filter reviews by a user whose login includes "coderabbit" (case-insensitive)
-            const codeRabbitReviews = reviews.filter(review =>
-              review.user.login.toLowerCase().includes('coderabbit')
+            // Log all reviews once for debugging
+            reviews.forEach(review =>
+              console.log('Reviewer:', review.user.login, 'State:', review.state)
             );
+
+            const latestReviewsMap = new Map();
+            for (const review of reviews) {
+              const login = review.user.login.toLowerCase();
+              if (login.includes('coderabbit')) {
+                const existing = latestReviewsMap.get(login);
+                if (!existing || new Date(review.submitted_at) > new Date(existing.submitted_at)) {
+                  latestReviewsMap.set(login, review);
+                }
+              }
+            }
+
+            const codeRabbitReviews = Array.from(latestReviewsMap.values());
 
             // Fail if no CodeRabbit reviews are found
             if (codeRabbitReviews.length === 0) {
