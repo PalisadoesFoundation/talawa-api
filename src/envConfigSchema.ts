@@ -244,6 +244,10 @@ export const envConfigSchema = Type.Object({
 	API_GRAPHQL_SCALAR_FIELD_COST: Type.Number({
 		minimum: 0,
 	}),
+	//  cost of scalar resolver field
+	API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST: Type.Number({
+		minimum: 1,
+	}),
 	// cost of object field
 	API_GRAPHQL_OBJECT_FIELD_COST: Type.Number({
 		minimum: 0,
@@ -269,6 +273,7 @@ export const envConfigSchema = Type.Object({
 	API_RATE_LIMIT_REFILL_RATE: Type.Number({
 		minimum: 0,
 	}),
+
 });
 
 /**
