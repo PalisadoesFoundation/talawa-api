@@ -103,9 +103,9 @@ builder.queryField("getPledgesByUserId", (t) =>
 
 			let sortInTs:
 				| ((
-					a: ExtendedFundCampaignPledge,
-					b: ExtendedFundCampaignPledge,
-				) => number)
+						a: ExtendedFundCampaignPledge,
+						b: ExtendedFundCampaignPledge,
+				  ) => number)
 				| null = null;
 
 			switch (sortOrder) {
