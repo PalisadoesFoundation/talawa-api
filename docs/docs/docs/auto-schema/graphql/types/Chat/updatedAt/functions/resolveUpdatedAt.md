@@ -6,7 +6,7 @@
 
 > **resolveUpdatedAt**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: src/graphql/types/Chat/updatedAt.ts:11
+Defined in: src/graphql/types/Chat/updatedAt.ts:12
 
 ## Parameters
 

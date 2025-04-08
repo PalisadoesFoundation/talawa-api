@@ -20,5 +20,9 @@ import "./tagFolder";
 import "./user";
 import "./venue";
 import "./allUsers";
-
+import "./ActionCategory";
+import "./ActionItem";
+import "./organizationUsers";
+import "./Events";
 import "./organizations";
+import "./hasUserVoted";

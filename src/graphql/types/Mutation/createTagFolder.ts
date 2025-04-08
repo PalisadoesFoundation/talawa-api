@@ -7,8 +7,8 @@ import {
 } from "~/src/graphql/inputs/MutationCreateTagFolderInput";
 import { TagFolder } from "~/src/graphql/types/TagFolder/TagFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-
 const mutationCreateTagFolderArgumentsSchema = z.object({
 	input: mutationCreateTagFolderInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("createTagFolder", (t) =>
 				type: MutationCreateTagFolderInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create a tag folder.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

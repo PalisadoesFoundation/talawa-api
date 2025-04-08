@@ -74,6 +74,7 @@ suite("Mutation field createPresignedUrl", () => {
 							postalCode: "94101",
 							addressLine1: "123 Main St",
 							addressLine2: "Suite 100",
+							isUserRegistrationRequired: false,
 						},
 					},
 				},
@@ -87,11 +88,10 @@ suite("Mutation field createPresignedUrl", () => {
 					input: {
 						fileName: "testfile.txt",
 						organizationId: orgId,
-						fileHash: "test-hash-2",
+						fileHash: "test-hash-sha-256",
 					},
 				},
 			});
-
 			expect(result.data?.createPresignedUrl).toMatchObject({
 				presignedUrl: "https://example.com/presigned-url",
 				requiresUpload: true,
@@ -99,7 +99,7 @@ suite("Mutation field createPresignedUrl", () => {
 
 			assertToBeNonNullish(result.data?.createPresignedUrl);
 			expect(result.data.createPresignedUrl.objectName).toMatch(
-				/^uploads\/[0-9a-f-]+\/\d+-test-hash-2-testfile\.txt$/i,
+				/^uploads\/[0-9a-f-]+\/\d+-test-hash-sha-256-testfile\.txt$/i,
 			);
 			server.minio.client.presignedPutObject = originalPresignedPutObject;
 		});
@@ -186,6 +186,7 @@ suite("Mutation field createPresignedUrl", () => {
 							postalCode: "94101",
 							addressLine1: "123 Main St",
 							addressLine2: "Suite 100",
+							isUserRegistrationRequired: false,
 						},
 					},
 				},
@@ -239,6 +240,7 @@ suite("Mutation field createPresignedUrl", () => {
 							postalCode: "12345",
 							addressLine1: "Address 1",
 							addressLine2: "Address 2",
+							isUserRegistrationRequired: false,
 						},
 					},
 				},
@@ -301,6 +303,7 @@ suite("Mutation field createPresignedUrl", () => {
 							postalCode: "94101",
 							addressLine1: "500 Test Blvd",
 							addressLine2: "Suite 50",
+							isUserRegistrationRequired: false,
 						},
 					},
 				},
@@ -359,6 +362,7 @@ suite("Mutation field createPresignedUrl", () => {
 							postalCode: "12345",
 							addressLine1: "Address 1",
 							addressLine2: "Address 2",
+							isUserRegistrationRequired: false,
 						},
 					},
 				},

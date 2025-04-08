@@ -8,8 +8,8 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateAgendaItemInput";
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-
 const mutationUpdateAgendaItemArgumentsSchema = z.object({
 	input: MutationUpdateAgendaItemInputSchema,
 });
@@ -23,6 +23,7 @@ builder.mutationField("updateAgendaItem", (t) =>
 				type: MutationUpdateAgendaItemInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update an agenda item.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

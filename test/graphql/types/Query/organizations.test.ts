@@ -1,10 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
-import type {
-	TalawaGraphQLFormattedError,
-	UnauthenticatedExtensions,
-} from "~/src/utilities/TalawaGraphQLError";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -280,23 +276,13 @@ suite("Query field organizations", () => {
 	suite(
 		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.organizations" field if`,
 		() => {
-			test("client triggering the graphql operation is not authenticated.", async () => {
+			test("client triggering the graphql operation without authentication token, should receive all organization", async () => {
 				const result = await mercuriusClient.query(Query_organizations, {
 					variables: {},
 				});
 
-				expect(result.data.organizations).toEqual(null);
-				expect(result.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<UnauthenticatedExtensions>({
-								code: "unauthenticated",
-							}),
-							message: expect.any(String),
-							path: ["organizations"],
-						}),
-					]),
-				);
+				expect(result.errors).toBeUndefined();
+				expect(result.data.organizations?.length).toBeGreaterThan(1);
 			});
 
 			test("client triggering the graphql operation is not authenticated delete user.", async () => {

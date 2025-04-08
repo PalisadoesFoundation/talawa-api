@@ -11,8 +11,8 @@ import {
 } from "~/src/graphql/inputs/MutationCreateUserInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
-
 const mutationCreateUserArgumentsSchema = z.object({
 	input: mutationCreateUserInputSchema.transform(async (arg, ctx) => {
 		let avatar:
@@ -57,6 +57,7 @@ builder.mutationField("createUser", (t) =>
 				type: MutationCreateUserInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create a user.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

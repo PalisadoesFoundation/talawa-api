@@ -1,5 +1,7 @@
 import { eq } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
 import { z } from "zod";
+import { postAttachmentsTable } from "~/src/drizzle/tables/postAttachments";
 import { postsTable } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -9,6 +11,7 @@ import {
 import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
+import envConfig from "~/src/utilities/graphqLimits";
 
 const mutationUpdatePostArgumentsSchema = z.object({
 	input: mutationUpdatePostInputSchema,
@@ -23,6 +26,7 @@ builder.mutationField("updatePost", (t) =>
 				type: MutationUpdatePostInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update a post.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
@@ -195,34 +199,76 @@ builder.mutationField("updatePost", (t) =>
 				}
 			}
 
-			const [updatedPost] = await ctx.drizzleClient
-				.update(postsTable)
-				.set({
-					caption: parsedArgs.input.caption,
-					pinnedAt:
-						parsedArgs.input.isPinned === undefined
-							? undefined
-							: parsedArgs.input.isPinned
-								? existingPost.pinnedAt === null
-									? new Date()
-									: undefined
-								: null,
-					updaterId: currentUserId,
-				})
-				.where(eq(postsTable.id, parsedArgs.input.id))
-				.returning();
+			// ...existing code...
 
-			// Updated post not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
-			if (updatedPost === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
+			// Replace the simple update with a transaction
+			return await ctx.drizzleClient.transaction(async (tx) => {
+				const [updatedPost] = await tx
+					.update(postsTable)
+					.set({
+						caption: parsedArgs.input.caption,
+						pinnedAt:
+							parsedArgs.input.isPinned === undefined
+								? undefined
+								: parsedArgs.input.isPinned
+									? existingPost.pinnedAt === null
+										? new Date()
+										: undefined
+									: null,
+						updaterId: currentUserId,
+					})
+					.where(eq(postsTable.id, parsedArgs.input.id))
+					.returning();
+
+				// Updated post not being returned means that either it was deleted or its `id` column was changed
+				if (updatedPost === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+					});
+				}
+
+				// Handle attachments if they're provided in the input
+				if (parsedArgs.input.attachments !== undefined) {
+					// First delete existing attachments
+					await tx
+						.delete(postAttachmentsTable)
+						.where(eq(postAttachmentsTable.postId, updatedPost.id));
+
+					// Then insert new attachments
+					const attachments = parsedArgs.input.attachments;
+					if (attachments.length > 0) {
+						const createdPostAttachments = await tx
+							.insert(postAttachmentsTable)
+							.values(
+								attachments.map((attachment) => ({
+									updaterId: currentUserId,
+									mimeType: attachment.mimetype,
+									id: uuidv7(),
+									name: attachment.name,
+									postId: updatedPost.id,
+									objectName: attachment.objectName,
+									fileHash: attachment.fileHash,
+								})),
+							)
+							.returning();
+
+						return Object.assign(updatedPost, {
+							attachments: createdPostAttachments,
+						});
+					}
+
+					// Return empty attachments array if no new attachments
+					return Object.assign(updatedPost, {
+						attachments: [],
+					});
+				}
+
+				// If attachments aren't part of the update, keep the existing ones
+				return Object.assign(updatedPost, {
+					attachments: existingPost.attachmentsWherePost,
 				});
-			}
-
-			return Object.assign(updatedPost, {
-				attachments: existingPost.attachmentsWherePost,
 			});
 		},
 		type: Post,

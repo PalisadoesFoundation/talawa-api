@@ -6,7 +6,7 @@
 
 > `const` **ChatMembershipResolver**: `object`
 
-Defined in: src/graphql/types/Mutation/createChatMembership.ts:99
+Defined in: src/graphql/types/Mutation/createChatMembership.ts:100
 
 ## Type declaration
 

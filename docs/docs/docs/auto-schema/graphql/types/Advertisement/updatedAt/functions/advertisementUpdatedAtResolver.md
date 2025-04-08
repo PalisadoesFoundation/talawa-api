@@ -16,7 +16,7 @@ Defined in: src/graphql/types/Advertisement/updatedAt.ts:6
 
 ### \_args
 
-`unknown`
+`Record`\<`string`, `never`\>
 
 ### ctx
 

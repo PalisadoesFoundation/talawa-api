@@ -4,6 +4,7 @@ import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationM
 import { usersTable } from "~/src/drizzle/tables/users";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { Event } from "./Event";
 type EventsTable = typeof eventsTable.$inferSelect;
@@ -103,6 +104,7 @@ Event.implement({
 			description: "User who last updated the event.",
 			resolve: resolveEventUpdater,
 			type: User,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		}),
 	}),
 });

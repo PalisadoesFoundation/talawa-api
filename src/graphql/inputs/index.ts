@@ -1,3 +1,5 @@
+import "./MutationBlockUserInput";
+import "./MutationUnblockUserInput";
 import "./MutationCreateAdvertisementInput";
 import "./MutationCreateAgendaFolderInput";
 import "./MutationCreateAgendaItemInput";
@@ -84,3 +86,4 @@ import "./QueryTagInput";
 import "./QueryUserInput";
 import "./QueryVenueInput";
 import "./SubscriptionChatMessageCreateInput";
+import "./QueryHasUserVotedInput";

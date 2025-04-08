@@ -6,7 +6,7 @@
 
 > **resolveOrganizations**(`_parent`, `args`, `ctx`): `Promise`\<`object`[]\>
 
-Defined in: src/graphql/types/Query/organizations.ts:27
+Defined in: src/graphql/types/Query/organizations.ts:23
 
 Resolver to fetch organizations with optional filtering.
 
@@ -22,7 +22,7 @@ Resolver to fetch organizations with optional filtering.
 
 ### ctx
 
-`ContextType`
+[`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md)
 
 ## Returns
 

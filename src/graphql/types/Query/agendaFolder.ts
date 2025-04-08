@@ -6,7 +6,7 @@ import {
 } from "~/src/graphql/inputs/QueryAgendaFolderInput";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const queryAgendaFolderArgumentsSchema = z.object({
 	input: queryAgendaFolderInputSchema,
 });
@@ -20,6 +20,7 @@ builder.queryField("agendaFolder", (t) =>
 				type: QueryAgendaFolderInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field to read an agenda folder.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

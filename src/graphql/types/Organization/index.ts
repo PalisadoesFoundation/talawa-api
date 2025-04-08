@@ -1,6 +1,7 @@
 import "./Organization";
 import "./advertisements";
 import "./avatarURL";
+import "./blockedUsers";
 import "./chats";
 import "./creator";
 import "./events";
@@ -17,3 +18,6 @@ import "./updater";
 import "./venues";
 import "./CancelMembershipResponse";
 import "./MembershipRequestObject";
+import "./membershipRequests";
+import "./membersInfo";
+import "./isMember";

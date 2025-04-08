@@ -1,11 +1,12 @@
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { Fund } from "./Fund";
-
 Fund.implement({
 	fields: (t) => ({
 		organization: t.field({
 			description: "Organization which the fund belongs to.",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				const existingOrganization =
 					await ctx.drizzleClient.query.organizationsTable.findFirst({

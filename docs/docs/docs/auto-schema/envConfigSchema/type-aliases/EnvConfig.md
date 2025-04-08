@@ -6,6 +6,6 @@
 
 > **EnvConfig**: `Static`\<*typeof* [`envConfigSchema`](../variables/envConfigSchema.md)\>
 
-Defined in: src/envConfigSchema.ts:277
+Defined in: src/envConfigSchema.ts:293
 
 Type of the object containing parsed configuration environment variables.

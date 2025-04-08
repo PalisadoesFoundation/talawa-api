@@ -6,4 +6,4 @@
 
 > `const` **actionsTable**: `PgTableWithColumns`\<\{\}\>
 
-Defined in: src/drizzle/tables/actions.ts:16
+Defined in: src/drizzle/tables/actions.ts:17

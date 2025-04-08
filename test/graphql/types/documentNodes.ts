@@ -42,7 +42,7 @@ export const Mutation_createUser =
 export const Mutation_deleteCurrentUser =
 	gql(`mutation Mutation_deleteCurrentUser {
     deleteCurrentUser {
-        id  
+        id
     }
 }`);
 
@@ -69,7 +69,7 @@ export const Mutation_deleteUser =
         postalCode
         role
         state
-        workPhoneNumber    
+        workPhoneNumber
     }
 }`);
 
@@ -126,7 +126,7 @@ export const Mutation_updateCurrentUser =
         postalCode
         role
         state
-        workPhoneNumber    
+        workPhoneNumber
     }
 }`);
 
@@ -153,7 +153,7 @@ export const Mutation_updateUser =
         postalCode
         role
         state
-        workPhoneNumber    
+        workPhoneNumber
     }
 }`);
 
@@ -318,7 +318,7 @@ export const Query_user_creator =
             postalCode
             role
             state
-            workPhoneNumber 
+            workPhoneNumber
         }
     }
 }`);
@@ -354,7 +354,7 @@ export const Query_user_updater =
             postalCode
             role
             state
-            workPhoneNumber 
+            workPhoneNumber
         }
     }
 }`);
@@ -370,9 +370,10 @@ export const Query_fund = gql(`query Query_fund($input: QueryFundInput!) {
 export const Mutation_createOrganization =
 	gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
     createOrganization(input: $input) {
-      id 
+      id
       name
       countryCode
+      isUserRegistrationRequired
     }
   }`);
 
@@ -529,6 +530,41 @@ export const Query_organizations = gql(`
 	}
 `);
 
+export const Query_blockedUsers = gql(`
+	query BlockedUsers(
+		$organizationId: String!
+		$first: Int
+		$after: String
+		$last: Int
+		$before: String
+	) {
+		organization(input:{id: $organizationId}) {
+			id
+			blockedUsers(
+				first: $first
+				after: $after
+				last: $last
+				before: $before
+			) {
+				edges {
+					cursor
+					node {
+						id
+						name
+						role
+					}
+				}
+				pageInfo {
+					hasNextPage
+					hasPreviousPage
+					startCursor
+					endCursor
+				}
+			}
+		}
+	}
+`);
+
 export const Query_organization = gql(`
     query Organization($input: QueryOrganizationInput!, $first: Int, $after: String,$last: Int, $before: String, $where: MembersWhereInput) {
       organization(input: $input) {
@@ -649,7 +685,7 @@ export const Mutation_createPresignedUrl = gql(`
     createPresignedUrl(input: $input) {
       presignedUrl
       objectName
-      requiresUpload   
+      requiresUpload
        }
   }
 `);
@@ -662,16 +698,27 @@ export const Mutation_createGetfileUrl = gql(`
   }
 `);
 
+export const Mutation_blockUser =
+	gql(`mutation Mutation_blockUser($organizationId: ID!, $userId: ID!) {
+    blockUser(organizationId: $organizationId, userId: $userId)
+}`);
+
+export const Mutation_unblockUser =
+	gql(`mutation Mutation_unblockUser($organizationId: ID!, $userId: ID!) {
+    unblockUser(organizationId: $organizationId, userId: $userId)
+}`);
+
 export const Mutation_updatePost = gql(`
   mutation Mutation_updatePost($input: MutationUpdatePostInput!) {
-    updatePost(input: $input) { 
+    updatePost(input: $input) {
       id
       pinnedAt
+      caption
       attachments {
-        mimeType
+        mimeType            
         fileHash
         name
-        objectName
+        objectName          
         id
       }
     }
@@ -766,3 +813,193 @@ export const Mutation_joinPublicOrganization = gql(`
     }
   }
 `);
+
+export const Mutation_createActionItem = gql(`
+  mutation CreateActionItem($input: CreateActionItemInput!) {
+    createActionItem(input: $input) {
+      id
+      categoryId
+      assigneeId
+      assignedAt
+      completionAt
+      preCompletionNotes
+      postCompletionNotes
+      isCompleted
+      eventId
+      organizationId
+      creatorId
+      updaterId
+      updatedAt
+    }
+  }
+`);
+
+export const POSTGRES_EVENTS_BY_ORGANIZATION_ID = gql(`
+  query EventsByOrganizationId($input: EventsByOrganizationIdInput!) {
+    eventsByOrganizationId(input: $input) {
+      id
+      name
+      description
+    }
+  }
+`);
+
+export const UPDATE_ACTION_ITEM_MUTATION = gql(`
+  mutation UpdateActionItem($input: MutationUpdateActionItemInput!) {
+    updateActionItem(input: $input) {
+      id
+      isCompleted
+      postCompletionNotes
+      preCompletionNotes
+      categoryId
+      assigneeId
+      updaterId
+    }
+  }
+`);
+
+export const DELETE_ACTION_ITEM_MUTATION = gql(`
+  mutation DeleteActionItem($input: MutationDeleteActionItemInput!) {
+    deleteActionItem(input: $input) {
+      id
+      isCompleted
+      categoryId
+      assigneeId
+      organizationId
+      createdAt
+      updatedAt
+      postCompletionNotes
+      preCompletionNotes
+    }
+  }
+  `);
+
+export const ACTION_ITEM_CATEGORY = gql(`
+  query FetchActionCategoriesByOrganization($input: QueryActionCategoriesByOrganizationInput!) {
+    actionCategoriesByOrganization(input: $input) {
+      id
+      name
+      organizationId
+      creatorId
+      isDisabled
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Query_eventsByIds = gql(`
+  query eventsByIds($input: QueryEventsByIdsInput!) {
+    eventsByIds(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+    }
+  }
+`);
+
+export const Query_usersByOrganizationId = gql(`
+  query UsersByOrganizationId($organizationId: ID!) {
+    usersByOrganizationId(organizationId: $organizationId) {
+      id
+      name
+      emailAddress
+    }
+  }
+`);
+
+export const Query_usersByIds = gql(`
+  query UsersByIds($input: UsersByIdsInput!) {
+    usersByIds(input: $input) {
+      id
+      name
+      emailAddress
+    }
+  }
+`);
+
+export const Query_eventsByOrganizationId = gql(`
+ query EventsByOrganizationId($input: EventsByOrganizationIdInput!) {
+    eventsByOrganizationId(input: $input) {
+      id
+      description
+      startAt
+      endAt
+      organization {
+        id
+      }
+      attachments {
+        mimeType
+      }
+    }
+  }
+`);
+
+export const Query_actionItemsByOrganization = `
+query ActionItemsByOrganization($input: QueryActionItemsByOrganizationInput!) {
+  actionItemsByOrganization(input: $input) {
+    id
+    preCompletionNotes
+    isCompleted
+    assignedAt
+    completionAt
+    categoryId
+    assigneeId
+    creatorId
+    organizationId
+    updaterId
+    updatedAt
+    eventId
+    postCompletionNotes
+  }
+}
+`;
+
+export const Mutation_sendMembershipRequest = gql(`
+  mutation Mutation_sendMembershipRequest($input: MutationSendMembershipRequestInput!) {
+  sendMembershipRequest(input: $input) {
+    organizationId
+    userId
+    status
+    createdAt
+    membershipRequestId
+    }
+  }
+`);
+
+export const Mutation_acceptMembershipRequest = gql(`
+  mutation Mutation_acceptMembershipRequest($input: MutationAcceptMembershipRequestInput!) {
+  acceptMembershipRequest(input: $input) {
+    success
+    message
+    }
+  }
+`);
+
+export const Mutation_rejectMembershipRequest = gql(`
+  mutation Mutation_rejectMembershipRequest($input: MutationRejectMembershipRequestInput!) {
+  rejectMembershipRequest(input: $input) {
+    success
+    message
+    }
+  }
+`);
+
+export const Query_hasUserVoted = gql(`
+  query Query_hasUserVoted($input: QueryHasUserVotedInput!) {
+    hasUserVoted(input: $input)
+    {
+      type
+    }
+  }
+`);
+
+export const Mutation_createPostVote = gql(`
+  mutation Mutation_createPostVote($input:MutationCreatePostVoteInput!){
+    createPostVote(input : $input){
+      id
+      caption
+    }
+  }`);

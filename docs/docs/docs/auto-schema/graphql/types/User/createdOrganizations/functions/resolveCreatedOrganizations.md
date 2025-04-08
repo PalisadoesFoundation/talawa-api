@@ -6,7 +6,7 @@
 
 > **resolveCreatedOrganizations**(`parent`, `args`, `ctx`): `Promise`\<`object`[]\>
 
-Defined in: src/graphql/types/User/createdOrganizations.ts:16
+Defined in: src/graphql/types/User/createdOrganizations.ts:17
 
 ## Parameters
 

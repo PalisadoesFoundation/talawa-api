@@ -5,6 +5,8 @@ import { ulid } from "ulidx";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
+import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests";
+import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -13,6 +15,7 @@ import {
 } from "~/src/graphql/inputs/MutationSignUpInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import type { CurrentClient } from "../../context";
 
@@ -60,6 +63,7 @@ builder.mutationField("signUp", (t) =>
 				type: MutationSignUpInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to sign up to talawa.",
 		resolve: async (_parent, args, ctx) => {
 			if (ctx.currentClient.isAuthenticated) {
@@ -88,10 +92,17 @@ builder.mutationField("signUp", (t) =>
 				});
 			}
 
-			const [existingUserWithEmailAddress] = await ctx.drizzleClient
-				.select()
-				.from(usersTable)
-				.where(eq(usersTable.emailAddress, parsedArgs.input.emailAddress));
+			const [[existingUserWithEmailAddress], existingOrganization] =
+				await Promise.all([
+					ctx.drizzleClient
+						.select()
+						.from(usersTable)
+						.where(eq(usersTable.emailAddress, parsedArgs.input.emailAddress)),
+					ctx.drizzleClient.query.organizationsTable.findFirst({
+						where: (fields, operators) =>
+							operators.eq(fields.id, parsedArgs.input.selectedOrganization),
+					}),
+				]);
 
 			if (existingUserWithEmailAddress !== undefined) {
 				throw new TalawaGraphQLError({
@@ -101,6 +112,20 @@ builder.mutationField("signUp", (t) =>
 							{
 								argumentPath: ["input", "emailAddress"],
 								message: "This email address is already registered.",
+							},
+						],
+					},
+				});
+			}
+
+			if (existingOrganization === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "selectedOrganization"],
+								message: "This organization does not exist.",
 							},
 						],
 					},
@@ -171,6 +196,47 @@ builder.mutationField("signUp", (t) =>
 							"content-type": parsedArgs.input.avatar.mimetype,
 						},
 					);
+				}
+
+				// If the organization does not require user registration, create a membership for the user in the organization.
+				if (existingOrganization.userRegistrationRequired === false) {
+					const [createdOrganizationMembership] = await tx
+						.insert(organizationMembershipsTable)
+						.values({
+							creatorId: createdUser.id,
+							memberId: createdUser.id,
+							organizationId: parsedArgs.input.selectedOrganization,
+							role: "regular",
+						})
+						.returning();
+
+					// Inserted organization membership not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+					if (createdOrganizationMembership === undefined) {
+						ctx.log.error(
+							"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+						);
+
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+					// Else user registration is required then create membership requeest
+				} else {
+					const newRequest = await tx
+						.insert(membershipRequestsTable)
+						.values({
+							userId: createdUser.id,
+							organizationId: parsedArgs.input.selectedOrganization,
+						})
+						.returning();
+
+					if (newRequest.length === 0) {
+						throw new TalawaGraphQLError({
+							extensions: { code: "unexpected" },
+						});
+					}
 				}
 
 				// TODO: The following code is necessary for continuing the expected graph traversal for unauthenticated clients that triggered this operation because of absence of an authentication context for those clients. This should be removed when authentication flows are seperated from the graphql implementation.

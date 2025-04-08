@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteEventArgumentsSchema = z.object({
 	input: mutationDeleteEventInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deleteEvent", (t) =>
 				type: MutationDeleteEventInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete an event.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

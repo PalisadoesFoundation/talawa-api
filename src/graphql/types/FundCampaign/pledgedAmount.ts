@@ -1,12 +1,13 @@
 import { eq, sum } from "drizzle-orm";
 import { fundCampaignPledgesTable } from "~/src/drizzle/tables/fundCampaignPledges";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { FundCampaign } from "./FundCampaign";
-
 FundCampaign.implement({
 	fields: (t) => ({
 		pledgedAmount: t.field({
 			description: "Total amount of money pledged under the fund campaign.",
+			complexity: envConfig.API_GRAPHQL_SCALAR_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				const [fundCampaignPledgedAmount] = await ctx.drizzleClient
 					.select({

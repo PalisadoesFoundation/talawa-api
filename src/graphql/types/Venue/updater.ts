@@ -1,6 +1,7 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import envConfig from "~/src/utilities/graphqLimits";
 import { Venue } from "./Venue";
 import type { Venue as VenueType } from "./Venue";
 
@@ -90,6 +91,7 @@ Venue.implement({
 		updater: t.field({
 			description: "User who last updated the venue.",
 			resolve: resolveUpdater,
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			type: User,
 		}),
 	}),

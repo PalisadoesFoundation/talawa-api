@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationDeleteChatMembershipInput";
 import { Chat } from "~/src/graphql/types/Chat/Chat";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationDeleteChatMembershipArgumentsSchema = z.object({
 	input: mutationDeleteChatMembershipInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("deleteChatMembership", (t) =>
 				type: MutationDeleteChatMembershipInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to delete a chat membership.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

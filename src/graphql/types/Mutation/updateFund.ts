@@ -8,7 +8,7 @@ import {
 } from "~/src/graphql/inputs/MutationUpdateFundInput";
 import { Fund } from "~/src/graphql/types/Fund/Fund";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
+import envConfig from "~/src/utilities/graphqLimits";
 const mutationUpdateFundArgumentsSchema = z.object({
 	input: mutationUpdateFundInputSchema,
 });
@@ -22,6 +22,7 @@ builder.mutationField("updateFund", (t) =>
 				type: MutationUpdateFundInput,
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to update a fund.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {

@@ -72,9 +72,13 @@ Defined in: src/graphql/types/Organization/creator.ts:7
 
 `string`
 
+#### userRegistrationRequired
+
+`boolean`
+
 ### \_args
 
-`unknown`
+`Record`\<`string`, `never`\>
 
 ### ctx
 
