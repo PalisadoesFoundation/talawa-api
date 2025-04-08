@@ -7,15 +7,17 @@ import { builder } from "~/src/graphql/builder";
 import {
 	QueryPledgeOrderByInput,
 	QueryPledgeWhereInput,
-	queryFundCampaignPledgeInputSchema,
 } from "~/src/graphql/inputs/QueryFundCampaignPledgeInput";
-import { QueryUserInput } from "~/src/graphql/inputs/QueryUserInput";
+import {
+	QueryUserInput,
+	queryUserInputSchema,
+} from "~/src/graphql/inputs/QueryUserInput";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { ParsedDefaultGraphQLConnectionArgumentsWithWhere } from "~/src/utilities/defaultGraphQLConnection";
 
 const queryFundCampaignPledgeArgumentsSchema = z.object({
-	userId: queryFundCampaignPledgeInputSchema,
+	userId: queryUserInputSchema,
 });
 
 builder.queryField("getPledgesByUserId", (t) =>
