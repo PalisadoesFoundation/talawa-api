@@ -386,7 +386,7 @@ export const Query_fundCampaignPledge =
 }`);
 
 export const Query_getPledgesByUserId =
-	gql(`query Query_getPledgesByUserId($userId: QueryUserInput! , $where: PledgeWhereInput, $orderBy:PledgeOrderByInput) {
+	gql(`query Query_getPledgesByUserId($userId: QueryUserInput! , $where: QueryPledgeWhereInput, $orderBy: QueryPledgeOrderByInput) {
   getPledgesByUserId(userId: $userId , where: $where , orderBy: $orderBy) {
     id
     note
