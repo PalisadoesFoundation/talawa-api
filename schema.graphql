@@ -3179,7 +3179,7 @@ scalar PhoneNumber
 """
 Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
 """
-enum PledgeOrderByInput {
+enum QueryPledgeOrderByInput {
   amount_ASC
   amount_DESC
   endDate_ASC
@@ -3187,7 +3187,7 @@ enum PledgeOrderByInput {
 }
 
 """Filter criteria for Pledges"""
-input PledgeWhereInput {
+input QueryPledgeWhereInput {
   """Filter pledges by the name of the creator"""
   firstName_contains: String
 
@@ -3388,13 +3388,13 @@ type Query {
     """
     Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
     """
-    orderBy: PledgeOrderByInput
+    orderBy: QueryPledgeOrderByInput
 
     """Global id of the user."""
     userId: QueryUserInput!
 
     """Filter criteria for pledges"""
-    where: PledgeWhereInput
+    where: QueryPledgeWhereInput
   ): [FundCampaignPledge!]
 
   """Query field to read a post vote."""

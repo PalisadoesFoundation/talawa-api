@@ -5934,9 +5934,9 @@ export type introspection_types = {
 			},
 		];
 	};
-	PledgeOrderByInput: {
+	QueryPledgeOrderByInput: {
 		kind: "ENUM";
-		name: "PledgeOrderByInput";
+		name: "QueryPledgeOrderByInput";
 		description: "Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'";
 		enumValues: [
 			{ name: "amount_ASC"; isDeprecated: false; deprecationReason: null },

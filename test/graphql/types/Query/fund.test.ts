@@ -510,7 +510,7 @@ suite("Query field fund Campaign Pledge", () => {
 		);
 	});
 
-	test("returns fund Campaign data Pledge if user is an admin", async () => {
+	test("returns fund Campaign Pledge data if user is an admin", async () => {
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
@@ -1547,7 +1547,7 @@ async function createFundCampaignPledge(
 							variables: { input: { id: fundCampaignPledgeId } },
 						});
 						console.log(
-							`Cleanup: Fund Campaign Pledge ${fundCampaignId} would be deleted here`,
+							`Cleanup: Fund Campaign Pledge ${fundCampaignPledgeId} would be deleted here`,
 						);
 					} catch (error) {
 						console.error("Failed to cleanup fund campaign Pledge :", error);
