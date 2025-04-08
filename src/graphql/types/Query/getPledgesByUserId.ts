@@ -5,8 +5,8 @@ import { fundCampaignsTable } from "~/src/drizzle/tables/fundCampaigns";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
-	PledgeOrderByInput,
-	PledgeWhereInput,
+	QueryPledgeOrderByInput,
+	QueryPledgeWhereInput,
 	queryFundCampaignPledgeInputSchema,
 } from "~/src/graphql/inputs/QueryFundCampaignPledgeInput";
 import { QueryUserInput } from "~/src/graphql/inputs/QueryUserInput";
@@ -29,13 +29,13 @@ builder.queryField("getPledgesByUserId", (t) =>
 			where: t.arg({
 				description: "Filter criteria for pledges",
 				required: false,
-				type: PledgeWhereInput,
+				type: QueryPledgeWhereInput,
 			}),
 			orderBy: t.arg({
 				description:
 					"Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'",
 				required: false,
-				type: PledgeOrderByInput,
+				type: QueryPledgeOrderByInput,
 			}),
 		},
 		description:
@@ -103,9 +103,9 @@ builder.queryField("getPledgesByUserId", (t) =>
 
 			let sortInTs:
 				| ((
-						a: ExtendedFundCampaignPledge,
-						b: ExtendedFundCampaignPledge,
-				  ) => number)
+					a: ExtendedFundCampaignPledge,
+					b: ExtendedFundCampaignPledge,
+				) => number)
 				| null = null;
 
 			switch (sortOrder) {

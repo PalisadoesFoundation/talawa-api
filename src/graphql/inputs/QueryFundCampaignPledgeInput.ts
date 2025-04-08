@@ -20,7 +20,7 @@ export const QueryFundCampaignPledgeInput = builder
 		}),
 	});
 
-export const PledgeWhereInput = builder.inputRef("PledgeWhereInput").implement({
+export const QueryPledgeWhereInput = builder.inputRef("QueryPledgeWhereInput").implement({
 	description: "Filter criteria for Pledges",
 	fields: (t) => ({
 		firstName_contains: t.string({
@@ -34,7 +34,7 @@ export const PledgeWhereInput = builder.inputRef("PledgeWhereInput").implement({
 	}),
 });
 
-export const PledgeOrderByInput = builder.enumType("PledgeOrderByInput", {
+export const QueryPledgeOrderByInput = builder.enumType("QueryPledgeOrderByInput", {
 	values: ["amount_ASC", "amount_DESC", "endDate_ASC", "endDate_DESC"] as const,
 	description:
 		"Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'",

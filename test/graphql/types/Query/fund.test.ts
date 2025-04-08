@@ -770,7 +770,6 @@ suite("Query field get fund Campaign Pledges by id", () => {
 					userId: {
 						id: regularUserResult.userId,
 					},
-					where: {},
 				},
 			},
 		);
@@ -814,7 +813,6 @@ suite("Query field get fund Campaign Pledges by id", () => {
 					userId: {
 						id: regularUserResult.userId,
 					},
-					where: {},
 				},
 			},
 		);
@@ -838,7 +836,7 @@ suite("Query field get fund Campaign Pledges by id", () => {
 		);
 	});
 
-	test("returns fund Campaign Pledge data if user is organization member test where input", async () => {
+	test("filters and returns only matching fund campaign pledge by user ID and campaign name", async () => {
 		const regularUserResult = await createRegularUser();
 
 		const { fundId: fundId1, orgId: orgId1 } = await createFund();
@@ -902,7 +900,7 @@ suite("Query field get fund Campaign Pledges by id", () => {
 		).toBeUndefined();
 	});
 
-	test("returns fund Campaign Pledge data if user is organization member test order by input", async () => {
+	test("returns user fund campaign pledges ordered by amount descending", async () => {
 		const regularUserResult = await createRegularUser();
 
 		const { fundId: fundId1, orgId: orgId1 } = await createFund();
@@ -1531,15 +1529,6 @@ async function createFundCampaignPledge(
 				},
 			);
 
-			if (createFundCampaignPledgeResult.errors) {
-				console.log(
-					"ofjenwfqf",
-					fundCampaignId,
-					"  ",
-					pledgerId,
-					createFundCampaignPledgeResult.errors,
-				);
-			}
 			if (!createFundCampaignPledgeResult.data?.createFundCampaignPledge?.id) {
 				throw new Error(
 					"Failed to create fund Campaign: Missing fund Campaign Pledge ID",
