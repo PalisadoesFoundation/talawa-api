@@ -252,14 +252,6 @@ enum AgendaItemType {
   song
 }
 
-input AttachmentInput {
-  """Mime type of the attachment."""
-  mimeType: String!
-
-  """URL of the attachment."""
-  url: String!
-}
-
 """"""
 type AuthenticationPayload {
   """
@@ -1994,7 +1986,7 @@ input MutationCreateOrganizationMembershipInput {
 """Input for creating a new post"""
 input MutationCreatePostInput {
   """Metadata for files already uploaded via presigned URL"""
-  attachments: [FileMetadataInput!]
+  attachments: [FileMetadataInput!]!
 
   """Caption about the post."""
   caption: String!
@@ -2372,6 +2364,9 @@ input MutationSignUpInput {
   """Postal code of the user."""
   postalCode: String
 
+  """The organization the user is signing up for"""
+  selectedOrganization: ID!
+
   """Name of the state the user resides in."""
   state: String
 
@@ -2737,8 +2732,8 @@ input MutationUpdateOrganizationMembershipInput {
 
 """Input for updating a post."""
 input MutationUpdatePostInput {
-  """Array of attachments (mimeType and URL)."""
-  attachments: [AttachmentInput!]
+  """Metadata for files already uploaded via presigned URL"""
+  attachments: [FileMetadataInput!]
 
   """Caption about the post."""
   caption: String
@@ -3364,6 +3359,9 @@ type Query {
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Query field to read a post vote."""
+  hasUserVoted(input: QueryHasUserVotedInput!): hasUserVoted
+
   """Query field to read an organization."""
   organization(input: QueryOrganizationInput!): Organization
 
@@ -3491,6 +3489,12 @@ input QueryFundCampaignPledgeInput {
 input QueryFundInput {
   """Global id of the fund."""
   id: String!
+}
+
+"""Input type for checking if a user has voted on a specific post"""
+input QueryHasUserVotedInput {
+  """ID of the post that is voted."""
+  postId: String!
 }
 
 """"""
@@ -3890,4 +3894,9 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
+}
+
+type hasUserVoted {
+  """Type of the post vote"""
+  type: PostVoteType!
 }

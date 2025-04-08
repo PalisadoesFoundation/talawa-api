@@ -6,7 +6,7 @@
 
 > **PubSub**: `object`
 
-Defined in: [src/graphql/pubsub.ts:8](https://github.com/NishantSinghhhhh/talawa-api/blob/097322c0353ac6926bd36bdd4ea38c52c0dfde5d/src/graphql/pubsub.ts#L8)
+Defined in: src/graphql/pubsub.ts:8
 
 Type of the publish and subscribe module used for publishing and subscribing to talawa events.
 

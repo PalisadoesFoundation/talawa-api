@@ -2,7 +2,7 @@
 id: testing
 title: Testing & Validation
 slug: /developer-resources/testing
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 This section covers important tests to validate the operation of the API.
@@ -63,21 +63,21 @@ There aren't any other strict structure requirements for the this directory.
 
 #### In Directory `test/_Mocks_/mockContextCreator`
 
-#### **Purpose**
+#### Purpose
 
 The `createMockGraphQLContext` function provides a **fully mocked GraphQL context** for unit and integration testing of GraphQL resolvers. It ensures that resolvers can be tested **without needing a real database, MinIO storage, or authentication service** and works as a centralized mocking mechanism.
 
-#### **Usage**
+#### Usage
 
-#### **Importing the Mock Context**
+#### Importing the Mock Context
 
 ```ts
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator";
 ```
 
-#### **Creating a Mock Context**
+#### Creating a Mock Context
 
-##### **For an Unauthenticated User**
+##### For an Unauthenticated User
 
 ```ts
 const { context, mocks } = createMockGraphQLContext({ isAuthenticated: false });
@@ -85,7 +85,7 @@ const { context, mocks } = createMockGraphQLContext({ isAuthenticated: false });
 
 `context.currentClient.isAuthenticated` will be `false`.
 
-##### **For an Authenticated User**
+##### For an Authenticated User
 
 ```ts
 const { context, mocks } = createMockGraphQLContext({
@@ -98,7 +98,7 @@ const { context, mocks } = createMockGraphQLContext({
 
 ---
 
-#### **Components in Mock Context**
+#### Components in Mock Context
 
 The mock context provides the following:
 
@@ -114,7 +114,7 @@ The mock context provides the following:
 
 ---
 
-#### **Return Value**
+#### Return Value
 
 The function returns an object with two properties:
 
@@ -125,9 +125,10 @@ The function returns an object with two properties:
 
 ---
 
-### **How Contributors Should Use It**
+### How Contributors Should Use It
 
-#### **Unit Testing Resolvers** (With exposed mocks for verification)
+Follow these ste
+#### Unit Testing Resolvers (With exposed mocks for verification)
 
 ```ts
 test("should return user data", async () => {
@@ -158,7 +159,7 @@ test("should return user data", async () => {
 
 ---
 
-### **Key Benefits**
+### Key Benefits
 
 - **Exposed Mocks** – Direct access to mock instances for setting expectations and verifying calls.
 - **Type Safety** – Proper TypeScript typing for all mocked components.
@@ -183,19 +184,19 @@ const { context, mocks } = createMockGraphQLContext({
 
 ####  Best Practices
 
-1. **Use Schema-Generated Types Only**  
+1. Use Schema-Generated Types Only
 
 - Derive types from `context.ts` and GraphQL schema. Avoid custom types.
 
-2. **Stick to `GraphQLContext`**  
+2. Stick to `GraphQLContext`
 
 - All resolvers must use `GraphQLContext` from `context.ts`.
 
-3. **Leverage Drizzle ORM Types**  
+3. Leverage Drizzle ORM Types
 
 - Use `typeof table.$inferSelect` for entity types. Never define manually.
 
-4. **only detach if needed for mock testing and ensure it follows correct typeSafety**
+4. Only detach if needed for mock testing and ensure it follows correct typeSafety
 
 ---
 
@@ -247,7 +248,7 @@ This ensures type safety and consistency across your GraphQL resolvers.
 
 
 
-### **Future Considerations**
+### Future Considerations
 
 In the future, there might be a requirement to run some tests sequentially. When that moment arrives, separating sequential and parallel tests into separate directories and using separate Vitest configuration for them would be the best idea.
 
@@ -524,7 +525,7 @@ ws://127.0.0.1:4000/graphql
 
 1. Launch the terminal application on your device.
 
-2. **Retrieve IPv4 Address**:
+2. Retrieve IPv4 Address:
 
    - **For Windows Users**: Enter the command `ipconfig`.
    - **For Linux/OSX Users**: Enter the command `ifconfig`.

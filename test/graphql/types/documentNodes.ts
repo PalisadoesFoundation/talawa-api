@@ -713,11 +713,12 @@ export const Mutation_updatePost = gql(`
     updatePost(input: $input) {
       id
       pinnedAt
+      caption
       attachments {
-        mimeType
+        mimeType            
         fileHash
         name
-        objectName
+        objectName          
         id
       }
     }
@@ -985,3 +986,20 @@ export const Mutation_rejectMembershipRequest = gql(`
     }
   }
 `);
+
+export const Query_hasUserVoted = gql(`
+  query Query_hasUserVoted($input: QueryHasUserVotedInput!) {
+    hasUserVoted(input: $input)
+    {
+      type
+    }
+  }
+`);
+
+export const Mutation_createPostVote = gql(`
+  mutation Mutation_createPostVote($input:MutationCreatePostVoteInput!){
+    createPostVote(input : $input){
+      id
+      caption
+    }
+  }`);
