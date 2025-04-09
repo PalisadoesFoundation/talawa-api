@@ -13,7 +13,7 @@ const mutationUpdateActionItemCategoryArgumentsSchema = z.object({
 	}),
 });
 
-builder.mutationField("updateActionItemCategory", (t) =>
+export const updateActionItemCategory = builder.mutationField("updateActionItemCategory", (t) =>
 	t.field({
 		type: ActionItemCategory,
 		args: {
@@ -85,17 +85,27 @@ builder.mutationField("updateActionItemCategory", (t) =>
 				});
 			}
 
-			// 5. Update the category
-			// Build a "set" object only with provided fields
-			const updates: Record<string, unknown> = { updatedAt: new Date() };
+			// Build update fields
+			const updates: Record<string, unknown> = {};
+			let hasUpdates = false;
+
 			if (typeof name === "string") {
-				updates.name = name;
-			}
-			if (typeof isDisabled === "boolean") {
-				updates.isDisabled = isDisabled;
+			updates.name = name;
+			hasUpdates = true;
 			}
 
-			// ...
+			if (typeof isDisabled === "boolean") {
+			updates.isDisabled = isDisabled;
+			hasUpdates = true;
+			}
+
+			// Only update if there's any field to update.
+			if (hasUpdates) {
+			updates.updatedAt = new Date();
+			// Proceed with the update operation
+			} else {
+			// Optionally log or handle no-op scenario: nothing to update
+			}
 
 			const [updatedCategory] = await ctx.drizzleClient
 				.update(actionCategoriesTable)
