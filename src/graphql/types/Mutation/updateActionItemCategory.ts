@@ -8,7 +8,7 @@ import { ActionItemCategory } from "../ActionItemCategory/ActionItemCategory";
 const mutationUpdateActionItemCategoryArgumentsSchema = z.object({
 	input: z.object({
 		categoryId: z.string().uuid(), // The ID of the category to update
-		name: z.string().optional(), 
+		name: z.string().optional(),
 		isDisabled: z.boolean().optional(),
 	}),
 });
