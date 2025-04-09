@@ -1003,3 +1003,17 @@ export const Mutation_createPostVote = gql(`
       caption
     }
   }`);
+
+export const Mutation_createActionItemCategory = gql(`
+  mutation CreateActionItemCategory($input: CreateActionItemCategoryInput!) {
+    createActionItemCategory(input: $input) {
+      id
+      name
+      organizationId
+      creatorId
+      isDisabled
+      createdAt
+      updatedAt
+    }
+  }
+`);
