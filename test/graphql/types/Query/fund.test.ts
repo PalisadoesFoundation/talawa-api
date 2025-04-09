@@ -900,7 +900,7 @@ suite("Query field get fund Campaign Pledges by id", () => {
 		).toBeUndefined();
 	});
 
-	test("returns user fund campaign pledges ordered by amount descending", async () => {
+	test("returns user fund campaign pledges ordered by amount descending and ascending", async () => {
 		const regularUserResult = await createRegularUser();
 
 		const { fundId: fundId1, orgId: orgId1 } = await createFund();
@@ -930,7 +930,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 		});
 		expect(fundCampaignResult.errors).toBeUndefined();
 
-		const fundCampaignPledgeResult = await mercuriusClient.query(
+		// Descending order
+		const fundCampaignPledgeResult1 = await mercuriusClient.query(
 			Query_getPledgesByUserId,
 			{
 				headers: {
@@ -944,14 +945,231 @@ suite("Query field get fund Campaign Pledges by id", () => {
 				},
 			},
 		);
-
-		expect(fundCampaignPledgeResult.errors).toBeUndefined();
+		expect(fundCampaignPledgeResult1.errors).toBeUndefined();
 		// first result should be the one with the highest amount
 		expect(
-			fundCampaignPledgeResult?.data?.getPledgesByUserId?.[0]?.amount ?? 0,
+			fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[0]?.amount ?? 0,
 		).toBeGreaterThanOrEqual(
-			fundCampaignPledgeResult?.data?.getPledgesByUserId?.[1]?.amount ?? 0,
-		); // Passes because 100 > 50
+			fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[1]?.amount ?? 0,
+		);
+
+		// Ascending order
+		const fundCampaignPledgeResult2 = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+					orderBy: "amount_ASC",
+				},
+			},
+		);
+		expect(fundCampaignPledgeResult2.errors).toBeUndefined();
+		// first result should be the one with the lowest amount
+		expect(
+			fundCampaignPledgeResult2?.data?.getPledgesByUserId?.[1]?.amount ?? 0,
+		).toBeGreaterThanOrEqual(
+			fundCampaignPledgeResult2?.data?.getPledgesByUserId?.[0]?.amount ?? 0,
+		);
+	});
+
+	test("returns user fund campaign pledges ordered by campaign endDate descending and ascending", async () => {
+		const regularUserResult = await createRegularUser();
+
+		const { fundId: fundId1, orgId: orgId1 } = await createFund();
+		const { fundId: fundId2, orgId: orgId2 } = await createFund();
+
+		const { fundCampaignId: fundCampaignId1 } =
+			await createFundCampaign(fundId1);
+		const { fundCampaignId: fundCampaignId2 } =
+			await createFundCampaign(fundId2);
+
+		await addUserToOrg(regularUserResult.userId, orgId1);
+		await addUserToOrg(regularUserResult.userId, orgId2);
+
+		await createFundCampaignPledge(fundCampaignId1, regularUserResult.userId);
+		await createFundCampaignPledge(fundCampaignId2, regularUserResult.userId);
+
+		// Get first campaign data
+		const fundCampaignResult = await mercuriusClient.query(Query_fundCampaign, {
+			headers: {
+				authorization: `bearer ${regularUserResult.authToken}`,
+			},
+			variables: {
+				input: {
+					id: fundCampaignId1,
+				},
+			},
+		});
+		expect(fundCampaignResult.errors).toBeUndefined();
+
+		// Descending order
+		const fundCampaignPledgeResult1 = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+					orderBy: "endDate_DESC",
+				},
+			},
+		);
+		expect(fundCampaignPledgeResult1.errors).toBeUndefined();
+		// first result should be the one with the most recent end date
+		const endAt1 = new Date(
+			fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[0]?.campaign
+				?.endAt ?? 0,
+		).getTime();
+		const endAt2 = new Date(
+			fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[1]?.campaign
+				?.endAt ?? 0,
+		).getTime();
+
+		expect(endAt1).toBeGreaterThanOrEqual(endAt2);
+
+		// Ascending order
+		const fundCampaignPledgeResult2 = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+					orderBy: "endDate_ASC",
+				},
+			},
+		);
+		expect(fundCampaignPledgeResult2.errors).toBeUndefined();
+		// second result should be the one with the most recent end date
+		const endAt3 = new Date(
+			fundCampaignPledgeResult2?.data?.getPledgesByUserId?.[0]?.campaign
+				?.endAt ?? 0,
+		).getTime();
+		const endAt4 = new Date(
+			fundCampaignPledgeResult2?.data?.getPledgesByUserId?.[1]?.campaign
+				?.endAt ?? 0,
+		).getTime();
+
+		expect(endAt4).toBeGreaterThanOrEqual(endAt3);
+	});
+
+	test("filters and returns only matching fund campaign pledge by user ID and pledger name", async () => {
+		const regularUserResult = await createRegularUser();
+
+		const { fundId: fundId1, orgId: orgId1 } = await createFund();
+		const { fundId: fundId2, orgId: orgId2 } = await createFund();
+
+		const { fundCampaignId: fundCampaignId1 } =
+			await createFundCampaign(fundId1);
+		const { fundCampaignId: fundCampaignId2 } =
+			await createFundCampaign(fundId2);
+
+		await addUserToOrg(regularUserResult.userId, orgId1);
+		await addUserToOrg(regularUserResult.userId, orgId2);
+
+		const { fundCampaignPledgeId: fundCampaignPledgeId1 } =
+			await createFundCampaignPledge(fundCampaignId1, regularUserResult.userId);
+		const { fundCampaignPledgeId: fundCampaignPledgeId2 } =
+			await createFundCampaignPledge(fundCampaignId2, regularUserResult.userId);
+
+		// Get first campaign data
+		const fundCampaignResult = await mercuriusClient.query(Query_fundCampaign, {
+			headers: {
+				authorization: `bearer ${regularUserResult.authToken}`,
+			},
+			variables: {
+				input: {
+					id: fundCampaignId1,
+				},
+			},
+		});
+		expect(fundCampaignResult.errors).toBeUndefined();
+
+		const fundCampaignPledgeResult1 = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+					where: {
+						firstName_contains: regularUserResult.name,
+					},
+				},
+			},
+		);
+
+		// should return two pledges that contain pledger name
+		expect(fundCampaignPledgeResult1.errors).toBeUndefined();
+		expect(fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[0]).toEqual(
+			expect.objectContaining({
+				id: fundCampaignPledgeId1,
+				amount: expect.any(Number),
+				note: expect.any(String),
+			}),
+		);
+
+		expect(fundCampaignPledgeResult1.errors).toBeUndefined();
+		expect(fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[1]).toEqual(
+			expect.objectContaining({
+				id: fundCampaignPledgeId2,
+				amount: expect.any(Number),
+				note: expect.any(String),
+			}),
+		);
+
+		const fundCampaignPledgeResult2 = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+					where: {
+						firstName_contains: faker.string.uuid(),
+					},
+				},
+			},
+		);
+
+		// should not return any pledges
+		expect(fundCampaignPledgeResult2.data.getPledgesByUserId).toEqual(null);
+		expect(fundCampaignPledgeResult2.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions:
+						expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+							{
+								code: "arguments_associated_resources_not_found",
+								issues: [
+									{
+										argumentPath: ["userId", "id"],
+									},
+								],
+							},
+						),
+					message: expect.any(String),
+					path: ["getPledgesByUserId"],
+				}),
+			]),
+		);
 	});
 });
 
@@ -1242,6 +1460,7 @@ suite("Required Field Validation", () => {
 interface TestUser {
 	authToken: string;
 	userId: string;
+	name: string | null;
 	cleanup: () => Promise<void>;
 }
 
@@ -1340,10 +1559,12 @@ async function createRegularUser(): Promise<TestUser> {
 
 			const userId = userResult.data.createUser.user.id;
 			const authToken = userResult.data.createUser.authenticationToken;
+			const name = userResult.data.createUser.user.name;
 
 			return {
 				authToken,
 				userId,
+				name,
 				cleanup: async () => {
 					try {
 						await mercuriusClient.mutate(Mutation_deleteUser, {

@@ -1,4 +1,4 @@
-import { type SQL, and, asc, desc, eq, exists, ilike } from "drizzle-orm";
+import { type SQL, and, asc, desc, eq, exists, ilike, or } from "drizzle-orm";
 import { z } from "zod";
 import { fundCampaignPledgesTable } from "~/src/drizzle/tables/fundCampaignPledges";
 import { fundCampaignsTable } from "~/src/drizzle/tables/fundCampaigns";
@@ -38,6 +38,16 @@ builder.queryField("getPledgesByUserId", (t) =>
 					"Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'",
 				required: false,
 				type: QueryPledgeOrderByInput,
+			}),
+			limit: t.arg({
+				description: "Maximum number of results to return.",
+				required: false,
+				type: "Int",
+			}),
+			offset: t.arg({
+				description: "Number of results to skip.",
+				required: false,
+				type: "Int",
 			}),
 		},
 		description:
@@ -183,40 +193,34 @@ builder.queryField("getPledgesByUserId", (t) =>
 						},
 					},
 					where: (pledges, { and: andOp }) => {
-						// base condition
 						const conditions = [eq(pledges.pledgerId, UserId)];
-
-						// campaign name filter
-						if (where?.name_contains !== undefined) {
+						if (
+							where?.name_contains !== undefined ||
+							where?.firstName_contains !== undefined
+						) {
 							conditions.push(
 								exists(
 									ctx.drizzleClient
 										.select()
 										.from(fundCampaignsTable)
+										.leftJoin(usersTable, eq(usersTable.id, pledges.pledgerId))
 										.where(
 											and(
 												eq(fundCampaignsTable.id, pledges.campaignId),
-												ilike(
-													fundCampaignsTable.name,
-													`%${where.name_contains}%`,
+												or(
+													where?.name_contains !== undefined
+														? ilike(
+																fundCampaignsTable.name,
+																`%${where.name_contains}%`,
+															)
+														: undefined,
+													where?.firstName_contains !== undefined
+														? ilike(
+																usersTable.name,
+																`%${where.firstName_contains}%`,
+															)
+														: undefined,
 												),
-											),
-										),
-								),
-							);
-						}
-
-						// user name filter
-						if (where?.firstName_contains !== undefined) {
-							conditions.push(
-								exists(
-									ctx.drizzleClient
-										.select()
-										.from(usersTable)
-										.where(
-											and(
-												eq(usersTable.id, pledges.pledgerId),
-												ilike(usersTable.name, `%${where.firstName_contains}%`),
 											),
 										),
 								),
@@ -225,9 +229,11 @@ builder.queryField("getPledgesByUserId", (t) =>
 						return andOp(...conditions);
 					},
 					orderBy: orderBy,
+					limit: args.limit ?? undefined,
+					offset: args.offset ?? undefined,
 				});
 
-			// Perform in-memory sorting as nested sort still not supported in drizzle see https://github.com/drizzle-team/drizzle-orm/issues/2297
+			// Perform in-memory sorting as nested sort still not supported in drizzle see https://github.com/drizzle-team/drizzle-orm/issues/2297 and https://www.answeroverflow.com/m/1240834016140066896
 			if (sortInTs) {
 				existingFundCampaignPledge.sort(sortInTs);
 			}

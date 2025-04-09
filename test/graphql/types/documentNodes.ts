@@ -391,6 +391,9 @@ export const Query_getPledgesByUserId =
     id
     note
     amount
+    campaign {
+    endAt
+    }
   }
 }`);
 
