@@ -8,9 +8,7 @@ import {
 	gt,
 	isNotNull,
 	lt,
-	ne,
 	or,
-	sql,
 } from "drizzle-orm";
 import { z } from "zod";
 import { postsTable, postsTableInsertSchema } from "~/src/drizzle/tables/posts";
