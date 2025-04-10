@@ -6,4 +6,4 @@
 
 > **FundCampaign** = *typeof* `fundCampaignsTable.$inferSelect`
 
-Defined in: [src/graphql/types/FundCampaign/FundCampaign.ts:5](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/graphql/types/FundCampaign/FundCampaign.ts#L5)
+Defined in: [src/graphql/types/FundCampaign/FundCampaign.ts:5](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/graphql/types/FundCampaign/FundCampaign.ts#L5)

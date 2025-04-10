@@ -57,7 +57,21 @@ export function generateJwtSecret(): string {
 		throw new Error("Failed to generate JWT secret");
 	}
 }
-
+export function generateBetterauthSecret(): string {
+	try {
+		const secret = crypto.randomBytes(32).toString("hex"); // 32 bytes = 64 hex chars
+		if (secret.length < 32) {
+			throw new Error("Generated secret is too short.");
+		}
+		return secret;
+	} catch (err) {
+		console.error(
+			"⚠️ Warning: Permission denied while generating Better Auth secret. Ensure the process has sufficient filesystem access.",
+			err,
+		);
+		throw new Error("Failed to generate Better Auth secret");
+	}
+}
 export function validateURL(input: string): true | string {
 	try {
 		const url = new URL(input);
@@ -597,7 +611,33 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	}
 	return answers;
 }
+export async function betterAuthSetup(
+	answers: SetupAnswers,
+): Promise<SetupAnswers> {
+	try {
+		answers.BETTER_AUTH_SECRET = await promptInput(
+			"BETTER_AUTH_SECRET",
+			"Better Auth secret:",
+			generateBetterauthSecret(),
+		);
 
+		answers.API_CORS_ORIGIN = await promptInput(
+			"API_CORS_ORIGIN",
+			"API CORS origin:",
+			"http://localhost:4321",
+		);
+
+		answers.NODE_ENV = await promptInput(
+			"NODE_ENV",
+			"Node environment:",
+			"development",
+		);
+
+		return answers;
+	} catch (err) {
+		handlePromptError(err);
+	}
+}
 export async function setup(): Promise<SetupAnswers> {
 	let answers: SetupAnswers = {};
 	if (checkEnvFile()) {
@@ -673,7 +713,19 @@ export async function setup(): Promise<SetupAnswers> {
 	if (!useDefaultApi) {
 		answers = await apiSetup(answers);
 	}
+	const useDefaultBetterAuth = await promptConfirm(
+		"useDefaultBetterAuth",
+		"Use recommended default Better Auth settings? (Y)/N",
+		true,
+	);
 
+	if (!useDefaultBetterAuth) {
+		answers = await betterAuthSetup(answers);
+	} else {
+		answers.BETTER_AUTH_SECRET = generateBetterauthSecret();
+		answers.API_CORS_ORIGIN = "http://localhost:4321";
+		answers.NODE_ENV = "development";
+	}
 	answers = await administratorEmail(answers);
 
 	updateEnvVariable(answers);

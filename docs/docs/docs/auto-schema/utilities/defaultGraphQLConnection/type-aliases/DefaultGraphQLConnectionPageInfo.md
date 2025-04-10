@@ -6,7 +6,7 @@
 
 > **DefaultGraphQLConnectionPageInfo** = `object`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:197](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/defaultGraphQLConnection.ts#L197)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:197](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/utilities/defaultGraphQLConnection.ts#L197)
 
 This is typescript type of a base graphql connection page info object. This connection page info object can be extended to create a custom connnection page info object as long as the new connection object adheres to the default type of this base connection object.
 
@@ -16,7 +16,7 @@ This is typescript type of a base graphql connection page info object. This conn
 
 > **endCursor**: `string` \| `null`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:198](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/defaultGraphQLConnection.ts#L198)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:198](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/utilities/defaultGraphQLConnection.ts#L198)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/utilities/defaultGraphQLConnection.ts:198](https://github.com/P
 
 > **hasNextPage**: `boolean`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:199](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/defaultGraphQLConnection.ts#L199)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:199](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/utilities/defaultGraphQLConnection.ts#L199)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/utilities/defaultGraphQLConnection.ts:199](https://github.com/P
 
 > **hasPreviousPage**: `boolean`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:200](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/defaultGraphQLConnection.ts#L200)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:200](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/utilities/defaultGraphQLConnection.ts#L200)
 
 ***
 
@@ -40,4 +40,4 @@ Defined in: [src/utilities/defaultGraphQLConnection.ts:200](https://github.com/P
 
 > **startCursor**: `string` \| `null`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:201](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/defaultGraphQLConnection.ts#L201)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:201](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/utilities/defaultGraphQLConnection.ts#L201)

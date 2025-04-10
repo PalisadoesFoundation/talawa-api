@@ -6,7 +6,7 @@
 
 > **UnauthorizedArgumentsExtensions** = `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:181](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L181)
+Defined in: [src/utilities/TalawaGraphQLError.ts:181](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/utilities/TalawaGraphQLError.ts#L181)
 
 When the client is not authorized to perform an action with certain arguments.
 
@@ -32,7 +32,7 @@ throw new TalawaGraphQLError({
 
 > **code**: `"unauthorized_arguments"`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:185](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L185)
+Defined in: [src/utilities/TalawaGraphQLError.ts:185](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/utilities/TalawaGraphQLError.ts#L185)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/utilities/TalawaGraphQLError.ts:185](https://github.com/Purnend
 
 > **issues**: `object`[]
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:182](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L182)
+Defined in: [src/utilities/TalawaGraphQLError.ts:182](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/utilities/TalawaGraphQLError.ts#L182)
 
 #### argumentPath
 

@@ -6,7 +6,7 @@
 
 > **UnauthorizedActionExtensions** = `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:139](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L139)
+Defined in: [src/utilities/TalawaGraphQLError.ts:139](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/utilities/TalawaGraphQLError.ts#L139)
 
 When the client is not authorized to perform an action.
 
@@ -26,4 +26,4 @@ throw new TalawaGraphQLError({
 
 > **code**: `"unauthorized_action"`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:140](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/utilities/TalawaGraphQLError.ts#L140)
+Defined in: [src/utilities/TalawaGraphQLError.ts:140](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/utilities/TalawaGraphQLError.ts#L140)

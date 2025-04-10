@@ -6,7 +6,7 @@
 
 > **PubSub** = `object`
 
-Defined in: [src/graphql/pubsub.ts:8](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/graphql/pubsub.ts#L8)
+Defined in: [src/graphql/pubsub.ts:8](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/graphql/pubsub.ts#L8)
 
 Type of the publish and subscribe module used for publishing and subscribing to talawa events.
 
@@ -14,9 +14,9 @@ Type of the publish and subscribe module used for publishing and subscribing to 
 
 ### publish()
 
-> **publish**\<`TKey`\>(`event`, `callback`?): `void`
+> **publish**\<`TKey`\>(`event`, `callback?`): `void`
 
-Defined in: [src/graphql/pubsub.ts:12](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/graphql/pubsub.ts#L12)
+Defined in: [src/graphql/pubsub.ts:12](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/graphql/pubsub.ts#L12)
 
 This method is used to publish an event.
 
@@ -52,7 +52,7 @@ This method is used to publish an event.
 
 > **subscribe**\<`TKey`\>(`topics`): `Promise`\<`Readable` & `AsyncIterableIterator`\<[`PubSubPublishArgsByKey`](PubSubPublishArgsByKey.md)\[`TKey`\], `any`, `any`\>\>
 
-Defined in: [src/graphql/pubsub.ts:22](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/graphql/pubsub.ts#L22)
+Defined in: [src/graphql/pubsub.ts:22](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/graphql/pubsub.ts#L22)
 
 This method is used to subscribe to events.
 

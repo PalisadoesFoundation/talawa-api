@@ -6,4 +6,4 @@
 
 > `const` **verificationTable**: `PgTableWithColumns`\<\{ \}\>
 
-Defined in: [src/drizzle/tables/verification.ts:2](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/drizzle/tables/verification.ts#L2)
+Defined in: [src/drizzle/tables/verification.ts:2](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/drizzle/tables/verification.ts#L2)

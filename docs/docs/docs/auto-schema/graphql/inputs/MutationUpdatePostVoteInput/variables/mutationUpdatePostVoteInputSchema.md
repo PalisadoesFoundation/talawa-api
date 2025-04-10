@@ -6,4 +6,4 @@
 
 > `const` **mutationUpdatePostVoteInputSchema**: `ZodObject`\<`Pick`\<\{ \}, `never`\>, `"strip"`, `ZodTypeAny`, \{ \}, \{ \}\>
 
-Defined in: [src/graphql/inputs/MutationUpdatePostVoteInput.ts:6](https://github.com/PurnenduMIshra129th/talawa-api/blob/dd95e2d2302936a5436289a9e626f7f4e2b14e02/src/graphql/inputs/MutationUpdatePostVoteInput.ts#L6)
+Defined in: [src/graphql/inputs/MutationUpdatePostVoteInput.ts:6](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/graphql/inputs/MutationUpdatePostVoteInput.ts#L6)
