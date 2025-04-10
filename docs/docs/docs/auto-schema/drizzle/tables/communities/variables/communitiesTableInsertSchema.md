@@ -6,4 +6,4 @@
 
 > `const` **communitiesTableInsertSchema**: `BuildSchema`\<`"insert"`, \{ `createdAt`: `PgColumn`\<\{\}, \{\}, \{\}\>; `facebookURL`: `PgColumn`\<\{\}, \{\}, \{\}\>; `githubURL`: `PgColumn`\<\{\}, \{\}, \{\}\>; `id`: `PgColumn`\<\{\}, \{\}, \{\}\>; `inactivityTimeoutDuration`: `PgColumn`\<\{\}, \{\}, \{\}\>; `instagramURL`: `PgColumn`\<\{\}, \{\}, \{\}\>; `linkedinURL`: `PgColumn`\<\{\}, \{\}, \{\}\>; `logoMimeType`: `PgColumn`\<\{\}, \{\}, \{\}\>; `logoName`: `PgColumn`\<\{\}, \{\}, \{\}\>; `name`: `PgColumn`\<\{\}, \{\}, \{\}\>; `redditURL`: `PgColumn`\<\{\}, \{\}, \{\}\>; `slackURL`: `PgColumn`\<\{\}, \{\}, \{\}\>; `updatedAt`: `PgColumn`\<\{\}, \{\}, \{\}\>; `updaterId`: `PgColumn`\<\{\}, \{\}, \{\}\>; `websiteURL`: `PgColumn`\<\{\}, \{\}, \{\}\>; `xURL`: `PgColumn`\<\{\}, \{\}, \{\}\>; `youtubeURL`: `PgColumn`\<\{\}, \{\}, \{\}\>; \}, \{ `name`: `ZodTypeAny` \| (`schema`) => `ZodTypeAny`; \}\>
 
-Defined in: [src/drizzle/tables/communities.ts:113](https://github.com/NishantSinghhhhh/talawa-api/blob/f689e29732f10b6ae99c0bb4da8790277c8377f0/src/drizzle/tables/communities.ts#L113)
+Defined in: src/drizzle/tables/communities.ts:113
