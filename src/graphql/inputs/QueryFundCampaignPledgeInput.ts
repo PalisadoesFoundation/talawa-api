@@ -19,3 +19,33 @@ export const QueryFundCampaignPledgeInput = builder
 			}),
 		}),
 	});
+
+export const QueryPledgeWhereInput = builder
+	.inputRef("QueryPledgeWhereInput")
+	.implement({
+		description: "Filter criteria for Pledges",
+		fields: (t) => ({
+			firstName_contains: t.string({
+				description: "Filter pledges by the name of the creator",
+				required: false,
+			}),
+			name_contains: t.string({
+				description: "Filter pledges by the name of the campaign",
+				required: false,
+			}),
+		}),
+	});
+
+export const QueryPledgeOrderByInput = builder.enumType(
+	"QueryPledgeOrderByInput",
+	{
+		values: [
+			"amount_ASC",
+			"amount_DESC",
+			"endDate_ASC",
+			"endDate_DESC",
+		] as const,
+		description:
+			"Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'",
+	},
+);

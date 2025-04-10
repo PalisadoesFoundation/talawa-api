@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -7,6 +7,7 @@ import {
 	Mutation_createOrganization,
 	Mutation_createPost,
 	Mutation_deleteCurrentUser,
+	Mutation_joinPublicOrganization,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -31,6 +32,14 @@ suite("Mutation field createPost", () => {
 					input: {
 						caption: "Test Post",
 						organizationId: faker.string.uuid(),
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: "test-object-name-isPinned",
+								name: "test-image.png",
+								fileHash: "test-file-hash-isPinned",
+							},
+						],
 					},
 				},
 			});
@@ -54,6 +63,14 @@ suite("Mutation field createPost", () => {
 					input: {
 						caption: "Test Post",
 						organizationId: faker.string.uuid(),
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: "test-object-name-isPinned",
+								name: "test-image.png",
+								fileHash: "test-file-hash-isPinned",
+							},
+						],
 					},
 				},
 			});
@@ -116,6 +133,14 @@ suite("Mutation field createPost", () => {
 						caption: "Pinned Post Attempt",
 						organizationId: orgId,
 						isPinned: true,
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: "test-object-name-3",
+								name: "test-image.png",
+								fileHash: "test-file-hash-3",
+							},
+						],
 					},
 				},
 			});
@@ -162,6 +187,14 @@ suite("Mutation field createPost", () => {
 						caption: "Pinned Post",
 						organizationId: orgId,
 						isPinned: true,
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: "test-object-name-4",
+								name: "test-image.png",
+								fileHash: "test-file-hash-4",
+							},
+						],
 					},
 				},
 			});
@@ -205,6 +238,14 @@ suite("Mutation field createPost", () => {
 						caption: "Unpinned Post",
 						organizationId: orgId,
 						isPinned: false,
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: "test-object-name-5",
+								name: "test-image.png",
+								fileHash: "test-file-hash-5",
+							},
+						],
 					},
 				},
 			});
@@ -268,6 +309,14 @@ suite("Mutation field createPost", () => {
 					input: {
 						caption: "Test Post",
 						organizationId: orgId,
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: "test-object-name-00",
+								name: "test-image.png",
+								fileHash: "test-file-hash-00",
+							},
+						],
 					},
 				},
 			});
@@ -293,6 +342,14 @@ suite("Mutation field createPost", () => {
 					input: {
 						caption: "Test Post",
 						organizationId: invalidOrganizationId,
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: "test-object-name-01",
+								name: "test-image.png",
+								fileHash: "test-file-hash-01",
+							},
+						],
 					},
 				},
 			});
@@ -316,10 +373,184 @@ suite("Mutation field createPost", () => {
 		});
 	});
 
+	suite("when the client is authenticated but not an administrator", () => {
+		test("should return an error with unauthorized_arguments extensions code when setting isPinned", async () => {
+			const { authToken: regularAuthToken } = await import(
+				"../createRegularUserUsingAdmin"
+			).then((module) => module.createRegularUserUsingAdmin());
+			assertToBeNonNullish(regularAuthToken);
+
+			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			assertToBeNonNullish(adminSignInResult.data?.signIn);
+			const adminToken = adminSignInResult.data.signIn.authenticationToken;
+			assertToBeNonNullish(adminToken);
+
+			// Create an organization using admin
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: {
+						input: {
+							name: "Unauthorized Args Test Org",
+							description: "Org to test unauthorized arguments",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "123 Auth St",
+							addressLine2: "Suite 100",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const joinResult = await mercuriusClient.mutate(
+				Mutation_joinPublicOrganization,
+				{
+					headers: { authorization: `bearer ${regularAuthToken}` },
+					variables: {
+						input: {
+							organizationId: orgId,
+						},
+					},
+				},
+			);
+			expect(joinResult.data?.joinPublicOrganization).toBeDefined();
+			expect(joinResult.data?.joinPublicOrganization?.organizationId).toBe(
+				orgId,
+			);
+			expect(joinResult.data?.joinPublicOrganization?.role).toBe("regular");
+
+			const result = await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${regularAuthToken}` },
+				variables: {
+					input: {
+						caption: "Unauthorized Pinned Post Attempt",
+						organizationId: orgId,
+						isPinned: true,
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: "test-object-name-unauth",
+								name: "test-image.png",
+								fileHash: "test-file-hash-unauth",
+							},
+						],
+					},
+				},
+			});
+
+			expect(result.data?.createPost).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthorized_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "isPinned"],
+								}),
+							]),
+						}),
+						path: ["createPost"],
+					}),
+				]),
+			);
+		});
+	});
+
+	suite("when the database insert operation unexpectedly fails", () => {
+		test("should return an error with unexpected extensions code", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Error Test Org",
+							description: "Organization for testing unexpected errors",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "123 Error St",
+							addressLine2: "Suite 404",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			// Mock the transaction to simulate the error
+			const originalTransaction = server.drizzleClient.transaction;
+			server.drizzleClient.transaction = vi
+				.fn()
+				.mockImplementation(async (callback) => {
+					// Create a mock transaction object with an insert method that returns empty array
+					const mockTx = {
+						insert: () => ({
+							values: () => ({
+								returning: async () => [],
+							}),
+						}),
+					};
+
+					// Call the callback with our mock transaction
+					return await callback(mockTx);
+				});
+
+			try {
+				const result = await mercuriusClient.mutate(Mutation_createPost, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							caption: "Post that should fail",
+							organizationId: orgId,
+							attachments: [
+								{
+									mimetype: "IMAGE_PNG",
+									objectName: "test-object-name-error",
+									name: "test-image.png",
+									fileHash: "test-file-hash-error",
+								},
+							],
+						},
+					},
+				});
+
+				expect(result.data?.createPost).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unexpected",
+							}),
+							path: ["createPost"],
+						}),
+					]),
+				);
+			} finally {
+				// Restore the original function
+				server.drizzleClient.transaction = originalTransaction;
+			}
+		});
+	});
+
 	suite(
 		"when the client is authorized and the post is created successfully",
 		() => {
-			test("should create a post and return the post data without attachments", async () => {
+			test("should create a post and return the post data attachments", async () => {
 				const createOrgResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
@@ -346,6 +577,14 @@ suite("Mutation field createPost", () => {
 						input: {
 							caption: "Successful Post",
 							organizationId: orgId,
+							attachments: [
+								{
+									mimetype: "IMAGE_PNG",
+									objectName: "test-object-name-99",
+									name: "test-image.png",
+									fileHash: "test-file-hash-99",
+								},
+							],
 						},
 					},
 				});
@@ -354,7 +593,18 @@ suite("Mutation field createPost", () => {
 					expect.objectContaining({
 						id: expect.any(String),
 						caption: "Successful Post",
-						attachments: [],
+						attachments: [
+							{
+								mimeType: "image/png",
+								objectName: "test-object-name-99",
+								name: "test-image.png",
+								fileHash: "test-file-hash-99",
+							},
+						],
+						organization: expect.objectContaining({
+							id: orgId,
+						}),
+						pinnedAt: null,
 					}),
 				);
 			});

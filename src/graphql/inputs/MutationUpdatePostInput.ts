@@ -1,38 +1,23 @@
 import { z } from "zod";
 import { postsTableInsertSchema } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
-
-const attachmentSchema = z.object({
-	mimeType: z.string(),
-	url: z.string(),
-});
+import {
+	FileMetadataInput,
+	fileMetadataSchema,
+} from "./MutationCreatePostInput";
 
 export const mutationUpdatePostInputSchema = z
 	.object({
 		caption: postsTableInsertSchema.shape.caption.optional(),
-		id: postsTableInsertSchema.shape.id.unwrap(),
+		id: z.string().uuid(),
 		isPinned: z.boolean().optional(),
-		attachments: z.array(attachmentSchema).optional(),
+		attachments: z.array(fileMetadataSchema).min(1).max(20).optional(),
 	})
 	.refine(
 		({ id, ...remainingArg }) =>
 			Object.values(remainingArg).some((value) => value !== undefined),
-		{
-			message: "At least one optional argument must be provided.",
-		},
+		{ message: "At least one optional argument must be provided." },
 	);
-
-const AttachmentInput = builder
-	.inputRef<{ mimeType: string; url: string }>("AttachmentInput")
-	.implement({
-		fields: (t) => ({
-			mimeType: t.string({
-				required: true,
-				description: "Mime type of the attachment.",
-			}),
-			url: t.string({ required: true, description: "URL of the attachment." }),
-		}),
-	});
 
 export const MutationUpdatePostInput = builder
 	.inputRef<z.infer<typeof mutationUpdatePostInputSchema>>(
@@ -52,8 +37,8 @@ export const MutationUpdatePostInput = builder
 				description: "Boolean to tell if the post is pinned",
 			}),
 			attachments: t.field({
-				type: [AttachmentInput],
-				description: "Array of attachments (mimeType and URL).",
+				type: [FileMetadataInput],
+				description: "Metadata for files already uploaded via presigned URL",
 			}),
 		}),
 	});

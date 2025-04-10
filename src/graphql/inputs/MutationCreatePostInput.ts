@@ -6,12 +6,15 @@ import {
 import { postsTableInsertSchema } from "~/src/drizzle/tables/posts";
 import { builder } from "~/src/graphql/builder";
 
-const PostAttachmentMimeType = builder.enumType("PostAttachmentMimeType", {
-	values: Object.fromEntries(
-		Object.entries(mimeTypeMapping).map(([key, value]) => [key, { value }]),
-	),
-	description: "MIME types supported for post attachments",
-});
+export const PostAttachmentMimeType = builder.enumType(
+	"PostAttachmentMimeType",
+	{
+		values: Object.fromEntries(
+			Object.entries(mimeTypeMapping).map(([key, value]) => [key, { value }]),
+		),
+		description: "MIME types supported for post attachments",
+	},
+);
 
 export const FileMetadataInput = builder.inputType("FileMetadataInput", {
 	description: "Metadata for files uploaded via presigned URL",
@@ -36,7 +39,7 @@ export const FileMetadataInput = builder.inputType("FileMetadataInput", {
 	}),
 });
 
-const fileMetadataSchema = z.object({
+export const fileMetadataSchema = z.object({
 	mimetype: postAttachmentMimeTypeEnum,
 	objectName: z.string().min(1),
 	fileHash: z.string().min(1),
@@ -61,7 +64,7 @@ export const MutationCreatePostInput = builder.inputType(
 			attachments: t.field({
 				description: "Metadata for files already uploaded via presigned URL",
 				type: [FileMetadataInput],
-				required: false,
+				required: true,
 			}),
 			caption: t.string({
 				description: "Caption about the post.",
