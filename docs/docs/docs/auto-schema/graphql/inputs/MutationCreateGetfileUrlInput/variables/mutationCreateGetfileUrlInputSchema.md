@@ -6,4 +6,4 @@
 
 > `const` **mutationCreateGetfileUrlInputSchema**: `ZodObject`\<\{ `objectName`: `ZodOptional`\<`ZodString`\>; `organizationId`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `objectName`: `string`; `organizationId`: `string`; \}, \{ `objectName`: `string`; `organizationId`: `string`; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateGetfileUrlInput.ts:4](https://github.com/PurnenduMIshra129th/talawa-api/blob/75f0e499b44e2c3bed70cf951ac8ac374317f43b/src/graphql/inputs/MutationCreateGetfileUrlInput.ts#L4)
+Defined in: [src/graphql/inputs/MutationCreateGetfileUrlInput.ts:4](https://github.com/PurnenduMIshra129th/talawa-api/blob/6dd1cb0af1891b88aa61534ec8a6180536cd264f/src/graphql/inputs/MutationCreateGetfileUrlInput.ts#L4)
