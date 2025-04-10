@@ -6,7 +6,7 @@ import { builder } from "~/src/graphql/builder";
 import {
 	MutationCreateActionItemInput,
 	mutationCreateActionItemInputSchema,
-} from "~/src/graphql/inputs/MutationcreateActionItem";
+} from "~/src/graphql/inputs/MutationCreateActionItem";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 

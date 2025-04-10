@@ -1071,15 +1071,15 @@ export const Mutation_createPostVote = gql(`
   }`);
 
 export const Mutation_createActionItemCategory = gql(`
-  mutation CreateActionItemCategory($input: CreateActionItemCategoryInput!) {
-    createActionItemCategory(input: $input) {
-      id
-      name
-      organizationId
-      creatorId
-      isDisabled
-      createdAt
-      updatedAt
+    mutation CreateActionItemCategory($input: MutationCreateActionItemCategoryInput!) {
+      createActionItemCategory(input: $input) {
+        id
+        name
+        organizationId
+        isDisabled
+        creatorId
+        createdAt
+        updatedAt
+      }
     }
-  }
-`);
+  `);

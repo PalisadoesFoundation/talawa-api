@@ -511,12 +511,6 @@ type Community {
   youtubeURL: String
 }
 
-input CreateActionItemCategoryInput {
-  isDisabled: Boolean
-  name: String!
-  organizationId: ID!
-}
-
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -1478,7 +1472,12 @@ type Mutation {
   ): ActionItem
 
   """Mutation field to create a new Action Item Category."""
-  createActionItemCategory(input: CreateActionItemCategoryInput!): ActionItemCategory
+  createActionItemCategory(
+    """
+    Input for creating an action item category. If isDisabled is not provided, the category will be enabled by default.
+    """
+    input: MutationCreateActionItemCategoryInput!
+  ): ActionItemCategory
 
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
@@ -1655,7 +1654,10 @@ type Mutation {
   ): ActionItem
 
   """Mutation field to update an existing Action Item Category."""
-  updateActionItemCategory(input: UpdateActionItemCategoryInput!): ActionItemCategory
+  updateActionItemCategory(
+    """Input for updating an Action Item Category."""
+    input: MutationUpdateActionItemCategoryInput!
+  ): ActionItemCategory
 
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
@@ -1742,6 +1744,24 @@ input MutationBlockUserInput {
 input MutationCancelMembershipRequestInput {
   """Global identifier of the membership request."""
   membershipRequestId: ID!
+}
+
+"""
+Input fields required for creating a new Action Item Category. The category name is required, the organization ID must be a valid UUID, and isDisabled is optional.
+"""
+input MutationCreateActionItemCategoryInput {
+  """
+  Optional flag indicating if the category should be disabled upon creation.
+  """
+  isDisabled: Boolean
+
+  """The name of the action item category. It cannot be empty."""
+  name: String!
+
+  """
+  Global identifier of the organization for which this category is being created.
+  """
+  organizationId: ID!
 }
 
 """Input fields required for creating an action item."""
@@ -2417,6 +2437,20 @@ input MutationUnblockUserInput {
 
   """Global identifier of the user to unblock."""
   userId: ID!
+}
+
+"""
+Input fields required for updating an Action Item Category. You can update the category name and/or the disabled state.
+"""
+input MutationUpdateActionItemCategoryInput {
+  """The UUID of the category to update."""
+  categoryId: ID!
+
+  """Optional flag to mark the category as disabled or enabled."""
+  isDisabled: Boolean
+
+  """Optional new name for the category."""
+  name: String
 }
 
 input MutationUpdateActionItemInput {
@@ -3737,12 +3771,6 @@ type TagFolderTagsConnection {
 type TagFolderTagsConnectionEdge {
   cursor: String!
   node: Tag
-}
-
-input UpdateActionItemCategoryInput {
-  categoryId: ID!
-  isDisabled: Boolean
-  name: String
 }
 
 """The `Upload` scalar type represents a file upload."""

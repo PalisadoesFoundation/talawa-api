@@ -5,12 +5,15 @@ import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { ActionItemCategory } from "../ActionItemCategory/ActionItemCategory";
 
+// Import the input reference and its Zod schema from the input folder.
+import {
+	MutationUpdateActionItemCategoryInput,
+	mutationUpdateActionItemCategoryInputSchema,
+} from "~/src/graphql/inputs/MutationUpdateActionItemCategory";
+
+// Wrap the imported schema in an arguments schema.
 const mutationUpdateActionItemCategoryArgumentsSchema = z.object({
-	input: z.object({
-		categoryId: z.string().uuid(), // The ID of the category to update
-		name: z.string().optional(),
-		isDisabled: z.boolean().optional(),
-	}),
+	input: mutationUpdateActionItemCategoryInputSchema,
 });
 
 export const updateActionItemCategory = builder.mutationField(
@@ -20,32 +23,45 @@ export const updateActionItemCategory = builder.mutationField(
 			type: ActionItemCategory,
 			args: {
 				input: t.arg({
+					description: "Input for updating an Action Item Category.",
 					required: true,
-					type: builder.inputType("UpdateActionItemCategoryInput", {
-						fields: (t) => ({
-							categoryId: t.field({ type: "ID", required: true }),
-							name: t.field({ type: "String" }),
-							isDisabled: t.field({ type: "Boolean" }),
-						}),
-					}),
+					// Use the imported input reference.
+					type: MutationUpdateActionItemCategoryInput,
 				}),
 			},
 			description: "Mutation field to update an existing Action Item Category.",
 			resolve: async (_parent, args, ctx) => {
-				// 1. Check user authentication
+				// 1. Check user authentication.
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
 						extensions: { code: "unauthenticated" },
 					});
 				}
 
-				// 2. Validate input
-				const parsedArgs =
-					mutationUpdateActionItemCategoryArgumentsSchema.parse(args);
+				// 2. Validate the input using the imported Zod schema.
+				const {
+					data: parsedArgs,
+					error,
+					success,
+				} = await mutationUpdateActionItemCategoryArgumentsSchema.safeParseAsync(
+					args,
+				);
+				if (!success) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: error.issues.map((issue) => ({
+								argumentPath: issue.path,
+								message: issue.message,
+							})),
+						},
+					});
+				}
+
 				const { categoryId, name, isDisabled } = parsedArgs.input;
 				const currentUserId = ctx.currentClient.user.id;
 
-				// 3. Find the existing category
+				// 3. Find the existing category.
 				const existingCategory =
 					await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
 						columns: {
@@ -64,13 +80,13 @@ export const updateActionItemCategory = builder.mutationField(
 					});
 				}
 
-				// 4. Check if the user is an admin in that category's organization
+				// 4. Check if the user is an admin in that category's organization.
 				const userMembership =
 					await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
 						columns: { role: true },
 						where: (fields, operators) =>
-							sql`${operators.eq(fields.memberId, currentUserId)}
-                 AND ${operators.eq(fields.organizationId, existingCategory.organizationId)}`,
+							sql`${operators.eq(fields.memberId, currentUserId)} 
+            AND ${operators.eq(fields.organizationId, existingCategory.organizationId)}`,
 					});
 
 				if (!userMembership || userMembership.role !== "administrator") {
@@ -87,7 +103,7 @@ export const updateActionItemCategory = builder.mutationField(
 					});
 				}
 
-				// Build update fields
+				// 5. Build update fields.
 				const updates: Record<string, unknown> = {};
 				let hasUpdates = false;
 
@@ -104,11 +120,11 @@ export const updateActionItemCategory = builder.mutationField(
 				// Only update if there's any field to update.
 				if (hasUpdates) {
 					updates.updatedAt = new Date();
-					// Proceed with the update operation
 				} else {
-					// Optionally log or handle no-op scenario: nothing to update
+					// Optionally handle scenario where nothing is provided to update.
 				}
 
+				// 6. Execute the update operation.
 				const [updatedCategory] = await ctx.drizzleClient
 					.update(actionCategoriesTable)
 					.set(updates)
