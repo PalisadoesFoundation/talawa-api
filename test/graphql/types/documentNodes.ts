@@ -367,6 +367,36 @@ export const Query_fund = gql(`query Query_fund($input: QueryFundInput!) {
     }
   }`);
 
+export const Query_fundCampaign =
+	gql(`query Query_fundCampaign($input: QueryFundCampaignInput!) {
+    fundCampaign(input: $input) {
+      id
+      name
+      goalAmount
+    }
+  }`);
+
+export const Query_fundCampaignPledge =
+	gql(`query Query_fundCampaignPledge($input: QueryFundCampaignPledgeInput!) {
+  fundCampaignPledge(input: $input) {
+    id
+    note
+    amount
+  }
+}`);
+
+export const Query_getPledgesByUserId =
+	gql(`query Query_getPledgesByUserId($userId: QueryUserInput! , $where: QueryPledgeWhereInput, $orderBy: QueryPledgeOrderByInput) {
+  getPledgesByUserId(userId: $userId , where: $where , orderBy: $orderBy) {
+    id
+    note
+    amount
+    campaign {
+    endAt
+    }
+  }
+}`);
+
 export const Mutation_createOrganization =
 	gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
     createOrganization(input: $input) {
@@ -386,6 +416,24 @@ export const Mutation_createFund =
     }
   }`);
 
+export const Mutation_createFundCampaign =
+	gql(`mutation Mutation_createFundCampaign($input: MutationCreateFundCampaignInput!) {
+    createFundCampaign(input: $input) {
+      id
+      name
+      goalAmount
+    }
+  }`);
+
+export const Mutation_createFundCampaignPledge =
+	gql(`mutation Mutation_createFundCampaignPledge($input: MutationCreateFundCampaignPledgeInput!) {
+    createFundCampaignPledge(input: $input) {
+      id
+      note
+      amount
+    }
+  }`);
+
 export const Mutation_createOrganizationMembership =
 	gql(`mutation Mutation_createOrganizationMembership($input: MutationCreateOrganizationMembershipInput!) {
     createOrganizationMembership(input: $input) {
@@ -401,6 +449,24 @@ export const Mutation_deleteFund =
       isTaxDeductible
     }
 }`);
+
+export const Mutation_deleteFundCampaign =
+	gql(`mutation Mutation_deleteFundCampaign($input: MutationDeleteFundCampaignInput!) {
+  deleteFundCampaign(input: $input) {
+    id
+    name
+    goalAmount
+    }
+  }`);
+
+export const Mutation_deleteFundCampaignPledge =
+	gql(`mutation Mutation_deleteFundCampaignPledge($input: MutationDeleteFundCampaignPledgeInput!) {
+  deleteFundCampaignPledge(input: $input) {
+    id
+    note
+    amount
+  }
+  }`);
 
 export const Mutation_deleteOrganization =
 	gql(`mutation Mutation_deleteOrganization($input: MutationDeleteOrganizationInput!) {
