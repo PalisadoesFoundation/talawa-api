@@ -11,7 +11,6 @@ export const mutationCreateActionItemInputSchema = z.object({
 	assignedAt: z.string().optional(), // Optional ISO string. Defaults to current date-time if not provided.
 });
 
-// GraphQL input reference for the createActionItem mutation
 export const MutationCreateActionItemInput = builder
 	.inputRef<z.infer<typeof mutationCreateActionItemInputSchema>>(
 		"MutationCreateActionItemInput",
