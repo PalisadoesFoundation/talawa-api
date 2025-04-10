@@ -6,6 +6,7 @@ import {
 	eq,
 	exists,
 	gt,
+	isNotNull,
 	lt,
 	or,
 	sql,
@@ -103,12 +104,12 @@ Event.implement({
 												eq(agendaFoldersTable.eventId, parent.id),
 												eq(agendaFoldersTable.id, cursor.id),
 												eq(agendaFoldersTable.name, cursor.name),
-												eq(agendaFoldersTable.parentFolderId, sql`${null}`),
+												isNotNull(agendaFoldersTable.parentFolderId),
 											),
 										),
 								),
 								eq(agendaFoldersTable.eventId, parent.id),
-								eq(agendaFoldersTable.parentFolderId, sql`${null}`),
+								isNotNull(agendaFoldersTable.parentFolderId),
 								or(
 									and(
 										eq(agendaFoldersTable.name, cursor.name),
@@ -120,7 +121,7 @@ Event.implement({
 						} else {
 							where = and(
 								eq(agendaFoldersTable.eventId, parent.id),
-								eq(agendaFoldersTable.parentFolderId, sql`${null}`),
+								isNotNull(agendaFoldersTable.parentFolderId),
 							);
 						}
 					} else {
@@ -135,12 +136,12 @@ Event.implement({
 												eq(agendaFoldersTable.eventId, parent.id),
 												eq(agendaFoldersTable.id, cursor.id),
 												eq(agendaFoldersTable.name, cursor.name),
-												eq(agendaFoldersTable.parentFolderId, sql`${null}`),
+												isNotNull(agendaFoldersTable.parentFolderId),
 											),
 										),
 								),
 								eq(agendaFoldersTable.eventId, parent.id),
-								eq(agendaFoldersTable.parentFolderId, sql`${null}`),
+								isNotNull(agendaFoldersTable.parentFolderId),
 								or(
 									and(
 										eq(agendaFoldersTable.name, cursor.name),
@@ -152,7 +153,7 @@ Event.implement({
 						} else {
 							where = and(
 								eq(agendaFoldersTable.eventId, parent.id),
-								eq(agendaFoldersTable.parentFolderId, sql`${null}`),
+								isNotNull(agendaFoldersTable.parentFolderId),
 							);
 						}
 					}

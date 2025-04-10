@@ -6,6 +6,7 @@ import {
 	eq,
 	exists,
 	gt,
+	isNotNull,
 	lt,
 	ne,
 	or,
@@ -161,7 +162,7 @@ Organization.implement({
 											),
 										),
 								),
-								ne(postsTable.pinnedAt, sql`${null}`),
+								isNotNull(postsTable.pinnedAt),
 								eq(postsTable.organizationId, parent.id),
 								or(
 									and(
@@ -173,7 +174,7 @@ Organization.implement({
 							);
 						} else {
 							where = and(
-								ne(postsTable.pinnedAt, sql`${null}`),
+								isNotNull(postsTable.pinnedAt),
 								eq(postsTable.organizationId, parent.id),
 							);
 						}
@@ -192,7 +193,7 @@ Organization.implement({
 											),
 										),
 								),
-								ne(postsTable.pinnedAt, sql`${null}`),
+								isNotNull(postsTable.pinnedAt),
 								eq(postsTable.organizationId, parent.id),
 								or(
 									and(
@@ -204,7 +205,7 @@ Organization.implement({
 							);
 						} else {
 							where = and(
-								ne(postsTable.pinnedAt, sql`${null}`),
+								isNotNull(postsTable.pinnedAt),
 								eq(postsTable.organizationId, parent.id),
 							);
 						}
