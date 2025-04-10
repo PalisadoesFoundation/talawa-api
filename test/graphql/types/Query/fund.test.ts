@@ -14,14 +14,21 @@ import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createFund,
+	Mutation_createFundCampaign,
+	Mutation_createFundCampaignPledge,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_deleteFund,
+	Mutation_deleteFundCampaign,
+	Mutation_deleteFundCampaignPledge,
 	Mutation_deleteOrganization,
 	Mutation_deleteOrganizationMembership,
 	Mutation_deleteUser,
 	Query_fund,
+	Query_fundCampaign,
+	Query_fundCampaignPledge,
+	Query_getPledgesByUserId,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -401,6 +408,771 @@ suite("Query field fund", () => {
 	});
 });
 
+suite("Query field fund Campaign", () => {
+	test("returns fund Campaign data if user is organization member", async () => {
+		const regularUserResult = await createRegularUser();
+		const { fundId, orgId } = await createFund();
+		const { fundCampaignId } = await createFundCampaign(fundId);
+
+		await addUserToOrg(regularUserResult.userId, orgId);
+
+		const fundCampaignResult = await mercuriusClient.query(Query_fundCampaign, {
+			headers: {
+				authorization: `bearer ${regularUserResult.authToken}`,
+			},
+			variables: {
+				input: {
+					id: fundCampaignId,
+				},
+			},
+		});
+
+		expect(fundCampaignResult.errors).toBeUndefined();
+		expect(fundCampaignResult.data.fundCampaign).toEqual(
+			expect.objectContaining({
+				id: fundCampaignId,
+				goalAmount: expect.any(Number),
+				name: expect.any(String),
+			}),
+		);
+	});
+
+	test("returns fund Campaign data if user is an admin", async () => {
+		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+
+		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+
+		const { fundId } = await createFund();
+		const { fundCampaignId } = await createFundCampaign(fundId);
+
+		const fundCampaignResult = await mercuriusClient.query(Query_fundCampaign, {
+			headers: {
+				authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+			},
+			variables: {
+				input: {
+					id: fundCampaignId,
+				},
+			},
+		});
+
+		expect(fundCampaignResult.errors).toBeUndefined();
+		expect(fundCampaignResult.data.fundCampaign).toEqual(
+			expect.objectContaining({
+				id: fundCampaignId,
+				goalAmount: expect.any(Number),
+				name: expect.any(String),
+			}),
+		);
+	});
+});
+
+suite("Query field fund Campaign Pledge", () => {
+	test("returns fund Campaign Pledge data if user is organization member", async () => {
+		const regularUserResult = await createRegularUser();
+
+		const { fundId, orgId } = await createFund();
+		const { fundCampaignId } = await createFundCampaign(fundId);
+		await addUserToOrg(regularUserResult.userId, orgId);
+		const { fundCampaignPledgeId } = await createFundCampaignPledge(
+			fundCampaignId,
+			regularUserResult.userId,
+		);
+
+		const fundCampaignPledgeResult = await mercuriusClient.query(
+			Query_fundCampaignPledge,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					input: {
+						id: fundCampaignPledgeId,
+					},
+				},
+			},
+		);
+
+		expect(fundCampaignPledgeResult.errors).toBeUndefined();
+		expect(fundCampaignPledgeResult.data.fundCampaignPledge).toEqual(
+			expect.objectContaining({
+				id: fundCampaignPledgeId,
+				amount: expect.any(Number),
+				note: expect.any(String),
+			}),
+		);
+	});
+
+	test("returns fund Campaign Pledge data if user is an admin", async () => {
+		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const regularUserResult = await createRegularUser();
+
+		assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+
+		const { fundId, orgId } = await createFund();
+		const { fundCampaignId } = await createFundCampaign(fundId);
+		await addUserToOrg(regularUserResult.userId, orgId);
+		const { fundCampaignPledgeId } = await createFundCampaignPledge(
+			fundCampaignId,
+			regularUserResult.userId,
+		);
+
+		const fundCampaignPledgeResult = await mercuriusClient.query(
+			Query_fundCampaignPledge,
+			{
+				headers: {
+					authorization: `bearer ${adminSignInResult.data.signIn?.authenticationToken}`,
+				},
+				variables: {
+					input: {
+						id: fundCampaignPledgeId,
+					},
+				},
+			},
+		);
+
+		expect(fundCampaignPledgeResult.errors).toBeUndefined();
+		expect(fundCampaignPledgeResult.data.fundCampaignPledge).toEqual(
+			expect.objectContaining({
+				id: fundCampaignPledgeId,
+				amount: expect.any(Number),
+				note: expect.any(String),
+			}),
+		);
+	});
+});
+
+suite("Query field get fund Campaign Pledges by id", () => {
+	suite("results in a graphql error", () => {
+		test("with 'unauthenticated' extensions code if client is not authenticated", async () => {
+			const fundCampaignPledgeResult = await mercuriusClient.query(
+				Query_getPledgesByUserId,
+				{
+					variables: {
+						userId: {
+							id: faker.string.uuid(),
+						},
+					},
+				},
+			);
+
+			expect(fundCampaignPledgeResult.data?.getPledgesByUserId).toEqual(null);
+			expect(fundCampaignPledgeResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnauthenticatedExtensions>({
+							code: "unauthenticated",
+						}),
+						message: expect.any(String),
+						path: ["getPledgesByUserId"],
+					}),
+				]),
+			);
+		});
+
+		test("with 'unauthenticated' extensions code if authenticated user doesn't exist in database", async () => {
+			const regularUserResult = await createRegularUser();
+			const { fundId, orgId } = await createFund();
+			const { fundCampaignId } = await createFundCampaign(fundId);
+			await addUserToOrg(regularUserResult.userId, orgId);
+			const { fundCampaignPledgeId } = await createFundCampaignPledge(
+				fundCampaignId,
+				regularUserResult.userId,
+			);
+
+			await server.drizzleClient
+				.delete(usersTable)
+				.where(eq(usersTable.id, regularUserResult.userId));
+
+			const fundResultCampaign = await mercuriusClient.query(
+				Query_getPledgesByUserId,
+				{
+					headers: {
+						authorization: `bearer ${regularUserResult.authToken}`,
+					},
+					variables: {
+						userId: {
+							id: fundCampaignPledgeId,
+						},
+					},
+				},
+			);
+
+			expect(fundResultCampaign.data.getPledgesByUserId).toEqual(null);
+			expect(fundResultCampaign.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnauthenticatedExtensions>({
+							code: "unauthenticated",
+						}),
+						message: expect.any(String),
+						path: ["getPledgesByUserId"],
+					}),
+				]),
+			);
+		});
+
+		test("with 'arguments_associated_resources_not_found' extensions code if fund Campaign pledge is not found", async () => {
+			const adminSignInResult = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+
+			assertToBeNonNullish(adminSignInResult.data.signIn?.authenticationToken);
+
+			const fundCampaignPledgeResult = await mercuriusClient.query(
+				Query_getPledgesByUserId,
+				{
+					headers: {
+						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
+					},
+					variables: {
+						userId: {
+							id: faker.string.uuid(),
+						},
+					},
+				},
+			);
+
+			expect(fundCampaignPledgeResult.data.getPledgesByUserId).toEqual(null);
+			expect(fundCampaignPledgeResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions:
+							expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+								{
+									code: "arguments_associated_resources_not_found",
+									issues: [
+										{
+											argumentPath: ["userId", "id"],
+										},
+									],
+								},
+							),
+						message: expect.any(String),
+						path: ["getPledgesByUserId"],
+					}),
+				]),
+			);
+		});
+
+		test("with 'unauthenticated' extensions code if authorization token is malformed", async () => {
+			// Generate a random invalid token instead of using a hard-coded value
+			const invalidToken = Buffer.from(faker.string.alphanumeric(32)).toString(
+				"base64",
+			);
+
+			const fundCampaignPledgeResult = await mercuriusClient.query(
+				Query_getPledgesByUserId,
+				{
+					headers: {
+						authorization: `bearer ${invalidToken}`,
+					},
+					variables: {
+						userId: {
+							id: faker.string.uuid(),
+						},
+					},
+				},
+			);
+
+			expect(fundCampaignPledgeResult.data.getPledgesByUserId).toEqual(null);
+			expect(fundCampaignPledgeResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnauthenticatedExtensions>({
+							code: "unauthenticated",
+						}),
+						message: expect.any(String),
+						path: ["getPledgesByUserId"],
+					}),
+				]),
+			);
+		});
+
+		test("with 'unauthenticated' extensions code if authorization token is expired", async () => {
+			// Generate an expired token with current time - 1 hour
+			const expiredTimestamp = Math.floor(Date.now() / 1000) - 3600;
+			const payload = {
+				exp: expiredTimestamp,
+				iat: expiredTimestamp - 3600,
+				sub: faker.string.uuid(),
+			};
+			const expiredToken = Buffer.from(JSON.stringify(payload)).toString(
+				"base64",
+			);
+
+			const fundCampaignPledgeResult = await mercuriusClient.query(
+				Query_getPledgesByUserId,
+				{
+					headers: {
+						authorization: `bearer ${expiredToken}`,
+					},
+					variables: {
+						userId: {
+							id: faker.string.uuid(),
+						},
+					},
+				},
+			);
+
+			expect(fundCampaignPledgeResult.data.getPledgesByUserId).toEqual(null);
+			expect(fundCampaignPledgeResult.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnauthenticatedExtensions>({
+							code: "unauthenticated",
+						}),
+						message: expect.any(String),
+						path: ["getPledgesByUserId"],
+					}),
+				]),
+			);
+		});
+	});
+
+	test("returns one fund Campaign Pledge data if user is organization member", async () => {
+		const regularUserResult = await createRegularUser();
+
+		const { fundId, orgId } = await createFund();
+		const { fundCampaignId } = await createFundCampaign(fundId);
+		await addUserToOrg(regularUserResult.userId, orgId);
+		const { fundCampaignPledgeId } = await createFundCampaignPledge(
+			fundCampaignId,
+			regularUserResult.userId,
+		);
+
+		const fundCampaignPledgeResult = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+				},
+			},
+		);
+
+		expect(fundCampaignPledgeResult.errors).toBeUndefined();
+		expect(fundCampaignPledgeResult?.data?.getPledgesByUserId?.[0]).toEqual(
+			expect.objectContaining({
+				id: fundCampaignPledgeId,
+				amount: expect.any(Number),
+				note: expect.any(String),
+			}),
+		);
+	});
+
+	test("returns two fund Campaign Pledge data if user is organization member", async () => {
+		const regularUserResult = await createRegularUser();
+
+		const { fundId: fundId1, orgId: orgId1 } = await createFund();
+		const { fundId: fundId2, orgId: orgId2 } = await createFund();
+
+		const { fundCampaignId: fundCampaignId1 } =
+			await createFundCampaign(fundId1);
+		const { fundCampaignId: fundCampaignId2 } =
+			await createFundCampaign(fundId2);
+
+		await addUserToOrg(regularUserResult.userId, orgId1);
+		await addUserToOrg(regularUserResult.userId, orgId2);
+
+		const { fundCampaignPledgeId: fundCampaignPledgeId1 } =
+			await createFundCampaignPledge(fundCampaignId1, regularUserResult.userId);
+		const { fundCampaignPledgeId: fundCampaignPledgeId2 } =
+			await createFundCampaignPledge(fundCampaignId2, regularUserResult.userId);
+
+		const fundCampaignPledgeResult = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+				},
+			},
+		);
+
+		expect(fundCampaignPledgeResult.errors).toBeUndefined();
+		expect(fundCampaignPledgeResult?.data?.getPledgesByUserId?.[0]).toEqual(
+			expect.objectContaining({
+				id: fundCampaignPledgeId1,
+				amount: expect.any(Number),
+				note: expect.any(String),
+			}),
+		);
+
+		expect(fundCampaignPledgeResult.errors).toBeUndefined();
+		expect(fundCampaignPledgeResult?.data?.getPledgesByUserId?.[1]).toEqual(
+			expect.objectContaining({
+				id: fundCampaignPledgeId2,
+				amount: expect.any(Number),
+				note: expect.any(String),
+			}),
+		);
+	});
+
+	test("filters and returns only matching fund campaign pledge by user ID and campaign name", async () => {
+		const regularUserResult = await createRegularUser();
+
+		const { fundId: fundId1, orgId: orgId1 } = await createFund();
+		const { fundId: fundId2, orgId: orgId2 } = await createFund();
+
+		const { fundCampaignId: fundCampaignId1 } =
+			await createFundCampaign(fundId1);
+		const { fundCampaignId: fundCampaignId2 } =
+			await createFundCampaign(fundId2);
+
+		await addUserToOrg(regularUserResult.userId, orgId1);
+		await addUserToOrg(regularUserResult.userId, orgId2);
+
+		const { fundCampaignPledgeId: fundCampaignPledgeId1 } =
+			await createFundCampaignPledge(fundCampaignId1, regularUserResult.userId);
+		await createFundCampaignPledge(fundCampaignId2, regularUserResult.userId);
+
+		// Get first campaign data
+		const fundCampaignResult = await mercuriusClient.query(Query_fundCampaign, {
+			headers: {
+				authorization: `bearer ${regularUserResult.authToken}`,
+			},
+			variables: {
+				input: {
+					id: fundCampaignId1,
+				},
+			},
+		});
+		expect(fundCampaignResult.errors).toBeUndefined();
+
+		const fundCampaignPledgeResult = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+					where: {
+						name_contains: fundCampaignResult?.data?.fundCampaign?.name,
+					},
+				},
+			},
+		);
+
+		// should return only first pledge that contain first campaign name
+		expect(fundCampaignPledgeResult.errors).toBeUndefined();
+		expect(fundCampaignPledgeResult?.data?.getPledgesByUserId?.[0]).toEqual(
+			expect.objectContaining({
+				id: fundCampaignPledgeId1,
+				amount: expect.any(Number),
+				note: expect.any(String),
+			}),
+		);
+
+		expect(fundCampaignPledgeResult.errors).toBeUndefined();
+		expect(
+			fundCampaignPledgeResult?.data?.getPledgesByUserId?.[1],
+		).toBeUndefined();
+	});
+
+	test("returns user fund campaign pledges ordered by amount descending and ascending", async () => {
+		const regularUserResult = await createRegularUser();
+
+		const { fundId: fundId1, orgId: orgId1 } = await createFund();
+		const { fundId: fundId2, orgId: orgId2 } = await createFund();
+
+		const { fundCampaignId: fundCampaignId1 } =
+			await createFundCampaign(fundId1);
+		const { fundCampaignId: fundCampaignId2 } =
+			await createFundCampaign(fundId2);
+
+		await addUserToOrg(regularUserResult.userId, orgId1);
+		await addUserToOrg(regularUserResult.userId, orgId2);
+
+		await createFundCampaignPledge(fundCampaignId1, regularUserResult.userId);
+		await createFundCampaignPledge(fundCampaignId2, regularUserResult.userId);
+
+		// Get first campaign data
+		const fundCampaignResult = await mercuriusClient.query(Query_fundCampaign, {
+			headers: {
+				authorization: `bearer ${regularUserResult.authToken}`,
+			},
+			variables: {
+				input: {
+					id: fundCampaignId1,
+				},
+			},
+		});
+		expect(fundCampaignResult.errors).toBeUndefined();
+
+		// Descending order
+		const fundCampaignPledgeResult1 = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+					orderBy: "amount_DESC",
+				},
+			},
+		);
+		expect(fundCampaignPledgeResult1.errors).toBeUndefined();
+		// first result should be the one with the highest amount
+		expect(
+			fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[0]?.amount ?? 0,
+		).toBeGreaterThanOrEqual(
+			fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[1]?.amount ?? 0,
+		);
+
+		// Ascending order
+		const fundCampaignPledgeResult2 = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+					orderBy: "amount_ASC",
+				},
+			},
+		);
+		expect(fundCampaignPledgeResult2.errors).toBeUndefined();
+		// first result should be the one with the lowest amount
+		expect(
+			fundCampaignPledgeResult2?.data?.getPledgesByUserId?.[1]?.amount ?? 0,
+		).toBeGreaterThanOrEqual(
+			fundCampaignPledgeResult2?.data?.getPledgesByUserId?.[0]?.amount ?? 0,
+		);
+	});
+
+	test("returns user fund campaign pledges ordered by campaign endDate descending and ascending", async () => {
+		const regularUserResult = await createRegularUser();
+
+		const { fundId: fundId1, orgId: orgId1 } = await createFund();
+		const { fundId: fundId2, orgId: orgId2 } = await createFund();
+
+		const { fundCampaignId: fundCampaignId1 } =
+			await createFundCampaign(fundId1);
+		const { fundCampaignId: fundCampaignId2 } =
+			await createFundCampaign(fundId2);
+
+		await addUserToOrg(regularUserResult.userId, orgId1);
+		await addUserToOrg(regularUserResult.userId, orgId2);
+
+		await createFundCampaignPledge(fundCampaignId1, regularUserResult.userId);
+		await createFundCampaignPledge(fundCampaignId2, regularUserResult.userId);
+
+		// Get first campaign data
+		const fundCampaignResult = await mercuriusClient.query(Query_fundCampaign, {
+			headers: {
+				authorization: `bearer ${regularUserResult.authToken}`,
+			},
+			variables: {
+				input: {
+					id: fundCampaignId1,
+				},
+			},
+		});
+		expect(fundCampaignResult.errors).toBeUndefined();
+
+		// Descending order
+		const fundCampaignPledgeResult1 = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+					orderBy: "endDate_DESC",
+				},
+			},
+		);
+		expect(fundCampaignPledgeResult1.errors).toBeUndefined();
+		// first result should be the one with the most recent end date
+		const endAt1 = new Date(
+			fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[0]?.campaign
+				?.endAt ?? 0,
+		).getTime();
+		const endAt2 = new Date(
+			fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[1]?.campaign
+				?.endAt ?? 0,
+		).getTime();
+
+		expect(endAt1).toBeGreaterThanOrEqual(endAt2);
+
+		// Ascending order
+		const fundCampaignPledgeResult2 = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+					orderBy: "endDate_ASC",
+				},
+			},
+		);
+		expect(fundCampaignPledgeResult2.errors).toBeUndefined();
+		// second result should be the one with the most recent end date
+		const endAt3 = new Date(
+			fundCampaignPledgeResult2?.data?.getPledgesByUserId?.[0]?.campaign
+				?.endAt ?? 0,
+		).getTime();
+		const endAt4 = new Date(
+			fundCampaignPledgeResult2?.data?.getPledgesByUserId?.[1]?.campaign
+				?.endAt ?? 0,
+		).getTime();
+
+		expect(endAt4).toBeGreaterThanOrEqual(endAt3);
+	});
+
+	test("filters and returns only matching fund campaign pledge by user ID and pledger name", async () => {
+		const regularUserResult = await createRegularUser();
+
+		const { fundId: fundId1, orgId: orgId1 } = await createFund();
+		const { fundId: fundId2, orgId: orgId2 } = await createFund();
+
+		const { fundCampaignId: fundCampaignId1 } =
+			await createFundCampaign(fundId1);
+		const { fundCampaignId: fundCampaignId2 } =
+			await createFundCampaign(fundId2);
+
+		await addUserToOrg(regularUserResult.userId, orgId1);
+		await addUserToOrg(regularUserResult.userId, orgId2);
+
+		const { fundCampaignPledgeId: fundCampaignPledgeId1 } =
+			await createFundCampaignPledge(fundCampaignId1, regularUserResult.userId);
+		const { fundCampaignPledgeId: fundCampaignPledgeId2 } =
+			await createFundCampaignPledge(fundCampaignId2, regularUserResult.userId);
+
+		// Get first campaign data
+		const fundCampaignResult = await mercuriusClient.query(Query_fundCampaign, {
+			headers: {
+				authorization: `bearer ${regularUserResult.authToken}`,
+			},
+			variables: {
+				input: {
+					id: fundCampaignId1,
+				},
+			},
+		});
+		expect(fundCampaignResult.errors).toBeUndefined();
+
+		const fundCampaignPledgeResult1 = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+					where: {
+						firstName_contains: regularUserResult.name,
+					},
+				},
+			},
+		);
+
+		// should return two pledges that contain pledger name
+		expect(fundCampaignPledgeResult1.errors).toBeUndefined();
+		expect(fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[0]).toEqual(
+			expect.objectContaining({
+				id: fundCampaignPledgeId1,
+				amount: expect.any(Number),
+				note: expect.any(String),
+			}),
+		);
+
+		expect(fundCampaignPledgeResult1.errors).toBeUndefined();
+		expect(fundCampaignPledgeResult1?.data?.getPledgesByUserId?.[1]).toEqual(
+			expect.objectContaining({
+				id: fundCampaignPledgeId2,
+				amount: expect.any(Number),
+				note: expect.any(String),
+			}),
+		);
+
+		const fundCampaignPledgeResult2 = await mercuriusClient.query(
+			Query_getPledgesByUserId,
+			{
+				headers: {
+					authorization: `bearer ${regularUserResult.authToken}`,
+				},
+				variables: {
+					userId: {
+						id: regularUserResult.userId,
+					},
+					where: {
+						firstName_contains: faker.string.uuid(),
+					},
+				},
+			},
+		);
+
+		// should not return any pledges
+		expect(fundCampaignPledgeResult2.data.getPledgesByUserId).toEqual(null);
+		expect(fundCampaignPledgeResult2.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions:
+						expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+							{
+								code: "arguments_associated_resources_not_found",
+								issues: [
+									{
+										argumentPath: ["userId", "id"],
+									},
+								],
+							},
+						),
+					message: expect.any(String),
+					path: ["getPledgesByUserId"],
+				}),
+			]),
+		);
+	});
+});
+
 suite("Funds schema validation and field behavior", () => {
 	test("validates fund name constraints", () => {
 		// Test length constraints
@@ -688,12 +1460,23 @@ suite("Required Field Validation", () => {
 interface TestUser {
 	authToken: string;
 	userId: string;
+	name: string | null;
 	cleanup: () => Promise<void>;
 }
 
 interface TestFund {
 	fundId: string;
 	orgId: string;
+	cleanup: () => Promise<void>;
+}
+
+interface TestFundCampaign {
+	fundCampaignId: string;
+	cleanup: () => Promise<void>;
+}
+
+interface TestFundCampaignPledge {
+	fundCampaignPledgeId: string;
 	cleanup: () => Promise<void>;
 }
 
@@ -776,10 +1559,12 @@ async function createRegularUser(): Promise<TestUser> {
 
 			const userId = userResult.data.createUser.user.id;
 			const authToken = userResult.data.createUser.authenticationToken;
+			const name = userResult.data.createUser.user.name;
 
 			return {
 				authToken,
 				userId,
+				name,
 				cleanup: async () => {
 					try {
 						await mercuriusClient.mutate(Mutation_deleteUser, {
@@ -877,6 +1662,123 @@ async function createFund(): Promise<TestFund> {
 		});
 	} catch (error) {
 		console.error("Failed to create fund:", error);
+		throw error;
+	}
+}
+
+async function createFundCampaign(fundId: string): Promise<TestFundCampaign> {
+	try {
+		return await retry(async () => {
+			const adminAuthToken = await getAdminAuthToken();
+
+			// Create fund Campaign
+			const createFundCampaignResult = await mercuriusClient.mutate(
+				Mutation_createFundCampaign,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							name: `Fund Campaign ${faker.string.uuid()}`,
+							fundId: fundId,
+							goalAmount: faker.number.int({ min: 1000, max: 10000 }),
+							startAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+							endAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+							currencyCode: "USD",
+						},
+					},
+				},
+			);
+
+			if (!createFundCampaignResult.data?.createFundCampaign?.id) {
+				throw new Error(
+					"Failed to create fund Campaign: Missing fund Campaign ID",
+				);
+			}
+
+			const fundCampaignId =
+				createFundCampaignResult.data.createFundCampaign.id;
+
+			return {
+				fundCampaignId,
+				cleanup: async () => {
+					try {
+						await mercuriusClient.mutate(Mutation_deleteFundCampaign, {
+							headers: { authorization: `bearer ${adminAuthToken}` },
+							variables: { input: { id: fundCampaignId } },
+						});
+						console.log(
+							`Cleanup: Fund Campaign ${fundCampaignId} would be deleted here`,
+						);
+					} catch (error) {
+						console.error("Failed to cleanup fund campaign :", error);
+						throw error;
+					}
+				},
+			};
+		});
+	} catch (error) {
+		console.error("Failed to create fund campaign:", error);
+		throw error;
+	}
+}
+
+async function createFundCampaignPledge(
+	fundCampaignId: string,
+	pledgerId: string,
+): Promise<TestFundCampaignPledge> {
+	try {
+		return await retry(async () => {
+			const adminAuthToken = await getAdminAuthToken();
+
+			// Create fund Campaign Pledge
+			const createFundCampaignPledgeResult = await mercuriusClient.mutate(
+				Mutation_createFundCampaignPledge,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							note: `Fund Campaign Pledge ${faker.string.uuid()}`,
+							campaignId: fundCampaignId,
+							pledgerId: pledgerId,
+							amount: faker.number.int({ min: 1000, max: 10000 }),
+						},
+					},
+				},
+			);
+
+			if (!createFundCampaignPledgeResult.data?.createFundCampaignPledge?.id) {
+				throw new Error(
+					"Failed to create fund Campaign: Missing fund Campaign Pledge ID",
+				);
+			}
+
+			const fundCampaignPledgeId =
+				createFundCampaignPledgeResult.data.createFundCampaignPledge.id;
+
+			return {
+				fundCampaignPledgeId,
+				cleanup: async () => {
+					try {
+						await mercuriusClient.mutate(Mutation_deleteFundCampaignPledge, {
+							headers: { authorization: `bearer ${adminAuthToken}` },
+							variables: { input: { id: fundCampaignPledgeId } },
+						});
+						console.log(
+							`Cleanup: Fund Campaign Pledge ${fundCampaignPledgeId} would be deleted here`,
+						);
+					} catch (error) {
+						console.error("Failed to cleanup fund campaign Pledge :", error);
+						throw error;
+					}
+				},
+			};
+		});
+	} catch (error) {
+		console.error("Failed to create fund campaign Pledge:", error);
 		throw error;
 	}
 }
