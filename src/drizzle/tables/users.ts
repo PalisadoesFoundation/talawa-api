@@ -8,6 +8,7 @@ import {
 	text,
 	timestamp,
 	uuid,
+	varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
@@ -123,7 +124,7 @@ export const usersTable = pgTable(
 		/**
 		 * Email address of the user.
 		 */
-		emailAddress: text("email_address").notNull().unique(),
+		emailAddress: varchar("email_address", { length: 255 }).notNull(),
 		/**
 		 * Employment status of the user.
 		 */

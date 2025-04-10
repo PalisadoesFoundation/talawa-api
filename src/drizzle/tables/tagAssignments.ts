@@ -93,5 +93,8 @@ export const tagAssignmentsTableRelations = relations(
 	}),
 );
 
-export const tagAssignmentsTableInsertSchema =
-	createInsertSchema(tagAssignmentsTable);
+export const tagAssignmentsTableInsertSchema = createInsertSchema(tagAssignmentsTable, {
+  assigneeId: (schema) => schema.uuid(),
+  tagId: (schema) => schema.uuid(),
+  creatorId: (schema) => schema.uuid().optional(),
+});

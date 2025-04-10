@@ -1462,15 +1462,6 @@ input MembershipRequestWhereInput {
 }
 
 type Mutation {
-  """Mutation field to accept a membership request by an admin."""
-  acceptMembershipRequest(
-    """Input to accept a membership request"""
-    input: MutationAcceptMembershipRequestInput!
-  ): AcceptMembershipResponse
-
-  """Mutation field to block a user from an organization."""
-  blockUser(organizationId: ID!, userId: ID!): Boolean
-
   """Mutation field to cancel a membership request."""
   cancelMembershipRequest(
     """Input to cancel a membership request"""
@@ -1719,20 +1710,15 @@ type Mutation {
 
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
-}
 
-input MutationAcceptMembershipRequestInput {
-  """ID of the membership request to accept"""
-  membershipRequestId: ID!
-}
+  """Mutation field to assign a user to tags."""
+  assignUserTag(input: TagActionsInput!): Tag!
 
-"""Input to block a user from an organization"""
-input MutationBlockUserInput {
-  """Global identifier of the organization."""
-  organizationId: ID!
+  """Mutation field to assign tags to a user."""
+  assignToUserTags(input: AssignToUserTagsInput!): Tag!
 
-  """Global identifier of the user to block."""
-  userId: ID!
+  """Mutation field to remove tags from a user."""
+  removeFromUserTags(input: RemoveFromUserTagsInput!): Tag!
 }
 
 """Input type for canceling a membership request."""
@@ -2054,6 +2040,14 @@ input MutationCreateTagInput {
 
   """Global identifier of the associated organization."""
   organizationId: ID!
+}
+
+""""""
+input TagActionsInput {
+  """ID of the current tag"""
+  currentTagId: String!
+  """Array of tag IDs to be assigned"""
+  selectedTagIds: [String!]!
 }
 
 """"""
@@ -2388,6 +2382,46 @@ input MutationUnblockUserInput {
 
   """Global identifier of the user to unblock."""
   userId: ID!
+}
+
+input AssignUserTagInput {
+  currentTagId: ID!
+  selectedTagIds: [ID!]!
+}
+
+input AssignToUserTagsInput {
+  """ID of the current tag to which other tags will be assigned"""
+  currentTagId: ID!
+  """Array of tag IDs to be assigned"""
+  selectedTagIds: [ID!]!
+}
+
+input RemoveFromUserTagsInput {
+  """ID of the current tag from which other tags will be removed"""
+  currentTagId: ID!
+  """Array of tag IDs to be removed"""
+  selectedTagIds: [ID!]!
+}
+
+input RemoveUserTagInput {
+  """The ID of the tag to remove"""
+  tagId: ID!
+}
+
+input AddUserTagInput {
+  """The ID of the tag to assign"""
+  tagId: ID!
+  """The ID of the user to assign the tag to"""
+  userId: ID!
+}
+
+type TagMutationResponse {
+  """Whether the mutation was successful"""
+  code: String!
+  """A message describing the result"""
+  message: String
+  """The tag that was modified"""
+  tag: Tag
 }
 
 input MutationUpdateActionItemInput {
@@ -3588,6 +3622,10 @@ type Tag {
 
   """User who last updated the tag."""
   updater: User
+
+  id: ID
+  name: String
+  organization: Organization
 }
 
 """"""

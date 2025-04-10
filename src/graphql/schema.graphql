@@ -1,0 +1,21 @@
+type Tag {
+  id: ID
+  name: String
+  organization: Organization
+  # ...existing fields...
+}
+
+"""Input type for tag actions (assign/remove)"""
+input TagActionsInput {
+  """ID of the current tag"""
+  currentTagId: ID!
+  """Array of tag IDs to be assigned/removed"""
+  selectedTagIds: [ID!]!
+}
+
+type Mutation {
+  # ...existing mutations...
+  """Remove tags from a user"""
+  removeFromUserTags(input: TagActionsInput!): Tag!
+  # ...existing mutations...
+}
