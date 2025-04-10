@@ -238,6 +238,7 @@ export type introspection_types = {
     'VenueAttachment': { kind: 'OBJECT'; name: 'VenueAttachment'; fields: { 'mimeType': { name: 'mimeType'; type: { kind: 'SCALAR'; name: 'String'; ofType: null; } }; 'url': { name: 'url'; type: { kind: 'SCALAR'; name: 'String'; ofType: null; } }; }; };
     'VenueEventsConnection': { kind: 'OBJECT'; name: 'VenueEventsConnection'; fields: { 'edges': { name: 'edges'; type: { kind: 'LIST'; name: never; ofType: { kind: 'OBJECT'; name: 'VenueEventsConnectionEdge'; ofType: null; }; } }; 'pageInfo': { name: 'pageInfo'; type: { kind: 'NON_NULL'; name: never; ofType: { kind: 'OBJECT'; name: 'PageInfo'; ofType: null; }; } }; }; };
     'VenueEventsConnectionEdge': { kind: 'OBJECT'; name: 'VenueEventsConnectionEdge'; fields: { 'cursor': { name: 'cursor'; type: { kind: 'NON_NULL'; name: never; ofType: { kind: 'SCALAR'; name: 'String'; ofType: null; }; } }; 'node': { name: 'node'; type: { kind: 'OBJECT'; name: 'Event'; ofType: null; } }; }; };
+
 };
 
 /** An IntrospectionQuery representation of your schema.

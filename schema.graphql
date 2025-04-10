@@ -3188,6 +3188,25 @@ A field whose value conforms to the standard E.164 format as specified in: https
 """
 scalar PhoneNumber
 
+"""
+Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
+"""
+enum QueryPledgeOrderByInput {
+  amount_ASC
+  amount_DESC
+  endDate_ASC
+  endDate_DESC
+}
+
+"""Filter criteria for Pledges"""
+input QueryPledgeWhereInput {
+  """Filter pledges by the name of the creator"""
+  firstName_contains: String
+
+  """Filter pledges by the name of the campaign"""
+  name_contains: String
+}
+
 type Post {
   """Array of attachments."""
   attachments: [PostAttachment!]
@@ -3375,6 +3394,20 @@ type Query {
 
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
+
+  """Query field to get fund campaign pledge associated to a user."""
+  getPledgesByUserId(
+    """
+    Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
+    """
+    orderBy: QueryPledgeOrderByInput
+
+    """Global id of the user."""
+    userId: QueryUserInput!
+
+    """Filter criteria for pledges"""
+    where: QueryPledgeWhereInput
+  ): [FundCampaignPledge!]
 
   """Query field to read a post vote."""
   hasUserVoted(input: QueryHasUserVotedInput!): HasUserVoted

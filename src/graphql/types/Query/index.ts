@@ -11,6 +11,7 @@ import "./event";
 import "./fund";
 import "./fundCampaign";
 import "./fundCampaignPledge";
+import "./getPledgesByUserId";
 import "./organization";
 import "./post";
 import "./renewAuthenticationToken";
