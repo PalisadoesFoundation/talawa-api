@@ -4,6 +4,6 @@
 
 # Variable: mutationBlockUserInputSchema
 
-> `const` **mutationBlockUserInputSchema**: `ZodEffects`\<`ZodObject`\<`Pick`\<\{[`key`: `string`]: `any`; \}, `any`\>, `"strip"`, `ZodTypeAny`, \{[`key`: `string`]: `any`; \}, \{[`key`: `string`]: `any`; \}\>, \{[`key`: `string`]: `any`; \}, \{[`key`: `string`]: `any`; \}\>
+> `const` **mutationBlockUserInputSchema**: `ZodEffects`\<`ZodObject`\<`Pick`\<\{\}, `any`\>, `"strip"`, `ZodTypeAny`, \{\}, \{\}\>, \{\}, \{\}\>
 
-Defined in: [src/graphql/inputs/MutationBlockUserInput.ts:5](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/graphql/inputs/MutationBlockUserInput.ts#L5)
+Defined in: [src/graphql/inputs/MutationBlockUserInput.ts:5](https://github.com/PurnenduMIshra129th/talawa-api/blob/75f0e499b44e2c3bed70cf951ac8ac374317f43b/src/graphql/inputs/MutationBlockUserInput.ts#L5)

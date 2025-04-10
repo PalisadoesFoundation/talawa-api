@@ -6,4 +6,4 @@
 
 > `const` **mutationCreatePresignedUrlInputSchema**: `ZodObject`\<\{ `fileHash`: `ZodString`; `fileName`: `ZodString`; `objectName`: `ZodOptional`\<`ZodString`\>; `organizationId`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `fileHash`: `string`; `fileName`: `string`; `objectName`: `string`; `organizationId`: `string`; \}, \{ `fileHash`: `string`; `fileName`: `string`; `objectName`: `string`; `organizationId`: `string`; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreatePresignedUrlInput.ts:4](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/graphql/inputs/MutationCreatePresignedUrlInput.ts#L4)
+Defined in: [src/graphql/inputs/MutationCreatePresignedUrlInput.ts:4](https://github.com/PurnenduMIshra129th/talawa-api/blob/75f0e499b44e2c3bed70cf951ac8ac374317f43b/src/graphql/inputs/MutationCreatePresignedUrlInput.ts#L4)

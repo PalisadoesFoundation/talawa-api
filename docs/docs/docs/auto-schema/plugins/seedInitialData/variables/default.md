@@ -6,4 +6,4 @@
 
 > **default**: `FastifyPluginAsync`
 
-Defined in: [src/plugins/seedInitialData.ts:179](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/plugins/seedInitialData.ts#L179)
+Defined in: [src/plugins/seedInitialData.ts:179](https://github.com/PurnenduMIshra129th/talawa-api/blob/75f0e499b44e2c3bed70cf951ac8ac374317f43b/src/plugins/seedInitialData.ts#L179)

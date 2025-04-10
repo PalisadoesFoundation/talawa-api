@@ -4,6 +4,6 @@
 
 # Variable: tagAssignmentsTableInsertSchema
 
-> `const` **tagAssignmentsTableInsertSchema**: `BuildSchema`\<`"insert"`, \{ `assigneeId`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `createdAt`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `creatorId`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; `tagId`: `PgColumn`\<\{ \}, \{ \}, \{ \}\>; \}, `undefined`\>
+> `const` **tagAssignmentsTableInsertSchema**: `BuildSchema`\<`"insert"`, \{ `assigneeId`: `PgColumn`\<\{\}, \{\}, \{\}\>; `createdAt`: `PgColumn`\<\{\}, \{\}, \{\}\>; `creatorId`: `PgColumn`\<\{\}, \{\}, \{\}\>; `tagId`: `PgColumn`\<\{\}, \{\}, \{\}\>; \}, `undefined`\>
 
-Defined in: [src/drizzle/tables/tagAssignments.ts:96](https://github.com/PurnenduMIshra129th/talawa-api/blob/86f70716c91247c1756c784fed3bccb85b1ded8e/src/drizzle/tables/tagAssignments.ts#L96)
+Defined in: [src/drizzle/tables/tagAssignments.ts:96](https://github.com/PurnenduMIshra129th/talawa-api/blob/75f0e499b44e2c3bed70cf951ac8ac374317f43b/src/drizzle/tables/tagAssignments.ts#L96)
