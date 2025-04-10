@@ -517,15 +517,6 @@ input CreateActionItemCategoryInput {
   organizationId: ID!
 }
 
-input CreateActionItemInput {
-  assignedAt: String
-  assigneeId: ID!
-  categoryId: ID!
-  eventId: ID
-  organizationId: ID!
-  preCompletionNotes: String
-}
-
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -1481,7 +1472,10 @@ type Mutation {
   ): CancelMembershipResponse
 
   """Mutation field to create an action item."""
-  createActionItem(input: CreateActionItemInput!): ActionItem
+  createActionItem(
+    """Input for creating an action item."""
+    input: MutationCreateActionItemInput!
+  ): ActionItem
 
   """Mutation field to create a new Action Item Category."""
   createActionItemCategory(input: CreateActionItemCategoryInput!): ActionItemCategory
@@ -1748,6 +1742,29 @@ input MutationBlockUserInput {
 input MutationCancelMembershipRequestInput {
   """Global identifier of the membership request."""
   membershipRequestId: ID!
+}
+
+"""Input fields required for creating an action item."""
+input MutationCreateActionItemInput {
+  """
+  Date-time string representing when the action item was assigned. Defaults to the current date-time if not provided.
+  """
+  assignedAt: String
+
+  """Global identifier of the action item assignee."""
+  assigneeId: ID!
+
+  """Global identifier of the action item's category."""
+  categoryId: ID!
+
+  """Global identifier of the associated event, if any."""
+  eventId: ID
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+
+  """Optional notes that can be added before completion."""
+  preCompletionNotes: String
 }
 
 """"""

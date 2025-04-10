@@ -1,40 +1,29 @@
 import { sql } from "drizzle-orm";
-import { uuidv7 } from "uuidv7";
+import { v4 as uuid } from "uuid";
 import { z } from "zod";
 import { actionsTable } from "~/src/drizzle/tables/actions";
 import { builder } from "~/src/graphql/builder";
+import {
+	MutationCreateActionItemInput,
+	mutationCreateActionItemInputSchema,
+} from "~/src/graphql/inputs/MutationcreateActionItem";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateActionItemArgumentsSchema = z.object({
-	input: z.object({
-		categoryId: z.string().uuid(),
-		assigneeId: z.string().uuid(),
-		preCompletionNotes: z.string().optional(),
-		eventId: z.string().uuid().optional(),
-		organizationId: z.string().uuid(),
-		assignedAt: z.string().optional(),
-	}),
+	input: mutationCreateActionItemInputSchema,
 });
 
-export const createActionItemMutation = builder.mutationField(
+export const createActionItemCategoryMutation = builder.mutationField(
 	"createActionItem",
 	(t) =>
 		t.field({
 			type: ActionItem,
 			args: {
 				input: t.arg({
+					description: "Input for creating an action item.",
 					required: true,
-					type: builder.inputType("CreateActionItemInput", {
-						fields: (t) => ({
-							categoryId: t.field({ type: "ID", required: true }),
-							assigneeId: t.field({ type: "ID", required: true }),
-							preCompletionNotes: t.field({ type: "String" }),
-							eventId: t.field({ type: "ID" }),
-							organizationId: t.field({ type: "ID", required: true }),
-							assignedAt: t.field({ type: "String" }), // 🆕 Added assignedAt field
-						}),
-					}),
+					type: MutationCreateActionItemInput,
 				}),
 			},
 			description: "Mutation field to create an action item.",
@@ -45,7 +34,23 @@ export const createActionItemMutation = builder.mutationField(
 					});
 				}
 
-				const parsedArgs = mutationCreateActionItemArgumentsSchema.parse(args);
+				const {
+					data: parsedArgs,
+					error,
+					success,
+				} = await mutationCreateActionItemArgumentsSchema.safeParseAsync(args);
+				if (!success) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: error.issues.map((issue) => ({
+								argumentPath: issue.path,
+								message: issue.message,
+							})),
+						},
+					});
+				}
+
 				const currentUserId = ctx.currentClient.user.id;
 
 				// **1. Check if the organization exists**
@@ -55,7 +60,6 @@ export const createActionItemMutation = builder.mutationField(
 						where: (fields, operators) =>
 							operators.eq(fields.id, parsedArgs.input.organizationId),
 					});
-
 				if (!existingOrganization) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -70,9 +74,11 @@ export const createActionItemMutation = builder.mutationField(
 					await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
 						columns: { role: true },
 						where: (fields, operators) =>
-							sql`${operators.eq(fields.memberId, currentUserId)} AND ${operators.eq(fields.organizationId, parsedArgs.input.organizationId)}`,
+							sql`${operators.eq(fields.memberId, currentUserId)} AND ${operators.eq(
+								fields.organizationId,
+								parsedArgs.input.organizationId,
+							)}`,
 					});
-
 				if (!userMembership) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -82,13 +88,13 @@ export const createActionItemMutation = builder.mutationField(
 					});
 				}
 
+				// **3. Check if the category exists**
 				const existingCategory =
 					await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
 						columns: { id: true },
 						where: (fields, operators) =>
 							operators.eq(fields.id, parsedArgs.input.categoryId),
 					});
-
 				if (!existingCategory) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -98,13 +104,13 @@ export const createActionItemMutation = builder.mutationField(
 					});
 				}
 
+				// **4. Check if the assignee exists**
 				const existingAssignee =
 					await ctx.drizzleClient.query.usersTable.findFirst({
 						columns: { id: true },
 						where: (fields, operators) =>
 							operators.eq(fields.id, parsedArgs.input.assigneeId),
 					});
-
 				if (!existingAssignee) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -114,6 +120,7 @@ export const createActionItemMutation = builder.mutationField(
 					});
 				}
 
+				// **5. Authorization check:** Only administrators can create action items.
 				if (userMembership.role !== "administrator") {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -129,16 +136,17 @@ export const createActionItemMutation = builder.mutationField(
 					});
 				}
 
+				// Insert the action item into the database.
 				const [createdActionItem] = await ctx.drizzleClient
 					.insert(actionsTable)
 					.values({
-						id: uuidv7(),
+						id: uuid(),
 						creatorId: currentUserId,
 						categoryId: parsedArgs.input.categoryId,
 						assigneeId: parsedArgs.input.assigneeId,
-						assignedAt: parsedArgs.input.assignedAt // 🆕 Using provided assignedAt date
+						assignedAt: parsedArgs.input.assignedAt
 							? new Date(parsedArgs.input.assignedAt)
-							: new Date(), // Default to current date if not provided
+							: new Date(), // Default to current date if not provided.
 						completionAt: new Date(),
 						preCompletionNotes: parsedArgs.input.preCompletionNotes ?? null,
 						postCompletionNotes: null,
