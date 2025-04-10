@@ -6,7 +6,7 @@ import {
 	eq,
 	exists,
 	gt,
-	isNotNull,
+	isNull,
 	lt,
 	or,
 } from "drizzle-orm";
@@ -159,13 +159,13 @@ Organization.implement({
 										.where(
 											and(
 												eq(tagFoldersTable.id, cursor.id),
-												isNotNull(tagFoldersTable.parentFolderId),
+												isNull(tagFoldersTable.parentFolderId),
 												eq(tagFoldersTable.name, cursor.name),
 												eq(tagFoldersTable.organizationId, parent.id),
 											),
 										),
 								),
-								isNotNull(tagFoldersTable.parentFolderId),
+								isNull(tagFoldersTable.parentFolderId),
 								eq(tagFoldersTable.organizationId, parent.id),
 								or(
 									and(
@@ -177,7 +177,7 @@ Organization.implement({
 							);
 						} else {
 							where = and(
-								isNotNull(tagFoldersTable.parentFolderId),
+								isNull(tagFoldersTable.parentFolderId),
 								eq(tagFoldersTable.organizationId, parent.id),
 							);
 						}
@@ -191,13 +191,13 @@ Organization.implement({
 										.where(
 											and(
 												eq(tagFoldersTable.id, cursor.id),
-												isNotNull(tagFoldersTable.parentFolderId),
+												isNull(tagFoldersTable.parentFolderId),
 												eq(tagFoldersTable.name, cursor.name),
 												eq(tagFoldersTable.organizationId, parent.id),
 											),
 										),
 								),
-								isNotNull(tagFoldersTable.parentFolderId),
+								isNull(tagFoldersTable.parentFolderId),
 								eq(tagFoldersTable.organizationId, parent.id),
 								or(
 									and(
@@ -209,7 +209,7 @@ Organization.implement({
 							);
 						} else {
 							where = and(
-								isNotNull(tagFoldersTable.parentFolderId),
+								isNull(tagFoldersTable.parentFolderId),
 								eq(tagFoldersTable.organizationId, parent.id),
 							);
 						}
