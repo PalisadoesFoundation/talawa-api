@@ -6,7 +6,7 @@
 
 > **createServer**(`options`?): `Promise`\<`FastifyInstance`\<`Server`\<*typeof* `IncomingMessage`, *typeof* `ServerResponse`\>, `IncomingMessage`, `ServerResponse`\<`IncomingMessage`\>, `FastifyBaseLogger`, `TypeBoxTypeProvider`\>\>
 
-Defined in: [src/createServer.ts:32](https://github.com/PurnenduMIshra129th/talawa-api/blob/6dd1cb0af1891b88aa61534ec8a6180536cd264f/src/createServer.ts#L32)
+Defined in: [src/createServer.ts:32](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/createServer.ts#L32)
 
 This function is used to set up the fastify server.
 

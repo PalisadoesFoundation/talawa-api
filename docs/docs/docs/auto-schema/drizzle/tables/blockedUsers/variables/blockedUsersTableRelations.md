@@ -6,4 +6,4 @@
 
 > `const` **blockedUsersTableRelations**: `Relations`\<`"blocked_users"`, \{ `organization`: `One`\<`"organizations"`, `true`\>; `user`: `One`\<`"users"`, `true`\>; \}\>
 
-Defined in: [src/drizzle/tables/blockedUsers.ts:42](https://github.com/PurnenduMIshra129th/talawa-api/blob/6dd1cb0af1891b88aa61534ec8a6180536cd264f/src/drizzle/tables/blockedUsers.ts#L42)
+Defined in: [src/drizzle/tables/blockedUsers.ts:42](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/drizzle/tables/blockedUsers.ts#L42)
