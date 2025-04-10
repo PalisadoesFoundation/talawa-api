@@ -6,7 +6,7 @@
 
 > **ArgumentsAssociatedResourcesNotFoundExtensions** = `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:32](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/utilities/TalawaGraphQLError.ts#L32)
+Defined in: [src/utilities/TalawaGraphQLError.ts:32](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/utilities/TalawaGraphQLError.ts#L32)
 
 When resources associated to the provided graphql arguments cannot be not found.
 
@@ -37,7 +37,7 @@ throw new TalawaGraphQLError({
 
 > **code**: `"arguments_associated_resources_not_found"`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:33](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/utilities/TalawaGraphQLError.ts#L33)
+Defined in: [src/utilities/TalawaGraphQLError.ts:33](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/utilities/TalawaGraphQLError.ts#L33)
 
 ***
 
@@ -45,7 +45,7 @@ Defined in: [src/utilities/TalawaGraphQLError.ts:33](https://github.com/Purnendu
 
 > **issues**: `object`[]
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:34](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/utilities/TalawaGraphQLError.ts#L34)
+Defined in: [src/utilities/TalawaGraphQLError.ts:34](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/utilities/TalawaGraphQLError.ts#L34)
 
 #### argumentPath
 

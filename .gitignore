@@ -837,7 +837,8 @@ FodyWeavers.xsd
 .pnpm-store          
 package-lock.json
 yarn.lock
-/test/graphql/types/gql.tada.d.ts
+./test/graphql/types/gql.tada.d.ts
+./test/graphql/types/gql.tada-cache.d.ts
 
 # FNM
 .node-version

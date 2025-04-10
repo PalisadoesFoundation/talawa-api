@@ -6,4 +6,4 @@
 
 > **Advertisement**: `ImplementableObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../../scalars/type-aliases/CustomScalars.md); \}\>, [`Advertisement`](../type-aliases/Advertisement.md), [`Advertisement`](../type-aliases/Advertisement.md)\>
 
-Defined in: [src/graphql/types/Advertisement/Advertisement.ts:9](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/graphql/types/Advertisement/Advertisement.ts#L9)
+Defined in: [src/graphql/types/Advertisement/Advertisement.ts:9](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/graphql/types/Advertisement/Advertisement.ts#L9)

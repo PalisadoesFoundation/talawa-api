@@ -6,7 +6,7 @@
 
 > **ExplicitGraphQLContext** = `object`
 
-Defined in: [src/graphql/context.ts:41](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/graphql/context.ts#L41)
+Defined in: [src/graphql/context.ts:41](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/graphql/context.ts#L41)
 
 Type of the transport protocol agnostic explicit context object that is merged with the implcit mercurius context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
 
@@ -16,7 +16,7 @@ Type of the transport protocol agnostic explicit context object that is merged w
 
 > **currentClient**: [`CurrentClient`](CurrentClient.md)
 
-Defined in: [src/graphql/context.ts:42](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/graphql/context.ts#L42)
+Defined in: [src/graphql/context.ts:42](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/graphql/context.ts#L42)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/graphql/context.ts:42](https://github.com/PurnenduMIshra129th/t
 
 > **drizzleClient**: `FastifyInstance`\[`"drizzleClient"`\]
 
-Defined in: [src/graphql/context.ts:43](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/graphql/context.ts#L43)
+Defined in: [src/graphql/context.ts:43](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/graphql/context.ts#L43)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/graphql/context.ts:43](https://github.com/PurnenduMIshra129th/t
 
 > **envConfig**: `Pick`\<`FastifyInstance`\[`"envConfig"`\], `"API_BASE_URL"`\>
 
-Defined in: [src/graphql/context.ts:44](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/graphql/context.ts#L44)
+Defined in: [src/graphql/context.ts:44](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/graphql/context.ts#L44)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/graphql/context.ts:44](https://github.com/PurnenduMIshra129th/t
 
 > **jwt**: `object`
 
-Defined in: [src/graphql/context.ts:45](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/graphql/context.ts#L45)
+Defined in: [src/graphql/context.ts:45](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/graphql/context.ts#L45)
 
 #### sign()
 
@@ -62,7 +62,7 @@ Defined in: [src/graphql/context.ts:45](https://github.com/PurnenduMIshra129th/t
 
 > **log**: `FastifyInstance`\[`"log"`\]
 
-Defined in: [src/graphql/context.ts:48](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/graphql/context.ts#L48)
+Defined in: [src/graphql/context.ts:48](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/graphql/context.ts#L48)
 
 ***
 
@@ -70,4 +70,4 @@ Defined in: [src/graphql/context.ts:48](https://github.com/PurnenduMIshra129th/t
 
 > **minio**: `FastifyInstance`\[`"minio"`\]
 
-Defined in: [src/graphql/context.ts:49](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/graphql/context.ts#L49)
+Defined in: [src/graphql/context.ts:49](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/graphql/context.ts#L49)

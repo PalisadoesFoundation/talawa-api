@@ -6,7 +6,7 @@
 
 > **DateTime** = `object`
 
-Defined in: [src/graphql/scalars/DateTime.ts:12](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/graphql/scalars/DateTime.ts#L12)
+Defined in: [src/graphql/scalars/DateTime.ts:12](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/graphql/scalars/DateTime.ts#L12)
 
 `DateTime` scalar type for pothos schema.
 
@@ -16,7 +16,7 @@ Defined in: [src/graphql/scalars/DateTime.ts:12](https://github.com/PurnenduMIsh
 
 > **Input**: `Date`
 
-Defined in: [src/graphql/scalars/DateTime.ts:13](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/graphql/scalars/DateTime.ts#L13)
+Defined in: [src/graphql/scalars/DateTime.ts:13](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/graphql/scalars/DateTime.ts#L13)
 
 ***
 
@@ -24,4 +24,4 @@ Defined in: [src/graphql/scalars/DateTime.ts:13](https://github.com/PurnenduMIsh
 
 > **Output**: `Date`
 
-Defined in: [src/graphql/scalars/DateTime.ts:14](https://github.com/PurnenduMIshra129th/talawa-api/blob/4d9be178e903c8bd2778a802379c92eee9a2afdf/src/graphql/scalars/DateTime.ts#L14)
+Defined in: [src/graphql/scalars/DateTime.ts:14](https://github.com/PurnenduMIshra129th/talawa-api/blob/89904a627ec60a3b378f6b033f4255df4e9e59ab/src/graphql/scalars/DateTime.ts#L14)
