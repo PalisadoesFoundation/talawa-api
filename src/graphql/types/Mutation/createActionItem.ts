@@ -13,7 +13,7 @@ const mutationCreateActionItemArgumentsSchema = z.object({
 		preCompletionNotes: z.string().optional(),
 		eventId: z.string().uuid().optional(),
 		organizationId: z.string().uuid(),
-		assignedAt: z.string().optional(), // 🆕 Added assignedAt field
+		assignedAt: z.string().optional(),
 	}),
 });
 

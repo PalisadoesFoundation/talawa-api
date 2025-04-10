@@ -3188,25 +3188,6 @@ A field whose value conforms to the standard E.164 format as specified in: https
 """
 scalar PhoneNumber
 
-"""
-Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
-"""
-enum QueryPledgeOrderByInput {
-  amount_ASC
-  amount_DESC
-  endDate_ASC
-  endDate_DESC
-}
-
-"""Filter criteria for Pledges"""
-input QueryPledgeWhereInput {
-  """Filter pledges by the name of the creator"""
-  firstName_contains: String
-
-  """Filter pledges by the name of the campaign"""
-  name_contains: String
-}
-
 type Post {
   """Array of attachments."""
   attachments: [PostAttachment!]
@@ -3397,6 +3378,12 @@ type Query {
 
   """Query field to get fund campaign pledge associated to a user."""
   getPledgesByUserId(
+    """Maximum number of results to return."""
+    limit: Int
+
+    """Number of results to skip."""
+    offset: Int
+
     """
     Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
     """
@@ -3551,6 +3538,25 @@ input QueryHasUserVotedInput {
 input QueryOrganizationInput {
   """Global id of the organization."""
   id: String!
+}
+
+"""
+Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
+"""
+enum QueryPledgeOrderByInput {
+  amount_ASC
+  amount_DESC
+  endDate_ASC
+  endDate_DESC
+}
+
+"""Filter criteria for Pledges"""
+input QueryPledgeWhereInput {
+  """Filter pledges by the name of the creator"""
+  firstName_contains: String
+
+  """Filter pledges by the name of the campaign"""
+  name_contains: String
 }
 
 """"""
