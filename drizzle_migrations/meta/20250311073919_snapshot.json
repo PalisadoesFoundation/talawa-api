@@ -1,11 +1,6 @@
 {
-<<<<<<<< HEAD:drizzle_migrations/meta/20250311073919_snapshot.json
-  "id": "f67decf9-7022-4175-a334-324bb895061e",
-  "prevId": "00000000-0000-0000-0000-000000000000",
-========
   "id": "333e7adc-d39f-444a-999f-233a6122920f",
   "prevId": "4d3a4603-1462-4b35-b30f-4d6a5f132d24",
->>>>>>>> 04adcbca27f07ca5c0bffce211b6e6b77a1828ce:drizzle_migrations/meta/20250321223020_snapshot.json
   "version": "7",
   "dialect": "postgresql",
   "tables": {

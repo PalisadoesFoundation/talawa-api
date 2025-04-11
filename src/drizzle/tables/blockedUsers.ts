@@ -30,7 +30,6 @@ export const blockedUsersTable = pgTable(
 			.defaultNow(),
 	},
 	(self) => [
-
 		uniqueIndex("blocked_users_org_user_unique").on(
 			self.organizationId,
 			self.userId,

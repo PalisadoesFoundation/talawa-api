@@ -12,7 +12,7 @@ const mutationUnblockUserArgumentsSchema = z.object({
 builder.mutationField("unblockUser", (t) =>
 	t.field({
 		args: {
-      organizationId: t.arg.id({ required: true }),
+			organizationId: t.arg.id({ required: true }),
 			userId: t.arg.id({ required: true }),
 		},
 		description: "Mutation field to unblock a user from an organization.",
