@@ -1,6 +1,6 @@
 {
-  "id": "333e7adc-d39f-444a-999f-233a6122920f",
-  "prevId": "4d3a4603-1462-4b35-b30f-4d6a5f132d24",
+  "id": "33fda06b-57e3-41f8-8edf-4f89dd35af0d",
+  "prevId": "e01843f7-5c20-41af-8a0e-6073b7429ad9",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1260,6 +1260,27 @@
         }
       },
       "indexes": {
+        "blocked_users_org_user_unique": {
+          "name": "blocked_users_org_user_unique",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "blocked_users_organization_id_idx": {
           "name": "blocked_users_organization_id_idx",
           "columns": [
