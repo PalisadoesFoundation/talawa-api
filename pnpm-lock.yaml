@@ -92,9 +92,6 @@ importers:
       ulidx:
         specifier: ^2.4.1
         version: 2.4.1
-      uuid:
-        specifier: ^11.1.0
-        version: 11.1.0
       uuidv7:
         specifier: ^1.0.2
         version: 1.0.2
@@ -120,9 +117,6 @@ importers:
       '@types/node':
         specifier: ^22.13.17
         version: 22.13.17
-      '@types/uuid':
-        specifier: ^10.0.0
-        version: 10.0.0
       '@vitest/coverage-v8':
         specifier: ^3.0.3
         version: 3.0.7(vitest@3.0.7(@types/node@22.13.17)(tsx@4.19.3)(yaml@2.7.1))
@@ -1546,9 +1540,6 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
-
-  '@types/uuid@10.0.0':
-    resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
 
   '@vitest/coverage-v8@3.0.7':
     resolution: {integrity: sha512-Av8WgBJLTrfLOer0uy3CxjlVuWK4CzcLBndW1Nm2vI+3hZ2ozHututkfc7Blu1u6waeQ7J8gzPK/AsBRnWA5mQ==}
@@ -3226,10 +3217,6 @@ packages:
   util@0.12.5:
     resolution: {integrity: sha512-kZf/K6hEIrWHI6XqOFUiiMa+79wE/D8Q+NCNAWclkyg3b4d2k7s0QGepNjiABc+aR3N1PAyHL7p6UcLY6LmrnA==}
 
-  uuid@11.1.0:
-    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
-    hasBin: true
-
   uuidv7@1.0.2:
     resolution: {integrity: sha512-8JQkH4ooXnm1JCIhqTMbtmdnYEn6oKukBxHn1Ic9878jMkL7daTI7anTExfY18VRCX7tcdn5quzvCb6EWrR8PA==}
     hasBin: true
@@ -4378,8 +4365,6 @@ snapshots:
       undici-types: 6.20.0
 
   '@types/unist@3.0.3': {}
-
-  '@types/uuid@10.0.0': {}
 
   '@vitest/coverage-v8@3.0.7(vitest@3.0.7(@types/node@22.13.17)(tsx@4.19.3)(yaml@2.7.1))':
     dependencies:
@@ -6109,8 +6094,6 @@ snapshots:
       is-generator-function: 1.1.0
       is-typed-array: 1.1.15
       which-typed-array: 1.1.18
-
-  uuid@11.1.0: {}
 
   uuidv7@1.0.2: {}
 

@@ -5909,6 +5909,42 @@ export type introspection_types = {
 			},
 		];
 	};
+	QueryPledgeWhereInput: {
+		kind: "INPUT_OBJECT";
+		name: "QueryPledgeWhereInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "firstName_contains";
+				type: {
+					kind: "SCALAR";
+					name: "String";
+					ofType: null;
+				};
+				defaultValue: null;
+			},
+			{
+				name: "name_contains";
+				type: {
+					kind: "SCALAR";
+					name: "String";
+					ofType: null;
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	QueryPledgeOrderByInput: {
+		kind: "ENUM";
+		name: "QueryPledgeOrderByInput";
+		description: "Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'";
+		enumValues: [
+			{ name: "amount_ASC"; isDeprecated: false; deprecationReason: null },
+			{ name: "amount_DESC"; isDeprecated: false; deprecationReason: null },
+			{ name: "endDate_ASC"; isDeprecated: false; deprecationReason: null },
+			{ name: "endDate_DESC"; isDeprecated: false; deprecationReason: null },
+		];
+	};
 	QueryFundInput: {
 		kind: "INPUT_OBJECT";
 		name: "QueryFundInput";
