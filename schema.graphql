@@ -773,6 +773,11 @@ type GetUrlResponse {
   presignedUrl: String
 }
 
+type HasUserVoted {
+  """Type of the post vote"""
+  type: PostVoteType!
+}
+
 """
 Possible variants of the two-letter language code defined in ISO 639-1, part of the ISO 639 standard published by the International Organization for Standardization (ISO), to represent natural languages.
 """
@@ -3171,6 +3176,25 @@ A field whose value conforms to the standard E.164 format as specified in: https
 """
 scalar PhoneNumber
 
+"""
+Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
+"""
+enum QueryPledgeOrderByInput {
+  amount_ASC
+  amount_DESC
+  endDate_ASC
+  endDate_DESC
+}
+
+"""Filter criteria for Pledges"""
+input QueryPledgeWhereInput {
+  """Filter pledges by the name of the creator"""
+  firstName_contains: String
+
+  """Filter pledges by the name of the campaign"""
+  name_contains: String
+}
+
 type Post {
   """Array of attachments."""
   attachments: [PostAttachment!]
@@ -3359,8 +3383,22 @@ type Query {
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Query field to get fund campaign pledge associated to a user."""
+  getPledgesByUserId(
+    """
+    Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
+    """
+    orderBy: QueryPledgeOrderByInput
+
+    """Global id of the user."""
+    userId: QueryUserInput!
+
+    """Filter criteria for pledges"""
+    where: QueryPledgeWhereInput
+  ): [FundCampaignPledge!]
+
   """Query field to read a post vote."""
-  hasUserVoted(input: QueryHasUserVotedInput!): hasUserVoted
+  hasUserVoted(input: QueryHasUserVotedInput!): HasUserVoted
 
   """Query field to read an organization."""
   organization(input: QueryOrganizationInput!): Organization
@@ -3894,9 +3932,4 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
-}
-
-type hasUserVoted {
-  """Type of the post vote"""
-  type: PostVoteType!
 }
