@@ -60,3 +60,17 @@ export const MembersWhereInput = builder
 			// Add other filter fields here
 		}),
 	});
+
+export const AdvertisementWhereInput = builder
+	.inputRef("AdvertisementWhereInput")
+	.implement({
+		description: "Filter criteria for organization advertisements",
+		fields: (t) => ({
+			isCompleted: t.field({
+				type: "Boolean",
+				description: "Filter advertisements by completion status",
+				required: false,
+			}),
+			// Add other filter fields here
+		}),
+	});
