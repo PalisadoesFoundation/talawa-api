@@ -285,7 +285,20 @@ export const envConfigSchema = Type.Object({
 	API_RATE_LIMIT_REFILL_RATE: Type.Number({
 		minimum: 0,
 	}),
+	BETTER_AUTH_SECRET: Type.String({
+		minLength: 32, // Ensure a reasonable minimum length for security
+	}),
+	NODE_ENV: Type.Enum({
+		development: "development",
+		production: "production",
+		test: "test",
+	}),
+	API_CORS_ORIGIN: Type.String({
+		format: "uri",
+		minLength: 1,
+	}),
 });
+
 
 /**
  * Type of the object containing parsed configuration environment variables.

@@ -1,3 +1,4 @@
+import type { IncomingHttpHeaders } from "node:http";
 import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
 import { fastifyJwt } from "@fastify/jwt";
@@ -11,6 +12,7 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "./envConfigSchema";
+import { auth } from "./lib/auth";
 import plugins from "./plugins/index";
 import routes from "./routes/index";
 
@@ -68,7 +70,16 @@ export const createServer = async (options?: {
 	fastify.register(fastifyRateLimit, {});
 
 	// More information at this link: https://github.com/fastify/fastify-cors
-	fastify.register(fastifyCors, {});
+	fastify.register(fastifyCors, {
+		origin: fastify.envConfig.API_CORS_ORIGIN || "http://localhost:4321", // Allow only your frontend origin
+		credentials: true, // Allow sending cookies and authentication headers
+		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
+		allowedHeaders: [
+			"Content-Type",
+			"Authorization",
+			"apollo-require-preflight",
+		], // Allowed headers
+	});
 
 	// More information at this link: https://github.com/fastify/fastify-helmet
 	fastify.register(fastifyHelmet, {
@@ -94,7 +105,55 @@ export const createServer = async (options?: {
 			expiresIn: fastify.envConfig.API_JWT_EXPIRES_IN,
 		},
 	});
+	fastify.all("/api/auth/*", async (req, reply) => {
+		// Convert FastifyRequest to Fetch API Request
+		fastify.log.debug(`Auth route hit: ${req.method} ${req.url}`);
+		const headers: Record<string, string> = {};
+		for (const [key, value] of Object.entries(
+			req.headers as IncomingHttpHeaders,
+		)) {
+			if (value) {
+				headers[key] = Array.isArray(value) ? value.join(", ") : value;
+			}
+		}
 
+		const fetchRequest = new Request(
+			`${req.protocol}://${req.hostname}${req.url}`,
+			{
+				method: req.method,
+				headers,
+				body:
+					req.method !== "GET" && req.method !== "HEAD"
+						? JSON.stringify(req.body)
+						: undefined,
+			},
+		);
+
+		try {
+			// Handle authentication
+			const response = await auth.handler(fetchRequest);
+
+			// Send response back to Fastify
+			reply.status(response.status);
+			response.headers.forEach((value, key) => reply.header(key, value));
+
+			// Check content type to handle JSON appropriately
+			const contentType = response.headers.get("content-type");
+			if (contentType?.includes("application/json")) {
+				const jsonData = await response.json();
+				return reply.send(jsonData);
+			}
+		} catch (error) {
+			fastify.log.error(
+				`Authentication error: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+			return reply.status(500).send({
+				statusCode: "10001",
+				message: "Authentication service error",
+				error: "Internal server error",
+			});
+		}
+	});
 	fastify.register(plugins, {});
 
 	fastify.register(routes, {});

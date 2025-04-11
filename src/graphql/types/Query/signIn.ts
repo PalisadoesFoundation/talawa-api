@@ -72,7 +72,10 @@ builder.queryField("signIn", (t) =>
 			}
 
 			if (
-				!(await verify(existingUser.passwordHash, parsedArgs.input.password))
+				!(await verify(
+					existingUser.passwordHash ? existingUser.passwordHash : "",
+					parsedArgs.input.password,
+				))
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {
