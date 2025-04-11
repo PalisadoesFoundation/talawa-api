@@ -1,5 +1,5 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
-import type { z } from "zod";
+import { z } from "zod";
 import {
 	advertisementsTable,
 	advertisementsTableInsertSchema,
@@ -7,37 +7,55 @@ import {
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
-	defaultGraphQLConnectionArgumentsSchema,
-	transformDefaultGraphQLConnectionArguments,
+	type ParsedDefaultGraphQLConnectionArgumentsWithWhere,
+	createGraphQLConnectionWithWhereSchema,
+	type defaultGraphQLConnectionArgumentsSchema,
+	transformGraphQLConnectionArgumentsWithWhere,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
+import { AdvertisementWhereInput } from "../../inputs/QueryOrganizationInput";
 import { Organization } from "./Organization";
-const advertisementsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
-	.transform(transformDefaultGraphQLConnectionArguments)
-	.transform((arg, ctx) => {
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
 
-		try {
-			if (arg.cursor !== undefined) {
-				cursor = cursorSchema.parse(
-					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
-				);
-			}
-		} catch (error) {
-			ctx.addIssue({
-				code: "custom",
-				message: "Not a valid cursor.",
-				path: [arg.isInversed ? "before" : "after"],
-			});
+const advertisementWhereSchema = z
+	.object({
+		isCompleted: z.boolean(),
+	})
+	.optional();
+
+const advertisementsArgumentsSchema = createGraphQLConnectionWithWhereSchema(
+	advertisementWhereSchema,
+).transform((arg, ctx) => {
+	const transformedArg = transformGraphQLConnectionArgumentsWithWhere(
+		// Type assertion to match the expected type
+		{ ...arg, where: arg.where || {} } as z.infer<
+			typeof defaultGraphQLConnectionArgumentsSchema
+		> & { where: unknown },
+		ctx,
+	);
+	let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+	try {
+		if (transformedArg.cursor !== undefined) {
+			cursor = cursorSchema.parse(
+				JSON.parse(
+					Buffer.from(transformedArg.cursor, "base64url").toString("utf-8"),
+				),
+			);
 		}
-
-		return {
-			cursor,
-			isInversed: arg.isInversed,
-			limit: arg.limit,
-		};
-	});
+	} catch (error) {
+		ctx.addIssue({
+			code: "custom",
+			message: "Not a valid cursor.",
+			path: [transformedArg.isInversed ? "before" : "after"],
+		});
+	}
+	return {
+		cursor,
+		isInversed: transformedArg.isInversed,
+		limit: transformedArg.limit,
+		where: transformedArg.where || {}, // Default to empty object if where is undefined
+	};
+});
 
 const cursorSchema = advertisementsTableInsertSchema.pick({
 	name: true,
@@ -55,6 +73,12 @@ Organization.implement({
 						multiplier: args.first || args.last || 1,
 					};
 				},
+				args: {
+					where: t.arg({
+						type: AdvertisementWhereInput,
+						required: false,
+					}),
+				},
 				resolve: async (parent, args, ctx) => {
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
@@ -69,7 +93,6 @@ Organization.implement({
 						error,
 						success,
 					} = advertisementsArgumentsSchema.safeParse(args);
-
 					if (!success) {
 						throw new TalawaGraphQLError({
 							extensions: {
@@ -124,7 +147,15 @@ Organization.implement({
 						});
 					}
 
-					const { cursor, isInversed, limit } = parsedArgs;
+					const {
+						cursor,
+						isInversed,
+						limit,
+						where: extendedArgs,
+					} = parsedArgs as ParsedDefaultGraphQLConnectionArgumentsWithWhere<
+						{ name: string },
+						{ isCompleted?: boolean }
+					>;
 
 					const orderBy = isInversed
 						? [desc(advertisementsTable.name)]
@@ -134,7 +165,7 @@ Organization.implement({
 
 					if (isInversed) {
 						if (cursor !== undefined) {
-							where = and(
+							const baseCondition = and(
 								exists(
 									ctx.drizzleClient
 										.select()
@@ -149,12 +180,51 @@ Organization.implement({
 								eq(advertisementsTable.organizationId, parent.id),
 								lt(advertisementsTable.name, cursor.name),
 							);
+
+							if (extendedArgs.isCompleted !== undefined) {
+								const today = new Date();
+
+								if (extendedArgs.isCompleted) {
+									where = and(
+										baseCondition,
+										lt(advertisementsTable.endAt, today),
+									);
+								} else {
+									where = and(
+										baseCondition,
+										gt(advertisementsTable.endAt, today),
+									);
+								}
+							} else {
+								where = baseCondition;
+							}
 						} else {
-							where = eq(advertisementsTable.organizationId, parent.id);
+							const baseCondition = eq(
+								advertisementsTable.organizationId,
+								parent.id,
+							);
+
+							if (extendedArgs.isCompleted !== undefined) {
+								const today = new Date();
+
+								if (extendedArgs.isCompleted) {
+									where = and(
+										baseCondition,
+										lt(advertisementsTable.endAt, today),
+									);
+								} else {
+									where = and(
+										baseCondition,
+										gt(advertisementsTable.endAt, today),
+									);
+								}
+							} else {
+								where = baseCondition;
+							}
 						}
 					} else {
 						if (cursor !== undefined) {
-							where = and(
+							const baseCondition = and(
 								exists(
 									ctx.drizzleClient
 										.select()
@@ -169,8 +239,47 @@ Organization.implement({
 								eq(advertisementsTable.organizationId, parent.id),
 								gt(advertisementsTable.name, cursor.name),
 							);
+
+							if (extendedArgs.isCompleted !== undefined) {
+								const today = new Date();
+
+								if (extendedArgs.isCompleted) {
+									where = and(
+										baseCondition,
+										lt(advertisementsTable.endAt, today),
+									);
+								} else {
+									where = and(
+										baseCondition,
+										gt(advertisementsTable.endAt, today),
+									);
+								}
+							} else {
+								where = baseCondition;
+							}
 						} else {
-							where = eq(advertisementsTable.organizationId, parent.id);
+							const baseCondition = eq(
+								advertisementsTable.organizationId,
+								parent.id,
+							);
+
+							if (extendedArgs.isCompleted !== undefined) {
+								const today = new Date();
+
+								if (extendedArgs.isCompleted) {
+									where = and(
+										baseCondition,
+										lt(advertisementsTable.endAt, today),
+									);
+								} else {
+									where = and(
+										baseCondition,
+										gt(advertisementsTable.endAt, today),
+									);
+								}
+							} else {
+								where = baseCondition;
+							}
 						}
 					}
 
