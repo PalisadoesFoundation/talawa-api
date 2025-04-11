@@ -140,6 +140,12 @@ enum AdvertisementType {
   pop_up
 }
 
+"""Filter criteria for organization advertisements"""
+input AdvertisementWhereInput {
+  """Filter advertisements by completion status"""
+  isCompleted: Boolean
+}
+
 type AgendaFolder {
   """
   GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
@@ -2884,7 +2890,7 @@ type Organization {
   """
   GraphQL connection to traverse through the advertisements belonging to the organization.
   """
-  advertisements(after: String, before: String, first: Int, last: Int): OrganizationAdvertisementsConnection
+  advertisements(after: String, before: String, first: Int, last: Int, where: AdvertisementWhereInput): OrganizationAdvertisementsConnection
 
   """Mime type of the avatar of the organization."""
   avatarMimeType: String
