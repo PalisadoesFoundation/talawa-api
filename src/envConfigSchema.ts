@@ -299,7 +299,6 @@ export const envConfigSchema = Type.Object({
 	}),
 });
 
-
 /**
  * Type of the object containing parsed configuration environment variables.
  */
