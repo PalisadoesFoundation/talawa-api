@@ -6,10 +6,9 @@ import {
 	eq,
 	exists,
 	gt,
+	isNotNull,
 	lt,
-	ne,
 	or,
-	sql,
 } from "drizzle-orm";
 import { z } from "zod";
 import { postsTable, postsTableInsertSchema } from "~/src/drizzle/tables/posts";
@@ -161,7 +160,7 @@ Organization.implement({
 											),
 										),
 								),
-								ne(postsTable.pinnedAt, sql`${null}`),
+								isNotNull(postsTable.pinnedAt),
 								eq(postsTable.organizationId, parent.id),
 								or(
 									and(
@@ -173,7 +172,7 @@ Organization.implement({
 							);
 						} else {
 							where = and(
-								ne(postsTable.pinnedAt, sql`${null}`),
+								isNotNull(postsTable.pinnedAt),
 								eq(postsTable.organizationId, parent.id),
 							);
 						}
@@ -192,7 +191,7 @@ Organization.implement({
 											),
 										),
 								),
-								ne(postsTable.pinnedAt, sql`${null}`),
+								isNotNull(postsTable.pinnedAt),
 								eq(postsTable.organizationId, parent.id),
 								or(
 									and(
@@ -204,7 +203,7 @@ Organization.implement({
 							);
 						} else {
 							where = and(
-								ne(postsTable.pinnedAt, sql`${null}`),
+								isNotNull(postsTable.pinnedAt),
 								eq(postsTable.organizationId, parent.id),
 							);
 						}
