@@ -85,7 +85,7 @@ services:
       - CI=${CI:?error}
       - NODE_ENV=${NODE_ENV:?error}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:?error}
-      - API_CORS_ORIGIN =${API_CORS_ORIGIN:?error}
+      - API_CORS_ORIGIN=${API_CORS_ORIGIN:?error}
     # https://docs.docker.com/reference/compose-file/build/#using-build-and-image
     # https://docs.docker.com/reference/compose-file/build/#publishing-built-images
     # https://docs.docker.com/reference/compose-file/services/#image
