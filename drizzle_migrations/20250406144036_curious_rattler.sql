@@ -14,7 +14,7 @@ CREATE TABLE "actions" (
 	"assigned_at" timestamp (3) with time zone NOT NULL,
 	"actor_id" uuid,
 	"category_id" uuid,
-	"completion_at" timestamp (3) with time zone NOT NULL,
+	"completion_at" timestamp (3) with time zone,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
 	"event_id" uuid,
