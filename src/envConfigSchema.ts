@@ -285,7 +285,6 @@ export const envConfigSchema = Type.Object({
 	API_RATE_LIMIT_REFILL_RATE: Type.Number({
 		minimum: 0,
 	}),
-
 });
 
 /**
