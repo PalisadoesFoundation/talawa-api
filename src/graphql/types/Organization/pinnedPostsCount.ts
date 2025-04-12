@@ -1,4 +1,4 @@
-import { and, count, eq, ne, sql } from "drizzle-orm";
+import { and, count, eq, isNotNull } from "drizzle-orm";
 import { postsTable } from "~/src/drizzle/tables/posts";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
@@ -46,7 +46,7 @@ Organization.implement({
 						.where(
 							and(
 								eq(postsTable.organizationId, parent.id),
-								ne(postsTable.pinnedAt, sql`${null}`),
+								isNotNull(postsTable.pinnedAt),
 							),
 						),
 				]);
