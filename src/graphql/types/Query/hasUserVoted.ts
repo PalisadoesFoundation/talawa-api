@@ -50,42 +50,33 @@ builder.queryField("hasUserVoted", (t) =>
 				});
 			}
 			const currentUserId = ctx.currentClient.user.id;
-			const [currentUser, existingPostVote] = await Promise.all([
+			const [currentUser, existingPost] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
-				ctx.drizzleClient.query.postVotesTable.findFirst({
+				ctx.drizzleClient.query.postsTable.findFirst({
 					with: {
-						post: {
+						organization: {
 							columns: {
-								id: true,
+								countryCode: true,
 							},
 							with: {
-								organization: {
+								membershipsWhereOrganization: {
 									columns: {
-										id: true,
+										role: true,
 									},
-									with: {
-										membershipsWhereOrganization: {
-											columns: {
-												role: true,
-											},
-											where: (fields, operators) =>
-												operators.eq(fields.memberId, currentUserId),
-										},
-									},
+									where: (fields, operators) =>
+										operators.eq(fields.memberId, currentUserId),
 								},
 							},
 						},
+						
 					},
 					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.postId, parsedArgs.input.postId),
-							operators.eq(fields.creatorId, currentUserId),
-						),
+						operators.eq(fields.id, parsedArgs.input.postId),
 				}),
 			]);
 			if (currentUser === undefined) {
@@ -95,7 +86,7 @@ builder.queryField("hasUserVoted", (t) =>
 					},
 				});
 			}
-			if (existingPostVote === undefined) {
+			if (existingPost === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -108,7 +99,7 @@ builder.queryField("hasUserVoted", (t) =>
 				});
 			}
 			const currentUserOrganizationMembership =
-				existingPostVote.post.organization.membershipsWhereOrganization[0];
+				existingPost.organization.membershipsWhereOrganization[0];
 			if (currentUserOrganizationMembership === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -121,8 +112,24 @@ builder.queryField("hasUserVoted", (t) =>
 					},
 				});
 			}
+
+			const existingPostVote =await ctx.drizzleClient.query.postVotesTable.findFirst({
+				where: (fields, operators) =>
+					operators.and(
+						operators.eq(fields.postId, parsedArgs.input.postId),
+						operators.eq(fields.creatorId, currentUserId),
+						
+					),
+			})
+			if(existingPostVote ===undefined){
+				return {
+					type : null,
+					hasVoted : false,
+				}
+			}
 			return {
 				type: existingPostVote.type,
+				hasVoted: true,
 			};
 		},
 		type: HasUserVoted,

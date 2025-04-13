@@ -1058,6 +1058,7 @@ export const Query_hasUserVoted = gql(`
     hasUserVoted(input: $input)
     {
       type
+      hasVoted
     }
   }
 `);

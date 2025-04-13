@@ -277,17 +277,6 @@ suite("Query: hasUserVoted", () => {
 			const { postId, organizationId } =
 				await createTestPost(cachedAdminUserId);
 
-			await mercuriusClient.mutate(Mutation_createPostVote, {
-				headers: {
-					authorization: `bearer ${cachedAdminToken}`,
-				},
-				variables: {
-					input: {
-						postId: postId,
-						type: "down_vote",
-					},
-				},
-			});
 			await server.drizzleClient
 				.delete(organizationMembershipsTable)
 				.where(
@@ -315,7 +304,41 @@ suite("Query: hasUserVoted", () => {
 				"unauthorized_action_on_arguments_associated_resources",
 			);
 		});
+		test("hasVoted in hasUserVoted is false if user has not voted", async () => {
+			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
+			// create a post
+			const { postId } = await createTestPost(cachedAdminUserId);
+			// create a post vote
+			await mercuriusClient.mutate(Mutation_createPostVote, {
+				headers: {
+					authorization: `bearer ${cachedAdminToken}`,
+				},
+				variables: {
+					input: {
+						postId: postId,
+						type: "down_vote",
+					},
+				},
+			});
 
+			const hasUserVotedResponse = await mercuriusClient.query(
+				Query_hasUserVoted,
+				{
+					headers: {
+						authorization: `bearer ${cachedAdminToken}`,
+					},
+					variables: {
+						input: {
+							postId,
+						},
+					},
+				},
+			);
+			expect(hasUserVotedResponse.data.hasUserVoted).not.toEqual(null);
+			expect(hasUserVotedResponse.errors).toEqual(undefined);
+			expect(hasUserVotedResponse.data.hasUserVoted?.type).toEqual(null);
+			expect(hasUserVotedResponse.data.hasUserVoted?.hasVoted).toEqual(false);
+		})
 		test("allows access if user is a member of the organization", async () => {
 			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
 			// create a post
@@ -349,6 +372,7 @@ suite("Query: hasUserVoted", () => {
 			expect(hasUserVotedResponse.data.hasUserVoted).not.toEqual(null);
 			expect(hasUserVotedResponse.errors).toEqual(undefined);
 			expect(hasUserVotedResponse.data.hasUserVoted?.type).toEqual("down_vote");
+			expect(hasUserVotedResponse.data.hasUserVoted?.hasVoted).toEqual(true);
 		});
 	});
 });
