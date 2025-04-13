@@ -50,41 +50,43 @@ builder.queryField("hasUserVoted", (t) =>
 				});
 			}
 			const currentUserId = ctx.currentClient.user.id;
-			const [currentUser, postWithOrganization, existingPostVote] = await Promise.all([
-				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-				}),
-				ctx.drizzleClient.query.postsTable.findFirst({
-					with: {
-						organization: {
-							columns: {
-								countryCode: true,
-							},
-							with: {
-								membershipsWhereOrganization: {
-									columns: {
-										role: true,
+			const [currentUser, postWithOrganization, existingPostVote] =
+				await Promise.all([
+					ctx.drizzleClient.query.usersTable.findFirst({
+						columns: {
+							role: true,
+						},
+						where: (fields, operators) =>
+							operators.eq(fields.id, currentUserId),
+					}),
+					ctx.drizzleClient.query.postsTable.findFirst({
+						with: {
+							organization: {
+								columns: {
+									countryCode: true,
+								},
+								with: {
+									membershipsWhereOrganization: {
+										columns: {
+											role: true,
+										},
+										where: (fields, operators) =>
+											operators.eq(fields.memberId, currentUserId),
 									},
-									where: (fields, operators) =>
-										operators.eq(fields.memberId, currentUserId),
 								},
 							},
 						},
-					},
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.postId),
-				}),
-				await ctx.drizzleClient.query.postVotesTable.findFirst({
-					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.postId, parsedArgs.input.postId),
-							operators.eq(fields.creatorId, currentUserId),
-						),
-				})
-			]);
+						where: (fields, operators) =>
+							operators.eq(fields.id, parsedArgs.input.postId),
+					}),
+					await ctx.drizzleClient.query.postVotesTable.findFirst({
+						where: (fields, operators) =>
+							operators.and(
+								operators.eq(fields.postId, parsedArgs.input.postId),
+								operators.eq(fields.creatorId, currentUserId),
+							),
+					}),
+				]);
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -105,7 +107,7 @@ builder.queryField("hasUserVoted", (t) =>
 				});
 			}
 			const currentUserOrganizationMembership =
-			postWithOrganization.organization.membershipsWhereOrganization[0];
+				postWithOrganization.organization.membershipsWhereOrganization[0];
 			if (currentUserOrganizationMembership === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -119,7 +121,6 @@ builder.queryField("hasUserVoted", (t) =>
 				});
 			}
 
-			
 			if (existingPostVote === undefined) {
 				return {
 					voteType: null,

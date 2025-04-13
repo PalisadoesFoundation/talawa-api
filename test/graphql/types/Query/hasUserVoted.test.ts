@@ -333,7 +333,9 @@ suite("Query: hasUserVoted", () => {
 			);
 			expect(hasUserVotedResponse.data.hasUserVoted).not.toEqual(null);
 			expect(hasUserVotedResponse.errors).toEqual(undefined);
-			expect(hasUserVotedResponse.data.hasUserVoted?.voteType).toEqual("down_vote");
+			expect(hasUserVotedResponse.data.hasUserVoted?.voteType).toEqual(
+				"down_vote",
+			);
 			expect(hasUserVotedResponse.data.hasUserVoted?.hasVoted).toEqual(true);
 		});
 	});
