@@ -338,7 +338,7 @@ suite("Query: hasUserVoted", () => {
 			expect(hasUserVotedResponse.errors).toEqual(undefined);
 			expect(hasUserVotedResponse.data.hasUserVoted?.type).toEqual(null);
 			expect(hasUserVotedResponse.data.hasUserVoted?.hasVoted).toEqual(false);
-		})
+		});
 		test("allows access if user is a member of the organization", async () => {
 			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
 			// create a post

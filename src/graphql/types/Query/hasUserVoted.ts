@@ -73,7 +73,6 @@ builder.queryField("hasUserVoted", (t) =>
 								},
 							},
 						},
-						
 					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.postId),
@@ -113,19 +112,19 @@ builder.queryField("hasUserVoted", (t) =>
 				});
 			}
 
-			const existingPostVote =await ctx.drizzleClient.query.postVotesTable.findFirst({
-				where: (fields, operators) =>
-					operators.and(
-						operators.eq(fields.postId, parsedArgs.input.postId),
-						operators.eq(fields.creatorId, currentUserId),
-						
-					),
-			})
-			if(existingPostVote ===undefined){
+			const existingPostVote =
+				await ctx.drizzleClient.query.postVotesTable.findFirst({
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.postId, parsedArgs.input.postId),
+							operators.eq(fields.creatorId, currentUserId),
+						),
+				});
+			if (existingPostVote === undefined) {
 				return {
-					type : null,
-					hasVoted : false,
-				}
+					type: null,
+					hasVoted: false,
+				};
 			}
 			return {
 				type: existingPostVote.type,
