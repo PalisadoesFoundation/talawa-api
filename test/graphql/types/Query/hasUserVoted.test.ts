@@ -243,7 +243,28 @@ suite("Query: hasUserVoted", () => {
 			);
 		});
 	});
-
+	suite("Resource Existence Tests", () => {
+		test("returns error if post does not exist", async () => {
+			const { cachedAdminToken: adminAuthToken } = await getAdminAuthToken();
+			const hasUserVotedResponse = await mercuriusClient.query(
+				Query_hasUserVoted,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							postId: faker.string.uuid(),
+						},
+					},
+				},
+			);
+			expect(hasUserVotedResponse.data.hasUserVoted).toEqual(null);
+			expect(hasUserVotedResponse.errors?.[0]?.extensions?.code).toBe(
+				"arguments_associated_resources_not_found",
+			);
+		});
+	});
 	suite("Authentication Tests", () => {
 		test("returns error if user is not a member of the organization", async () => {
 			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
