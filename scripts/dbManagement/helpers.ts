@@ -499,20 +499,37 @@ export async function insertCollections(
 				}
 
 				case "events": {
+					const now = new Date();
 					const events = JSON.parse(fileContent).map(
-						(event: {
-							id: string;
-							createdAt: string | number | Date;
-							updatedAt: string | number | Date;
-							startAt: string | number | Date;
-							endAt: string | number | Date;
-						}) => ({
-							...event,
-							createdAt: parseDate(event.createdAt),
-							updatedAt: parseDate(event.updatedAt),
-							startAt: parseDate(event.startAt),
-							endAt: parseDate(event.endAt),
-						}),
+						(
+							event: {
+								id: string;
+								createdAt: string | number | Date;
+								updatedAt: string | number | Date;
+								startAt: string | number | Date;
+								endAt: string | number | Date;
+							},
+							index: number,
+						) => {
+							const start = new Date(
+								now.getFullYear(),
+								now.getMonth(),
+								now.getDate() + index,
+								9,
+								0,
+								0,
+							);
+
+							const end = new Date(start.getTime() + 2 * 24 * 60 * 60 * 1000);
+
+							return {
+								...event,
+								createdAt: start,
+								startAt: start,
+								endAt: end,
+								updatedAt: null,
+							};
+						},
 					) as (typeof schema.eventsTable.$inferInsert)[];
 
 					await checkAndInsertData(
@@ -652,6 +669,7 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "comment_votes", table: schema.commentVotesTable },
 			{ name: "action_items", table: schema.actionsTable },
 			{ name: "events", table: schema.eventsTable },
+			{ name: "action_categories", table: schema.actionCategoriesTable },
 		];
 
 		console.log(`\nRecord Counts ${stage} Import:\n`);

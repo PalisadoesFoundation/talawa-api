@@ -6,10 +6,9 @@ import {
 	eq,
 	exists,
 	gt,
+	isNotNull,
 	lt,
-	ne,
 	or,
-	sql,
 } from "drizzle-orm";
 import { z } from "zod";
 import {
@@ -115,7 +114,7 @@ Comment.implement({
 										.from(commentVotesTable)
 										.where(
 											and(
-												ne(commentVotesTable.creatorId, sql`${null}`),
+												isNotNull(commentVotesTable.creatorId),
 												eq(commentVotesTable.createdAt, cursor.createdAt),
 												eq(commentVotesTable.creatorId, cursor.creatorId),
 												eq(commentVotesTable.commentId, parent.id),
@@ -123,7 +122,7 @@ Comment.implement({
 											),
 										),
 								),
-								ne(commentVotesTable.creatorId, sql`${null}`),
+								isNotNull(commentVotesTable.creatorId),
 								eq(commentVotesTable.commentId, parent.id),
 								eq(commentVotesTable.type, "up_vote"),
 								or(
@@ -136,7 +135,7 @@ Comment.implement({
 							);
 						} else {
 							where = and(
-								ne(commentVotesTable.creatorId, sql`${null}`),
+								isNotNull(commentVotesTable.creatorId),
 								eq(commentVotesTable.commentId, parent.id),
 								eq(commentVotesTable.type, "up_vote"),
 							);
@@ -150,7 +149,7 @@ Comment.implement({
 										.from(commentVotesTable)
 										.where(
 											and(
-												ne(commentVotesTable.creatorId, sql`${null}`),
+												isNotNull(commentVotesTable.creatorId),
 												eq(commentVotesTable.createdAt, cursor.createdAt),
 												eq(commentVotesTable.creatorId, cursor.creatorId),
 												eq(commentVotesTable.commentId, parent.id),
@@ -158,7 +157,7 @@ Comment.implement({
 											),
 										),
 								),
-								ne(commentVotesTable.creatorId, sql`${null}`),
+								isNotNull(commentVotesTable.creatorId),
 								eq(commentVotesTable.commentId, parent.id),
 								eq(commentVotesTable.type, "up_vote"),
 								or(
@@ -171,7 +170,7 @@ Comment.implement({
 							);
 						} else {
 							where = and(
-								ne(commentVotesTable.creatorId, sql`${null}`),
+								isNotNull(commentVotesTable.creatorId),
 								eq(commentVotesTable.commentId, parent.id),
 								eq(commentVotesTable.type, "up_vote"),
 							);
