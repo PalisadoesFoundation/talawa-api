@@ -239,6 +239,10 @@ suite.concurrent("insertCollections", () => {
 				"post_attachments",
 				"comments",
 				"comment_votes",
+				"action_categories",
+				"events",
+				"action_items",
+				"membership_requests",
 			]);
 			expect(result).toBe(true);
 		},
