@@ -27,7 +27,6 @@ const advertisementsArgumentsSchema = createGraphQLConnectionWithWhereSchema(
 	advertisementWhereSchema,
 ).transform((arg, ctx) => {
 	const transformedArg = transformGraphQLConnectionArgumentsWithWhere(
-		// Type assertion to match the expected type
 		{ ...arg, where: arg.where || {} } as z.infer<
 			typeof defaultGraphQLConnectionArgumentsSchema
 		> & { where: unknown },
