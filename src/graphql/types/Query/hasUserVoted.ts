@@ -50,7 +50,7 @@ builder.queryField("hasUserVoted", (t) =>
 				});
 			}
 			const currentUserId = ctx.currentClient.user.id;
-			const [currentUser, existingPost] = await Promise.all([
+			const [currentUser, postWithOrganization, existingPostVote] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
@@ -77,6 +77,13 @@ builder.queryField("hasUserVoted", (t) =>
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.postId),
 				}),
+				await ctx.drizzleClient.query.postVotesTable.findFirst({
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.postId, parsedArgs.input.postId),
+							operators.eq(fields.creatorId, currentUserId),
+						),
+				})
 			]);
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
@@ -85,7 +92,7 @@ builder.queryField("hasUserVoted", (t) =>
 					},
 				});
 			}
-			if (existingPost === undefined) {
+			if (postWithOrganization === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -98,7 +105,7 @@ builder.queryField("hasUserVoted", (t) =>
 				});
 			}
 			const currentUserOrganizationMembership =
-				existingPost.organization.membershipsWhereOrganization[0];
+			postWithOrganization.organization.membershipsWhereOrganization[0];
 			if (currentUserOrganizationMembership === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -112,22 +119,15 @@ builder.queryField("hasUserVoted", (t) =>
 				});
 			}
 
-			const existingPostVote =
-				await ctx.drizzleClient.query.postVotesTable.findFirst({
-					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.postId, parsedArgs.input.postId),
-							operators.eq(fields.creatorId, currentUserId),
-						),
-				});
+			
 			if (existingPostVote === undefined) {
 				return {
-					type: null,
+					voteType: null,
 					hasVoted: false,
 				};
 			}
 			return {
-				type: existingPostVote.type,
+				voteType: existingPostVote.type,
 				hasVoted: true,
 			};
 		},

@@ -5,7 +5,7 @@ import { PostVoteType } from "../../enums/PostVoteType";
 
 export const HasUserVoted = builder.objectRef<{
 	hasVoted: boolean;
-	type: z.infer<typeof postVoteTypeEnum> | null;
+	voteType: z.infer<typeof postVoteTypeEnum> | null;
 }>("HasUserVoted");
 
 HasUserVoted.implement({
@@ -16,7 +16,7 @@ HasUserVoted.implement({
 			description: "Indicates if the user has voted",
 			resolve: (parent) => parent.hasVoted,
 		}),
-		type: t.expose("type", {
+		voteType: t.expose("voteType", {
 			type: PostVoteType,
 			nullable: true,
 			description: "Type of the post vote, null if no vote exists",

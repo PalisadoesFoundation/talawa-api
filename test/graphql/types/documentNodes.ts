@@ -1057,7 +1057,7 @@ export const Query_hasUserVoted = gql(`
   query Query_hasUserVoted($input: QueryHasUserVotedInput!) {
     hasUserVoted(input: $input)
     {
-      type
+      voteType
       hasVoted
     }
   }

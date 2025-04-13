@@ -778,7 +778,7 @@ type HasUserVoted {
   hasVoted: Boolean!
 
   """Type of the post vote, null if no vote exists"""
-  type: PostVoteType
+  voteType: PostVoteType
 }
 
 """

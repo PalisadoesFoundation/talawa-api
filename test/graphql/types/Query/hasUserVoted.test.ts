@@ -298,7 +298,7 @@ suite("Query: hasUserVoted", () => {
 			);
 			expect(hasUserVotedResponse.data.hasUserVoted).not.toEqual(null);
 			expect(hasUserVotedResponse.errors).toEqual(undefined);
-			expect(hasUserVotedResponse.data.hasUserVoted?.type).toEqual(null);
+			expect(hasUserVotedResponse.data.hasUserVoted?.voteType).toEqual(null);
 			expect(hasUserVotedResponse.data.hasUserVoted?.hasVoted).toEqual(false);
 		});
 		test("allows access if user is a member of the organization", async () => {
@@ -333,7 +333,7 @@ suite("Query: hasUserVoted", () => {
 			);
 			expect(hasUserVotedResponse.data.hasUserVoted).not.toEqual(null);
 			expect(hasUserVotedResponse.errors).toEqual(undefined);
-			expect(hasUserVotedResponse.data.hasUserVoted?.type).toEqual("down_vote");
+			expect(hasUserVotedResponse.data.hasUserVoted?.voteType).toEqual("down_vote");
 			expect(hasUserVotedResponse.data.hasUserVoted?.hasVoted).toEqual(true);
 		});
 	});
