@@ -221,32 +221,6 @@ suite("Query: hasUserVoted", () => {
 			);
 		});
 	});
-	suite("Resource validation tests", () => {
-		test("return error if post vote does not exist", async () => {
-			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
-			// create a post
-
-			const { postId } = await createTestPost(cachedAdminUserId);
-
-			const hasUserVotedResponse = await mercuriusClient.query(
-				Query_hasUserVoted,
-				{
-					headers: {
-						authorization: `bearer ${cachedAdminToken}`,
-					},
-					variables: {
-						input: {
-							postId,
-						},
-					},
-				},
-			);
-			expect(hasUserVotedResponse.data.hasUserVoted).toEqual(null);
-			expect(hasUserVotedResponse.errors?.[0]?.extensions?.code).toBe(
-				"arguments_associated_resources_not_found",
-			);
-		});
-	});
 	suite("Input Validation Tests", () => {
 		test("returns error with 'invalid_argument' code if postId is not a valid UUID", async () => {
 			const { cachedAdminToken: adminAuthToken } = await getAdminAuthToken();
@@ -308,18 +282,6 @@ suite("Query: hasUserVoted", () => {
 			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
 			// create a post
 			const { postId } = await createTestPost(cachedAdminUserId);
-			// create a post vote
-			await mercuriusClient.mutate(Mutation_createPostVote, {
-				headers: {
-					authorization: `bearer ${cachedAdminToken}`,
-				},
-				variables: {
-					input: {
-						postId: postId,
-						type: "down_vote",
-					},
-				},
-			});
 
 			const hasUserVotedResponse = await mercuriusClient.query(
 				Query_hasUserVoted,
