@@ -3,6 +3,7 @@ import readline from "node:readline";
 import * as schema from "src/drizzle/schema";
 import type { TestEnvConfig } from "test/envConfigSchema";
 import { beforeAll, expect, suite, test, vi } from "vitest";
+import { uuidv7 } from "uuidv7";
 
 let testEnvConfig: TestEnvConfig;
 let helpers: typeof import("scripts/dbManagement/helpers");
@@ -69,6 +70,29 @@ suite.concurrent("parseDate", () => {
 		expect(helpers.parseDate("invalid-date")).toBeNull();
 		// Test an invalid number (NaN)
 		expect(helpers.parseDate(Number.NaN)).toBeNull();
+	});
+});
+
+suite.concurrent("action item ID generation", () => {
+	test.concurrent("should generate new uuidv7 when ID is not 36 characters", async () => {
+		const actionItem = {
+			id: "short-id",
+			assignedAt: "2024-03-14",
+			completionAt: "2024-03-15",
+			createdAt: "2024-03-13",
+			updaterId: "user-123"
+		};
+
+		const result = {
+			...actionItem,
+			id: actionItem.id.length === 36 ? actionItem.id : uuidv7(),
+			assignedAt: helpers.parseDate(actionItem.assignedAt),
+			completionAt: helpers.parseDate(actionItem.completionAt),
+			createdAt: helpers.parseDate(actionItem.createdAt),
+		};
+
+		expect(result.id).not.toBe("short-id");
+		expect(result.id.length).toBe(36);
 	});
 });
 
