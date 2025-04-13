@@ -284,48 +284,55 @@ suite.concurrent("insertCollections", () => {
 		},
 	);
 
-	test.concurrent("should generate new uuidv7 for action items with short IDs", async () => {
+	test.concurrent(
+		"should generate new uuidv7 for action items with short IDs",
+		async () => {
+			const mockActionItem = {
+				id: "short-id",
+				assignedAt: "2024-03-14",
+				completionAt: "2024-03-15",
+				createdAt: "2024-03-13",
+				updatedAt: "2024-03-13",
+				preCompletionNotes: "Test notes",
+				postCompletionNotes: "",
+				organizationId: "org-123",
+				categoryId: "cat-123",
+				eventId: null,
+				assigneeId: "user-123",
+				creatorId: "user-123",
+				updaterId: "user-123",
+				isCompleted: false,
+			};
 
-		const mockActionItem = {
-			id: "short-id",
-			assignedAt: "2024-03-14",
-			completionAt: "2024-03-15",
-			createdAt: "2024-03-13",
-			updatedAt: "2024-03-13",
-			preCompletionNotes: "Test notes",
-			postCompletionNotes: "",
-			organizationId: "org-123",
-			categoryId: "cat-123",
-			eventId: null,
-			assigneeId: "user-123",
-			creatorId: "user-123",
-			updaterId: "user-123",
-			isCompleted: false
-		};
+			const originalReadFile = fs.readFile;
+			fs.readFile = vi.fn().mockImplementation((path) => {
+				if (path.includes("action_items.json")) {
+					return Promise.resolve(JSON.stringify([mockActionItem]));
+				}
+				return originalReadFile(path);
+			});
 
-		const originalReadFile = fs.readFile;
-		fs.readFile = vi.fn().mockImplementation((path) => {
-			if (path.includes("action_items.json")) {
-				return Promise.resolve(JSON.stringify([mockActionItem]));
+			let capturedData: (typeof schema.actionsTable.$inferInsert)[] = [];
+			const originalCheckAndInsertData = helpers.checkAndInsertData;
+			helpers.checkAndInsertData = vi.fn().mockImplementation((table, data) => {
+				capturedData = data;
+				return Promise.resolve(true);
+			});
+
+			await helpers.insertCollections(["action_items"]);
+
+			expect(capturedData.length).toBeGreaterThan(0);
+			const firstItem = capturedData[0];
+			if (!firstItem || !firstItem.id) {
+				throw new Error("Expected action item with ID");
 			}
-			return originalReadFile(path);
-		});
+			expect(firstItem.id).not.toBe("short-id");
+			expect(firstItem.id.length).toBe(36);
 
-		let capturedData: any[] = [];
-		const originalCheckAndInsertData = helpers.checkAndInsertData;
-		helpers.checkAndInsertData = vi.fn().mockImplementation((table, data) => {
-			capturedData = data;
-			return Promise.resolve(true);
-		});
-
-		await helpers.insertCollections(["action_items"]);
-
-		expect(capturedData[0].id).not.toBe("short-id");
-		expect(capturedData[0].id.length).toBe(36);
-
-		fs.readFile = originalReadFile;
-		helpers.checkAndInsertData = originalCheckAndInsertData;
-	});
+			fs.readFile = originalReadFile;
+			helpers.checkAndInsertData = originalCheckAndInsertData;
+		},
+	);
 });
 
 suite.concurrent("checkDataSize integration test", () => {
