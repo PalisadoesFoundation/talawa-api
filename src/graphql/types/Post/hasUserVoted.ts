@@ -2,16 +2,24 @@ import type { z } from "zod";
 import type { postVoteTypeEnum } from "~/src/drizzle/enums/postVoteType";
 import { builder } from "~/src/graphql/builder";
 import { PostVoteType } from "../../enums/PostVoteType";
+
 export const HasUserVoted = builder.objectRef<{
-	type: z.infer<typeof postVoteTypeEnum>;
+	hasVoted: boolean;
+	voteType: z.infer<typeof postVoteTypeEnum> | null;
 }>("HasUserVoted");
 
 HasUserVoted.implement({
 	fields: (t) => ({
-		type: t.expose("type", {
-			type: PostVoteType,
+		hasVoted: t.field({
+			type: "Boolean",
 			nullable: false,
-			description: "Type of the post vote",
+			description: "Indicates if the user has voted",
+			resolve: (parent) => parent.hasVoted,
+		}),
+		voteType: t.expose("voteType", {
+			type: PostVoteType,
+			nullable: true,
+			description: "Type of the post vote, null if no vote exists",
 		}),
 	}),
 });

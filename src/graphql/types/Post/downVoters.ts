@@ -6,10 +6,9 @@ import {
 	eq,
 	exists,
 	gt,
+	isNotNull,
 	lt,
-	ne,
 	or,
-	sql,
 } from "drizzle-orm";
 import { z } from "zod";
 import {
@@ -109,7 +108,7 @@ Post.implement({
 										.from(postVotesTable)
 										.where(
 											and(
-												ne(postVotesTable.creatorId, sql`${null}`),
+												isNotNull(postVotesTable.creatorId),
 												eq(postVotesTable.createdAt, cursor.createdAt),
 												eq(postVotesTable.creatorId, cursor.creatorId),
 												eq(postVotesTable.postId, parent.id),
@@ -117,7 +116,7 @@ Post.implement({
 											),
 										),
 								),
-								ne(postVotesTable.creatorId, sql`${null}`),
+								isNotNull(postVotesTable.creatorId),
 								eq(postVotesTable.postId, parent.id),
 								eq(postVotesTable.type, "down_vote"),
 								or(
@@ -130,7 +129,7 @@ Post.implement({
 							);
 						} else {
 							where = and(
-								ne(postVotesTable.creatorId, sql`${null}`),
+								isNotNull(postVotesTable.creatorId),
 								eq(postVotesTable.postId, parent.id),
 								eq(postVotesTable.type, "down_vote"),
 							);
@@ -144,7 +143,7 @@ Post.implement({
 										.from(postVotesTable)
 										.where(
 											and(
-												ne(postVotesTable.creatorId, sql`${null}`),
+												isNotNull(postVotesTable.creatorId),
 												eq(postVotesTable.createdAt, cursor.createdAt),
 												eq(postVotesTable.creatorId, cursor.creatorId),
 												eq(postVotesTable.postId, parent.id),
@@ -152,7 +151,7 @@ Post.implement({
 											),
 										),
 								),
-								ne(postVotesTable.creatorId, sql`${null}`),
+								isNotNull(postVotesTable.creatorId),
 								eq(postVotesTable.postId, parent.id),
 								eq(postVotesTable.type, "down_vote"),
 								or(
@@ -165,7 +164,7 @@ Post.implement({
 							);
 						} else {
 							where = and(
-								ne(postVotesTable.creatorId, sql`${null}`),
+								isNotNull(postVotesTable.creatorId),
 								eq(postVotesTable.postId, parent.id),
 								eq(postVotesTable.type, "down_vote"),
 							);
