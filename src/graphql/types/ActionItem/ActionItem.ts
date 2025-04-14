@@ -24,7 +24,6 @@ ActionItem.implement({
 			type: "DateTime",
 			nullable: true, // Ensure this is explicitly marked
 		}),
-
 		completionAt: t.expose("completionAt", {
 			description: "Timestamp when the action item was completed.",
 			type: "DateTime",
@@ -37,21 +36,12 @@ ActionItem.implement({
 			description: "Notes added after completing the action item.",
 			nullable: true,
 		}),
-		organizationId: t.exposeID("organizationId", {
-			description: "The ID of the organization the action item belongs to.",
-		}),
+
 		categoryId: t.exposeID("categoryId", {
 			description: "The ID of the category this action item belongs to.",
 			nullable: true,
 		}),
-		eventId: t.exposeID("eventId", {
-			description: "The ID of the associated event, if applicable.",
-			nullable: true,
-		}),
-		assigneeId: t.exposeID("assigneeId", {
-			description: "The ID of the user assigned to this action item.",
-			nullable: true,
-		}),
+
 		creatorId: t.exposeID("creatorId", {
 			description: "The ID of the user who created this action item.",
 			nullable: true,

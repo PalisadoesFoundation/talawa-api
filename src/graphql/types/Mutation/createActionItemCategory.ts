@@ -12,7 +12,6 @@ import {
 	mutationCreateActionItemCategoryInputSchema,
 } from "~/src/graphql/inputs/MutationCreateActionItemCategory";
 
-// Create a Zod validation wrapper that mirrors the shape of your input.
 const mutationCreateActionItemCategoryArgumentsSchema = z.object({
 	input: mutationCreateActionItemCategoryInputSchema,
 });
@@ -21,7 +20,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 	"createActionItemCategory",
 	(t) =>
 		t.field({
-			type: ActionItemCategory, // The return type
+			type: ActionItemCategory, 
 			args: {
 				input: t.arg({
 					description:

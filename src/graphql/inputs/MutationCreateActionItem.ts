@@ -1,14 +1,13 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 
-// Zod schema for createActionItem input payload
 export const mutationCreateActionItemInputSchema = z.object({
 	categoryId: z.string().uuid(),
 	assigneeId: z.string().uuid(),
 	preCompletionNotes: z.string().optional(),
 	eventId: z.string().uuid().optional(),
 	organizationId: z.string().uuid(),
-	assignedAt: z.string().optional(), // Optional ISO string. Defaults to current date-time if not provided.
+	assignedAt: z.string().optional(),
 });
 
 export const MutationCreateActionItemInput = builder
