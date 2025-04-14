@@ -717,3 +717,57 @@ export const Query_blockedUsers = gql(`
     }
   }
 `);
+
+export const Query_advertisements = gql(`
+  query OrganizationAdvertisements(
+    $id: String!
+    $first: Int
+    $last: Int
+    $after: String
+    $before: String
+    $where: AdvertisementWhereInput
+  ) {
+    organization(input: { id: $id }) {
+      advertisements(
+        first: $first
+        last: $last
+        after: $after
+        before: $before
+        where: $where
+      ) {
+        edges {
+          node {
+            createdAt
+            description
+            organization {
+              id
+            }
+            endAt
+            id
+            name
+            startAt
+            type
+            attachments {
+              mimeType
+              url
+            }
+          }
+        }
+        pageInfo {
+          startCursor
+          endCursor
+          hasNextPage
+          hasPreviousPage
+        }
+      }
+    }
+  }
+`);
+
+export const Mutation_createAdvertisement = gql(`
+  mutation Mutation_createAd($input: MutationCreateAdvertisementInput!) {
+    createAdvertisement(input: $input) {
+      id
+      }
+  }
+`);

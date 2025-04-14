@@ -221,32 +221,6 @@ suite("Query: hasUserVoted", () => {
 			);
 		});
 	});
-	suite("Resource validation tests", () => {
-		test("return error if post vote does not exist", async () => {
-			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
-			// create a post
-
-			const { postId } = await createTestPost(cachedAdminUserId);
-
-			const hasUserVotedResponse = await mercuriusClient.query(
-				Query_hasUserVoted,
-				{
-					headers: {
-						authorization: `bearer ${cachedAdminToken}`,
-					},
-					variables: {
-						input: {
-							postId,
-						},
-					},
-				},
-			);
-			expect(hasUserVotedResponse.data.hasUserVoted).toEqual(null);
-			expect(hasUserVotedResponse.errors?.[0]?.extensions?.code).toBe(
-				"arguments_associated_resources_not_found",
-			);
-		});
-	});
 	suite("Input Validation Tests", () => {
 		test("returns error with 'invalid_argument' code if postId is not a valid UUID", async () => {
 			const { cachedAdminToken: adminAuthToken } = await getAdminAuthToken();
@@ -269,7 +243,28 @@ suite("Query: hasUserVoted", () => {
 			);
 		});
 	});
-
+	suite("Resource Existence Tests", () => {
+		test("returns error if post does not exist", async () => {
+			const { cachedAdminToken: adminAuthToken } = await getAdminAuthToken();
+			const hasUserVotedResponse = await mercuriusClient.query(
+				Query_hasUserVoted,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						input: {
+							postId: faker.string.uuid(),
+						},
+					},
+				},
+			);
+			expect(hasUserVotedResponse.data.hasUserVoted).toEqual(null);
+			expect(hasUserVotedResponse.errors?.[0]?.extensions?.code).toBe(
+				"arguments_associated_resources_not_found",
+			);
+		});
+	});
 	suite("Authentication Tests", () => {
 		test("returns error if user is not a member of the organization", async () => {
 			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
@@ -277,17 +272,6 @@ suite("Query: hasUserVoted", () => {
 			const { postId, organizationId } =
 				await createTestPost(cachedAdminUserId);
 
-			await mercuriusClient.mutate(Mutation_createPostVote, {
-				headers: {
-					authorization: `bearer ${cachedAdminToken}`,
-				},
-				variables: {
-					input: {
-						postId: postId,
-						type: "down_vote",
-					},
-				},
-			});
 			await server.drizzleClient
 				.delete(organizationMembershipsTable)
 				.where(
@@ -315,7 +299,29 @@ suite("Query: hasUserVoted", () => {
 				"unauthorized_action_on_arguments_associated_resources",
 			);
 		});
+		test("hasVoted in hasUserVoted is false if user has not voted", async () => {
+			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
+			// create a post
+			const { postId } = await createTestPost(cachedAdminUserId);
 
+			const hasUserVotedResponse = await mercuriusClient.query(
+				Query_hasUserVoted,
+				{
+					headers: {
+						authorization: `bearer ${cachedAdminToken}`,
+					},
+					variables: {
+						input: {
+							postId,
+						},
+					},
+				},
+			);
+			expect(hasUserVotedResponse.data.hasUserVoted).not.toEqual(null);
+			expect(hasUserVotedResponse.errors).toEqual(undefined);
+			expect(hasUserVotedResponse.data.hasUserVoted?.voteType).toEqual(null);
+			expect(hasUserVotedResponse.data.hasUserVoted?.hasVoted).toEqual(false);
+		});
 		test("allows access if user is a member of the organization", async () => {
 			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
 			// create a post
@@ -348,7 +354,10 @@ suite("Query: hasUserVoted", () => {
 			);
 			expect(hasUserVotedResponse.data.hasUserVoted).not.toEqual(null);
 			expect(hasUserVotedResponse.errors).toEqual(undefined);
-			expect(hasUserVotedResponse.data.hasUserVoted?.type).toEqual("down_vote");
+			expect(hasUserVotedResponse.data.hasUserVoted?.voteType).toEqual(
+				"down_vote",
+			);
+			expect(hasUserVotedResponse.data.hasUserVoted?.hasVoted).toEqual(true);
 		});
 	});
 });

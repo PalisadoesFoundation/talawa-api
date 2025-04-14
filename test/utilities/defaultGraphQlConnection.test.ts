@@ -333,8 +333,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges[3]?.node.id).toBe("4");
 			expect(result.pageInfo.hasNextPage).toBe(true);
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
-			expect(result.pageInfo.startCursor).toBe("4");
-			expect(result.pageInfo.endCursor).toBe("1");
+			expect(result.pageInfo.startCursor).toBe("1");
+			expect(result.pageInfo.endCursor).toBe("4");
 		});
 
 		test("transforms forward pagination with hasNextPage=false", () => {
@@ -354,8 +354,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges).toHaveLength(5);
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
-			expect(result.pageInfo.startCursor).toBe("5");
-			expect(result.pageInfo.endCursor).toBe("1");
+			expect(result.pageInfo.startCursor).toBe("1");
+			expect(result.pageInfo.endCursor).toBe("5");
 		});
 
 		test("transforms forward pagination with cursor (hasPreviousPage=true)", () => {
@@ -378,8 +378,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges).toHaveLength(3);
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(true);
-			expect(result.pageInfo.startCursor).toBe("5");
-			expect(result.pageInfo.endCursor).toBe("3");
+			expect(result.pageInfo.startCursor).toBe("3");
+			expect(result.pageInfo.endCursor).toBe("5");
 		});
 
 		test("transforms backward pagination with hasPreviousPage=true", () => {
@@ -401,8 +401,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges[3]?.node.id).toBe("1");
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(true);
-			expect(result.pageInfo.startCursor).toBe("1");
-			expect(result.pageInfo.endCursor).toBe("4");
+			expect(result.pageInfo.startCursor).toBe("4");
+			expect(result.pageInfo.endCursor).toBe("1");
 		});
 
 		test("transforms backward pagination with hasPreviousPage=false", () => {
@@ -422,8 +422,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges).toHaveLength(5);
 			expect(result.pageInfo.hasNextPage).toBe(false);
 			expect(result.pageInfo.hasPreviousPage).toBe(false);
-			expect(result.pageInfo.startCursor).toBe("1");
-			expect(result.pageInfo.endCursor).toBe("5");
+			expect(result.pageInfo.startCursor).toBe("5");
+			expect(result.pageInfo.endCursor).toBe("1");
 		});
 
 		test("transforms backward pagination with cursor (hasNextPage=true)", () => {
@@ -448,8 +448,8 @@ suite("defaultGraphQLConnection utilities", () => {
 			expect(result.edges[1]?.node.id).toBe("1");
 			expect(result.pageInfo.hasNextPage).toBe(true);
 			expect(result.pageInfo.hasPreviousPage).toBe(true);
-			expect(result.pageInfo.startCursor).toBe("1");
-			expect(result.pageInfo.endCursor).toBe("2");
+			expect(result.pageInfo.startCursor).toBe("2");
+			expect(result.pageInfo.endCursor).toBe("1");
 		});
 
 		test("handles empty results", () => {
