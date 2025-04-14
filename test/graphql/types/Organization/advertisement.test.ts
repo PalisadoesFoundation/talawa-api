@@ -22,7 +22,7 @@ assertToBeNonNullish(signInResult.data?.signIn);
 const authToken = signInResult.data.signIn.authenticationToken;
 assertToBeNonNullish(authToken);
 
-suite("Organization.blockedUsers Field", () => {
+suite("Organization.advertisement Field", () => {
 	suite("when the client is not authenticated", () => {
 		test("should return an error with unauthenticated extensions code", async () => {
 			const createOrgResult = await mercuriusClient.mutate(
