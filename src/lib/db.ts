@@ -32,10 +32,10 @@ export const db = drizzle(client);
 
 // ✅ Graceful Shutdown Handler
 const shutdownHandler = async () => {
-	console.log("🛑 Closing database connections...");
+	console.log("Closing database connections...");
 	try {
 		await client.end();
-		console.log("✅ Database connections closed.");
+		console.log("Database connections closed.");
 	} catch (error) {
 		console.error("❌ Error closing database connections:", error);
 	}
