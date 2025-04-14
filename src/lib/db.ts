@@ -10,8 +10,8 @@ let client: postgres.Sql;
 try {
 	client = postgres(DATABASE_URL, {
 		prepare: false,
-		max: 10, // ✅ Connection pooling
-		idle_timeout: 30, // ✅ Auto-close idle connections
+		max: 10, // Connection pooling
+		idle_timeout: 30, // auto-close idle connections
 		ssl: process.env.API_POSTGRES_SSL_MODE === "true" ? "allow" : undefined,
 		...(process.env.NODE_ENV === "development" && {
 			debug: (connection, query, params) => {
