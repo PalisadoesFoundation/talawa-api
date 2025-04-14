@@ -19,7 +19,7 @@ import { Organization } from "./Organization";
 
 const advertisementWhereSchema = z
 	.object({
-		isCompleted: z.boolean(),
+		isCompleted: z.boolean().optional(),
 	})
 	.optional();
 
@@ -75,6 +75,7 @@ Organization.implement({
 				args: {
 					where: t.arg({
 						type: AdvertisementWhereInput,
+						description: "Filter criteria for advertisements",
 						required: false,
 					}),
 				},
