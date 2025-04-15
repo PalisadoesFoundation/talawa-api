@@ -290,53 +290,59 @@ suite.concurrent("insertCollections", () => {
 			const userId = uuidv7();
 			await helpers.checkAndInsertData(
 				schema.usersTable,
-				[{
-					id: userId,
-					emailAddress: "test@example.com",
-					name: "Test User",
-					passwordHash: "hashed_password_123",
-					isEmailAddressVerified: true,
-					role: "regular",
-					createdAt: new Date(),
-					updatedAt: new Date()
-				}],
+				[
+					{
+						id: userId,
+						emailAddress: "test@example.com",
+						name: "Test User",
+						passwordHash: "hashed_password_123",
+						isEmailAddressVerified: true,
+						role: "regular",
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+				],
 				schema.usersTable.id,
-				1000
+				1000,
 			);
 
 			const organizationId = "123e4567-e89b-12d3-a456-426614174000";
 			await helpers.checkAndInsertData(
 				schema.organizationsTable,
-				[{
-					id: organizationId,
-					name: "Test Organization",
-					description: "Test organization description",
-					createdAt: new Date(),
-					updatedAt: new Date(),
-					creatorId: userId,
-					updaterId: userId,
-					isUserRegistrationRequired: false
-				}],
+				[
+					{
+						id: organizationId,
+						name: "Test Organization",
+						description: "Test organization description",
+						createdAt: new Date(),
+						updatedAt: new Date(),
+						creatorId: userId,
+						updaterId: userId,
+						isUserRegistrationRequired: false,
+					},
+				],
 				schema.organizationsTable.id,
-				1000
+				1000,
 			);
 
 			const categoryId = "123e4567-e89b-12d3-a456-426614174001";
 			await helpers.checkAndInsertData(
 				schema.actionCategoriesTable,
-				[{
-					id: categoryId,
-					name: "Test Category",
-					description: "Test category description",
-					createdAt: new Date(),
-					updatedAt: new Date(),
-					creatorId: userId,
-					updaterId: userId,
-					organizationId: organizationId,
-					isDisabled: false
-				}],
+				[
+					{
+						id: categoryId,
+						name: "Test Category",
+						description: "Test category description",
+						createdAt: new Date(),
+						updatedAt: new Date(),
+						creatorId: userId,
+						updaterId: userId,
+						organizationId: organizationId,
+						isDisabled: false,
+					},
+				],
 				schema.actionCategoriesTable.id,
-				1000
+				1000,
 			);
 			const mockActionItem = {
 				id: "short-id",
@@ -356,10 +362,12 @@ suite.concurrent("insertCollections", () => {
 			};
 
 			let capturedData: (typeof schema.actionsTable.$inferInsert)[] = [];
-			const checkAndInsertDataSpy = vi.spyOn(helpers, 'checkAndInsertData').mockImplementation((table, data) => {
-				capturedData = data as (typeof schema.actionsTable.$inferInsert)[];
-				return Promise.resolve(true);
-			});
+			const checkAndInsertDataSpy = vi
+				.spyOn(helpers, "checkAndInsertData")
+				.mockImplementation((table, data) => {
+					capturedData = data as (typeof schema.actionsTable.$inferInsert)[];
+					return Promise.resolve(true);
+				});
 
 			const actionItemWithUuid = {
 				...mockActionItem,
@@ -374,7 +382,7 @@ suite.concurrent("insertCollections", () => {
 				schema.actionsTable,
 				[actionItemWithUuid],
 				schema.actionsTable.id,
-				1000
+				1000,
 			);
 
 			expect(capturedData.length).toBeGreaterThan(0);
