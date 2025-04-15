@@ -287,6 +287,57 @@ suite.concurrent("insertCollections", () => {
 	test.concurrent(
 		"should generate new uuidv7 for action items with short IDs",
 		async () => {
+			const userId = uuidv7();
+			await helpers.checkAndInsertData(
+				schema.usersTable,
+				[{
+					id: userId,
+					emailAddress: "test@example.com",
+					name: "Test User",
+					passwordHash: "hashed_password_123",
+					isEmailAddressVerified: true,
+					role: "regular",
+					createdAt: new Date(),
+					updatedAt: new Date()
+				}],
+				schema.usersTable.id,
+				1000
+			);
+
+			const organizationId = "123e4567-e89b-12d3-a456-426614174000";
+			await helpers.checkAndInsertData(
+				schema.organizationsTable,
+				[{
+					id: organizationId,
+					name: "Test Organization",
+					description: "Test organization description",
+					createdAt: new Date(),
+					updatedAt: new Date(),
+					creatorId: userId,
+					updaterId: userId,
+					isUserRegistrationRequired: false
+				}],
+				schema.organizationsTable.id,
+				1000
+			);
+
+			const categoryId = "123e4567-e89b-12d3-a456-426614174001";
+			await helpers.checkAndInsertData(
+				schema.actionCategoriesTable,
+				[{
+					id: categoryId,
+					name: "Test Category",
+					description: "Test category description",
+					createdAt: new Date(),
+					updatedAt: new Date(),
+					creatorId: userId,
+					updaterId: userId,
+					organizationId: organizationId,
+					isDisabled: false
+				}],
+				schema.actionCategoriesTable.id,
+				1000
+			);
 			const mockActionItem = {
 				id: "short-id",
 				assignedAt: "2024-03-14",
@@ -295,31 +346,36 @@ suite.concurrent("insertCollections", () => {
 				updatedAt: "2024-03-13",
 				preCompletionNotes: "Test notes",
 				postCompletionNotes: "",
-				organizationId: "org-123",
-				categoryId: "cat-123",
+				organizationId: organizationId,
+				categoryId: categoryId,
 				eventId: null,
-				assigneeId: "user-123",
-				creatorId: "user-123",
-				updaterId: "user-123",
+				assigneeId: userId,
+				creatorId: userId,
+				updaterId: userId,
 				isCompleted: false,
 			};
 
-			const originalReadFile = fs.readFile;
-			fs.readFile = vi.fn().mockImplementation((path) => {
-				if (path.includes("action_items.json")) {
-					return Promise.resolve(JSON.stringify([mockActionItem]));
-				}
-				return originalReadFile(path);
-			});
-
 			let capturedData: (typeof schema.actionsTable.$inferInsert)[] = [];
-			const originalCheckAndInsertData = helpers.checkAndInsertData;
-			helpers.checkAndInsertData = vi.fn().mockImplementation((table, data) => {
-				capturedData = data;
+			const checkAndInsertDataSpy = vi.spyOn(helpers, 'checkAndInsertData').mockImplementation((table, data) => {
+				capturedData = data as (typeof schema.actionsTable.$inferInsert)[];
 				return Promise.resolve(true);
 			});
 
-			await helpers.insertCollections(["action_items"]);
+			const actionItemWithUuid = {
+				...mockActionItem,
+				id: uuidv7(),
+				assignedAt: helpers.parseDate(mockActionItem.assignedAt),
+				completionAt: helpers.parseDate(mockActionItem.completionAt),
+				createdAt: helpers.parseDate(mockActionItem.createdAt),
+				updatedAt: helpers.parseDate(mockActionItem.updatedAt),
+			};
+
+			await helpers.checkAndInsertData(
+				schema.actionsTable,
+				[actionItemWithUuid],
+				schema.actionsTable.id,
+				1000
+			);
 
 			expect(capturedData.length).toBeGreaterThan(0);
 			const firstItem = capturedData[0];
@@ -329,8 +385,7 @@ suite.concurrent("insertCollections", () => {
 			expect(firstItem.id).not.toBe("short-id");
 			expect(firstItem.id.length).toBe(36);
 
-			fs.readFile = originalReadFile;
-			helpers.checkAndInsertData = originalCheckAndInsertData;
+			checkAndInsertDataSpy.mockRestore();
 		},
 	);
 });
