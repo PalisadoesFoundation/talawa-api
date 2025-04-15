@@ -312,7 +312,7 @@ suite.concurrent("insertCollections", () => {
 				[
 					{
 						id: organizationId,
-						name: "Test Organization",
+						name: "Test Organizations",
 						description: "Test organization description",
 						createdAt: new Date(),
 						updatedAt: new Date(),
