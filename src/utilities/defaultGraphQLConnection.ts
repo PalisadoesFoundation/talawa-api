@@ -309,8 +309,8 @@ export const transformToDefaultGraphQLConnection = <
 		}
 	}
 
-	const endCursor = connection.edges[0]?.cursor;
-	const startCursor = connection.edges[connection.edges.length - 1]?.cursor;
+	const startCursor = connection.edges[0]?.cursor;
+	const endCursor = connection.edges[connection.edges.length - 1]?.cursor;
 	connection.pageInfo.endCursor = endCursor !== undefined ? endCursor : null;
 	connection.pageInfo.startCursor =
 		startCursor !== undefined ? startCursor : null;

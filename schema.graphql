@@ -140,6 +140,12 @@ enum AdvertisementType {
   pop_up
 }
 
+"""Filter criteria for organization advertisements"""
+input AdvertisementWhereInput {
+  """Filter advertisements by completion status"""
+  isCompleted: Boolean
+}
+
 type AgendaFolder {
   """
   GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
@@ -774,8 +780,11 @@ type GetUrlResponse {
 }
 
 type HasUserVoted {
-  """Type of the post vote"""
-  type: PostVoteType!
+  """Indicates if the user has voted"""
+  hasVoted: Boolean!
+
+  """Type of the post vote, null if no vote exists"""
+  voteType: PostVoteType
 }
 
 """
@@ -2884,7 +2893,15 @@ type Organization {
   """
   GraphQL connection to traverse through the advertisements belonging to the organization.
   """
-  advertisements(after: String, before: String, first: Int, last: Int): OrganizationAdvertisementsConnection
+  advertisements(
+    after: String
+    before: String
+    first: Int
+    last: Int
+
+    """Filter criteria for advertisements"""
+    where: AdvertisementWhereInput
+  ): OrganizationAdvertisementsConnection
 
   """Mime type of the avatar of the organization."""
   avatarMimeType: String
@@ -3176,25 +3193,6 @@ A field whose value conforms to the standard E.164 format as specified in: https
 """
 scalar PhoneNumber
 
-"""
-Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
-"""
-enum QueryPledgeOrderByInput {
-  amount_ASC
-  amount_DESC
-  endDate_ASC
-  endDate_DESC
-}
-
-"""Filter criteria for Pledges"""
-input QueryPledgeWhereInput {
-  """Filter pledges by the name of the creator"""
-  firstName_contains: String
-
-  """Filter pledges by the name of the campaign"""
-  name_contains: String
-}
-
 type Post {
   """Array of attachments."""
   attachments: [PostAttachment!]
@@ -3385,6 +3383,12 @@ type Query {
 
   """Query field to get fund campaign pledge associated to a user."""
   getPledgesByUserId(
+    """Maximum number of results to return."""
+    limit: Int
+
+    """Number of results to skip."""
+    offset: Int
+
     """
     Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
     """
@@ -3539,6 +3543,25 @@ input QueryHasUserVotedInput {
 input QueryOrganizationInput {
   """Global id of the organization."""
   id: String!
+}
+
+"""
+Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
+"""
+enum QueryPledgeOrderByInput {
+  amount_ASC
+  amount_DESC
+  endDate_ASC
+  endDate_DESC
+}
+
+"""Filter criteria for Pledges"""
+input QueryPledgeWhereInput {
+  """Filter pledges by the name of the creator"""
+  firstName_contains: String
+
+  """Filter pledges by the name of the campaign"""
+  name_contains: String
 }
 
 """"""
