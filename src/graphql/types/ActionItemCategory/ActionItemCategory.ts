@@ -18,22 +18,8 @@ ActionItemCategory.implement({
 		name: t.exposeString("name", {
 			description: "The name of the action item category.",
 		}),
-		organizationId: t.exposeID("organizationId", {
-			description: "Identifier for the organization this category belongs to.",
-		}),
-		creatorId: t.exposeID("creatorId", {
-			description: "Identifier for the user who created this category.",
-		}),
 		isDisabled: t.exposeBoolean("isDisabled", {
 			description: "Indicates whether the action item category is disabled.",
-		}),
-		createdAt: t.expose("createdAt", {
-			description: "Timestamp when the category was created.",
-			type: "DateTime",
-		}),
-		updatedAt: t.expose("updatedAt", {
-			description: "Timestamp when the category was last updated.",
-			type: "DateTime",
 		}),
 	}),
 });

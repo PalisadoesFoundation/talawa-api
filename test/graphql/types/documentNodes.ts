@@ -881,23 +881,25 @@ export const Mutation_joinPublicOrganization = gql(`
 `);
 
 export const Mutation_createActionItem = gql(`
-  mutation CreateActionItem($input: MutationCreateActionItemInput!) {
-    createActionItem(input: $input) {
-      id
-      categoryId
-      assigneeId
-      assignedAt
-      completionAt
-      preCompletionNotes
-      postCompletionNotes
-      isCompleted
-      eventId
-      organizationId
-      creatorId
-      updaterId
-      updatedAt
-    }
+ mutation CreateActionItem($input: MutationCreateActionItemInput!) {
+  createActionItem(input: $input) {
+    id
+    # primitives
+    isCompleted
+    preCompletionNotes
+    postCompletionNotes
+    assignedAt
+    completionAt
+    updatedAt
+    category    
+    assignee    
+    event      
+    organization
+    creator     
+    updater      
   }
+}
+
 `);
 
 export const POSTGRES_EVENTS_BY_ORGANIZATION_ID = gql(`
@@ -912,47 +914,51 @@ export const POSTGRES_EVENTS_BY_ORGANIZATION_ID = gql(`
 
 export const UPDATE_ACTION_ITEM_MUTATION = gql(`
   mutation UpdateActionItem($input: MutationUpdateActionItemInput!) {
-    updateActionItem(input: $input) {
-      id
-      isCompleted
-      postCompletionNotes
-      preCompletionNotes
-      categoryId
-      assigneeId
-      updaterId
-    }
+  updateActionItem(input: $input) {
+    id
+    isCompleted
+    preCompletionNotes
+    postCompletionNotes
+    updater 
+    category
+    assignee 
   }
+}
+
 `);
 
 export const DELETE_ACTION_ITEM_MUTATION = gql(`
-  mutation DeleteActionItem($input: MutationDeleteActionItemInput!) {
-    deleteActionItem(input: $input) {
-      id
-      isCompleted
-      categoryId
-      assigneeId
-      organizationId
-      createdAt
-      updatedAt
-      postCompletionNotes
-      preCompletionNotes
-    }
+mutation DeleteActionItem($input: MutationDeleteActionItemInput!) {
+  deleteActionItem(input: $input) {
+    id
+    isCompleted
+    preCompletionNotes
+    postCompletionNotes
+    createdAt
+    updatedAt
+    category     
+    assignee    
+    organization 
   }
-  `);
+}
+
+`);
 
 export const ACTION_ITEM_CATEGORY = gql(`
-  query FetchActionCategoriesByOrganization($input: QueryActionCategoriesByOrganizationInput!) {
-    actionCategoriesByOrganization(input: $input) {
+  query ActionItemCategoriesByOrganization(
+    $input: ActionItemCategoriesByOrganizationInput! ) {
+    actionItemCategoriesByOrganization(input: $input) {
       id
       name
-      organizationId
-      creatorId
       isDisabled
       createdAt
-      updatedAt
+      # relation fields (ids are now nested objects)
+      organization 
+      creator      
     }
   }
 `);
+
 
 export const Query_eventsByIds = gql(`
   query eventsByIds($input: QueryEventsByIdsInput!) {
@@ -1057,7 +1063,8 @@ export const Query_hasUserVoted = gql(`
   query Query_hasUserVoted($input: QueryHasUserVotedInput!) {
     hasUserVoted(input: $input)
     {
-      type
+      voteType
+      hasVoted
     }
   }
 `);
@@ -1071,15 +1078,17 @@ export const Mutation_createPostVote = gql(`
   }`);
 
 export const Mutation_createActionItemCategory = gql(`
-    mutation CreateActionItemCategory($input: MutationCreateActionItemCategoryInput!) {
-      createActionItemCategory(input: $input) {
-        id
-        name
-        organizationId
-        isDisabled
-        creatorId
-        createdAt
-        updatedAt
-      }
-    }
-  `);
+mutation CreateActionItemCategory(
+  $input: MutationCreateActionItemCategoryInput!
+) {
+  createActionItemCategory(input: $input) {
+    id
+    name
+    isDisabled
+    createdAt
+    # relations
+    organization 
+    creator    
+  }
+}
+`);

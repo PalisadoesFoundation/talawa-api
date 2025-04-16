@@ -27,7 +27,7 @@ const QueryActionCategoriesByOrganizationInput = builder.inputType(
  */
 
 export const actionCategoriesByOrganization = builder.queryField(
-	"actionCategoriesByOrganization",
+	"ActionItemsByOrganization",
 	(t) =>
 		t.field({
 			args: {
