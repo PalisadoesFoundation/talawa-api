@@ -22,3 +22,6 @@ import "./updatedAt";
 import "./updater";
 import "./workPhoneNumber";
 import "./createdOrganizations";
+import "./basicAliases";
+import "./organizationsBlockedBy";
+import "./joinedOrganizations";
