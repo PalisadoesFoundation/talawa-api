@@ -1468,6 +1468,12 @@ input MembershipRequestWhereInput {
 }
 
 type Mutation {
+  """Mutation field to accept a membership request by an admin."""
+  acceptMembershipRequest(
+    """Input to accept a membership request"""
+    input: MutationAcceptMembershipRequestInput!
+  ): AcceptMembershipResponse
+
   """Mutation field to cancel a membership request."""
   cancelMembershipRequest(
     """Input to cancel a membership request"""
@@ -1725,6 +1731,14 @@ type Mutation {
 
   """Mutation field to remove tags from a user."""
   removeFromUserTags(input: RemoveFromUserTagsInput!): Tag!
+
+  """Mutation field to block a user from an organization."""
+  blockUser(
+    """Global identifier of the organization"""
+    organizationId: ID!, 
+    """Global identifier of the user to block"""
+    userId: ID!
+  ): Boolean
 }
 
 """Input type for canceling a membership request."""
@@ -3993,4 +4007,18 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
+}
+
+"""Input type for accepting a membership request"""
+input MutationAcceptMembershipRequestInput {
+  """ID of the membership request to accept"""
+  membershipRequestId: ID!
+}
+
+"""Response type for accepting a membership request"""
+type AcceptMembershipResponse {
+  """Whether the operation was successful"""
+  success: Boolean!
+  """Message describing the result of the operation"""
+  message: String!
 }
