@@ -1,7 +1,10 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, 
+import {
+	expect,
+	suite,
+	test,
 	// vi
- } from "vitest";
+} from "vitest";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
