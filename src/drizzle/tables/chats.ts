@@ -21,7 +21,7 @@ import { usersTable } from "./users";
 export const chatsTable = pgTable(
 	"chats",
 	{
-		isGroup: boolean("is_group").notNull().default(false),
+	
 		/**
 		 * Mime type of the avatar of the chat.
 		 */
@@ -57,6 +57,10 @@ export const chatsTable = pgTable(
 		 * Primary unique identifier of the chat.
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
+		/**
+		 * Boolean flag indicating if the chat is a group chat.
+		 */
+		isGroup: boolean("is_group").notNull().default(false),
 		/**
 		 * Name of the chat.
 		 */
