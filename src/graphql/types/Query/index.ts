@@ -28,3 +28,4 @@ import "./Events";
 import "./organizations";
 import "./hasUserVoted";
 import "./users";
+import "./chatsByUserId";
