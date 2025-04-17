@@ -21,7 +21,6 @@ import { usersTable } from "./users";
 export const chatsTable = pgTable(
 	"chats",
 	{
-	
 		/**
 		 * Mime type of the avatar of the chat.
 		 */
