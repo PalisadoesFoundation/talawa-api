@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { expect, suite, test, 
+	// vi
+ } from "vitest";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -8,10 +10,10 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
-	Mutation_createChat,
-	Mutation_createChatMessage,
-	Mutation_createOrganization,
-	Mutation_createOrganizationMembership,
+	// Mutation_createChat,
+	// Mutation_createChatMessage,
+	// Mutation_createOrganization,
+	// Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Mutation_updateChatMessage,
@@ -138,8 +140,8 @@ suite("Mutation field updateChatMessage", () => {
 	);
 
 	// suite(
-	// 	`returns an error with "unauthorized_action_on_arguments_associated_resources" 
-    //   if the user is not part of the chat`,
+	// 	`returns an error with "unauthorized_action_on_arguments_associated_resources"
+	//   if the user is not part of the chat`,
 	// 	() => {
 	// 		test("returns an authorization error if user has a non-admin org membership but is not in the chat", async () => {
 	// 			// Sign in as Administrator
@@ -568,7 +570,6 @@ suite("Mutation field updateChatMessage", () => {
 	// 				},
 	// 			},
 	// 		);
-
 
 	// 		assertToBeNonNullish(
 	// 			orgMembershipResult.data?.createOrganizationMembership?.id,
