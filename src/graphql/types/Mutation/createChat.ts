@@ -91,20 +91,9 @@ builder.mutationField("createChat", (t) =>
 				});
 			}
 
-			if (!name) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{
-								argumentPath: ["input", "name"],
-								message: "Name is required.",
-							},
-						],
-					},
-				});
-			}
-			const keyName = isGroup ? name.trim() : userIds.slice().sort().join("|");
+		
+			
+			const keyName = isGroup && name ? name.trim() : userIds.slice().sort().join("|");
 
 			const chatId = await ctx.drizzleClient.transaction(async (tx) => {
 				const inserted = await tx
