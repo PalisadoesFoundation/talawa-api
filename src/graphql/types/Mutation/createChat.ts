@@ -1,206 +1,151 @@
-import type { FileUpload } from "graphql-upload-minimal";
-import { ulid } from "ulidx";
+import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
-import { chatsTable } from "~/src/drizzle/tables/chats";
 import { builder } from "~/src/graphql/builder";
+
+import { chatsTable } from "~/src/drizzle/tables/chats";
+import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
+
+
 import {
-	MutationCreateChatInput,
-	mutationCreateChatInputSchema,
+  MutationCreateChatInput,
+  mutationCreateChatInputSchema,
 } from "~/src/graphql/inputs/MutationCreateChatInput";
-import { Chat } from "~/src/graphql/types/Chat/Chat";
+
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { isNotNullish } from "~/src/utilities/isNotNullish";
-const mutationCreateChatArgumentsSchema = z.object({
-	input: mutationCreateChatInputSchema.transform(async (arg, ctx) => {
-		let avatar:
-			| (FileUpload & {
-					mimetype: z.infer<typeof imageMimeTypeEnum>;
-			  })
-			| null
-			| undefined;
 
-		if (isNotNullish(arg.avatar)) {
-			const rawAvatar = await arg.avatar;
-			const { data, success } = imageMimeTypeEnum.safeParse(rawAvatar.mimetype);
-
-			if (!success) {
-				ctx.addIssue({
-					code: "custom",
-					path: ["avatar"],
-					message: `Mime type "${rawAvatar.mimetype}" is not allowed.`,
-				});
-			} else {
-				avatar = Object.assign(rawAvatar, {
-					mimetype: data,
-				});
-			}
-		} else if (arg.avatar !== undefined) {
-			avatar = null;
-		}
-
-		return {
-			...arg,
-			avatar,
-		};
-	}),
+const argsSchema = z.object({
+  input: mutationCreateChatInputSchema,
 });
 
+
+export const CreateChatPayload = builder
+  .objectRef<{ _id: string }>("CreateChatPayload")
+  .implement({
+    fields: (t) => ({ _id: t.exposeID("_id") }),
+  });
+
+
 builder.mutationField("createChat", (t) =>
-	t.field({
-		args: {
-			input: t.arg({
-				description: "",
-				required: true,
-				type: MutationCreateChatInput,
-			}),
-		},
-		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-		description: "Mutation field to create a chat.",
-		resolve: async (_parent, args, ctx) => {
-			if (!ctx.currentClient.isAuthenticated) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
+  t.field({
+    type: CreateChatPayload,
+    complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+    args: {
+      input: t.arg({ type: MutationCreateChatInput, required: true }),
+    },
 
-			const {
-				data: parsedArgs,
-				error,
-				success,
-			} = await mutationCreateChatArgumentsSchema.safeParseAsync(args);
+    async resolve(_root, rawArgs, ctx) {
 
-			if (!success) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
-							message: issue.message,
-						})),
-					},
-				});
-			}
+      if (!ctx.currentClient.isAuthenticated) {
+        throw new TalawaGraphQLError({
+          extensions: { code: "unauthenticated" },
+        });
+      }
 
-			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingOrganization] = await Promise.all([
-				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-				}),
-				ctx.drizzleClient.query.organizationsTable.findFirst({
-					columns: {
-						countryCode: true,
-					},
-					with: {
-						membershipsWhereOrganization: {
-							columns: {
-								role: true,
-							},
-							where: (fields, operators) =>
-								operators.eq(fields.memberId, currentUserId),
-						},
-					},
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.organizationId),
-				}),
-			]);
+      const parsed = argsSchema.safeParse(rawArgs);
+      if (!parsed.success) {
+        throw new TalawaGraphQLError({
+          extensions: {
+            code: "invalid_arguments",
+            issues: parsed.error.issues.map((i) => ({
+              argumentPath: i.path,
+              message: i.message,
+            })),
+          },
+        });
+      }
 
-			if (currentUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
+      const {
+        userIds: rawUserIds,
+        organizationId,
+        isGroup,
+        name,
+      } = parsed.data.input;
+      const me = ctx.currentClient.user!.id;
 
-			if (existingOrganization === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "organizationId"],
-							},
-						],
-					},
-				});
-			}
+   
+      const org = await ctx.drizzleClient.query.organizationsTable.findFirst({
+        where: (o) => eq(o.id, organizationId),
+      });
+      if (!org) {
+        throw new TalawaGraphQLError({
+          extensions: {
+            code: "arguments_associated_resources_not_found",
+            issues: [{ argumentPath: ["input", "organizationId"] }],
+          },
+        });
+      }
 
-			const currentUserOrganizationMembership =
-				existingOrganization.membershipsWhereOrganization[0];
 
-			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action_on_arguments_associated_resources",
-						issues: [
-							{
-								argumentPath: ["input", "organizationId"],
-							},
-						],
-					},
-				});
-			}
+      const userIds = Array.from(new Set([...rawUserIds, me]));
 
-			let avatarMimeType: z.infer<typeof imageMimeTypeEnum>;
-			let avatarName: string;
+      const found = await ctx.drizzleClient.query.usersTable.findMany({
+        columns: { id: true },
+        where: (u) => inArray(u.id, userIds),
+      });
+      if (found.length !== userIds.length) {
+        throw new TalawaGraphQLError({
+          extensions: {
+            code: "invalid_arguments",
+            issues: [{ argumentPath: ["input", "userIds"], message: "One or more userIds do not exist." }],
+          },
+        });
+      }
 
-			if (isNotNullish(parsedArgs.input.avatar)) {
-				avatarName = ulid();
-				avatarMimeType = parsedArgs.input.avatar.mimetype;
-			}
+    
+      const keyName = isGroup
+        ? name!.trim()
+        : userIds.slice().sort().join("|");
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [createdChat] = await tx
-					.insert(chatsTable)
-					.values({
-						avatarMimeType,
-						avatarName,
-						creatorId: currentUserId,
-						description: parsedArgs.input.description,
-						name: parsedArgs.input.name,
-						organizationId: parsedArgs.input.organizationId,
-					})
-					.returning();
+     
+      const chatId = await ctx.drizzleClient.transaction(async (tx) => {
+       
+        const inserted = await tx
+          .insert(chatsTable)
+          .values({
+            name:         keyName,
+            isGroup,
+            organizationId,
+            creatorId:    me,
+          })
+          .onConflictDoNothing()    
+          .returning({ id: chatsTable.id });
 
-				// Inserted chat not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-				if (createdChat === undefined) {
-					ctx.log.error(
-						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-					);
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
+        let id: string;
+        if (inserted.length > 0 && inserted[0]?.id) {
+          id = inserted[0].id;
+        } else {
+        
+          const [row] = await tx
+            .select({ id: chatsTable.id })
+            .from(chatsTable)
+            .where(eq(chatsTable.name, keyName))
+            .limit(1);
+          if (!row?.id) {
+            throw new Error("Failed to retrieve existing chat ID");
+          }
+          id = row.id;
+        }
 
-				if (isNotNullish(parsedArgs.input.avatar)) {
-					await ctx.minio.client.putObject(
-						ctx.minio.bucketName,
-						avatarName,
-						parsedArgs.input.avatar.createReadStream(),
-						undefined,
-						{
-							"content-type": parsedArgs.input.avatar.mimetype,
-						},
-					);
-				}
+      
+        await tx
+          .insert(chatMembershipsTable)
+          .values(
+            userIds.map((uid) => ({
+              chatId:   id,
+              memberId: uid,
+              role:     "regular" as const,
+              creatorId: me,
+            })),
+          )
+          .onConflictDoNothing();
 
-				return createdChat;
-			});
-		},
-		type: Chat,
-	}),
+        return id;
+      });
+
+  
+      return { _id: chatId };
+    },
+  }),
 );

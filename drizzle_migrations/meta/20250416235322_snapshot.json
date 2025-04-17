@@ -1,5 +1,5 @@
 {
-  "id": "f6d470d8-510b-4cff-ae76-aaad61873088",
+  "id": "60af41e5-53a3-47c5-82fc-f1ae937eede2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1700,6 +1700,13 @@
       "name": "chats",
       "schema": "",
       "columns": {
+        "is_group": {
+          "name": "is_group",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "avatar_mime_type": {
           "name": "avatar_mime_type",
           "type": "text",

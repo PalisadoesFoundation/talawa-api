@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, pgTable, text, timestamp, uuid, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
@@ -14,6 +14,7 @@ import { usersTable } from "./users";
 export const chatsTable = pgTable(
 	"chats",
 	{
+		isGroup: boolean("is_group").notNull().default(false),
 		/**
 		 * Mime type of the avatar of the chat.
 		 */
@@ -131,4 +132,5 @@ export const chatsTableInsertSchema = createInsertSchema(chatsTable, {
 	avatarName: (schema) => schema.min(1).optional(),
 	description: (schema) => schema.min(1).max(2048).optional(),
 	name: (schema) => schema.min(1).max(256),
+	isGroup: (s) => s.optional(),  
 });

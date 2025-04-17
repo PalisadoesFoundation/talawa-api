@@ -106,6 +106,7 @@ CREATE TABLE "chat_messages" (
 );
 --> statement-breakpoint
 CREATE TABLE "chats" (
+	"is_group" boolean DEFAULT false NOT NULL,
 	"avatar_mime_type" text,
 	"avatar_name" text,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
