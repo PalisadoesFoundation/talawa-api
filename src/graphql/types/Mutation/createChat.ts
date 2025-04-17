@@ -91,9 +91,8 @@ builder.mutationField("createChat", (t) =>
 				});
 			}
 
-		
-			
-			const keyName = isGroup && name ? name.trim() : userIds.slice().sort().join("|");
+			const keyName =
+				isGroup && name ? name.trim() : userIds.slice().sort().join("|");
 
 			const chatId = await ctx.drizzleClient.transaction(async (tx) => {
 				const inserted = await tx
