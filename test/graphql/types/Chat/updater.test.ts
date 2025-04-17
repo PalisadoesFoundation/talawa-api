@@ -38,6 +38,7 @@ const mockUpdaterUser: MockUser = {
 
 const mockParent = {
 	id: "chat_1",
+	isGroup: false,
 	organizationId: "org_1",
 	updatedAt: new Date("2023-10-01T00:00:00Z"),
 	createdAt: new Date("2023-10-01T00:00:00Z"),
