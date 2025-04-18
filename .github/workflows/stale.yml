@@ -21,9 +21,8 @@ permissions:
   
 jobs:
   stale:
-
+    name: Process Stale Issues and PRs 
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/stale@v9
         with:
