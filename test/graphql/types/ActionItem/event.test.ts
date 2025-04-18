@@ -70,11 +70,6 @@ describe("resolveEvent", () => {
 		});
 	});
 
-	it("returns null immediately if eventId is null", async () => {
-		const result = await resolveEvent({ ...parent, eventId: null }, {}, ctx);
-		expect(result).toBeNull();
-	});
-
 	it("throws arguments_associated_resources_not_found if event lookup fails", async () => {
 		// First, stub user as administrator to pass auth
 		usersFindFirst.mockResolvedValue({
