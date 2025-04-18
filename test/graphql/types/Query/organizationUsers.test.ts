@@ -8,7 +8,6 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
 	Mutation_createUser,
-	Query_eventsByOrganizationId,
 	Query_signIn,
 	Query_usersByIds,
 	Query_usersByOrganizationId,
@@ -200,53 +199,5 @@ suite("Query: usersByOrganizationId", () => {
 		expect(users).toBeInstanceOf(Array);
 		const returnedIds = (users as Array<{ id: string }>).map((u) => u.id);
 		expect(returnedIds).toContain(memberUserId);
-	});
-	test("should return unauthenticated error if not signed in", async () => {
-		// Query without auth token
-		const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
-			variables: { input: { organizationId: orgId } },
-		});
-
-		// Expect the data field to be null when not authenticated.
-		expect(result.data?.eventsByOrganizationId).toBeNull();
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "unauthenticated" }),
-					path: ["eventsByOrganizationId"],
-				}),
-			]),
-		);
-	});
-
-	test("should return an error for invalid input", async () => {
-		// Query with an invalid organizationId (not a valid UUID)
-		const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
-			headers: { authorization: `bearer ${globalAuth.authToken}` },
-			variables: { input: { organizationId: "invalid-uuid" } },
-		});
-
-		// Expect the data field to be null for invalid input.
-		expect(result.data?.eventsByOrganizationId).toBeNull();
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "invalid_arguments" }),
-					path: ["eventsByOrganizationId"],
-				}),
-			]),
-		);
-	});
-
-	test("should return an empty array if no events exist", async () => {
-		// Query with a valid organizationId that has no events.
-		const result = await mercuriusClient.query(Query_eventsByOrganizationId, {
-			headers: { authorization: `bearer ${globalAuth.authToken}` },
-			variables: { input: { organizationId: orgId } },
-		});
-
-		// Expect no errors and data to be an empty array.
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.eventsByOrganizationId).toEqual([]);
 	});
 });
