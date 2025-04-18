@@ -16,7 +16,6 @@ type QueryTables = {
 	[K in keyof typeof drizzleSchema]: TableMethods<Record<string, unknown>>;
 };
 
-// Function to create table methods with default mocks
 function createTableMethods<T>(): TableMethods<T> {
 	return {
 		findFirst: vi.fn(), // Must be configured in individual tests with specific return values
