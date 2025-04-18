@@ -1,9 +1,9 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { inArray } from "drizzle-orm";
 import { z } from "zod";
-import type { actionCategoriesTable } from "~/src/drizzle/tables/actionCategories";
+import type { actionItemCategories } from "~/src/drizzle/tables/actionCategories";
 import { builder } from "~/src/graphql/builder";
-export type ActionItemCategory = InferSelectModel<typeof actionCategoriesTable>;
+export type ActionItemCategory = InferSelectModel<typeof actionItemCategories>;
 
 export const ActionItemCategory =
 	builder.objectRef<ActionItemCategory>("ActionItemCategory");
@@ -58,7 +58,7 @@ builder.queryField("categoriesByIds", (t) =>
 			const categoryIds = parsedArgs.data.ids;
 
 			const categories =
-				await ctx.drizzleClient.query.actionCategoriesTable.findMany({
+				await ctx.drizzleClient.query.actionItemCategories.findMany({
 					where: (fields, operators) => inArray(fields.id, categoryIds),
 				});
 

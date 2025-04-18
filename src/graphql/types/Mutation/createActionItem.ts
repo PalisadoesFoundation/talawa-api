@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import { z } from "zod";
-import { actionsTable } from "~/src/drizzle/tables/actions";
+import { actionItems } from "~/src/drizzle/tables/actions";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationCreateActionItemInput,
@@ -90,7 +90,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 
 				// **3. Check if the category exists**
 				const existingCategory =
-					await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+					await ctx.drizzleClient.query.actionItemCategories.findFirst({
 						columns: { id: true },
 						where: (fields, operators) =>
 							operators.eq(fields.id, parsedArgs.input.categoryId),
@@ -138,7 +138,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 
 				// Insert the action item into the database.
 				const [createdActionItem] = await ctx.drizzleClient
-					.insert(actionsTable)
+					.insert(actionItems)
 					.values({
 						id: uuid(),
 						creatorId: currentUserId,

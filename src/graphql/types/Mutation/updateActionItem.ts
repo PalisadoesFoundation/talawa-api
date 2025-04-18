@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { actionsTable } from "~/src/drizzle/tables/actions";
+import { actionItems } from "~/src/drizzle/tables/actions";
+
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -61,7 +62,7 @@ builder.mutationField("updateActionItem", (t) =>
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
-				ctx.drizzleClient.query.actionsTable.findFirst({
+				ctx.drizzleClient.query.actionItems.findFirst({
 					columns: {
 						isCompleted: true,
 						categoryId: true,
@@ -149,7 +150,7 @@ builder.mutationField("updateActionItem", (t) =>
 				const categoryId = parsedArgs.input.categoryId;
 
 				const existingCategory =
-					await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+					await ctx.drizzleClient.query.actionItemCategories.findFirst({
 						columns: {
 							name: true,
 						},
@@ -197,12 +198,12 @@ builder.mutationField("updateActionItem", (t) =>
 
 			// Update the action item with all provided fields plus the updaterId
 			const [updatedActionItem] = await ctx.drizzleClient
-				.update(actionsTable)
+				.update(actionItems)
 				.set({
 					...fieldsToUpdate,
 					updaterId: currentUserId,
 				})
-				.where(eq(actionsTable.id, actionItemId))
+				.where(eq(actionItems.id, actionItemId))
 				.returning();
 
 			if (!updatedActionItem) {
@@ -244,7 +245,7 @@ builder.mutationField("markActionItemAsPending", (t) =>
 
 			// Fetch the existing action item.
 			const existingActionItem =
-				await ctx.drizzleClient.query.actionsTable.findFirst({
+				await ctx.drizzleClient.query.actionItems.findFirst({
 					where: (fields, { eq }) => eq(fields.id, input.id),
 				});
 
@@ -274,14 +275,14 @@ builder.mutationField("markActionItemAsPending", (t) =>
 			}
 
 			const [updatedActionItem] = await ctx.drizzleClient
-				.update(actionsTable)
+				.update(actionItems)
 				.set({
 					isCompleted: false,
 					postCompletionNotes: null,
 					updaterId: ctx.currentClient.user.id,
 					updatedAt: new Date(),
 				})
-				.where(eq(actionsTable.id, input.id))
+				.where(eq(actionItems.id, input.id))
 				.returning();
 
 			if (!updatedActionItem) {

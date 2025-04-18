@@ -68,7 +68,7 @@ export const actionItemsByOrganization = builder.queryField(
 						where: (fields, operators) =>
 							operators.eq(fields.id, currentUserId),
 					}),
-					ctx.drizzleClient.query.actionsTable.findMany({
+					ctx.drizzleClient.query.actionItems.findMany({
 						with: {
 							assignee: true,
 							category: true,

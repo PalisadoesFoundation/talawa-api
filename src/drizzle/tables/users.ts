@@ -19,8 +19,8 @@ import { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStat
 import { userMaritalStatusEnum } from "~/src/drizzle/enums/userMaritalStatus";
 import { userNatalSexEnum } from "~/src/drizzle/enums/userNatalSex";
 import { userRoleEnum } from "~/src/drizzle/enums/userRole";
-import { actionCategoriesTable } from "./actionCategories";
-import { actionsTable } from "./actions";
+import { actionItemCategories } from "./actionCategories";
+import { actionItems } from "./actions";
 import { advertisementAttachmentsTable } from "./advertisementAttachments";
 import { advertisementsTable } from "./advertisements";
 import { agendaFoldersTable } from "./agendaFolders";
@@ -219,31 +219,31 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	/**
 	 * One to many relationship from `users` table to `actions` table.
 	 */
-	actionsWhereAssignee: many(actionsTable, {
+	actionsWhereAssignee: many(actionItems, {
 		relationName: "actions.assignee_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `actions` table.
 	 */
-	actionsWhereCreator: many(actionsTable, {
+	actionsWhereCreator: many(actionItems, {
 		relationName: "actions.creator_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `actions` table.
 	 */
-	actionsWhereUpdater: many(actionsTable, {
+	actionsWhereUpdater: many(actionItems, {
 		relationName: "actions.updater_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `action_categories` table.
 	 */
-	actionCategoriesWhereCreator: many(actionCategoriesTable, {
+	actionCategoriesWhereCreator: many(actionItemCategories, {
 		relationName: "action_categories.creator_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `action_categories` table.
 	 */
-	actionCategoriesWhereUpdater: many(actionCategoriesTable, {
+	actionCategoriesWhereUpdater: many(actionItemCategories, {
 		relationName: "action_categories.updater_id:users.id",
 	}),
 	/**

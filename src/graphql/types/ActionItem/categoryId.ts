@@ -14,11 +14,12 @@ export const resolveCategory = async (
 	}
 
 	// Query the category by categoryId using the categoriesTable.
-	const category =
-		await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+	const category = await ctx.drizzleClient.query.actionItemCategories.findFirst(
+		{
 			where: (fields, operators) =>
 				operators.eq(fields.id, parent.categoryId as string),
-		});
+		},
+	);
 
 	// If no category is found, log an error and throw an appropriate error.
 	if (!category) {

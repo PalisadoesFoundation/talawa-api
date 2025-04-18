@@ -9,12 +9,12 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { actionCategoriesTable } from "./actionCategories";
+import { actionItemCategories } from "./actionCategories";
 import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
-export const actionsTable = pgTable(
+export const actionItems = pgTable(
 	"actions",
 	{
 		assignedAt: timestamp("assigned_at", {
@@ -26,7 +26,7 @@ export const actionsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
-		categoryId: uuid("category_id").references(() => actionCategoriesTable.id, {
+		categoryId: uuid("category_id").references(() => actionItemCategories.id, {
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
@@ -83,38 +83,38 @@ export const actionsTable = pgTable(
 	],
 );
 
-export const actionsTableRelations = relations(actionsTable, ({ one }) => ({
+export const actionsItemRelations = relations(actionItems, ({ one }) => ({
 	assignee: one(usersTable, {
-		fields: [actionsTable.assigneeId],
+		fields: [actionItems.assigneeId],
 		references: [usersTable.id],
 		relationName: "actions.assignee_id:users.id",
 	}),
-	category: one(actionCategoriesTable, {
-		fields: [actionsTable.categoryId],
-		references: [actionCategoriesTable.id],
+	category: one(actionItemCategories, {
+		fields: [actionItems.categoryId],
+		references: [actionItemCategories.id],
 		relationName: "action_categories.id:actions.category_id",
 	}),
 	creator: one(usersTable, {
-		fields: [actionsTable.creatorId],
+		fields: [actionItems.creatorId],
 		references: [usersTable.id],
 		relationName: "actions.creator_id:users.id",
 	}),
 	event: one(eventsTable, {
-		fields: [actionsTable.eventId],
+		fields: [actionItems.eventId],
 		references: [eventsTable.id],
 		relationName: "actions.event_id:events.id",
 	}),
 	organization: one(organizationsTable, {
-		fields: [actionsTable.organizationId],
+		fields: [actionItems.organizationId],
 		references: [organizationsTable.id],
 		relationName: "actions.organization_id:organizations.id",
 	}),
 	updater: one(usersTable, {
-		fields: [actionsTable.updaterId],
+		fields: [actionItems.updaterId],
 		references: [usersTable.id],
 		relationName: "actions.updater_id:users.id",
 	}),
 }));
 
 // ✅ Export the actionsTableInsertSchema
-export const actionsTableInsertSchema = createInsertSchema(actionsTable);
+export const actionsTableInsertSchema = createInsertSchema(actionItems);
