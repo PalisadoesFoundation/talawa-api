@@ -262,7 +262,6 @@ suite("Mutation field createActionItemCategory", () => {
 				]),
 			);
 
-			// Explicit isDisabled = true
 			const explicitResult = await mercuriusClient.mutate(
 				Mutation_createActionItemCategory,
 				{
