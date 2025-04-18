@@ -1,15 +1,20 @@
+// src/graphql/inputs/MutationUpdateActionItemCategoryInput.ts
+
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 
-// Zod schema for the update ActionItemCategory input payload.
-// Only the fields provided by the client are included here.
+/**
+ * 1️⃣ Zod schema for the mutation input payload
+ */
 export const mutationUpdateActionItemCategoryInputSchema = z.object({
-	categoryId: z.string().uuid(), // The ID of the category to update.
+	categoryId: z.string().uuid(), // ID of the category to update
 	name: z.string().optional(),
 	isDisabled: z.boolean().optional(),
 });
 
-// GraphQL input reference for updating an Action Item Category.
+/**
+ * 2️⃣ Pothos GraphQL inputRef for schema
+ */
 export const MutationUpdateActionItemCategoryInput = builder
 	.inputRef<z.infer<typeof mutationUpdateActionItemCategoryInputSchema>>(
 		"MutationUpdateActionItemCategoryInput",
@@ -34,3 +39,10 @@ export const MutationUpdateActionItemCategoryInput = builder
 			}),
 		}),
 	});
+
+/**
+ * 3️⃣ Top-level arguments schema: wraps the input under `{ input: … }`
+ */
+export const mutationUpdateActionItemCategoryArgumentsSchema = z.object({
+	input: mutationUpdateActionItemCategoryInputSchema,
+});

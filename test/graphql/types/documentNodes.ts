@@ -900,16 +900,6 @@ export const Mutation_createActionItem = gql(/* GraphQL */ `
   }
 `);
 
-export const POSTGRES_EVENTS_BY_ORGANIZATION_ID = gql(`
-  query EventsByOrganizationId($input: EventsByOrganizationIdInput!) {
-    eventsByOrganizationId(input: $input) {
-      id
-      name
-      description
-    }
-  }
-`);
-
 export const UPDATE_ACTION_ITEM_MUTATION = gql(/* GraphQL */ `
   mutation UpdateActionItem($input: MutationUpdateActionItemInput!) {
     updateActionItem(input: $input) {
@@ -973,23 +963,6 @@ export const Query_usersByIds = gql(`
       id
       name
       emailAddress
-    }
-  }
-`);
-
-export const Query_eventsByOrganizationId = gql(`
- query EventsByOrganizationId($input: EventsByOrganizationIdInput!) {
-    eventsByOrganizationId(input: $input) {
-      id
-      description
-      startAt
-      endAt
-      organization {
-        id
-      }
-      attachments {
-        mimeType
-      }
     }
   }
 `);

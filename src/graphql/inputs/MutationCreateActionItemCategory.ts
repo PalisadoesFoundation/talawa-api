@@ -1,16 +1,19 @@
+// src/graphql/inputs/MutationCreateActionItemCategory.ts
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 
-// Zod schema for createActionItemCategory input payload.
-// Only the fields provided by the client (name, organizationId, and optional isDisabled)
-// are defined here.
+/**
+ * 1️⃣  Raw Zod schema for the mutation’s `input` payload
+ */
 export const mutationCreateActionItemCategoryInputSchema = z.object({
 	name: z.string().min(1, { message: "Category name cannot be empty" }),
 	organizationId: z.string().uuid(),
 	isDisabled: z.boolean().optional(),
 });
 
-// GraphQL input reference for the createActionItemCategory mutation.
+/**
+ * 2️⃣  Pothos inputRef for GraphQL
+ */
 export const MutationCreateActionItemCategoryInput = builder
 	.inputRef<z.infer<typeof mutationCreateActionItemCategoryInputSchema>>(
 		"MutationCreateActionItemCategoryInput",
@@ -37,3 +40,10 @@ export const MutationCreateActionItemCategoryInput = builder
 			}),
 		}),
 	});
+
+/**
+ * 3️⃣  “Arguments” schema wrapping it under `{ input: … }`
+ */
+export const mutationCreateActionItemCategoryArgumentsSchema = z.object({
+	input: mutationCreateActionItemCategoryInputSchema,
+});

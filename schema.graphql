@@ -601,10 +601,6 @@ type EventVenuesConnectionEdge {
   node: Venue
 }
 
-input EventsByOrganizationIdInput {
-  organizationId: ID!
-}
-
 """Metadata for files uploaded via presigned URL"""
 input FileMetadataInput {
   """Hash of the file for deduplication"""
@@ -1760,24 +1756,11 @@ input MutationCreateActionItemCategoryInput {
 
 """Input fields required for creating an action item."""
 input MutationCreateActionItemInput {
-  """
-  Date-time string representing when the action item was assigned. Defaults to the current date-time if not provided.
-  """
   assignedAt: String
-
-  """Global identifier of the action item assignee."""
   assigneeId: ID!
-
-  """Global identifier of the action item's category."""
   categoryId: ID!
-
-  """Global identifier of the associated event, if any."""
   eventId: ID
-
-  """Global identifier of the associated organization."""
   organizationId: ID!
-
-  """Optional notes that can be added before completion."""
   preCompletionNotes: String
 }
 
@@ -3413,9 +3396,6 @@ type Query {
 
   """Query field to read an event."""
   event(input: QueryEventInput!): Event
-
-  """Fetch all events that belong to a given organization."""
-  eventsByOrganizationId(input: EventsByOrganizationIdInput!): [Event!]
 
   """Query field to read a fund."""
   fund(input: QueryFundInput!): Fund

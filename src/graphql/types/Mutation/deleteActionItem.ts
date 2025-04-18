@@ -1,15 +1,10 @@
 import { eq } from "drizzle-orm";
-import { z } from "zod";
 import { actionItems } from "~/src/drizzle/tables/actions";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { MutationDeleteActionItemInput } from "../../inputs/MutationDeleteActionItemInput";
-import { mutationDeleteActionItemInputSchema } from "../../inputs/MutationDeleteActionItemInput";
-
-const mutationDeleteActionItemArgumentsSchema = z.object({
-	input: mutationDeleteActionItemInputSchema,
-});
+import { mutationDeleteActionItemArgumentsSchema } from "../../inputs/MutationDeleteActionItemInput";
 
 builder.mutationField("deleteActionItem", (t) =>
 	t.field({

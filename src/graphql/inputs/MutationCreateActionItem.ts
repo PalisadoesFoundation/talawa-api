@@ -17,30 +17,15 @@ export const MutationCreateActionItemInput = builder
 	.implement({
 		description: "Input fields required for creating an action item.",
 		fields: (t) => ({
-			categoryId: t.id({
-				description: "Global identifier of the action item's category.",
-				required: true,
-			}),
-			assigneeId: t.id({
-				description: "Global identifier of the action item assignee.",
-				required: true,
-			}),
-			preCompletionNotes: t.string({
-				description: "Optional notes that can be added before completion.",
-				required: false,
-			}),
-			eventId: t.id({
-				description: "Global identifier of the associated event, if any.",
-				required: false,
-			}),
-			organizationId: t.id({
-				description: "Global identifier of the associated organization.",
-				required: true,
-			}),
-			assignedAt: t.string({
-				description:
-					"Date-time string representing when the action item was assigned. Defaults to the current date-time if not provided.",
-				required: false,
-			}),
+			categoryId: t.id({ required: true }),
+			assigneeId: t.id({ required: true }),
+			preCompletionNotes: t.string({ required: false }),
+			eventId: t.id({ required: false }),
+			organizationId: t.id({ required: true }),
+			assignedAt: t.string({ required: false }),
 		}),
 	});
+
+export const mutationCreateActionItemArgumentsSchema = z.object({
+	input: mutationCreateActionItemInputSchema,
+});

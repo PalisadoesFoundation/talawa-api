@@ -1,5 +1,4 @@
 import { eq, sql } from "drizzle-orm";
-import { z } from "zod";
 import { actionItemCategories } from "~/src/drizzle/tables/actionCategories";
 import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -8,13 +7,8 @@ import { ActionItemCategory } from "../ActionItemCategory/ActionItemCategory";
 // Import the input reference and its Zod schema from the input folder.
 import {
 	MutationUpdateActionItemCategoryInput,
-	mutationUpdateActionItemCategoryInputSchema,
+	mutationUpdateActionItemCategoryArgumentsSchema,
 } from "~/src/graphql/inputs/MutationUpdateActionItemCategory";
-
-// Wrap the imported schema in an arguments schema.
-const mutationUpdateActionItemCategoryArgumentsSchema = z.object({
-	input: mutationUpdateActionItemCategoryInputSchema,
-});
 
 export const updateActionItemCategory = builder.mutationField(
 	"updateActionItemCategory",

@@ -1,16 +1,16 @@
 import { z } from "zod";
-import { actionsTableInsertSchema } from "~/src/drizzle/tables/actions"; // ✅ Now imported successfully
+import { actionsTableInsertSchema } from "~/src/drizzle/tables/actions";
 import { builder } from "~/src/graphql/builder";
 
 /**
- * Defines the Zod validation schema for querying ActionItems by organizationId.
+ * 1️⃣ Zod validation schema for querying ActionItems by organizationId
  */
 export const queryActionItemsByOrgInputSchema = z.object({
 	organizationId: actionsTableInsertSchema.shape.organizationId,
 });
 
 /**
- * GraphQL Input Type for querying ActionItems by organizationId.
+ * 2️⃣ Pothos GraphQL Input Type for querying ActionItems
  */
 export const QueryActionItemsByOrganizationInput = builder
 	.inputRef<z.infer<typeof queryActionItemsByOrgInputSchema>>(
@@ -25,3 +25,10 @@ export const QueryActionItemsByOrganizationInput = builder
 			}),
 		}),
 	});
+
+/**
+ * 3️⃣ Top-level wrapper used for validating `{ input: … }`
+ */
+export const queryActionItemsByOrganizationArgumentsSchema = z.object({
+	input: queryActionItemsByOrgInputSchema,
+});

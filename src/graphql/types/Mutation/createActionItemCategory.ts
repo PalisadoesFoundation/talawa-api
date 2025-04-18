@@ -1,6 +1,5 @@
 import { sql } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
-import { z } from "zod";
 import { actionItemCategories } from "~/src/drizzle/tables/actionCategories";
 import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -9,12 +8,8 @@ import { ActionItemCategory } from "../ActionItemCategory/ActionItemCategory";
 
 import {
 	MutationCreateActionItemCategoryInput,
-	mutationCreateActionItemCategoryInputSchema,
+	mutationCreateActionItemCategoryArgumentsSchema,
 } from "~/src/graphql/inputs/MutationCreateActionItemCategory";
-
-const mutationCreateActionItemCategoryArgumentsSchema = z.object({
-	input: mutationCreateActionItemCategoryInputSchema,
-});
 
 export const createActionItemCategoryMutation = builder.mutationField(
 	"createActionItemCategory",
