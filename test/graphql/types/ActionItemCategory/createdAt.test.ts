@@ -2,34 +2,40 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { resolveCreatedAt } from "~/src/graphql/types/ActionItem/createdAt";
+import { resolveCreatedAt } from "~/src/graphql/types/ActionItemCategory/createdAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockDrizzleClient } from "../../../_Mocks_/drizzleClientMock"; // adjust path as needed
 
-// Fake ActionItem shape
-interface FakeActionItem {
+// Fake ActionItemCategory shape for tests
+interface FakeCategory {
 	createdAt: Date;
 	organizationId: string;
 }
 
-describe("resolveCreatedAt", () => {
+describe("resolveCreatedAt (ActionItemCategory)", () => {
 	let ctx: GraphQLContext;
 	let findFirstMock: Mock<
 		() => Promise<
-			| {
-					role: string;
-					organizationMembershipsWhereMember: { role: string }[];
-			  }
+			| { role: string; organizationMembershipsWhereMember: { role: string }[] }
 			| undefined
 		>
 	>;
-	const fakeDate = new Date("2025-01-01T12:00:00Z");
+	const fakeDate = new Date("2025-01-01T00:00:00Z");
 	const orgId = "org-123";
-	const userId = "user-abc";
+	const userId = "user-xyz";
 
 	beforeEach(() => {
 		const mockDrizzle = createMockDrizzleClient();
-		findFirstMock = mockDrizzle.query.usersTable.findFirst;
+		findFirstMock = mockDrizzle.query.usersTable.findFirst as Mock<
+			() => Promise<
+				| {
+						role: string;
+						organizationMembershipsWhereMember: { role: string }[];
+				  }
+				| undefined
+			>
+		>;
+
 		ctx = {
 			currentClient: {
 				isAuthenticated: true,
@@ -42,12 +48,9 @@ describe("resolveCreatedAt", () => {
 		} as unknown as GraphQLContext;
 	});
 
-	it("throws unauthenticated when not authenticated", async () => {
+	it("throws unauthenticated when not signed in", async () => {
 		ctx.currentClient.isAuthenticated = false;
-		const parent: FakeActionItem = {
-			createdAt: fakeDate,
-			organizationId: orgId,
-		};
+		const parent: FakeCategory = { createdAt: fakeDate, organizationId: orgId };
 
 		await expect(resolveCreatedAt(parent, {}, ctx)).rejects.toBeInstanceOf(
 			TalawaGraphQLError,
@@ -57,57 +60,45 @@ describe("resolveCreatedAt", () => {
 		});
 	});
 
-	it("throws unauthenticated when user not found", async () => {
+	it("throws unauthenticated when current user lookup returns undefined", async () => {
 		findFirstMock.mockResolvedValue(undefined);
 
-		const parent: FakeActionItem = {
-			createdAt: fakeDate,
-			organizationId: orgId,
-		};
+		const parent: FakeCategory = { createdAt: fakeDate, organizationId: orgId };
 		await expect(resolveCreatedAt(parent, {}, ctx)).rejects.toMatchObject({
 			extensions: { code: "unauthenticated" },
 		});
 	});
 
-	it("throws unauthorized_action when not admin and no membership", async () => {
+	it("throws unauthorized_action when user is not admin by role or membership", async () => {
 		findFirstMock.mockResolvedValue({
 			role: "regular",
 			organizationMembershipsWhereMember: [],
 		});
 
-		const parent: FakeActionItem = {
-			createdAt: fakeDate,
-			organizationId: orgId,
-		};
+		const parent: FakeCategory = { createdAt: fakeDate, organizationId: orgId };
 		await expect(resolveCreatedAt(parent, {}, ctx)).rejects.toMatchObject({
 			extensions: { code: "unauthorized_action" },
 		});
 	});
 
-	it("returns date when user role is administrator", async () => {
+	it("returns date when user has administrator role", async () => {
 		findFirstMock.mockResolvedValue({
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
 		});
 
-		const parent: FakeActionItem = {
-			createdAt: fakeDate,
-			organizationId: orgId,
-		};
+		const parent: FakeCategory = { createdAt: fakeDate, organizationId: orgId };
 		const result = await resolveCreatedAt(parent, {}, ctx);
 		expect(result).toBe(fakeDate);
 	});
 
-	it("returns date when membership role is administrator", async () => {
+	it("returns date when user has administrator membership", async () => {
 		findFirstMock.mockResolvedValue({
 			role: "regular",
 			organizationMembershipsWhereMember: [{ role: "administrator" }],
 		});
 
-		const parent: FakeActionItem = {
-			createdAt: fakeDate,
-			organizationId: orgId,
-		};
+		const parent: FakeCategory = { createdAt: fakeDate, organizationId: orgId };
 		const result = await resolveCreatedAt(parent, {}, ctx);
 		expect(result).toBe(fakeDate);
 	});

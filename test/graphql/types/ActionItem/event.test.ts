@@ -1,64 +1,127 @@
+// resolveEvent.test.ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { resolveEvent } from "~/src/graphql/types/ActionItem/event";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import type { Event } from "~/src/graphql/types/Event/Event";
+import { createMockDrizzleClient } from "../../../_Mocks_/drizzleClientMock";
 
-// Fake ActionItem shape
-interface FakeActionItem {
-	eventId: string | null;
+// Define the shape returned by usersTable.findFirst
+interface UserRecord {
+	id: string;
+	role: string;
+	organizationMembershipsWhereMember: { role: string }[];
 }
+
+// Extend Event to include the raw attachments relation
+type RawEvent = Event & { attachmentsWhereEvent: unknown[] };
 
 describe("resolveEvent", () => {
 	let ctx: GraphQLContext;
-	let mockFindFirst: Mock;
-	const parentWithNull: FakeActionItem = { eventId: null };
-	const parentWithId: FakeActionItem = { eventId: "evt-123" };
-	const fakeEvent = {
-		id: "evt-123",
-		title: "Test Event",
-		attachmentsWhereEvent: [{ id: "att-1" }, { id: "att-2" }],
-	};
+	let parent: { eventId: string | null; organizationId: string };
+	let usersFindFirst: Mock<() => Promise<UserRecord | undefined>>;
+	let eventsFindFirst: Mock<() => Promise<RawEvent | undefined>>;
 
 	beforeEach(() => {
-		mockFindFirst = vi.fn();
+		parent = { eventId: "evt-123", organizationId: "org-abc" };
+
+		const mockDrizzle = createMockDrizzleClient();
+		usersFindFirst = mockDrizzle.query.usersTable.findFirst as Mock<
+			() => Promise<UserRecord | undefined>
+		>;
+		eventsFindFirst = mockDrizzle.query.eventsTable.findFirst as Mock<
+			() => Promise<RawEvent | undefined>
+		>;
+
 		ctx = {
-			drizzleClient: {
-				query: {
-					eventsTable: { findFirst: mockFindFirst },
-				},
+			currentClient: {
+				isAuthenticated: true,
+				user: { id: "user-1" },
 			},
+			drizzleClient: mockDrizzle,
 			log: { error: vi.fn() },
-			currentClient: { isAuthenticated: true, user: { id: "user-xyz" } },
 		} as unknown as GraphQLContext;
 	});
 
-	it("returns null when eventId is null", async () => {
-		const result = await resolveEvent(parentWithNull, {}, ctx);
+	it("throws unauthenticated if not logged in", async () => {
+		ctx.currentClient.isAuthenticated = false;
+		await expect(resolveEvent(parent, {}, ctx)).rejects.toMatchObject({
+			extensions: { code: "unauthenticated" },
+		});
+	});
+
+	it("throws unauthenticated if user record not found", async () => {
+		usersFindFirst.mockResolvedValue(undefined);
+
+		await expect(resolveEvent(parent, {}, ctx)).rejects.toMatchObject({
+			extensions: { code: "unauthenticated" },
+		});
+	});
+
+	it("throws unauthorized_action if not sys‑ or org‑admin", async () => {
+		usersFindFirst.mockResolvedValue({
+			id: "user-1",
+			role: "member",
+			organizationMembershipsWhereMember: [],
+		});
+
+		await expect(resolveEvent(parent, {}, ctx)).rejects.toMatchObject({
+			extensions: { code: "unauthorized_action" },
+		});
+	});
+
+	it("returns null immediately if eventId is null", async () => {
+		const result = await resolveEvent({ ...parent, eventId: null }, {}, ctx);
 		expect(result).toBeNull();
-		expect(mockFindFirst).not.toHaveBeenCalled();
 	});
 
-	it("returns event with attachments when found", async () => {
-		mockFindFirst.mockResolvedValue(fakeEvent);
-		const result = await resolveEvent(parentWithId, {}, ctx);
-		expect(result).toEqual({
-			...fakeEvent,
-			attachments: fakeEvent.attachmentsWhereEvent,
+	it("throws arguments_associated_resources_not_found if event lookup fails", async () => {
+		// First, stub user as administrator to pass auth
+		usersFindFirst.mockResolvedValue({
+			id: "user-1",
+			role: "administrator",
+			organizationMembershipsWhereMember: [{ role: "administrator" }],
 		});
-		expect(ctx.log.error).not.toHaveBeenCalled();
+		// Then stub the event lookup to return nothing
+		eventsFindFirst.mockResolvedValue(undefined);
+
+		await expect(resolveEvent(parent, {}, ctx)).rejects.toMatchObject({
+			extensions: { code: "arguments_associated_resources_not_found" },
+		});
+		expect(ctx.log.error).toHaveBeenCalled();
 	});
 
-	it("logs error and throws unexpected when event not found", async () => {
-		mockFindFirst.mockResolvedValue(null);
-		await expect(resolveEvent(parentWithId, {}, ctx)).rejects.toBeInstanceOf(
-			TalawaGraphQLError,
-		);
-		await expect(resolveEvent(parentWithId, {}, ctx)).rejects.toMatchObject({
-			extensions: { code: "unexpected" },
+	it("returns the event with attachments when all checks pass", async () => {
+		usersFindFirst.mockResolvedValue({
+			id: "user-1",
+			role: "member",
+			organizationMembershipsWhereMember: [{ role: "administrator" }],
 		});
-		expect(ctx.log.error).toHaveBeenCalledWith(
-			"Postgres select operation returned no row for action item's eventId that isn't null.",
+
+		// Construct a minimal Event object, then cast to RawEvent
+		const fakeEvent = {
+			id: "evt-123",
+			organizationId: "org-abc",
+			name: "n/a",
+			createdAt: new Date(),
+			creatorId: null,
+			description: null,
+			updatedAt: null,
+			updaterId: null,
+			startAt: new Date(),
+			endAt: new Date(),
+			attachmentsWhereEvent: [{ id: "att-1" }, { id: "att-2" }],
+		} as unknown as RawEvent;
+
+		eventsFindFirst.mockResolvedValue(fakeEvent);
+
+		const result = await resolveEvent(parent, {}, ctx);
+
+		expect(result).toBeTruthy();
+		expect(result?.id).toEqual(fakeEvent.id);
+		// The resolver maps attachmentsWhereEvent → attachments
+		expect((result as Event & { attachments: unknown[] }).attachments).toEqual(
+			fakeEvent.attachmentsWhereEvent,
 		);
 	});
 });

@@ -64,7 +64,7 @@ export const resolveCreator = async (
 		where: (fields, operators) =>
 			parent.creatorId !== null
 				? operators.eq(fields.id, parent.creatorId)
-				: operators.isNull(fields.id),
+				: undefined,
 	});
 
 	if (existingUser === undefined) {

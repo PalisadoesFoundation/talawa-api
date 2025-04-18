@@ -1,50 +1,59 @@
+// resolveOrganization.test.ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { resolveOrganization } from "~/src/graphql/types/ActionItem/organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { createMockDrizzleClient } from "../../../_Mocks_/drizzleClientMock";
 
-// Fake ActionItem shape for testing
 interface FakeActionItem {
 	organizationId: string | null;
 }
 
+type OrgRecord = { id: string; name: string };
+
 describe("resolveOrganization", () => {
 	let ctx: GraphQLContext;
-	let mockFindFirst: Mock;
-	const fakeOrg = { id: "org-1", name: "Test Org" };
-	const orgId = "org-1";
+	let findFirstMock: Mock<() => Promise<OrgRecord | null | undefined>>;
+	const fakeOrg: OrgRecord = { id: "org-1", name: "Test Org" };
 
 	beforeEach(() => {
-		mockFindFirst = vi.fn();
+		const mockDrizzle = createMockDrizzleClient();
+		findFirstMock = mockDrizzle.query.organizationsTable.findFirst as Mock<
+			() => Promise<OrgRecord | null | undefined>
+		>;
+
 		ctx = {
-			drizzleClient: {
-				query: {
-					organizationsTable: { findFirst: mockFindFirst },
-				},
+			currentClient: {
+				isAuthenticated: true,
+				user: { id: "user-xyz" },
 			},
-			log: { error: vi.fn() },
-			currentClient: { isAuthenticated: true, user: { id: "user-xyz" } },
+			drizzleClient: mockDrizzle,
+			log: {
+				error: vi.fn(),
+			},
 		} as unknown as GraphQLContext;
 	});
 
 	it("throws unexpected error when organizationId is null", async () => {
 		const parent: FakeActionItem = { organizationId: null };
+
 		await expect(resolveOrganization(parent, {}, ctx)).rejects.toBeInstanceOf(
 			TalawaGraphQLError,
 		);
 		await expect(resolveOrganization(parent, {}, ctx)).rejects.toMatchObject({
 			extensions: { code: "unexpected" },
 		});
+
 		expect(ctx.log.error).toHaveBeenCalledWith(
 			"Action item is missing an organizationId.",
 		);
-		expect(mockFindFirst).not.toHaveBeenCalled();
+		expect(findFirstMock).not.toHaveBeenCalled();
 	});
 
 	it("throws unexpected error when organization not found", async () => {
-		mockFindFirst.mockResolvedValue(null);
-		const parent: FakeActionItem = { organizationId: orgId };
+		findFirstMock.mockResolvedValue(null);
+		const parent: FakeActionItem = { organizationId: "org-1" };
 
 		await expect(resolveOrganization(parent, {}, ctx)).rejects.toBeInstanceOf(
 			TalawaGraphQLError,
@@ -52,21 +61,24 @@ describe("resolveOrganization", () => {
 		await expect(resolveOrganization(parent, {}, ctx)).rejects.toMatchObject({
 			extensions: { code: "unexpected" },
 		});
+
 		expect(ctx.log.error).toHaveBeenCalledWith(
-			`Postgres select operation returned no row for action item's organizationId: ${orgId}.`,
+			`Postgres select operation returned no row for action item's organizationId: org-1.`,
 		);
-		expect(mockFindFirst).toHaveBeenCalled();
+		expect(findFirstMock).toHaveBeenCalledWith(
+			expect.objectContaining({ where: expect.any(Function) }),
+		);
 	});
 
 	it("returns organization when found", async () => {
-		mockFindFirst.mockResolvedValue(fakeOrg);
-		const parent: FakeActionItem = { organizationId: orgId };
+		findFirstMock.mockResolvedValue(fakeOrg);
+		const parent: FakeActionItem = { organizationId: "org-1" };
 
 		const result = await resolveOrganization(parent, {}, ctx);
 		expect(result).toBe(fakeOrg);
 		expect(ctx.log.error).not.toHaveBeenCalled();
-		expect(mockFindFirst).toHaveBeenCalledWith({
-			where: expect.any(Function),
-		});
+		expect(findFirstMock).toHaveBeenCalledWith(
+			expect.objectContaining({ where: expect.any(Function) }),
+		);
 	});
 });

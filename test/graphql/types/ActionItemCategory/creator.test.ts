@@ -1,21 +1,26 @@
-// resolveCreator.test.ts
+// resolveCategoryCreator.test.ts
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { resolveCreator } from "~/src/graphql/types/ActionItem/creator";
+import { resolveCategoryCreator } from "~/src/graphql/types/ActionItemCategory/creator";
+import type { User } from "~/src/graphql/types/User/User";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockDrizzleClient } from "../../../_Mocks_/drizzleClientMock";
 
-describe("resolveCreator", () => {
+describe("resolveCategoryCreator", () => {
 	let ctx: GraphQLContext;
-	let findFirstMock: Mock<() => Promise<Record<string, unknown> | undefined>>;
+	let findFirstMock: Mock<() => Promise<User | undefined>>;
 
-	const orgId = "org-xyz";
-	const currentUserId = "user-abc";
-	const otherUserId = "user-def";
+	const orgId = "org-abc";
+	const currentUserId = "user-1";
+	const otherUserId = "user-2";
 
 	beforeEach(() => {
 		const mockDrizzle = createMockDrizzleClient();
-		findFirstMock = mockDrizzle.query.usersTable.findFirst;
+		findFirstMock = mockDrizzle.query.usersTable.findFirst as Mock<
+			() => Promise<User | undefined>
+		>;
+
 		ctx = {
 			currentClient: {
 				isAuthenticated: true,
@@ -30,8 +35,9 @@ describe("resolveCreator", () => {
 
 	it("throws unauthenticated if not signed in", async () => {
 		ctx.currentClient.isAuthenticated = false;
+
 		await expect(
-			resolveCreator(
+			resolveCategoryCreator(
 				{ creatorId: otherUserId, organizationId: orgId },
 				{},
 				ctx,
@@ -43,7 +49,7 @@ describe("resolveCreator", () => {
 		findFirstMock.mockResolvedValueOnce(undefined);
 
 		await expect(
-			resolveCreator(
+			resolveCategoryCreator(
 				{ creatorId: otherUserId, organizationId: orgId },
 				{},
 				ctx,
@@ -51,15 +57,15 @@ describe("resolveCreator", () => {
 		).rejects.toMatchObject({ extensions: { code: "unauthenticated" } });
 	});
 
-	it("throws unauthorized_action if not admin by role or membership", async () => {
+	it("throws unauthorized_action if not administrator by role or membership", async () => {
 		findFirstMock.mockResolvedValueOnce({
 			id: currentUserId,
 			role: "regular",
 			organizationMembershipsWhereMember: [],
-		});
+		} as unknown as User);
 
 		await expect(
-			resolveCreator(
+			resolveCategoryCreator(
 				{ creatorId: otherUserId, organizationId: orgId },
 				{},
 				ctx,
@@ -72,9 +78,9 @@ describe("resolveCreator", () => {
 			id: currentUserId,
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
-		});
+		} as unknown as User);
 
-		const result = await resolveCreator(
+		const result = await resolveCategoryCreator(
 			{ creatorId: null, organizationId: orgId },
 			{},
 			ctx,
@@ -83,56 +89,55 @@ describe("resolveCreator", () => {
 	});
 
 	it("returns currentUser when creatorId equals currentUserId", async () => {
-		const currentUserRecord = {
+		const currentUser = {
 			id: currentUserId,
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
-		};
-		findFirstMock.mockResolvedValueOnce(currentUserRecord);
+		} as unknown as User;
+		findFirstMock.mockResolvedValueOnce(currentUser);
 
-		const result = await resolveCreator(
+		const result = await resolveCategoryCreator(
 			{ creatorId: currentUserId, organizationId: orgId },
 			{},
 			ctx,
 		);
-		expect(result).toBe(currentUserRecord);
+		expect(result).toBe(currentUser);
 	});
 
 	it("returns existingUser when creatorId is different and found", async () => {
-		const currentUserRecord = {
+		const currentUser = {
 			id: currentUserId,
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
-		};
-		const existingUserRecord = { id: otherUserId, name: "Foo" };
+		} as unknown as User;
+		const existingUser = { id: otherUserId, name: "Foo" } as unknown as User;
 
-		// First call for currentUser, second for the actual creator
+		// first call for currentUser, second for the actual creator
 		findFirstMock
-			.mockResolvedValueOnce(currentUserRecord)
-			.mockResolvedValueOnce(existingUserRecord);
+			.mockResolvedValueOnce(currentUser)
+			.mockResolvedValueOnce(existingUser);
 
-		const result = await resolveCreator(
+		const result = await resolveCategoryCreator(
 			{ creatorId: otherUserId, organizationId: orgId },
 			{},
 			ctx,
 		);
-		expect(result).toBe(existingUserRecord);
+		expect(result).toBe(existingUser);
 	});
 
 	it("logs error and throws unexpected when existingUser not found", async () => {
-		const currentUserRecord = {
+		const currentUser = {
 			id: currentUserId,
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
-		};
+		} as unknown as User;
 
-		// First call returns currentUser, second returns undefined
 		findFirstMock
-			.mockResolvedValueOnce(currentUserRecord)
+			.mockResolvedValueOnce(currentUser)
 			.mockResolvedValueOnce(undefined);
 
 		await expect(
-			resolveCreator(
+			resolveCategoryCreator(
 				{ creatorId: otherUserId, organizationId: orgId },
 				{},
 				ctx,
@@ -140,7 +145,7 @@ describe("resolveCreator", () => {
 		).rejects.toMatchObject({ extensions: { code: "unexpected" } });
 
 		expect(ctx.log.error).toHaveBeenCalledWith(
-			"Postgres select operation returned an empty array for an action item's creator id that isn't null.",
+			"Postgres select operation returned an empty array for an action item category's creator id that isn't null.",
 		);
 	});
 });
