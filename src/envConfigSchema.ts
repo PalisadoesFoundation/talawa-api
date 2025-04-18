@@ -148,7 +148,7 @@ export const envConfigSchema = Type.Object({
 		minLength: 64,
 	}),
 	/**
-	 * Used for providing the log level for the logger used in talawa api.
+	 * Used for providing the log level for the logger used in talawa api .
 	 *
 	 * @privateRemarks
 	 * Log levels should only be changed when the developers know what they're doing. Otherwise the default log level of `info` should be used.
@@ -240,7 +240,6 @@ export const envConfigSchema = Type.Object({
 		maximum: 65535,
 		minimum: 0,
 	}),
-
 
 	API_GRAPHQL_SCALAR_FIELD_COST: Type.Number({
 		minimum: 0,
