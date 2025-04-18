@@ -554,6 +554,9 @@ type Event {
   """
   agendaFolders(after: String, before: String, first: Int, last: Int): EventAgendaFoldersConnection
 
+  """all day time."""
+  allDay: Boolean! 
+
   """Array of attachments."""
   attachments: [EventAttachment!]
 
@@ -1877,6 +1880,9 @@ input MutationCreateEventInput {
   """Attachments of the event."""
   attachments: [Upload!]
 
+  """ all day time."""
+  allDay: Boolean
+  
   """Custom information about the event."""
   description: String
 
