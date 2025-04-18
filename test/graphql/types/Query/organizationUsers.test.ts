@@ -60,7 +60,6 @@ async function createUserAndGetToken(userDetails = {}) {
 	return { authToken, userId };
 }
 
-// Creates an organization using the given token.
 // If creation fails (e.g. due to unauthorized_action), fall back to a mock org id.
 async function safeCreateOrganizationAndGetId(
 	authToken: string,
