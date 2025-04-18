@@ -20,7 +20,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 	"createActionItemCategory",
 	(t) =>
 		t.field({
-			type: ActionItemCategory, 
+			type: ActionItemCategory,
 			args: {
 				input: t.arg({
 					description:

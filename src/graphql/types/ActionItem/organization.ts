@@ -20,15 +20,16 @@ ActionItem.implement({
 				}
 
 				// Query the organizationsTable using the provided organizationId.
-				const existingOrganization = await ctx.drizzleClient.query.organizationsTable.findFirst({
-					where: (fields, operators) =>
-						operators.eq(fields.id, parent.organizationId),
-				});
+				const existingOrganization =
+					await ctx.drizzleClient.query.organizationsTable.findFirst({
+						where: (fields, operators) =>
+							operators.eq(fields.id, parent.organizationId),
+					});
 
 				// If no organization is found, log an error and throw an exception.
 				if (!existingOrganization) {
 					ctx.log.error(
-						`Postgres select operation returned no row for action item's organizationId: ${parent.organizationId}.`
+						`Postgres select operation returned no row for action item's organizationId: ${parent.organizationId}.`,
 					);
 					throw new TalawaGraphQLError({
 						extensions: {

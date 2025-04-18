@@ -1,6 +1,6 @@
 import type { GraphQLContext } from "~/src/graphql/context";
-import { ActionItemCategory } from "../ActionItemCategory/ActionItemCategory";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { ActionItemCategory } from "../ActionItemCategory/ActionItemCategory";
 import { ActionItem } from "./ActionItem";
 // import { actionCategoriesTable } from "~/src/drizzle/schema";
 export const resolveCategory = async (
@@ -14,15 +14,16 @@ export const resolveCategory = async (
 	}
 
 	// Query the category by categoryId using the categoriesTable.
-	const category = await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
-		where: (fields, operators) =>
-			operators.eq(fields.id, parent.categoryId as string),
-	});
+	const category =
+		await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+			where: (fields, operators) =>
+				operators.eq(fields.id, parent.categoryId as string),
+		});
 
 	// If no category is found, log an error and throw an appropriate error.
 	if (!category) {
 		ctx.log.error(
-			`Category with ID ${parent.categoryId} not found for ActionItem.`
+			`Category with ID ${parent.categoryId} not found for ActionItem.`,
 		);
 
 		throw new TalawaGraphQLError({

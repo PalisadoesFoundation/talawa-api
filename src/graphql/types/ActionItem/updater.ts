@@ -44,7 +44,8 @@ ActionItem.implement({
 					});
 				}
 
-				const currentUserOrganizationMembership = currentUser.organizationMembershipsWhereMember[0];
+				const currentUserOrganizationMembership =
+					currentUser.organizationMembershipsWhereMember[0];
 
 				// Check if the current user has administrator privileges.
 				if (
@@ -72,14 +73,16 @@ ActionItem.implement({
 				const updaterId = parent.updaterId;
 
 				// Query the usersTable to fetch the updater based on updaterId.
-				const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) => operators.eq(fields.id, updaterId),
-				});
+				const existingUser = await ctx.drizzleClient.query.usersTable.findFirst(
+					{
+						where: (fields, operators) => operators.eq(fields.id, updaterId),
+					},
+				);
 
 				// Log and throw an error if no user is found for the given updaterId.
 				if (existingUser === undefined) {
 					ctx.log.error(
-						"Postgres select operation returned an empty array for an action item's updater id that isn't null."
+						"Postgres select operation returned an empty array for an action item's updater id that isn't null.",
 					);
 					throw new TalawaGraphQLError({
 						extensions: {

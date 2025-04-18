@@ -73,14 +73,16 @@ ActionItemCategory.implement({
 				const creatorId = parent.creatorId;
 
 				// Query the usersTable for the creator using the creatorId.
-				const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) => operators.eq(fields.id, creatorId),
-				});
+				const existingUser = await ctx.drizzleClient.query.usersTable.findFirst(
+					{
+						where: (fields, operators) => operators.eq(fields.id, creatorId),
+					},
+				);
 
 				// If no user is found for the creatorId, log an error and throw an exception.
 				if (existingUser === undefined) {
 					ctx.log.error(
-						"Postgres select operation returned an empty array for an action item category's creator id that isn't null."
+						"Postgres select operation returned an empty array for an action item category's creator id that isn't null.",
 					);
 					throw new TalawaGraphQLError({
 						extensions: {

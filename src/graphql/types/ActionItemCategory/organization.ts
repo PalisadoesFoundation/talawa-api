@@ -14,9 +14,7 @@ ActionItemCategory.implement({
 			resolve: async (parent, _args, ctx) => {
 				// Ensure the category has an organizationId; if not, throw an error.
 				if (!parent.organizationId) {
-					ctx.log.error(
-						"Action item category is missing an organizationId."
-					);
+					ctx.log.error("Action item category is missing an organizationId.");
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unexpected", // Using an allowed error code.
@@ -34,7 +32,7 @@ ActionItemCategory.implement({
 				// If no organization is found, log an error and throw an exception.
 				if (!existingOrganization) {
 					ctx.log.error(
-						`Postgres select operation returned no row for action item category's organizationId: ${parent.organizationId}.`
+						`Postgres select operation returned no row for action item category's organizationId: ${parent.organizationId}.`,
 					);
 					throw new TalawaGraphQLError({
 						extensions: {
