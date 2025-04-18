@@ -4,7 +4,6 @@ import type { Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { resolveCategoryCreator } from "~/src/graphql/types/ActionItemCategory/creator";
 import type { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockDrizzleClient } from "../../../_Mocks_/drizzleClientMock";
 
 describe("resolveCategoryCreator", () => {
