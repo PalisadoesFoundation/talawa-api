@@ -24,7 +24,6 @@ ActionItem.implement({
 			type: "DateTime",
 			nullable: true, // Ensure this is explicitly marked
 		}),
-
 		completionAt: t.expose("completionAt", {
 			description: "Timestamp when the action item was completed.",
 			type: "DateTime",

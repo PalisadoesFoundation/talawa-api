@@ -65,7 +65,6 @@ export const resolveCreatedAt = async (
 	return parent.createdAt;
 };
 
-// Wire the resolver into your ActionItem type.
 ActionItem.implement({
 	fields: (t) => ({
 		createdAt: t.field({
