@@ -633,10 +633,10 @@ export async function betterAuthSetup(
 			"development",
 		);
 
-		return answers;
 	} catch (err) {
 		handlePromptError(err);
 	}
+	return answers;
 }
 export async function setup(): Promise<SetupAnswers> {
 	let answers: SetupAnswers = {};
@@ -721,12 +721,8 @@ export async function setup(): Promise<SetupAnswers> {
 
 	if (!useDefaultBetterAuth) {
 		answers = await betterAuthSetup(answers);
-	} else {
-		answers.BETTER_AUTH_SECRET = generateBetterauthSecret();
-		answers.API_CORS_ORIGIN = "http://localhost:4321";
-		answers.NODE_ENV = "development";
 	}
-
+		
 	answers = await administratorEmail(answers);
 
 	updateEnvVariable(answers);

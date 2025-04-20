@@ -53,6 +53,7 @@ describe("Setup -> postgresSetup", () => {
 			{ POSTGRES_USER: "myUser" },
 			{ useDefaultCaddy: "true" },
 			{ useDefaultApi: "true" },
+			{ useDefaultBetterAuth: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@postgres.com" },
 		];
 

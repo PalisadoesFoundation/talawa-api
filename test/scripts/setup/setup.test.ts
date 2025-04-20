@@ -23,6 +23,7 @@ describe("Setup", () => {
 			{ useDefaultPostgres: "true" },
 			{ useDefaultCaddy: "true" },
 			{ useDefaultApi: "true" },
+			{ useDefaultBetterAuth: "true" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 
@@ -69,7 +70,7 @@ describe("Setup", () => {
 
 		dotenv.config({ path: ".env" });
 
-		for (const [key, value] of Object.entries(expectedEnv)) {
+		for (const [key, value] of Object.entries(expectedEnv)) {	
 			expect(process.env[key]).toBe(value);
 		}
 	});
@@ -82,6 +83,7 @@ describe("Setup", () => {
 			{ useDefaultPostgres: "true" },
 			{ useDefaultCaddy: "true" },
 			{ useDefaultApi: "true" },
+			{ useDefaultBetterAuth: "true" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 

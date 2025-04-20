@@ -56,6 +56,7 @@ describe("Setup -> minioSetup", () => {
 			{ useDefaultPostgres: true },
 			{ useDefaultCaddy: "true" },
 			{ useDefaultApi: true },
+			{ useDefaultBetterAuth: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 

@@ -36,6 +36,7 @@ describe("Setup -> apiSetup", () => {
 			{ useDefaultMinio: true },
 			{ useDefaultPostgres: true },
 			{ useDefaultCaddy: true },
+			{ useDefaultBetterAuth: true },
 			{ useDefaultApi: false },
 			{ API_BASE_URL: "http://localhost:5000" },
 			{ API_HOST: "127.0.0.1" },
@@ -64,12 +65,15 @@ describe("Setup -> apiSetup", () => {
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
 
-		for (const response of mockResponses) {
-			promptMock.mockResolvedValueOnce(response);
-		}
+		const mockResponseMap = Object.assign({}, ...mockResponses);
 
+		// Return the correct value based on the prompt name
+		promptMock.mockImplementation(async ([{ name }]) => {
+			const value = mockResponseMap[name];
+			console.log("🔥 Mocking prompt:", name, "→", value);
+			return { [name]: value };
+		})
 		const answers = await setup();
-
 		const expectedEnv = {
 			API_BASE_URL: "http://localhost:5000",
 			API_HOST: "127.0.0.1",
@@ -277,7 +281,7 @@ describe("generateJwtSecret", () => {
 			});
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => {});
+			.mockImplementation(() => { });
 
 		expect(() => generateJwtSecret()).toThrow("Failed to generate JWT secret");
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
