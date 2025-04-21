@@ -632,7 +632,6 @@ export async function betterAuthSetup(
 			"Node environment:",
 			"development",
 		);
-
 	} catch (err) {
 		handlePromptError(err);
 	}
@@ -722,7 +721,7 @@ export async function setup(): Promise<SetupAnswers> {
 	if (!useDefaultBetterAuth) {
 		answers = await betterAuthSetup(answers);
 	}
-		
+
 	answers = await administratorEmail(answers);
 
 	updateEnvVariable(answers);

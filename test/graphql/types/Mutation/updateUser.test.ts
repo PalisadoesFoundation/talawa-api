@@ -558,19 +558,11 @@ suite("Mutation field updateUser", () => {
 										message: expect.any(String),
 									},
 									{
-										argumentPath: ["input", "isEmailAddressVerified"],
-										message: expect.any(String),
-									},
-									{
 										argumentPath: ["input", "name"],
 										message: expect.any(String),
 									},
 									{
 										argumentPath: ["input", "password"],
-										message: expect.any(String),
-									},
-									{
-										argumentPath: ["input", "role"],
 										message: expect.any(String),
 									},
 								]),

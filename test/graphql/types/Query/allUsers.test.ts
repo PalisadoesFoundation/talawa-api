@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { afterAll, beforeAll, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -9,6 +9,10 @@ import {
 	Query_allUsers,
 	Query_signIn,
 } from "../documentNodes";
+
+vi.mock("~/src/utilities/leakyBucket", () => ({
+	default: vi.fn().mockResolvedValue(true),
+}));
 
 suite("Query field allUsers", () => {
 	let adminAuthToken: string;
