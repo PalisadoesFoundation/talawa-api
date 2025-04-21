@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
 	index,
+	numeric,
 	pgTable,
 	text,
 	timestamp,
@@ -22,19 +23,23 @@ export const actionItems = pgTable(
 			precision: 3,
 			withTimezone: true,
 		}).notNull(),
+
 		assigneeId: uuid("actor_id").references(() => usersTable.id, {
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
+
 		categoryId: uuid("category_id").references(() => actionItemCategories.id, {
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
+
 		completionAt: timestamp("completion_at", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
 		}),
+
 		createdAt: timestamp("created_at", {
 			mode: "date",
 			precision: 3,
@@ -42,24 +47,33 @@ export const actionItems = pgTable(
 		})
 			.notNull()
 			.defaultNow(),
+
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
+
 		eventId: uuid("event_id").references(() => eventsTable.id, {
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
+
 		id: uuid("id").primaryKey().$default(uuidv7),
+
 		isCompleted: boolean("is_completed").notNull(),
+
+		allottedHours: numeric("allotted_hours"), // ✅ Newly added field
+
 		organizationId: uuid("organization_id")
 			.notNull()
 			.references(() => organizationsTable.id, {
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
+
 		postCompletionNotes: text("post_completion_notes"),
 		preCompletionNotes: text("pre_completion_notes"),
+
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
 			precision: 3,
@@ -67,6 +81,7 @@ export const actionItems = pgTable(
 		})
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
+
 		updaterId: uuid("updater_id").references(() => usersTable.id, {
 			onDelete: "set null",
 			onUpdate: "cascade",
@@ -116,5 +131,5 @@ export const actionsItemRelations = relations(actionItems, ({ one }) => ({
 	}),
 }));
 
-// ✅ Export the actionsTableInsertSchema
+// ✅ Export the insert schema with the new field included
 export const actionsTableInsertSchema = createInsertSchema(actionItems);

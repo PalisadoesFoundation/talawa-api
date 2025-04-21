@@ -7,3 +7,4 @@ import "./event";
 import "./updater";
 import "./categoryId";
 import "./organization";
+import "./allottedHours";

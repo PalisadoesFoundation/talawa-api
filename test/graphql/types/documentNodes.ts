@@ -890,6 +890,8 @@ export const Mutation_createActionItem = gql(`
       assignedAt
       completionAt
       updatedAt
+      allottedHours  
+
       category     { id }
       assignee     { id }
       event        { id }
@@ -908,6 +910,7 @@ export const UPDATE_ACTION_ITEM_MUTATION = gql(/* GraphQL */ `
       preCompletionNotes
       postCompletionNotes
       updatedAt
+      allottedHours
 
       category { id }
       assignee { id }
@@ -925,6 +928,7 @@ export const DELETE_ACTION_ITEM_MUTATION = gql(/* GraphQL */ `
       postCompletionNotes
       createdAt
       updatedAt
+      allottedHours
 
       category     { id }
       assignee     { id }
@@ -967,25 +971,28 @@ export const Query_usersByIds = gql(`
   }
 `);
 
-export const Query_actionItemsByOrganization = `
-query ActionItemsByOrganization($input: QueryActionItemsByOrganizationInput!) {
-  actionItemsByOrganization(input: $input) {
-    id
-    preCompletionNotes
-    isCompleted
-    assignedAt
-    completionAt
-    categoryId
-    assigneeId
-    creatorId
-    organizationId
-    updaterId
-    updatedAt
-    eventId
-    postCompletionNotes
+export const Query_actionItemsByOrganization = gql(/* GraphQL */ `
+  query ActionItemsByOrganization($input: QueryActionItemsByOrganizationInput!) {
+    actionItemsByOrganization(input: $input) {
+      id
+      isCompleted
+      preCompletionNotes
+      postCompletionNotes
+      assignedAt
+      completionAt
+      createdAt
+      updatedAt
+      allottedHours
+
+      category     { id }
+      assignee     { id }
+      creator      { id }
+      updater      { id }
+      organization { id }
+      event        { id }
+    }
   }
-}
-`;
+`);
 
 export const Mutation_sendMembershipRequest = gql(`
   mutation Mutation_sendMembershipRequest($input: MutationSendMembershipRequestInput!) {

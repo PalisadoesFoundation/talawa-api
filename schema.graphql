@@ -7,6 +7,9 @@ type AcceptMembershipResponse {
 }
 
 type ActionItem {
+  """The number of hours allotted to complete this action item."""
+  allottedHours: Float
+
   """Timestamp when the action item was assigned."""
   assignedAt: DateTime
 
