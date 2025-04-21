@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import readline from "node:readline";
 import * as schema from "src/drizzle/schema";
 import type { TestEnvConfig } from "test/envConfigSchema";
+import { uuidv7 } from "uuidv7";
 import { beforeAll, expect, suite, test, vi } from "vitest";
 
 let testEnvConfig: TestEnvConfig;
@@ -70,6 +71,32 @@ suite.concurrent("parseDate", () => {
 		// Test an invalid number (NaN)
 		expect(helpers.parseDate(Number.NaN)).toBeNull();
 	});
+});
+
+suite.concurrent("action item ID generation", () => {
+	test.concurrent(
+		"should generate new uuidv7 when ID is not 36 characters",
+		async () => {
+			const actionItem = {
+				id: "short-id",
+				assignedAt: "2024-03-14",
+				completionAt: "2024-03-15",
+				createdAt: "2024-03-13",
+				updaterId: "user-123",
+			};
+
+			const result = {
+				...actionItem,
+				id: actionItem.id.length === 36 ? actionItem.id : uuidv7(),
+				assignedAt: helpers.parseDate(actionItem.assignedAt),
+				completionAt: helpers.parseDate(actionItem.completionAt),
+				createdAt: helpers.parseDate(actionItem.createdAt),
+			};
+
+			expect(result.id).not.toBe("short-id");
+			expect(result.id.length).toBe(36);
+		},
+	);
 });
 
 suite.concurrent("askUserToContinue", () => {
@@ -254,6 +281,119 @@ suite.concurrent("insertCollections", () => {
 			await expect(
 				helpers.insertCollections(["invalid_collection"]),
 			).rejects.toThrow(/Error adding data to tables:/);
+		},
+	);
+
+	test.concurrent(
+		"should generate new uuidv7 for action items with short IDs",
+		async () => {
+			const userId = uuidv7();
+			await helpers.checkAndInsertData(
+				schema.usersTable,
+				[
+					{
+						id: userId,
+						emailAddress: "test@example.com",
+						name: "Test User",
+						passwordHash: "hashed_password_123",
+						isEmailAddressVerified: true,
+						role: "regular",
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+				],
+				schema.usersTable.id,
+				1000,
+			);
+
+			const organizationId = "123e4567-e89b-12d3-a456-426614174000";
+			await helpers.checkAndInsertData(
+				schema.organizationsTable,
+				[
+					{
+						id: organizationId,
+						name: "Test Organizations",
+						description: "Test organization description",
+						createdAt: new Date(),
+						updatedAt: new Date(),
+						creatorId: userId,
+						updaterId: userId,
+						isUserRegistrationRequired: false,
+					},
+				],
+				schema.organizationsTable.id,
+				1000,
+			);
+
+			const categoryId = "123e4567-e89b-12d3-a456-426614174001";
+			await helpers.checkAndInsertData(
+				schema.actionCategoriesTable,
+				[
+					{
+						id: categoryId,
+						name: "Test Category",
+						description: "Test category description",
+						createdAt: new Date(),
+						updatedAt: new Date(),
+						creatorId: userId,
+						updaterId: userId,
+						organizationId: organizationId,
+						isDisabled: false,
+					},
+				],
+				schema.actionCategoriesTable.id,
+				1000,
+			);
+			const mockActionItem = {
+				id: "short-id",
+				assignedAt: "2024-03-14",
+				completionAt: "2024-03-15",
+				createdAt: "2024-03-13",
+				updatedAt: "2024-03-13",
+				preCompletionNotes: "Test notes",
+				postCompletionNotes: "",
+				organizationId: organizationId,
+				categoryId: categoryId,
+				eventId: null,
+				assigneeId: userId,
+				creatorId: userId,
+				updaterId: userId,
+				isCompleted: false,
+			};
+
+			let capturedData: (typeof schema.actionsTable.$inferInsert)[] = [];
+			const checkAndInsertDataSpy = vi
+				.spyOn(helpers, "checkAndInsertData")
+				.mockImplementation((table, data) => {
+					capturedData = data as (typeof schema.actionsTable.$inferInsert)[];
+					return Promise.resolve(true);
+				});
+
+			const actionItemWithUuid = {
+				...mockActionItem,
+				id: uuidv7(),
+				assignedAt: helpers.parseDate(mockActionItem.assignedAt),
+				completionAt: helpers.parseDate(mockActionItem.completionAt),
+				createdAt: helpers.parseDate(mockActionItem.createdAt),
+				updatedAt: helpers.parseDate(mockActionItem.updatedAt),
+			};
+
+			await helpers.checkAndInsertData(
+				schema.actionsTable,
+				[actionItemWithUuid],
+				schema.actionsTable.id,
+				1000,
+			);
+
+			expect(capturedData.length).toBeGreaterThan(0);
+			const firstItem = capturedData[0];
+			if (!firstItem || !firstItem.id) {
+				throw new Error("Expected action item with ID");
+			}
+			expect(firstItem.id).not.toBe("short-id");
+			expect(firstItem.id.length).toBe(36);
+
+			checkAndInsertDataSpy.mockRestore();
 		},
 	);
 });
