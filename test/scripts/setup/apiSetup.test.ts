@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
+
 import {
 	apiSetup,
 	checkEnvFile,
@@ -27,144 +28,145 @@ describe("Setup -> apiSetup", () => {
 
 	const isEnvConfigured = checkEnvFile();
 
-// First, define a type for the values object to improve type safety
-type MockResponses = {
-	envReconfigure?: boolean;
-	CI: string;
-	useDefaultMinio: boolean;
-	useDefaultPostgres: boolean;
-	useDefaultCaddy: boolean;
-	useDefaultApi: boolean;
-	useDefaultBetterAuth: boolean;
-	API_BASE_URL: string;
-	API_HOST: string;
-	API_PORT: string;
-	API_IS_APPLY_DRIZZLE_MIGRATIONS: string;
-	API_IS_GRAPHIQL: string;
-	API_IS_PINO_PRETTY: string;
-	API_JWT_EXPIRES_IN: string;
-	API_JWT_SECRET: string;
-	API_LOG_LEVEL: string;
-	API_MINIO_ACCESS_KEY: string;
-	API_MINIO_END_POINT: string;
-	API_MINIO_PORT: string;
-	API_MINIO_SECRET_KEY: string;
-	API_MINIO_TEST_END_POINT: string;
-	API_MINIO_USE_SSL: string;
-	API_POSTGRES_DATABASE: string;
-	API_POSTGRES_HOST: string;
-	API_POSTGRES_PASSWORD: string;
-	API_POSTGRES_PORT: string;
-	API_POSTGRES_SSL_MODE: string;
-	API_POSTGRES_TEST_HOST: string;
-	API_POSTGRES_USER: string;
-	API_ADMINISTRATOR_USER_EMAIL_ADDRESS: string;
-	BETTER_AUTH_SECRET: string;
-	API_CORS_ORIGIN: string;
-	NODE_ENV: string;
-	[key: string]: any; // Fallback for any other keys
-  };
-  
-  function createInquirerMock() {
-	return (questions: any) => {
-	  // Extract the question name
-	  const name = Array.isArray(questions) ? questions[0].name : questions.name;
-	  
-	  // Response values map
-	  const values: MockResponses = {
-		envReconfigure: isEnvConfigured ? true : undefined,
-		CI: "true",
-		useDefaultMinio: true,
-		useDefaultPostgres: true,
-		useDefaultCaddy: true,
-		useDefaultApi: false,
-		useDefaultBetterAuth: true,
-		API_BASE_URL: "http://localhost:5000",
-		API_HOST: "127.0.0.1",
-		API_PORT: "5000",
-		API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
-		API_IS_GRAPHIQL: "false",
-		API_IS_PINO_PRETTY: "false",
-		API_JWT_EXPIRES_IN: "3600000",
-		API_JWT_SECRET: "mocked-secret",
-		API_LOG_LEVEL: "info",
-		API_MINIO_ACCESS_KEY: "mocked-access-key",
-		API_MINIO_END_POINT: "mocked-endpoint",
-		API_MINIO_PORT: "9001",
-		API_MINIO_SECRET_KEY: "password",
-		API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
-		API_MINIO_USE_SSL: "true",
-		API_POSTGRES_DATABASE: "mocked-database",
-		API_POSTGRES_HOST: "mocked-host",
-		API_POSTGRES_PASSWORD: "password",
-		API_POSTGRES_PORT: "5433",
-		API_POSTGRES_SSL_MODE: "true",
-		API_POSTGRES_TEST_HOST: "mocked-test-host",
-		API_POSTGRES_USER: "mocked-user",
-		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
-		BETTER_AUTH_SECRET: "generated-mock-secret",
-		API_CORS_ORIGIN: "http://localhost:4321",
-		NODE_ENV: "development"
-	  };
-	  
-	  // Add type safety by checking if name exists in values
-	  const value = name in values ? values[name] : undefined;
-	  
-	  // Create the result object that inquirer would return
-	  const result = Promise.resolve({
-		[name]: value,
-		// Add any required properties for the inquirer return type
-		ui: {
-		  close: vi.fn(),
-		  // Add other methods as needed
+	// First, define a type for the values object to improve type safety
+	type MockResponses = {
+		envReconfigure?: boolean;
+		CI: string;
+		useDefaultMinio: boolean;
+		useDefaultPostgres: boolean;
+		useDefaultCaddy: boolean;
+		useDefaultApi: boolean;
+		useDefaultBetterAuth: boolean;
+		API_BASE_URL: string;
+		API_HOST: string;
+		API_PORT: string;
+		API_IS_APPLY_DRIZZLE_MIGRATIONS: string;
+		API_IS_GRAPHIQL: string;
+		API_IS_PINO_PRETTY: string;
+		API_JWT_EXPIRES_IN: string;
+		API_JWT_SECRET: string;
+		API_LOG_LEVEL: string;
+		API_MINIO_ACCESS_KEY: string;
+		API_MINIO_END_POINT: string;
+		API_MINIO_PORT: string;
+		API_MINIO_SECRET_KEY: string;
+		API_MINIO_TEST_END_POINT: string;
+		API_MINIO_USE_SSL: string;
+		API_POSTGRES_DATABASE: string;
+		API_POSTGRES_HOST: string;
+		API_POSTGRES_PASSWORD: string;
+		API_POSTGRES_PORT: string;
+		API_POSTGRES_SSL_MODE: string;
+		API_POSTGRES_TEST_HOST: string;
+		API_POSTGRES_USER: string;
+		API_ADMINISTRATOR_USER_EMAIL_ADDRESS: string;
+		BETTER_AUTH_SECRET: string;
+		API_CORS_ORIGIN: string;
+		NODE_ENV: string;
+		[key: string]: string | boolean | undefined;
+	};
+	function createInquirerMock() {
+		return (questions: { name: string } | Array<{ name: string }>) => {
+			// Extract the question name
+			const name = Array.isArray(questions)
+				? (questions[0]?.name ?? "defaultName")
+				: questions.name;
+
+			// Response values map
+			const values: MockResponses = {
+				envReconfigure: isEnvConfigured ? true : undefined,
+				CI: "true",
+				useDefaultMinio: true,
+				useDefaultPostgres: true,
+				useDefaultCaddy: true,
+				useDefaultApi: false,
+				useDefaultBetterAuth: true,
+				API_BASE_URL: "http://localhost:5000",
+				API_HOST: "127.0.0.1",
+				API_PORT: "5000",
+				API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
+				API_IS_GRAPHIQL: "false",
+				API_IS_PINO_PRETTY: "false",
+				API_JWT_EXPIRES_IN: "3600000",
+				API_JWT_SECRET: "mocked-secret",
+				API_LOG_LEVEL: "info",
+				API_MINIO_ACCESS_KEY: "mocked-access-key",
+				API_MINIO_END_POINT: "mocked-endpoint",
+				API_MINIO_PORT: "9001",
+				API_MINIO_SECRET_KEY: "password",
+				API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
+				API_MINIO_USE_SSL: "true",
+				API_POSTGRES_DATABASE: "mocked-database",
+				API_POSTGRES_HOST: "mocked-host",
+				API_POSTGRES_PASSWORD: "password",
+				API_POSTGRES_PORT: "5433",
+				API_POSTGRES_SSL_MODE: "true",
+				API_POSTGRES_TEST_HOST: "mocked-test-host",
+				API_POSTGRES_USER: "mocked-user",
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+				BETTER_AUTH_SECRET: "generated-mock-secret",
+				API_CORS_ORIGIN: "http://localhost:4321",
+				NODE_ENV: "development",
+			};
+
+			// Add type safety by checking if name exists in values
+			const value = name in values ? values[name] : undefined;
+
+			// Create the result object that inquirer would return
+			const result = Promise.resolve({
+				[name]: value,
+				// Add any required properties for the inquirer return type
+				ui: {
+					close: vi.fn(),
+					// Add other methods as needed
+				},
+			});
+
+			// Use type assertion to match expected inquirer return type
+			return result as unknown as ReturnType<typeof inquirer.prompt>;
+		};
+	}
+
+	it("should prompt the user for API configuration and update environment variables", async () => {
+		process.env.MINIO_ROOT_PASSWORD = "password";
+		process.env.POSTGRES_PASSWORD = "password";
+
+		// Set up the mock using our factory
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		promptMock.mockImplementation(createInquirerMock());
+
+		const answers = await setup();
+
+		const expectedEnv = {
+			API_BASE_URL: "http://localhost:5000",
+			API_HOST: "127.0.0.1",
+			API_PORT: "5000",
+			API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
+			API_IS_GRAPHIQL: "false",
+			API_IS_PINO_PRETTY: "false",
+			API_JWT_EXPIRES_IN: "3600000",
+			API_JWT_SECRET: "mocked-secret",
+			API_LOG_LEVEL: "info",
+			API_MINIO_ACCESS_KEY: "mocked-access-key",
+			API_MINIO_END_POINT: "mocked-endpoint",
+			API_MINIO_PORT: "9001",
+			API_MINIO_SECRET_KEY: "password",
+			API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
+			API_MINIO_USE_SSL: "true",
+			API_POSTGRES_DATABASE: "mocked-database",
+			API_POSTGRES_HOST: "mocked-host",
+			API_POSTGRES_PASSWORD: "password",
+			API_POSTGRES_PORT: "5433",
+			API_POSTGRES_SSL_MODE: "true",
+			API_POSTGRES_TEST_HOST: "mocked-test-host",
+			API_POSTGRES_USER: "mocked-user",
+			API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+		};
+
+		for (const [key, value] of Object.entries(expectedEnv)) {
+			expect(answers[key]).toBe(value);
 		}
-	  });
-	  
-	  // Use type assertion to match expected inquirer return type
-	  return result as unknown as ReturnType<typeof inquirer.prompt>;
-	};
-  }
-  
-  it("should prompt the user for API configuration and update environment variables", async () => {
-	process.env.MINIO_ROOT_PASSWORD = "password";
-	process.env.POSTGRES_PASSWORD = "password";
-	
-	// Set up the mock using our factory
-	const promptMock = vi.spyOn(inquirer, "prompt");
-	promptMock.mockImplementation(createInquirerMock());
-	
-	const answers = await setup();
-	
-	const expectedEnv = {
-	  API_BASE_URL: "http://localhost:5000",
-	  API_HOST: "127.0.0.1",
-	  API_PORT: "5000",
-	  API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
-	  API_IS_GRAPHIQL: "false",
-	  API_IS_PINO_PRETTY: "false",
-	  API_JWT_EXPIRES_IN: "3600000",
-	  API_JWT_SECRET: "mocked-secret",
-	  API_LOG_LEVEL: "info",
-	  API_MINIO_ACCESS_KEY: "mocked-access-key",
-	  API_MINIO_END_POINT: "mocked-endpoint",
-	  API_MINIO_PORT: "9001",
-	  API_MINIO_SECRET_KEY: "password",
-	  API_MINIO_TEST_END_POINT: "mocked-test-endpoint",
-	  API_MINIO_USE_SSL: "true",
-	  API_POSTGRES_DATABASE: "mocked-database",
-	  API_POSTGRES_HOST: "mocked-host",
-	  API_POSTGRES_PASSWORD: "password",
-	  API_POSTGRES_PORT: "5433",
-	  API_POSTGRES_SSL_MODE: "true",
-	  API_POSTGRES_TEST_HOST: "mocked-test-host",
-	  API_POSTGRES_USER: "mocked-user",
-	  API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
-	};
-	
-	for (const [key, value] of Object.entries(expectedEnv)) {
-	  expect(answers[key]).toBe(value);
-	}  
-  });
+	});
 
 	it("should handle prompt errors correctly", async () => {
 		const processExitSpy = vi
