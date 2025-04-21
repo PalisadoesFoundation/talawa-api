@@ -7,7 +7,7 @@ type AcceptMembershipResponse {
 }
 
 type ActionItem {
-  """The number of hours allotted to complete this action item."""
+  """Number of hours allotted to complete the action item."""
   allottedHours: Float
 
   """Timestamp when the action item was assigned."""
@@ -1759,6 +1759,8 @@ input MutationCreateActionItemCategoryInput {
 
 """Input fields required for creating an action item."""
 input MutationCreateActionItemInput {
+  """Number of whole hours allotted to this item"""
+  allottedHours: Int
   assignedAt: String
   assigneeId: ID!
   categoryId: ID!
@@ -2434,6 +2436,9 @@ input MutationUpdateActionItemCategoryInput {
 }
 
 input MutationUpdateActionItemInput {
+  """Number of hours allotted for completion."""
+  allottedHours: Int
+
   """Identifier for the assignee of the action item."""
   assigneeId: ID
 
@@ -3354,7 +3359,7 @@ type Query {
   """
   Query field to fetch all action item categories linked to a specific organization.
   """
-  ActionItemsByOrganization(
+  actionCategoriesByOrganization(
     """Input parameters to fetch action item categories by organizationId."""
     input: QueryActionCategoriesByOrganizationInput!
   ): [ActionItemCategory!]

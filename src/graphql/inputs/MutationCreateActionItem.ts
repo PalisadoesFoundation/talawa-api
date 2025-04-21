@@ -8,6 +8,7 @@ export const mutationCreateActionItemInputSchema = z.object({
 	eventId: z.string().uuid().optional(),
 	organizationId: z.string().uuid(),
 	assignedAt: z.string().optional(),
+	allottedHours: z.number().int().nonnegative().optional(), // ← enforce integer ≥ 0
 });
 
 export const MutationCreateActionItemInput = builder
@@ -23,6 +24,11 @@ export const MutationCreateActionItemInput = builder
 			eventId: t.id({ required: false }),
 			organizationId: t.id({ required: true }),
 			assignedAt: t.string({ required: false }),
+			allottedHours: t.int({
+				// ← use Int here
+				description: "Number of whole hours allotted to this item",
+				required: false,
+			}),
 		}),
 	});
 

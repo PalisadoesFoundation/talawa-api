@@ -148,6 +148,10 @@ export const createActionItemCategoryMutation = builder.mutationField(
 						isCompleted: false,
 						eventId: parsedArgs.input.eventId ?? null,
 						organizationId: parsedArgs.input.organizationId,
+						allottedHours:
+							parsedArgs.input.allottedHours !== undefined
+								? parsedArgs.input.allottedHours.toString()
+								: "0",
 						updatedAt: new Date(),
 						updaterId: currentUserId,
 					})

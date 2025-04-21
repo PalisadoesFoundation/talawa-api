@@ -1,0 +1,1 @@
+ALTER TABLE "actions" ALTER COLUMN "allotted_hours" DROP NOT NULL;

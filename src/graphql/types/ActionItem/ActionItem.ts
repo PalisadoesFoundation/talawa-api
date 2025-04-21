@@ -4,10 +4,9 @@ import { builder } from "~/src/graphql/builder";
 export type ActionItem = typeof actionItems.$inferSelect;
 
 export const ActionItem = builder.objectRef<ActionItem>("ActionItem");
-
 ActionItem.implement({
 	description:
-		"Represents an action item assigned to users, linked to events, categories, and organizations .",
+		"Represents an action item assigned to users, linked to events, categories, and organizations.",
 	fields: (t) => ({
 		id: t.exposeID("id", {
 			description: "Unique identifier for the action item.",
@@ -22,7 +21,7 @@ ActionItem.implement({
 		updatedAt: t.expose("updatedAt", {
 			description: "Timestamp when the action item was last updated.",
 			type: "DateTime",
-			nullable: true, // Ensure this is explicitly marked
+			nullable: true,
 		}),
 		completionAt: t.expose("completionAt", {
 			description: "Timestamp when the action item was completed.",
@@ -35,6 +34,26 @@ ActionItem.implement({
 		postCompletionNotes: t.exposeString("postCompletionNotes", {
 			description: "Notes added after completing the action item.",
 			nullable: true,
+		}),
+		allottedHours: t.field({
+			type: "Float",
+			nullable: true,
+			description: "Number of hours allotted to complete the action item.",
+			resolve(parent) {
+				const raw = parent.allottedHours;
+				// if it's a string (e.g. coming from a numeric column),
+				// try to parse it:
+				if (typeof raw === "string") {
+					const parsed = Number.parseFloat(raw);
+					return Number.isNaN(parsed) ? null : parsed;
+				}
+				// if it's already a number, guard against NaN:
+				if (typeof raw === "number") {
+					return Number.isNaN(raw) ? null : raw;
+				}
+				// otherwise, just return null:
+				return null;
+			},
 		}),
 	}),
 });

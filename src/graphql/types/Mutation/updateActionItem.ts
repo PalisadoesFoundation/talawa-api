@@ -195,8 +195,13 @@ builder.mutationField("updateActionItem", (t) =>
 				.update(actionItems)
 				.set({
 					...fieldsToUpdate,
+					allottedHours:
+						fieldsToUpdate.allottedHours != null
+							? fieldsToUpdate.allottedHours.toString()
+							: undefined,
 					updaterId: currentUserId,
 				})
+
 				.where(eq(actionItems.id, actionItemId))
 				.returning();
 

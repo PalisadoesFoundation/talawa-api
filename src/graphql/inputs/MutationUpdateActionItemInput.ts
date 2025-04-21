@@ -18,6 +18,7 @@ export const MutationUpdateActionItemInputSchema = actionsTableInsertSchema
 	})
 	.extend({
 		id: actionsTableInsertSchema.shape.id.unwrap(), // required for update
+		allottedHours: zod.number().nullable().optional(), // ✅ added
 	});
 
 /**
@@ -48,6 +49,10 @@ export const MutationUpdateActionItemInput = builder
 			isCompleted: t.boolean({
 				description: "Completion status of the action item.",
 				required: true,
+			}),
+			allottedHours: t.int({
+				description: "Number of hours allotted for completion.",
+				required: false,
 			}),
 		}),
 	});

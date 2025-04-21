@@ -10,7 +10,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
  * GraphQL Query: Fetches all Action Item Categories by organizationId.
  */
 export const actionCategoriesByOrganization = builder.queryField(
-	"ActionItemsByOrganization",
+	"actionCategoriesByOrganization",
 	(t) =>
 		t.field({
 			args: {

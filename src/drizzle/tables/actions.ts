@@ -62,7 +62,7 @@ export const actionItems = pgTable(
 
 		isCompleted: boolean("is_completed").notNull(),
 
-		allottedHours: numeric("allotted_hours"), // ✅ Newly added field
+		allottedHours: numeric("allotted_hours"),
 
 		organizationId: uuid("organization_id")
 			.notNull()
