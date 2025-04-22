@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { v4 as uuid } from "uuid";
+import { uuidv7 } from "uuidv7";
 import { actionItems } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -135,7 +135,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 				const [createdActionItem] = await ctx.drizzleClient
 					.insert(actionItems)
 					.values({
-						id: uuid(),
+						id: uuidv7(),
 						creatorId: currentUserId,
 						categoryId: parsedArgs.input.categoryId,
 						assigneeId: parsedArgs.input.assigneeId,
