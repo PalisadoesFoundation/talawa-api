@@ -1,7 +1,7 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { ActionItem } from "./ActionItem";
+import { ActionItem } from "./actionItem";
 
 export const resolveEvent = async (
 	parent: { eventId: string | null; organizationId: string },

@@ -1,9 +1,9 @@
-import "./ActionItem";
+import "./actionItem";
 import "./createdAt";
 import "./updatedAt";
 import "./creator";
 import "./assignee";
 import "./event";
 import "./updater";
-import "./categoryId";
+import "./actionItemCategory";
 import "./organization";

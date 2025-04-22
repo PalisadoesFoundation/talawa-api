@@ -1,7 +1,7 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { ActionItem } from "./ActionItem";
+import { ActionItem } from "./actionItem";
 
 ActionItem.implement({
 	fields: (t) => ({

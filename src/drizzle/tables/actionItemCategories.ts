@@ -9,7 +9,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { uuidv7 } from "uuidv7";
-import { actionItems } from "./actions";
+import { actionItems } from "./actionItems";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 

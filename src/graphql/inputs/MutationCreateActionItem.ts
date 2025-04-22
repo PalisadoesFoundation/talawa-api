@@ -16,17 +16,42 @@ export const MutationCreateActionItemInput = builder
 		"MutationCreateActionItemInput",
 	)
 	.implement({
-		description: "Input fields required for creating an action item.",
+		description:
+			"All inputs needed to create a new action item within an organization.",
 		fields: (t) => ({
-			categoryId: t.id({ required: true }),
-			assigneeId: t.id({ required: true }),
-			preCompletionNotes: t.string({ required: false }),
-			eventId: t.id({ required: false }),
-			organizationId: t.id({ required: true }),
-			assignedAt: t.string({ required: false }),
+			categoryId: t.id({
+				description:
+					"Global ID of the category under which this action item is classified.",
+				required: true,
+			}),
+			assigneeId: t.id({
+				description:
+					"Global ID of the user (or group) to whom this action item will be assigned.",
+				required: true,
+			}),
+			preCompletionNotes: t.string({
+				description:
+					"Optional notes or instructions to display before the action item is completed.",
+				required: false,
+			}),
+			eventId: t.id({
+				description:
+					"Optional ID of the event this action item is associated with, if any.",
+				required: false,
+			}),
+			organizationId: t.id({
+				description:
+					"Global ID of the organization under which this action item is created.",
+				required: true,
+			}),
+			assignedAt: t.string({
+				description:
+					"Optional ISO‑formatted date string indicating when the action item was assigned (defaults to now).",
+				required: false,
+			}),
 			allottedHours: t.int({
-				// ← use Int here
-				description: "Number of whole hours allotted to this item",
+				description:
+					"Optional number of whole hours estimated to complete this action item (must be ≥ 0).",
 				required: false,
 			}),
 		}),

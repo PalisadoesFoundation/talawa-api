@@ -1,6 +1,6 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import type { ActionItem as ActionItemType } from "./ActionItem";
+import type { ActionItem as ActionItemType } from "./actionItem";
 
 export const actionItemUpdatedAtResolver = async (
 	parent: ActionItemType,

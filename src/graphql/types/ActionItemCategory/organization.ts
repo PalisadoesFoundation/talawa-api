@@ -1,7 +1,7 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { ActionItemCategory } from "./ActionItemCategory";
+import { ActionItemCategory } from "./actionItemCategory";
 
 /**
  * Resolver for the "organization" field on ActionItemCategory.

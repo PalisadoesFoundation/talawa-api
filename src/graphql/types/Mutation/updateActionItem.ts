@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import { actionItems } from "~/src/drizzle/tables/actions";
+import { actionItems } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
-import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
+import { ActionItem } from "~/src/graphql/types/ActionItem/actionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import {

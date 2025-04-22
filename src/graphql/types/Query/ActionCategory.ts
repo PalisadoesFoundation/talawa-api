@@ -3,7 +3,7 @@ import {
 	QueryActionCategoriesByOrganizationInput,
 	queryActionCategoriesByOrganizationArgumentsSchema,
 } from "~/src/graphql/inputs/QueryActionCategoriesByOrganizationInput";
-import { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/ActionItemCategory";
+import { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/actionItemCategory";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**

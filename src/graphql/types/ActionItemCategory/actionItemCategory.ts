@@ -1,7 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { inArray } from "drizzle-orm";
 import { z } from "zod";
-import type { actionItemCategories } from "~/src/drizzle/tables/actionCategories";
+import type { actionItemCategories } from "~/src/drizzle/tables/actionItemCategories";
 import { builder } from "~/src/graphql/builder";
 export type ActionItemCategory = InferSelectModel<typeof actionItemCategories>;
 

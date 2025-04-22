@@ -1,6 +1,6 @@
 // src/graphql/inputs/MutationDeleteActionItemInput.ts
 import { z } from "zod";
-import { actionsTableInsertSchema } from "~/src/drizzle/tables/actions";
+import { actionsTableInsertSchema } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 
 /**

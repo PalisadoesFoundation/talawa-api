@@ -18,8 +18,14 @@ export const queryActionCategoriesByOrganizationInputSchema = z.object({
 export const QueryActionCategoriesByOrganizationInput = builder.inputType(
 	"QueryActionCategoriesByOrganizationInput",
 	{
+		description:
+			"Input object for querying action item categories by a specific organization.",
 		fields: (t) => ({
-			organizationId: t.string({ required: true }),
+			organizationId: t.id({
+				description:
+					"Global identifier of the organization whose action item categories you want to fetch.",
+				required: true,
+			}),
 		}),
 	},
 );

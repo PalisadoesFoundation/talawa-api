@@ -1,6 +1,6 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
-import type { ActionItemCategory as ActionItemCategoryType } from "./ActionItemCategory";
+import type { ActionItemCategory as ActionItemCategoryType } from "./actionItemCategory";
 
 export const actionItemCategoryUpdatedAtResolver = async (
 	parent: ActionItemCategoryType,

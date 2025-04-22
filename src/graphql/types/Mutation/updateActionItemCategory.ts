@@ -1,8 +1,8 @@
 import { eq, sql } from "drizzle-orm";
-import { actionItemCategories } from "~/src/drizzle/tables/actionCategories";
+import { actionItemCategories } from "~/src/drizzle/tables/actionItemCategories";
 import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { ActionItemCategory } from "../ActionItemCategory/ActionItemCategory";
+import { ActionItemCategory } from "../ActionItemCategory/actionItemCategory";
 
 // Import the input reference and its Zod schema from the input folder.
 import {

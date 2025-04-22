@@ -1,10 +1,10 @@
 import { sql } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
-import { actionItemCategories } from "~/src/drizzle/tables/actionCategories";
+import { actionItemCategories } from "~/src/drizzle/tables/actionItemCategories";
 import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-import { ActionItemCategory } from "../ActionItemCategory/ActionItemCategory";
+import { ActionItemCategory } from "../ActionItemCategory/actionItemCategory";
 
 import {
 	MutationCreateActionItemCategoryInput,

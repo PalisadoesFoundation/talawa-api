@@ -1,7 +1,7 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { ActionItemCategory } from "../ActionItemCategory/ActionItemCategory";
-import { ActionItem } from "./ActionItem";
+import { ActionItemCategory } from "../ActionItemCategory/actionItemCategory";
+import { ActionItem } from "./actionItem";
 // import { actionCategoriesTable } from "~/src/drizzle/schema";
 export const resolveCategory = async (
 	parent: { categoryId: string | null },

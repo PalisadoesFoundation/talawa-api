@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { resolveCategory } from "~/src/graphql/types/ActionItem/categoryId";
+import { resolveCategory } from "~/src/graphql/types/ActionItem/actionItemCategory";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockDrizzleClient } from "../../../_Mocks_/drizzleClientMock";
 

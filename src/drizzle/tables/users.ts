@@ -19,8 +19,8 @@ import { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStat
 import { userMaritalStatusEnum } from "~/src/drizzle/enums/userMaritalStatus";
 import { userNatalSexEnum } from "~/src/drizzle/enums/userNatalSex";
 import { userRoleEnum } from "~/src/drizzle/enums/userRole";
-import { actionItemCategories } from "./actionCategories";
-import { actionItems } from "./actions";
+import { actionItemCategories } from "./actionItemCategories";
+import { actionItems } from "./actionItems";
 import { advertisementAttachmentsTable } from "./advertisementAttachments";
 import { advertisementsTable } from "./advertisements";
 import { agendaFoldersTable } from "./agendaFolders";

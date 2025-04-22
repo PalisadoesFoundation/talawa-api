@@ -4,8 +4,8 @@
 export {
 	actionItemCategories,
 	actionItemCategoriesRelations,
-} from "./tables/actionCategories";
-export { actionItems, actionsItemRelations } from "./tables/actions";
+} from "./tables/actionItemCategories";
+export { actionItems, actionsItemRelations } from "./tables/actionItems";
 export {
 	advertisementAttachmentsTable,
 	advertisementAttachmentsTableRelations,

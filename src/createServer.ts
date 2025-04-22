@@ -80,7 +80,7 @@ export const createServer = async (options?: {
 	// 	host: fastify.envConfig.API_REDIS_HOST,
 	// 	port: fastify.envConfig.API_REDIS_PORT,
 	// 	closeClient: true,
-	// });WWWWWWWWWW
+	// });WWWWWWWWW
 
 	fastify.register(fastifyRedis, {
 		url: fastify.envConfig.API_REDIS_URI,

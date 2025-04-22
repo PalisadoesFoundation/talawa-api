@@ -1,6 +1,6 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
-import { ActionItem } from "./ActionItem";
+import { ActionItem } from "./actionItem";
 
 export const resolveAssignee = async (
 	parent: { assigneeId: string | null },

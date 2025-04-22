@@ -1757,15 +1757,35 @@ input MutationCreateActionItemCategoryInput {
   organizationId: ID!
 }
 
-"""Input fields required for creating an action item."""
+"""All inputs needed to create a new action item within an organization."""
 input MutationCreateActionItemInput {
-  """Number of whole hours allotted to this item"""
+  """
+  Optional number of whole hours estimated to complete this action item (must be ≥ 0).
+  """
   allottedHours: Int
+
+  """
+  Optional ISO‑formatted date string indicating when the action item was assigned (defaults to now).
+  """
   assignedAt: String
+
+  """
+  Global ID of the user (or group) to whom this action item will be assigned.
+  """
   assigneeId: ID!
+
+  """Global ID of the category under which this action item is classified."""
   categoryId: ID!
+
+  """Optional ID of the event this action item is associated with, if any."""
   eventId: ID
+
+  """Global ID of the organization under which this action item is created."""
   organizationId: ID!
+
+  """
+  Optional notes or instructions to display before the action item is completed.
+  """
   preCompletionNotes: String
 }
 
@@ -3476,8 +3496,14 @@ type Query {
   venue(input: QueryVenueInput!): Venue
 }
 
+"""
+Input object for querying action item categories by a specific organization.
+"""
 input QueryActionCategoriesByOrganizationInput {
-  organizationId: String!
+  """
+  Global identifier of the organization whose action item categories you want to fetch.
+  """
+  organizationId: ID!
 }
 
 """Input schema for querying ActionItems by organizationId."""

@@ -1,6 +1,6 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { ActionItemCategory } from "./ActionItemCategory";
+import { ActionItemCategory } from "./actionItemCategory";
 
 /**
  * Resolver for the createdAt field on ActionItemCategory.

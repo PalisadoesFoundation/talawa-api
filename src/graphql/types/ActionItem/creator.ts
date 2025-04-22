@@ -1,7 +1,7 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { ActionItem } from "./ActionItem";
+import { ActionItem } from "./actionItem";
 
 export const resolveCreator = async (
 	parent: { creatorId: string | null; organizationId: string },
