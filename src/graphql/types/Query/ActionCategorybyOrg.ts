@@ -1,31 +1,14 @@
-import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
-import { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/ActionItemCategory";
+import {
+	QueryActionCategoriesByOrganizationInput,
+	queryActionCategoriesByOrganizationArgumentsSchema,
+} from "~/src/graphql/inputs/QueryActionCategoriesByOrganizationInput";
+import { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/actionItemCategory";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
-/**
- * GraphQL Query Input Validation Schema (Zod)
- */
-
-const queryActionCategoriesByOrganizationInputSchema = z.object({
-	organizationId: z
-		.string()
-		.uuid({ message: "Invalid Organization ID format" }),
-});
-
-const QueryActionCategoriesByOrganizationInput = builder.inputType(
-	"QueryActionCategoriesByOrganizationInput",
-	{
-		fields: (t) => ({
-			organizationId: t.string({ required: true }),
-		}),
-	},
-);
 
 /**
  * GraphQL Query: Fetches all Action Item Categories by organizationId.
  */
-
 export const actionCategoriesByOrganization = builder.queryField(
 	"actionCategoriesByOrganization",
 	(t) =>
@@ -42,21 +25,19 @@ export const actionCategoriesByOrganization = builder.queryField(
 				"Query field to fetch all action item categories linked to a specific organization.",
 			type: [ActionItemCategory],
 			resolve: async (_parent, args, ctx) => {
+				// 1. Authentication check
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthenticated",
-						},
+						extensions: { code: "unauthenticated" },
 					});
 				}
 
+				// 2. Input validation using shared Zod schema
 				const {
 					data: parsedArgs,
 					error,
 					success,
-				} = queryActionCategoriesByOrganizationInputSchema.safeParse(
-					args.input,
-				);
+				} = queryActionCategoriesByOrganizationArgumentsSchema.safeParse(args);
 
 				if (!success) {
 					throw new TalawaGraphQLError({
@@ -72,30 +53,32 @@ export const actionCategoriesByOrganization = builder.queryField(
 
 				const currentUserId = ctx.currentClient.user.id;
 
+				// 3. Authorization and data fetch
 				const [currentUser, actionCategories] = await Promise.all([
 					ctx.drizzleClient.query.usersTable.findFirst({
 						columns: { role: true },
 						where: (fields, operators) =>
 							operators.eq(fields.id, currentUserId),
 					}),
-					ctx.drizzleClient.query.actionCategoriesTable.findMany({
+					ctx.drizzleClient.query.actionItemCategoriesTable.findMany({
 						where: (fields, operators) =>
-							operators.eq(fields.organizationId, parsedArgs.organizationId),
+							operators.eq(
+								fields.organizationId,
+								parsedArgs.input.organizationId,
+							),
 					}),
 				]);
 
 				if (!currentUser) {
 					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthenticated",
-						},
+						extensions: { code: "unauthenticated" },
 					});
 				}
 
 				const organizationExists =
 					await ctx.drizzleClient.query.organizationsTable.findFirst({
 						where: (fields, operators) =>
-							operators.eq(fields.id, parsedArgs.organizationId),
+							operators.eq(fields.id, parsedArgs.input.organizationId),
 					});
 
 				if (!organizationExists) {
@@ -108,11 +91,7 @@ export const actionCategoriesByOrganization = builder.queryField(
 					});
 				}
 
-				if (!actionCategories.length) {
-					return [];
-				}
-
-				return actionCategories;
+				return actionCategories ?? [];
 			},
 		}),
 );

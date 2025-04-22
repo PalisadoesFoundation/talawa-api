@@ -881,89 +881,74 @@ export const Mutation_joinPublicOrganization = gql(`
 `);
 
 export const Mutation_createActionItem = gql(`
-  mutation CreateActionItem($input: CreateActionItemInput!) {
+  mutation CreateActionItem($input: MutationCreateActionItemInput!) {
     createActionItem(input: $input) {
       id
-      categoryId
-      assigneeId
-      assignedAt
-      completionAt
+      isCompleted
       preCompletionNotes
       postCompletionNotes
-      isCompleted
-      eventId
-      organizationId
-      creatorId
-      updaterId
+      assignedAt
+      completionAt
       updatedAt
+      allottedHours  
+
+      category     { id }
+      assignee     { id }
+      event        { id }
+      organization { id }
+      creator      { id }
+      updater      { id }
     }
   }
 `);
 
-export const POSTGRES_EVENTS_BY_ORGANIZATION_ID = gql(`
-  query EventsByOrganizationId($input: EventsByOrganizationIdInput!) {
-    eventsByOrganizationId(input: $input) {
-      id
-      name
-      description
-    }
-  }
-`);
-
-export const UPDATE_ACTION_ITEM_MUTATION = gql(`
+export const UPDATE_ACTION_ITEM_MUTATION = gql(/* GraphQL */ `
   mutation UpdateActionItem($input: MutationUpdateActionItemInput!) {
     updateActionItem(input: $input) {
       id
       isCompleted
-      postCompletionNotes
       preCompletionNotes
-      categoryId
-      assigneeId
-      updaterId
+      postCompletionNotes
+      updatedAt
+      allottedHours
+
+      category { id }
+      assignee { id }
+      updater  { id }
     }
   }
 `);
 
-export const DELETE_ACTION_ITEM_MUTATION = gql(`
+export const DELETE_ACTION_ITEM_MUTATION = gql(/* GraphQL */ `
   mutation DeleteActionItem($input: MutationDeleteActionItemInput!) {
     deleteActionItem(input: $input) {
       id
       isCompleted
-      categoryId
-      assigneeId
-      organizationId
-      createdAt
-      updatedAt
-      postCompletionNotes
       preCompletionNotes
-    }
-  }
-  `);
-
-export const ACTION_ITEM_CATEGORY = gql(`
-  query FetchActionCategoriesByOrganization($input: QueryActionCategoriesByOrganizationInput!) {
-    actionCategoriesByOrganization(input: $input) {
-      id
-      name
-      organizationId
-      creatorId
-      isDisabled
+      postCompletionNotes
       createdAt
       updatedAt
+      allottedHours
+
+      category     { id }
+      assignee     { id }
+      organization { id }
     }
   }
 `);
 
-export const Query_eventsByIds = gql(`
-  query eventsByIds($input: QueryEventsByIdsInput!) {
-    eventsByIds(input: $input) {
-      id
-      name
-      description
-      startAt
-      endAt
-    }
+export const ACTION_ITEM_CATEGORIES_BY_ORG = gql(`
+  query ActionItemsByOrganization(
+  $input: QueryActionItemsByOrganizationInput!
+) {
+  actionItemsByOrganization(input: $input) {
+    id
+    createdAt
+    organization { id }
+    creator      { id }
   }
+}
+
 `);
 
 export const Query_usersByOrganizationId = gql(`
@@ -986,42 +971,28 @@ export const Query_usersByIds = gql(`
   }
 `);
 
-export const Query_eventsByOrganizationId = gql(`
- query EventsByOrganizationId($input: EventsByOrganizationIdInput!) {
-    eventsByOrganizationId(input: $input) {
+export const Query_actionItemsByOrganization = gql(/* GraphQL */ `
+  query ActionItemsByOrganization($input: QueryActionItemsByOrganizationInput!) {
+    actionItemsByOrganization(input: $input) {
       id
-      description
-      startAt
-      endAt
-      organization {
-        id
-      }
-      attachments {
-        mimeType
-      }
+      isCompleted
+      preCompletionNotes
+      postCompletionNotes
+      assignedAt
+      completionAt
+      createdAt
+      updatedAt
+      allottedHours
+
+      category     { id }
+      assignee     { id }
+      creator      { id }
+      updater      { id }
+      organization { id }
+      event        { id }
     }
   }
 `);
-
-export const Query_actionItemsByOrganization = `
-query ActionItemsByOrganization($input: QueryActionItemsByOrganizationInput!) {
-  actionItemsByOrganization(input: $input) {
-    id
-    preCompletionNotes
-    isCompleted
-    assignedAt
-    completionAt
-    categoryId
-    assigneeId
-    creatorId
-    organizationId
-    updaterId
-    updatedAt
-    eventId
-    postCompletionNotes
-  }
-}
-`;
 
 export const Mutation_sendMembershipRequest = gql(`
   mutation Mutation_sendMembershipRequest($input: MutationSendMembershipRequestInput!) {
@@ -1070,3 +1041,19 @@ export const Mutation_createPostVote = gql(`
       caption
     }
   }`);
+
+export const Mutation_createActionItemCategory = gql(/* GraphQL */ `
+    mutation CreateActionItemCategory(
+      $input: MutationCreateActionItemCategoryInput!
+    ) {
+      createActionItemCategory(input: $input) {
+        id
+        name
+        isDisabled
+        createdAt
+  
+        organization { id }
+        creator      { id  }
+      }
+    }
+  `);

@@ -1,7 +1,6 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { ActionItem } from "./ActionItem";
+import { ActionItem } from "./actionItem";
 
 export const resolveAssignee = async (
 	parent: { assigneeId: string | null },
@@ -19,23 +18,11 @@ export const resolveAssignee = async (
 			operators.eq(fields.id, parent.assigneeId as string),
 	});
 
-	// If not found, log error & throw an appropriate error code from the recognized union
 	if (!user) {
-		ctx.log.error(
+		ctx.log.warn(
 			`Assignee with ID ${parent.assigneeId} not found for ActionItem.`,
 		);
-
-		throw new TalawaGraphQLError({
-			message: "Assignee not found",
-			extensions: {
-				code: "arguments_associated_resources_not_found",
-				issues: [
-					{
-						argumentPath: ["assigneeId"],
-					},
-				],
-			},
-		});
+		return null;
 	}
 
 	return user;

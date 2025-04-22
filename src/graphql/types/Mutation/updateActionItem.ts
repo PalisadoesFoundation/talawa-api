@@ -1,18 +1,13 @@
 import { eq } from "drizzle-orm";
-import { z } from "zod";
-import { actionsTable } from "~/src/drizzle/tables/actions";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
-import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
+import { ActionItem } from "~/src/graphql/types/ActionItem/actionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 import {
 	MutationUpdateActionItemInput,
-	MutationUpdateActionItemInputSchema,
+	mutationUpdateActionItemArgumentsSchema,
 } from "../../inputs/MutationUpdateActionItemInput";
-
-const mutationUpdateActionItemArgumentsSchema = z.object({
-	input: MutationUpdateActionItemInputSchema,
-});
 
 builder.mutationField("updateActionItem", (t) =>
 	t.field({
@@ -61,7 +56,7 @@ builder.mutationField("updateActionItem", (t) =>
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
-				ctx.drizzleClient.query.actionsTable.findFirst({
+				ctx.drizzleClient.query.actionItemsTable.findFirst({
 					columns: {
 						isCompleted: true,
 						categoryId: true,
@@ -149,7 +144,7 @@ builder.mutationField("updateActionItem", (t) =>
 				const categoryId = parsedArgs.input.categoryId;
 
 				const existingCategory =
-					await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+					await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 						columns: {
 							name: true,
 						},
@@ -197,12 +192,17 @@ builder.mutationField("updateActionItem", (t) =>
 
 			// Update the action item with all provided fields plus the updaterId
 			const [updatedActionItem] = await ctx.drizzleClient
-				.update(actionsTable)
+				.update(actionItemsTable)
 				.set({
 					...fieldsToUpdate,
+					allottedHours:
+						fieldsToUpdate.allottedHours != null
+							? fieldsToUpdate.allottedHours.toString()
+							: undefined,
 					updaterId: currentUserId,
 				})
-				.where(eq(actionsTable.id, actionItemId))
+
+				.where(eq(actionItemsTable.id, actionItemId))
 				.returning();
 
 			if (!updatedActionItem) {
@@ -244,7 +244,7 @@ builder.mutationField("markActionItemAsPending", (t) =>
 
 			// Fetch the existing action item.
 			const existingActionItem =
-				await ctx.drizzleClient.query.actionsTable.findFirst({
+				await ctx.drizzleClient.query.actionItemsTable.findFirst({
 					where: (fields, { eq }) => eq(fields.id, input.id),
 				});
 
@@ -274,14 +274,14 @@ builder.mutationField("markActionItemAsPending", (t) =>
 			}
 
 			const [updatedActionItem] = await ctx.drizzleClient
-				.update(actionsTable)
+				.update(actionItemsTable)
 				.set({
 					isCompleted: false,
 					postCompletionNotes: null,
 					updaterId: ctx.currentClient.user.id,
 					updatedAt: new Date(),
 				})
-				.where(eq(actionsTable.id, input.id))
+				.where(eq(actionItemsTable.id, input.id))
 				.returning();
 
 			if (!updatedActionItem) {

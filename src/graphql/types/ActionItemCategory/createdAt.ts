@@ -1,13 +1,12 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { ActionItem } from "./actionItem";
+import { ActionItemCategory } from "./actionItemCategory";
 
 /**
- * Resolver for the createdAt field on ActionItem.
+ * Resolver for the createdAt field on ActionItemCategory.
  * Returns the createdAt timestamp if the current user is authenticated
  * and is either an administrator or has an organization membership with administrator privileges.
  */
-// Export the createdAt resolver as a named export.
 export const resolveCreatedAt = async (
 	parent: { createdAt: Date; organizationId: string },
 	_args: Record<string, never>,
@@ -65,10 +64,11 @@ export const resolveCreatedAt = async (
 	return parent.createdAt;
 };
 
-ActionItem.implement({
+// Wire the resolver into your ActionItemCategory type.
+ActionItemCategory.implement({
 	fields: (t) => ({
 		createdAt: t.field({
-			description: "Date time at the time the action item was created.",
+			description: "Timestamp when the action item category was created.",
 			resolve: resolveCreatedAt,
 			type: "DateTime",
 		}),

@@ -7,17 +7,17 @@ type AcceptMembershipResponse {
 }
 
 type ActionItem {
+  """Number of hours allotted to complete the action item."""
+  allottedHours: Float
+
   """Timestamp when the action item was assigned."""
   assignedAt: DateTime
 
   """The user assigned to this action item."""
   assignee: User
 
-  """The ID of the user assigned to this action item."""
-  assigneeId: ID
-
-  """The ID of the category this action item belongs to."""
-  categoryId: ID
+  """The category associated with this action item."""
+  category: ActionItemCategory
 
   """Timestamp when the action item was completed."""
   completionAt: DateTime
@@ -28,16 +28,10 @@ type ActionItem {
   """User who created the action item."""
   creator: User
 
-  """The ID of the user who created this action item."""
-  creatorId: ID
-
   """
   Fetch the event associated with this action item, including attachments if available.
   """
   event: Event
-
-  """The ID of the associated event, if applicable."""
-  eventId: ID
 
   """Unique identifier for the action item."""
   id: ID
@@ -45,8 +39,8 @@ type ActionItem {
   """Indicates whether the action item is completed."""
   isCompleted: Boolean
 
-  """The ID of the organization the action item belongs to."""
-  organizationId: ID
+  """Fetch the organization associated with this action item."""
+  organization: Organization!
 
   """Notes added after completing the action item."""
   postCompletionNotes: String
@@ -57,19 +51,16 @@ type ActionItem {
   """Timestamp when the action item was last updated."""
   updatedAt: DateTime
 
-  """The ID of the user who last updated this action item."""
-  updaterId: ID
+  """User who last updated the action item."""
+  updater: User
 }
 
-"""
-Represents a category for action items, including metadata such as creation and update timestamps.
-"""
 type ActionItemCategory {
-  """Timestamp when the category was created."""
+  """Timestamp when the action item category was created."""
   createdAt: DateTime
 
-  """Identifier for the user who created this category."""
-  creatorId: ID
+  """User who created the action item category."""
+  creator: User
 
   """Unique identifier for the action item category."""
   id: ID
@@ -80,11 +71,8 @@ type ActionItemCategory {
   """The name of the action item category."""
   name: String
 
-  """Identifier for the organization this category belongs to."""
-  organizationId: ID
-
-  """Timestamp when the category was last updated."""
-  updatedAt: DateTime
+  """Fetch the organization associated with this action item category."""
+  organization: Organization!
 }
 
 type Advertisement {
@@ -517,15 +505,6 @@ type Community {
   youtubeURL: String
 }
 
-input CreateActionItemInput {
-  assignedAt: String
-  assigneeId: ID!
-  categoryId: ID!
-  eventId: ID
-  organizationId: ID!
-  preCompletionNotes: String
-}
-
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -623,10 +602,6 @@ type EventVenuesConnection {
 type EventVenuesConnectionEdge {
   cursor: String!
   node: Venue
-}
-
-input EventsByOrganizationIdInput {
-  organizationId: ID!
 }
 
 """Metadata for files uploaded via presigned URL"""
@@ -1484,7 +1459,18 @@ type Mutation {
   ): CancelMembershipResponse
 
   """Mutation field to create an action item."""
-  createActionItem(input: CreateActionItemInput!): ActionItem
+  createActionItem(
+    """Input for creating an action item."""
+    input: MutationCreateActionItemInput!
+  ): ActionItem
+
+  """Mutation field to create a new Action Item Category."""
+  createActionItemCategory(
+    """
+    Input for creating an action item category. If isDisabled is not provided, the category will be enabled by default.
+    """
+    input: MutationCreateActionItemCategoryInput!
+  ): ActionItemCategory
 
   """Mutation field to create an advertisement."""
   createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
@@ -1660,6 +1646,12 @@ type Mutation {
     input: MutationUpdateActionItemInput!
   ): ActionItem
 
+  """Mutation field to update an existing Action Item Category."""
+  updateActionItemCategory(
+    """Input for updating an Action Item Category."""
+    input: MutationUpdateActionItemCategoryInput!
+  ): ActionItemCategory
+
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
 
@@ -1745,6 +1737,56 @@ input MutationBlockUserInput {
 input MutationCancelMembershipRequestInput {
   """Global identifier of the membership request."""
   membershipRequestId: ID!
+}
+
+"""
+Input fields required for creating a new Action Item Category. The category name is required, the organization ID must be a valid UUID, and isDisabled is optional.
+"""
+input MutationCreateActionItemCategoryInput {
+  """
+  Optional flag indicating if the category should be disabled upon creation.
+  """
+  isDisabled: Boolean
+
+  """The name of the action item category. It cannot be empty."""
+  name: String!
+
+  """
+  Global identifier of the organization for which this category is being created.
+  """
+  organizationId: ID!
+}
+
+"""All inputs needed to create a new action item within an organization."""
+input MutationCreateActionItemInput {
+  """
+  Optional number of whole hours estimated to complete this action item (must be ≥ 0).
+  """
+  allottedHours: Int
+
+  """
+  Optional ISO‑formatted date string indicating when the action item was assigned (defaults to now).
+  """
+  assignedAt: String
+
+  """
+  Global ID of the user (or group) to whom this action item will be assigned.
+  """
+  assigneeId: ID!
+
+  """Global ID of the category under which this action item is classified."""
+  categoryId: ID!
+
+  """Optional ID of the event this action item is associated with, if any."""
+  eventId: ID
+
+  """Global ID of the organization under which this action item is created."""
+  organizationId: ID!
+
+  """
+  Optional notes or instructions to display before the action item is completed.
+  """
+  preCompletionNotes: String
 }
 
 """"""
@@ -2399,7 +2441,24 @@ input MutationUnblockUserInput {
   userId: ID!
 }
 
+"""
+Input fields required for updating an Action Item Category. You can update the category name and/or the disabled state.
+"""
+input MutationUpdateActionItemCategoryInput {
+  """The UUID of the category to update."""
+  categoryId: ID!
+
+  """Optional flag to mark the category as disabled or enabled."""
+  isDisabled: Boolean
+
+  """Optional new name for the category."""
+  name: String
+}
+
 input MutationUpdateActionItemInput {
+  """Number of hours allotted for completion."""
+  allottedHours: Int
+
   """Identifier for the assignee of the action item."""
   assigneeId: ID
 
@@ -3366,12 +3425,6 @@ type Query {
   """Query field to read an event."""
   event(input: QueryEventInput!): Event
 
-  """Fetch multiple events by their IDs."""
-  eventsByIds(input: QueryEventsByIdsInput!): [Event!]
-
-  """Fetch all events that belong to a given organization."""
-  eventsByOrganizationId(input: EventsByOrganizationIdInput!): [Event!]
-
   """Query field to read a fund."""
   fund(input: QueryFundInput!): Fund
 
@@ -3443,8 +3496,14 @@ type Query {
   venue(input: QueryVenueInput!): Venue
 }
 
+"""
+Input object for querying action item categories by a specific organization.
+"""
 input QueryActionCategoriesByOrganizationInput {
-  organizationId: String!
+  """
+  Global identifier of the organization whose action item categories you want to fetch.
+  """
+  organizationId: ID!
 }
 
 """Input schema for querying ActionItems by organizationId."""
@@ -3509,10 +3568,6 @@ input QueryCommentInput {
 input QueryEventInput {
   """Global id of the event."""
   id: String!
-}
-
-input QueryEventsByIdsInput {
-  ids: [ID!]!
 }
 
 """"""

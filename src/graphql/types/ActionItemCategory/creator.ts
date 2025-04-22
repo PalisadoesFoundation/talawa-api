@@ -1,23 +1,25 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { ActionItem } from "./actionItem";
+import { ActionItemCategory } from "./actionItemCategory";
 
-export const resolveCreator = async (
+/**
+ * Resolver for the "creator" field on ActionItemCategory.
+ * Ensures authentication and authorization before returning the User or null.
+ */
+export const resolveCategoryCreator = async (
 	parent: { creatorId: string | null; organizationId: string },
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ): Promise<User | null> => {
 	// 1. Authentication check
 	if (!ctx.currentClient.isAuthenticated) {
-		throw new TalawaGraphQLError({
-			extensions: { code: "unauthenticated" },
-		});
+		throw new TalawaGraphQLError({ extensions: { code: "unauthenticated" } });
 	}
 
 	const currentUserId = ctx.currentClient.user.id;
 
-	// 2. Fetch current user + their membership in this org
+	// 2. Fetch current user + their organization membership
 	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 		with: {
 			organizationMembershipsWhereMember: {
@@ -30,36 +32,32 @@ export const resolveCreator = async (
 	});
 
 	if (currentUser === undefined) {
-		throw new TalawaGraphQLError({
-			extensions: { code: "unauthenticated" },
-		});
+		throw new TalawaGraphQLError({ extensions: { code: "unauthenticated" } });
 	}
 
-	const currentUserOrganizationMembership =
-		currentUser.organizationMembershipsWhereMember[0];
+	const membership = currentUser.organizationMembershipsWhereMember[0];
 
-	// 3. Authorization: must be org administrator by role or membership
+	// 3. Authorization: must be administrator by role or membership
 	if (
 		currentUser.role !== "administrator" &&
-		(currentUserOrganizationMembership === undefined ||
-			currentUserOrganizationMembership.role !== "administrator")
+		(membership === undefined || membership.role !== "administrator")
 	) {
 		throw new TalawaGraphQLError({
 			extensions: { code: "unauthorized_action" },
 		});
 	}
 
-	// 4. Null guard for creatorId
+	// 4. Null guard: if no creatorId, return null
 	if (parent.creatorId === null) {
 		return null;
 	}
 
-	// 5. If the creator is the current user, return the already fetched object
+	// 5. If current user is the creator, return it
 	if (parent.creatorId === currentUserId) {
 		return currentUser;
 	}
 
-	// 6. Otherwise fetch the creator by ID
+	// 6. Fetch the actual creator
 	const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
 		where: (fields, operators) =>
 			parent.creatorId !== null
@@ -69,23 +67,22 @@ export const resolveCreator = async (
 
 	if (existingUser === undefined) {
 		ctx.log.error(
-			"Postgres select operation returned an empty array for an action item's creator id that isn't null.",
+			"Postgres select operation returned an empty array for an action item category's creator id that isn't null.",
 		);
-		throw new TalawaGraphQLError({
-			extensions: { code: "unexpected" },
-		});
+		throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
 	}
 
 	return existingUser;
 };
 
-ActionItem.implement({
+// Wire the resolver into ActionItemCategory type
+ActionItemCategory.implement({
 	fields: (t) => ({
 		creator: t.field({
 			type: User,
 			nullable: true,
-			description: "User who created the action item.",
-			resolve: resolveCreator,
+			description: "User who created the action item category.",
+			resolve: resolveCategoryCreator,
 		}),
 	}),
 });

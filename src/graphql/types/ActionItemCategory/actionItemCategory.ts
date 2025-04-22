@@ -1,9 +1,11 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { inArray } from "drizzle-orm";
 import { z } from "zod";
-import type { actionCategoriesTable } from "~/src/drizzle/tables/actionCategories";
+import type { actionItemCategoriesTable } from "~/src/drizzle/tables/actionItemCategories";
 import { builder } from "~/src/graphql/builder";
-export type ActionItemCategory = InferSelectModel<typeof actionCategoriesTable>;
+export type ActionItemCategory = InferSelectModel<
+	typeof actionItemCategoriesTable
+>;
 
 export const ActionItemCategory =
 	builder.objectRef<ActionItemCategory>("ActionItemCategory");
@@ -18,22 +20,8 @@ ActionItemCategory.implement({
 		name: t.exposeString("name", {
 			description: "The name of the action item category.",
 		}),
-		organizationId: t.exposeID("organizationId", {
-			description: "Identifier for the organization this category belongs to.",
-		}),
-		creatorId: t.exposeID("creatorId", {
-			description: "Identifier for the user who created this category.",
-		}),
 		isDisabled: t.exposeBoolean("isDisabled", {
 			description: "Indicates whether the action item category is disabled.",
-		}),
-		createdAt: t.expose("createdAt", {
-			description: "Timestamp when the category was created.",
-			type: "DateTime",
-		}),
-		updatedAt: t.expose("updatedAt", {
-			description: "Timestamp when the category was last updated.",
-			type: "DateTime",
 		}),
 	}),
 });
@@ -47,36 +35,41 @@ builder.queryField("categoriesByIds", (t) =>
 		type: [ActionItemCategory],
 		args: {
 			input: t.arg({
+				required: true,
 				type: builder.inputType("CategoriesByIdsInput", {
 					fields: (t) => ({
-						ids: t.field({
-							type: ["ID"],
-							required: true,
-						}),
+						ids: t.field({ type: ["ID"], required: true }),
 					}),
 				}),
-				required: true,
 			}),
 		},
 		description: "Fetch multiple action item categories by their IDs.",
-		resolve: async (_parent, args, ctx) => {
+		// note the explicit return type here
+		resolve: async (_parent, args, ctx): Promise<ActionItemCategory[]> => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new Error("Unauthenticated");
 			}
 
-			const parsedArgs = categoriesByIdsInputSchema.safeParse(args.input);
-			if (!parsedArgs.success) {
+			const parsed = categoriesByIdsInputSchema.safeParse(args.input);
+			if (!parsed.success) {
 				throw new Error("Invalid arguments");
 			}
+			const ids = parsed.data.ids;
 
-			const categoryIds = parsedArgs.data.ids;
-
+			// assert drizzleClient is defined, and cast result to our model type
+			if (!ctx.drizzleClient) {
+				throw new Error("Drizzle client is not initialized");
+			}
+			if (!ctx.drizzleClient?.query?.actionItemCategoriesTable) {
+				throw new Error(
+					"Drizzle client or actionItemCategoriesTable is not initialized",
+				);
+			}
 			const categories =
-				await ctx.drizzleClient.query.actionCategoriesTable.findMany({
-					where: (fields, operators) => inArray(fields.id, categoryIds),
+				await ctx.drizzleClient.query.actionItemCategoriesTable.findMany({
+					where: (fields, op) => inArray(fields.id, ids),
 				});
-
-			return categories;
+			return categories as ActionItemCategory[];
 		},
 	}),
 );

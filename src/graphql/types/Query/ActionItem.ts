@@ -1,15 +1,10 @@
-import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
-import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	QueryActionItemsByOrganizationInput,
-	queryActionItemsByOrgInputSchema,
-} from "../../inputs/QueryActionItemInput";
-
-const queryActionItemsByOrganizationArgumentsSchema = z.object({
-	input: queryActionItemsByOrgInputSchema,
-});
+	queryActionItemsByOrganizationArgumentsSchema,
+} from "~/src/graphql/inputs/QueryActionItemInput";
+import { ActionItem } from "~/src/graphql/types/ActionItem/actionItem";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 /**
  * GraphQL Query: Fetches all ActionItems by organizationId.
@@ -68,7 +63,7 @@ export const actionItemsByOrganization = builder.queryField(
 						where: (fields, operators) =>
 							operators.eq(fields.id, currentUserId),
 					}),
-					ctx.drizzleClient.query.actionsTable.findMany({
+					ctx.drizzleClient.query.actionItemsTable.findMany({
 						with: {
 							assignee: true,
 							category: true,
