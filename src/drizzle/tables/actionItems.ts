@@ -24,7 +24,7 @@ export const actionItemsTable = pgTable(
 			withTimezone: true,
 		}).notNull(),
 
-		assigneeId: uuid("actor_id").references(() => usersTable.id, {
+		assigneeId: uuid("assignee_id").references(() => usersTable.id, {
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
