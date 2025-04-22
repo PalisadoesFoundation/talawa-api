@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("fs");
 
 describe("updateEnvVariable", () => {
-	const envFileName = ".env_test";
+	const envFileName = ".env";
 	const backupFile = `${envFileName}.backup`;
 
 	beforeEach(() => {
