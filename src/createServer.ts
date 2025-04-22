@@ -76,14 +76,9 @@ export const createServer = async (options?: {
 		contentSecurityPolicy: !fastify.envConfig.API_IS_GRAPHIQL,
 	});
 
-	// fastify.register(fastifyRedis, {
-	// 	host: fastify.envConfig.API_REDIS_HOST,
-	// 	port: fastify.envConfig.API_REDIS_PORT,
-	// 	closeClient: true,
-	// });WWWWWWWWW
-
 	fastify.register(fastifyRedis, {
-		url: fastify.envConfig.API_REDIS_URI,
+		host: fastify.envConfig.API_REDIS_HOST,
+		port: fastify.envConfig.API_REDIS_PORT,
 		closeClient: true,
 	});
 

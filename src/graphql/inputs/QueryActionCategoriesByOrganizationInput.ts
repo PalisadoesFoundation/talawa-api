@@ -33,6 +33,7 @@ export const QueryActionCategoriesByOrganizationInput = builder.inputType(
 /**
  * 3️⃣ Arguments schema to wrap the input (optional for consistency)
  */
+
 export const queryActionCategoriesByOrganizationArgumentsSchema = z.object({
 	input: queryActionCategoriesByOrganizationInputSchema,
 });
