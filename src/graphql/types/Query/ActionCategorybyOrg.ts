@@ -60,7 +60,7 @@ export const actionCategoriesByOrganization = builder.queryField(
 						where: (fields, operators) =>
 							operators.eq(fields.id, currentUserId),
 					}),
-					ctx.drizzleClient.query.actionItemCategories.findMany({
+					ctx.drizzleClient.query.actionItemCategoriesTable.findMany({
 						where: (fields, operators) =>
 							operators.eq(
 								fields.organizationId,

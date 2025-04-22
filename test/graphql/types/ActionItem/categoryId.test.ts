@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { resolveCategory } from "~/src/graphql/types/ActionItem/actionItemCategory";
+import { resolveCategory } from "~/src/graphql/types/ActionItem/categoryId.ts";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockDrizzleClient } from "../../../_Mocks_/drizzleClientMock";
 
@@ -16,7 +16,8 @@ describe("resolveCategory", () => {
 
 	beforeEach(() => {
 		const mockDrizzle = createMockDrizzleClient();
-		findFirstMock = mockDrizzle.query.actionItemCategories.findFirst as Mock<
+		findFirstMock = mockDrizzle.query.actionItemCategoriesTable
+			.findFirst as Mock<
 			() => Promise<
 				{ id: string; name: string; isDisabled: boolean } | null | undefined
 			>

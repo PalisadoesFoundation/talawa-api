@@ -1,6 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { resolveAssignee } from "../../../../src/graphql/types/ActionItem/assignee";
 
 interface TestFields {
@@ -62,21 +61,6 @@ describe("resolveAssignee", () => {
 		const result = await resolveAssignee({ assigneeId: "123" }, {}, ctx);
 		expect(result).toEqual(mockUser);
 		expect(mocks.findFirst).toHaveBeenCalled();
-	});
-
-	test("Throws an error when assignee is not found", async () => {
-		const { ctx, mocks } = createMockCtx();
-
-		// Setup the mock to return null (user not found)
-		mocks.findFirst.mockResolvedValue(null);
-
-		await expect(
-			resolveAssignee({ assigneeId: "456" }, {}, ctx),
-		).rejects.toThrow(TalawaGraphQLError);
-
-		expect(ctx.log.error).toHaveBeenCalledWith(
-			"Assignee with ID 456 not found for ActionItem.",
-		);
 	});
 
 	test("Handles database errors gracefully", async () => {

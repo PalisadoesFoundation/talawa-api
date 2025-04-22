@@ -19,8 +19,8 @@ import { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStat
 import { userMaritalStatusEnum } from "~/src/drizzle/enums/userMaritalStatus";
 import { userNatalSexEnum } from "~/src/drizzle/enums/userNatalSex";
 import { userRoleEnum } from "~/src/drizzle/enums/userRole";
-import { actionItemCategories } from "./actionItemCategories";
-import { actionItems } from "./actionItems";
+import { actionItemCategoriesTable } from "./actionItemCategories";
+import { actionItemsTable } from "./actionItems";
 import { advertisementAttachmentsTable } from "./advertisementAttachments";
 import { advertisementsTable } from "./advertisements";
 import { agendaFoldersTable } from "./agendaFolders";
@@ -219,31 +219,31 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	/**
 	 * One to many relationship from `users` table to `actions` table.
 	 */
-	actionsWhereAssignee: many(actionItems, {
+	actionsWhereAssignee: many(actionItemsTable, {
 		relationName: "actions.assignee_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `actions` table.
 	 */
-	actionsWhereCreator: many(actionItems, {
+	actionsWhereCreator: many(actionItemsTable, {
 		relationName: "actions.creator_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `actions` table.
 	 */
-	actionsWhereUpdater: many(actionItems, {
+	actionsWhereUpdater: many(actionItemsTable, {
 		relationName: "actions.updater_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `action_categories` table.
 	 */
-	actionCategoriesWhereCreator: many(actionItemCategories, {
+	actionCategoriesWhereCreator: many(actionItemCategoriesTable, {
 		relationName: "action_categories.creator_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `action_categories` table.
 	 */
-	actionCategoriesWhereUpdater: many(actionItemCategories, {
+	actionCategoriesWhereUpdater: many(actionItemCategoriesTable, {
 		relationName: "action_categories.updater_id:users.id",
 	}),
 	/**

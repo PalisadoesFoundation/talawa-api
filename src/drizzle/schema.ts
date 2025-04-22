@@ -2,10 +2,10 @@
 // MAKE SURE TO NOT MISS ANY OF THE MODULES THAT ARE DIRECTLY CONCERNED WITH DRIZZLE DATABASE MIGRATIONS. FAILING TO DO SO WILL RESULT IN INCORRECT DRIZZLE DATABASE MIGRATIONS BEING GENERATED.
 
 export {
-	actionItemCategories,
+	actionItemCategoriesTable,
 	actionItemCategoriesRelations,
 } from "./tables/actionItemCategories";
-export { actionItems, actionsItemRelations } from "./tables/actionItems";
+export { actionItemsTable, actionsItemRelations } from "./tables/actionItems";
 export {
 	advertisementAttachmentsTable,
 	advertisementAttachmentsTableRelations,

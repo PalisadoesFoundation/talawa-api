@@ -21,7 +21,7 @@ import "./tagFolder";
 import "./user";
 import "./venue";
 import "./allUsers";
-import "./ActionCategory";
+import "./ActionCategorybyOrg";
 import "./ActionItem";
 import "./organizationUsers";
 import "./organizations";

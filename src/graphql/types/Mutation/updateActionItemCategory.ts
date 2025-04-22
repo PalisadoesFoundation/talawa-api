@@ -1,5 +1,5 @@
 import { eq, sql } from "drizzle-orm";
-import { actionItemCategories } from "~/src/drizzle/tables/actionItemCategories";
+import { actionItemCategoriesTable } from "~/src/drizzle/tables/actionItemCategories";
 import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { ActionItemCategory } from "../ActionItemCategory/actionItemCategory";
@@ -57,7 +57,7 @@ export const updateActionItemCategory = builder.mutationField(
 
 				// 3. Find the existing category.
 				const existingCategory =
-					await ctx.drizzleClient.query.actionItemCategories.findFirst({
+					await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 						columns: {
 							id: true,
 							organizationId: true,
@@ -120,9 +120,9 @@ export const updateActionItemCategory = builder.mutationField(
 
 				// 6. Execute the update operation.
 				const [updatedCategory] = await ctx.drizzleClient
-					.update(actionItemCategories)
+					.update(actionItemCategoriesTable)
 					.set(updates)
-					.where(eq(actionItemCategories.id, categoryId))
+					.where(eq(actionItemCategoriesTable.id, categoryId))
 					.returning();
 
 				if (!updatedCategory) {

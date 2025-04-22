@@ -11,8 +11,8 @@ import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
-import { actionItemCategories } from "./actionItemCategories";
-import { actionItems } from "./actionItems";
+import { actionItemCategoriesTable } from "./actionItemCategories";
+import { actionItemsTable } from "./actionItems";
 import { advertisementsTable } from "./advertisements";
 import { chatsTable } from "./chats";
 import { eventsTable } from "./events";
@@ -133,13 +133,13 @@ export const organizationsTableRelations = relations(
 		/**
 		 * One to many relationship from `organizations` table to `actions` table.
 		 */
-		actionsWhereOrganization: many(actionItems, {
+		actionsWhereOrganization: many(actionItemsTable, {
 			relationName: "actions.organization_id:organizations.id",
 		}),
 		/**
 		 * One to many relationship from `organizations` table to `action_categories` table.
 		 */
-		actionCategoriesWhereOrganization: many(actionItemCategories, {
+		actionCategoriesWhereOrganization: many(actionItemCategoriesTable, {
 			relationName: "action_categories.organization_id:organizations.id",
 		}),
 		/**

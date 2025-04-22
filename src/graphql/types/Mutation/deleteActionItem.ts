@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { actionItems } from "~/src/drizzle/tables/actionItems";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/actionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -55,7 +55,7 @@ builder.mutationField("deleteActionItem", (t) =>
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
-				ctx.drizzleClient.query.actionItems.findFirst({
+				ctx.drizzleClient.query.actionItemsTable.findFirst({
 					columns: {
 						organizationId: true,
 					},
@@ -87,8 +87,8 @@ builder.mutationField("deleteActionItem", (t) =>
 			}
 
 			const [deletedActionItem] = await ctx.drizzleClient
-				.delete(actionItems)
-				.where(eq(actionItems.id, parsedArgs.input.id))
+				.delete(actionItemsTable)
+				.where(eq(actionItemsTable.id, parsedArgs.input.id))
 				.returning();
 
 			if (!deletedActionItem) {

@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
-import { actionItemCategories } from "~/src/drizzle/tables/actionItemCategories";
+import { actionItemCategoriesTable } from "~/src/drizzle/tables/actionItemCategories";
 import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -110,7 +110,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 
 				// 6. Insert the new category into the database.
 				const [createdCategory] = await ctx.drizzleClient
-					.insert(actionItemCategories)
+					.insert(actionItemCategoriesTable)
 					.values({
 						id: uuidv7(),
 						name: parsedArgs.input.name,

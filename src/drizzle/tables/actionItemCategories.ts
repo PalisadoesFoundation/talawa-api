@@ -9,11 +9,11 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { uuidv7 } from "uuidv7";
-import { actionItems } from "./actionItems";
+import { actionItemsTable } from "./actionItems";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
-export const actionItemCategories = pgTable(
+export const actionItemCategoriesTable = pgTable(
 	"action_categories",
 	{
 		createdAt: timestamp("created_at", {
@@ -66,26 +66,26 @@ export const actionItemCategories = pgTable(
 );
 
 export const actionItemCategoriesRelations = relations(
-	actionItemCategories,
+	actionItemCategoriesTable,
 	({ many, one }) => ({
-		actionsWhereCategory: many(actionItems, {
+		actionsWhereCategory: many(actionItemsTable, {
 			relationName: "action_categories.id:actions.category_id",
 		}),
 
 		creator: one(usersTable, {
-			fields: [actionItemCategories.creatorId],
+			fields: [actionItemCategoriesTable.creatorId],
 			references: [usersTable.id],
 			relationName: "action_categories.creator_id:users.id",
 		}),
 
 		organization: one(organizationsTable, {
-			fields: [actionItemCategories.organizationId],
+			fields: [actionItemCategoriesTable.organizationId],
 			references: [organizationsTable.id],
 			relationName: "action_categories.organization_id:organizations.id",
 		}),
 
 		updater: one(usersTable, {
-			fields: [actionItemCategories.updaterId],
+			fields: [actionItemCategoriesTable.updaterId],
 			references: [usersTable.id],
 			relationName: "action_categories.updater_id:users.id",
 		}),

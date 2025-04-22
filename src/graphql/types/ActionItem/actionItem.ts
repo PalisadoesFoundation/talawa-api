@@ -1,7 +1,7 @@
-import type { actionItems } from "~/src/drizzle/tables/actionItems";
+import type { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 
-export type ActionItem = typeof actionItems.$inferSelect;
+export type ActionItem = typeof actionItemsTable.$inferSelect;
 
 export const ActionItem = builder.objectRef<ActionItem>("ActionItem");
 ActionItem.implement({

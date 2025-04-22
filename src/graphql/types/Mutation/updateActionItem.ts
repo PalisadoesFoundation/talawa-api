@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { actionItems } from "~/src/drizzle/tables/actionItems";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/actionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -56,7 +56,7 @@ builder.mutationField("updateActionItem", (t) =>
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
-				ctx.drizzleClient.query.actionItems.findFirst({
+				ctx.drizzleClient.query.actionItemsTable.findFirst({
 					columns: {
 						isCompleted: true,
 						categoryId: true,
@@ -144,7 +144,7 @@ builder.mutationField("updateActionItem", (t) =>
 				const categoryId = parsedArgs.input.categoryId;
 
 				const existingCategory =
-					await ctx.drizzleClient.query.actionItemCategories.findFirst({
+					await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 						columns: {
 							name: true,
 						},
@@ -192,7 +192,7 @@ builder.mutationField("updateActionItem", (t) =>
 
 			// Update the action item with all provided fields plus the updaterId
 			const [updatedActionItem] = await ctx.drizzleClient
-				.update(actionItems)
+				.update(actionItemsTable)
 				.set({
 					...fieldsToUpdate,
 					allottedHours:
@@ -202,7 +202,7 @@ builder.mutationField("updateActionItem", (t) =>
 					updaterId: currentUserId,
 				})
 
-				.where(eq(actionItems.id, actionItemId))
+				.where(eq(actionItemsTable.id, actionItemId))
 				.returning();
 
 			if (!updatedActionItem) {
@@ -244,7 +244,7 @@ builder.mutationField("markActionItemAsPending", (t) =>
 
 			// Fetch the existing action item.
 			const existingActionItem =
-				await ctx.drizzleClient.query.actionItems.findFirst({
+				await ctx.drizzleClient.query.actionItemsTable.findFirst({
 					where: (fields, { eq }) => eq(fields.id, input.id),
 				});
 
@@ -274,14 +274,14 @@ builder.mutationField("markActionItemAsPending", (t) =>
 			}
 
 			const [updatedActionItem] = await ctx.drizzleClient
-				.update(actionItems)
+				.update(actionItemsTable)
 				.set({
 					isCompleted: false,
 					postCompletionNotes: null,
 					updaterId: ctx.currentClient.user.id,
 					updatedAt: new Date(),
 				})
-				.where(eq(actionItems.id, input.id))
+				.where(eq(actionItemsTable.id, input.id))
 				.returning();
 
 			if (!updatedActionItem) {

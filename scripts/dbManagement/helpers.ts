@@ -558,12 +558,12 @@ export async function insertCollections(
 								? new Date(category.updatedAt)
 								: new Date(),
 						}),
-					) as (typeof schema.actionItemCategories.$inferInsert)[];
+					) as (typeof schema.actionItemCategoriesTable.$inferInsert)[];
 
 					await checkAndInsertData(
-						schema.actionItemCategories,
+						schema.actionItemCategoriesTable,
 						actionCategories,
-						schema.actionItemCategories.id,
+						schema.actionItemCategoriesTable.id,
 						1000,
 					);
 
@@ -608,12 +608,12 @@ export async function insertCollections(
 									? action_item.eventId
 									: null,
 						}),
-					) as (typeof schema.actionItems.$inferInsert)[];
+					) as (typeof schema.actionItemsTable.$inferInsert)[];
 
 					await checkAndInsertData(
-						schema.actionItems,
+						schema.actionItemsTable,
 						action_items,
-						schema.actionItems.id,
+						schema.actionItemsTable.id,
 						1000,
 					);
 
@@ -666,9 +666,9 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "comments", table: schema.commentsTable },
 			{ name: "membership_requests", table: schema.membershipRequestsTable },
 			{ name: "comment_votes", table: schema.commentVotesTable },
-			{ name: "action_items", table: schema.actionItems },
+			{ name: "action_items", table: schema.actionItemsTable },
 			{ name: "events", table: schema.eventsTable },
-			{ name: "action_categories", table: schema.actionItemCategories },
+			{ name: "action_categories", table: schema.actionItemCategoriesTable },
 		];
 
 		console.log(`\nRecord Counts ${stage} Import:\n`);

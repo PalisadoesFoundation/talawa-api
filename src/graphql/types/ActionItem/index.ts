@@ -5,5 +5,5 @@ import "./creator";
 import "./assignee";
 import "./event";
 import "./updater";
-import "./actionItemCategory";
+import "./categoryId.ts";
 import "./organization";
