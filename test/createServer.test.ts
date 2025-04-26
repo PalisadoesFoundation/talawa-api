@@ -8,6 +8,28 @@ vi.mock("~/src/lib/auth", () => ({
 		handler: vi.fn(),
 	},
 }));
+
+vi.mock("~/src/lib/db", async () => {
+	const actual =
+		await vi.importActual<typeof import("~/src/lib/db")>("~/src/lib/db");
+	return {
+		...actual,
+		db: {
+			select: vi.fn(() => ({
+				from: () => ({
+					where: () => [
+						{
+							role: "admin",
+							countryCode: "IN",
+							avatarName: "avatar123",
+						},
+					],
+				}),
+			})),
+		},
+	};
+});
+
 let server: FastifyInstance;
 
 beforeEach(async () => {
