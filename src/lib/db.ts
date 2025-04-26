@@ -1,9 +1,16 @@
-import dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-dotenv.config();
+import { EnvConfig, envConfigSchema, envSchemaAjv } from "../envConfigSchema";
+import envSchema from "env-schema";
 
-const DATABASE_URL = `postgres://${process.env.API_POSTGRES_USER}:${process.env.API_POSTGRES_PASSWORD}@${process.env.API_POSTGRES_HOST}:${process.env.API_POSTGRES_PORT}/${process.env.API_POSTGRES_DATABASE}`;
+const envConfig = envSchema<EnvConfig>({
+	ajv: envSchemaAjv,
+	dotenv: true,
+	schema: envConfigSchema,
+});
+
+const DATABASE_URL = `postgres://${envConfig.API_POSTGRES_USER}:${envConfig.API_POSTGRES_PASSWORD}@${envConfig.API_POSTGRES_HOST}:${envConfig.API_POSTGRES_PORT}/${envConfig.API_POSTGRES_DATABASE}`;
+console.log('DATABASE_URL',DATABASE_URL);
 
 let client: postgres.Sql;
 
@@ -12,8 +19,8 @@ try {
 		prepare: false,
 		max: 10,
 		idle_timeout: 30,
-		ssl: process.env.API_POSTGRES_SSL_MODE === "true" ? "allow" : undefined,
-		...(process.env.NODE_ENV === "development" && {
+		ssl: envConfig.API_POSTGRES_SSL_MODE === true ? "allow" : undefined,
+		...(envConfig.NODE_ENV === "development" && {
 			debug: (connection, query, params) => {
 				console.log("Running SQL Query:", query);
 				console.log("Query Parameters:", params);
