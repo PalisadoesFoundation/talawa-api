@@ -10,8 +10,8 @@ let client: postgres.Sql;
 try {
 	client = postgres(DATABASE_URL, {
 		prepare: false,
-		max: 10, //Connection pooling
-		idle_timeout: 30, //auto-close idle connections
+		max: 10,
+		idle_timeout: 30,
 		ssl: process.env.API_POSTGRES_SSL_MODE === "true" ? "allow" : undefined,
 		...(process.env.NODE_ENV === "development" && {
 			debug: (connection, query, params) => {
@@ -27,10 +27,10 @@ try {
 	process.exit(1);
 }
 
-// ✅ Connect Drizzle ORM
+//Connect Drizzle ORM
 export const db = drizzle(client);
 
-// ✅ Graceful Shutdown Handler
+//Graceful Shutdown Handler
 const shutdownHandler = async () => {
 	console.log("Closing database connections...");
 	try {
@@ -42,6 +42,6 @@ const shutdownHandler = async () => {
 	process.exit(0);
 };
 
-// ✅ Listen for termination signals
+//Listen for termination signals
 process.on("SIGINT", shutdownHandler);
 process.on("SIGTERM", shutdownHandler);
