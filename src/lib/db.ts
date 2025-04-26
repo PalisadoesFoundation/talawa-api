@@ -1,3 +1,4 @@
+import dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/postgres-js";
 import envSchema from "env-schema";
 import postgres from "postgres";
@@ -6,6 +7,7 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "../envConfigSchema";
+dotenv.config();
 
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
@@ -13,9 +15,7 @@ const envConfig = envSchema<EnvConfig>({
 	schema: envConfigSchema,
 });
 
-const DATABASE_URL = `postgres://${envConfig.API_POSTGRES_USER}:${envConfig.API_POSTGRES_PASSWORD}@${envConfig.API_POSTGRES_HOST}:${envConfig.API_POSTGRES_PORT}/${envConfig.API_POSTGRES_DATABASE}`;
-
-console.log("DATABASE_URL", DATABASE_URL);
+const DATABASE_URL = `postgres://${envConfig.API_POSTGRES_USER}:${envConfig.API_POSTGRES_PASSWORD}@${envConfig.NODE_ENV === "test" ? process.env.API_POSTGRES_TEST_HOST : envConfig.API_POSTGRES_HOST}:${envConfig.API_POSTGRES_PORT}/${envConfig.API_POSTGRES_DATABASE}`;
 
 let client: postgres.Sql;
 
