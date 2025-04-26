@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { type Mock, beforeEach, expect, test, vi } from "vitest";
-import { createServer } from "~/src/createServer";
 import { auth } from "~/src/lib/auth";
+import { server } from "./server";
 
 vi.mock("~/src/lib/auth", () => ({
 	auth: {
@@ -30,11 +30,11 @@ vi.mock("~/src/lib/db", async () => {
 	};
 });
 
-let server: FastifyInstance;
+let Server: FastifyInstance;
 
 beforeEach(async () => {
 	(auth.handler as Mock).mockReset();
-	server = await createServer();
+	Server = await server;
 });
 
 test("should handle valid requests and return the expected response", async () => {
@@ -45,7 +45,7 @@ test("should handle valid requests and return the expected response", async () =
 		}),
 	);
 
-	const response = await server.inject({
+	const response = await Server.inject({
 		method: "POST",
 		url: "/api/auth/sign-in/email",
 		headers: { "content-type": "application/json" },
@@ -65,7 +65,7 @@ test("should handle requests with missing headers gracefully", async () => {
 		}),
 	);
 
-	const response = await server.inject({
+	const response = await Server.inject({
 		method: "POST",
 		url: "/api/auth/sign-in/email",
 		payload: { email: "test@gmail.com", password: "test" },
@@ -81,7 +81,7 @@ test("should handle errors from auth.handler and return 500", async () => {
 		new Error("Auth service failed"),
 	);
 
-	const response = await server.inject({
+	const response = await Server.inject({
 		method: "POST",
 		url: "/api/auth/sign-in/email",
 		headers: { "content-type": "application/json" },
@@ -101,7 +101,7 @@ test("should forward headers and body correctly to auth.handler", async () => {
 	(auth.handler as Mock).mockResolvedValueOnce(
 		new Response(null, { status: 204 }),
 	);
-	const response = await server.inject({
+	const response = await Server.inject({
 		method: "POST",
 		url: "/api/auth/update",
 		headers: { "x-custom-header": "value" },
