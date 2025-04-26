@@ -14,7 +14,7 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "src/envConfigSchema";
-import { v4 as uuidv4 } from "uuid";
+import { uuidv7 } from "uuidv7";
 
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
@@ -593,7 +593,7 @@ export async function insertCollections(
 							updaterId: string;
 						}) => ({
 							...action_item,
-							id: action_item.id.length === 36 ? action_item.id : uuidv4(),
+							id: action_item.id.length === 36 ? action_item.id : uuidv7(),
 							assignedAt: parseDate(action_item.assignedAt),
 							completionAt: parseDate(action_item.completionAt),
 							createdAt: parseDate(action_item.createdAt),

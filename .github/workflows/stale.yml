@@ -13,7 +13,7 @@ name: Mark stale issues and pull requests
 
 on:
   schedule:
-  - cron: "0 0 * * *"
+    - cron: "0 0 * * *"
 
 permissions:
   issues: write
@@ -21,9 +21,8 @@ permissions:
   
 jobs:
   stale:
-
+    name: Process Stale Issues and PRs 
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/stale@v9
         with:
