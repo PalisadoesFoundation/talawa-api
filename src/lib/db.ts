@@ -1,7 +1,11 @@
 import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { EnvConfig, envConfigSchema, envSchemaAjv } from "../envConfigSchema";
 import envSchema from "env-schema";
+import postgres from "postgres";
+import {
+	type EnvConfig,
+	envConfigSchema,
+	envSchemaAjv,
+} from "../envConfigSchema";
 
 const envConfig = envSchema<EnvConfig>({
 	ajv: envSchemaAjv,
@@ -10,7 +14,8 @@ const envConfig = envSchema<EnvConfig>({
 });
 
 const DATABASE_URL = `postgres://${envConfig.API_POSTGRES_USER}:${envConfig.API_POSTGRES_PASSWORD}@${envConfig.API_POSTGRES_HOST}:${envConfig.API_POSTGRES_PORT}/${envConfig.API_POSTGRES_DATABASE}`;
-console.log('DATABASE_URL',DATABASE_URL);
+
+console.log("DATABASE_URL", DATABASE_URL);
 
 let client: postgres.Sql;
 
