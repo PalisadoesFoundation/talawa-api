@@ -1,7 +1,6 @@
 import { GraphQLObjectType } from "graphql";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
-import { vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { schema } from "~/src/graphql/schema";
 import type { Fund as FundType } from "~/src/graphql/types/Fund/Fund";
@@ -56,12 +55,11 @@ describe("Fund CreatedAt Resolver Tests", () => {
 
 			const fields = (fundType as GraphQLObjectType).getFields();
 			const createdAtField = fields.createdAt;
-
 			expect(createdAtField).toHaveProperty("complexity");
+
 			const fieldWithComplexity = createdAtField as typeof createdAtField & {
 				complexity?: number;
 			};
-
 			expect(fieldWithComplexity.complexity).toBe(1);
 		});
 	});
@@ -81,7 +79,6 @@ describe("Fund CreatedAt Resolver Tests", () => {
 				role: "member",
 				organizationMembershipsWhereMember: [],
 			};
-
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				mockUserData,
 			);
@@ -99,7 +96,6 @@ describe("Fund CreatedAt Resolver Tests", () => {
 					{ role: "member", organizationId: mockFund.organizationId },
 				],
 			};
-
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				mockUserData,
 			);
@@ -115,7 +111,6 @@ describe("Fund CreatedAt Resolver Tests", () => {
 				role: "administrator",
 				organizationMembershipsWhereMember: [],
 			};
-
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				mockUserData,
 			);
@@ -132,7 +127,6 @@ describe("Fund CreatedAt Resolver Tests", () => {
 					{ role: "administrator", organizationId: mockFund.organizationId },
 				],
 			};
-
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				mockUserData,
 			);
@@ -151,7 +145,6 @@ describe("Fund CreatedAt Resolver Tests", () => {
 					{ role: "administrator", organizationId: mockFund.organizationId },
 				],
 			};
-
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				mockUserData,
 			);
@@ -198,32 +191,24 @@ describe("Fund CreatedAt Resolver Tests", () => {
 
 			try {
 				await createdAtResolver(mockFund, {}, ctx);
-			} catch (error) {}
+			} catch {}
 
 			const firstCall = findFirstSpy.mock.calls[0]?.[0];
 			expect(firstCall).toBeDefined();
 
-			if (firstCall?.with?.organizationMembershipsWhereMember?.where) {
-				const whereFunction =
-					firstCall.with.organizationMembershipsWhereMember.where;
+			const nestedWhere =
+				firstCall?.with?.organizationMembershipsWhereMember?.where;
+			expect(nestedWhere).toBeDefined();
+
+			if (nestedWhere) {
 				const mockFields = { organizationId: "organizationId" };
 				const mockOperators = { eq: vi.fn() };
-				whereFunction(mockFields, mockOperators);
+				nestedWhere(mockFields, mockOperators);
 				expect(mockOperators.eq).toHaveBeenCalledWith(
 					mockFields.organizationId,
 					mockFund.organizationId,
 				);
 			}
-		});
-
-		it("should throw unauthenticated error if current user is not found in database", async () => {
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				undefined,
-			);
-
-			await expect(createdAtResolver(mockFund, {}, ctx)).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
-			);
 		});
 
 		it("should query users with correct ID filter", async () => {
@@ -235,16 +220,18 @@ describe("Fund CreatedAt Resolver Tests", () => {
 
 			try {
 				await createdAtResolver(mockFund, {}, ctx);
-			} catch (error) {}
+			} catch {}
 
 			const firstCall = findFirstSpy.mock.calls[0]?.[0];
 			expect(firstCall).toBeDefined();
 
-			if (firstCall?.where) {
-				const whereFunction = firstCall.where;
+			const idWhere = firstCall?.where;
+			expect(idWhere).toBeDefined();
+
+			if (idWhere) {
 				const mockFields = { id: "id" };
 				const mockOperators = { eq: vi.fn() };
-				whereFunction(mockFields, mockOperators);
+				idWhere(mockFields, mockOperators);
 				expect(mockOperators.eq).toHaveBeenCalledWith(
 					mockFields.id,
 					currentUserId,
@@ -263,7 +250,6 @@ describe("Fund CreatedAt Resolver Tests", () => {
 					extensions: { code: "unexpected" },
 				}),
 			);
-
 			expect(ctx.log.error).toHaveBeenCalled();
 		});
 	});

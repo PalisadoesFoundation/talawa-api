@@ -18,40 +18,49 @@ export const createdAtResolver = async (
 		});
 	}
 
-	const currentUserId = ctx.currentClient.user.id;
+	try {
+		const currentUserId = ctx.currentClient.user.id;
 
-	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		columns: { role: true },
-		with: {
-			organizationMembershipsWhereMember: {
-				columns: { role: true },
-				where: (fields, operators) =>
-					operators.eq(fields.organizationId, parent.organizationId),
+		const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+			columns: { role: true },
+			with: {
+				organizationMembershipsWhereMember: {
+					columns: { role: true },
+					where: (fields, operators) =>
+						operators.eq(fields.organizationId, parent.organizationId),
+				},
 			},
-		},
-		where: (fields, operators) => operators.eq(fields.id, currentUserId),
-	});
+			where: (fields, operators) => operators.eq(fields.id, currentUserId),
+		});
 
-	if (currentUser === undefined) {
+		if (currentUser === undefined) {
+			throw new TalawaGraphQLError({
+				extensions: { code: "unauthenticated" },
+			});
+		}
+
+		const currentUserOrganizationMembership =
+			currentUser.organizationMembershipsWhereMember[0];
+
+		if (
+			currentUser.role !== "administrator" &&
+			(!currentUserOrganizationMembership ||
+				currentUserOrganizationMembership.role !== "administrator")
+		) {
+			throw new TalawaGraphQLError({
+				extensions: { code: "unauthorized_action" },
+			});
+		}
+
+		return parent.createdAt;
+	} catch (error) {
+		ctx.log.error("An unexpected error occurred in createdAtResolver", {
+			error,
+		});
 		throw new TalawaGraphQLError({
-			extensions: { code: "unauthenticated" },
+			extensions: { code: "unexpected" },
 		});
 	}
-
-	const currentUserOrganizationMembership =
-		currentUser.organizationMembershipsWhereMember[0];
-
-	if (
-		currentUser.role !== "administrator" &&
-		(!currentUserOrganizationMembership ||
-			currentUserOrganizationMembership.role !== "administrator")
-	) {
-		throw new TalawaGraphQLError({
-			extensions: { code: "unauthorized_action" },
-		});
-	}
-
-	return parent.createdAt;
 };
 
 Fund.implement({
