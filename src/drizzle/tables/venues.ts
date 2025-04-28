@@ -1,8 +1,8 @@
 import { relations, sql } from "drizzle-orm";
 import {
 	index,
-	pgTable,
 	integer,
+	pgTable,
 	text,
 	timestamp,
 	uniqueIndex,

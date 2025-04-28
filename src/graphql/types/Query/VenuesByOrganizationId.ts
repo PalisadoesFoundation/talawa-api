@@ -48,29 +48,45 @@ builder.queryField("venuesByOrganizationId", (t) =>
       const conditions = [eq(venuesTable.organizationId, organizationId)];
 
       if (where?.name_contains) {
-        conditions.push(ilike(venuesTable.name, `%${where.name_contains}%`));
+        conditions.push(
+          ilike(venuesTable.name, `%${where.name_contains}%`)
+        );
       }
 
       if (where?.name_contains) {
-        conditions.push(ilike(venuesTable.name, `${where.name_contains}%`));
-      }
-
-      if (where?.description_contains) {
         conditions.push(
-          ilike(venuesTable.description, `%${where.description_contains}%`)
+          ilike(venuesTable.name, `${where.name_contains}%`)
         );
       }
 
       if (where?.description_contains) {
         conditions.push(
-          ilike(venuesTable.description, `${where.description_contains}%`)
+          ilike(
+            venuesTable.description,
+            `%${where.description_contains}%`
+          )
+        );
+      }
+
+      if (where?.description_contains) {
+        conditions.push(
+          ilike(
+            venuesTable.description,
+            `${where.description_contains}%`
+          )
         );
       }
 
       const orderByClause = orderBy?.field
         ? orderBy.direction === "DESC"
-          ? sql`${venuesTable[orderBy.field as keyof typeof venuesTable]} DESC`
-          : sql`${venuesTable[orderBy.field as keyof typeof venuesTable]} ASC`
+          ? sql`${venuesTable[
+            orderBy.field as keyof typeof venuesTable
+            ]
+            } DESC`
+          : sql`${venuesTable[
+            orderBy.field as keyof typeof venuesTable
+            ]
+            } ASC`
         : null;
 
       const venues = await (orderByClause
@@ -98,7 +114,9 @@ builder.queryField("venuesByOrganizationId", (t) =>
 
       return venues.map((row) => ({
         ...row.venues,
-        attachments: row.venue_attachments ? [row.venue_attachments] : [],
+        attachments: row.venue_attachments
+          ? [row.venue_attachments]
+          : [],
       }));
     },
   })
