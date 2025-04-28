@@ -8,6 +8,7 @@ export const mutationCreateVenueInputSchema = venuesTableInsertSchema
 		description: true,
 		name: true,
 		organizationId: true,
+		capacity: true,
 	})
 	.extend({
 		attachments: z
@@ -38,6 +39,10 @@ export const MutationCreateVenueInput = builder
 			}),
 			organizationId: t.id({
 				description: "Global identifier of the associated organization.",
+				required: true,
+			}),
+			capacity: t.int({
+				description: "Maximum number of people that can fit in the venue.",
 				required: true,
 			}),
 		}),

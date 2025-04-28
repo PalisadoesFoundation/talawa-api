@@ -411,7 +411,8 @@ CREATE TABLE "venues" (
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"updated_at" timestamp (3) with time zone,
-	"updater_id" uuid
+	"updater_id" uuid,
+	"capacity" integer NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "volunteer_group_assignments" (
@@ -694,6 +695,7 @@ CREATE INDEX "venues_created_at_index" ON "venues" USING btree ("created_at");--
 CREATE INDEX "venues_creator_id_index" ON "venues" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "venues_name_index" ON "venues" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "venues_organization_id_index" ON "venues" USING btree ("organization_id");--> statement-breakpoint
+CREATE INDEX "venues_capacity_index" ON "venues" USING btree ("capacity");--> statement-breakpoint
 CREATE UNIQUE INDEX "venues_name_organization_id_index" ON "venues" USING btree ("name","organization_id");--> statement-breakpoint
 CREATE INDEX "volunteer_group_assignments_created_at_index" ON "volunteer_group_assignments" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "volunteer_group_assignments_creator_id_index" ON "volunteer_group_assignments" USING btree ("creator_id");--> statement-breakpoint

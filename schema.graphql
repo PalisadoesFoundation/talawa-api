@@ -2157,6 +2157,9 @@ input MutationCreateVenueInput {
 
   """Global identifier of the associated organization."""
   organizationId: ID!
+
+  """Capacity of the Venue"""
+  capacity: Int!
 }
 
 """Input for deleting an action item."""

@@ -29,5 +29,9 @@ Venue.implement({
 		name: t.exposeString("name", {
 			description: "Name of the venue.",
 		}),
+		capacity: t.exposeInt("capacity", {
+			description: "Maximum number of people that can fit in the venue.",
+			nullable: false,
+		}),
 	}),
 });

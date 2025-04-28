@@ -18,12 +18,13 @@ builder.mutationField("updateVenue", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description: "Input for updating a venue.",
 				required: true,
 				type: MutationUpdateVenueInput,
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+		type: Venue,
 		description: "Mutation field to update a venue.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
@@ -63,6 +64,10 @@ builder.mutationField("updateVenue", (t) =>
 				}),
 				ctx.drizzleClient.query.venuesTable.findFirst({
 					columns: {
+						id: true,
+						name: true,
+						description: true,
+						capacity: true,
 						organizationId: true,
 					},
 					with: {
@@ -166,12 +171,12 @@ builder.mutationField("updateVenue", (t) =>
 				.set({
 					description: parsedArgs.input.description,
 					name: parsedArgs.input.name,
+					capacity: parsedArgs.input.capacity,
 					updaterId: currentUserId,
 				})
 				.where(eq(venuesTable.id, parsedArgs.input.id))
 				.returning();
 
-			// Updated venue not being returned means that either it was deleted or its `id` column was changed by external entities before this update operation could take place.
 			if (updatedVenue === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

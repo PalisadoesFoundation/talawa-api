@@ -9,7 +9,8 @@ export const mutationUpdateVenueInputSchema = venuesTableInsertSchema
 	.extend({
 		id: venuesTableInsertSchema.shape.id.unwrap(),
 		name: venuesTableInsertSchema.shape.name.optional(),
-	})
+		capacity: venuesTableInsertSchema.shape.capacity.optional(),
+	})	
 	.refine(
 		({ id, ...remainingArg }) =>
 			Object.values(remainingArg).some((value) => value !== undefined),
@@ -35,5 +36,9 @@ export const MutationUpdateVenueInput = builder
 			name: t.string({
 				description: "Name of the venue.",
 			}),
+			capacity: t.int({
+				description: "Maximum number of people that can fit in the venue.",
+				required: false,
+			  }),
 		}),
 	});

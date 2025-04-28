@@ -1,5 +1,5 @@
 {
-  "id": "f6d470d8-510b-4cff-ae76-aaad61873088",
+  "id": "5f32e155-011e-44b0-a2a7-0bb29c349264",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -5931,6 +5931,12 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
+        },
+        "capacity": {
+          "name": "capacity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {
@@ -5984,6 +5990,21 @@
           "columns": [
             {
               "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "venues_capacity_index": {
+          "name": "venues_capacity_index",
+          "columns": [
+            {
+              "expression": "capacity",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

@@ -85,5 +85,7 @@ import "./QueryTagFolderInput";
 import "./QueryTagInput";
 import "./QueryUserInput";
 import "./QueryVenueInput";
+import "./QueryVenueWhereInput";
+import "./QueryVenueOrderByInput";
 import "./SubscriptionChatMessageCreateInput";
 import "./QueryHasUserVotedInput";
