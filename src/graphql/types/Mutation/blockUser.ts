@@ -2,6 +2,7 @@ import { z } from "zod";
 import { blockedUsersTable } from "~/src/drizzle/tables/blockedUsers";
 import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { assertOrganizationAdmin } from "~/src/utilities/authorization";
 
 const mutationBlockUserArgumentsSchema = z.object({
 	organizationId: z.string().min(1, "Organization ID is required."),
@@ -72,7 +73,7 @@ builder.mutationField("blockUser", (t) =>
 						code: "arguments_associated_resources_not_found",
 						issues: [
 							{
-								argumentPath: ["organizationId"],
+								argumentPath: ["input", "organizationId"],
 							},
 						],
 					},
@@ -82,19 +83,11 @@ builder.mutationField("blockUser", (t) =>
 			const currentUserOrganizationMembership =
 				existingOrganization.membershipsWhereOrganization[0];
 
-			if (
-				currentUser?.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-						message:
-							"You must be an admin of this organization to block users.",
-					},
-				});
-			}
+			assertOrganizationAdmin(
+				currentUser,
+				currentUserOrganizationMembership,
+				"You must be an admin of this organization to block users."
+			);
 
 			const [targetUser, targetUserMembership, existingBlock] =
 				await Promise.all([

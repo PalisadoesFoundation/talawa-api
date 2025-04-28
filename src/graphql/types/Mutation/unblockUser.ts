@@ -3,6 +3,7 @@ import { z } from "zod";
 import { blockedUsersTable } from "~/src/drizzle/tables/blockedUsers";
 import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { assertOrganizationAdmin } from "~/src/utilities/authorization";
 
 const mutationUnblockUserArgumentsSchema = z.object({
 	organizationId: z.string().min(1, "Organization ID is required."),
@@ -91,19 +92,11 @@ builder.mutationField("unblockUser", (t) =>
 			const currentUserOrganizationMembership =
 				existingOrganization.membershipsWhereOrganization[0];
 
-			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-						message:
-							"You must be an admin of this organization to unblock users.",
-					},
-				});
-			}
+			assertOrganizationAdmin(
+				currentUser,
+				currentUserOrganizationMembership,
+				"You must be an admin of this organization to unblock users."
+			);
 
 			const [targetUser, existingBlock] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
