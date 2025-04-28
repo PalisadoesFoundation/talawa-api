@@ -6,6 +6,8 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { QueryVenuesByOrganizationInput } from "../../inputs/QueryVenueByOrganizationInput";
 import { QueryVenuesByOrganizationInputSchema } from "../../inputs/QueryVenueByOrganizationInput";
 
+const DEFAULT_LIMIT = 100;
+
 builder.queryField("venuesByOrganizationId", (t) =>
   t.field({
     description: "Fetch all venues that belong to a given organization.",
@@ -76,7 +78,7 @@ builder.queryField("venuesByOrganizationId", (t) =>
           .select()
           .from(venuesTable)
           .where(and(...conditions))
-          .limit(first ?? 100)
+          .limit(first ?? DEFAULT_LIMIT)
           .offset(skip ?? 0)
           .orderBy(orderByClause)
           .leftJoin(
@@ -87,7 +89,7 @@ builder.queryField("venuesByOrganizationId", (t) =>
           .select()
           .from(venuesTable)
           .where(and(...conditions))
-          .limit(first ?? 100)
+          .limit(first ?? DEFAULT_LIMIT)
           .offset(skip ?? 0)
           .leftJoin(
             venueAttachmentsTable,

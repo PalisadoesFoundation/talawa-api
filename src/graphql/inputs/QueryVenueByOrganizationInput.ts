@@ -7,8 +7,8 @@ import { QueryVenueWhereInputSchema } from "./QueryVenueWhereInput";
 
 export const QueryVenuesByOrganizationInputSchema = z.object({
   organizationId: z.string(),
-  first: z.number().optional(),
-  skip: z.number().optional(),
+  first: z.number().int().nonnegative().optional(),
+  skip: z.number().int().nonnegative().optional(),
   orderBy: QueryVenueOrderByInputSchema.optional(),
   where: QueryVenueWhereInputSchema.optional(),
 });
