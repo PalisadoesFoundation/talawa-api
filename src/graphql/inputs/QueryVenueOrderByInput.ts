@@ -8,7 +8,7 @@ export const QueryVenueOrderByInputSchema = z.object({
 
 export const QueryVenueOrderByInput = builder
 	.inputRef<z.infer<typeof QueryVenueOrderByInputSchema>>(
-    "QueryVenueOrderByInput"
+    "QueryVenueOrderByInput",
 	)
 	.implement({
 		description: "Input for ordering venues.",

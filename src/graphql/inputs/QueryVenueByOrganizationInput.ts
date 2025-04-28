@@ -15,7 +15,7 @@ export const QueryVenuesByOrganizationInputSchema = z.object({
 
 export const QueryVenuesByOrganizationInput = builder
 	.inputRef<z.infer<typeof QueryVenuesByOrganizationInputSchema>>(
-    "QueryVenuesByOrganizationInput"
+    "QueryVenuesByOrganizationInput",
 	)
 	.implement({
 		description: "Input for querying venues by organization ID.",
