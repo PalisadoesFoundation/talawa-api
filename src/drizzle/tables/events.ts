@@ -81,6 +81,18 @@ export const eventsTable = pgTable(
      */
     allDay: boolean("all_day").notNull().default(false),
     /**
+     * Indicates if the event is publicly visible.
+     */
+    isPublic: boolean("is_public").notNull().default(false),
+    /**
+     * Indicates if users can register for this event.
+     */
+    isRegisterable: boolean("is_registerable").notNull().default(false),
+    /**
+     * Physical or virtual location of the event.
+     */
+    location: text("location"),
+    /**
      * Date time at the time the event was last updated.
      */
     updatedAt: timestamp("updated_at", {
@@ -106,6 +118,8 @@ export const eventsTable = pgTable(
     index().on(self.organizationId),
     index().on(self.startAt),
     index().on(self.allDay),
+    index().on(self.isPublic),
+    index().on(self.isRegisterable),
   ]
 );
 
@@ -164,4 +178,7 @@ export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
   description: (schema) => schema.min(1).max(2048).optional(),
   name: (schema) => schema.min(1).max(256),
   allDay: (schema) => schema.optional(),
+  isPublic: (schema) => schema.optional(),
+  isRegisterable: (schema) => schema.optional(),
+  location: (schema) => schema.min(1).max(1024).optional(),
 });

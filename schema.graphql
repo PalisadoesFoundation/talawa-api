@@ -32,6 +32,16 @@ type ActionItem {
   creatorId: ID
 
   """
+  Deadline by which the action item should be completed.
+  """
+  dueDate: DateTime
+
+  """
+  Number of hours allocated for completing this action item.
+  """
+  allottedHours: Float
+
+  """
   Fetch the event associated with this action item, including attachments if available.
   """
   event: Event
@@ -575,8 +585,17 @@ type Event {
   """Global identifier of the event."""
   id: ID!
 
+  """ Boolean to tell if the event is public """
+  isPublic: Boolean
+
+  """Boolean to tell if the event is registerable."""
+  isRegisterable: Boolean
+
   """Name of the event."""
   name: String
+  
+  """ location of the event."""
+  location: String
 
   """Organization the event belongs to."""
   organization: Organization
@@ -1889,8 +1908,17 @@ input MutationCreateEventInput {
   """Date time at the time the event ends at."""
   endAt: DateTime!
 
+  """ Boolean to tell if the event is public """
+  isPublic: Boolean
+
+  """Boolean to tell if the event is registerable."""
+  isRegisterable: Boolean
+
   """Name of the event."""
   name: String!
+
+  """ location of the event."""
+  location: String
 
   """Global identifier of the associated organization."""
   organizationId: ID!
@@ -2647,20 +2675,50 @@ input MutationUpdateCurrentUserInput {
 
 """"""
 input MutationUpdateEventInput {
-  """Custom information about the event."""
-  description: String
-
-  """Date time at the time the event ends at."""
-  endAt: DateTime
-
-  """Global identifier of the event."""
+  """
+  Global identifier of the event to update.
+  """
   id: ID!
 
-  """Name of the event."""
+  """
+  Name of the event.
+  """
   name: String
 
-  """Date time at the time the event starts at."""
+  """
+  Custom information about the event.
+  """
+  description: String
+
+  """
+  Date time at the time the event starts at.
+  """
   startAt: DateTime
+
+  """
+  Date time at the time the event ends at.
+  """
+  endAt: DateTime
+
+  """
+  Indicates if the event spans the entire day.
+  """
+  allDay: Boolean
+
+  """
+  Physical or virtual location of the event.
+  """
+  location: String
+
+  """
+  Indicates if the event is publicly visible.
+  """
+  isPublic: Boolean
+
+  """
+  Indicates if users can register for this event.
+  """
+  isRegisterable: Boolean
 }
 
 """"""

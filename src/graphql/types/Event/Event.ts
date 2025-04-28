@@ -41,5 +41,14 @@ Event.implement({
     allDay: t.exposeBoolean("allDay", {
       description: "Indicates if the event spans the entire day.",
     }),
+    isPublic: t.exposeBoolean("isPublic", {
+      description: "Indicates if the event is publicly visible.",
+    }),
+    isRegisterable: t.exposeBoolean("isRegisterable", {
+      description: "Indicates if users can register for this event.",
+    }),
+    location: t.exposeString("location", {
+      description: "Physical or virtual location of the event.",
+    }),
   }),
 });

@@ -19,6 +19,9 @@ export const mutationCreateEventInputSchema = eventsTableInsertSchema
       .max(20)
       .optional(),
     allDay: z.boolean().optional(),
+    isPublic: z.boolean().optional(),
+    isRegisterable: z.boolean().optional(),
+    location: z.string().min(1).max(1024).optional(),
   })
   .superRefine((arg, ctx) => {
     if (arg.endAt <= arg.startAt) {
@@ -64,6 +67,18 @@ export const MutationCreateEventInput = builder
       }),
       allDay: t.boolean({
         description: "Indicates if the event spans the entire day",
+        required: false,
+      }),
+      isPublic: t.boolean({
+        description: "Indicates if the event is publicly visible",
+        required: false,
+      }),
+      isRegisterable: t.boolean({
+        description: "Indicates if users can register for this event",
+        required: false,
+      }),
+      location: t.string({
+        description: "Physical or virtual location of the event",
         required: false,
       }),
     }),

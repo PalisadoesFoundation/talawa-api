@@ -12,6 +12,7 @@ import {
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+
 const mutationCreateEventArgumentsSchema = z.object({
   input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
     let attachments:
@@ -33,7 +34,9 @@ const mutationCreateEventArgumentsSchema = z.object({
             ctx.addIssue({
               code: "custom",
               path: ["attachments", issue.path[0]],
-							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype}" is not allowed.`,
+              message: `Mime type "${
+                rawAttachments[issue.path[0]]?.mimetype
+              }" is not allowed.`,
             });
           }
         }
@@ -41,7 +44,7 @@ const mutationCreateEventArgumentsSchema = z.object({
         attachments = rawAttachments.map((attachment, index) =>
           Object.assign(attachment, {
             mimetype: data[index],
-					}),
+          })
         );
       }
     }
@@ -62,7 +65,7 @@ builder.mutationField("createEvent", (t) =>
         type: MutationCreateEventInput,
       }),
     },
-		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+    complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
     description: "Mutation field to create an event.",
     resolve: async (_parent, args, ctx) => {
       if (!ctx.currentClient.isAuthenticated) {
@@ -170,13 +173,16 @@ builder.mutationField("createEvent", (t) =>
             organizationId: parsedArgs.input.organizationId,
             startAt: parsedArgs.input.startAt,
             allDay: parsedArgs.input.allDay ?? false,
+            isPublic: parsedArgs.input.isPublic ?? false,
+            isRegisterable: parsedArgs.input.isRegisterable ?? false,
+            location: parsedArgs.input.location,
           })
           .returning();
 
         // Inserted event not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
         if (createdEvent === undefined) {
           ctx.log.error(
-						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+            "Postgres insert operation unexpectedly returned an empty array instead of throwing an error."
           );
 
           throw new TalawaGraphQLError({
@@ -197,7 +203,7 @@ builder.mutationField("createEvent", (t) =>
                 eventId: createdEvent.id,
                 mimeType: attachment.mimetype,
                 name: ulid(),
-							})),
+              }))
             )
             .returning();
 
@@ -211,10 +217,10 @@ builder.mutationField("createEvent", (t) =>
                   undefined,
                   {
                     "content-type": attachment.mimeType,
-									},
+                  }
                 );
               }
-						}),
+            })
           );
 
           return Object.assign(createdEvent, {
@@ -225,9 +231,11 @@ builder.mutationField("createEvent", (t) =>
         return Object.assign(createdEvent, {
           attachments: [],
           allDay: createdEvent.allDay ?? false,
+          isPublic: createdEvent.isPublic ?? false,
+          isRegisterable: createdEvent.isRegisterable ?? false,
         });
       });
     },
     type: Event,
-	}),
+  })
 );
