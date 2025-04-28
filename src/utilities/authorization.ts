@@ -7,7 +7,7 @@ interface HasRole {
 export const assertOrganizationAdmin = (
   currentUser: HasRole | undefined,
   membership: HasRole | undefined,
-  errorMessage: string
+  errorMessage: string,
 ): void => {
   if (
     currentUser?.role !== "administrator" &&
