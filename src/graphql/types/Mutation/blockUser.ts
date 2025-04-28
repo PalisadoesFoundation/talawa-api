@@ -86,7 +86,7 @@ builder.mutationField("blockUser", (t) =>
 			assertOrganizationAdmin(
 				currentUser,
 				currentUserOrganizationMembership,
-				"You must be an admin of this organization to block users."
+				"You must be an admin of this organization to block users.",
 			);
 
 			const [targetUser, targetUserMembership, existingBlock] =

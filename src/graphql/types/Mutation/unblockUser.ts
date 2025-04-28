@@ -95,7 +95,7 @@ builder.mutationField("unblockUser", (t) =>
 			assertOrganizationAdmin(
 				currentUser,
 				currentUserOrganizationMembership,
-				"You must be an admin of this organization to unblock users."
+				"You must be an admin of this organization to unblock users.",
 			);
 
 			const [targetUser, existingBlock] = await Promise.all([
