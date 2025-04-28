@@ -1,10 +1,10 @@
+import { and, eq, ilike, sql } from "drizzle-orm";
+import { venueAttachmentsTable, venuesTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
 import { Venue } from "~/src/graphql/types/Venue/Venue";
-import { eq, ilike, and, sql } from "drizzle-orm";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { QueryVenuesByOrganizationInput } from "../../inputs/QueryVenueByOrganizationInput";
 import { QueryVenuesByOrganizationInputSchema } from "../../inputs/QueryVenueByOrganizationInput";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { venueAttachmentsTable, venuesTable } from "~/src/drizzle/schema";
 
 builder.queryField("venuesByOrganizationId", (t) =>
   t.field({
@@ -73,26 +73,26 @@ builder.queryField("venuesByOrganizationId", (t) =>
 
       const venues = await (orderByClause
         ? ctx.drizzleClient
-            .select()
-            .from(venuesTable)
-            .where(and(...conditions))
-            .limit(first ?? 100)
-            .offset(skip ?? 0)
-            .orderBy(orderByClause)
-            .leftJoin(
-              venueAttachmentsTable,
-              eq(venuesTable.id, venueAttachmentsTable.venueId)
-            )
+          .select()
+          .from(venuesTable)
+          .where(and(...conditions))
+          .limit(first ?? 100)
+          .offset(skip ?? 0)
+          .orderBy(orderByClause)
+          .leftJoin(
+            venueAttachmentsTable,
+            eq(venuesTable.id, venueAttachmentsTable.venueId)
+          )
         : ctx.drizzleClient
-            .select()
-            .from(venuesTable)
-            .where(and(...conditions))
-            .limit(first ?? 100)
-            .offset(skip ?? 0)
-            .leftJoin(
-              venueAttachmentsTable,
-              eq(venuesTable.id, venueAttachmentsTable.venueId)
-            ));
+          .select()
+          .from(venuesTable)
+          .where(and(...conditions))
+          .limit(first ?? 100)
+          .offset(skip ?? 0)
+          .leftJoin(
+            venueAttachmentsTable,
+            eq(venuesTable.id, venueAttachmentsTable.venueId)
+          ));
 
       return venues.map((row) => ({
         ...row.venues,

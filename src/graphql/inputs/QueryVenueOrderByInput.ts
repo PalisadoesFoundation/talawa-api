@@ -2,8 +2,8 @@ import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 
 export const QueryVenueOrderByInputSchema = z.object({
-  field: z.enum(["name", "capacity"]).nullable(), 
-  direction: z.enum(["ASC", "DESC"]).nullable(), 
+  field: z.enum(["name", "capacity"]).nullable(),
+  direction: z.enum(["ASC", "DESC"]).nullable(),
 });
 
 export const QueryVenueOrderByInput = builder.inputRef<

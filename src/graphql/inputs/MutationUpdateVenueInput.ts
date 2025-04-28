@@ -10,7 +10,7 @@ export const mutationUpdateVenueInputSchema = venuesTableInsertSchema
 		id: venuesTableInsertSchema.shape.id.unwrap(),
 		name: venuesTableInsertSchema.shape.name.optional(),
 		capacity: venuesTableInsertSchema.shape.capacity.optional(),
-	})	
+	})
 	.refine(
 		({ id, ...remainingArg }) =>
 			Object.values(remainingArg).some((value) => value !== undefined),
@@ -39,6 +39,6 @@ export const MutationUpdateVenueInput = builder
 			capacity: t.int({
 				description: "Maximum number of people that can fit in the venue.",
 				required: false,
-			  }),
+			}),
 		}),
 	});

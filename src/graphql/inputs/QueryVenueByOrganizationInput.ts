@@ -1,8 +1,8 @@
-import { builder } from "~/src/graphql/builder";
 import { z } from "zod";
+import { builder } from "~/src/graphql/builder";
 import { QueryVenueOrderByInput } from "./QueryVenueOrderByInput";
-import { QueryVenueWhereInput } from "./QueryVenueWhereInput";
 import { QueryVenueOrderByInputSchema } from "./QueryVenueOrderByInput";
+import { QueryVenueWhereInput } from "./QueryVenueWhereInput";
 import { QueryVenueWhereInputSchema } from "./QueryVenueWhereInput";
 
 export const QueryVenuesByOrganizationInputSchema = z.object({
@@ -12,7 +12,6 @@ export const QueryVenuesByOrganizationInputSchema = z.object({
   orderBy: QueryVenueOrderByInputSchema.optional(),
   where: QueryVenueWhereInputSchema.optional(),
 });
-
 
 export const QueryVenuesByOrganizationInput = builder
   .inputRef<z.infer<typeof QueryVenuesByOrganizationInputSchema>>(

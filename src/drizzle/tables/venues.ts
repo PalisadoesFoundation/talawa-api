@@ -2,11 +2,11 @@ import { relations, sql } from "drizzle-orm";
 import {
 	index,
 	pgTable,
+	integer,
 	text,
 	timestamp,
 	uniqueIndex,
 	uuid,
-	integer,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";

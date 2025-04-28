@@ -189,6 +189,5 @@ builder.mutationField("updateVenue", (t) =>
 				attachments: existingVenue.attachmentsWhereVenue,
 			});
 		},
-		type: Venue,
 	}),
 );
