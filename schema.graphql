@@ -1513,6 +1513,9 @@ type Mutation {
   """Mutation field to create an event."""
   createEvent(input: MutationCreateEventInput!): Event
 
+  """Mutation field to create a volunteer group."""
+  createEventVolunteerGroup(input: MutationCreateVolunteerGroupsInput!): VolunteerGroups
+
   """Mutation field to create a fund."""
   createFund(input: MutationCreateFundInput!): Fund
 
@@ -1590,6 +1593,9 @@ type Mutation {
 
   """Mutation field to delete an event."""
   deleteEvent(input: MutationDeleteEventInput!): Event
+
+  """Mutation field to delete a volunteer group."""
+  deleteEventVolunteerGroup(input: MutationDeleteEventVolunteerGroupInput!): VolunteerGroups
 
   """Mutation field to delete a fund."""
   deleteFund(input: MutationDeleteFundInput!): Fund
@@ -1692,6 +1698,9 @@ type Mutation {
 
   """Mutation field to update an event."""
   updateEvent(input: MutationUpdateEventInput!): Event
+
+  """Mutation field to update a volunteer group."""
+  updateEventVolunteerGroup(input: MutationUpdateEventVolunteerGroupInput!): VolunteerGroups
 
   """Mutation field to update a fund."""
   updateFund(input: MutationUpdateFundInput!): Fund
@@ -2159,6 +2168,21 @@ input MutationCreateVenueInput {
   organizationId: ID!
 }
 
+""""""
+input MutationCreateVolunteerGroupsInput {
+  """Global identifier of the event that the group is to be made for."""
+  eventId: ID!
+
+  """Global identifier of the user that is assigned leader of the group."""
+  leaderId: ID
+
+  """Max volunteers count"""
+  maxVolunteerCount: Int!
+
+  """Name of the group."""
+  name: String!
+}
+
 """Input for deleting an action item."""
 input MutationDeleteActionItemInput {
   """Global identifier of the action item."""
@@ -2222,6 +2246,12 @@ input MutationDeleteCommentVoteInput {
 """"""
 input MutationDeleteEventInput {
   """Global identifier of the event."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteEventVolunteerGroupInput {
+  """Global identifier of the group."""
   id: ID!
 }
 
@@ -2655,6 +2685,21 @@ input MutationUpdateEventInput {
 
   """Date time at the time the event starts at."""
   startAt: DateTime
+}
+
+""""""
+input MutationUpdateEventVolunteerGroupInput {
+  """Global identifier of the group."""
+  id: ID!
+
+  """Global identifier of the user that is assigned leader of the group."""
+  leaderId: ID
+
+  """Max volunteers count"""
+  maxVolunteerCount: Int!
+
+  """Name of the Group."""
+  name: String
 }
 
 """"""
@@ -3381,6 +3426,9 @@ type Query {
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Query field to get all volunteer groups for an event."""
+  getEventVolunteerGroups(input: QueryEventVolunteerGroupsInput!): [VolunteerGroups!]
+
   """Query field to get fund campaign pledge associated to a user."""
   getPledgesByUserId(
     """Maximum number of results to return."""
@@ -3509,6 +3557,12 @@ input QueryCommentInput {
 input QueryEventInput {
   """Global id of the event."""
   id: String!
+}
+
+""""""
+input QueryEventVolunteerGroupsInput {
+  """Global id of the event."""
+  eventId: String!
 }
 
 input QueryEventsByIdsInput {
@@ -3955,4 +4009,56 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
+}
+
+type VolunteerGroupAssignments {
+  """User who has created the Assignment."""
+  assignee: User
+
+  """Date time at the time the Group Assignment was created."""
+  createdAt: DateTime
+
+  """User who has created the Assignment."""
+  creator: User
+
+  """User who has created the Assignment."""
+  group: VolunteerGroups
+
+  """Invitation status."""
+  inviteStatus: String
+
+  """Date time at the time the Group Assignment was last updated."""
+  updatedAt: DateTime
+
+  """User who has last updated the Assignment."""
+  updator: User
+}
+
+type VolunteerGroups {
+  """Date time at the time the Group was created."""
+  createdAt: DateTime
+
+  """User who has created the Group."""
+  creator: User
+
+  """Event for which Group was made."""
+  event: Event
+
+  """Global identifier of the group."""
+  id: ID!
+
+  """Leader assigned for the group."""
+  leader: User
+
+  """Maximum number of volunteers for this group."""
+  maxVolunteerCount: Int
+
+  """Name of the Group."""
+  name: String
+
+  """Date time at the time the Group was updated."""
+  updatedAt: DateTime
+
+  """User who has last updated the Group."""
+  updator: User
 }
