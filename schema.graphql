@@ -286,10 +286,6 @@ type CancelMembershipResponse {
   success: Boolean
 }
 
-input CategoriesByIdsInput {
-  ids: [ID!]!
-}
-
 type Chat {
   """Mime type of the avatar of the chat."""
   avatarMimeType: String
@@ -3410,8 +3406,8 @@ type Query {
   """Query field to read all Users."""
   allUsers(after: String, before: String, first: Int, last: Int, where: QueryAllUsersWhereInput): QueryAllUsersConnection
 
-  """Fetch multiple action item categories by their IDs."""
-  categoriesByIds(input: CategoriesByIdsInput!): [ActionItemCategory!]
+  """Fetch multiple action-item categories by their IDs."""
+  categoriesByIds(input: QueryCategoriesByIdsInput!): [ActionItemCategory!]
 
   """Query field to read a chat."""
   chat(input: QueryChatInput!): Chat
@@ -3570,6 +3566,10 @@ type QueryAllUsersConnectionEdge {
 
 input QueryAllUsersWhereInput {
   name: String
+}
+
+input QueryCategoriesByIdsInput {
+  ids: [ID!]!
 }
 
 """"""

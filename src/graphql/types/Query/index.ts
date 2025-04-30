@@ -26,3 +26,4 @@ import "./ActionItembyOrganization";
 import "./organizationUsers";
 import "./organizations";
 import "./hasUserVoted";
+import "./ActionItemCategoriesByIds";
