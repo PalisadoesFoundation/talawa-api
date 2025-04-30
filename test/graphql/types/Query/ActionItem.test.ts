@@ -118,7 +118,7 @@ async function seedActionItem(orgId: string, creatorId: string) {
 			isCompleted: faker.datatype.boolean(),
 			assignedAt: new Date(),
 			completionAt: new Date(),
-			categoryId: null,
+			actionItemCategoryId: null, // renamed field
 			assigneeId: creatorId,
 			creatorId,
 			organizationId: orgId,

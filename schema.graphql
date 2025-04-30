@@ -2456,14 +2456,14 @@ input MutationUpdateActionItemCategoryInput {
 }
 
 input MutationUpdateActionItemInput {
+  """Category identifier for the action item."""
+  actionItemCategoryId: ID
+
   """Number of hours allotted for completion."""
   allottedHours: Int
 
   """Identifier for the assignee of the action item."""
   assigneeId: ID
-
-  """Category identifier for the action item."""
-  categoryId: ID
 
   """Global identifier of the action item."""
   id: ID!

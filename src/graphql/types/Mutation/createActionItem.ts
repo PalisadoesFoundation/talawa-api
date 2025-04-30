@@ -137,7 +137,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 					.values({
 						id: uuidv7(),
 						creatorId: currentUserId,
-						categoryId: parsedArgs.input.categoryId,
+						actionItemCategoryId: parsedArgs.input.categoryId,
 						assigneeId: parsedArgs.input.assigneeId,
 						assignedAt: parsedArgs.input.assignedAt
 							? new Date(parsedArgs.input.assignedAt)

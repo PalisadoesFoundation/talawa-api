@@ -29,7 +29,7 @@ export const actionItemsTable = pgTable(
 			onUpdate: "cascade",
 		}),
 
-		categoryId: uuid("category_id").references(
+		actionItemCategoryId: uuid("category_id").references(
 			() => actionItemCategoriesTable.id,
 			{
 				onDelete: "set null",
@@ -93,7 +93,7 @@ export const actionItemsTable = pgTable(
 	(self) => [
 		index().on(self.assignedAt),
 		index().on(self.assigneeId),
-		index().on(self.categoryId),
+		index().on(self.actionItemCategoryId),
 		index().on(self.completionAt),
 		index().on(self.createdAt),
 		index().on(self.creatorId),
@@ -108,7 +108,7 @@ export const actionsItemRelations = relations(actionItemsTable, ({ one }) => ({
 		relationName: "actions.assignee_id:users.id",
 	}),
 	category: one(actionItemCategoriesTable, {
-		fields: [actionItemsTable.categoryId],
+		fields: [actionItemsTable.actionItemCategoryId],
 		references: [actionItemCategoriesTable.id],
 		relationName: "action_categories.id:actions.category_id",
 	}),

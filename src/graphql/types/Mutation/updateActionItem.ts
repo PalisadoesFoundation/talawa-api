@@ -59,7 +59,7 @@ builder.mutationField("updateActionItem", (t) =>
 				ctx.drizzleClient.query.actionItemsTable.findFirst({
 					columns: {
 						isCompleted: true,
-						categoryId: true,
+						actionItemCategoryId: true,
 						organizationId: true,
 					},
 					with: {
@@ -140,8 +140,8 @@ builder.mutationField("updateActionItem", (t) =>
 				});
 			}
 
-			if (isNotNullish(parsedArgs.input.categoryId)) {
-				const categoryId = parsedArgs.input.categoryId;
+			if (isNotNullish(parsedArgs.input.actionItemCategoryId)) {
+				const categoryId = parsedArgs.input.actionItemCategoryId;
 
 				const existingCategory =
 					await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({

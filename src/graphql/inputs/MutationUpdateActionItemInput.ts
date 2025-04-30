@@ -12,7 +12,7 @@ export const MutationUpdateActionItemInputSchema = actionsTableInsertSchema
 	.pick({
 		postCompletionNotes: true,
 		preCompletionNotes: true,
-		categoryId: true,
+		actionItemCategoryId: true,
 		assigneeId: true,
 		isCompleted: true,
 	})
@@ -40,7 +40,7 @@ export const MutationUpdateActionItemInput = builder
 			preCompletionNotes: t.string({
 				description: "Pre completion notes for the action item.",
 			}),
-			categoryId: t.id({
+			actionItemCategoryId: t.id({
 				description: "Category identifier for the action item.",
 			}),
 			assigneeId: t.id({

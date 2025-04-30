@@ -1,8 +1,9 @@
-// resolveCategory.test.ts
+// src/graphql/types/ActionItem/resolveCategory.test.ts
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { resolveCategory } from "~/src/graphql/types/ActionItem/categoryId.ts";
+import { resolveCategory } from "~/src/graphql/types/ActionItem/actionItemCategory";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockDrizzleClient } from "../../../_Mocks_/drizzleClientMock";
 
@@ -34,8 +35,12 @@ describe("resolveCategory", () => {
 		} as unknown as GraphQLContext;
 	});
 
-	it("returns null when parent.categoryId is null", async () => {
-		const result = await resolveCategory({ categoryId: null }, {}, ctx);
+	it("returns null when parent.actionItemCategoryId is null", async () => {
+		const result = await resolveCategory(
+			{ actionItemCategoryId: null },
+			{},
+			ctx,
+		);
 		expect(result).toBeNull();
 		expect(findFirstMock).not.toHaveBeenCalled();
 	});
@@ -43,7 +48,7 @@ describe("resolveCategory", () => {
 	it("throws arguments_associated_resources_not_found when category not found", async () => {
 		findFirstMock.mockResolvedValue(null);
 
-		const parent = { categoryId: "nonexistent-id" };
+		const parent = { actionItemCategoryId: "nonexistent-id" };
 		await expect(resolveCategory(parent, {}, ctx)).rejects.toBeInstanceOf(
 			TalawaGraphQLError,
 		);
@@ -55,11 +60,11 @@ describe("resolveCategory", () => {
 				message: "Category not found",
 				extensions: {
 					code: "arguments_associated_resources_not_found",
-					issues: [{ argumentPath: ["categoryId"] }],
+					issues: [{ argumentPath: ["actionItemCategoryId"] }],
 				},
 			});
 			expect(ctx.log.error).toHaveBeenCalledWith(
-				`Category with ID ${parent.categoryId} not found for ActionItem.`,
+				`Category with ID ${parent.actionItemCategoryId} not found for ActionItem.`,
 			);
 		}
 	});
@@ -72,7 +77,11 @@ describe("resolveCategory", () => {
 		};
 		findFirstMock.mockResolvedValue(fakeCategory);
 
-		const result = await resolveCategory({ categoryId: "cat-1" }, {}, ctx);
+		const result = await resolveCategory(
+			{ actionItemCategoryId: "cat-1" },
+			{},
+			ctx,
+		);
 		expect(result).toEqual(fakeCategory);
 		expect(ctx.log.error).not.toHaveBeenCalled();
 	});
