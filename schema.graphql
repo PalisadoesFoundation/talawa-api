@@ -3376,21 +3376,27 @@ enum PostVoteType {
 }
 
 type Query {
-  """
-  Query field to fetch all action item categories linked to a specific organization.
-  """
+  """Paginated action-item categories linked to a specific organization."""
   actionCategoriesByOrganization(
-    """Input parameters to fetch action item categories by organizationId."""
-    input: QueryActionCategoriesByOrganizationInput!
-  ): [ActionItemCategory!]
+    after: String
+    before: String
+    first: Int
 
-  """
-  Query field to fetch all action items linked to a specific organization.
-  """
+    """Business input – only the organizationId lives here."""
+    input: QueryActionCategoriesByOrganizationInput!
+    last: Int
+  ): QueryActionCategoriesByOrganizationConnection
+
+  """Paginated list of ActionItems for a given organization."""
   actionItemsByOrganization(
-    """Input parameters to fetch action items by organizationId."""
-    input: QueryActionItemsByOrganizationInput!
-  ): [ActionItem!]
+    after: String
+    before: String
+    first: Int
+    last: Int
+
+    """ID of the organization whose ActionItems you need"""
+    organizationId: ID!
+  ): QueryActionItemsByOrganizationConnection
 
   """Query field to read an advertisement."""
   advertisement(input: QueryAdvertisementInput!): Advertisement
@@ -3496,6 +3502,16 @@ type Query {
   venue(input: QueryVenueInput!): Venue
 }
 
+type QueryActionCategoriesByOrganizationConnection {
+  edges: [QueryActionCategoriesByOrganizationConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type QueryActionCategoriesByOrganizationConnectionEdge {
+  cursor: String!
+  node: ActionItemCategory
+}
+
 """
 Input object for querying action item categories by a specific organization.
 """
@@ -3504,6 +3520,16 @@ input QueryActionCategoriesByOrganizationInput {
   Global identifier of the organization whose action item categories you want to fetch.
   """
   organizationId: ID!
+}
+
+type QueryActionItemsByOrganizationConnection {
+  edges: [QueryActionItemsByOrganizationConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type QueryActionItemsByOrganizationConnectionEdge {
+  cursor: String!
+  node: ActionItem
 }
 
 """Input schema for querying ActionItems by organizationId."""

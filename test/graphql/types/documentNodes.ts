@@ -937,18 +937,82 @@ export const DELETE_ACTION_ITEM_MUTATION = gql(/* GraphQL */ `
   }
 `);
 
-export const ACTION_ITEM_CATEGORIES_BY_ORG = gql(`
-  query ActionItemsByOrganization(
-  $input: QueryActionItemsByOrganizationInput!
+export const QUERY_ACTION_ITEMS_BY_ORG = gql(`
+query ActionItemsByOrganization(
+  $organizationId: ID!
+  $first: Int
+  $after: String
+  $last: Int
+  $before: String
 ) {
-  actionItemsByOrganization(input: $input) {
-    id
-    createdAt
-    organization { id }
-    creator      { id }
+  actionItemsByOrganization(
+    organizationId: $organizationId
+    first: $first
+    after: $after
+    last: $last
+    before: $before
+  ) {
+    edges {
+      node {
+        id
+        isCompleted
+        preCompletionNotes
+        postCompletionNotes
+        assignedAt
+        completionAt
+        createdAt
+        updatedAt
+        allottedHours
+
+        category     { id name }
+        assignee     { id name }
+        creator      { id name }
+        updater      { id name }
+        organization { id }
+        event        { id name }
+      }
+    }
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
   }
 }
+`);
 
+export const QUERY_ACTION_ITEM_CATEGORIES_BY_ORG = gql(`
+  query ActionItemCategoriesByOrganization(
+    $input:  QueryActionCategoriesByOrganizationInput!
+    $first:  Int
+    $last:   Int
+    $after:  String
+    $before: String
+  ) {
+    actionCategoriesByOrganization(
+      input:  $input         
+      first:  $first       
+      last:   $last
+      after:  $after
+      before: $before
+    ) {
+      edges {
+        node {
+          id
+          name
+          isDisabled
+          createdAt
+        }
+      }
+      pageInfo {
+        startCursor
+        endCursor
+        hasNextPage
+        hasPreviousPage
+      }
+    }
+  }
 `);
 
 export const Query_usersByOrganizationId = gql(`
@@ -967,29 +1031,6 @@ export const Query_usersByIds = gql(`
       id
       name
       emailAddress
-    }
-  }
-`);
-
-export const Query_actionItemsByOrganization = gql(/* GraphQL */ `
-  query ActionItemsByOrganization($input: QueryActionItemsByOrganizationInput!) {
-    actionItemsByOrganization(input: $input) {
-      id
-      isCompleted
-      preCompletionNotes
-      postCompletionNotes
-      assignedAt
-      completionAt
-      createdAt
-      updatedAt
-      allottedHours
-
-      category     { id }
-      assignee     { id }
-      creator      { id }
-      updater      { id }
-      organization { id }
-      event        { id }
     }
   }
 `);
