@@ -1386,10 +1386,6 @@ enum Iso4217CurrencyCode {
   ZWG
 }
 
-input MarkActionItemAsPendingInput {
-  id: ID!
-}
-
 """Filter criteria for member roles"""
 input MembersRoleWhereInput {
   """Role equals this value"""
@@ -1614,9 +1610,6 @@ type Mutation {
     """Input to join a public organization"""
     input: MutationJoinPublicOrganizationInput!
   ): OrganizationMembershipObject
-
-  """Mutation to mark a completed action item as pending"""
-  markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
 
   """Mutation field to reject a membership request by an admin."""
   rejectMembershipRequest(
