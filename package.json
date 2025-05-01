@@ -46,7 +46,7 @@
     "drizzle-kit": "^0.30.6",
     "drizzle-seed": "^0.3.1",
     "gql.tada": "^1.8.10",
-    "lefthook": "^1.11.6",
+    "lefthook": "^1.11.12",
     "mercurius-integration-testing": "^9.0.1",
     "pino-pretty": "^13.0.0",
     "tsx": "^4.19.2",
