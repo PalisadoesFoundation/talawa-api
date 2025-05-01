@@ -5,13 +5,13 @@ import { usersTable } from "~/src/drizzle/tables/users";
 import { volunteerGroupsTable } from "~/src/drizzle/tables/volunteerGroups";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { VolunteerGroupAssignments } from "./VolunteerGroupAssignments";
+import { VolunteerGroups } from "../VolunteerGroup/VolunteerGroup";
+import { VolunteerGroupAssignments } from "./VolunteerGroupAssignment";
 
 VolunteerGroupAssignments.implement({
 	fields: (t) => ({
-		updatedAt: t.field({
-			description:
-				"Date time at the time the Group Assignment was last updated.",
+		group: t.field({
+			description: "Volunteer group.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
@@ -83,9 +83,9 @@ VolunteerGroupAssignments.implement({
 					});
 				}
 
-				return parent.updatedAt;
+				return result.volunteerGroup;
 			},
-			type: "DateTime",
+			type: VolunteerGroups,
 		}),
 	}),
 });

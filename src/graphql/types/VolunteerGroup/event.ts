@@ -1,12 +1,12 @@
+import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { User } from "../User/User";
-import { VolunteerGroups } from "./VolunteerGroups";
+import { VolunteerGroups } from "./VolunteerGroup";
 
 VolunteerGroups.implement({
 	fields: (t) => ({
-		updator: t.field({
-			description: "User who has last updated the Group.",
+		event: t.field({
+			description: "Event for which Group was made.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
@@ -20,8 +20,8 @@ VolunteerGroups.implement({
 				const currentUserId = ctx.currentClient.user.id;
 
 				const event = await ctx.drizzleClient.query.eventsTable.findFirst({
-					columns: {
-						organizationId: true,
+					with: {
+						attachmentsWhereEvent: true,
 					},
 					where: (fields, operators) => operators.eq(fields.id, parent.eventId), // parent is the VolunteerGroup
 				});
@@ -65,38 +65,11 @@ VolunteerGroups.implement({
 					});
 				}
 
-				if (parent.updaterId === null) {
-					return null;
-				}
-
-				if (parent.updaterId === currentUserId) {
-					return currentUser;
-				}
-
-				const updaterId = parent.updaterId;
-
-				const existingUser = await ctx.drizzleClient.query.usersTable.findFirst(
-					{
-						where: (fields, operators) => operators.eq(fields.id, updaterId),
-					},
-				);
-
-				// Creator id existing but the associated user not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
-				if (existingUser === undefined) {
-					ctx.log.error(
-						"Postgres select operation returned an empty array for a group's updator id that isn't null.",
-					);
-
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
-
-				return existingUser;
+				return Object.assign(event, {
+					attachments: event.attachmentsWhereEvent,
+				});
 			},
-			type: User,
+			type: Event,
 		}),
 	}),
 });

@@ -6,7 +6,7 @@
 
 > `const` **ChatMembershipResolver**: `object`
 
-Defined in: [src/graphql/types/Mutation/createChatMembership.ts:100](https://github.com/PalisadoesFoundation/talawa-api/blob/ba7157ff8b26bc2c54d7ad9ad4d0db0ff21eda4d/src/graphql/types/Mutation/createChatMembership.ts#L100)
+Defined in: [src/graphql/types/Mutation/createChatMembership.ts:100](https://github.com/PalisadoesFoundation/talawa-api/blob/a4f57b3a64e82c74809b195eb7bde9c04b2a5e89/src/graphql/types/Mutation/createChatMembership.ts#L100)
 
 ## Type declaration
 

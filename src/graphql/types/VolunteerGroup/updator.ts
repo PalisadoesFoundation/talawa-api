@@ -1,11 +1,12 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { VolunteerGroups } from "./VolunteerGroups";
+import { User } from "../User/User";
+import { VolunteerGroups } from "./VolunteerGroup";
 
 VolunteerGroups.implement({
 	fields: (t) => ({
-		createdAt: t.field({
-			description: "Date time at the time the Group was created.",
+		updator: t.field({
+			description: "User who has last updated the Group.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
@@ -30,9 +31,6 @@ VolunteerGroups.implement({
 				}
 
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
 					with: {
 						organizationMembershipsWhereMember: {
 							columns: {
@@ -67,9 +65,38 @@ VolunteerGroups.implement({
 					});
 				}
 
-				return parent.createdAt;
+				if (parent.updaterId === null) {
+					return null;
+				}
+
+				if (parent.updaterId === currentUserId) {
+					return currentUser;
+				}
+
+				const updaterId = parent.updaterId;
+
+				const existingUser = await ctx.drizzleClient.query.usersTable.findFirst(
+					{
+						where: (fields, operators) => operators.eq(fields.id, updaterId),
+					},
+				);
+
+				// Creator id existing but the associated user not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
+				if (existingUser === undefined) {
+					ctx.log.error(
+						"Postgres select operation returned an empty array for a group's updator id that isn't null.",
+					);
+
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+					});
+				}
+
+				return existingUser;
 			},
-			type: "DateTime",
+			type: User,
 		}),
 	}),
 });

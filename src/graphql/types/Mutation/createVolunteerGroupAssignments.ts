@@ -12,7 +12,7 @@ import {
 	MutationCreateVolunteerGroupAssignmentsInput,
 	mutationCreateVolunteerGroupAssignmentsInputSchema,
 } from "../../inputs/MutationCreateVolunteerGroupAssignments";
-import { VolunteerGroupAssignments } from "../VolunteerGroupAssignments/VolunteerGroupAssignments";
+import { VolunteerGroupAssignments } from "../VolunteerGroupAssignment/VolunteerGroupAssignment";
 const mutationCreateVolunteerGroupAssignmentsArgumentsSchema = z.object({
 	input: mutationCreateVolunteerGroupAssignmentsInputSchema,
 });

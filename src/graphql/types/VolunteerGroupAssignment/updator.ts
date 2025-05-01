@@ -6,12 +6,12 @@ import { volunteerGroupsTable } from "~/src/drizzle/tables/volunteerGroups";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { User } from "../User/User";
-import { VolunteerGroupAssignments } from "./VolunteerGroupAssignments";
+import { VolunteerGroupAssignments } from "./VolunteerGroupAssignment";
 
 VolunteerGroupAssignments.implement({
 	fields: (t) => ({
-		creator: t.field({
-			description: "User who has created the Assignment.",
+		updator: t.field({
+			description: "User who has last updated the Assignment.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
@@ -83,21 +83,21 @@ VolunteerGroupAssignments.implement({
 					});
 				}
 
-				if (parent.creatorId === null) {
+				if (parent.updaterId === null) {
 					return null;
 				}
 
-				const creatorId = parent.creatorId;
+				const updatorId = parent.updaterId;
 
 				const existingUser = await ctx.drizzleClient.query.usersTable.findFirst(
 					{
-						where: (fields, operators) => operators.eq(fields.id, creatorId),
+						where: (fields, operators) => operators.eq(fields.id, updatorId),
 					},
 				);
 
 				if (existingUser === undefined) {
 					ctx.log.error(
-						"Postgres select operation returned an empty array for a group's creator id that isn't null.",
+						"Postgres select operation returned an empty array for an assignment updator id that isn't null.",
 					);
 
 					throw new TalawaGraphQLError({

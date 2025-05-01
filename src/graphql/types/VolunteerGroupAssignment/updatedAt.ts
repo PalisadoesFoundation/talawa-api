@@ -5,13 +5,13 @@ import { usersTable } from "~/src/drizzle/tables/users";
 import { volunteerGroupsTable } from "~/src/drizzle/tables/volunteerGroups";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { User } from "../User/User";
-import { VolunteerGroupAssignments } from "./VolunteerGroupAssignments";
+import { VolunteerGroupAssignments } from "./VolunteerGroupAssignment";
 
 VolunteerGroupAssignments.implement({
 	fields: (t) => ({
-		updator: t.field({
-			description: "User who has last updated the Assignment.",
+		updatedAt: t.field({
+			description:
+				"Date time at the time the Group Assignment was last updated.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
 			resolve: async (parent, _args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
@@ -83,33 +83,9 @@ VolunteerGroupAssignments.implement({
 					});
 				}
 
-				if (parent.updaterId === null) {
-					return null;
-				}
-
-				const updatorId = parent.updaterId;
-
-				const existingUser = await ctx.drizzleClient.query.usersTable.findFirst(
-					{
-						where: (fields, operators) => operators.eq(fields.id, updatorId),
-					},
-				);
-
-				if (existingUser === undefined) {
-					ctx.log.error(
-						"Postgres select operation returned an empty array for an assignment updator id that isn't null.",
-					);
-
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
-
-				return existingUser;
+				return parent.updatedAt;
 			},
-			type: User,
+			type: "DateTime",
 		}),
 	}),
 });

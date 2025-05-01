@@ -10,7 +10,7 @@ import {
 	MutationDeleteEventVolunteerGroupInput,
 	mutationDeleteEventVolunteerGroupInputSchema,
 } from "../../inputs/MutationDeleteEventVolunteerGroupInput";
-import { VolunteerGroups } from "../VolunteerGroups/VolunteerGroups";
+import { VolunteerGroups } from "../VolunteerGroup/VolunteerGroup";
 const mutationDeleteEventVolunteerGroupArgumentsSchema = z.object({
 	input: mutationDeleteEventVolunteerGroupInputSchema,
 });
