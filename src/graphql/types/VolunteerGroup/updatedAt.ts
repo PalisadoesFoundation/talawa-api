@@ -1,6 +1,6 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { VolunteerGroups } from "./VolunteerGroups";
+import { VolunteerGroups } from "./VolunteerGroup";
 
 VolunteerGroups.implement({
 	fields: (t) => ({

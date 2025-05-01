@@ -6,6 +6,6 @@
 
 > `const` **actionItemsByOrganization**: `void`
 
-Defined in: [src/graphql/types/Query/ActionItem.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/ba7157ff8b26bc2c54d7ad9ad4d0db0ff21eda4d/src/graphql/types/Query/ActionItem.ts#L17)
+Defined in: [src/graphql/types/Query/ActionItem.ts:17](https://github.com/PalisadoesFoundation/talawa-api/blob/a4f57b3a64e82c74809b195eb7bde9c04b2a5e89/src/graphql/types/Query/ActionItem.ts#L17)
 
 GraphQL Query: Fetches all ActionItems by organizationId.

@@ -6,7 +6,7 @@ import {
 	QueryEventVolunteerGroupsInput,
 	queryEventVolunteerGroupsInputSchema,
 } from "../../inputs/QueryEventVolunteerGroupsInput";
-import { VolunteerGroups } from "../VolunteerGroups/VolunteerGroups";
+import { VolunteerGroups } from "../VolunteerGroup/VolunteerGroup";
 // import { VolunteerGroupAssignment } from "../VolunteerGroupAssignment/VolunteerGroupAssignment";
 const queryEventVolunteerGroupsArgumentsSchema = z.object({
 	input: queryEventVolunteerGroupsInputSchema,

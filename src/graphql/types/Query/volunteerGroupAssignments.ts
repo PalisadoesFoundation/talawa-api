@@ -11,7 +11,7 @@ import {
 	QueryVolunteerGroupAssignmentsInput,
 	queryVolunteerGroupAssignmentsInputSchema,
 } from "../../inputs/QueryVolunteerGroupAssignments";
-import { VolunteerGroupAssignments } from "../VolunteerGroupAssignments/VolunteerGroupAssignments";
+import { VolunteerGroupAssignments } from "../VolunteerGroupAssignment/VolunteerGroupAssignment";
 // import { VolunteerGroupAssignment } from "../VolunteerGroupAssignment/VolunteerGroupAssignment";
 const queryEventVolunteerGroupAssignmentsArgumentsSchema = z.object({
 	input: queryVolunteerGroupAssignmentsInputSchema,

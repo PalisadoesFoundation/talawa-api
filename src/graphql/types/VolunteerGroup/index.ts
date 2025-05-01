@@ -1,7 +1,7 @@
-import "./VolunteerGroupAssignments";
-import "./assignee";
+import "./VolunteerGroup";
 import "./createdAt";
 import "./creator";
-import "./group";
+import "./event";
+import "./leader";
 import "./updatedAt";
 import "./updator";

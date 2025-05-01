@@ -8,7 +8,7 @@ import {
 	MutationCreateVolunteerGroupInput,
 	mutationCreateVolunteerGroupInputSchema,
 } from "../../inputs/MutationCreateEventVolunteerGroupInput";
-import { VolunteerGroups } from "../VolunteerGroups/VolunteerGroups";
+import { VolunteerGroups } from "../VolunteerGroup/VolunteerGroup";
 const mutationCreateVolunteerGroupArgumentsSchema = z.object({
 	input: mutationCreateVolunteerGroupInputSchema,
 });
