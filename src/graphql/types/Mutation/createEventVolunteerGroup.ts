@@ -113,7 +113,7 @@ builder.mutationField("createEventVolunteerGroup", (t) =>
 				});
 			}
 
-			const volunteerGroup = await ctx.drizzleClient
+			const [volunteerGroup] = await ctx.drizzleClient
 				.insert(volunteerGroupsTable)
 				.values({
 					creatorId: currentUserId,
@@ -123,16 +123,6 @@ builder.mutationField("createEventVolunteerGroup", (t) =>
 					name: parsedArgs.input.name,
 				})
 				.returning();
-
-			//   const [vgA] = await ctx.drizzleClient
-			//     .insert(volunteerGroupAssignmentsTable)
-			//     .values({
-			//       assigneeId: parsedArgs.input.leaderId || "",
-			//       creatorId: currentUserId,
-			//       groupId: volunteerGroup?.id || "",
-			//       inviteStatus: "no_response",
-			//     })
-			//     .returning();
 
 			// Inserted venue booking not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
 			if (volunteerGroup === undefined) {
@@ -147,7 +137,17 @@ builder.mutationField("createEventVolunteerGroup", (t) =>
 				});
 			}
 
-			return volunteerGroup[0];
+			await ctx.drizzleClient
+				.insert(volunteerGroupAssignmentsTable)
+				.values({
+					assigneeId: parsedArgs.input.leaderId || "",
+					creatorId: currentUserId,
+					groupId: volunteerGroup.id,
+					inviteStatus: "no_response",
+				})
+				.returning();
+
+			return volunteerGroup;
 		},
 		type: VolunteerGroups,
 	}),

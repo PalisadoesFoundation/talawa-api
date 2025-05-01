@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { aliasedTable, and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
@@ -16,6 +16,9 @@ import { VolunteerGroupAssignments } from "../VolunteerGroupAssignments/Voluntee
 const mutationCreateVolunteerGroupAssignmentsArgumentsSchema = z.object({
 	input: mutationCreateVolunteerGroupAssignmentsInputSchema,
 });
+
+const assigneeAlias = aliasedTable(usersTable, "assignee");
+const userAlias = aliasedTable(usersTable, "user");
 
 builder.mutationField("createEventVolunteerGroupAssignments", (t) =>
 	t.field({
@@ -60,6 +63,8 @@ builder.mutationField("createEventVolunteerGroupAssignments", (t) =>
 			const currentUserId = ctx.currentClient.user.id;
 			const { groupId, assigneeId } = parsedArgs.input;
 
+			console.log("here", parsedArgs.input);
+
 			// Single query to check group, assignee, and event with permissions in one go
 			const [result] = await ctx.drizzleClient
 				.select({
@@ -72,10 +77,10 @@ builder.mutationField("createEventVolunteerGroupAssignments", (t) =>
 						creatorId: eventsTable.creatorId,
 					},
 					user: {
-						role: usersTable.role,
+						role: userAlias.role,
 					},
 					assignee: {
-						id: usersTable.id,
+						id: assigneeAlias.id,
 					},
 					orgMembership: {
 						role: organizationMembershipsTable.role,
@@ -83,8 +88,8 @@ builder.mutationField("createEventVolunteerGroupAssignments", (t) =>
 				})
 				.from(volunteerGroupsTable)
 				.leftJoin(eventsTable, eq(volunteerGroupsTable.eventId, eventsTable.id))
-				.leftJoin(usersTable, eq(sql`${usersTable.id}`, assigneeId))
-				.leftJoin(usersTable, eq(sql`${usersTable.id}`, currentUserId))
+				.leftJoin(assigneeAlias, eq(assigneeAlias.id, assigneeId))
+				.leftJoin(userAlias, eq(userAlias.id, currentUserId))
 				.leftJoin(
 					organizationMembershipsTable,
 					and(
@@ -97,6 +102,8 @@ builder.mutationField("createEventVolunteerGroupAssignments", (t) =>
 				)
 				.where(eq(volunteerGroupsTable.id, groupId))
 				.execute();
+
+			console.log("**", result);
 
 			// Check if volunteer group exists
 			if (!result || !result.group) {
@@ -174,6 +181,7 @@ builder.mutationField("createEventVolunteerGroupAssignments", (t) =>
 				});
 			}
 
+			console.log("***", groupAssignments[0]);
 			return groupAssignments[0];
 		},
 		type: VolunteerGroupAssignments,

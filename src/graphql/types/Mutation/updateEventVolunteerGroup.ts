@@ -55,98 +55,7 @@ builder.mutationField("updateEventVolunteerGroup", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			//   const { id } = parsedArgs.input;
-			//   if (!id) {
-			//     throw new Error("VolunteerGroup ID is required");
-			//   }
-
-			//   const existingGroup =
-			//     await ctx.drizzleClient.query.volunteerGroupsTable.findFirst({
-			//       columns: {
-			//         eventId: true,
-			//         creatorId: true,
-			//       },
-			//       where: (fields, operators) => operators.eq(fields.id, id), // parent is the VolunteerGroup
-			//     });
-
-			//   if (existingGroup === undefined) {
-			//     throw new TalawaGraphQLError({
-			//       extensions: {
-			//         code: "arguments_associated_resources_not_found",
-			//         issues: [
-			//           {
-			//             argumentPath: ["input", "groupId"],
-			//           },
-			//         ],
-			//       },
-			//     });
-			//   }
-
-			//   const existingEvent = await ctx.drizzleClient.query.eventsTable.findFirst(
-			//     {
-			//       columns: {
-			//         organizationId: true,
-			//         creatorId: true,
-			//       },
-			//       where: (fields, operators) =>
-			//         operators.eq(fields.id, existingGroup?.eventId), // parent is the VolunteerGroup
-			//     }
-			//   );
-
-			//   if (existingEvent === undefined) {
-			//     throw new TalawaGraphQLError({
-			//       extensions: {
-			//         code: "arguments_associated_resources_not_found",
-			//         issues: [
-			//           {
-			//             argumentPath: ["input", "eventId"],
-			//           },
-			//         ],
-			//       },
-			//     });
-			//   }
-
-			//   const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-			//     with: {
-			//       organizationMembershipsWhereMember: {
-			//         columns: {
-			//           role: true,
-			//         },
-			//         where: (fields, operators) =>
-			//           operators.eq(fields.organizationId, existingEvent.organizationId),
-			//       },
-			//     },
-			//     where: (fields, operators) => operators.eq(fields.id, currentUserId),
-			//   });
-
-			//   if (currentUser === undefined) {
-			//     throw new TalawaGraphQLError({
-			//       extensions: {
-			//         code: "unauthenticated",
-			//       },
-			//     });
-			//   }
-			//   const currentUserOrganizationMembership =
-			//     currentUser.organizationMembershipsWhereMember[0];
-
-			//   if (
-			//     currentUser.role !== "administrator" &&
-			//     currentUserOrganizationMembership?.role !== "administrator" &&
-			//     currentUserId !== existingGroup.creatorId
-			//   ) {
-			//     throw new TalawaGraphQLError({
-			//       extensions: {
-			//         code: "unauthorized_action_on_arguments_associated_resources",
-			//         issues: [
-			//           {
-			//             argumentPath: ["input", "id"],
-			//           },
-			//         ],
-			//       },
-			//     });
-			//   }
-
-			const volunteerGroupWithEventAndUser = await ctx.drizzleClient
+			const [volunteerGroupWithEventAndUser] = await ctx.drizzleClient
 				.select({
 					volunteerGroup: volunteerGroupsTable,
 					eventOrganizationId: eventsTable.organizationId,
@@ -168,10 +77,7 @@ builder.mutationField("updateEventVolunteerGroup", (t) =>
 				.where(eq(volunteerGroupsTable.id, parsedArgs.input.id))
 				.execute();
 
-			if (
-				!volunteerGroupWithEventAndUser ||
-				volunteerGroupWithEventAndUser.length === 0
-			) {
+			if (!volunteerGroupWithEventAndUser) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -180,7 +86,7 @@ builder.mutationField("updateEventVolunteerGroup", (t) =>
 				});
 			}
 
-			const result = volunteerGroupWithEventAndUser[0]!;
+			const result = volunteerGroupWithEventAndUser;
 
 			if (!result.eventOrganizationId) {
 				throw new TalawaGraphQLError({

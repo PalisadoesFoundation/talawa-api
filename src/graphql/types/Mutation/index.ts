@@ -80,3 +80,5 @@ import "./createActionItem";
 import "./createEventVolunteerGroup";
 import "./updateEventVolunteerGroup";
 import "./deleteEventVolunteerGroup";
+import "./createVolunteerGroupAssignments";
+import "./updateVolunteerGroupAssignments";
