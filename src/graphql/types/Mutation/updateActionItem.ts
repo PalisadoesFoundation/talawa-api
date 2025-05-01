@@ -9,6 +9,7 @@ import {
 	mutationUpdateActionItemArgumentsSchema,
 } from "../../inputs/MutationUpdateActionItemInput";
 
+// Defines the "updateActionItem" mutation field in the GraphQL schema
 builder.mutationField("updateActionItem", (t) =>
 	t.field({
 		args: {
@@ -20,6 +21,7 @@ builder.mutationField("updateActionItem", (t) =>
 		},
 		description: "Mutation to update an action item",
 		resolve: async (_parent, args, ctx) => {
+			// Authentication check
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -28,6 +30,7 @@ builder.mutationField("updateActionItem", (t) =>
 				});
 			}
 
+			// Validate input arguments using zod schema
 			const {
 				data: parsedArgs,
 				error,
@@ -35,6 +38,7 @@ builder.mutationField("updateActionItem", (t) =>
 			} = mutationUpdateActionItemArgumentsSchema.safeParse(args);
 
 			if (!success) {
+				// Throw error if validation fails
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",
@@ -48,7 +52,7 @@ builder.mutationField("updateActionItem", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			// Fetch current user and existing action item details
+			// Fetch the current user and the existing action item in parallel
 			const [currentUser, existingActionItem] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
@@ -85,6 +89,7 @@ builder.mutationField("updateActionItem", (t) =>
 				}),
 			]);
 
+			// Reject if user is not found
 			if (!currentUser) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -93,6 +98,7 @@ builder.mutationField("updateActionItem", (t) =>
 				});
 			}
 
+			// Reject if action item does not exist
 			if (!existingActionItem) {
 				throw new TalawaGraphQLError({
 					message: "The specified action item does not exist.",
@@ -107,6 +113,7 @@ builder.mutationField("updateActionItem", (t) =>
 				});
 			}
 
+			// Helper function to validate logical constraints for completed items
 			function validateActionItemTypeConstraints(
 				isCompleted: boolean,
 				input: {
@@ -140,6 +147,7 @@ builder.mutationField("updateActionItem", (t) =>
 				});
 			}
 
+			// If category is being changed, ensure it exists
 			if (isNotNullish(parsedArgs.input.actionItemCategoryId)) {
 				const categoryId = parsedArgs.input.actionItemCategoryId;
 
@@ -166,9 +174,11 @@ builder.mutationField("updateActionItem", (t) =>
 				}
 			}
 
+			// Fetch user's role in the organization associated with the item
 			const currentUserOrganizationMembership =
 				existingActionItem.organization.membershipsWhereOrganization[0];
 
+			// Authorization check: user must be admin globally or in org
 			if (
 				currentUser.role !== "administrator" &&
 				(!currentUserOrganizationMembership ||
@@ -187,10 +197,10 @@ builder.mutationField("updateActionItem", (t) =>
 				});
 			}
 
-			// Destructure the id and collect all other fields to update
+			// Destructure out id and retain rest for updating
 			const { id: actionItemId, ...fieldsToUpdate } = parsedArgs.input;
 
-			// Update the action item with all provided fields plus the updaterId
+			// Perform the update and return the modified row
 			const [updatedActionItem] = await ctx.drizzleClient
 				.update(actionItemsTable)
 				.set({
@@ -201,7 +211,6 @@ builder.mutationField("updateActionItem", (t) =>
 							: undefined,
 					updaterId: currentUserId,
 				})
-
 				.where(eq(actionItemsTable.id, actionItemId))
 				.returning();
 
@@ -213,12 +222,14 @@ builder.mutationField("updateActionItem", (t) =>
 				});
 			}
 
+			// Return the updated action item object
 			return updatedActionItem;
 		},
 		type: ActionItem,
 	}),
 );
 
+// Defines the "markActionItemAsPending" mutation field in the GraphQL schema
 builder.mutationField("markActionItemAsPending", (t) =>
 	t.field({
 		type: ActionItem,
@@ -234,6 +245,7 @@ builder.mutationField("markActionItemAsPending", (t) =>
 		},
 		description: "Mutation to mark a completed action item as pending",
 		resolve: async (_parent, args, ctx) => {
+			// Authentication check
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: { code: "unauthenticated" },
@@ -242,12 +254,13 @@ builder.mutationField("markActionItemAsPending", (t) =>
 
 			const { input } = args;
 
-			// Fetch the existing action item.
+			// Fetch the target action item by ID
 			const existingActionItem =
 				await ctx.drizzleClient.query.actionItemsTable.findFirst({
 					where: (fields, { eq }) => eq(fields.id, input.id),
 				});
 
+			// Error if item does not exist
 			if (!existingActionItem) {
 				throw new TalawaGraphQLError({
 					message: "The specified action item does not exist.",
@@ -258,6 +271,7 @@ builder.mutationField("markActionItemAsPending", (t) =>
 				});
 			}
 
+			// If already pending, no update is allowed
 			if (!existingActionItem.isCompleted) {
 				throw new TalawaGraphQLError({
 					message: "The action item is already pending.",
@@ -273,6 +287,7 @@ builder.mutationField("markActionItemAsPending", (t) =>
 				});
 			}
 
+			// Set item to pending state
 			const [updatedActionItem] = await ctx.drizzleClient
 				.update(actionItemsTable)
 				.set({

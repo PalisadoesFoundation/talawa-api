@@ -1,79 +1,86 @@
+// Import SQL operators and helpers from Drizzle ORM
 import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { actionItemCategoriesTable } from "~/src/drizzle/tables/actionItemCategories";
 import { builder } from "~/src/graphql/builder";
+
+// Import GraphQL input schema and validation
 import {
 	QueryActionCategoriesByOrganizationInput,
 	queryActionCategoriesByOrganizationArgumentsSchema,
 } from "~/src/graphql/inputs/QueryActionCategoriesByOrganizationInput";
+
 import { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/actionItemCategory";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
+// Import Relay-style connection utilities
 import {
 	type ParsedDefaultGraphQLConnectionArguments,
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
+
 import envConfig from "~/src/utilities/graphqLimits";
 
-/* ───────────────────────────────────────── helpers ────────────────────────── */
-
+/* ──────────────────────── Cursor schema for pagination ─────────────────────── */
+// Defines the structure and transformation for decoding pagination cursors
 const cursorSchema = z
 	.object({
-		createdAt: z.string().datetime(),
-		id: z.string().uuid(),
+		createdAt: z.string().datetime(), // Timestamp of the item
+		id: z.string().uuid(), // UUID of the item
 	})
 	.transform(({ createdAt, id }) => ({
 		createdAt: new Date(createdAt),
 		id,
 	}));
 
+// Transforms the default connection args into parsed relay-compatible format
 const connArgsSchema = defaultGraphQLConnectionArgumentsSchema.transform(
 	transformDefaultGraphQLConnectionArguments,
 );
 
-/* ─────────────────────────────────────── resolver ─────────────────────────── */
-
+/* ───────────────────────────── GraphQL Resolver ────────────────────────────── */
+// Define the GraphQL query field for paginated category list by organization
 export const actionCategoriesByOrganization = builder.queryField(
 	"actionCategoriesByOrganization",
 	(t) =>
 		t.connection(
 			{
-				type: ActionItemCategory,
+				type: ActionItemCategory, // Relay node type
 
-				/* ---------- arguments ---------- */
+				// ── GraphQL arguments ──
 				args: {
 					input: t.arg({
 						required: true,
 						type: QueryActionCategoriesByOrganizationInput,
 						description: "Business input – only the organizationId lives here.",
 					}),
-					/* Relay-connection args live at the same level as `input` */
-					after: t.arg.string(),
-					before: t.arg.string(),
-					first: t.arg.int(),
-					last: t.arg.int(),
+					after: t.arg.string(), // Relay pagination: cursor after
+					before: t.arg.string(), // Relay pagination: cursor before
+					first: t.arg.int(), // Relay pagination: forward limit
+					last: t.arg.int(), // Relay pagination: backward limit
 				},
 
 				description:
 					"Paginated action-item categories linked to a specific organization.",
 
-				/* ---------- complexity ---------- */
+				// ── Field complexity cost for query planning ──
 				complexity: (args) => ({
 					field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 					multiplier: (args.first ?? args.last ?? 1) + 1,
 				}),
 
-				/* ---------- resolver ---------- */
+				// ── Core resolver function ──
 				resolve: async (_p, args, ctx) => {
-					/* 1. auth guard */
+					// Step 1: Authentication check
 					if (!ctx.currentClient.isAuthenticated) {
 						throw new TalawaGraphQLError({
 							extensions: { code: "unauthenticated" },
 						});
 					}
 
-					/* 2. business-input validation */
+					// Step 2: Business input validation
 					const businessCheck =
 						queryActionCategoriesByOrganizationArgumentsSchema.safeParse(args);
 					if (!businessCheck.success) {
@@ -90,7 +97,7 @@ export const actionCategoriesByOrganization = builder.queryField(
 					}
 					const organizationId = businessCheck.data.input.organizationId;
 
-					/* 3. connection-args validation */
+					// Step 3: Pagination input validation
 					const connCheck = connArgsSchema.safeParse(args);
 					if (!connCheck.success) {
 						const { error } = connCheck;
@@ -110,7 +117,7 @@ export const actionCategoriesByOrganization = builder.queryField(
 							id: string;
 						}>;
 
-					/* 4. cursor decode (if supplied) */
+					// Step 4: Decode pagination cursor (if present)
 					let cursor: z.infer<typeof cursorSchema> | undefined;
 					if (parsed.cursor) {
 						cursor = cursorSchema.parse(
@@ -125,7 +132,7 @@ export const actionCategoriesByOrganization = builder.queryField(
 						);
 					}
 
-					/* 5. authZ – user must be org admin or sys admin */
+					// Step 5: Authorization - user must be org admin or sys admin
 					const currentUserId = ctx.currentClient.user.id;
 					const [me, membership] = await Promise.all([
 						ctx.drizzleClient.query.usersTable.findFirst({
@@ -155,7 +162,7 @@ export const actionCategoriesByOrganization = builder.queryField(
 						});
 					}
 
-					/* 6. build where & orderBy */
+					// Step 6: Build filtering conditions & ordering
 					const base = eq(
 						actionItemCategoriesTable.organizationId,
 						organizationId,
@@ -179,6 +186,7 @@ export const actionCategoriesByOrganization = builder.queryField(
 							? gt(actionItemCategoriesTable.createdAt, cursor.createdAt)
 							: lt(actionItemCategoriesTable.createdAt, cursor.createdAt);
 
+						// Include cursor-aware pagination logic
 						whereCond = and(
 							base,
 							exists(
@@ -202,7 +210,7 @@ export const actionCategoriesByOrganization = builder.queryField(
 						);
 					}
 
-					/* 7. fetch rows */
+					// Step 7: Execute the query to fetch paginated rows
 					const rows =
 						await ctx.drizzleClient.query.actionItemCategoriesTable.findMany({
 							where: whereCond,
@@ -210,6 +218,7 @@ export const actionCategoriesByOrganization = builder.queryField(
 							limit: parsed.limit,
 						});
 
+					// Step 8: Validate that cursor wasn't stale (optional fail-safe)
 					if (cursor && rows.length === 0) {
 						throw new TalawaGraphQLError({
 							extensions: {
@@ -223,7 +232,7 @@ export const actionCategoriesByOrganization = builder.queryField(
 						});
 					}
 
-					/* 8. build & return Relay connection */
+					// Step 9: Build and return the Relay-style connection object
 					return transformToDefaultGraphQLConnection({
 						createCursor: (row) =>
 							Buffer.from(
@@ -239,7 +248,7 @@ export const actionCategoriesByOrganization = builder.queryField(
 				},
 			},
 
-			/* ---------- edge & node field costs ---------- */
+			// ── Relay cost complexity for edges and nodes ──
 			{
 				edgesField: {
 					complexity: { field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST },

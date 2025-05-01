@@ -11,31 +11,34 @@ import {
 	mutationCreateActionItemCategoryArgumentsSchema,
 } from "~/src/graphql/inputs/MutationCreateActionItemCategory";
 
+/**
+ * GraphQL mutation for creating a new Action Item Category.
+ * Only authenticated administrators of a valid organization can create categories.
+ */
 export const createActionItemCategoryMutation = builder.mutationField(
 	"createActionItemCategory",
 	(t) =>
 		t.field({
 			type: ActionItemCategory,
+			description: "Mutation field to create a new Action Item Category.",
 			args: {
 				input: t.arg({
+					required: true,
 					description:
 						"Input for creating an action item category. " +
 						"If isDisabled is not provided, the category will be enabled by default.",
-					required: true,
-					// Use the input reference imported from the input folder.
 					type: MutationCreateActionItemCategoryInput,
 				}),
 			},
-			description: "Mutation field to create a new Action Item Category.",
 			resolve: async (_parent, args, ctx) => {
-				// 1. Check that the client is authenticated.
+				// Step 1: Ensure the request is made by an authenticated user
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
 						extensions: { code: "unauthenticated" },
 					});
 				}
 
-				// 2. Validate the input using the imported Zod schema.
+				// Step 2: Validate the input using the associated Zod schema
 				const {
 					data: parsedArgs,
 					error,
@@ -43,6 +46,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 				} = await mutationCreateActionItemCategoryArgumentsSchema.safeParseAsync(
 					args,
 				);
+
 				if (!success) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -57,13 +61,14 @@ export const createActionItemCategoryMutation = builder.mutationField(
 
 				const currentUserId = ctx.currentClient.user.id;
 
-				// 3. Check that the organization exists.
+				// Step 3: Confirm that the specified organization exists
 				const existingOrganization =
 					await ctx.drizzleClient.query.organizationsTable.findFirst({
 						columns: { id: true },
 						where: (fields, operators) =>
 							operators.eq(fields.id, parsedArgs.input.organizationId),
 					});
+
 				if (!existingOrganization) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -73,7 +78,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 					});
 				}
 
-				// 4. Check that the user is a member of the organization.
+				// Step 4: Verify the user is a member of the organization
 				const userMembership =
 					await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
 						columns: { role: true },
@@ -83,6 +88,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 								parsedArgs.input.organizationId,
 							)}`,
 					});
+
 				if (!userMembership) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -92,7 +98,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 					});
 				}
 
-				// 5. Ensure that only administrators can create categories.
+				// Step 5: Restrict access to administrators only
 				if (userMembership.role !== "administrator") {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -108,7 +114,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 					});
 				}
 
-				// 6. Insert the new category into the database.
+				// Step 6: Insert the new category into the database
 				const [createdCategory] = await ctx.drizzleClient
 					.insert(actionItemCategoriesTable)
 					.values({
@@ -116,13 +122,13 @@ export const createActionItemCategoryMutation = builder.mutationField(
 						name: parsedArgs.input.name,
 						organizationId: parsedArgs.input.organizationId,
 						creatorId: currentUserId,
-						// If isDisabled is provided, use it; otherwise, default to false (i.e. enabled).
-						isDisabled: parsedArgs.input.isDisabled ?? false,
+						isDisabled: parsedArgs.input.isDisabled ?? false, // Default to enabled
 						createdAt: new Date(),
 						updatedAt: new Date(),
 					})
 					.returning();
 
+				// Step 7: Validate that the insert was successful
 				if (!createdCategory) {
 					ctx.log.error(
 						"Postgres insert operation unexpectedly returned an empty array.",
@@ -130,6 +136,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 					throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
 				}
 
+				// Step 8: Return the newly created category
 				return createdCategory;
 			},
 		}),

@@ -4,14 +4,15 @@ import { ActionItemCategory } from "./actionItemCategory";
 
 /**
  * Resolver for the createdAt field on ActionItemCategory.
- * Returns the createdAt timestamp if the current user is authenticated
- * and is either an administrator or has an organization membership with administrator privileges.
+ * This resolver enforces that only authenticated users with administrator
+ * privileges can access the creation timestamp of a category.
  */
 export const resolveCreatedAt = async (
 	parent: { createdAt: Date; organizationId: string },
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ): Promise<Date> => {
+	// Step 1: Authentication check
 	if (!ctx.currentClient.isAuthenticated) {
 		throw new TalawaGraphQLError({
 			extensions: {
@@ -22,6 +23,7 @@ export const resolveCreatedAt = async (
 
 	const currentUserId = ctx.currentClient.user.id;
 
+	// Step 2: Fetch the current user and their organization membership role
 	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 		columns: {
 			role: true,
@@ -38,6 +40,7 @@ export const resolveCreatedAt = async (
 		where: (fields, operators) => operators.eq(fields.id, currentUserId),
 	});
 
+	// Step 3: If the user record is not found, treat as unauthenticated
 	if (currentUser === undefined) {
 		throw new TalawaGraphQLError({
 			extensions: {
@@ -49,6 +52,7 @@ export const resolveCreatedAt = async (
 	const currentUserOrganizationMembership =
 		currentUser.organizationMembershipsWhereMember[0];
 
+	// Step 4: Authorization check — must be an administrator globally or within the org
 	if (
 		currentUser.role !== "administrator" &&
 		(currentUserOrganizationMembership === undefined ||
@@ -61,10 +65,11 @@ export const resolveCreatedAt = async (
 		});
 	}
 
+	// Step 5: Return the createdAt timestamp
 	return parent.createdAt;
 };
 
-// Wire the resolver into your ActionItemCategory type.
+// Extend the ActionItemCategory GraphQL type to include the createdAt field
 ActionItemCategory.implement({
 	fields: (t) => ({
 		createdAt: t.field({

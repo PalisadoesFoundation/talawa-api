@@ -9,31 +9,38 @@ import {
 import { ActionItem } from "~/src/graphql/types/ActionItem/actionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
+/**
+ * GraphQL mutation to create a new action item.
+ * Performs input validation, membership and role checks, and resource existence checks.
+ */
 export const createActionItemCategoryMutation = builder.mutationField(
 	"createActionItem",
 	(t) =>
 		t.field({
 			type: ActionItem,
+			description: "Mutation field to create an action item.",
 			args: {
 				input: t.arg({
-					description: "Input for creating an action item.",
 					required: true,
+					description: "Input for creating an action item.",
 					type: MutationCreateActionItemInput,
 				}),
 			},
-			description: "Mutation field to create an action item.",
 			resolve: async (_parent, args, ctx) => {
+				// Step 1: Authentication check
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
 						extensions: { code: "unauthenticated" },
 					});
 				}
 
+				// Step 2: Validate and parse input
 				const {
 					data: parsedArgs,
 					error,
 					success,
 				} = await mutationCreateActionItemArgumentsSchema.safeParseAsync(args);
+
 				if (!success) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -48,7 +55,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 
 				const currentUserId = ctx.currentClient.user.id;
 
-				// **1. Check if the organization exists**
+				// Step 3: Check if the target organization exists
 				const existingOrganization =
 					await ctx.drizzleClient.query.organizationsTable.findFirst({
 						columns: { id: true },
@@ -64,7 +71,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 					});
 				}
 
-				// **2. Check if the user is part of the organization**
+				// Step 4: Check if current user is a member of the organization
 				const userMembership =
 					await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
 						columns: { role: true },
@@ -83,7 +90,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 					});
 				}
 
-				// **3. Check if the category exists**
+				// Step 5: Check if the provided category exists
 				const existingCategory =
 					await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 						columns: { id: true },
@@ -99,7 +106,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 					});
 				}
 
-				// **4. Check if the assignee exists**
+				// Step 6: Check if the assignee user exists
 				const existingAssignee =
 					await ctx.drizzleClient.query.usersTable.findFirst({
 						columns: { id: true },
@@ -115,7 +122,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 					});
 				}
 
-				// **5. Authorization check:** Only administrators can create action items.
+				// Step 7: Authorization — only administrators can create action items
 				if (userMembership.role !== "administrator") {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -131,7 +138,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 					});
 				}
 
-				// Insert the action item into the database.
+				// Step 8: Insert the new action item into the database
 				const [createdActionItem] = await ctx.drizzleClient
 					.insert(actionItemsTable)
 					.values({
@@ -141,7 +148,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 						assigneeId: parsedArgs.input.assigneeId,
 						assignedAt: parsedArgs.input.assignedAt
 							? new Date(parsedArgs.input.assignedAt)
-							: new Date(), // Default to current date if not provided.
+							: new Date(), // Default to current date if not provided
 						completionAt: new Date(),
 						preCompletionNotes: parsedArgs.input.preCompletionNotes ?? null,
 						postCompletionNotes: null,
@@ -157,6 +164,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 					})
 					.returning();
 
+				// Step 9: Ensure the insert operation returned a result
 				if (!createdActionItem) {
 					ctx.log.error(
 						"Postgres insert operation unexpectedly returned an empty array.",
@@ -164,6 +172,7 @@ export const createActionItemCategoryMutation = builder.mutationField(
 					throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
 				}
 
+				// Step 10: Return the newly created action item
 				return createdActionItem;
 			},
 		}),

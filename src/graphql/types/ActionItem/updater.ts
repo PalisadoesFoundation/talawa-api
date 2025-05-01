@@ -3,6 +3,10 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { ActionItem } from "./actionItem";
 
+/**
+ * Extends the ActionItem GraphQL type with a field to resolve the user
+ * who last updated the action item. Includes authentication and authorization checks.
+ */
 ActionItem.implement({
 	fields: (t) => ({
 		updater: t.field({
@@ -10,7 +14,7 @@ ActionItem.implement({
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			type: User,
 			resolve: async (parent, _args, ctx) => {
-				// Check if the current client is authenticated.
+				// Step 1: Ensure the request is made by an authenticated client
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -21,7 +25,7 @@ ActionItem.implement({
 
 				const currentUserId = ctx.currentClient.user.id;
 
-				// Fetch the current user along with their organization memberships.
+				// Step 2: Fetch the current user and their membership within the relevant organization
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 					with: {
 						organizationMembershipsWhereMember: {
@@ -35,7 +39,7 @@ ActionItem.implement({
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				});
 
-				// If no current user is found, throw an unauthenticated error.
+				// Step 3: If user could not be found, return unauthenticated error
 				if (currentUser === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -47,7 +51,7 @@ ActionItem.implement({
 				const currentUserOrganizationMembership =
 					currentUser.organizationMembershipsWhereMember[0];
 
-				// Check if the current user has administrator privileges.
+				// Step 4: Only administrators can access updater information
 				if (
 					currentUser.role !== "administrator" &&
 					(currentUserOrganizationMembership === undefined ||
@@ -60,26 +64,26 @@ ActionItem.implement({
 					});
 				}
 
-				// If the updaterId is null, return null.
+				// Step 5: If updaterId is null, return null (no updater assigned)
 				if (parent.updaterId === null) {
 					return null;
 				}
 
-				// If the current user is the updater, return the currentUser.
+				// Step 6: If current user is the updater, reuse the already fetched user object
 				if (parent.updaterId === currentUserId) {
 					return currentUser;
 				}
 
 				const updaterId = parent.updaterId;
 
-				// Query the usersTable to fetch the updater based on updaterId.
+				// Step 7: Query the user associated with the updaterId
 				const existingUser = await ctx.drizzleClient.query.usersTable.findFirst(
 					{
 						where: (fields, operators) => operators.eq(fields.id, updaterId),
 					},
 				);
 
-				// Log and throw an error if no user is found for the given updaterId.
+				// Step 8: If the user doesn't exist, log error and throw unexpected error
 				if (existingUser === undefined) {
 					ctx.log.error(
 						"Postgres select operation returned an empty array for an action item's updater id that isn't null.",
@@ -91,6 +95,7 @@ ActionItem.implement({
 					});
 				}
 
+				// Step 9: Return the resolved updater user
 				return existingUser;
 			},
 		}),

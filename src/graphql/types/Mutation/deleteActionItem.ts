@@ -6,8 +6,10 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { MutationDeleteActionItemInput } from "../../inputs/MutationDeleteActionItemInput";
 import { mutationDeleteActionItemArgumentsSchema } from "../../inputs/MutationDeleteActionItemInput";
 
+// Defines a GraphQL mutation field named `deleteActionItem`
 builder.mutationField("deleteActionItem", (t) =>
 	t.field({
+		// Define mutation arguments
 		args: {
 			input: t.arg({
 				description: "Delete an action item",
@@ -17,7 +19,7 @@ builder.mutationField("deleteActionItem", (t) =>
 		},
 		description: "Mutation field to delete an action item.",
 		resolve: async (_parent, args, ctx) => {
-			// Check if the client is authenticated
+			// Step 1: Authentication check – Ensure the client is logged in
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -26,13 +28,14 @@ builder.mutationField("deleteActionItem", (t) =>
 				});
 			}
 
-			// Validate the input arguments using Zod
+			// Step 2: Validate the input against the schema using Zod
 			const {
 				data: parsedArgs,
 				error,
 				success,
 			} = mutationDeleteActionItemArgumentsSchema.safeParse(args);
 
+			// If validation fails, throw a structured error with details
 			if (!success) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -47,23 +50,25 @@ builder.mutationField("deleteActionItem", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			// Fetch the current user and the existing action item concurrently
+			// Step 3: Fetch both the current user and the action item to be deleted
 			const [currentUser, existingActionItem] = await Promise.all([
+				// Fetch the current user's role for authorization logic
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
+				// Fetch the action item targeted for deletion
 				ctx.drizzleClient.query.actionItemsTable.findFirst({
 					columns: {
 						organizationId: true,
 					},
-					// Adjust the 'with' and 'where' clauses as needed for your relationships and permissions
 					where: (fields, { eq }) => eq(fields.id, parsedArgs.input.id),
 				}),
 			]);
 
+			// If the user isn't found (should not happen if authenticated), throw error
 			if (!currentUser) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -72,6 +77,7 @@ builder.mutationField("deleteActionItem", (t) =>
 				});
 			}
 
+			// If the specified action item doesn't exist, throw not found error
 			if (!existingActionItem) {
 				throw new TalawaGraphQLError({
 					message: "The specified action item does not exist.",
@@ -86,11 +92,13 @@ builder.mutationField("deleteActionItem", (t) =>
 				});
 			}
 
+			// Step 4: Delete the action item and return the deleted row
 			const [deletedActionItem] = await ctx.drizzleClient
 				.delete(actionItemsTable)
 				.where(eq(actionItemsTable.id, parsedArgs.input.id))
 				.returning();
 
+			// If deletion failed silently, throw an unexpected error
 			if (!deletedActionItem) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -99,6 +107,7 @@ builder.mutationField("deleteActionItem", (t) =>
 				});
 			}
 
+			// Return the deleted action item to the client
 			return deletedActionItem;
 		},
 		type: ActionItem,
