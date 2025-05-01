@@ -24,19 +24,25 @@ VolunteerGroupAssignments.implement({
 
 				const currentUserId = ctx.currentClient.user.id;
 
-				const result = await ctx.drizzleClient
+				const [result] = await ctx.drizzleClient
 					.select({
 						volunteerGroup: volunteerGroupsTable,
 						event: {
 							organizationId: eventsTable.organizationId,
 						},
-						user: usersTable,
+						user: {
+							id: usersTable.id,
+							role: usersTable.role,
+						},
 						orgMembership: {
 							role: organizationMembershipsTable.role,
 						},
 					})
 					.from(volunteerGroupsTable)
-					.leftJoin(eventsTable, eq(volunteerGroupsTable.id, eventsTable.id))
+					.leftJoin(
+						eventsTable,
+						eq(eventsTable.id, volunteerGroupsTable.eventId),
+					)
 					.leftJoin(usersTable, eq(usersTable.id, currentUserId))
 					.leftJoin(
 						organizationMembershipsTable,
@@ -51,7 +57,7 @@ VolunteerGroupAssignments.implement({
 					.where(eq(volunteerGroupsTable.id, parent.groupId))
 					.execute();
 
-				if (result.length === 0) {
+				if (result === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "arguments_associated_resources_not_found",
@@ -60,13 +66,7 @@ VolunteerGroupAssignments.implement({
 					});
 				}
 
-				const data = result[0]!;
-
-				if (!data.event?.organizationId) {
-					throw new Error("Event not found");
-				}
-
-				if (!data.user) {
+				if (!result.user) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthenticated",
@@ -75,7 +75,7 @@ VolunteerGroupAssignments.implement({
 				}
 
 				// Check user permissions
-				if (data.user.role !== "administrator" && !data.orgMembership) {
+				if (result.user.role !== "administrator" && !result.orgMembership) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action",
@@ -83,26 +83,21 @@ VolunteerGroupAssignments.implement({
 					});
 				}
 
-				if (parent.updaterId === null) {
+				if (parent.creatorId === null) {
 					return null;
 				}
 
-				if (parent.updaterId === currentUserId) {
-					return data.user;
-				}
-
-				const updatorId = parent.updaterId;
+				const creatorId = parent.creatorId;
 
 				const existingUser = await ctx.drizzleClient.query.usersTable.findFirst(
 					{
-						where: (fields, operators) => operators.eq(fields.id, updatorId),
+						where: (fields, operators) => operators.eq(fields.id, creatorId),
 					},
 				);
 
-				// Creator id existing but the associated user not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
 				if (existingUser === undefined) {
 					ctx.log.error(
-						"Postgres select operation returned an empty array for a group's updator id that isn't null.",
+						"Postgres select operation returned an empty array for a group's creator id that isn't null.",
 					);
 
 					throw new TalawaGraphQLError({

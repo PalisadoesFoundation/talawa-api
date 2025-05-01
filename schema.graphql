@@ -787,6 +787,12 @@ type HasUserVoted {
   voteType: PostVoteType
 }
 
+enum InviteStatus {
+  accepted
+  declined
+  no_response
+}
+
 """
 Possible variants of the two-letter language code defined in ISO 639-1, part of the ISO 639 standard published by the International Organization for Standardization (ISO), to represent natural languages.
 """
@@ -1516,6 +1522,9 @@ type Mutation {
   """Mutation field to create a volunteer group."""
   createEventVolunteerGroup(input: MutationCreateVolunteerGroupsInput!): VolunteerGroups
 
+  """Mutation field to create a volunteer group assignments."""
+  createEventVolunteerGroupAssignments(input: MutationCreateVolunteerGroupAssignmentsInput!): VolunteerGroupAssignments
+
   """Mutation field to create a fund."""
   createFund(input: MutationCreateFundInput!): Fund
 
@@ -1701,6 +1710,9 @@ type Mutation {
 
   """Mutation field to update a volunteer group."""
   updateEventVolunteerGroup(input: MutationUpdateEventVolunteerGroupInput!): VolunteerGroups
+
+  """Mutation field to update a volunteer group assignments."""
+  updateEventVolunteerGroupAssignments(input: MutationUpdateVolunteerGroupAssignmentsInput!): VolunteerGroupAssignments
 
   """Mutation field to update a fund."""
   updateFund(input: MutationUpdateFundInput!): Fund
@@ -2169,12 +2181,24 @@ input MutationCreateVenueInput {
 }
 
 """"""
+input MutationCreateVolunteerGroupAssignmentsInput {
+  """Global identifier of the user."""
+  assigneeId: ID!
+
+  """Global identifier of the group."""
+  groupId: ID!
+
+  """Invitation Status."""
+  inviteStatus: InviteStatus!
+}
+
+""""""
 input MutationCreateVolunteerGroupsInput {
   """Global identifier of the event that the group is to be made for."""
   eventId: ID!
 
   """Global identifier of the user that is assigned leader of the group."""
-  leaderId: ID
+  leaderId: ID!
 
   """Max volunteers count"""
   maxVolunteerCount: Int!
@@ -2925,6 +2949,18 @@ input MutationUpdateVenueInput {
   name: String
 }
 
+""""""
+input MutationUpdateVolunteerGroupAssignmentsInput {
+  """Global identifier of the user."""
+  assigneeId: ID!
+
+  """Global identifier of the group."""
+  groupId: ID!
+
+  """Invitation Status."""
+  inviteStatus: UpdateInviteStatus!
+}
+
 type Organization {
   """Address line 1 of the organization's address."""
   addressLine1: String
@@ -3426,6 +3462,9 @@ type Query {
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Query field to get all volunteer of a group."""
+  getEventVolunteerGroupAssignments(input: QueryVolunteerGroupAssignmentsInput!): [VolunteerGroupAssignments!]
+
   """Query field to get all volunteer groups for an event."""
   getEventVolunteerGroups(input: QueryEventVolunteerGroupsInput!): [VolunteerGroups!]
 
@@ -3657,6 +3696,12 @@ input QueryVenueInput {
   id: String!
 }
 
+""""""
+input QueryVolunteerGroupAssignmentsInput {
+  """Global id of the group."""
+  groupId: String!
+}
+
 type RejectMembershipResponse {
   """Success or error message"""
   message: String
@@ -3779,6 +3824,12 @@ type TagFolderTagsConnection {
 type TagFolderTagsConnectionEdge {
   cursor: String!
   node: Tag
+}
+
+enum UpdateInviteStatus {
+  accepted
+  declined
+  no_response
 }
 
 """The `Upload` scalar type represents a file upload."""
@@ -4012,7 +4063,7 @@ type VenueEventsConnectionEdge {
 }
 
 type VolunteerGroupAssignments {
-  """User who has created the Assignment."""
+  """Volunteer group assignee."""
   assignee: User
 
   """Date time at the time the Group Assignment was created."""
@@ -4021,7 +4072,7 @@ type VolunteerGroupAssignments {
   """User who has created the Assignment."""
   creator: User
 
-  """User who has created the Assignment."""
+  """Volunteer group."""
   group: VolunteerGroups
 
   """Invitation status."""

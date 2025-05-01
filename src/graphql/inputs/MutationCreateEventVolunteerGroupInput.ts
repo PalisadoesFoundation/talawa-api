@@ -29,6 +29,7 @@ export const MutationCreateVolunteerGroupInput = builder
 			leaderId: t.id({
 				description:
 					"Global identifier of the user that is assigned leader of the group.",
+				required: true,
 			}),
 			maxVolunteerCount: t.int({
 				description: "Max volunteers count",

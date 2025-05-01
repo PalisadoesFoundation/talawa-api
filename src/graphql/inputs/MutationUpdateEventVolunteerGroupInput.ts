@@ -25,7 +25,7 @@ export const mutationUpdateEventVolunteerGroupInputSchema = z
 		) {
 			ctx.addIssue({
 				code: "custom",
-				message: `Max Volunteer Count must be greater than 0.`,
+				message: "Max Volunteer Count must be greater than 0.",
 				path: ["maxVolunteerCount"],
 			});
 		}

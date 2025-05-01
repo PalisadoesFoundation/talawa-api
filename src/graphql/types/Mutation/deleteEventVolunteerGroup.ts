@@ -55,7 +55,7 @@ builder.mutationField("deleteEventVolunteerGroup", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const volunteerGroupWithEventAndUser = await ctx.drizzleClient
+			const [volunteerGroupWithEventAndUser] = await ctx.drizzleClient
 				.select({
 					volunteerGroup: volunteerGroupsTable,
 					eventOrganizationId: eventsTable.organizationId,
@@ -77,10 +77,7 @@ builder.mutationField("deleteEventVolunteerGroup", (t) =>
 				.where(eq(volunteerGroupsTable.id, parsedArgs.input.id))
 				.execute();
 
-			if (
-				!volunteerGroupWithEventAndUser ||
-				volunteerGroupWithEventAndUser.length === 0
-			) {
+			if (!volunteerGroupWithEventAndUser) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -89,7 +86,7 @@ builder.mutationField("deleteEventVolunteerGroup", (t) =>
 				});
 			}
 
-			const result = volunteerGroupWithEventAndUser[0]!;
+			const result = volunteerGroupWithEventAndUser;
 
 			if (!result.eventOrganizationId) {
 				throw new TalawaGraphQLError({
