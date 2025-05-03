@@ -2,6 +2,7 @@ import { z } from "zod";
 import { blockedUsersTable } from "~/src/drizzle/tables/blockedUsers";
 import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { assertOrganizationAdmin } from "~/src/utilities/authorization";
 
 const mutationBlockUserArgumentsSchema = z.object({
 	organizationId: z.string().min(1, "Organization ID is required."),
@@ -44,45 +45,29 @@ builder.mutationField("blockUser", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [
-				organization,
-				targetUser,
-				currentUserMembership,
-				targetUserMembership,
-				existingBlock,
-			] = await Promise.all([
+			const [currentUser, existingOrganization] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
+					with: {
+						membershipsWhereOrganization: {
+							columns: {
+								role: true,
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.memberId, currentUserId),
+						},
+					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.organizationId),
 				}),
-				ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.userId),
-				}),
-				ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
-					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.memberId, currentUserId),
-							operators.eq(fields.organizationId, parsedArgs.organizationId),
-						),
-				}),
-				ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
-					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.memberId, parsedArgs.userId),
-							operators.eq(fields.organizationId, parsedArgs.organizationId),
-						),
-				}),
-				ctx.drizzleClient.query.blockedUsersTable.findFirst({
-					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.userId, parsedArgs.userId),
-							operators.eq(fields.organizationId, parsedArgs.organizationId),
-						),
-				}),
 			]);
 
-			if (!organization) {
+			if (!existingOrganization) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -95,6 +80,41 @@ builder.mutationField("blockUser", (t) =>
 				});
 			}
 
+			const currentUserOrganizationMembership =
+				existingOrganization.membershipsWhereOrganization[0];
+
+			assertOrganizationAdmin(
+				currentUser,
+				currentUserOrganizationMembership,
+				"You must be an admin of this organization to block users.",
+			);
+
+			const [targetUser, targetUserMembership, existingBlock] =
+				await Promise.all([
+					ctx.drizzleClient.query.usersTable.findFirst({
+						columns: {
+							id: true,
+							role: true,
+						},
+						where: (fields, operators) =>
+							operators.eq(fields.id, parsedArgs.userId),
+					}),
+					ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
+						where: (fields, operators) =>
+							operators.and(
+								operators.eq(fields.memberId, parsedArgs.userId),
+								operators.eq(fields.organizationId, parsedArgs.organizationId),
+							),
+					}),
+					ctx.drizzleClient.query.blockedUsersTable.findFirst({
+						where: (fields, operators) =>
+							operators.and(
+								operators.eq(fields.userId, parsedArgs.userId),
+								operators.eq(fields.organizationId, parsedArgs.organizationId),
+							),
+					}),
+				]);
+
 			if (!targetUser) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -104,19 +124,6 @@ builder.mutationField("blockUser", (t) =>
 								argumentPath: ["input", "userId"],
 							},
 						],
-					},
-				});
-			}
-
-			if (
-				!currentUserMembership ||
-				currentUserMembership.role !== "administrator"
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-						message:
-							"You must be an admin of this organization to block users.",
 					},
 				});
 			}
