@@ -1098,3 +1098,15 @@ export const Mutation_createActionItemCategory = gql(/* GraphQL */ `
       }
     }
   `);
+
+export const Query_categoriesByIds = gql(`
+    query CategoriesByIds($input: QueryCategoriesByIdsInput!) {
+  categoriesByIds(input: $input) {
+    id
+    name
+    isDisabled
+    createdAt
+  }
+}
+
+    `);
