@@ -4,4 +4,4 @@ import "./creator";
 import "./event";
 import "./leader";
 import "./updatedAt";
-import "./updator";
+import "./updater";

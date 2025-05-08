@@ -88,15 +88,6 @@ builder.mutationField("deleteEventVolunteerGroup", (t) =>
 
 			const result = volunteerGroupWithEventAndUser;
 
-			if (!result.eventOrganizationId) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["input", "eventId"] }],
-					},
-				});
-			}
-
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 				columns: { role: true },
 				where: (fields, operators) => operators.eq(fields.id, currentUserId),

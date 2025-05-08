@@ -7,7 +7,7 @@ import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
-	MutationUpdateEvenVolunteerGrouptInput,
+	MutationUpdateEventVolunteerGrouptInput,
 	mutationUpdateEventVolunteerGroupInputSchema,
 } from "../../inputs/MutationUpdateEventVolunteerGroupInput";
 import { VolunteerGroups } from "../VolunteerGroup/VolunteerGroup";
@@ -21,7 +21,7 @@ builder.mutationField("updateEventVolunteerGroup", (t) =>
 			input: t.arg({
 				description: "",
 				required: true,
-				type: MutationUpdateEvenVolunteerGrouptInput,
+				type: MutationUpdateEventVolunteerGrouptInput,
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
@@ -88,14 +88,14 @@ builder.mutationField("updateEventVolunteerGroup", (t) =>
 
 			const result = volunteerGroupWithEventAndUser;
 
-			if (!result.eventOrganizationId) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["input", "eventId"] }],
-					},
-				});
-			}
+			// if (!result.eventOrganizationId) {
+			// 	throw new TalawaGraphQLError({
+			// 		extensions: {
+			// 			code: "arguments_associated_resources_not_found",
+			// 			issues: [{ argumentPath: ["input", "eventId"] }],
+			// 		},
+			// 	});
+			// }
 
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 				columns: { role: true },

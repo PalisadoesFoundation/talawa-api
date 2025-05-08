@@ -51,21 +51,6 @@ builder.queryField("getEventVolunteerGroups", (t) =>
 			}
 
 			const currentUserId = ctx.currentClient.user.id;
-			const { eventId } = parsedArgs.input;
-
-			if (!eventId) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{
-								argumentPath: ["input", "date"],
-								message: "EventId is required.",
-							},
-						],
-					},
-				});
-			}
 
 			const event = await ctx.drizzleClient.query.eventsTable.findFirst({
 				with: {
@@ -81,7 +66,8 @@ builder.queryField("getEventVolunteerGroups", (t) =>
 						},
 					},
 				},
-				where: (fields, operators) => operators.eq(fields.id, eventId), // parent is the VolunteerGroup
+				where: (fields, operators) =>
+					operators.eq(fields.id, parsedArgs.input.eventId), // parent is the VolunteerGroup
 			});
 
 			if (event === undefined) {
@@ -110,7 +96,8 @@ builder.queryField("getEventVolunteerGroups", (t) =>
 						event: true,
 						leader: true,
 					},
-					where: (fields, operators) => operators.eq(fields.eventId, eventId),
+					where: (fields, operators) =>
+						operators.eq(fields.eventId, parsedArgs.input.eventId),
 				}),
 			]);
 
@@ -118,19 +105,6 @@ builder.queryField("getEventVolunteerGroups", (t) =>
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthenticated",
-					},
-				});
-			}
-
-			if (eventVolunteerGroups === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "id"],
-							},
-						],
 					},
 				});
 			}

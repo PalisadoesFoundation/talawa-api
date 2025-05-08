@@ -1070,3 +1070,37 @@ export const Mutation_createPostVote = gql(`
       caption
     }
   }`);
+
+export const Mutation_createEventVolunteerGroup = gql(`
+  mutation Mutation_createEventVolunteerGroup($input: MutationCreateEventVolunteerGroupInput!){
+  createEventVolunteerGroup(input: $input) {
+    id
+    name
+  }
+  }`);
+
+export const Mutation_updateEventVolunteerGroup = gql(`
+    mutation Mutation_updateEventVolunteerGroup($input: MutationUpdateEventVolunteerGroupInput!){
+    updateEventVolunteerGroup(input: $input) {
+      id
+      name
+      maxVolunteerCount
+    }
+    }`);
+
+export const Mutation_deleteEventVolunteerGroup = gql(`
+      mutation Mutation_deleteEventVolunteerGroup($input: MutationDeleteEventVolunteerGroupInput!){
+      deleteEventVolunteerGroup(input: $input) {
+        id
+        name
+        maxVolunteerCount
+      }
+      }`);
+
+export const Query_getEventVolunteerGroups = gql(`
+      query Query_getEventVolunteerGroups($input: QueryEventVolunteerGroupsInput!){
+      getEventVolunteerGroups(input: $input) {
+        id
+        name
+      }
+      }`);
