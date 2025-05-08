@@ -1,12 +1,13 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
+import { User } from "../User/User";
 import {
 	VolunteerGroups,
 	type VolunteerGroups as VolunteerGroupsType,
 } from "./VolunteerGroup";
 
-export const resolveUpdatedAt = async (
+export const resolveUpdater = async (
 	parent: VolunteerGroupsType,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
@@ -42,9 +43,6 @@ export const resolveUpdatedAt = async (
 	}
 
 	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		columns: {
-			role: true,
-		},
 		with: {
 			organizationMembershipsWhereMember: {
 				columns: {
@@ -79,16 +77,42 @@ export const resolveUpdatedAt = async (
 		});
 	}
 
-	return parent.updatedAt;
+	if (parent.updaterId === null) {
+		return null;
+	}
+
+	if (parent.updaterId === currentUserId) {
+		return currentUser;
+	}
+
+	const updaterId = parent.updaterId;
+
+	const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
+		where: (fields, operators) => operators.eq(fields.id, updaterId),
+	});
+
+	if (existingUser === undefined) {
+		ctx.log.error(
+			"Postgres select operation returned an empty array for a group's updater id that isn't null.",
+		);
+
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unexpected",
+			},
+		});
+	}
+
+	return existingUser;
 };
 
 VolunteerGroups.implement({
 	fields: (t) => ({
-		updatedAt: t.field({
-			description: "Date time at the time the Group was updated.",
+		updater: t.field({
+			description: "User who has last updated the Group.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
-			resolve: resolveUpdatedAt,
-			type: "DateTime",
+			resolve: resolveUpdater,
+			type: User,
 		}),
 	}),
 });

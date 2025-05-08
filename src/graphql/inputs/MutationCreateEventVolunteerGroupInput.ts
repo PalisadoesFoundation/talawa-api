@@ -3,16 +3,26 @@ import { volunteerGroupsTableInsertSchema } from "~/src/drizzle/tables/volunteer
 import { builder } from "~/src/graphql/builder";
 
 export const mutationCreateVolunteerGroupInputSchema =
-	volunteerGroupsTableInsertSchema.pick({
-		eventId: true,
-		name: true,
-		leaderId: true,
-		maxVolunteerCount: true,
-	});
+	volunteerGroupsTableInsertSchema
+		.pick({
+			eventId: true,
+			name: true,
+			leaderId: true,
+			maxVolunteerCount: true,
+		})
+		.superRefine((arg, ctx) => {
+			if (arg.maxVolunteerCount <= 0) {
+				ctx.addIssue({
+					code: "custom",
+					message: "Must be greater than the 0",
+					path: ["maxVolunteerCount"],
+				});
+			}
+		});
 
 export const MutationCreateVolunteerGroupInput = builder
 	.inputRef<z.infer<typeof mutationCreateVolunteerGroupInputSchema>>(
-		"MutationCreateVolunteerGroupsInput",
+		"MutationCreateEventVolunteerGroupInput",
 	)
 	.implement({
 		description: "",

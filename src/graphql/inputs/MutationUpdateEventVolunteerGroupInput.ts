@@ -31,7 +31,7 @@ export const mutationUpdateEventVolunteerGroupInputSchema = z
 		}
 	});
 
-export const MutationUpdateEvenVolunteerGrouptInput = builder
+export const MutationUpdateEventVolunteerGrouptInput = builder
 	.inputRef<z.infer<typeof mutationUpdateEventVolunteerGroupInputSchema>>(
 		"MutationUpdateEventVolunteerGroupInput",
 	)

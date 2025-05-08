@@ -1520,7 +1520,7 @@ type Mutation {
   createEvent(input: MutationCreateEventInput!): Event
 
   """Mutation field to create a volunteer group."""
-  createEventVolunteerGroup(input: MutationCreateVolunteerGroupsInput!): VolunteerGroups
+  createEventVolunteerGroup(input: MutationCreateEventVolunteerGroupInput!): VolunteerGroups
 
   """Mutation field to create a volunteer group assignments."""
   createEventVolunteerGroupAssignments(input: MutationCreateVolunteerGroupAssignmentsInput!): VolunteerGroupAssignments
@@ -1915,6 +1915,21 @@ input MutationCreateEventInput {
 }
 
 """"""
+input MutationCreateEventVolunteerGroupInput {
+  """Global identifier of the event that the group is to be made for."""
+  eventId: ID!
+
+  """Global identifier of the user that is assigned leader of the group."""
+  leaderId: ID!
+
+  """Max volunteers count"""
+  maxVolunteerCount: Int!
+
+  """Name of the group."""
+  name: String!
+}
+
+""""""
 input MutationCreateFundCampaignInput {
   """Currency code of the fund campaign."""
   currencyCode: Iso4217CurrencyCode!
@@ -2190,21 +2205,6 @@ input MutationCreateVolunteerGroupAssignmentsInput {
 
   """Invitation Status."""
   inviteStatus: InviteStatus!
-}
-
-""""""
-input MutationCreateVolunteerGroupsInput {
-  """Global identifier of the event that the group is to be made for."""
-  eventId: ID!
-
-  """Global identifier of the user that is assigned leader of the group."""
-  leaderId: ID!
-
-  """Max volunteers count"""
-  maxVolunteerCount: Int!
-
-  """Name of the group."""
-  name: String!
 }
 
 """Input for deleting an action item."""
@@ -4111,5 +4111,5 @@ type VolunteerGroups {
   updatedAt: DateTime
 
   """User who has last updated the Group."""
-  updator: User
+  updater: User
 }
