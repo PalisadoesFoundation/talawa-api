@@ -3,6 +3,7 @@ import { z } from "zod";
 import { blockedUsersTable } from "~/src/drizzle/tables/blockedUsers";
 import { builder } from "~/src/graphql/builder";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { assertOrganizationAdmin } from "~/src/utilities/authorization";
 
 const mutationUnblockUserArgumentsSchema = z.object({
 	organizationId: z.string().min(1, "Organization ID is required."),
@@ -45,33 +46,37 @@ builder.mutationField("unblockUser", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [organization, targetUser, currentUserMembership, existingBlock] =
-				await Promise.all([
-					ctx.drizzleClient.query.organizationsTable.findFirst({
-						where: (fields, operators) =>
-							operators.eq(fields.id, parsedArgs.organizationId),
-					}),
-					ctx.drizzleClient.query.usersTable.findFirst({
-						where: (fields, operators) =>
-							operators.eq(fields.id, parsedArgs.userId),
-					}),
-					ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
-						where: (fields, operators) =>
-							operators.and(
+			const [currentUser, existingOrganization] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.organizationsTable.findFirst({
+					with: {
+						membershipsWhereOrganization: {
+							columns: {
+								role: true,
+							},
+							where: (fields, operators) =>
 								operators.eq(fields.memberId, currentUserId),
-								operators.eq(fields.organizationId, parsedArgs.organizationId),
-							),
-					}),
-					ctx.drizzleClient.query.blockedUsersTable.findFirst({
-						where: (fields, operators) =>
-							operators.and(
-								operators.eq(fields.userId, parsedArgs.userId),
-								operators.eq(fields.organizationId, parsedArgs.organizationId),
-							),
-					}),
-				]);
+						},
+					},
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.organizationId),
+				}),
+			]);
 
-			if (!organization) {
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
+
+			if (existingOrganization === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -84,6 +89,29 @@ builder.mutationField("unblockUser", (t) =>
 				});
 			}
 
+			const currentUserOrganizationMembership =
+				existingOrganization.membershipsWhereOrganization[0];
+
+			assertOrganizationAdmin(
+				currentUser,
+				currentUserOrganizationMembership,
+				"You must be an admin of this organization to unblock users.",
+			);
+
+			const [targetUser, existingBlock] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.userId),
+				}),
+				ctx.drizzleClient.query.blockedUsersTable.findFirst({
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.userId, parsedArgs.userId),
+							operators.eq(fields.organizationId, parsedArgs.organizationId),
+						),
+				}),
+			]);
+
 			if (!targetUser) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -93,19 +121,6 @@ builder.mutationField("unblockUser", (t) =>
 								argumentPath: ["input", "userId"],
 							},
 						],
-					},
-				});
-			}
-
-			if (
-				!currentUserMembership ||
-				currentUserMembership.role !== "administrator"
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-						message:
-							"You must be an admin of this organization to unblock users.",
 					},
 				});
 			}
