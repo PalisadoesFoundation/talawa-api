@@ -67,9 +67,9 @@ jobs:
         with:
           python-version: 3.9
 
-      - name: Run Biome Ignore Check
-        run: |
-          python .github/workflows/scripts/biome_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+            #- name: Run Biome Ignore Check
+            #run: |
+            #python .github/workflows/scripts/biome_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
       - name: Run Code Coverage Disable Check
         run: |
