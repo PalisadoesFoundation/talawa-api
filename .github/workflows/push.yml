@@ -1,180 +1,48 @@
-##############################################################################
-##############################################################################
-#
-# NOTE!
-#
-# Please read the README.md file in this directory that defines what should
-# be placed in this file
-#
-##############################################################################
-##############################################################################
-
-name: Push Workflow
+name: Push Workflow for develop-postgres
 
 on:
   push:
     branches:
-      - '**'
-      
-env:
-    CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
+      - develop-postgres
 
 jobs:
-  ##############################################################################
-  # This section is added so that the most recent and valid level of
-  # code coverage (post PR merge) is reported
-  ##############################################################################
-
-  Push-Workflow:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Testing Application
+  test-and-upload-coverage:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [22.x]
-    services:
-      redis:
-        image: redis:6.0
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-        ports:
-          - 6379:6379
-      mongo:
-        image: mongo:4.4
-        options: >-
-          --health-cmd mongo
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 10
-        ports:
-          - 27017:27017
-    env:
-      MONGO_DB_URL: mongodb://localhost:27017/talawa-test-db
-      REDIS_HOST: localhost
-      REDIS_PORT: 6379
 
-    # We checkout the content of the Talawa-API repository in a directory called `api`
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: Generate Access Token Secret
-        run: echo "ACCESS_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
-        
-      - name: Generate Refresh Token Secret
-        run: echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> $GITHUB_ENV
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Set up Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      # Create .env file for Talawa API testing environment
+      - name: Create .env file for Talawa API testing environment
+        run: cp ./envFiles/.env.ci ./.env
 
-      - name: Install dependencies
-        run: npm ci
+      # Build Talawa API compose testing environment
+      - name: Build Talawa API compose testing environment
+        run: docker compose build
 
-      - name: Sleep for 10s
-        uses: juliangruber/sleep-action@v2
-        with:
-          time: 10s
+      # Run tests
+      - name: Run tests
+        run: docker compose up --exit-code-from api
 
-      # Testing the application 
-      - name: Run the tests
-        run: npm run test
-    
-      # Upload Coverage
-      - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
+      # Copy coverage from container
+      - name: Copy coverage from container
+        run: |
+          CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
+          docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
+
+      # Upload coverage to Codecov
+      - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
-          fail_ci_if_error: false
-          name: '${{env.CODECOV_UNIQUE_NAME}}'  
-            
-            
-# You can find the deployment instructions in the scripts/cloud-api-demo/README.md file
-  Deploy-Workflow:
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Deploying Application to Cloud VPS
-    needs: Push-Workflow
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate Access Token Secret
-        run: |
-          secret=$(openssl rand -hex 32)
-          echo "INPUT_ACCESS_TOKEN_SECRET=$secret" >> $GITHUB_ENV
-          echo "::add-mask::$secret"
-        
-      - name: Generate Refresh Token Secret
-        run: |
-          secret=$(openssl rand -hex 32)
-          echo "INPUT_REFRESH_TOKEN_SECRET=$secret" >> $GITHUB_ENV
-          echo "::add-mask::$secret"
+          files: ./coverage/lcov.info
 
-      - name: Execute remote ssh commands 
-        uses: appleboy/ssh-action@v1.0.3 
-        env:
-          INPUT_RECAPTCHA_SECRET_KEY: ${{ secrets.API_DEMO_RECAPTCHA_SECRET_KEY }}
-          INPUT_MAIL_USERNAME: ${{ secrets.API_DEMO_MAIL_USERNAME }}
-          INPUT_MAIL_PASSWORD: ${{ secrets.API_DEMO_MAIL_PASSWORD }}
-          INPUT_LAST_RESORT_SUPERADMIN_EMAIL: ${{ secrets.API_DEMO_LAST_RESORT_SUPERADMIN_EMAIL }}
+      # Test acceptable level of code coverage
+      - name: Test acceptable level of code coverage
+        uses: VeryGoodOpenSource/very_good_coverage@v2
         with:
-          host: ${{secrets.API_DEMO_HOST}}
-          username: ${{ secrets.API_DEMO_USERNAME }}
-          key: ${{ secrets.API_DEMO_SSH_KEY }}
-          port: ${{ secrets.API_DEMO_SSH_PORT}}
-          allenvs: true
-          command_timeout: 30m
-          script: |
-            python3 /usr/local/bin/scripts/create_env.py --access_token_secret $INPUT_ACCESS_TOKEN_SECRET --refresh_token_secret $INPUT_REFRESH_TOKEN_SECRET --recaptcha_secret_key $INPUT_RECAPTCHA_SECRET_KEY --mail_username $INPUT_MAIL_USERNAME --mail_password $INPUT_MAIL_PASSWORD --last_resort_superadmin_email $INPUT_LAST_RESORT_SUPERADMIN_EMAIL
-            python3 /usr/local/bin/scripts/deploy.py --path ~/develop --branch develop
-
-  Check-Schema: 
-    if: ${{ github.actor != 'dependabot[bot]' }}
-    name: Check Schema
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Restore node_modules from cache
-        id: cache-npm
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            node_modules
-          key: ${{ runner.os }}-node-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ env.cache-name }}-
-            ${{ runner.os }}-node-
-            ${{ runner.os }}-    
-
-      - name: Install dependencies
-        run: npm ci
-        
-      - name: Generate schema.graphql
-        run: npm run gen:schema
-        
-    # A separate step for extracting branch name from $GITHUB_HEAD_REF/$GITHUB_REF
-    # $GITHUB_HEAD_REF on pull_request and $GITHUB_REF on push
-    # If GITHUB_HEAD_REF is not set, extract the branch name from GITHUB_REF using parameter expansion to remove "refs/heads/" prefix
-    # If GITHUB_HEAD_REF is set, directly assign its value to the branch variable
-    
-      - name: Extract branch name
-        shell: bash
-        run: | 
-          if [ -z "$GITHUB_HEAD_REF" ]; then
-            branch=${GITHUB_REF#refs/heads/}
-          else
-            branch=$GITHUB_HEAD_REF
-          fi
-          echo "branch=$branch" >> $GITHUB_OUTPUT
-        id: extract_branch  
-
-      - uses: kamilkisiela/graphql-inspector@master
-        with:
-          schema: ${{ steps.extract_branch.outputs.branch }}:schema.graphql    
+          path: "./coverage/lcov.info"
+          min_coverage: 39.0

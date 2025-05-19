@@ -1,405 +1,1240 @@
-directive @auth on FIELD_DEFINITION
+type AcceptMembershipResponse {
+  """Success or error message"""
+  message: String
 
-directive @role(requires: UserType) on FIELD_DEFINITION
+  """Whether the operation was successful"""
+  success: Boolean
+}
 
 type ActionItem {
-  _id: ID!
-  actionItemCategory: ActionItemCategory
-  allottedHours: Float
-  assignee: EventVolunteer
-  assigneeGroup: EventVolunteerGroup
-  assigneeType: String!
-  assigneeUser: User
-  assigner: User
-  assignmentDate: Date!
-  completionDate: Date!
-  createdAt: Date!
+  """Timestamp when the action item was assigned."""
+  assignedAt: DateTime
+
+  """The user assigned to this action item."""
+  assignee: User
+
+  """The ID of the user assigned to this action item."""
+  assigneeId: ID
+
+  """The ID of the category this action item belongs to."""
+  categoryId: ID
+
+  """Timestamp when the action item was completed."""
+  completionAt: DateTime
+
+  """Date time at the time the action item was created."""
+  createdAt: DateTime
+
+  """User who created the action item."""
   creator: User
-  dueDate: Date!
+
+  """The ID of the user who created this action item."""
+  creatorId: ID
+
+  """
+  Fetch the event associated with this action item, including attachments if available.
+  """
   event: Event
-  isCompleted: Boolean!
+
+  """The ID of the associated event, if applicable."""
+  eventId: ID
+
+  """Unique identifier for the action item."""
+  id: ID
+
+  """Indicates whether the action item is completed."""
+  isCompleted: Boolean
+
+  """The ID of the organization the action item belongs to."""
+  organizationId: ID
+
+  """Notes added after completing the action item."""
   postCompletionNotes: String
+
+  """Notes added before completing the action item."""
   preCompletionNotes: String
-  updatedAt: Date!
+
+  """Timestamp when the action item was last updated."""
+  updatedAt: DateTime
+
+  """The ID of the user who last updated this action item."""
+  updaterId: ID
 }
 
+"""
+Represents a category for action items, including metadata such as creation and update timestamps.
+"""
 type ActionItemCategory {
-  _id: ID!
-  createdAt: Date!
-  creator: User
-  isDisabled: Boolean!
-  name: String!
-  organization: Organization
-  updatedAt: Date!
-}
+  """Timestamp when the category was created."""
+  createdAt: DateTime
 
-input ActionItemCategoryWhereInput {
-  is_disabled: Boolean
-  name_contains: String
-}
+  """Identifier for the user who created this category."""
+  creatorId: ID
 
-input ActionItemWhereInput {
-  actionItemCategory_id: ID
-  assigneeName: String
-  categoryName: String
-  event_id: ID
-  is_completed: Boolean
-  orgId: ID
-}
+  """Unique identifier for the action item category."""
+  id: ID
 
-enum ActionItemsOrderByInput {
-  createdAt_ASC
-  createdAt_DESC
-  dueDate_ASC
-  dueDate_DESC
-}
+  """Indicates whether the action item category is disabled."""
+  isDisabled: Boolean
 
-input AddPeopleToUserTagInput {
-  tagId: ID!
-  userIds: [ID!]!
-}
+  """The name of the action item category."""
+  name: String
 
-type Address {
-  city: String
-  countryCode: String
-  dependentLocality: String
-  line1: String
-  line2: String
-  postalCode: String
-  sortingCode: String
-  state: String
-}
+  """Identifier for the organization this category belongs to."""
+  organizationId: ID
 
-input AddressInput {
-  city: String
-  countryCode: String
-  dependentLocality: String
-  line1: String
-  line2: String
-  postalCode: String
-  sortingCode: String
-  state: String
+  """Timestamp when the category was last updated."""
+  updatedAt: DateTime
 }
 
 type Advertisement {
-  _id: ID!
-  createdAt: DateTime!
+  """Array of attachments."""
+  attachments: [AdvertisementAttachment!]
+
+  """Date time at the time the advertisement was created."""
+  createdAt: DateTime
+
+  """User who created the advertisement."""
   creator: User
-  endDate: Date!
-  mediaUrl: URL!
-  name: String!
-  organization: Organization
-  startDate: Date!
-  type: AdvertisementType!
-  updatedAt: DateTime!
-}
 
-type AdvertisementEdge {
-  cursor: String
-  node: Advertisement
-}
-
-enum AdvertisementType {
-  BANNER
-  MENU
-  POPUP
-}
-
-type AdvertisementsConnection {
-  edges: [AdvertisementEdge]
-  pageInfo: DefaultConnectionPageInfo!
-  totalCount: Int
-}
-
-type AgendaCategory {
-  _id: ID!
-  createdAt: Date!
-  createdBy: User!
+  """Custom information about the advertisement."""
   description: String
-  name: String!
-  organization: Organization!
-  updatedAt: Date
-  updatedBy: User
+
+  """Date time at the time the advertised event ends at."""
+  endAt: DateTime
+
+  """Global identifier of the advertisement."""
+  id: ID!
+
+  """Name of the advertisement."""
+  name: String
+
+  """Organization which the advertisement belongs to."""
+  organization: Organization
+
+  """Date time at the time the advertised event starts at."""
+  startAt: DateTime
+
+  """Type of the advertisement."""
+  type: AdvertisementType
+
+  """Date time at the time the advertisement was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the advertisement."""
+  updater: User
+}
+
+type AdvertisementAttachment {
+  """Mime type of the attachment."""
+  mimeType: String
+
+  """URL to the attachment."""
+  url: String
+}
+
+"""Possible variants of the type of an advertisement."""
+enum AdvertisementType {
+  banner
+  menu
+  pop_up
+}
+
+"""Filter criteria for organization advertisements"""
+input AdvertisementWhereInput {
+  """Filter advertisements by completion status"""
+  isCompleted: Boolean
+}
+
+type AgendaFolder {
+  """
+  GraphQL connection to traverse through the agenda folders that have the agenda folder as a parent folder.
+  """
+  childFolders(after: String, before: String, first: Int, last: Int): AgendaFolderChildFoldersConnection
+
+  """Date time at the time the agenda folder was created."""
+  createdAt: DateTime
+
+  """User who created the agenda folder."""
+  creator: User
+
+  """
+  Event for which the agenda folder contains agenda items constituting a part of the agenda.
+  """
+  event: Event
+
+  """Global identifier of the agenda folder."""
+  id: ID!
+
+  """
+  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent for agenda folders.
+  """
+  isAgendaItemFolder: Boolean
+
+  """
+  GraphQL connection to traverse through the agenda items contained within the agenda folder.
+  """
+  items(after: String, before: String, first: Int, last: Int): AgendaFolderItemsConnection
+
+  """Name of the agenda folder."""
+  name: String
+
+  """Agenda folder that is a parent folder to the agenda folder."""
+  parentFolder: AgendaFolder
+
+  """Date time at the time the agenda folder was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda folder."""
+  updater: User
+}
+
+""""""
+type AgendaFolderChildFoldersConnection {
+  edges: [AgendaFolderChildFoldersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type AgendaFolderChildFoldersConnectionEdge {
+  cursor: String!
+  node: AgendaFolder
+}
+
+""""""
+type AgendaFolderItemsConnection {
+  edges: [AgendaFolderItemsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type AgendaFolderItemsConnectionEdge {
+  cursor: String!
+  node: AgendaItem
 }
 
 type AgendaItem {
-  _id: ID!
-  attachments: [String]
-  categories: [AgendaCategory]
-  createdAt: Date!
-  createdBy: User!
+  """Date time at the time the agenda item was last created."""
+  createdAt: DateTime
+
+  """User who created the agenda item."""
+  creator: User
+
+  """Custom information about the agenda item."""
   description: String
-  duration: String!
-  organization: Organization!
-  relatedEvent: Event
-  sequence: Int!
-  title: String!
-  updatedAt: Date!
-  updatedBy: User!
-  urls: [String]
-  users: [User]
+
+  """Duration of the agenda item."""
+  duration: String
+
+  """Agenda folder within which the agenda item in contained."""
+  event: AgendaFolder
+
+  """Global identifier of the agenda item."""
+  id: ID!
+
+  """
+  Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  """
+  key: String
+
+  """Name of the agenda item."""
+  name: String
+
+  """Type of the agenda item."""
+  type: AgendaItemType
+
+  """Date time at the time the agenda item was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the agenda item."""
+  updater: User
 }
 
-input AgendaItemCategoryWhereInput {
-  name_contains: String
+"""Possible variants of the type of an agenda item."""
+enum AgendaItemType {
+  general
+  note
+  scripture
+  song
 }
 
-type AgendaSection {
-  _id: ID!
-  createdAt: Date!
-  createdBy: User
-  description: String!
-  items: [AgendaItem]
-  relatedEvent: Event
-  sequence: Int!
-  updatedAt: Date
-  updatedBy: User
+""""""
+type AuthenticationPayload {
+  """
+  This is the authentication token using which a user can sign in to talawa.
+  """
+  authenticationToken: String
+
+  """"""
+  user: User
 }
 
-type AggregatePost {
-  count: Int!
-}
+"""
+The `BigInt` scalar type represents non-fractional signed whole numeric values.
+"""
+scalar BigInt
 
-type AggregateUser {
-  count: Int!
-}
+"""Represents a user blocked by an organization."""
+type BlockedUser {
+  """Timestamp when the user was blocked."""
+  createdAt: Date
 
-scalar Any
-
-type AppUserProfile {
-  _id: ID!
-  adminFor: [Organization]
-  appLanguageCode: String!
-  campaigns: [FundraisingCampaign]
-  createdEvents: [Event]
-  createdOrganizations: [Organization]
-  eventAdmin: [Event]
-  isSuperAdmin: Boolean!
-  pledges: [FundraisingCampaignPledge]
-  userId: User!
-}
-
-type AuthData {
-  accessToken: String!
-  appUserProfile: AppUserProfile!
-  refreshToken: String!
-  user: User!
-}
-
-enum CampaignOrderByInput {
-  endDate_ASC
-  endDate_DESC
-  fundingGoal_ASC
-  fundingGoal_DESC
-  startDate_ASC
-  startDate_DESC
-}
-
-input CampaignWhereInput {
-  fundId: ID
+  """Unique identifier of the blocked user."""
   id: ID
-  name_contains: String
-  organizationId: ID
+
+  """Organization that blocked the user."""
+  organization: Organization
+
+  """User who has been blocked."""
+  user: User
+}
+
+"""Response type for canceling a membership request."""
+type CancelMembershipResponse {
+  """A message providing more details about the cancellation status."""
+  message: String
+
+  """Indicates whether the membership request was successfully canceled."""
+  success: Boolean
+}
+
+input CategoriesByIdsInput {
+  ids: [ID!]!
 }
 
 type Chat {
-  _id: ID!
-  admins: [User]
-  createdAt: DateTime!
+  """Mime type of the avatar of the chat."""
+  avatarMimeType: String
+
+  """URL to the avatar of the chat."""
+  avatarURL: String
+
+  """Date time at the time the chat was first created."""
+  createdAt: DateTime
+
+  """User who created the chat."""
   creator: User
-  image: String
-  isGroup: Boolean!
-  lastMessageId: String
-  messages: [ChatMessage]
+
+  """Custom information about the chat."""
+  description: String
+
+  """Global identifier of the chat."""
+  id: ID!
+
+  """
+  GraphQL connection to traverse through the users that are members of the chat.
+  """
+  members(after: String, before: String, first: Int, last: Int): ChatMembersConnection
+
+  """
+  GraphQL connection to traverse through the messages created within the chat.
+  """
+  messages(after: String, before: String, first: Int, last: Int): ChatMessagesConnection
+
+  """Name of the chat."""
   name: String
+
+  """Organization which the chat belongs to."""
   organization: Organization
-  unseenMessagesByUsers: JSON
-  updatedAt: DateTime!
-  users: [User!]!
+
+  """Date time at the time the chat was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the chat."""
+  updater: User
+}
+
+""""""
+type ChatMembersConnection {
+  edges: [ChatMembersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type ChatMembersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+"""Possible variants of the role assigned to a user within a chat."""
+enum ChatMembershipRole {
+  administrator
+  regular
 }
 
 type ChatMessage {
-  _id: ID!
-  chatMessageBelongsTo: Chat!
-  createdAt: DateTime!
-  deletedBy: [User]
-  media: String
-  messageContent: String!
-  replyTo: ChatMessage
-  sender: User!
-  updatedAt: DateTime!
+  """Body of the chat message."""
+  body: String
+
+  """Chat which the chat message belongs to."""
+  chat: Chat
+
+  """Date time at the time the chat message was created."""
+  createdAt: DateTime
+
+  """User who created the chat message."""
+  creator: User
+
+  """Global identifier of the chat message."""
+  id: ID!
+
+  """Parent message of the chat message."""
+  parentMessage: ChatMessage
+
+  """Date time at the time the chat message was last updated."""
+  updatedAt: DateTime
 }
 
-input ChatWhereInput {
-  name_contains: String
-  user: UserWhereInput
+""""""
+type ChatMessagesConnection {
+  edges: [ChatMessagesConnectionEdge]
+  pageInfo: PageInfo!
 }
 
-type CheckIn {
-  _id: ID!
-  createdAt: DateTime!
-  event: Event!
-  feedbackSubmitted: Boolean!
-  time: DateTime!
-  updatedAt: DateTime!
-  user: User!
-}
-
-input CheckInCheckOutInput {
-  eventId: ID!
-  userId: ID!
-}
-
-type CheckInStatus {
-  _id: ID!
-  checkIn: CheckIn
-  user: User!
-}
-
-type CheckOut {
-  _id: ID!
-  createdAt: DateTime!
-  eventAttendeeId: ID!
-  time: DateTime!
-  updatedAt: DateTime!
+""""""
+type ChatMessagesConnectionEdge {
+  cursor: String!
+  node: ChatMessage
 }
 
 type Comment {
-  _id: ID!
-  createdAt: DateTime!
+  """Body of the comment."""
+  body: String
+
+  """Date time at the time the comment was created."""
+  createdAt: DateTime
+
+  """User who created the comment."""
   creator: User
-  likeCount: Int
-  likedBy: [User]
-  post: Post!
-  text: String!
-  updatedAt: DateTime!
+
+  """
+  GraphQL connection to traverse through the users that down voted the comment.
+  """
+  downVoters(after: String, before: String, first: Int, last: Int): CommentDownVotersConnection
+
+  """Total number of down votes on the comment."""
+  downVotesCount: Int
+
+  """Global identifier of the comment."""
+  id: ID!
+
+  """Post which the comment belongs to."""
+  post: Post
+
+  """
+  GraphQL connection to traverse through the users that up voted the comment.
+  """
+  upVoters(after: String, before: String, first: Int, last: Int): CommentUpVotersConnection
+
+  """Total number of up votes on the comment."""
+  upVotesCount: Int
+
+  """Date time at the time the comment was last updated."""
+  updatedAt: DateTime
 }
 
-input CommentInput {
-  text: String!
+""""""
+type CommentDownVotersConnection {
+  edges: [CommentDownVotersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type CommentDownVotersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+""""""
+type CommentUpVotersConnection {
+  edges: [CommentUpVotersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type CommentUpVotersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+"""Possible variants of the type of of a vote on a comment."""
+enum CommentVoteType {
+  down_vote
+  up_vote
 }
 
 type Community {
-  _id: ID!
-  logoUrl: String
-  name: String!
-  socialMediaUrls: SocialMediaUrls
-  timeout: Int
-  websiteLink: String
+  """Date time at the time the community was created."""
+  createdAt: DateTime
+
+  """URL to the facebook account of the community."""
+  facebookURL: String
+
+  """URL to the gitGub account of the community."""
+  githubURL: String
+
+  """Global identifier of the community."""
+  id: ID!
+
+  """ Duration in seconds it should take for inactive clients to get timed out of their authenticated session within client-side talawa applications.
+  """
+  inactivityTimeoutDuration: Int
+
+  """URL to the instagram account of the community."""
+  instagramURL: String
+
+  """URL to the linkedin account of the community."""
+  linkedinURL: String
+
+  """Mime type of the avatar of the community."""
+  logoMimeType: String
+
+  """URL to the logo of the community."""
+  logoURL: String
+
+  """Name of the community."""
+  name: String
+
+  """URL to the reddit account of the community."""
+  redditURL: String
+
+  """URL to the slack account of the community."""
+  slackURL: String
+
+  """Date time at the time the community was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the community."""
+  updater: User
+
+  """URL to the website of the community."""
+  websiteURL: String
+
+  """URL to the x account of the community."""
+  xURL: String
+
+  """URL to the youtube account of the community."""
+  youtubeURL: String
 }
-
-union ConnectionError = InvalidCursor | MaximumValueError
-
-"""
-The standard graphQL connection page info that contains metadata about a
-particular instance of a connection. ALl other custom connection page info
-types must implement this interface.
-"""
-interface ConnectionPageInfo {
-  """
-  A field to tell the value of cursor for the last edge of a particular instance of a
-  connection.
-  """
-  endCursor: String
-
-  """
-  A field to tell whether the connection has additional edges after the
-  edge with endCursor as its cursor.
-  """
-  hasNextPage: Boolean!
-
-  """
-  A field to tell whether the connection has additional edges
-  before the edge with startCursor as its cursor.
-  """
-  hasPreviousPage: Boolean!
-
-  """
-  A field to tell the value of cursor for the first edge of a particular instance of a
-  connection.
-  """
-  startCursor: String
-}
-
-scalar CountryCode
 
 input CreateActionItemInput {
-  allottedHours: Float
+  assignedAt: String
   assigneeId: ID!
-  assigneeType: String!
-  dueDate: Date
+  categoryId: ID!
   eventId: ID
+  organizationId: ID!
   preCompletionNotes: String
 }
 
-union CreateAdminError = OrganizationMemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedError | UserNotFoundError
+"""
+A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar Date
 
-type CreateAdminPayload {
-  user: AppUserProfile
-  userErrors: [CreateAdminError!]!
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
+"""Possible statuses for a membership request."""
+enum DrizzleMembershipRequestStatus {
+  approved
+  pending
+  rejected
 }
 
-input CreateAdvertisementInput {
-  endDate: Date!
-  mediaFile: String!
-  name: String!
-  organizationId: ID!
-  startDate: Date!
-  type: AdvertisementType!
-}
+"""
+A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
+"""
+scalar EmailAddress
 
-type CreateAdvertisementPayload {
-  advertisement: Advertisement
-}
+type Event {
+  """
+  GraphQL connection to traverse through the agenda folders that contain agenda items constituting a part of the agenda for the event.
+  """
+  agendaFolders(after: String, before: String, first: Int, last: Int): EventAgendaFoldersConnection
 
-input CreateAgendaCategoryInput {
+  """Array of attachments."""
+  attachments: [EventAttachment!]
+
+  """Date time at the time the event was created."""
+  createdAt: DateTime
+
+  """User who created the event."""
+  creator: User
+
+  """Custom information about the event."""
   description: String
-  name: String!
-  organizationId: ID!
-}
 
-input CreateAgendaItemInput {
-  attachments: [String]
-  categories: [ID]
-  description: String
-  duration: String!
-  organizationId: ID!
-  relatedEventId: ID
-  sequence: Int!
-  title: String
-  urls: [String]
-  users: [ID]
-}
+  """Date time at the time the event ends at."""
+  endAt: DateTime
 
-input CreateAgendaSectionInput {
-  description: String!
-  items: [CreateAgendaItemInput]
-  relatedEvent: ID
-  sequence: Int!
-}
+  """Global identifier of the event."""
+  id: ID!
 
-union CreateCommentError = PostNotFoundError
+  """Name of the event."""
+  name: String
 
-type CreateCommentPayload {
-  comment: Comment
-  userErrors: [CreateCommentError!]!
-}
-
-union CreateMemberError = MemberNotFoundError | OrganizationNotFoundError | UserNotAuthorizedAdminError | UserNotAuthorizedError | UserNotFoundError
-
-type CreateMemberPayload {
+  """Organization the event belongs to."""
   organization: Organization
-  userErrors: [CreateMemberError!]!
+
+  """Date time at the time the event starts at."""
+  startAt: DateTime
+
+  """Date time at the time the event was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the event."""
+  updater: User
+
+  """
+  GraphQL connection to traverse through the venues that are booked for the event.
+  """
+  venues(after: String, before: String, first: Int, last: Int): EventVenuesConnection
 }
 
-input CreateUserTagInput {
-  name: String!
+""""""
+type EventAgendaFoldersConnection {
+  edges: [EventAgendaFoldersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type EventAgendaFoldersConnectionEdge {
+  cursor: String!
+  node: AgendaFolder
+}
+
+type EventAttachment {
+  """Mime type of the attachment."""
+  mimeType: String
+
+  """URL to the attachment."""
+  url: String
+}
+
+""""""
+type EventVenuesConnection {
+  edges: [EventVenuesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type EventVenuesConnectionEdge {
+  cursor: String!
+  node: Venue
+}
+
+input EventsByOrganizationIdInput {
   organizationId: ID!
-  parentTagId: ID
-  tagColor: String
 }
 
-enum Currency {
+"""Metadata for files uploaded via presigned URL"""
+input FileMetadataInput {
+  """Hash of the file for deduplication"""
+  fileHash: String!
+
+  """MIME type of the file"""
+  mimetype: PostAttachmentMimeType!
+
+  """Name of the file"""
+  name: String!
+
+  """Object name used in storage"""
+  objectName: String!
+}
+
+type Fund {
+  """GraphQL connection to traverse through the campaigns for the fund."""
+  campaigns(after: String, before: String, first: Int, last: Int): FundCampaignsConnection
+
+  """Date time at the time the fund was created."""
+  createdAt: DateTime
+
+  """User who created the Fund."""
+  creator: User
+
+  """Global identifier of the fund."""
+  id: ID!
+
+  """Boolean to tell if the fund is tax deductible."""
+  isTaxDeductible: Boolean
+
+  """Name of the fund."""
+  name: String
+
+  """Organization which the fund belongs to."""
+  organization: Organization
+
+  """Date time at the time the fund was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the fund."""
+  updater: User
+}
+
+type FundCampaign {
+  """Date time at the time the fund campaign was created."""
+  createdAt: DateTime
+
+  """User who created the fund campaign."""
+  creator: User
+
+  """Currency code of the fund campaign."""
+  currencyCode: Iso4217CurrencyCode
+
+  """Date time at the time the fund campaign ends at."""
+  endAt: DateTime
+
+  """Fund which the fund campaign belongs to."""
+  fund: Fund
+
+  """Minimum amount of money that is set as the goal for the fund campaign."""
+  goalAmount: Int
+
+  """Global identifier of the fund campaign."""
+  id: ID!
+
+  """Name of the fund campaign."""
+  name: String
+
+  """Total amount of money pledged under the fund campaign."""
+  pledgedAmount: BigInt
+
+  """
+  GraphQL connection to traverse through the pledges made under the fund campaign.
+  """
+  pledges(after: String, before: String, first: Int, last: Int): FundCampaignPledgesConnection
+
+  """Date time at the time the fund campaign starts at."""
+  startAt: DateTime
+
+  """Date time at the time the fund campaign was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the fund campaign."""
+  updater: User
+}
+
+type FundCampaignPledge {
+  """The amount of pledged money."""
+  amount: Int
+
+  """Fund campaign which the fund campaign pledge is associated to."""
+  campaign: FundCampaign
+
+  """Date time at the time the fund campaign pledge was created."""
+  createdAt: DateTime
+
+  """User who created the fund campaign pledge."""
+  creator: User
+
+  """Global identifier of the fund campaign pledge."""
+  id: ID!
+
+  """Custom information about the fund campaign pledge."""
+  note: String
+
+  """User on whose behalf the fund campaign pledge is created."""
+  pledger: User
+
+  """Date time at the time the fund campaign pledge was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the fund campaign pledge."""
+  updater: User
+}
+
+""""""
+type FundCampaignPledgesConnection {
+  edges: [FundCampaignPledgesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type FundCampaignPledgesConnectionEdge {
+  cursor: String!
+  node: FundCampaignPledge
+}
+
+""""""
+type FundCampaignsConnection {
+  edges: [FundCampaignsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type FundCampaignsConnectionEdge {
+  cursor: String!
+  node: FundCampaign
+}
+
+input GetPostsByOrgInput {
+  organizationId: String!
+  sortOrder: String
+}
+
+"""GetUrlResponse"""
+type GetUrlResponse {
+  presignedUrl: String
+}
+
+type HasUserVoted {
+  """Indicates if the user has voted"""
+  hasVoted: Boolean!
+
+  """Type of the post vote, null if no vote exists"""
+  voteType: PostVoteType
+}
+
+"""
+Possible variants of the two-letter language code defined in ISO 639-1, part of the ISO 639 standard published by the International Organization for Standardization (ISO), to represent natural languages.
+"""
+enum Iso639Set1LanguageCode {
+  aa
+  ab
+  ae
+  af
+  ak
+  am
+  an
+  ar
+  as
+  av
+  ay
+  az
+  ba
+  be
+  bg
+  bi
+  bm
+  bn
+  bo
+  br
+  bs
+  ca
+  ce
+  ch
+  co
+  cr
+  cs
+  cu
+  cv
+  cy
+  da
+  de
+  dv
+  dz
+  ee
+  el
+  en
+  eo
+  es
+  et
+  eu
+  fa
+  ff
+  fi
+  fj
+  fo
+  fr
+  fy
+  ga
+  gd
+  gl
+  gn
+  gu
+  gv
+  ha
+  he
+  hi
+  ho
+  hr
+  ht
+  hu
+  hy
+  hz
+  ia
+  id
+  ie
+  ig
+  ii
+  ik
+  io
+  is
+  it
+  iu
+  ja
+  jv
+  ka
+  kg
+  ki
+  kj
+  kk
+  kl
+  km
+  kn
+  ko
+  kr
+  ks
+  ku
+  kv
+  kw
+  ky
+  la
+  lb
+  lg
+  li
+  ln
+  lo
+  lt
+  lu
+  lv
+  mg
+  mh
+  mi
+  mk
+  ml
+  mn
+  mr
+  ms
+  mt
+  my
+  na
+  nb
+  nd
+  ne
+  ng
+  nl
+  nn
+  no
+  nr
+  nv
+  ny
+  oc
+  oj
+  om
+  or
+  os
+  pa
+  pi
+  pl
+  ps
+  pt
+  qu
+  rm
+  rn
+  ro
+  ru
+  rw
+  sa
+  sc
+  sd
+  se
+  sg
+  si
+  sk
+  sl
+  sm
+  sn
+  so
+  sq
+  sr
+  ss
+  st
+  su
+  sv
+  sw
+  ta
+  te
+  tg
+  th
+  ti
+  tk
+  tl
+  tn
+  to
+  tr
+  ts
+  tt
+  tw
+  ty
+  ug
+  uk
+  ur
+  uz
+  ve
+  vi
+  vo
+  wa
+  wo
+  xh
+  yi
+  yo
+  za
+  zh
+  zu
+}
+
+"""
+Possible variants of the two-letter country code defined in ISO 3166-1, part of the ISO 3166 standard published by the International Organization for Standardization (ISO), to represent countries, dependent territories, and special areas of geographical interest.
+"""
+enum Iso3166Alpha2CountryCode {
+  ad
+  ae
+  af
+  ag
+  ai
+  al
+  am
+  ao
+  aq
+  ar
+  as
+  at
+  au
+  aw
+  ax
+  az
+  ba
+  bb
+  bd
+  be
+  bf
+  bg
+  bh
+  bi
+  bj
+  bl
+  bm
+  bn
+  bo
+  bq
+  br
+  bs
+  bt
+  bv
+  bw
+  by
+  bz
+  ca
+  cc
+  cd
+  cf
+  cg
+  ch
+  ci
+  ck
+  cl
+  cm
+  cn
+  co
+  cr
+  cu
+  cv
+  cw
+  cx
+  cy
+  cz
+  de
+  dj
+  dk
+  dm
+  do
+  dz
+  ec
+  ee
+  eg
+  eh
+  er
+  es
+  et
+  fi
+  fj
+  fk
+  fm
+  fo
+  fr
+  ga
+  gb
+  gd
+  ge
+  gf
+  gg
+  gh
+  gi
+  gl
+  gm
+  gn
+  gp
+  gq
+  gr
+  gs
+  gt
+  gu
+  gw
+  gy
+  hk
+  hm
+  hn
+  hr
+  ht
+  hu
+  id
+  ie
+  il
+  im
+  in
+  io
+  iq
+  ir
+  is
+  it
+  je
+  jm
+  jo
+  jp
+  ke
+  kg
+  kh
+  ki
+  km
+  kn
+  kp
+  kr
+  kw
+  ky
+  kz
+  la
+  lb
+  lc
+  li
+  lk
+  lr
+  ls
+  lt
+  lu
+  lv
+  ly
+  ma
+  mc
+  md
+  me
+  mf
+  mg
+  mh
+  mk
+  ml
+  mm
+  mn
+  mo
+  mp
+  mq
+  mr
+  ms
+  mt
+  mu
+  mv
+  mw
+  mx
+  my
+  mz
+  na
+  nc
+  ne
+  nf
+  ng
+  ni
+  nl
+  no
+  np
+  nr
+  nu
+  nz
+  om
+  pa
+  pe
+  pf
+  pg
+  ph
+  pk
+  pl
+  pm
+  pn
+  pr
+  ps
+  pt
+  pw
+  py
+  qa
+  re
+  ro
+  rs
+  ru
+  rw
+  sa
+  sb
+  sc
+  sd
+  se
+  sg
+  sh
+  si
+  sj
+  sk
+  sl
+  sm
+  sn
+  so
+  sr
+  ss
+  st
+  sv
+  sx
+  sy
+  sz
+  tc
+  td
+  tf
+  tg
+  th
+  tj
+  tk
+  tl
+  tm
+  tn
+  to
+  tr
+  tt
+  tv
+  tw
+  tz
+  ua
+  ug
+  um
+  us
+  uy
+  uz
+  va
+  vc
+  ve
+  vg
+  vi
+  vn
+  vu
+  wf
+  ws
+  ye
+  yt
+  za
+  zm
+  zw
+}
+
+"""
+Possible variants of the currency code defined in ISO 4217 standard published by the International Organization for Standardization (ISO) which defines alpha codes and numeric codes for the representation of currencies and provides information about the relationships between individual currencies and their minor units.
+"""
+enum Iso4217CurrencyCode {
   AED
   AFN
   ALL
@@ -419,6 +1254,7 @@ enum Currency {
   BMD
   BND
   BOB
+  BOV
   BRL
   BSD
   BTN
@@ -427,10 +1263,14 @@ enum Currency {
   BZD
   CAD
   CDF
+  CHE
   CHF
+  CHW
+  CLF
   CLP
   CNY
   COP
+  COU
   CRC
   CUP
   CVE
@@ -445,11 +1285,8 @@ enum Currency {
   EUR
   FJD
   FKP
-  FOK
-  FRO
   GBP
   GEL
-  GGP
   GHS
   GIP
   GMD
@@ -458,25 +1295,22 @@ enum Currency {
   GYD
   HKD
   HNL
-  HRK
   HTG
   HUF
   IDR
   ILS
-  IMP
   INR
   IQD
   IRR
   ISK
-  JEP
   JMD
   JOD
   JPY
   KES
   KGS
   KHR
-  KID
   KMF
+  KPW
   KRW
   KWD
   KYD
@@ -499,6 +1333,7 @@ enum Currency {
   MVR
   MWK
   MXN
+  MXV
   MYR
   MZN
   NAD
@@ -527,10 +1362,10 @@ enum Currency {
   SEK
   SGD
   SHP
-  SLL
+  SLE
   SOS
-  SPL
   SRD
+  SSP
   STN
   SVC
   SYP
@@ -542,1673 +1377,2582 @@ enum Currency {
   TOP
   TRY
   TTD
-  TVD
   TWD
   TZS
   UAH
   UGX
   USD
+  USN
+  UYI
   UYU
+  UYW
   UZS
-  VEF
+  VED
+  VES
   VND
   VUV
   WST
   XAF
+  XAG
+  XAU
+  XBA
+  XBB
+  XBC
+  XBD
   XCD
   XDR
   XOF
+  XPD
   XPF
+  XPT
+  XSU
+  XTS
+  XUA
+  XXX
   YER
   ZAR
   ZMW
-  ZWD
+  ZWG
 }
 
-input CursorPaginationInput {
-  cursor: String
-  direction: PaginationDirection!
-  limit: PositiveInt!
+input MarkActionItemAsPendingInput {
+  id: ID!
 }
 
-scalar Date
+"""Filter criteria for member roles"""
+input MembersRoleWhereInput {
+  """Role equals this value"""
+  equal: OrganizationMembershipRole
 
-scalar DateTime
+  """Role does not equal this value"""
+  notEqual: OrganizationMembershipRole
+}
+
+"""Filter criteria for organization members"""
+input MembersWhereInput {
+  """Filter members by role"""
+  role: MembersRoleWhereInput
+}
+
+"""Represents a membership request to an organization."""
+type MembershipRequest {
+  """Timestamp when the request was created."""
+  createdAt: DateTime
+
+  """Unique ID for the membership request."""
+  membershipRequestId: ID
+
+  """ID of the organization."""
+  organizationId: String
+
+  """Status of the membership request (e.g., pending, approved, rejected)."""
+  status: MembershipRequestStatus
+
+  """The user who requested membership"""
+  user: User
+
+  """ID of the user who requested membership."""
+  userId: String
+}
+
+"""Possible statuses of a membership request."""
+enum MembershipRequestStatus {
+  approved
+  pending
+  rejected
+}
+
+input MembershipRequestWhereInput {
+  """Filter criteria for user"""
+  user: UserWhereInput
+}
+
+type Mutation {
+  """Mutation field to accept a membership request by an admin."""
+  acceptMembershipRequest(
+    """Input to accept a membership request"""
+    input: MutationAcceptMembershipRequestInput!
+  ): AcceptMembershipResponse
+
+  """Mutation field to block a user from an organization."""
+  blockUser(organizationId: ID!, userId: ID!): Boolean
+
+  """Mutation field to cancel a membership request."""
+  cancelMembershipRequest(
+    """Input to cancel a membership request"""
+    input: MutationCancelMembershipRequestInput!
+  ): CancelMembershipResponse
+
+  """Mutation field to create an action item."""
+  createActionItem(input: CreateActionItemInput!): ActionItem
+
+  """Mutation field to create an advertisement."""
+  createAdvertisement(input: MutationCreateAdvertisementInput!): Advertisement
+
+  """Mutation field to create an agenda folder."""
+  createAgendaFolder(input: MutationCreateAgendaFolderInput!): AgendaFolder
+
+  """Mutation field to create an agenda item."""
+  createAgendaItem(input: MutationCreateAgendaItemInput!): AgendaItem
+
+  """Mutation field to create a chat."""
+  createChat(input: MutationCreateChatInput!): Chat
+
+  """Mutation field to create a chat membership."""
+  createChatMembership(input: MutationCreateChatMembershipInput!): Chat
+
+  """Mutation field to create a chat message."""
+  createChatMessage(input: MutationCreateChatMessageInput!): ChatMessage
+
+  """Mutation field to create a comment."""
+  createComment(input: MutationCreateCommentInput!): Comment
+
+  """Mutation field to create a comment vote."""
+  createCommentVote(input: MutationCreateCommentVoteInput!): Comment
+
+  """Mutation field to create an event."""
+  createEvent(input: MutationCreateEventInput!): Event
+
+  """Mutation field to create a fund."""
+  createFund(input: MutationCreateFundInput!): Fund
+
+  """Mutation field to create a fund campaign."""
+  createFundCampaign(input: MutationCreateFundCampaignInput!): FundCampaign
+
+  """Mutation field to create a fund campaign pledge."""
+  createFundCampaignPledge(input: MutationCreateFundCampaignPledgeInput!): FundCampaignPledge
+
+  """Mutation field to create a presigned URL for uploading a file."""
+  createGetfileUrl(input: MutationCreateGetfileUrlInput!): GetUrlResponse
+
+  """Mutation field to create an organization."""
+  createOrganization(input: MutationCreateOrganizationInput!): Organization
+
+  """Mutation field to create an organization membership."""
+  createOrganizationMembership(input: MutationCreateOrganizationMembershipInput!): Organization
+
+  """Mutation field to create a post."""
+  createPost(input: MutationCreatePostInput!): Post
+
+  """Mutation field to create a post vote."""
+  createPostVote(input: MutationCreatePostVoteInput!): Post
+
+  """Mutation field to create a presigned URL for uploading a file."""
+  createPresignedUrl(input: MutationCreatePresignedUrlInput!): UploadUrlResponse
+
+  """Mutation field to create a tag."""
+  createTag(input: MutationCreateTagInput!): Tag
+
+  """Mutation field to create a tag folder."""
+  createTagFolder(input: MutationCreateTagFolderInput!): TagFolder
+
+  """Mutation field to create a user."""
+  createUser(input: MutationCreateUserInput!): AuthenticationPayload
+
+  """Mutation field to create a venue."""
+  createVenue(input: MutationCreateVenueInput!): Venue
+
+  """Mutation field to create a venue booking."""
+  createVenueBooking(input: MutationCreateVenueBookingInput!): Venue
+
+  """Mutation field to delete an action item."""
+  deleteActionItem(
+    """Delete an action item"""
+    input: MutationDeleteActionItemInput!
+  ): ActionItem
+
+  """Mutation field to delete an advertisement."""
+  deleteAdvertisement(input: MutationDeleteAdvertisementInput!): Advertisement
+
+  """Mutation field to delete an agenda folder."""
+  deleteAgendaFolder(input: MutationDeleteAgendaFolderInput!): AgendaFolder
+
+  """Mutation field to delete an agenda item."""
+  deleteAgendaItem(input: MutationDeleteAgendaItemInput!): AgendaItem
+
+  """Mutation field to delete a chat."""
+  deleteChat(input: MutationDeleteChatInput!): Chat
+
+  """Mutation field to delete a chat membership."""
+  deleteChatMembership(input: MutationDeleteChatMembershipInput!): Chat
+
+  """Mutation field to delete a chat message."""
+  deleteChatMessage(input: MutationDeleteChatMessageInput!): ChatMessage
+
+  """Mutation field to delete a comment."""
+  deleteComment(input: MutationDeleteCommentInput!): Comment
+
+  """Mutation field to delete a comment vote."""
+  deleteCommentVote(input: MutationDeleteCommentVoteInput!): Comment
+
+  """Mutation field to delete the current user."""
+  deleteCurrentUser: User
+
+  """Mutation field to delete an event."""
+  deleteEvent(input: MutationDeleteEventInput!): Event
+
+  """Mutation field to delete a fund."""
+  deleteFund(input: MutationDeleteFundInput!): Fund
+
+  """Mutation field to delete a fund campaign."""
+  deleteFundCampaign(input: MutationDeleteFundCampaignInput!): FundCampaign
+
+  """Mutation field to delete a fund campaign pledge."""
+  deleteFundCampaignPledge(input: MutationDeleteFundCampaignPledgeInput!): FundCampaignPledge
+
+  """Mutation field to delete an organization."""
+  deleteOrganization(input: MutationDeleteOrganizationInput!): Organization
+
+  """Mutation field to delete an organization membership."""
+  deleteOrganizationMembership(input: MutationDeleteOrganizationMembershipInput!): Organization
+
+  """Mutation field to delete a post."""
+  deletePost(input: MutationDeletePostInput!): Post
+
+  """Mutation field to delete a post vote."""
+  deletePostVote(input: MutationDeletePostVoteInput!): Post
+
+  """Mutation field to delete a tag."""
+  deleteTag(input: MutationDeleteTagInput!): Tag
+
+  """Mutation field to delete a tagFolder."""
+  deleteTagFolder(input: MutationDeleteTagFolderInput!): TagFolder
+
+  """Mutation field to delete a user."""
+  deleteUser(input: MutationDeleteUserInput!): User
+
+  """Mutation field to delete a venue."""
+  deleteVenue(input: MutationDeleteVenueInput!): Venue
+
+  """Mutation field to delete a venue booking."""
+  deleteVenueBooking(input: MutationDeleteVenueBookingInput!): Venue
+
+  """Mutation field to join a public organization."""
+  joinPublicOrganization(
+    """Input to join a public organization"""
+    input: MutationJoinPublicOrganizationInput!
+  ): OrganizationMembershipObject
+
+  """Mutation to mark a completed action item as pending"""
+  markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
+
+  """Mutation field to reject a membership request by an admin."""
+  rejectMembershipRequest(
+    """Input to reject a membership request"""
+    input: MutationRejectMembershipRequestInput!
+  ): RejectMembershipResponse
+
+  """Mutation field to send a membership request to an organization."""
+  sendMembershipRequest(
+    """Input to send a membership request"""
+    input: MutationSendMembershipRequestInput!
+  ): MembershipRequest
+
+  """Mutation field to sign up to talawa."""
+  signUp(input: MutationSignUpInput!): AuthenticationPayload
+
+  """Mutation field to unblock a user from an organization."""
+  unblockUser(organizationId: ID!, userId: ID!): Boolean
+
+  """Mutation to update an action item"""
+  updateActionItem(
+    """Update an action item"""
+    input: MutationUpdateActionItemInput!
+  ): ActionItem
+
+  """Mutation field to update an advertisement."""
+  updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
+
+  """Mutation field to update an agenda folder."""
+  updateAgendaFolder(input: MutationUpdateAgendaFolderInput!): AgendaFolder
+
+  """Mutation field to update an agenda item."""
+  updateAgendaItem(input: MutationUpdateAgendaItemInput!): AgendaItem
+
+  """Mutation field to update a chat."""
+  updateChat(input: MutationUpdateChatInput!): Chat
+
+  """Mutation field to update a chat membership."""
+  updateChatMembership(input: MutationUpdateChatMembershipInput!): Chat
+
+  """Mutation field to update a chat message."""
+  updateChatMessage(input: MutationUpdateChatMessageInput!): ChatMessage
+
+  """Mutation field to update a comment."""
+  updateComment(input: MutationUpdateCommentInput!): Comment
+
+  """Mutation field to update a comment vote."""
+  updateCommentVote(input: MutationUpdateCommentVoteInput!): Comment
+
+  """Mutation field to update the community."""
+  updateCommunity(input: MutationUpdateCommunityInput!): Community
+
+  """Mutation field to update the current user."""
+  updateCurrentUser(input: MutationUpdateCurrentUserInput!): User
+
+  """Mutation field to update an event."""
+  updateEvent(input: MutationUpdateEventInput!): Event
+
+  """Mutation field to update a fund."""
+  updateFund(input: MutationUpdateFundInput!): Fund
+
+  """Mutation field to update a fund campaign."""
+  updateFundCampaign(input: MutationUpdateFundCampaignInput!): FundCampaign
+
+  """Mutation field to update a fund campaign pledge."""
+  updateFundCampaignPledge(input: MutationUpdateFundCampaignPledgeInput!): FundCampaignPledge
+
+  """Mutation field to update a organization."""
+  updateOrganization(input: MutationUpdateOrganizationInput!): Organization
+
+  """Mutation field to update an organization membership."""
+  updateOrganizationMembership(input: MutationUpdateOrganizationMembershipInput!): Organization
+
+  """Mutation field to update a post."""
+  updatePost(input: MutationUpdatePostInput!): Post
+
+  """Mutation field to update a post vote."""
+  updatePostVote(input: MutationUpdatePostVoteInput!): Post
+
+  """Mutation field to update a tag."""
+  updateTag(input: MutationUpdateTagInput!): Tag
+
+  """Mutation field to update a tag folder."""
+  updateTagFolder(input: MutationUpdateTagFolderInput!): TagFolder
+
+  """Mutation field to update a user."""
+  updateUser(input: MutationUpdateUserInput!): User
+
+  """Mutation field to update a venue."""
+  updateVenue(input: MutationUpdateVenueInput!): Venue
+}
+
+input MutationAcceptMembershipRequestInput {
+  """ID of the membership request to accept"""
+  membershipRequestId: ID!
+}
+
+"""Input to block a user from an organization"""
+input MutationBlockUserInput {
+  """Global identifier of the organization."""
+  organizationId: ID!
+
+  """Global identifier of the user to block."""
+  userId: ID!
+}
+
+"""Input type for canceling a membership request."""
+input MutationCancelMembershipRequestInput {
+  """Global identifier of the membership request."""
+  membershipRequestId: ID!
+}
+
+""""""
+input MutationCreateAdvertisementInput {
+  """Attachments of the advertisement."""
+  attachments: [Upload!]
+
+  """Custom information about the advertisement."""
+  description: String
+
+  """Date time at which the advertised event ends."""
+  endAt: DateTime!
+
+  """Name of the advertisement."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+
+  """Date time at which the advertised event starts."""
+  startAt: DateTime!
+
+  """Type of the advertisement."""
+  type: AdvertisementType!
+}
+
+""""""
+input MutationCreateAgendaFolderInput {
+  """Global identifier of the event the agenda folder is associated to."""
+  eventId: ID!
+
+  """
+  Boolean to tell if the agenda folder is meant to be a folder for agenda items or a parent folder for other agenda folders.
+  """
+  isAgendaItemFolder: Boolean!
+
+  """Name of the agenda folder."""
+  name: String!
+
+  """
+  Global identifier of the agenda folder the agenda folder is contained within.
+  """
+  parentFolderId: ID
+}
+
+""""""
+input MutationCreateAgendaItemInput {
+  """Custom information about the agenda item."""
+  description: String
+
+  """Duration of the agenda item."""
+  duration: String
+
+  """
+  Global identifier of the agenda folder the agenda item is associated to.
+  """
+  folderId: ID!
+
+  """
+  Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  """
+  key: String
+
+  """Name of the agenda item."""
+  name: String!
+
+  """Type of the agenda item."""
+  type: AgendaItemType!
+}
+
+""""""
+input MutationCreateChatInput {
+  """Avatar of the chat."""
+  avatar: Upload
+
+  """Custom information about the chat."""
+  description: String
+
+  """Name of the chat."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+}
+
+""""""
+input MutationCreateChatMembershipInput {
+  """Global identifier of the associated chat."""
+  chatId: ID!
+
+  """Global identifier of the associated user."""
+  memberId: ID!
+
+  """Role assigned to the user within the chat."""
+  role: ChatMembershipRole
+}
+
+""""""
+input MutationCreateChatMessageInput {
+  """Body of the chat message."""
+  body: String!
+
+  """Global identifier of the associated chat."""
+  chatId: ID!
+
+  """Global identifier of the associated parent message."""
+  parentMessageId: ID
+}
+
+""""""
+input MutationCreateCommentInput {
+  """Body of the comment."""
+  body: String!
+
+  """Global identifier of the post on which the comment is made."""
+  postId: ID!
+}
+
+""""""
+input MutationCreateCommentVoteInput {
+  """Global identifier of the comment that is voted."""
+  commentId: ID!
+
+  """Type of the vote."""
+  type: CommentVoteType!
+}
+
+""""""
+input MutationCreateEventInput {
+  """Attachments of the event."""
+  attachments: [Upload!]
+
+  """Custom information about the event."""
+  description: String
+
+  """Date time at the time the event ends at."""
+  endAt: DateTime!
+
+  """Name of the event."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+
+  """Date time at the time the event starts at."""
+  startAt: DateTime!
+}
+
+""""""
+input MutationCreateFundCampaignInput {
+  """Currency code of the fund campaign."""
+  currencyCode: Iso4217CurrencyCode!
+
+  """Date time at the time the fund campaign ends at."""
+  endAt: DateTime!
+
+  """Global identifier of the associated fund."""
+  fundId: ID!
+
+  """Minimum amount of money that is set as the goal for the fund campaign."""
+  goalAmount: Int!
+
+  """Name of the fund campaign."""
+  name: String!
+
+  """Date time at the time the fund campaign starts at."""
+  startAt: DateTime!
+}
+
+""""""
+input MutationCreateFundCampaignPledgeInput {
+  """The amount of pledged money."""
+  amount: Int!
+
+  """Global identifier of the fund campaign."""
+  campaignId: ID!
+
+  """Custom information about the fund campaign pledge."""
+  note: String
+
+  """Global identifier of the user who pledged."""
+  pledgerId: ID!
+}
+
+""""""
+input MutationCreateFundInput {
+  """Boolean to tell if the fund is tax deductible."""
+  isTaxDeductible: Boolean!
+
+  """Name of the fund."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+}
+
+"""Input for getting a presigned URL for file download"""
+input MutationCreateGetfileUrlInput {
+  """Name of the object to be downloaded"""
+  objectName: String
+
+  """ID of the organization the file belongs to"""
+  organizationId: ID!
+}
+
+""""""
+input MutationCreateOrganizationInput {
+  """Address line 1 of the organization's address."""
+  addressLine1: String
+
+  """Address line 2 of the organization's address."""
+  addressLine2: String
+
+  """Avatar of the organization."""
+  avatar: Upload
+
+  """Name of the city where the organization resides in."""
+  city: String
+
+  """Country code of the country the organization is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Custom information about the organization."""
+  description: String
+
+  """
+  Flag to indicate if user registration is required to access the organization.
+  """
+  isUserRegistrationRequired: Boolean
+
+  """Name of the organization."""
+  name: String!
+
+  """Postal code of the organization."""
+  postalCode: String
+
+  """Name of the state the organization resides in."""
+  state: String
+}
+
+""""""
+input MutationCreateOrganizationMembershipInput {
+  """Global identifier of the associated user."""
+  memberId: ID!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+
+  """Role assigned to the user within the organization."""
+  role: OrganizationMembershipRole
+}
+
+"""Input for creating a new post"""
+input MutationCreatePostInput {
+  """Metadata for files already uploaded via presigned URL"""
+  attachments: [FileMetadataInput!]!
+
+  """Caption about the post."""
+  caption: String!
+
+  """Boolean to tell if the post is pinned"""
+  isPinned: Boolean
+
+  """
+  Global identifier of the associated organization in which the post is posted.
+  """
+  organizationId: ID!
+}
+
+""""""
+input MutationCreatePostVoteInput {
+  """Global identifier of the post that is voted."""
+  postId: ID!
+
+  """Type of the vote."""
+  type: PostVoteType!
+}
+
+"""Input for creating a presigned URL for file upload"""
+input MutationCreatePresignedUrlInput {
+  """Hash of the file for deduplication check"""
+  fileHash: String!
+
+  """Name of the file to be uploaded"""
+  fileName: String!
+
+  """Custom object name for the file (optional)"""
+  objectName: String
+
+  """ID of the organization the file belongs to"""
+  organizationId: ID!
+}
+
+""""""
+input MutationCreateTagFolderInput {
+  """Name of the tag."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+
+  """Global identifier of the associated parent tag folder."""
+  parentFolderId: ID
+}
+
+""""""
+input MutationCreateTagInput {
+  """Global identifier of the associated tag folder."""
+  folderId: ID
+
+  """Name of the tag."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+}
+
+""""""
+input MutationCreateUserInput {
+  """Address line 1 of the user's address."""
+  addressLine1: String
+
+  """Address line 2 of the user's address."""
+  addressLine2: String
+
+  """Avatar of the user."""
+  avatar: Upload
+
+  """Date of birth of the user."""
+  birthDate: Date
+
+  """Name of the city where the user resides in."""
+  city: String
+
+  """Country code of the country the user is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Custom information about the user."""
+  description: String
+
+  """Primary education grade of the user."""
+  educationGrade: UserEducationGrade
+
+  """Email address of the user."""
+  emailAddress: EmailAddress!
+
+  """Employment status of the user."""
+  employmentStatus: UserEmploymentStatus
+
+  """The phone number to use to communicate with the user at their home."""
+  homePhoneNumber: PhoneNumber
+
+  """Boolean to tell whether the user has verified their email address."""
+  isEmailAddressVerified: Boolean!
+
+  """Marital status of the user."""
+  maritalStatus: UserMaritalStatus
+
+  """
+  The phone number to use to communicate with the user on their mobile phone.
+  """
+  mobilePhoneNumber: PhoneNumber
+
+  """Name of the user."""
+  name: String!
+
+  """The sex assigned to the user at their birth."""
+  natalSex: UserNatalSex
+
+  """Language code of the user's preferred natural language."""
+  naturalLanguageCode: Iso639Set1LanguageCode
+
+  """Password of the user to sign in to the application."""
+  password: String!
+
+  """Postal code of the user."""
+  postalCode: String
+
+  """Role assigned to the user in the application."""
+  role: UserRole!
+
+  """Name of the state the user resides in."""
+  state: String
+
+  """
+  The phone number to use to communicate with the user while they're at work.
+  """
+  workPhoneNumber: PhoneNumber
+}
+
+""""""
+input MutationCreateVenueBookingInput {
+  """Global identifier of the event that the venue is to be booked for."""
+  eventId: ID!
+
+  """Global identifier of the venue to be booked."""
+  venueId: ID!
+}
+
+""""""
+input MutationCreateVenueInput {
+  """Attachments of the venue."""
+  attachments: [Upload!]
+
+  """Custom information about the venue."""
+  description: String
+
+  """Name of the venue."""
+  name: String!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+}
+
+"""Input for deleting an action item."""
+input MutationDeleteActionItemInput {
+  """Global identifier of the action item."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteAdvertisementInput {
+  """Global identifier of the advertisement."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteAgendaFolderInput {
+  """Global identifier of the agenda folder."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteAgendaItemInput {
+  """Global identifier of the agenda item."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteChatInput {
+  """Global identifier of the chat."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteChatMembershipInput {
+  """Global identifier of the associated chat."""
+  chatId: ID!
+
+  """Global identifier of the associated user."""
+  memberId: ID!
+}
+
+""""""
+input MutationDeleteChatMessageInput {
+  """Global identifier of the chat message."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteCommentInput {
+  """Global identifier of the comment."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteCommentVoteInput {
+  """Global identifier of the comment that is voted."""
+  commentId: ID!
+
+  """Global identifier of the user who voted."""
+  creatorId: ID!
+}
+
+""""""
+input MutationDeleteEventInput {
+  """Global identifier of the event."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteFundCampaignInput {
+  """Global identifier of the fund campaign."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteFundCampaignPledgeInput {
+  """Global identifier of the fund campaign pledge."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteFundInput {
+  """Global identifier of the fund."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteOrganizationInput {
+  """Global identifier of the organization."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteOrganizationMembershipInput {
+  """Global identifier of the associated user."""
+  memberId: ID!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+}
+
+""""""
+input MutationDeletePostInput {
+  """Global identifier of the post."""
+  id: ID!
+}
+
+""""""
+input MutationDeletePostVoteInput {
+  """Global identifier of the user who voted."""
+  creatorId: ID!
+
+  """Global identifier of the post that is voted."""
+  postId: ID!
+}
+
+""""""
+input MutationDeleteTagFolderInput {
+  """Global identifier of the tag folder."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteTagInput {
+  """Global identifier of the tag."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteUserInput {
+  """Global identifier of the user."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteVenueBookingInput {
+  """Global identifier of the event that the venue is booked for."""
+  eventId: ID!
+
+  """Global identifier of the venue that is booked."""
+  venueId: ID!
+}
+
+""""""
+input MutationDeleteVenueInput {
+  """Global identifier of the venue."""
+  id: ID!
+}
+
+"""Input type for joining a public organization."""
+input MutationJoinPublicOrganizationInput {
+  """Global identifier of the organization."""
+  organizationId: ID!
+}
+
+input MutationRejectMembershipRequestInput {
+  """ID of the membership request to reject"""
+  membershipRequestId: ID!
+}
+
+"""Input type for sending a membership request."""
+input MutationSendMembershipRequestInput {
+  """Global identifier of the organization."""
+  organizationId: ID!
+}
+
+""""""
+input MutationSignUpInput {
+  """Address line 1 of the user's address."""
+  addressLine1: String
+
+  """Address line 2 of the user's address."""
+  addressLine2: String
+
+  """Date of birth of the user."""
+  birthDate: Date
+
+  """Name of the city where the user resides in."""
+  city: String
+
+  """Country code of the country the user is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Custom information about the user."""
+  description: String
+
+  """Primary education grade of the user."""
+  educationGrade: UserEducationGrade
+
+  """Email address of the user."""
+  emailAddress: EmailAddress!
+
+  """Employment status of the user."""
+  employmentStatus: UserEmploymentStatus
+
+  """The phone number to use to communicate with the user at their home."""
+  homePhoneNumber: PhoneNumber
+
+  """Marital status of the user."""
+  maritalStatus: UserMaritalStatus
+
+  """
+  The phone number to use to communicate with the user on their mobile phone.
+  """
+  mobilePhoneNumber: PhoneNumber
+
+  """Name of the user."""
+  name: String!
+
+  """The sex assigned to the user at their birth."""
+  natalSex: UserNatalSex
+
+  """Language code of the user's preferred natural language."""
+  naturalLanguageCode: Iso639Set1LanguageCode
+
+  """Password of the user to sign in to the application."""
+  password: String!
+
+  """Postal code of the user."""
+  postalCode: String
+
+  """The organization the user is signing up for"""
+  selectedOrganization: ID!
+
+  """Name of the state the user resides in."""
+  state: String
+
+  """
+  The phone number to use to communicate with the user while they're at work.
+  """
+  workPhoneNumber: PhoneNumber
+}
+
+"""Input to unblock a user from an organization"""
+input MutationUnblockUserInput {
+  """Global identifier of the organization."""
+  organizationId: ID!
+
+  """Global identifier of the user to unblock."""
+  userId: ID!
+}
+
+input MutationUpdateActionItemInput {
+  """Identifier for the assignee of the action item."""
+  assigneeId: ID
+
+  """Category identifier for the action item."""
+  categoryId: ID
+
+  """Global identifier of the action item."""
+  id: ID!
+
+  """Completion status of the action item."""
+  isCompleted: Boolean!
+
+  """Post completion notes for the action item."""
+  postCompletionNotes: String
+
+  """Pre completion notes for the action item."""
+  preCompletionNotes: String
+}
+
+""""""
+input MutationUpdateAdvertisementInput {
+  """Custom information about the advertisement."""
+  description: String
+
+  """Date time at which the advertised event ends."""
+  endAt: DateTime
+
+  """Global identifier of the associated organization."""
+  id: ID!
+
+  """Name of the advertisement."""
+  name: String
+
+  """Date time at which the advertised event starts."""
+  startAt: DateTime
+
+  """Type of the advertisement."""
+  type: AdvertisementType
+}
+
+""""""
+input MutationUpdateAgendaFolderInput {
+  """Global identifier of the agenda folder."""
+  id: ID!
+
+  """Name of the agenda folder."""
+  name: String
+
+  """
+  Global identifier of the agenda folder the agenda folder is contained within.
+  """
+  parentFolderId: ID
+}
+
+""""""
+input MutationUpdateAgendaItemInput {
+  """Custom information about the agenda item."""
+  description: String
+
+  """Duration of the agenda item."""
+  duration: String
+
+  """Global identifier of the associated agenda folder."""
+  folderId: ID
+
+  """Global identifier of the agenda item."""
+  id: ID!
+
+  """
+  Key of the agenda item if it's of a "song" type. More information at [this](https://en.wikipedia.org/wiki/Key_(music)) link.
+  """
+  key: String
+
+  """Name of the agenda item."""
+  name: String
+}
+
+""""""
+input MutationUpdateChatInput {
+  """Avatar of the chat."""
+  avatar: Upload
+
+  """Custom information about the chat."""
+  description: String
+
+  """Global identifier of the chat."""
+  id: ID!
+
+  """Name of the chat."""
+  name: String
+}
+
+""""""
+input MutationUpdateChatMembershipInput {
+  """Global identifier of the associated chat."""
+  chatId: ID!
+
+  """Global identifier of the associated user."""
+  memberId: ID!
+
+  """Role assigned to the user within the chat."""
+  role: ChatMembershipRole!
+}
+
+""""""
+input MutationUpdateChatMessageInput {
+  """Body of the chat message."""
+  body: String!
+
+  """Global identifier of the chat message."""
+  id: ID!
+}
+
+""""""
+input MutationUpdateCommentInput {
+  """Body of the comment."""
+  body: String
+
+  """Global identifier of the comment."""
+  id: ID!
+}
+
+""""""
+input MutationUpdateCommentVoteInput {
+  """Global identifier of the comment that is voted."""
+  commentId: ID!
+
+  """Type of the vote."""
+  type: CommentVoteType!
+}
+
+""""""
+input MutationUpdateCommunityInput {
+  """URL to the facebook account of the community."""
+  facebookURL: String
+
+  """URL to the gitGub account of the community."""
+  githubURL: String
+
+  """
+  Duration in seconds it should take for inactive clients to get timed out of their authenticated session within client-side talawa applications.
+  """
+  inactivityTimeoutDuration: Int
+
+  """URL to the instagram account of the community."""
+  instagramURL: String
+
+  """URL to the linkedin account of the community."""
+  linkedinURL: String
+
+  """Mime type of the logo of the community."""
+  logo: Upload
+
+  """Name of the community."""
+  name: String
+
+  """URL to the reddit account of the community."""
+  redditURL: String
+
+  """URL to the slack account of the community."""
+  slackURL: String
+
+  """URL to the website of the community."""
+  websiteURL: String
+
+  """URL to the x account of the community."""
+  xURL: String
+
+  """URL to the youtube account of the community."""
+  youtubeURL: String
+}
+
+""""""
+input MutationUpdateCurrentUserInput {
+  """Address line 1 of the user's address."""
+  addressLine1: String
+
+  """Address line 2 of the user's address."""
+  addressLine2: String
+
+  """Avatar of the user."""
+  avatar: Upload
+
+  """Date of birth of the user."""
+  birthDate: Date
+
+  """Name of the city where the user resides in."""
+  city: String
+
+  """Country code of the country the user is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Custom information about the user."""
+  description: String
+
+  """Primary education grade of the user."""
+  educationGrade: UserEducationGrade
+
+  """Email address of the user."""
+  emailAddress: EmailAddress
+
+  """Employment status of the user."""
+  employmentStatus: UserEmploymentStatus
+
+  """The phone number to use to communicate with the user at their home."""
+  homePhoneNumber: PhoneNumber
+
+  """Marital status of the user."""
+  maritalStatus: UserMaritalStatus
+
+  """
+  The phone number to use to communicate with the user on their mobile phone.
+  """
+  mobilePhoneNumber: PhoneNumber
+
+  """Name of the user."""
+  name: String
+
+  """The sex assigned to the user at their birth."""
+  natalSex: UserNatalSex
+
+  """Language code of the user's preferred natural language."""
+  naturalLanguageCode: Iso639Set1LanguageCode
+
+  """Password of the user to sign in to the application."""
+  password: String
+
+  """Postal code of the user."""
+  postalCode: String
+
+  """Name of the state the user resides in."""
+  state: String
+
+  """
+  The phone number to use to communicate with the user while they're at work.
+  """
+  workPhoneNumber: PhoneNumber
+}
+
+""""""
+input MutationUpdateEventInput {
+  """Custom information about the event."""
+  description: String
+
+  """Date time at the time the event ends at."""
+  endAt: DateTime
+
+  """Global identifier of the event."""
+  id: ID!
+
+  """Name of the event."""
+  name: String
+
+  """Date time at the time the event starts at."""
+  startAt: DateTime
+}
+
+""""""
+input MutationUpdateFundCampaignInput {
+  """Date time at the time the fund campaign ends at."""
+  endAt: DateTime
+
+  """Minimum amount of money that is set as the goal for the fund campaign."""
+  goalAmount: Int
+
+  """Global identifier of the associated fund campaign."""
+  id: ID!
+
+  """Name of the fundCampaign."""
+  name: String
+
+  """Date time at the time the fund campaign starts at."""
+  startAt: DateTime
+}
+
+""""""
+input MutationUpdateFundCampaignPledgeInput {
+  """The amount of pledged money."""
+  amount: Int
+
+  """Global identifier of the associated fund campaign pledge."""
+  id: ID!
+
+  """Custom information about the fund campaign pledge."""
+  note: String
+}
+
+""""""
+input MutationUpdateFundInput {
+  """Global identifier of the associated organization."""
+  id: ID!
+
+  """Boolean to tell if the fund is tax deductible."""
+  isTaxDeductible: Boolean
+
+  """Name of the fund."""
+  name: String
+}
+
+""""""
+input MutationUpdateOrganizationInput {
+  """Address line 1 of the organization's address."""
+  addressLine1: String
+
+  """Address line 2 of the organization's address."""
+  addressLine2: String
+
+  """Avatar of the organization."""
+  avatar: Upload
+
+  """Name of the city where the organization resides in."""
+  city: String
+
+  """Country code of the country the organization is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Custom information about the organization."""
+  description: String
+
+  """Global identifier of the organization."""
+  id: ID!
+
+  """Name of the organization."""
+  name: String
+
+  """Postal code of the organization."""
+  postalCode: String
+
+  """Name of the state the organization resides in."""
+  state: String
+}
+
+""""""
+input MutationUpdateOrganizationMembershipInput {
+  """Global identifier of the associated user."""
+  memberId: ID!
+
+  """Global identifier of the associated organization."""
+  organizationId: ID!
+
+  """Role assigned to the user within the organization."""
+  role: OrganizationMembershipRole
+}
+
+"""Input for updating a post."""
+input MutationUpdatePostInput {
+  """Metadata for files already uploaded via presigned URL"""
+  attachments: [FileMetadataInput!]
+
+  """Caption about the post."""
+  caption: String
+
+  """Global identifier of the post."""
+  id: ID!
+
+  """Boolean to tell if the post is pinned"""
+  isPinned: Boolean
+}
+
+""""""
+input MutationUpdatePostVoteInput {
+  """Global identifier of the voted post."""
+  postId: ID!
+
+  """Type of the vote."""
+  type: PostVoteType!
+}
+
+""""""
+input MutationUpdateTagFolderInput {
+  """Global identifier of the tag folder."""
+  id: ID!
+
+  """Name of the tag folder."""
+  name: String
+
+  """Global identifier of associated parent tag folder."""
+  parentFolderId: ID
+}
+
+""""""
+input MutationUpdateTagInput {
+  """Global identifier of associated tag folder."""
+  folderId: ID
+
+  """Global identifier of the tag."""
+  id: ID!
+
+  """Name of the tag."""
+  name: String
+}
+
+""""""
+input MutationUpdateUserInput {
+  """Address line 1 of the user's address."""
+  addressLine1: String
+
+  """Address line 2 of the user's address."""
+  addressLine2: String
+
+  """Avatar of the user."""
+  avatar: Upload
+
+  """Date of birth of the user."""
+  birthDate: Date
+
+  """Name of the city where the user resides in."""
+  city: String
+
+  """Country code of the country the user is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Custom information about the user."""
+  description: String
+
+  """Primary education grade of the user."""
+  educationGrade: UserEducationGrade
+
+  """Email address of the user."""
+  emailAddress: EmailAddress
+
+  """Employment status of the user."""
+  employmentStatus: UserEmploymentStatus
+
+  """The phone number to use to communicate with the user at their home."""
+  homePhoneNumber: PhoneNumber
+
+  """Global identifier of the user."""
+  id: ID!
+
+  """Boolean to tell whether the user has verified their email address."""
+  isEmailAddressVerified: Boolean
+
+  """Marital status of the user."""
+  maritalStatus: UserMaritalStatus
+
+  """
+  The phone number to use to communicate with the user on their mobile phone.
+  """
+  mobilePhoneNumber: PhoneNumber
+
+  """Name of the user."""
+  name: String
+
+  """The sex assigned to the user at their birth."""
+  natalSex: UserNatalSex
+
+  """Language code of the user's preferred natural language."""
+  naturalLanguageCode: Iso639Set1LanguageCode
+
+  """Password of the user to sign in to the application."""
+  password: String
+
+  """Postal code of the user."""
+  postalCode: String
+
+  """Role assigned to the user in the application."""
+  role: UserRole
+
+  """Name of the state the user resides in."""
+  state: String
+
+  """
+  The phone number to use to communicate with the user while they're at work.
+  """
+  workPhoneNumber: PhoneNumber
+}
+
+""""""
+input MutationUpdateVenueInput {
+  """Custom information about the venue."""
+  description: String
+
+  """Global identifier of the venue."""
+  id: ID!
+
+  """Name of the venue."""
+  name: String
+}
+
+type Organization {
+  """Address line 1 of the organization's address."""
+  addressLine1: String
+
+  """Address line 2 of the organization's address."""
+  addressLine2: String
+
+  """Total number of admins in the organization."""
+  adminsCount: Int
+
+  """
+  GraphQL connection to traverse through the advertisements belonging to the organization.
+  """
+  advertisements(
+    after: String
+    before: String
+    first: Int
+    last: Int
+
+    """Filter criteria for advertisements"""
+    where: AdvertisementWhereInput
+  ): OrganizationAdvertisementsConnection
+
+  """Mime type of the avatar of the organization."""
+  avatarMimeType: String
+
+  """URL to the avatar of the organization."""
+  avatarURL: String
+
+  """GraphQL connection to retrieve blocked users of the organization."""
+  blockedUsers(after: String, before: String, first: Int, last: Int): OrganizationBlockedUsersConnection
+
+  """
+  GraphQL connection to traverse through the chats belonging to the organization.
+  """
+  chats(after: String, before: String, first: Int, last: Int): OrganizationChatsConnection
+
+  """Name of the city where the organization exists in."""
+  city: String
+
+  """Country code of the country the organization exists in."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Date time at the time the organization was created."""
+  createdAt: DateTime
+
+  """User who created the organization."""
+  creator: User
+
+  """Custom information about the organization."""
+  description: String
+
+  """
+  GraphQL connection to traverse through the events belonging to the organization.
+  """
+  events(after: String, before: String, first: Int, last: Int): OrganizationEventsConnection
+
+  """
+  GraphQL connection to traverse through the funds belonging to the organization.
+  """
+  funds(after: String, before: String, first: Int, last: Int): OrganizationFundsConnection
+
+  """Global identifier of the organization."""
+  id: ID!
+
+  """Indicates whether the current user is a member of this organization."""
+  isMember: Boolean
+
+  """
+  Flag to indicate if user registration is required to join the organization.
+  """
+  isUserRegistrationRequired: Boolean
+
+  """
+  GraphQL connection to traverse through the users that are members of the organization.
+  """
+  members(
+    after: String
+    before: String
+    first: Int
+    last: Int
+
+    """Filter criteria for organization members"""
+    where: MembersWhereInput
+  ): OrganizationMembersConnection
+
+  """Total number of members in the organization."""
+  membersCount: Int
+
+  """Membership requests for this organization"""
+  membershipRequests(
+    """Number of items to return"""
+    first: Int
+
+    """Number of items to skip"""
+    skip: Int
+
+    """Filter criteria for membership requests"""
+    where: MembershipRequestWhereInput
+  ): [MembershipRequest!]
+
+  """Name of the organization."""
+  name: String
+
+  """
+  GraphQL connection to traverse through the pinned posts belonging to the organization.
+  """
+  pinnedPosts(after: String, before: String, first: Int, last: Int): OrganizationPinnedPostsConnection
+
+  """Total number of pinned posts belonging to the organization."""
+  pinnedPostsCount: Int
+
+  """Postal code of the organization."""
+  postalCode: String
+
+  """
+  GraphQL connection to traverse through the posts belonging to the organization.
+  """
+  posts(after: String, before: String, first: Int, last: Int): OrganizationPostsConnection
+
+  """Total number of posts belonging to the organization."""
+  postsCount: Int
+
+  """Name of the state the organization exists in."""
+  state: String
+
+  """
+  GraphQL connection to traverse through the tag folders belonging to the organization.
+  """
+  tagFolders(after: String, before: String, first: Int, last: Int): OrganizationTagFoldersConnection
+
+  """
+  GraphQL connection to traverse through the tags belonging to the organization.
+  """
+  tags(after: String, before: String, first: Int, last: Int): OrganizationTagsConnection
+
+  """Date time at the time the organization was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the organization."""
+  updater: User
+
+  """
+  GraphQL connection to traverse through the venues belonging to the organization.
+  """
+  venues(after: String, before: String, first: Int, last: Int): OrganizationVenuesConnection
+}
+
+""""""
+type OrganizationAdvertisementsConnection {
+  edges: [OrganizationAdvertisementsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationAdvertisementsConnectionEdge {
+  cursor: String!
+  node: Advertisement
+}
+
+type OrganizationBlockedUsersConnection {
+  edges: [OrganizationBlockedUsersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type OrganizationBlockedUsersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+""""""
+type OrganizationChatsConnection {
+  edges: [OrganizationChatsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationChatsConnectionEdge {
+  cursor: String!
+  node: Chat
+}
+
+""""""
+type OrganizationEventsConnection {
+  edges: [OrganizationEventsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationEventsConnectionEdge {
+  cursor: String!
+  node: Event
+}
+
+""""""
+type OrganizationFundsConnection {
+  edges: [OrganizationFundsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationFundsConnectionEdge {
+  cursor: String!
+  node: Fund
+}
+
+""""""
+type OrganizationMembersConnection {
+  edges: [OrganizationMembersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationMembersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+"""Represents a user's membership in an organization."""
+type OrganizationMembershipObject {
+  """User ID who created the membership."""
+  creatorId: String
+
+  """ID of the member."""
+  memberId: String
+
+  """ID of the organization."""
+  organizationId: String
+
+  """Role of the member in the organization."""
+  role: String
+}
 
 """
-Default connection page info for containing the metadata for a connection
-instance.
+Possible variants of the role assigned to a user within an organization.
 """
-type DefaultConnectionPageInfo implements ConnectionPageInfo {
+enum OrganizationMembershipRole {
+  administrator
+  regular
+}
+
+""""""
+type OrganizationPinnedPostsConnection {
+  edges: [OrganizationPinnedPostsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationPinnedPostsConnectionEdge {
+  cursor: String!
+  node: Post
+}
+
+""""""
+type OrganizationPostsConnection {
+  edges: [OrganizationPostsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationPostsConnectionEdge {
+  cursor: String!
+  node: Post
+}
+
+""""""
+type OrganizationTagFoldersConnection {
+  edges: [OrganizationTagFoldersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationTagFoldersConnectionEdge {
+  cursor: String!
+  node: TagFolder
+}
+
+""""""
+type OrganizationTagsConnection {
+  edges: [OrganizationTagsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationTagsConnectionEdge {
+  cursor: String!
+  node: Tag
+}
+
+""""""
+type OrganizationVenuesConnection {
+  edges: [OrganizationVenuesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type OrganizationVenuesConnectionEdge {
+  cursor: String!
+  node: Venue
+}
+
+type PageInfo {
   endCursor: String
   hasNextPage: Boolean!
   hasPreviousPage: Boolean!
   startCursor: String
 }
 
-type DeleteAdvertisementPayload {
-  advertisement: Advertisement
-}
-
-type DeletePayload {
-  success: Boolean!
-}
-
-type Donation {
-  _id: ID!
-  amount: Float!
-  createdAt: DateTime!
-  nameOfOrg: String!
-  nameOfUser: String!
-  orgId: ID!
-  payPalId: String!
-  updatedAt: DateTime!
-  userId: ID!
-}
-
-input DonationWhereInput {
-  id: ID
-  id_contains: ID
-  id_in: [ID!]
-  id_not: ID
-  id_not_in: [ID!]
-  id_starts_with: ID
-  name_of_user: String
-  name_of_user_contains: String
-  name_of_user_in: [String!]
-  name_of_user_not: String
-  name_of_user_not_in: [String!]
-  name_of_user_starts_with: String
-}
-
-input EditVenueInput {
-  capacity: Int
-  description: String
-  file: String
-  id: ID!
-  name: String
-}
-
-enum EducationGrade {
-  GRADE_1
-  GRADE_2
-  GRADE_3
-  GRADE_4
-  GRADE_5
-  GRADE_6
-  GRADE_7
-  GRADE_8
-  GRADE_9
-  GRADE_10
-  GRADE_11
-  GRADE_12
-  GRADUATE
-  KG
-  NO_GRADE
-  PRE_KG
-}
-
-scalar EmailAddress
-
-enum EmploymentStatus {
-  FULL_TIME
-  PART_TIME
-  UNEMPLOYED
-}
-
-interface Error {
-  message: String!
-}
-
-type Event {
-  _id: ID!
-  actionItems: [ActionItem]
-  admins(adminId: ID): [User!]
-  agendaItems: [AgendaItem]
-  allDay: Boolean!
-  attendees: [User]
-  attendeesCheckInStatus: [CheckInStatus!]!
-  averageFeedbackScore: Float
-  baseRecurringEvent: Event
-  createdAt: DateTime!
-  creator: User
-  description: String!
-  endDate: Date
-  endTime: Time
-  feedback: [Feedback!]!
-  images: [String]
-  isPublic: Boolean!
-  isRecurringEventException: Boolean!
-  isRegisterable: Boolean!
-  latitude: Latitude
-  location: String
-  longitude: Longitude
-  organization: Organization
-  recurrenceRule: RecurrenceRule
-  recurring: Boolean!
-  startDate: Date!
-  startTime: Time
-  title: String!
-  updatedAt: DateTime!
-  volunteerGroups: [EventVolunteerGroup]
-  volunteers: [EventVolunteer]
-}
-
-type EventAttendee {
-  _id: ID!
-  checkInId: ID
-  checkOutId: ID
-  createdAt: DateTime!
-  eventId: ID!
-  isCheckedIn: Boolean!
-  isCheckedOut: Boolean!
-  isInvited: Boolean!
-  isRegistered: Boolean!
-  updatedAt: DateTime!
-  userId: ID!
-}
-
-input EventAttendeeInput {
-  eventId: ID!
-  userId: ID!
-}
-
-input EventInput {
-  allDay: Boolean!
-  createChat: Boolean!
-  description: String!
-  endDate: Date!
-  endTime: Time
-  images: [String]
-  isPublic: Boolean!
-  isRegisterable: Boolean!
-  latitude: Latitude
-  location: String
-  longitude: Longitude
-  organizationId: ID!
-  recurring: Boolean!
-  startDate: Date!
-  startTime: Time
-  title: String!
-}
-
-enum EventOrderByInput {
-  allDay_ASC
-  allDay_DESC
-  description_ASC
-  description_DESC
-  endDate_ASC
-  endDate_DESC
-  endTime_ASC
-  endTime_DESC
-  id_ASC
-  id_DESC
-  location_ASC
-  location_DESC
-  recurrance_ASC
-  recurrance_DESC
-  startDate_ASC
-  startDate_DESC
-  startTime_ASC
-  startTime_DESC
-  title_ASC
-  title_DESC
-}
-
-type EventVolunteer {
-  _id: ID!
-  assignments: [ActionItem]
-  createdAt: DateTime!
-  creator: User
-  event: Event
-  groups: [EventVolunteerGroup]
-  hasAccepted: Boolean!
-  hoursHistory: [HoursHistory]
-  hoursVolunteered: Float!
-  isPublic: Boolean!
-  updatedAt: DateTime!
-  user: User!
-}
-
-type EventVolunteerGroup {
-  _id: ID!
-  assignments: [ActionItem]
-  createdAt: DateTime!
-  creator: User
-  description: String
-  event: Event
-  leader: User!
-  name: String
-  updatedAt: DateTime!
-  volunteers: [EventVolunteer]
-  volunteersRequired: Int
-}
-
-input EventVolunteerGroupInput {
-  description: String
-  eventId: ID!
-  leaderId: ID!
-  name: String!
-  volunteerUserIds: [ID!]!
-  volunteersRequired: Int
-}
-
-enum EventVolunteerGroupOrderByInput {
-  assignments_ASC
-  assignments_DESC
-  volunteers_ASC
-  volunteers_DESC
-}
-
-input EventVolunteerGroupWhereInput {
-  eventId: ID
-  leaderName: String
-  name_contains: String
-  orgId: ID
-  userId: ID
-}
-
-input EventVolunteerInput {
-  eventId: ID!
-  groupId: ID
-  userId: ID!
-}
-
-enum EventVolunteerResponse {
-  NO
-  YES
-}
-
-input EventVolunteerWhereInput {
-  eventId: ID
-  groupId: ID
-  hasAccepted: Boolean
-  id: ID
-  name_contains: String
-}
-
-enum EventVolunteersOrderByInput {
-  hoursVolunteered_ASC
-  hoursVolunteered_DESC
-}
-
-input EventWhereInput {
-  description: String
-  description_contains: String
-  description_in: [String!]
-  description_not: String
-  description_not_in: [String!]
-  description_starts_with: String
-  id: ID
-  id_contains: ID
-  id_in: [ID!]
-  id_not: ID
-  id_not_in: [ID!]
-  id_starts_with: ID
-  location: String
-  location_contains: String
-  location_in: [String!]
-  location_not: String
-  location_not_in: [String!]
-  location_starts_with: String
-  organization_id: ID
-  title: String
-  title_contains: String
-  title_in: [String!]
-  title_not: String
-  title_not_in: [String!]
-  title_starts_with: String
-}
-
-type ExtendSession {
-  accessToken: String!
-  refreshToken: String!
-}
-
-type Feedback {
-  _id: ID!
-  createdAt: DateTime!
-  event: Event!
-  rating: Int!
-  review: String
-  updatedAt: DateTime!
-}
-
-input FeedbackInput {
-  eventId: ID!
-  rating: Int!
-  review: String
-}
-
-interface FieldError {
-  message: String!
-  path: [String!]!
-}
-
-type File {
-  _id: ID!
-  archived: Boolean!
-  archivedAt: DateTime
-  backupStatus: String!
-  createdAt: DateTime!
-  encryption: Boolean!
-  fileName: String!
-  hash: Hash!
-  metadata: FileMetadata!
-  mimeType: String!
-  referenceCount: Int!
-  size: Int!
-  status: Status!
-  updatedAt: DateTime!
-  uri: String!
-  visibility: FileVisibility!
-}
-
-type FileMetadata {
-  bucketName: String!
-  objectKey: String!
-}
-
-enum FileVisibility {
-  PRIVATE
-  PUBLIC
-}
-
-input ForgotPasswordData {
-  newPassword: String!
-  otpToken: String!
-  userOtp: String!
-}
-
-enum Frequency {
-  DAILY
-  MONTHLY
-  WEEKLY
-  YEARLY
-}
-
-type Fund {
-  _id: ID!
-  campaigns: [FundraisingCampaign]
-  createdAt: DateTime!
-  creator: User
-  isArchived: Boolean!
-  isDefault: Boolean!
-  name: String!
-  organizationId: ID!
-  refrenceNumber: String
-  taxDeductible: Boolean!
-  updatedAt: DateTime!
-}
-
-input FundCampaignInput {
-  currency: Currency!
-  endDate: Date!
-  fundId: ID!
-  fundingGoal: Float!
-  name: String!
-  organizationId: ID!
-  startDate: Date!
-}
-
-input FundCampaignPledgeInput {
-  amount: Float!
-  campaignId: ID!
-  currency: Currency!
-  endDate: Date
-  startDate: Date
-  userIds: [ID!]!
-}
-
-input FundInput {
-  isArchived: Boolean!
-  isDefault: Boolean!
-  name: String!
-  organizationId: ID!
-  refrenceNumber: String
-  taxDeductible: Boolean!
-}
-
-enum FundOrderByInput {
-  createdAt_ASC
-  createdAt_DESC
-}
-
-input FundWhereInput {
-  name_contains: String
-}
-
-type FundraisingCampaign {
-  _id: ID!
-  createdAt: DateTime!
-  currency: Currency!
-  endDate: Date!
-  fundId: Fund!
-  fundingGoal: Float!
-  name: String!
-  organizationId: Organization!
-  pledges: [FundraisingCampaignPledge]
-  startDate: Date!
-  updatedAt: DateTime!
-}
-
-type FundraisingCampaignPledge {
-  _id: ID!
-  amount: Float!
-  campaign: FundraisingCampaign!
-  currency: Currency!
-  endDate: Date
-  startDate: Date
-  users: [User]!
-}
-
-enum Gender {
-  FEMALE
-  MALE
-  OTHER
-}
-
-type Group {
-  _id: ID!
-  admins: [User!]!
-  createdAt: DateTime!
-  description: String
-  organization: Organization!
-  title: String!
-  updatedAt: DateTime!
-}
-
-type Hash {
-  algorithm: String!
-  value: String!
-}
-
-type HoursHistory {
-  date: Date!
-  hours: Float!
-}
-
-type InvalidCursor implements FieldError {
-  message: String!
-  path: [String!]!
-}
-
-enum ItemType {
-  Note
-  Regular
-}
-
-scalar JSON
-
-type Language {
-  _id: ID!
-  createdAt: String!
-  en: String!
-  translation: [LanguageModel]
-}
-
-input LanguageInput {
-  en_value: String!
-  translation_lang_code: String!
-  translation_value: String!
-}
-
-type LanguageModel {
-  _id: ID!
-  createdAt: DateTime!
-  lang_code: String!
-  value: String!
-  verified: Boolean!
-}
-
-scalar Latitude
-
-input LoginInput {
-  email: EmailAddress!
-  password: String!
-}
-
-scalar Longitude
-
-enum MaritalStatus {
-  DIVORCED
-  ENGAGED
-  MARRIED
-  SEPERATED
-  SINGLE
-  WIDOWED
-}
-
-type MaximumLengthError implements FieldError {
-  message: String!
-  path: [String!]!
-}
-
-type MaximumValueError implements FieldError {
-  limit: Int!
-  message: String!
-  path: [String!]!
-}
-
-type MemberNotFoundError implements Error {
-  message: String!
-}
-
-type MembershipRequest {
-  _id: ID!
-  organization: Organization!
-  user: User!
-}
-
-input MembershipRequestsWhereInput {
-  creatorId: ID
-  creatorId_in: [ID!]
-  creatorId_not: ID
-  creatorId_not_in: [ID!]
-  id: ID
-  id_contains: ID
-  id_in: [ID!]
-  id_not: ID
-  id_not_in: [ID!]
-  id_starts_with: ID
-  user: UserWhereInput
-}
-
-type Message {
-  _id: ID!
-  createdAt: DateTime!
-  creator: User
-  imageUrl: URL
-  text: String!
-  updatedAt: DateTime!
-  videoUrl: URL
-}
-
-type MinimumLengthError implements FieldError {
-  limit: Int!
-  message: String!
-  path: [String!]!
-}
-
-type MinimumValueError implements FieldError {
-  message: String!
-  path: [String!]!
-}
-
-type Mutation {
-  acceptMembershipRequest(membershipRequestId: ID!): MembershipRequest!
-  addEventAttendee(data: EventAttendeeInput!): User!
-  addFeedback(data: FeedbackInput!): Feedback!
-  addLanguageTranslation(data: LanguageInput!): Language!
-  addOrganizationCustomField(name: String!, organizationId: ID!, type: String!): OrganizationCustomField!
-  addOrganizationImage(file: String!, organizationId: String!): Organization!
-  addPeopleToUserTag(input: AddPeopleToUserTagInput!): UserTag
-  addPledgeToFundraisingCampaign(campaignId: ID!, pledgeId: ID!): FundraisingCampaignPledge!
-  addUserCustomData(dataName: String!, dataValue: Any!, organizationId: ID!): UserCustomData!
-  addUserImage(file: String!): User!
-  addUserToGroupChat(chatId: ID!, userId: ID!): Chat
-  addUserToUserFamily(familyId: ID!, userId: ID!): UserFamily!
-  assignToUserTags(input: TagActionsInput!): UserTag
-  assignUserTag(input: ToggleUserTagAssignInput!): User
-  blockUser(organizationId: ID!, userId: ID!): User!
-  cancelMembershipRequest(membershipRequestId: ID!): MembershipRequest!
-  checkIn(data: CheckInCheckOutInput!): CheckIn!
-  checkOut(data: CheckInCheckOutInput!): CheckOut!
-  createActionItem(actionItemCategoryId: ID!, data: CreateActionItemInput!): ActionItem!
-  createActionItemCategory(isDisabled: Boolean!, name: String!, organizationId: ID!): ActionItemCategory!
-  createAdmin(data: UserAndOrganizationInput!): CreateAdminPayload!
-  createAdvertisement(input: CreateAdvertisementInput!): CreateAdvertisementPayload
-  createAgendaCategory(input: CreateAgendaCategoryInput!): AgendaCategory!
-  createAgendaItem(input: CreateAgendaItemInput!): AgendaItem!
-  createAgendaSection(input: CreateAgendaSectionInput!): AgendaSection!
-  createChat(data: chatInput!): Chat
-  createComment(data: CommentInput!, postId: ID!): Comment
-  createDonation(amount: Float!, nameOfOrg: String!, nameOfUser: String!, orgId: ID!, payPalId: ID!, userId: ID!): Donation!
-  createEvent(data: EventInput!, recurrenceRuleData: RecurrenceRuleInput): Event!
-  createEventVolunteer(data: EventVolunteerInput!): EventVolunteer!
-  createEventVolunteerGroup(data: EventVolunteerGroupInput!): EventVolunteerGroup!
-  createFund(data: FundInput!): Fund!
-  createFundraisingCampaign(data: FundCampaignInput!): FundraisingCampaign!
-  createFundraisingCampaignPledge(data: FundCampaignPledgeInput!): FundraisingCampaignPledge!
-  createMember(input: UserAndOrganizationInput!): CreateMemberPayload!
-  createNote(data: NoteInput!): Note!
-  createOrganization(data: OrganizationInput, file: String): Organization!
-  createPost(data: PostInput!, file: String): Post
-  createSampleOrganization: Boolean!
-  createUserFamily(data: createUserFamilyInput!): UserFamily!
-  createUserTag(input: CreateUserTagInput!): UserTag
-  createVenue(data: VenueInput!): Venue
-  createVolunteerMembership(data: VolunteerMembershipInput!): VolunteerMembership!
-  deleteAdvertisement(id: ID!): DeleteAdvertisementPayload
-  deleteAgendaCategory(id: ID!): ID!
-  deleteDonationById(id: ID!): DeletePayload!
-  deleteNote(id: ID!): ID!
-  deleteVenue(id: ID!): Venue
-  editVenue(data: EditVenueInput!): Venue
-  forgotPassword(data: ForgotPasswordData!): Boolean!
-  inviteEventAttendee(data: EventAttendeeInput!): EventAttendee!
-  joinPublicOrganization(organizationId: ID!): User!
-  leaveOrganization(organizationId: ID!): User!
-  likeComment(id: ID!): Comment
-  likePost(id: ID!): Post
-  login(data: LoginInput!): AuthData!
-  logout: Boolean!
-  markChatMessagesAsRead(chatId: ID!, userId: ID!): Chat!
-  otp(data: OTPInput!): OtpData!
-  recaptcha(data: RecaptchaVerification!): Boolean!
-  refreshToken(refreshToken: String!): ExtendSession!
-  registerEventAttendee(data: EventAttendeeInput!): EventAttendee!
-  registerForEvent(id: ID!): EventAttendee!
-  rejectMembershipRequest(membershipRequestId: ID!): MembershipRequest!
-  removeActionItem(id: ID!): ActionItem!
-  removeAdmin(data: UserAndOrganizationInput!): AppUserProfile!
-  removeAdvertisement(id: ID!): Advertisement
-  removeAgendaItem(id: ID!): AgendaItem!
-  removeAgendaSection(id: ID!): ID!
-  removeComment(id: ID!): Comment
-  removeEvent(id: ID!, recurringEventDeleteType: RecurringEventMutationType): Event!
-  removeEventAttendee(data: EventAttendeeInput!): User!
-  removeEventVolunteer(id: ID!): EventVolunteer!
-  removeEventVolunteerGroup(id: ID!): EventVolunteerGroup!
-  removeFromUserTags(input: TagActionsInput!): UserTag
-  removeFundraisingCampaignPledge(id: ID!): FundraisingCampaignPledge!
-  removeMember(data: UserAndOrganizationInput!): Organization!
-  removeOrganization(id: ID!): UserData!
-  removeOrganizationCustomField(customFieldId: ID!, organizationId: ID!): OrganizationCustomField!
-  removeOrganizationImage(organizationId: String!): Organization!
-  removePost(id: ID!): Post
-  removeSampleOrganization: Boolean!
-  removeUserCustomData(organizationId: ID!): UserCustomData!
-  removeUserFamily(familyId: ID!): UserFamily!
-  removeUserFromUserFamily(familyId: ID!, userId: ID!): UserFamily!
-  removeUserImage: User!
-  removeUserTag(id: ID!): UserTag
-  resetCommunity: Boolean!
-  revokeRefreshTokenForUser: Boolean!
-  saveFcmToken(token: String): Boolean!
-  sendMembershipRequest(organizationId: ID!): MembershipRequest!
-  sendMessageToChat(chatId: ID!, media: String, messageContent: String, replyTo: ID): ChatMessage!
-  signUp(data: UserInput!, file: String): AuthData!
-  togglePostPin(id: ID!, title: String): Post!
-  unassignUserTag(input: ToggleUserTagAssignInput!): User
-  unblockUser(organizationId: ID!, userId: ID!): User!
-  unlikeComment(id: ID!): Comment
-  unlikePost(id: ID!): Post
-  unregisterForEventByUser(id: ID!): Event!
-  updateActionItem(data: UpdateActionItemInput!, id: ID!): ActionItem
-  updateActionItemCategory(data: UpdateActionItemCategoryInput!, id: ID!): ActionItemCategory
-  updateAdvertisement(input: UpdateAdvertisementInput!): UpdateAdvertisementPayload
-  updateAgendaCategory(id: ID!, input: UpdateAgendaCategoryInput!): AgendaCategory
-  updateAgendaItem(id: ID!, input: UpdateAgendaItemInput!): AgendaItem
-  updateAgendaSection(id: ID!, input: UpdateAgendaSectionInput!): AgendaSection
-  updateChat(input: UpdateChatInput!): Chat!
-  updateChatMessage(input: UpdateChatMessageInput!): ChatMessage!
-  updateCommunity(data: UpdateCommunityInput!): Boolean!
-  updateEvent(data: UpdateEventInput!, id: ID!, recurrenceRuleData: RecurrenceRuleInput, recurringEventUpdateType: RecurringEventMutationType): Event!
-  updateEventVolunteer(data: UpdateEventVolunteerInput, id: ID!): EventVolunteer!
-  updateEventVolunteerGroup(data: UpdateEventVolunteerGroupInput!, id: ID!): EventVolunteerGroup!
-  updateFund(data: UpdateFundInput!, id: ID!): Fund!
-  updateFundraisingCampaign(data: UpdateFundCampaignInput!, id: ID!): FundraisingCampaign!
-  updateFundraisingCampaignPledge(data: UpdateFundCampaignPledgeInput!, id: ID!): FundraisingCampaignPledge!
-  updateLanguage(languageCode: String!): User!
-  updateNote(data: UpdateNoteInput!, id: ID!): Note!
-  updateOrganization(data: UpdateOrganizationInput, file: String, id: ID!): Organization!
-  updatePost(data: PostUpdateInput, id: ID!): Post!
-  updateSessionTimeout(timeout: Int!): Boolean!
-  updateUserPassword(data: UpdateUserPasswordInput!): UserData!
-  updateUserProfile(data: UpdateUserInput, file: String): User!
-  updateUserRoleInOrganization(organizationId: ID!, role: String!, userId: ID!): Organization!
-  updateUserTag(input: UpdateUserTagInput!): UserTag
-  updateVolunteerMembership(id: ID!, status: String!): VolunteerMembership!
-}
-
-type Note {
-  _id: ID!
-  agendaItemId: ID!
-  content: String!
-  createdAt: DateTime!
-  createdBy: User!
-  updatedAt: DateTime!
-  updatedBy: User!
-}
-
-input NoteInput {
-  agendaItemId: ID!
-  content: String!
-}
-
-input OTPInput {
-  email: EmailAddress!
-}
-
-type Organization {
-  _id: ID!
-  actionItemCategories: [ActionItemCategory]
-  address: Address
-  admins(adminId: ID): [User!]
-  advertisements(after: String, before: String, first: Int, last: Int): AdvertisementsConnection
-  agendaCategories: [AgendaCategory]
-  apiUrl: URL!
-  blockedUsers: [User]
-  createdAt: DateTime!
-  creator: User
-  customFields: [OrganizationCustomField!]!
-  description: String!
-  funds: [Fund]
-  image: String
-  members: [User]
-  membershipRequests(first: Int, skip: Int, where: MembershipRequestsWhereInput): [MembershipRequest]
-  name: String!
-  pinnedPosts: [Post]
-  posts(after: String, before: String, first: PositiveInt, last: PositiveInt): PostsConnection
-  updatedAt: DateTime!
-  userRegistrationRequired: Boolean!
-  userTags(after: String, before: String, first: PositiveInt, last: PositiveInt, sortedBy: UserTagSortedByInput, where: UserTagWhereInput): UserTagsConnection
-  venues: [Venue]
-  visibleInSearch: Boolean!
-}
-
-type OrganizationCustomField {
-  _id: ID!
-  name: String!
-  organizationId: String!
-  type: String!
-}
-
-type OrganizationInfoNode {
-  _id: ID!
-  apiUrl: URL!
-  creator: User
-  description: String!
-  image: String
-  name: String!
-  userRegistrationRequired: Boolean!
-  visibleInSearch: Boolean!
-}
-
-input OrganizationInput {
-  address: AddressInput!
-  apiUrl: URL
-  attendees: String
-  description: String!
-  image: String
-  name: String!
-  userRegistrationRequired: Boolean
-  visibleInSearch: Boolean
-}
-
-type OrganizationMemberNotFoundError implements Error {
-  message: String!
-}
-
-type OrganizationNotFoundError implements Error {
-  message: String!
-}
-
-enum OrganizationOrderByInput {
-  apiUrl_ASC
-  apiUrl_DESC
-  createdAt_ASC
-  createdAt_DESC
-  description_ASC
-  description_DESC
-  id_ASC
-  id_DESC
-  name_ASC
-  name_DESC
-}
-
-input OrganizationWhereInput {
-  apiUrl: URL
-  apiUrl_contains: URL
-  apiUrl_in: [URL!]
-  apiUrl_not: URL
-  apiUrl_not_in: [URL!]
-  apiUrl_starts_with: URL
-  description: String
-  description_contains: String
-  description_in: [String!]
-  description_not: String
-  description_not_in: [String!]
-  description_starts_with: String
-  id: ID
-  id_contains: ID
-  id_in: [ID!]
-  id_not: ID
-  id_not_in: [ID!]
-  id_starts_with: ID
-  name: String
-  name_contains: String
-  name_in: [String!]
-  name_not: String
-  name_not_in: [String!]
-  name_starts_with: String
-  userRegistrationRequired: Boolean
-  visibleInSearch: Boolean
-}
-
-type OtpData {
-  otpToken: String!
-}
-
-"""Information about pagination in a connection."""
-type PageInfo {
-  currPageNo: Int
-
-  """When paginating forwards, are there more items?"""
-  hasNextPage: Boolean!
-
-  """When paginating backwards, are there more items?"""
-  hasPreviousPage: Boolean!
-  nextPageNo: Int
-  prevPageNo: Int
-  totalPages: Int
-}
-
-enum PaginationDirection {
-  BACKWARD
-  FORWARD
-}
-
+"""
+A field whose value conforms to the standard E.164 format as specified in: https://en.wikipedia.org/wiki/E.164. Basically this is +17895551234.
+"""
 scalar PhoneNumber
 
-enum PledgeOrderByInput {
+type Post {
+  """Array of attachments."""
+  attachments: [PostAttachment!]
+
+  """Caption for the post."""
+  caption: String
+
+  """
+  GraphQL connection to traverse through the comments created under the post.
+  """
+  comments(after: String, before: String, first: Int, last: Int): PostCommentsConnection
+
+  """Total number of comments created under the post."""
+  commentsCount: Int
+
+  """Date time at the time the post was created."""
+  createdAt: DateTime
+
+  """User who created the post."""
+  creator: User
+
+  """
+  GraphQL connection to traverse through the users that down voted the post.
+  """
+  downVoters(after: String, before: String, first: Int, last: Int): PostDownVotersConnection
+
+  """Total number of down votes on the post."""
+  downVotesCount: Int
+
+  """Global identifier of the post."""
+  id: ID!
+
+  """Organization which the post belongs to."""
+  organization: Organization
+
+  """Date time at the time the post was pinned."""
+  pinnedAt: DateTime
+
+  """
+  GraphQL connection to traverse through the user that up voted the post.
+  """
+  upVoters(after: String, before: String, first: Int, last: Int): PostUpVotersConnection
+
+  """Total number of up votes on the post."""
+  upVotesCount: Int
+
+  """Date time at the time the post was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the post."""
+  updater: User
+}
+
+"""Attachment of the post."""
+type PostAttachment {
+  """File hash for deduplication purposes."""
+  fileHash: String
+
+  """Global identifier of the attachment."""
+  id: ID!
+
+  """Mime type of the attachment."""
+  mimeType: String
+
+  """Identifier name of the attachment."""
+  name: String
+
+  """Object name used when creating presigned URLs."""
+  objectName: String
+}
+
+"""MIME types supported for post attachments"""
+enum PostAttachmentMimeType {
+  IMAGE_AVIF
+  IMAGE_JPEG
+  IMAGE_PNG
+  IMAGE_WEBP
+  VIDEO_MP4
+  VIDEO_WEBM
+}
+
+""""""
+type PostCommentsConnection {
+  edges: [PostCommentsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type PostCommentsConnectionEdge {
+  cursor: String!
+  node: Comment
+}
+
+""""""
+type PostDownVotersConnection {
+  edges: [PostDownVotersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type PostDownVotersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+""""""
+type PostUpVotersConnection {
+  edges: [PostUpVotersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type PostUpVotersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+"""Possible variants of the type of a vote on a post."""
+enum PostVoteType {
+  down_vote
+  up_vote
+}
+
+type Query {
+  """
+  Query field to fetch all action item categories linked to a specific organization.
+  """
+  actionCategoriesByOrganization(
+    """Input parameters to fetch action item categories by organizationId."""
+    input: QueryActionCategoriesByOrganizationInput!
+  ): [ActionItemCategory!]
+
+  """
+  Query field to fetch all action items linked to a specific organization.
+  """
+  actionItemsByOrganization(
+    """Input parameters to fetch action items by organizationId."""
+    input: QueryActionItemsByOrganizationInput!
+  ): [ActionItem!]
+
+  """Query field to read an advertisement."""
+  advertisement(input: QueryAdvertisementInput!): Advertisement
+
+  """Query field to read an agenda folder."""
+  agendaFolder(input: QueryAgendaFolderInput!): AgendaFolder
+
+  """Query field to read an agenda item."""
+  agendaItem(input: QueryAgendaItemInput!): AgendaItem
+
+  """Query field to read all Users."""
+  allUsers(after: String, before: String, first: Int, last: Int, where: QueryAllUsersWhereInput): QueryAllUsersConnection
+
+  """Fetch multiple action item categories by their IDs."""
+  categoriesByIds(input: CategoriesByIdsInput!): [ActionItemCategory!]
+
+  """Query field to read a chat."""
+  chat(input: QueryChatInput!): Chat
+
+  """Query field to read a chat message."""
+  chatMessage(input: QueryChatMessageInput!): ChatMessage
+
+  """Query field to read a comment."""
+  comment(input: QueryCommentInput!): Comment
+
+  """Query field to read the community."""
+  community: Community
+
+  """Query field to read a user."""
+  currentUser: User
+
+  """Query field to read an event."""
+  event(input: QueryEventInput!): Event
+
+  """Fetch multiple events by their IDs."""
+  eventsByIds(input: QueryEventsByIdsInput!): [Event!]
+
+  """Fetch all events that belong to a given organization."""
+  eventsByOrganizationId(input: EventsByOrganizationIdInput!): [Event!]
+
+  """Query field to read a fund."""
+  fund(input: QueryFundInput!): Fund
+
+  """Query field to read a fund campaign."""
+  fundCampaign(input: QueryFundCampaignInput!): FundCampaign
+
+  """Query field to read a fund campaign pledge."""
+  fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
+
+  """Query field to get fund campaign pledge associated to a user."""
+  getPledgesByUserId(
+    """Maximum number of results to return."""
+    limit: Int
+
+    """Number of results to skip."""
+    offset: Int
+
+    """
+    Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
+    """
+    orderBy: QueryPledgeOrderByInput
+
+    """Global id of the user."""
+    userId: QueryUserInput!
+
+    """Filter criteria for pledges"""
+    where: QueryPledgeWhereInput
+  ): [FundCampaignPledge!]
+
+  """Query field to read a post vote."""
+  hasUserVoted(input: QueryHasUserVotedInput!): HasUserVoted
+
+  """Query field to read an organization."""
+  organization(input: QueryOrganizationInput!): Organization
+
+  """
+  Query to fetch all organizations with optional filtering. If limit and offset are not provided, returns all organizations.
+  """
+  organizations(filter: String, limit: Int, offset: Int): [Organization!]
+
+  """Query field to read a post."""
+  post(input: QueryPostInput!): Post
+  postsByOrganization(input: GetPostsByOrgInput!): [Post!]
+
+  """
+  Query field to renew the authentication token of an authenticated client for signing in to talawa.
+  """
+  renewAuthenticationToken: String
+
+  """Query field for a client to sign in to talawa."""
+  signIn(input: QuerySignInInput!): AuthenticationPayload
+
+  """Query field to read a tag."""
+  tag(input: QueryTagInput!): Tag
+
+  """Query field to read a tag folder."""
+  tagFolder(input: QueryTagFolderInput!): TagFolder
+
+  """Query field to read a user."""
+  user(input: QueryUserInput!): User
+
+  """Fetch multiple users by their IDs."""
+  usersByIds(input: UsersByIdsInput!): [User!]
+
+  """Fetch all users that belong to a given organization."""
+  usersByOrganizationId(organizationId: ID!): [User!]
+
+  """Query field to read a venue."""
+  venue(input: QueryVenueInput!): Venue
+}
+
+input QueryActionCategoriesByOrganizationInput {
+  organizationId: String!
+}
+
+"""Input schema for querying ActionItems by organizationId."""
+input QueryActionItemsByOrganizationInput {
+  """ID of the organization to fetch associated action items."""
+  organizationId: String!
+}
+
+""""""
+input QueryAdvertisementInput {
+  """Global id of the advertisement."""
+  id: String!
+}
+
+""""""
+input QueryAgendaFolderInput {
+  """Global id of the agenda folder."""
+  id: String!
+}
+
+""""""
+input QueryAgendaItemInput {
+  """Global id of the agenda item."""
+  id: String!
+}
+
+""""""
+type QueryAllUsersConnection {
+  edges: [QueryAllUsersConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type QueryAllUsersConnectionEdge {
+  cursor: String!
+  node: User
+}
+
+input QueryAllUsersWhereInput {
+  name: String
+}
+
+""""""
+input QueryChatInput {
+  """Global id of the chat."""
+  id: String!
+}
+
+""""""
+input QueryChatMessageInput {
+  """Global id of the chat message."""
+  id: String!
+}
+
+""""""
+input QueryCommentInput {
+  """Global id of the comment."""
+  id: String!
+}
+
+""""""
+input QueryEventInput {
+  """Global id of the event."""
+  id: String!
+}
+
+input QueryEventsByIdsInput {
+  ids: [ID!]!
+}
+
+""""""
+input QueryFundCampaignInput {
+  """Global id of the fund campaign."""
+  id: String!
+}
+
+""""""
+input QueryFundCampaignPledgeInput {
+  """Global id of the fund campaign pledge."""
+  id: String!
+}
+
+""""""
+input QueryFundInput {
+  """Global id of the fund."""
+  id: String!
+}
+
+"""Input type for checking if a user has voted on a specific post"""
+input QueryHasUserVotedInput {
+  """ID of the post that is voted."""
+  postId: String!
+}
+
+""""""
+input QueryOrganizationInput {
+  """Global id of the organization."""
+  id: String!
+}
+
+"""
+Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
+"""
+enum QueryPledgeOrderByInput {
   amount_ASC
   amount_DESC
   endDate_ASC
   endDate_DESC
-  startDate_ASC
-  startDate_DESC
 }
 
-input PledgeWhereInput {
-  campaignId: ID
+"""Filter criteria for Pledges"""
+input QueryPledgeWhereInput {
+  """Filter pledges by the name of the creator"""
   firstName_contains: String
-  id: ID
+
+  """Filter pledges by the name of the campaign"""
   name_contains: String
 }
 
-scalar PositiveInt
-
-type Post {
-  _id: ID
-  commentCount: Int
-  comments: [Comment]
-  createdAt: DateTime!
-  creator: User
-  file: File
-  likeCount: Int
-  likedBy: [User]
-  organization: Organization!
-  pinned: Boolean
-  text: String!
-  title: String
-  updatedAt: DateTime!
+""""""
+input QueryPostInput {
+  """Global id of the post."""
+  id: String!
 }
 
-type PostEdge {
-  cursor: String!
-  node: Post!
+""""""
+input QuerySignInInput {
+  """Email address of the user."""
+  emailAddress: EmailAddress!
+
+  """Password of the user to sign in to talawa."""
+  password: String!
 }
 
-input PostInput {
-  _id: ID
-  imageUrl: URL
-  organizationId: ID!
-  pinned: Boolean
-  text: String!
-  title: String
-  videoUrl: URL
+""""""
+input QueryTagFolderInput {
+  """Global id of the tag folder."""
+  id: String!
 }
 
-type PostNotFoundError implements Error {
-  message: String!
+""""""
+input QueryTagInput {
+  """Global id of the tag."""
+  id: String!
 }
 
-enum PostOrderByInput {
-  commentCount_ASC
-  commentCount_DESC
-  createdAt_ASC
-  createdAt_DESC
-  id_ASC
-  id_DESC
-  imageUrl_ASC
-  imageUrl_DESC
-  likeCount_ASC
-  likeCount_DESC
-  text_ASC
-  text_DESC
-  title_ASC
-  title_DESC
-  videoUrl_ASC
-  videoUrl_DESC
+""""""
+input QueryUserInput {
+  """Global id of the user."""
+  id: String!
 }
 
-input PostUpdateInput {
-  imageUrl: String
-  text: String
-  title: String
-  videoUrl: String
+""""""
+input QueryVenueInput {
+  """Global id of the venue."""
+  id: String!
 }
 
-input PostWhereInput {
-  id: ID
-  id_contains: ID
-  id_in: [ID!]
-  id_not: ID
-  id_not_in: [ID!]
-  id_starts_with: ID
-  text: String
-  text_contains: String
-  text_in: [String!]
-  text_not: String
-  text_not_in: [String!]
-  text_starts_with: String
-  title: String
-  title_contains: String
-  title_in: [String!]
-  title_not: String
-  title_not_in: [String!]
-  title_starts_with: String
-}
+type RejectMembershipResponse {
+  """Success or error message"""
+  message: String
 
-type PostsConnection {
-  edges: [PostEdge!]!
-  pageInfo: DefaultConnectionPageInfo!
-  totalCount: Int
-}
-
-type Query {
-  actionItemCategoriesByOrganization(orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemCategoryWhereInput): [ActionItemCategory]
-  actionItemsByEvent(eventId: ID!): [ActionItem]
-  actionItemsByOrganization(eventId: ID, orderBy: ActionItemsOrderByInput, organizationId: ID!, where: ActionItemWhereInput): [ActionItem]
-  actionItemsByUser(orderBy: ActionItemsOrderByInput, userId: ID!, where: ActionItemWhereInput): [ActionItem]
-  advertisementsConnection(after: String, before: String, first: PositiveInt, last: PositiveInt): AdvertisementsConnection
-  agendaCategory(id: ID!): AgendaCategory!
-  agendaItemByEvent(relatedEventId: ID!): [AgendaItem]
-  agendaItemByOrganization(organizationId: ID!): [AgendaItem]
-  agendaItemCategoriesByOrganization(organizationId: ID!, where: AgendaItemCategoryWhereInput): [AgendaCategory]
-  chatById(id: ID!): Chat!
-  chatsByUserId(id: ID!, where: ChatWhereInput): [Chat]
-  checkAuth: User!
-  customDataByOrganization(organizationId: ID!): [UserCustomData!]!
-  customFieldsByOrganization(id: ID!): [OrganizationCustomField]
-  event(id: ID!): Event
-  eventsAttendedByUser(id: ID, orderBy: EventOrderByInput): [Event]
-  eventsByOrganization(id: ID, orderBy: EventOrderByInput): [Event]
-  eventsByOrganizationConnection(first: Int, orderBy: EventOrderByInput, skip: Int, upcomingOnly: Boolean, where: EventWhereInput): [Event!]!
-  fundsByOrganization(orderBy: FundOrderByInput, organizationId: ID!, where: FundWhereInput): [Fund]
-  getAgendaItem(id: ID!): AgendaItem
-  getAgendaSection(id: ID!): AgendaSection
-  getAllAgendaItems: [AgendaItem]
-  getAllNotesForAgendaItem(agendaItemId: ID!): [Note]
-  getCommunityData: Community
-  getDonationById(id: ID!): Donation!
-  getDonationByOrgId(orgId: ID!): [Donation]
-  getDonationByOrgIdConnection(first: Int, orgId: ID!, skip: Int, where: DonationWhereInput): [Donation!]!
-  getEventAttendee(eventId: ID!, userId: ID!): EventAttendee
-  getEventAttendeesByEventId(eventId: ID!): [EventAttendee]
-  getEventInvitesByUserId(userId: ID!): [EventAttendee!]!
-  getEventVolunteerGroups(orderBy: EventVolunteerGroupOrderByInput, where: EventVolunteerGroupWhereInput!): [EventVolunteerGroup]!
-  getEventVolunteers(orderBy: EventVolunteersOrderByInput, where: EventVolunteerWhereInput!): [EventVolunteer]!
-  getFundById(id: ID!, orderBy: CampaignOrderByInput, where: CampaignWhereInput): Fund!
-  getFundraisingCampaignPledgeById(id: ID!): FundraisingCampaignPledge!
-  getFundraisingCampaigns(campaignOrderby: CampaignOrderByInput, pledgeOrderBy: PledgeOrderByInput, where: CampaignWhereInput): [FundraisingCampaign]!
-  getGroupChatsByUserId: [Chat]
-  getNoteById(id: ID!): Note!
-  getPledgesByUserId(orderBy: PledgeOrderByInput, userId: ID!, where: PledgeWhereInput): [FundraisingCampaignPledge]
-  getRecurringEvents(baseRecurringEventId: ID!): [Event]
-  getUnreadChatsByUserId: [Chat]
-  getUserTag(id: ID!): UserTag
-  getVenueByOrgId(first: Int, orderBy: VenueOrderByInput, orgId: ID!, skip: Int, where: VenueWhereInput): [Venue]
-  getVolunteerMembership(orderBy: VolunteerMembershipOrderByInput, where: VolunteerMembershipWhereInput!): [VolunteerMembership]!
-  getVolunteerRanks(orgId: ID!, where: VolunteerRankWhereInput!): [VolunteerRank]!
-  getlanguage(lang_code: String!): [Translation]
-  hasSubmittedFeedback(eventId: ID!, userId: ID!): Boolean
-  isSampleOrganization(id: ID!): Boolean!
-  joinedOrganizations(id: ID): [Organization]
-  me: UserData!
-  myLanguage: String
-  organizations(first: Int, id: ID, orderBy: OrganizationOrderByInput, skip: Int, where: MembershipRequestsWhereInput): [Organization]
-  organizationsConnection(first: Int, orderBy: OrganizationOrderByInput, skip: Int, where: OrganizationWhereInput): [Organization]!
-  organizationsMemberConnection(first: Int, orderBy: UserOrderByInput, orgId: ID!, skip: Int, where: UserWhereInput): UserConnection!
-  post(id: ID!): Post
-  registeredEventsByUser(id: ID, orderBy: EventOrderByInput): [Event]
-  registrantsByEvent(id: ID!): [User]
-  user(id: ID!): UserData!
-  userLanguage(userId: ID!): String
-  users(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]
-  usersConnection(first: Int, orderBy: UserOrderByInput, skip: Int, where: UserWhereInput): [UserData]!
-  venue(id: ID!): Venue
-  verifyRole: VerifyRoleResponse
-}
-
-input RecaptchaVerification {
-  recaptchaToken: String!
-}
-
-type RecurrenceRule {
-  baseRecurringEvent: Event
-  count: PositiveInt
-  frequency: Frequency!
-  interval: PositiveInt!
-  latestInstanceDate: Date
-  organization: Organization
-  recurrenceEndDate: Date
-  recurrenceRuleString: String!
-  recurrenceStartDate: Date!
-  weekDayOccurenceInMonth: Int
-  weekDays: [WeekDays]
-}
-
-input RecurrenceRuleInput {
-  count: PositiveInt
-  frequency: Frequency
-  interval: PositiveInt
-  recurrenceEndDate: Date
-  recurrenceStartDate: Date
-  weekDayOccurenceInMonth: Int
-  weekDays: [WeekDays]
-}
-
-enum RecurringEventMutationType {
-  allInstances
-  thisAndFollowingInstances
-  thisInstance
-}
-
-type SocialMediaUrls {
-  X: String
-  facebook: String
-  gitHub: String
-  instagram: String
-  linkedIn: String
-  reddit: String
-  slack: String
-  youTube: String
-}
-
-input SocialMediaUrlsInput {
-  X: String
-  facebook: String
-  gitHub: String
-  instagram: String
-  linkedIn: String
-  reddit: String
-  slack: String
-  youTube: String
-}
-
-"""
-Possible variants of ordering in which sorting on a field should be
-applied for a connection or other list type data structures.
-"""
-enum SortedByOrder {
-  """
-  When the sorting order should be from the smallest value to largest
-  value.
-  """
-  ASCENDING
-
-  """
-  When the sorting order should be from the largest value to the smallest
-  value.
-  """
-  DESCENDING
-}
-
-enum Status {
-  ACTIVE
-  BLOCKED
-  DELETED
+  """Whether the operation was successful"""
+  success: Boolean
 }
 
 type Subscription {
-  messageSentToChat(userId: ID!): ChatMessage
+  """
+  Subscription field to subscribe to the event of creation of a message in a chat.
+  """
+  chatMessageCreate(input: SubscriptionChatMessageCreateInput!): ChatMessage
 }
 
-input TagActionsInput {
-  currentTagId: ID!
-  selectedTagIds: [ID!]!
+""""""
+input SubscriptionChatMessageCreateInput {
+  """Global identifier of the chat."""
+  id: String!
 }
 
-scalar Time
+type Tag {
+  """
+  GraphQL connection to traverse through the users that are assignees of the tag.
+  """
+  assignees(after: String, before: String, first: Int, last: Int): TagAssigneesConnection
 
-input ToggleUserTagAssignInput {
-  tagId: ID!
-  userId: ID!
-}
+  """Date time at the time the tag was created."""
+  createdAt: DateTime
 
-type Translation {
-  en_value: String
-  lang_code: String
-  translation: String
-  verified: Boolean
-}
+  """User who created the tag."""
+  creator: User
 
-enum Type {
-  PRIVATE
-  UNIVERSAL
-}
+  """Tag folder the tag is contained within."""
+  folder: TagFolder
 
-scalar URL
+  """Global identifier of the tag."""
+  id: ID!
 
-type UnauthenticatedError implements Error {
-  message: String!
-}
-
-type UnauthorizedError implements Error {
-  message: String!
-}
-
-input UpdateActionItemCategoryInput {
-  isDisabled: Boolean
+  """Name of the tag."""
   name: String
+
+  """Organization the tag belong to."""
+  organization: Organization
+
+  """Date time at the time the tag was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the tag."""
+  updater: User
 }
 
-input UpdateActionItemInput {
-  allottedHours: Float
-  assigneeId: ID
-  assigneeType: String
-  completionDate: Date
-  dueDate: Date
-  isCompleted: Boolean
-  postCompletionNotes: String
-  preCompletionNotes: String
-}
-
-input UpdateAdvertisementInput {
-  _id: ID!
-  endDate: Date
-  mediaFile: String
-  name: String
-  startDate: Date
-  type: AdvertisementType
-}
-
-type UpdateAdvertisementPayload {
-  advertisement: Advertisement
-}
-
-input UpdateAgendaCategoryInput {
-  description: String
-  name: String
-}
-
-input UpdateAgendaItemInput {
-  attachments: [String]
-  categories: [ID]
-  description: String
-  duration: String
-  relatedEvent: ID
-  sequence: Int
-  title: String
-  urls: [String]
-  users: [ID]
-}
-
-input UpdateAgendaSectionInput {
-  description: String
-  relatedEvent: ID
-  sequence: Int
-}
-
-input UpdateChatInput {
-  _id: ID!
-  image: String
-  name: String
-}
-
-input UpdateChatMessageInput {
-  chatId: ID!
-  messageContent: String!
-  messageId: ID!
-}
-
-input UpdateCommunityInput {
-  logo: String!
-  name: String!
-  socialMediaUrls: SocialMediaUrlsInput!
-  websiteLink: String!
-}
-
-input UpdateEventInput {
-  allDay: Boolean
-  description: String
-  endDate: Date
-  endTime: Time
-  images: [String]
-  isPublic: Boolean
-  isRecurringEventException: Boolean
-  isRegisterable: Boolean
-  latitude: Latitude
-  location: String
-  longitude: Longitude
-  recurring: Boolean
-  startDate: Date
-  startTime: Time
-  title: String
-}
-
-input UpdateEventVolunteerGroupInput {
-  description: String
-  eventId: ID!
-  name: String
-  volunteersRequired: Int
-}
-
-input UpdateEventVolunteerInput {
-  assignments: [ID]
-  hasAccepted: Boolean
-  isPublic: Boolean
-}
-
-input UpdateFundCampaignInput {
-  currency: Currency
-  endDate: Date
-  fundingGoal: Float
-  name: String
-  startDate: Date
-}
-
-input UpdateFundCampaignPledgeInput {
-  amount: Float
-  currency: Currency
-  endDate: Date
-  startDate: Date
-  users: [ID]
-}
-
-input UpdateFundInput {
-  isArchived: Boolean
-  isDefault: Boolean
-  name: String
-  refrenceNumber: String
-  taxDeductible: Boolean
-}
-
-input UpdateNoteInput {
-  content: String
-  updatedBy: ID!
-}
-
-input UpdateOrganizationInput {
-  address: AddressInput
-  description: String
-  name: String
-  userRegistrationRequired: Boolean
-  visibleInSearch: Boolean
-}
-
-input UpdateUserInput {
-  address: AddressInput
-  appLanguageCode: String
-  birthDate: Date
-  educationGrade: EducationGrade
-  email: EmailAddress
-  employmentStatus: EmploymentStatus
-  firstName: String
-  gender: Gender
-  lastName: String
-  maritalStatus: MaritalStatus
-  phone: UserPhoneInput
-}
-
-input UpdateUserPasswordInput {
-  confirmNewPassword: String!
-  newPassword: String!
-  previousPassword: String!
-}
-
-input UpdateUserTagInput {
-  name: String!
-  tagColor: String
-  tagId: ID!
-}
-
-scalar Upload
-
-type User {
-  _id: ID!
-  address: Address
-  appUserProfileId: AppUserProfile
-  birthDate: Date
-  createdAt: DateTime!
-  educationGrade: EducationGrade
-  email: EmailAddress!
-  employmentStatus: EmploymentStatus
-  eventAdmin: [Event]
-  eventsAttended: [Event]
-  file: File
-  firstName: String!
-  gender: Gender
-  identifier: Int!
-  image: String
-  joinedOrganizations: [Organization]
-  lastName: String!
-  maritalStatus: MaritalStatus
-  membershipRequests: [MembershipRequest]
-  organizationsBlockedBy: [Organization]
-  phone: UserPhone
-  posts(after: String, before: String, first: PositiveInt, last: PositiveInt): PostsConnection
-  registeredEvents: [Event]
-  tagsAssignedWith(after: String, before: String, first: PositiveInt, last: PositiveInt, organizationId: ID): UserTagsConnection
-  updatedAt: DateTime!
-}
-
-input UserAndOrganizationInput {
-  organizationId: ID!
-  userId: ID!
-}
-
-type UserConnection {
-  aggregate: AggregateUser!
-  edges: [User]!
+""""""
+type TagAssigneesConnection {
+  edges: [TagAssigneesConnectionEdge]
   pageInfo: PageInfo!
 }
 
-type UserCustomData {
-  _id: ID!
-  organizationId: ID!
-  userId: ID!
-  values: JSON!
+""""""
+type TagAssigneesConnectionEdge {
+  cursor: String!
+  node: User
 }
 
-type UserData {
-  appUserProfile: AppUserProfile
-  user: User!
-}
-
-type UserFamily {
-  _id: ID!
-  admins: [User!]!
-  creator: User!
-  title: String
-  users: [User!]!
-}
-
-input UserInput {
-  appLanguageCode: String
-  email: EmailAddress!
-  firstName: String!
-  lastName: String!
-  password: String!
-  selectedOrganization: ID!
-}
-
-input UserNameWhereInput {
-  starts_with: String!
-}
-
-type UserNotAuthorizedAdminError implements Error {
-  message: String!
-}
-
-type UserNotAuthorizedError implements Error {
-  message: String!
-}
-
-type UserNotFoundError implements Error {
-  message: String!
-}
-
-enum UserOrderByInput {
-  createdAt_ASC
-  createdAt_DESC
-  email_ASC
-  email_DESC
-  firstName_ASC
-  firstName_DESC
-  id_ASC
-  id_DESC
-  lastName_ASC
-  lastName_DESC
-}
-
-type UserPhone {
-  home: PhoneNumber
-  mobile: PhoneNumber
-  work: PhoneNumber
-}
-
-input UserPhoneInput {
-  home: PhoneNumber
-  mobile: PhoneNumber
-  work: PhoneNumber
-}
-
-type UserTag {
-  """A field to get the mongodb object id identifier for this UserTag."""
-  _id: ID!
-
-  """A field to traverse the ancestor tags of this UserTag."""
-  ancestorTags: [UserTag]
-
+type TagFolder {
   """
-  A connection field to traverse a list of UserTag this UserTag is a
-  parent to.
+  GraphQL connection to traverse through the tag folders contained within the tag folder.
   """
-  childTags(after: String, before: String, first: PositiveInt, last: PositiveInt, sortedBy: UserTagSortedByInput, where: UserTagWhereInput): UserTagsConnection
+  childFolders(after: String, before: String, first: Int, last: Int): TagFolderChildFoldersConnection
 
-  """A field to get the name of this UserTag."""
-  name: String!
+  """Date time at the time the tag folder was created."""
+  createdAt: DateTime
 
-  """A field to traverse the Organization that created this UserTag."""
+  """User who created the tag folder."""
+  creator: User
+
+  """Global identifier of the tag folder."""
+  id: ID!
+
+  """Name of the tag folder."""
+  name: String
+
+  """Organization which the tag folder belongs to."""
   organization: Organization
 
-  """A field to traverse the parent UserTag of this UserTag."""
-  parentTag: UserTag
+  """Tag folder the tag folder is contained within."""
+  parentFolder: TagFolder
 
   """
-  A connection field to traverse a list of User this UserTag is assigned
-  to.
+  GraphQL connection to traverse through the tags contained within the tag folder.
   """
-  usersAssignedTo(after: String, before: String, first: PositiveInt, last: PositiveInt, sortedBy: UserTagUsersAssignedToSortedByInput, where: UserTagUsersAssignedToWhereInput): UsersConnection
+  tags(after: String, before: String, first: Int, last: Int): TagFolderTagsConnection
 
-  """
-  A connection field to traverse a list of Users this UserTag is not assigned
-  to, to see and select among them and assign this tag.
-  """
-  usersToAssignTo(after: String, before: String, first: PositiveInt, last: PositiveInt, where: UserTagUsersToAssignToWhereInput): UsersConnection
+  """Date time at the time the tag folder was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the tag folder."""
+  updater: User
 }
 
-input UserTagNameWhereInput {
-  starts_with: String!
+""""""
+type TagFolderChildFoldersConnection {
+  edges: [TagFolderChildFoldersConnectionEdge]
+  pageInfo: PageInfo!
 }
 
-input UserTagSortedByInput {
-  id: SortedByOrder!
-}
-
-input UserTagUsersAssignedToSortedByInput {
-  id: SortedByOrder!
-}
-
-input UserTagUsersAssignedToWhereInput {
-  firstName: UserNameWhereInput
-  lastName: UserNameWhereInput
-}
-
-input UserTagUsersToAssignToWhereInput {
-  firstName: UserNameWhereInput
-  lastName: UserNameWhereInput
-}
-
-input UserTagWhereInput {
-  name: UserTagNameWhereInput
-}
-
-"""A default connection on the UserTag type."""
-type UserTagsConnection {
-  edges: [UserTagsConnectionEdge!]!
-  pageInfo: DefaultConnectionPageInfo!
-  totalCount: Int
-}
-
-"""A default connection edge on the UserTag type for UserTagsConnection."""
-type UserTagsConnectionEdge {
+""""""
+type TagFolderChildFoldersConnectionEdge {
   cursor: String!
-  node: UserTag!
+  node: TagFolder
 }
 
-enum UserType {
-  ADMIN
-  NON_USER
-  SUPERADMIN
-  USER
+""""""
+type TagFolderTagsConnection {
+  edges: [TagFolderTagsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type TagFolderTagsConnectionEdge {
+  cursor: String!
+  node: Tag
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+"""UploadUrlResponse"""
+type UploadUrlResponse {
+  objectName: String
+  presignedUrl: String
+  requiresUpload: Boolean
+}
+
+type User {
+  """Address line 1 of the user's address."""
+  addressLine1: String
+
+  """Address line 2 of the user's address."""
+  addressLine2: String
+
+  """Mime type of the avatar of the user."""
+  avatarMimeType: String
+
+  """URL to the avatar of the user."""
+  avatarURL: String
+
+  """Date of birth of the user."""
+  birthDate: Date
+
+  """Name of the city where the user resides in."""
+  city: String
+
+  """Country code of the country the user is a citizen of."""
+  countryCode: Iso3166Alpha2CountryCode
+
+  """Date time at the time the user was created."""
+  createdAt: DateTime
+
+  """Organizations created by the user"""
+  createdOrganizations(filter: String): [Organization!]
+
+  """User who created the user."""
+  creator: User
+
+  """Custom information about the user."""
+  description: String
+
+  """Primary education grade of the user."""
+  educationGrade: UserEducationGrade
+
+  """Email address of the user."""
+  emailAddress: EmailAddress
+
+  """Employment status of the user."""
+  employmentStatus: UserEmploymentStatus
+
+  """The phone number to use to communicate with the user at their home."""
+  homePhoneNumber: PhoneNumber
+
+  """Global identifier of the user."""
+  id: ID!
+
+  """Boolean to tell whether the user has verified their email address."""
+  isEmailAddressVerified: Boolean
+
+  """Marital status of the user."""
+  maritalStatus: UserMaritalStatus
+
+  """
+  The phone number to use to communicate with the user on their mobile phone.
+  """
+  mobilePhoneNumber: PhoneNumber
+
+  """Name of the user."""
+  name: String
+
+  """The sex assigned to the user at their birth."""
+  natalSex: UserNatalSex
+
+  """Language code of the user's preferred natural language."""
+  naturalLanguageCode: Iso639Set1LanguageCode
+
+  """
+  GraphQL connection to traverse through the organizations the user is a member of.
+  """
+  organizationsWhereMember(after: String, before: String, filter: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
+
+  """Postal code of the user."""
+  postalCode: String
+
+  """Role assigned to the user in the application."""
+  role: UserRole
+
+  """Name of the state the user resides in."""
+  state: String
+
+  """Date time at the time the user was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the user."""
+  updater: User
+
+  """
+  The phone number to use to communicate with the user while they're at work.
+  """
+  workPhoneNumber: PhoneNumber
+}
+
+"""Possible variants of the education grade(if applicable) of a user."""
+enum UserEducationGrade {
+  grade_1
+  grade_2
+  grade_3
+  grade_4
+  grade_5
+  grade_6
+  grade_7
+  grade_8
+  grade_9
+  grade_10
+  grade_11
+  grade_12
+  graduate
+  kg
+  no_grade
+  pre_kg
+}
+
+"""Possible variants of the employment status(if applicable) of a user."""
+enum UserEmploymentStatus {
+  full_time
+  part_time
+  unemployed
+}
+
+"""Possible variants of the martial status(if applicable) of a user."""
+enum UserMaritalStatus {
+  divorced
+  engaged
+  married
+  seperated
+  single
+  widowed
+}
+
+"""Possible variants of the sex assigned to a user at birth."""
+enum UserNatalSex {
+  female
+  intersex
+  male
+}
+
+""""""
+type UserOrganizationsWhereMemberConnection {
+  edges: [UserOrganizationsWhereMemberConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type UserOrganizationsWhereMemberConnectionEdge {
+  cursor: String!
+  node: Organization
+}
+
+"""Possible variants of the role assigned to a user."""
+enum UserRole {
+  administrator
+  regular
 }
 
 input UserWhereInput {
-  email: EmailAddress
-  email_contains: EmailAddress
-  email_in: [EmailAddress!]
-  email_not: EmailAddress
-  email_not_in: [EmailAddress!]
-  email_starts_with: EmailAddress
-  event_title_contains: String
-  firstName: String
-  firstName_contains: String
-  firstName_in: [String!]
-  firstName_not: String
-  firstName_not_in: [String!]
-  firstName_starts_with: String
-  id: ID
-  id_contains: ID
-  id_in: [ID!]
-  id_not: ID
-  id_not_in: [ID!]
-  id_starts_with: ID
-  lastName: String
-  lastName_contains: String
-  lastName_in: [String!]
-  lastName_not: String
-  lastName_not_in: [String!]
-  lastName_starts_with: String
+  """Filter by first name containing this string"""
+  name_contains: String
 }
 
-"""A default connection on the User type."""
-type UsersConnection {
-  edges: [UsersConnectionEdge!]!
-  pageInfo: DefaultConnectionPageInfo!
-  totalCount: Int
-}
-
-"""A default connection edge on the User type for UsersConnection."""
-type UsersConnectionEdge {
-  cursor: String!
-  node: User!
+input UsersByIdsInput {
+  ids: [ID!]!
 }
 
 type Venue {
-  _id: ID!
-  capacity: Int!
+  """Array of attachments."""
+  attachments: [VenueAttachment!]
+
+  """Date time at the time the venue was created."""
+  createdAt: DateTime
+
+  """User who created the venue."""
+  creator: User
+
+  """Custom information about the venue."""
   description: String
-  imageUrl: URL
-  name: String!
-  organization: Organization!
-}
 
-input VenueInput {
-  capacity: Int!
-  description: String
-  file: String
-  name: String!
-  organizationId: ID!
-}
+  """
+  GraphQL connection to traverse through the events the venue has been booked for.
+  """
+  events(after: String, before: String, first: Int, last: Int): VenueEventsConnection
 
-enum VenueOrderByInput {
-  capacity_ASC
-  capacity_DESC
-}
+  """Global identifier of the venue."""
+  id: ID!
 
-input VenueWhereInput {
-  description_contains: String
-  description_starts_with: String
-  name_contains: String
-  name_starts_with: String
-}
-
-"""Response type for verifying user roles and their authorization status."""
-type VerifyRoleResponse {
-  """Whether the user is authorized for the requested action."""
-  isAuthorized: Boolean!
-
-  """The role of the user (e.g., 'ADMIN', 'USER', etc.)."""
-  role: String!
-}
-
-type VolunteerMembership {
-  _id: ID!
-  createdAt: DateTime!
-  createdBy: User
-  event: Event!
-  group: EventVolunteerGroup
-  status: String!
-  updatedAt: DateTime!
-  updatedBy: User
-  volunteer: EventVolunteer!
-}
-
-input VolunteerMembershipInput {
-  event: ID!
-  group: ID
-  status: String!
-  userId: ID!
-}
-
-enum VolunteerMembershipOrderByInput {
-  createdAt_ASC
-  createdAt_DESC
-}
-
-input VolunteerMembershipWhereInput {
-  eventId: ID
-  eventTitle: String
-  filter: String
-  groupId: ID
-  status: String
-  userId: ID
-  userName: String
-}
-
-type VolunteerRank {
-  hoursVolunteered: Float!
-  rank: Int!
-  user: User!
-}
-
-input VolunteerRankWhereInput {
-  limit: Int
-  nameContains: String
-  orderBy: String!
-  timeFrame: String!
-}
-
-enum WeekDays {
-  FRIDAY
-  MONDAY
-  SATURDAY
-  SUNDAY
-  THURSDAY
-  TUESDAY
-  WEDNESDAY
-}
-
-input chatInput {
-  image: String
-  isGroup: Boolean!
+  """Name of the venue."""
   name: String
-  organizationId: ID
-  userIds: [ID!]!
+
+  """Organization the venue belongs to."""
+  organization: Organization
+
+  """Date time at the time the venue was last updated."""
+  updatedAt: DateTime
+
+  """User who last updated the venue."""
+  updater: User
 }
 
-input createGroupChatInput {
-  organizationId: ID!
-  title: String!
-  userIds: [ID!]!
+type VenueAttachment {
+  """Mime type of the attachment."""
+  mimeType: String
+
+  """URL to the attachment."""
+  url: String
 }
 
-input createUserFamilyInput {
-  title: String!
-  userIds: [ID!]!
+""""""
+type VenueEventsConnection {
+  edges: [VenueEventsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+""""""
+type VenueEventsConnectionEdge {
+  cursor: String!
+  node: Event
 }

@@ -32,11 +32,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'typescript']
+        language: [ 'typescript' ]
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2

@@ -1,0 +1,121 @@
+# https://docs.docker.com/reference/compose-file/networks/
+networks:
+  minio_test:
+  postgres_test:
+  redis_test:
+# https://docs.docker.com/reference/compose-file/services
+services:
+  api:
+    # https://docs.docker.com/reference/compose-file/build/
+    build:
+      # https://docs.docker.com/reference/compose-file/build/#target
+      target: non_production
+    command: pnpm run_tests
+    # https://docs.docker.com/reference/compose-file/services/#depends_on
+    depends_on:
+      minio-test:
+        condition: service_healthy
+        # Should be set to false when a third party minio test service could be used in the api service and the `minio_test` compose profile is disabled.
+        required: true
+      postgres-test:
+        condition: service_healthy
+        # Should be set to false when a third party postgres test service could be used in the api service the and the `postgres_test` compose profile is disabled.
+        required: true
+    # https://docs.docker.com/compose/environment-variables/
+    # https://docs.docker.com/reference/compose-file/services/#environment
+    environment:
+      - API_MINIO_TEST_END_POINT=${API_MINIO_TEST_END_POINT:?error}
+      - API_POSTGRES_TEST_HOST=${API_POSTGRES_TEST_HOST:?error}
+      - API_REDIS_TEST_HOST=${API_REDIS_TEST_HOST:?error}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:?error}
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
+    healthcheck:
+      disable: true
+    # https://docs.docker.com/reference/compose-file/services/#networks
+    networks:
+      - minio_test
+      - postgres_test
+      - redis_test
+    # https://docs.docker.com/reference/compose-file/services/#restart
+    restart: no
+  # https://github.com/minio/minio/issues/13025
+  minio-test:
+    # https://docs.docker.com/compose/environment-variables/
+    # https://docs.docker.com/reference/compose-file/services/#environment
+    environment:
+      - MINIO_BROWSER=${MINIO_BROWSER:?error}
+        # https://min.io/docs/minio/linux/reference/minio-server/settings/root-credentials.html#envvar.MINIO_ROOT_PASSWORD
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:?error}
+        # https://min.io/docs/minio/linux/reference/minio-server/settings/root-credentials.html#root-user
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:?error}
+    # https://docs.docker.com/reference/compose-file/services/#command
+    command: server /data --console-address ":9001"
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      # https://github.com/minio/minio/issues/18373
+      # https://min.io/docs/minio/linux/reference/minio-mc/mc-ready.html
+      test: ["CMD-SHELL", "mc ready local"]
+      timeout: 10s
+    # https://docs.docker.com/reference/compose-file/services/#image
+    # https://hub.docker.com/r/minio/minio
+    image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+    # https://docs.docker.com/reference/compose-file/services/#networks
+    networks:
+      - minio_test
+    # https://docs.docker.com/reference/compose-file/services/#profiles
+    profiles:
+      - minio_test
+    # https://docs.docker.com/reference/compose-file/services/#restart
+    restart: unless-stopped
+  postgres-test:
+    # https://docs.docker.com/compose/environment-variables/
+    # https://docs.docker.com/reference/compose-file/services/#environment
+    environment:
+        # https://github.com/docker-library/docs/blob/master/postgres/README.md#postgres_db
+      - POSTGRES_DB=${POSTGRES_DB:?error}
+        # https://github.com/docker-library/docs/blob/master/postgres/README.md#postgres_password
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?error}
+        # https://github.com/docker-library/docs/blob/master/postgres/README.md#postgres_user
+      - POSTGRES_USER=${POSTGRES_USER:?error}
+    # https://docs.docker.com/reference/dockerfile/#healthcheck
+    # https://docs.docker.com/reference/compose-file/services/#healthcheck
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      # https://stackoverflow.com/questions/60193781/postgres-with-docker-compose-gives-fatal-role-root-does-not-exist-error
+      # https://www.postgresql.org/docs/current/app-pg-isready.html
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      timeout: 10s
+    # https://docs.docker.com/reference/compose-file/services/#image
+    # https://hub.docker.com/_/postgres
+    image: postgres:17.2-alpine3.21
+    # https://docs.docker.com/reference/compose-file/services/#networks
+    networks:
+      - postgres_test
+    # https://docs.docker.com/reference/compose-file/services/#profiles
+    profiles:
+      - postgres_test
+    # https://docs.docker.com/reference/compose-file/services/#restart
+    restart: unless-stopped
+  redis-test:
+    image: redis:8.0-M02-alpine
+    healthcheck:
+      interval: 10s
+      retries: 3
+      start_interval: 1s
+      start_period: 5s
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 10s
+    networks:
+      - redis_test
+    restart: unless-stopped
+    profiles:
+      - redis_test
