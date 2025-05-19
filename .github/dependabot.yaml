@@ -1,0 +1,11 @@
+# More information at this link: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+updates:
+  - package-ecosystem: pnpm
+    commit-message:
+      include: scope
+      prefix: "[pnpm]"
+    directory: /
+    schedule:
+      interval: monthly
+    target-branch: develop-postgres
+version: 2

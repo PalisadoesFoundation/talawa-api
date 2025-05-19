@@ -1,0 +1,194 @@
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/* Root Variables */
+:root {
+  /* Brand colors */
+  --brand: #febc59;
+
+  /* Dark theme */
+  --dark: #282c34;
+  --deepdark: #20232a;
+
+  /* Text and subtle colors */
+  --text: #1a1a1a;
+  --subtle: #767676;
+  --divider: #ececec;
+
+  /* UI and components */
+  --tintColor: #f7f7f7;
+  --rn-note-background: rgba(255, 229, 100, 0.25);
+  --ifm-font-family-base: "Optimistic Display", system-ui, -apple-system,
+    sans-serif;
+  --ifm-font-size-base: 17px;
+  --ifm-spacing-horizontal: 16px;
+  --ifm-menu-link-padding-horizontal: 0;
+  --ifm-toc-padding-vertical: 6px;
+  --ifm-toc-link-color: var(--ifm-color-emphasis-700);
+  --ifm-code-font-size: 90%;
+  --ifm-code-border-radius: 3px;
+  --ifm-blockquote-color: var(--ifm-font-color-base);
+  --ifm-blockquote-font-size: 16px;
+  --ifm-table-head-color: var(--subtle);
+  --ifm-link-hover-decoration: none;
+}
+
+/* Navbar */
+.navbar__brand {
+  color: var(--brand-color);
+  font-size: 20px;
+}
+
+/* Custom Button */
+.custom-button {
+  margin-right: 10px;
+}
+
+/* Homepage */
+.homepage {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Header Hero */
+.HeaderHero {
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  align-items: center;
+  margin-top: clamp(2rem, 15vh, 8rem);
+}
+
+.HeaderHero .title {
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: 0 !important;
+  font-weight: 500;
+  left: -250px;
+  opacity: 1.3;
+}
+
+.HeaderHero .tagline {
+  font-size: 1.5rem;
+  line-height: 1.3;
+  font-weight: 500;
+  margin-top: -7px;
+  opacity: 1.1;
+  left: -250px;
+}
+
+.HeaderHero .description {
+  font-size: 1.2rem;
+  line-height: 1.3;
+  color: var(--primary-neutral-800);
+  opacity: 1.1;
+  text-align: center;
+}
+
+.HeaderHero .buttons {
+  margin-top: 40px;
+}
+
+/* Action Button */
+.ActionButton {
+  padding: 0.75rem 1.25rem;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: var(--ifm-button-font-weight);
+  text-decoration: none !important;
+  border-bottom: none;
+  transition: all 0.2s ease-out;
+  border-radius: 0.375rem;
+  margin-right: 10px;
+}
+
+.ActionButton.primary {
+  color: var(--base-neutral-0);
+  background-color: var(--ifm-button-background-color);
+  border: var(--ifm-button-border-width) solid var(--ifm-button-border-color);
+  text-wrap: nowrap;
+}
+
+.ActionButton.primary:hover {
+  background-color: #1cbb99;
+}
+
+.ActionButton.secondary {
+  color: #1c1e21;
+  background-color: #ebedf0;
+}
+
+.ActionButton.secondary:hover {
+  background-color: #c7c7c7;
+}
+
+.ActionButton.secondary::after {
+  content: "›";
+  font-size: 24px;
+  margin-left: 5px;
+}
+
+/* Homepage */
+.HomePage {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Section */
+.Section {
+  width: 100%;
+  padding-top: 50px;
+  padding: 0 1.25rem;
+  overflow-x: hidden;
+  margin-bottom: 5rem;
+}
+
+.Section.tint {
+  background-color: var(--ifm-hover-overlay);
+}
+
+.Section.dark {
+  background-color: var(--dark);
+}
+
+/* Media Queries */
+@media only screen and (max-width: 760px) {
+  .HeaderHero .title {
+    font-size: 60px;
+  }
+
+  .HeaderHero .tagline {
+    font-size: 30px;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .ActionButton {
+    max-width: 100%;
+    width: 100%;
+    display: block;
+    white-space: nowrap;
+  }
+
+  .ActionButton.secondary {
+    margin-top: 1rem;
+    margin-left: auto;
+  }
+
+  .custom-image {
+    width: 80%;
+    padding-top: 60px;
+  }
+}
+
+@media only screen and (max-width: 960px) {
+  .Section {
+    margin-bottom: 2rem;
+    padding-top: 1rem;
+  }
+}
