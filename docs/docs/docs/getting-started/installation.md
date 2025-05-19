@@ -107,7 +107,7 @@ _(Note: Restart the docker if you are getting this error `Cannot connect to the 
    ```bash
    git clone https://github.com/PalisadoesFoundation/talawa-api.git
    cd talawa-api
-   git checkout develop-postgres
+   git checkout develop
    ```
 
 ## Production Environment Setup
@@ -138,7 +138,7 @@ Click on the image below to play the video.
 **Note: The video contains some inaccuracies.**
 
 1.  Please ensure you clone from the correct repository [Talawa API Repository](https://github.com/PalisadoesFoundation/talawa-api)
-2.  The correct branch to checkout is `develop-postgres`
+2.  The correct branch to checkout is `develop`
 3.  All the field for .env files are not shown in the video. Refer [Step 4: Configuring Environment Variables](##step-4-configuring-environment-variables)
 
 ### Setup - All Steps
@@ -277,7 +277,7 @@ Click on the image below to play the video.
 **Note: The video contains some inaccuracies.**
 
 1.  Please ensure you clone from the correct repository [Talawa API Repository](https://github.com/PalisadoesFoundation/talawa-api)
-2.  The correct branch to checkout is `develop-postgres`
+2.  The correct branch to checkout is `develop`
 3.  `postgres-test` is the name of the test database in the docker-compose file.
 
 ### Setup: Using the CLI

@@ -1,9 +1,9 @@
-name: Push Workflow for develop-postgres
+name: Push Workflow for develop
 
 on:
   push:
     branches:
-      - develop-postgres
+      - develop
 
 jobs:
   test-and-upload-coverage:
