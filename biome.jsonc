@@ -1,0 +1,46 @@
+// This file must be modified as seldom as possible. Best practice is to use the formatting and linting tools with the default configuration they come with instead of trying to shoehorn custom preferences for momentary satisfaction. Let the developers of formatters and linters decide what the best configuration and practices are. The job of the contributers to the project is simply to write code and let the formatters and linters take care of keeping uniformity in code quality across codebases. More information at this link: https://biomejs.dev/reference/configuration/
+{
+	// https://biomejs.dev/reference/configuration/#schema
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	// https://biomejs.dev/reference/configuration/#files
+	"files": {
+		// https://biomejs.dev/reference/configuration/#filesignore
+		"ignore": [
+			"./drizzle_migrations",
+			"./node_modules",
+			"./package.json",
+			"./pnpm-lock.yaml",
+			"./schema.graphql",
+			"./test/graphql/types/gql.tada.d.ts",
+			"./test/graphql/types/gql.tada-cache.d.ts",
+			"./docs/tsconfig.json",
+			"./docs/docusaurus.config.ts",
+			"./docs/src/**",
+			"./docs/sidebars.ts",
+			"./sample_data/**"
+		],
+		// https://biomejs.dev/reference/configuration/#filesignoreunknown
+		"ignoreUnknown": true
+	},
+	// https://biomejs.dev/reference/configuration/#linter
+	"linter": {
+		// https://biomejs.dev/reference/configuration/#linterenabled
+		"enabled": true
+	},
+	// https://biomejs.dev/reference/configuration/#vcs
+	"organizeImports": {
+		// https://biomejs.dev/reference/configuration/#organizeimportsenabled
+		"enabled": true
+	},
+	// https://biomejs.dev/reference/configuration/#vcs
+	"vcs": {
+		// https://biomejs.dev/reference/configuration/#vcsclientkind
+		"clientKind": "git",
+		// https://biomejs.dev/reference/configuration/#vcsdefaultbranch
+		"defaultBranch": "develop",
+		// https://biomejs.dev/reference/configuration/#vcsenabled
+		"enabled": true,
+		// https://biomejs.dev/reference/configuration/#vcsuseignorefile
+		"useIgnoreFile": true
+	}
+}
