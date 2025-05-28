@@ -10,6 +10,10 @@ export const mutationUpdateEventInputSchema = z
 		id: eventsTableInsertSchema.shape.id.unwrap(),
 		name: eventsTableInsertSchema.shape.name.optional(),
 		startAt: eventsTableInsertSchema.shape.startAt.optional(),
+		allDay: eventsTableInsertSchema.shape.allDay.optional(),
+		isPublic: eventsTableInsertSchema.shape.isPublic.optional(),
+		isRegisterable: eventsTableInsertSchema.shape.isRegisterable.optional(),
+		location: eventsTableInsertSchema.shape.location.optional(),
 	})
 	.superRefine(({ id, ...remainingArg }, ctx) => {
 		if (!Object.values(remainingArg).some((value) => value !== undefined)) {
@@ -18,7 +22,6 @@ export const mutationUpdateEventInputSchema = z
 				message: "At least one optional argument must be provided.",
 			});
 		}
-
 		if (
 			isNotNullish(remainingArg.endAt) &&
 			isNotNullish(remainingArg.startAt) &&
@@ -56,6 +59,18 @@ export const MutationUpdateEventInput = builder
 			startAt: t.field({
 				description: "Date time at the time the event starts at.",
 				type: "DateTime",
+			}),
+			allDay: t.boolean({
+				description: "Indicates if the event spans the entire day.",
+			}),
+			isPublic: t.boolean({
+				description: "Indicates if the event is publicly visible.",
+			}),
+			isRegisterable: t.boolean({
+				description: "Indicates if users can register for this event.",
+			}),
+			location: t.string({
+				description: "Physical or virtual location of the event.",
 			}),
 		}),
 	});
