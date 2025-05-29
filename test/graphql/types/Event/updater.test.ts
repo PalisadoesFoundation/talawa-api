@@ -23,6 +23,10 @@ const MockEvent = {
 	startAt: new Date(),
 	updatedAt: new Date(),
 	updaterId: "updater_1",
+	allDay: false,
+	isPublic: true,
+	isRegisterable: true,
+	location: "Test Location",
 };
 
 describe("Event updater resolver - Tests", () => {

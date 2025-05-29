@@ -12,6 +12,7 @@ import {
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+
 const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
 		let attachments:
@@ -33,7 +34,9 @@ const mutationCreateEventArgumentsSchema = z.object({
 						ctx.addIssue({
 							code: "custom",
 							path: ["attachments", issue.path[0]],
-							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype}" is not allowed.`,
+							message: `Mime type "${
+								rawAttachments[issue.path[0]]?.mimetype
+							}" is not allowed.`,
 						});
 					}
 				}
@@ -169,6 +172,10 @@ builder.mutationField("createEvent", (t) =>
 						name: parsedArgs.input.name,
 						organizationId: parsedArgs.input.organizationId,
 						startAt: parsedArgs.input.startAt,
+						allDay: parsedArgs.input.allDay ?? false,
+						isPublic: parsedArgs.input.isPublic ?? false,
+						isRegisterable: parsedArgs.input.isRegisterable ?? false,
+						location: parsedArgs.input.location,
 					})
 					.returning();
 
@@ -223,6 +230,9 @@ builder.mutationField("createEvent", (t) =>
 
 				return Object.assign(createdEvent, {
 					attachments: [],
+					allDay: createdEvent.allDay ?? false,
+					isPublic: createdEvent.isPublic ?? false,
+					isRegisterable: createdEvent.isRegisterable ?? false,
 				});
 			});
 		},
