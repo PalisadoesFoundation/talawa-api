@@ -10,6 +10,7 @@ import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+
 const mutationUpdateEventArgumentsSchema = z.object({
 	input: mutationUpdateEventInputSchema,
 });
@@ -66,6 +67,10 @@ builder.mutationField("updateEvent", (t) =>
 						endAt: true,
 						organizationId: true,
 						startAt: true,
+						allDay: true,
+						isPublic: true,
+						isRegisterable: true,
+						location: true,
 					},
 					with: {
 						attachmentsWhereEvent: true,
@@ -173,6 +178,10 @@ builder.mutationField("updateEvent", (t) =>
 					endAt: parsedArgs.input.endAt,
 					name: parsedArgs.input.name,
 					startAt: parsedArgs.input.startAt,
+					allDay: parsedArgs.input.allDay,
+					isPublic: parsedArgs.input.isPublic,
+					isRegisterable: parsedArgs.input.isRegisterable,
+					location: parsedArgs.input.location,
 					updaterId: currentUserId,
 				})
 				.where(eq(eventsTable.id, parsedArgs.input.id))

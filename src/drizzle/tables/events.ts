@@ -1,5 +1,12 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+	boolean,
+	index,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { agendaFoldersTable } from "./agendaFolders";
@@ -70,6 +77,22 @@ export const eventsTable = pgTable(
 			withTimezone: true,
 		}).notNull(),
 		/**
+		 * Indicates if the event spans the entire day.
+		 */
+		allDay: boolean("all_day").notNull().default(false),
+		/**
+		 * Indicates if the event is publicly visible.
+		 */
+		isPublic: boolean("is_public").notNull().default(false),
+		/**
+		 * Indicates if users can register for this event.
+		 */
+		isRegisterable: boolean("is_registerable").notNull().default(false),
+		/**
+		 * Physical or virtual location of the event.
+		 */
+		location: text("location"),
+		/**
 		 * Date time at the time the event was last updated.
 		 */
 		updatedAt: timestamp("updated_at", {
@@ -94,6 +117,9 @@ export const eventsTable = pgTable(
 		index().on(self.name),
 		index().on(self.organizationId),
 		index().on(self.startAt),
+		index().on(self.allDay),
+		index().on(self.isPublic),
+		index().on(self.isRegisterable),
 	],
 );
 
@@ -151,4 +177,8 @@ export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 	description: (schema) => schema.min(1).max(2048).optional(),
 	name: (schema) => schema.min(1).max(256),
+	allDay: (schema) => schema.optional(),
+	isPublic: (schema) => schema.optional(),
+	isRegisterable: (schema) => schema.optional(),
+	location: (schema) => schema.min(1).max(1024).optional(),
 });
