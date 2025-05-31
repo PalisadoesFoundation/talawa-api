@@ -101,8 +101,7 @@ builder.mutationField("updateEventVolunteerGroupAssignments", (t) =>
 				.where(eq(volunteerGroupsTable.id, groupId))
 				.execute();
 
-			// Check if volunteer group exists
-			if (!result || !result.group) {
+			if (!result || !result.event) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -111,27 +110,6 @@ builder.mutationField("updateEventVolunteerGroupAssignments", (t) =>
 				});
 			}
 
-			// Check if assignee exists
-			if (!result.assignee) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["input", "eventId"] }],
-					},
-				});
-			}
-
-			// Check if event exists
-			if (!result.event) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["input", "eventId"] }],
-					},
-				});
-			}
-
-			// Check if user exists and has permissions
 			if (!result.user) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -140,7 +118,6 @@ builder.mutationField("updateEventVolunteerGroupAssignments", (t) =>
 				});
 			}
 
-			// Check authorization
 			if (
 				result.user.role !== "administrator" &&
 				result.orgMembership?.role !== "administrator" &&
@@ -153,7 +130,6 @@ builder.mutationField("updateEventVolunteerGroupAssignments", (t) =>
 				});
 			}
 
-			// Create the volunteer group assignment
 			const updatedGroupAssignments = await ctx.drizzleClient
 				.update(volunteerGroupAssignmentsTable)
 				.set({
@@ -174,7 +150,6 @@ builder.mutationField("updateEventVolunteerGroupAssignments", (t) =>
 				)
 				.returning();
 
-			// Check if insertion was successful
 			if (!updatedGroupAssignments || updatedGroupAssignments.length === 0) {
 				ctx.log.error(
 					"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",

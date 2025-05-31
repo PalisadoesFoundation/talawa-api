@@ -63,8 +63,6 @@ builder.mutationField("createEventVolunteerGroupAssignments", (t) =>
 			const currentUserId = ctx.currentClient.user.id;
 			const { groupId, assigneeId } = parsedArgs.input;
 
-			console.log("here", parsedArgs.input);
-
 			// Single query to check group, assignee, and event with permissions in one go
 			const [result] = await ctx.drizzleClient
 				.select({
@@ -103,30 +101,8 @@ builder.mutationField("createEventVolunteerGroupAssignments", (t) =>
 				.where(eq(volunteerGroupsTable.id, groupId))
 				.execute();
 
-			console.log("**", result);
-
-			// Check if volunteer group exists
-			if (!result || !result.group) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["input", "eventId"] }],
-					},
-				});
-			}
-
-			// Check if assignee exists
-			if (!result.assignee) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["input", "eventId"] }],
-					},
-				});
-			}
-
 			// Check if event exists
-			if (!result.event) {
+			if (!result || !result.event) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -181,7 +157,6 @@ builder.mutationField("createEventVolunteerGroupAssignments", (t) =>
 				});
 			}
 
-			console.log("***", groupAssignments[0]);
 			return groupAssignments[0];
 		},
 		type: VolunteerGroupAssignments,
