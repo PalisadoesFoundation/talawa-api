@@ -77,3 +77,6 @@ import "./createPresignedUrl";
 import "./deleteActionItem";
 import "./updateActionItem";
 import "./createActionItem";
+import "./createEventVolunteerGroup";
+import "./updateEventVolunteerGroup";
+import "./deleteEventVolunteerGroup";

@@ -6,16 +6,20 @@
 
 > **transformGraphQLConnectionArgumentsWithWhere**\<`Arg`, `Where`\>(`arg`, `ctx`): `object` & `Omit`\<`Arg`, `"first"` \| `"last"` \| `"before"` \| `"after"`\> & `object`
 
-Defined in: src/utilities/defaultGraphQLConnection.ts:163
+Defined in: [src/utilities/defaultGraphQLConnection.ts:163](https://github.com/PalisadoesFoundation/talawa-api/blob/b92360e799fdc7cf89a1346eb8395735c501ee9c/src/utilities/defaultGraphQLConnection.ts#L163)
 
 Transform function for connection arguments with a where clause.
 Extends the base transformation with where handling.
 
 ## Type Parameters
 
-• **Arg** *extends* `object` & `object`
+### Arg
 
-• **Where** = `Arg`\[`"where"`\]
+`Arg` *extends* `object` & `object`
+
+### Where
+
+`Where` = `Arg`\[`"where"`\]
 
 ## Parameters
 
