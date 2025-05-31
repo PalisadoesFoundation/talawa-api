@@ -1,1 +1,1 @@
-import "./UnassignUserTag"
+import "./UnassignUserTag";

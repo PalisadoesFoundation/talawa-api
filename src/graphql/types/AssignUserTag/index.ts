@@ -1,1 +1,1 @@
-import "./AssignUserTag"
+import "./AssignUserTag";

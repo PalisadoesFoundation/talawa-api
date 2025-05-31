@@ -3,7 +3,7 @@ import "./acceptMembershipRequest";
 import "./blockUser";
 import "./unblockUser";
 import "./assignUserTag";
-import "./unassignUserTag"
+import "./unassignUserTag";
 import "./createAdvertisement";
 import "./createAgendaFolder";
 import "./createAgendaItem";
