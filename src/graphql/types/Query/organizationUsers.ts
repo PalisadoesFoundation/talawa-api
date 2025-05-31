@@ -24,6 +24,10 @@ interface EventType {
 	startAt: Date;
 	endAt: Date;
 	organizationId: string;
+	allDay: boolean;
+	isPublic: boolean;
+	isRegisterable: boolean;
+	location: string | null;
 	attachments: Array<{
 		name: string;
 		createdAt: Date;

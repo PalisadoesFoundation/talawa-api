@@ -554,6 +554,9 @@ type Event {
   """
   agendaFolders(after: String, before: String, first: Int, last: Int): EventAgendaFoldersConnection
 
+  """all day time."""
+  allDay: Boolean! 
+
   """Array of attachments."""
   attachments: [EventAttachment!]
 
@@ -572,8 +575,17 @@ type Event {
   """Global identifier of the event."""
   id: ID!
 
+  """ Boolean to tell if the event is public """
+  isPublic: Boolean
+
+  """Boolean to tell if the event is registerable."""
+  isRegisterable: Boolean
+
   """Name of the event."""
   name: String
+  
+  """ location of the event."""
+  location: String
 
   """Organization the event belongs to."""
   organization: Organization
@@ -1883,14 +1895,26 @@ input MutationCreateEventInput {
   """Attachments of the event."""
   attachments: [Upload!]
 
+  """ all day time."""
+  allDay: Boolean
+
   """Custom information about the event."""
   description: String
 
   """Date time at the time the event ends at."""
   endAt: DateTime!
 
+  """ Boolean to tell if the event is public """
+  isPublic: Boolean
+
+  """Boolean to tell if the event is registerable."""
+  isRegisterable: Boolean
+
   """Name of the event."""
   name: String!
+
+  """ location of the event."""
+  location: String
 
   """Global identifier of the associated organization."""
   organizationId: ID!
@@ -2645,22 +2669,53 @@ input MutationUpdateCurrentUserInput {
   workPhoneNumber: PhoneNumber
 }
 
-""""""
+"""
+"""
 input MutationUpdateEventInput {
-  """Custom information about the event."""
-  description: String
-
-  """Date time at the time the event ends at."""
-  endAt: DateTime
-
-  """Global identifier of the event."""
+  """
+  Global identifier of the event to update.
+  """
   id: ID!
 
-  """Name of the event."""
+  """
+  Name of the event.
+  """
   name: String
 
-  """Date time at the time the event starts at."""
+  """
+  Custom information about the event.
+  """
+  description: String
+
+  """
+  Date time at the time the event starts at.
+  """
   startAt: DateTime
+
+  """
+  Date time at the time the event ends at.
+  """
+  endAt: DateTime
+
+  """
+  Indicates if the event spans the entire day.
+  """
+  allDay: Boolean
+
+  """
+  Physical or virtual location of the event.
+  """
+  location: String
+
+  """
+  Indicates if the event is publicly visible.
+  """
+  isPublic: Boolean
+
+  """
+  Indicates if users can register for this event.
+  """
+  isRegisterable: Boolean
 }
 
 """"""
