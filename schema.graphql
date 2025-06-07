@@ -554,8 +554,8 @@ type Event {
   """
   agendaFolders(after: String, before: String, first: Int, last: Int): EventAgendaFoldersConnection
 
-  """all day time."""
-  allDay: Boolean! 
+  """Indicates if the event spans the entire day."""
+  allDay: Boolean
 
   """Array of attachments."""
   attachments: [EventAttachment!]
@@ -575,23 +575,23 @@ type Event {
   """Global identifier of the event."""
   id: ID!
 
-  """ Boolean to tell if the event is public """
+  """Indicates if the event is publicly visible."""
   isPublic: Boolean
 
-  """Boolean to tell if the event is registerable."""
+  """Indicates if users can register for this event."""
   isRegisterable: Boolean
+
+  """Physical or virtual location of the event."""
+  location: String
 
   """Name of the event."""
   name: String
-  
-  """ location of the event."""
-  location: String
 
   """Organization the event belongs to."""
   organization: Organization
 
   """Date time at the time the event starts at."""
-  startAt: DateTime
+  startAt: DateTime!
 
   """Date time at the time the event was last updated."""
   updatedAt: DateTime
@@ -1886,11 +1886,11 @@ input MutationCreateCommentVoteInput {
 
 """"""
 input MutationCreateEventInput {
+  """Indicates if the event spans the entire day"""
+  allDay: Boolean
+
   """Attachments of the event."""
   attachments: [Upload!]
-
-  """ all day time."""
-  allDay: Boolean
 
   """Custom information about the event."""
   description: String
@@ -1898,17 +1898,17 @@ input MutationCreateEventInput {
   """Date time at the time the event ends at."""
   endAt: DateTime!
 
-  """ Boolean to tell if the event is public """
+  """Indicates if the event is publicly visible"""
   isPublic: Boolean
 
-  """Boolean to tell if the event is registerable."""
+  """Indicates if users can register for this event"""
   isRegisterable: Boolean
+
+  """Physical or virtual location of the event"""
+  location: String
 
   """Name of the event."""
   name: String!
-
-  """ location of the event."""
-  location: String
 
   """Global identifier of the associated organization."""
   organizationId: ID!
@@ -2663,53 +2663,34 @@ input MutationUpdateCurrentUserInput {
   workPhoneNumber: PhoneNumber
 }
 
-"""
-"""
+""""""
 input MutationUpdateEventInput {
-  """
-  Global identifier of the event to update.
-  """
-  id: ID!
-
-  """
-  Name of the event.
-  """
-  name: String
-
-  """
-  Custom information about the event.
-  """
-  description: String
-
-  """
-  Date time at the time the event starts at.
-  """
-  startAt: DateTime
-
-  """
-  Date time at the time the event ends at.
-  """
-  endAt: DateTime
-
-  """
-  Indicates if the event spans the entire day.
-  """
+  """Indicates if the event spans the entire day."""
   allDay: Boolean
 
-  """
-  Physical or virtual location of the event.
-  """
-  location: String
+  """Custom information about the event."""
+  description: String
 
-  """
-  Indicates if the event is publicly visible.
-  """
+  """Date time at the time the event ends at."""
+  endAt: DateTime
+
+  """Global identifier of the event."""
+  id: ID!
+
+  """Indicates if the event is publicly visible."""
   isPublic: Boolean
 
-  """
-  Indicates if users can register for this event.
-  """
+  """Indicates if users can register for this event."""
   isRegisterable: Boolean
+
+  """Physical or virtual location of the event."""
+  location: String
+
+  """Name of the event."""
+  name: String
+
+  """Date time at the time the event starts at."""
+  startAt: DateTime
 }
 
 """"""
@@ -2936,6 +2917,18 @@ input MutationUpdateVenueInput {
 }
 
 type Organization {
+  """Posts for this organization"""
+  Orgposts(
+    """Number of items to return"""
+    first: Int
+
+    """Number of items to skip"""
+    skip: Int
+
+    """Filter criteria for posts"""
+    where: PostWhereInput
+  ): [Post!]
+
   """Address line 1 of the organization's address."""
   addressLine1: String
 
@@ -3369,6 +3362,17 @@ type PostUpVotersConnectionEdge {
 enum PostVoteType {
   down_vote
   up_vote
+}
+
+input PostWhereInput {
+  """Filter by caption containing this string"""
+  caption_contains: String
+
+  """Filter by creator ID"""
+  creatorId: String
+
+  """Filter pinned/unpinned posts"""
+  isPinned: Boolean
 }
 
 type Query {

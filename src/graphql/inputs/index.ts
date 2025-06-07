@@ -87,3 +87,4 @@ import "./QueryUserInput";
 import "./QueryVenueInput";
 import "./SubscriptionChatMessageCreateInput";
 import "./QueryHasUserVotedInput";
+import "./QueryOrganizationPostInput";
