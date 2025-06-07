@@ -2,21 +2,17 @@
 
 ***
 
-# Function: default()
+# Variable: plugins()
 
-> **default**(`instance`, `opts`): `Promise`\<`void`\>
+> `const` **plugins**: (`fastify`) => `Promise`\<`void`\>
 
-Defined in: src/plugins/seedInitialData.ts:179
+Defined in: src/plugins/index.ts:6
 
 ## Parameters
 
-### instance
+### fastify
 
 `FastifyInstance`\<`RawServerDefault`, `IncomingMessage`, `ServerResponse`\<`IncomingMessage`\>, `FastifyBaseLogger`, `FastifyTypeProviderDefault`\>
-
-### opts
-
-`Record`
 
 ## Returns
 

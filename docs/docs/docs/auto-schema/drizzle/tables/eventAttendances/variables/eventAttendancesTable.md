@@ -4,7 +4,7 @@
 
 # Variable: eventAttendancesTable
 
-> `const` **eventAttendancesTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **eventAttendancesTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/eventAttendances.ts:9
 

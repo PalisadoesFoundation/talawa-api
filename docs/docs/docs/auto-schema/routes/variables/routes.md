@@ -2,9 +2,9 @@
 
 ***
 
-# Function: routes()
+# Variable: routes()
 
-> **routes**(`fastify`): `Promise`\<`void`\>
+> `const` **routes**: (`fastify`) => `Promise`\<`void`\>
 
 Defined in: src/routes/index.ts:13
 

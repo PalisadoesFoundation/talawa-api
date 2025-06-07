@@ -4,7 +4,7 @@
 
 # Type Alias: Post
 
-> **Post**: *typeof* `postsTable.$inferSelect` & `object`
+> **Post** = *typeof* `postsTable.$inferSelect` & `object`
 
 Defined in: src/graphql/types/Post/Post.ts:8
 

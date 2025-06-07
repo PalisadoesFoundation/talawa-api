@@ -4,7 +4,7 @@
 
 # Type Alias: ParsedDefaultGraphQLConnectionArgumentsWithWhere\<Cursor, Where\>
 
-> **ParsedDefaultGraphQLConnectionArgumentsWithWhere**\<`Cursor`, `Where`\>: [`ParsedDefaultGraphQLConnectionArguments`](ParsedDefaultGraphQLConnectionArguments.md)\<`Cursor`\> & `object`
+> **ParsedDefaultGraphQLConnectionArgumentsWithWhere**\<`Cursor`, `Where`\> = [`ParsedDefaultGraphQLConnectionArguments`](ParsedDefaultGraphQLConnectionArguments.md)\<`Cursor`\> & `object`
 
 Defined in: src/utilities/defaultGraphQLConnection.ts:28
 
@@ -21,6 +21,10 @@ The where filter criteria to apply to the connection.
 
 ## Type Parameters
 
-• **Cursor** = `string`
+### Cursor
 
-• **Where** = `unknown`
+`Cursor` = `string`
+
+### Where
+
+`Where` = `unknown`

@@ -4,7 +4,7 @@
 
 # Variable: commentsTable
 
-> `const` **commentsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **commentsTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/comments.ts:12
 

@@ -4,7 +4,7 @@
 
 # Type Alias: DefaultGraphQLConnectionEdge\<NodeType\>
 
-> **DefaultGraphQLConnectionEdge**\<`NodeType`\>: `object`
+> **DefaultGraphQLConnectionEdge**\<`NodeType`\> = `object`
 
 Defined in: src/utilities/defaultGraphQLConnection.ts:189
 
@@ -12,14 +12,22 @@ This is typescript type of a base graphql connection edge object. This connectio
 
 ## Type Parameters
 
-• **NodeType**
+### NodeType
 
-## Type declaration
+`NodeType`
+
+## Properties
 
 ### cursor
 
 > **cursor**: `string`
 
+Defined in: src/utilities/defaultGraphQLConnection.ts:190
+
+***
+
 ### node
 
 > **node**: `NodeType`
+
+Defined in: src/utilities/defaultGraphQLConnection.ts:191

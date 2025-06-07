@@ -13,7 +13,6 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-// Sign in as administrator user
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
 		input: {
@@ -26,7 +25,6 @@ const signInResult = await mercuriusClient.query(Query_signIn, {
 const adminToken = signInResult.data?.signIn?.authenticationToken ?? null;
 assertToBeNonNullish(adminToken);
 
-// Helper function to create an organization with posts
 async function createOrganizationWithPosts(
 	authToken: string,
 	postCount = 3,
@@ -51,10 +49,9 @@ async function createOrganizationWithPosts(
 	const orgId = createOrgResult.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
 
-	// Create posts
 	const postIds = [];
 	for (let i = 0; i < postCount; i++) {
-		const isPinned = withPinnedPost && i === 0; // Pin first post if requested
+		const isPinned = withPinnedPost && i === 0;
 		const caption: string = `Test post ${i + 1} for organization ${orgId}`;
 
 		const createPostResult = await mercuriusClient.mutate(Mutation_createPost, {
@@ -164,13 +161,11 @@ suite("Organization.Orgposts field", () => {
 		test("should return organization posts", async () => {
 			const { orgId } = await createOrganizationWithPosts(adminToken);
 
-			// Create regular user
 			const { authToken: regularUserToken, userId } =
 				await createRegularUserUsingAdmin();
 			assertToBeNonNullish(regularUserToken);
 			assertToBeNonNullish(userId);
 
-			// Add the user to the organization
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
@@ -199,7 +194,6 @@ suite("Organization.Orgposts field", () => {
 		test("should return only posts with matching captions", async () => {
 			const { orgId } = await createOrganizationWithPosts(adminToken);
 
-			// Create an additional post with unique caption
 			const uniqueCaption = "UNIQUE_SEARCH_STRING";
 			await mercuriusClient.mutate(Mutation_createPost, {
 				headers: { authorization: `bearer ${adminToken}` },
@@ -416,7 +410,6 @@ suite("Organization.Orgposts field", () => {
 		test("should respect skip and first parameters", async () => {
 			const { orgId } = await createOrganizationWithPosts(adminToken, 5);
 
-			// Get first 2 posts
 			const firstBatch = await mercuriusClient.query(Query_organizationPosts, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
@@ -428,7 +421,6 @@ suite("Organization.Orgposts field", () => {
 
 			expect(firstBatch.data?.organization?.Orgposts).toHaveLength(2);
 
-			// Get next 2 posts
 			const secondBatch = await mercuriusClient.query(Query_organizationPosts, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
@@ -440,7 +432,6 @@ suite("Organization.Orgposts field", () => {
 
 			expect(secondBatch.data?.organization?.Orgposts).toHaveLength(2);
 
-			// Verify first and second batches contain different posts
 			const firstIds =
 				firstBatch.data?.organization?.Orgposts?.map((p) => p.id) || [];
 			const secondIds =
@@ -456,12 +447,11 @@ suite("Organization.Orgposts field", () => {
 		test("should return an error with invalid_arguments extensions code", async () => {
 			const { orgId } = await createOrganizationWithPosts(adminToken);
 
-			// Try with negative skip value
 			const result = await mercuriusClient.query(Query_organizationPosts, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
 					orgId,
-					skip: -1, // Invalid value
+					skip: -1,
 					first: 10,
 				},
 			});

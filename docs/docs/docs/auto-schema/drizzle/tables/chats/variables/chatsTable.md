@@ -4,7 +4,7 @@
 
 # Variable: chatsTable
 
-> `const` **chatsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **chatsTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/chats.ts:14
 

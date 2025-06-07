@@ -4,7 +4,7 @@
 
 # Type Alias: EnvConfig
 
-> **EnvConfig**: `Static`\<*typeof* [`envConfigSchema`](../variables/envConfigSchema.md)\>
+> **EnvConfig** = `Static`\<*typeof* [`envConfigSchema`](../variables/envConfigSchema.md)\>
 
 Defined in: src/envConfigSchema.ts:293
 

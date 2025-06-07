@@ -4,7 +4,7 @@
 
 # Variable: tagFoldersTable
 
-> `const` **tagFoldersTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **tagFoldersTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/tagFolders.ts:19
 

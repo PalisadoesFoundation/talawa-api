@@ -4,7 +4,7 @@
 
 # Variable: fundCampaignPledgesTable
 
-> `const` **fundCampaignPledgesTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **fundCampaignPledgesTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/fundCampaignPledges.ts:19
 

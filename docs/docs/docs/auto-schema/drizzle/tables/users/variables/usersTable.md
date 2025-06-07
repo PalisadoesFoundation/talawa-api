@@ -4,7 +4,7 @@
 
 # Variable: usersTable
 
-> `const` **usersTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **usersTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/users.ts:59
 

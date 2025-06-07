@@ -4,7 +4,7 @@
 
 # Type Alias: PubSubPublishArgsByKey
 
-> **PubSubPublishArgsByKey**: `object`
+> **PubSubPublishArgsByKey** = `object`
 
 Defined in: src/graphql/pubsub.ts:32
 

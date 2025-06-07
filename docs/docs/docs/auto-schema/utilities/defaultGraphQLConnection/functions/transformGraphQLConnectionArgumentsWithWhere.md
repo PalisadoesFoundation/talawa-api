@@ -13,9 +13,13 @@ Extends the base transformation with where handling.
 
 ## Type Parameters
 
-• **Arg** *extends* `object` & `object`
+### Arg
 
-• **Where** = `Arg`\[`"where"`\]
+`Arg` *extends* `object` & `object`
+
+### Where
+
+`Where` = `Arg`\[`"where"`\]
 
 ## Parameters
 
@@ -32,7 +36,5 @@ The arguments to transform
 The Zod refinement context
 
 ## Returns
-
-`object` & `Omit`\<`Arg`, `"first"` \| `"last"` \| `"before"` \| `"after"`\> & `object`
 
 The transformed arguments with where clause

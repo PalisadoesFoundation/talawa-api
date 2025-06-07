@@ -4,7 +4,7 @@
 
 # Variable: tagAssignmentsTable
 
-> `const` **tagAssignmentsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **tagAssignmentsTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/tagAssignments.ts:16
 

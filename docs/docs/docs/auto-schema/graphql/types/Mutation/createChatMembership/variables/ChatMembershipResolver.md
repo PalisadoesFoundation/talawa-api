@@ -24,7 +24,7 @@ Defined in: src/graphql/types/Mutation/createChatMembership.ts:100
 
 ###### input
 
-\{ `chatId`: `string`; `memberId`: `string`; `role`: `string`; \}
+\{ `chatId`: `string`; `memberId`: `string`; `role?`: `string`; \}
 
 ###### input.chatId
 

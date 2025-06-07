@@ -4,7 +4,7 @@
 
 # Variable: queryActionItemsByOrgInputSchema
 
-> `const` **queryActionItemsByOrgInputSchema**: `ZodObject`\<\{ `organizationId`: `any`; \}, `"strip"`, `ZodTypeAny`, \{ `[key: string]`: `any`;  `organizationId`: `unknown`; \}, \{ `[key: string]`: `any`;  `organizationId`: `unknown`; \}\>
+> `const` **queryActionItemsByOrgInputSchema**: `ZodObject`\<\{ `organizationId`: `any`; \}, `"strip"`, `ZodTypeAny`, \{[`key`: `string`]: `any`; `organizationId?`: `unknown`; \}, \{[`key`: `string`]: `any`; `organizationId?`: `unknown`; \}\>
 
 Defined in: src/graphql/inputs/QueryActionItemInput.ts:8
 

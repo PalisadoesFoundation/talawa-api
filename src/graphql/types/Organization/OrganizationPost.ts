@@ -1,12 +1,12 @@
 import { type SQL, and, desc, eq, ilike, isNull } from "drizzle-orm";
 import { postsTable } from "~/src/drizzle/tables/posts";
+import {
+	PostWhereInput,
+	organizationPostsArgumentsSchema,
+} from "~/src/graphql/inputs/QueryOrganizationPostInput";
 import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
-import {
-	organizationPostsArgumentsSchema,
-	PostWhereInput,
-} from "~/src/graphql/inputs/QueryOrganizationPostInput";
 
 interface PostWithAttachments {
 	id: string;

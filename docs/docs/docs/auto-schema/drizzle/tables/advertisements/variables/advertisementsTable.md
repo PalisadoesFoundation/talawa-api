@@ -4,7 +4,7 @@
 
 # Variable: advertisementsTable
 
-> `const` **advertisementsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **advertisementsTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/advertisements.ts:20
 

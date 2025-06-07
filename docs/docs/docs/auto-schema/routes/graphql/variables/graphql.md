@@ -2,9 +2,9 @@
 
 ***
 
-# Function: graphql()
+# Variable: graphql()
 
-> **graphql**(`fastify`): `Promise`\<`void`\>
+> `const` **graphql**: (`fastify`) => `Promise`\<`void`\>
 
 Defined in: src/routes/graphql.ts:86
 

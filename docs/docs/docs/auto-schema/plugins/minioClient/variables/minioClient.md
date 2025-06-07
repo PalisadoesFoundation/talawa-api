@@ -2,9 +2,9 @@
 
 ***
 
-# Function: minioClient()
+# Variable: minioClient()
 
-> **minioClient**(`fastify`): `Promise`\<`void`\>
+> `const` **minioClient**: (`fastify`) => `Promise`\<`void`\>
 
 Defined in: src/plugins/minioClient.ts:26
 

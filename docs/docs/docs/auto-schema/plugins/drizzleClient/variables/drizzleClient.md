@@ -2,9 +2,9 @@
 
 ***
 
-# Function: drizzleClient()
+# Variable: drizzleClient()
 
-> **drizzleClient**(`fastify`): `Promise`\<`void`\>
+> `const` **drizzleClient**: (`fastify`) => `Promise`\<`void`\>
 
 Defined in: src/plugins/drizzleClient.ts:22
 

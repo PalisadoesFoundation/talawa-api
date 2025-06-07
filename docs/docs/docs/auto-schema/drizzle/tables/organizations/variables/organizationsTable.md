@@ -4,7 +4,7 @@
 
 # Variable: organizationsTable
 
-> `const` **organizationsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **organizationsTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/organizations.ts:31
 

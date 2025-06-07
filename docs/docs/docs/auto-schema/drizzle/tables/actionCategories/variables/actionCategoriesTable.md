@@ -4,6 +4,6 @@
 
 # Variable: actionCategoriesTable
 
-> `const` **actionCategoriesTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **actionCategoriesTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/actionCategories.ts:16
