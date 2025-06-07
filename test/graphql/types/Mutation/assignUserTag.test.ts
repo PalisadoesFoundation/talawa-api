@@ -83,28 +83,9 @@ const drizzleClientMock = {
 		},
 	},
 	transaction: vi.fn().mockImplementation(async (callback) => {
-		interface TagAssignment {
-			tagId: string;
-			assigneeId: string;
-			createdAt: Date;
-			[key: string]: unknown;
-		}
-
-		interface InsertTable {
-			values: (
-				data: Omit<TagAssignment, "createdAt"> & { [key: string]: unknown },
-			) => Promise<void>;
-		}
-
-		interface MockTx {
-			insert: (table: unknown) => InsertTable;
-		}
-
-		const mockTx: MockTx = {
-			insert: (table: unknown): InsertTable => ({
-				values: (
-					data: Omit<TagAssignment, "createdAt"> & { [key: string]: unknown },
-				): Promise<void> => {
+		const mockTx = {
+			insert: (table: unknown) => ({
+				values: (data: { tagId: string; assigneeId: string }) => {
 					const key = `${data.tagId}:${data.assigneeId}`;
 					mockDb.tagAssignments.set(key, {
 						...data,
@@ -179,6 +160,23 @@ vi.mock("../client", () => ({
 									message: "You must be authenticated to perform this action.",
 									path: ["assignUserTag"],
 									extensions: { code: "unauthenticated" },
+								},
+							],
+						};
+					}
+
+					// Check existing assignment first
+					const existingAssignment = mockDb.tagAssignments.get(
+						`${tagId}:${assigneeId}`,
+					);
+					if (existingAssignment) {
+						return {
+							data: { assignUserTag: null },
+							errors: [
+								{
+									message: "This tag is already assigned to the user",
+									path: ["assignUserTag"],
+									extensions: { code: "invalid_arguments" },
 								},
 							],
 						};
@@ -423,7 +421,7 @@ suite("Mutation field assignUserTag", () => {
 			});
 
 			const result = await mercuriusClient.mutate(Mutation_assignUserTag, {
-				headers: { authorization: `bearer token-${regularUserId}` }, // Use token format instead of context
+				headers: { authorization: `bearer token-${regularUserId}` },
 				variables: {
 					assigneeId: faker.string.uuid(),
 					tagId: faker.string.uuid(),
@@ -441,6 +439,55 @@ suite("Mutation field assignUserTag", () => {
 					}),
 				]),
 			);
+		});
+	});
+
+	suite("when attempting duplicate tag assignment", () => {
+		test("should return error when tag is already assigned", async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: "Duplicate Tag Test Org",
+							description: "Test duplicate tag assignment",
+						},
+					},
+				},
+			);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
+
+			const tagId = faker.string.uuid();
+			const userId = faker.string.uuid();
+
+			// Set up existing tag assignment
+			mockDb.tags.set(tagId, { id: tagId, organizationId: orgId });
+			mockDb.users.set(userId, { id: userId, role: "USER" });
+			mockDb.organizationMemberships.set(`${orgId}:${userId}`, {
+				organizationId: orgId,
+				memberId: userId,
+				role: "USER",
+			});
+			mockDb.tagAssignments.set(`${tagId}:${userId}`, {
+				tagId,
+				assigneeId: userId,
+				createdAt: new Date(),
+			});
+
+			// Attempt to assign the same tag again
+			const result = await mercuriusClient.mutate(Mutation_assignUserTag, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					assigneeId: userId,
+					tagId,
+				},
+			});
+
+			expect(result.data?.assignUserTag).toBe(null);
+			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+			expect(result.errors?.[0]?.message).toContain("already assigned");
 		});
 	});
 });

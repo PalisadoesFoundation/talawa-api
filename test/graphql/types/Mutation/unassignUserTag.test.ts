@@ -162,7 +162,35 @@ vi.mock("../client", () => ({
 				}
 
 				const { tagId, assigneeId } = options?.variables || {};
-				const assignment = mockDb.tagAssignments.get(`${tagId}:${assigneeId}`);
+
+				// Use drizzleClientMock instead of direct DB access
+				interface TagAssignment {
+					tagId: string;
+					assigneeId: string;
+					createdAt: Date;
+				}
+
+				interface TagAssignmentsTable {
+					findFirst: (options: {
+						where: (
+							fields: { tagId: string; assigneeId: string },
+							operators: {
+								and: (...conditions: boolean[]) => boolean;
+								eq: (field: string, value: string) => boolean;
+							},
+						) => boolean;
+					}) => Promise<TagAssignment | null>;
+				}
+
+				const assignment: TagAssignment | null = await (
+					drizzleClientMock.query.tagAssignmentsTable as TagAssignmentsTable
+				).findFirst({
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.tagId, tagId),
+							operators.eq(fields.assigneeId, assigneeId),
+						),
+				});
 
 				if (!assignment) {
 					return {
@@ -177,7 +205,20 @@ vi.mock("../client", () => ({
 					};
 				}
 
-				mockDb.tagAssignments.delete(`${tagId}:${assigneeId}`);
+				// Use transaction for delete operation
+				await drizzleClientMock.transaction(
+					async (tx: {
+						delete: (table: unknown) => {
+							where: (args: {
+								tagId: string;
+								assigneeId: string;
+							}) => Promise<void>;
+						};
+					}) => {
+						await tx.delete(undefined).where({ tagId, assigneeId });
+					},
+				);
+
 				return { data: { unassignUserTag: true } };
 			}
 
@@ -275,6 +316,38 @@ suite("Mutation field unassignUserTag", () => {
 
 			expect(result.data?.unassignUserTag).toBe(null);
 			expect(result.errors?.[0]?.extensions?.code).toBe("unauthorized_action");
+		});
+	});
+
+	suite("when attempting to unassign a non-existent assignment", () => {
+		test("should return error when trying to unassign an already unassigned tag", async () => {
+			const tagId = faker.string.uuid();
+			const userId = faker.string.uuid();
+
+			// Set up user and tag but no assignment
+			mockDb.tags.set(tagId, { id: tagId, organizationId: "org-1" });
+			mockDb.users.set(userId, { id: userId, role: "USER" });
+			mockDb.organizationMemberships.set(`org-1:${userId}`, {
+				organizationId: "org-1",
+				memberId: userId,
+				role: "USER",
+			});
+
+			const result = await mercuriusClient.mutate(Mutation_unassignUserTag, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					assigneeId: userId,
+					tagId,
+				},
+			});
+
+			expect(result.data?.unassignUserTag).toBe(null);
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"arguments_validation_failed",
+			);
+			expect(result.errors?.[0]?.message).toContain(
+				"Tag is not assigned to this user",
+			);
 		});
 	});
 
