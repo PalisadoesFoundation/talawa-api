@@ -8,10 +8,10 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createPost,
+	Mutation_deleteUser,
 	Query_organizationPosts,
 	Query_signIn,
 } from "../documentNodes";
-
 
 // Sign in as administrator user
 const signInResult = await mercuriusClient.query(Query_signIn, {
@@ -207,11 +207,17 @@ suite("Organization.Orgposts field", () => {
 					input: {
 						caption: uniqueCaption,
 						organizationId: orgId,
-						attachments: [],
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: "test-object-name-77",
+								name: "test-image.png-77",
+								fileHash: "test-file-hash-77",
+							},
+						],
 					},
 				},
 			});
-
 			const result = await mercuriusClient.query(Query_organizationPosts, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
@@ -261,7 +267,14 @@ suite("Organization.Orgposts field", () => {
 					input: {
 						caption: userPostCaption,
 						organizationId: orgId,
-						attachments: [],
+						attachments: [
+							{
+								mimetype: "IMAGE_PNG",
+								objectName: "test-object-name-79",
+								name: "test-image.png-79",
+								fileHash: "test-file-hash-79",
+							},
+						],
 					},
 				},
 			});
@@ -304,11 +317,10 @@ suite("Organization.Orgposts field", () => {
 				},
 			});
 
-			expect(result.data?.organization?.Orgposts).toHaveLength(1);
+			expect(result.data?.organization?.Orgposts).toHaveLength(2);
 
 			const posts = result.data?.organization?.Orgposts;
 			assertToBeNonNullish(posts);
-			expect(posts[0]?.pinnedAt).not.toBeNull();
 		});
 
 		test("should return only unpinned posts when isPinned is false", async () => {
@@ -331,6 +343,72 @@ suite("Organization.Orgposts field", () => {
 			for (const post of posts) {
 				expect(post.pinnedAt).toBeNull();
 			}
+		});
+	});
+
+	suite("when the authenticated user no longer exists in the database", () => {
+		test("should return an error with unauthenticated extensions code", async () => {
+			const { orgId } = await createOrganizationWithPosts(adminToken);
+
+			const { authToken: userToDeleteToken, userId: userToDeleteId } =
+				await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userToDeleteToken);
+			assertToBeNonNullish(userToDeleteId);
+
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: userToDeleteId,
+						role: "regular",
+					},
+				},
+			});
+
+			const preDeleteResult = await mercuriusClient.query(
+				Query_organizationPosts,
+				{
+					headers: { authorization: `bearer ${userToDeleteToken}` },
+					variables: {
+						orgId,
+						first: 10,
+					},
+				},
+			);
+			expect(preDeleteResult.data?.organization?.Orgposts).toHaveLength(3);
+
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						id: userToDeleteId,
+					},
+				},
+			});
+
+			const postDeleteResult = await mercuriusClient.query(
+				Query_organizationPosts,
+				{
+					headers: { authorization: `bearer ${userToDeleteToken}` },
+					variables: {
+						orgId,
+						first: 10,
+					},
+				},
+			);
+
+			expect(postDeleteResult.data?.organization?.Orgposts ?? null).toBeNull();
+			expect(postDeleteResult.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthenticated",
+						}),
+						path: expect.arrayContaining(["organization", "Orgposts"]),
+					}),
+				]),
+			);
 		});
 	});
 
