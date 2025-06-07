@@ -1070,3 +1070,30 @@ export const Mutation_createPostVote = gql(`
       caption
     }
   }`);
+
+export const Query_organizationPosts = gql(`
+  query Query_organizationPosts($orgId: String!, $skip: Int, $first: Int, $where: PostWhereInput) {
+    organization(input: {id: $orgId}) {
+      id
+      name
+      Orgposts(skip: $skip, first: $first, where: $where) {
+        id
+        caption
+        createdAt
+        updatedAt
+        pinnedAt
+        creator {
+          id
+          name
+        }
+        attachments {
+          id
+          mimeType
+          name
+          objectName
+          fileHash
+        }
+      }
+    }
+  }
+`);
