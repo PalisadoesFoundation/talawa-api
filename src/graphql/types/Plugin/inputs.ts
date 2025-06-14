@@ -1,5 +1,5 @@
-import { builder } from "~/src/graphql/builder";
 import { z } from "zod";
+import { builder } from "~/src/graphql/builder";
 
 const queryPluginInputSchema = z.object({
 	id: z.string().uuid({ message: "Invalid Plugin ID format" }),
