@@ -37,7 +37,7 @@ export const createPlugin = builder.mutationField("createPlugin", (t) =>
 			if (existingPlugin) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "arguments_associated_resources_already_exist",
+						code: "forbidden_action_on_arguments_associated_resources",
 						issues: [
 							{
 								argumentPath: ["input", "pluginId"],

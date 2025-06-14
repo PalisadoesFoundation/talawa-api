@@ -43,7 +43,6 @@ export const updatePlugin = builder.mutationField("updatePlugin", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "id"],
-								message: "Plugin not found",
 							},
 						],
 					},
@@ -59,7 +58,7 @@ export const updatePlugin = builder.mutationField("updatePlugin", (t) =>
 				if (duplicatePlugin) {
 					throw new TalawaGraphQLError({
 						extensions: {
-							code: "arguments_associated_resources_already_exist",
+							code: "forbidden_action_on_arguments_associated_resources",
 							issues: [
 								{
 									argumentPath: ["input", "pluginId"],

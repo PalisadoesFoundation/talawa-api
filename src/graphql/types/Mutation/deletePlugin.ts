@@ -38,7 +38,6 @@ export const deletePlugin = builder.mutationField("deletePlugin", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "id"],
-								message: "Plugin not found",
 							},
 						],
 					},

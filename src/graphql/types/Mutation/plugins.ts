@@ -4,6 +4,11 @@ import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { builder } from "~/src/graphql/builder";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import {
+	CreatePluginInput,
+	DeletePluginInput,
+	UpdatePluginInput,
+} from "../Plugin/inputs";
 
 const createPluginInputSchema = z.object({
 	pluginId: z.string(),
@@ -28,7 +33,7 @@ builder.mutationFields((t) => ({
 	createPlugin: t.field({
 		type: Plugin,
 		args: {
-			input: t.arg({ type: "CreatePluginInput", required: true }),
+			input: t.arg({ type: CreatePluginInput, required: true }),
 		},
 		resolve: async (_, args, ctx) => {
 			const {
@@ -56,7 +61,7 @@ builder.mutationFields((t) => ({
 				backup = false,
 			} = parsedArgs;
 
-			const [plugin] = await ctx.db
+			const [plugin] = await ctx.drizzleClient
 				.insert(pluginsTable)
 				.values({
 					pluginId,
@@ -73,7 +78,7 @@ builder.mutationFields((t) => ({
 	updatePlugin: t.field({
 		type: Plugin,
 		args: {
-			input: t.arg({ type: "UpdatePluginInput", required: true }),
+			input: t.arg({ type: UpdatePluginInput, required: true }),
 		},
 		resolve: async (_, args, ctx) => {
 			const {
@@ -96,7 +101,7 @@ builder.mutationFields((t) => ({
 
 			const { id, ...updates } = parsedArgs;
 
-			const [plugin] = await ctx.db
+			const [plugin] = await ctx.drizzleClient
 				.update(pluginsTable)
 				.set(updates)
 				.where(eq(pluginsTable.id, id))
@@ -105,8 +110,12 @@ builder.mutationFields((t) => ({
 			if (!plugin) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "not_found",
-						message: "Plugin not found",
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
 					},
 				});
 			}
@@ -118,7 +127,7 @@ builder.mutationFields((t) => ({
 	deletePlugin: t.field({
 		type: Plugin,
 		args: {
-			input: t.arg({ type: "DeletePluginInput", required: true }),
+			input: t.arg({ type: DeletePluginInput, required: true }),
 		},
 		resolve: async (_, args, ctx) => {
 			const {
@@ -141,7 +150,7 @@ builder.mutationFields((t) => ({
 
 			const { id } = parsedArgs;
 
-			const [plugin] = await ctx.db
+			const [plugin] = await ctx.drizzleClient
 				.delete(pluginsTable)
 				.where(eq(pluginsTable.id, id))
 				.returning();
@@ -149,8 +158,12 @@ builder.mutationFields((t) => ({
 			if (!plugin) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "not_found",
-						message: "Plugin not found",
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
 					},
 				});
 			}

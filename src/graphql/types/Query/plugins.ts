@@ -3,7 +3,6 @@ import { z } from "zod";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { builder } from "~/src/graphql/builder";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { QueryPluginInput, QueryPluginsInput } from "../Plugin/inputs";
 
 const queryPluginInputSchema = z.object({
