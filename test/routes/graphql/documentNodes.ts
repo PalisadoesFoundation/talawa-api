@@ -678,6 +678,18 @@ export const Mutation_blockUser =
     blockUser(organizationId: $organizationId, userId: $userId)
 }`);
 
+export const Mutation_assignUserTag = gql(`
+  mutation AssignUserTag($assigneeId: ID!, $tagId: ID!) {
+    assignUserTag(assigneeId: $assigneeId, tagId: $tagId)
+  }
+`);
+
+export const Mutation_unassignUserTag = gql(`
+  mutation UnassignUserTag($assigneeId: ID!, $tagId: ID!) {
+    unassignUserTag(assigneeId: $assigneeId, tagId: $tagId)
+  }
+`);
+
 export const Mutation_unblockUser =
 	gql(`mutation Mutation_unblockUser($organizationId: ID!, $userId: ID!) {
     unblockUser(organizationId: $organizationId, userId: $userId)
