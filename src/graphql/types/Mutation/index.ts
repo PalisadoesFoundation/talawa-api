@@ -79,3 +79,6 @@ import "./createPresignedUrl";
 import "./deleteActionItem";
 import "./updateActionItem";
 import "./createActionItem";
+import "./createActionItemCategory";
+import "./updateActionItemCategory";
+import "./deleteActionItemCategory";
