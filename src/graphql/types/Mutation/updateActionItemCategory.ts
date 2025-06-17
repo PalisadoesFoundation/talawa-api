@@ -13,6 +13,15 @@ const mutationUpdateActionItemCategoryArgumentsSchema = z.object({
 	input: mutationUpdateActionItemCategoryInputSchema,
 });
 
+// Define a type for the update data based on the table schema
+type ActionCategoryUpdateData = {
+	name?: string;
+	description?: string | null;
+	isDisabled?: boolean;
+	updatedAt: Date;
+	updaterId: string;
+};
+
 builder.mutationField("updateActionItemCategory", (t) =>
 	t.field({
 		type: ActionItemCategory,
@@ -84,14 +93,13 @@ builder.mutationField("updateActionItemCategory", (t) =>
 				parsedArgs.input.name !== undefined &&
 				parsedArgs.input.name !== existingCategory.name
 			) {
+				const newName = parsedArgs.input.name;
+
 				const duplicateCategory =
 					await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
 						columns: { id: true },
 						where: (fields, operators) =>
-							sql`${operators.eq(
-								fields.name,
-								parsedArgs.input.name!,
-							)} AND ${operators.eq(
+							sql`${operators.eq(fields.name, newName)} AND ${operators.eq(
 								fields.organizationId,
 								existingCategory.organizationId,
 							)} AND ${operators.ne(fields.id, parsedArgs.input.id)}`,
@@ -114,7 +122,7 @@ builder.mutationField("updateActionItemCategory", (t) =>
 			}
 
 			// Build update object with only provided fields
-			const updateData: Record<string, any> = {
+			const updateData: ActionCategoryUpdateData = {
 				updatedAt: new Date(),
 				updaterId: currentUserId,
 			};

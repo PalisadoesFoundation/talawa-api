@@ -53,7 +53,7 @@ builder.queryField("actionItemCategory", (t) =>
 					where: (fields, operators) =>
 						sql`${operators.eq(
 							fields.memberId,
-							ctx.currentClient.user!.id,
+							ctx.currentClient.user?.id ?? "",
 						)} AND ${operators.eq(
 							fields.organizationId,
 							category.organizationId,
