@@ -951,6 +951,23 @@ export const UPDATE_ACTION_ITEM_MUTATION = gql(`
   }
 `);
 
+export const Mutation_updateActionItemCategory = gql(`
+  mutation UpdateActionItemCategory(
+    $input: MutationUpdateActionItemCategoryInput!
+  ) {
+    updateActionItemCategory(input: $input) {
+      id
+      name
+      description
+      organizationId
+      creatorId
+      isDisabled
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
 export const DELETE_ACTION_ITEM_MUTATION = gql(`
   mutation DeleteActionItem($input: MutationDeleteActionItemInput!) {
     deleteActionItem(input: $input) {

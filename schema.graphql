@@ -3505,6 +3505,18 @@ input MutationUpdateActionItemInput {
   preCompletionNotes: String
 }
 
+input MutationUpdateActionItemCategoryInput {
+  """
+  Global identifier of the action item category.
+  """
+  id: ID!
+
+  """
+  Name of the action item category.
+  """
+  name: String
+}
+
 """
 """
 input MutationUpdateAdvertisementInput {
