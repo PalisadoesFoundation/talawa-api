@@ -2115,6 +2115,13 @@ type Mutation {
     input: MutationDeleteActionItemInput!
   ): ActionItem
 
+  deleteActionItemCategory(
+    """
+    Delete an action item category
+    """
+    input: MutationDeleteActionItemCategoryInput!
+  ): ActionItemCategory
+
   """
   Mutation field to delete an advertisement.
   """
@@ -2288,6 +2295,13 @@ type Mutation {
     """
     input: MutationUpdateActionItemInput!
   ): ActionItem
+
+  updateActionItemCategory(
+    """
+    Update an action item category
+    """
+    input: MutationUpdateActionItemCategoryInput!
+  ): ActionItemCategory
 
   """
   Mutation field to update an advertisement.
