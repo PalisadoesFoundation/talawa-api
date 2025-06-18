@@ -1084,6 +1084,21 @@ query ActionItemsByOrganization($input: QueryActionItemsByOrganizationInput!) {
 }
 `;
 
+export const Query_actionItemCategory = gql(`
+  query ActionItemCategory($input: QueryActionItemCategoryInput!) {
+    actionItemCategory(input: $input) {
+      id
+      name
+      description
+      organizationId
+      creatorId
+      isDisabled
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
 export const Mutation_sendMembershipRequest = gql(`
   mutation Mutation_sendMembershipRequest($input: MutationSendMembershipRequestInput!) {
   sendMembershipRequest(input: $input) {

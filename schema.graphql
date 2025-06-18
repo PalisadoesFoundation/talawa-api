@@ -4922,6 +4922,13 @@ type Query {
     input: QueryActionItemsByOrganizationInput!
   ): [ActionItem!]
 
+  actionItemCategory(
+    """
+    Input parameters to fetch an action item category by its ID.
+    """
+    input: QueryActionItemCategoryInput!
+  ): ActionItemCategory
+
   """
   Query field to read an advertisement.
   """
@@ -5112,6 +5119,13 @@ input QueryActionItemsByOrganizationInput {
   ID of the organization to fetch associated action items.
   """
   organizationId: String!
+}
+
+input QueryActionItemCategoryInput {
+  """
+  Global id of the action item category.
+  """
+  id: String!
 }
 
 """
