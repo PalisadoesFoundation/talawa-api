@@ -112,6 +112,11 @@ type ActionItemCategory {
   creatorId: ID
 
   """
+  the description of the action item category.
+  """
+  description: String
+
+  """
   Unique identifier for the action item category.
   """
   id: ID
