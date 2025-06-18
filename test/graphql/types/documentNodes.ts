@@ -912,6 +912,21 @@ export const Mutation_createActionItem = gql(`
   }
 `);
 
+export const Mutation_createActionItemCategory = gql(`
+  mutation Mutation_createActionItemCategory($input: MutationCreateActionItemCategoryInput!) {
+    createActionItemCategory(input: $input) {
+      id
+      name
+      description
+      organizationId
+      creatorId
+      isDisabled
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
 export const POSTGRES_EVENTS_BY_ORGANIZATION_ID = gql(`
   query EventsByOrganizationId($input: EventsByOrganizationIdInput!) {
     eventsByOrganizationId(input: $input) {

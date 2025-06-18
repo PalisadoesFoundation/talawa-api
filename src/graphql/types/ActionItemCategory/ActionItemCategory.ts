@@ -18,6 +18,10 @@ ActionItemCategory.implement({
 		name: t.exposeString("name", {
 			description: "The name of the action item category.",
 		}),
+		description: t.exposeString("description", {
+			description: "The description of the action item category.",
+			nullable: true,
+		}),
 		organizationId: t.exposeID("organizationId", {
 			description: "Identifier for the organization this category belongs to.",
 		}),

@@ -31,8 +31,25 @@ builder.mutationField("createActionItemCategory", (t) =>
 				});
 			}
 
-			const parsedArgs =
-				mutationCreateActionItemCategoryArgumentsSchema.parse(args);
+			const {
+				data: parsedArgs,
+				error,
+				success,
+			} = await mutationCreateActionItemCategoryArgumentsSchema.safeParseAsync(
+				args,
+			);
+
+			if (!success) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: error.issues.map((issue) => ({
+							argumentPath: issue.path,
+							message: issue.message,
+						})),
+					},
+				});
+			}
 			const currentUserId = ctx.currentClient.user.id;
 
 			// Check if the organization exists
@@ -52,7 +69,7 @@ builder.mutationField("createActionItemCategory", (t) =>
 				});
 			}
 
-			// Check if the user is part of the organization and has admin privileges
+			// Check if the user is part of the organization
 			const userMembership =
 				await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
 					columns: { role: true },
@@ -66,7 +83,20 @@ builder.mutationField("createActionItemCategory", (t) =>
 						)}`,
 				});
 
-			if (!userMembership || userMembership.role !== "administrator") {
+			if (!userMembership) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "organizationId"],
+							},
+						],
+					},
+				});
+			}
+
+			if (userMembership.role !== "administrator") {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "forbidden_action_on_arguments_associated_resources",
@@ -98,7 +128,7 @@ builder.mutationField("createActionItemCategory", (t) =>
 			if (existingCategory) {
 				throw new TalawaGraphQLError({
 					extensions: {
-						code: "invalid_arguments",
+						code: "forbidden_action_on_arguments_associated_resources",
 						issues: [
 							{
 								argumentPath: ["input", "name"],
@@ -115,13 +145,10 @@ builder.mutationField("createActionItemCategory", (t) =>
 				.values({
 					id: uuidv7(),
 					name: parsedArgs.input.name,
-					description: parsedArgs.input.description || null,
+					description: parsedArgs.input.description ?? null,
 					organizationId: parsedArgs.input.organizationId,
-					isDisabled: parsedArgs.input.isDisabled || false,
+					isDisabled: parsedArgs.input.isDisabled ?? false,
 					creatorId: currentUserId,
-					createdAt: new Date(),
-					updatedAt: new Date(),
-					updaterId: currentUserId,
 				})
 				.returning();
 
