@@ -3106,6 +3106,13 @@ input MutationDeleteActionItemInput {
   id: ID!
 }
 
+input MutationDeleteActionItemCategoryInput {
+  """
+  Global identifier of the action item category.
+  """
+  id: ID!
+}
+
 """
 """
 input MutationDeleteAdvertisementInput {

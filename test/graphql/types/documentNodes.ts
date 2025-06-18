@@ -967,6 +967,23 @@ export const DELETE_ACTION_ITEM_MUTATION = gql(`
   }
   `);
 
+export const Mutation_deleteActionItemCategory = gql(`
+  mutation DeleteActionItemCategory(
+    $input: MutationDeleteActionItemCategoryInput!
+  ) {
+    deleteActionItemCategory(input: $input) {
+      id
+      name
+      description
+      organizationId
+      creatorId
+      isDisabled
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
 export const ACTION_ITEM_CATEGORY = gql(`
   query FetchActionCategoriesByOrganization($input: QueryActionCategoriesByOrganizationInput!) {
     actionCategoriesByOrganization(input: $input) {

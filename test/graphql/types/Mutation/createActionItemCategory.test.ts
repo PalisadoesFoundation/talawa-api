@@ -1,6 +1,5 @@
-import type { ResultOf, VariablesOf } from "gql.tada";
-
 import { faker } from "@faker-js/faker";
+import type { ResultOf, VariablesOf } from "gql.tada";
 import { expect, suite, test } from "vitest";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
@@ -890,7 +889,7 @@ suite("Mutation field createActionItemCategory", () => {
 					>({
 						id: expect.any(String),
 						name: variables.input.name,
-						description: variables.input.description,
+						description: variables.input.description ?? null,
 						organizationId: variables.input.organizationId,
 						creatorId: adminId,
 						isDisabled: variables.input.isDisabled,
