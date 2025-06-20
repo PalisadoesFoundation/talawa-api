@@ -554,8 +554,8 @@ type Event {
   """
   agendaFolders(after: String, before: String, first: Int, last: Int): EventAgendaFoldersConnection
 
-  """all day time."""
-  allDay: Boolean! 
+  """Indicates if the event spans the entire day."""
+  allDay: Boolean
 
   """Array of attachments."""
   attachments: [EventAttachment!]
@@ -575,23 +575,23 @@ type Event {
   """Global identifier of the event."""
   id: ID!
 
-  """ Boolean to tell if the event is public """
+  """Indicates if the event is publicly visible."""
   isPublic: Boolean
 
-  """Boolean to tell if the event is registerable."""
+  """Indicates if users can register for this event."""
   isRegisterable: Boolean
+
+  """Physical or virtual location of the event."""
+  location: String
 
   """Name of the event."""
   name: String
-  
-  """ location of the event."""
-  location: String
 
   """Organization the event belongs to."""
   organization: Organization
 
   """Date time at the time the event starts at."""
-  startAt: DateTime
+  startAt: DateTime!
 
   """Date time at the time the event was last updated."""
   updatedAt: DateTime
@@ -797,6 +797,12 @@ type HasUserVoted {
 
   """Type of the post vote, null if no vote exists"""
   voteType: PostVoteType
+}
+
+enum InviteStatus {
+  accepted
+  declined
+  no_response
 }
 
 """
@@ -1528,6 +1534,12 @@ type Mutation {
   """Mutation field to create an event."""
   createEvent(input: MutationCreateEventInput!): Event
 
+  """Mutation field to create a volunteer group."""
+  createEventVolunteerGroup(input: MutationCreateEventVolunteerGroupInput!): VolunteerGroups
+
+  """Mutation field to create a volunteer group assignments."""
+  createEventVolunteerGroupAssignments(input: MutationCreateVolunteerGroupAssignmentsInput!): VolunteerGroupAssignments
+
   """Mutation field to create a fund."""
   createFund(input: MutationCreateFundInput!): Fund
 
@@ -1605,6 +1617,9 @@ type Mutation {
 
   """Mutation field to delete an event."""
   deleteEvent(input: MutationDeleteEventInput!): Event
+
+  """Mutation field to delete a volunteer group."""
+  deleteEventVolunteerGroup(input: MutationDeleteEventVolunteerGroupInput!): VolunteerGroups
 
   """Mutation field to delete a fund."""
   deleteFund(input: MutationDeleteFundInput!): Fund
@@ -1710,6 +1725,12 @@ type Mutation {
 
   """Mutation field to update an event."""
   updateEvent(input: MutationUpdateEventInput!): Event
+
+  """Mutation field to update a volunteer group."""
+  updateEventVolunteerGroup(input: MutationUpdateEventVolunteerGroupInput!): VolunteerGroups
+
+  """Mutation field to update a volunteer group assignments."""
+  updateEventVolunteerGroupAssignments(input: MutationUpdateVolunteerGroupAssignmentsInput!): VolunteerGroupAssignments
 
   """Mutation field to update a fund."""
   updateFund(input: MutationUpdateFundInput!): Fund
@@ -1892,11 +1913,11 @@ input MutationCreateCommentVoteInput {
 
 """"""
 input MutationCreateEventInput {
+  """Indicates if the event spans the entire day"""
+  allDay: Boolean
+
   """Attachments of the event."""
   attachments: [Upload!]
-
-  """ all day time."""
-  allDay: Boolean
 
   """Custom information about the event."""
   description: String
@@ -1904,23 +1925,38 @@ input MutationCreateEventInput {
   """Date time at the time the event ends at."""
   endAt: DateTime!
 
-  """ Boolean to tell if the event is public """
+  """Indicates if the event is publicly visible"""
   isPublic: Boolean
 
-  """Boolean to tell if the event is registerable."""
+  """Indicates if users can register for this event"""
   isRegisterable: Boolean
+
+  """Physical or virtual location of the event"""
+  location: String
 
   """Name of the event."""
   name: String!
-
-  """ location of the event."""
-  location: String
 
   """Global identifier of the associated organization."""
   organizationId: ID!
 
   """Date time at the time the event starts at."""
   startAt: DateTime!
+}
+
+""""""
+input MutationCreateEventVolunteerGroupInput {
+  """Global identifier of the event that the group is to be made for."""
+  eventId: ID!
+
+  """Global identifier of the user that is assigned leader of the group."""
+  leaderId: ID!
+
+  """Max volunteers count"""
+  maxVolunteerCount: Int!
+
+  """Name of the group."""
+  name: String!
 }
 
 """"""
@@ -2189,6 +2225,18 @@ input MutationCreateVenueInput {
   organizationId: ID!
 }
 
+""""""
+input MutationCreateVolunteerGroupAssignmentsInput {
+  """Global identifier of the user."""
+  assigneeId: ID!
+
+  """Global identifier of the group."""
+  groupId: ID!
+
+  """Invitation Status."""
+  inviteStatus: InviteStatus!
+}
+
 """Input for deleting an action item."""
 input MutationDeleteActionItemInput {
   """Global identifier of the action item."""
@@ -2252,6 +2300,12 @@ input MutationDeleteCommentVoteInput {
 """"""
 input MutationDeleteEventInput {
   """Global identifier of the event."""
+  id: ID!
+}
+
+""""""
+input MutationDeleteEventVolunteerGroupInput {
+  """Global identifier of the group."""
   id: ID!
 }
 
@@ -2669,53 +2723,49 @@ input MutationUpdateCurrentUserInput {
   workPhoneNumber: PhoneNumber
 }
 
-"""
-"""
+""""""
 input MutationUpdateEventInput {
-  """
-  Global identifier of the event to update.
-  """
-  id: ID!
-
-  """
-  Name of the event.
-  """
-  name: String
-
-  """
-  Custom information about the event.
-  """
-  description: String
-
-  """
-  Date time at the time the event starts at.
-  """
-  startAt: DateTime
-
-  """
-  Date time at the time the event ends at.
-  """
-  endAt: DateTime
-
-  """
-  Indicates if the event spans the entire day.
-  """
+  """Indicates if the event spans the entire day."""
   allDay: Boolean
 
-  """
-  Physical or virtual location of the event.
-  """
-  location: String
+  """Custom information about the event."""
+  description: String
 
-  """
-  Indicates if the event is publicly visible.
-  """
+  """Date time at the time the event ends at."""
+  endAt: DateTime
+
+  """Global identifier of the event."""
+  id: ID!
+
+  """Indicates if the event is publicly visible."""
   isPublic: Boolean
 
-  """
-  Indicates if users can register for this event.
-  """
+  """Indicates if users can register for this event."""
   isRegisterable: Boolean
+
+  """Physical or virtual location of the event."""
+  location: String
+
+  """Name of the event."""
+  name: String
+
+  """Date time at the time the event starts at."""
+  startAt: DateTime
+}
+
+""""""
+input MutationUpdateEventVolunteerGroupInput {
+  """Global identifier of the group."""
+  id: ID!
+
+  """Global identifier of the user that is assigned leader of the group."""
+  leaderId: ID
+
+  """Max volunteers count"""
+  maxVolunteerCount: Int!
+
+  """Name of the Group."""
+  name: String
 }
 
 """"""
@@ -2939,6 +2989,18 @@ input MutationUpdateVenueInput {
 
   """Name of the venue."""
   name: String
+}
+
+""""""
+input MutationUpdateVolunteerGroupAssignmentsInput {
+  """Global identifier of the user."""
+  assigneeId: ID!
+
+  """Global identifier of the group."""
+  groupId: ID!
+
+  """Invitation Status."""
+  inviteStatus: UpdateInviteStatus!
 }
 
 type Organization {
@@ -3442,6 +3504,12 @@ type Query {
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Query field to get all volunteer of a group."""
+  getEventVolunteerGroupAssignments(input: QueryVolunteerGroupAssignmentsInput!): [VolunteerGroupAssignments!]
+
+  """Query field to get all volunteer groups for an event."""
+  getEventVolunteerGroups(input: QueryEventVolunteerGroupsInput!): [VolunteerGroups!]
+
   """Query field to get fund campaign pledge associated to a user."""
   getPledgesByUserId(
     """Maximum number of results to return."""
@@ -3572,6 +3640,12 @@ input QueryEventInput {
   id: String!
 }
 
+""""""
+input QueryEventVolunteerGroupsInput {
+  """Global id of the event."""
+  eventId: String!
+}
+
 input QueryEventsByIdsInput {
   ids: [ID!]!
 }
@@ -3662,6 +3736,12 @@ input QueryUserInput {
 input QueryVenueInput {
   """Global id of the venue."""
   id: String!
+}
+
+""""""
+input QueryVolunteerGroupAssignmentsInput {
+  """Global id of the group."""
+  groupId: String!
 }
 
 type RejectMembershipResponse {
@@ -3786,6 +3866,12 @@ type TagFolderTagsConnection {
 type TagFolderTagsConnectionEdge {
   cursor: String!
   node: Tag
+}
+
+enum UpdateInviteStatus {
+  accepted
+  declined
+  no_response
 }
 
 """The `Upload` scalar type represents a file upload."""
@@ -4016,4 +4102,56 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
+}
+
+type VolunteerGroupAssignments {
+  """Volunteer group assignee."""
+  assignee: User
+
+  """Date time at the time the Group Assignment was created."""
+  createdAt: DateTime
+
+  """User who has created the Assignment."""
+  creator: User
+
+  """Volunteer group."""
+  group: VolunteerGroups
+
+  """Invitation status."""
+  inviteStatus: String
+
+  """Date time at the time the Group Assignment was last updated."""
+  updatedAt: DateTime
+
+  """User who has last updated the Assignment."""
+  updator: User
+}
+
+type VolunteerGroups {
+  """Date time at the time the Group was created."""
+  createdAt: DateTime
+
+  """User who has created the Group."""
+  creator: User
+
+  """Event for which Group was made."""
+  event: Event
+
+  """Global identifier of the group."""
+  id: ID!
+
+  """Leader assigned for the group."""
+  leader: User
+
+  """Maximum number of volunteers for this group."""
+  maxVolunteerCount: Int
+
+  """Name of the Group."""
+  name: String
+
+  """Date time at the time the Group was updated."""
+  updatedAt: DateTime
+
+  """User who has last updated the Group."""
+  updater: User
 }

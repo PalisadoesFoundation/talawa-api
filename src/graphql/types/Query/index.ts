@@ -27,3 +27,5 @@ import "./organizationUsers";
 import "./Events";
 import "./organizations";
 import "./hasUserVoted";
+import "./volunteerGroups";
+import "./volunteerGroupAssignments";
