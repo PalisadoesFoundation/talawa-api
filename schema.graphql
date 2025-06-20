@@ -1492,6 +1492,9 @@ type Mutation {
     input: MutationAcceptMembershipRequestInput!
   ): AcceptMembershipResponse
 
+  """Assign a tag to a user within an organization."""
+  assignUserTag(assigneeId: ID!, tagId: ID!): Boolean
+
   """Mutation field to block a user from an organization."""
   blockUser(organizationId: ID!, userId: ID!): Boolean
 
@@ -1677,6 +1680,9 @@ type Mutation {
 
   """Mutation field to sign up to talawa."""
   signUp(input: MutationSignUpInput!): AuthenticationPayload
+
+  """Unassign a tag from a user within an organization."""
+  unassignUserTag(assigneeId: ID!, tagId: ID!): Boolean
 
   """Mutation field to unblock a user from an organization."""
   unblockUser(organizationId: ID!, userId: ID!): Boolean
