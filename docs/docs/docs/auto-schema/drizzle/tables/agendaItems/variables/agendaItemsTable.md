@@ -4,7 +4,7 @@
 
 # Variable: agendaItemsTable
 
-> `const` **agendaItemsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **agendaItemsTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/agendaItems.ts:12
 

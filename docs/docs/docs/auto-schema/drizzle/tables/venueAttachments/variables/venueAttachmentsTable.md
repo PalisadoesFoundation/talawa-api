@@ -4,7 +4,7 @@
 
 # Variable: venueAttachmentsTable
 
-> `const` **venueAttachmentsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **venueAttachmentsTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/venueAttachments.ts:11
 

@@ -4,18 +4,24 @@
 
 # Type Alias: DateTime
 
-> **DateTime**: `object`
+> **DateTime** = `object`
 
 Defined in: src/graphql/scalars/DateTime.ts:12
 
 `DateTime` scalar type for pothos schema.
 
-## Type declaration
+## Properties
 
 ### Input
 
 > **Input**: `Date`
 
+Defined in: src/graphql/scalars/DateTime.ts:13
+
+***
+
 ### Output
 
 > **Output**: `Date`
+
+Defined in: src/graphql/scalars/DateTime.ts:14

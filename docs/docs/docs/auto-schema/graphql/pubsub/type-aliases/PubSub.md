@@ -4,21 +4,27 @@
 
 # Type Alias: PubSub
 
-> **PubSub**: `object`
+> **PubSub** = `object`
 
 Defined in: src/graphql/pubsub.ts:8
 
 Type of the publish and subscribe module used for publishing and subscribing to talawa events.
 
-## Type declaration
+## Methods
 
 ### publish()
+
+> **publish**\<`TKey`\>(`event`, `callback?`): `void`
+
+Defined in: src/graphql/pubsub.ts:12
 
 This method is used to publish an event.
 
 #### Type Parameters
 
-• **TKey** *extends* `` `chats.${string}:chat_messages::create` ``
+##### TKey
+
+`TKey` *extends* `` `chats.${string}:chat_messages::create` ``
 
 #### Parameters
 
@@ -40,13 +46,21 @@ This method is used to publish an event.
 
 `void`
 
+***
+
 ### subscribe()
+
+> **subscribe**\<`TKey`\>(`topics`): `Promise`\<`Readable` & `AsyncIterableIterator`\<[`PubSubPublishArgsByKey`](PubSubPublishArgsByKey.md)\[`TKey`\], `any`, `any`\>\>
+
+Defined in: src/graphql/pubsub.ts:22
 
 This method is used to subscribe to events.
 
 #### Type Parameters
 
-• **TKey** *extends* `` `chats.${string}:chat_messages::create` ``
+##### TKey
+
+`TKey` *extends* `` `chats.${string}:chat_messages::create` ``
 
 #### Parameters
 

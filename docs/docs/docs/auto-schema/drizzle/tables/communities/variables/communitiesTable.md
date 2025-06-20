@@ -4,7 +4,7 @@
 
 # Variable: communitiesTable
 
-> `const` **communitiesTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **communitiesTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/communities.ts:11
 

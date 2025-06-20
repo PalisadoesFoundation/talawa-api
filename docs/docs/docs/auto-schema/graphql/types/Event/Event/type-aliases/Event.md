@@ -4,7 +4,7 @@
 
 # Type Alias: Event
 
-> **Event**: *typeof* `eventsTable.$inferSelect` & `object`
+> **Event** = *typeof* `eventsTable.$inferSelect` & `object`
 
 Defined in: src/graphql/types/Event/Event.ts:8
 

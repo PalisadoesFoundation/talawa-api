@@ -12,7 +12,9 @@ This function is used to check nullish state of a value passed to it. Nullish me
 
 ## Type Parameters
 
-• **T0**
+### T0
+
+`T0`
 
 ## Parameters
 

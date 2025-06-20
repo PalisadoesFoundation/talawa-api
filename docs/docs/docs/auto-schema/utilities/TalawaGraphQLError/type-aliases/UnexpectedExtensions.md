@@ -4,17 +4,11 @@
 
 # Type Alias: UnexpectedExtensions
 
-> **UnexpectedExtensions**: `object`
+> **UnexpectedExtensions** = `object`
 
 Defined in: src/utilities/TalawaGraphQLError.ts:198
 
 When an error that doesn't fit one of the error types listed above occurs. One example would be a database request failure.
-
-## Type declaration
-
-### code
-
-> **code**: `"unexpected"`
 
 ## Example
 
@@ -25,3 +19,11 @@ throw new TalawaGraphQLError({
 	},
 });
 ```
+
+## Properties
+
+### code
+
+> **code**: `"unexpected"`
+
+Defined in: src/utilities/TalawaGraphQLError.ts:199

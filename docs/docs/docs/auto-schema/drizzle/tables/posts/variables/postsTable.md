@@ -4,7 +4,7 @@
 
 # Variable: postsTable
 
-> `const` **postsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **postsTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/posts.ts:14
 

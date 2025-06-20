@@ -13,7 +13,9 @@ Extends the default connection arguments schema with a custom where schema.
 
 ## Type Parameters
 
-• **T** *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\>
+### T
+
+`T` *extends* `ZodType`\<`any`, `ZodTypeDef`, `any`\>
 
 ## Parameters
 

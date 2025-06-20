@@ -4,7 +4,7 @@
 
 # Type Alias: Advertisement
 
-> **Advertisement**: *typeof* `advertisementsTable.$inferSelect` & `object`
+> **Advertisement** = *typeof* `advertisementsTable.$inferSelect` & `object`
 
 Defined in: src/graphql/types/Advertisement/Advertisement.ts:9
 

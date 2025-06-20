@@ -44,9 +44,9 @@ export const user = async (parent, args, ctx) => {
 
 ## Constructors
 
-### new TalawaGraphQLError()
+### Constructor
 
-> **new TalawaGraphQLError**(`__namedParameters`): [`TalawaGraphQLError`](TalawaGraphQLError.md)
+> **new TalawaGraphQLError**(`__namedParameters`): `TalawaGraphQLError`
 
 Defined in: src/utilities/TalawaGraphQLError.ts:265
 
@@ -58,7 +58,7 @@ Defined in: src/utilities/TalawaGraphQLError.ts:265
 
 #### Returns
 
-[`TalawaGraphQLError`](TalawaGraphQLError.md)
+`TalawaGraphQLError`
 
 #### Overrides
 

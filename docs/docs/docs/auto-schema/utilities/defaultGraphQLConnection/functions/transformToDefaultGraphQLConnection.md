@@ -12,11 +12,17 @@ This function is used to transform an array of objects to a standard graphql con
 
 ## Type Parameters
 
-• **RawNode**
+### RawNode
 
-• **Node** = `RawNode`
+`RawNode`
 
-• **Cursor** = `string`
+### Node
+
+`Node` = `RawNode`
+
+### Cursor
+
+`Cursor` = `string`
 
 ## Parameters
 

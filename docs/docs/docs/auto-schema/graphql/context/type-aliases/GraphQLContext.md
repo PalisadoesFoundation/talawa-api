@@ -4,7 +4,7 @@
 
 # Type Alias: GraphQLContext
 
-> **GraphQLContext**: [`ExplicitGraphQLContext`](ExplicitGraphQLContext.md) & [`ImplicitMercuriusContext`](ImplicitMercuriusContext.md)
+> **GraphQLContext** = [`ExplicitGraphQLContext`](ExplicitGraphQLContext.md) & [`ImplicitMercuriusContext`](ImplicitMercuriusContext.md)
 
 Defined in: src/graphql/context.ts:55
 

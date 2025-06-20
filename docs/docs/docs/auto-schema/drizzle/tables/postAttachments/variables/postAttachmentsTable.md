@@ -4,7 +4,7 @@
 
 # Variable: postAttachmentsTable
 
-> `const` **postAttachmentsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **postAttachmentsTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/postAttachments.ts:11
 

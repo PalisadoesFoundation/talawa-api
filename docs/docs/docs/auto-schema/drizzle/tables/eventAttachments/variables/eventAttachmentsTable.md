@@ -4,7 +4,7 @@
 
 # Variable: eventAttachmentsTable
 
-> `const` **eventAttachmentsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **eventAttachmentsTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/eventAttachments.ts:11
 

@@ -4,7 +4,7 @@
 
 # Variable: membershipRequestsTable
 
-> `const` **membershipRequestsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **membershipRequestsTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/membershipRequests.ts:20
 

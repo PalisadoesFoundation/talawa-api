@@ -4,6 +4,6 @@
 
 # Variable: volunteerGroupsTable
 
-> `const` **volunteerGroupsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **volunteerGroupsTable**: `PgTableWithColumns`\<\{ \}\>
 
 Defined in: src/drizzle/tables/volunteerGroups.ts:16

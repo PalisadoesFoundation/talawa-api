@@ -4,17 +4,11 @@
 
 # Type Alias: UnauthorizedActionExtensions
 
-> **UnauthorizedActionExtensions**: `object`
+> **UnauthorizedActionExtensions** = `object`
 
 Defined in: src/utilities/TalawaGraphQLError.ts:139
 
 When the client is not authorized to perform an action.
-
-## Type declaration
-
-### code
-
-> **code**: `"unauthorized_action"`
 
 ## Example
 
@@ -25,3 +19,11 @@ throw new TalawaGraphQLError({
 	},
 });
 ```
+
+## Properties
+
+### code
+
+> **code**: `"unauthorized_action"`
+
+Defined in: src/utilities/TalawaGraphQLError.ts:140

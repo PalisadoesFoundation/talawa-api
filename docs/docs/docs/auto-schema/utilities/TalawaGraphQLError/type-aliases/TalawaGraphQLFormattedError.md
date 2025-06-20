@@ -4,7 +4,7 @@
 
 # Type Alias: TalawaGraphQLFormattedError
 
-> **TalawaGraphQLFormattedError**: `GraphQLFormattedError` & `object`
+> **TalawaGraphQLFormattedError** = `GraphQLFormattedError` & `object`
 
 Defined in: src/utilities/TalawaGraphQLError.ts:282
 

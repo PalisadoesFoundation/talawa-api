@@ -12,6 +12,10 @@ Defined in: src/graphql/types/Event/updater.ts:12
 
 ### parent
 
+#### allDay
+
+`boolean`
+
 #### createdAt
 
 `Date`
@@ -29,6 +33,18 @@ Defined in: src/graphql/types/Event/updater.ts:12
 `Date`
 
 #### id
+
+`string`
+
+#### isPublic
+
+`boolean`
+
+#### isRegisterable
+
+`boolean`
+
+#### location
 
 `string`
 

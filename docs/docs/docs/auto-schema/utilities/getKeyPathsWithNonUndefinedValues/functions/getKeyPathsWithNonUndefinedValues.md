@@ -12,7 +12,9 @@ This function takes in a javascript object and a list of key paths within that o
 
 ## Type Parameters
 
-• **T** *extends* `Record`\<`string`, `unknown`\>
+### T
+
+`T` *extends* `Record`\<`string`, `unknown`\>
 
 ## Parameters
 
