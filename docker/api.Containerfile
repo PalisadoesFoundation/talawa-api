@@ -47,7 +47,7 @@ RUN curl -fsSL --proto '=https' --tlsv1.2 https://fnm.vercel.app/install | bash 
 ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 WORKDIR /home/talawa/api
   
-FROM node:23.7.0-bookworm-slim AS base
+FROM node:23.11.1-bookworm-slim AS base
 # Used to configure the group id for the group assigned to the non-root "talawa" user within the image.
 ARG API_GID
 # Used to configure the user id for the non-root "talawa" user within the image.

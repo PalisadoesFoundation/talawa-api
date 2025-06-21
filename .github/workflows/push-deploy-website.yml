@@ -45,7 +45,7 @@ jobs:
           key: docusaurus-${{ hashFiles('docs/**') }}
           restore-keys: |
             docusaurus-
-      - uses: webfactory/ssh-agent@v0.9.0
+      - uses: webfactory/ssh-agent@v0.9.1
         with:
           ssh-private-key: ${{ secrets.DEPLOY_GITHUB_PAGES }}
       - name: Deploy to GitHub Pages

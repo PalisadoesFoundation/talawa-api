@@ -96,7 +96,7 @@ services:
       timeout: 10s
     # https://docs.docker.com/reference/compose-file/services/#image
     # https://hub.docker.com/_/postgres
-    image: postgres:17.2-alpine3.21
+    image: postgres:17.5-alpine3.21
     # https://docs.docker.com/reference/compose-file/services/#networks
     networks:
       - postgres_test

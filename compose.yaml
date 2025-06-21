@@ -126,7 +126,7 @@ services:
       - CADDY_TALAWA_API_PORT=${CADDY_TALAWA_API_PORT:?error}
     # https://caddyserver.com/docs/install#docker
     # https://hub.docker.com/_/caddy
-    image: caddy:2.8.4-alpine
+    image: caddy:2.10.0-alpine
     # https://docs.docker.com/reference/compose-file/services/#networks
     networks:
       - api
@@ -223,7 +223,7 @@ services:
       timeout: 10s
     # https://docs.docker.com/reference/compose-file/services/#image
     # https://hub.docker.com/_/postgres
-    image: postgres:17.2-alpine3.21
+    image: postgres:17.5-alpine3.21
     # https://docs.docker.com/reference/compose-file/services/#networks
     networks:
       - postgres

@@ -95,7 +95,7 @@ services:
       timeout: 10s
     # https://dbeaver.com/docs/cloudbeaver/Run-Docker-Container/
     # https://hub.docker.com/r/dbeaver/cloudbeaver
-    image: dbeaver/cloudbeaver:24.3.1
+    image: dbeaver/cloudbeaver:24.3.5
     # https://docs.docker.com/reference/compose-file/services/#networks
     networks:
       - postgres
