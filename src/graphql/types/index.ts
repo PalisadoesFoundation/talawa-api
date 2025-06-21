@@ -27,3 +27,5 @@ import "./TagFolder/index";
 import "./User/index";
 import "./Venue/index";
 import "./VenueAttachment/index";
+import "./VolunteerGroup/index";
+import "./VolunteerGroupAssignment/index";
