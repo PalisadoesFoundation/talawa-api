@@ -227,7 +227,7 @@ jobs:
           CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
           docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -235,7 +235,7 @@ jobs:
           name: "${{env.CODECOV_UNIQUE_NAME}}"
 
       - name: Test acceptable level of code coverage
-        uses: VeryGoodOpenSource/very_good_coverage@v2
+        uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
           path: "./coverage/lcov.info"
           min_coverage: 57.0
@@ -273,7 +273,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
 
