@@ -1,18 +1,9 @@
 import { eq } from "drizzle-orm";
-import { z } from "zod";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { builder } from "~/src/graphql/builder";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { UpdatePluginInput } from "../Plugin/inputs";
-
-const updatePluginInputSchema = z.object({
-	id: z.string().uuid({ message: "Invalid Plugin ID format" }),
-	pluginId: z.string().optional(),
-	isActivated: z.boolean().optional(),
-	isInstalled: z.boolean().optional(),
-	backup: z.boolean().optional(),
-});
+import { UpdatePluginInput, updatePluginInputSchema } from "../Plugin/inputs";
 
 /**
  * GraphQL Mutation: Updates an existing plugin.
@@ -30,6 +21,35 @@ export const updatePlugin = builder.mutationField("updatePlugin", (t) =>
 		resolve: async (_, args, ctx) => {
 			const { id, pluginId, isActivated, isInstalled, backup } =
 				updatePluginInputSchema.parse(args.input);
+
+			// Guard against no-op updates - if only id is provided, return early
+			if (
+				pluginId === undefined &&
+				isActivated === undefined &&
+				isInstalled === undefined &&
+				backup === undefined
+			) {
+				// Fetch the existing plugin to return it
+				const existingPlugin =
+					await ctx.drizzleClient.query.pluginsTable.findFirst({
+						where: eq(pluginsTable.id, id),
+					});
+
+				if (!existingPlugin) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [
+								{
+									argumentPath: ["input", "id"],
+								},
+							],
+						},
+					});
+				}
+
+				return existingPlugin;
+			}
 
 			const existingPlugin =
 				await ctx.drizzleClient.query.pluginsTable.findFirst({

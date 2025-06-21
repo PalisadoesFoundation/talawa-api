@@ -1,14 +1,9 @@
 import { eq } from "drizzle-orm";
-import { z } from "zod";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { builder } from "~/src/graphql/builder";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { DeletePluginInput } from "../Plugin/inputs";
-
-const deletePluginInputSchema = z.object({
-	id: z.string().uuid({ message: "Invalid Plugin ID format" }),
-});
+import { DeletePluginInput, deletePluginInputSchema } from "../Plugin/inputs";
 
 /**
  * GraphQL Mutation: Deletes a plugin.
@@ -26,12 +21,29 @@ export const deletePlugin = builder.mutationField("deletePlugin", (t) =>
 		resolve: async (_, args, ctx) => {
 			const { id } = deletePluginInputSchema.parse(args.input);
 
-			const existingPlugin =
-				await ctx.drizzleClient.query.pluginsTable.findFirst({
-					where: eq(pluginsTable.id, id),
-				});
+			// Explicit cleanup of plugin dependencies before deletion
+			// This ensures data integrity even if foreign key constraints are not set up
+			// or if we need to handle cleanup in a specific order
 
-			if (!existingPlugin) {
+			// TODO: Uncomment and implement when these tables are created
+			// await ctx.drizzleClient
+			//   .delete(pluginLogsTable)
+			//   .where(eq(pluginLogsTable.pluginId, id));
+			//
+			// await ctx.drizzleClient
+			//   .delete(pluginBackupsTable)
+			//   .where(eq(pluginBackupsTable.pluginId, id));
+			//
+			// await ctx.drizzleClient
+			//   .delete(pluginACLsTable)
+			//   .where(eq(pluginACLsTable.pluginId, id));
+
+			const [plugin] = await ctx.drizzleClient
+				.delete(pluginsTable)
+				.where(eq(pluginsTable.id, id))
+				.returning();
+
+			if (!plugin) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -43,11 +55,6 @@ export const deletePlugin = builder.mutationField("deletePlugin", (t) =>
 					},
 				});
 			}
-
-			const [plugin] = await ctx.drizzleClient
-				.delete(pluginsTable)
-				.where(eq(pluginsTable.id, id))
-				.returning();
 
 			return plugin;
 		},

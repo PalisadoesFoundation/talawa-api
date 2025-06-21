@@ -90,10 +90,10 @@ const config: Config = {
           position: "left",
         },
         {
-          label: 'Plugin Guide',
-          position: 'left',
-          to: 'https://docs-plugin.talawa.io/docs',
-          target: '_self',
+          label: "Plugin Guide",
+          position: "left",
+          to: "https://docs-plugin.talawa.io/docs",
+          target: "_self",
         },
         {
           label: "Demo",

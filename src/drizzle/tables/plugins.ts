@@ -18,7 +18,9 @@ export const pluginsTable = pgTable(
 		/**
 		 * Primary unique identifier of the plugin.
 		 */
-		id: uuid("id").primaryKey().$default(uuidv7),
+		id: uuid("id")
+			.primaryKey()
+			.$defaultFn(() => uuidv7()),
 
 		/**
 		 * Unique identifier of the plugin type.
@@ -62,11 +64,7 @@ export const pluginsTable = pgTable(
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
 	},
-	(self) => [
-		index().on(self.pluginId),
-		index().on(self.isActivated),
-		index().on(self.isInstalled),
-	],
+	(self) => [index().on(self.isActivated), index().on(self.isInstalled)],
 );
 
 /**
