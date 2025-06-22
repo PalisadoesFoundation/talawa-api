@@ -109,3 +109,15 @@ export {
 	volunteerGroupsTable,
 	volunteerGroupsTableRelations,
 } from "./tables/volunteerGroups";
+export {
+	notificationAudienceTable,
+	notificationAudienceTableRelations,
+} from "./tables/NotificationAudience";
+export {
+	notificationLogsTable,
+	notificationLogsTableRelations,	
+} from "./tables/NotificationLog";
+export {	
+	notificationTemplatesTable,
+	notificationTemplatesTableRelations,	
+} from "./tables/NotificationTemplate";

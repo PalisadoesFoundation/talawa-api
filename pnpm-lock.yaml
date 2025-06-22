@@ -6031,15 +6031,7 @@ snapshots:
 
   type-fest@0.21.3: {}
 
-<<<<<<< HEAD
-  typedoc-plugin-markdown@4.6.4(typedoc@0.28.3(typescript@5.7.3)):
-    dependencies:
-      typedoc: 0.28.3(typescript@5.7.3)
-
-  typedoc@0.28.3(typescript@5.7.3):
-=======
   typedoc@0.28.5(typescript@5.7.3):
->>>>>>> upstream/develop
     dependencies:
       '@gerrit0/mini-shiki': 3.4.2
       lunr: 2.3.9

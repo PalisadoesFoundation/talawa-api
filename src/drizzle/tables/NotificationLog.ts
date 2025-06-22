@@ -83,8 +83,6 @@ export const notificationLogsTable = pgTable(
     },
     (self) => [
         index().on(self.templateId),
-        index().on(self.sender),
-        index().on(self.eventType),
         index().on(self.status),
         index().on(self.channel),
         index().on(self.createdAt),

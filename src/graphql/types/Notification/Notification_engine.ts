@@ -14,7 +14,6 @@ export enum NotificationTargetType {
   ORGANIZATION = "organization",
   ADMIN = "admin",
   ORGANIZATION_ADMIN = "organization_admin",
-  GROUP_CHAT = "group_chat"
 }
 
 /**
@@ -76,12 +75,15 @@ export class NotificationEngine {
       : null;
 
     // Find appropriate template
-    const template = await this.ctx.drizzleClient.query.notificationTemplatesTable.findFirst({
+    // Define an interface for the template result
+    type NotificationTemplate = typeof notificationTemplatesTable.$inferSelect;
+    
+    const template: NotificationTemplate | undefined = await this.ctx.drizzleClient.query.notificationTemplatesTable.findFirst({
       where: (fields, operators) => 
-        and(
-          operators.eq(fields.eventType, eventType),
-          operators.eq(fields.channelType, channelType)
-        )
+      and(
+        operators.eq(fields.eventType, eventType),
+        operators.eq(fields.channelType, channelType)
+      )
     });
 
     if (!template) {
@@ -151,8 +153,7 @@ export class NotificationEngine {
     
     // Handle special audience types that need resolution
     if (targetType === NotificationTargetType.ORGANIZATION_ADMIN) {
-      // For organization admins, we need to query membership table
-      const orgId = audience.targetIds[0]; // First ID is assumed to be org ID
+      const orgId = audience.targetIds[0]; 
       
       if (!orgId) return;
       
@@ -178,7 +179,6 @@ export class NotificationEngine {
           );
       }
     } else if (targetType === NotificationTargetType.ADMIN) {
-      // For system admins, query all users with admin role
       const admins = await this.ctx.drizzleClient.query.usersTable.findMany({
         columns: { id: true },
         where: (fields, operators) => operators.eq(fields.role, "administrator")
@@ -233,100 +233,17 @@ export class NotificationEngine {
     template: typeof notificationTemplatesTable.$inferSelect,
     variables: NotificationVariables
   ): { title: string; body: string } {
-    // Start with the template content
     let title = template.title;
     let body = template.body;
 
-    // Replace all variables in the content
-    // Variable format: {variableName}
     for (const [key, value] of Object.entries(variables)) {
-      // Skip null or undefined values
       if (value === null || value === undefined) continue;
-
       const placeholder = new RegExp(`{${key}}`, 'g');
       title = title.replace(placeholder, String(value));
       body = body.replace(placeholder, String(value));
     }
-
     return { title, body };
   }
 
-  /**
-   * Helper method to send notification to a specific user
-   */
-  async notifyUser(
-    userId: string,
-    eventType: string,
-    variables: NotificationVariables,
-    channelType: NotificationChannelType = NotificationChannelType.IN_APP
-  ): Promise<string> {
-    return this.createNotification(
-      eventType,
-      variables,
-      {
-        targetType: NotificationTargetType.USER,
-        targetIds: [userId]
-      },
-      channelType
-    );
-  }
-
-  /**
-   * Helper method to notify all members of an organization
-   */
-  async notifyOrganization(
-    organizationId: string,
-    eventType: string,
-    variables: NotificationVariables,
-    channelType: NotificationChannelType = NotificationChannelType.IN_APP
-  ): Promise<string> {
-    return this.createNotification(
-      eventType,
-      variables,
-      {
-        targetType: NotificationTargetType.ORGANIZATION,
-        targetIds: [organizationId]
-      },
-      channelType
-    );
-  }
-
-  /**
-   * Helper method to notify all admins of an organization
-   */
-  async notifyOrganizationAdmins(
-    organizationId: string,
-    eventType: string,
-    variables: NotificationVariables,
-    channelType: NotificationChannelType = NotificationChannelType.IN_APP
-  ): Promise<string> {
-    return this.createNotification(
-      eventType,
-      variables,
-      {
-        targetType: NotificationTargetType.ORGANIZATION_ADMIN,
-        targetIds: [organizationId]
-      },
-      channelType
-    );
-  }
-
-  /**
-   * Helper method to notify all system administrators
-   */
-  async notifySystemAdmins(
-    eventType: string,
-    variables: NotificationVariables,
-    channelType: NotificationChannelType = NotificationChannelType.IN_APP
-  ): Promise<string> {
-    return this.createNotification(
-      eventType,
-      variables,
-      {
-        targetType: NotificationTargetType.ADMIN,
-        targetIds: []
-      },
-      channelType
-    );
-  }
 }
+ 
