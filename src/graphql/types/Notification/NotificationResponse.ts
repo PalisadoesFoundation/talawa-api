@@ -12,7 +12,6 @@ export const userNotificationSchema = z.object({
   }).passthrough(), 
   createdAt: z.date(),
   eventType: z.string().min(1),
-  channel: z.enum(["email", "in_app", "push", "sms"]),
 });
 
 export type UserNotification = z.infer<typeof userNotificationSchema>;
@@ -55,9 +54,6 @@ Notification.implement({
     }),
     eventType: t.exposeString("eventType", {
       description: "Type of event (for categorization).",
-    }),
-    channel: t.exposeString("channel", {
-      description: "Delivery channel (email, in_app, push, sms).",
     }),
   }),
 });

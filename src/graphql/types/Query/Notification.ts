@@ -6,12 +6,8 @@ import {
 } from "~/src/graphql/inputs/QueryNotificationInput";
 import { User } from "../User/User";
 import { Notification } from "~/src/graphql/types/Notification/NotificationResponse";
-import {
-	notificationLogsTable
-} from "~/src/drizzle/tables/NotificationLog";
-import {
-	notificationAudienceTable,
-} from "~/src/drizzle/tables/NotificationAudience";
+import { notificationLogsTable } from "~/src/drizzle/tables/NotificationLog";
+import { notificationAudienceTable } from "~/src/drizzle/tables/NotificationAudience";
 import { eq, and, desc } from "drizzle-orm";
 
 const queryNotificationArgumentsSchema = z.object({
@@ -76,14 +72,13 @@ User.implement({
 						},
 					});
 				}
-				const notifications = await ctx.drizzleClient
+				const rawNotifications = await ctx.drizzleClient
 					.select({
 						id: notificationLogsTable.id,
 						navigation: notificationLogsTable.navigation,
 						renderedContent: notificationLogsTable.renderedContent,
 						createdAt: notificationLogsTable.createdAt,
 						eventType: notificationLogsTable.eventType,
-						channel: notificationLogsTable.channel,
 						isRead: notificationAudienceTable.isRead,
 						readAt: notificationAudienceTable.readAt,
 					})
@@ -106,7 +101,26 @@ User.implement({
 					.limit(parsedArgs.input.first || 20)
 					.offset(parsedArgs.input.skip || 0);
 
-				return notifications;
+				return rawNotifications.map((notification) => ({
+					id: notification.id,
+					isRead: notification.isRead,
+					readAt: notification.readAt,
+					navigation: notification.navigation,
+					createdAt: notification.createdAt,
+					eventType: notification.eventType,
+					renderedContent: {
+						title:
+							((notification.renderedContent as Record<string, unknown>)
+								?.title as string) || "",
+						body:
+							((notification.renderedContent as Record<string, unknown>)
+								?.body as string) || "",
+						...(typeof notification.renderedContent === "object" &&
+						notification.renderedContent !== null
+							? (notification.renderedContent as Record<string, unknown>)
+							: {}),
+					},
+				}));
 			},
 		}),
 	}),
