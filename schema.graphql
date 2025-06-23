@@ -22,14 +22,9 @@ type ActionItem {
   assignee: User
 
   """
-  The ID of the user assigned to this action item.
+  The category this action item belongs to.
   """
-  assigneeId: ID
-
-  """
-  The ID of the category this action item belongs to.
-  """
-  categoryId: ID
+  category: ActionItemCategory
 
   """
   Timestamp when the action item was completed.
@@ -47,19 +42,9 @@ type ActionItem {
   creator: User
 
   """
-  The ID of the user who created this action item.
-  """
-  creatorId: ID
-
-  """
   Fetch the event associated with this action item, including attachments if available.
   """
   event: Event
-
-  """
-  The ID of the associated event, if applicable.
-  """
-  eventId: ID
 
   """
   Unique identifier for the action item.
@@ -72,9 +57,9 @@ type ActionItem {
   isCompleted: Boolean
 
   """
-  The ID of the organization the action item belongs to.
+  The organization the action item belongs to.
   """
-  organizationId: ID
+  organization: Organization
 
   """
   Notes added after completing the action item.
@@ -92,24 +77,49 @@ type ActionItem {
   updatedAt: DateTime
 
   """
-  The ID of the user who last updated this action item.
+  User who last updated the action item.
   """
-  updaterId: ID
+  updater: User
 }
 
+"""
+GraphQL connection for ActionItemCategory actionItems field
+"""
+type ActionItemCategoryActionItemsConnection {
+  edges: [ActionItemCategoryActionItemsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+"""
+GraphQL connection edge for ActionItemCategory actionItems field
+"""
+type ActionItemCategoryActionItemsConnectionEdge {
+  cursor: String!
+  node: ActionItem
+}
 """
 Represents a category for action items, including metadata such as creation and update timestamps.
 """
 type ActionItemCategory {
+  """
+  GraphQL connection to traverse through the action items that belong to this category.
+  """
+  actionItems(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): ActionItemCategoryActionItemsConnection
+
   """
   Timestamp when the category was created.
   """
   createdAt: DateTime
 
   """
-  Identifier for the user who created this category.
+  User who created the category.
   """
-  creatorId: ID
+  creator: User
 
   """
   the description of the action item category.
@@ -132,14 +142,19 @@ type ActionItemCategory {
   name: String
 
   """
-  Identifier for the organization this category belongs to.
+  Organization which the action item category belongs to.
   """
-  organizationId: ID
+  organization: Organization
 
   """
   Timestamp when the category was last updated.
   """
   updatedAt: DateTime
+
+  """
+  User who last updated the category.
+  """
+  updater: User
 }
 
 type Advertisement {
@@ -4275,6 +4290,22 @@ input MutationUpdateVenueInput {
   name: String
 }
 
+"""
+GraphQL connection for Organization actionItemCategories field
+"""
+type OrganizationActionItemCategoriesConnection {
+  edges: [OrganizationActionItemCategoriesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+"""
+GraphQL connection edge for Organization actionItemCategories field
+"""
+type OrganizationActionItemCategoriesConnectionEdge {
+  cursor: String!
+  node: ActionItemCategory
+}
+
 type Organization {
   """
   Address line 1 of the organization's address.
@@ -4290,6 +4321,16 @@ type Organization {
   Total number of admins in the organization.
   """
   adminsCount: Int
+
+  """
+  GraphQL connection to traverse through the action item categories belonging to the organization.
+  """
+  actionItemCategories(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationActionItemCategoriesConnection
 
   """
   GraphQL connection to traverse through the advertisements belonging to the organization.

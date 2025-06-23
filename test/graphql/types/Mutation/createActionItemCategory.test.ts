@@ -831,6 +831,8 @@ suite("Mutation field createActionItemCategory", () => {
 				}
 				const organizationId =
 					createOrganizationResult.data.createOrganization.id;
+				const organizationName =
+					createOrganizationResult.data.createOrganization.name;
 
 				// Make admin user an administrator of the organization
 				const createMembershipResult = await mercuriusClient.mutate(
@@ -890,8 +892,14 @@ suite("Mutation field createActionItemCategory", () => {
 						id: expect.any(String),
 						name: variables.input.name,
 						description: variables.input.description ?? null,
-						organizationId: variables.input.organizationId,
-						creatorId: adminId,
+						organization: {
+							id: organizationId,
+							name: organizationName,
+						},
+						creator: {
+							id: adminId,
+							name: expect.any(String),
+						},
 						isDisabled: variables.input.isDisabled,
 						createdAt: expect.any(String),
 						updatedAt: null, // New categories should have null updatedAt initially
@@ -950,6 +958,8 @@ suite("Mutation field createActionItemCategory", () => {
 				}
 				const organizationId =
 					createOrganizationResult.data.createOrganization.id;
+				const organizationName =
+					createOrganizationResult.data.createOrganization.name;
 
 				// Make admin user an administrator of the organization
 				const createMembershipResult = await mercuriusClient.mutate(
@@ -1009,8 +1019,14 @@ suite("Mutation field createActionItemCategory", () => {
 						id: expect.any(String),
 						name: variables.input.name,
 						description: null, // Expect null when field is omitted
-						organizationId: variables.input.organizationId,
-						creatorId: adminId,
+						organization: {
+							id: organizationId,
+							name: organizationName,
+						},
+						creator: {
+							id: adminId,
+							name: expect.any(String),
+						},
 						isDisabled: variables.input.isDisabled,
 						createdAt: expect.any(String),
 						updatedAt: null,
@@ -1069,6 +1085,8 @@ suite("Mutation field createActionItemCategory", () => {
 				}
 				const organizationId =
 					createOrganizationResult.data.createOrganization.id;
+				const organizationName =
+					createOrganizationResult.data.createOrganization.name;
 
 				// Make admin user an administrator of the organization
 				const createMembershipResult = await mercuriusClient.mutate(
@@ -1128,8 +1146,14 @@ suite("Mutation field createActionItemCategory", () => {
 						id: expect.any(String),
 						name: variables.input.name,
 						description: null, // Expect null when field is not provided
-						organizationId: variables.input.organizationId,
-						creatorId: adminId, // Add creatorId to match the admin user
+						organization: {
+							id: organizationId,
+							name: organizationName,
+						},
+						creator: {
+							id: adminId,
+							name: expect.any(String),
+						},
 						isDisabled: variables.input.isDisabled,
 						createdAt: expect.any(String),
 						updatedAt: null,
@@ -1189,6 +1213,8 @@ suite("Mutation field createActionItemCategory", () => {
 				}
 				const organizationId =
 					createOrganizationResult.data.createOrganization.id;
+				const organizationName =
+					createOrganizationResult.data.createOrganization.name;
 
 				// Make admin user an administrator of the organization
 				const createMembershipResult = await mercuriusClient.mutate(
@@ -1247,8 +1273,14 @@ suite("Mutation field createActionItemCategory", () => {
 						id: expect.any(String),
 						name: variables.input.name,
 						description: null,
-						organizationId: variables.input.organizationId,
-						creatorId: adminId,
+						organization: {
+							id: organizationId,
+							name: organizationName,
+						},
+						creator: {
+							id: adminId,
+							name: expect.any(String),
+						},
 						isDisabled: false, // This should match what we provided
 						createdAt: expect.any(String),
 						updatedAt: null,

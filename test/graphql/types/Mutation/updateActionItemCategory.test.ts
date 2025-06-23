@@ -530,10 +530,18 @@ describe("Mutation field updateActionItemCategory", () => {
 			expect.objectContaining({
 				id: categoryId,
 				name: "Updated Category Name",
-				organizationId: organizationId,
+				description: null,
 				isDisabled: false,
 				createdAt: expect.any(String),
 				updatedAt: expect.any(String),
+				organization: expect.objectContaining({
+					id: organizationId,
+					name: expect.any(String),
+				}),
+				creator: expect.objectContaining({
+					id: expect.any(String),
+					name: expect.any(String),
+				}),
 			}),
 		);
 	});
@@ -651,10 +659,17 @@ describe("Mutation field updateActionItemCategory", () => {
 				id: categoryId,
 				name: "Test Category",
 				description: "Updated description for this category",
-				organizationId: organizationId,
 				isDisabled: false,
 				createdAt: expect.any(String),
 				updatedAt: expect.any(String),
+				organization: expect.objectContaining({
+					id: organizationId,
+					name: expect.any(String),
+				}),
+				creator: expect.objectContaining({
+					id: expect.any(String),
+					name: expect.any(String),
+				}),
 			}),
 		);
 	});
@@ -770,10 +785,18 @@ describe("Mutation field updateActionItemCategory", () => {
 			expect.objectContaining({
 				id: categoryId,
 				name: "Test Category",
-				organizationId: organizationId,
+				description: null,
 				isDisabled: true,
 				createdAt: expect.any(String),
 				updatedAt: expect.any(String),
+				organization: expect.objectContaining({
+					id: organizationId,
+					name: expect.any(String),
+				}),
+				creator: expect.objectContaining({
+					id: expect.any(String),
+					name: expect.any(String),
+				}),
 			}),
 		);
 	});
@@ -893,10 +916,17 @@ describe("Mutation field updateActionItemCategory", () => {
 				id: categoryId,
 				name: "Completely Updated Category",
 				description: "This is the new updated description",
-				organizationId: organizationId,
 				isDisabled: true,
 				createdAt: expect.any(String),
 				updatedAt: expect.any(String),
+				organization: expect.objectContaining({
+					id: organizationId,
+					name: expect.any(String),
+				}),
+				creator: expect.objectContaining({
+					id: expect.any(String),
+					name: expect.any(String),
+				}),
 			}),
 		);
 	});
@@ -1014,10 +1044,17 @@ describe("Mutation field updateActionItemCategory", () => {
 				id: categoryId,
 				name: "Same Name Category",
 				description: "Updated description but same name",
-				organizationId: organizationId,
 				isDisabled: false,
 				createdAt: expect.any(String),
 				updatedAt: expect.any(String),
+				organization: expect.objectContaining({
+					id: organizationId,
+					name: expect.any(String),
+				}),
+				creator: expect.objectContaining({
+					id: expect.any(String),
+					name: expect.any(String),
+				}),
 			}),
 		);
 	});
