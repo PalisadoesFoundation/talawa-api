@@ -4,21 +4,11 @@
 
 # Type Alias: ArgumentsAssociatedResourcesNotFoundExtensions
 
-> **ArgumentsAssociatedResourcesNotFoundExtensions**: `object`
+> **ArgumentsAssociatedResourcesNotFoundExtensions** = `object`
 
-Defined in: src/utilities/TalawaGraphQLError.ts:32
+Defined in: [src/utilities/TalawaGraphQLError.ts:32](https://github.com/PalisadoesFoundation/talawa-api/blob/a4f57b3a64e82c74809b195eb7bde9c04b2a5e89/src/utilities/TalawaGraphQLError.ts#L32)
 
 When resources associated to the provided graphql arguments cannot be not found.
-
-## Type declaration
-
-### code
-
-> **code**: `"arguments_associated_resources_not_found"`
-
-### issues
-
-> **issues**: `object`[]
 
 ## Example
 
@@ -40,3 +30,23 @@ throw new TalawaGraphQLError({
 	},
 });
 ```
+
+## Properties
+
+### code
+
+> **code**: `"arguments_associated_resources_not_found"`
+
+Defined in: [src/utilities/TalawaGraphQLError.ts:33](https://github.com/PalisadoesFoundation/talawa-api/blob/a4f57b3a64e82c74809b195eb7bde9c04b2a5e89/src/utilities/TalawaGraphQLError.ts#L33)
+
+***
+
+### issues
+
+> **issues**: `object`[]
+
+Defined in: [src/utilities/TalawaGraphQLError.ts:34](https://github.com/PalisadoesFoundation/talawa-api/blob/a4f57b3a64e82c74809b195eb7bde9c04b2a5e89/src/utilities/TalawaGraphQLError.ts#L34)
+
+#### argumentPath
+
+> **argumentPath**: (`string` \| `number`)[]

@@ -8,6 +8,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
@@ -102,3 +103,6 @@ export const volunteerGroupsTableRelations = relations(
 		}),
 	}),
 );
+
+export const volunteerGroupsTableInsertSchema =
+	createInsertSchema(volunteerGroupsTable);

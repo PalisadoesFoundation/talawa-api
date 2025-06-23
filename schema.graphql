@@ -1250,6 +1250,12 @@ type HasUserVoted {
   voteType: PostVoteType
 }
 
+enum InviteStatus {
+  accepted
+  declined
+  no_response
+}
+
 """
 Possible variants of the two-letter language code defined in ISO 639-1, part of the ISO 639 standard published by the International Organization for Standardization (ISO), to represent natural languages.
 """
@@ -3886,8 +3892,7 @@ input MutationUpdateCurrentUserInput {
   workPhoneNumber: PhoneNumber
 }
 
-"""
-"""
+""""""
 input MutationUpdateEventInput {
   """
   Global identifier of the event to update.
@@ -5250,6 +5255,12 @@ input QueryEventInput {
   id: String!
 }
 
+""""""
+input QueryEventVolunteerGroupsInput {
+  """Global id of the event."""
+  eventId: String!
+}
+
 input QueryEventsByIdsInput {
   ids: [ID!]!
 }
@@ -5382,6 +5393,12 @@ input QueryVenueInput {
   Global id of the venue.
   """
   id: String!
+}
+
+""""""
+input QueryVolunteerGroupAssignmentsInput {
+  """Global id of the group."""
+  groupId: String!
 }
 
 type RejectMembershipResponse {

@@ -1241,3 +1241,64 @@ export const Mutation_createPostVote = gql(`
       caption
     }
   }`);
+
+export const Mutation_createEventVolunteerGroup = gql(`
+  mutation Mutation_createEventVolunteerGroup($input: MutationCreateEventVolunteerGroupInput!){
+    createEventVolunteerGroup(input: $input) {
+      id
+      name
+    }
+  }`);
+
+export const Mutation_updateEventVolunteerGroup = gql(`
+    mutation Mutation_updateEventVolunteerGroup($input: MutationUpdateEventVolunteerGroupInput!){
+      updateEventVolunteerGroup(input: $input) {
+        id
+        name
+        maxVolunteerCount
+      }
+    }`);
+
+export const Mutation_deleteEventVolunteerGroup = gql(`
+  mutation Mutation_deleteEventVolunteerGroup($input: MutationDeleteEventVolunteerGroupInput!){
+    deleteEventVolunteerGroup(input: $input) {
+      id
+      name
+      maxVolunteerCount
+    }
+  }`);
+
+export const Query_getEventVolunteerGroups = gql(`
+  query Query_getEventVolunteerGroups($input: QueryEventVolunteerGroupsInput!){
+    getEventVolunteerGroups(input: $input) {
+      id
+      name
+    }
+  }`);
+
+export const Mutation_createEventVolunteerGroupAssignments = gql(`
+  mutation Mutation_createEventVolunteerGroupAssignments($input: MutationCreateVolunteerGroupAssignmentsInput!){
+    createEventVolunteerGroupAssignments(input: $input) {
+      assignee {id}
+      group {id}
+      inviteStatus
+    }
+  }`);
+
+export const Mutation_updateEventVolunteerGroupAssignments = gql(`
+  mutation Mutation_updateEventVolunteerGroupAssignments($input: MutationUpdateVolunteerGroupAssignmentsInput!){
+    updateEventVolunteerGroupAssignments(input: $input) {
+      assignee {id}
+      group {id}
+      inviteStatus
+    }
+  }`);
+
+export const Query_getEventVolunteerGroupAssignments = gql(`
+  query Query_getEventVolunteerGroupAssignments($input: QueryVolunteerGroupAssignmentsInput!){
+    getEventVolunteerGroupAssignments(input: $input) {
+      assignee {id}
+      group {id}
+      inviteStatus
+    }
+  }`);
