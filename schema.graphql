@@ -2053,6 +2053,20 @@ type Mutation {
   createEvent(input: MutationCreateEventInput!): Event
 
   """
+  Mutation field to create a volunteer group.
+  """
+  createEventVolunteerGroup(
+    input: MutationCreateEventVolunteerGroupInput!
+  ): VolunteerGroups
+
+  """
+  Mutation field to create a volunteer group assignments.
+  """
+  createEventVolunteerGroupAssignments(
+    input: MutationCreateVolunteerGroupAssignmentsInput!
+  ): VolunteerGroupAssignments
+
+  """
   Mutation field to create a fund.
   """
   createFund(input: MutationCreateFundInput!): Fund
@@ -2192,6 +2206,13 @@ type Mutation {
   Mutation field to delete an event.
   """
   deleteEvent(input: MutationDeleteEventInput!): Event
+
+  """
+  Mutation field to delete a volunteer group.
+  """
+  deleteEventVolunteerGroup(
+    input: MutationDeleteEventVolunteerGroupInput!
+  ): VolunteerGroups
 
   """
   Mutation field to delete a fund.
@@ -2378,6 +2399,20 @@ type Mutation {
   Mutation field to update an event.
   """
   updateEvent(input: MutationUpdateEventInput!): Event
+
+  """
+  Mutation field to update a volunteer group.
+  """
+  updateEventVolunteerGroup(
+    input: MutationUpdateEventVolunteerGroupInput!
+  ): VolunteerGroups
+
+  """
+  Mutation field to update a volunteer group assignments.
+  """
+  updateEventVolunteerGroupAssignments(
+    input: MutationUpdateVolunteerGroupAssignmentsInput!
+  ): VolunteerGroupAssignments
 
   """
   Mutation field to update a fund.
@@ -2682,7 +2717,7 @@ input MutationCreateEventInput {
   endAt: DateTime!
 
   """
-  Boolean to tell if the event is public
+  Indicates if the event is publicly visible
   """
   isPublic: Boolean
 
@@ -2710,6 +2745,30 @@ input MutationCreateEventInput {
   Date time at the time the event starts at.
   """
   startAt: DateTime!
+}
+
+"""
+"""
+input MutationCreateEventVolunteerGroupInput {
+  """
+  Global identifier of the event that the group is to be made for.
+  """
+  eventId: ID!
+
+  """
+  Global identifier of the user that is assigned leader of the group.
+  """
+  leaderId: ID!
+
+  """
+  Max volunteers count
+  """
+  maxVolunteerCount: Int!
+
+  """
+  Name of the group.
+  """
+  name: String!
 }
 
 """
@@ -3147,6 +3206,22 @@ input MutationDeleteActionItemCategoryInput {
   """
   id: ID!
 }
+input MutationCreateVolunteerGroupAssignmentsInput {
+  """
+  Global identifier of the user.
+  """
+  assigneeId: ID!
+
+  """
+  Global identifier of the group.
+  """
+  groupId: ID!
+
+  """
+  Invitation Status.
+  """
+  inviteStatus: InviteStatus!
+}
 
 """
 """
@@ -3235,6 +3310,15 @@ input MutationDeleteCommentVoteInput {
 input MutationDeleteEventInput {
   """
   Global identifier of the event.
+  """
+  id: ID!
+}
+
+"""
+"""
+input MutationDeleteEventVolunteerGroupInput {
+  """
+  Global identifier of the group.
   """
   id: ID!
 }
@@ -3894,9 +3978,9 @@ input MutationUpdateCurrentUserInput {
 
 """"""
 input MutationUpdateEventInput {
-  """
+"""
   Global identifier of the event to update.
-  """
+"""
   id: ID!
 
   """
@@ -3938,6 +4022,29 @@ input MutationUpdateEventInput {
   Indicates if users can register for this event.
   """
   isRegisterable: Boolean
+}
+"""
+"""
+input MutationUpdateEventVolunteerGroupInput {
+  """
+  Global identifier of the group.
+  """
+  id: ID!
+
+  """
+  Global identifier of the user that is assigned leader of the group.
+  """
+  leaderId: ID
+
+  """
+  Max volunteers count
+  """
+  maxVolunteerCount: Int!
+
+  """
+  Name of the Group.
+  """
+  name: String
 }
 
 """
@@ -4311,6 +4418,24 @@ type OrganizationActionItemCategoriesConnectionEdge {
   node: ActionItemCategory
 }
 
+"""
+"""
+input MutationUpdateVolunteerGroupAssignmentsInput {
+  """
+  Global identifier of the user.
+  """
+  assigneeId: ID!
+
+  """
+  Global identifier of the group.
+  """
+  groupId: ID!
+
+  """
+  Invitation Status.
+  """
+  inviteStatus: UpdateInviteStatus!
+}
 type Organization {
   """
   Address line 1 of the organization's address.
@@ -5062,6 +5187,20 @@ type Query {
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
   """
+  Query field to get all volunteer of a group.
+  """
+  getEventVolunteerGroupAssignments(
+    input: QueryVolunteerGroupAssignmentsInput!
+  ): [VolunteerGroupAssignments!]
+
+  """
+  Query field to get all volunteer groups for an event.
+  """
+  getEventVolunteerGroups(
+    input: QueryEventVolunteerGroupsInput!
+  ): [VolunteerGroups!]
+
+  """
   Query field to get fund campaign pledge associated to a user.
   """
   getPledgesByUserId(
@@ -5255,9 +5394,12 @@ input QueryEventInput {
   id: String!
 }
 
-""""""
+"""
+"""
 input QueryEventVolunteerGroupsInput {
-  """Global id of the event."""
+  """
+  Global id of the event.
+  """
   eventId: String!
 }
 
@@ -5395,9 +5537,12 @@ input QueryVenueInput {
   id: String!
 }
 
-""""""
+"""
+"""
 input QueryVolunteerGroupAssignmentsInput {
-  """Global id of the group."""
+  """
+  Global id of the group.
+  """
   groupId: String!
 }
 
@@ -5583,6 +5728,12 @@ type TagFolderTagsConnection {
 type TagFolderTagsConnectionEdge {
   cursor: String!
   node: Tag
+}
+
+enum UpdateInviteStatus {
+  accepted
+  declined
+  no_response
 }
 
 """
@@ -5918,4 +6069,88 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
+}
+
+type VolunteerGroupAssignments {
+  """
+  Volunteer group assignee.
+  """
+  assignee: User
+
+  """
+  Date time at the time the Group Assignment was created.
+  """
+  createdAt: DateTime
+
+  """
+  User who has created the Assignment.
+  """
+  creator: User
+
+  """
+  Volunteer group.
+  """
+  group: VolunteerGroups
+
+  """
+  Invitation status.
+  """
+  inviteStatus: String
+
+  """
+  Date time at the time the Group Assignment was last updated.
+  """
+  updatedAt: DateTime
+
+  """
+  User who has last updated the Assignment.
+  """
+  updator: User
+}
+
+type VolunteerGroups {
+  """
+  Date time at the time the Group was created.
+  """
+  createdAt: DateTime
+
+  """
+  User who has created the Group.
+  """
+  creator: User
+
+  """
+  Event for which Group was made.
+  """
+  event: Event
+
+  """
+  Global identifier of the group.
+  """
+  id: ID!
+
+  """
+  Leader assigned for the group.
+  """
+  leader: User
+
+  """
+  Maximum number of volunteers for this group.
+  """
+  maxVolunteerCount: Int
+
+  """
+  Name of the Group.
+  """
+  name: String
+
+  """
+  Date time at the time the Group was updated.
+  """
+  updatedAt: DateTime
+
+  """
+  User who has last updated the Group.
+  """
+  updater: User
 }
