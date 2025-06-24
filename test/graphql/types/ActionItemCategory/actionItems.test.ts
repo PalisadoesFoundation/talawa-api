@@ -1,6 +1,6 @@
 import { Buffer } from "node:buffer";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/ActionItemCategory";
 import {
@@ -148,7 +148,7 @@ describe("ActionItemCategory.actionItems resolver", () => {
 				await context.drizzleClient.query.actionsTable.findMany({
 					limit,
 					orderBy: [],
-					where: {},
+					where: undefined,
 				});
 
 			if (cursor && actionItems.length === 0) {
@@ -178,21 +178,31 @@ describe("ActionItemCategory.actionItems resolver", () => {
 					hasPreviousPage: false,
 					startCursor:
 						itemsArray.length > 0
-							? Buffer.from(
-									JSON.stringify({
-										id: itemsArray[0].id,
-										assignedAt: itemsArray[0].assignedAt,
-									}),
-								).toString("base64url")
+							? (() => {
+									const firstItem = itemsArray[0];
+									return firstItem
+										? Buffer.from(
+												JSON.stringify({
+													id: firstItem.id,
+													assignedAt: firstItem.assignedAt,
+												}),
+											).toString("base64url")
+										: null;
+								})()
 							: null,
 					endCursor:
 						itemsArray.length > 0
-							? Buffer.from(
-									JSON.stringify({
-										id: itemsArray[itemsArray.length - 1].id,
-										assignedAt: itemsArray[itemsArray.length - 1].assignedAt,
-									}),
-								).toString("base64url")
+							? (() => {
+									const lastItem = itemsArray[itemsArray.length - 1];
+									return lastItem
+										? Buffer.from(
+												JSON.stringify({
+													id: lastItem.id,
+													assignedAt: lastItem.assignedAt,
+												}),
+											).toString("base64url")
+										: null;
+								})()
 							: null,
 				},
 			};
@@ -224,8 +234,8 @@ describe("ActionItemCategory.actionItems resolver", () => {
 			};
 
 			expect(connection.edges).toHaveLength(2);
-			expect(connection.edges[0].node).toEqual(mockActionItem1);
-			expect(connection.edges[1].node).toEqual(mockActionItem2);
+			expect(connection.edges[0]?.node).toEqual(mockActionItem1);
+			expect(connection.edges[1]?.node).toEqual(mockActionItem2);
 		});
 
 		it("should handle valid last argument", async () => {
@@ -240,7 +250,7 @@ describe("ActionItemCategory.actionItems resolver", () => {
 			};
 
 			expect(connection.edges).toHaveLength(2);
-			expect(connection.edges[0].node).toEqual(mockActionItem2);
+			expect(connection.edges[0]?.node).toEqual(mockActionItem2);
 		});
 
 		it("should throw error for invalid after cursor", async () => {
@@ -310,8 +320,8 @@ describe("ActionItemCategory.actionItems resolver", () => {
 			};
 
 			expect(connection.edges).toHaveLength(2);
-			expect(connection.edges[0].node).toEqual(mockActionItem2);
-			expect(connection.edges[1].node).toEqual(mockActionItem3);
+			expect(connection.edges[0]?.node).toEqual(mockActionItem2);
+			expect(connection.edges[1]?.node).toEqual(mockActionItem3);
 		});
 
 		it("should handle backward pagination with before cursor", async () => {
@@ -337,8 +347,8 @@ describe("ActionItemCategory.actionItems resolver", () => {
 			};
 
 			expect(connection.edges).toHaveLength(2);
-			expect(connection.edges[0].node).toEqual(mockActionItem2);
-			expect(connection.edges[1].node).toEqual(mockActionItem1);
+			expect(connection.edges[0]?.node).toEqual(mockActionItem2);
+			expect(connection.edges[1]?.node).toEqual(mockActionItem1);
 		});
 
 		it("should throw error when cursor points to non-existent resource", async () => {
@@ -403,14 +413,17 @@ describe("ActionItemCategory.actionItems resolver", () => {
 
 			expect(connection.edges[0]).toHaveProperty("cursor");
 			expect(connection.edges[0]).toHaveProperty("node");
-			expect(connection.edges[0].node).toEqual(mockActionItem1);
+			expect(connection.edges[0]?.node).toEqual(mockActionItem1);
 
 			// Verify cursor can be decoded
-			const decodedCursor = JSON.parse(
-				Buffer.from(connection.edges[0].cursor, "base64url").toString("utf-8"),
-			);
-			expect(decodedCursor).toHaveProperty("id", mockActionItem1.id);
-			expect(decodedCursor).toHaveProperty("assignedAt");
+			const firstEdge = connection.edges[0];
+			if (firstEdge?.cursor) {
+				const decodedCursor = JSON.parse(
+					Buffer.from(firstEdge.cursor, "base64url").toString("utf-8"),
+				);
+				expect(decodedCursor).toHaveProperty("id", mockActionItem1.id);
+				expect(decodedCursor).toHaveProperty("assignedAt");
+			}
 		});
 
 		it("should handle empty result set", async () => {
@@ -441,7 +454,7 @@ describe("ActionItemCategory.actionItems resolver", () => {
 			).toHaveBeenCalledWith({
 				limit: 10,
 				orderBy: expect.any(Array),
-				where: expect.any(Object),
+				where: undefined,
 			});
 		});
 
@@ -481,14 +494,14 @@ describe("ActionItemCategory.actionItems resolver", () => {
 			};
 
 			expect(connection.edges).toHaveLength(1);
-			expect(connection.edges[0].node).toEqual(mockActionItem1);
+			expect(connection.edges[0]?.node).toEqual(mockActionItem1);
 		});
 
 		it("should handle missing parent category id", async () => {
 			const parentWithoutId = {
 				...mockParent,
-				id: undefined,
-			} as ActionItemCategory;
+				id: undefined as unknown as string, // Force the type for testing
+			};
 
 			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
 
@@ -517,16 +530,18 @@ describe("ActionItemCategory.actionItems resolver", () => {
 			};
 
 			expect(connection.edges).toHaveLength(3);
-			expect(
-				new Date(connection.edges[0].node.assignedAt).getTime(),
-			).toBeLessThanOrEqual(
-				new Date(connection.edges[1].node.assignedAt).getTime(),
-			);
-			expect(
-				new Date(connection.edges[1].node.assignedAt).getTime(),
-			).toBeLessThanOrEqual(
-				new Date(connection.edges[2].node.assignedAt).getTime(),
-			);
+			const firstNode = connection.edges[0]?.node;
+			const secondNode = connection.edges[1]?.node;
+			const thirdNode = connection.edges[2]?.node;
+
+			if (firstNode && secondNode && thirdNode) {
+				expect(new Date(firstNode.assignedAt).getTime()).toBeLessThanOrEqual(
+					new Date(secondNode.assignedAt).getTime(),
+				);
+				expect(new Date(secondNode.assignedAt).getTime()).toBeLessThanOrEqual(
+					new Date(thirdNode.assignedAt).getTime(),
+				);
+			}
 		});
 
 		it("should return items in descending order for backward pagination", async () => {
@@ -552,12 +567,15 @@ describe("ActionItemCategory.actionItems resolver", () => {
 			};
 
 			expect(connection.edges).toHaveLength(2);
-			// In backward pagination, items should be in descending order by assignedAt
-			expect(
-				new Date(connection.edges[0].node.assignedAt).getTime(),
-			).toBeGreaterThanOrEqual(
-				new Date(connection.edges[1].node.assignedAt).getTime(),
-			);
+			const firstNode = connection.edges[0]?.node;
+			const secondNode = connection.edges[1]?.node;
+
+			if (firstNode && secondNode) {
+				// In backward pagination, items should be in descending order by assignedAt
+				expect(new Date(firstNode.assignedAt).getTime()).toBeGreaterThanOrEqual(
+					new Date(secondNode.assignedAt).getTime(),
+				);
+			}
 		});
 	});
 
