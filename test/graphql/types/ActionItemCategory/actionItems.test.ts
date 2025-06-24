@@ -1,16 +1,16 @@
 import { Buffer } from "node:buffer";
+import { asc, desc, eq } from "drizzle-orm";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { actionsTable } from "~/src/drizzle/tables/actions";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/ActionItemCategory";
-import {
-	TalawaGraphQLError,
-	type TalawaGraphQLErrorExtensions,
-} from "~/src/utilities/TalawaGraphQLError";
+import type { ActionItemCategory as ActionItemCategoryType } from "~/src/graphql/types/ActionItemCategory/ActionItemCategory";
+import { resolveActionItems } from "~/src/graphql/types/ActionItemCategory/actionItems";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-// Mock data for testing
+// Mock data
 const mockActionItem1 = {
-	id: "action-1",
+	id: "01234567-89ab-cdef-0123-456789abcdef", // Valid UUID
 	categoryId: "category-1",
 	assignedAt: new Date("2024-01-01T10:00:00Z"),
 	isCompleted: false,
@@ -26,41 +26,7 @@ const mockActionItem1 = {
 	updaterId: null,
 };
 
-const mockActionItem2 = {
-	id: "action-2",
-	categoryId: "category-1",
-	assignedAt: new Date("2024-01-02T10:00:00Z"),
-	isCompleted: true,
-	preCompletionNotes: "Initial notes",
-	postCompletionNotes: "Task completed successfully",
-	completionAt: new Date("2024-01-02T15:00:00Z"),
-	assigneeId: "user-2",
-	creatorId: "user-admin",
-	eventId: null,
-	organizationId: "org-1",
-	createdAt: new Date("2024-01-02T09:00:00Z"),
-	updatedAt: new Date("2024-01-02T15:00:00Z"),
-	updaterId: "user-2",
-};
-
-const mockActionItem3 = {
-	id: "action-3",
-	categoryId: "category-1",
-	assignedAt: new Date("2024-01-03T10:00:00Z"),
-	isCompleted: false,
-	preCompletionNotes: "Work in progress",
-	postCompletionNotes: null,
-	completionAt: null,
-	assigneeId: "user-3",
-	creatorId: "user-admin",
-	eventId: null,
-	organizationId: "org-1",
-	createdAt: new Date("2024-01-03T09:00:00Z"),
-	updatedAt: null,
-	updaterId: null,
-};
-
-const mockParent: ActionItemCategory = {
+const mockParent: ActionItemCategoryType = {
 	id: "category-1",
 	name: "Test Category",
 	description: "Test category description",
@@ -75,14 +41,9 @@ const mockParent: ActionItemCategory = {
 describe("ActionItemCategory.actionItems resolver", () => {
 	let ctx: GraphQLContext;
 	let mocks: ReturnType<typeof createMockGraphQLContext>["mocks"];
-	let actionItemsResolver: (
-		parent: ActionItemCategory,
-		args: Record<string, unknown>,
-		context: GraphQLContext,
-	) => Promise<unknown>;
 
 	beforeEach(() => {
-		// Create mock context using the same pattern as the Organization test
+		vi.clearAllMocks();
 		const { context, mocks: newMocks } = createMockGraphQLContext(
 			true,
 			"user-1",
@@ -90,123 +51,12 @@ describe("ActionItemCategory.actionItems resolver", () => {
 		ctx = context;
 		mocks = newMocks;
 
-		// Mock resolver function - this would be your actual resolver
-		actionItemsResolver = async (
-			parent: ActionItemCategory,
-			args: Record<string, unknown>,
-			context: GraphQLContext,
-		) => {
-			if (!context.currentClient.isAuthenticated) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
-
-			// Parse and validate arguments (simplified)
-			const { first, last, after, before } = args;
-			let cursor: { id: string; assignedAt: Date } | undefined = undefined;
-			let isInversed = false;
-			const limit = (first as number) || (last as number) || 10;
-
-			if (before) {
-				isInversed = true;
-				try {
-					cursor = JSON.parse(
-						Buffer.from(before as string, "base64url").toString("utf-8"),
-					);
-				} catch {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "invalid_arguments",
-							issues: [
-								{ argumentPath: ["before"], message: "Not a valid cursor." },
-							],
-						},
-					});
-				}
-			} else if (after) {
-				try {
-					cursor = JSON.parse(
-						Buffer.from(after as string, "base64url").toString("utf-8"),
-					);
-				} catch {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "invalid_arguments",
-							issues: [
-								{ argumentPath: ["after"], message: "Not a valid cursor." },
-							],
-						},
-					});
-				}
-			}
-
-			// Get mock database query result
-			const actionItems =
-				await context.drizzleClient.query.actionsTable.findMany({
-					limit,
-					orderBy: [],
-					where: undefined,
-				});
-
-			if (cursor && actionItems.length === 0) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: [isInversed ? "before" : "after"] }],
-					},
-				});
-			}
-
-			// Transform to connection format - ensure actionItems is an array
-			const itemsArray = Array.isArray(actionItems) ? actionItems : [];
-
-			return {
-				edges: itemsArray.map((item) => ({
-					cursor: Buffer.from(
-						JSON.stringify({
-							id: item.id,
-							assignedAt: item.assignedAt,
-						}),
-					).toString("base64url"),
-					node: item,
-				})),
-				pageInfo: {
-					hasNextPage: false,
-					hasPreviousPage: false,
-					startCursor:
-						itemsArray.length > 0
-							? (() => {
-									const firstItem = itemsArray[0];
-									return firstItem
-										? Buffer.from(
-												JSON.stringify({
-													id: firstItem.id,
-													assignedAt: firstItem.assignedAt,
-												}),
-											).toString("base64url")
-										: null;
-								})()
-							: null,
-					endCursor:
-						itemsArray.length > 0
-							? (() => {
-									const lastItem = itemsArray[itemsArray.length - 1];
-									return lastItem
-										? Buffer.from(
-												JSON.stringify({
-													id: lastItem.id,
-													assignedAt: lastItem.assignedAt,
-												}),
-											).toString("base64url")
-										: null;
-								})()
-							: null,
-				},
-			};
+		// Mock the select method for exists queries
+		const mockSelect = {
+			from: vi.fn().mockReturnThis(),
+			where: vi.fn().mockReturnThis(),
 		};
+		ctx.drizzleClient.select = vi.fn().mockReturnValue(mockSelect);
 	});
 
 	describe("Authentication", () => {
@@ -214,50 +64,175 @@ describe("ActionItemCategory.actionItems resolver", () => {
 			ctx.currentClient.isAuthenticated = false;
 
 			await expect(
-				actionItemsResolver(mockParent, { first: 10 }, ctx),
+				resolveActionItems(mockParent, { first: 10 }, ctx),
 			).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
+				new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				}),
 			);
 		});
 	});
 
-	describe("Argument Validation", () => {
-		it("should handle valid first argument", async () => {
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
-				mockActionItem1,
-				mockActionItem2,
-			]);
-
-			const result = await actionItemsResolver(mockParent, { first: 2 }, ctx);
-			const connection = result as {
-				edges: Array<{ node: typeof mockActionItem1 }>;
-			};
-
-			expect(connection.edges).toHaveLength(2);
-			expect(connection.edges[0]?.node).toEqual(mockActionItem1);
-			expect(connection.edges[1]?.node).toEqual(mockActionItem2);
+	describe("Argument Parsing and Validation", () => {
+		it("should throw error when both first and last are provided", async () => {
+			await expect(
+				resolveActionItems(mockParent, { first: 10, last: 10 }, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["last"],
+								message:
+									'Argument "last" cannot be provided with argument "first".',
+							}),
+						]),
+					},
+				}),
+			);
 		});
 
-		it("should handle valid last argument", async () => {
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
-				mockActionItem2,
-				mockActionItem3,
-			]);
-
-			const result = await actionItemsResolver(mockParent, { last: 2 }, ctx);
-			const connection = result as {
-				edges: Array<{ node: typeof mockActionItem2 }>;
-			};
-
-			expect(connection.edges).toHaveLength(2);
-			expect(connection.edges[0]?.node).toEqual(mockActionItem2);
+		it("should throw error when before is provided with first", async () => {
+			await expect(
+				resolveActionItems(mockParent, { first: 10, before: "cursor" }, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["before"],
+								message:
+									'Argument "before" cannot be provided with argument "first".',
+							}),
+						]),
+					},
+				}),
+			);
 		});
 
-		it("should throw error for invalid after cursor", async () => {
-			const invalidCursor = "invalid-cursor";
+		it("should throw error when after is provided with last", async () => {
+			await expect(
+				resolveActionItems(mockParent, { last: 10, after: "cursor" }, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["after"],
+								message:
+									'Argument "after" cannot be provided with argument "last".',
+							}),
+						]),
+					},
+				}),
+			);
+		});
+
+		it("should throw error when neither first nor last is provided", async () => {
+			await expect(resolveActionItems(mockParent, {}, ctx)).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["first"],
+								message:
+									'A non-null value for argument "first" must be provided.',
+							}),
+							expect.objectContaining({
+								argumentPath: ["last"],
+								message:
+									'A non-null value for argument "last" must be provided.',
+							}),
+						]),
+					},
+				}),
+			);
+		});
+
+		it("should throw error for invalid after cursor format", async () => {
+			await expect(
+				resolveActionItems(
+					mockParent,
+					{ first: 10, after: "invalid-cursor" },
+					ctx,
+				),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["after"],
+								message: "Not a valid cursor.",
+							}),
+						]),
+					},
+				}),
+			);
+		});
+
+		it("should throw error for invalid before cursor format", async () => {
+			await expect(
+				resolveActionItems(
+					mockParent,
+					{ last: 10, before: "invalid-cursor" },
+					ctx,
+				),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["before"],
+								message: "Not a valid cursor.",
+							}),
+						]),
+					},
+				}),
+			);
+		});
+
+		it("should throw error for cursor with invalid JSON", async () => {
+			const invalidJsonCursor = Buffer.from("invalid json", "utf-8").toString(
+				"base64url",
+			);
 
 			await expect(
-				actionItemsResolver(
+				resolveActionItems(
+					mockParent,
+					{ first: 10, after: invalidJsonCursor },
+					ctx,
+				),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["after"],
+								message: "Not a valid cursor.",
+							}),
+						]),
+					},
+				}),
+			);
+		});
+
+		it("should throw error for cursor missing required fields", async () => {
+			const invalidCursor = Buffer.from(
+				JSON.stringify({ id: "test-id" }), // Missing assignedAt
+				"utf-8",
+			).toString("base64url");
+
+			await expect(
+				resolveActionItems(
 					mockParent,
 					{ first: 10, after: invalidCursor },
 					ctx,
@@ -266,367 +241,315 @@ describe("ActionItemCategory.actionItems resolver", () => {
 				new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",
-						issues: [
-							{ argumentPath: ["after"], message: "Not a valid cursor." },
-						],
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["after"],
+								message: "Not a valid cursor.",
+							}),
+						]),
 					},
 				}),
 			);
 		});
 
-		it("should throw error for invalid before cursor", async () => {
-			const invalidCursor = "invalid-cursor";
-
-			await expect(
-				actionItemsResolver(
-					mockParent,
-					{ last: 10, before: invalidCursor },
-					ctx,
-				),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{ argumentPath: ["before"], message: "Not a valid cursor." },
-						],
-					},
-				}),
-			);
-		});
-	});
-
-	describe("Cursor-based Pagination", () => {
-		it("should handle forward pagination with after cursor", async () => {
-			const cursor = Buffer.from(
+		it("should throw error for cursor with invalid UUID", async () => {
+			const invalidCursor = Buffer.from(
 				JSON.stringify({
-					id: mockActionItem1.id,
-					assignedAt: mockActionItem1.assignedAt,
-				}),
-			).toString("base64url");
-
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
-				mockActionItem2,
-				mockActionItem3,
-			]);
-
-			const result = await actionItemsResolver(
-				mockParent,
-				{ first: 2, after: cursor },
-				ctx,
-			);
-			const connection = result as {
-				edges: Array<{ node: typeof mockActionItem2 }>;
-			};
-
-			expect(connection.edges).toHaveLength(2);
-			expect(connection.edges[0]?.node).toEqual(mockActionItem2);
-			expect(connection.edges[1]?.node).toEqual(mockActionItem3);
-		});
-
-		it("should handle backward pagination with before cursor", async () => {
-			const cursor = Buffer.from(
-				JSON.stringify({
-					id: mockActionItem3.id,
-					assignedAt: mockActionItem3.assignedAt,
-				}),
-			).toString("base64url");
-
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
-				mockActionItem2,
-				mockActionItem1,
-			]);
-
-			const result = await actionItemsResolver(
-				mockParent,
-				{ last: 2, before: cursor },
-				ctx,
-			);
-			const connection = result as {
-				edges: Array<{ node: typeof mockActionItem2 }>;
-			};
-
-			expect(connection.edges).toHaveLength(2);
-			expect(connection.edges[0]?.node).toEqual(mockActionItem2);
-			expect(connection.edges[1]?.node).toEqual(mockActionItem1);
-		});
-
-		it("should throw error when cursor points to non-existent resource", async () => {
-			const cursor = Buffer.from(
-				JSON.stringify({
-					id: "non-existent-id",
+					id: "invalid-uuid",
 					assignedAt: new Date("2024-01-01T10:00:00Z"),
 				}),
+				"utf-8",
 			).toString("base64url");
 
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
-
 			await expect(
-				actionItemsResolver(mockParent, { first: 10, after: cursor }, ctx),
+				resolveActionItems(
+					mockParent,
+					{ first: 10, after: invalidCursor },
+					ctx,
+				),
 			).rejects.toThrow(
 				new TalawaGraphQLError({
 					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["after"] }],
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["after"],
+								message: "Not a valid cursor.",
+							}),
+						]),
 					},
 				}),
 			);
 		});
 	});
 
-	describe("Connection Format", () => {
-		it("should return properly formatted GraphQL connection", async () => {
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
-				mockActionItem1,
-				mockActionItem2,
-			]);
-
-			const result = await actionItemsResolver(mockParent, { first: 2 }, ctx);
-			const connection = result as {
-				edges: Array<{ cursor: string; node: unknown }>;
-				pageInfo: {
-					hasNextPage: boolean;
-					hasPreviousPage: boolean;
-					startCursor: string | null;
-					endCursor: string | null;
-				};
-			};
-
-			expect(connection).toHaveProperty("edges");
-			expect(connection).toHaveProperty("pageInfo");
-			expect(connection.edges).toBeInstanceOf(Array);
-			expect(connection.pageInfo).toHaveProperty("hasNextPage");
-			expect(connection.pageInfo).toHaveProperty("hasPreviousPage");
-			expect(connection.pageInfo).toHaveProperty("startCursor");
-			expect(connection.pageInfo).toHaveProperty("endCursor");
-		});
-
-		it("should generate valid cursors for edges", async () => {
+	describe("Cursor Creation", () => {
+		it("should create valid base64url cursors", async () => {
 			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
 				mockActionItem1,
 			]);
 
-			const result = await actionItemsResolver(mockParent, { first: 1 }, ctx);
-			const connection = result as {
-				edges: Array<{ cursor: string; node: typeof mockActionItem1 }>;
-			};
+			const result = await resolveActionItems(mockParent, { first: 1 }, ctx);
 
-			expect(connection.edges[0]).toHaveProperty("cursor");
-			expect(connection.edges[0]).toHaveProperty("node");
-			expect(connection.edges[0]?.node).toEqual(mockActionItem1);
+			// Verify cursor format
+			const cursor = result.edges[0]?.cursor;
+			expect(cursor).toBeTruthy();
 
-			// Verify cursor can be decoded
-			const firstEdge = connection.edges[0];
-			if (firstEdge?.cursor) {
-				const decodedCursor = JSON.parse(
-					Buffer.from(firstEdge.cursor, "base64url").toString("utf-8"),
+			if (cursor) {
+				const decoded = JSON.parse(
+					Buffer.from(cursor, "base64url").toString("utf-8"),
 				);
-				expect(decodedCursor).toHaveProperty("id", mockActionItem1.id);
-				expect(decodedCursor).toHaveProperty("assignedAt");
+				expect(decoded).toEqual({
+					id: mockActionItem1.id,
+					assignedAt: mockActionItem1.assignedAt.toISOString(),
+				});
 			}
-		});
-
-		it("should handle empty result set", async () => {
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
-
-			const result = await actionItemsResolver(mockParent, { first: 10 }, ctx);
-			const connection = result as {
-				edges: Array<unknown>;
-				pageInfo: { startCursor: string | null; endCursor: string | null };
-			};
-
-			expect(connection.edges).toHaveLength(0);
-			expect(connection.pageInfo.startCursor).toBeNull();
-			expect(connection.pageInfo.endCursor).toBeNull();
 		});
 	});
 
-	describe("Database Integration", () => {
-		it("should call drizzle client with correct parameters for forward pagination", async () => {
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
-				mockActionItem1,
-			]);
-
-			await actionItemsResolver(mockParent, { first: 10 }, ctx);
-
-			expect(
-				mocks.drizzleClient.query.actionsTable.findMany,
-			).toHaveBeenCalledWith({
-				limit: 10,
-				orderBy: expect.any(Array),
-				where: undefined,
-			});
-		});
-
-		it("should handle database errors gracefully", async () => {
-			mocks.drizzleClient.query.actionsTable.findMany.mockRejectedValue(
-				new Error("Database connection failed"),
-			);
-
+	describe("Query Parameter Validation", () => {
+		it("should reject first parameter below minimum", async () => {
 			await expect(
-				actionItemsResolver(mockParent, { first: 10 }, ctx),
-			).rejects.toThrow("Database connection failed");
-		});
-	});
-
-	describe("Edge Cases", () => {
-		it("should handle very large limit values", async () => {
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
-
-			const result = await actionItemsResolver(
-				mockParent,
-				{ first: 1000 },
-				ctx,
-			);
-			const connection = result as { edges: Array<unknown> };
-
-			expect(connection.edges).toHaveLength(0);
-		});
-
-		it("should handle limit of 1", async () => {
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
-				mockActionItem1,
-			]);
-
-			const result = await actionItemsResolver(mockParent, { first: 1 }, ctx);
-			const connection = result as {
-				edges: Array<{ node: typeof mockActionItem1 }>;
-			};
-
-			expect(connection.edges).toHaveLength(1);
-			expect(connection.edges[0]?.node).toEqual(mockActionItem1);
-		});
-
-		it("should handle missing parent category id", async () => {
-			const parentWithoutId = {
-				...mockParent,
-				id: undefined as unknown as string, // Force the type for testing
-			};
-
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
-
-			const result = await actionItemsResolver(
-				parentWithoutId,
-				{ first: 10 },
-				ctx,
-			);
-			const connection = result as { edges: Array<unknown> };
-
-			expect(connection.edges).toHaveLength(0);
-		});
-	});
-
-	describe("Sorting and Ordering", () => {
-		it("should return items in ascending order by default", async () => {
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
-				mockActionItem1,
-				mockActionItem2,
-				mockActionItem3,
-			]);
-
-			const result = await actionItemsResolver(mockParent, { first: 3 }, ctx);
-			const connection = result as {
-				edges: Array<{ node: typeof mockActionItem1 }>;
-			};
-
-			expect(connection.edges).toHaveLength(3);
-			const firstNode = connection.edges[0]?.node;
-			const secondNode = connection.edges[1]?.node;
-			const thirdNode = connection.edges[2]?.node;
-
-			if (firstNode && secondNode && thirdNode) {
-				expect(new Date(firstNode.assignedAt).getTime()).toBeLessThanOrEqual(
-					new Date(secondNode.assignedAt).getTime(),
-				);
-				expect(new Date(secondNode.assignedAt).getTime()).toBeLessThanOrEqual(
-					new Date(thirdNode.assignedAt).getTime(),
-				);
-			}
-		});
-
-		it("should return items in descending order for backward pagination", async () => {
-			const cursor = Buffer.from(
-				JSON.stringify({
-					id: mockActionItem3.id,
-					assignedAt: mockActionItem3.assignedAt,
+				resolveActionItems(mockParent, { first: 0 }, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: expect.any(Array),
+					},
 				}),
-			).toString("base64url");
-
-			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
-				mockActionItem2,
-				mockActionItem1,
-			]);
-
-			const result = await actionItemsResolver(
-				mockParent,
-				{ last: 2, before: cursor },
-				ctx,
 			);
-			const connection = result as {
-				edges: Array<{ node: typeof mockActionItem2 }>;
-			};
+		});
 
-			expect(connection.edges).toHaveLength(2);
-			const firstNode = connection.edges[0]?.node;
-			const secondNode = connection.edges[1]?.node;
+		it("should reject first parameter above maximum", async () => {
+			await expect(
+				resolveActionItems(mockParent, { first: 33 }, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: expect.any(Array),
+					},
+				}),
+			);
+		});
 
-			if (firstNode && secondNode) {
-				// In backward pagination, items should be in descending order by assignedAt
-				expect(new Date(firstNode.assignedAt).getTime()).toBeGreaterThanOrEqual(
-					new Date(secondNode.assignedAt).getTime(),
-				);
-			}
+		it("should reject last parameter below minimum", async () => {
+			await expect(
+				resolveActionItems(mockParent, { last: 0 }, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: expect.any(Array),
+					},
+				}),
+			);
+		});
+
+		it("should reject last parameter above maximum", async () => {
+			await expect(
+				resolveActionItems(mockParent, { last: 33 }, ctx),
+			).rejects.toThrow(
+				new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: expect.any(Array),
+					},
+				}),
+			);
 		});
 	});
 
-	describe("Error Handling", () => {
-		it("should handle database connection errors", async () => {
+	describe("Error Propagation", () => {
+		it("should propagate database errors", async () => {
+			const dbError = new Error("Database connection failed");
 			mocks.drizzleClient.query.actionsTable.findMany.mockRejectedValue(
-				new Error("Database connection failed"),
+				dbError,
 			);
 
 			await expect(
-				actionItemsResolver(mockParent, { first: 10 }, ctx),
-			).rejects.toThrow("Database connection failed");
+				resolveActionItems(mockParent, { first: 10 }, ctx),
+			).rejects.toThrow(dbError);
+		});
+	});
+
+	describe("Node and Edge Structure", () => {
+		it("should return correct node structure", async () => {
+			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
+				mockActionItem1,
+			]);
+
+			const result = await resolveActionItems(mockParent, { first: 1 }, ctx);
+
+			expect(result.edges).toHaveLength(1);
+			expect(result.edges[0]?.node).toEqual(mockActionItem1);
+			expect(result.edges[0]?.cursor).toBeTruthy();
 		});
 
-		it("should handle database timeout errors", async () => {
-			mocks.drizzleClient.query.actionsTable.findMany.mockRejectedValue(
-				new Error("Query timeout"),
+		it("should handle empty results correctly", async () => {
+			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
+
+			const result = await resolveActionItems(mockParent, { first: 10 }, ctx);
+
+			expect(result.edges).toHaveLength(0);
+			expect(result.pageInfo.startCursor).toBeNull();
+			expect(result.pageInfo.endCursor).toBeNull();
+			expect(result.pageInfo.hasNextPage).toBe(false);
+			expect(result.pageInfo.hasPreviousPage).toBe(false);
+		});
+	});
+
+	describe("Order By Verification", () => {
+		it("should use ascending order for forward pagination", async () => {
+			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
+
+			await resolveActionItems(mockParent, { first: 1 }, ctx);
+
+			const findManyCalls = mocks.drizzleClient.query.actionsTable
+				.findMany as ReturnType<typeof vi.fn>;
+			expect(findManyCalls).toHaveBeenCalled();
+
+			const callArgs = findManyCalls.mock.calls[0]?.[0];
+			expect(callArgs).toBeDefined();
+			expect(callArgs).toHaveProperty("orderBy");
+			expect(callArgs.orderBy).toEqual([
+				asc(actionsTable.assignedAt),
+				asc(actionsTable.id),
+			]);
+		});
+
+		it("should use descending order for backward pagination", async () => {
+			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
+
+			await resolveActionItems(mockParent, { last: 1 }, ctx);
+
+			const findManyCalls = mocks.drizzleClient.query.actionsTable
+				.findMany as ReturnType<typeof vi.fn>;
+			expect(findManyCalls).toHaveBeenCalled();
+
+			const callArgs = findManyCalls.mock.calls[0]?.[0];
+			expect(callArgs).toBeDefined();
+			expect(callArgs).toHaveProperty("orderBy");
+			expect(callArgs.orderBy).toEqual([
+				desc(actionsTable.assignedAt),
+				desc(actionsTable.id),
+			]);
+		});
+	});
+
+	describe("Category ID Filtering", () => {
+		it("should always filter by parent category ID", async () => {
+			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
+
+			await resolveActionItems(mockParent, { first: 1 }, ctx);
+
+			const findManyCalls = mocks.drizzleClient.query.actionsTable
+				.findMany as ReturnType<typeof vi.fn>;
+			expect(findManyCalls).toHaveBeenCalled();
+
+			const callArgs = findManyCalls.mock.calls[0]?.[0];
+			expect(callArgs).toBeDefined();
+			expect(callArgs).toHaveProperty("where");
+			expect(callArgs.where).toEqual(
+				eq(actionsTable.categoryId, mockParent.id),
 			);
-
-			await expect(
-				actionItemsResolver(mockParent, { first: 10 }, ctx),
-			).rejects.toThrow("Query timeout");
 		});
+	});
 
-		it("should validate argument path in error extensions", async () => {
-			const invalidCursor = "invalid-cursor";
+	describe("Date Handling", () => {
+		it("should handle Date serialization in cursors correctly", async () => {
+			const testDate = new Date("2024-06-15T14:30:00.123Z");
+			const itemWithPreciseDate = {
+				...mockActionItem1,
+				assignedAt: testDate,
+			};
 
-			try {
-				await actionItemsResolver(
-					mockParent,
-					{ first: 10, after: invalidCursor },
-					ctx,
+			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
+				itemWithPreciseDate,
+			]);
+
+			const result = await resolveActionItems(mockParent, { first: 1 }, ctx);
+
+			const cursor = result.edges[0]?.cursor;
+			if (cursor) {
+				const decoded = JSON.parse(
+					Buffer.from(cursor, "base64url").toString("utf-8"),
 				);
-			} catch (error) {
-				expect(error).toBeInstanceOf(TalawaGraphQLError);
-				const talawaError = error as TalawaGraphQLError;
-				const extensions =
-					talawaError.extensions as TalawaGraphQLErrorExtensions;
-				expect(extensions.code).toBe("invalid_arguments");
-
-				if (
-					"issues" in extensions &&
-					extensions.issues &&
-					extensions.issues.length > 0
-				) {
-					const firstIssue = extensions.issues[0] as {
-						argumentPath: (string | number)[];
-					};
-					expect(firstIssue.argumentPath).toEqual(["after"]);
-				}
+				expect(decoded.assignedAt).toBe(testDate.toISOString());
 			}
+		});
+
+		it("should handle items with same assignedAt correctly", async () => {
+			const sameTimeItem1 = {
+				...mockActionItem1,
+				id: "01234567-89ab-cdef-0123-456789abcde4",
+			};
+			const sameTimeItem2 = {
+				...mockActionItem1,
+				id: "01234567-89ab-cdef-0123-456789abcde5",
+			};
+
+			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
+				sameTimeItem1,
+				sameTimeItem2,
+			]);
+
+			const result = await resolveActionItems(mockParent, { first: 2 }, ctx);
+
+			expect(result.edges).toHaveLength(2);
+			expect(result.edges[0]?.node.id).toBe(
+				"01234567-89ab-cdef-0123-456789abcde4",
+			);
+			expect(result.edges[1]?.node.id).toBe(
+				"01234567-89ab-cdef-0123-456789abcde5",
+			);
+		});
+	});
+
+	describe("Null Handling", () => {
+		it("should handle null cursor values", async () => {
+			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
+				mockActionItem1,
+			]);
+
+			// Test with null after
+			const result1 = await resolveActionItems(
+				mockParent,
+				{ first: 1, after: null },
+				ctx,
+			);
+			expect(result1.edges).toHaveLength(1);
+
+			// Test with null before
+			const result2 = await resolveActionItems(
+				mockParent,
+				{ last: 1, before: null },
+				ctx,
+			);
+			expect(result2.edges).toHaveLength(1);
+		});
+
+		it("should handle undefined cursor values", async () => {
+			mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([
+				mockActionItem1,
+			]);
+
+			// Test with undefined after
+			const result1 = await resolveActionItems(
+				mockParent,
+				{ first: 1, after: undefined },
+				ctx,
+			);
+			expect(result1.edges).toHaveLength(1);
+
+			// Test with undefined before
+			const result2 = await resolveActionItems(
+				mockParent,
+				{ last: 1, before: undefined },
+				ctx,
+			);
+			expect(result2.edges).toHaveLength(1);
 		});
 	});
 });
