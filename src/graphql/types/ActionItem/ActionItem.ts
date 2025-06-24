@@ -32,7 +32,5 @@ ActionItem.implement({
 			description: "Notes added after completing the action item.",
 			nullable: true,
 		}),
-		// Removed raw ID fields - these will be replaced with relationship resolvers
-		// organizationId, categoryId, eventId, assigneeId, creatorId, updaterId
 	}),
 });
