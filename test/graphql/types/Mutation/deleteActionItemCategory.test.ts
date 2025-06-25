@@ -365,7 +365,6 @@ suite("Mutation field deleteActionItemCategory", () => {
 				description: null,
 				isDisabled: false,
 				createdAt: expect.any(String),
-				updatedAt: null,
 				organization: expect.objectContaining({
 					id: orgId,
 					name: orgNameReturned,

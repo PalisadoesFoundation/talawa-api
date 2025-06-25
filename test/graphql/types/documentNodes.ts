@@ -938,7 +938,6 @@ export const Mutation_createActionItemCategory = gql(`
       description
       isDisabled
       createdAt
-      updatedAt
       organization {
         id
         name
@@ -1053,7 +1052,6 @@ export const Mutation_deleteActionItemCategory = gql(`
       description
       isDisabled
       createdAt
-      updatedAt
       organization {
         id
         name

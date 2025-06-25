@@ -902,7 +902,6 @@ suite("Mutation field createActionItemCategory", () => {
 						},
 						isDisabled: variables.input.isDisabled,
 						createdAt: expect.any(String),
-						updatedAt: null, // New categories should have null updatedAt initially
 					}),
 				);
 			});
@@ -1029,7 +1028,6 @@ suite("Mutation field createActionItemCategory", () => {
 						},
 						isDisabled: variables.input.isDisabled,
 						createdAt: expect.any(String),
-						updatedAt: null,
 					}),
 				);
 			});
@@ -1156,7 +1154,6 @@ suite("Mutation field createActionItemCategory", () => {
 						},
 						isDisabled: variables.input.isDisabled,
 						createdAt: expect.any(String),
-						updatedAt: null,
 					}),
 				);
 			});
@@ -1283,7 +1280,6 @@ suite("Mutation field createActionItemCategory", () => {
 						},
 						isDisabled: false, // This should match what we provided
 						createdAt: expect.any(String),
-						updatedAt: null,
 					}),
 				);
 			});
