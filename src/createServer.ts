@@ -70,7 +70,7 @@ export const createServer = async (options?: {
 	// More information at this link: https://github.com/fastify/fastify-cors
 	fastify.register(fastifyCors, {
 		origin: fastify.envConfig.FRONTEND_URL, // your frontend URL
-        credentials: true
+		credentials: true,
 	});
 
 	// More information at this link: https://github.com/fastify/fastify-helmet
