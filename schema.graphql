@@ -4421,6 +4421,23 @@ input MutationUpdateVolunteerGroupAssignmentsInput {
   """
   inviteStatus: UpdateInviteStatus!
 }
+
+"""
+GraphQL connection for Organization actionItemCategories field
+"""
+type OrganizationActionItemCategoriesConnection {
+  edges: [OrganizationActionItemCategoriesConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+"""
+GraphQL connection edge for Organization actionItemCategories field
+"""
+type OrganizationActionItemCategoriesConnectionEdge {
+  cursor: String!
+  node: ActionItemCategory
+}
+
 type Organization {
   """
   Address line 1 of the organization's address.

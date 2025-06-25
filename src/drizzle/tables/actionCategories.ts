@@ -8,6 +8,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { actionsTable } from "./actions";
 import { organizationsTable } from "./organizations";
@@ -23,27 +24,20 @@ export const actionCategoriesTable = pgTable(
 		})
 			.notNull()
 			.defaultNow(),
-
 		creatorId: uuid("creator_id").references(() => usersTable.id, {
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
-
 		description: text("description"),
-
 		id: uuid("id").primaryKey().$default(uuidv7),
-
 		isDisabled: boolean("is_disabled").notNull(),
-
 		name: text("name", {}).notNull(),
-
 		organizationId: uuid("organization_id")
 			.notNull()
 			.references(() => organizationsTable.id, {
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
-
 		updatedAt: timestamp("updated_at", {
 			mode: "date",
 			precision: 3,
@@ -51,7 +45,6 @@ export const actionCategoriesTable = pgTable(
 		})
 			.$defaultFn(() => sql`${null}`)
 			.$onUpdate(() => new Date()),
-
 		updaterId: uuid("updater_id").references(() => usersTable.id, {
 			onDelete: "set null",
 			onUpdate: "cascade",
@@ -71,23 +64,28 @@ export const actionCategoriesTableRelations = relations(
 		actionsWhereCategory: many(actionsTable, {
 			relationName: "action_categories.id:actions.category_id",
 		}),
-
 		creator: one(usersTable, {
 			fields: [actionCategoriesTable.creatorId],
 			references: [usersTable.id],
 			relationName: "action_categories.creator_id:users.id",
 		}),
-
 		organization: one(organizationsTable, {
 			fields: [actionCategoriesTable.organizationId],
 			references: [organizationsTable.id],
 			relationName: "action_categories.organization_id:organizations.id",
 		}),
-
 		updater: one(usersTable, {
 			fields: [actionCategoriesTable.updaterId],
 			references: [usersTable.id],
 			relationName: "action_categories.updater_id:users.id",
 		}),
 	}),
+);
+
+export const actionCategoriesTableInsertSchema = createInsertSchema(
+	actionCategoriesTable,
+	{
+		description: (schema) => schema.min(1).max(2048).optional(),
+		name: (schema) => schema.min(1).max(256),
+	},
 );
