@@ -861,7 +861,16 @@ A field whose value conforms to the standard internet email address format as sp
 """
 scalar EmailAddress
 
+
+
 type Event {
+  actionItems(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): EventActionItemsConnection
+
   """
   GraphQL connection to traverse through the agenda folders that contain agenda items constituting a part of the agenda for the event.
   """
@@ -956,6 +965,18 @@ type Event {
     first: Int
     last: Int
   ): EventVenuesConnection
+}
+
+"""
+"""
+type EventActionItemsConnection {
+  edges: [EventActionItemsConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type EventActionItemsConnectionEdge {
+  cursor: String!
+  node: ActionItem
 }
 
 """

@@ -1179,7 +1179,6 @@ export const Query_actionItemCategory = gql(`
       description
       isDisabled
       createdAt
-      updatedAt
       organization {
         id
         name

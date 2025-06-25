@@ -282,8 +282,6 @@ describe("Query field actionItemCategory", () => {
 					name: category.name,
 					isDisabled: false,
 					createdAt: expect.any(String),
-					updatedAt: null, // New categories have null updatedAt
-					// Organization relationship
 					organization: expect.objectContaining({
 						id: orgId,
 						name: expect.any(String),
@@ -368,8 +366,6 @@ describe("Query field actionItemCategory", () => {
 				description: category.description,
 				isDisabled: false,
 				createdAt: expect.any(String),
-				updatedAt: null, // New categories have null updatedAt
-				// Relationship fields instead of raw IDs
 				organization: expect.objectContaining({
 					id: orgId,
 					name: expect.any(String),
@@ -457,8 +453,6 @@ describe("Query field actionItemCategory", () => {
 				name: category.name,
 				isDisabled: true,
 				createdAt: expect.any(String),
-				updatedAt: null, // New categories have null updatedAt
-				// Relationship fields instead of raw IDs
 				organization: expect.objectContaining({
 					id: orgId,
 					name: expect.any(String),
