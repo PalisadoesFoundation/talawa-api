@@ -3976,11 +3976,12 @@ input MutationUpdateCurrentUserInput {
   workPhoneNumber: PhoneNumber
 }
 
-""""""
+"""
+"""
 input MutationUpdateEventInput {
-"""
+  """
   Global identifier of the event to update.
-"""
+  """
   id: ID!
 
   """
@@ -4400,22 +4401,6 @@ input MutationUpdateVenueInput {
   Name of the venue.
   """
   name: String
-}
-
-"""
-GraphQL connection for Organization actionItemCategories field
-"""
-type OrganizationActionItemCategoriesConnection {
-  edges: [OrganizationActionItemCategoriesConnectionEdge]
-  pageInfo: PageInfo!
-}
-
-"""
-GraphQL connection edge for Organization actionItemCategories field
-"""
-type OrganizationActionItemCategoriesConnectionEdge {
-  cursor: String!
-  node: ActionItemCategory
 }
 
 """

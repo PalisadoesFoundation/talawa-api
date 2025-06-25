@@ -26,14 +26,6 @@ ActionItemCategory.implement({
 		isDisabled: t.exposeBoolean("isDisabled", {
 			description: "Indicates whether the action item category is disabled.",
 		}),
-		createdAt: t.expose("createdAt", {
-			description: "Timestamp when the category was created.",
-			type: "DateTime",
-		}),
-		updatedAt: t.expose("updatedAt", {
-			description: "Timestamp when the category was last updated.",
-			type: "DateTime",
-		}),
 	}),
 });
 
