@@ -71,6 +71,7 @@ export const createServer = async (options?: {
 	fastify.register(fastifyCors, {
 		origin: fastify.envConfig.FRONTEND_URL, // your frontend URL
 		credentials: true,
+		allowedHeaders: ["Authorization", "Content-Type"],
 	});
 
 	// More information at this link: https://github.com/fastify/fastify-helmet
