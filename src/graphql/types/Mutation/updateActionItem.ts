@@ -132,7 +132,7 @@ builder.mutationField("updateActionItem", (t) =>
 			}
 
 			const validationIssues = validateActionItemTypeConstraints(
-				existingActionItem.isCompleted,
+				parsedArgs.input.isCompleted,
 				parsedArgs.input,
 			);
 
@@ -195,13 +195,18 @@ builder.mutationField("updateActionItem", (t) =>
 			// Destructure the id and collect all other fields to update
 			const { id: actionItemId, ...fieldsToUpdate } = parsedArgs.input;
 
+			// Set completion timestamp if marking as completed
+			const updateData = {
+				...fieldsToUpdate,
+				updaterId: currentUserId,
+				updatedAt: new Date(),
+				...(parsedArgs.input.isCompleted && { completionAt: new Date() }),
+			};
+
 			// Update the action item with all provided fields plus the updaterId
 			const [updatedActionItem] = await ctx.drizzleClient
 				.update(actionsTable)
-				.set({
-					...fieldsToUpdate,
-					updaterId: currentUserId,
-				})
+				.set(updateData)
 				.where(eq(actionsTable.id, actionItemId))
 				.returning();
 
@@ -278,6 +283,7 @@ builder.mutationField("markActionItemAsPending", (t) =>
 				.set({
 					isCompleted: false,
 					postCompletionNotes: null,
+					completionAt: null,
 					updaterId: ctx.currentClient.user.id,
 					updatedAt: new Date(),
 				})

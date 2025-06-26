@@ -4,3 +4,6 @@ export * from "./updatedAt";
 export * from "./creator";
 export * from "./assignee";
 export * from "./event";
+export * from "./organization";
+export * from "./actionItemCategory";
+export * from "./updater";

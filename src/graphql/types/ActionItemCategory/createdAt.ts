@@ -1,15 +1,14 @@
 import type { GraphQLContext } from "~/src/graphql/context";
-import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { ActionItem } from "./ActionItem";
-import type { ActionItem as ActionItemType } from "./ActionItem";
+import envConfig from "~/src/utilities/graphqLimits";
+import { ActionItemCategory } from "./ActionItemCategory";
+import type { ActionItemCategory as ActionItemCategoryType } from "./ActionItemCategory";
 
-// Export the resolver function so it can be tested
-export const resolveCreator = async (
-	parent: ActionItemType,
+export const resolveCreatedAt = async (
+	parent: ActionItemCategoryType,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
-) => {
+): Promise<Date> => {
 	if (!ctx.currentClient.isAuthenticated) {
 		throw new TalawaGraphQLError({
 			extensions: {
@@ -21,6 +20,9 @@ export const resolveCreator = async (
 	const currentUserId = ctx.currentClient.user.id;
 
 	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+		columns: {
+			role: true,
+		},
 		with: {
 			organizationMembershipsWhereMember: {
 				columns: {
@@ -42,7 +44,7 @@ export const resolveCreator = async (
 	}
 
 	const currentUserOrganizationMembership =
-		currentUser.organizationMembershipsWhereMember?.[0];
+		currentUser.organizationMembershipsWhereMember[0];
 
 	if (
 		currentUser.role !== "administrator" &&
@@ -56,41 +58,16 @@ export const resolveCreator = async (
 		});
 	}
 
-	if (parent.creatorId === null) {
-		return null;
-	}
-
-	if (parent.creatorId === currentUserId) {
-		return currentUser;
-	}
-
-	const creatorId = parent.creatorId;
-
-	const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		where: (fields, operators) => operators.eq(fields.id, creatorId),
-	});
-
-	if (existingUser === undefined) {
-		ctx.log.error(
-			"Postgres select operation returned an empty array for an action item's creator id that isn't null.",
-		);
-
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unexpected",
-			},
-		});
-	}
-
-	return existingUser;
+	return parent.createdAt;
 };
 
-ActionItem.implement({
+ActionItemCategory.implement({
 	fields: (t) => ({
-		creator: t.field({
-			description: "User who created the action item.",
-			resolve: resolveCreator, // Use the exported function
-			type: User,
+		createdAt: t.field({
+			description: "Timestamp when the action item category was created.",
+			resolve: resolveCreatedAt,
+			type: "DateTime",
+			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		}),
 	}),
 });

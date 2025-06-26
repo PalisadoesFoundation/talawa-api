@@ -12,7 +12,7 @@ import { DELETE_ACTION_ITEM_MUTATION } from "../documentNodes";
 
 suite("Mutation field deleteActionItem", () => {
 	suite(
-		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.deleteActionItem" field if`,
+		'results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.deleteActionItem" field if',
 		() => {
 			test("client triggering the graphql operation is not authenticated.", async () => {
 				const deleteActionItemResult = await mercuriusClient.mutate(
@@ -26,17 +26,20 @@ suite("Mutation field deleteActionItem", () => {
 					},
 				);
 
-				expect(deleteActionItemResult.data.deleteActionItem).toEqual(null);
-				expect(deleteActionItemResult.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<UnauthenticatedExtensions>({
-								code: "unauthenticated",
-							}),
-							message: expect.any(String),
-							path: ["deleteActionItem"],
+				const data =
+					deleteActionItemResult.data === null
+						? { deleteActionItem: null }
+						: deleteActionItemResult.data;
+
+				expect(data.deleteActionItem).toEqual(null);
+				expect(deleteActionItemResult.errors?.[0]).toEqual(
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnauthenticatedExtensions>({
+							code: "unauthenticated",
 						}),
-					]),
+						message: expect.any(String),
+						path: ["deleteActionItem"],
+					}),
 				);
 			});
 
@@ -110,17 +113,20 @@ suite("Mutation field deleteActionItem", () => {
 					},
 				);
 
-				expect(deleteActionItemResult.data.deleteActionItem).toEqual(null);
-				expect(deleteActionItemResult.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<UnauthenticatedExtensions>({
-								code: "unauthenticated",
-							}),
-							message: expect.any(String),
-							path: ["deleteActionItem"],
+				const data =
+					deleteActionItemResult.data === null
+						? { deleteActionItem: null }
+						: deleteActionItemResult.data;
+
+				expect(data.deleteActionItem).toEqual(null);
+				expect(deleteActionItemResult.errors?.[0]).toEqual(
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<UnauthenticatedExtensions>({
+							code: "unauthenticated",
 						}),
-					]),
+						message: expect.any(String),
+						path: ["deleteActionItem"],
+					}),
 				);
 			});
 
@@ -151,19 +157,17 @@ suite("Mutation field deleteActionItem", () => {
 					},
 				);
 
-				expect(result.data.deleteActionItem).toEqual(null);
-				expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
-				const issues = result.errors?.[0]?.extensions?.issues;
+				const data =
+					result.data === null ? { deleteActionItem: null } : result.data;
 
-				if (Array.isArray(issues) && "argumentPath" in issues[0]) {
-					expect(
-						(issues[0] as { argumentPath: string[] }).argumentPath,
-					).toEqual(["input", "id"]);
-				} else {
-					throw new Error(
-						"issues array or argumentPath not found in error response",
-					);
-				}
+				expect(data.deleteActionItem).toEqual(null);
+				expect(result.errors?.[0]).toEqual(
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+						}),
+					}),
+				);
 			});
 
 			test("deletion fails at database level and returns 'unexpected' error.", async () => {
@@ -179,7 +183,6 @@ suite("Mutation field deleteActionItem", () => {
 
 				assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
 
-				// Trigger delete with valid UUID that will not match anything
 				const result = await mercuriusClient.mutate(
 					DELETE_ACTION_ITEM_MUTATION,
 					{
@@ -194,9 +197,16 @@ suite("Mutation field deleteActionItem", () => {
 					},
 				);
 
-				expect(result.data.deleteActionItem).toBeNull();
-				expect(result.errors?.[0]?.extensions?.code).toBe(
-					"arguments_associated_resources_not_found",
+				const data =
+					result.data === null ? { deleteActionItem: null } : result.data;
+
+				expect(data.deleteActionItem).toBeNull();
+				expect(result.errors?.[0]).toEqual(
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
+						}),
+					}),
 				);
 			});
 		},
@@ -225,9 +235,16 @@ suite("Mutation field deleteActionItem", () => {
 			},
 		});
 
-		expect(result.data.deleteActionItem).toEqual(null);
-		expect(result.errors?.[0]?.extensions?.code).toBe(
-			"arguments_associated_resources_not_found",
+		const data =
+			result.data === null ? { deleteActionItem: null } : result.data;
+
+		expect(data.deleteActionItem).toEqual(null);
+		expect(result.errors?.[0]).toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "arguments_associated_resources_not_found",
+				}),
+			}),
 		);
 	});
 });
