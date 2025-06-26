@@ -149,6 +149,8 @@ builder.mutationField("createActionItemCategory", (t) =>
 					organizationId: parsedArgs.input.organizationId,
 					isDisabled: parsedArgs.input.isDisabled ?? false,
 					creatorId: currentUserId,
+					updatedAt: new Date(),
+					updaterId: currentUserId,
 				})
 				.returning();
 
