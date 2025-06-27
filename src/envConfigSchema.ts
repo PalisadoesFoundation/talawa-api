@@ -7,6 +7,13 @@ import type { EnvSchemaOpt } from "env-schema";
  */
 export const envConfigSchema = Type.Object({
 	/**
+	 * The frontend URL allowed for CORS.
+	 */
+	FRONTEND_URL: Type.String({
+		minLength: 1,
+		format: "uri",
+	}),
+	/**
 	 * Email address of the user with "administrator" role that is guaranteed to exist in the postgres database at the startup time of talawa api.
 	 */
 	API_ADMINISTRATOR_USER_EMAIL_ADDRESS: Type.String({

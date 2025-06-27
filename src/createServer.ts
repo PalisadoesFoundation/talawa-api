@@ -68,7 +68,16 @@ export const createServer = async (options?: {
 	fastify.register(fastifyRateLimit, {});
 
 	// More information at this link: https://github.com/fastify/fastify-cors
-	fastify.register(fastifyCors, {});
+	fastify.register(fastifyCors, {
+		origin: fastify.envConfig.FRONTEND_URL,
+		methods: ["GET", "POST", "OPTIONS"],
+		allowedHeaders: [
+			"Content-Type",
+			"Authorization",
+			"Apollo-Require-Preflight",
+		],
+		credentials: true,
+	});
 
 	// More information at this link: https://github.com/fastify/fastify-helmet
 	fastify.register(fastifyHelmet, {
