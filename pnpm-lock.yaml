@@ -48,8 +48,8 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0
       dotenv:
-        specifier: ^16.4.7
-        version: 16.4.7
+        specifier: ^17.0.0
+        version: 17.0.0
       drizzle-orm:
         specifier: ^0.44.1
         version: 0.44.1(gel@2.0.1)(postgres@3.4.5)
@@ -1873,8 +1873,12 @@ packages:
     resolution: {integrity: sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==}
     engines: {node: '>=12'}
 
-  dotenv@16.4.7:
-    resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
+  dotenv@16.6.1:
+    resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+    engines: {node: '>=12'}
+
+  dotenv@17.0.0:
+    resolution: {integrity: sha512-A0BJ5lrpJVSfnMMXjmeO0xUnoxqsBHWCoqqTnGwGYVdnctqXXUEhJOO7LxmgxJon9tEZFGpe0xPRX0h2v3AANQ==}
     engines: {node: '>=12'}
 
   drizzle-kit@0.30.6:
@@ -4722,7 +4726,9 @@ snapshots:
 
   dotenv-expand@10.0.0: {}
 
-  dotenv@16.4.7: {}
+  dotenv@16.6.1: {}
+
+  dotenv@17.0.0: {}
 
   drizzle-kit@0.30.6:
     dependencies:
@@ -4784,7 +4790,7 @@ snapshots:
   env-schema@6.0.1:
     dependencies:
       ajv: 8.17.1
-      dotenv: 16.4.7
+      dotenv: 16.6.1
       dotenv-expand: 10.0.0
 
   es-define-property@1.0.1: {}
