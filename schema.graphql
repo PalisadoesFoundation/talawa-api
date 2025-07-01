@@ -861,8 +861,6 @@ A field whose value conforms to the standard internet email address format as sp
 """
 scalar EmailAddress
 
-
-
 type Event {
   actionItems(
     after: String
@@ -5116,6 +5114,16 @@ type Query {
     input: QueryActionItemsByOrganizationInput!
   ): [ActionItem!]
 
+  """
+  Query field to fetch all action items assigned to a specific user.
+  """
+  actionItemsByUser(
+    """
+    Input parameters to fetch action items assigned to a user.
+    """
+    input: QueryActionItemsByUserInput!
+  ): [ActionItem!]
+
   actionItemCategory(
     """
     Input parameters to fetch an action item category by its ID.
@@ -5327,6 +5335,21 @@ input QueryActionItemsByOrganizationInput {
   ID of the organization to fetch associated action items.
   """
   organizationId: String!
+}
+
+"""
+Input type for querying action items assigned to a specific user
+"""
+input QueryActionItemsByUserInput {
+  """
+  ID of the user to fetch assigned action items for.
+  """
+  userId: String!
+
+  """
+  Optional ID of organization to filter action items by.
+  """
+  organizationId: String
 }
 
 input QueryActionItemCategoryInput {

@@ -30,3 +30,4 @@ import "./hasUserVoted";
 import "./volunteerGroups";
 import "./volunteerGroupAssignments";
 import "./actionItemCategory";
+import "./actionItemsByUser";
