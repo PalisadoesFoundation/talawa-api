@@ -46,7 +46,7 @@ builder.mutationField("createActionItem", (t) =>
 			const parsedArgs = mutationCreateActionItemArgumentsSchema.parse(args);
 			const currentUserId = ctx.currentClient.user.id;
 
-			// **1. Check if the organization exists**
+			// Check if the organization exists
 			const existingOrganization =
 				await ctx.drizzleClient.query.organizationsTable.findFirst({
 					columns: { id: true },
@@ -63,12 +63,18 @@ builder.mutationField("createActionItem", (t) =>
 				});
 			}
 
-			// **2. Check if the user is part of the organization**
+			// Check if the user is part of the organization
 			const userMembership =
 				await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
 					columns: { role: true },
 					where: (fields, operators) =>
-						sql`${operators.eq(fields.memberId, currentUserId)} AND ${operators.eq(fields.organizationId, parsedArgs.input.organizationId)}`,
+						sql`${operators.eq(
+							fields.memberId,
+							currentUserId,
+						)} AND ${operators.eq(
+							fields.organizationId,
+							parsedArgs.input.organizationId,
+						)}`,
 				});
 
 			if (!userMembership) {
@@ -134,10 +140,10 @@ builder.mutationField("createActionItem", (t) =>
 					creatorId: currentUserId,
 					categoryId: parsedArgs.input.categoryId,
 					assigneeId: parsedArgs.input.assigneeId,
-					assignedAt: parsedArgs.input.assignedAt // 🆕 Using provided assignedAt date
+					assignedAt: parsedArgs.input.assignedAt
 						? new Date(parsedArgs.input.assignedAt)
-						: new Date(), // Default to current date if not provided
-					completionAt: new Date(),
+						: new Date(),
+					completionAt: null, // Set to null for new action items
 					preCompletionNotes: parsedArgs.input.preCompletionNotes ?? null,
 					postCompletionNotes: null,
 					isCompleted: false,
