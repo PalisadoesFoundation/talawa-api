@@ -33,7 +33,9 @@ suite("Mutation field updateActionItem", () => {
 			},
 		});
 
-		expect(result.data?.updateActionItem ?? null).toBeNull();
+		const data =
+			result.data === null ? { updateActionItem: null } : result.data;
+		expect(data.updateActionItem).toBeNull();
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
@@ -68,7 +70,9 @@ suite("Mutation field updateActionItem", () => {
 			},
 		});
 
-		expect(result.data?.updateActionItem ?? null).toBeNull();
+		const data =
+			result.data === null ? { updateActionItem: null } : result.data;
+		expect(data.updateActionItem).toBeNull();
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
@@ -78,11 +82,12 @@ suite("Mutation field updateActionItem", () => {
 			]),
 		);
 	});
+
 	suite(
-		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.updateActionItem" field if`,
+		'results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.updateActionItem" field if',
 		() => {
 			test("client triggering the graphql operation is not authenticated.", async () => {
-				const updateActionItemResult = await mercuriusClient.mutate(
+				const result = await mercuriusClient.mutate(
 					UPDATE_ACTION_ITEM_MUTATION,
 					{
 						variables: {
@@ -95,8 +100,10 @@ suite("Mutation field updateActionItem", () => {
 					},
 				);
 
-				expect(updateActionItemResult.data.updateActionItem).toEqual(null);
-				expect(updateActionItemResult.errors).toEqual(
+				const data =
+					result.data === null ? { updateActionItem: null } : result.data;
+				expect(data.updateActionItem).toBeNull();
+				expect(result.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
 							extensions: expect.objectContaining<UnauthenticatedExtensions>({
@@ -128,7 +135,7 @@ suite("Mutation field updateActionItem", () => {
 					administratorUserSignInResult.data.signIn?.authenticationToken,
 				);
 
-				// Create a new user
+				// Create and delete user setup...
 				const createUserResult = await mercuriusClient.mutate(
 					Mutation_createUser,
 					{
@@ -155,7 +162,6 @@ suite("Mutation field updateActionItem", () => {
 				const userToken = createUserResult.data.createUser.authenticationToken;
 				const userId = createUserResult.data.createUser.user.id;
 
-				// Delete the user
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: {
 						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
@@ -165,8 +171,7 @@ suite("Mutation field updateActionItem", () => {
 					},
 				});
 
-				// Try performing an action with the deleted user's token
-				const updateActionItemResult = await mercuriusClient.mutate(
+				const result = await mercuriusClient.mutate(
 					UPDATE_ACTION_ITEM_MUTATION,
 					{
 						headers: {
@@ -182,7 +187,10 @@ suite("Mutation field updateActionItem", () => {
 					},
 				);
 
-				expect(updateActionItemResult.errors).toEqual(
+				const data =
+					result.data === null ? { updateActionItem: null } : result.data;
+				expect(data.updateActionItem).toBeNull();
+				expect(result.errors).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
@@ -208,7 +216,9 @@ suite("Mutation field updateActionItem", () => {
 				},
 			});
 
-			expect(result.data.updateActionItem).toBeNull();
+			const data =
+				result.data === null ? { updateActionItem: null } : result.data;
+			expect(data.updateActionItem).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining({
@@ -268,12 +278,16 @@ suite("Mutation field updateActionItem", () => {
 				},
 			});
 
+			const data =
+				result.data === null ? { updateActionItem: null } : result.data;
+			expect(data.updateActionItem).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
 							code: "unauthenticated",
 						}),
+						path: ["updateActionItem"],
 					}),
 				]),
 			);
@@ -304,7 +318,9 @@ suite("Mutation field updateActionItem", () => {
 			},
 		});
 
-		expect(result.data.updateActionItem).toBeNull();
+		const data =
+			result.data === null ? { updateActionItem: null } : result.data;
+		expect(data.updateActionItem).toBeNull();
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
