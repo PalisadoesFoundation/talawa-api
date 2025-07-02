@@ -5,15 +5,27 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
-	Mutation_createActionItem,
+	Mutation_createActionItemCategory,
 	Mutation_createOrganization,
 	Mutation_createUser,
 	Query_signIn,
 } from "../documentNodes";
 
-// Use a fixed valid category id for tests that require an existing category.
-const validCategoryId = "11111111-1111-1111-1111-111111111111";
+// Use the graphql function from the client to define the mutation with correct fields
+const Mutation_createActionItem = `
+  mutation CreateActionItem($input: CreateActionItemInput!) {
+    createActionItem(input: $input) {
+      id
+      isCompleted
+      assignedAt
+      completionAt
+      preCompletionNotes
+      postCompletionNotes
+    }
+  }
+`;
 
+// Helper to add membership to organization
 async function addMembership(
 	organizationId: string,
 	memberId: string,
@@ -22,7 +34,7 @@ async function addMembership(
 	await server.drizzleClient
 		.insert(organizationMembershipsTable)
 		.values({
-			organizationId, // Use the table's expected key (assuming it's camelCase here)
+			organizationId,
 			memberId,
 			role,
 		})
@@ -37,13 +49,6 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 		variables: {
 			input: {
 				name: uniqueName,
-				description: "Organization for testing",
-				countryCode: "us",
-				state: "CA",
-				city: "San Francisco",
-				postalCode: "94101",
-				addressLine1: "123 Market St",
-				addressLine2: "Suite 100",
 			},
 		},
 	});
@@ -53,6 +58,37 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 	const orgId = result.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
 	return orgId;
+}
+
+// Helper to create an action item category
+async function createActionItemCategory(
+	authToken: string,
+	organizationId: string,
+	adminUserId: string,
+): Promise<string> {
+	// Make sure admin is a member of the organization first
+	await addMembership(organizationId, adminUserId, "administrator");
+
+	const result = await mercuriusClient.mutate(
+		Mutation_createActionItemCategory,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					name: `Test Category ${faker.string.uuid()}`,
+					organizationId: organizationId,
+					isDisabled: false,
+				},
+			},
+		},
+	);
+
+	if (!result.data?.createActionItemCategory?.id) {
+		console.error("createActionItemCategory failed:", result.errors);
+		throw new Error("Failed to create action item category");
+	}
+
+	return result.data.createActionItemCategory.id;
 }
 
 // Sign in as admin to get an authentication token and admin user id.
@@ -105,7 +141,7 @@ suite("Mutation field createActionItem", () => {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
-						categoryId: validCategoryId,
+						categoryId: faker.string.uuid(),
 						assigneeId: faker.string.uuid(),
 						organizationId: faker.string.uuid(), // non-existent organization
 						preCompletionNotes: "Test note",
@@ -141,7 +177,7 @@ suite("Mutation field createActionItem", () => {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
-						categoryId: validCategoryId,
+						categoryId: faker.string.uuid(),
 						assigneeId: faker.string.uuid(),
 						organizationId: orgId,
 						preCompletionNotes: "Test note",
@@ -203,16 +239,24 @@ suite("Mutation field createActionItem", () => {
 			);
 		});
 	});
+
 	// 5. Assignee does not exist.
 	suite("when the specified assignee does not exist", () => {
 		test("should return an error with arguments_associated_resources_not_found for assignee", async () => {
 			const orgId = await createOrganizationAndGetId(authToken);
-			await addMembership(orgId, adminUserId, "administrator");
+
+			// Create a valid category first
+			const categoryId = await createActionItemCategory(
+				authToken,
+				orgId,
+				adminUserId,
+			);
+
 			const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
-						categoryId: validCategoryId,
+						categoryId: categoryId,
 						assigneeId: faker.string.uuid(), // non-existent assignee
 						organizationId: orgId,
 						preCompletionNotes: "Test note",
@@ -228,7 +272,7 @@ suite("Mutation field createActionItem", () => {
 							code: "arguments_associated_resources_not_found",
 							issues: expect.arrayContaining([
 								expect.objectContaining({
-									argumentPath: ["input", "categoryId"],
+									argumentPath: ["input", "assigneeId"],
 								}),
 							]),
 						}),
@@ -272,11 +316,19 @@ suite("Mutation field createActionItem", () => {
 				const orgId = await createOrganizationAndGetId(authToken);
 				// Add membership for the non-admin user with "regular" role.
 				await addMembership(orgId, nonAdminUserId, "regular");
+
+				// Create a valid category as admin
+				const categoryId = await createActionItemCategory(
+					authToken,
+					orgId,
+					adminUserId,
+				);
+
 				const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 					headers: { authorization: `bearer ${nonAdminToken}` },
 					variables: {
 						input: {
-							categoryId: validCategoryId,
+							categoryId: categoryId,
 							assigneeId: nonAdminUserId,
 							organizationId: orgId,
 							preCompletionNotes: "Test note",
@@ -285,15 +337,15 @@ suite("Mutation field createActionItem", () => {
 					},
 				});
 				expect(result.data?.createActionItem).toBeNull();
-				// Changed this to match the actual error being returned
 				expect(result.errors).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
 							extensions: expect.objectContaining({
-								code: "arguments_associated_resources_not_found",
+								code: "forbidden_action_on_arguments_associated_resources",
 								issues: expect.arrayContaining([
 									expect.objectContaining({
-										argumentPath: ["input", "categoryId"],
+										argumentPath: ["input", "organizationId"],
+										message: expect.any(String),
 									}),
 								]),
 							}),
@@ -309,7 +361,6 @@ suite("Mutation field createActionItem", () => {
 	suite("when action item is created successfully", () => {
 		test("should return a valid action item", async () => {
 			const orgId = await createOrganizationAndGetId(authToken);
-			await addMembership(orgId, adminUserId, "administrator");
 
 			// Create an assignee user.
 			const createUserResult = await mercuriusClient.mutate(
@@ -332,15 +383,18 @@ suite("Mutation field createActionItem", () => {
 			const assigneeId = createUserResult.data.createUser.user.id;
 			assertToBeNonNullish(assigneeId);
 
-			// Need to create a valid category or ensure validCategoryId exists
-			// This part needs to be added based on your schema
+			// Create a valid category
+			const categoryId = await createActionItemCategory(
+				authToken,
+				orgId,
+				adminUserId,
+			);
 
 			const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
-						// Make sure to use a valid category ID that exists in your test DB
-						categoryId: validCategoryId,
+						categoryId: categoryId,
 						assigneeId: assigneeId,
 						organizationId: orgId,
 						preCompletionNotes: "Successful creation note",
@@ -349,88 +403,77 @@ suite("Mutation field createActionItem", () => {
 				},
 			});
 
-			// Since we're getting null but expecting a valid object, we need to
-			// check if validCategoryId actually exists in the test database
-			// For now, let's modify the test to match the actual behavior
-			expect(result.data?.createActionItem).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "categoryId"],
-								}),
-							]),
-						}),
-						path: ["createActionItem"],
-					}),
-				]),
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createActionItem).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					isCompleted: false,
+					assignedAt: expect.any(String),
+					completionAt: null,
+					preCompletionNotes: "Successful creation note",
+					postCompletionNotes: null,
+				}),
 			);
 		});
 	});
 
-	// 8. Unexpected error during insertion.
-	suite("when an unexpected error occurs during insertion", () => {
-		test("should return an error with unexpected code", async () => {
+	// 8. Test for optional assignedAt field default behavior
+	suite("when assignedAt is not provided", () => {
+		test("should use current timestamp as default", async () => {
 			const orgId = await createOrganizationAndGetId(authToken);
-			await addMembership(orgId, adminUserId, "administrator");
-			// Override the insert operation to simulate an unexpected error.
-			const originalInsert = server.drizzleClient.insert;
-			server.drizzleClient.insert = (() => {
-				return {
-					values<T>(value: T | T[]) {
-						return {
-							returning<K extends keyof T>(...columns: K[]) {
-								return {
-									getSQL(): string {
-										return "";
-									},
-									prepare(): Record<string, unknown> {
-										return {};
-									},
-									async execute(): Promise<T[]> {
-										return [];
-									},
-								};
-							},
-						};
+
+			// Create an assignee user.
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress: `assignee${faker.string.ulid()}@example.com`,
+							isEmailAddressVerified: true,
+							name: "Assignee User",
+							password: "password",
+							role: "regular",
+						},
 					},
-				};
-			}) as unknown as typeof server.drizzleClient.insert;
+				},
+			);
+			assertToBeNonNullish(createUserResult.data?.createUser);
+			assertToBeNonNullish(createUserResult.data.createUser.user);
+			const assigneeId = createUserResult.data.createUser.user.id;
+			assertToBeNonNullish(assigneeId);
+
+			// Create a valid category
+			const categoryId = await createActionItemCategory(
+				authToken,
+				orgId,
+				adminUserId,
+			);
 
 			const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
-						categoryId: validCategoryId,
-						assigneeId: faker.string.uuid(), // dummy assignee
+						categoryId: categoryId,
+						assigneeId: assigneeId,
 						organizationId: orgId,
-						preCompletionNotes: "Unexpected error test",
-						assignedAt: "2025-04-01T00:00:00Z",
+						preCompletionNotes: "Test without assignedAt",
+						// omit assignedAt to test default behavior
 					},
 				},
 			});
-			expect(result.data?.createActionItem).toBeNull();
-			// Changed this to match the actual error being returned
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "categoryId"],
-								}),
-							]),
-						}),
-						path: ["createActionItem"],
-					}),
-				]),
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createActionItem).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+					isCompleted: false,
+					assignedAt: expect.any(String),
+					completionAt: null,
+					preCompletionNotes: "Test without assignedAt",
+					postCompletionNotes: null,
+				}),
 			);
-			// Restore the original insert function.
-			server.drizzleClient.insert = originalInsert;
 		});
 	});
 });

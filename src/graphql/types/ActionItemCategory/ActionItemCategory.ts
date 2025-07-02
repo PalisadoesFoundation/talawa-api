@@ -3,6 +3,7 @@ import { inArray } from "drizzle-orm";
 import { z } from "zod";
 import type { actionCategoriesTable } from "~/src/drizzle/tables/actionCategories";
 import { builder } from "~/src/graphql/builder";
+
 export type ActionItemCategory = InferSelectModel<typeof actionCategoriesTable>;
 
 export const ActionItemCategory =
@@ -18,22 +19,12 @@ ActionItemCategory.implement({
 		name: t.exposeString("name", {
 			description: "The name of the action item category.",
 		}),
-		organizationId: t.exposeID("organizationId", {
-			description: "Identifier for the organization this category belongs to.",
-		}),
-		creatorId: t.exposeID("creatorId", {
-			description: "Identifier for the user who created this category.",
+		description: t.exposeString("description", {
+			description: "The description of the action item category.",
+			nullable: true,
 		}),
 		isDisabled: t.exposeBoolean("isDisabled", {
 			description: "Indicates whether the action item category is disabled.",
-		}),
-		createdAt: t.expose("createdAt", {
-			description: "Timestamp when the category was created.",
-			type: "DateTime",
-		}),
-		updatedAt: t.expose("updatedAt", {
-			description: "Timestamp when the category was last updated.",
-			type: "DateTime",
 		}),
 	}),
 });
