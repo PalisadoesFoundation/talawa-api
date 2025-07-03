@@ -8,7 +8,7 @@ import { User } from "../User/User";
 import { Notification } from "~/src/graphql/types/Notification/NotificationResponse";
 import { notificationLogsTable } from "~/src/drizzle/tables/NotificationLog";
 import { notificationAudienceTable } from "~/src/drizzle/tables/NotificationAudience";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, or, inArray } from "drizzle-orm";
 
 const queryNotificationArgumentsSchema = z.object({
 	input: queryNotificationInputSchema,
@@ -72,6 +72,14 @@ User.implement({
 						},
 					});
 				}
+				const userOrgs =
+					await ctx.drizzleClient.query.organizationMembershipsTable.findMany({
+						columns: { organizationId: true },
+						where: (fields, operators) =>
+							operators.eq(fields.memberId, currentUserid),
+					});
+				const orgIds = userOrgs.map((org) => org.organizationId);
+
 				const rawNotifications = await ctx.drizzleClient
 					.select({
 						id: notificationLogsTable.id,
@@ -92,8 +100,16 @@ User.implement({
 					)
 					.where(
 						and(
-							eq(notificationAudienceTable.targetId, parent.id),
-							eq(notificationAudienceTable.targetType, "user"),
+							or(
+								and(
+									eq(notificationAudienceTable.targetType, "user"),
+									eq(notificationAudienceTable.targetId, parent.id),
+								),
+								and(
+									eq(notificationAudienceTable.targetType, "organization"),
+									inArray(notificationAudienceTable.targetId, orgIds),
+								),
+							),
 							eq(notificationLogsTable.channel, "in_app"),
 						),
 					)
@@ -101,6 +117,7 @@ User.implement({
 					.limit(parsedArgs.input.first || 20)
 					.offset(parsedArgs.input.skip || 0);
 
+				console.log("Raw Notifications:", rawNotifications);
 				return rawNotifications.map((notification) => ({
 					id: notification.id,
 					isRead: notification.isRead,

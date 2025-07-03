@@ -11,6 +11,12 @@ import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
+import {
+	NotificationEngine,
+	NotificationTargetType,
+	NotificationChannelType,
+} from "~/src/graphql/types/Notification/Notification_engine";
+
 const mutationCreatePostArgumentsSchema = z.object({
 	input: mutationCreatePostInputSchema,
 });
@@ -59,12 +65,14 @@ builder.mutationField("createPost", (t) =>
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
+						name: true,
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
 					columns: {
 						countryCode: true,
+						name: true,
 					},
 					with: {
 						membershipsWhereOrganization: {
@@ -162,6 +170,10 @@ builder.mutationField("createPost", (t) =>
 					});
 				}
 
+				let finalPost: typeof createdPost & {
+					attachments: (typeof postAttachmentsTable.$inferSelect)[];
+				};
+
 				if (parsedArgs.input.attachments !== undefined) {
 					const attachments = parsedArgs.input.attachments;
 
@@ -180,14 +192,43 @@ builder.mutationField("createPost", (t) =>
 						)
 						.returning();
 
-					return Object.assign(createdPost, {
+					finalPost = Object.assign(createdPost, {
 						attachments: createdPostAttachments,
+					});
+				} else {
+					finalPost = Object.assign(createdPost, {
+						attachments: [],
 					});
 				}
 
-				return Object.assign(createdPost, {
-					attachments: [],
-				});
+				try {
+					const notificationEngine = new NotificationEngine(ctx);
+
+					const authorName = currentUser.name || "Anonymous";
+					await notificationEngine.createNotification(
+						"post_created", 
+						{
+							authorName: authorName,
+							organizationName: existingOrganization.name || "Organization",
+							postCaption: parsedArgs.input.caption || "New post",
+							postId: createdPost.id,
+							postUrl: `/post/${createdPost.id}`,
+						},
+						{
+							targetType: NotificationTargetType.ORGANIZATION,
+							targetIds: [parsedArgs.input.organizationId],
+						},
+						NotificationChannelType.IN_APP,
+					);
+
+					ctx.log.info(
+						`Notification saved for new post ${createdPost.id} in organization ${parsedArgs.input.organizationId}`,
+					);
+				} catch (notificationError) {
+					ctx.log.error("Failed to save post notification:", notificationError);
+				}
+
+				return finalPost;
 			});
 		},
 		type: Post,
