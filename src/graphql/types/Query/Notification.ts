@@ -117,7 +117,6 @@ User.implement({
 					.limit(parsedArgs.input.first || 20)
 					.offset(parsedArgs.input.skip || 0);
 
-				console.log("Raw Notifications:", rawNotifications);
 				return rawNotifications.map((notification) => ({
 					id: notification.id,
 					isRead: notification.isRead,
