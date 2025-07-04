@@ -1,5 +1,5 @@
 {
-  "id": "3b074753-00f8-4dba-8935-ceab7dafa807",
+  "id": "a9b4406b-43ff-4448-a533-8f01675d0ad3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -4430,25 +4430,11 @@
           "name": "updated_at",
           "type": "timestamp (3) with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "now()"
         }
       },
       "indexes": {
-        "plugins_plugin_id_index": {
-          "name": "plugins_plugin_id_index",
-          "columns": [
-            {
-              "expression": "plugin_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "plugins_is_activated_index": {
           "name": "plugins_is_activated_index",
           "columns": [

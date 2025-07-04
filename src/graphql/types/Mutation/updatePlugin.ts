@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { builder } from "~/src/graphql/builder";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
+import { getPluginManagerInstance } from "~/src/plugin/registry";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { UpdatePluginInput, updatePluginInputSchema } from "../Plugin/inputs";
 
@@ -90,6 +91,11 @@ export const updatePlugin = builder.mutationField("updatePlugin", (t) =>
 				}
 			}
 
+			// Detect activation status changes
+			const wasActivated = existingPlugin.isActivated;
+			const willBeActivated = isActivated ?? existingPlugin.isActivated;
+			const activationChanged = wasActivated !== willBeActivated;
+
 			const [plugin] = await ctx.drizzleClient
 				.update(pluginsTable)
 				.set({
@@ -100,6 +106,43 @@ export const updatePlugin = builder.mutationField("updatePlugin", (t) =>
 				})
 				.where(eq(pluginsTable.id, id))
 				.returning();
+
+			// Handle dynamic plugin activation/deactivation
+			if (activationChanged) {
+				const pluginManager = getPluginManagerInstance();
+				if (pluginManager) {
+					const targetPluginId = pluginId ?? existingPlugin.pluginId;
+
+					try {
+						if (willBeActivated) {
+							// Plugin is being activated
+							console.log(`Activating plugin: ${targetPluginId}`);
+
+							// Load plugin if not already loaded
+							if (!pluginManager.isPluginLoaded(targetPluginId)) {
+								await pluginManager.loadPlugin(targetPluginId);
+							}
+
+							// Activate the plugin (registers GraphQL, etc.)
+							await pluginManager.activatePlugin(targetPluginId);
+
+							console.log(`Plugin activated successfully: ${targetPluginId}`);
+						} else {
+							// Plugin is being deactivated
+							console.log(`Deactivating plugin: ${targetPluginId}`);
+							await pluginManager.deactivatePlugin(targetPluginId);
+							console.log(`Plugin deactivated successfully: ${targetPluginId}`);
+						}
+					} catch (error) {
+						console.error(
+							`Error during plugin ${willBeActivated ? "activation" : "deactivation"}:`,
+							error,
+						);
+						// Note: We don't throw here to avoid breaking the DB update,
+						// but in production you might want to rollback the DB change
+					}
+				}
+			}
 
 			return plugin;
 		},

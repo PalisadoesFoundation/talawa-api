@@ -301,7 +301,7 @@ CREATE TABLE "plugins" (
 	"is_installed" boolean DEFAULT true NOT NULL,
 	"backup" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp (3) with time zone,
+	"updated_at" timestamp (3) with time zone DEFAULT now(),
 	CONSTRAINT "plugins_plugin_id_unique" UNIQUE("plugin_id")
 );
 --> statement-breakpoint
@@ -672,7 +672,6 @@ CREATE INDEX "organization_memberships_role_index" ON "organization_memberships"
 CREATE INDEX "organizations_creator_id_index" ON "organizations" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "organizations_name_index" ON "organizations" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "organizations_updater_id_index" ON "organizations" USING btree ("updater_id");--> statement-breakpoint
-CREATE INDEX "plugins_plugin_id_index" ON "plugins" USING btree ("plugin_id");--> statement-breakpoint
 CREATE INDEX "plugins_is_activated_index" ON "plugins" USING btree ("is_activated");--> statement-breakpoint
 CREATE INDEX "plugins_is_installed_index" ON "plugins" USING btree ("is_installed");--> statement-breakpoint
 CREATE INDEX "post_attachments_created_at_index" ON "post_attachments" USING btree ("created_at");--> statement-breakpoint

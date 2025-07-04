@@ -61,7 +61,7 @@ export const pluginsTable = pgTable(
 			precision: 3,
 			withTimezone: true,
 		})
-			.$defaultFn(() => sql`${null}`)
+			.defaultNow()
 			.$onUpdate(() => new Date()),
 	},
 	(self) => [index().on(self.isActivated), index().on(self.isInstalled)],
