@@ -178,17 +178,39 @@ builder.queryField("chatsByUser", (t) =>
 
 			// Check if current user has permission to view the target user's chats
 			// For now, users can only view their own chats unless they're an admin
-			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-				columns: {
-					role: true,
-				},
-				where: (fields, operators) => operators.eq(fields.id, currentUserId),
-			});
+			const [currentUser, targetUser] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						id: true,
+					},
+					where: (fields, operators) => operators.eq(fields.id, targetUserId),
+				}),
+			]);
 
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthenticated",
+					},
+				});
+			}
+
+			// Check if target user exists
+			if (targetUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
 					},
 				});
 			}

@@ -209,7 +209,7 @@ suite("Query field chat", () => {
 				variables: { input: { id: testChatId } },
 			});
 		} catch (error) {
-			console.warn("Failed to delete chat:", error);
+			// Ignore cleanup errors as resources may already be deleted
 		}
 
 		try {
@@ -218,7 +218,7 @@ suite("Query field chat", () => {
 				variables: { input: { id: regularUser1Id } },
 			});
 		} catch (error) {
-			console.warn("Failed to delete user1:", error);
+			// Ignore cleanup errors as resources may already be deleted
 		}
 
 		try {
@@ -227,7 +227,7 @@ suite("Query field chat", () => {
 				variables: { input: { id: regularUser2Id } },
 			});
 		} catch (error) {
-			console.warn("Failed to delete user2:", error);
+			// Ignore cleanup errors as resources may already be deleted
 		}
 
 		try {
@@ -236,7 +236,7 @@ suite("Query field chat", () => {
 				variables: { input: { id: organizationId } },
 			});
 		} catch (error) {
-			console.warn("Failed to delete organization:", error);
+			// Ignore cleanup errors as resources may already be deleted
 		}
 	});
 
@@ -641,7 +641,7 @@ suite("Query field chatsByUser", () => {
 				variables: { input: { id: testChatId } },
 			});
 		} catch (error) {
-			console.warn("Failed to delete chat:", error);
+			// Ignore cleanup errors as resources may already be deleted
 		}
 
 		try {
@@ -650,7 +650,7 @@ suite("Query field chatsByUser", () => {
 				variables: { input: { id: regularUser1Id } },
 			});
 		} catch (error) {
-			console.warn("Failed to delete user1:", error);
+			// Ignore cleanup errors as resources may already be deleted
 		}
 
 		try {
@@ -659,7 +659,7 @@ suite("Query field chatsByUser", () => {
 				variables: { input: { id: regularUser2Id } },
 			});
 		} catch (error) {
-			console.warn("Failed to delete user2:", error);
+			// Ignore cleanup errors as resources may already be deleted
 		}
 
 		try {
@@ -668,7 +668,7 @@ suite("Query field chatsByUser", () => {
 				variables: { input: { id: organizationId } },
 			});
 		} catch (error) {
-			console.warn("Failed to delete organization:", error);
+			// Ignore cleanup errors as resources may already be deletedx
 		}
 	});
 
@@ -770,6 +770,50 @@ suite("Query field chatsByUser", () => {
 									}),
 								]),
 							}),
+							message: expect.any(String),
+							path: ["chatsByUser"],
+						}),
+					]),
+				);
+			});
+		},
+	);
+
+	suite(
+		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.chatsByUser" field if`,
+		() => {
+			test("no user exists with the provided id", async () => {
+				const nonExistentUserId = faker.string.uuid();
+
+				const chatsByUserResult = await mercuriusClient.query(
+					Query_chatsByUser,
+					{
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								id: nonExistentUserId,
+							},
+						},
+					},
+				);
+
+				expect(chatsByUserResult.data.chatsByUser).toBeNull();
+				expect(chatsByUserResult.errors).toEqual(
+					expect.arrayContaining<TalawaGraphQLFormattedError>([
+						expect.objectContaining<TalawaGraphQLFormattedError>({
+							extensions:
+								expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
+									{
+										code: "arguments_associated_resources_not_found",
+										issues: expect.arrayContaining([
+											expect.objectContaining({
+												argumentPath: ["input", "id"],
+											}),
+										]),
+									},
+								),
 							message: expect.any(String),
 							path: ["chatsByUser"],
 						}),
