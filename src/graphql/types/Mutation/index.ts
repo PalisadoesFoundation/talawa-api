@@ -84,3 +84,6 @@ import "./updateEventVolunteerGroup";
 import "./deleteEventVolunteerGroup";
 import "./createVolunteerGroupAssignments";
 import "./updateVolunteerGroupAssignments";
+import "./createActionItemCategory";
+import "./updateActionItemCategory";
+import "./deleteActionItemCategory";
