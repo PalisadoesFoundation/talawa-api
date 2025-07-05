@@ -5173,6 +5173,11 @@ type Query {
   chatMessage(input: QueryChatMessageInput!): ChatMessage
 
   """
+  Query field to read all chats a user is a member of.
+  """
+  chatsByUser(input: QueryUserInput!): [Chat!]
+
+  """
   Query field to read a comment.
   """
   comment(input: QueryCommentInput!): Comment
