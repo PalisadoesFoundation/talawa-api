@@ -56,7 +56,8 @@ for port in "${ports[@]}"; do
     echo " OS not supported for local port check in this script."
   fi
 
-  # Check if any docker container uses the port
+# Check if any docker container uses the port
+if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   docker_usage=$(docker ps --format "table {{.Names}}\t{{.Ports}}" | grep ":$port->")
   if [ -n "$docker_usage" ]; then
     echo " Port $port is used by Docker container:"
@@ -64,6 +65,9 @@ for port in "${ports[@]}"; do
   else
     echo " Port $port is NOT used by any running Docker container."
   fi
+else
+  echo " Docker is not installed or running. Skipping Docker container check."
+fi
 
 done
 
