@@ -267,7 +267,7 @@ class PluginManager extends EventEmitter {
 			throw new Error(`Failed to load plugin module: ${manifest.main}`);
 		}
 
-		return pluginModule;
+		return pluginModule as Record<string, unknown>;
 	}
 
 	/**
@@ -685,7 +685,7 @@ class PluginManager extends EventEmitter {
 
 		(plugin.databaseTables as Record<string, Record<string, unknown>>)[
 			extension.name
-		] = tableDefinition;
+		] = tableDefinition as Record<string, unknown>;
 
 		// Register in extension registry
 		this.extensionRegistry.database[
@@ -995,13 +995,15 @@ class PluginManager extends EventEmitter {
 		pluginId: string,
 	): Promise<typeof pluginsTable.$inferSelect | null> {
 		try {
-			const results = (await (this.pluginContext.db as IDatabaseClient)
+			// @ts-ignore - IDatabaseClient interface doesn't fully capture Drizzle return types
+			const dbResults = await (this.pluginContext.db as IDatabaseClient)
 				.select()
 				.from(pluginsTable)
 				.where(eq(pluginsTable.pluginId, pluginId))
-				.limit?.(1)) as Array<typeof pluginsTable.$inferSelect> | unknown;
+				.limit?.(1);
+			const results = dbResults as Array<typeof pluginsTable.$inferSelect>;
 
-			return (results as Array<typeof pluginsTable.$inferSelect>)[0] || null;
+			return results[0] || null;
 		} catch (error) {
 			console.error("Error fetching plugin from database:", error);
 			return null;
