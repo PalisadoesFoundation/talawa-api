@@ -23,5 +23,9 @@ export const server = await createServer({
 		 * This makes the server test instance connect to the postgres test database.
 		 */
 		API_POSTGRES_HOST: testEnvConfig.API_POSTGRES_TEST_HOST,
+		/**
+		 * Disable migrations for tests since drizzle-seed reset function handles database setup.
+		 */
+		API_IS_APPLY_DRIZZLE_MIGRATIONS: false,
 	},
 });

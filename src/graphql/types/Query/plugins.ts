@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { builder } from "~/src/graphql/builder";
+import type { GraphQLContext } from "~/src/graphql/context";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
 import {
 	QueryPluginInput,
@@ -8,6 +9,21 @@ import {
 	queryPluginInputSchema,
 	queryPluginsInputSchema,
 } from "../Plugin/inputs";
+
+/**
+ * Resolver for getPluginById
+ */
+export const getPluginByIdResolver = async (
+	_: unknown,
+	args: { input: { id: string } },
+	ctx: GraphQLContext,
+) => {
+	const { id } = queryPluginInputSchema.parse(args.input);
+	const plugin = await ctx.drizzleClient.query.pluginsTable.findFirst({
+		where: eq(pluginsTable.id, id),
+	});
+	return plugin;
+};
 
 /**
  * GraphQL Query: Fetches a single plugin by ID.
@@ -23,18 +39,41 @@ export const getPluginById = builder.queryField("getPluginById", (t) =>
 		},
 		description: "Query field to fetch a single plugin by ID.",
 		nullable: true,
-		resolve: async (_, args, ctx) => {
-			const { id } = queryPluginInputSchema.parse(args.input);
-
-			const plugin = await ctx.drizzleClient.query.pluginsTable.findFirst({
-				where: eq(pluginsTable.id, id),
-			});
-
-			return plugin;
-		},
+		resolve: getPluginByIdResolver,
 		type: Plugin,
 	}),
 );
+
+/**
+ * Resolver for getPlugins
+ */
+export const getPluginsResolver = async (
+	_: unknown,
+	args: {
+		input?: {
+			pluginId?: string | null;
+			isActivated?: boolean | null;
+			isInstalled?: boolean | null;
+		} | null;
+	},
+	ctx: GraphQLContext,
+) => {
+	const { pluginId, isActivated, isInstalled } = queryPluginsInputSchema.parse(
+		args.input ?? {},
+	);
+	const plugins = await ctx.drizzleClient.query.pluginsTable.findMany({
+		where: (fields, operators) => {
+			const conditions = [];
+			if (pluginId) conditions.push(operators.eq(fields.pluginId, pluginId));
+			if (isActivated !== undefined)
+				conditions.push(operators.eq(fields.isActivated, isActivated));
+			if (isInstalled !== undefined)
+				conditions.push(operators.eq(fields.isInstalled, isInstalled));
+			return conditions.length > 0 ? operators.and(...conditions) : undefined;
+		},
+	});
+	return plugins;
+};
 
 /**
  * GraphQL Query: Fetches multiple plugins with optional filtering.
@@ -51,24 +90,7 @@ export const getPlugins = builder.queryField("getPlugins", (t) =>
 		},
 		description:
 			"Query field to fetch multiple plugins with optional filtering.",
-		resolve: async (_, args, ctx) => {
-			const { pluginId, isActivated, isInstalled } =
-				queryPluginsInputSchema.parse(args.input ?? {});
-
-			const plugins = await ctx.drizzleClient.query.pluginsTable.findMany({
-				where: (plugin, { and, eq }) => {
-					const conditions = [];
-					if (pluginId) conditions.push(eq(plugin.pluginId, pluginId));
-					if (isActivated !== undefined)
-						conditions.push(eq(plugin.isActivated, isActivated));
-					if (isInstalled !== undefined)
-						conditions.push(eq(plugin.isInstalled, isInstalled));
-					return conditions.length > 0 ? and(...conditions) : undefined;
-				},
-			});
-
-			return plugins;
-		},
+		resolve: getPluginsResolver,
 		type: [Plugin],
 	}),
 );
