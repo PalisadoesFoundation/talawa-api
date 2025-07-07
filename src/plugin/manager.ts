@@ -179,10 +179,12 @@ class PluginManager extends EventEmitter {
 		Array<typeof pluginsTable.$inferSelect>
 	> {
 		try {
-			const results = await (this.pluginContext.db as IDatabaseClient)
+			const queryBuilder = (this.pluginContext.db as IDatabaseClient)
 				.select()
-				.from(pluginsTable)
-				.where(eq(pluginsTable.isInstalled, true));
+				.from(pluginsTable);
+			const results = await queryBuilder.where(
+				eq(pluginsTable.isInstalled, true),
+			);
 
 			return results as Array<typeof pluginsTable.$inferSelect>;
 		} catch (error) {
@@ -995,13 +997,12 @@ class PluginManager extends EventEmitter {
 		pluginId: string,
 	): Promise<typeof pluginsTable.$inferSelect | null> {
 		try {
-			// @ts-ignore - IDatabaseClient interface doesn't fully capture Drizzle return types
-			const dbResults = await (this.pluginContext.db as IDatabaseClient)
+			const queryBuilder = (this.pluginContext.db as IDatabaseClient)
 				.select()
-				.from(pluginsTable)
-				.where(eq(pluginsTable.pluginId, pluginId))
-				.limit?.(1);
-			const results = dbResults as Array<typeof pluginsTable.$inferSelect>;
+				.from(pluginsTable);
+			const results = (await queryBuilder.where(
+				eq(pluginsTable.pluginId, pluginId),
+			)) as Array<typeof pluginsTable.$inferSelect>;
 
 			return results[0] || null;
 		} catch (error) {
@@ -1018,10 +1019,10 @@ class PluginManager extends EventEmitter {
 		updates: Partial<typeof pluginsTable.$inferInsert>,
 	): Promise<void> {
 		try {
-			await (this.pluginContext.db as IDatabaseClient)
+			const updateBuilder = (this.pluginContext.db as IDatabaseClient)
 				.update(pluginsTable)
-				.set(updates)
-				.where(eq(pluginsTable.pluginId, pluginId));
+				.set(updates);
+			await updateBuilder.where(eq(pluginsTable.pluginId, pluginId));
 		} catch (error) {
 			console.error("Error updating plugin in database:", error);
 			throw error;

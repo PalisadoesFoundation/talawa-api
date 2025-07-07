@@ -198,13 +198,13 @@ export interface IDrawerExtension {
 export interface IDatabaseClient {
 	select: (...args: unknown[]) => {
 		from: (table: unknown) => {
-			where: (...args: unknown[]) => unknown;
-			limit?: (...args: unknown[]) => unknown;
+			where: (...args: unknown[]) => Promise<unknown[]>;
+			limit?: (...args: unknown[]) => Promise<unknown[]>;
 		};
 	};
 	update: (...args: unknown[]) => {
 		set: (...args: unknown[]) => {
-			where: (...args: unknown[]) => unknown;
+			where: (...args: unknown[]) => Promise<void>;
 		};
 	};
 	execute?: (sql: string) => Promise<unknown>;
