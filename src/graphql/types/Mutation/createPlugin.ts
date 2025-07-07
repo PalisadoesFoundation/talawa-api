@@ -70,7 +70,7 @@ export const createPlugin = builder.mutationField("createPlugin", (t) =>
 				) {
 					console.log(`Creating plugin-defined tables for: ${pluginId}`);
 
-					const tableDefinitions: Record<string, unknown> = {};
+					const tableDefinitions: Record<string, Record<string, unknown>> = {};
 
 					// Load each table definition
 					for (const tableExtension of manifest.extensionPoints.database) {
@@ -90,7 +90,10 @@ export const createPlugin = builder.mutationField("createPlugin", (t) =>
 							);
 						}
 
-						const tableDefinition = tableModule[tableExtension.name];
+						const tableDefinition = tableModule[tableExtension.name] as Record<
+							string,
+							unknown
+						>;
 						if (!tableDefinition) {
 							throw new Error(
 								`Table '${tableExtension.name}' not found in file: ${tableExtension.file}`,
@@ -103,7 +106,9 @@ export const createPlugin = builder.mutationField("createPlugin", (t) =>
 
 					// Create the plugin-defined tables
 					await createPluginTables(
-						ctx.drizzleClient,
+						ctx.drizzleClient as unknown as {
+							execute: (sql: string) => Promise<unknown>;
+						},
 						pluginId,
 						tableDefinitions,
 						console, // Using console as logger for now

@@ -57,11 +57,16 @@ export interface ILoadedPlugin {
 	errorMessage?: string;
 }
 
+export interface IGraphQLExtensionResolver {
+	pluginId: string;
+	resolver: (parent: unknown, args: unknown, context: unknown) => unknown;
+}
+
 export interface IExtensionRegistry {
 	graphql: {
-		queries: Record<string, unknown>;
-		mutations: Record<string, unknown>;
-		subscriptions: Record<string, unknown>;
+		queries: Record<string, IGraphQLExtensionResolver>;
+		mutations: Record<string, IGraphQLExtensionResolver>;
+		subscriptions: Record<string, IGraphQLExtensionResolver>;
 		types: Record<string, unknown>;
 	};
 	database: {
@@ -90,11 +95,18 @@ export enum ExtensionPointType {
 }
 
 // Plugin Context Types
+export interface ILogger {
+	info?: (message: string, ...args: unknown[]) => void;
+	error?: (message: string, ...args: unknown[]) => void;
+	warn?: (message: string, ...args: unknown[]) => void;
+	debug?: (message: string, ...args: unknown[]) => void;
+}
+
 export interface IPluginContext {
 	db: unknown; // Drizzle database instance
 	graphql: unknown; // GraphQL schema builder
 	pubsub: unknown; // PubSub instance
-	logger: unknown; // Logger instance
+	logger: ILogger; // Logger instance
 	pluginManager?: unknown; // Reference to the plugin manager (optional to avoid circular dependency)
 }
 
@@ -180,4 +192,20 @@ export interface IDrawerExtension {
 	isAdmin?: boolean;
 	permissions?: string[];
 	order?: number;
+}
+
+// Simplified database client interface used for type-casting where full Drizzle types are unavailable.
+export interface IDatabaseClient {
+	select: (...args: unknown[]) => {
+		from: (table: unknown) => {
+			where: (...args: unknown[]) => unknown;
+			limit?: (...args: unknown[]) => unknown;
+		};
+	};
+	update: (...args: unknown[]) => {
+		set: (...args: unknown[]) => {
+			where: (...args: unknown[]) => unknown;
+		};
+	};
+	execute?: (sql: string) => Promise<unknown>;
 }

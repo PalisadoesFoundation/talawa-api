@@ -6,7 +6,7 @@
  */
 
 import PluginManager from "./manager";
-import type { IPluginContext } from "./types";
+import type { ILogger, IPluginContext } from "./types";
 
 // Global plugin manager instance
 let pluginManagerInstance: PluginManager | null = null;
@@ -18,7 +18,7 @@ export function createPluginContext(dependencies: {
 	db: unknown;
 	graphql: unknown;
 	pubsub: unknown;
-	logger: unknown;
+	logger: ILogger;
 }): IPluginContext {
 	return {
 		db: dependencies.db,
@@ -41,7 +41,7 @@ export async function initializePluginSystem(
 	}
 
 	try {
-		context.logger?.info("Initializing plugin system...");
+		context.logger?.info?.("Initializing plugin system...");
 
 		pluginManagerInstance = new PluginManager(context, pluginsDirectory);
 
@@ -52,10 +52,10 @@ export async function initializePluginSystem(
 			});
 		});
 
-		context.logger?.info("Plugin system initialized successfully");
+		context.logger?.info?.("Plugin system initialized successfully");
 		return pluginManagerInstance;
 	} catch (error) {
-		context.logger?.error("Failed to initialize plugin system:", error);
+		context.logger?.error?.("Failed to initialize plugin system:", error);
 		throw error;
 	}
 }

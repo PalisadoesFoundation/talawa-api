@@ -23,19 +23,16 @@ import type {
 } from "./types";
 import { PluginStatus } from "./types";
 import {
-	createPluginTables,
 	directoryExists,
 	dropPluginTables,
 	isValidPluginId,
 	loadPluginManifest,
 	safeRequire,
 	scanPluginsDirectory,
-	validatePluginManifest,
 } from "./utils";
 
 class PluginManager extends EventEmitter {
 	private loadedPlugins: Map<string, ILoadedPlugin> = new Map();
-	private manifestCache: Map<string, IPluginManifest> = new Map();
 	private extensionRegistry: IExtensionRegistry = {
 		graphql: {
 			queries: {},
@@ -57,8 +54,6 @@ class PluginManager extends EventEmitter {
 	private pluginsDirectory: string;
 	private isInitialized = false;
 	private errors: IPluginError[] = [];
-	private maxRetries = 3;
-	private retryDelay = 1000;
 
 	constructor(context: IPluginContext, pluginsDir?: string) {
 		super();
@@ -183,7 +178,15 @@ class PluginManager extends EventEmitter {
 		Array<typeof pluginsTable.$inferSelect>
 	> {
 		try {
-			return await this.pluginContext.db
+			return await (
+				this.pluginContext.db as {
+					select: (...args: unknown[]) => {
+						from: (...args: unknown[]) => {
+							where: (...args: unknown[]) => unknown;
+						};
+					};
+				}
+			)
 				.select()
 				.from(pluginsTable)
 				.where(eq(pluginsTable.isInstalled, true));
@@ -434,20 +437,30 @@ class PluginManager extends EventEmitter {
 					);
 				}
 
-				resolver = extensionModule[extension.resolver];
+				resolver = (extensionModule as Record<string, unknown>)[
+					extension.resolver
+				];
 
 				await pluginLogger.info("📦 GraphQL Extension File Analysis", {
 					pluginId,
 					filePath: extensionFilePath,
-					moduleExports: Object.keys(extensionModule),
-					targetResolver: extension.resolver,
-					resolverFound: extension.resolver in extensionModule,
-					resolverType: typeof resolver,
-					totalExports: Object.keys(extensionModule).length,
-					availableResolvers: Object.keys(extensionModule).filter(
-						(key) => typeof extensionModule[key] === "function",
+					moduleExports: Object.keys(
+						extensionModule as Record<string, unknown>,
 					),
-					moduleStructure: extensionModule,
+					targetResolver: extension.resolver,
+					resolverFound:
+						extension.resolver in (extensionModule as Record<string, unknown>),
+					resolverType: typeof resolver,
+					totalExports: Object.keys(extensionModule as Record<string, unknown>)
+						.length,
+					availableResolvers: Object.keys(
+						extensionModule as Record<string, unknown>,
+					).filter(
+						(key) =>
+							typeof (extensionModule as Record<string, unknown>)[key] ===
+							"function",
+					),
+					moduleStructure: extensionModule as Record<string, unknown>,
 				});
 			} catch (error) {
 				await pluginLogger.error("❌ GraphQL Extension File Load Failed", {
@@ -646,7 +659,9 @@ class PluginManager extends EventEmitter {
 					throw new Error(`Failed to load extension file: ${extension.file}`);
 				}
 
-				tableDefinition = extensionModule[extension.name];
+				tableDefinition = (extensionModule as Record<string, unknown>)[
+					extension.name
+				];
 			} catch (error) {
 				throw new Error(
 					`Failed to load database extension from ${extension.file}: ${error}`,
@@ -670,7 +685,7 @@ class PluginManager extends EventEmitter {
 
 		// Ensure databaseTables is initialized
 		if (!plugin.databaseTables) {
-			plugin.databaseTables = {};
+			plugin.databaseTables = {} as Record<string, unknown>;
 		}
 
 		plugin.databaseTables[extension.name] = tableDefinition;
@@ -711,7 +726,9 @@ class PluginManager extends EventEmitter {
 					);
 				}
 
-				handler = extensionModule[extension.handler];
+				handler = (extensionModule as Record<string, unknown>)[
+					extension.handler
+				];
 			} catch (error) {
 				throw new Error(
 					`Failed to load hook extension from ${extension.file}: ${error}`,
@@ -735,10 +752,10 @@ class PluginManager extends EventEmitter {
 
 		// Ensure hooks is initialized
 		if (!plugin.hooks) {
-			plugin.hooks = {};
+			plugin.hooks = {} as Record<string, (...args: unknown[]) => unknown>;
 		}
 
-		plugin.hooks[extension.event] = handler;
+		plugin.hooks[extension.event] = handler as (...args: unknown[]) => unknown;
 
 		// Register in extension registry
 		const hookType = extension.type as "pre" | "post";
@@ -854,10 +871,12 @@ class PluginManager extends EventEmitter {
 			// Optionally drop database tables (data will be lost!)
 			if (dropTables && Object.keys(plugin.databaseTables).length > 0) {
 				await dropPluginTables(
-					this.pluginContext.db,
+					this.pluginContext.db as {
+						execute: (sql: string) => Promise<unknown>;
+					},
 					pluginId,
 					plugin.databaseTables,
-					this.pluginContext.logger,
+					this.pluginContext.logger as { info?: (message: string) => void },
 				);
 			}
 
@@ -979,7 +998,17 @@ class PluginManager extends EventEmitter {
 		pluginId: string,
 	): Promise<typeof pluginsTable.$inferSelect | null> {
 		try {
-			const results = await this.pluginContext.db
+			const results = await (
+				this.pluginContext.db as {
+					select: (...args: unknown[]) => {
+						from: (...args: unknown[]) => {
+							where: (...args: unknown[]) => {
+								limit: (...args: unknown[]) => unknown;
+							};
+						};
+					};
+				}
+			)
 				.select()
 				.from(pluginsTable)
 				.where(eq(pluginsTable.pluginId, pluginId))
@@ -1000,7 +1029,15 @@ class PluginManager extends EventEmitter {
 		updates: Partial<typeof pluginsTable.$inferInsert>,
 	): Promise<void> {
 		try {
-			await this.pluginContext.db
+			await (
+				this.pluginContext.db as {
+					update: (...args: unknown[]) => {
+						set: (...args: unknown[]) => {
+							where: (...args: unknown[]) => unknown;
+						};
+					};
+				}
+			)
 				.update(pluginsTable)
 				.set(updates)
 				.where(eq(pluginsTable.pluginId, pluginId));

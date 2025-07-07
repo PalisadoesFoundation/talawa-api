@@ -211,7 +211,13 @@ class GraphQLSchemaManager {
 		// Register queries
 		for (const [queryName, queryExtension] of Object.entries(
 			extensionRegistry.graphql.queries,
-		)) {
+		) as [
+			string,
+			{
+				pluginId: string;
+				resolver: (parent: unknown, args: unknown, context: unknown) => unknown;
+			},
+		][]) {
 			if (pluginManager.isPluginActive(queryExtension.pluginId)) {
 				this.registerGraphQLField(
 					queryExtension.pluginId,
@@ -225,7 +231,13 @@ class GraphQLSchemaManager {
 		// Register mutations
 		for (const [mutationName, mutationExtension] of Object.entries(
 			extensionRegistry.graphql.mutations,
-		)) {
+		) as [
+			string,
+			{
+				pluginId: string;
+				resolver: (parent: unknown, args: unknown, context: unknown) => unknown;
+			},
+		][]) {
 			if (pluginManager.isPluginActive(mutationExtension.pluginId)) {
 				this.registerGraphQLField(
 					mutationExtension.pluginId,
@@ -239,7 +251,13 @@ class GraphQLSchemaManager {
 		// Register subscriptions
 		for (const [subscriptionName, subscriptionExtension] of Object.entries(
 			extensionRegistry.graphql.subscriptions,
-		)) {
+		) as [
+			string,
+			{
+				pluginId: string;
+				resolver: (parent: unknown, args: unknown, context: unknown) => unknown;
+			},
+		][]) {
 			if (pluginManager.isPluginActive(subscriptionExtension.pluginId)) {
 				this.registerGraphQLField(
 					subscriptionExtension.pluginId,
