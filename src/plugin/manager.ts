@@ -748,7 +748,7 @@ class PluginManager extends EventEmitter {
 		const hooks =
 			this.extensionRegistry.hooks[hookType][extension.event as string];
 		if (hooks) {
-			hooks.push(handler as Function);
+			hooks.push(handler as (...args: unknown[]) => unknown);
 		}
 	}
 
@@ -961,8 +961,11 @@ class PluginManager extends EventEmitter {
 				const handlers = this.extensionRegistry.hooks[hookType][event];
 				if (handlers) {
 					this.extensionRegistry.hooks[hookType][event] = handlers.filter(
-						(handler: Function & { pluginId?: string }) =>
-							handler.pluginId !== pluginId,
+						(
+							handler: ((...args: unknown[]) => unknown) & {
+								pluginId?: string;
+							},
+						) => handler.pluginId !== pluginId,
 					);
 				}
 			}
@@ -1091,7 +1094,7 @@ class PluginManager extends EventEmitter {
 	/**
 	 * Execute pre hooks for an event
 	 */
-	public async executePreHooks(event: string, data: any): Promise<any> {
+	public async executePreHooks(event: string, data: unknown): Promise<unknown> {
 		const hooks = this.extensionRegistry.hooks.pre[event] || [];
 		let result = data;
 
@@ -1109,7 +1112,7 @@ class PluginManager extends EventEmitter {
 	/**
 	 * Execute post hooks for an event
 	 */
-	public async executePostHooks(event: string, data: any): Promise<void> {
+	public async executePostHooks(event: string, data: unknown): Promise<void> {
 		const hooks = this.extensionRegistry.hooks.post[event] || [];
 
 		await Promise.allSettled(
@@ -1164,7 +1167,8 @@ class PluginManager extends EventEmitter {
 				default:
 					throw new Error(`Unknown GraphQL extension type: ${type}`);
 			}
-		} else if (registryType === "database") {
+		}
+		if (registryType === "database") {
 			switch (type) {
 				case "table":
 					return "tables";

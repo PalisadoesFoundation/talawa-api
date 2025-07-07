@@ -2,20 +2,21 @@
  * Utility functions for the Talawa API plugin system
  */
 
-import { promises as fs } from "fs";
-import path from "path";
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import type { IPluginManifest } from "./types";
 
 /**
  * Validates a plugin manifest structure
  */
 export function validatePluginManifest(
-	manifest: any,
+	manifest: unknown,
 ): manifest is IPluginManifest {
-	if (!manifest || typeof manifest !== "object") {
+	if (!manifest || typeof manifest !== "object" || manifest === null) {
 		return false;
 	}
 
+	const manifestObj = manifest as Record<string, unknown>;
 	const requiredFields = [
 		"name",
 		"pluginId",
@@ -26,20 +27,20 @@ export function validatePluginManifest(
 	];
 
 	for (const field of requiredFields) {
-		if (!manifest[field] || typeof manifest[field] !== "string") {
+		if (!manifestObj[field] || typeof manifestObj[field] !== "string") {
 			return false;
 		}
 	}
 
 	// Validate version format (basic semver check)
 	const versionRegex = /^\d+\.\d+\.\d+$/;
-	if (!versionRegex.test(manifest.version)) {
+	if (!versionRegex.test(manifestObj.version as string)) {
 		return false;
 	}
 
 	// Validate pluginId format (camelCase, snake_case, or lowercase)
 	const pluginIdRegex = /^[a-z][a-zA-Z0-9_]*$/;
-	if (!pluginIdRegex.test(manifest.pluginId)) {
+	if (!pluginIdRegex.test(manifestObj.pluginId as string)) {
 		return false;
 	}
 
@@ -140,7 +141,7 @@ export function normalizeImportPath(
 /**
  * Safely requires a module with error handling
  */
-export async function safeRequire<T = any>(
+export async function safeRequire<T = unknown>(
 	modulePath: string,
 ): Promise<T | null> {
 	try {
@@ -201,7 +202,7 @@ export function filterActiveExtensions<T extends { pluginId: string }>(
 /**
  * Debounces a function call
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
 	func: T,
 	delay: number,
 ): (...args: Parameters<T>) => void {
@@ -214,7 +215,7 @@ export function debounce<T extends (...args: any[]) => any>(
 }
 
 /**
- * Creates a deep clone of an object
+ * Deep clone an object
  */
 export function deepClone<T>(obj: T): T {
 	if (obj === null || typeof obj !== "object") {
@@ -225,14 +226,14 @@ export function deepClone<T>(obj: T): T {
 		return new Date(obj.getTime()) as T;
 	}
 
-	if (obj instanceof Array) {
+	if (Array.isArray(obj)) {
 		return obj.map((item) => deepClone(item)) as T;
 	}
 
 	if (typeof obj === "object") {
 		const cloned = {} as T;
 		for (const key in obj) {
-			if (obj.hasOwnProperty(key)) {
+			if (Object.hasOwn(obj, key)) {
 				cloned[key] = deepClone(obj[key]);
 			}
 		}
@@ -245,34 +246,50 @@ export function deepClone<T>(obj: T): T {
 /**
  * Converts a Drizzle column type to PostgreSQL SQL type
  */
-function drizzleTypeToPostgresType(column: any): string {
-	const columnType = (column as any).columnType;
+function drizzleTypeToPostgresType(column: unknown): string {
+	const columnType = (column as { columnType?: string }).columnType;
 
 	// Handle different Drizzle column types
 	if (columnType === "PgUUID") {
 		return "uuid";
-	} else if (columnType === "PgText") {
+	}
+	if (columnType === "PgText") {
 		return "text";
-	} else if (columnType === "PgVarchar") {
-		const length = column.length || 255;
-		return `varchar(${length})`;
-	} else if (columnType === "PgBoolean") {
-		return "boolean";
-	} else if (columnType === "PgTimestamp") {
-		const precision = column.precision ? `(${column.precision})` : "";
-		const timezone = column.withTimezone ? " with time zone" : "";
-		return `timestamp${precision}${timezone}`;
-	} else if (columnType === "PgDate") {
-		return "date";
-	} else if (columnType === "PgInteger") {
+	}
+	if (columnType === "PgInteger") {
 		return "integer";
-	} else if (columnType === "PgReal") {
+	}
+	if (columnType === "PgBigInt") {
+		return "bigint";
+	}
+	if (columnType === "PgBoolean") {
+		return "boolean";
+	}
+	if (columnType === "PgTimestamp") {
+		return "timestamp";
+	}
+	if (columnType === "PgDate") {
+		return "date";
+	}
+	if (columnType === "PgTime") {
+		return "time";
+	}
+	if (columnType === "PgDecimal") {
+		return "decimal";
+	}
+	if (columnType === "PgReal") {
 		return "real";
-	} else if (columnType === "PgNumeric") {
-		return "numeric";
-	} else if (columnType === "PgSerial") {
+	}
+	if (columnType === "PgDoublePrecision") {
+		return "double precision";
+	}
+	if (columnType === "PgSmallInt") {
+		return "smallint";
+	}
+	if (columnType === "PgSerial") {
 		return "serial";
-	} else if (columnType === "PgBigSerial") {
+	}
+	if (columnType === "PgBigSerial") {
 		return "bigserial";
 	}
 
@@ -284,24 +301,40 @@ function drizzleTypeToPostgresType(column: any): string {
  * Generates CREATE TABLE SQL from a Drizzle table definition
  */
 export function generateCreateTableSQL(
-	tableDefinition: any,
+	tableDefinition: Record<string, unknown>,
 	pluginId?: string,
 ): string {
+	const drizzleNameSymbol = Symbol.for("drizzle:Name");
+	const drizzleColumnsSymbol = Symbol.for("drizzle:Columns");
+
 	const originalTableName =
-		tableDefinition[Symbol.for("drizzle:Name")] || "unknown_table";
+		(tableDefinition[
+			drizzleNameSymbol as unknown as keyof typeof tableDefinition
+		] as string) || "unknown_table";
 
 	// If plugin ID is provided and table name doesn't already start with pluginId, prefix it
 	const tableName =
 		pluginId && !originalTableName.startsWith(`${pluginId}_`)
 			? `${pluginId}_${originalTableName.replace(/^plugin_/, "")}`
 			: originalTableName;
-	const columns = tableDefinition[Symbol.for("drizzle:Columns")] || {};
+	const columns =
+		(tableDefinition[
+			drizzleColumnsSymbol as unknown as keyof typeof tableDefinition
+		] as Record<string, unknown>) || {};
 
 	const columnDefinitions: string[] = [];
 	const constraints: string[] = [];
 
 	for (const [columnName, column] of Object.entries(columns)) {
-		const col = column as any; // Cast to any to avoid TypeScript issues with dynamic column types
+		const col = column as {
+			name?: string;
+			notNull?: boolean;
+			primary?: boolean;
+			default?: unknown;
+			hasDefault?: boolean;
+			defaultFn?: unknown;
+			unique?: boolean;
+		}; // Cast to specific type to avoid TypeScript issues with dynamic column types
 
 		// Use the actual database column name from Drizzle, not the JavaScript property name
 		const dbColumnName = col.name || columnName;
@@ -353,8 +386,9 @@ export function generateCreateTableSQL(
 	sql += columnDefinitions.map((def) => `  ${def}`).join(",\n");
 
 	if (constraints.length > 0) {
-		sql +=
-			",\n" + constraints.map((constraint) => `  ${constraint}`).join(",\n");
+		sql += `,\n${constraints
+			.map((constraint) => `  ${constraint}`)
+			.join(",\n")}`;
 	}
 
 	sql += "\n);";
@@ -366,33 +400,46 @@ export function generateCreateTableSQL(
  * Generates CREATE INDEX SQL for table indexes
  */
 export function generateCreateIndexSQL(
-	tableDefinition: any,
+	tableDefinition: Record<string, unknown>,
 	pluginId?: string,
 ): string[] {
+	const drizzleNameSymbol = Symbol.for("drizzle:Name");
+	const drizzleIndexesSymbol = Symbol.for("drizzle:Indexes");
+
 	const originalTableName =
-		tableDefinition[Symbol.for("drizzle:Name")] || "unknown_table";
+		(tableDefinition[
+			drizzleNameSymbol as unknown as keyof typeof tableDefinition
+		] as string) || "unknown_table";
 
 	// If plugin ID is provided and table name doesn't already start with pluginId, prefix it
 	const tableName =
 		pluginId && !originalTableName.startsWith(`${pluginId}_`)
 			? `${pluginId}_${originalTableName.replace(/^plugin_/, "")}`
 			: originalTableName;
-	const indexes = tableDefinition[Symbol.for("drizzle:Indexes")] || [];
+	const indexes =
+		(tableDefinition[
+			drizzleIndexesSymbol as unknown as keyof typeof tableDefinition
+		] as Array<{
+			columns: Array<{ name: string }>;
+			unique?: boolean;
+		}>) || [];
 
 	const indexSQLs: string[] = [];
 
 	for (let i = 0; i < indexes.length; i++) {
 		const index = indexes[i];
-		const indexName = `${tableName}_${index.columns
-			.map((col: any) => col.name)
-			.join("_")}_index`;
-		const columnNames = index.columns
-			.map((col: any) => `"${col.name}"`)
-			.join(", ");
-		const uniqueKeyword = index.unique ? "UNIQUE " : "";
+		if (index) {
+			const indexName = `${tableName}_${index.columns
+				.map((col) => col.name)
+				.join("_")}_index`;
+			const columnNames = index.columns
+				.map((col) => `"${col.name}"`)
+				.join(", ");
+			const uniqueKeyword = index.unique ? "UNIQUE " : "";
 
-		const sql = `CREATE ${uniqueKeyword}INDEX IF NOT EXISTS "${indexName}" ON "${tableName}" (${columnNames});`;
-		indexSQLs.push(sql);
+			const sql = `CREATE ${uniqueKeyword}INDEX IF NOT EXISTS "${indexName}" ON "${tableName}" (${columnNames});`;
+			indexSQLs.push(sql);
+		}
 	}
 
 	return indexSQLs;
@@ -402,10 +449,10 @@ export function generateCreateIndexSQL(
  * Dynamically creates database tables from plugin table definitions
  */
 export async function createPluginTables(
-	db: any,
+	db: { execute: (sql: string) => Promise<unknown> },
 	pluginId: string,
-	tableDefinitions: Record<string, any>,
-	logger?: any,
+	tableDefinitions: Record<string, Record<string, unknown>>,
+	logger?: { info?: (message: string) => void },
 ): Promise<void> {
 	// Import the plugin logger
 	const { pluginLogger } = await import("./logger");
@@ -417,7 +464,7 @@ export async function createPluginTables(
 			tableNames: Object.keys(tableDefinitions),
 		});
 
-		logger?.info(`Creating database tables for plugin: ${pluginId}`);
+		logger?.info?.(`Creating database tables for plugin: ${pluginId}`);
 
 		for (const [tableName, tableDefinition] of Object.entries(
 			tableDefinitions,
@@ -443,7 +490,7 @@ export async function createPluginTables(
 					sql: createTableSQL,
 				});
 
-				logger?.info(`Creating table: ${createTableSQL}`);
+				logger?.info?.(`Creating table: ${createTableSQL}`);
 
 				// Execute CREATE TABLE
 				await db.execute(createTableSQL);
@@ -462,7 +509,7 @@ export async function createPluginTables(
 				});
 
 				for (const indexSQL of indexSQLs) {
-					logger?.info(`Creating index: ${indexSQL}`);
+					logger?.info?.(`Creating index: ${indexSQL}`);
 					await db.execute(indexSQL);
 					await pluginLogger.debug("Index created", {
 						pluginId,
@@ -471,7 +518,7 @@ export async function createPluginTables(
 					});
 				}
 
-				logger?.info(
+				logger?.info?.(
 					`Successfully created table and indexes for: ${tableName}`,
 				);
 				await pluginLogger.info("Table creation completed", {
@@ -482,21 +529,21 @@ export async function createPluginTables(
 				await pluginLogger.error("Table creation failed", {
 					pluginId,
 					tableName,
-					error,
+					error: error instanceof Error ? error.message : String(error),
 				});
-				logger?.error(`Error creating table ${tableName}:`, error);
 				throw error;
 			}
 		}
 
-		logger?.info(`Successfully created all tables for plugin: ${pluginId}`);
-		await pluginLogger.info("All tables created successfully", { pluginId });
-	} catch (error) {
-		await pluginLogger.error("Plugin table creation failed", {
+		await pluginLogger.info("All tables created successfully", {
 			pluginId,
-			error,
+			tableCount: Object.keys(tableDefinitions).length,
 		});
-		logger?.error(`Failed to create tables for plugin ${pluginId}:`, error);
+	} catch (error) {
+		await pluginLogger.error("Table creation process failed", {
+			pluginId,
+			error: error instanceof Error ? error.message : String(error),
+		});
 		throw error;
 	}
 }
@@ -505,35 +552,52 @@ export async function createPluginTables(
  * Dynamically drops database tables for a plugin
  */
 export async function dropPluginTables(
-	db: any,
+	db: { execute: (sql: string) => Promise<unknown> },
 	pluginId: string,
-	tableDefinitions: Record<string, any>,
-	logger?: any,
+	tableDefinitions: Record<string, Record<string, unknown>>,
+	logger?: { info?: (message: string) => void },
 ): Promise<void> {
 	try {
-		logger?.info(`Dropping database tables for plugin: ${pluginId}`);
+		logger?.info?.(`Dropping database tables for plugin: ${pluginId}`);
 
 		for (const [tableName, tableDefinition] of Object.entries(
 			tableDefinitions,
 		)) {
 			try {
-				const actualTableName =
-					tableDefinition[Symbol.for("drizzle:Name")] || tableName;
-				const dropSQL = `DROP TABLE IF EXISTS "${actualTableName}" CASCADE;`;
+				const drizzleNameSymbol = Symbol.for("drizzle:Name");
+				const originalTableName =
+					(tableDefinition[
+						drizzleNameSymbol as unknown as keyof typeof tableDefinition
+					] as string) || "unknown_table";
 
-				logger?.info(`Dropping table: ${dropSQL}`);
+				// If plugin ID is provided and table name doesn't already start with pluginId, prefix it
+				const prefixedTableName =
+					pluginId && !originalTableName.startsWith(`${pluginId}_`)
+						? `${pluginId}_${originalTableName.replace(/^plugin_/, "")}`
+						: originalTableName;
+
+				const dropSQL = `DROP TABLE IF EXISTS "${prefixedTableName}" CASCADE;`;
+				logger?.info?.(`Dropping table: ${dropSQL}`);
+
 				await db.execute(dropSQL);
-
-				logger?.info(`Successfully dropped table: ${actualTableName}`);
+				logger?.info?.(`Successfully dropped table: ${prefixedTableName}`);
 			} catch (error) {
-				logger?.error(`Error dropping table ${tableName}:`, error);
+				logger?.info?.(
+					`Error dropping table ${tableName}: ${
+						error instanceof Error ? error.message : String(error)
+					}`,
+				);
 				// Continue with other tables even if one fails
 			}
 		}
 
-		logger?.info(`Finished dropping tables for plugin: ${pluginId}`);
+		logger?.info?.(`Completed dropping tables for plugin: ${pluginId}`);
 	} catch (error) {
-		logger?.error(`Failed to drop tables for plugin ${pluginId}:`, error);
+		logger?.info?.(
+			`Error in dropPluginTables for plugin ${pluginId}: ${
+				error instanceof Error ? error.message : String(error)
+			}`,
+		);
 		throw error;
 	}
 }
