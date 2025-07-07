@@ -12,7 +12,7 @@ import {
 /**
  * GraphQL Query: Fetches a single plugin by ID.
  */
-export const plugin = builder.queryField("plugin", (t) =>
+export const getPluginById = builder.queryField("getPluginById", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
@@ -39,7 +39,7 @@ export const plugin = builder.queryField("plugin", (t) =>
 /**
  * GraphQL Query: Fetches multiple plugins with optional filtering.
  */
-export const plugins = builder.queryField("plugins", (t) =>
+export const getPlugins = builder.queryField("getPlugins", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
