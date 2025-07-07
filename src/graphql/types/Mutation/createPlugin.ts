@@ -82,7 +82,10 @@ export const createPlugin = builder.mutationField("createPlugin", (t) =>
 						);
 
 						const tableFilePath = path.join(pluginPath, tableExtension.file);
-						const tableModule = await safeRequire(tableFilePath);
+						const tableModule =
+							await safeRequire<Record<string, Record<string, unknown>>>(
+								tableFilePath,
+							);
 
 						if (!tableModule) {
 							throw new Error(

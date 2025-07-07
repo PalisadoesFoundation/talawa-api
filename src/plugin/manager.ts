@@ -11,6 +11,7 @@ import { eq } from "drizzle-orm";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { pluginLogger } from "./logger";
 import type {
+	IDatabaseClient,
 	IDatabaseExtension,
 	IExtensionRegistry,
 	IGraphQLExtension,
@@ -178,18 +179,12 @@ class PluginManager extends EventEmitter {
 		Array<typeof pluginsTable.$inferSelect>
 	> {
 		try {
-			return await (
-				this.pluginContext.db as {
-					select: (...args: unknown[]) => {
-						from: (...args: unknown[]) => {
-							where: (...args: unknown[]) => unknown;
-						};
-					};
-				}
-			)
+			const results = await (this.pluginContext.db as IDatabaseClient)
 				.select()
 				.from(pluginsTable)
 				.where(eq(pluginsTable.isInstalled, true));
+
+			return results as Array<typeof pluginsTable.$inferSelect>;
 		} catch (error) {
 			console.error("Error fetching installed plugins from database:", error);
 			return [];
@@ -231,7 +226,7 @@ class PluginManager extends EventEmitter {
 				id: pluginId,
 				manifest,
 				graphqlResolvers: {},
-				databaseTables: {},
+				databaseTables: {} as Record<string, Record<string, unknown>>,
 				hooks: {},
 				status: PluginStatus.LOADING,
 			};
@@ -685,10 +680,12 @@ class PluginManager extends EventEmitter {
 
 		// Ensure databaseTables is initialized
 		if (!plugin.databaseTables) {
-			plugin.databaseTables = {} as Record<string, unknown>;
+			plugin.databaseTables = {} as Record<string, Record<string, unknown>>;
 		}
 
-		plugin.databaseTables[extension.name] = tableDefinition;
+		(plugin.databaseTables as Record<string, Record<string, unknown>>)[
+			extension.name
+		] = tableDefinition;
 
 		// Register in extension registry
 		this.extensionRegistry.database[
@@ -875,7 +872,7 @@ class PluginManager extends EventEmitter {
 						execute: (sql: string) => Promise<unknown>;
 					},
 					pluginId,
-					plugin.databaseTables,
+					plugin.databaseTables as Record<string, Record<string, unknown>>,
 					this.pluginContext.logger as { info?: (message: string) => void },
 				);
 			}
@@ -998,23 +995,13 @@ class PluginManager extends EventEmitter {
 		pluginId: string,
 	): Promise<typeof pluginsTable.$inferSelect | null> {
 		try {
-			const results = await (
-				this.pluginContext.db as {
-					select: (...args: unknown[]) => {
-						from: (...args: unknown[]) => {
-							where: (...args: unknown[]) => {
-								limit: (...args: unknown[]) => unknown;
-							};
-						};
-					};
-				}
-			)
+			const results = (await (this.pluginContext.db as IDatabaseClient)
 				.select()
 				.from(pluginsTable)
 				.where(eq(pluginsTable.pluginId, pluginId))
-				.limit(1);
+				.limit?.(1)) as Array<typeof pluginsTable.$inferSelect> | unknown;
 
-			return results[0] || null;
+			return (results as Array<typeof pluginsTable.$inferSelect>)[0] || null;
 		} catch (error) {
 			console.error("Error fetching plugin from database:", error);
 			return null;
@@ -1029,15 +1016,7 @@ class PluginManager extends EventEmitter {
 		updates: Partial<typeof pluginsTable.$inferInsert>,
 	): Promise<void> {
 		try {
-			await (
-				this.pluginContext.db as {
-					update: (...args: unknown[]) => {
-						set: (...args: unknown[]) => {
-							where: (...args: unknown[]) => unknown;
-						};
-					};
-				}
-			)
+			await (this.pluginContext.db as IDatabaseClient)
 				.update(pluginsTable)
 				.set(updates)
 				.where(eq(pluginsTable.pluginId, pluginId));

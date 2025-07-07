@@ -51,7 +51,7 @@ export interface ILoadedPlugin {
 	id: string;
 	manifest: IPluginManifest;
 	graphqlResolvers: Record<string, unknown>;
-	databaseTables: Record<string, unknown>;
+	databaseTables: Record<string, Record<string, unknown>>;
 	hooks: Record<string, (...args: unknown[]) => unknown>;
 	status: PluginStatus;
 	errorMessage?: string;
