@@ -13,6 +13,7 @@ import "./fundCampaign";
 import "./fundCampaignPledge";
 import "./getPledgesByUserId";
 import "./organization";
+import "./plugins";
 import "./post";
 import "./renewAuthenticationToken";
 import "./signIn";

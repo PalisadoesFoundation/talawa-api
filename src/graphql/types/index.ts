@@ -17,6 +17,7 @@ import "./FundCampaign/index";
 import "./FundCampaignPledge/index";
 import "./Mutation/index";
 import "./Organization/index";
+import "./Plugin/index";
 import "./Post/index";
 import "./PostAttachment/index";
 import "./Query/index";
