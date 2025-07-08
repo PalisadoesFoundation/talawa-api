@@ -68,6 +68,7 @@ builder.mutationField("readNotification", (t) =>
 					},
 				});
 			}
+			console.log(notificationIds);
 			if (notificationIds.length === 0) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -102,6 +103,7 @@ builder.mutationField("readNotification", (t) =>
 					},
 				});
 			}
+			console.log("Update Result:", updateResult);
 			if (updateResult === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
