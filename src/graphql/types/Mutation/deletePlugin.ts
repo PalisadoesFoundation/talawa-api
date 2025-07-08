@@ -3,6 +3,7 @@ import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
+import { getPluginManagerInstance } from "~/src/plugin/registry";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { DeletePluginInput, deletePluginInputSchema } from "../Plugin/inputs";
 
@@ -15,6 +16,54 @@ export const deletePluginResolver = async (
 	ctx: GraphQLContext,
 ) => {
 	const { id } = deletePluginInputSchema.parse(args.input);
+
+	// Find the plugin first to get its pluginId for cleanup
+	const existingPlugin = await ctx.drizzleClient.query.pluginsTable.findFirst({
+		where: eq(pluginsTable.id, id),
+	});
+
+	if (!existingPlugin) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "arguments_associated_resources_not_found",
+				issues: [
+					{
+						argumentPath: ["input", "id"],
+					},
+				],
+			},
+		});
+	}
+
+	// Get plugin manager for cleanup
+	const pluginManager = getPluginManagerInstance();
+	if (pluginManager) {
+		const pluginId = existingPlugin.pluginId;
+
+		// Check if plugin is loaded
+		const isLoaded = pluginManager.isPluginLoaded(pluginId);
+		const isActive = pluginManager.isPluginActive(pluginId);
+
+		// Deactivate plugin if it's active
+		if (isActive) {
+			try {
+				await pluginManager.deactivatePlugin(pluginId);
+			} catch (error) {
+				console.error("Error during plugin deactivation:", error);
+				// Continue with deletion even if deactivation fails
+			}
+		}
+
+		// Unload plugin if it's loaded
+		if (isLoaded) {
+			try {
+				await pluginManager.unloadPlugin(pluginId);
+			} catch (error) {
+				console.error("Error during plugin unloading:", error);
+				// Continue with deletion even if unloading fails
+			}
+		}
+	}
 
 	// Explicit cleanup of plugin dependencies before deletion
 	// This ensures data integrity even if foreign key constraints are not set up

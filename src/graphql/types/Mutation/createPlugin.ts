@@ -5,6 +5,7 @@ import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
 import { getPluginManagerInstance } from "~/src/plugin/registry";
+import type { IPluginManifest } from "~/src/plugin/types";
 import {
 	createPluginTables,
 	loadPluginManifest,
@@ -30,6 +31,52 @@ export const createPluginResolver = async (
 ) => {
 	const { pluginId, isActivated, isInstalled, backup } =
 		createPluginInputSchema.parse(args.input);
+
+	// Additional validation for edge cases
+	if (!pluginId || pluginId.trim() === "") {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "forbidden_action_on_arguments_associated_resources",
+				issues: [
+					{
+						argumentPath: ["input", "pluginId"],
+						message: "Plugin ID cannot be empty",
+					},
+				],
+			},
+		});
+	}
+
+	if (pluginId.length > 100) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "forbidden_action_on_arguments_associated_resources",
+				issues: [
+					{
+						argumentPath: ["input", "pluginId"],
+						message: "Plugin ID is too long (maximum 100 characters)",
+					},
+				],
+			},
+		});
+	}
+
+	// Check for special characters that might cause issues
+	const specialCharRegex = /[^a-zA-Z0-9_-]/;
+	if (specialCharRegex.test(pluginId)) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "forbidden_action_on_arguments_associated_resources",
+				issues: [
+					{
+						argumentPath: ["input", "pluginId"],
+						message:
+							"Plugin ID contains invalid characters (only letters, numbers, hyphens, and underscores allowed)",
+					},
+				],
+			},
+		});
+	}
 
 	try {
 		// Check if a plugin with the same pluginId already exists to provide
@@ -63,7 +110,22 @@ export const createPluginResolver = async (
 		const pluginPath = path.join(pluginsDirectory, pluginId);
 
 		console.log("Loading plugin manifest for:", pluginId);
-		const manifest = await loadPluginManifest(pluginPath);
+		let manifest: IPluginManifest;
+		try {
+			manifest = await loadPluginManifest(pluginPath);
+		} catch (e) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "forbidden_action_on_arguments_associated_resources",
+					issues: [
+						{
+							argumentPath: ["input", "pluginId"],
+							message: "Manifest not found",
+						},
+					],
+				},
+			});
+		}
 		console.log("Plugin manifest loaded:", manifest);
 
 		// Create plugin-defined tables during creation (not activation)
@@ -109,14 +171,28 @@ export const createPluginResolver = async (
 			}
 
 			// Create the plugin-defined tables
-			await createPluginTables(
-				ctx.drizzleClient as unknown as {
-					execute: (sql: string) => Promise<unknown>;
-				},
-				pluginId,
-				tableDefinitions,
-				console, // Using console as logger for now
-			);
+			try {
+				await createPluginTables(
+					ctx.drizzleClient as unknown as {
+						execute: (sql: string) => Promise<unknown>;
+					},
+					pluginId,
+					tableDefinitions,
+					console, // Using console as logger for now
+				);
+			} catch (e) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "pluginId"],
+								message: "Table creation failed",
+							},
+						],
+					},
+				});
+			}
 
 			console.log("Successfully created plugin-defined tables for:", pluginId);
 		} else {
@@ -137,29 +213,92 @@ export const createPluginResolver = async (
 		// Handle plugin activation during creation (GraphQL extensions hookup)
 		if (isActivated) {
 			const pluginManager = getPluginManagerInstance();
-			if (pluginManager) {
-				try {
-					console.log("Activating newly created plugin:", pluginId);
+			if (!pluginManager) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "pluginId"],
+								message: "Plugin manager is not available",
+							},
+						],
+					},
+				});
+			}
 
-					// Load plugin if not already loaded
-					if (!pluginManager.isPluginLoaded(pluginId)) {
-						await pluginManager.loadPlugin(pluginId);
-					}
+			try {
+				console.log("Activating newly created plugin:", pluginId);
 
-					// Activate the plugin (hooks up GraphQL extensions, etc.)
-					await pluginManager.activatePlugin(pluginId);
-
-					console.log("Plugin activated successfully:", pluginId);
-				} catch (error) {
-					console.error("Error during plugin activation:", error);
-					// Note: We don't throw here to avoid breaking the DB insert
+				// Load plugin if not already loaded
+				if (!pluginManager.isPluginLoaded(pluginId)) {
+					await pluginManager.loadPlugin(pluginId);
 				}
+
+				// Activate the plugin (hooks up GraphQL extensions, etc.)
+				await pluginManager.activatePlugin(pluginId);
+
+				console.log("Plugin activated successfully:", pluginId);
+			} catch (error) {
+				console.error("Error during plugin activation:", error);
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "pluginId"],
+								message: "Failed to activate plugin",
+							},
+						],
+					},
+				});
 			}
 		}
 
 		return plugin;
 	} catch (error: unknown) {
 		const err = error as { code?: string; message?: string };
+
+		// If it's already a TalawaGraphQLError, re-throw it
+		if (error instanceof TalawaGraphQLError) {
+			throw error;
+		}
+
+		// Handle manifest loading errors
+		if (
+			error instanceof Error &&
+			error.message.includes("Manifest not found")
+		) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "forbidden_action_on_arguments_associated_resources",
+					issues: [
+						{
+							argumentPath: ["input", "pluginId"],
+							message: "Manifest not found",
+						},
+					],
+				},
+			});
+		}
+
+		// Handle table creation errors
+		if (
+			error instanceof Error &&
+			error.message.includes("Table creation failed")
+		) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "forbidden_action_on_arguments_associated_resources",
+					issues: [
+						{
+							argumentPath: ["input", "pluginId"],
+							message: "Table creation failed",
+						},
+					],
+				},
+			});
+		}
 
 		if (
 			err.code === "23505" ||

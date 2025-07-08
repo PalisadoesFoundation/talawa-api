@@ -477,3 +477,4 @@ class GraphQLSchemaManager {
 // Export singleton instance
 export const schemaManager = new GraphQLSchemaManager();
 export default schemaManager;
+export { GraphQLSchemaManager };
