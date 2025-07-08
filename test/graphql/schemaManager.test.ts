@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { builder } from "~/src/graphql/builder";
 import { GraphQLSchemaManager } from "~/src/graphql/schemaManager";
 import { pluginLogger } from "~/src/plugin/logger";
 import type PluginManager from "~/src/plugin/manager";
@@ -20,15 +21,14 @@ vi.mock("~/src/plugin/logger", () => ({
 	},
 }));
 
-// Mock GraphQL builder
-const mockBuilder = {
-	queryField: vi.fn(),
-	mutationField: vi.fn(),
-	subscriptionField: vi.fn(),
-};
-
+// Mock GraphQL builder - define inline to avoid hoisting issues
 vi.mock("~/src/graphql/builder", () => ({
-	builder: mockBuilder,
+	builder: {
+		queryField: vi.fn(),
+		mutationField: vi.fn(),
+		subscriptionField: vi.fn(),
+		toSchema: vi.fn(),
+	},
 }));
 
 // Mock plugin manager with vi.mocked wrapper
@@ -310,7 +310,7 @@ describe("GraphQLSchemaManager", () => {
 			).registerGraphQLField.bind(schemaManager);
 			registerGraphQLField("test_plugin", "query", "getTestData", extension);
 
-			expect(vi.mocked(mockBuilder.queryField)).toHaveBeenCalledWith(
+			expect(vi.mocked(builder).queryField).toHaveBeenCalledWith(
 				"test_plugin_getTestData",
 				expect.any(Function),
 			);
@@ -340,7 +340,7 @@ describe("GraphQLSchemaManager", () => {
 				extension,
 			);
 
-			expect(vi.mocked(mockBuilder.mutationField)).toHaveBeenCalledWith(
+			expect(vi.mocked(builder).mutationField).toHaveBeenCalledWith(
 				"test_plugin_createTestData",
 				expect.any(Function),
 			);
@@ -370,7 +370,7 @@ describe("GraphQLSchemaManager", () => {
 				extension,
 			);
 
-			expect(vi.mocked(mockBuilder.subscriptionField)).toHaveBeenCalledWith(
+			expect(vi.mocked(builder).subscriptionField).toHaveBeenCalledWith(
 				"test_plugin_testDataChanged",
 				expect.any(Function),
 			);
@@ -384,7 +384,7 @@ describe("GraphQLSchemaManager", () => {
 			};
 
 			// Mock the builder to throw an error
-			vi.mocked(mockBuilder.queryField).mockImplementation(() => {
+			vi.mocked(builder).queryField.mockImplementation(() => {
 				throw new Error("Registration failed");
 			});
 
@@ -433,9 +433,21 @@ describe("GraphQLSchemaManager", () => {
 
 			// Mock the query field to capture the resolver
 			let capturedResolver: unknown;
-			vi.mocked(mockBuilder.queryField).mockImplementation((name, config) => {
-				capturedResolver = config.resolve;
-			});
+			vi.mocked(builder).queryField.mockImplementation(
+				(name, builderFunction) => {
+					// Create a mock 't' object that mimics the Pothos field builder
+					const mockT = {
+						string: vi.fn().mockImplementation((config) => {
+							capturedResolver = config.resolve;
+							return config;
+						}),
+					} as unknown as Parameters<
+						Parameters<typeof builder.queryField>[1]
+					>[0];
+					// Call the builder function to capture the resolver
+					builderFunction(mockT);
+				},
+			);
 
 			const registerGraphQLField = (
 				schemaManager as unknown as {
@@ -487,9 +499,22 @@ describe("GraphQLSchemaManager", () => {
 
 			// Mock the mutation field to capture the resolver
 			let capturedResolver: unknown;
-			vi.mocked(mockBuilder.mutationField).mockImplementation(
-				(name, config) => {
-					capturedResolver = config.resolve;
+			vi.mocked(builder).mutationField.mockImplementation(
+				(name, builderFunction) => {
+					// Create a mock 't' object that mimics the Pothos field builder
+					const mockT = {
+						string: vi.fn().mockImplementation((config) => {
+							capturedResolver = config.resolve;
+							return config;
+						}),
+						arg: {
+							string: vi.fn().mockReturnValue("mockArg"),
+						},
+					} as unknown as Parameters<
+						Parameters<typeof builder.mutationField>[1]
+					>[0];
+					// Call the builder function to capture the resolver
+					builderFunction(mockT);
 				},
 			);
 
@@ -523,7 +548,8 @@ describe("GraphQLSchemaManager", () => {
 				"⚡ Executing Plugin GraphQL Mutation",
 				expect.objectContaining({
 					pluginId: "test_plugin",
-					resolver: mockResolver,
+					mutationName: "createTestData",
+					namespacedFieldName: "test_plugin_createTestData",
 				}),
 			);
 		});
@@ -547,9 +573,22 @@ describe("GraphQLSchemaManager", () => {
 
 			// Mock the mutation field to capture the resolver
 			let capturedResolver: unknown;
-			vi.mocked(mockBuilder.mutationField).mockImplementation(
-				(name, config) => {
-					capturedResolver = config.resolve;
+			vi.mocked(builder).mutationField.mockImplementation(
+				(name, builderFunction) => {
+					// Create a mock 't' object that mimics the Pothos field builder
+					const mockT = {
+						string: vi.fn().mockImplementation((config) => {
+							capturedResolver = config.resolve;
+							return config;
+						}),
+						arg: {
+							string: vi.fn().mockReturnValue("mockArg"),
+						},
+					} as unknown as Parameters<
+						Parameters<typeof builder.mutationField>[1]
+					>[0];
+					// Call the builder function to capture the resolver
+					builderFunction(mockT);
 				},
 			);
 
@@ -601,9 +640,22 @@ describe("GraphQLSchemaManager", () => {
 
 			// Mock the mutation field to capture the resolver
 			let capturedResolver: unknown;
-			vi.mocked(mockBuilder.mutationField).mockImplementation(
-				(name, config) => {
-					capturedResolver = config.resolve;
+			vi.mocked(builder).mutationField.mockImplementation(
+				(name, builderFunction) => {
+					// Create a mock 't' object that mimics the Pothos field builder
+					const mockT = {
+						string: vi.fn().mockImplementation((config) => {
+							capturedResolver = config.resolve;
+							return config;
+						}),
+						arg: {
+							string: vi.fn().mockReturnValue("mockArg"),
+						},
+					} as unknown as Parameters<
+						Parameters<typeof builder.mutationField>[1]
+					>[0];
+					// Call the builder function to capture the resolver
+					builderFunction(mockT);
 				},
 			);
 
@@ -660,9 +712,21 @@ describe("GraphQLSchemaManager", () => {
 
 			// Mock the query field to capture the resolver
 			let capturedResolver: unknown;
-			vi.mocked(mockBuilder.queryField).mockImplementation((name, config) => {
-				capturedResolver = config.resolve;
-			});
+			vi.mocked(builder).queryField.mockImplementation(
+				(name, builderFunction) => {
+					// Create a mock 't' object that mimics the Pothos field builder
+					const mockT = {
+						string: vi.fn().mockImplementation((config) => {
+							capturedResolver = config.resolve;
+							return config;
+						}),
+					} as unknown as Parameters<
+						Parameters<typeof builder.queryField>[1]
+					>[0];
+					// Call the builder function to capture the resolver
+					builderFunction(mockT);
+				},
+			);
 
 			const registerGraphQLField = (
 				schemaManager as unknown as {
