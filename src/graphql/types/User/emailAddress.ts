@@ -32,17 +32,6 @@ User.implement({
 					});
 				}
 
-				if (
-					currentUser.role !== "administrator" &&
-					parent.id !== currentUserId
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action",
-						},
-					});
-				}
-
 				return parent.emailAddress;
 			},
 			type: "EmailAddress",
