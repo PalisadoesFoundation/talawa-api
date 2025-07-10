@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -euo pipefail
 # Detect OS
 OS="$(uname -s)"
 
