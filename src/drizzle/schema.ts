@@ -52,6 +52,10 @@ export {
 	eventAttendancesTable,
 	eventAttendancesTableRelations,
 } from "./tables/eventAttendances";
+export {
+	eventExceptionsTable,
+	eventExceptionsTableRelations,
+} from "./tables/eventExceptions";
 export { eventsTable, eventsTableRelations } from "./tables/events";
 export {
 	membershipRequestsTable,
@@ -85,6 +89,10 @@ export {
 } from "./tables/postAttachments";
 export { postVotesTable, postVotesTableRelations } from "./tables/postVotes";
 export { postsTable, postsTableRelations } from "./tables/posts";
+export {
+	recurrenceRulesTable,
+	recurrenceRulesTableRelations,
+} from "./tables/recurrenceRules";
 export {
 	tagAssignmentsTable,
 	tagAssignmentsTableRelations,

@@ -27,6 +27,9 @@ const MockEvent = {
 	isPublic: true,
 	isRegisterable: true,
 	location: "Test Location",
+	isRecurringTemplate: false,
+	recurringEventId: null,
+	instanceStartTime: null,
 };
 
 describe("Event updater resolver - Tests", () => {
