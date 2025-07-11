@@ -4,7 +4,7 @@
 
 # Interface: UploadUrlResponse
 
-Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:3](https://github.com/gautam-divyanshu/talawa-api/blob/441b833d91882cfef7272c118419933afe47f7b6/src/graphql/types/Post/UploadUrlResponse.ts#L3)
+Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:3](https://github.com/gautam-divyanshu/talawa-api/blob/a895c36f24acf725ac16aa7e0f8e50ef9fa64c42/src/graphql/types/Post/UploadUrlResponse.ts#L3)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:3](https://github.com/g
 
 > **objectName**: `string`
 
-Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/gautam-divyanshu/talawa-api/blob/441b833d91882cfef7272c118419933afe47f7b6/src/graphql/types/Post/UploadUrlResponse.ts#L5)
+Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/gautam-divyanshu/talawa-api/blob/a895c36f24acf725ac16aa7e0f8e50ef9fa64c42/src/graphql/types/Post/UploadUrlResponse.ts#L5)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:5](https://github.com/g
 
 > **presignedUrl**: `string`
 
-Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:4](https://github.com/gautam-divyanshu/talawa-api/blob/441b833d91882cfef7272c118419933afe47f7b6/src/graphql/types/Post/UploadUrlResponse.ts#L4)
+Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:4](https://github.com/gautam-divyanshu/talawa-api/blob/a895c36f24acf725ac16aa7e0f8e50ef9fa64c42/src/graphql/types/Post/UploadUrlResponse.ts#L4)
 
 ***
 
@@ -28,4 +28,4 @@ Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:4](https://github.com/g
 
 > **requiresUpload**: `boolean`
 
-Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:6](https://github.com/gautam-divyanshu/talawa-api/blob/441b833d91882cfef7272c118419933afe47f7b6/src/graphql/types/Post/UploadUrlResponse.ts#L6)
+Defined in: [src/graphql/types/Post/UploadUrlResponse.ts:6](https://github.com/gautam-divyanshu/talawa-api/blob/a895c36f24acf725ac16aa7e0f8e50ef9fa64c42/src/graphql/types/Post/UploadUrlResponse.ts#L6)

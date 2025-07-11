@@ -667,6 +667,14 @@ input FileMetadataInput {
   objectName: String!
 }
 
+"""Possible variants of the frequency of a recurring event."""
+enum Frequency {
+  DAILY
+  MONTHLY
+  WEEKLY
+  YEARLY
+}
+
 type Fund {
   """GraphQL connection to traverse through the campaigns for the fund."""
   campaigns(after: String, before: String, first: Int, last: Int): FundCampaignsConnection
@@ -1974,6 +1982,11 @@ input MutationCreateEventInput {
 
   """Global identifier of the associated organization."""
   organizationId: ID!
+
+  """
+  Recurrence pattern for the event. If provided, creates a recurring event.
+  """
+  recurrence: RecurrenceInput
 
   """Date time at the time the event starts at."""
   startAt: DateTime!
@@ -3837,6 +3850,32 @@ input QueryVenueInput {
 input QueryVolunteerGroupAssignmentsInput {
   """Global id of the group."""
   groupId: String!
+}
+
+"""Input type for defining recurrence rules for events."""
+input RecurrenceInput {
+  """Days of the week (e.g., ['MO', 'WE', 'FR'])."""
+  byDay: [String!]
+
+  """Months of the year (1-12)."""
+  byMonth: [Int!]
+
+  """Days of the month (-31 to 31, excluding 0)."""
+  byMonthDay: [Int!]
+
+  """Number of occurrences."""
+  count: Int
+
+  """Date when the recurrence ends."""
+  endDate: DateTime
+
+  """Frequency of recurrence (DAILY, WEEKLY, MONTHLY, YEARLY)."""
+  frequency: Frequency!
+
+  """
+  Interval between recurrences (e.g., 2 for every 2 weeks). Defaults to 1.
+  """
+  interval: Int
 }
 
 type RejectMembershipResponse {

@@ -11,6 +11,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
+import { frequencyEnum as frequencyZodEnum } from "~/src/drizzle/enums/frequency";
 import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
@@ -234,6 +235,7 @@ export const recurrenceRulesTableInsertSchema = createInsertSchema(
 	recurrenceRulesTable,
 	{
 		recurrenceRuleString: (schema) => schema.min(1).max(512),
+		frequency: frequencyZodEnum,
 		interval: (schema) => schema.min(1).max(999),
 		byDay: z.array(z.string().min(2).max(3)).optional(),
 		byMonth: z.array(z.number().min(1).max(12)).optional(),

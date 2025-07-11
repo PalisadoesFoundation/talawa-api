@@ -6,7 +6,7 @@
 
 > **DefaultGraphQLConnectionEdge**\<`NodeType`\> = `object`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:189](https://github.com/gautam-divyanshu/talawa-api/blob/441b833d91882cfef7272c118419933afe47f7b6/src/utilities/defaultGraphQLConnection.ts#L189)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:189](https://github.com/gautam-divyanshu/talawa-api/blob/a895c36f24acf725ac16aa7e0f8e50ef9fa64c42/src/utilities/defaultGraphQLConnection.ts#L189)
 
 This is typescript type of a base graphql connection edge object. This connection edge object can be extended to create a custom connection edge object as long as the new connection edge object adheres to the default type of this base connection edge object.
 
@@ -22,7 +22,7 @@ This is typescript type of a base graphql connection edge object. This connectio
 
 > **cursor**: `string`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:190](https://github.com/gautam-divyanshu/talawa-api/blob/441b833d91882cfef7272c118419933afe47f7b6/src/utilities/defaultGraphQLConnection.ts#L190)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:190](https://github.com/gautam-divyanshu/talawa-api/blob/a895c36f24acf725ac16aa7e0f8e50ef9fa64c42/src/utilities/defaultGraphQLConnection.ts#L190)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [src/utilities/defaultGraphQLConnection.ts:190](https://github.com/g
 
 > **node**: `NodeType`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:191](https://github.com/gautam-divyanshu/talawa-api/blob/441b833d91882cfef7272c118419933afe47f7b6/src/utilities/defaultGraphQLConnection.ts#L191)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:191](https://github.com/gautam-divyanshu/talawa-api/blob/a895c36f24acf725ac16aa7e0f8e50ef9fa64c42/src/utilities/defaultGraphQLConnection.ts#L191)

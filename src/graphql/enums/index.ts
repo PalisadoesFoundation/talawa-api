@@ -2,6 +2,7 @@ import "./AdvertisementType";
 import "./AgendaItemType";
 import "./ChatMembershipRole";
 import "./CommentVoteType";
+import "./Frequency";
 import "./Iso3166Alpha2CountryCode";
 import "./Iso4217CurrencyCode";
 import "./Iso639Set1LanguageCode";
