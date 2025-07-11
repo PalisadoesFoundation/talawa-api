@@ -1299,3 +1299,44 @@ export const Query_getEventVolunteerGroupAssignments = gql(`
       inviteStatus
     }
   }`);
+
+export const Query_chat = gql(`
+  query Query_chat($input: QueryChatInput!) {
+    chat(input: $input) {
+      id
+      name
+      description
+      avatarMimeType
+      avatarURL
+      organization {
+        id
+        countryCode
+      }
+    }
+  }
+`);
+
+export const Query_chatsByUser = gql(`
+  query Query_chatsByUser {
+    chatsByUser {
+      id
+      name
+      description
+      avatarMimeType
+      avatarURL
+      organization {
+        id
+        countryCode
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteChat = gql(`
+  mutation Mutation_deleteChat($input: MutationDeleteChatInput!) {
+    deleteChat(input: $input) {
+      id
+      name
+    }
+  }
+`);
