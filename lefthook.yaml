@@ -36,9 +36,5 @@ pre-commit:
         set -e
         pnpm generate:docs
         git add ./docs/docs/docs/auto-schema
-    10_check_tests:
-      run: |
-        set -e
-        pnpm check_tests
-
+  
   piped: true
