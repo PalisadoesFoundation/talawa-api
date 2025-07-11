@@ -5175,7 +5175,7 @@ type Query {
   """
   Query field to read all chats a user is a member of.
   """
-  chatsByUser(input: QueryUserInput!): [Chat!]
+  chatsByUser: [Chat!]
 
   """
   Query field to read a comment.

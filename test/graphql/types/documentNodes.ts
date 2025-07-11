@@ -1317,8 +1317,8 @@ export const Query_chat = gql(`
 `);
 
 export const Query_chatsByUser = gql(`
-  query Query_chatsByUser($input: QueryUserInput!) {
-    chatsByUser(input: $input) {
+  query Query_chatsByUser {
+    chatsByUser {
       id
       name
       description

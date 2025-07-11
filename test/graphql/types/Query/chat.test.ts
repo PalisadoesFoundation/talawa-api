@@ -5,7 +5,6 @@ import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
-	UnauthorizedActionExtensions,
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -563,13 +562,7 @@ suite("Query field chatsByUser", () => {
 			test("client triggering the graphql operation is not authenticated", async () => {
 				const chatsByUserResult = await mercuriusClient.query(
 					Query_chatsByUser,
-					{
-						variables: {
-							input: {
-								id: regularUser1Id,
-							},
-						},
-					},
+					{},
 				);
 
 				expect(chatsByUserResult.data.chatsByUser).toBeNull();
@@ -600,11 +593,6 @@ suite("Query field chatsByUser", () => {
 						headers: {
 							authorization: `bearer ${tempUser.authToken}`,
 						},
-						variables: {
-							input: {
-								id: regularUser1Id,
-							},
-						},
 					},
 				);
 
@@ -624,137 +612,12 @@ suite("Query field chatsByUser", () => {
 		},
 	);
 
-	suite(
-		`results in a graphql error with "invalid_arguments" extensions code in the "errors" field and "null" as the value of "data.chatsByUser" field if`,
-		() => {
-			test("provided user id is not a valid uuid", async () => {
-				const chatsByUserResult = await mercuriusClient.query(
-					Query_chatsByUser,
-					{
-						headers: {
-							authorization: `bearer ${regularUser1AuthToken}`,
-						},
-						variables: {
-							input: {
-								id: "invalid-uuid",
-							},
-						},
-					},
-				);
-
-				expect(chatsByUserResult.data.chatsByUser).toBeNull();
-				expect(chatsByUserResult.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-								code: "invalid_arguments",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["input", "id"],
-										message: expect.any(String),
-									}),
-								]),
-							}),
-							message: expect.any(String),
-							path: ["chatsByUser"],
-						}),
-					]),
-				);
-			});
-		},
-	);
-
-	suite(
-		`results in a graphql error with "arguments_associated_resources_not_found" extensions code in the "errors" field and "null" as the value of "data.chatsByUser" field if`,
-		() => {
-			test("no user exists with the provided id", async () => {
-				const nonExistentUserId = faker.string.uuid();
-
-				const chatsByUserResult = await mercuriusClient.query(
-					Query_chatsByUser,
-					{
-						headers: {
-							authorization: `bearer ${adminAuthToken}`,
-						},
-						variables: {
-							input: {
-								id: nonExistentUserId,
-							},
-						},
-					},
-				);
-
-				expect(chatsByUserResult.data.chatsByUser).toBeNull();
-				expect(chatsByUserResult.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions:
-								expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
-									{
-										code: "arguments_associated_resources_not_found",
-										issues: expect.arrayContaining([
-											expect.objectContaining({
-												argumentPath: ["input", "id"],
-											}),
-										]),
-									},
-								),
-							message: expect.any(String),
-							path: ["chatsByUser"],
-						}),
-					]),
-				);
-			});
-		},
-	);
-
-	suite(
-		`results in a graphql error with "unauthorized_action" extensions code in the "errors" field and "null" as the value of "data.chatsByUser" field if`,
-		() => {
-			test("regular user attempts to access chats of another user", async () => {
-				const chatsByUserResult = await mercuriusClient.query(
-					Query_chatsByUser,
-					{
-						headers: {
-							authorization: `bearer ${regularUser1AuthToken}`,
-						},
-						variables: {
-							input: {
-								id: regularUser2Id,
-							},
-						},
-					},
-				);
-
-				expect(chatsByUserResult.data.chatsByUser).toBeNull();
-				expect(chatsByUserResult.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<UnauthorizedActionExtensions>(
-								{
-									code: "unauthorized_action",
-								},
-							),
-							message: expect.any(String),
-							path: ["chatsByUser"],
-						}),
-					]),
-				);
-			});
-		},
-	);
-
 	suite("successful chatsByUser access", () => {
 		test("user can access their own chats", async () => {
 			const chatsByUserResult = await mercuriusClient.query(Query_chatsByUser, {
 				headers: {
 					authorization: `bearer ${regularUser1AuthToken}`,
 				},
-				variables: {
-					input: {
-						id: regularUser1Id,
-					},
-				},
 			});
 
 			expect(chatsByUserResult.errors).toBeUndefined();
@@ -768,38 +631,22 @@ suite("Query field chatsByUser", () => {
 			);
 		});
 
-		test("administrator can access any user's chats", async () => {
+		test("administrator can access their own chats", async () => {
 			const chatsByUserResult = await mercuriusClient.query(Query_chatsByUser, {
 				headers: {
 					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						id: regularUser1Id,
-					},
 				},
 			});
 
 			expect(chatsByUserResult.errors).toBeUndefined();
 			expect(Array.isArray(chatsByUserResult.data.chatsByUser)).toBe(true);
-			expect(chatsByUserResult.data.chatsByUser).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						id: testChatId,
-					}),
-				]),
-			);
+			// Admin may or may not have chats, so just check it's an array
 		});
 
 		test("returns empty array when user has no chats", async () => {
 			const chatsByUserResult = await mercuriusClient.query(Query_chatsByUser, {
 				headers: {
 					authorization: `bearer ${regularUser2AuthToken}`,
-				},
-				variables: {
-					input: {
-						id: regularUser2Id,
-					},
 				},
 			});
 
