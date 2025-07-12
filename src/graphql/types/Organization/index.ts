@@ -22,3 +22,4 @@ import "./MembershipRequestObject";
 import "./membershipRequests";
 import "./membersInfo";
 import "./isMember";
+import "./OrganizationPost";

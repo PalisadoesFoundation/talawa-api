@@ -14,7 +14,8 @@ type Collection =
 	| "comment_votes"
 	| "action_categories"
 	| "events"
-	| "action_items";
+	| "action_items"
+	| "notification_templates";
 
 export async function main(): Promise<void> {
 	const collections: Collection[] = [
@@ -30,6 +31,7 @@ export async function main(): Promise<void> {
 		"action_categories",
 		"events",
 		"action_items",
+		"notification_templates",
 	];
 
 	try {

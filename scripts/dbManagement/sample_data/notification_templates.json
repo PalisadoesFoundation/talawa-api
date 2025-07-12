@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Membership Request Accepted",
+    "eventType": "membership_request_accepted",
+    "title": "Your membership request has been accepted!",
+    "body": "Congratulations! Your request to join {organizationName} has been approved.",
+    "channelType": "in_app",
+    "linkedRouteName": "/organization/{organizationId}"
+  }
+]

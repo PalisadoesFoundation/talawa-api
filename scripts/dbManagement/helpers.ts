@@ -623,6 +623,46 @@ export async function insertCollections(
 					);
 					break;
 				}
+				case "notification_templates": {
+					const fileContent = await fs.readFile(
+						`${process.cwd()}/scripts/dbManagement/sample_data/notification_templates.json`,
+						"utf-8",
+					);
+					const notificationTemplatesRaw = JSON.parse(fileContent);
+					type NotificationTemplate = {
+						name: string;
+						eventType: string;
+						title: string;
+						body: string;
+						channelType: string;
+						linkedRouteName: string;
+					};
+
+					const now = new Date();
+					const notificationTemplates = notificationTemplatesRaw.map(
+						(tpl: NotificationTemplate) => ({
+							id: uuidv7(),
+							name: tpl.name,
+							eventType: tpl.eventType,
+							title: tpl.title,
+							body: tpl.body,
+							channelType: tpl.channelType,
+							linkedRouteName: tpl.linkedRouteName,
+							createdAt: now,
+							creatorId: "0194e194-c6b3-7802-b074-362efea24dbc",
+							updatedAt: now,
+							updaterId: "0194e194-c6b3-7802-b074-362efea24dbc",
+						}),
+					);
+					await db
+						.insert(schema.notificationTemplatesTable)
+						.values(notificationTemplates);
+
+					console.log(
+						"\x1b[35mAdded: Notification_templates table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
 
 				default:
 					console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
