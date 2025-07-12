@@ -559,6 +559,9 @@ type Event {
   """Array of attachments."""
   attachments: [EventAttachment!]
 
+  """Base event ID for virtual instances."""
+  baseEventId: ID
+
   """Date time at the time the event was created."""
   createdAt: DateTime
 
@@ -571,14 +574,30 @@ type Event {
   """Date time at the time the event ends at."""
   endAt: DateTime
 
-  """Global identifier of the event."""
+  """Indicates if this virtual instance has exceptions applied."""
+  hasExceptions: Boolean
+
+  """
+  Global identifier of the event. For recurring instances, this is a virtual ID.
+  """
   id: ID!
+
+  """Original start time for this recurring instance."""
+  instanceStartTime: DateTime
 
   """Indicates if the event is publicly visible."""
   isPublic: Boolean
 
+  """Indicates if this event is a recurring template (base event)."""
+  isRecurringTemplate: Boolean
+
   """Indicates if users can register for this event."""
   isRegisterable: Boolean
+
+  """
+  Indicates if this is a virtual instance generated from a recurring event.
+  """
+  isVirtualInstance: Boolean
 
   """Physical or virtual location of the event."""
   location: String
@@ -588,6 +607,9 @@ type Event {
 
   """Organization the event belongs to."""
   organization: Organization
+
+  """ID of the base recurring event if this is an instance."""
+  recurringEventId: ID
 
   """Date time at the time the event starts at."""
   startAt: DateTime!
@@ -1523,6 +1545,14 @@ type Mutation {
     input: MutationCancelMembershipRequestInput!
   ): CancelMembershipResponse
 
+  """Mutation field to convert a standalone event to a recurring event."""
+  convertEventToRecurring(input: MutationConvertEventToRecurringInput!): Event
+
+  """
+  Mutation field to convert a recurring event back to a standalone event.
+  """
+  convertRecurringToStandalone(input: MutationConvertRecurringToStandaloneInput!): Event
+
   """Mutation field to create an action item."""
   createActionItem(input: CreateActionItemInput!): ActionItem
 
@@ -1812,6 +1842,21 @@ input MutationBlockUserInput {
 input MutationCancelMembershipRequestInput {
   """Global identifier of the membership request."""
   membershipRequestId: ID!
+}
+
+"""Input for converting a standalone event to a recurring event."""
+input MutationConvertEventToRecurringInput {
+  """ID of the standalone event to convert to recurring."""
+  eventId: ID!
+
+  """Recurrence pattern to apply to the event."""
+  recurrence: RecurrenceInput!
+}
+
+"""Input for converting a recurring event back to a standalone event."""
+input MutationConvertRecurringToStandaloneInput {
+  """ID of the recurring event template to convert to standalone."""
+  eventId: ID!
 }
 
 """Input for creating a new action item category."""
@@ -3130,9 +3175,25 @@ type Organization {
   description: String
 
   """
-  GraphQL connection to traverse through the events belonging to the organization.
+  GraphQL connection to traverse through the events belonging to the organization. Includes both standalone events and virtual instances from recurring events.
   """
-  events(after: String, before: String, first: Int, last: Int): OrganizationEventsConnection
+  events(
+    after: String
+    before: String
+
+    """End date for filtering events (defaults to 3 months from now)"""
+    endDate: DateTime
+    first: Int
+
+    """
+    Whether to include virtual instances from recurring events (default: true)
+    """
+    includeRecurring: Boolean
+    last: Int
+
+    """Start date for filtering events (defaults to today)"""
+    startDate: DateTime
+  ): OrganizationEventsConnection
 
   """
   GraphQL connection to traverse through the funds belonging to the organization.
@@ -3581,10 +3642,14 @@ type Query {
   """Query field to read a user."""
   currentUser: User
 
-  """Query field to read an event."""
+  """
+  Query field to read an event. Supports both real events and virtual recurring instances.
+  """
   event(input: QueryEventInput!): Event
 
-  """Fetch multiple events by their IDs."""
+  """
+  Fetch multiple events by their IDs. Supports both real event IDs and virtual instance IDs.
+  """
   eventsByIds(input: QueryEventsByIdsInput!): [Event!]
 
   """Fetch all events that belong to a given organization."""

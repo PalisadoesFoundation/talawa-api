@@ -4,6 +4,6 @@
 
 # Variable: queryEventInputSchema
 
-> `const` **queryEventInputSchema**: `ZodObject`\<\{ `id`: `any`; \}, `"strip"`, `ZodTypeAny`, \{[`key`: `string`]: `any`; `id?`: `unknown`; \}, \{[`key`: `string`]: `any`; `id?`: `unknown`; \}\>
+> `const` **queryEventInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id?`: `string`; \}, \{ `id?`: `string`; \}\>
 
-Defined in: [src/graphql/inputs/QueryEventInput.ts:5](https://github.com/gautam-divyanshu/talawa-api/blob/a895c36f24acf725ac16aa7e0f8e50ef9fa64c42/src/graphql/inputs/QueryEventInput.ts#L5)
+Defined in: [src/graphql/inputs/QueryEventInput.ts:4](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/graphql/inputs/QueryEventInput.ts#L4)

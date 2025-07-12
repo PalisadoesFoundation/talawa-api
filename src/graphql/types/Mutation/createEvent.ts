@@ -4,6 +4,7 @@ import { z } from "zod";
 import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
+import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationCreateEventInput,
@@ -12,6 +13,10 @@ import {
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import {
+	buildRRuleString,
+	validateRecurrenceInput,
+} from "~/src/utilities/recurringEventHelpers";
 
 const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
@@ -96,6 +101,26 @@ builder.mutationField("createEvent", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
+			// Validate recurrence input if provided
+			if (parsedArgs.input.recurrence) {
+				const validation = validateRecurrenceInput(
+					parsedArgs.input.recurrence,
+					parsedArgs.input.startAt,
+				);
+
+				if (!validation.isValid) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: validation.errors.map((error) => ({
+								argumentPath: ["input", "recurrence"],
+								message: error,
+							})),
+						},
+					});
+				}
+			}
+
 			const [currentUser, existingOrganization] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
@@ -163,6 +188,7 @@ builder.mutationField("createEvent", (t) =>
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
+				// Create the base event (template for recurring, or standalone event)
 				const [createdEvent] = await tx
 					.insert(eventsTable)
 					.values({
@@ -176,6 +202,11 @@ builder.mutationField("createEvent", (t) =>
 						isPublic: parsedArgs.input.isPublic ?? false,
 						isRegisterable: parsedArgs.input.isRegisterable ?? false,
 						location: parsedArgs.input.location,
+						// Set as recurring template if recurrence is provided
+						isRecurringTemplate: !!parsedArgs.input.recurrence,
+						// For recurring events, these are null (template only)
+						recurringEventId: null,
+						instanceStartTime: null,
 					})
 					.returning();
 
@@ -192,6 +223,58 @@ builder.mutationField("createEvent", (t) =>
 					});
 				}
 
+				// Handle recurring event: Create recurrence rule only (NO instance generation)
+				if (parsedArgs.input.recurrence) {
+					// Build RRULE string
+					const rruleString = buildRRuleString(
+						parsedArgs.input.recurrence,
+						parsedArgs.input.startAt,
+					);
+
+					// Create recurrence rule (just the rule, no instances)
+					const [createdRecurrenceRule] = await tx
+						.insert(recurrenceRulesTable)
+						.values({
+							recurrenceRuleString: rruleString,
+							frequency: parsedArgs.input.recurrence.frequency,
+							interval: parsedArgs.input.recurrence.interval || 1,
+							recurrenceStartDate: parsedArgs.input.startAt,
+							recurrenceEndDate: parsedArgs.input.recurrence.endDate,
+							count: parsedArgs.input.recurrence.count,
+							// latestInstanceDate is now just used for tracking, not generation
+							latestInstanceDate: parsedArgs.input.startAt,
+							byDay: parsedArgs.input.recurrence.byDay,
+							byMonth: parsedArgs.input.recurrence.byMonth,
+							byMonthDay: parsedArgs.input.recurrence.byMonthDay,
+							baseRecurringEventId: createdEvent.id,
+							organizationId: parsedArgs.input.organizationId,
+							creatorId: currentUserId,
+						})
+						.returning();
+
+					if (createdRecurrenceRule === undefined) {
+						ctx.log.error(
+							"Failed to create recurrence rule for recurring event.",
+						);
+
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
+					ctx.log.info(
+						"Created recurring event template - instances will be generated on-demand",
+						{
+							baseEventId: createdEvent.id,
+							recurrenceRuleId: createdRecurrenceRule.id,
+							rruleString: rruleString,
+						},
+					);
+				}
+
+				// Handle attachments (same logic for both recurring and standalone events)
 				if (parsedArgs.input.attachments !== undefined) {
 					const attachments = parsedArgs.input.attachments;
 

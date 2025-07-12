@@ -6,6 +6,6 @@
 
 > `const` **agendaFoldersTable**: `PgTableWithColumns`\<\{ \}\>
 
-Defined in: [src/drizzle/tables/agendaFolders.ts:20](https://github.com/gautam-divyanshu/talawa-api/blob/a895c36f24acf725ac16aa7e0f8e50ef9fa64c42/src/drizzle/tables/agendaFolders.ts#L20)
+Defined in: [src/drizzle/tables/agendaFolders.ts:20](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/drizzle/tables/agendaFolders.ts#L20)
 
 Drizzle orm postgres table definition for agenda folders.
