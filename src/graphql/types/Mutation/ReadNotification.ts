@@ -1,14 +1,14 @@
+import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
+import { notificationAudienceTable } from "~/src/drizzle/tables/NotificationAudience";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationReadNotificationInput,
 	mutationReadNotificationInputSchema,
 } from "~/src/graphql/inputs/MutationReadNotificationinput";
-import { ReadNotificationResponse } from "../Notification/ReadNotificationResponse";
-import envConfig from "~/src/utilities/graphqLimits";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { notificationAudienceTable } from "~/src/drizzle/tables/NotificationAudience";
-import { and, eq, inArray } from "drizzle-orm";
+import envConfig from "~/src/utilities/graphqLimits";
+import { ReadNotificationResponse } from "../Notification/ReadNotificationResponse";
 
 const MutationReadNotificationArgumentSchema = z.object({
 	input: mutationReadNotificationInputSchema,

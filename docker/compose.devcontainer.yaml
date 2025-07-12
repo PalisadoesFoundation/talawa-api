@@ -178,6 +178,7 @@ services:
       - source: redis_test_data
         target: /data
         type: volume
+
 volumes:
   api_bash_history:
   api_node_modules:

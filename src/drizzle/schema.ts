@@ -115,9 +115,9 @@ export {
 } from "./tables/NotificationAudience";
 export {
 	notificationLogsTable,
-	notificationLogsTableRelations,	
+	notificationLogsTableRelations,
 } from "./tables/NotificationLog";
-export {	
+export {
 	notificationTemplatesTable,
-	notificationTemplatesTableRelations,	
+	notificationTemplatesTableRelations,
 } from "./tables/NotificationTemplate";

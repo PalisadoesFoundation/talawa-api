@@ -93,4 +93,4 @@ import "./SubscriptionChatMessageCreateInput";
 import "./QueryHasUserVotedInput";
 import "./QueryOrganizationPostInput";
 import "./QueryNotificationInput";
-import "./MutationReadNotificationinput"
+import "./MutationReadNotificationinput";

@@ -1,14 +1,14 @@
+import { and, desc, eq, inArray, or } from "drizzle-orm";
 import z from "zod";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { notificationAudienceTable } from "~/src/drizzle/tables/NotificationAudience";
+import { notificationLogsTable } from "~/src/drizzle/tables/NotificationLog";
 import {
 	QueryNotificationInput,
 	queryNotificationInputSchema,
 } from "~/src/graphql/inputs/QueryNotificationInput";
-import { User } from "../User/User";
 import { Notification } from "~/src/graphql/types/Notification/NotificationResponse";
-import { notificationLogsTable } from "~/src/drizzle/tables/NotificationLog";
-import { notificationAudienceTable } from "~/src/drizzle/tables/NotificationAudience";
-import { eq, and, desc, or, inArray } from "drizzle-orm";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { User } from "../User/User";
 
 const queryNotificationArgumentsSchema = z.object({
 	input: queryNotificationInputSchema,

@@ -7,15 +7,11 @@ import {
 	MutationCreatePostInput,
 	mutationCreatePostInputSchema,
 } from "~/src/graphql/inputs/MutationCreatePostInput";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
-import {
-	NotificationEngine,
-	NotificationTargetType,
-	NotificationChannelType,
-} from "~/src/graphql/types/Notification/Notification_engine";
 
 const mutationCreatePostArgumentsSchema = z.object({
 	input: mutationCreatePostInputSchema,
@@ -201,32 +197,16 @@ builder.mutationField("createPost", (t) =>
 					});
 				}
 
-				try {
-					const notificationEngine = new NotificationEngine(ctx);
-
-					const authorName = currentUser.name || "Anonymous";
-					await notificationEngine.createNotification(
-						"post_created", 
-						{
-							authorName: authorName,
-							organizationName: existingOrganization.name || "Organization",
-							postCaption: parsedArgs.input.caption || "New post",
-							postId: createdPost.id,
-							postUrl: `/post/${createdPost.id}`,
-						},
-						{
-							targetType: NotificationTargetType.ORGANIZATION,
-							targetIds: [parsedArgs.input.organizationId],
-						},
-						NotificationChannelType.IN_APP,
-					);
-
-					ctx.log.info(
-						`Notification saved for new post ${createdPost.id} in organization ${parsedArgs.input.organizationId}`,
-					);
-				} catch (notificationError) {
-					ctx.log.error("Failed to save post notification:", notificationError);
-				}
+				notificationEventBus.emitPostCreated(
+					{
+						postId: createdPost.id,
+						organizationId: parsedArgs.input.organizationId,
+						authorName: currentUser.name || "Anonymous",
+						organizationName: existingOrganization.name || "Organization",
+						postCaption: parsedArgs.input.caption || "New post",
+					},
+					ctx,
+				);
 
 				return finalPost;
 			});

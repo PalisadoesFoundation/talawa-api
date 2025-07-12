@@ -7,6 +7,7 @@ import {
 	MutationAcceptMembershipRequestInput,
 	acceptMembershipRequestInputSchema,
 } from "~/src/graphql/inputs/MutationAcceptMembershipRequestInput";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { AcceptMembershipResponse } from "~/src/graphql/types/Organization/AcceptMembershipResponse";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -173,7 +174,14 @@ builder.mutationField("acceptMembershipRequest", (t) =>
 						})
 						.returning();
 				});
-
+				await notificationEventBus.emitMembershipRequestAccepted(
+					{
+						userId: membershipRequest.userId,
+						organizationId: membershipRequest.organizationId,
+						organizationName: membershipRequest.organization.name,
+					},
+					ctx,
+				);
 				return {
 					success: true,
 					message:
