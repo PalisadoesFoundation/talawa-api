@@ -840,3 +840,7 @@ yarn.lock
 
 # FNM
 .node-version
+
+# Plugin related
+/src/plugin/available/*
+!/src/plugin/available/readme.md

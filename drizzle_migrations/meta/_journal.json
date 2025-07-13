@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1743950436505,
-      "tag": "20250406144036_curious_rattler",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1748449937661,
-      "tag": "20250528163217_zippy_supernaut",
+      "when": 1751913008860,
+      "tag": "20250707183008_careless_earthquake",
       "breakpoints": true
     }
   ]
