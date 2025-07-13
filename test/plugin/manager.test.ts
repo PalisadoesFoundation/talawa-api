@@ -95,6 +95,14 @@ import {
 	scanPluginsDirectory,
 } from "~/src/plugin/utils";
 
+// Type for extension registry structure used in private method tests
+interface ExtensionRegistryForTest {
+	hooks: Record<
+		"pre" | "post",
+		Record<string, Array<(...args: unknown[]) => unknown>>
+	>;
+}
+
 describe("PluginManager", () => {
 	let pluginManager: PluginManager;
 	let mockManifest: IPluginManifest;
@@ -820,6 +828,806 @@ describe("PluginManager", () => {
 
 			const result = await pluginManager.loadPlugin("test_plugin");
 			expect(result).toBe(true);
+		});
+	});
+
+	describe("Private Methods", () => {
+		let pluginManager: PluginManager;
+
+		// Proper TypeScript interfaces for private method testing
+		interface DatabaseExtension {
+			name: string;
+			type: "table" | "enum" | "relation";
+			file: string;
+		}
+
+		interface GraphQLExtension {
+			name: string;
+			type: "query" | "mutation" | "subscription";
+			resolver: string;
+			file: string;
+		}
+
+		interface LoadedPlugin {
+			id: string;
+			manifest: IPluginManifest;
+			status: PluginStatus;
+			graphqlResolvers: Record<string, unknown> | null;
+			databaseTables: Record<string, unknown>;
+			hooks: Record<string, unknown>;
+		}
+
+		// Type for accessing private methods with proper typing
+		type PluginManagerWithPrivateMethods = {
+			loadedPlugins: Map<string, LoadedPlugin>;
+			getExtensionRegistryKey: (type: string, registryType: string) => string;
+			loadDatabaseExtension: (
+				pluginId: string,
+				extension: DatabaseExtension,
+				pluginModule: Record<string, unknown>,
+			) => Promise<void>;
+			loadGraphQLExtension: (
+				pluginId: string,
+				extension: GraphQLExtension,
+				pluginModule: Record<string, unknown>,
+			) => Promise<void>;
+			loadExtensionPoints: (
+				pluginId: string,
+				manifest: IPluginManifest,
+				pluginModule: Record<string, unknown>,
+			) => Promise<void>;
+		};
+
+		beforeEach(() => {
+			pluginManager = new PluginManager(mockPluginContext);
+		});
+
+		describe("getExtensionRegistryKey", () => {
+			it("should return correct keys for GraphQL types", () => {
+				expect(
+					(
+						pluginManager as unknown as {
+							getExtensionRegistryKey: (
+								type: string,
+								registryType: string,
+							) => string;
+						}
+					).getExtensionRegistryKey("query", "graphql"),
+				).toBe("queries");
+				expect(
+					(
+						pluginManager as unknown as {
+							getExtensionRegistryKey: (
+								type: string,
+								registryType: string,
+							) => string;
+						}
+					).getExtensionRegistryKey("mutation", "graphql"),
+				).toBe("mutations");
+				expect(
+					(
+						pluginManager as unknown as {
+							getExtensionRegistryKey: (
+								type: string,
+								registryType: string,
+							) => string;
+						}
+					).getExtensionRegistryKey("subscription", "graphql"),
+				).toBe("subscriptions");
+				expect(
+					(
+						pluginManager as unknown as {
+							getExtensionRegistryKey: (
+								type: string,
+								registryType: string,
+							) => string;
+						}
+					).getExtensionRegistryKey("type", "graphql"),
+				).toBe("types");
+			});
+
+			it("should return correct keys for database types", () => {
+				expect(
+					(
+						pluginManager as unknown as {
+							getExtensionRegistryKey: (
+								type: string,
+								registryType: string,
+							) => string;
+						}
+					).getExtensionRegistryKey("table", "database"),
+				).toBe("tables");
+				expect(
+					(
+						pluginManager as unknown as {
+							getExtensionRegistryKey: (
+								type: string,
+								registryType: string,
+							) => string;
+						}
+					).getExtensionRegistryKey("enum", "database"),
+				).toBe("enums");
+				expect(
+					(
+						pluginManager as unknown as {
+							getExtensionRegistryKey: (
+								type: string,
+								registryType: string,
+							) => string;
+						}
+					).getExtensionRegistryKey("relation", "database"),
+				).toBe("relations");
+			});
+
+			it("should throw error for unknown GraphQL type", () => {
+				expect(() =>
+					(
+						pluginManager as unknown as {
+							getExtensionRegistryKey: (
+								type: string,
+								registryType: string,
+							) => string;
+						}
+					).getExtensionRegistryKey("unknown", "graphql"),
+				).toThrow("Unknown GraphQL extension type: unknown");
+			});
+
+			it("should throw error for unknown database type", () => {
+				expect(() =>
+					(
+						pluginManager as unknown as {
+							getExtensionRegistryKey: (
+								type: string,
+								registryType: string,
+							) => string;
+						}
+					).getExtensionRegistryKey("unknown", "database"),
+				).toThrow("Unknown database extension type: unknown");
+			});
+
+			it("should throw error for unknown registry type", () => {
+				expect(() =>
+					(
+						pluginManager as unknown as {
+							getExtensionRegistryKey: (
+								type: string,
+								registryType: string,
+							) => string;
+						}
+					).getExtensionRegistryKey("query", "unknown"),
+				).toThrow("Unknown registry type: unknown");
+			});
+		});
+
+		describe("loadDatabaseExtension", () => {
+			const mockPlugin: LoadedPlugin = {
+				id: "test-plugin",
+				manifest: {} as IPluginManifest,
+				status: PluginStatus.INACTIVE,
+				graphqlResolvers: {},
+				databaseTables: {},
+				hooks: {},
+			};
+
+			beforeEach(() => {
+				(
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.set("test-plugin", mockPlugin);
+			});
+
+			it("should load database extension from main module", async () => {
+				const extension: DatabaseExtension = {
+					name: "testTable",
+					type: "table",
+					file: "",
+				};
+
+				const mockTableDefinition = { name: "test_table", columns: [] };
+				const pluginModule = {
+					testTable: mockTableDefinition,
+				};
+
+				await (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadDatabaseExtension("test-plugin", extension, pluginModule);
+
+				const plugin = (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.get("test-plugin");
+				expect(plugin?.databaseTables.testTable).toEqual(mockTableDefinition);
+			});
+
+			it("should load database extension from separate file", async () => {
+				vi.mocked(safeRequire).mockResolvedValue({
+					testTable: { name: "test_table", columns: [] },
+				});
+
+				const extension: DatabaseExtension = {
+					name: "testTable",
+					type: "table",
+					file: "tables.js",
+				};
+
+				await (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadDatabaseExtension("test-plugin", extension, {});
+
+				expect(safeRequire).toHaveBeenCalledWith(
+					"/home/talawa/api/src/plugin/available/test-plugin/tables.js",
+				);
+			});
+
+			it("should throw error if table definition not found", async () => {
+				const extension: DatabaseExtension = {
+					name: "missingTable",
+					type: "table",
+					file: "",
+				};
+
+				await expect(
+					(
+						pluginManager as unknown as PluginManagerWithPrivateMethods
+					).loadDatabaseExtension("test-plugin", extension, {}),
+				).rejects.toThrow(
+					"Database table 'missingTable' not found in plugin test-plugin",
+				);
+			});
+
+			it("should throw error if extension file fails to load", async () => {
+				vi.mocked(safeRequire).mockResolvedValue(null);
+
+				const extension: DatabaseExtension = {
+					name: "testTable",
+					type: "table",
+					file: "missing.js",
+				};
+
+				await expect(
+					(
+						pluginManager as unknown as PluginManagerWithPrivateMethods
+					).loadDatabaseExtension("test-plugin", extension, {}),
+				).rejects.toThrow("Failed to load extension file: missing.js");
+			});
+		});
+
+		describe("loadGraphQLExtension", () => {
+			const mockPlugin: LoadedPlugin = {
+				id: "test-plugin",
+				manifest: {} as IPluginManifest,
+				status: PluginStatus.INACTIVE,
+				graphqlResolvers: {},
+				databaseTables: {},
+				hooks: {},
+			};
+
+			beforeEach(() => {
+				(
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.set("test-plugin", mockPlugin);
+			});
+
+			it("should load GraphQL extension from main module", async () => {
+				const extension: GraphQLExtension = {
+					name: "testQuery",
+					type: "query",
+					resolver: "testResolver",
+					file: "",
+				};
+
+				const mockResolver = vi.fn();
+				const pluginModule = {
+					testResolver: mockResolver,
+				};
+
+				await (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadGraphQLExtension("test-plugin", extension, pluginModule);
+
+				const plugin = (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.get("test-plugin");
+				expect(plugin?.graphqlResolvers?.testQuery).toBe(mockResolver);
+			});
+
+			it("should load GraphQL extension from separate file", async () => {
+				const mockResolver = vi.fn();
+				vi.mocked(safeRequire).mockResolvedValue({
+					testMutationResolver: mockResolver,
+				});
+
+				const extension: GraphQLExtension = {
+					name: "testMutation",
+					type: "mutation",
+					resolver: "testMutationResolver",
+					file: "resolvers.js",
+				};
+
+				await (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadGraphQLExtension("test-plugin", extension, {});
+
+				expect(safeRequire).toHaveBeenCalledWith(
+					"/home/talawa/api/src/plugin/available/test-plugin/resolvers.js",
+				);
+
+				const plugin = (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.get("test-plugin");
+				expect(plugin?.graphqlResolvers?.testMutation).toBe(mockResolver);
+			});
+
+			it("should throw error if resolver not found", async () => {
+				const extension: GraphQLExtension = {
+					name: "testQuery",
+					type: "query",
+					resolver: "missingResolver",
+					file: "",
+				};
+
+				await expect(
+					(
+						pluginManager as unknown as PluginManagerWithPrivateMethods
+					).loadGraphQLExtension("test-plugin", extension, {}),
+				).rejects.toThrow(
+					"GraphQL resolver 'missingResolver' not found in plugin test-plugin",
+				);
+			});
+
+			it("should throw error if extension file fails to load", async () => {
+				vi.mocked(safeRequire).mockResolvedValue(null);
+
+				const extension: GraphQLExtension = {
+					name: "testQuery",
+					type: "query",
+					resolver: "testResolver",
+					file: "missing.js",
+				};
+
+				await expect(
+					(
+						pluginManager as unknown as PluginManagerWithPrivateMethods
+					).loadGraphQLExtension("test-plugin", extension, {}),
+				).rejects.toThrow("Failed to load GraphQL extension file: missing.js");
+			});
+
+			it("should initialize graphqlResolvers if not present", async () => {
+				const pluginWithoutResolvers: LoadedPlugin = {
+					...mockPlugin,
+					graphqlResolvers: null,
+				};
+				(
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.set("test-plugin", pluginWithoutResolvers);
+
+				const extension: GraphQLExtension = {
+					name: "testQuery",
+					type: "query",
+					resolver: "testResolver",
+					file: "",
+				};
+
+				const mockResolver = vi.fn();
+				const pluginModule = {
+					testResolver: mockResolver,
+				};
+
+				await (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadGraphQLExtension("test-plugin", extension, pluginModule);
+
+				const plugin = (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.get("test-plugin");
+				expect(plugin?.graphqlResolvers).toEqual({
+					testQuery: mockResolver,
+				});
+			});
+		});
+
+		describe("loadExtensionPoints", () => {
+			const mockPlugin: LoadedPlugin = {
+				id: "test-plugin",
+				manifest: {} as IPluginManifest,
+				status: PluginStatus.INACTIVE,
+				graphqlResolvers: {},
+				databaseTables: {},
+				hooks: {},
+			};
+
+			beforeEach(() => {
+				(
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.set("test-plugin", mockPlugin);
+			});
+
+			it("should load GraphQL extensions successfully", async () => {
+				const manifest: IPluginManifest = {
+					name: "test-plugin",
+					pluginId: "test-plugin",
+					version: "1.0.0",
+					description: "Test plugin",
+					author: "Test Author",
+					main: "index.js",
+					extensionPoints: {
+						graphql: [
+							{
+								name: "testQuery",
+								type: "query",
+								resolver: "testResolver",
+								file: "",
+							} as GraphQLExtension,
+						],
+					},
+				};
+
+				const mockResolver = vi.fn();
+				const pluginModule = {
+					testResolver: mockResolver,
+				};
+
+				await (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadExtensionPoints("test-plugin", manifest, pluginModule);
+
+				const plugin = (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.get("test-plugin");
+				expect(plugin?.graphqlResolvers?.testQuery).toBe(mockResolver);
+			});
+
+			it("should load database extensions successfully", async () => {
+				const manifest: IPluginManifest = {
+					name: "test-plugin",
+					pluginId: "test-plugin",
+					version: "1.0.0",
+					description: "Test plugin",
+					author: "Test Author",
+					main: "index.js",
+					extensionPoints: {
+						database: [
+							{
+								name: "testTable",
+								type: "table",
+								file: "",
+							} as DatabaseExtension,
+						],
+					},
+				};
+
+				const mockTableDefinition = { name: "test_table", columns: [] };
+				const pluginModule = {
+					testTable: mockTableDefinition,
+				};
+
+				await (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadExtensionPoints("test-plugin", manifest, pluginModule);
+
+				const plugin = (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.get("test-plugin");
+				expect(plugin?.databaseTables?.testTable).toEqual(mockTableDefinition);
+			});
+
+			it("should handle mixed extension types", async () => {
+				const manifest: IPluginManifest = {
+					name: "test-plugin",
+					pluginId: "test-plugin",
+					version: "1.0.0",
+					description: "Test plugin",
+					author: "Test Author",
+					main: "index.js",
+					extensionPoints: {
+						graphql: [
+							{
+								name: "testQuery",
+								type: "query",
+								resolver: "testResolver",
+								file: "",
+							},
+						],
+						database: [
+							{
+								name: "testTable",
+								type: "table",
+								file: "",
+							},
+						],
+					},
+				};
+
+				const mockResolver = vi.fn();
+				const mockTableDefinition = { name: "test_table", columns: [] };
+				const pluginModule = {
+					testResolver: mockResolver,
+					testTable: mockTableDefinition,
+				};
+
+				await (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadExtensionPoints("test-plugin", manifest, pluginModule);
+
+				const plugin = (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.get("test-plugin");
+				expect(plugin?.graphqlResolvers?.testQuery).toBe(mockResolver);
+				expect(plugin?.databaseTables?.testTable).toEqual(mockTableDefinition);
+			});
+
+			it("should return early if plugin not found", async () => {
+				const manifest: IPluginManifest = {
+					name: "missing-plugin",
+					pluginId: "missing-plugin",
+					version: "1.0.0",
+					description: "Missing plugin",
+					author: "Test Author",
+					main: "index.js",
+					extensionPoints: {
+						graphql: [
+							{
+								name: "testQuery",
+								type: "query",
+								resolver: "testResolver",
+								file: "",
+							},
+						],
+					},
+				};
+
+				// Should not throw error, just return early
+				await (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadExtensionPoints("missing-plugin", manifest, {});
+
+				// Verify no plugin was affected
+				expect(
+					(
+						pluginManager as unknown as PluginManagerWithPrivateMethods
+					).loadedPlugins.has("missing-plugin"),
+				).toBe(false);
+			});
+
+			it("should handle GraphQL extension loading errors", async () => {
+				const manifest: IPluginManifest = {
+					name: "test-plugin",
+					pluginId: "test-plugin",
+					version: "1.0.0",
+					description: "Test plugin",
+					author: "Test Author",
+					main: "index.js",
+					extensionPoints: {
+						graphql: [
+							{
+								name: "testQuery",
+								type: "query",
+								resolver: "missingResolver",
+								file: "",
+							},
+						],
+					},
+				};
+
+				await expect(
+					(
+						pluginManager as unknown as PluginManagerWithPrivateMethods
+					).loadExtensionPoints("test-plugin", manifest, {}),
+				).rejects.toThrow("Failed to load extension points");
+			});
+
+			it("should handle manifest without extension points", async () => {
+				// Create a fresh plugin manager to avoid test interference
+				const freshPluginManager = new PluginManager(mockPluginContext);
+				const freshMockPlugin = {
+					id: "test-plugin",
+					manifest: {} as IPluginManifest,
+					status: PluginStatus.INACTIVE,
+					graphqlResolvers: {},
+					databaseTables: {},
+					hooks: {},
+				};
+				(
+					freshPluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.set("test-plugin", freshMockPlugin);
+
+				const manifest: IPluginManifest = {
+					name: "test-plugin",
+					pluginId: "test-plugin",
+					version: "1.0.0",
+					description: "Test plugin",
+					author: "Test Author",
+					main: "index.js",
+				};
+
+				// Should complete without errors
+				await (
+					freshPluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadExtensionPoints("test-plugin", manifest, {});
+
+				// Plugin should still exist but unchanged
+				const plugin = (
+					freshPluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.get("test-plugin");
+				expect(plugin?.graphqlResolvers).toEqual({});
+				expect(plugin?.databaseTables).toEqual({});
+			});
+		});
+
+		describe("loadHookExtension", () => {
+			interface HookExtension {
+				name: string;
+				event: string;
+				handler: string;
+				type: "pre" | "post";
+				file?: string;
+			}
+
+			const mockPlugin: LoadedPlugin = {
+				id: "test-plugin",
+				manifest: {} as IPluginManifest,
+				status: PluginStatus.INACTIVE,
+				graphqlResolvers: {},
+				databaseTables: {},
+				hooks: {},
+			};
+
+			beforeEach(() => {
+				(
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.set("test-plugin", mockPlugin);
+			});
+
+			it("should load hook extension from main module", async () => {
+				const extension: HookExtension = {
+					name: "testHook",
+					event: "user:created",
+					handler: "testHookHandler",
+					type: "pre",
+				};
+
+				const mockHandler = vi.fn();
+				const pluginModule = {
+					testHookHandler: mockHandler,
+				};
+
+				await (
+					pluginManager as unknown as {
+						loadHookExtension: (
+							pluginId: string,
+							extension: HookExtension,
+							pluginModule: Record<string, unknown>,
+						) => Promise<void>;
+						loadedPlugins: Map<string, LoadedPlugin>;
+						extensionRegistry: ExtensionRegistryForTest;
+					}
+				).loadHookExtension("test-plugin", extension, pluginModule);
+
+				const plugin = (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.get("test-plugin");
+				expect(plugin?.hooks["user:created"]).toBe(mockHandler);
+				// Also check extension registry
+				const registry = (
+					pluginManager as unknown as {
+						extensionRegistry: ExtensionRegistryForTest;
+					}
+				).extensionRegistry;
+				expect(registry.hooks.pre["user:created"]).toContain(mockHandler);
+			});
+
+			it("should load hook extension from separate file", async () => {
+				const mockHandler = vi.fn();
+				vi.mocked(safeRequire).mockResolvedValue({
+					testHookHandler: mockHandler,
+				});
+
+				const extension: HookExtension = {
+					name: "testHook",
+					event: "user:created",
+					handler: "testHookHandler",
+					type: "post",
+					file: "hooks.js",
+				};
+
+				await (
+					pluginManager as unknown as {
+						loadHookExtension: (
+							pluginId: string,
+							extension: HookExtension,
+							pluginModule: Record<string, unknown>,
+						) => Promise<void>;
+						loadedPlugins: Map<string, LoadedPlugin>;
+						extensionRegistry: ExtensionRegistryForTest;
+					}
+				).loadHookExtension("test-plugin", extension, {});
+
+				expect(safeRequire).toHaveBeenCalledWith(
+					"/home/talawa/api/src/plugin/available/test-plugin/hooks.js",
+				);
+				const plugin = (
+					pluginManager as unknown as PluginManagerWithPrivateMethods
+				).loadedPlugins.get("test-plugin");
+				expect(plugin?.hooks["user:created"]).toBe(mockHandler);
+				const registry = (
+					pluginManager as unknown as {
+						extensionRegistry: ExtensionRegistryForTest;
+					}
+				).extensionRegistry;
+				expect(registry.hooks.post["user:created"]).toContain(mockHandler);
+			});
+
+			it("should throw error if handler is missing", async () => {
+				const extension: HookExtension = {
+					name: "testHook",
+					event: "user:created",
+					handler: "missingHandler",
+					type: "pre",
+				};
+
+				const pluginModule = {};
+
+				await expect(
+					(
+						pluginManager as unknown as {
+							loadHookExtension: (
+								pluginId: string,
+								extension: HookExtension,
+								pluginModule: Record<string, unknown>,
+							) => Promise<void>;
+						}
+					).loadHookExtension("test-plugin", extension, pluginModule),
+				).rejects.toThrow(
+					"Hook handler 'missingHandler' not found or not a function in plugin test-plugin",
+				);
+			});
+
+			it("should throw error if handler is not a function", async () => {
+				const extension: HookExtension = {
+					name: "testHook",
+					event: "user:created",
+					handler: "notAFunction",
+					type: "pre",
+				};
+
+				const pluginModule = { notAFunction: 123 };
+
+				await expect(
+					(
+						pluginManager as unknown as {
+							loadHookExtension: (
+								pluginId: string,
+								extension: HookExtension,
+								pluginModule: Record<string, unknown>,
+							) => Promise<void>;
+						}
+					).loadHookExtension("test-plugin", extension, pluginModule),
+				).rejects.toThrow(
+					"Hook handler 'notAFunction' not found or not a function in plugin test-plugin",
+				);
+			});
+
+			it("should throw error if extension file fails to load", async () => {
+				vi.mocked(safeRequire).mockResolvedValue(null);
+
+				const extension: HookExtension = {
+					name: "testHook",
+					event: "user:created",
+					handler: "testHookHandler",
+					type: "pre",
+					file: "missing.js",
+				};
+
+				await expect(
+					(
+						pluginManager as unknown as {
+							loadHookExtension: (
+								pluginId: string,
+								extension: HookExtension,
+								pluginModule: Record<string, unknown>,
+							) => Promise<void>;
+						}
+					).loadHookExtension("test-plugin", extension, {}),
+				).rejects.toThrow("Failed to load hook extension file: missing.js");
+			});
 		});
 	});
 });

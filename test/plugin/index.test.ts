@@ -11,240 +11,401 @@
  * - Plugin types and interfaces
  */
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import {
-	destroyPluginSystem,
+	PluginManager,
+	PluginStatus,
+	ExtensionPointType,
+	validatePluginManifest,
+	generatePluginId,
+	loadPluginManifest,
+	scanPluginsDirectory,
+	isValidPluginId,
+	normalizeImportPath,
+	safeRequire,
+	directoryExists,
+	ensureDirectory,
+	sortExtensionPoints,
+	filterActiveExtensions,
+	debounce,
+	deepClone,
+	createPluginContext,
 	initializePluginSystem,
-} from "~/src/plugin/registry";
-import type { IPluginContext } from "~/src/plugin/types";
+} from "~/src/plugin";
+import type {
+	IPluginManifest,
+	IExtensionPoints,
+	IGraphQLExtension,
+	IDatabaseExtension,
+	IHookExtension,
+	ILoadedPlugin,
+	IExtensionRegistry,
+	IPluginContext,
+	IPluginDiscovery,
+	IPluginLifecycle,
+	IPluginError,
+} from "~/src/plugin";
 
-// Mock dependencies for system-wide tests
-const mockDb = {
-	select: () => ({
-		from: () => ({
-			where: () => Promise.resolve([]),
-		}),
-	}),
-	update: () => ({
-		set: () => ({
-			where: () => Promise.resolve(),
-		}),
-	}),
-	execute: () => Promise.resolve(),
-};
-
-const mockGraphQL = {
-	schema: {},
-	resolvers: {},
-};
-
-const mockPubSub = {
-	publish: () => {},
-	subscribe: () => {},
-};
-
-const mockLogger = {
-	info: () => {},
-	error: () => {},
-	warn: () => {},
-	debug: () => {},
-	lifecycle: () => Promise.resolve(),
-};
-
-const mockPluginContext: IPluginContext = {
-	db: mockDb,
-	graphql: mockGraphQL,
-	pubsub: mockPubSub,
-	logger: mockLogger,
-};
-
-describe("Plugin System Integration Tests", () => {
-	beforeAll(async () => {
-		// Initialize the plugin system for integration tests
-		await initializePluginSystem(mockPluginContext);
-	});
-
-	afterAll(async () => {
-		// Clean up the plugin system
-		await destroyPluginSystem();
-	});
-
-	describe("System Initialization", () => {
-		it("should initialize plugin system successfully", async () => {
-			// This test verifies that the plugin system can be initialized
-			// without errors in a test environment
-			expect(true).toBe(true); // Placeholder for actual initialization check
-		});
-
-		it("should handle multiple initialization attempts", async () => {
-			// Test that the system handles multiple initialization calls gracefully
-			await expect(
-				initializePluginSystem(mockPluginContext),
-			).resolves.not.toThrow();
+describe("Plugin Index Exports", () => {
+	describe("PluginManager Export", () => {
+		it("should export PluginManager as default", () => {
+			expect(PluginManager).toBeDefined();
+			expect(typeof PluginManager).toBe("function");
 		});
 	});
 
-	describe("Plugin System Architecture", () => {
-		it("should have all required components", () => {
-			// Verify that all core plugin system components are available
-			// Note: These are integration tests that verify the plugin system
-			// components are working correctly in the actual application
-			expect(true).toBe(true); // Placeholder for actual component checks
+	describe("Type Exports", () => {
+		it("should export PluginStatus enum", () => {
+			expect(PluginStatus).toBeDefined();
+			expect(typeof PluginStatus).toBe("object");
+			expect(PluginStatus.ACTIVE).toBeDefined();
+			expect(PluginStatus.INACTIVE).toBeDefined();
 		});
 
-		it("should export all required types and interfaces", () => {
-			// Verify that all plugin types are properly exported
-			// Note: These are integration tests that verify the plugin system
-			// types are working correctly in the actual application
-			expect(true).toBe(true); // Placeholder for actual type checks
-		});
-
-		it("should export all required utilities", () => {
-			// Verify that all plugin utilities are properly exported
-			// Note: These are integration tests that verify the plugin system
-			// utilities are working correctly in the actual application
-			expect(true).toBe(true); // Placeholder for actual utility checks
-		});
-
-		it("should export all required registry functions", () => {
-			// Verify that all plugin registry functions are properly exported
-			// Note: These are integration tests that verify the plugin system
-			// registry functions are working correctly in the actual application
-			expect(true).toBe(true); // Placeholder for actual registry checks
+		it("should export ExtensionPointType enum", () => {
+			expect(ExtensionPointType).toBeDefined();
+			expect(typeof ExtensionPointType).toBe("object");
 		});
 	});
 
-	describe("Plugin System Lifecycle", () => {
-		it("should handle complete plugin lifecycle", async () => {
-			// Test the complete lifecycle of a plugin system
-			// This is a high-level integration test
-
-			// 1. System should be initialized
-			expect(true).toBe(true); // Placeholder for actual check
-
-			// 2. System should be ready for plugin operations
-			expect(true).toBe(true); // Placeholder for actual check
-
-			// 3. System should handle cleanup gracefully
-			expect(true).toBe(true); // Placeholder for actual check
+	describe("Utility Function Exports", () => {
+		it("should export manifest validation functions", () => {
+			expect(validatePluginManifest).toBeDefined();
+			expect(typeof validatePluginManifest).toBe("function");
 		});
 
-		it("should maintain system state correctly", () => {
-			// Test that the plugin system maintains its state correctly
-			// across different operations
-			expect(true).toBe(true); // Placeholder for actual state checks
-		});
-	});
-
-	describe("Error Handling", () => {
-		it("should handle system errors gracefully", () => {
-			// Test that the plugin system handles errors gracefully
-			// without crashing the entire application
-			expect(true).toBe(true); // Placeholder for actual error handling tests
+		it("should export plugin ID functions", () => {
+			expect(generatePluginId).toBeDefined();
+			expect(typeof generatePluginId).toBe("function");
+			expect(isValidPluginId).toBeDefined();
+			expect(typeof isValidPluginId).toBe("function");
 		});
 
-		it("should provide meaningful error messages", () => {
-			// Test that error messages are meaningful and helpful
-			// for debugging plugin issues
-			expect(true).toBe(true); // Placeholder for actual error message tests
-		});
-	});
-
-	describe("Performance", () => {
-		it("should handle multiple plugins efficiently", () => {
-			// Test that the system can handle multiple plugins
-			// without performance degradation
-			expect(true).toBe(true); // Placeholder for actual performance tests
+		it("should export manifest loading functions", () => {
+			expect(loadPluginManifest).toBeDefined();
+			expect(typeof loadPluginManifest).toBe("function");
 		});
 
-		it("should have reasonable memory usage", () => {
-			// Test that the plugin system doesn't consume
-			// excessive memory
-			expect(true).toBe(true); // Placeholder for actual memory tests
-		});
-	});
-
-	describe("Security", () => {
-		it("should validate plugin manifests securely", () => {
-			// Test that plugin manifests are validated
-			// to prevent security issues
-			expect(true).toBe(true); // Placeholder for actual security tests
+		it("should export directory scanning functions", () => {
+			expect(scanPluginsDirectory).toBeDefined();
+			expect(typeof scanPluginsDirectory).toBe("function");
 		});
 
-		it("should isolate plugin execution", () => {
-			// Test that plugins are properly isolated
-			// to prevent security vulnerabilities
-			expect(true).toBe(true); // Placeholder for actual isolation tests
+		it("should export import path functions", () => {
+			expect(normalizeImportPath).toBeDefined();
+			expect(typeof normalizeImportPath).toBe("function");
+		});
+
+		it("should export safe require function", () => {
+			expect(safeRequire).toBeDefined();
+			expect(typeof safeRequire).toBe("function");
+		});
+
+		it("should export directory utility functions", () => {
+			expect(directoryExists).toBeDefined();
+			expect(typeof directoryExists).toBe("function");
+			expect(ensureDirectory).toBeDefined();
+			expect(typeof ensureDirectory).toBe("function");
+		});
+
+		it("should export extension utility functions", () => {
+			expect(sortExtensionPoints).toBeDefined();
+			expect(typeof sortExtensionPoints).toBe("function");
+			expect(filterActiveExtensions).toBeDefined();
+			expect(typeof filterActiveExtensions).toBe("function");
+		});
+
+		it("should export utility functions", () => {
+			expect(debounce).toBeDefined();
+			expect(typeof debounce).toBe("function");
+			expect(deepClone).toBeDefined();
+			expect(typeof deepClone).toBe("function");
 		});
 	});
 
-	describe("Compatibility", () => {
-		it("should be compatible with existing GraphQL schema", () => {
-			// Test that the plugin system is compatible
-			// with the existing GraphQL schema
-			expect(true).toBe(true); // Placeholder for actual compatibility tests
+	describe("Registry Function Exports", () => {
+		it("should export plugin context creation function", () => {
+			expect(createPluginContext).toBeDefined();
+			expect(typeof createPluginContext).toBe("function");
 		});
 
-		it("should work with existing database schema", () => {
-			// Test that the plugin system works correctly
-			// with the existing database schema
-			expect(true).toBe(true); // Placeholder for actual database tests
+		it("should export plugin system initialization function", () => {
+			expect(initializePluginSystem).toBeDefined();
+			expect(typeof initializePluginSystem).toBe("function");
 		});
 	});
 });
 
-describe("Plugin System Test Coverage", () => {
-	it("should have comprehensive test coverage", () => {
-		// This test serves as a reminder to maintain comprehensive
-		// test coverage for the plugin system
+describe("Plugin Index Integration", () => {
+	describe("Type Compatibility", () => {
+		it("should have compatible plugin manifest types", () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test_plugin",
+				version: "1.0.0",
+				description: "A test plugin",
+				author: "Test Author",
+				main: "index.js",
+			};
 
-		const testFiles = [
-			"manager.test.ts",
-			"utils.test.ts",
-			"registry.test.ts",
-			"logger.test.ts",
-			"graphql.test.ts",
-			"types.test.ts",
-		];
+			expect(manifest.name).toBe("Test Plugin");
+			expect(manifest.pluginId).toBe("test_plugin");
+		});
 
-		// Verify that all test files are present
-		for (const testFile of testFiles) {
-			expect(testFile).toMatch(/\.test\.ts$/);
-		}
+		it("should have compatible extension point types", () => {
+			const extensionPoints: IExtensionPoints = {
+				graphql: [
+					{
+						name: "testQuery",
+						type: "query",
+						resolver: "testResolver",
+						file: "",
+					},
+				],
+				database: [
+					{
+						name: "testTable",
+						type: "table",
+						file: "",
+					},
+				],
+			};
 
-		// Verify that we have tests for all major components
-		const components = [
-			"PluginManager",
-			"Plugin Utils",
-			"Plugin Registry",
-			"Plugin Logger",
-			"Plugin GraphQL",
-			"Plugin Types",
-		];
+			expect(extensionPoints.graphql).toHaveLength(1);
+			expect(extensionPoints.database).toHaveLength(1);
+		});
 
-		for (const component of components) {
-			expect(component).toBeDefined();
-		}
+		it("should have compatible GraphQL extension types", () => {
+			const graphqlExtension: IGraphQLExtension = {
+				name: "testQuery",
+				type: "query",
+				resolver: "testResolver",
+				file: "",
+			};
+
+			expect(graphqlExtension.name).toBe("testQuery");
+			expect(graphqlExtension.type).toBe("query");
+		});
+
+		it("should have compatible database extension types", () => {
+			const databaseExtension: IDatabaseExtension = {
+				name: "testTable",
+				type: "table",
+				file: "",
+			};
+
+			expect(databaseExtension.name).toBe("testTable");
+			expect(databaseExtension.type).toBe("table");
+		});
+
+		it("should have compatible hook extension types", () => {
+			const hookExtension: IHookExtension = {
+				name: "testHook",
+				event: "user:created",
+				handler: "testHandler",
+				file: "",
+			};
+
+			expect(hookExtension.name).toBe("testHook");
+			expect(hookExtension.event).toBe("user:created");
+		});
+
+		it("should have compatible loaded plugin types", () => {
+			const loadedPlugin: ILoadedPlugin = {
+				id: "test_plugin",
+				manifest: {
+					name: "Test Plugin",
+					pluginId: "test_plugin",
+					version: "1.0.0",
+					description: "A test plugin",
+					author: "Test Author",
+					main: "index.js",
+				},
+				status: PluginStatus.ACTIVE,
+				graphqlResolvers: {},
+				databaseTables: {},
+				hooks: {},
+			};
+
+			expect(loadedPlugin.id).toBe("test_plugin");
+			expect(loadedPlugin.status).toBe(PluginStatus.ACTIVE);
+		});
+
+		it("should have compatible extension registry types", () => {
+			const extensionRegistry: IExtensionRegistry = {
+				graphql: {
+					queries: {},
+					mutations: {},
+					subscriptions: {},
+					types: {},
+				},
+				database: {
+					tables: {},
+					enums: {},
+					relations: {},
+				},
+				hooks: {
+					pre: {},
+					post: {},
+				},
+			};
+
+			expect(extensionRegistry.graphql).toBeDefined();
+			expect(extensionRegistry.database).toBeDefined();
+			expect(extensionRegistry.hooks).toBeDefined();
+		});
+
+		it("should have compatible plugin context types", () => {
+			const mockDb = {};
+			const mockGraphQL = {};
+			const mockPubSub = {};
+			const mockLogger = {};
+
+			const pluginContext: IPluginContext = {
+				db: mockDb,
+				graphql: mockGraphQL,
+				pubsub: mockPubSub,
+				logger: mockLogger,
+			};
+
+			expect(pluginContext.db).toBe(mockDb);
+			expect(pluginContext.graphql).toBe(mockGraphQL);
+			expect(pluginContext.pubsub).toBe(mockPubSub);
+			expect(pluginContext.logger).toBe(mockLogger);
+		});
+
+		it("should have compatible plugin discovery types", () => {
+			const pluginDiscovery: IPluginDiscovery = {
+				scanDirectory: vi.fn(),
+				validateManifest: vi.fn(),
+				loadManifest: vi.fn(),
+			};
+
+			expect(pluginDiscovery.scanDirectory).toBeDefined();
+			expect(pluginDiscovery.loadManifest).toBeDefined();
+			expect(pluginDiscovery.validateManifest).toBeDefined();
+		});
+
+		it("should have compatible plugin lifecycle types", () => {
+			const pluginLifecycle: IPluginLifecycle = {
+				onLoad: vi.fn(),
+				onActivate: vi.fn(),
+				onDeactivate: vi.fn(),
+				onUnload: vi.fn(),
+			};
+
+			expect(pluginLifecycle.onLoad).toBeDefined();
+			expect(pluginLifecycle.onActivate).toBeDefined();
+			expect(pluginLifecycle.onDeactivate).toBeDefined();
+			expect(pluginLifecycle.onUnload).toBeDefined();
+		});
+
+		it("should have compatible plugin error types", () => {
+			const pluginError: IPluginError = {
+				pluginId: "test_plugin",
+				error: new Error("Test error"),
+				phase: "load",
+				timestamp: new Date(),
+			};
+
+			expect(pluginError.pluginId).toBe("test_plugin");
+			expect(pluginError.phase).toBe("load");
+			expect(pluginError.error).toBeInstanceOf(Error);
+		});
 	});
 
-	it("should test all major functionality", () => {
-		// Verify that we test all major plugin system functionality
+	describe("Enum Values", () => {
+		it("should have correct PluginStatus enum values", () => {
+			expect(PluginStatus.ACTIVE).toBe("active");
+			expect(PluginStatus.INACTIVE).toBe("inactive");
+		});
 
-		const functionality = [
-			"Plugin Loading",
-			"Plugin Activation",
-			"Plugin Deactivation",
-			"Plugin Unloading",
-			"Extension Points",
-			"GraphQL Integration",
-			"Database Integration",
-			"Hook System",
-			"Error Handling",
-			"Lifecycle Management",
-		];
+		it("should have correct ExtensionPointType enum values", () => {
+			expect(ExtensionPointType.GRAPHQL).toBe("graphql");
+			expect(ExtensionPointType.DATABASE).toBe("database");
+			expect(ExtensionPointType.HOOKS).toBe("hooks");
+		});
+	});
 
-		for (const func of functionality) {
-			expect(func).toBeDefined();
-		}
+	describe("Function Integration", () => {
+		it("should be able to use exported functions together", async () => {
+			// Test that we can use the exported functions in combination
+			const pluginId = "test_plugin";
+			const isValid = isValidPluginId(pluginId);
+			const generatedId = generatePluginId("Test Plugin");
+
+			expect(typeof isValid).toBe("boolean");
+			expect(typeof generatedId).toBe("string");
+		});
+
+		it("should be able to create plugin context with exported types", () => {
+			const mockDb = {};
+			const mockGraphQL = {};
+			const mockPubSub = {};
+			const mockLogger = {};
+
+			const context: IPluginContext = {
+				db: mockDb,
+				graphql: mockGraphQL,
+				pubsub: mockPubSub,
+				logger: mockLogger,
+			};
+
+			expect(context).toBeDefined();
+			expect(context.db).toBe(mockDb);
+		});
+
+		it("should be able to validate plugin manifest with exported types", () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test_plugin",
+				version: "1.0.0",
+				description: "A test plugin",
+				author: "Test Author",
+				main: "index.js",
+			};
+
+			// This should not throw any type errors
+			expect(manifest).toBeDefined();
+			expect(manifest.name).toBe("Test Plugin");
+		});
+	});
+
+	describe("Export Completeness", () => {
+		it("should export all necessary plugin system components", () => {
+			// Test that all main runtime components are exported
+			const exports = {
+				PluginManager,
+				PluginStatus,
+				ExtensionPointType,
+				validatePluginManifest,
+				generatePluginId,
+				loadPluginManifest,
+				scanPluginsDirectory,
+				isValidPluginId,
+				normalizeImportPath,
+				safeRequire,
+				directoryExists,
+				ensureDirectory,
+				sortExtensionPoints,
+				filterActiveExtensions,
+				debounce,
+				deepClone,
+				createPluginContext,
+				initializePluginSystem,
+			};
+
+			// Verify all exports are defined
+			for (const [name, exportValue] of Object.entries(exports)) {
+				expect(exportValue, `${name} should be exported`).toBeDefined();
+			}
+		});
+
+		it("should maintain backward compatibility for existing imports", () => {
+			// Test that existing import patterns still work
+			expect(PluginManager).toBeDefined();
+			expect(PluginStatus).toBeDefined();
+			expect(validatePluginManifest).toBeDefined();
+		});
 	});
 });
