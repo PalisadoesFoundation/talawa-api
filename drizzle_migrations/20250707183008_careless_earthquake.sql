@@ -188,6 +188,10 @@ CREATE TABLE "events" (
 	"name" text NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"start_at" timestamp (3) with time zone NOT NULL,
+	"all_day" boolean DEFAULT false NOT NULL,
+	"is_public" boolean DEFAULT false NOT NULL,
+	"is_registerable" boolean DEFAULT false NOT NULL,
+	"location" text,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
 );
@@ -288,6 +292,17 @@ CREATE TABLE "organizations" (
 	"updater_id" uuid,
 	"user_registration_required" boolean DEFAULT false,
 	CONSTRAINT "organizations_name_unique" UNIQUE("name")
+);
+--> statement-breakpoint
+CREATE TABLE "plugins" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"plugin_id" text NOT NULL,
+	"is_activated" boolean DEFAULT false NOT NULL,
+	"is_installed" boolean DEFAULT true NOT NULL,
+	"backup" boolean DEFAULT false NOT NULL,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp (3) with time zone DEFAULT now(),
+	CONSTRAINT "plugins_plugin_id_unique" UNIQUE("plugin_id")
 );
 --> statement-breakpoint
 CREATE TABLE "post_attachments" (
@@ -618,6 +633,9 @@ CREATE INDEX "events_end_at_index" ON "events" USING btree ("end_at");--> statem
 CREATE INDEX "events_name_index" ON "events" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "events_organization_id_index" ON "events" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "events_start_at_index" ON "events" USING btree ("start_at");--> statement-breakpoint
+CREATE INDEX "events_all_day_index" ON "events" USING btree ("all_day");--> statement-breakpoint
+CREATE INDEX "events_is_public_index" ON "events" USING btree ("is_public");--> statement-breakpoint
+CREATE INDEX "events_is_registerable_index" ON "events" USING btree ("is_registerable");--> statement-breakpoint
 CREATE INDEX "families_created_at_index" ON "families" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "families_creator_id_index" ON "families" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "families_name_index" ON "families" USING btree ("name");--> statement-breakpoint
@@ -654,6 +672,8 @@ CREATE INDEX "organization_memberships_role_index" ON "organization_memberships"
 CREATE INDEX "organizations_creator_id_index" ON "organizations" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "organizations_name_index" ON "organizations" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "organizations_updater_id_index" ON "organizations" USING btree ("updater_id");--> statement-breakpoint
+CREATE INDEX "plugins_is_activated_index" ON "plugins" USING btree ("is_activated");--> statement-breakpoint
+CREATE INDEX "plugins_is_installed_index" ON "plugins" USING btree ("is_installed");--> statement-breakpoint
 CREATE INDEX "post_attachments_created_at_index" ON "post_attachments" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "post_attachments_creator_id_index" ON "post_attachments" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "post_attachments_post_id_index" ON "post_attachments" USING btree ("post_id");--> statement-breakpoint
