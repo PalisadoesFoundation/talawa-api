@@ -1507,7 +1507,9 @@ describe("PluginManager", () => {
 				expect(plugin?.hooks["user:created"]).toBe(mockHandler);
 				// Also check extension registry
 				const registry = (
-					pluginManager as unknown as { extensionRegistry: ExtensionRegistryForTest }
+					pluginManager as unknown as {
+						extensionRegistry: ExtensionRegistryForTest;
+					}
 				).extensionRegistry;
 				expect(registry.hooks.pre["user:created"]).toContain(mockHandler);
 			});
@@ -1546,7 +1548,9 @@ describe("PluginManager", () => {
 				).loadedPlugins.get("test-plugin");
 				expect(plugin?.hooks["user:created"]).toBe(mockHandler);
 				const registry = (
-					pluginManager as unknown as { extensionRegistry: ExtensionRegistryForTest }
+					pluginManager as unknown as {
+						extensionRegistry: ExtensionRegistryForTest;
+					}
 				).extensionRegistry;
 				expect(registry.hooks.post["user:created"]).toContain(mockHandler);
 			});
