@@ -11,7 +11,7 @@
  * - Plugin types and interfaces
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
 	ExtensionPointType,
 	PluginManager,
@@ -200,14 +200,14 @@ describe("Plugin Index Integration", () => {
 
 		it("should have compatible hook extension types", () => {
 			const hookExtension: IHookExtension = {
-				name: "testHook",
+				type: "pre",
 				event: "user:created",
 				handler: "testHandler",
 				file: "",
 			};
 
-			expect(hookExtension.name).toBe("testHook");
 			expect(hookExtension.event).toBe("user:created");
+			expect(hookExtension.handler).toBe("testHandler");
 		});
 
 		it("should have compatible loaded plugin types", () => {
