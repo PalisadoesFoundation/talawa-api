@@ -11,39 +11,39 @@
  * - Plugin types and interfaces
  */
 
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+	ExtensionPointType,
 	PluginManager,
 	PluginStatus,
-	ExtensionPointType,
-	validatePluginManifest,
-	generatePluginId,
-	loadPluginManifest,
-	scanPluginsDirectory,
-	isValidPluginId,
-	normalizeImportPath,
-	safeRequire,
-	directoryExists,
-	ensureDirectory,
-	sortExtensionPoints,
-	filterActiveExtensions,
+	createPluginContext,
 	debounce,
 	deepClone,
-	createPluginContext,
+	directoryExists,
+	ensureDirectory,
+	filterActiveExtensions,
+	generatePluginId,
 	initializePluginSystem,
+	isValidPluginId,
+	loadPluginManifest,
+	normalizeImportPath,
+	safeRequire,
+	scanPluginsDirectory,
+	sortExtensionPoints,
+	validatePluginManifest,
 } from "~/src/plugin";
 import type {
-	IPluginManifest,
-	IExtensionPoints,
-	IGraphQLExtension,
 	IDatabaseExtension,
+	IExtensionPoints,
+	IExtensionRegistry,
+	IGraphQLExtension,
 	IHookExtension,
 	ILoadedPlugin,
-	IExtensionRegistry,
 	IPluginContext,
 	IPluginDiscovery,
-	IPluginLifecycle,
 	IPluginError,
+	IPluginLifecycle,
+	IPluginManifest,
 } from "~/src/plugin";
 
 describe("Plugin Index Exports", () => {
