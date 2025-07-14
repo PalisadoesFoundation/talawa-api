@@ -121,3 +121,4 @@ export {
 	notificationTemplatesTable,
 	notificationTemplatesTableRelations,
 } from "./tables/NotificationTemplate";
+export { pluginsTable } from "./tables/plugins";
