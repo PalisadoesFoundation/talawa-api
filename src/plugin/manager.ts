@@ -29,7 +29,6 @@ import {
 	isValidPluginId,
 	loadPluginManifest,
 	safeRequire,
-	scanPluginsDirectory,
 } from "./utils";
 
 class PluginManager extends EventEmitter {
@@ -81,7 +80,7 @@ class PluginManager extends EventEmitter {
 		try {
 			this.emit("plugins:initializing");
 
-			// Ensure plugins directory exists
+			// Ensure plugins directory exists (create if needed)
 			const pluginsDirExists = await directoryExists(this.pluginsDirectory);
 			await pluginLogger.debug("Plugins directory exists check", {
 				directory: this.pluginsDirectory,
@@ -89,64 +88,88 @@ class PluginManager extends EventEmitter {
 			});
 
 			if (!pluginsDirExists) {
-				console.warn(
-					`Plugins directory does not exist: ${this.pluginsDirectory}`,
-				);
-				await pluginLogger.warn("Plugins directory does not exist", {
+				console.log(`Creating plugins directory: ${this.pluginsDirectory}`);
+				await pluginLogger.info("Creating plugins directory", {
 					directory: this.pluginsDirectory,
 				});
-				this.markAsInitialized();
-				return;
+				try {
+					await import("node:fs/promises").then((fs) =>
+						fs.mkdir(this.pluginsDirectory, { recursive: true }),
+					);
+				} catch (error) {
+					console.error("Failed to create plugins directory:", error);
+					await pluginLogger.error("Failed to create plugins directory", error);
+				}
 			}
 
-			// Discover available plugins
-			const availablePlugins = await this.discoverPlugins();
-			await pluginLogger.debug(
-				"Available plugins discovered",
-				availablePlugins,
-			);
-
-			if (availablePlugins.length === 0) {
-				console.log("No plugins found in directory");
-				await pluginLogger.info("No plugins found in directory");
-				this.markAsInitialized();
-				return;
-			}
-
-			// Load plugins that are marked as installed in the database
+			// Get installed plugins from database (DATABASE IS SOURCE OF TRUTH)
 			const installedPlugins = await this.getInstalledPlugins();
-			await pluginLogger.debug(
-				"Installed plugins from database",
-				installedPlugins.map((p) => ({
+			await pluginLogger.info("Database-based plugin initialization", {
+				installedPluginCount: installedPlugins.length,
+				installedPlugins: installedPlugins.map((p) => ({
 					id: p.pluginId,
 					activated: p.isActivated,
+					installed: p.isInstalled,
 				})),
-			);
+			});
 
-			const pluginsToLoad = availablePlugins.filter((pluginId) =>
-				installedPlugins.some((p) => p.pluginId === pluginId),
-			);
-			await pluginLogger.info("Plugins to load", pluginsToLoad);
+			if (installedPlugins.length === 0) {
+				console.log("No plugins installed in database");
+				await pluginLogger.info("No plugins installed in database");
+				this.markAsInitialized();
+				return;
+			}
 
-			// Load each plugin
-			await Promise.allSettled(
-				pluginsToLoad.map(async (pluginId) => {
+			// Load each installed plugin directly from database
+			const loadResults = await Promise.allSettled(
+				installedPlugins.map(async (dbPlugin) => {
 					try {
-						await this.loadPlugin(pluginId);
+						await pluginLogger.info("Loading plugin from database", {
+							pluginId: dbPlugin.pluginId,
+							isActivated: dbPlugin.isActivated,
+							isInstalled: dbPlugin.isInstalled,
+						});
+
+						const success = await this.loadPlugin(dbPlugin.pluginId);
+						if (success) {
+							await pluginLogger.info("Plugin loaded successfully", {
+								pluginId: dbPlugin.pluginId,
+							});
+						} else {
+							await pluginLogger.warn("Plugin failed to load", {
+								pluginId: dbPlugin.pluginId,
+							});
+						}
+						return { pluginId: dbPlugin.pluginId, success };
 					} catch (error) {
 						await pluginLogger.error(
-							`Failed to load plugin ${pluginId}`,
+							`Failed to load plugin ${dbPlugin.pluginId}`,
 							error,
 						);
-						this.handlePluginError(pluginId, error as Error, "load");
+						this.handlePluginError(dbPlugin.pluginId, error as Error, "load");
+						return { pluginId: dbPlugin.pluginId, success: false, error };
 					}
 				}),
 			);
+
+			// Log results summary
+			const successful = loadResults.filter(
+				(result) => result.status === "fulfilled" && result.value.success,
+			).length;
+			const failed = loadResults.length - successful;
+
+			await pluginLogger.info("Plugin initialization completed", {
+				totalPlugins: installedPlugins.length,
+				successful,
+				failed,
+				loadedPlugins: this.getLoadedPluginIds(),
+			});
 
 			this.markAsInitialized();
 			this.emit("plugins:initialized", this.getLoadedPluginIds());
 			await pluginLogger.lifecycle("INIT_COMPLETE", "system", {
 				loadedPlugins: this.getLoadedPluginIds(),
+				summary: { total: installedPlugins.length, successful, failed },
 			});
 		} catch (error) {
 			console.error("Failed to initialize plugins:", error);
@@ -158,18 +181,6 @@ class PluginManager extends EventEmitter {
 	private markAsInitialized(): void {
 		this.isInitialized = true;
 		this.emit("plugins:ready");
-	}
-
-	/**
-	 * Discover available plugins in the plugins directory
-	 */
-	private async discoverPlugins(): Promise<string[]> {
-		try {
-			return await scanPluginsDirectory(this.pluginsDirectory);
-		} catch (error) {
-			console.error("Error discovering plugins:", error);
-			return [];
-		}
 	}
 
 	/**
@@ -210,14 +221,64 @@ class PluginManager extends EventEmitter {
 				return true;
 			}
 
-			// Load plugin manifest
+			// Check if plugin files exist
 			const pluginPath = path.join(this.pluginsDirectory, pluginId);
-			const manifest = await loadPluginManifest(pluginPath);
+			const manifestPath = path.join(pluginPath, "manifest.json");
+
+			try {
+				await import("node:fs/promises").then((fs) => fs.access(manifestPath));
+			} catch (error) {
+				await pluginLogger.warn("Plugin files not found", {
+					pluginId,
+					pluginPath,
+					manifestPath,
+					message:
+						"Plugin is in database but files are missing. This could happen if files were deleted manually.",
+				});
+				console.warn(
+					`Plugin ${pluginId} is in database but files are missing at ${pluginPath}`,
+				);
+				return false;
+			}
+
+			// Load plugin manifest
+			let manifest: IPluginManifest;
+			try {
+				manifest = await loadPluginManifest(pluginPath);
+				await pluginLogger.debug("Plugin manifest loaded", {
+					pluginId,
+					manifestPath,
+					manifest,
+				});
+			} catch (error) {
+				await pluginLogger.error("Failed to load plugin manifest", {
+					pluginId,
+					manifestPath,
+					error: error instanceof Error ? error.message : String(error),
+				});
+				console.error(`Failed to load manifest for plugin ${pluginId}:`, error);
+				return false;
+			}
 
 			// Load plugin module
-			const pluginModule = await this.loadPluginModule(pluginPath, manifest);
+			let pluginModule: Record<string, unknown>;
+			try {
+				pluginModule = await this.loadPluginModule(pluginPath, manifest);
+				await pluginLogger.debug("Plugin module loaded", {
+					pluginId,
+					mainFile: manifest.main,
+				});
+			} catch (error) {
+				await pluginLogger.error("Failed to load plugin module", {
+					pluginId,
+					mainFile: manifest.main,
+					error: error instanceof Error ? error.message : String(error),
+				});
+				console.error(`Failed to load module for plugin ${pluginId}:`, error);
+				return false;
+			}
 
-			// Determine initial status
+			// Determine initial status from database
 			const dbPlugin = await this.getPluginFromDatabase(pluginId);
 			const status = dbPlugin?.isActivated
 				? PluginStatus.ACTIVE
@@ -236,14 +297,46 @@ class PluginManager extends EventEmitter {
 			this.loadedPlugins.set(pluginId, loadedPlugin);
 
 			// Load extension points into memory (database tables already created by createPlugin mutation)
-			await this.loadExtensionPoints(pluginId, manifest, pluginModule);
+			try {
+				await this.loadExtensionPoints(pluginId, manifest, pluginModule);
+				await pluginLogger.debug("Plugin extension points loaded", {
+					pluginId,
+				});
+			} catch (error) {
+				await pluginLogger.error("Failed to load extension points", {
+					pluginId,
+					error: error instanceof Error ? error.message : String(error),
+				});
+				// Remove from loaded plugins if extension loading fails
+				this.loadedPlugins.delete(pluginId);
+				console.error(
+					`Failed to load extension points for plugin ${pluginId}:`,
+					error,
+				);
+				return false;
+			}
 
 			// Update status
 			loadedPlugin.status = status;
 
 			// Activate plugin if it should be active
 			if (status === PluginStatus.ACTIVE) {
-				await this.activatePlugin(pluginId);
+				try {
+					await this.activatePlugin(pluginId);
+					await pluginLogger.info("Plugin activated during load", {
+						pluginId,
+					});
+				} catch (error) {
+					await pluginLogger.error("Failed to activate plugin during load", {
+						pluginId,
+						error: error instanceof Error ? error.message : String(error),
+					});
+					// Don't return false here - plugin is loaded but not activated
+					console.error(
+						`Failed to activate plugin ${pluginId} during load:`,
+						error,
+					);
+				}
 			}
 
 			this.emit("plugin:loaded", pluginId);
@@ -780,8 +873,8 @@ class PluginManager extends EventEmitter {
 		try {
 			this.emit("plugin:activating", pluginId);
 
-			// Integrate GraphQL extensions into the main API schema
-			await this.integrateGraphQLExtensions(pluginId);
+			// Update plugin status FIRST - before triggering schema integration
+			plugin.status = PluginStatus.ACTIVE;
 
 			// Call plugin lifecycle hook
 			const pluginModule = await this.getPluginModule(pluginId);
@@ -789,15 +882,17 @@ class PluginManager extends EventEmitter {
 				await pluginModule.onActivate(this.pluginContext);
 			}
 
-			// Update plugin status
-			plugin.status = PluginStatus.ACTIVE;
-
 			// Update database
 			await this.updatePluginInDatabase(pluginId, { isActivated: true });
+
+			// Integrate GraphQL extensions into the main API schema AFTER status is set
+			await this.integrateGraphQLExtensions(pluginId);
 
 			this.emit("plugin:activated", pluginId);
 			return true;
 		} catch (error) {
+			// Reset status on error
+			plugin.status = PluginStatus.INACTIVE;
 			this.handlePluginError(pluginId, error as Error, "activate");
 			return false;
 		}
@@ -858,8 +953,16 @@ class PluginManager extends EventEmitter {
 			throw new Error(`Plugin ${pluginId} is not loaded`);
 		}
 
+		if (plugin.status !== PluginStatus.ACTIVE) {
+			console.warn(`Plugin ${pluginId} is not currently active`);
+			return true;
+		}
+
 		try {
 			this.emit("plugin:deactivating", pluginId);
+
+			// Update plugin status FIRST to ensure schema rebuild excludes it
+			plugin.status = PluginStatus.INACTIVE;
 
 			// Call plugin lifecycle hook
 			const pluginModule = await this.getPluginModule(pluginId);
@@ -879,15 +982,17 @@ class PluginManager extends EventEmitter {
 				);
 			}
 
-			// Update plugin status
-			plugin.status = PluginStatus.INACTIVE;
-
 			// Update database
 			await this.updatePluginInDatabase(pluginId, { isActivated: false });
+
+			// Trigger schema rebuild to remove plugin extensions
+			await this.triggerSchemaRebuildForDeactivation(pluginId);
 
 			this.emit("plugin:deactivated", pluginId);
 			return true;
 		} catch (error) {
+			// Reset status on error
+			plugin.status = PluginStatus.ACTIVE;
 			this.handlePluginError(pluginId, error as Error, "deactivate");
 			return false;
 		}
@@ -916,17 +1021,54 @@ class PluginManager extends EventEmitter {
 				await pluginModule.onUnload(this.pluginContext);
 			}
 
-			// Remove from registries
+			// Remove from extension registry
 			this.removeFromExtensionRegistry(pluginId);
 
 			// Remove from loaded plugins
 			this.loadedPlugins.delete(pluginId);
+
+			// Trigger final schema rebuild to ensure complete cleanup
+			await this.triggerSchemaRebuildForDeactivation(pluginId);
 
 			this.emit("plugin:unloaded", pluginId);
 			return true;
 		} catch (error) {
 			this.handlePluginError(pluginId, error as Error, "unload");
 			return false;
+		}
+	}
+
+	/**
+	 * Trigger schema rebuild for plugin deactivation/unloading
+	 */
+	private async triggerSchemaRebuildForDeactivation(
+		pluginId: string,
+	): Promise<void> {
+		try {
+			// Emit the schema rebuild event
+			this.emit("schema:rebuild", {
+				pluginId,
+				reason: "plugin_deactivation",
+				timestamp: new Date().toISOString(),
+			});
+
+			// Also try to trigger schema rebuild directly as a fallback
+			const { schemaManager } = await import("../graphql/schemaManager");
+			await schemaManager.rebuildSchema();
+
+			await pluginLogger.info("✅ Schema Rebuilt After Plugin Deactivation", {
+				pluginId,
+				timestamp: new Date().toISOString(),
+			});
+		} catch (error) {
+			await pluginLogger.error(
+				"❌ Schema Rebuild Failed After Plugin Deactivation",
+				{
+					pluginId,
+					error: error instanceof Error ? error.message : String(error),
+				},
+			);
+			// Don't throw - this shouldn't break the deactivation process
 		}
 	}
 

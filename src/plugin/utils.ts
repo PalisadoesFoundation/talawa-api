@@ -38,8 +38,10 @@ export function validatePluginManifest(
 		return false;
 	}
 
-	// Validate pluginId format (camelCase, snake_case, or lowercase)
-	const pluginIdRegex = /^[a-z][a-zA-Z0-9_]*$/;
+	// Validate pluginId format (camelCase, PascalCase, or underscore)
+	// Must start with a letter, can contain letters, numbers, and underscores
+	// No hyphens allowed since plugin IDs will be prefixed to GraphQL queries/mutations
+	const pluginIdRegex = /^[a-zA-Z][a-zA-Z0-9_]*$/;
 	if (!pluginIdRegex.test(manifestObj.pluginId as string)) {
 		return false;
 	}
@@ -85,37 +87,6 @@ export async function loadPluginManifest(
 }
 
 /**
- * Scans a directory for available plugins
- */
-export async function scanPluginsDirectory(
-	pluginsDir: string,
-): Promise<string[]> {
-	try {
-		const entries = await fs.readdir(pluginsDir, { withFileTypes: true });
-		const pluginIds: string[] = [];
-
-		for (const entry of entries) {
-			if (entry.isDirectory()) {
-				const pluginPath = path.join(pluginsDir, entry.name);
-				const manifestPath = path.join(pluginPath, "manifest.json");
-
-				try {
-					await fs.access(manifestPath);
-					pluginIds.push(entry.name);
-				} catch {
-					// Directory doesn't contain a manifest.json, skip it
-				}
-			}
-		}
-
-		return pluginIds;
-	} catch (error) {
-		console.error("Error scanning plugins directory:", error);
-		return [];
-	}
-}
-
-/**
  * Checks if a plugin ID is valid
  */
 export function isValidPluginId(pluginId: string): boolean {
@@ -123,7 +94,10 @@ export function isValidPluginId(pluginId: string): boolean {
 		return false;
 	}
 
-	const pluginIdRegex = /^[a-z][a-zA-Z0-9_]*$/;
+	// Plugin ID should support camelCase, PascalCase, and underscore formats
+	// Must start with a letter, can contain letters, numbers, and underscores
+	// No hyphens allowed since plugin IDs will be prefixed to GraphQL queries/mutations
+	const pluginIdRegex = /^[a-zA-Z][a-zA-Z0-9_]*$/;
 	return pluginIdRegex.test(pluginId);
 }
 
@@ -139,16 +113,16 @@ export function normalizeImportPath(
 }
 
 /**
- * Safely requires a module with error handling
+ * Safely requires a module and handles errors
  */
 export async function safeRequire<T = unknown>(
 	modulePath: string,
 ): Promise<T | null> {
 	try {
 		const module = await import(modulePath);
-		return module.default || module;
+		return module as T;
 	} catch (error) {
-		console.error(`Failed to require module ${modulePath}:`, error);
+		console.error(`Failed to require module: ${modulePath}`, error);
 		return null;
 	}
 }
@@ -158,8 +132,8 @@ export async function safeRequire<T = unknown>(
  */
 export async function directoryExists(dirPath: string): Promise<boolean> {
 	try {
-		const stats = await fs.stat(dirPath);
-		return stats.isDirectory();
+		const stat = await fs.stat(dirPath);
+		return stat.isDirectory();
 	} catch {
 		return false;
 	}
@@ -599,5 +573,65 @@ export async function dropPluginTables(
 			}`,
 		);
 		throw error;
+	}
+}
+
+/**
+ * Removes a plugin directory from the filesystem
+ */
+export async function removePluginDirectory(pluginId: string): Promise<void> {
+	const pluginPath = path.join(
+		process.cwd(),
+		"src",
+		"plugin",
+		"available",
+		pluginId,
+	);
+
+	try {
+		// Clear module cache for the plugin to prevent memory leaks in dev mode
+		clearPluginModuleCache(pluginPath);
+
+		// Check if directory exists
+		const exists = await directoryExists(pluginPath);
+		if (!exists) {
+			console.log(
+				`Plugin directory ${pluginId} does not exist, skipping removal`,
+			);
+			return;
+		}
+
+		// Remove the directory and all its contents
+		await fs.rm(pluginPath, { recursive: true, force: true });
+		console.log(`Successfully removed plugin directory: ${pluginPath}`);
+	} catch (error) {
+		console.error(`Failed to remove plugin directory ${pluginId}:`, error);
+		throw error;
+	}
+}
+
+/**
+ * Clear module cache entries for a plugin to prevent memory leaks
+ */
+export function clearPluginModuleCache(pluginPath: string): void {
+	try {
+		// Get all cached module paths that start with the plugin path
+		const cachedPaths = Object.keys(require.cache).filter((cachePath) =>
+			cachePath.startsWith(pluginPath),
+		);
+
+		// Delete each cached module
+		for (const cachePath of cachedPaths) {
+			delete require.cache[cachePath];
+		}
+
+		if (cachedPaths.length > 0) {
+			console.log(
+				`Cleared ${cachedPaths.length} module cache entries for plugin`,
+			);
+		}
+	} catch (error) {
+		console.warn("Failed to clear module cache:", error);
+		// Non-critical error, continue with cleanup
 	}
 }

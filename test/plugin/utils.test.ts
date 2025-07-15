@@ -17,7 +17,6 @@ import {
 	loadPluginManifest,
 	normalizeImportPath,
 	safeRequire,
-	scanPluginsDirectory,
 	sortExtensionPoints,
 	validatePluginManifest,
 } from "~/src/plugin/utils";
@@ -222,61 +221,21 @@ describe("Plugin Utils", () => {
 		});
 	});
 
-	describe("scanPluginsDirectory", () => {
-		it("should return plugin IDs from directories with manifest.json", async () => {
-			const mockDirents = [
-				{ name: "plugin1", isDirectory: () => true },
-				{ name: "plugin2", isDirectory: () => true },
-				{ name: "file.txt", isDirectory: () => false },
-				{ name: "plugin3", isDirectory: () => true },
-			];
-
-			mockFs.readdir.mockResolvedValue(mockDirents);
-			mockFs.access.mockImplementation((filePath: string) => {
-				if (filePath.includes("plugin1") || filePath.includes("plugin2")) {
-					return Promise.resolve();
-				}
-				return Promise.reject(new Error("File not found"));
-			});
-
-			const result = await scanPluginsDirectory("/plugins");
-
-			expect(result).toEqual(["plugin1", "plugin2"]);
-			expect(mockFs.readdir).toHaveBeenCalledWith("/plugins", {
-				withFileTypes: true,
-			});
-		});
-
-		it("should return empty array for directory read error", async () => {
-			mockFs.readdir.mockRejectedValue(new Error("Directory not found"));
-
-			const result = await scanPluginsDirectory("/plugins");
-
-			expect(result).toEqual([]);
-		});
-
-		it("should handle empty directory", async () => {
-			mockFs.readdir.mockResolvedValue([]);
-
-			const result = await scanPluginsDirectory("/plugins");
-
-			expect(result).toEqual([]);
-		});
-	});
-
 	describe("isValidPluginId", () => {
 		it("should return true for valid plugin IDs", () => {
 			expect(isValidPluginId("test_plugin")).toBe(true);
 			expect(isValidPluginId("testPlugin")).toBe(true);
+			expect(isValidPluginId("TestPlugin")).toBe(true);
+			expect(isValidPluginId("Test_Plugin")).toBe(true);
 			expect(isValidPluginId("test123")).toBe(true);
 			expect(isValidPluginId("a")).toBe(true);
+			expect(isValidPluginId("A")).toBe(true);
 		});
 
 		it("should return false for invalid plugin IDs", () => {
 			expect(isValidPluginId("")).toBe(false);
 			expect(isValidPluginId("123test")).toBe(false);
 			expect(isValidPluginId("test-plugin")).toBe(false);
-			expect(isValidPluginId("Test_Plugin")).toBe(false);
 			expect(isValidPluginId("_test")).toBe(false);
 		});
 

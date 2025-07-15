@@ -61,24 +61,18 @@ export async function initializePluginSystem(
 }
 
 /**
- * Gets the global plugin manager instance
- */
-export function getPluginManager(): PluginManager | null {
-	return pluginManagerInstance;
-}
-
-/**
- * Checks if the plugin system is initialized
- */
-export function isPluginSystemInitialized(): boolean {
-	return pluginManagerInstance?.isSystemInitialized() ?? false;
-}
-
-/**
- * Gets the plugin manager instance
+ * Get the current plugin manager instance
+ * This is the main function used throughout the codebase
  */
 export function getPluginManagerInstance(): PluginManager | null {
 	return pluginManagerInstance;
+}
+
+/**
+ * Check if the plugin system has been initialized
+ */
+export function isPluginSystemInitialized(): boolean {
+	return pluginManagerInstance?.isSystemInitialized() ?? false;
 }
 
 /**
@@ -109,7 +103,7 @@ export async function destroyPluginSystem(): Promise<void> {
 }
 
 /**
- * Plugin system health check
+ * Plugin system health check and status information
  */
 export function getPluginSystemStatus(): {
 	initialized: boolean;

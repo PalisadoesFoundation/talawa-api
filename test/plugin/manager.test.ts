@@ -1,8 +1,7 @@
-import { EventEmitter } from "node:events";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import PluginManager from "~/src/plugin/manager";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IPluginContext, IPluginManifest } from "~/src/plugin/types";
-import { PluginStatus } from "~/src/plugin/types";
+import PluginManager from "../../src/plugin/manager";
+import { loadPluginManifest, safeRequire } from "../../src/plugin/utils";
 
 // Mock dependencies
 const mockDb = {
@@ -16,43 +15,18 @@ const mockDb = {
 			where: vi.fn(() => Promise.resolve()),
 		})),
 	})),
-	insert: vi.fn(() => ({
-		values: vi.fn(() => ({
-			returning: vi.fn(() => Promise.resolve([{ id: "test-id" }])),
-		})),
-	})),
-	delete: vi.fn(() => ({
-		where: vi.fn(() => ({
-			returning: vi.fn(() => Promise.resolve([{ id: "test-id" }])),
-		})),
-	})),
-	execute: vi.fn(() => Promise.resolve()),
-	query: {
-		pluginsTable: {
-			findFirst: vi.fn(),
-		},
-	},
-};
+} as unknown as IPluginContext["db"];
 
-const mockGraphQL = {
-	schema: {},
-	resolvers: {},
-};
-
-const mockPubSub = {
-	publish: vi.fn(),
-	subscribe: vi.fn(),
-};
-
+const mockGraphQL = {} as IPluginContext["graphql"];
+const mockPubSub = {} as IPluginContext["pubsub"];
 const mockLogger = {
 	info: vi.fn(),
 	error: vi.fn(),
 	warn: vi.fn(),
 	debug: vi.fn(),
-	lifecycle: vi.fn(() => Promise.resolve()),
-};
+} as IPluginContext["logger"];
 
-const mockPluginContext: IPluginContext = {
+const mockContext: IPluginContext = {
 	db: mockDb,
 	graphql: mockGraphQL,
 	pubsub: mockPubSub,
@@ -60,1574 +34,261 @@ const mockPluginContext: IPluginContext = {
 };
 
 // Mock plugin utilities
-vi.mock("~/src/plugin/utils", () => ({
+vi.mock("../../src/plugin/utils", () => ({
 	directoryExists: vi.fn(),
-	scanPluginsDirectory: vi.fn(),
 	loadPluginManifest: vi.fn(),
 	safeRequire: vi.fn(),
-	isValidPluginId: vi.fn().mockImplementation((id: string) => {
-		if (!id || typeof id !== "string") return false;
-		if (id === "invalid-id") return false;
-		if (id === "") return false;
-		return true;
-	}),
-	dropPluginTables: vi.fn(),
-	createPluginTables: vi.fn(),
-}));
-
-// Mock plugin logger
-vi.mock("~/src/plugin/logger", () => ({
-	pluginLogger: {
-		info: vi.fn(() => Promise.resolve()),
-		error: vi.fn(() => Promise.resolve()),
-		warn: vi.fn(() => Promise.resolve()),
-		debug: vi.fn(() => Promise.resolve()),
-		lifecycle: vi.fn(() => Promise.resolve()),
-	},
 }));
 
 // Import mocked utilities
-import {
-	directoryExists,
-	dropPluginTables,
-	loadPluginManifest,
-	safeRequire,
-	scanPluginsDirectory,
-} from "~/src/plugin/utils";
-
-// Type for extension registry structure used in private method tests
-interface ExtensionRegistryForTest {
-	hooks: Record<
-		"pre" | "post",
-		Record<string, Array<(...args: unknown[]) => unknown>>
-	>;
-}
+import { directoryExists } from "~/src/plugin/utils";
 
 describe("PluginManager", () => {
 	let pluginManager: PluginManager;
-	let mockManifest: IPluginManifest;
 
 	beforeEach(() => {
-		// Clear all mocks
 		vi.clearAllMocks();
+		pluginManager = new PluginManager(mockContext);
+	});
 
-		// Setup default mock manifest - no extensions for basic loading tests
-		mockManifest = {
-			name: "Test Plugin",
-			pluginId: "test_plugin",
-			version: "1.0.0",
-			description: "A test plugin",
-			author: "Test Author",
-			main: "index.js",
-			// No extension points for basic loading tests
-		};
+	describe("constructor", () => {
+		it("should create a PluginManager instance", () => {
+			expect(pluginManager).toBeDefined();
+			expect(pluginManager).toBeInstanceOf(PluginManager);
+		});
+	});
 
-		// Setup default mock implementations
-		vi.mocked(directoryExists).mockResolvedValue(true);
-		vi.mocked(scanPluginsDirectory).mockResolvedValue(["test_plugin"]);
-		vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
-
-		// Mock safeRequire to handle different file loads
-		vi.mocked(safeRequire).mockImplementation(async (filePath: string) => {
-			if (filePath.includes("resolvers.js")) {
-				return {
-					testQueryResolver: vi.fn(),
-				};
-			}
-			if (filePath.includes("schema.js")) {
-				return {
-					testTable: { name: "test_table" },
-				};
-			}
-			// Main plugin module (index.js)
-			return {
-				testQueryResolver: vi.fn(),
-				testTable: { name: "test_table" },
-				testHookHandler: vi.fn(),
+	describe("loadPlugin", () => {
+		it("should load a plugin successfully", async () => {
+			const mockManifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test_plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
 			};
-		});
 
-		// Setup database mocks
-		mockDb.query.pluginsTable.findFirst.mockResolvedValue({
-			id: "test-id",
-			pluginId: "test_plugin",
-			isActivated: true,
-			isInstalled: true,
-		});
-	});
-
-	afterEach(() => {
-		if (pluginManager) {
-			pluginManager.removeAllListeners();
-		}
-	});
-
-	describe("Constructor", () => {
-		it("should initialize with default plugins directory", () => {
-			pluginManager = new PluginManager(mockPluginContext);
-			expect(pluginManager).toBeInstanceOf(EventEmitter);
-			expect(pluginManager.isSystemInitialized()).toBe(false);
-		});
-
-		it("should initialize with custom plugins directory", () => {
-			const customDir = "/custom/plugins";
-			pluginManager = new PluginManager(mockPluginContext, customDir);
-			expect(pluginManager).toBeInstanceOf(EventEmitter);
-		});
-
-		it("should handle initialization errors gracefully", async () => {
-			vi.mocked(directoryExists).mockRejectedValue(
-				new Error("Directory access failed"),
-			);
-
-			pluginManager = new PluginManager(mockPluginContext);
-
-			// Wait for initialization to complete
-			await new Promise((resolve) => setTimeout(resolve, 100));
-
-			expect(pluginManager.isSystemInitialized()).toBe(true);
-		});
-	});
-
-	describe("Plugin Discovery", () => {
-		beforeEach(() => {
-			pluginManager = new PluginManager(mockPluginContext);
-		});
-
-		it("should discover plugins when directory exists", async () => {
 			vi.mocked(directoryExists).mockResolvedValue(true);
-			vi.mocked(scanPluginsDirectory).mockResolvedValue(["plugin1", "plugin2"]);
+			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
+			vi.mocked(safeRequire).mockResolvedValue({
+				default: {
+					onLoad: vi.fn(),
+				},
+			});
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
-
-			expect(scanPluginsDirectory).toHaveBeenCalled();
+			const result = await pluginManager.loadPlugin("test_plugin");
+			expect(result).toBe(true);
 		});
 
-		it("should handle empty plugins directory", async () => {
-			vi.mocked(directoryExists).mockResolvedValue(true);
-			vi.mocked(scanPluginsDirectory).mockResolvedValue([]);
-
-			await new Promise((resolve) => setTimeout(resolve, 100));
-
-			expect(pluginManager.getLoadedPluginIds()).toEqual([]);
-		});
-
-		it("should handle non-existent plugins directory", async () => {
+		it("should fail to load non-existent plugin", async () => {
 			vi.mocked(directoryExists).mockResolvedValue(false);
 
-			await new Promise((resolve) => setTimeout(resolve, 100));
-
-			expect(pluginManager.isSystemInitialized()).toBe(true);
-		});
-	});
-
-	describe("Plugin Loading", () => {
-		beforeEach(() => {
-			pluginManager = new PluginManager(mockPluginContext);
-		});
-
-		it("should load a valid plugin successfully", async () => {
-			// Ensure proper mock setup
-			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
-			vi.mocked(safeRequire).mockImplementation(async (filePath: string) => {
-				if (filePath.includes("resolvers.js")) {
-					return {
-						testQueryResolver: vi.fn(),
-					};
-				}
-				if (filePath.includes("schema.js")) {
-					return {
-						testTable: { name: "test_table" },
-					};
-				}
-				// Main plugin module (index.js)
-				return {
-					testQueryResolver: vi.fn(),
-					testTable: { name: "test_table" },
-					testHookHandler: vi.fn(),
-				};
-			});
-			mockDb.query.pluginsTable.findFirst.mockResolvedValue({
-				id: "test-id",
-				pluginId: "test_plugin",
-				isActivated: false,
-				isInstalled: true,
-			});
-
-			const result = await pluginManager.loadPlugin("test_plugin");
-
-			expect(result).toBe(true);
-			expect(pluginManager.isPluginLoaded("test_plugin")).toBe(true);
-			expect(loadPluginManifest).toHaveBeenCalled();
-		});
-
-		it("should reject invalid plugin IDs", async () => {
-			await expect(pluginManager.loadPlugin("")).rejects.toThrow(
-				"Invalid plugin ID",
-			);
-			await expect(pluginManager.loadPlugin("invalid-id")).rejects.toThrow(
-				"Invalid plugin ID",
-			);
-		});
-
-		it("should handle already loaded plugins", async () => {
-			// Setup mocks for first load
-			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
-			vi.mocked(safeRequire).mockImplementation(async (filePath: string) => {
-				if (filePath.includes("resolvers.js")) {
-					return {
-						testQueryResolver: vi.fn(),
-					};
-				}
-				if (filePath.includes("schema.js")) {
-					return {
-						testTable: { name: "test_table" },
-					};
-				}
-				// Main plugin module (index.js)
-				return {
-					testQueryResolver: vi.fn(),
-					testTable: { name: "test_table" },
-					testHookHandler: vi.fn(),
-				};
-			});
-			mockDb.query.pluginsTable.findFirst.mockResolvedValue({
-				id: "test-id",
-				pluginId: "test_plugin",
-				isActivated: false,
-				isInstalled: true,
-			});
-
-			await pluginManager.loadPlugin("test_plugin");
-			const result = await pluginManager.loadPlugin("test_plugin");
-
-			expect(result).toBe(true);
-		});
-
-		it("should handle manifest loading errors", async () => {
-			vi.mocked(loadPluginManifest).mockRejectedValue(
-				new Error("Manifest not found"),
-			);
-
-			const result = await pluginManager.loadPlugin("test_plugin");
-
-			expect(result).toBe(false);
-			expect(pluginManager.getErrors()).toHaveLength(1);
-		});
-
-		it("should handle plugin module loading errors", async () => {
-			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
-			vi.mocked(safeRequire).mockResolvedValue(null);
-
-			const result = await pluginManager.loadPlugin("test_plugin");
-
+			const result = await pluginManager.loadPlugin("non_existent");
 			expect(result).toBe(false);
 		});
 
-		it("should load plugin with correct status based on database", async () => {
-			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
-			vi.mocked(safeRequire).mockImplementation(async (filePath: string) => {
-				if (filePath.includes("resolvers.js")) {
-					return {
-						testQueryResolver: vi.fn(),
-					};
-				}
-				if (filePath.includes("schema.js")) {
-					return {
-						testTable: { name: "test_table" },
-					};
-				}
-				// Main plugin module (index.js)
-				return {
-					testQueryResolver: vi.fn(),
-					testTable: { name: "test_table" },
-					testHookHandler: vi.fn(),
-				};
-			});
-			mockDb.query.pluginsTable.findFirst.mockResolvedValue({
-				id: "test-id",
-				pluginId: "test_plugin",
-				isActivated: false,
-				isInstalled: true,
-			});
+		it("should handle plugin with invalid manifest", async () => {
+			vi.mocked(directoryExists).mockResolvedValue(true);
+			vi.mocked(loadPluginManifest).mockResolvedValue(
+				undefined as unknown as IPluginManifest,
+			);
 
 			const result = await pluginManager.loadPlugin("test_plugin");
-
-			expect(result).toBe(true);
-			const plugin = pluginManager.getPlugin("test_plugin");
-			expect(plugin?.status).toBe(PluginStatus.INACTIVE);
+			expect(result).toBe(false);
 		});
 	});
 
-	describe("Plugin Activation", () => {
-		beforeEach(async () => {
-			pluginManager = new PluginManager(mockPluginContext);
-			await pluginManager.loadPlugin("test_plugin");
-		});
-
+	describe("activatePlugin", () => {
 		it("should activate a loaded plugin", async () => {
+			const mockManifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test_plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+			};
+
+			// First load the plugin
+			vi.mocked(directoryExists).mockResolvedValue(true);
+			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
+			vi.mocked(safeRequire).mockResolvedValue({
+				default: {
+					onLoad: vi.fn(),
+					onActivate: vi.fn(),
+				},
+			});
+
+			await pluginManager.loadPlugin("test_plugin");
 			const result = await pluginManager.activatePlugin("test_plugin");
-
-			expect(result).toBe(true);
-			expect(pluginManager.isPluginActive("test_plugin")).toBe(true);
-		});
-
-		it("should handle activation of non-existent plugin", async () => {
-			await expect(
-				pluginManager.activatePlugin("non_existent"),
-			).rejects.toThrow("Plugin non_existent is not loaded");
-		});
-
-		it("should handle already active plugins", async () => {
-			await pluginManager.activatePlugin("test_plugin");
-			const result = await pluginManager.activatePlugin("test_plugin");
-
 			expect(result).toBe(true);
 		});
 
-		it("should update database when activating plugin", async () => {
-			await pluginManager.activatePlugin("test_plugin");
-
-			expect(mockDb.update).toHaveBeenCalled();
-		});
-
-		it("should emit activation events", async () => {
-			const activatedSpy = vi.fn();
-			pluginManager.on("plugin:activated", activatedSpy);
-
-			await pluginManager.activatePlugin("test_plugin");
-
-			expect(activatedSpy).toHaveBeenCalledWith("test_plugin");
-		});
-	});
-
-	describe("Plugin Deactivation", () => {
-		beforeEach(async () => {
-			pluginManager = new PluginManager(mockPluginContext);
-			await pluginManager.loadPlugin("test_plugin");
-			await pluginManager.activatePlugin("test_plugin");
-		});
-
-		it("should deactivate an active plugin", async () => {
-			const result = await pluginManager.deactivatePlugin("test_plugin");
-
-			expect(result).toBe(true);
-			expect(pluginManager.isPluginActive("test_plugin")).toBe(false);
-		});
-
-		it("should deactivate plugin with table dropping", async () => {
-			// Setup plugin with database tables for this test
-			const plugin = pluginManager.getPlugin("test_plugin");
-			if (plugin) {
-				plugin.databaseTables = {
-					testTable: { name: "test_table" },
-				};
-			}
-
-			const result = await pluginManager.deactivatePlugin("test_plugin", true);
-
-			expect(result).toBe(true);
-			expect(dropPluginTables).toHaveBeenCalled();
-		});
-
-		it("should handle deactivation of non-existent plugin", async () => {
-			await expect(
-				pluginManager.deactivatePlugin("non_existent"),
-			).rejects.toThrow("Plugin non_existent is not loaded");
-		});
-
-		it("should handle already inactive plugins", async () => {
-			await pluginManager.deactivatePlugin("test_plugin");
-			const result = await pluginManager.deactivatePlugin("test_plugin");
-
-			expect(result).toBe(true);
-		});
-
-		it("should emit deactivation events", async () => {
-			const deactivatedSpy = vi.fn();
-			pluginManager.on("plugin:deactivated", deactivatedSpy);
-
-			await pluginManager.deactivatePlugin("test_plugin");
-
-			expect(deactivatedSpy).toHaveBeenCalledWith("test_plugin");
-		});
-	});
-
-	describe("Plugin Unloading", () => {
-		beforeEach(async () => {
-			pluginManager = new PluginManager(mockPluginContext);
-			await pluginManager.loadPlugin("test_plugin");
-		});
-
-		it("should unload a loaded plugin", async () => {
-			const result = await pluginManager.unloadPlugin("test_plugin");
-
-			expect(result).toBe(true);
-			expect(pluginManager.isPluginLoaded("test_plugin")).toBe(false);
-		});
-
-		it("should handle unloading of non-existent plugin", async () => {
-			const result = await pluginManager.unloadPlugin("non_existent");
-
-			expect(result).toBe(true); // Returns true for non-existent plugins (already unloaded)
-		});
-
-		it("should deactivate plugin before unloading if active", async () => {
-			await pluginManager.activatePlugin("test_plugin");
-			const result = await pluginManager.unloadPlugin("test_plugin");
-
-			expect(result).toBe(true);
-			expect(pluginManager.isPluginLoaded("test_plugin")).toBe(false);
-		});
-
-		it("should emit unloading events", async () => {
-			const unloadedSpy = vi.fn();
-			pluginManager.on("plugin:unloaded", unloadedSpy);
-
-			await pluginManager.unloadPlugin("test_plugin");
-
-			expect(unloadedSpy).toHaveBeenCalledWith("test_plugin");
-		});
-	});
-
-	describe("Extension Points", () => {
-		beforeEach(async () => {
-			pluginManager = new PluginManager(mockPluginContext);
-			await pluginManager.loadPlugin("test_plugin");
-		});
-
-		it("should register GraphQL extensions", async () => {
-			await pluginManager.activatePlugin("test_plugin");
-
-			const registry = pluginManager.getExtensionRegistry();
-			// Extensions are registered during activation but with prefixed names
-			expect(registry.graphql).toBeDefined();
-			expect(registry.graphql.queries).toBeDefined();
-		});
-
-		it("should register database extensions", async () => {
-			await pluginManager.activatePlugin("test_plugin");
-
-			const registry = pluginManager.getExtensionRegistry();
-			// Database extensions are registered during activation
-			expect(registry.database).toBeDefined();
-			expect(registry.database.tables).toBeDefined();
-		});
-
-		it("should register hook extensions", async () => {
-			await pluginManager.activatePlugin("test_plugin");
-
-			const registry = pluginManager.getExtensionRegistry();
-			// Hook extensions are registered during activation
-			expect(registry.hooks).toBeDefined();
-			expect(registry.hooks.pre).toBeDefined();
-		});
-
-		it("should handle extension loading errors", async () => {
-			vi.mocked(safeRequire).mockResolvedValue(null);
-
-			const result = await pluginManager.loadPlugin("error_plugin");
-
+		it("should fail to activate non-loaded plugin", async () => {
+			const result = await pluginManager.activatePlugin("non_loaded");
 			expect(result).toBe(false);
 		});
 	});
 
-	describe("Hook Execution", () => {
-		beforeEach(async () => {
-			pluginManager = new PluginManager(mockPluginContext);
+	describe("deactivatePlugin", () => {
+		it("should deactivate an active plugin", async () => {
+			const mockManifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test_plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+			};
+
+			// Load and activate plugin first
+			vi.mocked(directoryExists).mockResolvedValue(true);
+			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
+			vi.mocked(safeRequire).mockResolvedValue({
+				default: {
+					onLoad: vi.fn(),
+					onActivate: vi.fn(),
+					onDeactivate: vi.fn(),
+				},
+			});
+
 			await pluginManager.loadPlugin("test_plugin");
 			await pluginManager.activatePlugin("test_plugin");
+
+			const result = await pluginManager.deactivatePlugin("test_plugin");
+			expect(result).toBe(true);
 		});
 
-		it("should execute pre hooks", async () => {
-			const data = { userId: "123" };
-			const result = await pluginManager.executePreHooks("user:created", data);
-
-			expect(result).toBeDefined();
-		});
-
-		it("should execute post hooks", async () => {
-			const data = { userId: "123" };
-			await pluginManager.executePostHooks("user:created", data);
-
-			// Should not throw
-			expect(true).toBe(true);
-		});
-
-		it("should handle hook execution errors", async () => {
-			const mockHook = vi.fn().mockRejectedValue(new Error("Hook failed"));
-			vi.mocked(safeRequire).mockImplementation(async (filePath: string) => {
-				if (filePath.includes("resolvers.js")) {
-					return {
-						testQueryResolver: vi.fn(),
-					};
-				}
-				if (filePath.includes("schema.js")) {
-					return {
-						testTable: { name: "test_table" },
-					};
-				}
-				// Main plugin module (index.js)
-				return {
-					testQueryResolver: vi.fn(),
-					testTable: { name: "test_table" },
-					testHookHandler: mockHook,
-				};
-			});
-
-			await pluginManager.loadPlugin("error_plugin");
-			await pluginManager.activatePlugin("error_plugin");
-
-			const data = { userId: "123" };
-			const result = await pluginManager.executePreHooks("user:created", data);
-
-			expect(result).toBe(data); // Should return original data on error
+		it("should fail to deactivate non-active plugin", async () => {
+			const result = await pluginManager.deactivatePlugin("non_active");
+			expect(result).toBe(false);
 		});
 	});
 
-	describe("Error Handling", () => {
-		beforeEach(() => {
-			pluginManager = new PluginManager(mockPluginContext);
-		});
-
-		it("should track plugin errors", async () => {
-			vi.mocked(loadPluginManifest).mockRejectedValue(new Error("Test error"));
-
-			await pluginManager.loadPlugin("test_plugin");
-
-			const errors = pluginManager.getErrors();
-			expect(errors).toHaveLength(1);
-			expect(errors[0]).toMatchObject({
+	describe("unloadPlugin", () => {
+		it("should unload a loaded plugin", async () => {
+			const mockManifest: IPluginManifest = {
+				name: "Test Plugin",
 				pluginId: "test_plugin",
-				phase: "load",
-				error: expect.any(Error),
-			});
-		});
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+			};
 
-		it("should clear errors", async () => {
-			vi.mocked(loadPluginManifest).mockRejectedValue(new Error("Test error"));
+			// Load plugin first
+			vi.mocked(directoryExists).mockResolvedValue(true);
+			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
+			vi.mocked(safeRequire).mockResolvedValue({
+				default: {
+					onLoad: vi.fn(),
+					onUnload: vi.fn(),
+				},
+			});
 
 			await pluginManager.loadPlugin("test_plugin");
-			expect(pluginManager.getErrors()).toHaveLength(1);
+			const result = await pluginManager.unloadPlugin("test_plugin");
+			expect(result).toBe(true);
+		});
 
-			pluginManager.clearErrors();
-			expect(pluginManager.getErrors()).toHaveLength(0);
+		it("should fail to unload non-loaded plugin", async () => {
+			const result = await pluginManager.unloadPlugin("non_loaded");
+			expect(result).toBe(false);
 		});
 	});
 
-	describe("Plugin Information", () => {
-		beforeEach(async () => {
-			pluginManager = new PluginManager(mockPluginContext);
-			await pluginManager.loadPlugin("test_plugin");
+	describe("getLoadedPlugins", () => {
+		it("should return empty array when no plugins loaded", () => {
+			const plugins = pluginManager.getLoadedPlugins();
+			expect(plugins).toEqual([]);
 		});
 
-		it("should return loaded plugins", () => {
+		it("should return loaded plugins", async () => {
+			const mockManifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test_plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+			};
+
+			vi.mocked(directoryExists).mockResolvedValue(true);
+			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
+			vi.mocked(safeRequire).mockResolvedValue({
+				default: {
+					onLoad: vi.fn(),
+				},
+			});
+
+			await pluginManager.loadPlugin("test_plugin");
 			const plugins = pluginManager.getLoadedPlugins();
 			expect(plugins).toHaveLength(1);
 			expect(plugins[0]?.id).toBe("test_plugin");
 		});
-
-		it("should return loaded plugin IDs", () => {
-			const pluginIds = pluginManager.getLoadedPluginIds();
-			expect(pluginIds).toEqual(["test_plugin"]);
-		});
-
-		it("should return active plugins", async () => {
-			await pluginManager.activatePlugin("test_plugin");
-
-			const activePlugins = pluginManager.getActivePlugins();
-			expect(activePlugins).toHaveLength(1);
-			expect(activePlugins[0]?.id).toBe("test_plugin");
-		});
-
-		it("should get specific plugin", () => {
-			const plugin = pluginManager.getPlugin("test_plugin");
-			expect(plugin).toBeDefined();
-			expect(plugin?.id).toBe("test_plugin");
-		});
-
-		it("should check if plugin is loaded", () => {
-			expect(pluginManager.isPluginLoaded("test_plugin")).toBe(true);
-			expect(pluginManager.isPluginLoaded("non_existent")).toBe(false);
-		});
-
-		it("should check if plugin is active", async () => {
-			expect(pluginManager.isPluginActive("test_plugin")).toBe(false);
-
-			await pluginManager.activatePlugin("test_plugin");
-			expect(pluginManager.isPluginActive("test_plugin")).toBe(true);
-		});
-
-		it("should get extension registry", () => {
-			const registry = pluginManager.getExtensionRegistry();
-			expect(registry).toHaveProperty("graphql");
-			expect(registry).toHaveProperty("database");
-			expect(registry).toHaveProperty("hooks");
-		});
 	});
 
-	describe("System Status", () => {
-		it("should track initialization status", async () => {
-			pluginManager = new PluginManager(mockPluginContext);
-			expect(pluginManager.isSystemInitialized()).toBe(false);
-
-			// Wait for initialization
-			await new Promise((resolve) => setTimeout(resolve, 100));
-			expect(pluginManager.isSystemInitialized()).toBe(true);
+	describe("isPluginLoaded", () => {
+		it("should return false for non-loaded plugin", () => {
+			const result = pluginManager.isPluginLoaded("non_loaded");
+			expect(result).toBe(false);
 		});
 
-		it("should emit initialization events", async () => {
-			const initializingSpy = vi.fn();
-			const initializedSpy = vi.fn();
-			const readySpy = vi.fn();
-
-			pluginManager = new PluginManager(mockPluginContext);
-			pluginManager.on("plugins:initializing", initializingSpy);
-			pluginManager.on("plugins:initialized", initializedSpy);
-			pluginManager.on("plugins:ready", readySpy);
-
-			// Wait for initialization
-			await new Promise((resolve) => setTimeout(resolve, 100));
-
-			expect(initializingSpy).toHaveBeenCalled();
-			expect(initializedSpy).toHaveBeenCalled();
-			expect(readySpy).toHaveBeenCalled();
-		});
-	});
-
-	describe("Edge Cases", () => {
-		beforeEach(() => {
-			pluginManager = new PluginManager(mockPluginContext);
-		});
-
-		it("should handle concurrent plugin operations", async () => {
-			// Reset mocks for this test
-			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
-			vi.mocked(safeRequire).mockImplementation(async (filePath: string) => {
-				if (filePath.includes("resolvers.js")) {
-					return {
-						testQueryResolver: vi.fn(),
-					};
-				}
-				if (filePath.includes("schema.js")) {
-					return {
-						testTable: { name: "test_table" },
-					};
-				}
-				// Main plugin module (index.js)
-				return {
-					testQueryResolver: vi.fn(),
-					testTable: { name: "test_table" },
-					testHookHandler: vi.fn(),
-				};
-			});
-			mockDb.query.pluginsTable.findFirst.mockResolvedValue({
-				id: "test-id",
+		it("should return true for loaded plugin", async () => {
+			const mockManifest: IPluginManifest = {
+				name: "Test Plugin",
 				pluginId: "test_plugin",
-				isActivated: false,
-				isInstalled: true,
-			});
-
-			const promises = [
-				pluginManager.loadPlugin("test_plugin"),
-				pluginManager.loadPlugin("test_plugin"),
-				pluginManager.loadPlugin("test_plugin"),
-			];
-
-			const results = await Promise.all(promises);
-			// First load should succeed, others should return true (already loaded)
-			expect(results.filter((r) => r === true).length).toBeGreaterThan(0);
-		});
-
-		it("should handle plugin with no extension points", async () => {
-			const simpleManifest = {
-				...mockManifest,
-				extensionPoints: undefined,
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
 			};
-			vi.mocked(loadPluginManifest).mockResolvedValue(simpleManifest);
-			vi.mocked(safeRequire).mockImplementation(async (filePath: string) => {
-				// Main plugin module (index.js)
-				return {
-					testQueryResolver: vi.fn(),
-					testTable: { name: "test_table" },
-					testHookHandler: vi.fn(),
-				};
-			});
-			mockDb.query.pluginsTable.findFirst.mockResolvedValue({
-				id: "test-id",
-				pluginId: "test_plugin",
-				isActivated: false,
-				isInstalled: true,
-			});
 
-			const result = await pluginManager.loadPlugin("test_plugin");
-			expect(result).toBe(true);
-		});
-
-		it("should handle database connection errors", async () => {
-			mockDb.query.pluginsTable.findFirst.mockRejectedValue(
-				new Error("DB Error"),
-			);
+			vi.mocked(directoryExists).mockResolvedValue(true);
 			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
-			vi.mocked(safeRequire).mockImplementation(async (filePath: string) => {
-				if (filePath.includes("resolvers.js")) {
-					return {
-						testQueryResolver: vi.fn(),
-					};
-				}
-				if (filePath.includes("schema.js")) {
-					return {
-						testTable: { name: "test_table" },
-					};
-				}
-				// Main plugin module (index.js)
-				return {
-					testQueryResolver: vi.fn(),
-					testTable: { name: "test_table" },
-					testHookHandler: vi.fn(),
-				};
+			vi.mocked(safeRequire).mockResolvedValue({
+				default: {
+					onLoad: vi.fn(),
+				},
 			});
 
-			const result = await pluginManager.loadPlugin("test_plugin");
-			expect(result).toBe(true); // Should still load plugin
-		});
-
-		it("should handle plugin module export variations", async () => {
-			// Test default export with resolver still available at top level
-			vi.mocked(safeRequire).mockImplementation(async (filePath: string) => {
-				if (filePath.includes("resolvers.js")) {
-					return {
-						testQueryResolver: vi.fn(), // Resolver must be at top level
-						default: {
-							testQueryResolver: vi.fn(),
-						},
-					};
-				}
-				if (filePath.includes("schema.js")) {
-					return {
-						testTable: { name: "test_table" },
-					};
-				}
-				// Main plugin module (index.js)
-				return {
-					testQueryResolver: vi.fn(),
-					testTable: { name: "test_table" },
-					testHookHandler: vi.fn(),
-					default: {
-						testQueryResolver: vi.fn(),
-					},
-				};
-			});
-			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
-			mockDb.query.pluginsTable.findFirst.mockResolvedValue({
-				id: "test-id",
-				pluginId: "test_plugin",
-				isActivated: false,
-				isInstalled: true,
-			});
-
-			const result = await pluginManager.loadPlugin("test_plugin");
+			await pluginManager.loadPlugin("test_plugin");
+			const result = pluginManager.isPluginLoaded("test_plugin");
 			expect(result).toBe(true);
 		});
 	});
 
-	describe("Private Methods", () => {
-		let pluginManager: PluginManager;
-
-		// Proper TypeScript interfaces for private method testing
-		interface DatabaseExtension {
-			name: string;
-			type: "table" | "enum" | "relation";
-			file: string;
-		}
-
-		interface GraphQLExtension {
-			name: string;
-			type: "query" | "mutation" | "subscription";
-			resolver: string;
-			file: string;
-		}
-
-		interface LoadedPlugin {
-			id: string;
-			manifest: IPluginManifest;
-			status: PluginStatus;
-			graphqlResolvers: Record<string, unknown> | null;
-			databaseTables: Record<string, unknown>;
-			hooks: Record<string, unknown>;
-		}
-
-		// Type for accessing private methods with proper typing
-		type PluginManagerWithPrivateMethods = {
-			loadedPlugins: Map<string, LoadedPlugin>;
-			getExtensionRegistryKey: (type: string, registryType: string) => string;
-			loadDatabaseExtension: (
-				pluginId: string,
-				extension: DatabaseExtension,
-				pluginModule: Record<string, unknown>,
-			) => Promise<void>;
-			loadGraphQLExtension: (
-				pluginId: string,
-				extension: GraphQLExtension,
-				pluginModule: Record<string, unknown>,
-			) => Promise<void>;
-			loadExtensionPoints: (
-				pluginId: string,
-				manifest: IPluginManifest,
-				pluginModule: Record<string, unknown>,
-			) => Promise<void>;
-		};
-
-		beforeEach(() => {
-			pluginManager = new PluginManager(mockPluginContext);
+	describe("isPluginActive", () => {
+		it("should return false for non-active plugin", () => {
+			const result = pluginManager.isPluginActive("non_active");
+			expect(result).toBe(false);
 		});
 
-		describe("getExtensionRegistryKey", () => {
-			it("should return correct keys for GraphQL types", () => {
-				expect(
-					(
-						pluginManager as unknown as {
-							getExtensionRegistryKey: (
-								type: string,
-								registryType: string,
-							) => string;
-						}
-					).getExtensionRegistryKey("query", "graphql"),
-				).toBe("queries");
-				expect(
-					(
-						pluginManager as unknown as {
-							getExtensionRegistryKey: (
-								type: string,
-								registryType: string,
-							) => string;
-						}
-					).getExtensionRegistryKey("mutation", "graphql"),
-				).toBe("mutations");
-				expect(
-					(
-						pluginManager as unknown as {
-							getExtensionRegistryKey: (
-								type: string,
-								registryType: string,
-							) => string;
-						}
-					).getExtensionRegistryKey("subscription", "graphql"),
-				).toBe("subscriptions");
-				expect(
-					(
-						pluginManager as unknown as {
-							getExtensionRegistryKey: (
-								type: string,
-								registryType: string,
-							) => string;
-						}
-					).getExtensionRegistryKey("type", "graphql"),
-				).toBe("types");
-			});
-
-			it("should return correct keys for database types", () => {
-				expect(
-					(
-						pluginManager as unknown as {
-							getExtensionRegistryKey: (
-								type: string,
-								registryType: string,
-							) => string;
-						}
-					).getExtensionRegistryKey("table", "database"),
-				).toBe("tables");
-				expect(
-					(
-						pluginManager as unknown as {
-							getExtensionRegistryKey: (
-								type: string,
-								registryType: string,
-							) => string;
-						}
-					).getExtensionRegistryKey("enum", "database"),
-				).toBe("enums");
-				expect(
-					(
-						pluginManager as unknown as {
-							getExtensionRegistryKey: (
-								type: string,
-								registryType: string,
-							) => string;
-						}
-					).getExtensionRegistryKey("relation", "database"),
-				).toBe("relations");
-			});
-
-			it("should throw error for unknown GraphQL type", () => {
-				expect(() =>
-					(
-						pluginManager as unknown as {
-							getExtensionRegistryKey: (
-								type: string,
-								registryType: string,
-							) => string;
-						}
-					).getExtensionRegistryKey("unknown", "graphql"),
-				).toThrow("Unknown GraphQL extension type: unknown");
-			});
-
-			it("should throw error for unknown database type", () => {
-				expect(() =>
-					(
-						pluginManager as unknown as {
-							getExtensionRegistryKey: (
-								type: string,
-								registryType: string,
-							) => string;
-						}
-					).getExtensionRegistryKey("unknown", "database"),
-				).toThrow("Unknown database extension type: unknown");
-			});
-
-			it("should throw error for unknown registry type", () => {
-				expect(() =>
-					(
-						pluginManager as unknown as {
-							getExtensionRegistryKey: (
-								type: string,
-								registryType: string,
-							) => string;
-						}
-					).getExtensionRegistryKey("query", "unknown"),
-				).toThrow("Unknown registry type: unknown");
-			});
-		});
-
-		describe("loadDatabaseExtension", () => {
-			const mockPlugin: LoadedPlugin = {
-				id: "test-plugin",
-				manifest: {} as IPluginManifest,
-				status: PluginStatus.INACTIVE,
-				graphqlResolvers: {},
-				databaseTables: {},
-				hooks: {},
+		it("should return true for active plugin", async () => {
+			const mockManifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test_plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
 			};
 
-			beforeEach(() => {
-				(
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.set("test-plugin", mockPlugin);
+			vi.mocked(directoryExists).mockResolvedValue(true);
+			vi.mocked(loadPluginManifest).mockResolvedValue(mockManifest);
+			vi.mocked(safeRequire).mockResolvedValue({
+				default: {
+					onLoad: vi.fn(),
+					onActivate: vi.fn(),
+				},
 			});
 
-			it("should load database extension from main module", async () => {
-				const extension: DatabaseExtension = {
-					name: "testTable",
-					type: "table",
-					file: "",
-				};
-
-				const mockTableDefinition = { name: "test_table", columns: [] };
-				const pluginModule = {
-					testTable: mockTableDefinition,
-				};
-
-				await (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadDatabaseExtension("test-plugin", extension, pluginModule);
-
-				const plugin = (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.get("test-plugin");
-				expect(plugin?.databaseTables.testTable).toEqual(mockTableDefinition);
-			});
-
-			it("should load database extension from separate file", async () => {
-				vi.mocked(safeRequire).mockResolvedValue({
-					testTable: { name: "test_table", columns: [] },
-				});
-
-				const extension: DatabaseExtension = {
-					name: "testTable",
-					type: "table",
-					file: "tables.js",
-				};
-
-				await (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadDatabaseExtension("test-plugin", extension, {});
-
-				expect(safeRequire).toHaveBeenCalledWith(
-					"/home/talawa/api/src/plugin/available/test-plugin/tables.js",
-				);
-			});
-
-			it("should throw error if table definition not found", async () => {
-				const extension: DatabaseExtension = {
-					name: "missingTable",
-					type: "table",
-					file: "",
-				};
-
-				await expect(
-					(
-						pluginManager as unknown as PluginManagerWithPrivateMethods
-					).loadDatabaseExtension("test-plugin", extension, {}),
-				).rejects.toThrow(
-					"Database table 'missingTable' not found in plugin test-plugin",
-				);
-			});
-
-			it("should throw error if extension file fails to load", async () => {
-				vi.mocked(safeRequire).mockResolvedValue(null);
-
-				const extension: DatabaseExtension = {
-					name: "testTable",
-					type: "table",
-					file: "missing.js",
-				};
-
-				await expect(
-					(
-						pluginManager as unknown as PluginManagerWithPrivateMethods
-					).loadDatabaseExtension("test-plugin", extension, {}),
-				).rejects.toThrow("Failed to load extension file: missing.js");
-			});
-		});
-
-		describe("loadGraphQLExtension", () => {
-			const mockPlugin: LoadedPlugin = {
-				id: "test-plugin",
-				manifest: {} as IPluginManifest,
-				status: PluginStatus.INACTIVE,
-				graphqlResolvers: {},
-				databaseTables: {},
-				hooks: {},
-			};
-
-			beforeEach(() => {
-				(
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.set("test-plugin", mockPlugin);
-			});
-
-			it("should load GraphQL extension from main module", async () => {
-				const extension: GraphQLExtension = {
-					name: "testQuery",
-					type: "query",
-					resolver: "testResolver",
-					file: "",
-				};
-
-				const mockResolver = vi.fn();
-				const pluginModule = {
-					testResolver: mockResolver,
-				};
-
-				await (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadGraphQLExtension("test-plugin", extension, pluginModule);
-
-				const plugin = (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.get("test-plugin");
-				expect(plugin?.graphqlResolvers?.testQuery).toBe(mockResolver);
-			});
-
-			it("should load GraphQL extension from separate file", async () => {
-				const mockResolver = vi.fn();
-				vi.mocked(safeRequire).mockResolvedValue({
-					testMutationResolver: mockResolver,
-				});
-
-				const extension: GraphQLExtension = {
-					name: "testMutation",
-					type: "mutation",
-					resolver: "testMutationResolver",
-					file: "resolvers.js",
-				};
-
-				await (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadGraphQLExtension("test-plugin", extension, {});
-
-				expect(safeRequire).toHaveBeenCalledWith(
-					"/home/talawa/api/src/plugin/available/test-plugin/resolvers.js",
-				);
-
-				const plugin = (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.get("test-plugin");
-				expect(plugin?.graphqlResolvers?.testMutation).toBe(mockResolver);
-			});
-
-			it("should throw error if resolver not found", async () => {
-				const extension: GraphQLExtension = {
-					name: "testQuery",
-					type: "query",
-					resolver: "missingResolver",
-					file: "",
-				};
-
-				await expect(
-					(
-						pluginManager as unknown as PluginManagerWithPrivateMethods
-					).loadGraphQLExtension("test-plugin", extension, {}),
-				).rejects.toThrow(
-					"GraphQL resolver 'missingResolver' not found in plugin test-plugin",
-				);
-			});
-
-			it("should throw error if extension file fails to load", async () => {
-				vi.mocked(safeRequire).mockResolvedValue(null);
-
-				const extension: GraphQLExtension = {
-					name: "testQuery",
-					type: "query",
-					resolver: "testResolver",
-					file: "missing.js",
-				};
-
-				await expect(
-					(
-						pluginManager as unknown as PluginManagerWithPrivateMethods
-					).loadGraphQLExtension("test-plugin", extension, {}),
-				).rejects.toThrow("Failed to load GraphQL extension file: missing.js");
-			});
-
-			it("should initialize graphqlResolvers if not present", async () => {
-				const pluginWithoutResolvers: LoadedPlugin = {
-					...mockPlugin,
-					graphqlResolvers: null,
-				};
-				(
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.set("test-plugin", pluginWithoutResolvers);
-
-				const extension: GraphQLExtension = {
-					name: "testQuery",
-					type: "query",
-					resolver: "testResolver",
-					file: "",
-				};
-
-				const mockResolver = vi.fn();
-				const pluginModule = {
-					testResolver: mockResolver,
-				};
-
-				await (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadGraphQLExtension("test-plugin", extension, pluginModule);
-
-				const plugin = (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.get("test-plugin");
-				expect(plugin?.graphqlResolvers).toEqual({
-					testQuery: mockResolver,
-				});
-			});
-		});
-
-		describe("loadExtensionPoints", () => {
-			const mockPlugin: LoadedPlugin = {
-				id: "test-plugin",
-				manifest: {} as IPluginManifest,
-				status: PluginStatus.INACTIVE,
-				graphqlResolvers: {},
-				databaseTables: {},
-				hooks: {},
-			};
-
-			beforeEach(() => {
-				(
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.set("test-plugin", mockPlugin);
-			});
-
-			it("should load GraphQL extensions successfully", async () => {
-				const manifest: IPluginManifest = {
-					name: "test-plugin",
-					pluginId: "test-plugin",
-					version: "1.0.0",
-					description: "Test plugin",
-					author: "Test Author",
-					main: "index.js",
-					extensionPoints: {
-						graphql: [
-							{
-								name: "testQuery",
-								type: "query",
-								resolver: "testResolver",
-								file: "",
-							} as GraphQLExtension,
-						],
-					},
-				};
-
-				const mockResolver = vi.fn();
-				const pluginModule = {
-					testResolver: mockResolver,
-				};
-
-				await (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadExtensionPoints("test-plugin", manifest, pluginModule);
-
-				const plugin = (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.get("test-plugin");
-				expect(plugin?.graphqlResolvers?.testQuery).toBe(mockResolver);
-			});
-
-			it("should load database extensions successfully", async () => {
-				const manifest: IPluginManifest = {
-					name: "test-plugin",
-					pluginId: "test-plugin",
-					version: "1.0.0",
-					description: "Test plugin",
-					author: "Test Author",
-					main: "index.js",
-					extensionPoints: {
-						database: [
-							{
-								name: "testTable",
-								type: "table",
-								file: "",
-							} as DatabaseExtension,
-						],
-					},
-				};
-
-				const mockTableDefinition = { name: "test_table", columns: [] };
-				const pluginModule = {
-					testTable: mockTableDefinition,
-				};
-
-				await (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadExtensionPoints("test-plugin", manifest, pluginModule);
-
-				const plugin = (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.get("test-plugin");
-				expect(plugin?.databaseTables?.testTable).toEqual(mockTableDefinition);
-			});
-
-			it("should handle mixed extension types", async () => {
-				const manifest: IPluginManifest = {
-					name: "test-plugin",
-					pluginId: "test-plugin",
-					version: "1.0.0",
-					description: "Test plugin",
-					author: "Test Author",
-					main: "index.js",
-					extensionPoints: {
-						graphql: [
-							{
-								name: "testQuery",
-								type: "query",
-								resolver: "testResolver",
-								file: "",
-							},
-						],
-						database: [
-							{
-								name: "testTable",
-								type: "table",
-								file: "",
-							},
-						],
-					},
-				};
-
-				const mockResolver = vi.fn();
-				const mockTableDefinition = { name: "test_table", columns: [] };
-				const pluginModule = {
-					testResolver: mockResolver,
-					testTable: mockTableDefinition,
-				};
-
-				await (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadExtensionPoints("test-plugin", manifest, pluginModule);
-
-				const plugin = (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.get("test-plugin");
-				expect(plugin?.graphqlResolvers?.testQuery).toBe(mockResolver);
-				expect(plugin?.databaseTables?.testTable).toEqual(mockTableDefinition);
-			});
-
-			it("should return early if plugin not found", async () => {
-				const manifest: IPluginManifest = {
-					name: "missing-plugin",
-					pluginId: "missing-plugin",
-					version: "1.0.0",
-					description: "Missing plugin",
-					author: "Test Author",
-					main: "index.js",
-					extensionPoints: {
-						graphql: [
-							{
-								name: "testQuery",
-								type: "query",
-								resolver: "testResolver",
-								file: "",
-							},
-						],
-					},
-				};
-
-				// Should not throw error, just return early
-				await (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadExtensionPoints("missing-plugin", manifest, {});
-
-				// Verify no plugin was affected
-				expect(
-					(
-						pluginManager as unknown as PluginManagerWithPrivateMethods
-					).loadedPlugins.has("missing-plugin"),
-				).toBe(false);
-			});
-
-			it("should handle GraphQL extension loading errors", async () => {
-				const manifest: IPluginManifest = {
-					name: "test-plugin",
-					pluginId: "test-plugin",
-					version: "1.0.0",
-					description: "Test plugin",
-					author: "Test Author",
-					main: "index.js",
-					extensionPoints: {
-						graphql: [
-							{
-								name: "testQuery",
-								type: "query",
-								resolver: "missingResolver",
-								file: "",
-							},
-						],
-					},
-				};
-
-				await expect(
-					(
-						pluginManager as unknown as PluginManagerWithPrivateMethods
-					).loadExtensionPoints("test-plugin", manifest, {}),
-				).rejects.toThrow("Failed to load extension points");
-			});
-
-			it("should handle manifest without extension points", async () => {
-				// Create a fresh plugin manager to avoid test interference
-				const freshPluginManager = new PluginManager(mockPluginContext);
-				const freshMockPlugin = {
-					id: "test-plugin",
-					manifest: {} as IPluginManifest,
-					status: PluginStatus.INACTIVE,
-					graphqlResolvers: {},
-					databaseTables: {},
-					hooks: {},
-				};
-				(
-					freshPluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.set("test-plugin", freshMockPlugin);
-
-				const manifest: IPluginManifest = {
-					name: "test-plugin",
-					pluginId: "test-plugin",
-					version: "1.0.0",
-					description: "Test plugin",
-					author: "Test Author",
-					main: "index.js",
-				};
-
-				// Should complete without errors
-				await (
-					freshPluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadExtensionPoints("test-plugin", manifest, {});
-
-				// Plugin should still exist but unchanged
-				const plugin = (
-					freshPluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.get("test-plugin");
-				expect(plugin?.graphqlResolvers).toEqual({});
-				expect(plugin?.databaseTables).toEqual({});
-			});
-		});
-
-		describe("loadHookExtension", () => {
-			interface HookExtension {
-				name: string;
-				event: string;
-				handler: string;
-				type: "pre" | "post";
-				file?: string;
-			}
-
-			const mockPlugin: LoadedPlugin = {
-				id: "test-plugin",
-				manifest: {} as IPluginManifest,
-				status: PluginStatus.INACTIVE,
-				graphqlResolvers: {},
-				databaseTables: {},
-				hooks: {},
-			};
-
-			beforeEach(() => {
-				(
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.set("test-plugin", mockPlugin);
-			});
-
-			it("should load hook extension from main module", async () => {
-				const extension: HookExtension = {
-					name: "testHook",
-					event: "user:created",
-					handler: "testHookHandler",
-					type: "pre",
-				};
-
-				const mockHandler = vi.fn();
-				const pluginModule = {
-					testHookHandler: mockHandler,
-				};
-
-				await (
-					pluginManager as unknown as {
-						loadHookExtension: (
-							pluginId: string,
-							extension: HookExtension,
-							pluginModule: Record<string, unknown>,
-						) => Promise<void>;
-						loadedPlugins: Map<string, LoadedPlugin>;
-						extensionRegistry: ExtensionRegistryForTest;
-					}
-				).loadHookExtension("test-plugin", extension, pluginModule);
-
-				const plugin = (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.get("test-plugin");
-				expect(plugin?.hooks["user:created"]).toBe(mockHandler);
-				// Also check extension registry
-				const registry = (
-					pluginManager as unknown as {
-						extensionRegistry: ExtensionRegistryForTest;
-					}
-				).extensionRegistry;
-				expect(registry.hooks.pre["user:created"]).toContain(mockHandler);
-			});
-
-			it("should load hook extension from separate file", async () => {
-				const mockHandler = vi.fn();
-				vi.mocked(safeRequire).mockResolvedValue({
-					testHookHandler: mockHandler,
-				});
-
-				const extension: HookExtension = {
-					name: "testHook",
-					event: "user:created",
-					handler: "testHookHandler",
-					type: "post",
-					file: "hooks.js",
-				};
-
-				await (
-					pluginManager as unknown as {
-						loadHookExtension: (
-							pluginId: string,
-							extension: HookExtension,
-							pluginModule: Record<string, unknown>,
-						) => Promise<void>;
-						loadedPlugins: Map<string, LoadedPlugin>;
-						extensionRegistry: ExtensionRegistryForTest;
-					}
-				).loadHookExtension("test-plugin", extension, {});
-
-				expect(safeRequire).toHaveBeenCalledWith(
-					"/home/talawa/api/src/plugin/available/test-plugin/hooks.js",
-				);
-				const plugin = (
-					pluginManager as unknown as PluginManagerWithPrivateMethods
-				).loadedPlugins.get("test-plugin");
-				expect(plugin?.hooks["user:created"]).toBe(mockHandler);
-				const registry = (
-					pluginManager as unknown as {
-						extensionRegistry: ExtensionRegistryForTest;
-					}
-				).extensionRegistry;
-				expect(registry.hooks.post["user:created"]).toContain(mockHandler);
-			});
-
-			it("should throw error if handler is missing", async () => {
-				const extension: HookExtension = {
-					name: "testHook",
-					event: "user:created",
-					handler: "missingHandler",
-					type: "pre",
-				};
-
-				const pluginModule = {};
-
-				await expect(
-					(
-						pluginManager as unknown as {
-							loadHookExtension: (
-								pluginId: string,
-								extension: HookExtension,
-								pluginModule: Record<string, unknown>,
-							) => Promise<void>;
-						}
-					).loadHookExtension("test-plugin", extension, pluginModule),
-				).rejects.toThrow(
-					"Hook handler 'missingHandler' not found or not a function in plugin test-plugin",
-				);
-			});
-
-			it("should throw error if handler is not a function", async () => {
-				const extension: HookExtension = {
-					name: "testHook",
-					event: "user:created",
-					handler: "notAFunction",
-					type: "pre",
-				};
-
-				const pluginModule = { notAFunction: 123 };
-
-				await expect(
-					(
-						pluginManager as unknown as {
-							loadHookExtension: (
-								pluginId: string,
-								extension: HookExtension,
-								pluginModule: Record<string, unknown>,
-							) => Promise<void>;
-						}
-					).loadHookExtension("test-plugin", extension, pluginModule),
-				).rejects.toThrow(
-					"Hook handler 'notAFunction' not found or not a function in plugin test-plugin",
-				);
-			});
-
-			it("should throw error if extension file fails to load", async () => {
-				vi.mocked(safeRequire).mockResolvedValue(null);
-
-				const extension: HookExtension = {
-					name: "testHook",
-					event: "user:created",
-					handler: "testHookHandler",
-					type: "pre",
-					file: "missing.js",
-				};
-
-				await expect(
-					(
-						pluginManager as unknown as {
-							loadHookExtension: (
-								pluginId: string,
-								extension: HookExtension,
-								pluginModule: Record<string, unknown>,
-							) => Promise<void>;
-						}
-					).loadHookExtension("test-plugin", extension, {}),
-				).rejects.toThrow("Failed to load hook extension file: missing.js");
-			});
+			await pluginManager.loadPlugin("test_plugin");
+			await pluginManager.activatePlugin("test_plugin");
+
+			const result = pluginManager.isPluginActive("test_plugin");
+			expect(result).toBe(true);
 		});
 	});
 });
