@@ -4,7 +4,7 @@
 
 # Interface: DiscoveredWorkload
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:19](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/workers/eventMaterialization/jobDiscovery.ts#L19)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:19](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L19)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:19](https://github
 
 > **estimatedDurationMs**: `number`
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:30](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/workers/eventMaterialization/jobDiscovery.ts#L30)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:30](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L30)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:30](https://github
 
 > **organizationId**: `string`
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:20](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/workers/eventMaterialization/jobDiscovery.ts#L20)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:20](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L20)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:20](https://github
 
 > **priority**: `number`
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:29](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/workers/eventMaterialization/jobDiscovery.ts#L29)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:29](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L29)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:29](https://github
 
 > **recurringEvents**: `object`[]
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:22](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/workers/eventMaterialization/jobDiscovery.ts#L22)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:22](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L22)
 
 #### estimatedInstances
 
@@ -64,7 +64,7 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:22](https://github
 
 > **windowConfig**: `object`
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:21](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/workers/eventMaterialization/jobDiscovery.ts#L21)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:21](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L21)
 
 #### configurationNotes
 

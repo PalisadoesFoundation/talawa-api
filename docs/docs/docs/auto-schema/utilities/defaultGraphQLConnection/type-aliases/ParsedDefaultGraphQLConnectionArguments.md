@@ -6,7 +6,7 @@
 
 > **ParsedDefaultGraphQLConnectionArguments**\<`Cursor`\> = `object`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:6](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/utilities/defaultGraphQLConnection.ts#L6)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:6](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/utilities/defaultGraphQLConnection.ts#L6)
 
 Type of the object containing the parsed default arguments of a graphql connection.
 
@@ -22,7 +22,7 @@ Type of the object containing the parsed default arguments of a graphql connecti
 
 > `optional` **cursor**: `Cursor`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:10](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/utilities/defaultGraphQLConnection.ts#L10)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:10](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/utilities/defaultGraphQLConnection.ts#L10)
 
 The cursor representing the position in the connection.
 
@@ -32,7 +32,7 @@ The cursor representing the position in the connection.
 
 > **isInversed**: `boolean`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:21](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/utilities/defaultGraphQLConnection.ts#L21)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:21](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/utilities/defaultGraphQLConnection.ts#L21)
 
 This field is used to identify whether the client wants to traverse the graphql connection edges in the default order or in the inversed order.
 
@@ -48,6 +48,6 @@ An example would be scrolling on twitter's home page(assuming they're using grap
 
 > **limit**: `number`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:14](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/utilities/defaultGraphQLConnection.ts#L14)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:14](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/utilities/defaultGraphQLConnection.ts#L14)
 
 The amount of graphql connection edges to return in a single graphql connection operation.

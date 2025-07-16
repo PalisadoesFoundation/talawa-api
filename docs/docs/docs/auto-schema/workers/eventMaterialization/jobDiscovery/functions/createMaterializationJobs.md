@@ -6,7 +6,7 @@
 
 > **createMaterializationJobs**(`workloads`): [`MaterializationJob`](../../executionEngine/interfaces/MaterializationJob.md)[]
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:99](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/workers/eventMaterialization/jobDiscovery.ts#L99)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:99](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L99)
 
 Converts discovered workloads into executable materialization jobs
 

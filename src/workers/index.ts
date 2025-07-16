@@ -22,7 +22,7 @@ export {
 	createDefaultWorkerConfig,
 	type WorkerConfig,
 	type WorkerResult,
-} from "./eventMaterialization/workerOrchestrator";
+} from "./eventMaterialization/materializationPipeline";
 
 export {
 	executeMaterialization,

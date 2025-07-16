@@ -6,7 +6,7 @@
 
 > `const` **eventMaterializationWindowsTable**: `PgTableWithColumns`\<\{ \}\>
 
-Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:24](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/drizzle/tables/eventMaterializationWindows.ts#L24)
+Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:24](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/drizzle/tables/eventMaterializationWindows.ts#L24)
 
 Drizzle ORM postgres table definition for event materialization window configuration.
 

@@ -8,7 +8,7 @@ import {
 	type WorkerResult,
 	createDefaultWorkerConfig,
 	runMaterializationWorker,
-} from "./eventMaterialization/workerOrchestrator";
+} from "./eventMaterialization/materializationPipeline";
 
 /**
  * Background worker service that orchestrates all event materialization tasks.

@@ -238,7 +238,7 @@ function shouldGenerateForWeekly(
 	recurrenceRule: typeof recurrenceRulesTable.$inferSelect,
 ): boolean {
 	// Check byDay filter for weekly events
-	if (recurrenceRule.byDay && recurrenceRule.byDay.length > 0) {
+	if (recurrenceRule.byDay?.length) {
 		const dayNames = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 		const dayOfWeek = dayNames[date.getDay()];
 		if (!dayOfWeek || !recurrenceRule.byDay.includes(dayOfWeek)) {
@@ -256,25 +256,25 @@ function shouldGenerateForMonthly(
 	recurrenceRule: typeof recurrenceRulesTable.$inferSelect,
 ): boolean {
 	// Handle complex monthly patterns (like "first Friday of each month")
-	if (recurrenceRule.byDay && recurrenceRule.byDay.length > 0) {
-		// Check if the day of week matches
+	if (recurrenceRule.byDay?.length) {
 		const dayNames = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 		const dayOfWeek = dayNames[date.getDay()];
-		if (!dayOfWeek || !recurrenceRule.byDay.includes(dayOfWeek)) {
-			return false;
-		}
+		const dayOfMonth = date.getDate();
 
-		// If byMonthDay is also specified, check if the date falls within the range
-		if (recurrenceRule.byMonthDay && recurrenceRule.byMonthDay.length > 0) {
-			const dayOfMonth = date.getDate();
-			if (!recurrenceRule.byMonthDay.includes(dayOfMonth)) {
-				return false;
+		for (const byDayRule of recurrenceRule.byDay) {
+			const ruleDay = byDayRule.slice(-2);
+			const ordinal = Number.parseInt(byDayRule.slice(0, -2), 10);
+
+			if (ruleDay === dayOfWeek) {
+				const weekOfMonth = Math.floor((dayOfMonth - 1) / 7) + 1;
+				if (weekOfMonth === ordinal) {
+					return true;
+				}
 			}
 		}
-	} else if (
-		recurrenceRule.byMonthDay &&
-		recurrenceRule.byMonthDay.length > 0
-	) {
+		return false;
+	}
+	if (recurrenceRule.byMonthDay?.length) {
 		// Only byMonthDay is specified (no byDay)
 		const dayOfMonth = date.getDate();
 		if (!recurrenceRule.byMonthDay.includes(dayOfMonth)) {
@@ -332,8 +332,26 @@ export function getNextOccurrenceDate(
 			break;
 
 		case "MONTHLY":
-			// For monthly events, move by months
-			nextDate.setMonth(nextDate.getMonth() + interval);
+			if (recurrenceRule.byDay?.length) {
+				nextDate.setMonth(nextDate.getMonth() + interval);
+				const dayNames = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+				const byDayRule = recurrenceRule.byDay[0];
+				if (byDayRule) {
+					const ruleDay = byDayRule.slice(-2);
+					const targetDay = dayNames.indexOf(ruleDay);
+					const ordinal = Number.parseInt(byDayRule.slice(0, -2), 10);
+
+					nextDate.setDate(1); // Start of the month
+					const firstDayOfMonth = nextDate.getDay();
+					let dayOfMonth = (targetDay - firstDayOfMonth + 7) % 7;
+					dayOfMonth += (ordinal - 1) * 7 + 1;
+
+					nextDate.setDate(dayOfMonth);
+				}
+			} else {
+				// For monthly events, move by months
+				nextDate.setMonth(nextDate.getMonth() + interval);
+			}
 			break;
 
 		case "YEARLY":

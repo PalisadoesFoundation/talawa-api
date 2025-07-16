@@ -6,7 +6,7 @@
 
 > **UpdateMaterializationWindowInput** = `object`
 
-Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:288](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/drizzle/tables/eventMaterializationWindows.ts#L288)
+Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:288](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/drizzle/tables/eventMaterializationWindows.ts#L288)
 
 Input for updating materialization window configuration.
 
@@ -16,7 +16,7 @@ Input for updating materialization window configuration.
 
 > `optional` **configurationNotes**: `string`
 
-Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:295](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/drizzle/tables/eventMaterializationWindows.ts#L295)
+Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:295](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/drizzle/tables/eventMaterializationWindows.ts#L295)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:295](https://gith
 
 > `optional` **historyRetentionMonths**: `number`
 
-Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:291](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/drizzle/tables/eventMaterializationWindows.ts#L291)
+Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:291](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/drizzle/tables/eventMaterializationWindows.ts#L291)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:291](https://gith
 
 > `optional` **hotWindowMonthsAhead**: `number`
 
-Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:290](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/drizzle/tables/eventMaterializationWindows.ts#L290)
+Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:290](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/drizzle/tables/eventMaterializationWindows.ts#L290)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:290](https://gith
 
 > `optional` **isEnabled**: `boolean`
 
-Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:294](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/drizzle/tables/eventMaterializationWindows.ts#L294)
+Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:294](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/drizzle/tables/eventMaterializationWindows.ts#L294)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:294](https://gith
 
 > **lastUpdatedById**: `string`
 
-Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:296](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/drizzle/tables/eventMaterializationWindows.ts#L296)
+Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:296](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/drizzle/tables/eventMaterializationWindows.ts#L296)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:296](https://gith
 
 > `optional` **maxInstancesPerRun**: `number`
 
-Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:293](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/drizzle/tables/eventMaterializationWindows.ts#L293)
+Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:293](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/drizzle/tables/eventMaterializationWindows.ts#L293)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:293](https://gith
 
 > `optional` **processingPriority**: `number`
 
-Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:292](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/drizzle/tables/eventMaterializationWindows.ts#L292)
+Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:292](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/drizzle/tables/eventMaterializationWindows.ts#L292)
 
 ***
 
@@ -72,4 +72,4 @@ Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:292](https://gith
 
 > **windowId**: `string`
 
-Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:289](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/drizzle/tables/eventMaterializationWindows.ts#L289)
+Defined in: [src/drizzle/tables/eventMaterializationWindows.ts:289](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/drizzle/tables/eventMaterializationWindows.ts#L289)
