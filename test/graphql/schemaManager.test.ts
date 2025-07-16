@@ -42,8 +42,6 @@ describe("GraphQLSchemaManager", () => {
 	});
 
 	describe("Plugin Extension Registration", () => {
-		
-
 		it("should handle missing plugin manager gracefully", async () => {
 			vi.mocked(getPluginManagerInstance).mockReturnValue(null);
 
