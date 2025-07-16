@@ -6,4 +6,4 @@
 
 > `const` **eventsTableRelations**: `Relations`\<`"events"`, \{ `agendaFoldersWhereEvent`: `Many`\<`"agenda_folders"`\>; `attachmentsWhereEvent`: `Many`\<`"event_attachments"`\>; `baseRecurringEvent`: `One`\<`"events"`, `false`\>; `creator`: `One`\<`"users"`, `false`\>; `eventAttendancesWhereEvent`: `Many`\<`"event_attendances"`\>; `exceptionsWhereEventInstance`: `Many`\<`"event_exceptions"`\>; `exceptionsWhereRecurringEvent`: `Many`\<`"event_exceptions"`\>; `organization`: `One`\<`"organizations"`, `true`\>; `recurringEventInstances`: `Many`\<`"events"`\>; `updater`: `One`\<`"users"`, `false`\>; `venueBookingsWhereEvent`: `Many`\<`"venue_bookings"`\>; \}\>
 
-Defined in: [src/drizzle/tables/events.ts:177](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/drizzle/tables/events.ts#L177)
+Defined in: [src/drizzle/tables/events.ts:177](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/drizzle/tables/events.ts#L177)

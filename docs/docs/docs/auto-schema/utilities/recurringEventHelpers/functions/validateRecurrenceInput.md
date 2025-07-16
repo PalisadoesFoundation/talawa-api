@@ -6,7 +6,7 @@
 
 > **validateRecurrenceInput**(`recurrence`, `startDate`): `object`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:225](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/utilities/recurringEventHelpers.ts#L225)
+Defined in: [src/utilities/recurringEventHelpers.ts:230](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/utilities/recurringEventHelpers.ts#L230)
 
 Validates recurrence input
 
@@ -41,6 +41,10 @@ Validates recurrence input
 #### interval?
 
 `number` = `...`
+
+#### never?
+
+`boolean` = `...`
 
 ### startDate
 

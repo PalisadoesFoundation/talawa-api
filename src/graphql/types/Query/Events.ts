@@ -1,17 +1,11 @@
-import { inArray } from "drizzle-orm";
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 import { Event } from "~/src/graphql/types/Event/Event";
+import { getEventsByIds } from "~/src/graphql/types/Query/eventQueries";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import {
-	generateVirtualInstances,
-	getBaseEventId,
-	getInstanceStartTime,
-	isVirtualEventId,
-} from "~/src/utilities/recurringEventHelpers";
 
 const queryEventsByIdsSchema = z.object({
-	ids: z.array(z.string()).min(1), // Changed from z.string().uuid() to support virtual IDs
+	ids: z.array(z.string().uuid()).min(1),
 });
 
 builder.queryField("eventsByIds", (t) =>
@@ -31,7 +25,7 @@ builder.queryField("eventsByIds", (t) =>
 			}),
 		},
 		description:
-			"Fetch multiple events by their IDs. Supports both real event IDs and virtual instance IDs.",
+			"Fetch multiple events by their IDs. Supports both standalone events and materialized recurring instances. Uses pure materialized approach",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -66,171 +60,81 @@ builder.queryField("eventsByIds", (t) =>
 				});
 			}
 
-			// Separate regular IDs from virtual IDs
-			const regularIds: string[] = [];
-			const virtualIds: string[] = [];
+			try {
+				// Use the unified query to get events by IDs
+				const events = await getEventsByIds(
+					eventIds,
+					ctx.drizzleClient,
+					ctx.log,
+				);
 
-			for (const id of eventIds) {
-				if (isVirtualEventId(id)) {
-					virtualIds.push(id);
-				} else {
-					regularIds.push(id);
-				}
-			}
-
-			const events = [];
-
-			// Handle regular events
-			if (regularIds.length > 0) {
-				const regularEvents =
-					await ctx.drizzleClient.query.eventsTable.findMany({
-						with: {
-							attachmentsWhereEvent: true,
-							organization: {
-								columns: { countryCode: true },
-								with: {
-									membershipsWhereOrganization: {
-										columns: { role: true },
-										where: (fields, operators) =>
-											operators.eq(fields.memberId, currentUserId),
-									},
+				// Filter events based on user authorization
+				const authorizedEvents = [];
+				for (const event of events) {
+					// Check authorization for each event's organization
+					const organization =
+						await ctx.drizzleClient.query.organizationsTable.findFirst({
+							columns: { countryCode: true },
+							with: {
+								membershipsWhereOrganization: {
+									columns: { role: true },
+									where: (fields, operators) =>
+										operators.eq(fields.memberId, currentUserId),
 								},
 							},
-						},
-						where: (fields, operators) => inArray(fields.id, regularIds),
-					});
+							where: (fields, operators) =>
+								operators.eq(fields.id, event.organizationId),
+						});
 
-				// Filter by authorization and add to results
-				for (const event of regularEvents) {
 					const currentUserOrganizationMembership =
-						event.organization.membershipsWhereOrganization[0];
+						organization?.membershipsWhereOrganization[0];
 
+					// User can access event if they're a global admin or organization member
 					if (
 						currentUser.role === "administrator" ||
 						currentUserOrganizationMembership !== undefined
 					) {
-						events.push(
-							Object.assign(event, {
-								attachments: event.attachmentsWhereEvent,
-							}),
-						);
+						authorizedEvents.push(event);
 					}
 				}
-			}
 
-			// Handle virtual instances
-			for (const virtualId of virtualIds) {
-				try {
-					const baseEventId = getBaseEventId(virtualId);
-					const instanceStartTime = getInstanceStartTime(virtualId);
-
-					if (!instanceStartTime) {
-						continue;
-					}
-
-					// Get the base event
-					const baseEvent = await ctx.drizzleClient.query.eventsTable.findFirst(
-						{
-							with: {
-								attachmentsWhereEvent: true,
-								organization: {
-									columns: { countryCode: true },
-									with: {
-										membershipsWhereOrganization: {
-											columns: { role: true },
-											where: (fields, operators) =>
-												operators.eq(fields.memberId, currentUserId),
-										},
-									},
+				if (authorizedEvents.length === 0) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [
+								{
+									argumentPath: ["input", "ids"],
 								},
-							},
-							where: (fields, operators) =>
-								operators.and(
-									operators.eq(fields.id, baseEventId),
-									operators.eq(fields.isRecurringTemplate, true),
-								),
+							],
 						},
-					);
-
-					if (!baseEvent) {
-						continue; // Skip if base event not found
-					}
-
-					// Check authorization
-					const currentUserOrganizationMembership =
-						baseEvent.organization.membershipsWhereOrganization[0];
-
-					if (
-						currentUser.role !== "administrator" &&
-						currentUserOrganizationMembership === undefined
-					) {
-						continue; // Skip unauthorized events
-					}
-
-					// Get recurrence rule and exceptions
-					const [recurrenceRule, exceptions] = await Promise.all([
-						ctx.drizzleClient.query.recurrenceRulesTable.findFirst({
-							where: (fields, operators) =>
-								operators.eq(fields.baseRecurringEventId, baseEventId),
-						}),
-						ctx.drizzleClient.query.eventExceptionsTable.findMany({
-							where: (fields, operators) =>
-								operators.eq(fields.recurringEventId, baseEventId),
-						}),
-					]);
-
-					if (!recurrenceRule) {
-						continue; // Skip if no recurrence rule
-					}
-
-					// Generate the specific virtual instance
-					const windowStart = new Date(instanceStartTime.getTime() - 1);
-					const windowEnd = new Date(instanceStartTime.getTime() + 1);
-
-					const virtualInstances = generateVirtualInstances(
-						baseEvent,
-						recurrenceRule,
-						windowStart,
-						windowEnd,
-						exceptions,
-					);
-
-					const targetInstance = virtualInstances.find(
-						(instance) =>
-							instance.instanceStartTime.getTime() ===
-							instanceStartTime.getTime(),
-					);
-
-					if (targetInstance) {
-						events.push(
-							Object.assign(targetInstance, {
-								attachments: baseEvent.attachmentsWhereEvent,
-							}),
-						);
-					}
-				} catch (error) {
-					ctx.log.error("Error processing virtual event ID", {
-						virtualId,
-						error,
 					});
-					// Continue processing other events
 				}
-			}
 
-			if (events.length === 0) {
+				ctx.log.debug("Retrieved events by IDs", {
+					requestedIds: eventIds.length,
+					foundEvents: authorizedEvents.length,
+					standaloneEvents: authorizedEvents.filter(
+						(e) => e.eventType === "standalone",
+					).length,
+					materializedEvents: authorizedEvents.filter(
+						(e) => e.eventType === "materialized",
+					).length,
+				});
+
+				return authorizedEvents;
+			} catch (error) {
+				ctx.log.error("Failed to retrieve events by IDs", {
+					eventIds,
+					error,
+				});
 				throw new TalawaGraphQLError({
+					message: "Failed to retrieve events",
 					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "ids"],
-							},
-						],
+						code: "unexpected",
 					},
 				});
 			}
-
-			return events;
 		},
 	}),
 );

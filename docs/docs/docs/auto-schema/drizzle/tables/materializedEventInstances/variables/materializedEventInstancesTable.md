@@ -1,0 +1,21 @@
+[Admin Docs](/)
+
+***
+
+# Variable: materializedEventInstancesTable
+
+> `const` **materializedEventInstancesTable**: `PgTableWithColumns`\<\{ \}\>
+
+Defined in: [src/drizzle/tables/materializedEventInstances.ts:34](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/drizzle/tables/materializedEventInstances.ts#L34)
+
+Drizzle ORM postgres table definition for materialized event instances.
+
+This table stores pre-calculated instances of recurring events within a hot window
+(typically 12-24 months ahead). Each instance represents a specific occurrence
+of a recurring event with calculated dates and times.
+
+The actual event properties (name, description, etc.) are resolved at query time by:
+1. Inheriting from the base template event
+2. Applying any exceptions from the event_exceptions table
+
+This approach eliminates data duplication while providing fast date-range queries.

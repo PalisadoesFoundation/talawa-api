@@ -46,6 +46,7 @@ export const buildRRuleString = (
 	} else if (recurrence.count) {
 		rrule += `;COUNT=${recurrence.count}`;
 	}
+	// If recurrence.never is true, we don't add any end condition (infinite recurrence)
 
 	// Add byDay (e.g., ["MO", "WE", "FR"])
 	if (recurrence.byDay && recurrence.byDay.length > 0) {
@@ -95,7 +96,10 @@ export const generateVirtualInstances = (
 		Math.max(startDate.getTime(), windowStart.getTime()),
 	);
 	let instanceCount = 0;
-	const maxInstances = recurrenceRule.count || 1000; // Safety limit
+
+	// For infinite recurrence (never-ending), use a reasonable safety limit
+	// For count-based recurrence, use the specified count
+	const maxInstances = recurrenceRule.count || 1000; // Increased safety limit for infinite events
 
 	while (currentDate <= windowEnd && instanceCount < maxInstances) {
 		// Check if we should generate an instance at this date
@@ -137,7 +141,7 @@ export const generateVirtualInstances = (
 		// Move to next potential date based on frequency
 		currentDate = getNextDate(currentDate, recurrenceRule);
 
-		// Safety check to prevent infinite loops
+		// Safety check to prevent infinite loops (especially important for never-ending events)
 		if (instanceCount > 1000) break;
 	}
 
@@ -156,6 +160,7 @@ const shouldGenerateInstance = (
 	if (date < startDate) return false;
 
 	// Check if we have an end date and we're past it
+	// For never-ending events, recurrenceEndDate will be null, so this check is skipped
 	if (
 		recurrenceRule.recurrenceEndDate &&
 		date > recurrenceRule.recurrenceEndDate
@@ -228,15 +233,17 @@ export const validateRecurrenceInput = (
 ): { isValid: boolean; errors: string[] } => {
 	const errors: string[] = [];
 
-	// Check if end date is after start date
+	// Check if end date is after start date (only if endDate is provided)
 	if (recurrence.endDate && recurrence.endDate <= startDate) {
 		errors.push("Recurrence end date must be after event start date");
 	}
 
-	// Validate count
+	// Validate count (only if count is provided)
 	if (recurrence.count && recurrence.count < 1) {
 		errors.push("Recurrence count must be at least 1");
 	}
+
+	// No validation needed for never option - it's just a boolean flag
 
 	// Validate byDay format for weekly events
 	if (recurrence.frequency === "WEEKLY" && recurrence.byDay) {

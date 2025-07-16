@@ -1,26 +1,19 @@
-import { type InferSelectModel, and, eq, gte, lte } from "drizzle-orm";
 import { z } from "zod";
-import { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
-import {
-	eventsTable,
-	eventsTableInsertSchema,
-} from "~/src/drizzle/tables/events";
-import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import { eventsTableInsertSchema } from "~/src/drizzle/tables/events";
 import { Event } from "~/src/graphql/types/Event/Event";
-import type { EventAttachment } from "~/src/graphql/types/EventAttachment/EventAttachment";
+import {
+	type EventWithAttachments,
+	getUnifiedEventsInDateRange,
+} from "~/src/graphql/types/Query/eventQueries";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	type ParsedDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
-import {
-	type VirtualEventInstance,
-	generateVirtualInstances,
-} from "~/src/utilities/recurringEventHelpers";
 import { Organization } from "./Organization";
 
-// Custom schema for events with higher limits due to virtual instances
+// Custom schema for events with higher limits due to materialized instances
 const eventsConnectionArgumentsSchema = z.object({
 	after: z
 		.string()
@@ -112,11 +105,6 @@ const transformEventsConnectionArguments = (
 			message: `A non-null value for argument "first" must be provided.`,
 			path: ["first"],
 		});
-		ctx.addIssue({
-			code: "custom",
-			message: `A non-null value for argument "last" must be provided.`,
-			path: ["last"],
-		});
 	}
 
 	// Handle date range
@@ -190,7 +178,7 @@ Organization.implement({
 		events: t.connection(
 			{
 				description:
-					"GraphQL connection to traverse through the events belonging to the organization. Includes both standalone events and virtual instances from recurring events.",
+					"GraphQL connection to traverse through the events belonging to the organization. Includes both standalone events and materialized instances from recurring events. Uses pure materialized approach - no virtual instances.",
 				args: {
 					startDate: t.arg({
 						type: "DateTime",
@@ -204,7 +192,7 @@ Organization.implement({
 					includeRecurring: t.arg({
 						type: "Boolean",
 						description:
-							"Whether to include virtual instances from recurring events (default: true)",
+							"Whether to include materialized instances from recurring events (default: true)",
 					}),
 				},
 				complexity: (args) => {
@@ -241,6 +229,8 @@ Organization.implement({
 					}
 
 					const currentUserId = ctx.currentClient.user.id;
+					const { cursor, isInversed, limit, dateRange, includeRecurring } =
+						parsedArgs;
 
 					// Check user authentication and organization membership
 					const currentUser =
@@ -284,128 +274,50 @@ Organization.implement({
 						});
 					}
 
-					const { cursor, isInversed, limit, dateRange, includeRecurring } =
-						parsedArgs;
-
-					// Type definition for events with attachments
-					type EventWithAttachments = InferSelectModel<typeof eventsTable> & {
-						attachments: EventAttachment[];
-					};
-
+					// Get unified events using the new query module
 					let allEvents: EventWithAttachments[] = [];
 
-					// 1. Query standalone events in date range
-					// Include events that overlap with the date range
-					const standaloneWhere = and(
-						eq(eventsTable.organizationId, parent.id),
-						eq(eventsTable.isRecurringTemplate, false),
-						// Event overlaps if: event.start <= range.end AND event.end >= range.start
-						lte(eventsTable.startAt, dateRange.end),
-						gte(eventsTable.endAt, dateRange.start),
-					);
-
-					const standaloneEvents =
-						await ctx.drizzleClient.query.eventsTable.findMany({
-							where: standaloneWhere,
-							with: {
-								attachmentsWhereEvent: true,
+					try {
+						allEvents = await getUnifiedEventsInDateRange(
+							{
+								organizationId: parent.id,
+								startDate: dateRange.start,
+								endDate: dateRange.end,
+								includeRecurring,
+								limit: limit - 1, // Reserve one spot for pagination logic
 							},
-							orderBy: (fields, operators) => [
-								operators.asc(fields.startAt),
-								operators.asc(fields.id),
-							],
+							ctx.drizzleClient,
+							ctx.log,
+						);
+
+						ctx.log.debug("Retrieved unified events for organization", {
+							organizationId: parent.id,
+							totalEvents: allEvents.length,
+							standaloneEvents: allEvents.filter(
+								(e) => e.eventType === "standalone",
+							).length,
+							materializedEvents: allEvents.filter(
+								(e) => e.eventType === "materialized",
+							).length,
+							dateRange: {
+								start: dateRange.start.toISOString(),
+								end: dateRange.end.toISOString(),
+							},
 						});
-
-					// Add standalone events to the result
-					allEvents.push(
-						...standaloneEvents.map((event) => ({
-							...event,
-							attachments: event.attachmentsWhereEvent,
-						})),
-					);
-
-					// 2. Generate virtual instances from recurring events if requested
-					if (includeRecurring) {
-						// Get all recurring event templates for this organization
-						const recurringTemplates =
-							await ctx.drizzleClient.query.eventsTable.findMany({
-								where: and(
-									eq(eventsTable.organizationId, parent.id),
-									eq(eventsTable.isRecurringTemplate, true),
-								),
-								with: {
-									attachmentsWhereEvent: true,
-								},
-							});
-
-						// Process each recurring template
-						for (const template of recurringTemplates) {
-							try {
-								// Get recurrence rule for this template
-								const recurrenceRule =
-									await ctx.drizzleClient.query.recurrenceRulesTable.findFirst({
-										where: eq(
-											recurrenceRulesTable.baseRecurringEventId,
-											template.id,
-										),
-									});
-
-								if (!recurrenceRule) {
-									ctx.log.warn(
-										`Recurring event template ${template.id} has no recurrence rule`,
-									);
-									continue;
-								}
-
-								// Get exceptions for this recurring event
-								const exceptions =
-									await ctx.drizzleClient.query.eventExceptionsTable.findMany({
-										where: eq(
-											eventExceptionsTable.recurringEventId,
-											template.id,
-										),
-									});
-
-								// Generate virtual instances for the date range
-								const virtualInstances = generateVirtualInstances(
-									template,
-									recurrenceRule,
-									dateRange.start,
-									dateRange.end,
-									exceptions,
-								);
-
-								// Add attachments to virtual instances (inherited from template)
-								const enrichedInstances: (VirtualEventInstance & {
-									attachments: EventAttachment[];
-								})[] = virtualInstances.map((instance) => ({
-									...instance,
-									attachments: template.attachmentsWhereEvent,
-								}));
-
-								allEvents.push(...enrichedInstances);
-							} catch (error) {
-								ctx.log.error(
-									`Error processing recurring template ${template.id}:`,
-									error,
-								);
-								// Continue processing other templates
-							}
-						}
+					} catch (unifiedQueryError) {
+						ctx.log.error("Failed to retrieve unified events", {
+							organizationId: parent.id,
+							error: unifiedQueryError,
+						});
+						throw new TalawaGraphQLError({
+							message: "Failed to retrieve events",
+							extensions: {
+								code: "unexpected",
+							},
+						});
 					}
 
-					// 3. Sort all events by start time (and then by ID for consistency)
-					allEvents.sort((a, b) => {
-						const aTime = new Date(a.startAt).getTime();
-						const bTime = new Date(b.startAt).getTime();
-						if (aTime === bTime) {
-							// Secondary sort by ID for consistent ordering
-							return a.id.localeCompare(b.id);
-						}
-						return aTime - bTime;
-					});
-
-					// 4. Apply cursor-based pagination
+					// Apply cursor-based pagination
 					if (cursor !== undefined) {
 						const cursorIndex = allEvents.findIndex(
 							(event) =>
@@ -435,17 +347,17 @@ Organization.implement({
 						}
 					}
 
-					// 5. Apply sorting direction for inverse pagination
+					// Apply sorting direction for inverse pagination
 					if (isInversed && cursor === undefined) {
 						allEvents = allEvents.reverse();
 					}
 
-					// 6. Apply final limit
+					// Apply final limit
 					if (allEvents.length > limit) {
 						allEvents = allEvents.slice(0, limit);
 					}
 
-					// 7. Transform to GraphQL connection format
+					// Transform to GraphQL connection format
 					return transformToDefaultGraphQLConnection({
 						createCursor: (event) =>
 							Buffer.from(

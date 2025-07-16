@@ -1,15 +1,5 @@
-DO $$ BEGIN
- CREATE TYPE "public"."exception_type" AS ENUM('SINGLE_INSTANCE', 'THIS_AND_FUTURE');
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
-DO $$ BEGIN
- CREATE TYPE "public"."frequency" AS ENUM('DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY');
-EXCEPTION
- WHEN duplicate_object THEN null;
-END $$;
---> statement-breakpoint
+CREATE TYPE "public"."exception_type" AS ENUM('SINGLE_INSTANCE', 'THIS_AND_FUTURE');--> statement-breakpoint
+CREATE TYPE "public"."frequency" AS ENUM('DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY');--> statement-breakpoint
 CREATE TABLE "action_categories" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
@@ -205,6 +195,25 @@ CREATE TABLE "event_exceptions" (
 	"updated_at" timestamp (3) with time zone
 );
 --> statement-breakpoint
+CREATE TABLE "event_materialization_windows" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"organization_id" uuid NOT NULL,
+	"hot_window_months_ahead" integer DEFAULT 12 NOT NULL,
+	"history_retention_months" integer DEFAULT 3 NOT NULL,
+	"current_window_end_date" timestamp (3) with time zone NOT NULL,
+	"retention_start_date" timestamp (3) with time zone NOT NULL,
+	"last_processed_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"last_processed_instance_count" integer DEFAULT 0 NOT NULL,
+	"is_enabled" boolean DEFAULT true NOT NULL,
+	"processing_priority" integer DEFAULT 5 NOT NULL,
+	"max_instances_per_run" integer DEFAULT 1000 NOT NULL,
+	"configuration_notes" text,
+	"created_by_id" uuid NOT NULL,
+	"last_updated_by_id" uuid,
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp (3) with time zone
+);
+--> statement-breakpoint
 CREATE TABLE "events" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
@@ -281,6 +290,22 @@ CREATE TABLE "funds" (
 	"organization_id" uuid NOT NULL,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
+);
+--> statement-breakpoint
+CREATE TABLE "materialized_event_instances" (
+	"id" uuid PRIMARY KEY NOT NULL,
+	"base_recurring_event_id" uuid NOT NULL,
+	"recurrence_rule_id" uuid NOT NULL,
+	"original_instance_start_time" timestamp (3) with time zone NOT NULL,
+	"actual_start_time" timestamp (3) with time zone NOT NULL,
+	"actual_end_time" timestamp (3) with time zone NOT NULL,
+	"is_cancelled" boolean DEFAULT false NOT NULL,
+	"organization_id" uuid NOT NULL,
+	"materialized_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"last_updated_at" timestamp (3) with time zone,
+	"version" text DEFAULT '1' NOT NULL,
+	"sequence_number" integer NOT NULL,
+	"total_count" integer
 );
 --> statement-breakpoint
 CREATE TABLE "membership_requests" (
@@ -541,6 +566,9 @@ ALTER TABLE "event_exceptions" ADD CONSTRAINT "event_exceptions_recurring_event_
 ALTER TABLE "event_exceptions" ADD CONSTRAINT "event_exceptions_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_exceptions" ADD CONSTRAINT "event_exceptions_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_exceptions" ADD CONSTRAINT "event_exceptions_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "event_materialization_windows" ADD CONSTRAINT "event_materialization_windows_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "event_materialization_windows" ADD CONSTRAINT "event_materialization_windows_created_by_id_users_id_fk" FOREIGN KEY ("created_by_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "event_materialization_windows" ADD CONSTRAINT "event_materialization_windows_last_updated_by_id_users_id_fk" FOREIGN KEY ("last_updated_by_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
@@ -562,6 +590,9 @@ ALTER TABLE "fund_campaigns" ADD CONSTRAINT "fund_campaigns_updater_id_users_id_
 ALTER TABLE "funds" ADD CONSTRAINT "funds_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "funds" ADD CONSTRAINT "funds_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "funds" ADD CONSTRAINT "funds_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "materialized_event_instances" ADD CONSTRAINT "materialized_event_instances_base_recurring_event_id_events_id_fk" FOREIGN KEY ("base_recurring_event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "materialized_event_instances" ADD CONSTRAINT "materialized_event_instances_recurrence_rule_id_recurrence_rules_id_fk" FOREIGN KEY ("recurrence_rule_id") REFERENCES "public"."recurrence_rules"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "materialized_event_instances" ADD CONSTRAINT "materialized_event_instances_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "membership_requests" ADD CONSTRAINT "membership_requests_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "membership_requests" ADD CONSTRAINT "membership_requests_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "organization_memberships" ADD CONSTRAINT "organization_memberships_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
@@ -682,6 +713,12 @@ CREATE INDEX "ee_organization_id_idx" ON "event_exceptions" USING btree ("organi
 CREATE INDEX "ee_exception_type_idx" ON "event_exceptions" USING btree ("exception_type");--> statement-breakpoint
 CREATE INDEX "ee_creator_id_idx" ON "event_exceptions" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "ee_recurring_event_instance_idx" ON "event_exceptions" USING btree ("recurring_event_id","instance_start_time");--> statement-breakpoint
+CREATE INDEX "emw_organization_id_unique_idx" ON "event_materialization_windows" USING btree ("organization_id");--> statement-breakpoint
+CREATE INDEX "emw_enabled_windows_idx" ON "event_materialization_windows" USING btree ("is_enabled","processing_priority");--> statement-breakpoint
+CREATE INDEX "emw_last_processed_at_idx" ON "event_materialization_windows" USING btree ("last_processed_at");--> statement-breakpoint
+CREATE INDEX "emw_current_window_end_date_idx" ON "event_materialization_windows" USING btree ("current_window_end_date");--> statement-breakpoint
+CREATE INDEX "emw_retention_start_date_idx" ON "event_materialization_windows" USING btree ("retention_start_date");--> statement-breakpoint
+CREATE INDEX "emw_worker_processing_idx" ON "event_materialization_windows" USING btree ("is_enabled","processing_priority","last_processed_at");--> statement-breakpoint
 CREATE INDEX "events_created_at_idx" ON "events" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "events_creator_id_idx" ON "events" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "events_end_at_idx" ON "events" USING btree ("end_at");--> statement-breakpoint
@@ -720,6 +757,18 @@ CREATE INDEX "funds_creator_id_index" ON "funds" USING btree ("creator_id");--> 
 CREATE INDEX "funds_name_index" ON "funds" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "funds_organization_id_index" ON "funds" USING btree ("organization_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "funds_name_organization_id_index" ON "funds" USING btree ("name","organization_id");--> statement-breakpoint
+CREATE INDEX "mei_base_recurring_event_idx" ON "materialized_event_instances" USING btree ("base_recurring_event_id");--> statement-breakpoint
+CREATE INDEX "mei_org_date_range_idx" ON "materialized_event_instances" USING btree ("organization_id","actual_start_time","actual_end_time");--> statement-breakpoint
+CREATE INDEX "mei_actual_start_time_idx" ON "materialized_event_instances" USING btree ("actual_start_time");--> statement-breakpoint
+CREATE INDEX "mei_actual_end_time_idx" ON "materialized_event_instances" USING btree ("actual_end_time");--> statement-breakpoint
+CREATE INDEX "mei_original_instance_start_time_idx" ON "materialized_event_instances" USING btree ("original_instance_start_time");--> statement-breakpoint
+CREATE INDEX "mei_recurrence_rule_idx" ON "materialized_event_instances" USING btree ("recurrence_rule_id");--> statement-breakpoint
+CREATE INDEX "mei_is_cancelled_idx" ON "materialized_event_instances" USING btree ("is_cancelled");--> statement-breakpoint
+CREATE INDEX "mei_materialized_at_idx" ON "materialized_event_instances" USING btree ("materialized_at");--> statement-breakpoint
+CREATE INDEX "mei_org_active_instances_idx" ON "materialized_event_instances" USING btree ("organization_id","is_cancelled","actual_start_time");--> statement-breakpoint
+CREATE INDEX "mei_base_event_instance_time_idx" ON "materialized_event_instances" USING btree ("base_recurring_event_id","original_instance_start_time");--> statement-breakpoint
+CREATE INDEX "mei_cleanup_candidates_idx" ON "materialized_event_instances" USING btree ("actual_end_time","materialized_at");--> statement-breakpoint
+CREATE INDEX "mei_sequence_number_idx" ON "materialized_event_instances" USING btree ("base_recurring_event_id","sequence_number");--> statement-breakpoint
 CREATE INDEX "idx_membership_requests_user" ON "membership_requests" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "idx_membership_requests_org" ON "membership_requests" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "organization_memberships_created_at_index" ON "organization_memberships" USING btree ("created_at");--> statement-breakpoint

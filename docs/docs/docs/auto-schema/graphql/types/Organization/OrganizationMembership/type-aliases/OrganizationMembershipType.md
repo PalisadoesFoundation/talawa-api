@@ -6,7 +6,7 @@
 
 > **OrganizationMembershipType** = `object`
 
-Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:4](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/graphql/types/Organization/OrganizationMembership.ts#L4)
+Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:4](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/graphql/types/Organization/OrganizationMembership.ts#L4)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:4](https:/
 
 > **creatorId**: `string` \| `null`
 
-Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:8](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/graphql/types/Organization/OrganizationMembership.ts#L8)
+Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:8](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/graphql/types/Organization/OrganizationMembership.ts#L8)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:8](https:/
 
 > **memberId**: `string`
 
-Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:5](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/graphql/types/Organization/OrganizationMembership.ts#L5)
+Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:5](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/graphql/types/Organization/OrganizationMembership.ts#L5)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:5](https:/
 
 > **organizationId**: `string`
 
-Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:6](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/graphql/types/Organization/OrganizationMembership.ts#L6)
+Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:6](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/graphql/types/Organization/OrganizationMembership.ts#L6)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:6](https:/
 
 > **role**: `string`
 
-Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:7](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/graphql/types/Organization/OrganizationMembership.ts#L7)
+Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:7](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/graphql/types/Organization/OrganizationMembership.ts#L7)

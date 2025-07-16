@@ -292,6 +292,26 @@ export const envConfigSchema = Type.Object({
 	API_RATE_LIMIT_REFILL_RATE: Type.Number({
 		minimum: 0,
 	}),
+
+	/**
+	 * Cron schedule for the event materialization background worker.
+	 * Default: "0 * * * *" (every hour at minute 0)
+	 */
+	MATERIALIZATION_CRON_SCHEDULE: Type.Optional(
+		Type.String({
+			minLength: 9, // Minimum valid cron: "* * * * *"
+		}),
+	),
+
+	/**
+	 * Cron schedule for the cleanup background worker.
+	 * Default: "0 2 * * *" (daily at 2 AM UTC)
+	 */
+	CLEANUP_CRON_SCHEDULE: Type.Optional(
+		Type.String({
+			minLength: 9, // Minimum valid cron: "* * * * *"
+		}),
+	),
 });
 
 /**

@@ -30,6 +30,7 @@ const MockEvent = {
 	isRecurringTemplate: false,
 	recurringEventId: null,
 	instanceStartTime: null,
+	attachments: [],
 };
 
 describe("Event updater resolver - Tests", () => {

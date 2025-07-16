@@ -55,6 +55,7 @@ export {
 export {
 	eventExceptionsTable,
 	eventExceptionsTableRelations,
+	exceptionTypeEnum,
 } from "./tables/eventExceptions";
 export { eventsTable, eventsTableRelations } from "./tables/events";
 export {
@@ -92,7 +93,16 @@ export { postsTable, postsTableRelations } from "./tables/posts";
 export {
 	recurrenceRulesTable,
 	recurrenceRulesTableRelations,
+	frequencyEnum,
 } from "./tables/recurrenceRules";
+export {
+	materializedEventInstancesTable,
+	materializedEventInstancesTableRelations,
+} from "./tables/materializedEventInstances";
+export {
+	eventMaterializationWindowsTable,
+	eventMaterializationWindowsTableRelations,
+} from "./tables/eventMaterializationWindows";
 export {
 	tagAssignmentsTable,
 	tagAssignmentsTableRelations,

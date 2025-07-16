@@ -6,7 +6,7 @@
 
 > **generateVirtualInstances**(`baseEvent`, `recurrenceRule`, `windowStart`, `windowEnd`, `exceptions`): [`VirtualEventInstance`](../type-aliases/VirtualEventInstance.md)[]
 
-Defined in: [src/utilities/recurringEventHelpers.ts:72](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/utilities/recurringEventHelpers.ts#L72)
+Defined in: [src/utilities/recurringEventHelpers.ts:73](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/utilities/recurringEventHelpers.ts#L73)
 
 Generate virtual event instances for a given time window
 This is the core inheritance function - instances inherit from template

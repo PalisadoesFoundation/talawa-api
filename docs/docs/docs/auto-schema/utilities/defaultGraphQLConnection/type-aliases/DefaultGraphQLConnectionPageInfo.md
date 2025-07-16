@@ -6,7 +6,7 @@
 
 > **DefaultGraphQLConnectionPageInfo** = `object`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:197](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/utilities/defaultGraphQLConnection.ts#L197)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:197](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/utilities/defaultGraphQLConnection.ts#L197)
 
 This is typescript type of a base graphql connection page info object. This connection page info object can be extended to create a custom connnection page info object as long as the new connection object adheres to the default type of this base connection object.
 
@@ -16,7 +16,7 @@ This is typescript type of a base graphql connection page info object. This conn
 
 > **endCursor**: `string` \| `null`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:198](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/utilities/defaultGraphQLConnection.ts#L198)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:198](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/utilities/defaultGraphQLConnection.ts#L198)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/utilities/defaultGraphQLConnection.ts:198](https://github.com/g
 
 > **hasNextPage**: `boolean`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:199](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/utilities/defaultGraphQLConnection.ts#L199)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:199](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/utilities/defaultGraphQLConnection.ts#L199)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/utilities/defaultGraphQLConnection.ts:199](https://github.com/g
 
 > **hasPreviousPage**: `boolean`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:200](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/utilities/defaultGraphQLConnection.ts#L200)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:200](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/utilities/defaultGraphQLConnection.ts#L200)
 
 ***
 
@@ -40,4 +40,4 @@ Defined in: [src/utilities/defaultGraphQLConnection.ts:200](https://github.com/g
 
 > **startCursor**: `string` \| `null`
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:201](https://github.com/gautam-divyanshu/talawa-api/blob/d8a8cac9e6df3a48d2412b7eda7ba90695bb5e35/src/utilities/defaultGraphQLConnection.ts#L201)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:201](https://github.com/gautam-divyanshu/talawa-api/blob/7e7d786bbd7356b22a3ba5029601eed88ff27201/src/utilities/defaultGraphQLConnection.ts#L201)

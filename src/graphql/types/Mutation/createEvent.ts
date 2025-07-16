@@ -11,6 +11,10 @@ import {
 	mutationCreateEventInputSchema,
 } from "~/src/graphql/inputs/MutationCreateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
+import {
+	initializeMaterializationWindow,
+	materializeInstancesForRecurringEvent,
+} from "~/src/services/eventInstanceMaterialization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
@@ -187,74 +191,34 @@ builder.mutationField("createEvent", (t) =>
 				});
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				// Create the base event (template for recurring, or standalone event)
-				const [createdEvent] = await tx
-					.insert(eventsTable)
-					.values({
-						creatorId: currentUserId,
-						description: parsedArgs.input.description,
-						endAt: parsedArgs.input.endAt,
-						name: parsedArgs.input.name,
-						organizationId: parsedArgs.input.organizationId,
-						startAt: parsedArgs.input.startAt,
-						allDay: parsedArgs.input.allDay ?? false,
-						isPublic: parsedArgs.input.isPublic ?? false,
-						isRegisterable: parsedArgs.input.isRegisterable ?? false,
-						location: parsedArgs.input.location,
-						// Set as recurring template if recurrence is provided
-						isRecurringTemplate: !!parsedArgs.input.recurrence,
-						// For recurring events, these are null (template only)
-						recurringEventId: null,
-						instanceStartTime: null,
-					})
-					.returning();
-
-				// Inserted event not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-				if (createdEvent === undefined) {
-					ctx.log.error(
-						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-					);
-
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
-
-				// Handle recurring event: Create recurrence rule only (NO instance generation)
-				if (parsedArgs.input.recurrence) {
-					// Build RRULE string
-					const rruleString = buildRRuleString(
-						parsedArgs.input.recurrence,
-						parsedArgs.input.startAt,
-					);
-
-					// Create recurrence rule (just the rule, no instances)
-					const [createdRecurrenceRule] = await tx
-						.insert(recurrenceRulesTable)
+			const createdEventResult = await ctx.drizzleClient.transaction(
+				async (tx) => {
+					// Create the base event (template for recurring, or standalone event)
+					const [createdEvent] = await tx
+						.insert(eventsTable)
 						.values({
-							recurrenceRuleString: rruleString,
-							frequency: parsedArgs.input.recurrence.frequency,
-							interval: parsedArgs.input.recurrence.interval || 1,
-							recurrenceStartDate: parsedArgs.input.startAt,
-							recurrenceEndDate: parsedArgs.input.recurrence.endDate,
-							count: parsedArgs.input.recurrence.count,
-							// latestInstanceDate is now just used for tracking, not generation
-							latestInstanceDate: parsedArgs.input.startAt,
-							byDay: parsedArgs.input.recurrence.byDay,
-							byMonth: parsedArgs.input.recurrence.byMonth,
-							byMonthDay: parsedArgs.input.recurrence.byMonthDay,
-							baseRecurringEventId: createdEvent.id,
-							organizationId: parsedArgs.input.organizationId,
 							creatorId: currentUserId,
+							description: parsedArgs.input.description,
+							endAt: parsedArgs.input.endAt,
+							name: parsedArgs.input.name,
+							organizationId: parsedArgs.input.organizationId,
+							startAt: parsedArgs.input.startAt,
+							allDay: parsedArgs.input.allDay ?? false,
+							isPublic: parsedArgs.input.isPublic ?? false,
+							isRegisterable: parsedArgs.input.isRegisterable ?? false,
+							location: parsedArgs.input.location,
+							// Set as recurring template if recurrence is provided
+							isRecurringTemplate: !!parsedArgs.input.recurrence,
+							// For recurring events, these are null (template only)
+							recurringEventId: null,
+							instanceStartTime: null,
 						})
 						.returning();
 
-					if (createdRecurrenceRule === undefined) {
+					// Inserted event not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+					if (createdEvent === undefined) {
 						ctx.log.error(
-							"Failed to create recurrence rule for recurring event.",
+							"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
 						);
 
 						throw new TalawaGraphQLError({
@@ -264,60 +228,184 @@ builder.mutationField("createEvent", (t) =>
 						});
 					}
 
-					ctx.log.info(
-						"Created recurring event template - instances will be generated on-demand",
-						{
-							baseEventId: createdEvent.id,
-							recurrenceRuleId: createdRecurrenceRule.id,
-							rruleString: rruleString,
-						},
-					);
-				}
+					// Handle recurring event: Create recurrence rule AND immediately materialize instances
+					if (parsedArgs.input.recurrence) {
+						// Build RRULE string
+						const rruleString = buildRRuleString(
+							parsedArgs.input.recurrence,
+							parsedArgs.input.startAt,
+						);
 
-				// Handle attachments (same logic for both recurring and standalone events)
-				if (parsedArgs.input.attachments !== undefined) {
-					const attachments = parsedArgs.input.attachments;
-
-					const createdEventAttachments = await tx
-						.insert(eventAttachmentsTable)
-						.values(
-							attachments.map((attachment) => ({
+						// Create recurrence rule
+						const [createdRecurrenceRule] = await tx
+							.insert(recurrenceRulesTable)
+							.values({
+								recurrenceRuleString: rruleString,
+								frequency: parsedArgs.input.recurrence.frequency,
+								interval: parsedArgs.input.recurrence.interval || 1,
+								recurrenceStartDate: parsedArgs.input.startAt,
+								recurrenceEndDate: parsedArgs.input.recurrence.endDate || null, // null for never-ending events
+								count: parsedArgs.input.recurrence.count || null, // null for never-ending events
+								latestInstanceDate: parsedArgs.input.startAt,
+								byDay: parsedArgs.input.recurrence.byDay,
+								byMonth: parsedArgs.input.recurrence.byMonth,
+								byMonthDay: parsedArgs.input.recurrence.byMonthDay,
+								baseRecurringEventId: createdEvent.id,
+								organizationId: parsedArgs.input.organizationId,
 								creatorId: currentUserId,
-								eventId: createdEvent.id,
-								mimeType: attachment.mimetype,
-								name: ulid(),
-							})),
-						)
-						.returning();
+							})
+							.returning();
 
-					await Promise.all(
-						createdEventAttachments.map((attachment, index) => {
-							if (attachments[index] !== undefined) {
-								return ctx.minio.client.putObject(
-									ctx.minio.bucketName,
-									attachment.name,
-									attachments[index].createReadStream(),
-									undefined,
-									{
-										"content-type": attachment.mimeType,
-									},
-								);
+						if (createdRecurrenceRule === undefined) {
+							ctx.log.error(
+								"Failed to create recurrence rule for recurring event.",
+							);
+
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "unexpected",
+								},
+							});
+						}
+
+						ctx.log.info(
+							"Created recurring event template and recurrence rule",
+							{
+								baseEventId: createdEvent.id,
+								recurrenceRuleId: createdRecurrenceRule.id,
+								rruleString: rruleString,
+							},
+						);
+
+						// Ensure materialization window exists for the organization
+						let windowConfig =
+							await ctx.drizzleClient.query.eventMaterializationWindowsTable.findFirst(
+								{
+									where: (fields, operators) =>
+										operators.eq(
+											fields.organizationId,
+											parsedArgs.input.organizationId,
+										),
+								},
+							);
+
+						if (!windowConfig) {
+							// Initialize materialization window for the organization
+							windowConfig = await initializeMaterializationWindow(
+								{
+									organizationId: parsedArgs.input.organizationId,
+									createdById: currentUserId,
+									// Fixed global settings will be applied automatically
+								},
+								tx,
+								ctx.log,
+							);
+						}
+
+						// Determine materialization window based on recurrence pattern
+						const windowStartDate = new Date();
+						let windowEndDate: Date;
+
+						if (parsedArgs.input.recurrence.endDate) {
+							// For events with end dates, materialize up to the end date
+							windowEndDate = new Date(parsedArgs.input.recurrence.endDate);
+
+							// If end date is within the default window, use the window end instead
+							const defaultWindowEnd = new Date();
+							defaultWindowEnd.setMonth(
+								defaultWindowEnd.getMonth() + 12, // Fixed 12 months
+							);
+
+							if (windowEndDate > defaultWindowEnd) {
+								windowEndDate = defaultWindowEnd;
 							}
-						}),
-					);
+						} else if (parsedArgs.input.recurrence.count) {
+							// For count-based recurrence, estimate end date and use window
+							const defaultWindowEnd = new Date();
+							defaultWindowEnd.setMonth(
+								defaultWindowEnd.getMonth() + 12, // Fixed 12 months
+							);
+							windowEndDate = defaultWindowEnd;
+						} else {
+							// For never-ending events, use the materialization window
+							const defaultWindowEnd = new Date();
+							defaultWindowEnd.setMonth(
+								defaultWindowEnd.getMonth() + 12, // Fixed 12 months
+							);
+							windowEndDate = defaultWindowEnd;
+						}
 
-					return Object.assign(createdEvent, {
+						// Immediately materialize instances for the new recurring event
+						await materializeInstancesForRecurringEvent(
+							{
+								baseRecurringEventId: createdEvent.id,
+								organizationId: parsedArgs.input.organizationId,
+								windowStartDate,
+								windowEndDate,
+							},
+							tx,
+							ctx.log,
+						);
+
+						ctx.log.info("Materialized initial instances for recurring event", {
+							baseEventId: createdEvent.id,
+							windowStart: windowStartDate.toISOString(),
+							windowEnd: windowEndDate.toISOString(),
+							recurrenceType: parsedArgs.input.recurrence.never
+								? "never-ending"
+								: parsedArgs.input.recurrence.endDate
+									? "end-date"
+									: "count-based",
+						});
+					}
+
+					// Handle attachments (same logic for both recurring and standalone events)
+					let createdEventAttachments: (typeof eventAttachmentsTable.$inferSelect)[] =
+						[];
+					if (parsedArgs.input.attachments !== undefined) {
+						const attachments = parsedArgs.input.attachments;
+
+						createdEventAttachments = await tx
+							.insert(eventAttachmentsTable)
+							.values(
+								attachments.map((attachment) => ({
+									creatorId: currentUserId,
+									eventId: createdEvent.id,
+									mimeType: attachment.mimetype,
+									name: ulid(),
+								})),
+							)
+							.returning();
+
+						await Promise.all(
+							createdEventAttachments.map((attachment, index) => {
+								if (attachments[index] !== undefined) {
+									return ctx.minio.client.putObject(
+										ctx.minio.bucketName,
+										attachment.name,
+										attachments[index].createReadStream(),
+										undefined,
+										{
+											"content-type": attachment.mimeType,
+										},
+									);
+								}
+							}),
+						);
+					}
+
+					const finalEvent = Object.assign(createdEvent, {
 						attachments: createdEventAttachments,
+						allDay: createdEvent.allDay ?? false,
+						isPublic: createdEvent.isPublic ?? false,
+						isRegisterable: createdEvent.isRegisterable ?? false,
 					});
-				}
 
-				return Object.assign(createdEvent, {
-					attachments: [],
-					allDay: createdEvent.allDay ?? false,
-					isPublic: createdEvent.isPublic ?? false,
-					isRegisterable: createdEvent.isRegisterable ?? false,
-				});
-			});
+					return finalEvent;
+				},
+			);
+
+			return createdEventResult;
 		},
 		type: Event,
 	}),

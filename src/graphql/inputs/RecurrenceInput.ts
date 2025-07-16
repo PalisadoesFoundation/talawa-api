@@ -9,23 +9,27 @@ export const recurrenceInputSchema = z
 		interval: z.number().int().min(1).max(999).optional(),
 		endDate: z.date().optional(),
 		count: z.number().int().min(1).max(999).optional(),
+		never: z.boolean().optional(),
 		byDay: z.string().array().optional(),
 		byMonth: z.number().int().min(1).max(12).array().optional(),
 		byMonthDay: z.number().int().min(-31).max(31).array().optional(),
 	})
 	.superRefine((arg, ctx) => {
-		// Either endDate or count must be provided, but not both
-		if (arg.endDate && arg.count) {
-			ctx.addIssue({
-				code: "custom",
-				message: "Cannot specify both endDate and count",
-			});
-		}
+		// Count how many end conditions are specified
+		const endConditions = [!!arg.endDate, !!arg.count, !!arg.never].filter(
+			Boolean,
+		);
 
-		if (!arg.endDate && !arg.count) {
+		// Exactly one end condition must be specified
+		if (endConditions.length === 0) {
 			ctx.addIssue({
 				code: "custom",
-				message: "Must specify either endDate or count",
+				message: "Must specify exactly one of: endDate, count, or never",
+			});
+		} else if (endConditions.length > 1) {
+			ctx.addIssue({
+				code: "custom",
+				message: "Cannot specify more than one of: endDate, count, or never",
 			});
 		}
 
@@ -42,7 +46,8 @@ export const recurrenceInputSchema = z
 export const RecurrenceInput = builder
 	.inputRef<z.infer<typeof recurrenceInputSchema>>("RecurrenceInput")
 	.implement({
-		description: "Input type for defining recurrence rules for events.",
+		description:
+			"Input type for defining recurrence rules for events. Must specify exactly one end condition: endDate, count, or never.",
 		fields: (t) => ({
 			frequency: t.field({
 				description:
@@ -62,6 +67,10 @@ export const RecurrenceInput = builder
 			}),
 			count: t.int({
 				description: "Number of occurrences.",
+				required: false,
+			}),
+			never: t.boolean({
+				description: "Indicates if the event recurs indefinitely (never ends).",
 				required: false,
 			}),
 			byDay: t.stringList({

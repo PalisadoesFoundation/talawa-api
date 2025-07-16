@@ -45,7 +45,7 @@ interface EventType {
 			| "image/webp"
 			| "video/mp4"
 			| "video/webm";
-	}> | null;
+	}>;
 }
 
 const eventsByOrganizationIdInputSchema = z.object({
