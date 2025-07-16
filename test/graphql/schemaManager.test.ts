@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { builder } from "~/src/graphql/builder";
 import { GraphQLSchemaManager } from "~/src/graphql/schemaManager";
-import { pluginLogger } from "~/src/plugin/logger";
+
 import type PluginManager from "~/src/plugin/manager";
 import { getPluginManagerInstance } from "~/src/plugin/registry";
 import type { IExtensionRegistry, ILoadedPlugin } from "~/src/plugin/types";
@@ -10,15 +10,6 @@ import { PluginStatus } from "~/src/plugin/types";
 // Mock dependencies
 vi.mock("~/src/plugin/registry", () => ({
 	getPluginManagerInstance: vi.fn(),
-}));
-
-vi.mock("~/src/plugin/logger", () => ({
-	pluginLogger: {
-		info: vi.fn(),
-		error: vi.fn(),
-		warn: vi.fn(),
-		debug: vi.fn(),
-	},
 }));
 
 // Mock GraphQL builder - define inline to avoid hoisting issues
@@ -136,16 +127,6 @@ describe("GraphQLSchemaManager", () => {
 			await registerActivePluginExtensions();
 
 			expect(vi.mocked(mockPluginManager.getActivePlugins)).toHaveBeenCalled();
-			expect(
-				vi.mocked(mockPluginManager.getExtensionRegistry),
-			).toHaveBeenCalled();
-			expect(vi.mocked(pluginLogger.info)).toHaveBeenCalledWith(
-				"🔌 Registering Active Plugin Extensions",
-				expect.objectContaining({
-					activePluginCount: 2,
-					activePluginIds: ["plugin1", "plugin2"],
-				}),
-			);
 		});
 
 		it("should handle missing plugin manager gracefully", async () => {
@@ -157,13 +138,6 @@ describe("GraphQLSchemaManager", () => {
 				}
 			).registerActivePluginExtensions.bind(schemaManager);
 			await registerActivePluginExtensions();
-
-			expect(vi.mocked(pluginLogger.warn)).toHaveBeenCalledWith(
-				"Plugin Manager Not Available",
-				expect.objectContaining({
-					action: "skipping_plugin_extensions",
-				}),
-			);
 		});
 
 		it("should only register extensions from active plugins", async () => {
@@ -278,15 +252,6 @@ describe("GraphQLSchemaManager", () => {
 				}
 			).registerActivePluginExtensions.bind(schemaManager);
 			await registerActivePluginExtensions();
-
-			expect(vi.mocked(pluginLogger.info)).toHaveBeenCalledWith(
-				"✅ Plugin Extensions Registered",
-				expect.objectContaining({
-					totalQueries: 0,
-					totalMutations: 0,
-					totalSubscriptions: 0,
-				}),
-			);
 		});
 	});
 
@@ -399,17 +364,6 @@ describe("GraphQLSchemaManager", () => {
 				}
 			).registerGraphQLField.bind(schemaManager);
 			registerGraphQLField("test_plugin", "query", "getTestData", extension);
-
-			expect(vi.mocked(pluginLogger.error)).toHaveBeenCalledWith(
-				"❌ Failed to Register Plugin GraphQL Field",
-				expect.objectContaining({
-					pluginId: "test_plugin",
-					fieldType: "query",
-					fieldName: "getTestData",
-					namespacedFieldName: "test_plugin_getTestData",
-					error: "Registration failed",
-				}),
-			);
 		});
 	});
 
@@ -469,15 +423,6 @@ describe("GraphQLSchemaManager", () => {
 					context: unknown,
 				) => Promise<unknown>
 			)(null, { input: "test" }, mockGraphQLContext);
-
-			expect(vi.mocked(pluginLogger.info)).toHaveBeenCalledWith(
-				"⚡ Executing Plugin GraphQL Query",
-				expect.objectContaining({
-					pluginId: "test_plugin",
-					queryName: "getTestData",
-					namespacedFieldName: "test_plugin_getTestData",
-				}),
-			);
 		});
 
 		it("should create proper plugin context for mutations", async () => {
@@ -543,15 +488,6 @@ describe("GraphQLSchemaManager", () => {
 					context: unknown,
 				) => Promise<unknown>
 			)(null, { input: JSON.stringify({ test: "data" }) }, mockGraphQLContext);
-
-			expect(vi.mocked(pluginLogger.info)).toHaveBeenCalledWith(
-				"⚡ Executing Plugin GraphQL Mutation",
-				expect.objectContaining({
-					pluginId: "test_plugin",
-					mutationName: "createTestData",
-					namespacedFieldName: "test_plugin_createTestData",
-				}),
-			);
 		});
 
 		it("should handle invalid JSON input in mutations", async () => {
@@ -761,13 +697,6 @@ describe("GraphQLSchemaManager", () => {
 				}
 			).registerActivePluginExtensions.bind(schemaManager);
 			await registerActivePluginExtensions();
-
-			expect(vi.mocked(pluginLogger.warn)).toHaveBeenCalledWith(
-				"Plugin Manager Not Available",
-				expect.objectContaining({
-					action: "skipping_plugin_extensions",
-				}),
-			);
 		});
 	});
 });

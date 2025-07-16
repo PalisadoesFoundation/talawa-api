@@ -32,15 +32,6 @@ vi.mock("node:fs", () => ({
 	},
 }));
 
-// Mock the plugin logger
-vi.mock("~/src/plugin/logger", () => ({
-	pluginLogger: {
-		info: vi.fn(),
-		debug: vi.fn(),
-		error: vi.fn(),
-	},
-}));
-
 describe("Plugin Utils", () => {
 	let mockFs: {
 		readFile: ReturnType<typeof vi.fn>;

@@ -19,7 +19,7 @@ import "./createFundCampaignPledge";
 import "./createGetfileUrl";
 import "./createOrganization";
 import "./createOrganizationMembership";
-import "./plugins";
+import "./plugin";
 import "./createPost";
 import "./createPostVote";
 import "./createTag";

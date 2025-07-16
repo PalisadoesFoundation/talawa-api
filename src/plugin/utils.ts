@@ -429,10 +429,9 @@ export async function createPluginTables(
 	logger?: { info?: (message: string) => void },
 ): Promise<void> {
 	// Import the plugin logger
-	const { pluginLogger } = await import("./logger");
 
 	try {
-		await pluginLogger.info("Starting table creation", {
+		console.log("Starting table creation", {
 			pluginId,
 			tableCount: Object.keys(tableDefinitions).length,
 			tableNames: Object.keys(tableDefinitions),
@@ -444,7 +443,7 @@ export async function createPluginTables(
 			tableDefinitions,
 		)) {
 			try {
-				await pluginLogger.debug("Processing table definition", {
+				console.log("Processing table definition", {
 					pluginId,
 					tableName,
 					tableType: typeof tableDefinition,
@@ -458,7 +457,7 @@ export async function createPluginTables(
 					tableDefinition,
 					pluginId,
 				);
-				await pluginLogger.info("Generated CREATE TABLE SQL", {
+				console.log("Generated CREATE TABLE SQL", {
 					pluginId,
 					tableName,
 					sql: createTableSQL,
@@ -468,14 +467,14 @@ export async function createPluginTables(
 
 				// Execute CREATE TABLE
 				await db.execute(createTableSQL);
-				await pluginLogger.info("CREATE TABLE executed successfully", {
+				console.log("CREATE TABLE executed successfully", {
 					pluginId,
 					tableName,
 				});
 
 				// Generate and execute CREATE INDEX statements
 				const indexSQLs = generateCreateIndexSQL(tableDefinition, pluginId);
-				await pluginLogger.debug("Generated index SQLs", {
+				console.log("Generated index SQLs", {
 					pluginId,
 					tableName,
 					indexCount: indexSQLs.length,
@@ -485,7 +484,7 @@ export async function createPluginTables(
 				for (const indexSQL of indexSQLs) {
 					logger?.info?.(`Creating index: ${indexSQL}`);
 					await db.execute(indexSQL);
-					await pluginLogger.debug("Index created", {
+					console.log("Index created", {
 						pluginId,
 						tableName,
 						indexSQL,
@@ -495,12 +494,12 @@ export async function createPluginTables(
 				logger?.info?.(
 					`Successfully created table and indexes for: ${tableName}`,
 				);
-				await pluginLogger.info("Table creation completed", {
+				console.log("Table creation completed", {
 					pluginId,
 					tableName,
 				});
 			} catch (error) {
-				await pluginLogger.error("Table creation failed", {
+				console.error("Table creation failed", {
 					pluginId,
 					tableName,
 					error: error instanceof Error ? error.message : String(error),
@@ -509,12 +508,12 @@ export async function createPluginTables(
 			}
 		}
 
-		await pluginLogger.info("All tables created successfully", {
+		console.log("All tables created successfully", {
 			pluginId,
 			tableCount: Object.keys(tableDefinitions).length,
 		});
 	} catch (error) {
-		await pluginLogger.error("Table creation process failed", {
+		console.error("Table creation process failed", {
 			pluginId,
 			error: error instanceof Error ? error.message : String(error),
 		});

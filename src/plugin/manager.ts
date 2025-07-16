@@ -9,7 +9,7 @@ import { EventEmitter } from "node:events";
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
-import { pluginLogger } from "./logger";
+
 import type {
 	IDatabaseClient,
 	IDatabaseExtension,
@@ -61,13 +61,10 @@ class PluginManager extends EventEmitter {
 		this.pluginsDirectory =
 			pluginsDir || path.join(process.cwd(), "src", "plugin", "available");
 
-		pluginLogger.info("PluginManager constructor called", {
-			pluginsDirectory: this.pluginsDirectory,
-		});
+		console.log("PluginManager constructor called");
 
 		this.initializePlugins().catch((error) => {
 			console.error("Failed to initialize plugin system:", error);
-			pluginLogger.error("Failed to initialize plugin system", error);
 		});
 	}
 
@@ -75,21 +72,21 @@ class PluginManager extends EventEmitter {
 	 * Initialize the plugin system
 	 */
 	private async initializePlugins(): Promise<void> {
-		await pluginLogger.lifecycle("INIT_START", "system");
+		console.log("INIT_START", "system");
 
 		try {
 			this.emit("plugins:initializing");
 
 			// Ensure plugins directory exists (create if needed)
 			const pluginsDirExists = await directoryExists(this.pluginsDirectory);
-			await pluginLogger.debug("Plugins directory exists check", {
+			console.log("Plugins directory exists check", {
 				directory: this.pluginsDirectory,
 				exists: pluginsDirExists,
 			});
 
 			if (!pluginsDirExists) {
 				console.log(`Creating plugins directory: ${this.pluginsDirectory}`);
-				await pluginLogger.info("Creating plugins directory", {
+				console.log("Creating plugins directory", {
 					directory: this.pluginsDirectory,
 				});
 				try {
@@ -98,13 +95,13 @@ class PluginManager extends EventEmitter {
 					);
 				} catch (error) {
 					console.error("Failed to create plugins directory:", error);
-					await pluginLogger.error("Failed to create plugins directory", error);
+					console.error("Failed to create plugins directory", error);
 				}
 			}
 
 			// Get installed plugins from database (DATABASE IS SOURCE OF TRUTH)
 			const installedPlugins = await this.getInstalledPlugins();
-			await pluginLogger.info("Database-based plugin initialization", {
+			console.log("Database-based plugin initialization", {
 				installedPluginCount: installedPlugins.length,
 				installedPlugins: installedPlugins.map((p) => ({
 					id: p.pluginId,
@@ -115,7 +112,7 @@ class PluginManager extends EventEmitter {
 
 			if (installedPlugins.length === 0) {
 				console.log("No plugins installed in database");
-				await pluginLogger.info("No plugins installed in database");
+				console.log("No plugins installed in database");
 				this.markAsInitialized();
 				return;
 			}
@@ -124,7 +121,7 @@ class PluginManager extends EventEmitter {
 			const loadResults = await Promise.allSettled(
 				installedPlugins.map(async (dbPlugin) => {
 					try {
-						await pluginLogger.info("Loading plugin from database", {
+						console.log("Loading plugin from database", {
 							pluginId: dbPlugin.pluginId,
 							isActivated: dbPlugin.isActivated,
 							isInstalled: dbPlugin.isInstalled,
@@ -132,20 +129,17 @@ class PluginManager extends EventEmitter {
 
 						const success = await this.loadPlugin(dbPlugin.pluginId);
 						if (success) {
-							await pluginLogger.info("Plugin loaded successfully", {
+							console.log("Plugin loaded successfully", {
 								pluginId: dbPlugin.pluginId,
 							});
 						} else {
-							await pluginLogger.warn("Plugin failed to load", {
+							console.log("Plugin failed to load", {
 								pluginId: dbPlugin.pluginId,
 							});
 						}
 						return { pluginId: dbPlugin.pluginId, success };
 					} catch (error) {
-						await pluginLogger.error(
-							`Failed to load plugin ${dbPlugin.pluginId}`,
-							error,
-						);
+						console.error(`Failed to load plugin ${dbPlugin.pluginId}`, error);
 						this.handlePluginError(dbPlugin.pluginId, error as Error, "load");
 						return { pluginId: dbPlugin.pluginId, success: false, error };
 					}
@@ -158,7 +152,7 @@ class PluginManager extends EventEmitter {
 			).length;
 			const failed = loadResults.length - successful;
 
-			await pluginLogger.info("Plugin initialization completed", {
+			console.log("Plugin initialization completed", {
 				totalPlugins: installedPlugins.length,
 				successful,
 				failed,
@@ -167,13 +161,13 @@ class PluginManager extends EventEmitter {
 
 			this.markAsInitialized();
 			this.emit("plugins:initialized", this.getLoadedPluginIds());
-			await pluginLogger.lifecycle("INIT_COMPLETE", "system", {
+			console.log("INIT_COMPLETE", "system", {
 				loadedPlugins: this.getLoadedPluginIds(),
 				summary: { total: installedPlugins.length, successful, failed },
 			});
 		} catch (error) {
 			console.error("Failed to initialize plugins:", error);
-			await pluginLogger.error("Failed to initialize plugins", error);
+			console.error("Failed to initialize plugins", error);
 			this.markAsInitialized();
 		}
 	}
@@ -228,7 +222,7 @@ class PluginManager extends EventEmitter {
 			try {
 				await import("node:fs/promises").then((fs) => fs.access(manifestPath));
 			} catch (error) {
-				await pluginLogger.warn("Plugin files not found", {
+				console.log("Plugin files not found", {
 					pluginId,
 					pluginPath,
 					manifestPath,
@@ -245,13 +239,13 @@ class PluginManager extends EventEmitter {
 			let manifest: IPluginManifest;
 			try {
 				manifest = await loadPluginManifest(pluginPath);
-				await pluginLogger.debug("Plugin manifest loaded", {
+				console.log("Plugin manifest loaded", {
 					pluginId,
 					manifestPath,
 					manifest,
 				});
 			} catch (error) {
-				await pluginLogger.error("Failed to load plugin manifest", {
+				console.error("Failed to load plugin manifest", {
 					pluginId,
 					manifestPath,
 					error: error instanceof Error ? error.message : String(error),
@@ -264,12 +258,12 @@ class PluginManager extends EventEmitter {
 			let pluginModule: Record<string, unknown>;
 			try {
 				pluginModule = await this.loadPluginModule(pluginPath, manifest);
-				await pluginLogger.debug("Plugin module loaded", {
+				console.log("Plugin module loaded", {
 					pluginId,
 					mainFile: manifest.main,
 				});
 			} catch (error) {
-				await pluginLogger.error("Failed to load plugin module", {
+				console.error("Failed to load plugin module", {
 					pluginId,
 					mainFile: manifest.main,
 					error: error instanceof Error ? error.message : String(error),
@@ -299,11 +293,11 @@ class PluginManager extends EventEmitter {
 			// Load extension points into memory (database tables already created by createPlugin mutation)
 			try {
 				await this.loadExtensionPoints(pluginId, manifest, pluginModule);
-				await pluginLogger.debug("Plugin extension points loaded", {
+				console.log("Plugin extension points loaded", {
 					pluginId,
 				});
 			} catch (error) {
-				await pluginLogger.error("Failed to load extension points", {
+				console.error("Failed to load extension points", {
 					pluginId,
 					error: error instanceof Error ? error.message : String(error),
 				});
@@ -323,11 +317,11 @@ class PluginManager extends EventEmitter {
 			if (status === PluginStatus.ACTIVE) {
 				try {
 					await this.activatePlugin(pluginId);
-					await pluginLogger.info("Plugin activated during load", {
+					console.log("Plugin activated during load", {
 						pluginId,
 					});
 				} catch (error) {
-					await pluginLogger.error("Failed to activate plugin during load", {
+					console.error("Failed to activate plugin during load", {
 						pluginId,
 						error: error instanceof Error ? error.message : String(error),
 					});
@@ -379,7 +373,7 @@ class PluginManager extends EventEmitter {
 		try {
 			// Load GraphQL extensions with detailed logging
 			if (manifest.extensionPoints?.graphql) {
-				await pluginLogger.info("🔥 GraphQL Extension Discovery", {
+				console.log("🔥 GraphQL Extension Discovery", {
 					pluginId,
 					totalExtensions: manifest.extensionPoints.graphql.length,
 					extensionTypes: manifest.extensionPoints.graphql.map(
@@ -393,7 +387,7 @@ class PluginManager extends EventEmitter {
 
 				for (const extension of manifest.extensionPoints.graphql) {
 					try {
-						await pluginLogger.info("⚡ Loading GraphQL Extension", {
+						console.log("⚡ Loading GraphQL Extension", {
 							pluginId,
 							extensionName: extension.name,
 							extensionType: extension.type,
@@ -404,14 +398,14 @@ class PluginManager extends EventEmitter {
 
 						await this.loadGraphQLExtension(pluginId, extension, pluginModule);
 
-						await pluginLogger.info("✅ GraphQL Extension Loaded", {
+						console.log("✅ GraphQL Extension Loaded", {
 							pluginId,
 							extensionName: extension.name,
 							extensionType: extension.type,
 							success: true,
 						});
 					} catch (error) {
-						await pluginLogger.error("❌ GraphQL Extension Load Failed", {
+						console.error("❌ GraphQL Extension Load Failed", {
 							pluginId,
 							extensionName: extension.name,
 							extensionType: extension.type,
@@ -431,7 +425,7 @@ class PluginManager extends EventEmitter {
 					}
 				}
 
-				await pluginLogger.info("🎯 GraphQL Extensions Summary", {
+				console.log("🎯 GraphQL Extensions Summary", {
 					pluginId,
 					totalLoaded: manifest.extensionPoints.graphql.length,
 					loadedExtensions: manifest.extensionPoints.graphql.map((ext) => ({
@@ -456,7 +450,7 @@ class PluginManager extends EventEmitter {
 				}
 			}
 		} catch (error) {
-			await pluginLogger.error("🚨 Extension Points Loading Failed", {
+			console.error("🚨 Extension Points Loading Failed", {
 				pluginId,
 				error:
 					error instanceof Error
@@ -486,7 +480,7 @@ class PluginManager extends EventEmitter {
 	): Promise<void> {
 		let resolver: unknown;
 
-		await pluginLogger.info("🔍 GraphQL Resolver Discovery", {
+		console.log("🔍 GraphQL Resolver Discovery", {
 			pluginId,
 			extensionName: extension.name,
 			extensionType: extension.type,
@@ -507,17 +501,14 @@ class PluginManager extends EventEmitter {
 			const pluginPath = path.join(this.pluginsDirectory, pluginId);
 			const extensionFilePath = path.join(pluginPath, extension.file);
 
-			await pluginLogger.info(
-				"📁 Loading GraphQL Resolver from Dedicated File",
-				{
-					pluginId,
-					resolverName: extension.resolver,
-					filePath: extensionFilePath,
-					relativePath: extension.file,
-					absolutePath: extensionFilePath,
-					loadingMethod: "file_based_resolver",
-				},
-			);
+			console.log("📁 Loading GraphQL Resolver from Dedicated File", {
+				pluginId,
+				resolverName: extension.resolver,
+				filePath: extensionFilePath,
+				relativePath: extension.file,
+				absolutePath: extensionFilePath,
+				loadingMethod: "file_based_resolver",
+			});
 
 			try {
 				const extensionModule = await safeRequire(extensionFilePath);
@@ -531,7 +522,7 @@ class PluginManager extends EventEmitter {
 					extension.resolver
 				];
 
-				await pluginLogger.info("📦 GraphQL Extension File Analysis", {
+				console.log("📦 GraphQL Extension File Analysis", {
 					pluginId,
 					filePath: extensionFilePath,
 					moduleExports: Object.keys(
@@ -553,7 +544,7 @@ class PluginManager extends EventEmitter {
 					moduleStructure: extensionModule as Record<string, unknown>,
 				});
 			} catch (error) {
-				await pluginLogger.error("❌ GraphQL Extension File Load Failed", {
+				console.error("❌ GraphQL Extension File Load Failed", {
 					pluginId,
 					filePath: extensionFilePath,
 					resolverName: extension.resolver,
@@ -576,7 +567,7 @@ class PluginManager extends EventEmitter {
 			// Fallback: try to get from main plugin module
 			resolver = pluginModule[extension.resolver];
 
-			await pluginLogger.info("🏠 Loading GraphQL Resolver from Main Module", {
+			console.log("🏠 Loading GraphQL Resolver from Main Module", {
 				pluginId,
 				resolverName: extension.resolver,
 				mainModuleExports: Object.keys(pluginModule),
@@ -587,7 +578,7 @@ class PluginManager extends EventEmitter {
 		}
 
 		if (!resolver) {
-			await pluginLogger.error("❌ GraphQL Resolver Not Found", {
+			console.error("❌ GraphQL Resolver Not Found", {
 				pluginId,
 				resolverName: extension.resolver,
 				searchedInFile: extension.file || "main module",
@@ -610,7 +601,7 @@ class PluginManager extends EventEmitter {
 			throw new Error(`Plugin ${pluginId} not found in loaded plugins`);
 		}
 
-		await pluginLogger.info("🔧 GraphQL Resolver Registration Process", {
+		console.log("🔧 GraphQL Resolver Registration Process", {
 			pluginId,
 			extensionName: extension.name,
 			extensionType: extension.type,
@@ -631,7 +622,7 @@ class PluginManager extends EventEmitter {
 			typeof plugin.graphqlResolvers !== "object"
 		) {
 			plugin.graphqlResolvers = {};
-			await pluginLogger.info("🔄 GraphQL Resolvers Object Initialized", {
+			console.log("🔄 GraphQL Resolvers Object Initialized", {
 				pluginId,
 				action: "force_initialization",
 				reason: "graphqlResolvers_was_null_or_not_object",
@@ -641,7 +632,7 @@ class PluginManager extends EventEmitter {
 		// Double-check by re-fetching the plugin again
 		const pluginRefresh = this.loadedPlugins.get(pluginId);
 		if (!pluginRefresh || !pluginRefresh.graphqlResolvers) {
-			await pluginLogger.error("❌ Plugin Object Corruption", {
+			console.error("❌ Plugin Object Corruption", {
 				pluginId,
 				hasPluginRefresh: !!pluginRefresh,
 				refreshKeys: pluginRefresh ? Object.keys(pluginRefresh) : "no plugin",
@@ -654,7 +645,7 @@ class PluginManager extends EventEmitter {
 		try {
 			pluginRefresh.graphqlResolvers[extension.name] = resolver;
 
-			await pluginLogger.info("✅ GraphQL Resolver Assigned", {
+			console.log("✅ GraphQL Resolver Assigned", {
 				pluginId,
 				extensionName: extension.name,
 				extensionType: extension.type,
@@ -664,7 +655,7 @@ class PluginManager extends EventEmitter {
 				allResolvers: Object.keys(pluginRefresh.graphqlResolvers),
 			});
 		} catch (error) {
-			await pluginLogger.error("❌ GraphQL Resolver Assignment Failed", {
+			console.error("❌ GraphQL Resolver Assignment Failed", {
 				pluginId,
 				extensionName: extension.name,
 				extensionType: extension.type,
@@ -704,7 +695,7 @@ class PluginManager extends EventEmitter {
 			description: extension.description,
 		};
 
-		await pluginLogger.info("🎯 GraphQL Extension Registry Updated", {
+		console.log("🎯 GraphQL Extension Registry Updated", {
 			pluginId,
 			extensionName: extension.name,
 			extensionType: extension.type,
@@ -902,7 +893,7 @@ class PluginManager extends EventEmitter {
 	 * Integrate GraphQL extensions from a plugin into the main API schema
 	 */
 	private async integrateGraphQLExtensions(pluginId: string): Promise<void> {
-		await pluginLogger.info("🚀 GraphQL Schema Integration Started", {
+		console.log("🚀 GraphQL Schema Integration Started", {
 			pluginId,
 			phase: "activation_integration",
 			timestamp: new Date().toISOString(),
@@ -918,23 +909,23 @@ class PluginManager extends EventEmitter {
 		// Also try to trigger schema rebuild directly as a fallback
 		try {
 			const { schemaManager } = await import("../graphql/schemaManager");
-			await pluginLogger.info("🔄 Manually Triggering Schema Rebuild", {
+			console.log("🔄 Manually Triggering Schema Rebuild", {
 				pluginId,
 				reason: "direct_fallback_call",
 			});
 			await schemaManager.rebuildSchema();
-			await pluginLogger.info("✅ Manual Schema Rebuild Completed", {
+			console.log("✅ Manual Schema Rebuild Completed", {
 				pluginId,
 			});
 		} catch (error) {
-			await pluginLogger.warn("⚠️ Manual Schema Rebuild Failed", {
+			console.log("⚠️ Manual Schema Rebuild Failed", {
 				pluginId,
 				error: error instanceof Error ? error.message : String(error),
 				reason: "fallback_failed",
 			});
 		}
 
-		await pluginLogger.info("🎉 GraphQL Schema Integration Completed", {
+		console.log("🎉 GraphQL Schema Integration Completed", {
 			pluginId,
 			reason: "delegated_to_schema_manager",
 			timestamp: new Date().toISOString(),
@@ -1056,18 +1047,15 @@ class PluginManager extends EventEmitter {
 			const { schemaManager } = await import("../graphql/schemaManager");
 			await schemaManager.rebuildSchema();
 
-			await pluginLogger.info("✅ Schema Rebuilt After Plugin Deactivation", {
+			console.log("✅ Schema Rebuilt After Plugin Deactivation", {
 				pluginId,
 				timestamp: new Date().toISOString(),
 			});
 		} catch (error) {
-			await pluginLogger.error(
-				"❌ Schema Rebuild Failed After Plugin Deactivation",
-				{
-					pluginId,
-					error: error instanceof Error ? error.message : String(error),
-				},
-			);
+			console.error("❌ Schema Rebuild Failed After Plugin Deactivation", {
+				pluginId,
+				error: error instanceof Error ? error.message : String(error),
+			});
 			// Don't throw - this shouldn't break the deactivation process
 		}
 	}
