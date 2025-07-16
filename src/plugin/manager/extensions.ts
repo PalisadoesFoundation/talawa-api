@@ -35,69 +35,19 @@ export class ExtensionLoader {
 		if (!plugin) return;
 
 		try {
-			// Load GraphQL extensions with detailed logging
+			// Load GraphQL extensions
 			if (manifest.extensionPoints?.graphql) {
-				console.log("🔥 GraphQL Extension Discovery", {
-					pluginId,
-					totalExtensions: manifest.extensionPoints.graphql.length,
-					extensionTypes: manifest.extensionPoints.graphql.map(
-						(ext) => ext.type,
-					),
-					extensionNames: manifest.extensionPoints.graphql.map(
-						(ext) => ext.name,
-					),
-					manifestStructure: manifest.extensionPoints.graphql,
-				});
-
 				for (const extension of manifest.extensionPoints.graphql) {
 					try {
-						console.log("⚡ Loading GraphQL Extension", {
-							pluginId,
-							extensionName: extension.name,
-							extensionType: extension.type,
-							extensionFile: extension.file,
-							extensionResolver: extension.resolver,
-							extensionStructure: extension,
-						});
-
 						await this.loadGraphQLExtension(pluginId, extension, pluginModule);
-
-						console.log("✅ GraphQL Extension Loaded", {
-							pluginId,
-							extensionName: extension.name,
-							extensionType: extension.type,
-							success: true,
-						});
 					} catch (error) {
-						console.error("❌ GraphQL Extension Load Failed", {
-							pluginId,
-							extensionName: extension.name,
-							extensionType: extension.type,
-							extensionFile: extension.file,
-							extensionResolver: extension.resolver,
-							error:
-								error instanceof Error
-									? {
-											message: error.message,
-											stack: error.stack,
-											name: error.name,
-										}
-									: String(error),
-							failureReason: "Extension loading process failed",
-						});
+						console.error(
+							`Failed to load GraphQL extension ${extension.name} for plugin ${pluginId}:`,
+							error,
+						);
 						throw error;
 					}
 				}
-
-				console.log("🎯 GraphQL Extensions Summary", {
-					pluginId,
-					totalLoaded: manifest.extensionPoints.graphql.length,
-					loadedExtensions: manifest.extensionPoints.graphql.map((ext) => ({
-						name: ext.name,
-						type: ext.type,
-						file: ext.file,
-					})),
-				});
 			}
 
 			// Load Database extensions (no logging)
@@ -114,18 +64,10 @@ export class ExtensionLoader {
 				}
 			}
 		} catch (error) {
-			console.error("🚨 Extension Points Loading Failed", {
-				pluginId,
-				error:
-					error instanceof Error
-						? {
-								message: error.message,
-								stack: error.stack,
-								name: error.name,
-							}
-						: String(error),
-				context: "Extension points loading process failed",
-			});
+			console.error(
+				`Extension points loading failed for plugin ${pluginId}:`,
+				error,
+			);
 			throw new Error(
 				`Failed to load extension points: ${
 					error instanceof Error ? error.message : String(error)
@@ -144,35 +86,14 @@ export class ExtensionLoader {
 	): Promise<void> {
 		let resolver: unknown;
 
-		console.log("🔍 GraphQL Resolver Discovery", {
-			pluginId,
-			extensionName: extension.name,
-			extensionType: extension.type,
-			resolverName: extension.resolver,
-			sourceFile: extension.file || "main module",
-			resolverLoadStrategy: extension.file ? "dedicated_file" : "main_module",
-			extensionMetadata: {
-				name: extension.name,
-				type: extension.type,
-				resolver: extension.resolver,
-				file: extension.file,
-				description: extension.description,
-			},
-		});
+		// Load GraphQL resolver
 
 		// If extension specifies a file, load from that file directly
 		if (extension.file) {
 			const pluginPath = path.join(this.pluginsDirectory, pluginId);
 			const extensionFilePath = path.join(pluginPath, extension.file);
 
-			console.log("📁 Loading GraphQL Resolver from Dedicated File", {
-				pluginId,
-				resolverName: extension.resolver,
-				filePath: extensionFilePath,
-				relativePath: extension.file,
-				absolutePath: extensionFilePath,
-				loadingMethod: "file_based_resolver",
-			});
+			// Load resolver from dedicated file
 
 			try {
 				const extensionModule = await safeRequire(extensionFilePath);
@@ -186,74 +107,18 @@ export class ExtensionLoader {
 					extension.resolver
 				];
 
-				console.log("📦 GraphQL Extension File Analysis", {
-					pluginId,
-					filePath: extensionFilePath,
-					moduleExports: Object.keys(
-						extensionModule as Record<string, unknown>,
-					),
-					targetResolver: extension.resolver,
-					resolverFound:
-						extension.resolver in (extensionModule as Record<string, unknown>),
-					resolverType: typeof resolver,
-					totalExports: Object.keys(extensionModule as Record<string, unknown>)
-						.length,
-					availableResolvers: Object.keys(
-						extensionModule as Record<string, unknown>,
-					).filter(
-						(key) =>
-							typeof (extensionModule as Record<string, unknown>)[key] ===
-							"function",
-					),
-					moduleStructure: extensionModule as Record<string, unknown>,
-				});
+				// Resolver loaded successfully
 			} catch (error) {
-				console.error("❌ GraphQL Extension File Load Failed", {
-					pluginId,
-					filePath: extensionFilePath,
-					resolverName: extension.resolver,
-					error:
-						error instanceof Error
-							? {
-									message: error.message,
-									stack: error.stack,
-									name: error.name,
-								}
-							: error,
-					loadingAttempt: "dedicated_file",
-					failurePoint: "file_loading_or_parsing",
-				});
 				throw new Error(
 					`Failed to load GraphQL extension from ${extension.file}: ${error}`,
 				);
 			}
 		} else {
-			// Fallback: try to get from main plugin module
+			// Load from main plugin module
 			resolver = pluginModule[extension.resolver];
-
-			console.log("🏠 Loading GraphQL Resolver from Main Module", {
-				pluginId,
-				resolverName: extension.resolver,
-				mainModuleExports: Object.keys(pluginModule),
-				resolverFound: extension.resolver in pluginModule,
-				resolverType: typeof resolver,
-				loadingMethod: "main_module_resolver",
-			});
 		}
 
 		if (!resolver) {
-			console.error("❌ GraphQL Resolver Not Found", {
-				pluginId,
-				resolverName: extension.resolver,
-				searchedInFile: extension.file || "main module",
-				availableResolvers: extension.file
-					? "see file analysis above"
-					: Object.keys(pluginModule).filter(
-							(key) => typeof pluginModule[key] === "function",
-						),
-				resolutionFailure: true,
-				extensionMetadata: extension,
-			});
 			throw new Error(
 				`GraphQL resolver '${extension.resolver}' not found in plugin ${pluginId}`,
 			);
@@ -265,84 +130,16 @@ export class ExtensionLoader {
 			throw new Error(`Plugin ${pluginId} not found in loaded plugins`);
 		}
 
-		console.log("🔧 GraphQL Resolver Registration Process", {
-			pluginId,
-			extensionName: extension.name,
-			extensionType: extension.type,
-			resolverFunction: typeof resolver,
-			pluginState: {
-				hasPlugin: !!plugin,
-				hasGraphqlResolvers: !!plugin.graphqlResolvers,
-				graphqlResolversType: typeof plugin.graphqlResolvers,
-				currentResolvers: Object.keys(plugin.graphqlResolvers || {}),
-				pluginKeys: Object.keys(plugin),
-			},
-			registrationTarget: "plugin_graphql_resolvers",
-		});
-
-		// Force re-initialize graphqlResolvers as a completely new object
+		// Initialize graphqlResolvers if needed
 		if (
 			!plugin.graphqlResolvers ||
 			typeof plugin.graphqlResolvers !== "object"
 		) {
 			plugin.graphqlResolvers = {};
-			console.log("🔄 GraphQL Resolvers Object Initialized", {
-				pluginId,
-				action: "force_initialization",
-				reason: "graphqlResolvers_was_null_or_not_object",
-			});
 		}
 
-		// Double-check by re-fetching the plugin again
-		const pluginRefresh = this.loadedPlugins.get(pluginId);
-		if (!pluginRefresh || !pluginRefresh.graphqlResolvers) {
-			console.error("❌ Plugin Object Corruption", {
-				pluginId,
-				hasPluginRefresh: !!pluginRefresh,
-				refreshKeys: pluginRefresh ? Object.keys(pluginRefresh) : "no plugin",
-				corruptionType: "plugin_object_invalid",
-				expectedStructure: "plugin.graphqlResolvers should be object",
-			});
-			throw new Error(`Plugin object corrupted for ${pluginId}`);
-		}
-
-		try {
-			pluginRefresh.graphqlResolvers[extension.name] = resolver;
-
-			console.log("✅ GraphQL Resolver Assigned", {
-				pluginId,
-				extensionName: extension.name,
-				extensionType: extension.type,
-				assignmentSuccess: true,
-				resolverType: typeof resolver,
-				totalResolvers: Object.keys(pluginRefresh.graphqlResolvers).length,
-				allResolvers: Object.keys(pluginRefresh.graphqlResolvers),
-			});
-		} catch (error) {
-			console.error("❌ GraphQL Resolver Assignment Failed", {
-				pluginId,
-				extensionName: extension.name,
-				extensionType: extension.type,
-				error:
-					error instanceof Error
-						? {
-								message: error.message,
-								stack: error.stack,
-								name: error.name,
-							}
-						: error,
-				pluginState: {
-					hasPlugin: !!pluginRefresh,
-					pluginKeys: pluginRefresh ? Object.keys(pluginRefresh) : "no plugin",
-					hasGraphqlResolvers: !!pluginRefresh?.graphqlResolvers,
-					graphqlResolversType: typeof pluginRefresh?.graphqlResolvers,
-					graphqlResolversValue: pluginRefresh?.graphqlResolvers,
-				},
-				assignmentTarget: extension.name,
-				failurePoint: "resolver_assignment",
-			});
-			throw error;
-		}
+		// Assign resolver to plugin
+		plugin.graphqlResolvers[extension.name] = resolver;
 
 		// Register in extension registry
 		this.extensionRegistry.graphql[
@@ -359,28 +156,7 @@ export class ExtensionLoader {
 			description: extension.description,
 		};
 
-		console.log("🎯 GraphQL Extension Registry Updated", {
-			pluginId,
-			extensionName: extension.name,
-			extensionType: extension.type,
-			resolverName: extension.resolver,
-			registryKey: this.getExtensionRegistryKey(extension.type, "graphql"),
-			registryEntry: {
-				pluginId,
-				resolverType: typeof resolver,
-				...extension,
-			},
-			registryState: {
-				totalQueries: Object.keys(this.extensionRegistry.graphql.queries)
-					.length,
-				totalMutations: Object.keys(this.extensionRegistry.graphql.mutations)
-					.length,
-				totalSubscriptions: Object.keys(
-					this.extensionRegistry.graphql.subscriptions,
-				).length,
-				totalTypes: Object.keys(this.extensionRegistry.graphql.types).length,
-			},
-		});
+		// Extension registered successfully
 	}
 
 	/**

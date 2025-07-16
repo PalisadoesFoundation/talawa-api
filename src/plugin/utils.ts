@@ -431,92 +431,44 @@ export async function createPluginTables(
 	// Import the plugin logger
 
 	try {
-		console.log("Starting table creation", {
-			pluginId,
-			tableCount: Object.keys(tableDefinitions).length,
-			tableNames: Object.keys(tableDefinitions),
-		});
-
 		logger?.info?.(`Creating database tables for plugin: ${pluginId}`);
 
 		for (const [tableName, tableDefinition] of Object.entries(
 			tableDefinitions,
 		)) {
 			try {
-				console.log("Processing table definition", {
-					pluginId,
-					tableName,
-					tableType: typeof tableDefinition,
-					hasSymbols: Object.getOwnPropertySymbols(tableDefinition).map((s) =>
-						s.toString(),
-					),
-				});
-
 				// Generate CREATE TABLE SQL with plugin ID prefix
 				const createTableSQL = generateCreateTableSQL(
 					tableDefinition,
 					pluginId,
 				);
-				console.log("Generated CREATE TABLE SQL", {
-					pluginId,
-					tableName,
-					sql: createTableSQL,
-				});
 
 				logger?.info?.(`Creating table: ${createTableSQL}`);
 
 				// Execute CREATE TABLE
 				await db.execute(createTableSQL);
-				console.log("CREATE TABLE executed successfully", {
-					pluginId,
-					tableName,
-				});
 
 				// Generate and execute CREATE INDEX statements
 				const indexSQLs = generateCreateIndexSQL(tableDefinition, pluginId);
-				console.log("Generated index SQLs", {
-					pluginId,
-					tableName,
-					indexCount: indexSQLs.length,
-					indexSQLs,
-				});
 
 				for (const indexSQL of indexSQLs) {
 					logger?.info?.(`Creating index: ${indexSQL}`);
 					await db.execute(indexSQL);
-					console.log("Index created", {
-						pluginId,
-						tableName,
-						indexSQL,
-					});
 				}
 
 				logger?.info?.(
 					`Successfully created table and indexes for: ${tableName}`,
 				);
-				console.log("Table creation completed", {
-					pluginId,
-					tableName,
-				});
 			} catch (error) {
-				console.error("Table creation failed", {
-					pluginId,
-					tableName,
-					error: error instanceof Error ? error.message : String(error),
-				});
+				console.error(`Table creation failed for ${tableName}:`, error);
 				throw error;
 			}
 		}
-
-		console.log("All tables created successfully", {
-			pluginId,
-			tableCount: Object.keys(tableDefinitions).length,
-		});
 	} catch (error) {
-		console.error("Table creation process failed", {
-			pluginId,
-			error: error instanceof Error ? error.message : String(error),
-		});
+		console.error(
+			`Table creation process failed for plugin ${pluginId}:`,
+			error,
+		);
 		throw error;
 	}
 }
@@ -594,15 +546,12 @@ export async function removePluginDirectory(pluginId: string): Promise<void> {
 		// Check if directory exists
 		const exists = await directoryExists(pluginPath);
 		if (!exists) {
-			console.log(
-				`Plugin directory ${pluginId} does not exist, skipping removal`,
-			);
+			// Plugin directory doesn't exist, skipping removal
 			return;
 		}
 
 		// Remove the directory and all its contents
 		await fs.rm(pluginPath, { recursive: true, force: true });
-		console.log(`Successfully removed plugin directory: ${pluginPath}`);
 	} catch (error) {
 		console.error(`Failed to remove plugin directory ${pluginId}:`, error);
 		throw error;
@@ -624,11 +573,7 @@ export function clearPluginModuleCache(pluginPath: string): void {
 			delete require.cache[cachePath];
 		}
 
-		if (cachedPaths.length > 0) {
-			console.log(
-				`Cleared ${cachedPaths.length} module cache entries for plugin`,
-			);
-		}
+		// Module cache cleared successfully
 	} catch (error) {
 		console.warn("Failed to clear module cache:", error);
 		// Non-critical error, continue with cleanup

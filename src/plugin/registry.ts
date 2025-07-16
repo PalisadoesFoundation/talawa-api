@@ -36,7 +36,6 @@ export async function initializePluginSystem(
 	pluginsDirectory?: string,
 ): Promise<PluginManager> {
 	if (pluginManagerInstance) {
-		console.warn("Plugin system is already initialized");
 		return pluginManagerInstance;
 	}
 

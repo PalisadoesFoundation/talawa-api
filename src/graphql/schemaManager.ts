@@ -21,23 +21,15 @@ class GraphQLSchemaManager {
 	private async setupPluginListeners(): Promise<void> {
 		const pluginManager = getPluginManagerInstance();
 		if (pluginManager) {
-			console.log("🔗 Setting up Schema Manager Plugin Listeners");
-
 			// Listen for schema rebuild events
 			pluginManager.on("schema:rebuild", async (data) => {
-				console.log("🔄 Schema Rebuild Triggered", data.pluginId, data.reason);
 				await this.rebuildSchema();
 			});
 
 			// Listen for plugin deactivation to remove fields
 			pluginManager.on("plugin:deactivated", async (pluginId) => {
-				console.log("🔄 Schema Rebuild for Plugin Deactivation", pluginId);
 				await this.rebuildSchema();
 			});
-
-			console.log("✅ Schema Manager Plugin Listeners Setup Complete");
-		} else {
-			console.log("⚠️ Plugin Manager Not Available for Schema Listeners");
 		}
 	}
 
@@ -45,8 +37,6 @@ class GraphQLSchemaManager {
 	 * Build the initial schema
 	 */
 	async buildInitialSchema(): Promise<GraphQLSchema> {
-		console.log("🏗️ Building Initial GraphQL Schema");
-
 		// Set up plugin listeners now that we're initializing
 		await this.setupPluginListeners();
 
@@ -60,8 +50,6 @@ class GraphQLSchemaManager {
 		const schema = builder.toSchema();
 		this.currentSchema = schema;
 
-		console.log("✅ Initial GraphQL Schema Built");
-
 		return schema;
 	}
 
@@ -70,7 +58,6 @@ class GraphQLSchemaManager {
 	 */
 	async rebuildSchema(): Promise<GraphQLSchema> {
 		if (this.isRebuilding) {
-			console.log("⏳ Schema Rebuild Already In Progress");
 			if (!this.currentSchema) {
 				throw new Error("No current schema available during rebuild");
 			}
@@ -80,10 +67,6 @@ class GraphQLSchemaManager {
 		this.isRebuilding = true;
 
 		try {
-			console.log("🔧 Starting Dynamic Schema Rebuild");
-
-			// Use the main builder instance (builders maintain global state)
-
 			// Re-import all core schema components
 			await this.importCoreSchema();
 
@@ -94,14 +77,12 @@ class GraphQLSchemaManager {
 			const newSchema = builder.toSchema();
 			this.currentSchema = newSchema;
 
-			console.log("✅ Schema Rebuild Completed");
-
 			// Notify all registered callbacks about the schema update
 			this.notifySchemaUpdateCallbacks(newSchema);
 
 			return newSchema;
 		} catch (error) {
-			console.error("❌ Schema Rebuild Failed", error);
+			console.error("Schema rebuild failed:", error);
 			throw error;
 		} finally {
 			this.isRebuilding = false;
@@ -122,10 +103,8 @@ class GraphQLSchemaManager {
 			await import("./inputs/index");
 			await import("./types/index");
 			// Note: interfaces and unions directories have empty index files, so skipping them
-
-			console.log("📦 Core Schema Components Imported");
 		} catch (error) {
-			console.error("❌ Core Schema Import Failed", error);
+			console.error("Core schema import failed:", error);
 			throw error;
 		}
 	}
@@ -139,12 +118,6 @@ class GraphQLSchemaManager {
 			console.log("Plugin Manager Not Available");
 			return;
 		}
-
-		const activePlugins = pluginManager.getActivePlugins();
-		console.log(
-			"🔌 Registering Active Plugin Extensions",
-			activePlugins.length,
-		);
 
 		const extensionRegistry = pluginManager.getExtensionRegistry();
 
@@ -208,7 +181,7 @@ class GraphQLSchemaManager {
 			}
 		}
 
-		console.log("✅ Plugin Extensions Registered");
+		// Plugin extensions registered successfully
 	}
 
 	/**
@@ -231,12 +204,6 @@ class GraphQLSchemaManager {
 					t.string({
 						description: `Plugin ${pluginId} query: ${fieldName}`,
 						resolve: async (parent, args, ctx) => {
-							console.log(
-								"⚡ Executing Plugin GraphQL Query",
-								pluginId,
-								fieldName,
-							);
-
 							// Create plugin context from the main GraphQL context
 							const pluginContext = {
 								db: ctx.drizzleClient,
@@ -271,12 +238,6 @@ class GraphQLSchemaManager {
 							}),
 						},
 						resolve: async (parent, args, ctx) => {
-							console.log(
-								"⚡ Executing Plugin GraphQL Mutation",
-								pluginId,
-								fieldName,
-							);
-
 							// Parse input if provided and structure it properly for plugin resolvers
 							let formattedArgs = {};
 							if (args.input && args.input !== null) {
@@ -323,12 +284,6 @@ class GraphQLSchemaManager {
 							return subscriptionGenerator();
 						},
 						resolve: async (parent, args, ctx) => {
-							console.log(
-								"⚡ Executing Plugin GraphQL Subscription",
-								pluginId,
-								fieldName,
-							);
-
 							// Create plugin context from the main GraphQL context
 							const pluginContext = {
 								db: ctx.drizzleClient,
@@ -355,10 +310,7 @@ class GraphQLSchemaManager {
 			}
 		} catch (error) {
 			console.error(
-				"❌ Failed to Register Plugin GraphQL Field",
-				pluginId,
-				type,
-				fieldName,
+				`Failed to register plugin GraphQL field ${pluginId}.${fieldName}:`,
 				error,
 			);
 		}
@@ -388,7 +340,7 @@ class GraphQLSchemaManager {
 			try {
 				callback(schema);
 			} catch (error) {
-				console.error("❌ Schema Update Callback Failed", error);
+				console.error("Schema update callback failed:", error);
 			}
 		}
 	}

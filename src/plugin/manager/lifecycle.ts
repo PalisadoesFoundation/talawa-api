@@ -75,40 +75,13 @@ export class PluginLifecycle {
 	 * Integrate GraphQL extensions from a plugin into the main API schema
 	 */
 	private async integrateGraphQLExtensions(pluginId: string): Promise<void> {
-		console.log("🚀 GraphQL Schema Integration Started", {
-			pluginId,
-			phase: "activation_integration",
-			timestamp: new Date().toISOString(),
-		});
-
-		// Emit the schema rebuild event
-		// Note: This assumes the pluginManager has an emit method
-		// We'll need to pass the pluginManager instance or use a different approach
-
-		// Also try to trigger schema rebuild directly as a fallback
+		// Trigger schema rebuild to integrate plugin extensions
 		try {
 			const { schemaManager } = await import("../../graphql/schemaManager");
-			console.log("🔄 Manually Triggering Schema Rebuild", {
-				pluginId,
-				reason: "direct_fallback_call",
-			});
 			await schemaManager.rebuildSchema();
-			console.log("✅ Manual Schema Rebuild Completed", {
-				pluginId,
-			});
 		} catch (error) {
-			console.log("⚠️ Manual Schema Rebuild Failed", {
-				pluginId,
-				error: error instanceof Error ? error.message : String(error),
-				reason: "fallback_failed",
-			});
+			console.error(`Schema rebuild failed for plugin ${pluginId}:`, error);
 		}
-
-		console.log("🎉 GraphQL Schema Integration Completed", {
-			pluginId,
-			reason: "delegated_to_schema_manager",
-			timestamp: new Date().toISOString(),
-		});
 	}
 
 	/**
@@ -125,7 +98,6 @@ export class PluginLifecycle {
 		}
 
 		if (plugin.status !== PluginStatus.ACTIVE) {
-			console.warn(`Plugin ${pluginId} is not currently active`);
 			return true;
 		}
 
@@ -219,19 +191,14 @@ export class PluginLifecycle {
 		pluginId: string,
 	): Promise<void> {
 		try {
-			// Also try to trigger schema rebuild directly as a fallback
+			// Trigger schema rebuild to remove plugin extensions
 			const { schemaManager } = await import("../../graphql/schemaManager");
 			await schemaManager.rebuildSchema();
-
-			console.log("✅ Schema Rebuilt After Plugin Deactivation", {
-				pluginId,
-				timestamp: new Date().toISOString(),
-			});
 		} catch (error) {
-			console.error("❌ Schema Rebuild Failed After Plugin Deactivation", {
-				pluginId,
-				error: error instanceof Error ? error.message : String(error),
-			});
+			console.error(
+				`❌ Schema rebuild failed after plugin deactivation ${pluginId}:`,
+				error,
+			);
 			// Don't throw - this shouldn't break the deactivation process
 		}
 	}
