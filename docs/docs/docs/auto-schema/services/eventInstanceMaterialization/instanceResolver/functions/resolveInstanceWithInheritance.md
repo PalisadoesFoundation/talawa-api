@@ -6,14 +6,11 @@
 
 > **resolveInstanceWithInheritance**(`input`): [`ResolvedMaterializedEventInstance`](../../../../drizzle/tables/materializedEventInstances/type-aliases/ResolvedMaterializedEventInstance.md)
 
-Defined in: [src/services/eventInstanceMaterialization/instanceResolver.ts:15](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/instanceResolver.ts#L15)
+Defined in: [src/services/eventInstanceMaterialization/instanceResolver.ts:15](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/instanceResolver.ts#L15)
 
-Resolves a single materialized instance with inheritance from base template + exception.
-
-This is the core inheritance logic:
-1. Start with base template properties
-2. Apply exception overrides if they exist
-3. Return fully resolved instance
+Resolves a single materialized instance by combining the properties of the base event template
+with any applicable exceptions. This function forms the core of the inheritance logic,
+ensuring that each instance accurately reflects its intended state.
 
 ## Parameters
 
@@ -21,6 +18,10 @@ This is the core inheritance logic:
 
 [`ResolveInstanceInput`](../../types/interfaces/ResolveInstanceInput.md)
 
+An object containing the materialized instance, base template, and optional exception.
+
 ## Returns
 
 [`ResolvedMaterializedEventInstance`](../../../../drizzle/tables/materializedEventInstances/type-aliases/ResolvedMaterializedEventInstance.md)
+
+A fully resolved materialized event instance with all properties correctly inherited and overridden.

@@ -6,4 +6,4 @@
 
 > `const` **mutationCreateChatMembershipInputSchema**: `ZodObject`\<`extendShape`\<`Pick`\<\{ \}, `never`\>, \{ `role`: `any`; \}\>, `"strip"`, `ZodTypeAny`, \{[`key`: `string`]: `any`; `role?`: `unknown`; \}, \{[`key`: `string`]: `any`; `role?`: `unknown`; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateChatMembershipInput.ts:6](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/inputs/MutationCreateChatMembershipInput.ts#L6)
+Defined in: [src/graphql/inputs/MutationCreateChatMembershipInput.ts:6](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/inputs/MutationCreateChatMembershipInput.ts#L6)

@@ -6,10 +6,11 @@
 
 > **getEventsByIds**(`eventIds`, `drizzleClient`, `logger`): `Promise`\<[`EventWithAttachments`](../type-aliases/EventWithAttachments.md)[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:178](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L178)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:194](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L194)
 
-Gets events by their IDs, supporting both standalone events and materialized instances.
-This is used by the eventsByIds GraphQL query.
+Retrieves events by their specific IDs, supporting both standalone events and
+materialized instances in a single, unified query. This function is used by the
+`eventsByIds` GraphQL query to fetch a mixed list of event types.
 
 ## Parameters
 
@@ -17,14 +18,23 @@ This is used by the eventsByIds GraphQL query.
 
 `string`[]
 
+An array of event IDs to retrieve.
+
 ### drizzleClient
 
 `NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
+
+The Drizzle ORM client for database access.
 
 ### logger
 
 `FastifyBaseLogger`
 
+The logger for logging debug and error messages.
+
 ## Returns
 
 `Promise`\<[`EventWithAttachments`](../type-aliases/EventWithAttachments.md)[]\>
+
+A promise that resolves to an array of the requested event objects,
+         unified into a common format.

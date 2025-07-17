@@ -13,7 +13,14 @@ import { calculateInstanceOccurrences } from "./occurrenceCalculator";
 import type { MaterializeInstancesInput, ServiceDependencies } from "./types";
 
 /**
- * Creates materialized instances for a recurring event within a time window.
+ * Generates and stores materialized instances for a recurring event within a specified time window.
+ * This function fetches the base event template and recurrence rule, calculates all occurrences,
+ * and creates new instances in the database, avoiding duplicates.
+ *
+ * @param input - The input object containing the event ID, time window, and organization ID.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to the number of newly created materialized instances.
  */
 export async function materializeInstancesForRecurringEvent(
 	input: MaterializeInstancesInput,
@@ -114,7 +121,18 @@ export async function materializeInstancesForRecurringEvent(
 }
 
 /**
- * Creates new materialized instances, filtering out existing ones
+ * Creates new materialized instances in the database from a list of calculated occurrences,
+ * after filtering out any instances that already exist.
+ *
+ * @param occurrences - An array of calculated occurrence data.
+ * @param baseRecurringEventId - The ID of the base recurring event.
+ * @param recurrenceRuleId - The ID of the associated recurrence rule.
+ * @param organizationId - The ID of the organization.
+ * @param windowStartDate - The start of the materialization window.
+ * @param windowEndDate - The end of the materialization window.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to the number of newly created instances.
  */
 async function createNewMaterializedInstances(
 	occurrences: Array<{
@@ -204,7 +222,6 @@ async function createNewMaterializedInstances(
 	return newOccurrences.length;
 }
 
-// Re-export functions from other modules for convenience
 export {
 	initializeMaterializationWindow,
 	cleanupOldMaterializedInstances,

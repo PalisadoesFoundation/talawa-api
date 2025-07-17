@@ -6,9 +6,10 @@
 
 > **discoverMaterializationWorkloads**(`config`, `deps`): `Promise`\<[`DiscoveredWorkload`](../interfaces/DiscoveredWorkload.md)[]\>
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:41](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L41)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:48](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/jobDiscovery.ts#L48)
 
-Discovers organizations and events that need materialization
+Discovers organizations and their recurring events that require materialization,
+creating a prioritized list of workloads.
 
 ## Parameters
 
@@ -16,10 +17,16 @@ Discovers organizations and events that need materialization
 
 [`JobDiscoveryConfig`](../interfaces/JobDiscoveryConfig.md)
 
+The configuration for the job discovery process.
+
 ### deps
 
 [`WorkerDependencies`](../../types/interfaces/WorkerDependencies.md)
 
+The dependencies required for the worker, such as the database client and logger.
+
 ## Returns
 
 `Promise`\<[`DiscoveredWorkload`](../interfaces/DiscoveredWorkload.md)[]\>
+
+A promise that resolves to an array of discovered workloads, sorted by priority.

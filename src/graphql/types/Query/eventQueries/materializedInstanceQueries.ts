@@ -11,23 +11,29 @@ import {
 } from "~/src/services/eventInstanceMaterialization/instanceResolver";
 import type { ServiceDependencies } from "~/src/services/eventInstanceMaterialization/types";
 
+/**
+ * @description Defines the input parameters for querying materialized event instances.
+ */
 export interface GetMaterializedInstancesInput {
 	organizationId: string;
 	startDate: Date;
 	endDate: Date;
 	includeCancelled?: boolean;
+	/**
+	 * @description An optional limit on the number of instances to return.
+	 */
 	limit?: number;
 }
 
 /**
- * Gets materialized instances for an organization within a date range.
- * Resolves each instance with inheritance from template + exceptions.
+ * Retrieves materialized event instances for a given organization within a specified date range.
+ * This function resolves each instance by combining data from the base event template
+ * with any applicable exceptions, providing a complete and accurate representation of each event instance.
  *
- * This demonstrates the exception table only approach:
- * 1. Get materialized instances (just dates and metadata)
- * 2. Get base templates (for inheritance)
- * 3. Get exceptions (for overrides)
- * 4. Resolve inheritance + exceptions at runtime
+ * @param input - The input object containing organizationId, date range, and optional filters.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to an array of fully resolved materialized event instances.
  */
 export async function getMaterializedInstancesInDateRange(
 	input: GetMaterializedInstancesInput,
@@ -78,8 +84,14 @@ export async function getMaterializedInstancesInDateRange(
 }
 
 /**
- * Gets multiple resolved materialized instances by their IDs.
- * This is a batch operation to avoid N+1 queries.
+ * Retrieves multiple resolved materialized instances by their specific IDs.
+ * This function performs a batch operation to efficiently fetch and resolve instances,
+ * avoiding the N+1 query problem.
+ *
+ * @param instanceIds - An array of materialized instance IDs to retrieve.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to an array of the requested resolved materialized event instances.
  */
 export async function getMaterializedInstancesByIds(
 	instanceIds: string[],
@@ -135,7 +147,13 @@ export async function getMaterializedInstancesByIds(
 }
 
 /**
- * Gets a single resolved materialized instance by ID.
+ * Retrieves a single resolved materialized instance by its ID and organization ID.
+ *
+ * @param instanceId - The ID of the materialized instance to retrieve.
+ * @param organizationId - The ID of the organization to which the instance belongs.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to the resolved materialized event instance, or null if not found.
  */
 export async function getMaterializedInstanceById(
 	instanceId: string,
@@ -195,7 +213,11 @@ export async function getMaterializedInstanceById(
 }
 
 /**
- * Fetches materialized instances from database with proper filtering
+ * Fetches raw materialized instances from the database based on the provided input filters.
+ *
+ * @param input - The input object containing filtering criteria.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @returns A promise that resolves to an array of raw materialized event instances.
  */
 async function fetchMaterializedInstances(
 	input: GetMaterializedInstancesInput,
@@ -223,7 +245,11 @@ async function fetchMaterializedInstances(
 }
 
 /**
- * Fetches base templates for given instances
+ * Fetches the base event templates for a given list of materialized instances.
+ *
+ * @param instances - An array of materialized instances.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @returns A promise that resolves to a map of base event templates, keyed by their IDs.
  */
 async function fetchBaseTemplates(
 	instances: (typeof materializedEventInstancesTable.$inferSelect)[],
@@ -241,7 +267,13 @@ async function fetchBaseTemplates(
 }
 
 /**
- * Fetches exceptions for given instances within date range
+ * Fetches event exceptions for a given list of instances within a specified date range.
+ *
+ * @param instances - An array of materialized instances.
+ * @param startDate - The start of the date range to check for exceptions.
+ * @param endDate - The end of the date range to check for exceptions.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @returns A promise that resolves to a map of event exceptions, keyed by a composite key of event ID and instance start time.
  */
 async function fetchExceptions(
 	instances: (typeof materializedEventInstancesTable.$inferSelect)[],

@@ -4,7 +4,11 @@
 
 # Interface: GetMaterializedInstancesInput
 
-Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:14](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L14)
+Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:17](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L17)
+
+## Description
+
+Defines the input parameters for querying materialized event instances.
 
 ## Properties
 
@@ -12,7 +16,7 @@ Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts
 
 > **endDate**: `Date`
 
-Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:17](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L17)
+Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:20](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L20)
 
 ***
 
@@ -20,7 +24,7 @@ Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts
 
 > `optional` **includeCancelled**: `boolean`
 
-Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:18](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L18)
+Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:21](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L21)
 
 ***
 
@@ -28,7 +32,11 @@ Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts
 
 > `optional` **limit**: `number`
 
-Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:19](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L19)
+Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:25](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L25)
+
+#### Description
+
+An optional limit on the number of instances to return.
 
 ***
 
@@ -36,7 +44,7 @@ Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts
 
 > **organizationId**: `string`
 
-Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:15](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L15)
+Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:18](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L18)
 
 ***
 
@@ -44,4 +52,4 @@ Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts
 
 > **startDate**: `Date`
 
-Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:16](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L16)
+Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:19](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L19)

@@ -6,13 +6,17 @@
 
 > **buildRRuleString**(`recurrence`, `startDate`): `string`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:8](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/utilities/recurringEventHelpers.ts#L8)
+Defined in: [src/utilities/recurringEventHelpers.ts:14](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/utilities/recurringEventHelpers.ts#L14)
 
-Converts recurrence input to RRULE string following RFC 5545
+Converts a recurrence input object into an RRULE string compliant with RFC 5545.
+This function constructs a recurrence rule string based on the provided frequency,
+interval, end date, count, and other recurrence properties.
 
 ## Parameters
 
 ### recurrence
+
+The recurrence input object, conforming to the recurrenceInputSchema.
 
 #### byDay?
 
@@ -50,6 +54,10 @@ Converts recurrence input to RRULE string following RFC 5545
 
 `Date`
 
+The start date of the event, used for validation and context.
+
 ## Returns
 
 `string`
+
+A full RRULE string, e.g., "RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=MO,FR".

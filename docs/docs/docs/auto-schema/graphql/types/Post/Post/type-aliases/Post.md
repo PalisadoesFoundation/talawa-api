@@ -6,7 +6,7 @@
 
 > **Post** = *typeof* `postsTable.$inferSelect` & `object`
 
-Defined in: [src/graphql/types/Post/Post.ts:8](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Post/Post.ts#L8)
+Defined in: [src/graphql/types/Post/Post.ts:8](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Post/Post.ts#L8)
 
 ## Type declaration
 

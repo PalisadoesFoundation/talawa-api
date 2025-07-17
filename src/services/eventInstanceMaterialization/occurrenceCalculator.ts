@@ -9,8 +9,12 @@ import type {
 } from "./types";
 
 /**
- * Calculates instance occurrence times based on recurrence rules and exceptions.
- * Handles daily, weekly, monthly, and yearly frequencies with proper exception handling.
+ * Calculates the occurrence times for a recurring event based on its recurrence rule,
+ * handling exceptions and various frequencies (daily, weekly, monthly, yearly).
+ *
+ * @param config - The configuration object containing the recurrence rule, base event, and time window.
+ * @param logger - The logger for logging debug and informational messages.
+ * @returns An array of calculated occurrences, each with its start and end times and metadata.
  */
 export function calculateInstanceOccurrences(
 	config: OccurrenceCalculationConfig,
@@ -99,7 +103,13 @@ export function calculateInstanceOccurrences(
 }
 
 /**
- * Builds the recurrence context with pre-calculated values and exception maps
+ * Builds a recurrence context object containing pre-calculated values and exception maps
+ * to optimize the occurrence calculation process.
+ *
+ * @param recurrenceRule - The recurrence rule for the event.
+ * @param baseEvent - The base event template.
+ * @param exceptions - An array of exceptions for the event.
+ * @returns A recurrence context object with all necessary pre-calculated data.
  */
 function buildRecurrenceContext(
 	recurrenceRule: typeof recurrenceRulesTable.$inferSelect,
@@ -139,7 +149,13 @@ function buildRecurrenceContext(
 }
 
 /**
- * Creates a calculated occurrence from a date using the recurrence context
+ * Creates a calculated occurrence object from a given date, applying any relevant exceptions
+ * from the recurrence context.
+ *
+ * @param currentDate - The date for which to create the occurrence.
+ * @param context - The recurrence context containing duration, exceptions, and other metadata.
+ * @param sequenceNumber - The sequence number of this occurrence in the series.
+ * @returns A calculated occurrence object with its original and actual start/end times.
  */
 function createOccurrenceFromDate(
 	currentDate: Date,
@@ -183,8 +199,13 @@ function createOccurrenceFromDate(
 }
 
 /**
- * Determines if an instance should be generated at the given date.
- * Handles never-ending events and complex monthly patterns properly.
+ * Determines whether a recurring event instance should be generated on a specific date,
+ * based on the recurrence rule and its frequency-specific constraints.
+ *
+ * @param date - The date to check.
+ * @param recurrenceRule - The recurrence rule to apply.
+ * @param startDate - The start date of the base event.
+ * @returns `true` if an instance should be generated on the given date, otherwise `false`.
  */
 export function shouldGenerateInstanceAtDate(
 	date: Date,
@@ -220,7 +241,11 @@ export function shouldGenerateInstanceAtDate(
 }
 
 /**
- * Checks if a date should generate an instance for daily frequency
+ * Checks if an instance should be generated for a daily recurring event on a given date.
+ *
+ * @param date - The date to check.
+ * @param recurrenceRule - The daily recurrence rule.
+ * @returns `true` if an instance should be generated, otherwise `false`.
  */
 function shouldGenerateForDaily(
 	date: Date,
@@ -231,7 +256,12 @@ function shouldGenerateForDaily(
 }
 
 /**
- * Checks if a date should generate an instance for weekly frequency
+ * Checks if an instance should be generated for a weekly recurring event on a given date,
+ * based on the `byDay` filter in the recurrence rule.
+ *
+ * @param date - The date to check.
+ * @param recurrenceRule - The weekly recurrence rule.
+ * @returns `true` if an instance should be generated, otherwise `false`.
  */
 function shouldGenerateForWeekly(
 	date: Date,
@@ -249,7 +279,12 @@ function shouldGenerateForWeekly(
 }
 
 /**
- * Checks if a date should generate an instance for monthly frequency
+ * Checks if an instance should be generated for a monthly recurring event on a given date,
+ * handling complex patterns like "the first Friday of the month".
+ *
+ * @param date - The date to check.
+ * @param recurrenceRule - The monthly recurrence rule.
+ * @returns `true` if an instance should be generated, otherwise `false`.
  */
 function shouldGenerateForMonthly(
 	date: Date,
@@ -285,7 +320,12 @@ function shouldGenerateForMonthly(
 }
 
 /**
- * Checks if a date should generate an instance for yearly frequency
+ * Checks if an instance should be generated for a yearly recurring event on a given date,
+ * based on `byMonth` and `byMonthDay` filters in the recurrence rule.
+ *
+ * @param date - The date to check.
+ * @param recurrenceRule - The yearly recurrence rule.
+ * @returns `true` if an instance should be generated, otherwise `false`.
  */
 function shouldGenerateForYearly(
 	date: Date,
@@ -311,8 +351,12 @@ function shouldGenerateForYearly(
 }
 
 /**
- * Gets the next occurrence date based on frequency and interval.
- * Enhanced to properly handle all frequency types.
+ * Calculates the next potential occurrence date based on the event's frequency and interval.
+ * This function correctly handles advancing the date for all supported frequency types.
+ *
+ * @param currentDate - The current occurrence date.
+ * @param recurrenceRule - The recurrence rule for the event.
+ * @returns The date of the next potential occurrence.
  */
 export function getNextOccurrenceDate(
 	currentDate: Date,
@@ -369,7 +413,11 @@ export function getNextOccurrenceDate(
 }
 
 /**
- * Validates recurrence rule configuration
+ * Validates the configuration of a recurrence rule to ensure it has a valid frequency
+ * and a positive interval.
+ *
+ * @param recurrenceRule - The recurrence rule to validate.
+ * @returns `true` if the recurrence rule is valid, otherwise `false`.
  */
 export function validateRecurrenceRule(
 	recurrenceRule: typeof recurrenceRulesTable.$inferSelect,

@@ -6,10 +6,11 @@
 
 > **getMaterializedInstancesByIds**(`instanceIds`, `drizzleClient`, `logger`): `Promise`\<[`ResolvedMaterializedEventInstance`](../../../../../../drizzle/tables/materializedEventInstances/type-aliases/ResolvedMaterializedEventInstance.md)[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:84](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L84)
+Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:96](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L96)
 
-Gets multiple resolved materialized instances by their IDs.
-This is a batch operation to avoid N+1 queries.
+Retrieves multiple resolved materialized instances by their specific IDs.
+This function performs a batch operation to efficiently fetch and resolve instances,
+avoiding the N+1 query problem.
 
 ## Parameters
 
@@ -17,14 +18,22 @@ This is a batch operation to avoid N+1 queries.
 
 `string`[]
 
+An array of materialized instance IDs to retrieve.
+
 ### drizzleClient
 
 `NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
+
+The Drizzle ORM client for database access.
 
 ### logger
 
 `FastifyBaseLogger`
 
+The logger for logging debug and error messages.
+
 ## Returns
 
 `Promise`\<[`ResolvedMaterializedEventInstance`](../../../../../../drizzle/tables/materializedEventInstances/type-aliases/ResolvedMaterializedEventInstance.md)[]\>
+
+A promise that resolves to an array of the requested resolved materialized event instances.

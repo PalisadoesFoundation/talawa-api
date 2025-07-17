@@ -3,19 +3,32 @@ import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachment
 import { eventsTable } from "~/src/drizzle/tables/events";
 import type { ServiceDependencies } from "~/src/services/eventInstanceMaterialization/types";
 
+/**
+ * @description Defines the input parameters for querying standalone events.
+ */
 export interface GetStandaloneEventsInput {
 	organizationId: string;
 	startDate: Date;
 	endDate: Date;
+	/**
+	 * @description An optional array of event IDs to filter by.
+	 */
 	eventIds?: string[];
+	/**
+	 * @description An optional limit on the number of events to return.
+	 */
 	limit?: number;
 }
 
 /**
- * Gets standalone events (non-recurring events) for an organization within a date range.
- * This includes:
- * - Regular standalone events (isRecurringTemplate: false, recurringEventId: null)
- * - Does NOT include recurring templates or materialized instances
+ * Retrieves standalone (non-recurring) events for a given organization within a specified date range.
+ * This function filters out recurring templates and materialized instances, focusing only on regular,
+ * single-occurrence events that overlap with the provided time window.
+ *
+ * @param input - The input object containing organizationId, date range, and optional filters.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to an array of standalone event objects, including their attachments.
  */
 export async function getStandaloneEventsInDateRange(
 	input: GetStandaloneEventsInput,
@@ -96,8 +109,15 @@ export async function getStandaloneEventsInDateRange(
 }
 
 /**
- * Gets standalone events by specific IDs.
- * Used for eventsByIds query when IDs represent standalone events.
+ * Retrieves standalone events by a list of specific IDs.
+ * This function is designed for the `eventsByIds` query, ensuring that only standalone events
+ * (not recurring templates or instances) are returned.
+ *
+ * @param eventIds - An array of event IDs to retrieve.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to an array of the requested standalone event objects,
+ *          including their attachments.
  */
 export async function getStandaloneEventsByIds(
 	eventIds: string[],

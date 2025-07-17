@@ -17,128 +17,109 @@ export const Event = builder.objectRef<Event>("Event");
 
 Event.implement({
 	description:
-		"Events are occurrences that take place for specific purposes at specific times. Can be standalone events or instances of recurring events.",
+		"Represents an event, which can be a standalone occurrence or a materialized instance of a recurring series. This unified type allows for consistent handling of all events.",
 	fields: (t) => ({
 		attachments: t.expose("attachments", {
-			description: "Array of attachments.",
+			description:
+				"A list of attachments associated with the event, such as images or documents.",
 			type: t.listRef(EventAttachment),
 		}),
 		description: t.exposeString("description", {
-			description: "Custom information about the event.",
+			description:
+				"A detailed description of the event, providing custom information and context.",
 		}),
 		endAt: t.field({
-			description: "Date time at the time the event ends at.",
+			description:
+				"The date and time when the event is scheduled to end. For materialized instances, this reflects the actual end time if modified.",
 			type: "DateTime",
 			resolve: (event) =>
 				"actualEndTime" in event ? event.actualEndTime : event.endAt,
 		}),
 		id: t.exposeID("id", {
 			description:
-				"Global identifier of the event. For recurring instances, this is the materialized instance ID.",
+				"The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.",
 			nullable: false,
 		}),
 		name: t.exposeString("name", {
-			description: "Name of the event.",
+			description: "The name or title of the event.",
 		}),
 		startAt: t.field({
-			description: "Date time at the time the event starts at.",
+			description:
+				"The date and time when the event is scheduled to start. For materialized instances, this reflects the actual start time if modified.",
 			type: "DateTime",
 			nullable: false,
 			resolve: (event) =>
 				"actualStartTime" in event ? event.actualStartTime : event.startAt,
 		}),
 		allDay: t.exposeBoolean("allDay", {
-			description: "Indicates if the event spans the entire day.",
+			description:
+				"A boolean flag indicating if the event lasts for the entire day.",
 		}),
 		isPublic: t.exposeBoolean("isPublic", {
-			description: "Indicates if the event is publicly visible.",
+			description:
+				"A boolean flag indicating if the event is visible to the public.",
 		}),
 		isRegisterable: t.exposeBoolean("isRegisterable", {
-			description: "Indicates if users can register for this event.",
+			description:
+				"A boolean flag indicating if users can register for this event.",
 		}),
 		location: t.exposeString("location", {
-			description: "Physical or virtual location of the event.",
+			description:
+				"The physical or virtual location where the event will take place.",
 		}),
-		// Recurring event fields
 		isRecurringTemplate: t.boolean({
 			description:
-				"Indicates if this event is a recurring template (base event).",
+				"A boolean flag indicating if this event serves as a template for a recurring series.",
 			resolve: (event) =>
 				"isRecurringTemplate" in event && event.isRecurringTemplate,
 		}),
 		recurringEventId: t.id({
-			description: "ID of the base recurring event if this is an instance.",
+			description:
+				"The ID of the base recurring event if this is a materialized instance.",
 			resolve: (event) =>
 				"recurringEventId" in event ? event.recurringEventId : null,
 		}),
 		instanceStartTime: t.field({
-			description: "Original start time for this recurring instance.",
+			description:
+				"The original start time of this instance as defined by the recurrence rule.",
 			type: "DateTime",
 			resolve: (event) =>
 				"instanceStartTime" in event ? event.instanceStartTime : null,
 		}),
-		// Simplified metadata - no more virtual instance complexity
 		isMaterialized: t.boolean({
 			description:
-				"Indicates if this is a materialized instance from a recurring event.",
-			resolve: (event) => {
-				// Check if this has materialization metadata
-				return "baseRecurringEventId" in event;
-			},
+				"A boolean flag indicating if this event is a materialized instance of a recurring event.",
+			resolve: (event) => "baseRecurringEventId" in event,
 		}),
 		baseEventId: t.id({
-			description: "Base event ID for materialized instances.",
-			resolve: (event) => {
-				// For materialized instances, return the base recurring event ID
-				if ("baseRecurringEventId" in event) {
-					return event.baseRecurringEventId;
-				}
-				return null;
-			},
+			description:
+				"The ID of the base event from which this materialized instance was generated.",
+			resolve: (event) =>
+				"baseRecurringEventId" in event ? event.baseRecurringEventId : null,
 		}),
 		hasExceptions: t.boolean({
 			description:
-				"Indicates if this materialized instance has exceptions applied.",
-			resolve: (event) => {
-				// For materialized instances, check if exceptions were applied
-				if ("hasExceptions" in event) {
-					return event.hasExceptions;
-				}
-				return false;
-			},
+				"A boolean flag indicating if this materialized instance has any exceptions applied to it.",
+			resolve: (event) => "hasExceptions" in event && event.hasExceptions,
 		}),
-		// NEW: Sequence metadata fields
 		sequenceNumber: t.int({
 			description:
-				"Sequence number of this instance in the recurring series (1, 2, 3, ...).",
-			resolve: (event) => {
-				// For materialized instances, return sequence number
-				if ("sequenceNumber" in event) {
-					return event.sequenceNumber;
-				}
-				return null;
-			},
+				"The sequence number of this instance within its recurring series (e.g., 1, 2, 3, ...).",
+			resolve: (event) =>
+				"sequenceNumber" in event ? event.sequenceNumber : null,
 		}),
 		totalCount: t.int({
 			description:
-				"Total count of instances in the complete recurring series. Null for infinite series.",
-			resolve: (event) => {
-				// For materialized instances, return total count
-				if ("totalCount" in event) {
-					return event.totalCount;
-				}
-				return null;
-			},
+				"The total number of instances in the complete recurring series. This will be null for infinite series.",
+			resolve: (event) => ("totalCount" in event ? event.totalCount : null),
 		}),
 		progressLabel: t.string({
 			description:
-				"Human-readable progress label like '5 of 12' or 'Episode #7'.",
+				"A human-readable label indicating the progress of this instance in the series, such as '5 of 12' or 'Episode #7'.",
 			resolve: (event) => {
-				// For materialized instances, create progress label
 				if ("sequenceNumber" in event && "totalCount" in event) {
 					const sequence = event.sequenceNumber;
 					const total = event.totalCount;
-
 					if (total) {
 						return `${sequence} of ${total}`;
 					}

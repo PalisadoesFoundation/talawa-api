@@ -6,10 +6,10 @@
 
 > **shouldGenerateInstanceAtDate**(`date`, `recurrenceRule`, `startDate`): `boolean`
 
-Defined in: [src/services/eventInstanceMaterialization/occurrenceCalculator.ts:189](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/occurrenceCalculator.ts#L189)
+Defined in: [src/services/eventInstanceMaterialization/occurrenceCalculator.ts:210](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/occurrenceCalculator.ts#L210)
 
-Determines if an instance should be generated at the given date.
-Handles never-ending events and complex monthly patterns properly.
+Determines whether a recurring event instance should be generated on a specific date,
+based on the recurrence rule and its frequency-specific constraints.
 
 ## Parameters
 
@@ -17,7 +17,11 @@ Handles never-ending events and complex monthly patterns properly.
 
 `Date`
 
+The date to check.
+
 ### recurrenceRule
+
+The recurrence rule to apply.
 
 #### baseRecurringEventId
 
@@ -91,6 +95,10 @@ Handles never-ending events and complex monthly patterns properly.
 
 `Date`
 
+The start date of the base event.
+
 ## Returns
 
 `boolean`
+
+`true` if an instance should be generated on the given date, otherwise `false`.

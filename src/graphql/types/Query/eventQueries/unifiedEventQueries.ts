@@ -14,7 +14,8 @@ import {
 } from "./standaloneEventQueries";
 
 /**
- * Type definition for events with attachments that can be either standalone or materialized
+ * @description Represents a unified event object that includes attachments and metadata
+ * to distinguish between standalone and materialized events.
  */
 export type EventWithAttachments = InferSelectModel<typeof eventsTable> & {
 	attachments: (typeof eventAttachmentsTable.$inferSelect)[];
@@ -26,6 +27,10 @@ export type EventWithAttachments = InferSelectModel<typeof eventsTable> & {
 	hasExceptions?: boolean;
 };
 
+/**
+ * @description Defines the input parameters for querying a unified list of events,
+ * including both standalone and recurring instances.
+ */
 export interface GetUnifiedEventsInput {
 	organizationId: string;
 	startDate: Date;
@@ -35,8 +40,14 @@ export interface GetUnifiedEventsInput {
 }
 
 /**
- * Gets both standalone events and materialized instances in a unified response.
- * This is the main function used by organization.events GraphQL resolver.
+ * Retrieves a unified list of events, including both standalone events and materialized
+ * instances of recurring events, within a specified date range. This is the primary function
+ * used by the `organization.events` GraphQL resolver.
+ *
+ * @param input - The input object containing organizationId, date range, and optional filters.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to a sorted array of unified event objects.
  */
 export async function getUnifiedEventsInDateRange(
 	input: GetUnifiedEventsInput,
@@ -124,8 +135,6 @@ export async function getUnifiedEventsInDateRange(
 					hasExceptions: instance.hasExceptions,
 					isMaterialized: true,
 
-					// Attachments: TODO - implement instance-specific attachments
-					// For now, instances inherit attachments from base template
 					attachments: [],
 					eventType: "materialized" as const,
 				}));
@@ -172,8 +181,15 @@ export async function getUnifiedEventsInDateRange(
 }
 
 /**
- * Gets events by their IDs, supporting both standalone events and materialized instances.
- * This is used by the eventsByIds GraphQL query.
+ * Retrieves events by their specific IDs, supporting both standalone events and
+ * materialized instances in a single, unified query. This function is used by the
+ * `eventsByIds` GraphQL query to fetch a mixed list of event types.
+ *
+ * @param eventIds - An array of event IDs to retrieve.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to an array of the requested event objects,
+ *          unified into a common format.
  */
 export async function getEventsByIds(
 	eventIds: string[],

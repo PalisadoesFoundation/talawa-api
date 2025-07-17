@@ -8,6 +8,11 @@ const queryEventsByIdsSchema = z.object({
 	ids: z.array(z.string().uuid()).min(1),
 });
 
+/**
+ * @description Defines the 'eventsByIds' query field for fetching multiple events by their IDs.
+ * This query supports a mix of standalone events and materialized instances, providing a unified
+ * way to retrieve various event types in a single request.
+ */
 builder.queryField("eventsByIds", (t) =>
 	t.field({
 		type: [Event],
@@ -25,7 +30,7 @@ builder.queryField("eventsByIds", (t) =>
 			}),
 		},
 		description:
-			"Fetch multiple events by their IDs. Supports both standalone events and materialized recurring instances. Uses pure materialized approach",
+			"Fetches multiple events by their IDs, supporting both standalone events and materialized recurring instances.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({

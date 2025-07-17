@@ -6,10 +6,12 @@
 
 > **createDefaultWorkerConfig**(): [`WorkerConfig`](../interfaces/WorkerConfig.md)
 
-Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:209](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/materializationPipeline.ts#L209)
+Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:225](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/materializationPipeline.ts#L225)
 
-Creates default worker configuration
+Creates a default configuration object for the materialization worker.
 
 ## Returns
 
 [`WorkerConfig`](../interfaces/WorkerConfig.md)
+
+A default worker configuration.

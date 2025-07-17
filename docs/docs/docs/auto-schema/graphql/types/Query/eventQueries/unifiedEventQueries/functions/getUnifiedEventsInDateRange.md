@@ -6,10 +6,11 @@
 
 > **getUnifiedEventsInDateRange**(`input`, `drizzleClient`, `logger`): `Promise`\<[`EventWithAttachments`](../type-aliases/EventWithAttachments.md)[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:41](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L41)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:52](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L52)
 
-Gets both standalone events and materialized instances in a unified response.
-This is the main function used by organization.events GraphQL resolver.
+Retrieves a unified list of events, including both standalone events and materialized
+instances of recurring events, within a specified date range. This is the primary function
+used by the `organization.events` GraphQL resolver.
 
 ## Parameters
 
@@ -17,14 +18,22 @@ This is the main function used by organization.events GraphQL resolver.
 
 [`GetUnifiedEventsInput`](../interfaces/GetUnifiedEventsInput.md)
 
+The input object containing organizationId, date range, and optional filters.
+
 ### drizzleClient
 
 `NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
+
+The Drizzle ORM client for database access.
 
 ### logger
 
 `FastifyBaseLogger`
 
+The logger for logging debug and error messages.
+
 ## Returns
 
 `Promise`\<[`EventWithAttachments`](../type-aliases/EventWithAttachments.md)[]\>
+
+A promise that resolves to a sorted array of unified event objects.

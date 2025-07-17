@@ -4,7 +4,7 @@
 
 # Interface: WindowManagerConfig
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:65](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L65)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:65](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L65)
 
 Configuration for window management
 
@@ -14,7 +14,7 @@ Configuration for window management
 
 > `optional` **historyRetentionMonths**: `number`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:68](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L68)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:68](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L68)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:68](https://gith
 
 > `optional` **hotWindowMonthsAhead**: `number`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:67](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L67)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:67](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L67)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:67](https://gith
 
 > `optional` **maxInstancesPerRun**: `number`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:70](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L70)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:70](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L70)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:70](https://gith
 
 > **organizationId**: `string`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:66](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L66)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:66](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L66)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:66](https://gith
 
 > `optional` **processingPriority**: `number`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:69](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L69)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:69](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L69)

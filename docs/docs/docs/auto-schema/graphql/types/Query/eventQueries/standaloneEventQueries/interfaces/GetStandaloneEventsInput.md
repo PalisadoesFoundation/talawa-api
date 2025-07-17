@@ -4,7 +4,11 @@
 
 # Interface: GetStandaloneEventsInput
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:6](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L6)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:9](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L9)
+
+## Description
+
+Defines the input parameters for querying standalone events.
 
 ## Properties
 
@@ -12,7 +16,7 @@ Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:6](h
 
 > **endDate**: `Date`
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:9](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L9)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:12](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L12)
 
 ***
 
@@ -20,7 +24,11 @@ Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:9](h
 
 > `optional` **eventIds**: `string`[]
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:10](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L10)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:16](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L16)
+
+#### Description
+
+An optional array of event IDs to filter by.
 
 ***
 
@@ -28,7 +36,11 @@ Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:10](
 
 > `optional` **limit**: `number`
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:11](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L11)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:20](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L20)
+
+#### Description
+
+An optional limit on the number of events to return.
 
 ***
 
@@ -36,7 +48,7 @@ Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:11](
 
 > **organizationId**: `string`
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:7](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L7)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:10](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L10)
 
 ***
 
@@ -44,4 +56,4 @@ Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:7](h
 
 > **startDate**: `Date`
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:8](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L8)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:11](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L11)

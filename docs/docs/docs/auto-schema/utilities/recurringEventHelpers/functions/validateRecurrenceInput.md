@@ -6,13 +6,17 @@
 
 > **validateRecurrenceInput**(`recurrence`, `startDate`): `object`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:52](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/utilities/recurringEventHelpers.ts#L52)
+Defined in: [src/utilities/recurringEventHelpers.ts:65](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/utilities/recurringEventHelpers.ts#L65)
 
-Validates recurrence input
+Validates the recurrence input object against a set of rules to ensure its correctness.
+This function checks for logical consistency, such as ensuring the end date is after the
+start date, and validates the format of values like day codes and month numbers.
 
 ## Parameters
 
 ### recurrence
+
+The recurrence input object to validate.
 
 #### byDay?
 
@@ -50,9 +54,14 @@ Validates recurrence input
 
 `Date`
 
+The start date of the event, used for validation against the end date.
+
 ## Returns
 
 `object`
+
+An object containing a boolean `isValid` and an array of error strings.
+         If `isValid` is true, the `errors` array will be empty.
 
 ### errors
 

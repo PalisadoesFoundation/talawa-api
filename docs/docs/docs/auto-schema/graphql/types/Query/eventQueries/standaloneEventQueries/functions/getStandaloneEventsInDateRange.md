@@ -6,12 +6,11 @@
 
 > **getStandaloneEventsInDateRange**(`input`, `drizzleClient`, `logger`): `Promise`\<`object` & `object`[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:20](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L20)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:33](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L33)
 
-Gets standalone events (non-recurring events) for an organization within a date range.
-This includes:
-- Regular standalone events (isRecurringTemplate: false, recurringEventId: null)
-- Does NOT include recurring templates or materialized instances
+Retrieves standalone (non-recurring) events for a given organization within a specified date range.
+This function filters out recurring templates and materialized instances, focusing only on regular,
+single-occurrence events that overlap with the provided time window.
 
 ## Parameters
 
@@ -19,14 +18,22 @@ This includes:
 
 [`GetStandaloneEventsInput`](../interfaces/GetStandaloneEventsInput.md)
 
+The input object containing organizationId, date range, and optional filters.
+
 ### drizzleClient
 
 `NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
+
+The Drizzle ORM client for database access.
 
 ### logger
 
 `FastifyBaseLogger`
 
+The logger for logging debug and error messages.
+
 ## Returns
 
 `Promise`\<`object` & `object`[]\>
+
+A promise that resolves to an array of standalone event objects, including their attachments.

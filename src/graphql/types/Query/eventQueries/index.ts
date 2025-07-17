@@ -1,12 +1,9 @@
 /**
- * Event query utilities for GraphQL resolvers.
+ * This file serves as the central export point for all event query utilities,
+ * providing a clean and organized way to access queries for standalone events,
+ * materialized instances, and unified event data. It is used by GraphQL resolvers
+ * to fetch event-related information from the database.
  *
- * This module provides clean separation between:
- * - Standalone event queries
- * - Materialized instance queries
- * - Unified queries that combine both
- *
- * Used by GraphQL resolvers in Organization.events and Query.eventsByIds
  */
 
 export * from "./materializedInstanceQueries";

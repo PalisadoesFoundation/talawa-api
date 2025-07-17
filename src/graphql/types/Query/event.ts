@@ -13,18 +13,23 @@ const queryEventArgumentsSchema = z.object({
 	input: queryEventInputSchema,
 });
 
+/**
+ * @description Defines the 'event' query field for fetching a single event by its ID.
+ * This query supports both standalone events and materialized instances of recurring events,
+ * ensuring a unified way to retrieve any event type.
+ */
 builder.queryField("event", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "Input for querying a single event by ID",
+				description: "Input containing the ID of the event to query.",
 				required: true,
 				type: QueryEventInput,
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description:
-			"Query field to read a single event by ID. Supports both standalone events and materialized recurring instances.",
+			"Retrieves a single event by its ID, supporting both standalone events and materialized recurring instances.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({

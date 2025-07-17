@@ -6,7 +6,7 @@
 
 > **UnauthorizedArgumentsExtensions** = `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:181](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/utilities/TalawaGraphQLError.ts#L181)
+Defined in: [src/utilities/TalawaGraphQLError.ts:181](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/utilities/TalawaGraphQLError.ts#L181)
 
 When the client is not authorized to perform an action with certain arguments.
 
@@ -32,7 +32,7 @@ throw new TalawaGraphQLError({
 
 > **code**: `"unauthorized_arguments"`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:185](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/utilities/TalawaGraphQLError.ts#L185)
+Defined in: [src/utilities/TalawaGraphQLError.ts:185](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/utilities/TalawaGraphQLError.ts#L185)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/utilities/TalawaGraphQLError.ts:185](https://github.com/gautam-
 
 > **issues**: `object`[]
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:182](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/utilities/TalawaGraphQLError.ts#L182)
+Defined in: [src/utilities/TalawaGraphQLError.ts:182](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/utilities/TalawaGraphQLError.ts#L182)
 
 #### argumentPath
 

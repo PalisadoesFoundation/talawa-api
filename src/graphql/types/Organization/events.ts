@@ -13,7 +13,10 @@ import {
 import envConfig from "~/src/utilities/graphqLimits";
 import { Organization } from "./Organization";
 
-// Custom schema for events with higher limits due to materialized instances
+/**
+ * @description Zod schema for validating and parsing connection arguments for events,
+ * with increased limits to accommodate recurring event instances.
+ */
 const eventsConnectionArgumentsSchema = z.object({
 	after: z
 		.string()
@@ -26,18 +29,24 @@ const eventsConnectionArgumentsSchema = z.object({
 	first: z
 		.number()
 		.min(1)
-		.max(1000) // Increased limit for events to handle large date ranges with recurring events
+		.max(1000)
 		.nullish()
 		.transform((arg) => (arg === null ? undefined : arg)),
 	last: z
 		.number()
 		.min(1)
-		.max(1000) // Increased limit for events
+		.max(1000)
 		.nullish()
 		.transform((arg) => (arg === null ? undefined : arg)),
 });
 
-// Custom transform function for events connection arguments
+/**
+ * @description Transforms and validates the connection arguments for event queries,
+ * handling pagination logic and setting default date ranges.
+ * @param arg - The raw connection arguments.
+ * @param ctx - The Zod refinement context for adding issues.
+ * @returns The parsed and validated connection arguments.
+ */
 const transformEventsConnectionArguments = (
 	arg: z.infer<typeof eventsConnectionArgumentsSchema> & {
 		startDate?: Date;
@@ -130,9 +139,12 @@ const transformEventsConnectionArguments = (
 	return transformedArg;
 };
 
+/**
+ * @description Zod schema for validating and parsing the complete set of arguments
+ * for the `events` field, including pagination, date range, and recurring event filters.
+ */
 const eventsArgumentsSchema = eventsConnectionArgumentsSchema
 	.extend({
-		// Add date range filtering for recurring events
 		startDate: z.date().optional(),
 		endDate: z.date().optional(),
 		includeRecurring: z.boolean().optional().default(true),
@@ -163,6 +175,10 @@ const eventsArgumentsSchema = eventsConnectionArgumentsSchema
 		};
 	});
 
+/**
+ * @description Zod schema for validating and parsing the event cursor,
+ * which is used for pagination.
+ */
 const cursorSchema = z
 	.object({
 		id: eventsTableInsertSchema.shape.id.unwrap(),

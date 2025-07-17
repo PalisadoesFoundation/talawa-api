@@ -16,7 +16,7 @@ import {
 import type { WorkerDependencies } from "./types";
 
 /**
- * Simple worker configuration
+ * @description Configuration for the materialization worker, specifying concurrency and processing limits.
  */
 export interface WorkerConfig {
 	maxConcurrentJobs: number;
@@ -25,7 +25,7 @@ export interface WorkerConfig {
 }
 
 /**
- * Simplified worker result
+ * @description Represents the result of a materialization worker run, summarizing the work done.
  */
 export interface WorkerResult {
 	organizationsProcessed: number;
@@ -36,7 +36,13 @@ export interface WorkerResult {
 }
 
 /**
- * Main materialization worker function - simplified and focused
+ * The main function for the materialization worker, orchestrating the entire pipeline
+ * from job discovery to execution and post-processing.
+ *
+ * @param config - The configuration for the worker.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging the worker's progress and any errors.
+ * @returns A promise that resolves to a summary result of the worker's run.
  */
 export async function runMaterializationWorker(
 	config: WorkerConfig,
@@ -120,7 +126,12 @@ export async function runMaterializationWorker(
 }
 
 /**
- * Processes a specific organization manually
+ * Manually triggers the materialization process for a single, specific organization.
+ *
+ * @param organizationId - The ID of the organization to process.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging the process.
+ * @returns A promise that resolves to the result of the processing for the specified organization.
  */
 export async function runSingleOrganizationWorker(
 	organizationId: string,
@@ -191,7 +202,10 @@ export async function runSingleOrganizationWorker(
 }
 
 /**
- * Creates an empty result for when no work is found
+ * Creates an empty worker result object, used when no materialization work is found.
+ *
+ * @param startTime - The start time of the worker run, used to calculate processing time.
+ * @returns An empty worker result object.
  */
 function createEmptyResult(startTime: number): WorkerResult {
 	return {
@@ -204,7 +218,9 @@ function createEmptyResult(startTime: number): WorkerResult {
 }
 
 /**
- * Creates default worker configuration
+ * Creates a default configuration object for the materialization worker.
+ *
+ * @returns A default worker configuration.
  */
 export function createDefaultWorkerConfig(): WorkerConfig {
 	return {

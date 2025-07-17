@@ -553,13 +553,17 @@ type Event {
   """
   agendaFolders(after: String, before: String, first: Int, last: Int): EventAgendaFoldersConnection
 
-  """Indicates if the event spans the entire day."""
+  """A boolean flag indicating if the event lasts for the entire day."""
   allDay: Boolean
 
-  """Array of attachments."""
+  """
+  A list of attachments associated with the event, such as images or documents.
+  """
   attachments: [EventAttachment!]
 
-  """Base event ID for materialized instances."""
+  """
+  The ID of the base event from which this materialized instance was generated.
+  """
   baseEventId: ID
 
   """Date time at the time the event was created."""
@@ -568,60 +572,76 @@ type Event {
   """User who created the event."""
   creator: User
 
-  """Custom information about the event."""
+  """
+  A detailed description of the event, providing custom information and context.
+  """
   description: String
 
-  """Date time at the time the event ends at."""
+  """
+  The date and time when the event is scheduled to end. For materialized instances, this reflects the actual end time if modified.
+  """
   endAt: DateTime
 
-  """Indicates if this materialized instance has exceptions applied."""
+  """
+  A boolean flag indicating if this materialized instance has any exceptions applied to it.
+  """
   hasExceptions: Boolean
 
   """
-  Global identifier of the event. For recurring instances, this is the materialized instance ID.
+  The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.
   """
   id: ID!
 
-  """Original start time for this recurring instance."""
+  """
+  The original start time of this instance as defined by the recurrence rule.
+  """
   instanceStartTime: DateTime
 
-  """Indicates if this is a materialized instance from a recurring event."""
+  """
+  A boolean flag indicating if this event is a materialized instance of a recurring event.
+  """
   isMaterialized: Boolean
 
-  """Indicates if the event is publicly visible."""
+  """A boolean flag indicating if the event is visible to the public."""
   isPublic: Boolean
 
-  """Indicates if this event is a recurring template (base event)."""
+  """
+  A boolean flag indicating if this event serves as a template for a recurring series.
+  """
   isRecurringTemplate: Boolean
 
-  """Indicates if users can register for this event."""
+  """A boolean flag indicating if users can register for this event."""
   isRegisterable: Boolean
 
-  """Physical or virtual location of the event."""
+  """The physical or virtual location where the event will take place."""
   location: String
 
-  """Name of the event."""
+  """The name or title of the event."""
   name: String
 
   """Organization the event belongs to."""
   organization: Organization
 
-  """Human-readable progress label like '5 of 12' or 'Episode #7'."""
+  """
+  A human-readable label indicating the progress of this instance in the series, such as '5 of 12' or 'Episode #7'.
+  """
   progressLabel: String
 
-  """ID of the base recurring event if this is an instance."""
+  """The ID of the base recurring event if this is a materialized instance."""
   recurringEventId: ID
 
   """
-  Sequence number of this instance in the recurring series (1, 2, 3, ...).
+  The sequence number of this instance within its recurring series (e.g., 1, 2, 3, ...).
   """
   sequenceNumber: Int
 
-  """Date time at the time the event starts at."""
+  """
+  The date and time when the event is scheduled to start. For materialized instances, this reflects the actual start time if modified.
+  """
   startAt: DateTime!
 
   """
-  Total count of instances in the complete recurring series. Null for infinite series.
+  The total number of instances in the complete recurring series. This will be null for infinite series.
   """
   totalCount: Int
 
@@ -3654,15 +3674,15 @@ type Query {
   currentUser: User
 
   """
-  Query field to read a single event by ID. Supports both standalone events and materialized recurring instances.
+  Retrieves a single event by its ID, supporting both standalone events and materialized recurring instances.
   """
   event(
-    """Input for querying a single event by ID"""
+    """Input containing the ID of the event to query."""
     input: QueryEventInput!
   ): Event
 
   """
-  Fetch multiple events by their IDs. Supports both standalone events and materialized recurring instances. Uses pure materialized approach
+  Fetches multiple events by their IDs, supporting both standalone events and materialized recurring instances.
   """
   eventsByIds(input: QueryEventsByIdsInput!): [Event!]
 

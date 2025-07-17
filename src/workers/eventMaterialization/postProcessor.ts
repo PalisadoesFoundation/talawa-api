@@ -2,14 +2,15 @@ import type { MaterializationExecutionResult } from "./executionEngine";
 import type { ProcessingMetrics, WorkerDependencies } from "./types";
 
 /**
- * Post-processing operations after materialization work is complete
- * Handles cleanup, statistics, and state updates
+ * @description Configuration for post-processing operations, allowing features like cleanup to be toggled.
  */
-
 export interface PostProcessingConfig {
 	enableCleanup: boolean;
 }
 
+/**
+ * @description Represents the result of post-processing operations, including whether cleanup was performed and any errors encountered.
+ */
 export interface PostProcessingResult {
 	cleanupPerformed: boolean;
 	errors: string[];
@@ -17,7 +18,14 @@ export interface PostProcessingResult {
 }
 
 /**
- * Performs post-processing after materialization execution
+ * Executes post-processing tasks after the materialization of event instances is complete.
+ * This includes operations like cleaning up old data and logging final statistics.
+ *
+ * @param executionResults - An array of results from the materialization execution.
+ * @param metrics - The metrics collected during the materialization process.
+ * @param config - The configuration for post-processing.
+ * @param deps - The dependencies required for the worker.
+ * @returns A promise that resolves to the result of the post-processing operations.
  */
 export async function executePostProcessing(
 	executionResults: MaterializationExecutionResult[],
@@ -47,10 +55,12 @@ export async function executePostProcessing(
 	return result;
 }
 
-// Statistics collection removed - using simple logging only
-
 /**
- * Performs cleanup operations after processing
+ * Performs cleanup operations after the materialization process is complete,
+ * such as clearing temporary data and logging completion status.
+ *
+ * @param executionResults - The results from the materialization execution.
+ * @param deps - The worker dependencies.
  */
 async function performCleanupOperations(
 	executionResults: MaterializationExecutionResult[],
@@ -76,7 +86,9 @@ async function performCleanupOperations(
 }
 
 /**
- * Creates default post-processing configuration
+ * Creates a default configuration object for post-processing operations.
+ *
+ * @returns A default post-processing configuration.
  */
 export function createDefaultPostProcessingConfig(): PostProcessingConfig {
 	return {

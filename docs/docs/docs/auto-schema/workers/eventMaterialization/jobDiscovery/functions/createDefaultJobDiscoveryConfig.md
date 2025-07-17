@@ -6,10 +6,12 @@
 
 > **createDefaultJobDiscoveryConfig**(): [`JobDiscoveryConfig`](../interfaces/JobDiscoveryConfig.md)
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:314](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L314)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:351](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/jobDiscovery.ts#L351)
 
-Creates default job discovery configuration
+Creates a default configuration object for the job discovery process.
 
 ## Returns
 
 [`JobDiscoveryConfig`](../interfaces/JobDiscoveryConfig.md)
+
+A default job discovery configuration.

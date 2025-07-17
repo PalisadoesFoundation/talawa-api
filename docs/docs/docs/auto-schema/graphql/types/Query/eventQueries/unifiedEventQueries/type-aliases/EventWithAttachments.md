@@ -6,9 +6,7 @@
 
 > **EventWithAttachments** = `InferSelectModel`\<*typeof* [`eventsTable`](../../../../../../drizzle/tables/events/variables/eventsTable.md)\> & `object`
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:19](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L19)
-
-Type definition for events with attachments that can be either standalone or materialized
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:20](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L20)
 
 ## Type declaration
 
@@ -39,3 +37,8 @@ Type definition for events with attachments that can be either standalone or mat
 ### totalCount?
 
 > `optional` **totalCount**: `number` \| `null`
+
+## Description
+
+Represents a unified event object that includes attachments and metadata
+to distinguish between standalone and materialized events.

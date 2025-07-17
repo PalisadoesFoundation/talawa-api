@@ -6,15 +6,17 @@
 
 > **isEndDateBasedEvent**(`rule`): `boolean`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:267](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/utilities/recurringEventHelpers.ts#L267)
+Defined in: [src/utilities/recurringEventHelpers.ts:290](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/utilities/recurringEventHelpers.ts#L290)
 
-Determines if a recurrence rule is end-date-based (has end date, may or may not have count).
+Determines if a recurrence rule is end-date-based.
+An end-date-based event is defined by an `endDate`. It may or may not also have a `count`,
+in which case it would be considered a hybrid event.
 
 ## Parameters
 
 ### rule
 
-The recurrence rule to check
+The recurrence rule to check.
 
 #### baseRecurringEventId
 
@@ -88,4 +90,4 @@ The recurrence rule to check
 
 `boolean`
 
-True if the event has an end date
+`true` if the event has an end date, otherwise `false`.

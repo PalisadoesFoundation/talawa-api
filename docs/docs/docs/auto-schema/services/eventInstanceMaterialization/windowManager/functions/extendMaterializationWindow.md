@@ -6,9 +6,10 @@
 
 > **extendMaterializationWindow**(`organizationId`, `additionalMonths`, `drizzleClient`, `logger`): `Promise`\<`Date`\>
 
-Defined in: [src/services/eventInstanceMaterialization/windowManager.ts:85](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/windowManager.ts#L85)
+Defined in: [src/services/eventInstanceMaterialization/windowManager.ts:101](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/windowManager.ts#L101)
 
-Extends materialization window forward by specified months
+Extends the materialization window for an organization by a specified number of months,
+allowing for the generation of future event instances.
 
 ## Parameters
 
@@ -16,18 +17,28 @@ Extends materialization window forward by specified months
 
 `string`
 
+The ID of the organization whose window is to be extended.
+
 ### additionalMonths
 
 `number`
+
+The number of months to extend the window by.
 
 ### drizzleClient
 
 `NodePgDatabase`\<[`drizzle/schema`](../../../../drizzle/schema/README.md)\>
 
+The Drizzle ORM client for database access.
+
 ### logger
 
 `FastifyBaseLogger`
 
+The logger for logging debug and error messages.
+
 ## Returns
 
 `Promise`\<`Date`\>
+
+A promise that resolves to the new end date of the materialization window.

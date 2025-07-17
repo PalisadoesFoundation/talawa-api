@@ -6,16 +6,18 @@
 
 > **normalizeRecurrenceRule**(`rule`): `object`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:115](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/utilities/recurringEventHelpers.ts#L115)
+Defined in: [src/utilities/recurringEventHelpers.ts:130](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/utilities/recurringEventHelpers.ts#L130)
 
-Normalizes recurrence rule by converting count to end date for unified processing.
-This enables treating all bounded events (count-based or end-date-based) uniformly.
+Normalizes a recurrence rule by converting a `count`-based rule to an `endDate`-based one.
+This allows for uniform processing of events that have a defined end, whether specified
+by a count of occurrences or a specific end date. If the rule is already `endDate`-based
+or is infinite (never-ending), it is returned unchanged.
 
 ## Parameters
 
 ### rule
 
-The original recurrence rule
+The recurrence rule from the database.
 
 #### baseRecurringEventId
 
@@ -89,7 +91,7 @@ The original recurrence rule
 
 `object`
 
-Normalized rule with calculated end date if count-based
+A normalized recurrence rule, where `count` has been converted to `recurrenceEndDate`.
 
 ### baseRecurringEventId
 

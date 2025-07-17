@@ -6,10 +6,12 @@
 
 > **calculateCompletionDateFromCount**(`startDate`, `count`, `frequency`, `interval`): `Date`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:147](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/utilities/recurringEventHelpers.ts#L147)
+Defined in: [src/utilities/recurringEventHelpers.ts:164](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/utilities/recurringEventHelpers.ts#L164)
 
-Calculates when a count-based recurrence will complete.
-Used internally by normalizeRecurrenceRule and can be used for estimations.
+Calculates the completion date of a recurrence that is defined by a `count`.
+This function is used internally by `normalizeRecurrenceRule` to convert a count-based
+recurrence into an end-date-based one. It can also be used for estimating the
+duration of a recurring event.
 
 ## Parameters
 
@@ -17,28 +19,28 @@ Used internally by normalizeRecurrenceRule and can be used for estimations.
 
 `Date`
 
-When the recurrence starts
+The start date of the recurrence.
 
 ### count
 
 `number`
 
-Number of occurrences
+The total number of occurrences.
 
 ### frequency
 
 `string`
 
-Recurrence frequency (DAILY, WEEKLY, MONTHLY, YEARLY)
+The frequency of the recurrence (e.g., "DAILY", "WEEKLY").
 
 ### interval
 
 `number` = `1`
 
-Interval between occurrences (default: 1)
+The interval between occurrences (default is 1).
 
 ## Returns
 
 `Date`
 
-Date when the final occurrence will happen
+The calculated date of the final occurrence.

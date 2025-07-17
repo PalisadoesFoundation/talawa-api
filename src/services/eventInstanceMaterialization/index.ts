@@ -5,7 +5,6 @@
  * This service handles creating materialized instances from recurring event templates
  * and maintaining the hot window of pre-calculated instances.
  *
- * Query functions have been moved to ~/src/graphql/types/Query/eventQueries/
  */
 
 // Main service functions (business logic only)

@@ -6,7 +6,7 @@
 
 > **CreateMaterializedInstanceInput** = `object`
 
-Defined in: [src/drizzle/tables/materializedEventInstances.ts:336](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/drizzle/tables/materializedEventInstances.ts#L336)
+Defined in: [src/drizzle/tables/materializedEventInstances.ts:336](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/drizzle/tables/materializedEventInstances.ts#L336)
 
 Input type for creating new materialized instances.
 
@@ -16,7 +16,7 @@ Input type for creating new materialized instances.
 
 > **actualEndTime**: `Date`
 
-Defined in: [src/drizzle/tables/materializedEventInstances.ts:341](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/drizzle/tables/materializedEventInstances.ts#L341)
+Defined in: [src/drizzle/tables/materializedEventInstances.ts:341](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/drizzle/tables/materializedEventInstances.ts#L341)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/drizzle/tables/materializedEventInstances.ts:341](https://githu
 
 > **actualStartTime**: `Date`
 
-Defined in: [src/drizzle/tables/materializedEventInstances.ts:340](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/drizzle/tables/materializedEventInstances.ts#L340)
+Defined in: [src/drizzle/tables/materializedEventInstances.ts:340](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/drizzle/tables/materializedEventInstances.ts#L340)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/drizzle/tables/materializedEventInstances.ts:340](https://githu
 
 > **baseRecurringEventId**: `string`
 
-Defined in: [src/drizzle/tables/materializedEventInstances.ts:337](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/drizzle/tables/materializedEventInstances.ts#L337)
+Defined in: [src/drizzle/tables/materializedEventInstances.ts:337](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/drizzle/tables/materializedEventInstances.ts#L337)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/drizzle/tables/materializedEventInstances.ts:337](https://githu
 
 > `optional` **isCancelled**: `boolean`
 
-Defined in: [src/drizzle/tables/materializedEventInstances.ts:343](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/drizzle/tables/materializedEventInstances.ts#L343)
+Defined in: [src/drizzle/tables/materializedEventInstances.ts:343](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/drizzle/tables/materializedEventInstances.ts#L343)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [src/drizzle/tables/materializedEventInstances.ts:343](https://githu
 
 > **organizationId**: `string`
 
-Defined in: [src/drizzle/tables/materializedEventInstances.ts:342](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/drizzle/tables/materializedEventInstances.ts#L342)
+Defined in: [src/drizzle/tables/materializedEventInstances.ts:342](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/drizzle/tables/materializedEventInstances.ts#L342)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [src/drizzle/tables/materializedEventInstances.ts:342](https://githu
 
 > **originalInstanceStartTime**: `Date`
 
-Defined in: [src/drizzle/tables/materializedEventInstances.ts:339](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/drizzle/tables/materializedEventInstances.ts#L339)
+Defined in: [src/drizzle/tables/materializedEventInstances.ts:339](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/drizzle/tables/materializedEventInstances.ts#L339)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [src/drizzle/tables/materializedEventInstances.ts:339](https://githu
 
 > **recurrenceRuleId**: `string`
 
-Defined in: [src/drizzle/tables/materializedEventInstances.ts:338](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/drizzle/tables/materializedEventInstances.ts#L338)
+Defined in: [src/drizzle/tables/materializedEventInstances.ts:338](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/drizzle/tables/materializedEventInstances.ts#L338)
 
 ***
 
@@ -72,7 +72,7 @@ Defined in: [src/drizzle/tables/materializedEventInstances.ts:338](https://githu
 
 > **sequenceNumber**: `number`
 
-Defined in: [src/drizzle/tables/materializedEventInstances.ts:344](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/drizzle/tables/materializedEventInstances.ts#L344)
+Defined in: [src/drizzle/tables/materializedEventInstances.ts:344](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/drizzle/tables/materializedEventInstances.ts#L344)
 
 ***
 
@@ -80,4 +80,4 @@ Defined in: [src/drizzle/tables/materializedEventInstances.ts:344](https://githu
 
 > `optional` **totalCount**: `number` \| `null`
 
-Defined in: [src/drizzle/tables/materializedEventInstances.ts:345](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/drizzle/tables/materializedEventInstances.ts#L345)
+Defined in: [src/drizzle/tables/materializedEventInstances.ts:345](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/drizzle/tables/materializedEventInstances.ts#L345)

@@ -6,10 +6,11 @@
 
 > **getStandaloneEventsByIds**(`eventIds`, `drizzleClient`, `logger`): `Promise`\<`object` & `object`[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:102](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L102)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:122](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L122)
 
-Gets standalone events by specific IDs.
-Used for eventsByIds query when IDs represent standalone events.
+Retrieves standalone events by a list of specific IDs.
+This function is designed for the `eventsByIds` query, ensuring that only standalone events
+(not recurring templates or instances) are returned.
 
 ## Parameters
 
@@ -17,14 +18,23 @@ Used for eventsByIds query when IDs represent standalone events.
 
 `string`[]
 
+An array of event IDs to retrieve.
+
 ### drizzleClient
 
 `NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
+
+The Drizzle ORM client for database access.
 
 ### logger
 
 `FastifyBaseLogger`
 
+The logger for logging debug and error messages.
+
 ## Returns
 
 `Promise`\<`object` & `object`[]\>
+
+A promise that resolves to an array of the requested standalone event objects,
+         including their attachments.

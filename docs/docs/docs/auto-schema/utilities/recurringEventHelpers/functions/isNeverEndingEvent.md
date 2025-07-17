@@ -6,15 +6,16 @@
 
 > **isNeverEndingEvent**(`rule`): `boolean`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:243](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/utilities/recurringEventHelpers.ts#L243)
+Defined in: [src/utilities/recurringEventHelpers.ts:263](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/utilities/recurringEventHelpers.ts#L263)
 
 Determines if a recurrence rule represents a never-ending event.
+A never-ending event is one that has neither a `count` nor an `endDate`.
 
 ## Parameters
 
 ### rule
 
-The recurrence rule to check
+The recurrence rule to check.
 
 #### baseRecurringEventId
 
@@ -88,4 +89,4 @@ The recurrence rule to check
 
 `boolean`
 
-True if the event never ends (no count and no end date)
+`true` if the event is never-ending, otherwise `false`.

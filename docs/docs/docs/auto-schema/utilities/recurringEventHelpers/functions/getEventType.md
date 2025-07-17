@@ -6,15 +6,17 @@
 
 > **getEventType**(`rule`): `"NEVER_ENDING"` \| `"COUNT_BASED"` \| `"END_DATE_BASED"` \| `"HYBRID"`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:279](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/utilities/recurringEventHelpers.ts#L279)
+Defined in: [src/utilities/recurringEventHelpers.ts:304](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/utilities/recurringEventHelpers.ts#L304)
 
-Gets the event type classification for a recurrence rule.
+Classifies a recurrence rule into one of four types: "NEVER_ENDING", "COUNT_BASED",
+"END_DATE_BASED", or "HYBRID". This helps in understanding how the recurrence
+is defined and constrained.
 
 ## Parameters
 
 ### rule
 
-The recurrence rule to classify
+The recurrence rule to classify.
 
 #### baseRecurringEventId
 
@@ -88,4 +90,4 @@ The recurrence rule to classify
 
 `"NEVER_ENDING"` \| `"COUNT_BASED"` \| `"END_DATE_BASED"` \| `"HYBRID"`
 
-Event type classification
+The classification of the event type as a string literal.

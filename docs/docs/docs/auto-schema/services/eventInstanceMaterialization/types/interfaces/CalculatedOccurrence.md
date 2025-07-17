@@ -4,7 +4,7 @@
 
 # Interface: CalculatedOccurrence
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:44](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L44)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:44](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L44)
 
 Result of occurrence calculation
 
@@ -14,7 +14,7 @@ Result of occurrence calculation
 
 > **actualEndTime**: `Date`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:47](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L47)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:47](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L47)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:47](https://gith
 
 > **actualStartTime**: `Date`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:46](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L46)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:46](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L46)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:46](https://gith
 
 > **isCancelled**: `boolean`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:48](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L48)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:48](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L48)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:48](https://gith
 
 > **originalStartTime**: `Date`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:45](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L45)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:45](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L45)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:45](https://gith
 
 > **sequenceNumber**: `number`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:49](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L49)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:49](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L49)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:49](https://gith
 
 > **totalCount**: `number`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:50](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L50)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:50](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L50)

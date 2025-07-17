@@ -6,9 +6,10 @@
 
 > **createMaterializationJobs**(`workloads`): [`MaterializationJob`](../../executionEngine/interfaces/MaterializationJob.md)[]
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:104](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L104)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:115](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/jobDiscovery.ts#L115)
 
-Converts discovered workloads into executable materialization jobs with unified date-based approach
+Converts a list of discovered workloads into an array of executable materialization jobs.
+This function uses a unified, date-based approach by normalizing recurrence rules.
 
 ## Parameters
 
@@ -16,6 +17,10 @@ Converts discovered workloads into executable materialization jobs with unified 
 
 [`DiscoveredWorkload`](../interfaces/DiscoveredWorkload.md)[]
 
+An array of discovered workloads to be converted.
+
 ## Returns
 
 [`MaterializationJob`](../../executionEngine/interfaces/MaterializationJob.md)[]
+
+An array of materialization jobs ready for execution.

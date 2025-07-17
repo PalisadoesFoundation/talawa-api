@@ -5,12 +5,12 @@ import type { ResolvedMaterializedEventInstance } from "~/src/drizzle/tables/mat
 import type { ResolveInstanceInput, ServiceDependencies } from "./types";
 
 /**
- * Resolves a single materialized instance with inheritance from base template + exception.
+ * Resolves a single materialized instance by combining the properties of the base event template
+ * with any applicable exceptions. This function forms the core of the inheritance logic,
+ * ensuring that each instance accurately reflects its intended state.
  *
- * This is the core inheritance logic:
- * 1. Start with base template properties
- * 2. Apply exception overrides if they exist
- * 3. Return fully resolved instance
+ * @param input - An object containing the materialized instance, base template, and optional exception.
+ * @returns A fully resolved materialized event instance with all properties correctly inherited and overridden.
  */
 export function resolveInstanceWithInheritance(
 	input: ResolveInstanceInput,
@@ -70,8 +70,12 @@ export function resolveInstanceWithInheritance(
 }
 
 /**
- * Applies exception data to a resolved instance.
- * This function handles the logic of which fields can be overridden and how.
+ * Applies exception data to a resolved instance, overriding base template properties
+ * with the specified changes. This function handles the logic of which fields can be
+ * modified and ensures that the updates are applied correctly.
+ *
+ * @param resolvedInstance - The instance to which the exception data will be applied.
+ * @param exceptionData - An object containing the exception data to apply.
  */
 function applyExceptionData(
 	resolvedInstance: ResolvedMaterializedEventInstance,
@@ -104,7 +108,12 @@ function applyExceptionData(
 }
 
 /**
- * Validates if a field can be overridden by exception data
+ * Validates whether a given field is eligible to be overridden by exception data.
+ * This function maintains a list of overridable fields to prevent unintended modifications.
+ *
+ * @param fieldName - The name of the field to validate.
+ * @param resolvedInstance - The resolved instance, used to check for field existence.
+ * @returns `true` if the field is valid for overriding, otherwise `false`.
  */
 function isValidExceptionField(
 	fieldName: string,
@@ -128,7 +137,15 @@ function isValidExceptionField(
 }
 
 /**
- * Resolves multiple instances in batch for better performance
+ * Resolves multiple materialized instances in a batch operation to improve performance.
+ * This function iterates through a list of instances and applies the inheritance and
+ * exception logic to each one.
+ *
+ * @param instances - An array of materialized instances to resolve.
+ * @param templatesMap - A map of base event templates, keyed by their IDs.
+ * @param exceptionsMap - A map of event exceptions, keyed by a composite key.
+ * @param logger - The logger for logging warnings or errors.
+ * @returns An array of fully resolved materialized event instances.
  */
 export function resolveMultipleInstances(
 	instances: (typeof materializedEventInstancesTable.$inferSelect)[],
@@ -165,7 +182,13 @@ export function resolveMultipleInstances(
 }
 
 /**
- * Creates a composite key for exception lookup
+ * Creates a composite key for the exception lookup map.
+ * This key is used to uniquely identify an exception based on the recurring event ID
+ * and the original start time of the instance.
+ *
+ * @param recurringEventId - The ID of the recurring event.
+ * @param instanceStartTime - The original start time of the instance.
+ * @returns A string representing the composite key.
  */
 export function createExceptionKey(
 	recurringEventId: string,
@@ -175,7 +198,11 @@ export function createExceptionKey(
 }
 
 /**
- * Creates exception lookup maps for efficient batch processing
+ * Creates a lookup map for event exceptions to enable efficient batch processing.
+ * The map is keyed by a composite key of the recurring event ID and instance start time.
+ *
+ * @param exceptions - An array of event exceptions.
+ * @returns A map of exceptions, keyed for quick lookup.
  */
 export function createExceptionLookupMap(
 	exceptions: (typeof eventExceptionsTable.$inferSelect)[],
@@ -197,7 +224,11 @@ export function createExceptionLookupMap(
 }
 
 /**
- * Creates template lookup maps for efficient batch processing
+ * Creates a lookup map for event templates to enable efficient batch processing.
+ * The map is keyed by the event template ID.
+ *
+ * @param templates - An array of event templates.
+ * @returns A map of templates, keyed by their IDs.
  */
 export function createTemplateLookupMap(
 	templates: (typeof eventsTable.$inferSelect)[],
@@ -212,7 +243,12 @@ export function createTemplateLookupMap(
 }
 
 /**
- * Validates that a resolved instance has all required fields
+ * Validates that a resolved materialized instance contains all required fields.
+ * This function helps ensure data integrity before the instance is used elsewhere.
+ *
+ * @param resolvedInstance - The resolved instance to validate.
+ * @param logger - The logger for reporting any missing fields.
+ * @returns `true` if the instance is valid, otherwise `false`.
  */
 export function validateResolvedInstance(
 	resolvedInstance: ResolvedMaterializedEventInstance,

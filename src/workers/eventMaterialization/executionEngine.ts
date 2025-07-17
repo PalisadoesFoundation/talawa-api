@@ -5,10 +5,9 @@ import {
 import type { ProcessingResult, WorkerDependencies } from "./types";
 
 /**
- * Core execution engine for materializing event instances
- * Handles the actual materialization work without scheduling concerns
+ * @description Defines the structure of a materialization job, containing all necessary
+ * information to process a single recurring event.
  */
-
 export interface MaterializationJob {
 	organizationId: string;
 	baseRecurringEventId: string;
@@ -16,6 +15,10 @@ export interface MaterializationJob {
 	windowEndDate: Date;
 }
 
+/**
+ * @description Represents the result of a single materialization job execution,
+ * including the number of instances created and the time taken.
+ */
 export interface MaterializationExecutionResult {
 	organizationId: string;
 	eventId: string;
@@ -24,7 +27,12 @@ export interface MaterializationExecutionResult {
 }
 
 /**
- * Executes materialization for a single organization's events
+ * Executes the materialization process for a single recurring event job.
+ * This function is the core of the execution engine, handling the creation of event instances.
+ *
+ * @param job - The materialization job to execute.
+ * @param deps - The dependencies required for the worker, such as the database client and logger.
+ * @returns A promise that resolves to a processing result, including metrics and resource usage.
  */
 export async function executeMaterialization(
 	job: MaterializationJob,
@@ -103,7 +111,13 @@ export async function executeMaterialization(
 }
 
 /**
- * Executes multiple materialization jobs in parallel
+ * Executes multiple materialization jobs in parallel, with a specified level of concurrency.
+ * This function processes jobs in batches to control resource usage and improve throughput.
+ *
+ * @param jobs - An array of materialization jobs to execute.
+ * @param maxConcurrency - The maximum number of jobs to run in parallel.
+ * @param deps - The dependencies required for the worker.
+ * @returns A promise that resolves to a consolidated processing result for the entire batch.
  */
 export async function executeBatchMaterialization(
 	jobs: MaterializationJob[],

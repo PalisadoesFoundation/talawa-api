@@ -6,9 +6,10 @@
 
 > **validateResolvedInstance**(`resolvedInstance`, `logger`): `boolean`
 
-Defined in: [src/services/eventInstanceMaterialization/instanceResolver.ts:217](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/instanceResolver.ts#L217)
+Defined in: [src/services/eventInstanceMaterialization/instanceResolver.ts:253](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/instanceResolver.ts#L253)
 
-Validates that a resolved instance has all required fields
+Validates that a resolved materialized instance contains all required fields.
+This function helps ensure data integrity before the instance is used elsewhere.
 
 ## Parameters
 
@@ -16,10 +17,16 @@ Validates that a resolved instance has all required fields
 
 [`ResolvedMaterializedEventInstance`](../../../../drizzle/tables/materializedEventInstances/type-aliases/ResolvedMaterializedEventInstance.md)
 
+The resolved instance to validate.
+
 ### logger
 
 `FastifyBaseLogger`
 
+The logger for reporting any missing fields.
+
 ## Returns
 
 `boolean`
+
+`true` if the instance is valid, otherwise `false`.

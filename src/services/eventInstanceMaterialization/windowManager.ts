@@ -5,8 +5,13 @@ import { materializedEventInstancesTable } from "~/src/drizzle/tables/materializ
 import type { ServiceDependencies, WindowManagerConfig } from "./types";
 
 /**
- * Initializes materialization window for an organization.
- * Uses 12-month default for never-ending events.
+ * Initializes the materialization window for a given organization, setting up the time frame
+ * for which event instances will be generated and retained.
+ *
+ * @param input - The input object containing the organization ID.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to the newly created materialization window configuration.
  */
 export async function initializeMaterializationWindow(
 	input: CreateMaterializationWindowInput,
@@ -49,7 +54,11 @@ export async function initializeMaterializationWindow(
 }
 
 /**
- * Builds window configuration with proper defaults and calculated dates
+ * Builds the complete window configuration object, applying fixed global defaults for
+ * the materialization window and retention period.
+ *
+ * @param input - The initial input containing the organization ID.
+ * @returns A complete window configuration object with all required properties.
  */
 function buildWindowConfiguration(
 	input: CreateMaterializationWindowInput,
@@ -80,7 +89,14 @@ function buildWindowConfiguration(
 }
 
 /**
- * Extends materialization window forward by specified months
+ * Extends the materialization window for an organization by a specified number of months,
+ * allowing for the generation of future event instances.
+ *
+ * @param organizationId - The ID of the organization whose window is to be extended.
+ * @param additionalMonths - The number of months to extend the window by.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to the new end date of the materialization window.
  */
 export async function extendMaterializationWindow(
 	organizationId: string,
@@ -136,7 +152,13 @@ export async function extendMaterializationWindow(
 }
 
 /**
- * Cleans up old materialized instances beyond the retention window.
+ * Deletes old materialized instances that fall outside the defined retention window
+ * for a given organization.
+ *
+ * @param organizationId - The ID of the organization for which to clean up instances.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to the number of deleted instances.
  */
 export async function cleanupOldMaterializedInstances(
 	organizationId: string,
@@ -192,7 +214,12 @@ export async function cleanupOldMaterializedInstances(
 }
 
 /**
- * Gets cleanup statistics for an organization
+ * Retrieves cleanup statistics for an organization, including the total number of instances,
+ * the number of instances within the retention window, and the number eligible for cleanup.
+ *
+ * @param organizationId - The ID of the organization to get stats for.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @returns A promise that resolves to an object containing the cleanup statistics.
  */
 export async function getCleanupStats(
 	organizationId: string,
@@ -256,7 +283,11 @@ export async function getCleanupStats(
 }
 
 /**
- * Validates window configuration
+ * Validates the configuration of a window manager to ensure all properties are within
+ * acceptable ranges and formats.
+ *
+ * @param config - The window manager configuration object to validate.
+ * @returns `true` if the configuration is valid, otherwise `false`.
  */
 export function validateWindowConfig(config: WindowManagerConfig): boolean {
 	if (!config.organizationId) {
@@ -284,5 +315,3 @@ export function validateWindowConfig(config: WindowManagerConfig): boolean {
 
 	return true;
 }
-
-// Removed adaptive window sizing - using fixed global settings

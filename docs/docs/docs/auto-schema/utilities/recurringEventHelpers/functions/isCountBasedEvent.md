@@ -6,15 +6,16 @@
 
 > **isCountBasedEvent**(`rule`): `boolean`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:255](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/utilities/recurringEventHelpers.ts#L255)
+Defined in: [src/utilities/recurringEventHelpers.ts:276](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/utilities/recurringEventHelpers.ts#L276)
 
-Determines if a recurrence rule is count-based (has count but no end date).
+Determines if a recurrence rule is count-based.
+A count-based event is defined by a `count` of occurrences and does not have an `endDate`.
 
 ## Parameters
 
 ### rule
 
-The recurrence rule to check
+The recurrence rule to check.
 
 #### baseRecurringEventId
 
@@ -88,4 +89,4 @@ The recurrence rule to check
 
 `boolean`
 
-True if the event is count-based
+`true` if the event is count-based, otherwise `false`.

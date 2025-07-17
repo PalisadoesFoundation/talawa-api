@@ -4,9 +4,11 @@
 
 # Interface: WorkerResult
 
-Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:30](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/materializationPipeline.ts#L30)
+Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:30](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/materializationPipeline.ts#L30)
 
-Simplified worker result
+## Description
+
+Represents the result of a materialization worker run, summarizing the work done.
 
 ## Properties
 
@@ -14,7 +16,7 @@ Simplified worker result
 
 > **errorsEncountered**: `number`
 
-Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:34](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/materializationPipeline.ts#L34)
+Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:34](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/materializationPipeline.ts#L34)
 
 ***
 
@@ -22,7 +24,7 @@ Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:34](htt
 
 > **instancesCreated**: `number`
 
-Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:32](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/materializationPipeline.ts#L32)
+Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:32](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/materializationPipeline.ts#L32)
 
 ***
 
@@ -30,7 +32,7 @@ Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:32](htt
 
 > **organizationsProcessed**: `number`
 
-Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:31](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/materializationPipeline.ts#L31)
+Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:31](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/materializationPipeline.ts#L31)
 
 ***
 
@@ -38,7 +40,7 @@ Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:31](htt
 
 > **processingTimeMs**: `number`
 
-Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:35](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/materializationPipeline.ts#L35)
+Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:35](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/materializationPipeline.ts#L35)
 
 ***
 
@@ -46,4 +48,4 @@ Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:35](htt
 
 > **windowsUpdated**: `number`
 
-Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:33](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/materializationPipeline.ts#L33)
+Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:33](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/materializationPipeline.ts#L33)

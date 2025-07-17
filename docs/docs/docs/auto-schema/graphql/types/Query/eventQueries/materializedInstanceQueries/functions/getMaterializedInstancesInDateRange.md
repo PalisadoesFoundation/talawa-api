@@ -6,16 +6,11 @@
 
 > **getMaterializedInstancesInDateRange**(`input`, `drizzleClient`, `logger`): `Promise`\<[`ResolvedMaterializedEventInstance`](../../../../../../drizzle/tables/materializedEventInstances/type-aliases/ResolvedMaterializedEventInstance.md)[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:32](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L32)
+Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:38](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L38)
 
-Gets materialized instances for an organization within a date range.
-Resolves each instance with inheritance from template + exceptions.
-
-This demonstrates the exception table only approach:
-1. Get materialized instances (just dates and metadata)
-2. Get base templates (for inheritance)
-3. Get exceptions (for overrides)
-4. Resolve inheritance + exceptions at runtime
+Retrieves materialized event instances for a given organization within a specified date range.
+This function resolves each instance by combining data from the base event template
+with any applicable exceptions, providing a complete and accurate representation of each event instance.
 
 ## Parameters
 
@@ -23,14 +18,22 @@ This demonstrates the exception table only approach:
 
 [`GetMaterializedInstancesInput`](../interfaces/GetMaterializedInstancesInput.md)
 
+The input object containing organizationId, date range, and optional filters.
+
 ### drizzleClient
 
 `NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
+
+The Drizzle ORM client for database access.
 
 ### logger
 
 `FastifyBaseLogger`
 
+The logger for logging debug and error messages.
+
 ## Returns
 
 `Promise`\<[`ResolvedMaterializedEventInstance`](../../../../../../drizzle/tables/materializedEventInstances/type-aliases/ResolvedMaterializedEventInstance.md)[]\>
+
+A promise that resolves to an array of fully resolved materialized event instances.

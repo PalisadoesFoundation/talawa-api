@@ -6,16 +6,18 @@
 
 > **validateRecurrenceRule**(`rule`): `object`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:327](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/utilities/recurringEventHelpers.ts#L327)
+Defined in: [src/utilities/recurringEventHelpers.ts:355](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/utilities/recurringEventHelpers.ts#L355)
 
-Validates that a recurrence rule has valid configuration.
-This is for database-level recurrence rules, different from GraphQL input validation above.
+Validates a recurrence rule from the database to ensure its configuration is valid.
+This function checks for the presence of a valid frequency, ensures that the interval
+and count are positive integers if they exist, and verifies that the end date is
+after the start date.
 
 ## Parameters
 
 ### rule
 
-The recurrence rule to validate
+The recurrence rule to validate.
 
 #### baseRecurringEventId
 
@@ -89,7 +91,7 @@ The recurrence rule to validate
 
 `object`
 
-Object with validation result and any errors
+An object with a boolean `isValid` and an array of error strings.
 
 ### errors
 

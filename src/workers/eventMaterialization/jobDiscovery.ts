@@ -10,16 +10,18 @@ import type { MaterializationJob } from "./executionEngine";
 import type { WorkerDependencies } from "./types";
 
 /**
- * Job discovery and creation for materialization workloads
- * Uses unified approach: converts count-based events to end-date-based events
+ * @description Configuration for the job discovery process, defining limits and thresholds.
  */
-
 export interface JobDiscoveryConfig {
 	maxOrganizations: number;
 	lookAheadMonths: number;
 	priorityThreshold: number;
 }
 
+/**
+ * @description Represents a discovered workload for a single organization, including all
+ * recurring events that require materialization.
+ */
 export interface DiscoveredWorkload {
 	organizationId: string;
 	windowConfig: typeof eventMaterializationWindowsTable.$inferSelect;
@@ -36,7 +38,12 @@ export interface DiscoveredWorkload {
 }
 
 /**
- * Discovers organizations and events that need materialization
+ * Discovers organizations and their recurring events that require materialization,
+ * creating a prioritized list of workloads.
+ *
+ * @param config - The configuration for the job discovery process.
+ * @param deps - The dependencies required for the worker, such as the database client and logger.
+ * @returns A promise that resolves to an array of discovered workloads, sorted by priority.
  */
 export async function discoverMaterializationWorkloads(
 	config: JobDiscoveryConfig,
@@ -99,7 +106,11 @@ export async function discoverMaterializationWorkloads(
 }
 
 /**
- * Converts discovered workloads into executable materialization jobs with unified date-based approach
+ * Converts a list of discovered workloads into an array of executable materialization jobs.
+ * This function uses a unified, date-based approach by normalizing recurrence rules.
+ *
+ * @param workloads - An array of discovered workloads to be converted.
+ * @returns An array of materialization jobs ready for execution.
  */
 export function createMaterializationJobs(
 	workloads: DiscoveredWorkload[],
@@ -132,7 +143,13 @@ export function createMaterializationJobs(
 }
 
 /**
- * Calculates appropriate window end date for an event based on its end date (unified approach)
+ * Calculates the appropriate window end date for a given event, using a unified approach
+ * that considers the event's normalized end date.
+ *
+ * @param normalizedRule - The normalized recurrence rule, with count converted to an end date.
+ * @param windowConfig - The materialization window configuration for the organization.
+ * @param now - The current date, used as a reference for calculations.
+ * @returns The calculated end date for the materialization window.
  */
 function calculateWindowEndDateForEvent(
 	normalizedRule: typeof recurrenceRulesTable.$inferSelect,
@@ -161,7 +178,12 @@ function calculateWindowEndDateForEvent(
 }
 
 /**
- * Finds organizations that need materialization work
+ * Finds organizations that require materialization work based on their current window
+ * and processing status.
+ *
+ * @param config - The job discovery configuration.
+ * @param deps - The worker dependencies.
+ * @returns A promise that resolves to an array of organization window configurations.
  */
 async function findOrganizationsNeedingWork(
 	config: JobDiscoveryConfig,
@@ -191,7 +213,11 @@ async function findOrganizationsNeedingWork(
 }
 
 /**
- * Discovers recurring events for an organization
+ * Discovers all recurring events for a given organization that may require materialization.
+ *
+ * @param organizationId - The ID of the organization to discover events for.
+ * @param deps - The worker dependencies.
+ * @returns A promise that resolves to an array of detailed recurring event information.
  */
 async function discoverRecurringEventsForOrganization(
 	organizationId: string,
@@ -249,7 +275,12 @@ async function discoverRecurringEventsForOrganization(
 }
 
 /**
- * Calculates priority for a workload
+ * Calculates the priority of a materialization workload based on factors like event type,
+ * window urgency, and the number of events.
+ *
+ * @param windowConfig - The materialization window configuration.
+ * @param recurringEvents - An array of recurring events in the workload.
+ * @returns A numerical priority score, with higher values indicating higher priority.
  */
 function calculateWorkloadPriority(
 	windowConfig: typeof eventMaterializationWindowsTable.$inferSelect,
@@ -287,7 +318,11 @@ function calculateWorkloadPriority(
 }
 
 /**
- * Estimates workload duration
+ * Estimates the duration of a materialization workload based on the number of events
+ * and the total estimated instances to be created.
+ *
+ * @param recurringEvents - An array of recurring events in the workload.
+ * @returns The estimated duration of the workload in milliseconds.
  */
 function estimateWorkloadDuration(
 	recurringEvents: Array<{ estimatedInstances: number }>,
@@ -309,7 +344,9 @@ function estimateWorkloadDuration(
 }
 
 /**
- * Creates default job discovery configuration
+ * Creates a default configuration object for the job discovery process.
+ *
+ * @returns A default job discovery configuration.
  */
 export function createDefaultJobDiscoveryConfig(): JobDiscoveryConfig {
 	return {

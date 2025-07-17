@@ -7,13 +7,8 @@
  * - Functional worker modules: Direct access to functional components
  */
 
-export {
-	BackgroundWorkerService,
-	initializeBackgroundWorkerService,
-	getBackgroundWorkerService,
-} from "./backgroundWorkerService";
-
-export { EventCleanupWorker } from "./eventCleanupWorker";
+export * from "./backgroundWorkerService";
+export * from "./eventCleanupWorker";
 
 // Functional worker API - imported directly from modules
 export {
@@ -40,12 +35,12 @@ export {
 } from "./eventMaterialization/jobDiscovery";
 
 export {
-	getOrganizationsNeedingMaterialization,
-	updateWindowAfterProcessing,
-	getOrganizationMaterializationStatus,
-	type WindowProcessingConfig,
-	type WindowProcessingResult,
-} from "./eventMaterialization/windowManager";
+	initializeMaterializationWindow,
+	extendMaterializationWindow,
+	cleanupOldMaterializedInstances,
+	getCleanupStats,
+	validateWindowConfig,
+} from "../services/eventInstanceMaterialization/windowManager";
 
 export {
 	executePostProcessing,
