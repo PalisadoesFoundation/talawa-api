@@ -74,7 +74,11 @@ export const validateRecurrenceInput = (
 	}
 
 	// Validate count (only if count is provided)
-	if (recurrence.count && recurrence.count < 1) {
+	if (
+		recurrence.count !== null &&
+		recurrence.count !== undefined &&
+		recurrence.count < 1
+	) {
 		errors.push("Recurrence count must be at least 1");
 	}
 
@@ -223,7 +227,7 @@ export function estimateInstanceCount(
 
 		switch (rule.frequency) {
 			case "DAILY":
-				return Math.ceil(daysDiff / interval);
+				return Math.ceil(daysDiff / interval) + 1;
 			case "WEEKLY":
 				return Math.ceil(daysDiff / (7 * interval));
 			case "MONTHLY":
