@@ -4,7 +4,7 @@
 
 # Class: EventCleanupWorker
 
-Defined in: [src/workers/eventCleanupWorker.ts:17](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventCleanupWorker.ts#L17)
+Defined in: [src/workers/eventCleanupWorker.ts:17](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventCleanupWorker.ts#L17)
 
 Worker responsible for cleaning up old materialized event instances.
 
@@ -20,7 +20,7 @@ This worker:
 
 > **new EventCleanupWorker**(`drizzleClient`, `logger`): `EventCleanupWorker`
 
-Defined in: [src/workers/eventCleanupWorker.ts:18](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventCleanupWorker.ts#L18)
+Defined in: [src/workers/eventCleanupWorker.ts:18](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventCleanupWorker.ts#L18)
 
 #### Parameters
 
@@ -42,7 +42,7 @@ Defined in: [src/workers/eventCleanupWorker.ts:18](https://github.com/gautam-div
 
 > **cleanupOldInstances**(): `Promise`\<\{ `errorsEncountered`: `number`; `instancesDeleted`: `number`; `organizationsProcessed`: `number`; \}\>
 
-Defined in: [src/workers/eventCleanupWorker.ts:26](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventCleanupWorker.ts#L26)
+Defined in: [src/workers/eventCleanupWorker.ts:26](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventCleanupWorker.ts#L26)
 
 Main cleanup method - processes all organizations' retention policies.
 
@@ -56,7 +56,7 @@ Main cleanup method - processes all organizations' retention policies.
 
 > **cleanupSpecificOrganization**(`organizationId`): `Promise`\<\{ `instancesDeleted`: `number`; `retentionCutoffDate`: `Date`; \}\>
 
-Defined in: [src/workers/eventCleanupWorker.ts:161](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventCleanupWorker.ts#L161)
+Defined in: [src/workers/eventCleanupWorker.ts:161](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventCleanupWorker.ts#L161)
 
 Manually cleans up instances for a specific organization.
 
@@ -76,7 +76,7 @@ Manually cleans up instances for a specific organization.
 
 > **emergencyCleanupBefore**(`cutoffDate`): `Promise`\<\{ `instancesDeleted`: `number`; `organizationsAffected`: `number`; \}\>
 
-Defined in: [src/workers/eventCleanupWorker.ts:276](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventCleanupWorker.ts#L276)
+Defined in: [src/workers/eventCleanupWorker.ts:276](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventCleanupWorker.ts#L276)
 
 Emergency cleanup method that removes ALL instances older than a specific date.
 Use with caution - this ignores per-organization retention settings.
@@ -97,7 +97,7 @@ Use with caution - this ignores per-organization retention settings.
 
 > **getGlobalCleanupStatistics**(): `Promise`\<\{ `averageInstancesPerOrganization`: `number`; `newestInstanceDate`: `Date`; `oldestInstanceDate`: `Date`; `totalInstances`: `number`; `totalInstancesEligibleForCleanup`: `number`; `totalOrganizations`: `number`; \}\>
 
-Defined in: [src/workers/eventCleanupWorker.ts:316](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventCleanupWorker.ts#L316)
+Defined in: [src/workers/eventCleanupWorker.ts:316](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventCleanupWorker.ts#L316)
 
 Gets overall cleanup statistics across all organizations.
 
@@ -111,7 +111,7 @@ Gets overall cleanup statistics across all organizations.
 
 > **getOrganizationCleanupStatus**(`organizationId`): `Promise`\<\{ `instancesEligibleForCleanup`: `number`; `lastCleanupDate`: `Date`; `retentionCutoffDate`: `Date`; `retentionMonths`: `number`; `totalInstances`: `number`; \}\>
 
-Defined in: [src/workers/eventCleanupWorker.ts:205](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventCleanupWorker.ts#L205)
+Defined in: [src/workers/eventCleanupWorker.ts:205](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventCleanupWorker.ts#L205)
 
 Gets cleanup status for an organization.
 

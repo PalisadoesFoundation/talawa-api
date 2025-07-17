@@ -4,7 +4,7 @@
 
 # Interface: WorkerDependencies
 
-Defined in: [src/workers/eventMaterialization/windowManager.ts:12](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/windowManager.ts#L12)
+Defined in: [src/workers/eventMaterialization/windowManager.ts:12](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/windowManager.ts#L12)
 
 Worker dependencies for window management functions
 
@@ -14,7 +14,7 @@ Worker dependencies for window management functions
 
 > **drizzleClient**: `NodePgDatabase`\<[`drizzle/schema`](../../../../drizzle/schema/README.md)\>
 
-Defined in: [src/workers/eventMaterialization/windowManager.ts:13](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/windowManager.ts#L13)
+Defined in: [src/workers/eventMaterialization/windowManager.ts:13](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/windowManager.ts#L13)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [src/workers/eventMaterialization/windowManager.ts:13](https://githu
 
 > **logger**: `FastifyBaseLogger`
 
-Defined in: [src/workers/eventMaterialization/windowManager.ts:14](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/windowManager.ts#L14)
+Defined in: [src/workers/eventMaterialization/windowManager.ts:14](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/windowManager.ts#L14)

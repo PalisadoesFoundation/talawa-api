@@ -6,4 +6,4 @@
 
 > `const` **MembershipRequestStatusValues**: readonly \[`"pending"`, `"approved"`, `"rejected"`\]
 
-Defined in: [src/drizzle/enums/membershipRequestStatus.ts:12](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/drizzle/enums/membershipRequestStatus.ts#L12)
+Defined in: [src/drizzle/enums/membershipRequestStatus.ts:12](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/drizzle/enums/membershipRequestStatus.ts#L12)

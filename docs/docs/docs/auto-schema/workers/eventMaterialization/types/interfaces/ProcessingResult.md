@@ -4,7 +4,7 @@
 
 # Interface: ProcessingResult\<T\>
 
-Defined in: [src/workers/eventMaterialization/types.ts:37](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/types.ts#L37)
+Defined in: [src/workers/eventMaterialization/types.ts:37](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/types.ts#L37)
 
 ## Type Parameters
 
@@ -18,7 +18,7 @@ Defined in: [src/workers/eventMaterialization/types.ts:37](https://github.com/ga
 
 > **data**: `T`
 
-Defined in: [src/workers/eventMaterialization/types.ts:39](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/types.ts#L39)
+Defined in: [src/workers/eventMaterialization/types.ts:39](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/types.ts#L39)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [src/workers/eventMaterialization/types.ts:39](https://github.com/ga
 
 > `optional` **error**: `string`
 
-Defined in: [src/workers/eventMaterialization/types.ts:40](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/types.ts#L40)
+Defined in: [src/workers/eventMaterialization/types.ts:40](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/types.ts#L40)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [src/workers/eventMaterialization/types.ts:40](https://github.com/ga
 
 > **metrics**: [`ProcessingMetrics`](ProcessingMetrics.md)
 
-Defined in: [src/workers/eventMaterialization/types.ts:41](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/types.ts#L41)
+Defined in: [src/workers/eventMaterialization/types.ts:41](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/types.ts#L41)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [src/workers/eventMaterialization/types.ts:41](https://github.com/ga
 
 > **resourceUsage**: [`ResourceUsage`](ResourceUsage.md)
 
-Defined in: [src/workers/eventMaterialization/types.ts:42](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/types.ts#L42)
+Defined in: [src/workers/eventMaterialization/types.ts:42](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/types.ts#L42)
 
 ***
 
@@ -50,4 +50,4 @@ Defined in: [src/workers/eventMaterialization/types.ts:42](https://github.com/ga
 
 > **success**: `boolean`
 
-Defined in: [src/workers/eventMaterialization/types.ts:38](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/types.ts#L38)
+Defined in: [src/workers/eventMaterialization/types.ts:38](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/types.ts#L38)

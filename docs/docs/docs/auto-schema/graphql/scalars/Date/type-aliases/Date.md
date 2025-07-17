@@ -6,7 +6,7 @@
 
 > **\_Date** = `object`
 
-Defined in: [src/graphql/scalars/Date.ts:12](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/scalars/Date.ts#L12)
+Defined in: [src/graphql/scalars/Date.ts:12](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/scalars/Date.ts#L12)
 
 `Date` scalar type for pothos schema.
 
@@ -16,7 +16,7 @@ Defined in: [src/graphql/scalars/Date.ts:12](https://github.com/gautam-divyanshu
 
 > **Input**: `Date`
 
-Defined in: [src/graphql/scalars/Date.ts:13](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/scalars/Date.ts#L13)
+Defined in: [src/graphql/scalars/Date.ts:13](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/scalars/Date.ts#L13)
 
 ***
 
@@ -24,4 +24,4 @@ Defined in: [src/graphql/scalars/Date.ts:13](https://github.com/gautam-divyanshu
 
 > **Output**: `Date`
 
-Defined in: [src/graphql/scalars/Date.ts:14](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/scalars/Date.ts#L14)
+Defined in: [src/graphql/scalars/Date.ts:14](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/scalars/Date.ts#L14)

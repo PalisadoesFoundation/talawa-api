@@ -6,7 +6,7 @@
 
 > **BlockedUser** = `object`
 
-Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:5](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/types/BlockedUser/BlockedUser.ts#L5)
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:5](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/BlockedUser/BlockedUser.ts#L5)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:5](https://github.com/
 
 > **createdAt**: `Date`
 
-Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:9](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/types/BlockedUser/BlockedUser.ts#L9)
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:9](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/BlockedUser/BlockedUser.ts#L9)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:9](https://github.com/
 
 > **id**: `string`
 
-Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:6](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/types/BlockedUser/BlockedUser.ts#L6)
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:6](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/BlockedUser/BlockedUser.ts#L6)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:6](https://github.com/
 
 > **organization**: [`Organization`](../../../Organization/Organization/type-aliases/Organization.md)
 
-Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:7](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/types/BlockedUser/BlockedUser.ts#L7)
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:7](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/BlockedUser/BlockedUser.ts#L7)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:7](https://github.com/
 
 > **user**: [`User`](../../../User/User/type-aliases/User.md)
 
-Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:8](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/types/BlockedUser/BlockedUser.ts#L8)
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:8](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/BlockedUser/BlockedUser.ts#L8)

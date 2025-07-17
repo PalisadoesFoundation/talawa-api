@@ -6,7 +6,7 @@
 
 > **getMaterializedInstancesInDateRange**(`input`, `drizzleClient`, `logger`): `Promise`\<[`ResolvedMaterializedEventInstance`](../../../../../../drizzle/tables/materializedEventInstances/type-aliases/ResolvedMaterializedEventInstance.md)[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:32](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L32)
+Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:32](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L32)
 
 Gets materialized instances for an organization within a date range.
 Resolves each instance with inheritance from template + exceptions.

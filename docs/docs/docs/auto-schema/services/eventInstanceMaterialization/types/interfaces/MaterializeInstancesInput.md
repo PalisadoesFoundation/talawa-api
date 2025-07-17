@@ -4,7 +4,7 @@
 
 # Interface: MaterializeInstancesInput
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:23](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/services/eventInstanceMaterialization/types.ts#L23)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:23](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L23)
 
 Input for materializing instances for a recurring event
 
@@ -14,7 +14,7 @@ Input for materializing instances for a recurring event
 
 > **baseRecurringEventId**: `string`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:24](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/services/eventInstanceMaterialization/types.ts#L24)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:24](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L24)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:24](https://gith
 
 > **organizationId**: `string`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:27](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/services/eventInstanceMaterialization/types.ts#L27)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:27](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L27)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:27](https://gith
 
 > **windowEndDate**: `Date`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:26](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/services/eventInstanceMaterialization/types.ts#L26)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:26](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L26)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:26](https://gith
 
 > **windowStartDate**: `Date`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:25](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/services/eventInstanceMaterialization/types.ts#L25)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:25](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/types.ts#L25)

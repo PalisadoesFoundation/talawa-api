@@ -4,7 +4,7 @@
 
 # Interface: DiscoveredWorkload
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:19](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L19)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:23](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L23)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:19](https://github
 
 > **estimatedDurationMs**: `number`
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:30](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L30)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:35](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L35)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:30](https://github
 
 > **organizationId**: `string`
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:20](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L20)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:24](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L24)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:20](https://github
 
 > **priority**: `number`
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:29](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L29)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:34](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L34)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:29](https://github
 
 > **recurringEvents**: `object`[]
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:22](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L22)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:26](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L26)
 
 #### estimatedInstances
 
@@ -54,6 +54,78 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:22](https://github
 
 > **isNeverEnding**: `boolean`
 
+#### recurrenceRule
+
+> **recurrenceRule**: `object`
+
+##### recurrenceRule.baseRecurringEventId
+
+> **baseRecurringEventId**: `string`
+
+##### recurrenceRule.byDay
+
+> **byDay**: `string`[]
+
+##### recurrenceRule.byMonth
+
+> **byMonth**: `number`[]
+
+##### recurrenceRule.byMonthDay
+
+> **byMonthDay**: `number`[]
+
+##### recurrenceRule.count
+
+> **count**: `number`
+
+##### recurrenceRule.createdAt
+
+> **createdAt**: `Date`
+
+##### recurrenceRule.creatorId
+
+> **creatorId**: `string`
+
+##### recurrenceRule.frequency
+
+> **frequency**: `"DAILY"` \| `"WEEKLY"` \| `"MONTHLY"` \| `"YEARLY"`
+
+##### recurrenceRule.id
+
+> **id**: `string`
+
+##### recurrenceRule.interval
+
+> **interval**: `number`
+
+##### recurrenceRule.latestInstanceDate
+
+> **latestInstanceDate**: `Date`
+
+##### recurrenceRule.organizationId
+
+> **organizationId**: `string`
+
+##### recurrenceRule.recurrenceEndDate
+
+> **recurrenceEndDate**: `Date`
+
+##### recurrenceRule.recurrenceRuleString
+
+> **recurrenceRuleString**: `string`
+
+##### recurrenceRule.recurrenceStartDate
+
+> **recurrenceStartDate**: `Date`
+
+##### recurrenceRule.updatedAt
+
+> **updatedAt**: `Date`
+
+##### recurrenceRule.updaterId
+
+> **updaterId**: `string`
+
 #### ruleId
 
 > **ruleId**: `string`
@@ -64,7 +136,7 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:22](https://github
 
 > **windowConfig**: `object`
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:21](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L21)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:25](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L25)
 
 #### configurationNotes
 

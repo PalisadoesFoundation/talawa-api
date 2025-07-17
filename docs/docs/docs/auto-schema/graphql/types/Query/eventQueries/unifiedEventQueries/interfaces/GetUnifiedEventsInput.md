@@ -4,7 +4,7 @@
 
 # Interface: GetUnifiedEventsInput
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:29](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L29)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:29](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L29)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:29](htt
 
 > **endDate**: `Date`
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:32](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L32)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:32](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L32)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:32](htt
 
 > `optional` **includeRecurring**: `boolean`
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:33](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L33)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:33](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L33)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:33](htt
 
 > `optional` **limit**: `number`
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:34](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L34)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:34](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L34)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:34](htt
 
 > **organizationId**: `string`
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:30](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L30)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:30](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L30)
 
 ***
 
@@ -44,4 +44,4 @@ Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:30](htt
 
 > **startDate**: `Date`
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:31](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L31)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:31](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L31)

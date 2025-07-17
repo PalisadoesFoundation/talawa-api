@@ -6,7 +6,7 @@
 
 > **createExceptionKey**(`recurringEventId`, `instanceStartTime`): `string`
 
-Defined in: [src/services/eventInstanceMaterialization/instanceResolver.ts:170](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/services/eventInstanceMaterialization/instanceResolver.ts#L170)
+Defined in: [src/services/eventInstanceMaterialization/instanceResolver.ts:170](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/services/eventInstanceMaterialization/instanceResolver.ts#L170)
 
 Creates a composite key for exception lookup
 

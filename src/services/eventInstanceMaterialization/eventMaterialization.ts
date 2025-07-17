@@ -8,6 +8,7 @@ import {
 } from "~/src/drizzle/tables/materializedEventInstances";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 
+import { normalizeRecurrenceRule } from "~/src/utilities/recurringEventHelpers";
 import { calculateInstanceOccurrences } from "./occurrenceCalculator";
 import type { MaterializeInstancesInput, ServiceDependencies } from "./types";
 
@@ -59,10 +60,13 @@ export async function materializeInstancesForRecurringEvent(
 			where: eq(eventExceptionsTable.recurringEventId, baseRecurringEventId),
 		});
 
-		// Calculate occurrence times
+		// Normalize the recurrence rule (convert count to end date for unified processing)
+		const normalizedRecurrenceRule = normalizeRecurrenceRule(recurrenceRule);
+
+		// Calculate occurrence times using normalized rule
 		const occurrences = calculateInstanceOccurrences(
 			{
-				recurrenceRule,
+				recurrenceRule: normalizedRecurrenceRule,
 				baseEvent: baseTemplate,
 				windowStart: windowStartDate,
 				windowEnd: windowEndDate,
@@ -74,7 +78,10 @@ export async function materializeInstancesForRecurringEvent(
 		logger.info(
 			`Generated ${occurrences.length} occurrences for ${baseRecurringEventId}`,
 			{
-				frequency: recurrenceRule.frequency,
+				frequency: normalizedRecurrenceRule.frequency,
+				originalCount: recurrenceRule.count,
+				normalizedEndDate:
+					normalizedRecurrenceRule.recurrenceEndDate?.toISOString(),
 				firstOccurrence:
 					occurrences[0]?.originalStartTime.toISOString() ?? null,
 				lastOccurrence:

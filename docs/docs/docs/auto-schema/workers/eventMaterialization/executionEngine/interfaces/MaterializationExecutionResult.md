@@ -4,7 +4,7 @@
 
 # Interface: MaterializationExecutionResult
 
-Defined in: [src/workers/eventMaterialization/executionEngine.ts:19](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/executionEngine.ts#L19)
+Defined in: [src/workers/eventMaterialization/executionEngine.ts:19](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/executionEngine.ts#L19)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/workers/eventMaterialization/executionEngine.ts:19](https://git
 
 > **eventId**: `string`
 
-Defined in: [src/workers/eventMaterialization/executionEngine.ts:21](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/executionEngine.ts#L21)
+Defined in: [src/workers/eventMaterialization/executionEngine.ts:21](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/executionEngine.ts#L21)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/workers/eventMaterialization/executionEngine.ts:21](https://git
 
 > **executionTimeMs**: `number`
 
-Defined in: [src/workers/eventMaterialization/executionEngine.ts:23](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/executionEngine.ts#L23)
+Defined in: [src/workers/eventMaterialization/executionEngine.ts:23](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/executionEngine.ts#L23)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/workers/eventMaterialization/executionEngine.ts:23](https://git
 
 > **instancesCreated**: `number`
 
-Defined in: [src/workers/eventMaterialization/executionEngine.ts:22](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/executionEngine.ts#L22)
+Defined in: [src/workers/eventMaterialization/executionEngine.ts:22](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/executionEngine.ts#L22)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/workers/eventMaterialization/executionEngine.ts:22](https://git
 
 > **organizationId**: `string`
 
-Defined in: [src/workers/eventMaterialization/executionEngine.ts:20](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/executionEngine.ts#L20)
+Defined in: [src/workers/eventMaterialization/executionEngine.ts:20](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/executionEngine.ts#L20)

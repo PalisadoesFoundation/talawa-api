@@ -2,12 +2,16 @@ import { and, eq, lt } from "drizzle-orm";
 import { eventMaterializationWindowsTable } from "~/src/drizzle/tables/eventMaterializationWindows";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import {
+	estimateInstanceCount,
+	normalizeRecurrenceRule,
+} from "~/src/utilities/recurringEventHelpers";
 import type { MaterializationJob } from "./executionEngine";
 import type { WorkerDependencies } from "./types";
 
 /**
  * Job discovery and creation for materialization workloads
- * Handles finding work that needs to be done and converting it to executable jobs
+ * Uses unified approach: converts count-based events to end-date-based events
  */
 
 export interface JobDiscoveryConfig {
@@ -25,6 +29,7 @@ export interface DiscoveredWorkload {
 		ruleId: string;
 		isNeverEnding: boolean;
 		estimatedInstances: number;
+		recurrenceRule: typeof recurrenceRulesTable.$inferSelect;
 	}>;
 	priority: number;
 	estimatedDurationMs: number;
@@ -94,7 +99,7 @@ export async function discoverMaterializationWorkloads(
 }
 
 /**
- * Converts discovered workloads into executable materialization jobs
+ * Converts discovered workloads into executable materialization jobs with unified date-based approach
  */
 export function createMaterializationJobs(
 	workloads: DiscoveredWorkload[],
@@ -103,12 +108,17 @@ export function createMaterializationJobs(
 	const now = new Date();
 
 	for (const workload of workloads) {
-		const windowEndDate = new Date(now);
-		windowEndDate.setMonth(
-			windowEndDate.getMonth() + workload.windowConfig.hotWindowMonthsAhead,
-		);
-
 		for (const event of workload.recurringEvents) {
+			// Normalize the recurrence rule (convert count to end date)
+			const normalizedRule = normalizeRecurrenceRule(event.recurrenceRule);
+
+			// Calculate window end date based on the normalized rule
+			const windowEndDate = calculateWindowEndDateForEvent(
+				normalizedRule,
+				workload.windowConfig,
+				now,
+			);
+
 			jobs.push({
 				organizationId: workload.organizationId,
 				baseRecurringEventId: event.eventId,
@@ -119,6 +129,35 @@ export function createMaterializationJobs(
 	}
 
 	return jobs;
+}
+
+/**
+ * Calculates appropriate window end date for an event based on its end date (unified approach)
+ */
+function calculateWindowEndDateForEvent(
+	normalizedRule: typeof recurrenceRulesTable.$inferSelect,
+	windowConfig: typeof eventMaterializationWindowsTable.$inferSelect,
+	now: Date,
+): Date {
+	// Default window end date (12 months from now)
+	const defaultWindowEnd = new Date(now);
+	defaultWindowEnd.setMonth(
+		defaultWindowEnd.getMonth() + windowConfig.hotWindowMonthsAhead,
+	);
+
+	// If event has an end date (either original or calculated from count)
+	if (normalizedRule.recurrenceEndDate) {
+		// Add small buffer (1 week) to end date
+		const endWithBuffer = new Date(normalizedRule.recurrenceEndDate);
+		endWithBuffer.setDate(endWithBuffer.getDate() + 7);
+
+		// Use the later of: event end date or default window
+		// This ensures we never cut off events early, but extend when needed
+		return endWithBuffer > defaultWindowEnd ? endWithBuffer : defaultWindowEnd;
+	}
+
+	// For never-ending events, use default window
+	return defaultWindowEnd;
 }
 
 /**
@@ -164,6 +203,7 @@ async function discoverRecurringEventsForOrganization(
 		ruleId: string;
 		isNeverEnding: boolean;
 		estimatedInstances: number;
+		recurrenceRule: typeof recurrenceRulesTable.$inferSelect;
 	}>
 > {
 	const { drizzleClient } = deps;
@@ -201,6 +241,7 @@ async function discoverRecurringEventsForOrganization(
 			ruleId: rule.id,
 			isNeverEnding,
 			estimatedInstances,
+			recurrenceRule: rule,
 		});
 	}
 
@@ -265,51 +306,6 @@ function estimateWorkloadDuration(
 		recurringEvents.length * timePerEvent +
 		totalInstances * timePerInstance
 	);
-}
-
-/**
- * Estimates instance count for a recurrence rule
- */
-function estimateInstanceCount(
-	rule: typeof recurrenceRulesTable.$inferSelect,
-): number {
-	if (rule.count) return rule.count;
-
-	if (rule.recurrenceEndDate) {
-		const daysDiff = Math.ceil(
-			(rule.recurrenceEndDate.getTime() - rule.recurrenceStartDate.getTime()) /
-				(1000 * 60 * 60 * 24),
-		);
-		const interval = rule.interval || 1;
-
-		switch (rule.frequency) {
-			case "DAILY":
-				return Math.ceil(daysDiff / interval);
-			case "WEEKLY":
-				return Math.ceil(daysDiff / (7 * interval));
-			case "MONTHLY":
-				return Math.ceil(daysDiff / (30 * interval));
-			case "YEARLY":
-				return Math.ceil(daysDiff / (365 * interval));
-			default:
-				return 100;
-		}
-	}
-
-	// Never-ending: estimate for 12 months
-	const interval = rule.interval || 1;
-	switch (rule.frequency) {
-		case "DAILY":
-			return Math.ceil(365 / interval);
-		case "WEEKLY":
-			return Math.ceil(52 / interval);
-		case "MONTHLY":
-			return Math.ceil(12 / interval);
-		case "YEARLY":
-			return Math.ceil(1 / interval);
-		default:
-			return 100;
-	}
 }
 
 /**

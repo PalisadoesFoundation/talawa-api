@@ -4,7 +4,7 @@
 
 # Interface: WorkerConfig
 
-Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:21](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/materializationPipeline.ts#L21)
+Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:21](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/materializationPipeline.ts#L21)
 
 Simple worker configuration
 
@@ -14,7 +14,7 @@ Simple worker configuration
 
 > **enablePostProcessing**: `boolean`
 
-Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:24](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/materializationPipeline.ts#L24)
+Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:24](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/materializationPipeline.ts#L24)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:24](htt
 
 > **maxConcurrentJobs**: `number`
 
-Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:22](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/materializationPipeline.ts#L22)
+Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:22](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/materializationPipeline.ts#L22)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:22](htt
 
 > **maxOrganizations**: `number`
 
-Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:23](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/materializationPipeline.ts#L23)
+Defined in: [src/workers/eventMaterialization/materializationPipeline.ts:23](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/materializationPipeline.ts#L23)

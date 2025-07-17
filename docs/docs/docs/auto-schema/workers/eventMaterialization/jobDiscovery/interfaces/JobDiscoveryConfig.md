@@ -4,10 +4,10 @@
 
 # Interface: JobDiscoveryConfig
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:13](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L13)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:17](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L17)
 
 Job discovery and creation for materialization workloads
-Handles finding work that needs to be done and converting it to executable jobs
+Uses unified approach: converts count-based events to end-date-based events
 
 ## Properties
 
@@ -15,7 +15,7 @@ Handles finding work that needs to be done and converting it to executable jobs
 
 > **lookAheadMonths**: `number`
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:15](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L15)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:19](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L19)
 
 ***
 
@@ -23,7 +23,7 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:15](https://github
 
 > **maxOrganizations**: `number`
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:14](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L14)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:18](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L18)
 
 ***
 
@@ -31,4 +31,4 @@ Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:14](https://github
 
 > **priorityThreshold**: `number`
 
-Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:16](https://github.com/gautam-divyanshu/talawa-api/blob/de42235531e11387f0ad0479547630845dbc8b37/src/workers/eventMaterialization/jobDiscovery.ts#L16)
+Defined in: [src/workers/eventMaterialization/jobDiscovery.ts:20](https://github.com/gautam-divyanshu/talawa-api/blob/22f85ff86fcf5f38b53dcdb9fe90ab33ea32d944/src/workers/eventMaterialization/jobDiscovery.ts#L20)
