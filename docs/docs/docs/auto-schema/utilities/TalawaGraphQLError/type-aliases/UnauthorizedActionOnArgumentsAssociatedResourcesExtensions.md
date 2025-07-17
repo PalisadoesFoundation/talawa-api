@@ -4,11 +4,21 @@
 
 # Type Alias: UnauthorizedActionOnArgumentsAssociatedResourcesExtensions
 
-> **UnauthorizedActionOnArgumentsAssociatedResourcesExtensions** = `object`
+> **UnauthorizedActionOnArgumentsAssociatedResourcesExtensions**: `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:158](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/utilities/TalawaGraphQLError.ts#L158)
+Defined in: src/utilities/TalawaGraphQLError.ts:158
 
 When the client is not authorized to perform an action on a resource associated to an argument.
+
+## Type declaration
+
+### code
+
+> **code**: `"unauthorized_action_on_arguments_associated_resources"`
+
+### issues
+
+> **issues**: `object`[]
 
 ## Example
 
@@ -24,23 +34,3 @@ throw new TalawaGraphQLError({
 	},
 });
 ```
-
-## Properties
-
-### code
-
-> **code**: `"unauthorized_action_on_arguments_associated_resources"`
-
-Defined in: [src/utilities/TalawaGraphQLError.ts:162](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/utilities/TalawaGraphQLError.ts#L162)
-
-***
-
-### issues
-
-> **issues**: `object`[]
-
-Defined in: [src/utilities/TalawaGraphQLError.ts:159](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/utilities/TalawaGraphQLError.ts#L159)
-
-#### argumentPath
-
-> **argumentPath**: (`string` \| `number`)[]

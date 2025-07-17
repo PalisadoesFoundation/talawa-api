@@ -4,6 +4,6 @@
 
 # Variable: mutationCreateFundCampaignPledgeInputSchema
 
-> `const` **mutationCreateFundCampaignPledgeInputSchema**: `ZodObject`\<`Pick`\<\{ `amount`: `ZodArray`\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<..., "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, `"many"`\>; `note`: `ZodNullable`\<`ZodOptional`\<`ZodArray`\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<ZodArray\<..., "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, "many"\>, `"many"`\>\>\>; \}, `"note"` \| `"amount"`\>, `"strip"`, `ZodTypeAny`, \{ `amount?`: `unknown`[]; `note?`: `unknown`[]; \}, \{ `amount?`: `unknown`[]; `note?`: `unknown`[]; \}\>
+> `const` **mutationCreateFundCampaignPledgeInputSchema**: `ZodObject`\<`Pick`\<\{ `amount`: `ZodTypeAny`; `campaignId`: `ZodTypeAny`; `pledgerId`: `ZodTypeAny`; \}, `"amount"` \| `"campaignId"` \| `"pledgerId"`\>, `"strip"`, `ZodTypeAny`, \{ `amount`: `any`; `campaignId`: `any`; `pledgerId`: `any`; \}, \{ `amount`: `any`; `campaignId`: `any`; `pledgerId`: `any`; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateFundCampaignPledgeInput.ts:5](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/graphql/inputs/MutationCreateFundCampaignPledgeInput.ts#L5)
+Defined in: src/graphql/inputs/MutationCreateFundCampaignPledgeInput.ts:5
