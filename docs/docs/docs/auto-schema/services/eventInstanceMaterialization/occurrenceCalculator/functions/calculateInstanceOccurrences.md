@@ -6,7 +6,7 @@
 
 > **calculateInstanceOccurrences**(`config`, `logger`): [`CalculatedOccurrence`](../../types/interfaces/CalculatedOccurrence.md)[]
 
-Defined in: [src/services/eventInstanceMaterialization/occurrenceCalculator.ts:19](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/occurrenceCalculator.ts#L19)
+Defined in: [src/services/eventInstanceMaterialization/occurrenceCalculator.ts:19](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/occurrenceCalculator.ts#L19)
 
 Calculates the occurrence times for a recurring event based on its recurrence rule,
 handling exceptions and various frequencies (daily, weekly, monthly, yearly).

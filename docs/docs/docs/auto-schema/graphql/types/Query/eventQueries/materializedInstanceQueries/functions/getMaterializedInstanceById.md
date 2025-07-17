@@ -6,7 +6,7 @@
 
 > **getMaterializedInstanceById**(`instanceId`, `organizationId`, `drizzleClient`, `logger`): `Promise`\<[`ResolvedMaterializedEventInstance`](../../../../../../drizzle/tables/materializedEventInstances/type-aliases/ResolvedMaterializedEventInstance.md)\>
 
-Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:158](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L158)
+Defined in: [src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts:158](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/graphql/types/Query/eventQueries/materializedInstanceQueries.ts#L158)
 
 Retrieves a single resolved materialized instance by its ID and organization ID.
 

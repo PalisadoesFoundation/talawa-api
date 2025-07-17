@@ -4,7 +4,7 @@
 
 # Interface: OccurrenceCalculationConfig
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:33](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L33)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:33](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L33)
 
 Configuration for occurrence calculation
 
@@ -14,7 +14,7 @@ Configuration for occurrence calculation
 
 > **baseEvent**: `object`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:35](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L35)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:35](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L35)
 
 #### allDay
 
@@ -90,7 +90,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:35](https://gith
 
 > **exceptions**: `object`[]
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:38](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L38)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:38](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L38)
 
 #### createdAt
 
@@ -142,7 +142,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:38](https://gith
 
 > **recurrenceRule**: `object`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:34](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L34)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:34](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L34)
 
 #### baseRecurringEventId
 
@@ -218,7 +218,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:34](https://gith
 
 > **windowEnd**: `Date`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:37](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L37)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:37](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L37)
 
 ***
 
@@ -226,4 +226,4 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:37](https://gith
 
 > **windowStart**: `Date`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:36](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L36)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:36](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L36)

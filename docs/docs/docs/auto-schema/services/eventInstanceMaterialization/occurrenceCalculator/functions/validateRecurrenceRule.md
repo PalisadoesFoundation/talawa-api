@@ -6,7 +6,7 @@
 
 > **validateRecurrenceRule**(`recurrenceRule`): `boolean`
 
-Defined in: [src/services/eventInstanceMaterialization/occurrenceCalculator.ts:422](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/occurrenceCalculator.ts#L422)
+Defined in: [src/services/eventInstanceMaterialization/occurrenceCalculator.ts:422](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/occurrenceCalculator.ts#L422)
 
 Validates the configuration of a recurrence rule to ensure it has a valid frequency
 and a positive interval.

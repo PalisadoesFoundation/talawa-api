@@ -4,7 +4,7 @@
 
 # Interface: ResolveInstanceInput
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:56](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L56)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:56](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L56)
 
 Input for resolving instance with inheritance
 
@@ -14,7 +14,7 @@ Input for resolving instance with inheritance
 
 > **baseTemplate**: `object`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:58](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L58)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:58](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L58)
 
 #### allDay
 
@@ -90,7 +90,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:58](https://gith
 
 > `optional` **exception**: `object`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:59](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L59)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:59](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L59)
 
 #### createdAt
 
@@ -142,7 +142,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:59](https://gith
 
 > **materializedInstance**: `object`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:57](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L57)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:57](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L57)
 
 #### actualEndTime
 

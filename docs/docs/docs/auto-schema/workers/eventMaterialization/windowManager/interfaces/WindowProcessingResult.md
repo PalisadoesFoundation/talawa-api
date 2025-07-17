@@ -4,7 +4,7 @@
 
 # Interface: WindowProcessingResult
 
-Defined in: [src/workers/eventMaterialization/windowManager.ts:29](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/windowManager.ts#L29)
+Defined in: [src/workers/eventMaterialization/windowManager.ts:29](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/windowManager.ts#L29)
 
 Result of window processing
 
@@ -14,7 +14,7 @@ Result of window processing
 
 > **eventsProcessed**: `number`
 
-Defined in: [src/workers/eventMaterialization/windowManager.ts:33](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/windowManager.ts#L33)
+Defined in: [src/workers/eventMaterialization/windowManager.ts:33](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/windowManager.ts#L33)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/workers/eventMaterialization/windowManager.ts:33](https://githu
 
 > **instancesCreated**: `number`
 
-Defined in: [src/workers/eventMaterialization/windowManager.ts:32](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/windowManager.ts#L32)
+Defined in: [src/workers/eventMaterialization/windowManager.ts:32](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/windowManager.ts#L32)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/workers/eventMaterialization/windowManager.ts:32](https://githu
 
 > **organizationId**: `string`
 
-Defined in: [src/workers/eventMaterialization/windowManager.ts:31](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/windowManager.ts#L31)
+Defined in: [src/workers/eventMaterialization/windowManager.ts:31](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/windowManager.ts#L31)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [src/workers/eventMaterialization/windowManager.ts:31](https://githu
 
 > **processingTime**: `number`
 
-Defined in: [src/workers/eventMaterialization/windowManager.ts:34](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/windowManager.ts#L34)
+Defined in: [src/workers/eventMaterialization/windowManager.ts:34](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/windowManager.ts#L34)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [src/workers/eventMaterialization/windowManager.ts:34](https://githu
 
 > **windowId**: `string`
 
-Defined in: [src/workers/eventMaterialization/windowManager.ts:30](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/windowManager.ts#L30)
+Defined in: [src/workers/eventMaterialization/windowManager.ts:30](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/windowManager.ts#L30)

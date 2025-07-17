@@ -127,3 +127,4 @@ export {
 	volunteerGroupsTable,
 	volunteerGroupsTableRelations,
 } from "./tables/volunteerGroups";
+export { pluginsTable } from "./tables/plugins";

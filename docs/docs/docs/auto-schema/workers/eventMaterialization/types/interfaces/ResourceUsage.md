@@ -4,7 +4,7 @@
 
 # Interface: ResourceUsage
 
-Defined in: [src/workers/eventMaterialization/types.ts:23](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/types.ts#L23)
+Defined in: [src/workers/eventMaterialization/types.ts:23](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/types.ts#L23)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/workers/eventMaterialization/types.ts:23](https://github.com/ga
 
 > **cpuUsagePercent**: `number`
 
-Defined in: [src/workers/eventMaterialization/types.ts:25](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/types.ts#L25)
+Defined in: [src/workers/eventMaterialization/types.ts:25](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/types.ts#L25)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/workers/eventMaterialization/types.ts:25](https://github.com/ga
 
 > **databaseConnections**: `number`
 
-Defined in: [src/workers/eventMaterialization/types.ts:26](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/types.ts#L26)
+Defined in: [src/workers/eventMaterialization/types.ts:26](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/types.ts#L26)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/workers/eventMaterialization/types.ts:26](https://github.com/ga
 
 > **memoryUsageMB**: `number`
 
-Defined in: [src/workers/eventMaterialization/types.ts:24](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/types.ts#L24)
+Defined in: [src/workers/eventMaterialization/types.ts:24](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/types.ts#L24)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/workers/eventMaterialization/types.ts:24](https://github.com/ga
 
 > **processingThroughput**: `number`
 
-Defined in: [src/workers/eventMaterialization/types.ts:27](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/types.ts#L27)
+Defined in: [src/workers/eventMaterialization/types.ts:27](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/types.ts#L27)

@@ -4,7 +4,7 @@
 
 # Interface: GetMaterializedInstancesInput
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:12](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L12)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:12](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L12)
 
 Input for getting materialized instances within a date range
 
@@ -14,7 +14,7 @@ Input for getting materialized instances within a date range
 
 > **endDate**: `Date`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:15](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L15)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:15](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L15)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:15](https://gith
 
 > `optional` **includeCancelled**: `boolean`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:16](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L16)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:16](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L16)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:16](https://gith
 
 > `optional` **limit**: `number`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:17](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L17)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:17](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L17)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:17](https://gith
 
 > **organizationId**: `string`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:13](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L13)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:13](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L13)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:13](https://gith
 
 > **startDate**: `Date`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:14](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L14)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:14](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L14)

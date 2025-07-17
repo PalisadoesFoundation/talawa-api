@@ -4,7 +4,7 @@
 
 # Interface: BatchProcessingConfig
 
-Defined in: [src/workers/eventMaterialization/types.ts:30](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/types.ts#L30)
+Defined in: [src/workers/eventMaterialization/types.ts:30](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/types.ts#L30)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/workers/eventMaterialization/types.ts:30](https://github.com/ga
 
 > **batchSize**: `number`
 
-Defined in: [src/workers/eventMaterialization/types.ts:31](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/types.ts#L31)
+Defined in: [src/workers/eventMaterialization/types.ts:31](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/types.ts#L31)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/workers/eventMaterialization/types.ts:31](https://github.com/ga
 
 > **maxConcurrentBatches**: `number`
 
-Defined in: [src/workers/eventMaterialization/types.ts:32](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/types.ts#L32)
+Defined in: [src/workers/eventMaterialization/types.ts:32](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/types.ts#L32)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/workers/eventMaterialization/types.ts:32](https://github.com/ga
 
 > **retryAttempts**: `number`
 
-Defined in: [src/workers/eventMaterialization/types.ts:34](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/types.ts#L34)
+Defined in: [src/workers/eventMaterialization/types.ts:34](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/types.ts#L34)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/workers/eventMaterialization/types.ts:34](https://github.com/ga
 
 > **timeoutMs**: `number`
 
-Defined in: [src/workers/eventMaterialization/types.ts:33](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/workers/eventMaterialization/types.ts#L33)
+Defined in: [src/workers/eventMaterialization/types.ts:33](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/workers/eventMaterialization/types.ts#L33)

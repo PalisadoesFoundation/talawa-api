@@ -6,4 +6,4 @@
 
 > `const` **MutationCreatePostVoteInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ \}\>
 
-Defined in: [src/graphql/inputs/MutationCreatePostVoteInput.ts:12](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/graphql/inputs/MutationCreatePostVoteInput.ts#L12)
+Defined in: [src/graphql/inputs/MutationCreatePostVoteInput.ts:12](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/graphql/inputs/MutationCreatePostVoteInput.ts#L12)

@@ -1,8 +1,8 @@
 import fastifyPlugin from "fastify-plugin";
+import drizzleClient from "../fastifyPlugins/drizzleClient";
+import minioClient from "../fastifyPlugins/minioClient";
+import seedInitialData from "../fastifyPlugins/seedInitialData";
 import backgroundWorkers from "./backgroundWorkers";
-import drizzleClient from "./drizzleClient";
-import minioClient from "./minioClient";
-import seedInitialData from "./seedInitialData";
 
 export const plugins = fastifyPlugin(async (fastify) => {
 	await fastify.register(drizzleClient);

@@ -6,7 +6,7 @@
 
 > **extendMaterializationWindow**(`organizationId`, `additionalMonths`, `drizzleClient`, `logger`): `Promise`\<`Date`\>
 
-Defined in: [src/services/eventInstanceMaterialization/windowManager.ts:101](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/windowManager.ts#L101)
+Defined in: [src/services/eventInstanceMaterialization/windowManager.ts:101](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/windowManager.ts#L101)
 
 Extends the materialization window for an organization by a specified number of months,
 allowing for the generation of future event instances.

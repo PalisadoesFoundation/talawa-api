@@ -6,7 +6,7 @@
 
 > **resolveMultipleInstances**(`instances`, `templatesMap`, `exceptionsMap`, `logger`): [`ResolvedMaterializedEventInstance`](../../../../drizzle/tables/materializedEventInstances/type-aliases/ResolvedMaterializedEventInstance.md)[]
 
-Defined in: [src/services/eventInstanceMaterialization/instanceResolver.ts:150](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/instanceResolver.ts#L150)
+Defined in: [src/services/eventInstanceMaterialization/instanceResolver.ts:150](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/instanceResolver.ts#L150)
 
 Resolves multiple materialized instances in a batch operation to improve performance.
 This function iterates through a list of instances and applies the inheritance and

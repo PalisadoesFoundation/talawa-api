@@ -4,7 +4,7 @@
 
 # Interface: RecurrenceContext
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:84](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L84)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:84](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L84)
 
 Recurrence calculation context
 
@@ -14,7 +14,7 @@ Recurrence calculation context
 
 > **eventDuration**: `number`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:85](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L85)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:85](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L85)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:85](https://gith
 
 > **exceptionsByTime**: `Map`\<`string`, \{ `createdAt`: `Date`; `creatorId`: `string`; `eventInstanceId`: `string`; `exceptionData`: `unknown`; `exceptionType`: `"SINGLE_INSTANCE"` \| `"THIS_AND_FUTURE"`; `id`: `string`; `instanceStartTime`: `Date`; `organizationId`: `string`; `recurringEventId`: `string`; `updatedAt`: `Date`; `updaterId`: `string`; \}\>
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:89](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L89)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:89](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L89)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:89](https://gith
 
 > **isNeverEnding**: `boolean`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:88](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L88)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:88](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L88)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:88](https://gith
 
 > **maxIterations**: `number`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:90](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L90)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:90](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L90)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:90](https://gith
 
 > **shouldCalculateTotalCount**: `boolean`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:87](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L87)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:87](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L87)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [src/services/eventInstanceMaterialization/types.ts:87](https://gith
 
 > **totalCount**: `number`
 
-Defined in: [src/services/eventInstanceMaterialization/types.ts:86](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/types.ts#L86)
+Defined in: [src/services/eventInstanceMaterialization/types.ts:86](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/types.ts#L86)

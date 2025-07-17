@@ -520,6 +520,13 @@ input CreateActionItemInput {
   preCompletionNotes: String
 }
 
+input CreatePluginInput {
+  backup: Boolean
+  isActivated: Boolean
+  isInstalled: Boolean
+  pluginId: String!
+}
+
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -529,6 +536,10 @@ scalar Date
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
 scalar DateTime
+
+input DeletePluginInput {
+  id: String!
+}
 
 """Possible statuses for a membership request."""
 enum DrizzleMembershipRequestStatus {
@@ -1641,6 +1652,12 @@ type Mutation {
   """Mutation field to create an organization membership."""
   createOrganizationMembership(input: MutationCreateOrganizationMembershipInput!): Organization
 
+  """Mutation field to create a new plugin."""
+  createPlugin(
+    """Input parameters to create a new plugin."""
+    input: CreatePluginInput!
+  ): Plugin
+
   """Mutation field to create a post."""
   createPost(input: MutationCreatePostInput!): Post
 
@@ -1721,6 +1738,12 @@ type Mutation {
 
   """Mutation field to delete an organization membership."""
   deleteOrganizationMembership(input: MutationDeleteOrganizationMembershipInput!): Organization
+
+  """Mutation field to delete a plugin."""
+  deletePlugin(
+    """Input parameters to delete a plugin."""
+    input: DeletePluginInput!
+  ): Plugin
 
   """Mutation field to delete a post."""
   deletePost(input: MutationDeletePostInput!): Post
@@ -1835,6 +1858,12 @@ type Mutation {
 
   """Mutation field to update an organization membership."""
   updateOrganizationMembership(input: MutationUpdateOrganizationMembershipInput!): Organization
+
+  """Mutation field to update a plugin."""
+  updatePlugin(
+    """Input parameters to update a plugin."""
+    input: UpdatePluginInput!
+  ): Plugin
 
   """Mutation field to update a post."""
   updatePost(input: MutationUpdatePostInput!): Post
@@ -3494,6 +3523,32 @@ A field whose value conforms to the standard E.164 format as specified in: https
 """
 scalar PhoneNumber
 
+"""
+Represents a plugin in the system with its installation and activation status
+"""
+type Plugin {
+  """Whether the plugin has an existing backup"""
+  backup: Boolean
+
+  """Timestamp when the plugin record was created"""
+  createdAt: DateTime
+
+  """Unique identifier for the plugin record"""
+  id: ID
+
+  """Whether the plugin is currently activated"""
+  isActivated: Boolean
+
+  """Whether the plugin is installed in the system"""
+  isInstalled: Boolean
+
+  """The unique identifier/name of the plugin"""
+  pluginId: String
+
+  """Timestamp when the plugin record was last updated"""
+  updatedAt: DateTime
+}
+
 type Post {
   """Array of attachments."""
   attachments: [PostAttachment!]
@@ -3664,6 +3719,9 @@ type Query {
   """Query field to read a chat message."""
   chatMessage(input: QueryChatMessageInput!): ChatMessage
 
+  """Query field to read all chats the current user is a member of."""
+  chatsByUser: [Chat!]
+
   """Query field to read a comment."""
   comment(input: QueryCommentInput!): Comment
 
@@ -3723,6 +3781,18 @@ type Query {
     """Filter criteria for pledges"""
     where: QueryPledgeWhereInput
   ): [FundCampaignPledge!]
+
+  """Query field to fetch a single plugin by ID."""
+  getPluginById(
+    """Input parameters to fetch a plugin by ID."""
+    input: QueryPluginInput!
+  ): Plugin
+
+  """Query field to fetch multiple plugins with optional filtering."""
+  getPlugins(
+    """Input parameters to fetch plugins with optional filtering."""
+    input: QueryPluginsInput
+  ): [Plugin!]
 
   """Query field to read a post vote."""
   hasUserVoted(input: QueryHasUserVotedInput!): HasUserVoted
@@ -3904,6 +3974,16 @@ input QueryPledgeWhereInput {
 
   """Filter pledges by the name of the campaign"""
   name_contains: String
+}
+
+input QueryPluginInput {
+  id: String!
+}
+
+input QueryPluginsInput {
+  isActivated: Boolean
+  isInstalled: Boolean
+  pluginId: String
 }
 
 """"""
@@ -4110,6 +4190,14 @@ enum UpdateInviteStatus {
   accepted
   declined
   no_response
+}
+
+input UpdatePluginInput {
+  backup: Boolean
+  id: String!
+  isActivated: Boolean
+  isInstalled: Boolean
+  pluginId: String
 }
 
 """The `Upload` scalar type represents a file upload."""

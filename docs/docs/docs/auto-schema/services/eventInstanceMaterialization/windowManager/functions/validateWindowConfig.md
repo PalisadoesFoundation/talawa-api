@@ -6,7 +6,7 @@
 
 > **validateWindowConfig**(`config`): `boolean`
 
-Defined in: [src/services/eventInstanceMaterialization/windowManager.ts:292](https://github.com/gautam-divyanshu/talawa-api/blob/1d38acecd3e456f869683fb8dca035a5e42010d5/src/services/eventInstanceMaterialization/windowManager.ts#L292)
+Defined in: [src/services/eventInstanceMaterialization/windowManager.ts:292](https://github.com/gautam-divyanshu/talawa-api/blob/84910820371ade6fdca33545b3a0fc1e929731b2/src/services/eventInstanceMaterialization/windowManager.ts#L292)
 
 Validates the configuration of a window manager to ensure all properties are within
 acceptable ranges and formats.
