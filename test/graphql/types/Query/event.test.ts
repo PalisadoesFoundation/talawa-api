@@ -218,11 +218,11 @@ suite("Query field event", () => {
 				expect(result.data.event).toBeNull();
 				expect(result.errors).toBeDefined();
 				expect(result.errors).toHaveLength(1);
-				// We've already verified that errors exists and has length 1
-				// biome-ignore lint/style/noNonNullAssertion: We've already verified errors exists and has length 1
-				expect(result.errors![0]!.message).toContain("Failed query:");
-				// biome-ignore lint/style/noNonNullAssertion: We've already verified errors exists and has length 1
-				expect(result.errors![0]!.path).toEqual(["event"]);
+				// Validate error structure safely
+				const error = result.errors?.[0];
+				expect(error).toBeDefined();
+				expect(error?.message).toContain("Failed query:");
+				expect(error?.path).toEqual(["event"]);
 			});
 
 			test("fails with ULID containing invalid characters", async () => {
@@ -241,11 +241,11 @@ suite("Query field event", () => {
 				expect(result.data.event).toBeNull();
 				expect(result.errors).toBeDefined();
 				expect(result.errors).toHaveLength(1);
-				// We've already verified that errors exists and has length 1
-				// biome-ignore lint/style/noNonNullAssertion: We've already verified errors exists and has length 1
-				expect(result.errors![0]!.message).toContain("Failed query:");
-				// biome-ignore lint/style/noNonNullAssertion: We've already verified errors exists and has length 1
-				expect(result.errors![0]!.path).toEqual(["event"]);
+				// Validate error structure safely
+				const error = result.errors?.[0];
+				expect(error).toBeDefined();
+				expect(error?.message).toContain("Failed query:");
+				expect(error?.path).toEqual(["event"]);
 			});
 
 			test("provided event ID is not a valid ULID.", async () => {
@@ -276,11 +276,11 @@ suite("Query field event", () => {
 				expect(eventResult.data.event).toBeNull();
 				expect(eventResult.errors).toBeDefined();
 				expect(eventResult.errors).toHaveLength(1);
-				// We've already verified that errors exists and has length 1
-				// biome-ignore lint/style/noNonNullAssertion: We've already verified errors exists and has length 1
-				expect(eventResult.errors![0]!.message).toContain("Failed query:");
-				// biome-ignore lint/style/noNonNullAssertion: We've already verified errors exists and has length 1
-				expect(eventResult.errors![0]!.path).toEqual(["event"]);
+				// Validate error structure safely
+				const error = eventResult.errors?.[0];
+				expect(error).toBeDefined();
+				expect(error?.message).toContain("Failed query:");
+				expect(error?.path).toEqual(["event"]);
 			});
 		},
 	);
