@@ -561,16 +561,20 @@ export async function removePluginDirectory(pluginId: string): Promise<void> {
 /**
  * Clear module cache entries for a plugin to prevent memory leaks
  */
-export function clearPluginModuleCache(pluginPath: string): void {
+export function clearPluginModuleCache(
+	pluginPath: string,
+	cacheObj?: Record<string, unknown>,
+): void {
+	const cache = cacheObj ?? require.cache;
 	try {
 		// Get all cached module paths that start with the plugin path
-		const cachedPaths = Object.keys(require.cache).filter((cachePath) =>
+		const cachedPaths = Object.keys(cache).filter((cachePath) =>
 			cachePath.startsWith(pluginPath),
 		);
 
 		// Delete each cached module
 		for (const cachePath of cachedPaths) {
-			delete require.cache[cachePath];
+			delete cache[cachePath];
 		}
 
 		// Module cache cleared successfully

@@ -6,7 +6,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { installPluginFromZip } from "~/src/utilities/pluginInstaller";
 
-const uploadPluginZipInputSchema = z.object({
+export const uploadPluginZipInputSchema = z.object({
 	pluginZip: z.custom<Promise<FileUpload>>(),
 	activate: z.boolean().optional().default(false),
 });
