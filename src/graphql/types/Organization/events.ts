@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { eventsTableInsertSchema } from "~/src/drizzle/tables/events";
 import { Event } from "~/src/graphql/types/Event/Event";
 import {
 	type EventWithAttachments,
@@ -181,8 +180,8 @@ const eventsArgumentsSchema = eventsConnectionArgumentsSchema
  */
 const cursorSchema = z
 	.object({
-		id: eventsTableInsertSchema.shape.id.unwrap(),
-		startAt: z.string().datetime(),
+		id: z.string(),
+		startAt: z.string(),
 	})
 	.transform((arg) => ({
 		id: arg.id,

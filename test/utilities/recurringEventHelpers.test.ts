@@ -331,8 +331,9 @@ describe("recurringEventHelpers", () => {
 				["End date must be after start date"],
 			],
 		])("should validate various recurrence rules", (rule, isValid, errors) => {
-			// biome-ignore lint/suspicious/noExplicitAny: This is a test case for invalid data
-			const result = validateRecurrenceRule(rule as any);
+			const result = validateRecurrenceRule(
+				rule as typeof recurrenceRulesTable.$inferSelect,
+			);
 			expect(result.isValid).toBe(isValid);
 			expect(result.errors).toEqual(errors);
 		});
