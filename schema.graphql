@@ -3616,7 +3616,14 @@ type Query {
   """Query field to read a chat message."""
   chatMessage(input: QueryChatMessageInput!): ChatMessage
 
-  """Query field to read a comment."""
+  """
+  Query field to read all chats a user is a member of.
+  """
+  chatsByUser: [Chat!]
+
+  """
+  Query field to read a comment.
+  """
   comment(input: QueryCommentInput!): Comment
 
   """Query field to read the community."""
