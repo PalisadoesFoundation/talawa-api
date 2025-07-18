@@ -81,7 +81,6 @@ class NotificationEventBus extends EventEmitter {
 			}
 		});
 	}
-	
 }
 
 export const notificationEventBus = new NotificationEventBus();
