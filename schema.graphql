@@ -1587,14 +1587,6 @@ type Mutation {
     input: MutationCancelMembershipRequestInput!
   ): CancelMembershipResponse
 
-  """Mutation field to convert a standalone event to a recurring event."""
-  convertEventToRecurring(input: MutationConvertEventToRecurringInput!): Event
-
-  """
-  Mutation field to convert a recurring event back to a standalone event.
-  """
-  convertRecurringToStandalone(input: MutationConvertRecurringToStandaloneInput!): Event
-
   """Mutation field to create an action item."""
   createActionItem(input: CreateActionItemInput!): ActionItem
 
@@ -1902,21 +1894,6 @@ input MutationBlockUserInput {
 input MutationCancelMembershipRequestInput {
   """Global identifier of the membership request."""
   membershipRequestId: ID!
-}
-
-"""Input for converting a standalone event to a recurring event."""
-input MutationConvertEventToRecurringInput {
-  """ID of the standalone event to convert to recurring."""
-  eventId: ID!
-
-  """Recurrence pattern to apply to the event."""
-  recurrence: RecurrenceInput!
-}
-
-"""Input for converting a recurring event back to a standalone event."""
-input MutationConvertRecurringToStandaloneInput {
-  """ID of the recurring event template to convert to standalone."""
-  eventId: ID!
 }
 
 """Input for creating a new action item category."""

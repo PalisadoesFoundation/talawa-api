@@ -13,8 +13,6 @@ import "./createChatMessage";
 import "./createComment";
 import "./createCommentVote";
 import "./createEvent";
-import "./convertEventToRecurring";
-import "./convertRecurringToStandalone";
 import "./createFund";
 import "./createFundCampaign";
 import "./createFundCampaignPledge";
