@@ -12,10 +12,6 @@ Defined in: [src/graphql/types/Event/updater.ts:12](https://github.com/Palisadoe
 
 ### parent
 
-#### allDay
-
-`boolean`
-
 #### createdAt
 
 `Date`
@@ -33,18 +29,6 @@ Defined in: [src/graphql/types/Event/updater.ts:12](https://github.com/Palisadoe
 `Date`
 
 #### id
-
-`string`
-
-#### isPublic
-
-`boolean`
-
-#### isRegisterable
-
-`boolean`
-
-#### location
 
 `string`
 

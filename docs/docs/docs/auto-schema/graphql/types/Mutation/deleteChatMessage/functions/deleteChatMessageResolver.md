@@ -18,7 +18,7 @@ Defined in: [src/graphql/types/Mutation/deleteChatMessage.ts:17](https://github.
 
 #### input?
 
-\{[`key`: `string`]: `any`; `id?`: `unknown`; \} = `mutationDeleteChatMessageInputSchema`
+\{ `[key: string]`: `any`;  `id`: `unknown`; \} = `mutationDeleteChatMessageInputSchema`
 
 #### input.id?
 

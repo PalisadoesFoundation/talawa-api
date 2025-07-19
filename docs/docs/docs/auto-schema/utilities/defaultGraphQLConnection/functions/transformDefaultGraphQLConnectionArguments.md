@@ -27,3 +27,5 @@ Transform function for the basic connection arguments.
 `RefinementCtx`
 
 ## Returns
+
+`object` & `Omit`\<`Arg`, `"first"` \| `"last"` \| `"before"` \| `"after"`\>

@@ -37,4 +37,6 @@ The Zod refinement context
 
 ## Returns
 
+`object` & `Omit`\<`Arg`, `"first"` \| `"last"` \| `"before"` \| `"after"`\> & `object`
+
 The transformed arguments with where clause
