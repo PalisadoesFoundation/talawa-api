@@ -122,7 +122,7 @@ builder.mutationField("sendMembershipRequest", (t) =>
 				if (!newRequest[0]) {
 					throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
 				}
-				await notificationEventBus.emitJoinRequestSubmitted(
+				notificationEventBus.emitJoinRequestSubmitted(
 					{
 						requestId: newRequest[0].membershipRequestId,
 						userId: currentUserId,

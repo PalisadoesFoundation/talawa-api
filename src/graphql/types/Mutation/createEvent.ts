@@ -194,7 +194,7 @@ builder.mutationField("createEvent", (t) =>
 						},
 					});
 				}
-				await notificationEventBus.emitEventCreated(
+				notificationEventBus.emitEventCreated(
 					{
 						eventId: createdEvent.id,
 						eventName: createdEvent.name,

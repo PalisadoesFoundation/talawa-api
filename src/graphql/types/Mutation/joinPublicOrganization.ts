@@ -139,7 +139,7 @@ builder.mutationField("joinPublicOrganization", (t) =>
 			}
 
 			// Notify organization admins about new member
-			await notificationEventBus.emitNewMemberJoined(
+			notificationEventBus.emitNewMemberJoined(
 				{
 					userId: currentUserId,
 					userName: user.name,
