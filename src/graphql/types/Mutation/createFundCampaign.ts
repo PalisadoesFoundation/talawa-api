@@ -180,26 +180,19 @@ builder.mutationField("createFundCampaign", (t) =>
 			}
 
 			// Send notification to organization admins
-			try {
-				await notificationEventBus.emitFundCampaignCreated(
-					{
-						campaignId: createdFundCampaign.id,
-						campaignName: createdFundCampaign.name,
-						fundName: existingFund.name,
-						organizationId: existingFund.organization.id,
-						organizationName: existingFund.organization.name,
-						creatorName: currentUser.name,
-						goalAmount: createdFundCampaign.goalAmount.toString(),
-						currencyCode: createdFundCampaign.currencyCode,
-					},
-					ctx,
-				);
-			} catch (error) {
-				ctx.log.error(
-					"Failed to emit fund campaign creation notification:",
-					error,
-				);
-			}
+			notificationEventBus.emitFundCampaignCreated(
+				{
+					campaignId: createdFundCampaign.id,
+					campaignName: createdFundCampaign.name,
+					fundName: existingFund.name,
+					organizationId: existingFund.organization.id,
+					organizationName: existingFund.organization.name,
+					creatorName: currentUser.name,
+					goalAmount: createdFundCampaign.goalAmount.toString(),
+					currencyCode: createdFundCampaign.currencyCode,
+				},
+				ctx,
+			);
 
 			return createdFundCampaign;
 		},

@@ -314,25 +314,18 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 			}
 
 			// Send notification to organization admins
-			try {
-				await notificationEventBus.emitFundCampaignPledgeCreated(
-					{
-						pledgeId: createdFundCampaignPledge.id,
-						campaignName: existingFundCampaign.name,
-						organizationId: existingFundCampaign.fund.organization.id,
-						organizationName: existingFundCampaign.fund.organization.name,
-						pledgerName: existingPledger.name,
-						amount: createdFundCampaignPledge.amount.toString(),
-						currencyCode: existingFundCampaign.currencyCode,
-					},
-					ctx,
-				);
-			} catch (error) {
-				ctx.log.error(
-					"Failed to emit fund campaign pledge notification:",
-					error,
-				);
-			}
+			notificationEventBus.emitFundCampaignPledgeCreated(
+				{
+					pledgeId: createdFundCampaignPledge.id,
+					campaignName: existingFundCampaign.name,
+					organizationId: existingFundCampaign.fund.organization.id,
+					organizationName: existingFundCampaign.fund.organization.name,
+					pledgerName: existingPledger.name,
+					amount: createdFundCampaignPledge.amount.toString(),
+					currencyCode: existingFundCampaign.currencyCode,
+				},
+				ctx,
+			);
 
 			return createdFundCampaignPledge;
 		},

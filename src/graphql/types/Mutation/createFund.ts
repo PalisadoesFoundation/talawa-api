@@ -168,20 +168,16 @@ builder.mutationField("createFund", (t) =>
 			}
 
 			// Send notification to organization admins
-			try {
-				await notificationEventBus.emitFundCreated(
-					{
-						fundId: createdFund.id,
-						fundName: createdFund.name,
-						organizationId: parsedArgs.input.organizationId,
-						organizationName: existingOrganization.name,
-						creatorName: currentUser.name,
-					},
-					ctx,
-				);
-			} catch (error) {
-				ctx.log.error("Failed to emit fund creation notification:", error);
-			}
+			notificationEventBus.emitFundCreated(
+				{
+					fundId: createdFund.id,
+					fundName: createdFund.name,
+					organizationId: parsedArgs.input.organizationId,
+					organizationName: existingOrganization.name,
+					creatorName: currentUser.name,
+				},
+				ctx,
+			);
 
 			return createdFund;
 		},
