@@ -17,7 +17,7 @@ export {
 	createDefaultWorkerConfig,
 	type WorkerConfig,
 	type WorkerResult,
-} from "./eventGeneration/materializationPipeline";
+} from "./eventGeneration/eventGenerationPipeline";
 
 export {
 	executeEventGeneration,

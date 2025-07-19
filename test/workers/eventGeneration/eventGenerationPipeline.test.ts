@@ -7,7 +7,7 @@ import {
 	createDefaultWorkerConfig,
 	runMaterializationWorker,
 	runSingleOrganizationWorker,
-} from "~/src/workers/eventGeneration/materializationPipeline";
+} from "~/src/workers/eventGeneration/eventGenerationPipeline";
 
 // Mock dependencies
 vi.mock("~/src/workers/eventGeneration/executionEngine", () => ({
