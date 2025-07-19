@@ -2,8 +2,8 @@ import { and, eq, lt } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
 import type * as schema from "~/src/drizzle/schema";
-import { eventMaterializationWindowsTable } from "~/src/drizzle/tables/eventMaterializationWindows";
-import { materializedEventInstancesTable } from "~/src/drizzle/tables/materializedEventInstances";
+import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
+import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 
 /**
  * The main method for the cleanup worker, which processes all organizations
@@ -28,9 +28,9 @@ export async function cleanupOldInstances(
 	try {
 		// Get all organizations with materialization windows
 		const organizationWindows =
-			await drizzleClient.query.eventMaterializationWindowsTable.findMany({
-				where: eq(eventMaterializationWindowsTable.isEnabled, true),
-				orderBy: [eventMaterializationWindowsTable.organizationId],
+			await drizzleClient.query.eventGenerationWindowsTable.findMany({
+				where: eq(eventGenerationWindowsTable.isEnabled, true),
+				orderBy: [eventGenerationWindowsTable.organizationId],
 			});
 
 		logger.info(
@@ -73,7 +73,7 @@ export async function cleanupOldInstances(
  * @returns A promise that resolves to the number of instances deleted for the organization.
  */
 async function cleanupOrganizationInstances(
-	windowConfig: typeof eventMaterializationWindowsTable.$inferSelect,
+	windowConfig: typeof eventGenerationWindowsTable.$inferSelect,
 	drizzleClient: NodePgDatabase<typeof schema>,
 	logger: FastifyBaseLogger,
 ): Promise<number> {
@@ -93,10 +93,10 @@ async function cleanupOrganizationInstances(
 
 	// Count instances that will be deleted (for logging)
 	const instancesToDelete =
-		await drizzleClient.query.materializedEventInstancesTable.findMany({
+		await drizzleClient.query.recurringEventInstancesTable.findMany({
 			where: and(
-				eq(materializedEventInstancesTable.organizationId, organizationId),
-				lt(materializedEventInstancesTable.actualEndTime, retentionCutoffDate),
+				eq(recurringEventInstancesTable.organizationId, organizationId),
+				lt(recurringEventInstancesTable.actualEndTime, retentionCutoffDate),
 			),
 			columns: { id: true },
 		});
@@ -110,11 +110,11 @@ async function cleanupOrganizationInstances(
 
 	// Delete old instances
 	const result = await drizzleClient
-		.delete(materializedEventInstancesTable)
+		.delete(recurringEventInstancesTable)
 		.where(
 			and(
-				eq(materializedEventInstancesTable.organizationId, organizationId),
-				lt(materializedEventInstancesTable.actualEndTime, retentionCutoffDate),
+				eq(recurringEventInstancesTable.organizationId, organizationId),
+				lt(recurringEventInstancesTable.actualEndTime, retentionCutoffDate),
 			),
 		);
 
@@ -148,11 +148,11 @@ async function updateRetentionStartDate(
 	logger: FastifyBaseLogger,
 ): Promise<void> {
 	await drizzleClient
-		.update(eventMaterializationWindowsTable)
+		.update(eventGenerationWindowsTable)
 		.set({
 			retentionStartDate: newRetentionStartDate,
 		})
-		.where(eq(eventMaterializationWindowsTable.id, windowId));
+		.where(eq(eventGenerationWindowsTable.id, windowId));
 
 	logger.debug(`Updated retention start date for window ${windowId}`);
 }
@@ -178,11 +178,8 @@ export async function cleanupSpecificOrganization(
 
 	// Get window configuration for this organization
 	const windowConfig =
-		await drizzleClient.query.eventMaterializationWindowsTable.findFirst({
-			where: eq(
-				eventMaterializationWindowsTable.organizationId,
-				organizationId,
-			),
+		await drizzleClient.query.eventGenerationWindowsTable.findFirst({
+			where: eq(eventGenerationWindowsTable.organizationId, organizationId),
 		});
 
 	if (!windowConfig) {
@@ -229,11 +226,8 @@ export async function getOrganizationCleanupStatus(
 }> {
 	// Get window configuration
 	const windowConfig =
-		await drizzleClient.query.eventMaterializationWindowsTable.findFirst({
-			where: eq(
-				eventMaterializationWindowsTable.organizationId,
-				organizationId,
-			),
+		await drizzleClient.query.eventGenerationWindowsTable.findFirst({
+			where: eq(eventGenerationWindowsTable.organizationId, organizationId),
 		});
 
 	if (!windowConfig) {
@@ -248,8 +242,8 @@ export async function getOrganizationCleanupStatus(
 
 	// Count total instances
 	const totalInstances =
-		await drizzleClient.query.materializedEventInstancesTable.findMany({
-			where: eq(materializedEventInstancesTable.organizationId, organizationId),
+		await drizzleClient.query.recurringEventInstancesTable.findMany({
+			where: eq(recurringEventInstancesTable.organizationId, organizationId),
 			columns: { id: true },
 		});
 
@@ -262,10 +256,10 @@ export async function getOrganizationCleanupStatus(
 
 	// Count instances eligible for cleanup
 	const instancesEligibleForCleanup =
-		await drizzleClient.query.materializedEventInstancesTable.findMany({
+		await drizzleClient.query.recurringEventInstancesTable.findMany({
 			where: and(
-				eq(materializedEventInstancesTable.organizationId, organizationId),
-				lt(materializedEventInstancesTable.actualEndTime, retentionCutoffDate),
+				eq(recurringEventInstancesTable.organizationId, organizationId),
+				lt(recurringEventInstancesTable.actualEndTime, retentionCutoffDate),
 			),
 			columns: { id: true },
 		});
@@ -302,8 +296,8 @@ export async function emergencyCleanupBefore(
 
 	// Get affected organizations (for reporting)
 	const affectedOrganizations =
-		await drizzleClient.query.materializedEventInstancesTable.findMany({
-			where: lt(materializedEventInstancesTable.actualEndTime, cutoffDate),
+		await drizzleClient.query.recurringEventInstancesTable.findMany({
+			where: lt(recurringEventInstancesTable.actualEndTime, cutoffDate),
 			columns: { organizationId: true },
 		});
 
@@ -313,8 +307,8 @@ export async function emergencyCleanupBefore(
 
 	// Delete old instances
 	const result = await drizzleClient
-		.delete(materializedEventInstancesTable)
-		.where(lt(materializedEventInstancesTable.actualEndTime, cutoffDate));
+		.delete(recurringEventInstancesTable)
+		.where(lt(recurringEventInstancesTable.actualEndTime, cutoffDate));
 
 	const deletedCount = result.rowCount || 0;
 
@@ -347,17 +341,17 @@ export async function getGlobalCleanupStatistics(
 }> {
 	// Get all organizations with windows
 	const organizations =
-		await drizzleClient.query.eventMaterializationWindowsTable.findMany({
+		await drizzleClient.query.eventGenerationWindowsTable.findMany({
 			columns: { organizationId: true, historyRetentionMonths: true },
 		});
 
 	// Get all instances
 	const allInstances =
-		await drizzleClient.query.materializedEventInstancesTable.findMany({
+		await drizzleClient.query.recurringEventInstancesTable.findMany({
 			columns: {
 				organizationId: true,
 				actualEndTime: true,
-				materializedAt: true,
+				generatedAt: true,
 			},
 		});
 

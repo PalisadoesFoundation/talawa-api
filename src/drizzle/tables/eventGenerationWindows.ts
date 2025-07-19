@@ -15,14 +15,14 @@ import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
 /**
- * Drizzle ORM postgres table definition for event materialization window configuration.
+ * Drizzle ORM postgres table definition for event generation window configuration.
  *
- * This table stores configuration settings for the materialization hot window
+ * This table stores configuration settings for the generation hot window
  * per organization. It controls how far ahead the background worker should
  * pre-calculate and store event instances.
  */
-export const eventMaterializationWindowsTable = pgTable(
-	"event_materialization_windows",
+export const eventGenerationWindowsTable = pgTable(
+	"event_generation_windows",
 	{
 		/**
 		 * Primary unique identifier of the window configuration.
@@ -31,7 +31,7 @@ export const eventMaterializationWindowsTable = pgTable(
 
 		/**
 		 * Foreign key reference to organization.
-		 * Each organization can have its own materialization settings.
+		 * Each organization can have its own generatino settings.
 		 */
 		organizationId: uuid("organization_id")
 			.notNull()
@@ -41,7 +41,7 @@ export const eventMaterializationWindowsTable = pgTable(
 			}),
 
 		/**
-		 * How many months ahead should we maintain materialized instances.
+		 * How many months ahead should we maintain generated instances.
 		 * Default: 12 months (1 year ahead)
 		 */
 		hotWindowMonthsAhead: integer("hot_window_months_ahead")
@@ -57,7 +57,7 @@ export const eventMaterializationWindowsTable = pgTable(
 			.default(3),
 
 		/**
-		 * The furthest future date for which we have materialized instances.
+		 * The furthest future date for which we have generated instances.
 		 * Updated by the background worker as it progresses.
 		 */
 		currentWindowEndDate: timestamp("current_window_end_date", {
@@ -67,7 +67,7 @@ export const eventMaterializationWindowsTable = pgTable(
 		}).notNull(),
 
 		/**
-		 * The earliest past date for which we retain materialized instances.
+		 * The earliest past date for which we retain generated instances.
 		 * Instances older than this are candidates for cleanup.
 		 */
 		retentionStartDate: timestamp("retention_start_date", {
@@ -97,7 +97,7 @@ export const eventMaterializationWindowsTable = pgTable(
 			.default(0),
 
 		/**
-		 * Whether materialization is enabled for this organization.
+		 * Whether generatino is enabled for this organization.
 		 * Can be disabled to fall back to virtual instances for specific organizations.
 		 */
 		isEnabled: boolean("is_enabled").notNull().default(true),
@@ -166,29 +166,29 @@ export const eventMaterializationWindowsTable = pgTable(
 	},
 	(self) => ({
 		// Unique constraint: one window config per organization
-		organizationIdIdx: index("emw_organization_id_unique_idx").on(
+		organizationIdIdx: index("egw_organization_id_unique_idx").on(
 			self.organizationId,
 		),
 
 		// Indexes for background worker queries
-		enabledWindowsIdx: index("emw_enabled_windows_idx").on(
+		enabledWindowsIdx: index("egw_enabled_windows_idx").on(
 			self.isEnabled,
 			self.processingPriority,
 		),
-		lastProcessedAtIdx: index("emw_last_processed_at_idx").on(
+		lastProcessedAtIdx: index("egw_last_processed_at_idx").on(
 			self.lastProcessedAt,
 		),
-		currentWindowEndDateIdx: index("emw_current_window_end_date_idx").on(
+		currentWindowEndDateIdx: index("egw_current_window_end_date_idx").on(
 			self.currentWindowEndDate,
 		),
 
 		// Index for cleanup operations
-		retentionStartDateIdx: index("emw_retention_start_date_idx").on(
+		retentionStartDateIdx: index("egw_retention_start_date_idx").on(
 			self.retentionStartDate,
 		),
 
 		// Composite index for worker priority processing
-		workerProcessingIdx: index("emw_worker_processing_idx").on(
+		workerProcessingIdx: index("egw_worker_processing_idx").on(
 			self.isEnabled,
 			self.processingPriority,
 			self.lastProcessedAt,
@@ -196,41 +196,40 @@ export const eventMaterializationWindowsTable = pgTable(
 	}),
 );
 
-export const eventMaterializationWindowsTableRelations = relations(
-	eventMaterializationWindowsTable,
+export const eventGenerationWindowsTableRelations = relations(
+	eventGenerationWindowsTable,
 	({ one }) => ({
 		/**
 		 * Many to one relationship to organization.
 		 */
 		organization: one(organizationsTable, {
-			fields: [eventMaterializationWindowsTable.organizationId],
+			fields: [eventGenerationWindowsTable.organizationId],
 			references: [organizationsTable.id],
-			relationName:
-				"event_materialization_windows.organization_id:organizations.id",
+			relationName: "event_generation_windows.organization_id:organizations.id",
 		}),
 
 		/**
 		 * Many to one relationship to the user who created this configuration.
 		 */
 		createdBy: one(usersTable, {
-			fields: [eventMaterializationWindowsTable.createdById],
+			fields: [eventGenerationWindowsTable.createdById],
 			references: [usersTable.id],
-			relationName: "event_materialization_windows.created_by_id:users.id",
+			relationName: "event_generation_windows.created_by_id:users.id",
 		}),
 
 		/**
 		 * Many to one relationship to the user who last updated this configuration.
 		 */
 		lastUpdatedBy: one(usersTable, {
-			fields: [eventMaterializationWindowsTable.lastUpdatedById],
+			fields: [eventGenerationWindowsTable.lastUpdatedById],
 			references: [usersTable.id],
-			relationName: "event_materialization_windows.last_updated_by_id:users.id",
+			relationName: "event_generation_windows.last_updated_by_id:users.id",
 		}),
 	}),
 );
 
-export const eventMaterializationWindowsTableInsertSchema = createInsertSchema(
-	eventMaterializationWindowsTable,
+export const eventGenerationWindowsTableInsertSchema = createInsertSchema(
+	eventGenerationWindowsTable,
 	{
 		organizationId: z.string().uuid(),
 		hotWindowMonthsAhead: z.number().min(1).max(60), // 1 month to 5 years
@@ -250,7 +249,7 @@ export const eventMaterializationWindowsTableInsertSchema = createInsertSchema(
 /**
  * Type for window configuration with calculated dates.
  */
-export type MaterializationWindowConfig = {
+export type GenerationWindowConfig = {
 	id: string;
 	organizationId: string;
 	hotWindowMonthsAhead: number;
@@ -270,9 +269,9 @@ export type MaterializationWindowConfig = {
 };
 
 /**
- * Input for creating a new materialization window configuration.
+ * Input for creating a new generation window configuration.
  */
-export type CreateMaterializationWindowInput = {
+export type CreateGenerationWindowInput = {
 	organizationId: string;
 	hotWindowMonthsAhead?: number;
 	historyRetentionMonths?: number;
@@ -283,9 +282,9 @@ export type CreateMaterializationWindowInput = {
 };
 
 /**
- * Input for updating materialization window configuration.
+ * Input for updating generation window configuration.
  */
-export type UpdateMaterializationWindowInput = {
+export type UpdateGenerationWindowInput = {
 	windowId: string;
 	hotWindowMonthsAhead?: number;
 	historyRetentionMonths?: number;

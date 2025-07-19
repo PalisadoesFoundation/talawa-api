@@ -69,7 +69,7 @@ describe("Organization Events Resolver Tests", () => {
 			name: "Test Event 2",
 			startAt: new Date("2024-07-21T14:00:00Z"),
 			endAt: new Date("2024-07-21T15:00:00Z"),
-			eventType: "materialized" as const,
+			eventType: "generated" as const,
 			title: "Test Event 2",
 			organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
 			createdAt: new Date(),

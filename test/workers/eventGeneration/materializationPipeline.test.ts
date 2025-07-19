@@ -7,34 +7,34 @@ import {
 	createDefaultWorkerConfig,
 	runMaterializationWorker,
 	runSingleOrganizationWorker,
-} from "~/src/workers/eventMaterialization/materializationPipeline";
+} from "~/src/workers/eventGeneration/materializationPipeline";
 
 // Mock dependencies
-vi.mock("~/src/workers/eventMaterialization/executionEngine", () => ({
-	executeBatchMaterialization: vi.fn(),
+vi.mock("~/src/workers/eventGeneration/executionEngine", () => ({
+	executeBatchEventGeneration: vi.fn(),
 }));
 
-vi.mock("~/src/workers/eventMaterialization/jobDiscovery", () => ({
+vi.mock("~/src/workers/eventGeneration/jobDiscovery", () => ({
 	createDefaultJobDiscoveryConfig: vi.fn(),
-	createMaterializationJobs: vi.fn(),
-	discoverMaterializationWorkloads: vi.fn(),
+	createEventGenerationJobs: vi.fn(),
+	discoverEventGenerationWorkloads: vi.fn(),
 }));
 
-vi.mock("~/src/workers/eventMaterialization/postProcessor", () => ({
+vi.mock("~/src/workers/eventGeneration/postProcessor", () => ({
 	createDefaultPostProcessingConfig: vi.fn(),
 	executePostProcessing: vi.fn(),
 }));
 
-import { executeBatchMaterialization } from "~/src/workers/eventMaterialization/executionEngine";
+import { executeBatchEventGeneration } from "~/src/workers/eventGeneration/executionEngine";
 import {
 	createDefaultJobDiscoveryConfig,
-	createMaterializationJobs,
-	discoverMaterializationWorkloads,
-} from "~/src/workers/eventMaterialization/jobDiscovery";
+	createEventGenerationJobs,
+	discoverEventGenerationWorkloads,
+} from "~/src/workers/eventGeneration/jobDiscovery";
 import {
 	createDefaultPostProcessingConfig,
 	executePostProcessing,
-} from "~/src/workers/eventMaterialization/postProcessor";
+} from "~/src/workers/eventGeneration/postProcessor";
 
 describe("materializationPipeline", () => {
 	let mockDrizzleClient: NodePgDatabase<typeof schema>;
@@ -138,11 +138,11 @@ describe("materializationPipeline", () => {
 				lookAheadMonths: 1,
 				priorityThreshold: 5,
 			});
-			vi.mocked(discoverMaterializationWorkloads).mockResolvedValue(
+			vi.mocked(discoverEventGenerationWorkloads).mockResolvedValue(
 				mockWorkloads,
 			);
-			vi.mocked(createMaterializationJobs).mockReturnValue(mockJobs);
-			vi.mocked(executeBatchMaterialization).mockResolvedValue(
+			vi.mocked(createEventGenerationJobs).mockReturnValue(mockJobs);
+			vi.mocked(executeBatchEventGeneration).mockResolvedValue(
 				mockExecutionResult,
 			);
 			vi.mocked(createDefaultPostProcessingConfig).mockReturnValue({
@@ -191,7 +191,7 @@ describe("materializationPipeline", () => {
 				lookAheadMonths: 1,
 				priorityThreshold: 5,
 			});
-			vi.mocked(discoverMaterializationWorkloads).mockResolvedValue([]);
+			vi.mocked(discoverEventGenerationWorkloads).mockResolvedValue([]);
 
 			const result = await runMaterializationWorker(
 				config,
@@ -262,11 +262,11 @@ describe("materializationPipeline", () => {
 				lookAheadMonths: 1,
 				priorityThreshold: 5,
 			});
-			vi.mocked(discoverMaterializationWorkloads).mockResolvedValue(
+			vi.mocked(discoverEventGenerationWorkloads).mockResolvedValue(
 				mockWorkloads,
 			);
-			vi.mocked(createMaterializationJobs).mockReturnValue(mockJobs);
-			vi.mocked(executeBatchMaterialization).mockResolvedValue(
+			vi.mocked(createEventGenerationJobs).mockReturnValue(mockJobs);
+			vi.mocked(executeBatchEventGeneration).mockResolvedValue(
 				mockExecutionResult,
 			);
 
@@ -345,11 +345,11 @@ describe("materializationPipeline", () => {
 				lookAheadMonths: 1,
 				priorityThreshold: 5,
 			});
-			vi.mocked(discoverMaterializationWorkloads).mockResolvedValue(
+			vi.mocked(discoverEventGenerationWorkloads).mockResolvedValue(
 				mockWorkloads,
 			);
-			vi.mocked(createMaterializationJobs).mockReturnValue(mockJobs);
-			vi.mocked(executeBatchMaterialization).mockResolvedValue(
+			vi.mocked(createEventGenerationJobs).mockReturnValue(mockJobs);
+			vi.mocked(executeBatchEventGeneration).mockResolvedValue(
 				mockExecutionResult,
 			);
 
@@ -382,7 +382,7 @@ describe("materializationPipeline", () => {
 				lookAheadMonths: 1,
 				priorityThreshold: 5,
 			});
-			vi.mocked(discoverMaterializationWorkloads).mockRejectedValue(error);
+			vi.mocked(discoverEventGenerationWorkloads).mockRejectedValue(error);
 
 			const result = await runMaterializationWorker(
 				config,
@@ -471,11 +471,11 @@ describe("materializationPipeline", () => {
 				lookAheadMonths: 1,
 				priorityThreshold: 5,
 			});
-			vi.mocked(discoverMaterializationWorkloads).mockResolvedValue(
+			vi.mocked(discoverEventGenerationWorkloads).mockResolvedValue(
 				mockWorkloads,
 			);
-			vi.mocked(createMaterializationJobs).mockReturnValue(mockJobs);
-			vi.mocked(executeBatchMaterialization).mockResolvedValue(
+			vi.mocked(createEventGenerationJobs).mockReturnValue(mockJobs);
+			vi.mocked(executeBatchEventGeneration).mockResolvedValue(
 				mockExecutionResult,
 			);
 			vi.mocked(createDefaultPostProcessingConfig).mockReturnValue({
@@ -523,7 +523,7 @@ describe("materializationPipeline", () => {
 				lookAheadMonths: 1,
 				priorityThreshold: 5,
 			});
-			vi.mocked(discoverMaterializationWorkloads).mockResolvedValue(
+			vi.mocked(discoverEventGenerationWorkloads).mockResolvedValue(
 				mockWorkloads,
 			);
 
@@ -554,7 +554,7 @@ describe("materializationPipeline", () => {
 				lookAheadMonths: 1,
 				priorityThreshold: 5,
 			});
-			vi.mocked(discoverMaterializationWorkloads).mockRejectedValue(error);
+			vi.mocked(discoverEventGenerationWorkloads).mockRejectedValue(error);
 
 			const result = await runSingleOrganizationWorker(
 				organizationId,

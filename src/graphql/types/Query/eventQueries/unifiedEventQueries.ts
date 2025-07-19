@@ -1,12 +1,12 @@
 import type { InferSelectModel } from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import type { eventsTable } from "~/src/drizzle/tables/events";
-import type { ServiceDependencies } from "~/src/services/eventInstanceMaterialization/types";
+import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
 import {
-	type GetMaterializedInstancesInput,
-	getMaterializedInstancesByIds,
-	getMaterializedInstancesInDateRange,
-} from "./materializedInstanceQueries";
+	type GetRecurringEventInstancesInput,
+	getRecurringEventInstancesByIds,
+	getRecurringEventInstancesInDateRange,
+} from "./recurringEventInstanceQueries";
 import {
 	type GetStandaloneEventsInput,
 	getStandaloneEventsByIds,
@@ -15,12 +15,12 @@ import {
 
 /**
  * @description Represents a unified event object that includes attachments and metadata
- * to distinguish between standalone and materialized events.
+ * to distinguish between standalone and generated events.
  */
 export type EventWithAttachments = InferSelectModel<typeof eventsTable> & {
 	attachments: (typeof eventAttachmentsTable.$inferSelect)[];
-	eventType: "standalone" | "materialized";
-	isMaterialized?: boolean;
+	eventType: "standalone" | "generated";
+	isGenerated?: boolean;
 	baseRecurringEventId?: string;
 	sequenceNumber?: number;
 	totalCount?: number | null;
@@ -40,7 +40,7 @@ export interface GetUnifiedEventsInput {
 }
 
 /**
- * Retrieves a unified list of events, including both standalone events and materialized
+ * Retrieves a unified list of events, including both standalone events and generated
  * instances of recurring events, within a specified date range. This is the primary function
  * used by the `organization.events` GraphQL resolver.
  *
@@ -88,27 +88,27 @@ export async function getUnifiedEventsInDateRange(
 			})),
 		);
 
-		// Step 2: Get materialized instances (if recurring events are included)
+		// Step 2: Get generated instances (if recurring events are included)
 		if (includeRecurring) {
-			const materializedInstancesInput: GetMaterializedInstancesInput = {
+			const generatedInstancesInput: GetRecurringEventInstancesInput = {
 				organizationId,
 				startDate,
 				endDate,
 				includeCancelled: false,
-				limit: Math.floor(limit * 0.4), // Reserve 40% of limit for materialized instances
+				limit: Math.floor(limit * 0.4), // Reserve 40% of limit for generated instances
 			};
 
-			const materializedInstances = await getMaterializedInstancesInDateRange(
-				materializedInstancesInput,
+			const generatedInstances = await getRecurringEventInstancesInDateRange(
+				generatedInstancesInput,
 				drizzleClient,
 				logger,
 			);
 
-			// Transform materialized instances to unified format
-			const enrichedMaterializedInstances: EventWithAttachments[] =
-				materializedInstances.map((instance) => ({
+			// Transform generated instances to unified format
+			const enrichedGeneratedInstances: EventWithAttachments[] =
+				generatedInstances.map((instance) => ({
 					// Core event properties (resolved from template + exceptions)
-					id: instance.id, // Use materialized instance ID
+					id: instance.id, // Use generated instance ID
 					name: instance.name,
 					description: instance.description,
 					startAt: instance.actualStartTime,
@@ -123,23 +123,23 @@ export async function getUnifiedEventsInDateRange(
 					createdAt: instance.createdAt,
 					updatedAt: instance.updatedAt,
 
-					// Materialized instance metadata
+					// Generated instance metadata
 					isRecurringTemplate: false, // Instances are never templates
 					recurringEventId: instance.baseRecurringEventId, // Reference to base template
 					instanceStartTime: instance.originalInstanceStartTime, // Original scheduled time
 
-					// Additional materialized properties
+					// Additional generated properties
 					baseRecurringEventId: instance.baseRecurringEventId,
 					sequenceNumber: instance.sequenceNumber,
 					totalCount: instance.totalCount,
 					hasExceptions: instance.hasExceptions,
-					isMaterialized: true,
+					isGenerated: true,
 
 					attachments: [],
-					eventType: "materialized" as const,
+					eventType: "generated" as const,
 				}));
 
-			allEvents.push(...enrichedMaterializedInstances);
+			allEvents.push(...enrichedGeneratedInstances);
 		}
 
 		// Step 3: Sort all events by start time (and then by ID for consistency)
@@ -160,8 +160,8 @@ export async function getUnifiedEventsInDateRange(
 		logger.debug("Retrieved unified events", {
 			organizationId,
 			standaloneCount: standaloneEvents.length,
-			materializedCount: includeRecurring
-				? allEvents.filter((e) => e.eventType === "materialized").length
+			generatedCount: includeRecurring
+				? allEvents.filter((e) => e.eventType === "generated").length
 				: 0,
 			totalCount: allEvents.length,
 			dateRange: {
@@ -182,7 +182,7 @@ export async function getUnifiedEventsInDateRange(
 
 /**
  * Retrieves events by their specific IDs, supporting both standalone events and
- * materialized instances in a single, unified query. This function is used by the
+ * generated instances in a single, unified query. This function is used by the
  * `eventsByIds` GraphQL query to fetch a mixed list of event types.
  *
  * @param eventIds - An array of event IDs to retrieve.
@@ -211,7 +211,7 @@ export async function getEventsByIds(
 			...standaloneEvents.map((event) => ({
 				...event,
 				eventType: "standalone" as const,
-				isMaterialized: false,
+				isGenerated: false,
 			})),
 		);
 
@@ -219,15 +219,15 @@ export async function getEventsByIds(
 		const foundStandaloneIds = new Set(standaloneEvents.map((e) => e.id));
 		const remainingIds = eventIds.filter((id) => !foundStandaloneIds.has(id));
 
-		// Step 3: Get all materialized instances for the remaining IDs in a single batch
+		// Step 3: Get all generated instances for the remaining IDs in a single batch
 		if (remainingIds.length > 0) {
-			const resolvedInstances = await getMaterializedInstancesByIds(
+			const resolvedInstances = await getRecurringEventInstancesByIds(
 				remainingIds,
 				drizzleClient,
 				logger,
 			);
 
-			const materializedEvents: EventWithAttachments[] = resolvedInstances.map(
+			const generatedEvents: EventWithAttachments[] = resolvedInstances.map(
 				(resolvedInstance) => ({
 					id: resolvedInstance.id,
 					name: resolvedInstance.name,
@@ -250,18 +250,18 @@ export async function getEventsByIds(
 					sequenceNumber: resolvedInstance.sequenceNumber,
 					totalCount: resolvedInstance.totalCount,
 					hasExceptions: resolvedInstance.hasExceptions,
-					attachments: [], // TODO: Handle attachments for materialized instances
-					eventType: "materialized" as const,
-					isMaterialized: true,
+					attachments: [], // TODO: Handle attachments for generated instances
+					eventType: "generated" as const,
+					isGenerated: true,
 				}),
 			);
-			events.push(...materializedEvents);
+			events.push(...generatedEvents);
 		}
 
 		logger.debug("Retrieved events by IDs", {
 			requestedIds: eventIds.length,
 			foundStandalone: standaloneEvents.length,
-			foundMaterialized: events.length - standaloneEvents.length,
+			foundGenerated: events.length - standaloneEvents.length,
 			totalFound: events.length,
 		});
 

@@ -6,11 +6,11 @@
  *
  */
 
-export * from "./materializedInstanceQueries";
+export * from "./recurringEventInstanceQueries";
 export * from "./standaloneEventQueries";
 export * from "./unifiedEventQueries";
 
-export type { GetMaterializedInstancesInput } from "./materializedInstanceQueries";
+export type { GetRecurringEventInstancesInput } from "./recurringEventInstanceQueries";
 
 export type { GetStandaloneEventsInput } from "./standaloneEventQueries";
 

@@ -6,10 +6,10 @@ import {
 	type DiscoveredWorkload,
 	type JobDiscoveryConfig,
 	createDefaultJobDiscoveryConfig,
-	createMaterializationJobs,
-	discoverMaterializationWorkloads,
-} from "~/src/workers/eventMaterialization/jobDiscovery";
-import type { WorkerDependencies } from "~/src/workers/eventMaterialization/types";
+	createEventGenerationJobs,
+	discoverEventGenerationWorkloads,
+} from "~/src/workers/eventGeneration/jobDiscovery";
+import type { WorkerDependencies } from "~/src/workers/eventGeneration/types";
 
 // Mock dependencies
 vi.mock("drizzle-orm", async () => {
@@ -122,7 +122,7 @@ describe("jobDiscovery", () => {
 
 		mockDrizzleClient = {
 			query: {
-				eventMaterializationWindowsTable: {
+				eventGenerationWindowsTable: {
 					findMany: vi.fn(),
 				},
 				eventsTable: {
@@ -140,7 +140,7 @@ describe("jobDiscovery", () => {
 		};
 	});
 
-	describe("discoverMaterializationWorkloads", () => {
+	describe("discoverEventGenerationWorkloads", () => {
 		it("should discover workloads successfully", async () => {
 			const config: JobDiscoveryConfig = {
 				maxOrganizations: 10,
@@ -192,7 +192,7 @@ describe("jobDiscovery", () => {
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue(mockWindowConfigs);
 			vi.mocked(mockDrizzleClient.query.eventsTable.findMany)
 				.mockResolvedValueOnce(mockEvents) // org1 has events
@@ -202,7 +202,7 @@ describe("jobDiscovery", () => {
 				.mockResolvedValueOnce([]); // org2 has no rules
 			vi.mocked(estimateInstanceCount).mockReturnValue(5);
 
-			const result = await discoverMaterializationWorkloads(config, deps);
+			const result = await discoverEventGenerationWorkloads(config, deps);
 
 			expect(result).toHaveLength(1);
 			expect(result[0]).toEqual({
@@ -246,10 +246,10 @@ describe("jobDiscovery", () => {
 			};
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue([]);
 
-			const result = await discoverMaterializationWorkloads(config, deps);
+			const result = await discoverEventGenerationWorkloads(config, deps);
 
 			expect(result).toHaveLength(0);
 			expect(mockLogger.info).toHaveBeenCalledWith(
@@ -273,7 +273,7 @@ describe("jobDiscovery", () => {
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue(mockWindowConfigs);
 			vi.mocked(mockDrizzleClient.query.eventsTable.findMany).mockResolvedValue(
 				[],
@@ -282,7 +282,7 @@ describe("jobDiscovery", () => {
 				mockDrizzleClient.query.recurrenceRulesTable.findMany,
 			).mockResolvedValue([]);
 
-			const result = await discoverMaterializationWorkloads(config, deps);
+			const result = await discoverEventGenerationWorkloads(config, deps);
 
 			expect(result).toHaveLength(0);
 		});
@@ -303,13 +303,13 @@ describe("jobDiscovery", () => {
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue(mockWindowConfigs);
 			vi.mocked(mockDrizzleClient.query.eventsTable.findMany).mockRejectedValue(
 				new Error("Database error"),
 			);
 
-			const result = await discoverMaterializationWorkloads(config, deps);
+			const result = await discoverEventGenerationWorkloads(config, deps);
 
 			expect(result).toHaveLength(0);
 			expect(mockLogger.error).toHaveBeenCalledWith(
@@ -374,7 +374,7 @@ describe("jobDiscovery", () => {
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue(mockWindowConfigs);
 			vi.mocked(mockDrizzleClient.query.eventsTable.findMany)
 				.mockResolvedValueOnce(mockEvents)
@@ -384,7 +384,7 @@ describe("jobDiscovery", () => {
 				.mockResolvedValueOnce(mockRecurrenceRules);
 			vi.mocked(estimateInstanceCount).mockReturnValue(5);
 
-			const result = await discoverMaterializationWorkloads(config, deps);
+			const result = await discoverEventGenerationWorkloads(config, deps);
 
 			expect(result).toHaveLength(2);
 
@@ -397,7 +397,7 @@ describe("jobDiscovery", () => {
 		});
 	});
 
-	describe("createMaterializationJobs", () => {
+	describe("createEventGenerationJobs", () => {
 		it("should create materialization jobs from workloads", () => {
 			const mockWorkloads: DiscoveredWorkload[] = [
 				{
@@ -452,7 +452,7 @@ describe("jobDiscovery", () => {
 
 			vi.mocked(normalizeRecurrenceRule).mockReturnValue(mockNormalizedRule);
 
-			const result = createMaterializationJobs(mockWorkloads);
+			const result = createEventGenerationJobs(mockWorkloads);
 
 			expect(result).toHaveLength(2);
 			expect(result[0]).toEqual({
@@ -470,7 +470,7 @@ describe("jobDiscovery", () => {
 		});
 
 		it("should handle empty workloads", () => {
-			const result = createMaterializationJobs([]);
+			const result = createEventGenerationJobs([]);
 
 			expect(result).toHaveLength(0);
 		});
@@ -490,7 +490,7 @@ describe("jobDiscovery", () => {
 				},
 			];
 
-			const result = createMaterializationJobs(mockWorkloads);
+			const result = createEventGenerationJobs(mockWorkloads);
 
 			expect(result).toHaveLength(0);
 		});

@@ -2,9 +2,9 @@ import { and, eq, lt } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
 import type * as schema from "~/src/drizzle/schema";
-import { eventMaterializationWindowsTable } from "~/src/drizzle/tables/eventMaterializationWindows";
+import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { eventsTable } from "~/src/drizzle/tables/events";
-import { materializedEventInstancesTable } from "~/src/drizzle/tables/materializedEventInstances";
+import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 
 /**
  * Worker dependencies for window management functions
@@ -45,7 +45,7 @@ export interface WindowProcessingResult {
 export async function getOrganizationsNeedingMaterialization(
 	config: WindowProcessingConfig,
 	deps: WorkerDependencies,
-): Promise<(typeof eventMaterializationWindowsTable.$inferSelect)[]> {
+): Promise<(typeof eventGenerationWindowsTable.$inferSelect)[]> {
 	const { maxOrganizationsPerRun, processingTimeoutHours } = config;
 	const { drizzleClient, logger } = deps;
 
@@ -65,21 +65,15 @@ export async function getOrganizationsNeedingMaterialization(
 	});
 
 	const organizations =
-		await drizzleClient.query.eventMaterializationWindowsTable.findMany({
+		await drizzleClient.query.eventGenerationWindowsTable.findMany({
 			where: and(
-				eq(eventMaterializationWindowsTable.isEnabled, true),
+				eq(eventGenerationWindowsTable.isEnabled, true),
 				// Window end is approaching (needs extension)
-				lt(
-					eventMaterializationWindowsTable.currentWindowEndDate,
-					oneMonthFromNow,
-				),
+				lt(eventGenerationWindowsTable.currentWindowEndDate, oneMonthFromNow),
 				// Haven't processed recently (prevent excessive processing)
-				lt(
-					eventMaterializationWindowsTable.lastProcessedAt,
-					processingTimeoutDate,
-				),
+				lt(eventGenerationWindowsTable.lastProcessedAt, processingTimeoutDate),
 			),
-			orderBy: [eventMaterializationWindowsTable.processingPriority], // High priority first
+			orderBy: [eventGenerationWindowsTable.processingPriority], // High priority first
 			limit: maxOrganizationsPerRun,
 		});
 
@@ -103,8 +97,8 @@ export async function updateWindowAfterProcessing(
 
 	// Get current window config to calculate new end date
 	const currentWindow =
-		await drizzleClient.query.eventMaterializationWindowsTable.findFirst({
-			where: eq(eventMaterializationWindowsTable.id, windowId),
+		await drizzleClient.query.eventGenerationWindowsTable.findFirst({
+			where: eq(eventGenerationWindowsTable.id, windowId),
 		});
 
 	if (!currentWindow) {
@@ -119,7 +113,7 @@ export async function updateWindowAfterProcessing(
 
 	// Update window configuration with processing stats
 	await drizzleClient
-		.update(eventMaterializationWindowsTable)
+		.update(eventGenerationWindowsTable)
 		.set({
 			currentWindowEndDate: newWindowEndDate,
 			lastProcessedAt: now,
@@ -127,7 +121,7 @@ export async function updateWindowAfterProcessing(
 			// Store processing metrics in configuration notes
 			configurationNotes: buildProcessingNotes(currentWindow, processingResult),
 		})
-		.where(eq(eventMaterializationWindowsTable.id, windowId));
+		.where(eq(eventGenerationWindowsTable.id, windowId));
 
 	logger.info("Updated materialization window", {
 		windowId,
@@ -143,7 +137,7 @@ export async function updateWindowAfterProcessing(
  * Builds processing notes for window configuration
  */
 function buildProcessingNotes(
-	currentWindow: typeof eventMaterializationWindowsTable.$inferSelect,
+	currentWindow: typeof eventGenerationWindowsTable.$inferSelect,
 	processingResult: WindowProcessingResult,
 ): string {
 	const previousNotes = currentWindow.configurationNotes || "";
@@ -170,7 +164,7 @@ export async function getOrganizationMaterializationStatus(
 	organizationId: string,
 	deps: WorkerDependencies,
 ): Promise<{
-	windowConfig: typeof eventMaterializationWindowsTable.$inferSelect | null;
+	windowConfig: typeof eventGenerationWindowsTable.$inferSelect | null;
 	recurringEventsCount: number;
 	materializedInstancesCount: number;
 	lastProcessedAt: Date | null;
@@ -181,11 +175,8 @@ export async function getOrganizationMaterializationStatus(
 
 	// Get window configuration
 	const windowConfig =
-		await drizzleClient.query.eventMaterializationWindowsTable.findFirst({
-			where: eq(
-				eventMaterializationWindowsTable.organizationId,
-				organizationId,
-			),
+		await drizzleClient.query.eventGenerationWindowsTable.findFirst({
+			where: eq(eventGenerationWindowsTable.organizationId, organizationId),
 		});
 
 	// Count recurring events
@@ -199,8 +190,8 @@ export async function getOrganizationMaterializationStatus(
 
 	// Count materialized instances
 	const materializedInstances =
-		await drizzleClient.query.materializedEventInstancesTable.findMany({
-			where: eq(materializedEventInstancesTable.organizationId, organizationId),
+		await drizzleClient.query.recurringEventInstancesTable.findMany({
+			where: eq(recurringEventInstancesTable.organizationId, organizationId),
 			columns: { id: true },
 		});
 
@@ -221,7 +212,7 @@ export async function getOrganizationMaterializationStatus(
  * Calculates if an organization needs processing based on window configuration
  */
 function calculateNeedsProcessing(
-	windowConfig: typeof eventMaterializationWindowsTable.$inferSelect | null,
+	windowConfig: typeof eventGenerationWindowsTable.$inferSelect | null,
 ): boolean {
 	if (!windowConfig) {
 		return true; // No window config means needs setup
@@ -248,7 +239,7 @@ function calculateNeedsProcessing(
  * Validates window configuration for processing
  */
 export function validateWindowConfiguration(
-	windowConfig: typeof eventMaterializationWindowsTable.$inferSelect,
+	windowConfig: typeof eventGenerationWindowsTable.$inferSelect,
 ): { isValid: boolean; errors: string[] } {
 	const errors: string[] = [];
 
@@ -292,7 +283,7 @@ export async function getProcessingStatistics(
 	const { drizzleClient } = deps;
 
 	const [allWindows, enabledWindows] = await Promise.all([
-		drizzleClient.query.eventMaterializationWindowsTable.findMany({
+		drizzleClient.query.eventGenerationWindowsTable.findMany({
 			columns: {
 				id: true,
 				isEnabled: true,
@@ -301,8 +292,8 @@ export async function getProcessingStatistics(
 				currentWindowEndDate: true,
 			},
 		}),
-		drizzleClient.query.eventMaterializationWindowsTable.findMany({
-			where: eq(eventMaterializationWindowsTable.isEnabled, true),
+		drizzleClient.query.eventGenerationWindowsTable.findMany({
+			where: eq(eventGenerationWindowsTable.isEnabled, true),
 			columns: {
 				id: true,
 				lastProcessedInstanceCount: true,

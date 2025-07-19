@@ -1,7 +1,7 @@
 import { and, asc, eq, gte, inArray, isNull, lte, or } from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
-import type { ServiceDependencies } from "~/src/services/eventInstanceMaterialization/types";
+import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
 
 /**
  * @description Defines the input parameters for querying standalone events.
@@ -22,7 +22,7 @@ export interface GetStandaloneEventsInput {
 
 /**
  * Retrieves standalone (non-recurring) events for a given organization within a specified date range.
- * This function filters out recurring templates and materialized instances, focusing only on regular,
+ * This function filters out recurring templates and generated instances, focusing only on regular,
  * single-occurrence events that overlap with the provided time window.
  *
  * @param input - The input object containing organizationId, date range, and optional filters.

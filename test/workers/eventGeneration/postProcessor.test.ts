@@ -2,16 +2,16 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
-import type { MaterializationExecutionResult } from "~/src/workers/eventMaterialization/executionEngine";
+import type { EventGenerationExecutionResult } from "~/src/workers/eventGeneration/executionEngine";
 import {
 	type PostProcessingConfig,
 	createDefaultPostProcessingConfig,
 	executePostProcessing,
-} from "~/src/workers/eventMaterialization/postProcessor";
+} from "~/src/workers/eventGeneration/postProcessor";
 import type {
 	ProcessingMetrics,
 	WorkerDependencies,
-} from "~/src/workers/eventMaterialization/types";
+} from "~/src/workers/eventGeneration/types";
 
 describe("postProcessor", () => {
 	let mockDrizzleClient: NodePgDatabase<typeof schema>;
@@ -38,7 +38,7 @@ describe("postProcessor", () => {
 
 	describe("executePostProcessing", () => {
 		it("should execute post-processing successfully with cleanup enabled", async () => {
-			const executionResults: MaterializationExecutionResult[] = [
+			const executionResults: EventGenerationExecutionResult[] = [
 				{
 					organizationId: "org1",
 					eventId: "event1",
@@ -88,7 +88,7 @@ describe("postProcessor", () => {
 		});
 
 		it("should skip cleanup when disabled", async () => {
-			const executionResults: MaterializationExecutionResult[] = [
+			const executionResults: EventGenerationExecutionResult[] = [
 				{
 					organizationId: "org1",
 					eventId: "event1",
@@ -126,7 +126,7 @@ describe("postProcessor", () => {
 		});
 
 		it("should handle empty execution results", async () => {
-			const executionResults: MaterializationExecutionResult[] = [];
+			const executionResults: EventGenerationExecutionResult[] = [];
 
 			const metrics: ProcessingMetrics = {
 				startTime: Date.now(),
@@ -163,7 +163,7 @@ describe("postProcessor", () => {
 		});
 
 		it("should handle multiple results from same organization", async () => {
-			const executionResults: MaterializationExecutionResult[] = [
+			const executionResults: EventGenerationExecutionResult[] = [
 				{
 					organizationId: "org1",
 					eventId: "event1",
@@ -219,7 +219,7 @@ describe("postProcessor", () => {
 		});
 
 		it("should handle cleanup operations throwing errors", async () => {
-			const executionResults: MaterializationExecutionResult[] = [
+			const executionResults: EventGenerationExecutionResult[] = [
 				{
 					organizationId: "org1",
 					eventId: "event1",
@@ -265,7 +265,7 @@ describe("postProcessor", () => {
 		});
 
 		it("should handle cleanup operations throwing non-Error objects", async () => {
-			const executionResults: MaterializationExecutionResult[] = [
+			const executionResults: EventGenerationExecutionResult[] = [
 				{
 					organizationId: "org1",
 					eventId: "event1",
@@ -311,7 +311,7 @@ describe("postProcessor", () => {
 		});
 
 		it("should calculate unique organizations correctly", async () => {
-			const executionResults: MaterializationExecutionResult[] = [
+			const executionResults: EventGenerationExecutionResult[] = [
 				{
 					organizationId: "org1",
 					eventId: "event1",

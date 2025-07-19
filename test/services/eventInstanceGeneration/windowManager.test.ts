@@ -1,20 +1,20 @@
 import { faker } from "@faker-js/faker";
 import { and, eq, lt } from "drizzle-orm";
 import { type Mock, expect, suite, test, vi } from "vitest";
-import { eventMaterializationWindowsTable } from "~/src/drizzle/tables/eventMaterializationWindows";
-import type { CreateMaterializationWindowInput } from "~/src/drizzle/tables/eventMaterializationWindows";
-import { materializedEventInstancesTable } from "~/src/drizzle/tables/materializedEventInstances";
+import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
+import type { CreateGenerationWindowInput } from "~/src/drizzle/tables/eventGenerationWindows";
+import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import type {
 	ServiceDependencies,
 	WindowManagerConfig,
-} from "~/src/services/eventInstanceMaterialization/types";
+} from "~/src/services/eventGeneration/types";
 import {
-	cleanupOldMaterializedInstances,
-	extendMaterializationWindow,
+	cleanupOldGeneratedInstances,
+	extendGenerationWindow,
 	getCleanupStats,
-	initializeMaterializationWindow,
+	initializeGenerationWindow,
 	validateWindowConfig,
-} from "~/src/services/eventInstanceMaterialization/windowManager";
+} from "~/src/services/eventGeneration/windowManager";
 
 suite("windowManager", () => {
 	const mockLogger = {
@@ -26,10 +26,10 @@ suite("windowManager", () => {
 
 	const mockDrizzleClient = {
 		query: {
-			eventMaterializationWindowsTable: {
+			eventGenerationWindowsTable: {
 				findFirst: vi.fn(),
 			},
-			materializedEventInstancesTable: {
+			recurringEventInstancesTable: {
 				findMany: vi.fn(),
 			},
 		},
@@ -51,9 +51,9 @@ suite("windowManager", () => {
 	const mockOrganizationId = faker.string.uuid();
 	const mockUserId = faker.string.uuid();
 
-	suite("initializeMaterializationWindow", () => {
+	suite("initializeGenerationWindow", () => {
 		test("successfully initializes materialization window", async () => {
-			const input: CreateMaterializationWindowInput = {
+			const input: CreateGenerationWindowInput = {
 				organizationId: mockOrganizationId,
 				createdById: mockUserId,
 			};
@@ -79,7 +79,7 @@ suite("windowManager", () => {
 
 			(mockDrizzleClient.insert as Mock).mockReturnValue(mockInsertChain);
 
-			const result = await initializeMaterializationWindow(
+			const result = await initializeGenerationWindow(
 				input,
 				mockDrizzleClient,
 				mockLogger,
@@ -87,7 +87,7 @@ suite("windowManager", () => {
 
 			expect(result).toEqual(mockInsertedConfig);
 			expect(mockDrizzleClient.insert).toHaveBeenCalledWith(
-				eventMaterializationWindowsTable,
+				eventGenerationWindowsTable,
 			);
 			expect(mockInsertChain.values).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -108,7 +108,7 @@ suite("windowManager", () => {
 		});
 
 		test("throws error when insertion fails", async () => {
-			const input: CreateMaterializationWindowInput = {
+			const input: CreateGenerationWindowInput = {
 				organizationId: mockOrganizationId,
 				createdById: mockUserId,
 			};
@@ -122,7 +122,7 @@ suite("windowManager", () => {
 			(mockDrizzleClient.insert as Mock).mockReturnValue(mockInsertChain);
 
 			await expect(
-				initializeMaterializationWindow(input, mockDrizzleClient, mockLogger),
+				initializeGenerationWindow(input, mockDrizzleClient, mockLogger),
 			).rejects.toThrow("Failed to initialize materialization window.");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
@@ -131,7 +131,7 @@ suite("windowManager", () => {
 		});
 
 		test("handles database errors gracefully", async () => {
-			const input: CreateMaterializationWindowInput = {
+			const input: CreateGenerationWindowInput = {
 				organizationId: mockOrganizationId,
 				createdById: mockUserId,
 			};
@@ -142,7 +142,7 @@ suite("windowManager", () => {
 			});
 
 			await expect(
-				initializeMaterializationWindow(input, mockDrizzleClient, mockLogger),
+				initializeGenerationWindow(input, mockDrizzleClient, mockLogger),
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
@@ -152,7 +152,7 @@ suite("windowManager", () => {
 		});
 	});
 
-	suite("extendMaterializationWindow", () => {
+	suite("extendGenerationWindow", () => {
 		test("successfully extends materialization window", async () => {
 			const additionalMonths = 6;
 			const mockExistingConfig = {
@@ -175,12 +175,11 @@ suite("windowManager", () => {
 			};
 
 			(
-				mockDrizzleClient.query.eventMaterializationWindowsTable
-					.findFirst as Mock
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
 			).mockResolvedValue(mockExistingConfig);
 			(mockDrizzleClient.update as Mock).mockReturnValue(mockUpdateChain);
 
-			const result = await extendMaterializationWindow(
+			const result = await extendGenerationWindow(
 				mockOrganizationId,
 				additionalMonths,
 				mockDrizzleClient,
@@ -190,7 +189,7 @@ suite("windowManager", () => {
 			const expectedNewEndDate = new Date("2026-07-01T00:00:00Z");
 			expect(result).toEqual(expectedNewEndDate);
 			expect(mockDrizzleClient.update).toHaveBeenCalledWith(
-				eventMaterializationWindowsTable,
+				eventGenerationWindowsTable,
 			);
 			expect(mockUpdateChain.set).toHaveBeenCalledWith({
 				currentWindowEndDate: expectedNewEndDate,
@@ -211,12 +210,11 @@ suite("windowManager", () => {
 			const additionalMonths = 6;
 
 			(
-				mockDrizzleClient.query.eventMaterializationWindowsTable
-					.findFirst as Mock
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
 			).mockResolvedValue(null);
 
 			await expect(
-				extendMaterializationWindow(
+				extendGenerationWindow(
 					mockOrganizationId,
 					additionalMonths,
 					mockDrizzleClient,
@@ -232,12 +230,11 @@ suite("windowManager", () => {
 			const dbError = new Error("Database connection failed");
 
 			(
-				mockDrizzleClient.query.eventMaterializationWindowsTable
-					.findFirst as Mock
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
 			).mockRejectedValue(dbError);
 
 			await expect(
-				extendMaterializationWindow(
+				extendGenerationWindow(
 					mockOrganizationId,
 					additionalMonths,
 					mockDrizzleClient,
@@ -252,7 +249,7 @@ suite("windowManager", () => {
 		});
 	});
 
-	suite("cleanupOldMaterializedInstances", () => {
+	suite("cleanupOldGeneratedInstances", () => {
 		test("successfully cleans up old instances", async () => {
 			const mockWindowConfig = {
 				id: faker.string.uuid(),
@@ -273,12 +270,11 @@ suite("windowManager", () => {
 			};
 
 			(
-				mockDrizzleClient.query.eventMaterializationWindowsTable
-					.findFirst as Mock
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
 			).mockResolvedValue(mockWindowConfig);
 			(mockDrizzleClient.delete as Mock).mockReturnValue(mockDeleteChain);
 
-			const result = await cleanupOldMaterializedInstances(
+			const result = await cleanupOldGeneratedInstances(
 				mockOrganizationId,
 				mockDrizzleClient,
 				mockLogger,
@@ -286,16 +282,13 @@ suite("windowManager", () => {
 
 			expect(result).toBe(25);
 			expect(mockDrizzleClient.delete).toHaveBeenCalledWith(
-				materializedEventInstancesTable,
+				recurringEventInstancesTable,
 			);
 			expect(mockDeleteChain.where).toHaveBeenCalledWith(
 				and(
-					eq(
-						materializedEventInstancesTable.organizationId,
-						mockOrganizationId,
-					),
+					eq(recurringEventInstancesTable.organizationId, mockOrganizationId),
 					lt(
-						materializedEventInstancesTable.actualEndTime,
+						recurringEventInstancesTable.actualEndTime,
 						mockWindowConfig.retentionStartDate,
 					),
 				),
@@ -311,11 +304,10 @@ suite("windowManager", () => {
 
 		test("returns 0 when no window config found", async () => {
 			(
-				mockDrizzleClient.query.eventMaterializationWindowsTable
-					.findFirst as Mock
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
 			).mockResolvedValue(null);
 
-			const result = await cleanupOldMaterializedInstances(
+			const result = await cleanupOldGeneratedInstances(
 				mockOrganizationId,
 				mockDrizzleClient,
 				mockLogger,
@@ -347,12 +339,11 @@ suite("windowManager", () => {
 			};
 
 			(
-				mockDrizzleClient.query.eventMaterializationWindowsTable
-					.findFirst as Mock
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
 			).mockResolvedValue(mockWindowConfig);
 			(mockDrizzleClient.delete as Mock).mockReturnValue(mockDeleteChain);
 
-			const result = await cleanupOldMaterializedInstances(
+			const result = await cleanupOldGeneratedInstances(
 				mockOrganizationId,
 				mockDrizzleClient,
 				mockLogger,
@@ -365,12 +356,11 @@ suite("windowManager", () => {
 			const dbError = new Error("Database connection failed");
 
 			(
-				mockDrizzleClient.query.eventMaterializationWindowsTable
-					.findFirst as Mock
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
 			).mockRejectedValue(dbError);
 
 			await expect(
-				cleanupOldMaterializedInstances(
+				cleanupOldGeneratedInstances(
 					mockOrganizationId,
 					mockDrizzleClient,
 					mockLogger,
@@ -407,10 +397,9 @@ suite("windowManager", () => {
 			}));
 
 			(
-				mockDrizzleClient.query.eventMaterializationWindowsTable
-					.findFirst as Mock
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
 			).mockResolvedValue(mockWindowConfig);
-			(mockDrizzleClient.query.materializedEventInstancesTable.findMany as Mock)
+			(mockDrizzleClient.query.recurringEventInstancesTable.findMany as Mock)
 				.mockResolvedValueOnce(mockTotalInstances)
 				.mockResolvedValueOnce(mockEligibleInstances);
 
@@ -429,8 +418,7 @@ suite("windowManager", () => {
 
 		test("returns default stats when no window config found", async () => {
 			(
-				mockDrizzleClient.query.eventMaterializationWindowsTable
-					.findFirst as Mock
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
 			).mockResolvedValue(null);
 
 			const result = await getCleanupStats(
@@ -461,35 +449,31 @@ suite("windowManager", () => {
 			};
 
 			(
-				mockDrizzleClient.query.eventMaterializationWindowsTable
-					.findFirst as Mock
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst as Mock
 			).mockResolvedValue(mockWindowConfig);
-			(mockDrizzleClient.query.materializedEventInstancesTable.findMany as Mock)
+			(mockDrizzleClient.query.recurringEventInstancesTable.findMany as Mock)
 				.mockResolvedValueOnce([])
 				.mockResolvedValueOnce([]);
 
 			await getCleanupStats(mockOrganizationId, mockDrizzleClient);
 
 			expect(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 			).toHaveBeenCalledWith({
 				where: eq(
-					materializedEventInstancesTable.organizationId,
+					recurringEventInstancesTable.organizationId,
 					mockOrganizationId,
 				),
 				columns: { id: true },
 			});
 
 			expect(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 			).toHaveBeenCalledWith({
 				where: and(
-					eq(
-						materializedEventInstancesTable.organizationId,
-						mockOrganizationId,
-					),
+					eq(recurringEventInstancesTable.organizationId, mockOrganizationId),
 					lt(
-						materializedEventInstancesTable.actualEndTime,
+						recurringEventInstancesTable.actualEndTime,
 						mockWindowConfig.retentionStartDate,
 					),
 				),

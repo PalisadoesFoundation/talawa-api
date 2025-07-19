@@ -2,12 +2,12 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
 import type * as schema from "~/src/drizzle/schema";
 
-import { executeBatchMaterialization } from "./executionEngine";
+import { executeBatchEventGeneration } from "./executionEngine";
 // Import focused modules
 import {
 	createDefaultJobDiscoveryConfig,
-	createMaterializationJobs,
-	discoverMaterializationWorkloads,
+	createEventGenerationJobs,
+	discoverEventGenerationWorkloads,
 } from "./jobDiscovery";
 import {
 	createDefaultPostProcessingConfig,
@@ -59,7 +59,7 @@ export async function runMaterializationWorker(
 
 	try {
 		// Step 1: Discover work to be done
-		const workloads = await discoverMaterializationWorkloads(
+		const workloads = await discoverEventGenerationWorkloads(
 			{
 				...createDefaultJobDiscoveryConfig(),
 				maxOrganizations: config.maxOrganizations,
@@ -73,14 +73,14 @@ export async function runMaterializationWorker(
 		}
 
 		// Step 2: Create executable jobs
-		const jobs = createMaterializationJobs(workloads);
+		const jobs = createEventGenerationJobs(workloads);
 
 		logger.info(
 			`Created ${jobs.length} materialization jobs from ${workloads.length} workloads`,
 		);
 
 		// Step 3: Execute jobs
-		const executionResult = await executeBatchMaterialization(
+		const executionResult = await executeBatchEventGeneration(
 			jobs,
 			config.maxConcurrentJobs,
 			deps,
@@ -145,7 +145,7 @@ export async function runSingleOrganizationWorker(
 
 	try {
 		// Discover work for this specific organization
-		const allWorkloads = await discoverMaterializationWorkloads(
+		const allWorkloads = await discoverEventGenerationWorkloads(
 			createDefaultJobDiscoveryConfig(),
 			deps,
 		);
@@ -160,9 +160,9 @@ export async function runSingleOrganizationWorker(
 		}
 
 		// Create and execute jobs for this organization
-		const jobs = createMaterializationJobs(orgWorkloads);
+		const jobs = createEventGenerationJobs(orgWorkloads);
 
-		const executionResult = await executeBatchMaterialization(jobs, 5, deps);
+		const executionResult = await executeBatchEventGeneration(jobs, 5, deps);
 
 		// Post-processing
 		let windowsUpdated = 0;

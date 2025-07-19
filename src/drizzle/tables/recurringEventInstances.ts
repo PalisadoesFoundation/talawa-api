@@ -19,7 +19,7 @@ import { recurrenceRulesTable } from "./recurrenceRules";
 import { venueBookingsTable } from "./venueBookings";
 
 /**
- * Drizzle ORM postgres table definition for materialized event instances.
+ * Drizzle ORM postgres table definition for recurring event event instances.
  *
  * This table stores pre-calculated instances of recurring events within a hot window
  * (typically 12-24 months ahead). Each instance represents a specific occurrence
@@ -31,11 +31,11 @@ import { venueBookingsTable } from "./venueBookings";
  *
  * This approach eliminates data duplication while providing fast date-range queries.
  */
-export const materializedEventInstancesTable = pgTable(
-	"materialized_event_instances",
+export const recurringEventInstancesTable = pgTable(
+	"recurring_event_instances",
 	{
 		/**
-		 * Primary unique identifier of the materialized instance.
+		 * Primary unique identifier of the recurring event instance.
 		 * This is a real database ID for fast lookups and relationships.
 		 */
 		id: uuid("id").primaryKey().$default(uuidv7),
@@ -75,7 +75,7 @@ export const materializedEventInstancesTable = pgTable(
 		}).notNull(),
 
 		/**
-		 * The actual start time for this materialized instance.
+		 * The actual start time for this recurring event instance.
 		 * This is calculated from the original time plus any exceptions.
 		 * Pre-calculated for fast date-range queries and sorting.
 		 */
@@ -86,7 +86,7 @@ export const materializedEventInstancesTable = pgTable(
 		}).notNull(),
 
 		/**
-		 * The actual end time for this materialized instance.
+		 * The actual end time for this recurring event instance.
 		 * Calculated based on actualStartTime and duration from template + exceptions.
 		 * Pre-calculated for fast date-range queries and calendar views.
 		 */
@@ -114,10 +114,10 @@ export const materializedEventInstancesTable = pgTable(
 			}),
 
 		/**
-		 * Date time when this materialized instance was created by the background worker.
-		 * Used for tracking materialization freshness and debugging.
+		 * Date time when this recurring event instance was created by the background worker.
+		 * Used for tracking recurring event freshness and debugging.
 		 */
-		materializedAt: timestamp("materialized_at", {
+		generatedAt: timestamp("recurringEventd_at", {
 			mode: "date",
 			precision: 3,
 			withTimezone: true,
@@ -126,7 +126,7 @@ export const materializedEventInstancesTable = pgTable(
 			.defaultNow(),
 
 		/**
-		 * Date time when this materialized instance was last updated.
+		 * Date time when this recurring event instance was last updated.
 		 * Updated when the background worker recalculates instances due to
 		 * template changes or exception modifications.
 		 */
@@ -160,121 +160,121 @@ export const materializedEventInstancesTable = pgTable(
 	},
 	(self) => ({
 		// Primary performance indexes for hot queries
-		baseRecurringEventIdx: index("mei_base_recurring_event_idx").on(
+		baseRecurringEventIdx: index("reei_base_recurring_event_idx").on(
 			self.baseRecurringEventId,
 		),
-		organizationDateRangeIdx: index("mei_org_date_range_idx").on(
+		organizationDateRangeIdx: index("reei_org_date_range_idx").on(
 			self.organizationId,
 			self.actualStartTime,
 			self.actualEndTime,
 		),
-		actualStartTimeIdx: index("mei_actual_start_time_idx").on(
+		actualStartTimeIdx: index("reei_actual_start_time_idx").on(
 			self.actualStartTime,
 		),
-		actualEndTimeIdx: index("mei_actual_end_time_idx").on(self.actualEndTime),
+		actualEndTimeIdx: index("reei_actual_end_time_idx").on(self.actualEndTime),
 
 		// Indexes for background worker operations
 		originalInstanceStartTimeIdx: index(
-			"mei_original_instance_start_time_idx",
+			"reei_original_instance_start_time_idx",
 		).on(self.originalInstanceStartTime),
-		recurrenceRuleIdx: index("mei_recurrence_rule_idx").on(
+		recurrenceRuleIdx: index("reei_recurrence_rule_idx").on(
 			self.recurrenceRuleId,
 		),
 
 		// Indexes for filtering and status queries
-		isCancelledIdx: index("mei_is_cancelled_idx").on(self.isCancelled),
-		materializedAtIdx: index("mei_materialized_at_idx").on(self.materializedAt),
+		isCancelledIdx: index("reei_is_cancelled_idx").on(self.isCancelled),
+		generatedAtIdx: index("reei_recurringEventd_at_idx").on(self.generatedAt),
 
 		// Composite indexes for complex queries
-		organizationActiveInstancesIdx: index("mei_org_active_instances_idx").on(
+		organizationActiveInstancesIdx: index("reei_org_active_instances_idx").on(
 			self.organizationId,
 			self.isCancelled,
 			self.actualStartTime,
 		),
-		baseEventInstanceTimeIdx: index("mei_base_event_instance_time_idx").on(
+		baseEventInstanceTimeIdx: index("reei_base_event_instance_time_idx").on(
 			self.baseRecurringEventId,
 			self.originalInstanceStartTime,
 		),
 
 		// Index for cleanup operations (finding old instances)
-		cleanupCandidatesIdx: index("mei_cleanup_candidates_idx").on(
+		cleanupCandidatesIdx: index("reei_cleanup_candidates_idx").on(
 			self.actualEndTime,
-			self.materializedAt,
+			self.generatedAt,
 		),
 
 		// Index for sequence-based queries
-		sequenceNumberIdx: index("mei_sequence_number_idx").on(
+		sequenceNumberIdx: index("reei_sequence_number_idx").on(
 			self.baseRecurringEventId,
 			self.sequenceNumber,
 		),
 	}),
 );
 
-export const materializedEventInstancesTableRelations = relations(
-	materializedEventInstancesTable,
+export const recurringEventInstancesTableRelations = relations(
+	recurringEventInstancesTable,
 	({ one, many }) => ({
 		/**
 		 * Many to one relationship to the base recurring template event.
 		 * This is where all inherited properties come from.
 		 */
 		baseRecurringEvent: one(eventsTable, {
-			fields: [materializedEventInstancesTable.baseRecurringEventId],
+			fields: [recurringEventInstancesTable.baseRecurringEventId],
 			references: [eventsTable.id],
 			relationName:
-				"materialized_event_instances.base_recurring_event_id:events.id",
+				"recurring_event_instances.base_recurring_event_id:events.id",
 		}),
 
 		/**
 		 * Many to one relationship to the recurrence rule that generated this instance.
 		 */
 		recurrenceRule: one(recurrenceRulesTable, {
-			fields: [materializedEventInstancesTable.recurrenceRuleId],
+			fields: [recurringEventInstancesTable.recurrenceRuleId],
 			references: [recurrenceRulesTable.id],
 			relationName:
-				"materialized_event_instances.recurrence_rule_id:recurrence_rules.id",
+				"recurring_event_instances.recurrence_rule_id:recurrence_rules.id",
 		}),
 
 		/**
 		 * Many to one relationship to organization for data isolation.
 		 */
 		organization: one(organizationsTable, {
-			fields: [materializedEventInstancesTable.organizationId],
+			fields: [recurringEventInstancesTable.organizationId],
 			references: [organizationsTable.id],
 			relationName:
-				"materialized_event_instances.organization_id:organizations.id",
+				"recurring_event_instances.organization_id:organizations.id",
 		}),
 
 		/**
 		 * One to many relationship to event attendances.
-		 * Attendances are linked to materialized instances, not templates.
+		 * Attendances are linked to recurring event instances, not templates.
 		 */
-		attendancesForMaterializedInstance: many(eventAttendancesTable, {
+		attendancesForRecurringEventInstance: many(eventAttendancesTable, {
 			relationName:
-				"event_attendances.materialized_instance_id:materialized_event_instances.id",
+				"event_attendances.recurring_event_instance_id:recurring_event_instances.id",
 		}),
 
 		/**
 		 * One to many relationship to event attachments.
 		 * Instance-specific attachments (inherits from template by default).
 		 */
-		attachmentsForMaterializedInstance: many(eventAttachmentsTable, {
+		attachmentsForRecurringEventInstance: many(eventAttachmentsTable, {
 			relationName:
-				"event_attachments.materialized_instance_id:materialized_event_instances.id",
+				"event_attachments.recurring_event_instance_id:recurring_event_instances.id",
 		}),
 
 		/**
 		 * One to many relationship to venue bookings.
-		 * Each materialized instance can have its own venue booking.
+		 * Each recurring event instance can have its own venue booking.
 		 */
-		venueBookingsForMaterializedInstance: many(venueBookingsTable, {
+		venueBookingsForRecurringEventInstance: many(venueBookingsTable, {
 			relationName:
-				"venue_bookings.materialized_instance_id:materialized_event_instances.id",
+				"venue_bookings.recurring_event_instance_id:recurring_event_instances.id",
 		}),
 	}),
 );
 
-export const materializedEventInstancesTableInsertSchema = createInsertSchema(
-	materializedEventInstancesTable,
+export const recurringEventInstancesTableInsertSchema = createInsertSchema(
+	recurringEventInstancesTable,
 	{
 		baseRecurringEventId: z.string().uuid(),
 		recurrenceRuleId: z.string().uuid(),
@@ -290,10 +290,10 @@ export const materializedEventInstancesTableInsertSchema = createInsertSchema(
 );
 
 /**
- * Type representing a fully resolved materialized event instance.
+ * Type representing a fully resolved recurring event event instance.
  * This includes all inherited properties from the template plus any exceptions applied.
  */
-export type ResolvedMaterializedEventInstance = {
+export type ResolvedRecurringEventInstance = {
 	// Core instance metadata
 	id: string;
 	baseRecurringEventId: string;
@@ -303,7 +303,7 @@ export type ResolvedMaterializedEventInstance = {
 	actualEndTime: Date;
 	isCancelled: boolean;
 	organizationId: string;
-	materializedAt: Date;
+	generatedAt: Date;
 	lastUpdatedAt: Date | null;
 	version: string;
 
@@ -331,9 +331,9 @@ export type ResolvedMaterializedEventInstance = {
 };
 
 /**
- * Input type for creating new materialized instances.
+ * Input type for creating new recurring event instances.
  */
-export type CreateMaterializedInstanceInput = {
+export type CreateRecurringEventInstanceInput = {
 	baseRecurringEventId: string;
 	recurrenceRuleId: string;
 	originalInstanceStartTime: Date;
@@ -346,9 +346,9 @@ export type CreateMaterializedInstanceInput = {
 };
 
 /**
- * Input type for batch creating materialized instances.
+ * Input type for batch creating recurring event instances.
  */
-export type BatchCreateMaterializedInstancesInput = {
-	instances: CreateMaterializedInstanceInput[];
+export type BatchCreateRecurringEventInstancesInput = {
+	instances: CreateRecurringEventInstanceInput[];
 	organizationId: string;
 };

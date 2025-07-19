@@ -12,7 +12,7 @@ import {
 	getProcessingStatistics,
 	updateWindowAfterProcessing,
 	validateWindowConfiguration,
-} from "~/src/workers/eventMaterialization/windowManager";
+} from "~/src/workers/eventGeneration/windowManager";
 
 // Mock dependencies
 vi.mock("drizzle-orm", async () => {
@@ -61,7 +61,7 @@ describe("windowManager", () => {
 		actualStartTime: new Date("2024-01-01"),
 		actualEndTime: new Date("2024-01-02"),
 		isCancelled: false,
-		materializedAt: new Date("2024-01-01"),
+		generatedAt: new Date("2024-01-01"),
 		lastUpdatedAt: null,
 		version: "1",
 		sequenceNumber: 1,
@@ -108,14 +108,14 @@ describe("windowManager", () => {
 
 		mockDrizzleClient = {
 			query: {
-				eventMaterializationWindowsTable: {
+				eventGenerationWindowsTable: {
 					findMany: vi.fn(),
 					findFirst: vi.fn(),
 				},
 				eventsTable: {
 					findMany: vi.fn(),
 				},
-				materializedEventInstancesTable: {
+				recurringEventInstancesTable: {
 					findMany: vi.fn(),
 				},
 			},
@@ -156,7 +156,7 @@ describe("windowManager", () => {
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue(mockOrganizations);
 
 			const result = await getOrganizationsNeedingMaterialization(config, deps);
@@ -183,7 +183,7 @@ describe("windowManager", () => {
 			};
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue([]);
 
 			const result = await getOrganizationsNeedingMaterialization(config, deps);
@@ -215,7 +215,7 @@ describe("windowManager", () => {
 			});
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findFirst,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst,
 			).mockResolvedValue(mockCurrentWindow);
 
 			await updateWindowAfterProcessing(windowId, processingResult, deps);
@@ -245,7 +245,7 @@ describe("windowManager", () => {
 			};
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findFirst,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst,
 			).mockResolvedValue(undefined);
 
 			await expect(
@@ -275,7 +275,7 @@ describe("windowManager", () => {
 			});
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findFirst,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst,
 			).mockResolvedValue(mockCurrentWindow);
 
 			const mockSet = vi.fn().mockReturnThis();
@@ -322,13 +322,13 @@ describe("windowManager", () => {
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findFirst,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst,
 			).mockResolvedValue(mockWindowConfig);
 			vi.mocked(mockDrizzleClient.query.eventsTable.findMany).mockResolvedValue(
 				mockRecurringEvents,
 			);
 			vi.mocked(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 			).mockResolvedValue(mockMaterializedInstances);
 
 			const result = await getOrganizationMaterializationStatus(
@@ -350,13 +350,13 @@ describe("windowManager", () => {
 			const organizationId = "org1";
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findFirst,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst,
 			).mockResolvedValue(undefined);
 			vi.mocked(mockDrizzleClient.query.eventsTable.findMany).mockResolvedValue(
 				[],
 			);
 			vi.mocked(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 			).mockResolvedValue([]);
 
 			const result = await getOrganizationMaterializationStatus(
@@ -486,9 +486,7 @@ describe("windowManager", () => {
 				}),
 			];
 
-			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
-			)
+			vi.mocked(mockDrizzleClient.query.eventGenerationWindowsTable.findMany)
 				.mockResolvedValueOnce(mockAllWindows)
 				.mockResolvedValueOnce(mockEnabledWindows);
 
@@ -504,9 +502,7 @@ describe("windowManager", () => {
 		});
 
 		it("should handle no organizations", async () => {
-			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
-			)
+			vi.mocked(mockDrizzleClient.query.eventGenerationWindowsTable.findMany)
 				.mockResolvedValueOnce([])
 				.mockResolvedValueOnce([]);
 
@@ -544,9 +540,7 @@ describe("windowManager", () => {
 				}),
 			];
 
-			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
-			)
+			vi.mocked(mockDrizzleClient.query.eventGenerationWindowsTable.findMany)
 				.mockResolvedValueOnce(mockAllWindows)
 				.mockResolvedValueOnce(mockEnabledWindows);
 

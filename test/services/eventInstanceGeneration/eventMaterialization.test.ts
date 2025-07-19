@@ -4,11 +4,11 @@ import { type Mock, expect, suite, test, vi } from "vitest";
 import { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
-import { materializeInstancesForRecurringEvent } from "~/src/services/eventInstanceMaterialization/eventMaterialization";
+import { generateInstancesForRecurringEvent } from "~/src/services/eventGeneration";
 import type {
-	MaterializeInstancesInput,
+	GenerateInstancesInput,
 	ServiceDependencies,
-} from "~/src/services/eventInstanceMaterialization/types";
+} from "~/src/services/eventGeneration/types";
 
 suite("eventMaterialization", () => {
 	const mockLogger = {
@@ -34,7 +34,7 @@ suite("eventMaterialization", () => {
 			eventExceptionsTable: {
 				findMany: vi.fn(),
 			},
-			materializedEventInstancesTable: {
+			recurringEventInstancesTable: {
 				findMany: vi.fn(),
 			},
 		},
@@ -43,9 +43,9 @@ suite("eventMaterialization", () => {
 		})),
 	} as unknown as ServiceDependencies["drizzleClient"];
 
-	suite("materializeInstancesForRecurringEvent", () => {
+	suite("generateInstancesForRecurringEvent", () => {
 		test("successfully materializes instances for a recurring event", async () => {
-			const input: MaterializeInstancesInput = {
+			const input: GenerateInstancesInput = {
 				baseRecurringEventId: faker.string.uuid(),
 				windowStartDate: new Date("2025-01-01"),
 				windowEndDate: new Date("2025-12-31"),
@@ -103,10 +103,10 @@ suite("eventMaterialization", () => {
 				mockDrizzleClient.query.eventExceptionsTable.findMany as Mock
 			).mockResolvedValue(mockExceptions);
 			(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany as Mock
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany as Mock
 			).mockResolvedValue([]);
 
-			const result = await materializeInstancesForRecurringEvent(
+			const result = await generateInstancesForRecurringEvent(
 				input,
 				mockDrizzleClient,
 				mockLogger,
@@ -141,7 +141,7 @@ suite("eventMaterialization", () => {
 		});
 
 		test("throws error when base template is not found", async () => {
-			const input: MaterializeInstancesInput = {
+			const input: GenerateInstancesInput = {
 				baseRecurringEventId: faker.string.uuid(),
 				windowStartDate: new Date("2025-01-01"),
 				windowEndDate: new Date("2025-12-31"),
@@ -156,7 +156,7 @@ suite("eventMaterialization", () => {
 			).mockResolvedValue({});
 
 			await expect(
-				materializeInstancesForRecurringEvent(
+				generateInstancesForRecurringEvent(
 					input,
 					mockDrizzleClient,
 					mockLogger,
@@ -172,7 +172,7 @@ suite("eventMaterialization", () => {
 		});
 
 		test("throws error when recurrence rule is not found", async () => {
-			const input: MaterializeInstancesInput = {
+			const input: GenerateInstancesInput = {
 				baseRecurringEventId: faker.string.uuid(),
 				windowStartDate: new Date("2025-01-01"),
 				windowEndDate: new Date("2025-12-31"),
@@ -196,7 +196,7 @@ suite("eventMaterialization", () => {
 			).mockResolvedValue(null);
 
 			await expect(
-				materializeInstancesForRecurringEvent(
+				generateInstancesForRecurringEvent(
 					input,
 					mockDrizzleClient,
 					mockLogger,
@@ -212,7 +212,7 @@ suite("eventMaterialization", () => {
 		});
 
 		test("returns 0 when no new instances need to be created", async () => {
-			const input: MaterializeInstancesInput = {
+			const input: GenerateInstancesInput = {
 				baseRecurringEventId: faker.string.uuid(),
 				windowStartDate: new Date("2025-01-01"),
 				windowEndDate: new Date("2025-01-31"),
@@ -256,10 +256,10 @@ suite("eventMaterialization", () => {
 				mockDrizzleClient.query.eventExceptionsTable.findMany as Mock
 			).mockResolvedValue([]);
 			(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany as Mock
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany as Mock
 			).mockResolvedValue(mockExistingInstances);
 
-			const result = await materializeInstancesForRecurringEvent(
+			const result = await generateInstancesForRecurringEvent(
 				input,
 				mockDrizzleClient,
 				mockLogger,
@@ -272,7 +272,7 @@ suite("eventMaterialization", () => {
 		});
 
 		test("logs detailed information about the materialization process", async () => {
-			const input: MaterializeInstancesInput = {
+			const input: GenerateInstancesInput = {
 				baseRecurringEventId: faker.string.uuid(),
 				windowStartDate: new Date("2025-01-01"),
 				windowEndDate: new Date("2025-01-31"),
@@ -308,10 +308,10 @@ suite("eventMaterialization", () => {
 				mockDrizzleClient.query.eventExceptionsTable.findMany as Mock
 			).mockResolvedValue([]);
 			(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany as Mock
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany as Mock
 			).mockResolvedValue([]);
 
-			await materializeInstancesForRecurringEvent(
+			await generateInstancesForRecurringEvent(
 				input,
 				mockDrizzleClient,
 				mockLogger,
@@ -327,7 +327,7 @@ suite("eventMaterialization", () => {
 		});
 
 		test("handles database errors gracefully", async () => {
-			const input: MaterializeInstancesInput = {
+			const input: GenerateInstancesInput = {
 				baseRecurringEventId: faker.string.uuid(),
 				windowStartDate: new Date("2025-01-01"),
 				windowEndDate: new Date("2025-12-31"),
@@ -340,7 +340,7 @@ suite("eventMaterialization", () => {
 			);
 
 			await expect(
-				materializeInstancesForRecurringEvent(
+				generateInstancesForRecurringEvent(
 					input,
 					mockDrizzleClient,
 					mockLogger,

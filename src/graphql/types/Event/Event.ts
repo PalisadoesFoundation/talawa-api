@@ -1,5 +1,5 @@
 import type { eventsTable } from "~/src/drizzle/tables/events";
-import type { ResolvedMaterializedEventInstance } from "~/src/drizzle/tables/materializedEventInstances";
+import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
 import { builder } from "~/src/graphql/builder";
 import {
 	EventAttachment,
@@ -9,7 +9,7 @@ import {
 // Unified Event type supporting both standalone events and materialized instances
 export type Event =
 	| (typeof eventsTable.$inferSelect & { attachments: EventAttachmentType[] })
-	| (ResolvedMaterializedEventInstance & {
+	| (ResolvedRecurringEventInstance & {
 			attachments: EventAttachmentType[];
 	  });
 

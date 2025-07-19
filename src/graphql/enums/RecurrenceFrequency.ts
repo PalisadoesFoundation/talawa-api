@@ -1,4 +1,4 @@
-import { frequencyEnum } from "~/src/drizzle/enums/frequency";
+import { frequencyEnum } from "~/src/drizzle/enums/recurrenceFrequency";
 import { builder } from "~/src/graphql/builder";
 
 export const Frequency = builder.enumType("Frequency", {

@@ -17,41 +17,41 @@ export {
 	createDefaultWorkerConfig,
 	type WorkerConfig,
 	type WorkerResult,
-} from "./eventMaterialization/materializationPipeline";
+} from "./eventGeneration/materializationPipeline";
 
 export {
-	executeMaterialization,
-	executeBatchMaterialization,
-	type MaterializationJob,
-	type MaterializationExecutionResult,
-} from "./eventMaterialization/executionEngine";
+	executeEventGeneration,
+	executeBatchEventGeneration,
+	type EventGenerationJob,
+	type EventGenerationExecutionResult,
+} from "./eventGeneration/executionEngine";
 
 export {
-	discoverMaterializationWorkloads,
-	createMaterializationJobs,
+	discoverEventGenerationWorkloads,
+	createEventGenerationJobs,
 	createDefaultJobDiscoveryConfig,
 	type DiscoveredWorkload,
 	type JobDiscoveryConfig,
-} from "./eventMaterialization/jobDiscovery";
+} from "./eventGeneration/jobDiscovery";
 
 export {
-	initializeMaterializationWindow,
-	extendMaterializationWindow,
-	cleanupOldMaterializedInstances,
+	initializeGenerationWindow,
+	extendGenerationWindow,
+	cleanupOldGeneratedInstances,
 	getCleanupStats,
 	validateWindowConfig,
-} from "../services/eventInstanceMaterialization/windowManager";
+} from "../services/eventGeneration/windowManager";
 
 export {
 	executePostProcessing,
 	createDefaultPostProcessingConfig,
 	type PostProcessingConfig,
 	type PostProcessingResult,
-} from "./eventMaterialization/postProcessor";
+} from "./eventGeneration/postProcessor";
 
 export type {
 	WorkerDependencies,
 	ProcessingMetrics,
 	ResourceUsage,
 	ProcessingResult,
-} from "./eventMaterialization/types";
+} from "./eventGeneration/types";

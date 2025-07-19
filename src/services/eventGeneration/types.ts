@@ -3,13 +3,13 @@ import type { FastifyBaseLogger } from "fastify";
 import type * as schema from "~/src/drizzle/schema";
 import type { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
 import type { eventsTable } from "~/src/drizzle/tables/events";
-import type { materializedEventInstancesTable } from "~/src/drizzle/tables/materializedEventInstances";
 import type { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import type { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 
 /**
- * Input for getting materialized instances within a date range
+ * Input for getting generated instances within a date range
  */
-export interface GetMaterializedInstancesInput {
+export interface GetGeneratedInstancesInput {
 	organizationId: string;
 	startDate: Date;
 	endDate: Date;
@@ -18,9 +18,9 @@ export interface GetMaterializedInstancesInput {
 }
 
 /**
- * Input for materializing instances for a recurring event
+ * Input for generating instances for a recurring event
  */
-export interface MaterializeInstancesInput {
+export interface GenerateInstancesInput {
 	baseRecurringEventId: string;
 	windowStartDate: Date;
 	windowEndDate: Date;
@@ -54,7 +54,7 @@ export interface CalculatedOccurrence {
  * Input for resolving instance with inheritance
  */
 export interface ResolveInstanceInput {
-	materializedInstance: typeof materializedEventInstancesTable.$inferSelect;
+	generatedInstance: typeof recurringEventInstancesTable.$inferSelect;
 	baseTemplate: typeof eventsTable.$inferSelect;
 	exception?: typeof eventExceptionsTable.$inferSelect;
 }

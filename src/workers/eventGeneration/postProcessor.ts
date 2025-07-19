@@ -1,4 +1,4 @@
-import type { MaterializationExecutionResult } from "./executionEngine";
+import type { EventGenerationExecutionResult } from "./executionEngine";
 import type { ProcessingMetrics, WorkerDependencies } from "./types";
 
 /**
@@ -28,7 +28,7 @@ export interface PostProcessingResult {
  * @returns A promise that resolves to the result of the post-processing operations.
  */
 export async function executePostProcessing(
-	executionResults: MaterializationExecutionResult[],
+	executionResults: EventGenerationExecutionResult[],
 	metrics: ProcessingMetrics,
 	config: PostProcessingConfig,
 	deps: WorkerDependencies,
@@ -63,7 +63,7 @@ export async function executePostProcessing(
  * @param deps - The worker dependencies.
  */
 async function performCleanupOperations(
-	executionResults: MaterializationExecutionResult[],
+	executionResults: EventGenerationExecutionResult[],
 	deps: WorkerDependencies,
 ): Promise<void> {
 	const { logger } = deps;

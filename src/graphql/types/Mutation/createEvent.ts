@@ -12,9 +12,9 @@ import {
 } from "~/src/graphql/inputs/MutationCreateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
 import {
-	initializeMaterializationWindow,
-	materializeInstancesForRecurringEvent,
-} from "~/src/services/eventInstanceMaterialization";
+	generateInstancesForRecurringEvent,
+	initializeGenerationWindow,
+} from "~/src/services/eventGeneration";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
@@ -228,7 +228,7 @@ builder.mutationField("createEvent", (t) =>
 						});
 					}
 
-					// Handle recurring event: Create recurrence rule AND immediately materialize instances
+					// Handle recurring event: Create recurrence rule AND immediately generate instances
 					if (parsedArgs.input.recurrence) {
 						// Build RRULE string
 						const rruleString = buildRRuleString(
@@ -277,9 +277,9 @@ builder.mutationField("createEvent", (t) =>
 							},
 						);
 
-						// Ensure materialization window exists for the organization
+						// Ensure generation window exists for the organization
 						let windowConfig =
-							await ctx.drizzleClient.query.eventMaterializationWindowsTable.findFirst(
+							await ctx.drizzleClient.query.eventGenerationWindowsTable.findFirst(
 								{
 									where: (fields, operators) =>
 										operators.eq(
@@ -290,8 +290,8 @@ builder.mutationField("createEvent", (t) =>
 							);
 
 						if (!windowConfig) {
-							// Initialize materialization window for the organization
-							windowConfig = await initializeMaterializationWindow(
+							// Initialize generation window for the organization
+							windowConfig = await initializeGenerationWindow(
 								{
 									organizationId: parsedArgs.input.organizationId,
 									createdById: currentUserId,
@@ -336,7 +336,7 @@ builder.mutationField("createEvent", (t) =>
 						}
 
 						// Immediately materialize instances for the new recurring event
-						await materializeInstancesForRecurringEvent(
+						await generateInstancesForRecurringEvent(
 							{
 								baseRecurringEventId: createdEvent.id,
 								organizationId: parsedArgs.input.organizationId,

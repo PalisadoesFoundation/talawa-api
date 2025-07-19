@@ -8,11 +8,11 @@ import {
 	getNextOccurrenceDate,
 	shouldGenerateInstanceAtDate,
 	validateRecurrenceRule,
-} from "~/src/services/eventInstanceMaterialization/occurrenceCalculator";
+} from "~/src/services/eventGeneration/occurrenceCalculator";
 import type {
 	OccurrenceCalculationConfig,
 	ServiceDependencies,
-} from "~/src/services/eventInstanceMaterialization/types";
+} from "~/src/services/eventGeneration/types";
 
 suite("occurrenceCalculator", () => {
 	const mockLogger = {

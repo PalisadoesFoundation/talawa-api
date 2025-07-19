@@ -8,7 +8,7 @@
  */
 
 // Main service functions (business logic only)
-export { materializeInstancesForRecurringEvent } from "./eventMaterialization";
+export { generateInstancesForRecurringEvent } from "./eventGeneration";
 
 // Instance resolution functions
 export {
@@ -29,17 +29,17 @@ export {
 
 // Window management functions
 export {
-	initializeMaterializationWindow,
-	extendMaterializationWindow,
-	cleanupOldMaterializedInstances,
+	initializeGenerationWindow,
+	extendGenerationWindow,
+	cleanupOldGeneratedInstances,
 	getCleanupStats,
 	validateWindowConfig,
 } from "./windowManager";
 
 // Types
 export type {
-	GetMaterializedInstancesInput,
-	MaterializeInstancesInput,
+	GetGeneratedInstancesInput,
+	GenerateInstancesInput,
 	OccurrenceCalculationConfig,
 	CalculatedOccurrence,
 	ResolveInstanceInput,
@@ -50,8 +50,8 @@ export type {
 
 // Convenience re-exports for backward compatibility
 export {
-	initializeMaterializationWindow as initializeWindow,
-	cleanupOldMaterializedInstances as cleanupOldInstances,
+	initializeGenerationWindow as initializeWindow,
+	cleanupOldGeneratedInstances as cleanupOldInstances,
 	calculateInstanceOccurrences as calculateOccurrences,
 	resolveInstanceWithInheritance as resolveInstance,
-} from "./eventMaterialization";
+} from "./eventGeneration";

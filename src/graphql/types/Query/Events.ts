@@ -123,7 +123,7 @@ builder.queryField("eventsByIds", (t) =>
 						(e) => e.eventType === "standalone",
 					).length,
 					materializedEvents: authorizedEvents.filter(
-						(e) => e.eventType === "materialized",
+						(e) => e.eventType === "generated",
 					).length,
 				});
 

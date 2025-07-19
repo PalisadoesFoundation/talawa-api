@@ -1,29 +1,29 @@
 import { and, eq, gte, lte } from "drizzle-orm";
 import { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
 import { eventsTable } from "~/src/drizzle/tables/events";
-import type { CreateMaterializedInstanceInput } from "~/src/drizzle/tables/materializedEventInstances";
-import {
-	materializedEventInstancesTable,
-	materializedEventInstancesTableInsertSchema,
-} from "~/src/drizzle/tables/materializedEventInstances";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import type { CreateRecurringEventInstanceInput } from "~/src/drizzle/tables/recurringEventInstances";
+import {
+	recurringEventInstancesTable,
+	recurringEventInstancesTableInsertSchema,
+} from "~/src/drizzle/tables/recurringEventInstances";
 
 import { normalizeRecurrenceRule } from "~/src/utilities/recurringEventHelpers";
 import { calculateInstanceOccurrences } from "./occurrenceCalculator";
-import type { MaterializeInstancesInput, ServiceDependencies } from "./types";
+import type { GenerateInstancesInput, ServiceDependencies } from "./types";
 
 /**
- * Generates and stores materialized instances for a recurring event within a specified time window.
+ * Generates and stores generated instances for a recurring event within a specified time window.
  * This function fetches the base event template and recurrence rule, calculates all occurrences,
  * and creates new instances in the database, avoiding duplicates.
  *
  * @param input - The input object containing the event ID, time window, and organization ID.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to the number of newly created materialized instances.
+ * @returns A promise that resolves to the number of newly created generated instances.
  */
-export async function materializeInstancesForRecurringEvent(
-	input: MaterializeInstancesInput,
+export async function generateInstancesForRecurringEvent(
+	input: GenerateInstancesInput,
 	drizzleClient: ServiceDependencies["drizzleClient"],
 	logger: ServiceDependencies["logger"],
 ): Promise<number> {
@@ -99,7 +99,7 @@ export async function materializeInstancesForRecurringEvent(
 		);
 
 		// Filter out existing instances and create new ones
-		const newInstancesCount = await createNewMaterializedInstances(
+		const newInstancesCount = await createNewGeneratedInstances(
 			occurrences,
 			baseRecurringEventId,
 			recurrenceRule.id,
@@ -113,7 +113,7 @@ export async function materializeInstancesForRecurringEvent(
 		return newInstancesCount;
 	} catch (error) {
 		logger.error(
-			`Failed to materialize instances for ${baseRecurringEventId}:`,
+			`Failed to generate instances for ${baseRecurringEventId}:`,
 			error,
 		);
 		throw error;
@@ -121,20 +121,20 @@ export async function materializeInstancesForRecurringEvent(
 }
 
 /**
- * Creates new materialized instances in the database from a list of calculated occurrences,
+ * Creates new generated instances in the database from a list of calculated occurrences,
  * after filtering out any instances that already exist.
  *
  * @param occurrences - An array of calculated occurrence data.
  * @param baseRecurringEventId - The ID of the base recurring event.
  * @param recurrenceRuleId - The ID of the associated recurrence rule.
  * @param organizationId - The ID of the organization.
- * @param windowStartDate - The start of the materialization window.
- * @param windowEndDate - The end of the materialization window.
+ * @param windowStartDate - The start of the event generation window.
+ * @param windowEndDate - The end of the event generation window.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
  * @returns A promise that resolves to the number of newly created instances.
  */
-async function createNewMaterializedInstances(
+async function createNewGeneratedInstances(
 	occurrences: Array<{
 		originalStartTime: Date;
 		actualStartTime: Date;
@@ -157,18 +157,18 @@ async function createNewMaterializedInstances(
 
 	// Filter out existing instances
 	const existingInstances =
-		await drizzleClient.query.materializedEventInstancesTable.findMany({
+		await drizzleClient.query.recurringEventInstancesTable.findMany({
 			where: and(
 				eq(
-					materializedEventInstancesTable.baseRecurringEventId,
+					recurringEventInstancesTable.baseRecurringEventId,
 					baseRecurringEventId,
 				),
 				gte(
-					materializedEventInstancesTable.originalInstanceStartTime,
+					recurringEventInstancesTable.originalInstanceStartTime,
 					windowStartDate,
 				),
 				lte(
-					materializedEventInstancesTable.originalInstanceStartTime,
+					recurringEventInstancesTable.originalInstanceStartTime,
 					windowEndDate,
 				),
 			),
@@ -193,7 +193,7 @@ async function createNewMaterializedInstances(
 	}
 
 	// Create new instances
-	const createInputs: CreateMaterializedInstanceInput[] = newOccurrences.map(
+	const createInputs: CreateRecurringEventInstanceInput[] = newOccurrences.map(
 		(occurrence) => ({
 			baseRecurringEventId,
 			recurrenceRuleId,
@@ -208,23 +208,23 @@ async function createNewMaterializedInstances(
 	);
 
 	const validatedInputs = createInputs.map((input) => {
-		return materializedEventInstancesTableInsertSchema.parse(input);
+		return recurringEventInstancesTableInsertSchema.parse(input);
 	});
 
 	await drizzleClient
-		.insert(materializedEventInstancesTable)
+		.insert(recurringEventInstancesTable)
 		.values(validatedInputs);
 
 	logger.info(
-		`Created ${newOccurrences.length} materialized instances for ${baseRecurringEventId}`,
+		`Created ${newOccurrences.length} generated instances for ${baseRecurringEventId}`,
 	);
 
 	return newOccurrences.length;
 }
 
 export {
-	initializeMaterializationWindow,
-	cleanupOldMaterializedInstances,
+	initializeGenerationWindow,
+	cleanupOldGeneratedInstances,
 } from "./windowManager";
 export { calculateInstanceOccurrences } from "./occurrenceCalculator";
 export { resolveInstanceWithInheritance } from "./instanceResolver";

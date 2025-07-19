@@ -11,7 +11,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { frequencyEnum as frequencyZodEnum } from "~/src/drizzle/enums/frequency";
+import { frequencyEnum as frequencyZodEnum } from "~/src/drizzle/enums/recurrenceFrequency";
 import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";

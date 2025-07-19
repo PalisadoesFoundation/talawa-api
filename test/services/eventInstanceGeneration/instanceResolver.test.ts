@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
 import type { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
 import type { eventsTable } from "~/src/drizzle/tables/events";
-import type { materializedEventInstancesTable } from "~/src/drizzle/tables/materializedEventInstances";
+import type { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import {
 	createExceptionKey,
 	createExceptionLookupMap,
@@ -10,15 +10,15 @@ import {
 	resolveInstanceWithInheritance,
 	resolveMultipleInstances,
 	validateResolvedInstance,
-} from "~/src/services/eventInstanceMaterialization/instanceResolver";
+} from "~/src/services/eventGeneration/instanceResolver";
 import type {
 	ResolveInstanceInput,
 	ServiceDependencies,
-} from "~/src/services/eventInstanceMaterialization/types";
+} from "~/src/services/eventGeneration/types";
 
-import type { ResolvedMaterializedEventInstance } from "~/src/drizzle/tables/materializedEventInstances";
+import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
 
-type ResolvedEventInstance = ResolvedMaterializedEventInstance;
+type ResolvedEventInstance = ResolvedRecurringEventInstance;
 
 suite("instanceResolver", () => {
 	const mockLogger: ServiceDependencies["logger"] = {
@@ -33,7 +33,7 @@ suite("instanceResolver", () => {
 		level: "info",
 	};
 
-	const mockMaterializedInstance = {
+	const mockGeneratedInstance = {
 		id: faker.string.uuid(),
 		baseRecurringEventId: faker.string.uuid(),
 		recurrenceRuleId: faker.string.uuid(),
@@ -42,12 +42,12 @@ suite("instanceResolver", () => {
 		actualEndTime: new Date("2025-01-01T11:00:00Z"),
 		isCancelled: false,
 		organizationId: faker.string.uuid(),
-		materializedAt: new Date(),
+		generatedAt: new Date(),
 		lastUpdatedAt: new Date(),
 		version: "1",
 		sequenceNumber: 1,
 		totalCount: 10,
-	} as typeof materializedEventInstancesTable.$inferSelect;
+	} as typeof recurringEventInstancesTable.$inferSelect;
 
 	const mockBaseTemplate = {
 		id: faker.string.uuid(),
@@ -66,24 +66,24 @@ suite("instanceResolver", () => {
 	suite("resolveInstanceWithInheritance", () => {
 		test("resolves instance with base template properties", () => {
 			const input: ResolveInstanceInput = {
-				materializedInstance: mockMaterializedInstance,
+				generatedInstance: mockGeneratedInstance,
 				baseTemplate: mockBaseTemplate,
 			};
 
 			const result = resolveInstanceWithInheritance(input);
 
 			expect(result).toMatchObject({
-				id: mockMaterializedInstance.id,
-				baseRecurringEventId: mockMaterializedInstance.baseRecurringEventId,
-				recurrenceRuleId: mockMaterializedInstance.recurrenceRuleId,
+				id: mockGeneratedInstance.id,
+				baseRecurringEventId: mockGeneratedInstance.baseRecurringEventId,
+				recurrenceRuleId: mockGeneratedInstance.recurrenceRuleId,
 				originalInstanceStartTime:
-					mockMaterializedInstance.originalInstanceStartTime,
-				actualStartTime: mockMaterializedInstance.actualStartTime,
-				actualEndTime: mockMaterializedInstance.actualEndTime,
-				isCancelled: mockMaterializedInstance.isCancelled,
-				organizationId: mockMaterializedInstance.organizationId,
-				sequenceNumber: mockMaterializedInstance.sequenceNumber,
-				totalCount: mockMaterializedInstance.totalCount,
+					mockGeneratedInstance.originalInstanceStartTime,
+				actualStartTime: mockGeneratedInstance.actualStartTime,
+				actualEndTime: mockGeneratedInstance.actualEndTime,
+				isCancelled: mockGeneratedInstance.isCancelled,
+				organizationId: mockGeneratedInstance.organizationId,
+				sequenceNumber: mockGeneratedInstance.sequenceNumber,
+				totalCount: mockGeneratedInstance.totalCount,
 				name: mockBaseTemplate.name,
 				description: mockBaseTemplate.description,
 				location: mockBaseTemplate.location,
@@ -102,8 +102,8 @@ suite("instanceResolver", () => {
 		test("resolves instance with exception data applied", () => {
 			const mockException = {
 				id: faker.string.uuid(),
-				recurringEventId: mockMaterializedInstance.baseRecurringEventId,
-				instanceStartTime: mockMaterializedInstance.originalInstanceStartTime,
+				recurringEventId: mockGeneratedInstance.baseRecurringEventId,
+				instanceStartTime: mockGeneratedInstance.originalInstanceStartTime,
 				exceptionData: {
 					name: "Modified Event Name",
 					description: "Modified Description",
@@ -115,7 +115,7 @@ suite("instanceResolver", () => {
 			} as typeof eventExceptionsTable.$inferSelect;
 
 			const input: ResolveInstanceInput = {
-				materializedInstance: mockMaterializedInstance,
+				generatedInstance: mockGeneratedInstance,
 				baseTemplate: mockBaseTemplate,
 				exception: mockException,
 			};
@@ -140,8 +140,8 @@ suite("instanceResolver", () => {
 
 			const mockException = {
 				id: faker.string.uuid(),
-				recurringEventId: mockMaterializedInstance.baseRecurringEventId,
-				instanceStartTime: mockMaterializedInstance.originalInstanceStartTime,
+				recurringEventId: mockGeneratedInstance.baseRecurringEventId,
+				instanceStartTime: mockGeneratedInstance.originalInstanceStartTime,
 				exceptionData: {
 					startAt: newStartTime,
 					endAt: newEndTime,
@@ -151,7 +151,7 @@ suite("instanceResolver", () => {
 			} as typeof eventExceptionsTable.$inferSelect;
 
 			const input: ResolveInstanceInput = {
-				materializedInstance: mockMaterializedInstance,
+				generatedInstance: mockGeneratedInstance,
 				baseTemplate: mockBaseTemplate,
 				exception: mockException,
 			};
@@ -165,8 +165,8 @@ suite("instanceResolver", () => {
 		test("ignores invalid exception fields", () => {
 			const mockException = {
 				id: faker.string.uuid(),
-				recurringEventId: mockMaterializedInstance.baseRecurringEventId,
-				instanceStartTime: mockMaterializedInstance.originalInstanceStartTime,
+				recurringEventId: mockGeneratedInstance.baseRecurringEventId,
+				instanceStartTime: mockGeneratedInstance.originalInstanceStartTime,
 				exceptionData: {
 					name: "Modified Event Name",
 					invalidField: "Should be ignored",
@@ -177,7 +177,7 @@ suite("instanceResolver", () => {
 			} as typeof eventExceptionsTable.$inferSelect;
 
 			const input: ResolveInstanceInput = {
-				materializedInstance: mockMaterializedInstance,
+				generatedInstance: mockGeneratedInstance,
 				baseTemplate: mockBaseTemplate,
 				exception: mockException,
 			};
@@ -185,16 +185,16 @@ suite("instanceResolver", () => {
 			const result = resolveInstanceWithInheritance(input);
 
 			expect(result.name).toBe("Modified Event Name");
-			expect(result.id).toBe(mockMaterializedInstance.id); // Should not be overridden
+			expect(result.id).toBe(mockGeneratedInstance.id); // Should not be overridden
 			expect(result).not.toHaveProperty("invalidField");
 		});
 	});
 
 	suite("resolveMultipleInstances", () => {
 		test("resolves multiple instances with templates and exceptions", () => {
-			const instances = [mockMaterializedInstance];
+			const instances = [mockGeneratedInstance];
 			const templatesMap = new Map([
-				[mockMaterializedInstance.baseRecurringEventId, mockBaseTemplate],
+				[mockGeneratedInstance.baseRecurringEventId, mockBaseTemplate],
 			]);
 			const exceptionsMap = new Map();
 
@@ -207,14 +207,14 @@ suite("instanceResolver", () => {
 
 			expect(result).toHaveLength(1);
 			expect(result[0]).toMatchObject({
-				id: mockMaterializedInstance.id,
+				id: mockGeneratedInstance.id,
 				name: mockBaseTemplate.name,
 				hasExceptions: false,
 			});
 		});
 
 		test("skips instances without base templates", () => {
-			const instances = [mockMaterializedInstance];
+			const instances = [mockGeneratedInstance];
 			const templatesMap = new Map(); // Empty map
 			const exceptionsMap = new Map();
 
@@ -227,27 +227,27 @@ suite("instanceResolver", () => {
 
 			expect(result).toHaveLength(0);
 			expect(mockLogger.warn).toHaveBeenCalledWith(
-				`Base template not found for instance ${mockMaterializedInstance.id}`,
+				`Base template not found for instance ${mockGeneratedInstance.id}`,
 			);
 		});
 
 		test("applies exceptions when found", () => {
 			const mockException = {
 				id: faker.string.uuid(),
-				recurringEventId: mockMaterializedInstance.baseRecurringEventId,
-				instanceStartTime: mockMaterializedInstance.originalInstanceStartTime,
+				recurringEventId: mockGeneratedInstance.baseRecurringEventId,
+				instanceStartTime: mockGeneratedInstance.originalInstanceStartTime,
 				exceptionData: { name: "Modified Event Name" },
 				creatorId: faker.string.uuid(),
 				createdAt: new Date(),
 			} as typeof eventExceptionsTable.$inferSelect;
 
-			const instances = [mockMaterializedInstance];
+			const instances = [mockGeneratedInstance];
 			const templatesMap = new Map([
-				[mockMaterializedInstance.baseRecurringEventId, mockBaseTemplate],
+				[mockGeneratedInstance.baseRecurringEventId, mockBaseTemplate],
 			]);
 			const exceptionKey = createExceptionKey(
-				mockMaterializedInstance.baseRecurringEventId,
-				mockMaterializedInstance.originalInstanceStartTime,
+				mockGeneratedInstance.baseRecurringEventId,
+				mockGeneratedInstance.originalInstanceStartTime,
 			);
 			const exceptionsMap = new Map([[exceptionKey, mockException]]);
 

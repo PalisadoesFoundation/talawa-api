@@ -1,40 +1,40 @@
 import type { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
 import type { eventsTable } from "~/src/drizzle/tables/events";
-import type { materializedEventInstancesTable } from "~/src/drizzle/tables/materializedEventInstances";
-import type { ResolvedMaterializedEventInstance } from "~/src/drizzle/tables/materializedEventInstances";
+import type { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
+import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
 import type { ResolveInstanceInput, ServiceDependencies } from "./types";
 
 /**
- * Resolves a single materialized instance by combining the properties of the base event template
+ * Resolves a single generated instance by combining the properties of the base event template
  * with any applicable exceptions. This function forms the core of the inheritance logic,
  * ensuring that each instance accurately reflects its intended state.
  *
- * @param input - An object containing the materialized instance, base template, and optional exception.
- * @returns A fully resolved materialized event instance with all properties correctly inherited and overridden.
+ * @param input - An object containing the generated instance, base template, and optional exception.
+ * @returns A fully resolved generated event instance with all properties correctly inherited and overridden.
  */
 export function resolveInstanceWithInheritance(
 	input: ResolveInstanceInput,
-): ResolvedMaterializedEventInstance {
-	const { materializedInstance, baseTemplate, exception } = input;
+): ResolvedRecurringEventInstance {
+	const { generatedInstance, baseTemplate, exception } = input;
 
 	// Start with inherited properties from base template
-	const resolvedInstance: ResolvedMaterializedEventInstance = {
+	const resolvedInstance: ResolvedRecurringEventInstance = {
 		// Core instance metadata
-		id: materializedInstance.id,
-		baseRecurringEventId: materializedInstance.baseRecurringEventId,
-		recurrenceRuleId: materializedInstance.recurrenceRuleId,
-		originalInstanceStartTime: materializedInstance.originalInstanceStartTime,
-		actualStartTime: materializedInstance.actualStartTime,
-		actualEndTime: materializedInstance.actualEndTime,
-		isCancelled: materializedInstance.isCancelled,
-		organizationId: materializedInstance.organizationId,
-		materializedAt: materializedInstance.materializedAt,
-		lastUpdatedAt: materializedInstance.lastUpdatedAt,
-		version: materializedInstance.version,
+		id: generatedInstance.id,
+		baseRecurringEventId: generatedInstance.baseRecurringEventId,
+		recurrenceRuleId: generatedInstance.recurrenceRuleId,
+		originalInstanceStartTime: generatedInstance.originalInstanceStartTime,
+		actualStartTime: generatedInstance.actualStartTime,
+		actualEndTime: generatedInstance.actualEndTime,
+		isCancelled: generatedInstance.isCancelled,
+		organizationId: generatedInstance.organizationId,
+		generatedAt: generatedInstance.generatedAt,
+		lastUpdatedAt: generatedInstance.lastUpdatedAt,
+		version: generatedInstance.version,
 
 		// Sequence metadata for recurring series
-		sequenceNumber: materializedInstance.sequenceNumber,
-		totalCount: materializedInstance.totalCount,
+		sequenceNumber: generatedInstance.sequenceNumber,
+		totalCount: generatedInstance.totalCount,
 
 		// Inherited event properties (from base template)
 		name: baseTemplate.name,
@@ -78,7 +78,7 @@ export function resolveInstanceWithInheritance(
  * @param exceptionData - An object containing the exception data to apply.
  */
 function applyExceptionData(
-	resolvedInstance: ResolvedMaterializedEventInstance,
+	resolvedInstance: ResolvedRecurringEventInstance,
 	exceptionData: Record<string, unknown>,
 ): void {
 	// Apply each exception field to the resolved instance
@@ -117,7 +117,7 @@ function applyExceptionData(
  */
 function isValidExceptionField(
 	fieldName: string,
-	resolvedInstance: ResolvedMaterializedEventInstance,
+	resolvedInstance: ResolvedRecurringEventInstance,
 ): boolean {
 	// Define which fields can be overridden by exceptions
 	const overridableFields = [
@@ -137,23 +137,23 @@ function isValidExceptionField(
 }
 
 /**
- * Resolves multiple materialized instances in a batch operation to improve performance.
+ * Resolves multiple generated instances in a batch operation to improve performance.
  * This function iterates through a list of instances and applies the inheritance and
  * exception logic to each one.
  *
- * @param instances - An array of materialized instances to resolve.
+ * @param instances - An array of generated instances to resolve.
  * @param templatesMap - A map of base event templates, keyed by their IDs.
  * @param exceptionsMap - A map of event exceptions, keyed by a composite key.
  * @param logger - The logger for logging warnings or errors.
- * @returns An array of fully resolved materialized event instances.
+ * @returns An array of fully resolved generated event instances.
  */
 export function resolveMultipleInstances(
-	instances: (typeof materializedEventInstancesTable.$inferSelect)[],
+	instances: (typeof recurringEventInstancesTable.$inferSelect)[],
 	templatesMap: Map<string, typeof eventsTable.$inferSelect>,
 	exceptionsMap: Map<string, typeof eventExceptionsTable.$inferSelect>,
 	logger: ServiceDependencies["logger"],
-): ResolvedMaterializedEventInstance[] {
-	const resolvedInstances: ResolvedMaterializedEventInstance[] = [];
+): ResolvedRecurringEventInstance[] {
+	const resolvedInstances: ResolvedRecurringEventInstance[] = [];
 
 	for (const instance of instances) {
 		const baseTemplate = templatesMap.get(instance.baseRecurringEventId);
@@ -170,7 +170,7 @@ export function resolveMultipleInstances(
 		const exception = exceptionsMap.get(exceptionKey);
 
 		const resolved = resolveInstanceWithInheritance({
-			materializedInstance: instance,
+			generatedInstance: instance,
 			baseTemplate,
 			exception,
 		});
@@ -243,7 +243,7 @@ export function createTemplateLookupMap(
 }
 
 /**
- * Validates that a resolved materialized instance contains all required fields.
+ * Validates that a resolved generated instance contains all required fields.
  * This function helps ensure data integrity before the instance is used elsewhere.
  *
  * @param resolvedInstance - The resolved instance to validate.
@@ -251,7 +251,7 @@ export function createTemplateLookupMap(
  * @returns `true` if the instance is valid, otherwise `false`.
  */
 export function validateResolvedInstance(
-	resolvedInstance: ResolvedMaterializedEventInstance,
+	resolvedInstance: ResolvedRecurringEventInstance,
 	logger: ServiceDependencies["logger"],
 ): boolean {
 	const requiredFields = [

@@ -1,14 +1,14 @@
 import {
-	type MaterializeInstancesInput,
-	materializeInstancesForRecurringEvent,
-} from "~/src/services/eventInstanceMaterialization";
+	type GenerateInstancesInput,
+	generateInstancesForRecurringEvent,
+} from "~/src/services/eventGeneration";
 import type { ProcessingResult, WorkerDependencies } from "./types";
 
 /**
- * @description Defines the structure of a materialization job, containing all necessary
+ * @description Defines the structure of a Generation job, containing all necessary
  * information to process a single recurring event.
  */
-export interface MaterializationJob {
+export interface EventGenerationJob {
 	organizationId: string;
 	baseRecurringEventId: string;
 	windowStartDate: Date;
@@ -16,10 +16,10 @@ export interface MaterializationJob {
 }
 
 /**
- * @description Represents the result of a single materialization job execution,
+ * @description Represents the result of a single Generation job execution,
  * including the number of instances created and the time taken.
  */
-export interface MaterializationExecutionResult {
+export interface EventGenerationExecutionResult {
 	organizationId: string;
 	eventId: string;
 	instancesCreated: number;
@@ -27,29 +27,29 @@ export interface MaterializationExecutionResult {
 }
 
 /**
- * Executes the materialization process for a single recurring event job.
+ * Executes the Generation process for a single recurring event job.
  * This function is the core of the execution engine, handling the creation of event instances.
  *
- * @param job - The materialization job to execute.
+ * @param job - The Generation job to execute.
  * @param deps - The dependencies required for the worker, such as the database client and logger.
  * @returns A promise that resolves to a processing result, including metrics and resource usage.
  */
-export async function executeMaterialization(
-	job: MaterializationJob,
+export async function executeEventGeneration(
+	job: EventGenerationJob,
 	deps: WorkerDependencies,
-): Promise<ProcessingResult<MaterializationExecutionResult>> {
+): Promise<ProcessingResult<EventGenerationExecutionResult>> {
 	const startTime = Date.now();
 	const { drizzleClient, logger } = deps;
 
 	try {
-		const input: MaterializeInstancesInput = {
+		const input: GenerateInstancesInput = {
 			baseRecurringEventId: job.baseRecurringEventId,
 			windowStartDate: job.windowStartDate,
 			windowEndDate: job.windowEndDate,
 			organizationId: job.organizationId,
 		};
 
-		const instancesCreated = await materializeInstancesForRecurringEvent(
+		const instancesCreated = await generateInstancesForRecurringEvent(
 			input,
 			drizzleClient,
 			logger,
@@ -84,7 +84,7 @@ export async function executeMaterialization(
 	} catch (error) {
 		const endTime = Date.now();
 		logger.error(
-			`Materialization execution failed for ${job.organizationId}`,
+			`Generation execution failed for ${job.organizationId}`,
 			error,
 		);
 
@@ -111,27 +111,27 @@ export async function executeMaterialization(
 }
 
 /**
- * Executes multiple materialization jobs in parallel, with a specified level of concurrency.
+ * Executes multiple Generation jobs in parallel, with a specified level of concurrency.
  * This function processes jobs in batches to control resource usage and improve throughput.
  *
- * @param jobs - An array of materialization jobs to execute.
+ * @param jobs - An array of Generation jobs to execute.
  * @param maxConcurrency - The maximum number of jobs to run in parallel.
  * @param deps - The dependencies required for the worker.
  * @returns A promise that resolves to a consolidated processing result for the entire batch.
  */
-export async function executeBatchMaterialization(
-	jobs: MaterializationJob[],
+export async function executeBatchEventGeneration(
+	jobs: EventGenerationJob[],
 	maxConcurrency: number,
 	deps: WorkerDependencies,
-): Promise<ProcessingResult<MaterializationExecutionResult[]>> {
+): Promise<ProcessingResult<EventGenerationExecutionResult[]>> {
 	const startTime = Date.now();
-	const results: MaterializationExecutionResult[] = [];
+	const results: EventGenerationExecutionResult[] = [];
 	const errors: string[] = [];
 
 	// Process in batches to control concurrency
 	for (let i = 0; i < jobs.length; i += maxConcurrency) {
 		const batch = jobs.slice(i, i + maxConcurrency);
-		const batchPromises = batch.map((job) => executeMaterialization(job, deps));
+		const batchPromises = batch.map((job) => executeEventGeneration(job, deps));
 
 		const batchResults = await Promise.allSettled(batchPromises);
 

@@ -1,40 +1,40 @@
 import { and, eq, lt } from "drizzle-orm";
-import type { CreateMaterializationWindowInput } from "~/src/drizzle/tables/eventMaterializationWindows";
-import { eventMaterializationWindowsTable } from "~/src/drizzle/tables/eventMaterializationWindows";
-import { materializedEventInstancesTable } from "~/src/drizzle/tables/materializedEventInstances";
+import type { CreateGenerationWindowInput } from "~/src/drizzle/tables/eventGenerationWindows";
+import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
+import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import type { ServiceDependencies, WindowManagerConfig } from "./types";
 
 /**
- * Initializes the materialization window for a given organization, setting up the time frame
+ * Initializes the Generation window for a given organization, setting up the time frame
  * for which event instances will be generated and retained.
  *
  * @param input - The input object containing the organization ID.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to the newly created materialization window configuration.
+ * @returns A promise that resolves to the newly created Generation window configuration.
  */
-export async function initializeMaterializationWindow(
-	input: CreateMaterializationWindowInput,
+export async function initializeGenerationWindow(
+	input: CreateGenerationWindowInput,
 	drizzleClient: ServiceDependencies["drizzleClient"],
 	logger: ServiceDependencies["logger"],
-): Promise<typeof eventMaterializationWindowsTable.$inferSelect> {
+): Promise<typeof eventGenerationWindowsTable.$inferSelect> {
 	try {
 		const windowConfig = buildWindowConfiguration(input);
 
 		const [insertedConfig] = await drizzleClient
-			.insert(eventMaterializationWindowsTable)
+			.insert(eventGenerationWindowsTable)
 			.values(windowConfig)
 			.returning();
 
 		if (!insertedConfig) {
 			logger.error(
-				`Failed to insert and return materialization window for organization ${input.organizationId}`,
+				`Failed to insert and return Generation window for organization ${input.organizationId}`,
 			);
-			throw new Error("Failed to initialize materialization window.");
+			throw new Error("Failed to initialize Generation window.");
 		}
 
 		logger.info(
-			`Materialization window initialized for organization ${input.organizationId}`,
+			`Generation window initialized for organization ${input.organizationId}`,
 			{
 				hotWindowMonthsAhead: insertedConfig.hotWindowMonthsAhead,
 				historyRetentionMonths: insertedConfig.historyRetentionMonths,
@@ -46,7 +46,7 @@ export async function initializeMaterializationWindow(
 		return insertedConfig;
 	} catch (error) {
 		logger.error(
-			`Failed to initialize materialization window for organization ${input.organizationId}:`,
+			`Failed to initialize Generation window for organization ${input.organizationId}:`,
 			error,
 		);
 		throw error;
@@ -55,14 +55,14 @@ export async function initializeMaterializationWindow(
 
 /**
  * Builds the complete window configuration object, applying fixed global defaults for
- * the materialization window and retention period.
+ * the Generation window and retention period.
  *
  * @param input - The initial input containing the organization ID.
  * @returns A complete window configuration object with all required properties.
  */
 function buildWindowConfiguration(
-	input: CreateMaterializationWindowInput,
-): CreateMaterializationWindowInput & {
+	input: CreateGenerationWindowInput,
+): CreateGenerationWindowInput & {
 	currentWindowEndDate: Date;
 	retentionStartDate: Date;
 } {
@@ -89,16 +89,16 @@ function buildWindowConfiguration(
 }
 
 /**
- * Extends the materialization window for an organization by a specified number of months,
+ * Extends the Generation window for an organization by a specified number of months,
  * allowing for the generation of future event instances.
  *
  * @param organizationId - The ID of the organization whose window is to be extended.
  * @param additionalMonths - The number of months to extend the window by.
  * @param drizzleClient - The Drizzle ORM client for database access.
  * @param logger - The logger for logging debug and error messages.
- * @returns A promise that resolves to the new end date of the materialization window.
+ * @returns A promise that resolves to the new end date of the Generation window.
  */
-export async function extendMaterializationWindow(
+export async function extendGenerationWindow(
 	organizationId: string,
 	additionalMonths: number,
 	drizzleClient: ServiceDependencies["drizzleClient"],
@@ -106,16 +106,13 @@ export async function extendMaterializationWindow(
 ): Promise<Date> {
 	try {
 		const windowConfig =
-			await drizzleClient.query.eventMaterializationWindowsTable.findFirst({
-				where: eq(
-					eventMaterializationWindowsTable.organizationId,
-					organizationId,
-				),
+			await drizzleClient.query.eventGenerationWindowsTable.findFirst({
+				where: eq(eventGenerationWindowsTable.organizationId, organizationId),
 			});
 
 		if (!windowConfig) {
 			throw new Error(
-				`No materialization window found for organization ${organizationId}`,
+				`No Generation window found for organization ${organizationId}`,
 			);
 		}
 
@@ -123,18 +120,16 @@ export async function extendMaterializationWindow(
 		newEndDate.setMonth(newEndDate.getMonth() + additionalMonths);
 
 		await drizzleClient
-			.update(eventMaterializationWindowsTable)
+			.update(eventGenerationWindowsTable)
 			.set({
 				currentWindowEndDate: newEndDate,
 				hotWindowMonthsAhead:
 					windowConfig.hotWindowMonthsAhead + additionalMonths,
 			})
-			.where(
-				eq(eventMaterializationWindowsTable.organizationId, organizationId),
-			);
+			.where(eq(eventGenerationWindowsTable.organizationId, organizationId));
 
 		logger.info(
-			`Extended materialization window for organization ${organizationId} by ${additionalMonths} months`,
+			`Extended Generation window for organization ${organizationId} by ${additionalMonths} months`,
 			{
 				previousEndDate: windowConfig.currentWindowEndDate.toISOString(),
 				newEndDate: newEndDate.toISOString(),
@@ -144,7 +139,7 @@ export async function extendMaterializationWindow(
 		return newEndDate;
 	} catch (error) {
 		logger.error(
-			`Failed to extend materialization window for organization ${organizationId}:`,
+			`Failed to extend Generation window for organization ${organizationId}:`,
 			error,
 		);
 		throw error;
@@ -152,7 +147,7 @@ export async function extendMaterializationWindow(
 }
 
 /**
- * Deletes old materialized instances that fall outside the defined retention window
+ * Deletes old Generated instances that fall outside the defined retention window
  * for a given organization.
  *
  * @param organizationId - The ID of the organization for which to clean up instances.
@@ -160,34 +155,31 @@ export async function extendMaterializationWindow(
  * @param logger - The logger for logging debug and error messages.
  * @returns A promise that resolves to the number of deleted instances.
  */
-export async function cleanupOldMaterializedInstances(
+export async function cleanupOldGeneratedInstances(
 	organizationId: string,
 	drizzleClient: ServiceDependencies["drizzleClient"],
 	logger: ServiceDependencies["logger"],
 ): Promise<number> {
 	try {
 		const windowConfig =
-			await drizzleClient.query.eventMaterializationWindowsTable.findFirst({
-				where: eq(
-					eventMaterializationWindowsTable.organizationId,
-					organizationId,
-				),
+			await drizzleClient.query.eventGenerationWindowsTable.findFirst({
+				where: eq(eventGenerationWindowsTable.organizationId, organizationId),
 			});
 
 		if (!windowConfig) {
 			logger.warn(
-				`No materialization window found for organization ${organizationId}`,
+				`No Generation window found for organization ${organizationId}`,
 			);
 			return 0;
 		}
 
 		const result = await drizzleClient
-			.delete(materializedEventInstancesTable)
+			.delete(recurringEventInstancesTable)
 			.where(
 				and(
-					eq(materializedEventInstancesTable.organizationId, organizationId),
+					eq(recurringEventInstancesTable.organizationId, organizationId),
 					lt(
-						materializedEventInstancesTable.actualEndTime,
+						recurringEventInstancesTable.actualEndTime,
 						windowConfig.retentionStartDate,
 					),
 				),
@@ -196,7 +188,7 @@ export async function cleanupOldMaterializedInstances(
 		const deletedCount = result.rowCount || 0;
 
 		logger.info(
-			`Cleaned up ${deletedCount} old materialized instances for organization ${organizationId}`,
+			`Cleaned up ${deletedCount} old Generated instances for organization ${organizationId}`,
 			{
 				retentionStartDate: windowConfig.retentionStartDate.toISOString(),
 				deletedCount,
@@ -206,7 +198,7 @@ export async function cleanupOldMaterializedInstances(
 		return deletedCount;
 	} catch (error) {
 		logger.error(
-			`Failed to cleanup old materialized instances for organization ${organizationId}:`,
+			`Failed to cleanup old Generated instances for organization ${organizationId}:`,
 			error,
 		);
 		throw error;
@@ -231,11 +223,8 @@ export async function getCleanupStats(
 	retentionStartDate: Date | null;
 }> {
 	const windowConfig =
-		await drizzleClient.query.eventMaterializationWindowsTable.findFirst({
-			where: eq(
-				eventMaterializationWindowsTable.organizationId,
-				organizationId,
-			),
+		await drizzleClient.query.eventGenerationWindowsTable.findFirst({
+			where: eq(eventGenerationWindowsTable.organizationId, organizationId),
 		});
 
 	if (!windowConfig) {
@@ -249,23 +238,20 @@ export async function getCleanupStats(
 
 	const [totalInstances, instancesEligibleForCleanup] = await Promise.all([
 		// Total instances
-		drizzleClient.query.materializedEventInstancesTable
+		drizzleClient.query.recurringEventInstancesTable
 			.findMany({
-				where: eq(
-					materializedEventInstancesTable.organizationId,
-					organizationId,
-				),
+				where: eq(recurringEventInstancesTable.organizationId, organizationId),
 				columns: { id: true },
 			})
 			.then((result: { id: string }[]) => result.length),
 
 		// Instances eligible for cleanup
-		drizzleClient.query.materializedEventInstancesTable
+		drizzleClient.query.recurringEventInstancesTable
 			.findMany({
 				where: and(
-					eq(materializedEventInstancesTable.organizationId, organizationId),
+					eq(recurringEventInstancesTable.organizationId, organizationId),
 					lt(
-						materializedEventInstancesTable.actualEndTime,
+						recurringEventInstancesTable.actualEndTime,
 						windowConfig.retentionStartDate,
 					),
 				),

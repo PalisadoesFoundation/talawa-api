@@ -56,7 +56,7 @@ describe("eventCleanupWorker", () => {
 		actualStartTime: new Date("2024-01-01"),
 		actualEndTime: new Date("2024-01-02"),
 		isCancelled: false,
-		materializedAt: new Date("2024-01-01"),
+		generatedAt: new Date("2024-01-01"),
 		lastUpdatedAt: null,
 		version: "1",
 		sequenceNumber: 1,
@@ -76,11 +76,11 @@ describe("eventCleanupWorker", () => {
 
 		mockDrizzleClient = {
 			query: {
-				eventMaterializationWindowsTable: {
+				eventGenerationWindowsTable: {
 					findMany: vi.fn(),
 					findFirst: vi.fn(),
 				},
-				materializedEventInstancesTable: {
+				recurringEventInstancesTable: {
 					findMany: vi.fn(),
 				},
 			},
@@ -120,10 +120,10 @@ describe("eventCleanupWorker", () => {
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue(mockWindowConfigs);
 			vi.mocked(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 			).mockResolvedValue(mockInstances);
 
 			const result = await cleanupOldInstances(mockDrizzleClient, mockLogger);
@@ -155,11 +155,9 @@ describe("eventCleanupWorker", () => {
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue(mockWindowConfigs);
-			vi.mocked(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
-			)
+			vi.mocked(mockDrizzleClient.query.recurringEventInstancesTable.findMany)
 				.mockResolvedValueOnce([
 					createMockMaterializedInstance({ id: "instance1" }),
 				])
@@ -180,7 +178,7 @@ describe("eventCleanupWorker", () => {
 
 		it("should handle no organizations", async () => {
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue([]);
 
 			const result = await cleanupOldInstances(mockDrizzleClient, mockLogger);
@@ -198,7 +196,7 @@ describe("eventCleanupWorker", () => {
 		it("should handle database errors", async () => {
 			const error = new Error("Database connection failed");
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockRejectedValue(error);
 
 			await expect(
@@ -226,10 +224,10 @@ describe("eventCleanupWorker", () => {
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findFirst,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst,
 			).mockResolvedValue(mockWindowConfig);
 			vi.mocked(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 			).mockResolvedValue(mockInstances);
 
 			const result = await cleanupSpecificOrganization(
@@ -249,7 +247,7 @@ describe("eventCleanupWorker", () => {
 
 		it("should throw error if organization not found", async () => {
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findFirst,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst,
 			).mockResolvedValue(undefined);
 
 			await expect(
@@ -281,11 +279,9 @@ describe("eventCleanupWorker", () => {
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findFirst,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst,
 			).mockResolvedValue(mockWindowConfig);
-			vi.mocked(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
-			)
+			vi.mocked(mockDrizzleClient.query.recurringEventInstancesTable.findMany)
 				.mockResolvedValueOnce(mockTotalInstances)
 				.mockResolvedValueOnce(mockEligibleInstances);
 
@@ -305,7 +301,7 @@ describe("eventCleanupWorker", () => {
 
 		it("should return empty status if organization not found", async () => {
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findFirst,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findFirst,
 			).mockResolvedValue(undefined);
 
 			const result = await getOrganizationCleanupStatus(
@@ -342,7 +338,7 @@ describe("eventCleanupWorker", () => {
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 			).mockResolvedValue(mockInstances);
 
 			const result = await emergencyCleanupBefore(
@@ -366,7 +362,7 @@ describe("eventCleanupWorker", () => {
 		it("should handle no instances to cleanup", async () => {
 			const cutoffDate = new Date("2024-01-01");
 			vi.mocked(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 			).mockResolvedValue([]);
 
 			const result = await emergencyCleanupBefore(
@@ -400,27 +396,27 @@ describe("eventCleanupWorker", () => {
 					id: "instance1",
 					organizationId: "org1",
 					actualEndTime: new Date("2024-01-01"),
-					materializedAt: new Date("2024-01-01"),
+					generatedAt: new Date("2024-01-01"),
 				}),
 				createMockMaterializedInstance({
 					id: "instance2",
 					organizationId: "org1",
 					actualEndTime: new Date("2024-06-01"),
-					materializedAt: new Date("2024-06-01"),
+					generatedAt: new Date("2024-06-01"),
 				}),
 				createMockMaterializedInstance({
 					id: "instance3",
 					organizationId: "org2",
 					actualEndTime: new Date("2024-03-01"),
-					materializedAt: new Date("2024-03-01"),
+					generatedAt: new Date("2024-03-01"),
 				}),
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue(mockOrganizations);
 			vi.mocked(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 			).mockResolvedValue(mockInstances);
 
 			const result = await getGlobalCleanupStatistics(mockDrizzleClient);
@@ -437,10 +433,10 @@ describe("eventCleanupWorker", () => {
 
 		it("should handle no organizations", async () => {
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue([]);
 			vi.mocked(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 			).mockResolvedValue([]);
 
 			const result = await getGlobalCleanupStatistics(mockDrizzleClient);
@@ -468,10 +464,10 @@ describe("eventCleanupWorker", () => {
 			];
 
 			vi.mocked(
-				mockDrizzleClient.query.eventMaterializationWindowsTable.findMany,
+				mockDrizzleClient.query.eventGenerationWindowsTable.findMany,
 			).mockResolvedValue(mockOrganizations);
 			vi.mocked(
-				mockDrizzleClient.query.materializedEventInstancesTable.findMany,
+				mockDrizzleClient.query.recurringEventInstancesTable.findMany,
 			).mockResolvedValue([]);
 
 			const result = await getGlobalCleanupStatistics(mockDrizzleClient);

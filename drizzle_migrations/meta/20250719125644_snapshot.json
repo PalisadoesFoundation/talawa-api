@@ -1,5 +1,5 @@
 {
-  "id": "51d5e9a4-2100-41c6-99fb-7bcdc1422237",
+  "id": "155feef7-d5f3-4147-a03c-7b3ff1da4eb1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -2891,8 +2891,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.event_materialization_windows": {
-      "name": "event_materialization_windows",
+    "public.event_generation_windows": {
+      "name": "event_generation_windows",
       "schema": "",
       "columns": {
         "id": {
@@ -3001,8 +3001,8 @@
         }
       },
       "indexes": {
-        "emw_organization_id_unique_idx": {
-          "name": "emw_organization_id_unique_idx",
+        "egw_organization_id_unique_idx": {
+          "name": "egw_organization_id_unique_idx",
           "columns": [
             {
               "expression": "organization_id",
@@ -3016,8 +3016,8 @@
           "method": "btree",
           "with": {}
         },
-        "emw_enabled_windows_idx": {
-          "name": "emw_enabled_windows_idx",
+        "egw_enabled_windows_idx": {
+          "name": "egw_enabled_windows_idx",
           "columns": [
             {
               "expression": "is_enabled",
@@ -3037,8 +3037,8 @@
           "method": "btree",
           "with": {}
         },
-        "emw_last_processed_at_idx": {
-          "name": "emw_last_processed_at_idx",
+        "egw_last_processed_at_idx": {
+          "name": "egw_last_processed_at_idx",
           "columns": [
             {
               "expression": "last_processed_at",
@@ -3052,8 +3052,8 @@
           "method": "btree",
           "with": {}
         },
-        "emw_current_window_end_date_idx": {
-          "name": "emw_current_window_end_date_idx",
+        "egw_current_window_end_date_idx": {
+          "name": "egw_current_window_end_date_idx",
           "columns": [
             {
               "expression": "current_window_end_date",
@@ -3067,8 +3067,8 @@
           "method": "btree",
           "with": {}
         },
-        "emw_retention_start_date_idx": {
-          "name": "emw_retention_start_date_idx",
+        "egw_retention_start_date_idx": {
+          "name": "egw_retention_start_date_idx",
           "columns": [
             {
               "expression": "retention_start_date",
@@ -3082,8 +3082,8 @@
           "method": "btree",
           "with": {}
         },
-        "emw_worker_processing_idx": {
-          "name": "emw_worker_processing_idx",
+        "egw_worker_processing_idx": {
+          "name": "egw_worker_processing_idx",
           "columns": [
             {
               "expression": "is_enabled",
@@ -3111,9 +3111,9 @@
         }
       },
       "foreignKeys": {
-        "event_materialization_windows_organization_id_organizations_id_fk": {
-          "name": "event_materialization_windows_organization_id_organizations_id_fk",
-          "tableFrom": "event_materialization_windows",
+        "event_generation_windows_organization_id_organizations_id_fk": {
+          "name": "event_generation_windows_organization_id_organizations_id_fk",
+          "tableFrom": "event_generation_windows",
           "tableTo": "organizations",
           "columnsFrom": [
             "organization_id"
@@ -3124,9 +3124,9 @@
           "onDelete": "cascade",
           "onUpdate": "cascade"
         },
-        "event_materialization_windows_created_by_id_users_id_fk": {
-          "name": "event_materialization_windows_created_by_id_users_id_fk",
-          "tableFrom": "event_materialization_windows",
+        "event_generation_windows_created_by_id_users_id_fk": {
+          "name": "event_generation_windows_created_by_id_users_id_fk",
+          "tableFrom": "event_generation_windows",
           "tableTo": "users",
           "columnsFrom": [
             "created_by_id"
@@ -3137,9 +3137,9 @@
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
-        "event_materialization_windows_last_updated_by_id_users_id_fk": {
-          "name": "event_materialization_windows_last_updated_by_id_users_id_fk",
-          "tableFrom": "event_materialization_windows",
+        "event_generation_windows_last_updated_by_id_users_id_fk": {
+          "name": "event_generation_windows_last_updated_by_id_users_id_fk",
+          "tableFrom": "event_generation_windows",
           "tableTo": "users",
           "columnsFrom": [
             "last_updated_by_id"
@@ -4477,363 +4477,6 @@
             "id"
           ],
           "onDelete": "set null",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.materialized_event_instances": {
-      "name": "materialized_event_instances",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "base_recurring_event_id": {
-          "name": "base_recurring_event_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "recurrence_rule_id": {
-          "name": "recurrence_rule_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "original_instance_start_time": {
-          "name": "original_instance_start_time",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "actual_start_time": {
-          "name": "actual_start_time",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "actual_end_time": {
-          "name": "actual_end_time",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "is_cancelled": {
-          "name": "is_cancelled",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "organization_id": {
-          "name": "organization_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "materialized_at": {
-          "name": "materialized_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "last_updated_at": {
-          "name": "last_updated_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "version": {
-          "name": "version",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'1'"
-        },
-        "sequence_number": {
-          "name": "sequence_number",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "total_count": {
-          "name": "total_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "mei_base_recurring_event_idx": {
-          "name": "mei_base_recurring_event_idx",
-          "columns": [
-            {
-              "expression": "base_recurring_event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mei_org_date_range_idx": {
-          "name": "mei_org_date_range_idx",
-          "columns": [
-            {
-              "expression": "organization_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "actual_start_time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "actual_end_time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mei_actual_start_time_idx": {
-          "name": "mei_actual_start_time_idx",
-          "columns": [
-            {
-              "expression": "actual_start_time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mei_actual_end_time_idx": {
-          "name": "mei_actual_end_time_idx",
-          "columns": [
-            {
-              "expression": "actual_end_time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mei_original_instance_start_time_idx": {
-          "name": "mei_original_instance_start_time_idx",
-          "columns": [
-            {
-              "expression": "original_instance_start_time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mei_recurrence_rule_idx": {
-          "name": "mei_recurrence_rule_idx",
-          "columns": [
-            {
-              "expression": "recurrence_rule_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mei_is_cancelled_idx": {
-          "name": "mei_is_cancelled_idx",
-          "columns": [
-            {
-              "expression": "is_cancelled",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mei_materialized_at_idx": {
-          "name": "mei_materialized_at_idx",
-          "columns": [
-            {
-              "expression": "materialized_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mei_org_active_instances_idx": {
-          "name": "mei_org_active_instances_idx",
-          "columns": [
-            {
-              "expression": "organization_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "is_cancelled",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "actual_start_time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mei_base_event_instance_time_idx": {
-          "name": "mei_base_event_instance_time_idx",
-          "columns": [
-            {
-              "expression": "base_recurring_event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "original_instance_start_time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mei_cleanup_candidates_idx": {
-          "name": "mei_cleanup_candidates_idx",
-          "columns": [
-            {
-              "expression": "actual_end_time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "materialized_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "mei_sequence_number_idx": {
-          "name": "mei_sequence_number_idx",
-          "columns": [
-            {
-              "expression": "base_recurring_event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "sequence_number",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "materialized_event_instances_base_recurring_event_id_events_id_fk": {
-          "name": "materialized_event_instances_base_recurring_event_id_events_id_fk",
-          "tableFrom": "materialized_event_instances",
-          "tableTo": "events",
-          "columnsFrom": [
-            "base_recurring_event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "materialized_event_instances_recurrence_rule_id_recurrence_rules_id_fk": {
-          "name": "materialized_event_instances_recurrence_rule_id_recurrence_rules_id_fk",
-          "tableFrom": "materialized_event_instances",
-          "tableTo": "recurrence_rules",
-          "columnsFrom": [
-            "recurrence_rule_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "materialized_event_instances_organization_id_organizations_id_fk": {
-          "name": "materialized_event_instances_organization_id_organizations_id_fk",
-          "tableFrom": "materialized_event_instances",
-          "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
           "onUpdate": "cascade"
         }
       },
@@ -6205,6 +5848,363 @@
             "id"
           ],
           "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.recurring_event_instances": {
+      "name": "recurring_event_instances",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "base_recurring_event_id": {
+          "name": "base_recurring_event_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recurrence_rule_id": {
+          "name": "recurrence_rule_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_instance_start_time": {
+          "name": "original_instance_start_time",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actual_start_time": {
+          "name": "actual_start_time",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "actual_end_time": {
+          "name": "actual_end_time",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_cancelled": {
+          "name": "is_cancelled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recurringEventd_at": {
+          "name": "recurringEventd_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_updated_at": {
+          "name": "last_updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version": {
+          "name": "version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'1'"
+        },
+        "sequence_number": {
+          "name": "sequence_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_count": {
+          "name": "total_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "reei_base_recurring_event_idx": {
+          "name": "reei_base_recurring_event_idx",
+          "columns": [
+            {
+              "expression": "base_recurring_event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reei_org_date_range_idx": {
+          "name": "reei_org_date_range_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "actual_start_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "actual_end_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reei_actual_start_time_idx": {
+          "name": "reei_actual_start_time_idx",
+          "columns": [
+            {
+              "expression": "actual_start_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reei_actual_end_time_idx": {
+          "name": "reei_actual_end_time_idx",
+          "columns": [
+            {
+              "expression": "actual_end_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reei_original_instance_start_time_idx": {
+          "name": "reei_original_instance_start_time_idx",
+          "columns": [
+            {
+              "expression": "original_instance_start_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reei_recurrence_rule_idx": {
+          "name": "reei_recurrence_rule_idx",
+          "columns": [
+            {
+              "expression": "recurrence_rule_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reei_is_cancelled_idx": {
+          "name": "reei_is_cancelled_idx",
+          "columns": [
+            {
+              "expression": "is_cancelled",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reei_recurringEventd_at_idx": {
+          "name": "reei_recurringEventd_at_idx",
+          "columns": [
+            {
+              "expression": "recurringEventd_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reei_org_active_instances_idx": {
+          "name": "reei_org_active_instances_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "is_cancelled",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "actual_start_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reei_base_event_instance_time_idx": {
+          "name": "reei_base_event_instance_time_idx",
+          "columns": [
+            {
+              "expression": "base_recurring_event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "original_instance_start_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reei_cleanup_candidates_idx": {
+          "name": "reei_cleanup_candidates_idx",
+          "columns": [
+            {
+              "expression": "actual_end_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "recurringEventd_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reei_sequence_number_idx": {
+          "name": "reei_sequence_number_idx",
+          "columns": [
+            {
+              "expression": "base_recurring_event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "sequence_number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "recurring_event_instances_base_recurring_event_id_events_id_fk": {
+          "name": "recurring_event_instances_base_recurring_event_id_events_id_fk",
+          "tableFrom": "recurring_event_instances",
+          "tableTo": "events",
+          "columnsFrom": [
+            "base_recurring_event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "recurring_event_instances_recurrence_rule_id_recurrence_rules_id_fk": {
+          "name": "recurring_event_instances_recurrence_rule_id_recurrence_rules_id_fk",
+          "tableFrom": "recurring_event_instances",
+          "tableTo": "recurrence_rules",
+          "columnsFrom": [
+            "recurrence_rule_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "recurring_event_instances_organization_id_organizations_id_fk": {
+          "name": "recurring_event_instances_organization_id_organizations_id_fk",
+          "tableFrom": "recurring_event_instances",
+          "tableTo": "organizations",
+          "columnsFrom": [
+            "organization_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "cascade"
         }
       },

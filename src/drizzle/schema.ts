@@ -96,13 +96,13 @@ export {
 	frequencyEnum,
 } from "./tables/recurrenceRules";
 export {
-	materializedEventInstancesTable,
-	materializedEventInstancesTableRelations,
-} from "./tables/materializedEventInstances";
+	recurringEventInstancesTable,
+	recurringEventInstancesTableRelations,
+} from "./tables/recurringEventInstances";
 export {
-	eventMaterializationWindowsTable,
-	eventMaterializationWindowsTableRelations,
-} from "./tables/eventMaterializationWindows";
+	eventGenerationWindowsTable,
+	eventGenerationWindowsTableRelations,
+} from "./tables/eventGenerationWindows";
 export {
 	tagAssignmentsTable,
 	tagAssignmentsTableRelations,

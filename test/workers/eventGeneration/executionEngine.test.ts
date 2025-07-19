@@ -3,18 +3,18 @@ import type { FastifyBaseLogger } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 import {
-	type MaterializationJob,
-	executeBatchMaterialization,
-	executeMaterialization,
-} from "~/src/workers/eventMaterialization/executionEngine";
-import type { WorkerDependencies } from "~/src/workers/eventMaterialization/types";
+	type EventGenerationJob,
+	executeBatchEventGeneration,
+	executeEventGeneration,
+} from "~/src/workers/eventGeneration/executionEngine";
+import type { WorkerDependencies } from "~/src/workers/eventGeneration/types";
 
 // Mock the service
-vi.mock("~/src/services/eventInstanceMaterialization", () => ({
-	materializeInstancesForRecurringEvent: vi.fn(),
+vi.mock("~/src/services/eventGeneration", () => ({
+	generateInstancesForRecurringEvent: vi.fn(),
 }));
 
-import { materializeInstancesForRecurringEvent } from "~/src/services/eventInstanceMaterialization";
+import { generateInstancesForRecurringEvent } from "~/src/services/eventGeneration";
 
 describe("executionEngine", () => {
 	let mockDrizzleClient: NodePgDatabase<typeof schema>;
@@ -39,9 +39,9 @@ describe("executionEngine", () => {
 		};
 	});
 
-	describe("executeMaterialization", () => {
+	describe("executeEventGeneration", () => {
 		it("should execute materialization successfully", async () => {
-			const job: MaterializationJob = {
+			const job: EventGenerationJob = {
 				organizationId: "org1",
 				baseRecurringEventId: "event1",
 				windowStartDate: new Date("2024-01-01"),
@@ -49,11 +49,11 @@ describe("executionEngine", () => {
 			};
 
 			const instancesCreated = 5;
-			vi.mocked(materializeInstancesForRecurringEvent).mockResolvedValue(
+			vi.mocked(generateInstancesForRecurringEvent).mockResolvedValue(
 				instancesCreated,
 			);
 
-			const result = await executeMaterialization(job, deps);
+			const result = await executeEventGeneration(job, deps);
 
 			expect(result.success).toBe(true);
 			expect(result.data).toEqual({
@@ -79,7 +79,7 @@ describe("executionEngine", () => {
 		});
 
 		it("should handle materialization errors", async () => {
-			const job: MaterializationJob = {
+			const job: EventGenerationJob = {
 				organizationId: "org1",
 				baseRecurringEventId: "event1",
 				windowStartDate: new Date("2024-01-01"),
@@ -87,9 +87,9 @@ describe("executionEngine", () => {
 			};
 
 			const error = new Error("Database connection failed");
-			vi.mocked(materializeInstancesForRecurringEvent).mockRejectedValue(error);
+			vi.mocked(generateInstancesForRecurringEvent).mockRejectedValue(error);
 
-			const result = await executeMaterialization(job, deps);
+			const result = await executeEventGeneration(job, deps);
 
 			expect(result.success).toBe(false);
 			expect(result.data).toBe(null);
@@ -114,19 +114,19 @@ describe("executionEngine", () => {
 			);
 		});
 
-		it("should call materializeInstancesForRecurringEvent with correct parameters", async () => {
-			const job: MaterializationJob = {
+		it("should call generateInstancesForRecurringEvent with correct parameters", async () => {
+			const job: EventGenerationJob = {
 				organizationId: "org1",
 				baseRecurringEventId: "event1",
 				windowStartDate: new Date("2024-01-01"),
 				windowEndDate: new Date("2024-01-31"),
 			};
 
-			vi.mocked(materializeInstancesForRecurringEvent).mockResolvedValue(3);
+			vi.mocked(generateInstancesForRecurringEvent).mockResolvedValue(3);
 
-			await executeMaterialization(job, deps);
+			await executeEventGeneration(job, deps);
 
-			expect(materializeInstancesForRecurringEvent).toHaveBeenCalledWith(
+			expect(generateInstancesForRecurringEvent).toHaveBeenCalledWith(
 				{
 					baseRecurringEventId: "event1",
 					windowStartDate: new Date("2024-01-01"),
@@ -139,7 +139,7 @@ describe("executionEngine", () => {
 		});
 
 		it("should calculate execution time correctly", async () => {
-			const job: MaterializationJob = {
+			const job: EventGenerationJob = {
 				organizationId: "org1",
 				baseRecurringEventId: "event1",
 				windowStartDate: new Date("2024-01-01"),
@@ -147,11 +147,11 @@ describe("executionEngine", () => {
 			};
 
 			const delay = 100;
-			vi.mocked(materializeInstancesForRecurringEvent).mockImplementation(
+			vi.mocked(generateInstancesForRecurringEvent).mockImplementation(
 				() => new Promise((resolve) => setTimeout(() => resolve(2), delay)),
 			);
 
-			const result = await executeMaterialization(job, deps);
+			const result = await executeEventGeneration(job, deps);
 
 			expect(result.data?.executionTimeMs).toBeGreaterThanOrEqual(delay);
 			expect(
@@ -160,9 +160,9 @@ describe("executionEngine", () => {
 		});
 	});
 
-	describe("executeBatchMaterialization", () => {
+	describe("executeBatchEventGeneration", () => {
 		it("should execute batch materialization successfully", async () => {
-			const jobs: MaterializationJob[] = [
+			const jobs: EventGenerationJob[] = [
 				{
 					organizationId: "org1",
 					baseRecurringEventId: "event1",
@@ -177,11 +177,11 @@ describe("executionEngine", () => {
 				},
 			];
 
-			vi.mocked(materializeInstancesForRecurringEvent)
+			vi.mocked(generateInstancesForRecurringEvent)
 				.mockResolvedValueOnce(3)
 				.mockResolvedValueOnce(5);
 
-			const result = await executeBatchMaterialization(jobs, 2, deps);
+			const result = await executeBatchEventGeneration(jobs, 2, deps);
 
 			expect(result.success).toBe(true);
 			expect(result.data).toHaveLength(2);
@@ -208,7 +208,7 @@ describe("executionEngine", () => {
 		});
 
 		it("should handle mixed success and failure results", async () => {
-			const jobs: MaterializationJob[] = [
+			const jobs: EventGenerationJob[] = [
 				{
 					organizationId: "org1",
 					baseRecurringEventId: "event1",
@@ -223,11 +223,11 @@ describe("executionEngine", () => {
 				},
 			];
 
-			vi.mocked(materializeInstancesForRecurringEvent)
+			vi.mocked(generateInstancesForRecurringEvent)
 				.mockResolvedValueOnce(3)
 				.mockRejectedValueOnce(new Error("Database error"));
 
-			const result = await executeBatchMaterialization(jobs, 2, deps);
+			const result = await executeBatchEventGeneration(jobs, 2, deps);
 
 			expect(result.success).toBe(false);
 			expect(result.data).toHaveLength(1);
@@ -249,7 +249,7 @@ describe("executionEngine", () => {
 		});
 
 		it("should process jobs in batches with concurrency control", async () => {
-			const jobs: MaterializationJob[] = [
+			const jobs: EventGenerationJob[] = [
 				{
 					organizationId: "org1",
 					baseRecurringEventId: "event1",
@@ -271,12 +271,12 @@ describe("executionEngine", () => {
 			];
 
 			const maxConcurrency = 2;
-			vi.mocked(materializeInstancesForRecurringEvent)
+			vi.mocked(generateInstancesForRecurringEvent)
 				.mockResolvedValueOnce(2)
 				.mockResolvedValueOnce(3)
 				.mockResolvedValueOnce(4);
 
-			const result = await executeBatchMaterialization(
+			const result = await executeBatchEventGeneration(
 				jobs,
 				maxConcurrency,
 				deps,
@@ -289,9 +289,9 @@ describe("executionEngine", () => {
 		});
 
 		it("should handle empty job array", async () => {
-			const jobs: MaterializationJob[] = [];
+			const jobs: EventGenerationJob[] = [];
 
-			const result = await executeBatchMaterialization(jobs, 2, deps);
+			const result = await executeBatchEventGeneration(jobs, 2, deps);
 
 			expect(result.success).toBe(true);
 			expect(result.data).toHaveLength(0);
@@ -306,7 +306,7 @@ describe("executionEngine", () => {
 		});
 
 		it("should calculate processing throughput correctly", async () => {
-			const jobs: MaterializationJob[] = [
+			const jobs: EventGenerationJob[] = [
 				{
 					organizationId: "org1",
 					baseRecurringEventId: "event1",
@@ -315,9 +315,9 @@ describe("executionEngine", () => {
 				},
 			];
 
-			vi.mocked(materializeInstancesForRecurringEvent).mockResolvedValue(10);
+			vi.mocked(generateInstancesForRecurringEvent).mockResolvedValue(10);
 
-			const result = await executeBatchMaterialization(jobs, 1, deps);
+			const result = await executeBatchEventGeneration(jobs, 1, deps);
 
 			expect(result.success).toBe(true);
 			expect(result.resourceUsage.processingThroughput).toBeGreaterThan(0);
@@ -325,7 +325,7 @@ describe("executionEngine", () => {
 		});
 
 		it("should handle all jobs failing", async () => {
-			const jobs: MaterializationJob[] = [
+			const jobs: EventGenerationJob[] = [
 				{
 					organizationId: "org1",
 					baseRecurringEventId: "event1",
@@ -340,11 +340,11 @@ describe("executionEngine", () => {
 				},
 			];
 
-			vi.mocked(materializeInstancesForRecurringEvent)
+			vi.mocked(generateInstancesForRecurringEvent)
 				.mockRejectedValueOnce(new Error("Error 1"))
 				.mockRejectedValueOnce(new Error("Error 2"));
 
-			const result = await executeBatchMaterialization(jobs, 2, deps);
+			const result = await executeBatchEventGeneration(jobs, 2, deps);
 
 			expect(result.success).toBe(false);
 			expect(result.data).toHaveLength(0);

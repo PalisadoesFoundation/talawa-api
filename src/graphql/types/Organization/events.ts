@@ -312,7 +312,7 @@ Organization.implement({
 								(e) => e.eventType === "standalone",
 							).length,
 							materializedEvents: allEvents.filter(
-								(e) => e.eventType === "materialized",
+								(e) => e.eventType === "generated",
 							).length,
 							dateRange: {
 								start: dateRange.start.toISOString(),

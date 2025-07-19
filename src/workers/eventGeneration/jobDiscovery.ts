@@ -1,12 +1,12 @@
 import { and, eq, lt } from "drizzle-orm";
-import { eventMaterializationWindowsTable } from "~/src/drizzle/tables/eventMaterializationWindows";
+import { eventGenerationWindowsTable } from "~/src/drizzle/tables/eventGenerationWindows";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import {
 	estimateInstanceCount,
 	normalizeRecurrenceRule,
 } from "~/src/utilities/recurringEventHelpers";
-import type { MaterializationJob } from "./executionEngine";
+import type { EventGenerationJob } from "./executionEngine";
 import type { WorkerDependencies } from "./types";
 
 /**
@@ -20,11 +20,11 @@ export interface JobDiscoveryConfig {
 
 /**
  * @description Represents a discovered workload for a single organization, including all
- * recurring events that require materialization.
+ * recurring events that require EventGeneration.
  */
 export interface DiscoveredWorkload {
 	organizationId: string;
-	windowConfig: typeof eventMaterializationWindowsTable.$inferSelect;
+	windowConfig: typeof eventGenerationWindowsTable.$inferSelect;
 	recurringEvents: Array<{
 		eventId: string;
 		eventName: string;
@@ -38,24 +38,24 @@ export interface DiscoveredWorkload {
 }
 
 /**
- * Discovers organizations and their recurring events that require materialization,
+ * Discovers organizations and their recurring events that require EventGeneration,
  * creating a prioritized list of workloads.
  *
  * @param config - The configuration for the job discovery process.
  * @param deps - The dependencies required for the worker, such as the database client and logger.
  * @returns A promise that resolves to an array of discovered workloads, sorted by priority.
  */
-export async function discoverMaterializationWorkloads(
+export async function discoverEventGenerationWorkloads(
 	config: JobDiscoveryConfig,
 	deps: WorkerDependencies,
 ): Promise<DiscoveredWorkload[]> {
 	const { logger } = deps;
 
-	// Find organizations needing materialization
+	// Find organizations needing EventGeneration
 	const organizationWindows = await findOrganizationsNeedingWork(config, deps);
 
 	if (organizationWindows.length === 0) {
-		logger.info("No organizations need materialization work");
+		logger.info("No organizations need EventGeneration work");
 		return [];
 	}
 
@@ -94,7 +94,7 @@ export async function discoverMaterializationWorkloads(
 	// Sort by priority (highest first)
 	workloads.sort((a, b) => b.priority - a.priority);
 
-	logger.info(`Discovered ${workloads.length} materialization workloads`, {
+	logger.info(`Discovered ${workloads.length} EventGeneration workloads`, {
 		totalEvents: workloads.reduce(
 			(sum, w) => sum + w.recurringEvents.length,
 			0,
@@ -106,22 +106,24 @@ export async function discoverMaterializationWorkloads(
 }
 
 /**
- * Converts a list of discovered workloads into an array of executable materialization jobs.
+ * Converts a list of discovered workloads into an array of executable EventGeneration jobs.
  * This function uses a unified, date-based approach by normalizing recurrence rules.
  *
  * @param workloads - An array of discovered workloads to be converted.
- * @returns An array of materialization jobs ready for execution.
+ * @returns An array of EventGeneration jobs ready for execution.
  */
-export function createMaterializationJobs(
+export function createEventGenerationJobs(
 	workloads: DiscoveredWorkload[],
-): MaterializationJob[] {
-	const jobs: MaterializationJob[] = [];
+): EventGenerationJob[] {
+	const jobs: EventGenerationJob[] = [];
 	const now = new Date();
 
 	for (const workload of workloads) {
 		for (const event of workload.recurringEvents) {
 			// Normalize the recurrence rule (convert count to end date)
-			const normalizedRule = normalizeRecurrenceRule(event.recurrenceRule);
+			const normalizedRule = normalizeRecurrenceRule(
+				event.recurrenceRule as typeof recurrenceRulesTable.$inferSelect,
+			);
 
 			// Calculate window end date based on the normalized rule
 			const windowEndDate = calculateWindowEndDateForEvent(
@@ -147,13 +149,13 @@ export function createMaterializationJobs(
  * that considers the event's normalized end date.
  *
  * @param normalizedRule - The normalized recurrence rule, with count converted to an end date.
- * @param windowConfig - The materialization window configuration for the organization.
+ * @param windowConfig - The EventGeneration window configuration for the organization.
  * @param now - The current date, used as a reference for calculations.
- * @returns The calculated end date for the materialization window.
+ * @returns The calculated end date for the EventGeneration window.
  */
 function calculateWindowEndDateForEvent(
 	normalizedRule: typeof recurrenceRulesTable.$inferSelect,
-	windowConfig: typeof eventMaterializationWindowsTable.$inferSelect,
+	windowConfig: typeof eventGenerationWindowsTable.$inferSelect,
 	now: Date,
 ): Date {
 	// Default window end date (12 months from now)
@@ -178,7 +180,7 @@ function calculateWindowEndDateForEvent(
 }
 
 /**
- * Finds organizations that require materialization work based on their current window
+ * Finds organizations that require EventGeneration work based on their current window
  * and processing status.
  *
  * @param config - The job discovery configuration.
@@ -188,7 +190,7 @@ function calculateWindowEndDateForEvent(
 async function findOrganizationsNeedingWork(
 	config: JobDiscoveryConfig,
 	deps: WorkerDependencies,
-): Promise<(typeof eventMaterializationWindowsTable.$inferSelect)[]> {
+): Promise<(typeof eventGenerationWindowsTable.$inferSelect)[]> {
 	const { drizzleClient } = deps;
 	const now = new Date();
 
@@ -198,22 +200,19 @@ async function findOrganizationsNeedingWork(
 	const lastProcessedThreshold = new Date(now);
 	lastProcessedThreshold.setHours(lastProcessedThreshold.getHours() - 1);
 
-	return await drizzleClient.query.eventMaterializationWindowsTable.findMany({
+	return await drizzleClient.query.eventGenerationWindowsTable.findMany({
 		where: and(
-			eq(eventMaterializationWindowsTable.isEnabled, true),
-			lt(eventMaterializationWindowsTable.currentWindowEndDate, lookAheadDate),
-			lt(
-				eventMaterializationWindowsTable.lastProcessedAt,
-				lastProcessedThreshold,
-			),
+			eq(eventGenerationWindowsTable.isEnabled, true),
+			lt(eventGenerationWindowsTable.currentWindowEndDate, lookAheadDate),
+			lt(eventGenerationWindowsTable.lastProcessedAt, lastProcessedThreshold),
 		),
-		orderBy: [eventMaterializationWindowsTable.processingPriority],
+		orderBy: [eventGenerationWindowsTable.processingPriority],
 		limit: config.maxOrganizations,
 	});
 }
 
 /**
- * Discovers all recurring events for a given organization that may require materialization.
+ * Discovers all recurring events for a given organization that may require EventGeneration.
  *
  * @param organizationId - The ID of the organization to discover events for.
  * @param deps - The worker dependencies.
@@ -275,15 +274,15 @@ async function discoverRecurringEventsForOrganization(
 }
 
 /**
- * Calculates the priority of a materialization workload based on factors like event type,
+ * Calculates the priority of a EventGeneration workload based on factors like event type,
  * window urgency, and the number of events.
  *
- * @param windowConfig - The materialization window configuration.
+ * @param windowConfig - The EventGeneration window configuration.
  * @param recurringEvents - An array of recurring events in the workload.
  * @returns A numerical priority score, with higher values indicating higher priority.
  */
 function calculateWorkloadPriority(
-	windowConfig: typeof eventMaterializationWindowsTable.$inferSelect,
+	windowConfig: typeof eventGenerationWindowsTable.$inferSelect,
 	recurringEvents: Array<{
 		isNeverEnding: boolean;
 		estimatedInstances: number;
@@ -318,7 +317,7 @@ function calculateWorkloadPriority(
 }
 
 /**
- * Estimates the duration of a materialization workload based on the number of events
+ * Estimates the duration of a EventGeneration workload based on the number of events
  * and the total estimated instances to be created.
  *
  * @param recurringEvents - An array of recurring events in the workload.

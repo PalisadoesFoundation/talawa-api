@@ -8,7 +8,7 @@ import {
 	type WorkerResult,
 	createDefaultWorkerConfig,
 	runMaterializationWorker,
-} from "./eventMaterialization/materializationPipeline";
+} from "./eventGeneration/materializationPipeline";
 
 let materializationTask: cron.ScheduledTask | undefined;
 let cleanupTask: cron.ScheduledTask | undefined;
