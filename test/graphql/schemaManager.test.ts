@@ -28,6 +28,8 @@ const createMockPluginManager = () =>
 		getActivePlugins: vi.fn(),
 		getExtensionRegistry: vi.fn(),
 		isPluginActive: vi.fn(),
+		isSystemInitialized: vi.fn(),
+		getLoadedPlugins: vi.fn(),
 	}) as unknown as PluginManager;
 
 let mockPluginManager: PluginManager;
@@ -44,6 +46,29 @@ describe("GraphQLSchemaManager", () => {
 	describe("Plugin Extension Registration", () => {
 		it("should handle missing plugin manager gracefully", async () => {
 			vi.mocked(getPluginManagerInstance).mockReturnValue(null);
+
+			const registerActivePluginExtensions = (
+				schemaManager as unknown as {
+					registerActivePluginExtensions: () => Promise<void>;
+				}
+			).registerActivePluginExtensions.bind(schemaManager);
+			await registerActivePluginExtensions();
+		});
+
+		it("should handle uninitialized plugin manager gracefully", async () => {
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(false);
+
+			const registerActivePluginExtensions = (
+				schemaManager as unknown as {
+					registerActivePluginExtensions: () => Promise<void>;
+				}
+			).registerActivePluginExtensions.bind(schemaManager);
+			await registerActivePluginExtensions();
+		});
+
+		it("should handle no loaded plugins gracefully", async () => {
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
 
 			const registerActivePluginExtensions = (
 				schemaManager as unknown as {
@@ -97,6 +122,10 @@ describe("GraphQLSchemaManager", () => {
 				hooks: { pre: {}, post: {} },
 			};
 
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue(
+				mockActivePlugins,
+			);
 			vi.mocked(mockPluginManager.getActivePlugins).mockReturnValue(
 				mockActivePlugins,
 			);
@@ -152,6 +181,10 @@ describe("GraphQLSchemaManager", () => {
 				hooks: { pre: {}, post: {} },
 			};
 
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue(
+				mockActivePlugins,
+			);
 			vi.mocked(mockPluginManager.getActivePlugins).mockReturnValue(
 				mockActivePlugins,
 			);
@@ -603,6 +636,17 @@ describe("GraphQLSchemaManager", () => {
 
 		it("should handle missing plugin manager during extension registration", async () => {
 			vi.mocked(getPluginManagerInstance).mockReturnValue(null);
+
+			const registerActivePluginExtensions = (
+				schemaManager as unknown as {
+					registerActivePluginExtensions: () => Promise<void>;
+				}
+			).registerActivePluginExtensions.bind(schemaManager);
+			await registerActivePluginExtensions();
+		});
+
+		it("should handle uninitialized plugin manager during extension registration", async () => {
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(false);
 
 			const registerActivePluginExtensions = (
 				schemaManager as unknown as {

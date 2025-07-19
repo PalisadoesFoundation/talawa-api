@@ -114,12 +114,19 @@ class GraphQLSchemaManager {
 	 */
 	private async registerActivePluginExtensions(): Promise<void> {
 		const pluginManager = getPluginManagerInstance();
-		if (!pluginManager) {
-			console.log("Plugin Manager Not Available");
+		if (!pluginManager || !pluginManager.isSystemInitialized()) {
+			console.log("Plugin Manager Not Available or Not Initialized");
 			return;
 		}
 
 		const extensionRegistry = pluginManager.getExtensionRegistry();
+
+		// Check if there are any plugins loaded
+		const loadedPlugins = pluginManager.getLoadedPlugins();
+		if (loadedPlugins.length === 0) {
+			console.log("No plugins loaded, skipping plugin extension registration");
+			return;
+		}
 
 		// Register queries
 		for (const [queryName, queryExtension] of Object.entries(
