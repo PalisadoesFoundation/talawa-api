@@ -6,5 +6,13 @@
     "body": "Congratulations! Your request to join {organizationName} has been approved.",
     "channelType": "in_app",
     "linkedRouteName": "/organization/{organizationId}"
+  },
+  {
+    "name": "New Event Created",
+    "eventType": "event_created",
+    "title": "New event: {eventName}",
+    "body": "A new event '{eventName}' has been created in {organizationName}. Event starts at {startDate}.",
+    "channelType": "in_app",
+    "linkedRouteName": "/event/{eventId}"
   }
 ]

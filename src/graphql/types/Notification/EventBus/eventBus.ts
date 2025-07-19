@@ -81,6 +81,47 @@ class NotificationEventBus extends EventEmitter {
 			}
 		});
 	}
+
+	async emitEventCreated(
+		data: {
+			eventId: string;
+			eventName: string;
+			organizationId: string;
+			organizationName: string;
+			startDate: string;
+			creatorName: string;
+		},
+		ctx: GraphQLContext,
+	) {
+		this.emit("event.created", data);
+
+		setImmediate(async () => {
+			try {
+				const notificationEngine = new NotificationEngine(ctx);
+				await notificationEngine.createNotification(
+					"event_created",
+					{
+						eventName: data.eventName,
+						organizationName: data.organizationName,
+						startDate: data.startDate,
+						eventId: data.eventId,
+						creatorName: data.creatorName,
+					},
+					{
+						targetType: NotificationTargetType.ORGANIZATION,
+						targetIds: [data.organizationId],
+					},
+					NotificationChannelType.IN_APP,
+				);
+
+				ctx.log.info(
+					`Event creation notification sent for event ${data.eventId}`,
+				);
+			} catch (error) {
+				ctx.log.error("Failed to send event creation notification:", error);
+			}
+		});
+	}
 }
 
 export const notificationEventBus = new NotificationEventBus();

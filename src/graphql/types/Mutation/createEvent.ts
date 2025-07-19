@@ -9,6 +9,7 @@ import {
 	MutationCreateEventInput,
 	mutationCreateEventInputSchema,
 } from "~/src/graphql/inputs/MutationCreateEventInput";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
@@ -100,12 +101,14 @@ builder.mutationField("createEvent", (t) =>
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
+						name: true,
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
 					columns: {
 						countryCode: true,
+						name: true,
 					},
 					with: {
 						membershipsWhereOrganization: {
@@ -191,6 +194,17 @@ builder.mutationField("createEvent", (t) =>
 						},
 					});
 				}
+				await notificationEventBus.emitEventCreated(
+					{
+						eventId: createdEvent.id,
+						eventName: createdEvent.name,
+						organizationId: parsedArgs.input.organizationId,
+						organizationName: existingOrganization.name,
+						startDate: createdEvent.startAt.toISOString(),
+						creatorName: currentUser.name,
+					},
+					ctx,
+				);
 
 				if (parsedArgs.input.attachments !== undefined) {
 					const attachments = parsedArgs.input.attachments;
