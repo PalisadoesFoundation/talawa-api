@@ -230,7 +230,7 @@ describe("jobDiscovery", () => {
 				estimatedDurationMs: expect.any(Number),
 			});
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Discovered 1 materialization workloads",
+				"Discovered 1 EventGeneration workloads",
 				{
 					totalEvents: 2,
 					highPriorityWorkloads: expect.any(Number),
@@ -253,7 +253,7 @@ describe("jobDiscovery", () => {
 
 			expect(result).toHaveLength(0);
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"No organizations need materialization work",
+				"No organizations need EventGeneration work",
 			);
 		});
 

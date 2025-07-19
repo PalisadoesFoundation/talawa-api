@@ -348,7 +348,7 @@ suite("eventMaterialization", () => {
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Failed to materialize instances for ${input.baseRecurringEventId}:`,
+				`Failed to generate instances for ${input.baseRecurringEventId}:`,
 				dbError,
 			);
 		});

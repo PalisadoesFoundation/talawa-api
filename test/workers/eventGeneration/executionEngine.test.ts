@@ -109,7 +109,7 @@ describe("executionEngine", () => {
 				processingThroughput: 0,
 			});
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Materialization execution failed for org1",
+				"Generation execution failed for org1",
 				error,
 			);
 		});

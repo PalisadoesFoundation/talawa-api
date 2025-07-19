@@ -52,7 +52,7 @@ suite("windowManager", () => {
 	const mockUserId = faker.string.uuid();
 
 	suite("initializeGenerationWindow", () => {
-		test("successfully initializes materialization window", async () => {
+		test("successfully initializes Generation window", async () => {
 			const input: CreateGenerationWindowInput = {
 				organizationId: mockOrganizationId,
 				createdById: mockUserId,
@@ -99,7 +99,7 @@ suite("windowManager", () => {
 				}),
 			);
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				`Materialization window initialized for organization ${mockOrganizationId}`,
+				`Generation window initialized for organization ${mockOrganizationId}`,
 				expect.objectContaining({
 					hotWindowMonthsAhead: 12,
 					historyRetentionMonths: 3,
@@ -123,10 +123,10 @@ suite("windowManager", () => {
 
 			await expect(
 				initializeGenerationWindow(input, mockDrizzleClient, mockLogger),
-			).rejects.toThrow("Failed to initialize materialization window.");
+			).rejects.toThrow("Failed to initialize Generation window.");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Failed to insert and return materialization window for organization ${mockOrganizationId}`,
+				`Failed to insert and return Generation window for organization ${mockOrganizationId}`,
 			);
 		});
 
@@ -146,14 +146,14 @@ suite("windowManager", () => {
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Failed to initialize materialization window for organization ${mockOrganizationId}:`,
+				`Failed to initialize Generation window for organization ${mockOrganizationId}:`,
 				dbError,
 			);
 		});
 	});
 
 	suite("extendGenerationWindow", () => {
-		test("successfully extends materialization window", async () => {
+		test("successfully extends Generation window", async () => {
 			const additionalMonths = 6;
 			const mockExistingConfig = {
 				id: faker.string.uuid(),
@@ -197,7 +197,7 @@ suite("windowManager", () => {
 					mockExistingConfig.hotWindowMonthsAhead + additionalMonths,
 			});
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				`Extended materialization window for organization ${mockOrganizationId} by ${additionalMonths} months`,
+				`Extended Generation window for organization ${mockOrganizationId} by ${additionalMonths} months`,
 				expect.objectContaining({
 					previousEndDate:
 						mockExistingConfig.currentWindowEndDate.toISOString(),
@@ -221,7 +221,7 @@ suite("windowManager", () => {
 					mockLogger,
 				),
 			).rejects.toThrow(
-				`No materialization window found for organization ${mockOrganizationId}`,
+				`No Generation window found for organization ${mockOrganizationId}`,
 			);
 		});
 
@@ -243,7 +243,7 @@ suite("windowManager", () => {
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Failed to extend materialization window for organization ${mockOrganizationId}:`,
+				`Failed to extend Generation window for organization ${mockOrganizationId}:`,
 				dbError,
 			);
 		});
@@ -294,7 +294,7 @@ suite("windowManager", () => {
 				),
 			);
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				`Cleaned up ${25} old materialized instances for organization ${mockOrganizationId}`,
+				`Cleaned up ${25} old Generated instances for organization ${mockOrganizationId}`,
 				expect.objectContaining({
 					retentionStartDate: mockWindowConfig.retentionStartDate.toISOString(),
 					deletedCount: 25,
@@ -315,7 +315,7 @@ suite("windowManager", () => {
 
 			expect(result).toBe(0);
 			expect(mockLogger.warn).toHaveBeenCalledWith(
-				`No materialization window found for organization ${mockOrganizationId}`,
+				`No Generation window found for organization ${mockOrganizationId}`,
 			);
 		});
 
@@ -368,7 +368,7 @@ suite("windowManager", () => {
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Failed to cleanup old materialized instances for organization ${mockOrganizationId}:`,
+				`Failed to cleanup old Generated instances for organization ${mockOrganizationId}:`,
 				dbError,
 			);
 		});
