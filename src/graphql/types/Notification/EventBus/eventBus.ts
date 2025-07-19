@@ -199,7 +199,7 @@ class NotificationEventBus extends EventEmitter {
 		});
 	}
 
-	async emitUserRemoved(
+	async emitUserBlocked(
 		data: {
 			userId: string;
 			userName: string;
@@ -208,13 +208,13 @@ class NotificationEventBus extends EventEmitter {
 		},
 		ctx: GraphQLContext,
 	) {
-		this.emit("user.removed", data);
+		this.emit("user.blocked", data);
 
 		setImmediate(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 				await notificationEngine.createNotification(
-					"user_removed",
+					"user_blocked",
 					{
 						userName: data.userName,
 						organizationName: data.organizationName,
@@ -228,10 +228,183 @@ class NotificationEventBus extends EventEmitter {
 				);
 
 				ctx.log.info(
-					`User removal notification sent to user ${data.userId} from organization ${data.organizationId}`,
+					`User blocked notification sent to user ${data.userId} from organization ${data.organizationId}`,
 				);
 			} catch (error) {
-				ctx.log.error("Failed to send user removal notification:", error);
+				ctx.log.error("Failed to send user blocked notification:", error);
+			}
+		});
+	}
+
+	async emitMembershipRequestRejected(
+		data: {
+			userId: string;
+			userName: string;
+			organizationId: string;
+			organizationName: string;
+		},
+		ctx: GraphQLContext,
+	) {
+		this.emit("membership_request.rejected", data);
+
+		setImmediate(async () => {
+			try {
+				const notificationEngine = new NotificationEngine(ctx);
+				await notificationEngine.createNotification(
+					"membership_request_rejected",
+					{
+						userName: data.userName,
+						organizationName: data.organizationName,
+						organizationId: data.organizationId,
+					},
+					{
+						targetType: NotificationTargetType.USER,
+						targetIds: [data.userId],
+					},
+					NotificationChannelType.IN_APP,
+				);
+
+				ctx.log.info(
+					`Membership request rejection notification sent to user ${data.userId} for organization ${data.organizationId}`,
+				);
+			} catch (error) {
+				ctx.log.error(
+					"Failed to send membership request rejection notification:",
+					error,
+				);
+			}
+		});
+	}
+
+	async emitFundCreated(
+		data: {
+			fundId: string;
+			fundName: string;
+			organizationId: string;
+			organizationName: string;
+			creatorName: string;
+		},
+		ctx: GraphQLContext,
+	) {
+		this.emit("fund.created", data);
+
+		setImmediate(async () => {
+			try {
+				const notificationEngine = new NotificationEngine(ctx);
+				await notificationEngine.createNotification(
+					"fund_created",
+					{
+						fundName: data.fundName,
+						organizationName: data.organizationName,
+						organizationId: data.organizationId,
+						creatorName: data.creatorName,
+					},
+					{
+						targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+						targetIds: [data.organizationId],
+					},
+					NotificationChannelType.IN_APP,
+				);
+
+				ctx.log.info(
+					`Fund creation notification sent for fund ${data.fundId} in organization ${data.organizationId}`,
+				);
+			} catch (error) {
+				ctx.log.error("Failed to send fund creation notification:", error);
+			}
+		});
+	}
+
+	async emitFundCampaignCreated(
+		data: {
+			campaignId: string;
+			campaignName: string;
+			fundName: string;
+			organizationId: string;
+			organizationName: string;
+			creatorName: string;
+			goalAmount: string;
+			currencyCode: string;
+		},
+		ctx: GraphQLContext,
+	) {
+		this.emit("fund_campaign.created", data);
+
+		setImmediate(async () => {
+			try {
+				const notificationEngine = new NotificationEngine(ctx);
+				await notificationEngine.createNotification(
+					"fund_campaign_created",
+					{
+						campaignName: data.campaignName,
+						fundName: data.fundName,
+						organizationName: data.organizationName,
+						organizationId: data.organizationId,
+						creatorName: data.creatorName,
+						goalAmount: data.goalAmount,
+						currencyCode: data.currencyCode,
+					},
+					{
+						targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+						targetIds: [data.organizationId],
+					},
+					NotificationChannelType.IN_APP,
+				);
+
+				ctx.log.info(
+					`Fund campaign creation notification sent for campaign ${data.campaignId} in organization ${data.organizationId}`,
+				);
+			} catch (error) {
+				ctx.log.error(
+					"Failed to send fund campaign creation notification:",
+					error,
+				);
+			}
+		});
+	}
+
+	async emitFundCampaignPledgeCreated(
+		data: {
+			pledgeId: string;
+			campaignName: string;
+			organizationId: string;
+			organizationName: string;
+			pledgerName: string;
+			amount: string;
+			currencyCode: string;
+		},
+		ctx: GraphQLContext,
+	) {
+		this.emit("fund_campaign_pledge.created", data);
+
+		setImmediate(async () => {
+			try {
+				const notificationEngine = new NotificationEngine(ctx);
+				await notificationEngine.createNotification(
+					"fund_campaign_pledge_created",
+					{
+						campaignName: data.campaignName,
+						organizationName: data.organizationName,
+						organizationId: data.organizationId,
+						pledgerName: data.pledgerName,
+						amount: data.amount,
+						currencyCode: data.currencyCode,
+					},
+					{
+						targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+						targetIds: [data.organizationId],
+					},
+					NotificationChannelType.IN_APP,
+				);
+
+				ctx.log.info(
+					`Fund campaign pledge notification sent for pledge ${data.pledgeId} in organization ${data.organizationId}`,
+				);
+			} catch (error) {
+				ctx.log.error(
+					"Failed to send fund campaign pledge notification:",
+					error,
+				);
 			}
 		});
 	}

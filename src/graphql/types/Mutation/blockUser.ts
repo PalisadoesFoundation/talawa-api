@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { blockedUsersTable } from "~/src/drizzle/tables/blockedUsers";
 import { builder } from "~/src/graphql/builder";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { assertOrganizationAdmin } from "~/src/utilities/authorization";
 
@@ -53,6 +54,9 @@ builder.mutationField("blockUser", (t) =>
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
+					columns: {
+						name: true,
+					},
 					with: {
 						membershipsWhereOrganization: {
 							columns: {
@@ -95,6 +99,7 @@ builder.mutationField("blockUser", (t) =>
 						columns: {
 							id: true,
 							role: true,
+							name: true,
 						},
 						where: (fields, operators) =>
 							operators.eq(fields.id, parsedArgs.userId),
@@ -168,9 +173,19 @@ builder.mutationField("blockUser", (t) =>
 				await tx.insert(blockedUsersTable).values({
 					organizationId: parsedArgs.organizationId,
 					userId: parsedArgs.userId,
-
 					createdAt: new Date(),
 				});
+
+				// Notify the blocked user
+				await notificationEventBus.emitUserBlocked(
+					{
+						userId: parsedArgs.userId,
+						userName: targetUser.name,
+						organizationId: parsedArgs.organizationId,
+						organizationName: existingOrganization.name,
+					},
+					ctx,
+				);
 
 				return true;
 			});

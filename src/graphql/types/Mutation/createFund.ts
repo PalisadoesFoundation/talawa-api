@@ -6,6 +6,7 @@ import {
 	mutationCreateFundInputSchema,
 } from "~/src/graphql/inputs/MutationCreateFundInput";
 import { Fund } from "~/src/graphql/types/Fund/Fund";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 const mutationCreateFundArgumentsSchema = z.object({
@@ -56,12 +57,14 @@ builder.mutationField("createFund", (t) =>
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
+						name: true,
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
 					columns: {
 						countryCode: true,
+						name: true,
 					},
 					with: {
 						fundsWhereOrganization: {
@@ -162,6 +165,22 @@ builder.mutationField("createFund", (t) =>
 						code: "unexpected",
 					},
 				});
+			}
+
+			// Send notification to organization admins
+			try {
+				await notificationEventBus.emitFundCreated(
+					{
+						fundId: createdFund.id,
+						fundName: createdFund.name,
+						organizationId: parsedArgs.input.organizationId,
+						organizationName: existingOrganization.name,
+						creatorName: currentUser.name,
+					},
+					ctx,
+				);
+			} catch (error) {
+				ctx.log.error("Failed to emit fund creation notification:", error);
 			}
 
 			return createdFund;

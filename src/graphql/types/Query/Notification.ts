@@ -110,7 +110,10 @@ User.implement({
 									inArray(notificationAudienceTable.targetId, orgIds),
 								),
 								and(
-									eq(notificationAudienceTable.targetType, "organization_admin"),
+									eq(
+										notificationAudienceTable.targetType,
+										"organization_admin",
+									),
 									inArray(notificationAudienceTable.targetId, orgIds),
 								),
 							),

@@ -6,6 +6,7 @@ import {
 	MutationJoinPublicOrganizationInput,
 	joinPublicOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationJoinPublicOrganizationInput";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { OrganizationMembershipObject } from "~/src/graphql/types/Organization/OrganizationMembership";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -53,21 +54,23 @@ builder.mutationField("joinPublicOrganization", (t) =>
 			const currentUserId = ctx.currentClient.user.id;
 
 			// Check if user exists in the database
-			const user = await ctx.drizzleClient.query.usersTable.findFirst({
-				where: (fields, operators) => operators.eq(fields.id, currentUserId),
-			});
+			const [user, organization] = await Promise.all([
+				ctx.drizzleClient.query.usersTable.findFirst({
+					columns: { name: true },
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
+				}),
+				ctx.drizzleClient.query.organizationsTable.findFirst({
+					columns: { name: true, userRegistrationRequired: true },
+					where: (fields, operators) =>
+						operators.eq(fields.id, parsedArgs.input.organizationId),
+				}),
+			]);
+
 			if (!user) {
 				throw new GraphQLError("User not found", {
 					extensions: { code: "unauthenticated" },
 				});
 			}
-
-			// Check if organization exists
-			const organization =
-				await ctx.drizzleClient.query.organizationsTable.findFirst({
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.organizationId),
-				});
 
 			if (!organization) {
 				throw new TalawaGraphQLError({
@@ -134,6 +137,17 @@ builder.mutationField("joinPublicOrganization", (t) =>
 			if (newMemberships.length === 0) {
 				throw new TalawaGraphQLError({ extensions: { code: "unexpected" } });
 			}
+
+			// Notify organization admins about new member
+			await notificationEventBus.emitNewMemberJoined(
+				{
+					userId: currentUserId,
+					userName: user.name,
+					organizationId: parsedArgs.input.organizationId,
+					organizationName: organization.name,
+				},
+				ctx,
+			);
 
 			// Return created membership
 			return newMemberships[0];

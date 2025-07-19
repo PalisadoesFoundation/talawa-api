@@ -38,5 +38,45 @@
     "body": "You have been removed from {organizationName} by an administrator.",
     "channelType": "in_app",
     "linkedRouteName": "/organizations"
+  },
+  {
+    "name": "User Blocked from Organization",
+    "eventType": "user_blocked",
+    "title": "You have been blocked from {organizationName}",
+    "body": "You have been blocked from {organizationName} by an administrator. You can no longer access this organization.",
+    "channelType": "in_app",
+    "linkedRouteName": "/organizations"
+  },
+  {
+    "name": "Membership Request Rejected",
+    "eventType": "membership_request_rejected",
+    "title": "Your membership request has been rejected",
+    "body": "Your request to join {organizationName} has been rejected by an administrator.",
+    "channelType": "in_app",
+    "linkedRouteName": "/organizations"
+  },
+  {
+    "name": "New Fund Created",
+    "eventType": "fund_created",
+    "title": "New fund created: {fundName}",
+    "body": "A new fund '{fundName}' has been created in {organizationName} by {creatorName}.",
+    "channelType": "in_app",
+    "linkedRouteName": "/organization/{organizationId}/funds"
+  },
+  {
+    "name": "New Fund Campaign Created",
+    "eventType": "fund_campaign_created",
+    "title": "New fund campaign: {campaignName}",
+    "body": "A new fund campaign '{campaignName}' has been created for fund '{fundName}' by {creatorName}. Goal: {goalAmount} {currencyCode}.",
+    "channelType": "in_app",
+    "linkedRouteName": "/organization/{organizationId}/campaigns"
+  },
+  {
+    "name": "New Fund Campaign Pledge",
+    "eventType": "fund_campaign_pledge_created",
+    "title": "New pledge for {campaignName}",
+    "body": "{pledgerName} has pledged {amount} {currencyCode} to the campaign '{campaignName}'.",
+    "channelType": "in_app",
+    "linkedRouteName": "/organization/{organizationId}/campaigns"
   }
 ]

@@ -7,6 +7,7 @@ import {
 	mutationCreateFundCampaignPledgeInputSchema,
 } from "~/src/graphql/inputs/MutationCreateFundCampaignPledgeInput";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 const mutationCreateFundCampaignPledgeArgumentsSchema = z.object({
@@ -66,6 +67,8 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 						columns: {
 							endAt: true,
 							startAt: true,
+							name: true,
+							currencyCode: true,
 						},
 						with: {
 							fundCampaignPledgesWhereCampaign: {
@@ -80,6 +83,8 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 									organization: {
 										columns: {
 											countryCode: true,
+											name: true,
+											id: true,
 										},
 										with: {
 											membershipsWhereOrganization: {
@@ -104,6 +109,7 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 					ctx.drizzleClient.query.usersTable.findFirst({
 						columns: {
 							role: true,
+							name: true,
 						},
 						where: (fields, operators) =>
 							operators.eq(fields.id, parsedArgs.input.pledgerId),
@@ -305,6 +311,27 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 						code: "unexpected",
 					},
 				});
+			}
+
+			// Send notification to organization admins
+			try {
+				await notificationEventBus.emitFundCampaignPledgeCreated(
+					{
+						pledgeId: createdFundCampaignPledge.id,
+						campaignName: existingFundCampaign.name,
+						organizationId: existingFundCampaign.fund.organization.id,
+						organizationName: existingFundCampaign.fund.organization.name,
+						pledgerName: existingPledger.name,
+						amount: createdFundCampaignPledge.amount.toString(),
+						currencyCode: existingFundCampaign.currencyCode,
+					},
+					ctx,
+				);
+			} catch (error) {
+				ctx.log.error(
+					"Failed to emit fund campaign pledge notification:",
+					error,
+				);
 			}
 
 			return createdFundCampaignPledge;
