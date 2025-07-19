@@ -9,8 +9,8 @@ import {
 	MutationCreateEventInput,
 	mutationCreateEventInputSchema,
 } from "~/src/graphql/inputs/MutationCreateEventInput";
-import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { Event } from "~/src/graphql/types/Event/Event";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 

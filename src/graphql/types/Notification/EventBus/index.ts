@@ -1,1 +1,1 @@
-import "./eventBus"
+import "./eventBus";
