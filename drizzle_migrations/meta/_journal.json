@@ -8,6 +8,13 @@
       "when": 1751913008860,
       "tag": "20250707183008_careless_earthquake",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1752866662622,
+      "tag": "20250718192422_motionless_kylun",
+      "breakpoints": true
     }
   ]
 }
