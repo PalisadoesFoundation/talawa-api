@@ -109,6 +109,10 @@ User.implement({
 									eq(notificationAudienceTable.targetType, "organization"),
 									inArray(notificationAudienceTable.targetId, orgIds),
 								),
+								and(
+									eq(notificationAudienceTable.targetType, "organization_admin"),
+									inArray(notificationAudienceTable.targetId, orgIds),
+								),
 							),
 							eq(notificationLogsTable.channel, "in_app"),
 						),

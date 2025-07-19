@@ -80,6 +80,11 @@ builder.mutationField("acceptMembershipRequest", (t) =>
 								},
 							},
 						},
+						user: {
+							columns: {
+								name: true,
+							},
+						},
 					},
 				}),
 			]);
@@ -174,6 +179,8 @@ builder.mutationField("acceptMembershipRequest", (t) =>
 						})
 						.returning();
 				});
+
+				// Notify the user about membership acceptance
 				await notificationEventBus.emitMembershipRequestAccepted(
 					{
 						userId: membershipRequest.userId,
@@ -182,6 +189,18 @@ builder.mutationField("acceptMembershipRequest", (t) =>
 					},
 					ctx,
 				);
+
+				// Notify organization admins about new member
+				await notificationEventBus.emitNewMemberJoined(
+					{
+						userId: membershipRequest.userId,
+						userName: membershipRequest.user.name,
+						organizationId: membershipRequest.organizationId,
+						organizationName: membershipRequest.organization.name,
+					},
+					ctx,
+				);
+
 				return {
 					success: true,
 					message:

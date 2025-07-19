@@ -14,5 +14,29 @@
     "body": "A new event '{eventName}' has been created in {organizationName}. Event starts at {startDate}.",
     "channelType": "in_app",
     "linkedRouteName": "/event/{eventId}"
+  },
+  {
+    "name": "Join Request Submitted",
+    "eventType": "join_request_submitted",
+    "title": "New membership request for {organizationName}",
+    "body": "{userName} has requested to join {organizationName}. Please review the request.",
+    "channelType": "in_app",
+    "linkedRouteName": "/organization/{organizationId}/requests"
+  },
+  {
+    "name": "New Organization Member",
+    "eventType": "new_member_joined",
+    "title": "New member joined {organizationName}",
+    "body": "{userName} has joined {organizationName} as a new member.",
+    "channelType": "in_app",
+    "linkedRouteName": "/organization/{organizationId}/members"
+  },
+  {
+    "name": "User Removed from Organization",
+    "eventType": "user_removed",
+    "title": "You have been removed from {organizationName}",
+    "body": "You have been removed from {organizationName} by an administrator.",
+    "channelType": "in_app",
+    "linkedRouteName": "/organizations"
   }
 ]

@@ -8,7 +8,7 @@ import type {
 	ExplicitAuthenticationTokenPayload,
 	ExplicitGraphQLContext,
 } from "~/src/graphql/context";
-import schemaManager from "~/src/graphql/schemaManager";
+import { schema } from "~/src/graphql/schema";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 import leakyBucket from "../utilities/leakyBucket";
 
@@ -107,9 +107,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		maxFileSize: 10485760,
 	});
 
-	// Build initial schema with active plugins
-	const initialSchema = await schemaManager.buildInitialSchema();
-
 	// More information at this link: https://mercurius.dev/#/docs/api/options?id=mercurius
 	await fastify.register(mercurius, {
 		context: (request, reply) =>
@@ -124,7 +121,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		},
 		cache: false,
 		path: "/graphql",
-		schema: initialSchema,
+		schema,
 		subscription: {
 			context: async (socket, request) =>
 				await createContext({
@@ -146,38 +143,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 				next(true);
 			},
 		},
-	});
-
-	// Register schema update callback to replace schema when plugins are activated/deactivated
-	schemaManager.onSchemaUpdate((newSchema) => {
-		try {
-			// Replace the schema in the Mercurius instance
-			fastify.graphql.replaceSchema(newSchema);
-			fastify.log.info("✅ GraphQL Schema Updated Successfully", {
-				timestamp: new Date().toISOString(),
-				newSchemaFields: {
-					queries: Object.keys(newSchema.getQueryType()?.getFields() || {}),
-					mutations: Object.keys(
-						newSchema.getMutationType()?.getFields() || {},
-					),
-					subscriptions: Object.keys(
-						newSchema.getSubscriptionType()?.getFields() || {},
-					),
-				},
-			});
-		} catch (error) {
-			fastify.log.error("❌ Failed to Update GraphQL Schema", {
-				error:
-					error instanceof Error
-						? {
-								message: error.message,
-								stack: error.stack,
-								name: error.name,
-							}
-						: String(error),
-				timestamp: new Date().toISOString(),
-			});
-		}
 	});
 	fastify.graphql.addHook(
 		"preExecution",

@@ -122,6 +122,119 @@ class NotificationEventBus extends EventEmitter {
 			}
 		});
 	}
+
+	async emitJoinRequestSubmitted(
+		data: {
+			requestId: string;
+			userId: string;
+			userName: string;
+			organizationId: string;
+			organizationName: string;
+		},
+		ctx: GraphQLContext,
+	) {
+		this.emit("join_request.submitted", data);
+
+		setImmediate(async () => {
+			try {
+				const notificationEngine = new NotificationEngine(ctx);
+				await notificationEngine.createNotification(
+					"join_request_submitted",
+					{
+						userName: data.userName,
+						organizationName: data.organizationName,
+						organizationId: data.organizationId,
+						requestId: data.requestId,
+					},
+					{
+						targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+						targetIds: [data.organizationId],
+					},
+					NotificationChannelType.IN_APP,
+				);
+
+				ctx.log.info(
+					`Join request notification sent for user ${data.userId} to organization ${data.organizationId}`,
+				);
+			} catch (error) {
+				ctx.log.error("Failed to send join request notification:", error);
+			}
+		});
+	}
+
+	async emitNewMemberJoined(
+		data: {
+			userId: string;
+			userName: string;
+			organizationId: string;
+			organizationName: string;
+		},
+		ctx: GraphQLContext,
+	) {
+		this.emit("member.joined", data);
+
+		setImmediate(async () => {
+			try {
+				const notificationEngine = new NotificationEngine(ctx);
+				await notificationEngine.createNotification(
+					"new_member_joined",
+					{
+						userName: data.userName,
+						organizationName: data.organizationName,
+						organizationId: data.organizationId,
+					},
+					{
+						targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+						targetIds: [data.organizationId],
+					},
+					NotificationChannelType.IN_APP,
+				);
+
+				ctx.log.info(
+					`New member notification sent for user ${data.userId} joining organization ${data.organizationId}`,
+				);
+			} catch (error) {
+				ctx.log.error("Failed to send new member notification:", error);
+			}
+		});
+	}
+
+	async emitUserRemoved(
+		data: {
+			userId: string;
+			userName: string;
+			organizationId: string;
+			organizationName: string;
+		},
+		ctx: GraphQLContext,
+	) {
+		this.emit("user.removed", data);
+
+		setImmediate(async () => {
+			try {
+				const notificationEngine = new NotificationEngine(ctx);
+				await notificationEngine.createNotification(
+					"user_removed",
+					{
+						userName: data.userName,
+						organizationName: data.organizationName,
+						organizationId: data.organizationId,
+					},
+					{
+						targetType: NotificationTargetType.USER,
+						targetIds: [data.userId],
+					},
+					NotificationChannelType.IN_APP,
+				);
+
+				ctx.log.info(
+					`User removal notification sent to user ${data.userId} from organization ${data.organizationId}`,
+				);
+			} catch (error) {
+				ctx.log.error("Failed to send user removal notification:", error);
+			}
+		});
+	}
 }
 
 export const notificationEventBus = new NotificationEventBus();
