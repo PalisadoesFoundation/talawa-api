@@ -50,7 +50,18 @@ export function calculateInstanceOccurrences(
 	let sequenceNumber = 1;
 
 	// Generate occurrences
-	while (currentDate <= windowEnd && iterationCount < context.maxIterations) {
+	// For yearly events, don't limit by window end since there will be very few instances
+	// Yearly events are always finite (never-ending yearly events are not allowed)
+	const effectiveWindowEnd =
+		recurrenceRule.frequency === "YEARLY"
+			? recurrenceRule.recurrenceEndDate ||
+				new Date(windowEnd.getFullYear() + 100, 11, 31)
+			: windowEnd;
+
+	while (
+		currentDate <= effectiveWindowEnd &&
+		iterationCount < context.maxIterations
+	) {
 		iterationCount++;
 
 		// Check if we should generate an instance at this date
@@ -70,7 +81,8 @@ export function calculateInstanceOccurrences(
 			}
 
 			// Only include instances that fall within our window
-			if (currentDate >= windowStart) {
+			// For yearly events, include all instances since there will be very few
+			if (currentDate >= windowStart || recurrenceRule.frequency === "YEARLY") {
 				const occurrence = createOccurrenceFromDate(
 					currentDate,
 					context,
@@ -404,8 +416,19 @@ export function getNextOccurrenceDate(
 					nextDate.setDate(dayOfMonth);
 				}
 			} else if (recurrenceRule.byMonthDay?.length) {
-				// For monthly events with byMonthDay, move day by day to check each day
+				// For monthly events with byMonthDay, we need to handle month transitions properly
+				const currentMonth = nextDate.getMonth();
+				const currentYear = nextDate.getFullYear();
+
+				// Try moving to the next day first
 				nextDate.setDate(nextDate.getDate() + 1);
+
+				// If we've moved to a different month, skip to the correct month based on interval
+				if (nextDate.getMonth() !== currentMonth) {
+					nextDate.setFullYear(currentYear);
+					nextDate.setMonth(currentMonth + interval);
+					nextDate.setDate(1); // Start from the beginning of the target month
+				}
 			} else {
 				// For monthly events without filters, move by months
 				nextDate.setMonth(nextDate.getMonth() + interval);
