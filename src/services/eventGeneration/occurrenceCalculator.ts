@@ -377,8 +377,13 @@ export function getNextOccurrenceDate(
 			break;
 
 		case "WEEKLY":
-			// For weekly events, always move by full weeks
-			nextDate.setDate(nextDate.getDate() + 7 * interval);
+			// For weekly events with byDay filter, move day by day to check each day
+			// For weekly events without byDay, move by full weeks
+			if (recurrenceRule.byDay?.length) {
+				nextDate.setDate(nextDate.getDate() + 1);
+			} else {
+				nextDate.setDate(nextDate.getDate() + 7 * interval);
+			}
 			break;
 
 		case "MONTHLY":
@@ -398,15 +403,23 @@ export function getNextOccurrenceDate(
 
 					nextDate.setDate(dayOfMonth);
 				}
+			} else if (recurrenceRule.byMonthDay?.length) {
+				// For monthly events with byMonthDay, move day by day to check each day
+				nextDate.setDate(nextDate.getDate() + 1);
 			} else {
-				// For monthly events, move by months
+				// For monthly events without filters, move by months
 				nextDate.setMonth(nextDate.getMonth() + interval);
 			}
 			break;
 
 		case "YEARLY":
-			// For yearly events, move by years
-			nextDate.setFullYear(nextDate.getFullYear() + interval);
+			// For yearly events with byMonth or byMonthDay, move month by month
+			// For yearly events without these filters, move by full years
+			if (recurrenceRule.byMonth?.length || recurrenceRule.byMonthDay?.length) {
+				nextDate.setMonth(nextDate.getMonth() + 1);
+			} else {
+				nextDate.setFullYear(nextDate.getFullYear() + interval);
+			}
 			break;
 
 		default:
