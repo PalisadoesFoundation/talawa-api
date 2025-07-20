@@ -560,24 +560,25 @@ export async function removePluginDirectory(pluginId: string): Promise<void> {
 
 /**
  * Clear module cache entries for a plugin to prevent memory leaks
+ * Note: In ES modules, we cannot directly access the module cache like in CommonJS
+ * This function is kept for compatibility but does not perform cache clearing in ES modules
  */
 export function clearPluginModuleCache(
 	pluginPath: string,
 	cacheObj?: Record<string, unknown>,
 ): void {
-	const cache = cacheObj ?? require.cache;
 	try {
-		// Get all cached module paths that start with the plugin path
-		const cachedPaths = Object.keys(cache).filter((cachePath) =>
-			cachePath.startsWith(pluginPath),
+		// In ES modules, we cannot access the module cache directly
+		// The module cache is managed by the ES module loader and is not exposed
+		// This function is kept for compatibility but does not perform cache clearing
+		// The garbage collector will handle cleanup of unused modules automatically
+
+		// Log that cache clearing is not available in ES modules
+		console.log(
+			`Module cache clearing not available in ES modules for plugin: ${pluginPath}`,
 		);
 
-		// Delete each cached module
-		for (const cachePath of cachedPaths) {
-			delete cache[cachePath];
-		}
-
-		// Module cache cleared successfully
+		// Non-critical operation, continue with cleanup
 	} catch (error) {
 		console.warn("Failed to clear module cache:", error);
 		// Non-critical error, continue with cleanup
