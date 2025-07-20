@@ -16,7 +16,6 @@ export type {
 	ILoadedPlugin,
 	IExtensionRegistry,
 	IPluginContext,
-	IPluginDiscovery,
 	IPluginLifecycle,
 	IPluginError,
 } from "./types";
@@ -30,7 +29,6 @@ export {
 	validatePluginManifest,
 	generatePluginId,
 	loadPluginManifest,
-	scanPluginsDirectory,
 	isValidPluginId,
 	normalizeImportPath,
 	safeRequire,
