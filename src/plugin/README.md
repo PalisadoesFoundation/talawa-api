@@ -6,7 +6,7 @@ The Talawa API Plugin System is a microkernel architecture that allows extending
 
 The plugin system consists of:
 
-- **Plugin Manager**: Core system that handles plugin discovery, loading, and lifecycle management
+- **Plugin Manager**: Core system that handles loading, activation, and lifecycle management of plugins
 - **Extension Points**: Predefined points where plugins can extend functionality (GraphQL, Database, Hooks)
 - **Plugin Registry**: System for managing plugin registration and initialization
 - **Plugin Context**: Shared context providing access to database, GraphQL, PubSub, and logging
@@ -20,15 +20,8 @@ src/plugin/
 ├── utils.ts           # Utility functions
 ├── registry.ts        # Plugin registry and initialization
 ├── index.ts           # Main exports
+├── logger.ts          # Plugin logging system
 ├── available/         # Directory containing available plugins
-│   └── todoList/     # Example todoList plugin
-│       ├── manifest.json
-│       ├── index.ts
-│       ├── database/
-│       │   └── tables.ts
-│       └── graphql/
-│           ├── queries.ts
-│           └── mutations.ts
 └── README.md          # This file
 ```
 
@@ -43,7 +36,7 @@ Each plugin must have:
 ### Example Plugin Structure
 
 ```
-todoList/
+my_plugin/
 ├── manifest.json      # Plugin metadata and extension points
 ├── index.ts          # Main plugin file with lifecycle hooks
 ├── database/
@@ -60,7 +53,7 @@ todoList/
 Create a new directory under `src/plugin/available/` with your plugin name:
 
 ```bash
-mkdir src/plugin/available/my-plugin
+mkdir src/plugin/available/my_plugin
 ```
 
 ### 2. Create Manifest File
@@ -70,7 +63,7 @@ Create `manifest.json` with plugin metadata:
 ```json
 {
   "name": "My Plugin",
-  "pluginId": "my-plugin",
+  "pluginId": "my_plugin",
   "version": "1.0.0",
   "description": "Description of my plugin",
   "author": "Your Name",
@@ -133,27 +126,13 @@ export async function onDeactivate(context: IPluginContext): Promise<void> {
   context.logger?.info("My Plugin deactivated");
 }
 
-export async function onUnload(context: IPluginContext): Promise<void> {
-  context.logger?.info("My Plugin unloaded");
-}
-
-// Event handlers
+// Hook handlers
 export async function onMyDataCreated(
   data: any,
   context: IPluginContext
 ): Promise<void> {
-  // Handle the event
-  context.logger?.info(`My data created: ${data.id}`);
+  context.logger?.info("My data created:", data);
 }
-
-const MyPlugin: IPluginLifecycle = {
-  onLoad,
-  onActivate,
-  onDeactivate,
-  onUnload,
-};
-
-export default MyPlugin;
 ```
 
 ### 4. Create Database Tables
@@ -223,16 +202,32 @@ export async function createMyData(
 
 ## Plugin Installation and Activation
 
-### 1. Install Plugin in Database
+### 1. Install Plugin via API
 
-First, create a plugin record in the database:
+Upload the plugin using the GraphQL mutation:
 
-```typescript
-await db.insert(pluginsTable).values({
-  pluginId: "my-plugin",
-  isInstalled: true,
-  isActivated: true,
-});
+```graphql
+mutation UploadPlugin($input: UploadPluginZipInput!) {
+  uploadPluginZip(input: $input) {
+    id
+    pluginId
+    isInstalled
+    isActivated
+  }
+}
+```
+
+Or create a plugin record manually:
+
+```graphql
+mutation CreatePlugin($input: CreatePluginInput!) {
+  createPlugin(input: $input) {
+    id
+    pluginId
+    isInstalled
+    isActivated
+  }
+}
 ```
 
 ### 2. Initialize Plugin System
@@ -289,13 +284,13 @@ Common events:
 
 ## Plugin Lifecycle
 
-1. **Discovery**: System scans `available/` directory for plugins
-2. **Loading**: Plugin manifest is loaded and validated
-3. **Installation**: Plugin is registered in database
-4. **Activation**: Plugin extension points are registered
+1. **Database Record**: Plugin is registered in database via API
+2. **File Storage**: Plugin files are stored in `available/` directory
+3. **Loading**: Plugin manifest and modules are loaded from files
+4. **Activation**: Plugin extension points are registered with the system
 5. **Runtime**: Plugin handles requests and events
 6. **Deactivation**: Plugin is disabled but remains loaded
-7. **Unloading**: Plugin is completely removed from memory
+7. **Deletion**: Plugin is completely removed from database and files
 
 ## Plugin Management API
 
@@ -303,38 +298,35 @@ The plugin system provides methods for managing plugins:
 
 ```typescript
 // Load a plugin
-await pluginManager.loadPlugin("my-plugin");
+await pluginManager.loadPlugin("my_plugin");
 
 // Activate a plugin
-await pluginManager.activatePlugin("my-plugin");
+await pluginManager.activatePlugin("my_plugin");
 
 // Deactivate a plugin
-await pluginManager.deactivatePlugin("my-plugin");
+await pluginManager.deactivatePlugin("my_plugin");
 
 // Unload a plugin
-await pluginManager.unloadPlugin("my-plugin");
+await pluginManager.unloadPlugin("my_plugin");
 
 // Get plugin status
-const plugin = pluginManager.getPlugin("my-plugin");
-const isActive = pluginManager.isPluginActive("my-plugin");
-
-// Execute hooks
-await pluginManager.executePreHooks("event:name", data);
-await pluginManager.executePostHooks("event:name", data);
+const plugin = pluginManager.getPlugin("my_plugin");
+const isActive = pluginManager.isPluginActive("my_plugin");
 ```
 
 ## Best Practices
 
 ### 1. Plugin Naming
 
-- Use camelCase or snake_case for plugin IDs (e.g., `todoList`, `todo_list`)
+- Use camelCase or snake_case for plugin IDs (e.g., `myPlugin`, `my_plugin`)
 - Use descriptive names that reflect functionality
 - Avoid conflicts with core API features
+- No hyphens allowed (GraphQL compatibility)
 
 ### 2. Database Design
 
-- Prefix plugin tables with `plugin_`
-- Use UUIDs for primary keys
+- Tables are automatically prefixed with `{pluginId}_`
+- Use UUIDs for primary keys when possible
 - Include audit fields (createdAt, updatedAt)
 - Add proper indexes for performance
 
@@ -359,47 +351,43 @@ await pluginManager.executePostHooks("event:name", data);
 - Use async/await for database operations
 - Consider caching for frequently accessed data
 
-## Example: Todo List Plugin
+## Database-First Architecture
 
-The included todoList plugin demonstrates:
+The plugin system uses a **database-first approach**:
 
-- Database table creation with proper indexing
-- GraphQL queries and mutations with validation
-- Event hooks for todo creation and completion
-- Lifecycle management
-- Error handling and logging
+1. **Source of Truth**: Database contains all plugin records
+2. **File Storage**: Plugin files are stored separately
+3. **Loading Strategy**: Plugins are loaded based on database records, not file discovery
+4. **Graceful Handling**: Missing files are handled without breaking the system
 
 ## Troubleshooting
 
 ### Plugin Not Loading
 
-1. Check manifest.json syntax
-2. Verify plugin directory structure
-3. Check database plugin record
-4. Review server logs for errors
+1. Check plugin record exists in database
+2. Verify plugin files exist in `available/` directory
+3. Check manifest.json syntax and structure
+4. Review server logs for detailed errors
 
 ### GraphQL Errors
 
-1. Verify resolver function exports
+1. Verify resolver function exports match manifest
 2. Check parameter types and validation
 3. Ensure database operations are correct
 4. Review GraphQL schema conflicts
 
 ### Database Issues
 
-1. Verify table definitions
-2. Check foreign key constraints
-3. Review database permissions
-4. Ensure migrations are applied
+1. Verify database tables were created during installation
+2. Check table naming with plugin prefix
+3. Ensure proper database permissions
+4. Review table definition syntax
 
-## Contributing
+### Missing Files
 
-When creating plugins for the Talawa API:
+When plugins exist in database but files are missing:
 
-1. Follow the established patterns
-2. Include comprehensive tests
-3. Document your plugin thoroughly
-4. Consider backward compatibility
-5. Follow security best practices
-
-For more information, see the main Talawa API documentation.
+- Plugin loading will fail gracefully
+- Check plugin installation logs
+- Re-upload plugin files if needed
+- Consider cleaning up orphaned database records

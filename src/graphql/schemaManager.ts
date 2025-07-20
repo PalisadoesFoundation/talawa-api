@@ -6,7 +6,7 @@
  */
 
 import type { GraphQLSchema } from "graphql";
-import { pluginLogger } from "~/src/plugin/logger";
+
 import { getPluginManagerInstance } from "~/src/plugin/registry";
 import { builder } from "./builder";
 
@@ -21,40 +21,15 @@ class GraphQLSchemaManager {
 	private async setupPluginListeners(): Promise<void> {
 		const pluginManager = getPluginManagerInstance();
 		if (pluginManager) {
-			await pluginLogger.info("🔗 Setting up Schema Manager Plugin Listeners", {
-				hasPluginManager: !!pluginManager,
-				pluginManagerInitialized: pluginManager.isSystemInitialized(),
-			});
-
 			// Listen for schema rebuild events
 			pluginManager.on("schema:rebuild", async (data) => {
-				await pluginLogger.info("🔄 Schema Rebuild Triggered", {
-					pluginId: data.pluginId,
-					reason: data.reason,
-					timestamp: data.timestamp,
-				});
 				await this.rebuildSchema();
 			});
 
 			// Listen for plugin deactivation to remove fields
 			pluginManager.on("plugin:deactivated", async (pluginId) => {
-				await pluginLogger.info("🔄 Schema Rebuild for Plugin Deactivation", {
-					pluginId,
-					reason: "plugin_deactivation",
-				});
 				await this.rebuildSchema();
 			});
-
-			await pluginLogger.info(
-				"✅ Schema Manager Plugin Listeners Setup Complete",
-			);
-		} else {
-			await pluginLogger.warn(
-				"⚠️ Plugin Manager Not Available for Schema Listeners",
-				{
-					retryStrategy: "will_setup_during_initial_build",
-				},
-			);
 		}
 	}
 
@@ -62,10 +37,6 @@ class GraphQLSchemaManager {
 	 * Build the initial schema
 	 */
 	async buildInitialSchema(): Promise<GraphQLSchema> {
-		await pluginLogger.info("🏗️ Building Initial GraphQL Schema", {
-			timestamp: new Date().toISOString(),
-		});
-
 		// Set up plugin listeners now that we're initializing
 		await this.setupPluginListeners();
 
@@ -79,17 +50,6 @@ class GraphQLSchemaManager {
 		const schema = builder.toSchema();
 		this.currentSchema = schema;
 
-		await pluginLogger.info("✅ Initial GraphQL Schema Built", {
-			schemaFields: {
-				queries: Object.keys(schema.getQueryType()?.getFields() || {}),
-				mutations: Object.keys(schema.getMutationType()?.getFields() || {}),
-				subscriptions: Object.keys(
-					schema.getSubscriptionType()?.getFields() || {},
-				),
-			},
-			timestamp: new Date().toISOString(),
-		});
-
 		return schema;
 	}
 
@@ -98,9 +58,6 @@ class GraphQLSchemaManager {
 	 */
 	async rebuildSchema(): Promise<GraphQLSchema> {
 		if (this.isRebuilding) {
-			await pluginLogger.info("⏳ Schema Rebuild Already In Progress", {
-				action: "skipping_duplicate_rebuild",
-			});
 			if (!this.currentSchema) {
 				throw new Error("No current schema available during rebuild");
 			}
@@ -110,13 +67,6 @@ class GraphQLSchemaManager {
 		this.isRebuilding = true;
 
 		try {
-			await pluginLogger.info("🔧 Starting Dynamic Schema Rebuild", {
-				timestamp: new Date().toISOString(),
-				currentSchemaExists: !!this.currentSchema,
-			});
-
-			// Use the main builder instance (builders maintain global state)
-
 			// Re-import all core schema components
 			await this.importCoreSchema();
 
@@ -127,35 +77,12 @@ class GraphQLSchemaManager {
 			const newSchema = builder.toSchema();
 			this.currentSchema = newSchema;
 
-			await pluginLogger.info("✅ Schema Rebuild Completed", {
-				newSchemaFields: {
-					queries: Object.keys(newSchema.getQueryType()?.getFields() || {}),
-					mutations: Object.keys(
-						newSchema.getMutationType()?.getFields() || {},
-					),
-					subscriptions: Object.keys(
-						newSchema.getSubscriptionType()?.getFields() || {},
-					),
-				},
-				timestamp: new Date().toISOString(),
-			});
-
 			// Notify all registered callbacks about the schema update
 			this.notifySchemaUpdateCallbacks(newSchema);
 
 			return newSchema;
 		} catch (error) {
-			await pluginLogger.error("❌ Schema Rebuild Failed", {
-				error:
-					error instanceof Error
-						? {
-								message: error.message,
-								stack: error.stack,
-								name: error.name,
-							}
-						: String(error),
-				timestamp: new Date().toISOString(),
-			});
+			console.error("Schema rebuild failed:", error);
 			throw error;
 		} finally {
 			this.isRebuilding = false;
@@ -176,14 +103,8 @@ class GraphQLSchemaManager {
 			await import("./inputs/index");
 			await import("./types/index");
 			// Note: interfaces and unions directories have empty index files, so skipping them
-
-			await pluginLogger.info("📦 Core Schema Components Imported", {
-				componentsLoaded: ["enums", "scalars", "inputs", "types"],
-			});
 		} catch (error) {
-			await pluginLogger.error("❌ Core Schema Import Failed", {
-				error: error instanceof Error ? error.message : String(error),
-			});
+			console.error("Core schema import failed:", error);
 			throw error;
 		}
 	}
@@ -193,20 +114,19 @@ class GraphQLSchemaManager {
 	 */
 	private async registerActivePluginExtensions(): Promise<void> {
 		const pluginManager = getPluginManagerInstance();
-		if (!pluginManager) {
-			await pluginLogger.warn("Plugin Manager Not Available", {
-				action: "skipping_plugin_extensions",
-			});
+		if (!pluginManager || !pluginManager.isSystemInitialized()) {
+			console.log("Plugin Manager Not Available or Not Initialized");
 			return;
 		}
 
-		const activePlugins = pluginManager.getActivePlugins();
-		await pluginLogger.info("🔌 Registering Active Plugin Extensions", {
-			activePluginCount: activePlugins.length,
-			activePluginIds: activePlugins.map((p) => p.id),
-		});
-
 		const extensionRegistry = pluginManager.getExtensionRegistry();
+
+		// Check if there are any plugins loaded
+		const loadedPlugins = pluginManager.getLoadedPlugins();
+		if (loadedPlugins.length === 0) {
+			console.log("No plugins loaded, skipping plugin extension registration");
+			return;
+		}
 
 		// Register queries
 		for (const [queryName, queryExtension] of Object.entries(
@@ -268,12 +188,7 @@ class GraphQLSchemaManager {
 			}
 		}
 
-		await pluginLogger.info("✅ Plugin Extensions Registered", {
-			totalQueries: Object.keys(extensionRegistry.graphql.queries).length,
-			totalMutations: Object.keys(extensionRegistry.graphql.mutations).length,
-			totalSubscriptions: Object.keys(extensionRegistry.graphql.subscriptions)
-				.length,
-		});
+		// Plugin extensions registered successfully
 	}
 
 	/**
@@ -296,13 +211,6 @@ class GraphQLSchemaManager {
 					t.string({
 						description: `Plugin ${pluginId} query: ${fieldName}`,
 						resolve: async (parent, args, ctx) => {
-							await pluginLogger.info("⚡ Executing Plugin GraphQL Query", {
-								pluginId,
-								queryName: fieldName,
-								namespacedFieldName,
-								timestamp: new Date().toISOString(),
-							});
-
 							// Create plugin context from the main GraphQL context
 							const pluginContext = {
 								db: ctx.drizzleClient,
@@ -337,13 +245,6 @@ class GraphQLSchemaManager {
 							}),
 						},
 						resolve: async (parent, args, ctx) => {
-							await pluginLogger.info("⚡ Executing Plugin GraphQL Mutation", {
-								pluginId,
-								mutationName: fieldName,
-								namespacedFieldName,
-								timestamp: new Date().toISOString(),
-							});
-
 							// Parse input if provided and structure it properly for plugin resolvers
 							let formattedArgs = {};
 							if (args.input && args.input !== null) {
@@ -390,16 +291,6 @@ class GraphQLSchemaManager {
 							return subscriptionGenerator();
 						},
 						resolve: async (parent, args, ctx) => {
-							await pluginLogger.info(
-								"⚡ Executing Plugin GraphQL Subscription",
-								{
-									pluginId,
-									subscriptionName: fieldName,
-									namespacedFieldName,
-									timestamp: new Date().toISOString(),
-								},
-							);
-
 							// Create plugin context from the main GraphQL context
 							const pluginContext = {
 								db: ctx.drizzleClient,
@@ -425,13 +316,10 @@ class GraphQLSchemaManager {
 				);
 			}
 		} catch (error) {
-			pluginLogger.error("❌ Failed to Register Plugin GraphQL Field", {
-				pluginId,
-				fieldType: type,
-				fieldName,
-				namespacedFieldName,
-				error: error instanceof Error ? error.message : String(error),
-			});
+			console.error(
+				`Failed to register plugin GraphQL field ${pluginId}.${fieldName}:`,
+				error,
+			);
 		}
 	}
 
@@ -459,9 +347,7 @@ class GraphQLSchemaManager {
 			try {
 				callback(schema);
 			} catch (error) {
-				pluginLogger.error("❌ Schema Update Callback Failed", {
-					error: error instanceof Error ? error.message : String(error),
-				});
+				console.error("Schema update callback failed:", error);
 			}
 		}
 	}

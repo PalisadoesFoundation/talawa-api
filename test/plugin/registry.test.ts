@@ -3,7 +3,6 @@ import type { IPluginContext } from "~/src/plugin/types";
 import {
 	createPluginContext,
 	destroyPluginSystem,
-	getPluginManager,
 	getPluginManagerInstance,
 	getPluginSystemStatus,
 	initializePluginSystem,
@@ -162,7 +161,7 @@ describe("Plugin Registry", () => {
 
 	describe("getPluginManager", () => {
 		it("should return null when system is not initialized", () => {
-			const manager = getPluginManager();
+			const manager = getPluginManagerInstance();
 			expect(manager).toBeNull();
 		});
 
@@ -175,7 +174,7 @@ describe("Plugin Registry", () => {
 			};
 
 			await initializePluginSystem(context);
-			const manager = getPluginManager();
+			const manager = getPluginManagerInstance();
 
 			expect(manager).toBeDefined();
 			expect(manager).toBeInstanceOf(Object);
@@ -248,7 +247,7 @@ describe("Plugin Registry", () => {
 
 			await destroyPluginSystem();
 			expect(isPluginSystemInitialized()).toBe(false);
-			expect(getPluginManager()).toBeNull();
+			expect(getPluginManagerInstance()).toBeNull();
 		});
 
 		it("should handle destruction errors gracefully", async () => {
@@ -312,7 +311,7 @@ describe("Plugin Registry", () => {
 			expect(isPluginSystemInitialized()).toBe(false);
 			const manager = await initializePluginSystem(context);
 			expect(isPluginSystemInitialized()).toBe(true);
-			expect(getPluginManager()).toBe(manager);
+			expect(getPluginManagerInstance()).toBe(manager);
 
 			// Get status
 			const status = getPluginSystemStatus();
@@ -321,7 +320,7 @@ describe("Plugin Registry", () => {
 			// Destroy
 			await destroyPluginSystem();
 			expect(isPluginSystemInitialized()).toBe(false);
-			expect(getPluginManager()).toBeNull();
+			expect(getPluginManagerInstance()).toBeNull();
 		});
 
 		it("should handle multiple initialization attempts", async () => {

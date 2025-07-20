@@ -1643,12 +1643,7 @@ type Mutation {
 
   """Mutation field to create an organization membership."""
   createOrganizationMembership(input: MutationCreateOrganizationMembershipInput!): Organization
-
-  """Mutation field to create a new plugin."""
-  createPlugin(
-    """Input parameters to create a new plugin."""
-    input: CreatePluginInput!
-  ): Plugin
+  createPlugin(input: CreatePluginInput!): Plugin
 
   """Mutation field to create a post."""
   createPost(input: MutationCreatePostInput!): Post
@@ -1730,12 +1725,7 @@ type Mutation {
 
   """Mutation field to delete an organization membership."""
   deleteOrganizationMembership(input: MutationDeleteOrganizationMembershipInput!): Organization
-
-  """Mutation field to delete a plugin."""
-  deletePlugin(
-    """Input parameters to delete a plugin."""
-    input: DeletePluginInput!
-  ): Plugin
+  deletePlugin(input: DeletePluginInput!): Plugin
 
   """Mutation field to delete a post."""
   deletePost(input: MutationDeletePostInput!): Post
@@ -1850,12 +1840,7 @@ type Mutation {
 
   """Mutation field to update an organization membership."""
   updateOrganizationMembership(input: MutationUpdateOrganizationMembershipInput!): Organization
-
-  """Mutation field to update a plugin."""
-  updatePlugin(
-    """Input parameters to update a plugin."""
-    input: UpdatePluginInput!
-  ): Plugin
+  updatePlugin(input: UpdatePluginInput!): Plugin
 
   """Mutation field to update a post."""
   updatePost(input: MutationUpdatePostInput!): Post
@@ -1874,6 +1859,9 @@ type Mutation {
 
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
+
+  """Upload and install a plugin from a zip file"""
+  uploadPluginZip(input: UploadPluginZipInput!): Plugin
 }
 
 input MutationAcceptMembershipRequestInput {
@@ -4179,6 +4167,15 @@ input UpdatePluginInput {
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
+
+"""Input for uploading a plugin zip file"""
+input UploadPluginZipInput {
+  """Whether to activate the plugin after installation"""
+  activate: Boolean
+
+  """The plugin zip file to upload"""
+  pluginZip: Upload!
+}
 
 """UploadUrlResponse"""
 type UploadUrlResponse {

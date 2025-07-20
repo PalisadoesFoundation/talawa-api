@@ -107,14 +107,7 @@ export interface IPluginContext {
 	graphql: unknown; // GraphQL schema builder
 	pubsub: unknown; // PubSub instance
 	logger: ILogger; // Logger instance
-	pluginManager?: unknown; // Reference to the plugin manager (optional to avoid circular dependency)
-}
-
-// Plugin Discovery Types
-export interface IPluginDiscovery {
-	scanDirectory(path: string): Promise<string[]>;
-	validateManifest(manifest: IPluginManifest): boolean;
-	loadManifest(pluginId: string): Promise<IPluginManifest>;
+	pluginManager?: unknown; // Plugin manager instance (set after initialization)
 }
 
 // Plugin Lifecycle Types
@@ -131,67 +124,6 @@ export interface IPluginError {
 	error: Error;
 	phase: "load" | "activate" | "deactivate" | "unload";
 	timestamp: Date;
-}
-
-// Unified Plugin Interface for consistency
-export interface IUnifiedPlugin {
-	id: string;
-	manifest: IPluginManifest;
-	status: PluginStatus;
-	errorMessage?: string;
-	// Platform-specific implementations
-	extensions?: {
-		api?: {
-			graphqlResolvers?: Record<string, unknown>;
-			databaseTables?: Record<string, unknown>;
-			hooks?: Record<string, (...args: unknown[]) => unknown>;
-		};
-		admin?: {
-			components?: Record<string, unknown>;
-			routes?: IRouteExtension[];
-			drawer?: IDrawerExtension[];
-		};
-	};
-}
-
-// Plugin validation result interface
-export interface IPluginValidationResult {
-	isValid: boolean;
-	errors: string[];
-	warnings: string[];
-	missingFields: string[];
-	invalidTypes: string[];
-}
-
-// Plugin performance metrics interface
-export interface IPluginMetrics {
-	pluginId: string;
-	loadTime: number;
-	activationTime: number;
-	memoryUsage: number;
-	errorCount: number;
-	lastError?: Date;
-	performanceScore: number;
-}
-
-// Admin-specific extension types (for unified interface)
-export interface IRouteExtension {
-	pluginId: string;
-	path: string;
-	component: string;
-	exact?: boolean;
-	isAdmin?: boolean;
-	permissions?: string[];
-}
-
-export interface IDrawerExtension {
-	pluginId: string;
-	label: string;
-	icon: string;
-	path: string;
-	isAdmin?: boolean;
-	permissions?: string[];
-	order?: number;
 }
 
 // Simplified database client interface used for type-casting where full Drizzle types are unavailable.
