@@ -302,9 +302,16 @@ builder.mutationField("createEvent", (t) =>
 							);
 						}
 
-						// Determine materialization window based on recurrence pattern
-						const windowStartDate = new Date();
+						//  Determine materialization window based on recurrence pattern
+						// Window should start from event start time, not current time
+						const windowStartDate = new Date(parsedArgs.input.startAt);
 						let windowEndDate: Date;
+
+						ctx.log.debug("FIXED: Window calculation", {
+							eventStartAt: parsedArgs.input.startAt.toISOString(),
+							windowStartDate: windowStartDate.toISOString(),
+							currentTime: new Date().toISOString(),
+						});
 
 						if (parsedArgs.input.recurrence.endDate) {
 							// For events with end dates, materialize up to the end date
@@ -356,6 +363,8 @@ builder.mutationField("createEvent", (t) =>
 								: parsedArgs.input.recurrence.endDate
 									? "end-date"
 									: "count-based",
+							originalRecurrenceInput: parsedArgs.input.recurrence,
+							createdRecurrenceRuleId: createdRecurrenceRule.id,
 						});
 					}
 

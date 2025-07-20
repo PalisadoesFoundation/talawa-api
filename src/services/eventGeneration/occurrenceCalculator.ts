@@ -61,6 +61,14 @@ export function calculateInstanceOccurrences(
 				baseEvent.startAt,
 			)
 		) {
+			//  Check count limit BEFORE creating occurrence to include start date properly
+			if (context.totalCount && sequenceNumber > context.totalCount) {
+				logger.debug(
+					`Stopping at sequence ${sequenceNumber}, reached count limit ${context.totalCount}`,
+				);
+				break;
+			}
+
 			// Only include instances that fall within our window
 			if (currentDate >= windowStart) {
 				const occurrence = createOccurrenceFromDate(
@@ -69,14 +77,12 @@ export function calculateInstanceOccurrences(
 					sequenceNumber,
 				);
 				occurrences.push(occurrence);
+				logger.debug(
+					`Created occurrence ${sequenceNumber} at ${currentDate.toISOString()}`,
+				);
 			}
 
 			sequenceNumber++;
-
-			// If we have a count limit and reached it, stop
-			if (context.totalCount && sequenceNumber > context.totalCount) {
-				break;
-			}
 		}
 
 		// Move to next potential date based on frequency

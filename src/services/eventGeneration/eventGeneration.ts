@@ -70,10 +70,17 @@ export async function generateInstancesForRecurringEvent(
 		// Normalize the recurrence rule (convert count to end date for unified processing)
 		const normalizedRecurrenceRule = normalizeRecurrenceRule(recurrenceRule);
 
-		// Calculate occurrence times using normalized rule
+		// Preserve original count for proper instance generation
+		const preservedOriginalCount = recurrenceRule.count;
+
+		// Calculate occurrence times using normalized rule but with preserved count
 		const occurrences = calculateInstanceOccurrences(
 			{
-				recurrenceRule: normalizedRecurrenceRule,
+				recurrenceRule: {
+					...normalizedRecurrenceRule,
+					//  Use original count to ensure proper limit enforcement
+					count: preservedOriginalCount,
+				},
 				baseEvent: baseTemplate,
 				windowStart: windowStartDate,
 				windowEnd: windowEndDate,
@@ -86,7 +93,7 @@ export async function generateInstancesForRecurringEvent(
 			`Generated ${occurrences.length} occurrences for ${baseRecurringEventId}`,
 			{
 				frequency: normalizedRecurrenceRule.frequency,
-				originalCount: recurrenceRule.count,
+				originalCount: preservedOriginalCount,
 				normalizedEndDate:
 					normalizedRecurrenceRule.recurrenceEndDate?.toISOString(),
 				firstOccurrence:
@@ -95,6 +102,10 @@ export async function generateInstancesForRecurringEvent(
 					occurrences[
 						occurrences.length - 1
 					]?.originalStartTime.toISOString() ?? null,
+				expectedCount: preservedOriginalCount
+					? `Should create exactly ${preservedOriginalCount} occurrences`
+					: "No count limit",
+				actualCount: `Created ${occurrences.length} occurrences`,
 			},
 		);
 

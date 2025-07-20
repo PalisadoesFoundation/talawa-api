@@ -43,6 +43,8 @@ suite("occurrenceCalculator", () => {
 	} as typeof recurrenceRulesTable.$inferSelect;
 
 	suite("calculateInstanceOccurrences", () => {
+		// FIXED: For weekly recurrence with count=4, starting from 2025-01-01 (Wednesday)
+		// Should generate: Jan 1, Jan 8, Jan 15, Jan 22 (4 occurrences)
 		test("calculates occurrences for a weekly recurring event", () => {
 			const config: OccurrenceCalculationConfig = {
 				recurrenceRule: mockRecurrenceRule,
@@ -54,6 +56,7 @@ suite("occurrenceCalculator", () => {
 
 			const result = calculateInstanceOccurrences(config, mockLogger);
 
+			// With count=4, should generate exactly 4 occurrences
 			expect(result).toHaveLength(4);
 			expect(result[0]).toMatchObject({
 				originalStartTime: new Date("2025-01-01T10:00:00Z"),
@@ -113,6 +116,7 @@ suite("occurrenceCalculator", () => {
 
 			const result = calculateInstanceOccurrences(config, mockLogger);
 
+			// FIXED: With count=4, should still generate exactly 4 occurrences (count limit)
 			expect(result).toHaveLength(4);
 			const cancelledOccurrence = result.find(
 				(r) =>
