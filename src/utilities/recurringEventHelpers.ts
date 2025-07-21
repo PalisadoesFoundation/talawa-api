@@ -82,8 +82,12 @@ export const validateRecurrenceInput = (
 		errors.push("Recurrence count must be at least 1");
 	}
 
-	// No validation needed for never option - it's just a boolean flag
-
+	// Validate that yearly events cannot be never-ending
+	if (recurrence.frequency === "YEARLY" && recurrence.never) {
+		errors.push(
+			"Yearly events cannot be never-ending. Please specify an end date or count.",
+		);
+	}
 	// Validate byDay format for weekly events
 	if (recurrence.frequency === "WEEKLY" && recurrence.byDay) {
 		const validDays = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];

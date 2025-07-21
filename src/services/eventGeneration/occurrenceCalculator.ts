@@ -49,7 +49,36 @@ export function calculateInstanceOccurrences(
 	let iterationCount = 0;
 	let sequenceNumber = 1;
 
-	// Generate occurrences
+	// For yearly events, create instances immediately without windowing
+	if (recurrenceRule.frequency === "YEARLY") {
+		while (
+			recurrenceRule.recurrenceEndDate
+				? currentDate <= recurrenceRule.recurrenceEndDate
+				: sequenceNumber <= (context.totalCount || 1)
+		) {
+			if (
+				shouldGenerateInstanceAtDate(
+					currentDate,
+					recurrenceRule,
+					baseEvent.startAt,
+				)
+			) {
+				const occurrence = createOccurrenceFromDate(
+					currentDate,
+					context,
+					sequenceNumber,
+				);
+				occurrences.push(occurrence);
+				sequenceNumber++;
+			}
+			currentDate.setFullYear(
+				currentDate.getFullYear() + (recurrenceRule.interval || 1),
+			);
+		}
+		return occurrences;
+	}
+
+	// Generate occurrences for other frequencies with windowing
 	while (currentDate <= windowEnd && iterationCount < context.maxIterations) {
 		iterationCount++;
 
@@ -404,8 +433,19 @@ export function getNextOccurrenceDate(
 					nextDate.setDate(dayOfMonth);
 				}
 			} else if (recurrenceRule.byMonthDay?.length) {
-				// For monthly events with byMonthDay, move day by day to check each day
+				// For monthly events with byMonthDay, we need to handle month transitions properly
+				const currentMonth = nextDate.getMonth();
+				const currentYear = nextDate.getFullYear();
+
+				// Try moving to the next day first
 				nextDate.setDate(nextDate.getDate() + 1);
+
+				// If we've moved to a different month, skip to the correct month based on interval
+				if (nextDate.getMonth() !== currentMonth) {
+					nextDate.setFullYear(currentYear);
+					nextDate.setMonth(currentMonth + interval);
+					nextDate.setDate(1); // Start from the beginning of the target month
+				}
 			} else {
 				// For monthly events without filters, move by months
 				nextDate.setMonth(nextDate.getMonth() + interval);
