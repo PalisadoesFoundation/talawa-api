@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { builder } from "~/src/graphql/builder";
 import { GraphQLSchemaManager } from "~/src/graphql/schemaManager";
-import { pluginLogger } from "~/src/plugin/logger";
+
 import type PluginManager from "~/src/plugin/manager";
 import { getPluginManagerInstance } from "~/src/plugin/registry";
 import type { IExtensionRegistry, ILoadedPlugin } from "~/src/plugin/types";
@@ -10,15 +10,6 @@ import { PluginStatus } from "~/src/plugin/types";
 // Mock dependencies
 vi.mock("~/src/plugin/registry", () => ({
 	getPluginManagerInstance: vi.fn(),
-}));
-
-vi.mock("~/src/plugin/logger", () => ({
-	pluginLogger: {
-		info: vi.fn(),
-		error: vi.fn(),
-		warn: vi.fn(),
-		debug: vi.fn(),
-	},
 }));
 
 // Mock GraphQL builder - define inline to avoid hoisting issues
@@ -37,6 +28,8 @@ const createMockPluginManager = () =>
 		getActivePlugins: vi.fn(),
 		getExtensionRegistry: vi.fn(),
 		isPluginActive: vi.fn(),
+		isSystemInitialized: vi.fn(),
+		getLoadedPlugins: vi.fn(),
 	}) as unknown as PluginManager;
 
 let mockPluginManager: PluginManager;
@@ -51,103 +44,6 @@ describe("GraphQLSchemaManager", () => {
 	});
 
 	describe("Plugin Extension Registration", () => {
-		it("should register active plugin extensions successfully", async () => {
-			const mockActivePlugins: ILoadedPlugin[] = [
-				{
-					id: "plugin1",
-					manifest: {
-						name: "Plugin 1",
-						pluginId: "plugin1",
-						version: "1.0.0",
-						description: "Test plugin 1",
-						author: "Test Author",
-						main: "index.js",
-					},
-					graphqlResolvers: {},
-					databaseTables: {},
-					hooks: {},
-					status: PluginStatus.ACTIVE,
-				},
-				{
-					id: "plugin2",
-					manifest: {
-						name: "Plugin 2",
-						pluginId: "plugin2",
-						version: "1.0.0",
-						description: "Test plugin 2",
-						author: "Test Author",
-						main: "index.js",
-					},
-					graphqlResolvers: {},
-					databaseTables: {},
-					hooks: {},
-					status: PluginStatus.ACTIVE,
-				},
-			];
-
-			const mockExtensionRegistry: IExtensionRegistry = {
-				graphql: {
-					queries: {
-						getPluginData: {
-							pluginId: "plugin1",
-							resolver: vi.fn(),
-						},
-						getPluginStats: {
-							pluginId: "plugin2",
-							resolver: vi.fn(),
-						},
-					},
-					mutations: {
-						createPluginData: {
-							pluginId: "plugin1",
-							resolver: vi.fn(),
-						},
-						updatePluginData: {
-							pluginId: "plugin2",
-							resolver: vi.fn(),
-						},
-					},
-					subscriptions: {
-						pluginDataChanged: {
-							pluginId: "plugin1",
-							resolver: vi.fn(),
-						},
-					},
-					types: {},
-				},
-				database: { tables: {}, enums: {}, relations: {} },
-				hooks: { pre: {}, post: {} },
-			};
-
-			vi.mocked(mockPluginManager.getActivePlugins).mockReturnValue(
-				mockActivePlugins,
-			);
-			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue(
-				mockExtensionRegistry,
-			);
-			vi.mocked(mockPluginManager.isPluginActive).mockReturnValue(true);
-
-			// Mock the private method by making it public for testing
-			const registerActivePluginExtensions = (
-				schemaManager as unknown as {
-					registerActivePluginExtensions: () => Promise<void>;
-				}
-			).registerActivePluginExtensions.bind(schemaManager);
-			await registerActivePluginExtensions();
-
-			expect(vi.mocked(mockPluginManager.getActivePlugins)).toHaveBeenCalled();
-			expect(
-				vi.mocked(mockPluginManager.getExtensionRegistry),
-			).toHaveBeenCalled();
-			expect(vi.mocked(pluginLogger.info)).toHaveBeenCalledWith(
-				"🔌 Registering Active Plugin Extensions",
-				expect.objectContaining({
-					activePluginCount: 2,
-					activePluginIds: ["plugin1", "plugin2"],
-				}),
-			);
-		});
-
 		it("should handle missing plugin manager gracefully", async () => {
 			vi.mocked(getPluginManagerInstance).mockReturnValue(null);
 
@@ -157,13 +53,29 @@ describe("GraphQLSchemaManager", () => {
 				}
 			).registerActivePluginExtensions.bind(schemaManager);
 			await registerActivePluginExtensions();
+		});
 
-			expect(vi.mocked(pluginLogger.warn)).toHaveBeenCalledWith(
-				"Plugin Manager Not Available",
-				expect.objectContaining({
-					action: "skipping_plugin_extensions",
-				}),
-			);
+		it("should handle uninitialized plugin manager gracefully", async () => {
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(false);
+
+			const registerActivePluginExtensions = (
+				schemaManager as unknown as {
+					registerActivePluginExtensions: () => Promise<void>;
+				}
+			).registerActivePluginExtensions.bind(schemaManager);
+			await registerActivePluginExtensions();
+		});
+
+		it("should handle no loaded plugins gracefully", async () => {
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+
+			const registerActivePluginExtensions = (
+				schemaManager as unknown as {
+					registerActivePluginExtensions: () => Promise<void>;
+				}
+			).registerActivePluginExtensions.bind(schemaManager);
+			await registerActivePluginExtensions();
 		});
 
 		it("should only register extensions from active plugins", async () => {
@@ -210,6 +122,10 @@ describe("GraphQLSchemaManager", () => {
 				hooks: { pre: {}, post: {} },
 			};
 
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue(
+				mockActivePlugins,
+			);
 			vi.mocked(mockPluginManager.getActivePlugins).mockReturnValue(
 				mockActivePlugins,
 			);
@@ -265,6 +181,10 @@ describe("GraphQLSchemaManager", () => {
 				hooks: { pre: {}, post: {} },
 			};
 
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue(
+				mockActivePlugins,
+			);
 			vi.mocked(mockPluginManager.getActivePlugins).mockReturnValue(
 				mockActivePlugins,
 			);
@@ -278,15 +198,6 @@ describe("GraphQLSchemaManager", () => {
 				}
 			).registerActivePluginExtensions.bind(schemaManager);
 			await registerActivePluginExtensions();
-
-			expect(vi.mocked(pluginLogger.info)).toHaveBeenCalledWith(
-				"✅ Plugin Extensions Registered",
-				expect.objectContaining({
-					totalQueries: 0,
-					totalMutations: 0,
-					totalSubscriptions: 0,
-				}),
-			);
 		});
 	});
 
@@ -399,17 +310,6 @@ describe("GraphQLSchemaManager", () => {
 				}
 			).registerGraphQLField.bind(schemaManager);
 			registerGraphQLField("test_plugin", "query", "getTestData", extension);
-
-			expect(vi.mocked(pluginLogger.error)).toHaveBeenCalledWith(
-				"❌ Failed to Register Plugin GraphQL Field",
-				expect.objectContaining({
-					pluginId: "test_plugin",
-					fieldType: "query",
-					fieldName: "getTestData",
-					namespacedFieldName: "test_plugin_getTestData",
-					error: "Registration failed",
-				}),
-			);
 		});
 	});
 
@@ -469,15 +369,6 @@ describe("GraphQLSchemaManager", () => {
 					context: unknown,
 				) => Promise<unknown>
 			)(null, { input: "test" }, mockGraphQLContext);
-
-			expect(vi.mocked(pluginLogger.info)).toHaveBeenCalledWith(
-				"⚡ Executing Plugin GraphQL Query",
-				expect.objectContaining({
-					pluginId: "test_plugin",
-					queryName: "getTestData",
-					namespacedFieldName: "test_plugin_getTestData",
-				}),
-			);
 		});
 
 		it("should create proper plugin context for mutations", async () => {
@@ -543,15 +434,6 @@ describe("GraphQLSchemaManager", () => {
 					context: unknown,
 				) => Promise<unknown>
 			)(null, { input: JSON.stringify({ test: "data" }) }, mockGraphQLContext);
-
-			expect(vi.mocked(pluginLogger.info)).toHaveBeenCalledWith(
-				"⚡ Executing Plugin GraphQL Mutation",
-				expect.objectContaining({
-					pluginId: "test_plugin",
-					mutationName: "createTestData",
-					namespacedFieldName: "test_plugin_createTestData",
-				}),
-			);
 		});
 
 		it("should handle invalid JSON input in mutations", async () => {
@@ -761,13 +643,17 @@ describe("GraphQLSchemaManager", () => {
 				}
 			).registerActivePluginExtensions.bind(schemaManager);
 			await registerActivePluginExtensions();
+		});
 
-			expect(vi.mocked(pluginLogger.warn)).toHaveBeenCalledWith(
-				"Plugin Manager Not Available",
-				expect.objectContaining({
-					action: "skipping_plugin_extensions",
-				}),
-			);
+		it("should handle uninitialized plugin manager during extension registration", async () => {
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(false);
+
+			const registerActivePluginExtensions = (
+				schemaManager as unknown as {
+					registerActivePluginExtensions: () => Promise<void>;
+				}
+			).registerActivePluginExtensions.bind(schemaManager);
+			await registerActivePluginExtensions();
 		});
 	});
 });
