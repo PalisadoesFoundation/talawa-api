@@ -23,6 +23,7 @@ import {
 	directoryExists,
 	isValidPluginId,
 	loadPluginManifest,
+	normalizeImportPath,
 	safeRequire,
 } from "../utils";
 import { ExtensionLoader } from "./extensions.js";
@@ -296,8 +297,8 @@ class PluginManager extends EventEmitter {
 		pluginPath: string,
 		manifest: IPluginManifest,
 	): Promise<Record<string, unknown>> {
-		const mainFilePath = path.join(pluginPath, manifest.main);
-
+		// Use normalizeImportPath for main file path
+		const mainFilePath = normalizeImportPath(pluginPath, manifest.main);
 		const pluginModule = await safeRequire(mainFilePath);
 
 		if (!pluginModule) {

@@ -9,12 +9,17 @@ import type {
 } from "../../../src/plugin/types";
 
 // Mocks
-vi.mock("../../../src/plugin/utils", () => ({
-	directoryExists: vi.fn(),
-	isValidPluginId: vi.fn(() => true),
-	loadPluginManifest: vi.fn(),
-	safeRequire: vi.fn(),
-}));
+vi.mock("../../../src/plugin/utils", async (importOriginal) => {
+	const actual = (await importOriginal()) as Record<string, unknown>;
+	return {
+		...actual,
+		directoryExists: vi.fn(),
+		isValidPluginId: vi.fn(),
+		loadPluginManifest: vi.fn(),
+		safeRequire: vi.fn(),
+		normalizeImportPath: actual.normalizeImportPath,
+	};
+});
 
 import {
 	directoryExists,

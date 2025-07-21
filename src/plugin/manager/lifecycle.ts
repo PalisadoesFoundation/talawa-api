@@ -23,6 +23,7 @@ interface IPluginManager {
 }
 import { PluginStatus } from "../types";
 import { dropPluginTables, safeRequire } from "../utils";
+import { normalizeImportPath } from "../utils";
 
 export class PluginLifecycle {
 	constructor(
@@ -219,7 +220,7 @@ export class PluginLifecycle {
 			"available",
 			pluginId,
 		);
-		const mainFilePath = path.join(pluginPath, plugin.manifest.main);
+		const mainFilePath = normalizeImportPath(pluginPath, plugin.manifest.main);
 		return await safeRequire(mainFilePath);
 	}
 

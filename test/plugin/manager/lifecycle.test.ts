@@ -3,10 +3,15 @@ import { PluginLifecycle } from "../../../src/plugin/manager/lifecycle";
 import { PluginStatus } from "../../../src/plugin/types";
 
 // Mock dependencies
-vi.mock("../../../src/plugin/utils", () => ({
-	dropPluginTables: vi.fn(),
-	safeRequire: vi.fn(),
-}));
+vi.mock("../../../src/plugin/utils", async (importOriginal) => {
+	const actual = (await importOriginal()) as Record<string, unknown>;
+	return {
+		...actual,
+		dropPluginTables: vi.fn(),
+		safeRequire: vi.fn(),
+		normalizeImportPath: actual.normalizeImportPath,
+	};
+});
 
 vi.mock("../../../src/graphql/schemaManager", () => ({
 	schemaManager: {
