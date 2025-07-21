@@ -220,7 +220,9 @@ export class PluginLifecycle {
 			"available",
 			pluginId,
 		);
-		const mainFilePath = normalizeImportPath(pluginPath, plugin.manifest.main);
+		const mainFilePath = path.resolve(
+			normalizeImportPath(pluginPath, plugin.manifest.main),
+		);
 		return await safeRequire(mainFilePath);
 	}
 
