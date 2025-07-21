@@ -294,20 +294,20 @@ export const envConfigSchema = Type.Object({
 	}),
 
 	/**
-	 * Cron schedule for the event materialization background worker.
+	 * Cron schedule for the recurring event instance generation background worker.
 	 * Default: "0 * * * *" (every hour at minute 0)
 	 */
-	MATERIALIZATION_CRON_SCHEDULE: Type.Optional(
+	RECURRING_EVENT_GENERATION_CRON_SCHEDULE: Type.Optional(
 		Type.String({
 			minLength: 9, // Minimum valid cron: "* * * * *"
 		}),
 	),
 
 	/**
-	 * Cron schedule for the cleanup background worker.
+	 * Cron schedule for the old event instance cleanup background worker.
 	 * Default: "0 2 * * *" (daily at 2 AM UTC)
 	 */
-	CLEANUP_CRON_SCHEDULE: Type.Optional(
+	OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE: Type.Optional(
 		Type.String({
 			minLength: 9, // Minimum valid cron: "* * * * *"
 		}),

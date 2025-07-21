@@ -44,7 +44,7 @@ export async function getStandaloneEventsInDateRange(
 	try {
 		const whereConditions = [
 			eq(eventsTable.organizationId, organizationId),
-			eq(eventsTable.isRecurringTemplate, false),
+			eq(eventsTable.isRecurringEventTemplate, false),
 			// Only get events that are NOT instances of recurring events
 			isNull(eventsTable.recurringEventId),
 			// Event overlaps with date range
@@ -134,7 +134,7 @@ export async function getStandaloneEventsByIds(
 		})[] = await drizzleClient.query.eventsTable.findMany({
 			where: and(
 				inArray(eventsTable.id, eventIds),
-				eq(eventsTable.isRecurringTemplate, false),
+				eq(eventsTable.isRecurringEventTemplate, false),
 				isNull(eventsTable.recurringEventId),
 			),
 			with: {

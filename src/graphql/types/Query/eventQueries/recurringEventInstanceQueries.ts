@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, inArray, lte } from "drizzle-orm";
-import { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
 import { eventsTable } from "~/src/drizzle/tables/events";
+import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import {
@@ -190,7 +190,7 @@ export async function getRecurringEventInstanceById(
 		const exception = await drizzleClient.query.eventExceptionsTable.findFirst({
 			where: and(
 				eq(
-					eventExceptionsTable.recurringEventId,
+					eventExceptionsTable.baseRecurringEventId,
 					instance.baseRecurringEventId,
 				),
 				eq(
@@ -288,7 +288,7 @@ async function fetchExceptions(
 
 	const exceptions = await drizzleClient.query.eventExceptionsTable.findMany({
 		where: and(
-			inArray(eventExceptionsTable.recurringEventId, baseEventIds),
+			inArray(eventExceptionsTable.baseRecurringEventId, baseEventIds),
 			gte(eventExceptionsTable.instanceStartTime, startDate),
 			lte(eventExceptionsTable.instanceStartTime, endDate),
 		),

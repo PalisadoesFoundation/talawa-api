@@ -1,5 +1,5 @@
-import type { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
 import type { eventsTable } from "~/src/drizzle/tables/events";
+import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
 import type { ResolveInstanceInput, ServiceDependencies } from "./types";
@@ -214,7 +214,7 @@ export function createExceptionLookupMap(
 
 	for (const exception of exceptions) {
 		const key = createExceptionKey(
-			exception.recurringEventId,
+			exception.baseRecurringEventId,
 			exception.instanceStartTime,
 		);
 		exceptionMap.set(key, exception);

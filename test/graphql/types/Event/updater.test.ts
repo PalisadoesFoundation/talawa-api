@@ -27,7 +27,7 @@ const MockEvent = {
 	isPublic: true,
 	isRegisterable: true,
 	location: "Test Location",
-	isRecurringTemplate: false,
+	isRecurringEventTemplate: false,
 	recurringEventId: null,
 	instanceStartTime: null,
 	attachments: [],

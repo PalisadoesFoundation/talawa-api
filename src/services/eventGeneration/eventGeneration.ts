@@ -1,7 +1,7 @@
 import { and, eq, gte, lte } from "drizzle-orm";
-import { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type { CreateRecurringEventInstanceInput } from "~/src/drizzle/tables/recurringEventInstances";
 import {
 	recurringEventInstancesTable,
@@ -40,7 +40,7 @@ export async function generateInstancesForRecurringEvent(
 			drizzleClient.query.eventsTable.findFirst({
 				where: and(
 					eq(eventsTable.id, baseRecurringEventId),
-					eq(eventsTable.isRecurringTemplate, true),
+					eq(eventsTable.isRecurringEventTemplate, true),
 					eq(eventsTable.organizationId, organizationId),
 				),
 			}),
@@ -64,7 +64,10 @@ export async function generateInstancesForRecurringEvent(
 
 		// Get existing exceptions
 		const exceptions = await drizzleClient.query.eventExceptionsTable.findMany({
-			where: eq(eventExceptionsTable.recurringEventId, baseRecurringEventId),
+			where: eq(
+				eventExceptionsTable.baseRecurringEventId,
+				baseRecurringEventId,
+			),
 		});
 
 		// Normalize the recurrence rule (convert count to end date for unified processing)

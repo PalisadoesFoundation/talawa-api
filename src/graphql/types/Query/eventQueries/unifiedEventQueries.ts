@@ -124,7 +124,7 @@ export async function getUnifiedEventsInDateRange(
 					updatedAt: instance.updatedAt,
 
 					// Generated instance metadata
-					isRecurringTemplate: false, // Instances are never templates
+					isRecurringEventTemplate: false, // Instances are never templates
 					recurringEventId: instance.baseRecurringEventId, // Reference to base template
 					instanceStartTime: instance.originalInstanceStartTime, // Original scheduled time
 
@@ -243,7 +243,7 @@ export async function getEventsByIds(
 					updaterId: resolvedInstance.updaterId,
 					createdAt: resolvedInstance.createdAt,
 					updatedAt: resolvedInstance.updatedAt,
-					isRecurringTemplate: false,
+					isRecurringEventTemplate: false,
 					recurringEventId: resolvedInstance.baseRecurringEventId,
 					instanceStartTime: resolvedInstance.originalInstanceStartTime,
 					baseRecurringEventId: resolvedInstance.baseRecurringEventId,

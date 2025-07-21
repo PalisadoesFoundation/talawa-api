@@ -1,9 +1,9 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import type { FastifyBaseLogger } from "fastify";
 import type * as schema from "~/src/drizzle/schema";
-import type { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 
 /**

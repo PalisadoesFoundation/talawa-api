@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { frequencyEnum } from "~/src/drizzle/enums/recurrenceFrequency";
+import { recurrenceFrequencyEnum } from "~/src/drizzle/enums/recurrenceFrequency";
 import { builder } from "~/src/graphql/builder";
 import { Frequency } from "~/src/graphql/enums/RecurrenceFrequency";
 
 export const recurrenceInputSchema = z
 	.object({
-		frequency: frequencyEnum,
+		frequency: recurrenceFrequencyEnum,
 		interval: z.number().int().min(1).max(999).optional(),
 		endDate: z.date().optional(),
 		count: z.number().int().min(1).max(999).optional(),

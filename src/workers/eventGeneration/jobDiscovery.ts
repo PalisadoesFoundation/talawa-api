@@ -237,7 +237,7 @@ async function discoverRecurringEventsForOrganization(
 	const recurringEvents = await drizzleClient.query.eventsTable.findMany({
 		where: and(
 			eq(eventsTable.organizationId, organizationId),
-			eq(eventsTable.isRecurringTemplate, true),
+			eq(eventsTable.isRecurringEventTemplate, true),
 		),
 	});
 

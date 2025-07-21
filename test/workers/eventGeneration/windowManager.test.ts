@@ -80,7 +80,7 @@ describe("windowManager", () => {
 		updaterId: null,
 		endAt: new Date("2024-01-02"),
 		organizationId: "org1",
-		isRecurringTemplate: true,
+		isRecurringEventTemplate: true,
 		instanceStartTime: null,
 		instanceEndTime: null,
 		startDate: new Date("2024-01-01"),

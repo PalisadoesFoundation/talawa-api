@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
-import type { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import {
 	calculateInstanceOccurrences,
 	getNextOccurrenceDate,
@@ -99,11 +99,16 @@ suite("occurrenceCalculator", () => {
 		test("applies exceptions to cancel an occurrence", () => {
 			const canceledException = {
 				id: faker.string.uuid(),
-				recurringEventId: mockBaseEvent.id,
+				eventInstanceId: faker.string.uuid(),
+				baseRecurringEventId: mockBaseEvent.id,
 				instanceStartTime: new Date("2025-01-08T10:00:00Z"),
 				exceptionData: { isCancelled: true },
+				exceptionType: "SINGLE_INSTANCE" as const,
+				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
+				updaterId: null,
 				createdAt: new Date(),
+				updatedAt: null,
 			} as typeof eventExceptionsTable.$inferSelect;
 
 			const config: OccurrenceCalculationConfig = {
@@ -130,14 +135,19 @@ suite("occurrenceCalculator", () => {
 		test("applies exceptions to modify occurrence times", () => {
 			const modifiedException = {
 				id: faker.string.uuid(),
-				recurringEventId: mockBaseEvent.id,
+				eventInstanceId: faker.string.uuid(),
+				baseRecurringEventId: mockBaseEvent.id,
 				instanceStartTime: new Date("2025-01-08T10:00:00Z"),
 				exceptionData: {
 					startAt: new Date("2025-01-08T14:00:00Z"),
 					endAt: new Date("2025-01-08T15:00:00Z"),
 				},
+				exceptionType: "SINGLE_INSTANCE" as const,
+				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
+				updaterId: null,
 				createdAt: new Date(),
+				updatedAt: null,
 			} as typeof eventExceptionsTable.$inferSelect;
 
 			const config: OccurrenceCalculationConfig = {

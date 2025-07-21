@@ -30,9 +30,9 @@ export async function startBackgroundWorkers(
 	try {
 		logger.info("Starting background worker service...");
 
-		// Schedule materialization worker - runs every hour
+		// Schedule event generation worker - runs every hour
 		materializationTask = cron.schedule(
-			process.env.MATERIALIZATION_CRON_SCHEDULE || "0 * * * *",
+			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 			() => runMaterializationWorkerSafely(drizzleClient, logger),
 			{
 				scheduled: false,
@@ -57,7 +57,7 @@ export async function startBackgroundWorkers(
 		isRunning = true;
 		logger.info("Background worker service started successfully", {
 			materializationSchedule:
-				process.env.MATERIALIZATION_CRON_SCHEDULE || "0 * * * *",
+				process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 			cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
 		});
 
@@ -211,7 +211,7 @@ export function getBackgroundWorkerStatus(): {
 	return {
 		isRunning,
 		materializationSchedule:
-			process.env.MATERIALIZATION_CRON_SCHEDULE || "0 * * * *",
+			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
 		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
 	};
 }

@@ -56,7 +56,7 @@ export {
 	eventExceptionsTable,
 	eventExceptionsTableRelations,
 	exceptionTypeEnum,
-} from "./tables/eventExceptions";
+} from "./tables/recurringEventExceptions";
 export { eventsTable, eventsTableRelations } from "./tables/events";
 export {
 	membershipRequestsTable,
@@ -93,7 +93,7 @@ export { postsTable, postsTableRelations } from "./tables/posts";
 export {
 	recurrenceRulesTable,
 	recurrenceRulesTableRelations,
-	frequencyEnum,
+	recurrenceFrequencyEnum,
 } from "./tables/recurrenceRules";
 export {
 	recurringEventInstancesTable,

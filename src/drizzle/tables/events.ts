@@ -14,8 +14,8 @@ import { z } from "zod";
 import { agendaFoldersTable } from "./agendaFolders";
 import { eventAttachmentsTable } from "./eventAttachments";
 import { eventAttendancesTable } from "./eventAttendances";
-import { eventExceptionsTable } from "./eventExceptions";
 import { organizationsTable } from "./organizations";
+import { eventExceptionsTable } from "./recurringEventExceptions";
 import { usersTable } from "./users";
 import { venueBookingsTable } from "./venueBookings";
 
@@ -118,7 +118,7 @@ export const eventsTable = pgTable(
 		 * Indicates if this event is a recurring template (base event).
 		 * Template events store the default properties that all instances inherit.
 		 */
-		isRecurringTemplate: boolean("is_recurring_template")
+		isRecurringEventTemplate: boolean("is_recurring_template")
 			.notNull()
 			.default(false),
 
@@ -162,8 +162,8 @@ export const eventsTable = pgTable(
 		),
 
 		// New recurring event indexes
-		isRecurringTemplateIdx: index("events_is_recurring_template_idx").on(
-			self.isRecurringTemplate,
+		isRecurringEventTemplateIdx: index("events_is_recurring_template_idx").on(
+			self.isRecurringEventTemplate,
 		),
 		recurringEventIdIdx: index("events_recurring_event_id_idx").on(
 			self.recurringEventId,
@@ -265,7 +265,7 @@ export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 	isRegisterable: (schema) => schema.optional(),
 	location: (schema) => schema.min(1).max(1024).optional(),
 	// Recurring event fields validation
-	isRecurringTemplate: z.boolean().optional(),
+	isRecurringEventTemplate: z.boolean().optional(),
 	recurringEventId: z.string().uuid().optional(),
 	instanceStartTime: z.date().optional(),
 });

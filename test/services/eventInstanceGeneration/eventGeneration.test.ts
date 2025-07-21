@@ -1,9 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
 import { type Mock, expect, suite, test, vi } from "vitest";
-import { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import { generateInstancesForRecurringEvent } from "~/src/services/eventGeneration";
 import type {
 	GenerateInstancesInput,
@@ -59,7 +59,7 @@ suite("eventMaterialization", () => {
 				location: "Test Location",
 				startAt: new Date("2025-01-01T10:00:00Z"),
 				endAt: new Date("2025-01-01T11:00:00Z"),
-				isRecurringTemplate: true,
+				isRecurringEventTemplate: true,
 				organizationId: input.organizationId,
 				creatorId: faker.string.uuid(),
 				isPublic: true,
@@ -118,7 +118,7 @@ suite("eventMaterialization", () => {
 			).toHaveBeenCalledWith({
 				where: and(
 					eq(eventsTable.id, input.baseRecurringEventId),
-					eq(eventsTable.isRecurringTemplate, true),
+					eq(eventsTable.isRecurringEventTemplate, true),
 					eq(eventsTable.organizationId, input.organizationId),
 				),
 			});
@@ -134,7 +134,7 @@ suite("eventMaterialization", () => {
 				mockDrizzleClient.query.eventExceptionsTable.findMany,
 			).toHaveBeenCalledWith({
 				where: eq(
-					eventExceptionsTable.recurringEventId,
+					eventExceptionsTable.baseRecurringEventId,
 					input.baseRecurringEventId,
 				),
 			});
@@ -182,7 +182,7 @@ suite("eventMaterialization", () => {
 			const mockBaseTemplate = {
 				id: input.baseRecurringEventId,
 				name: "Test Event",
-				isRecurringTemplate: true,
+				isRecurringEventTemplate: true,
 				organizationId: input.organizationId,
 				startAt: new Date("2025-01-01T10:00:00Z"),
 				endAt: new Date("2025-01-01T11:00:00Z"),
@@ -224,7 +224,7 @@ suite("eventMaterialization", () => {
 				name: "Test Event",
 				startAt: new Date("2025-01-01T10:00:00Z"),
 				endAt: new Date("2025-01-01T11:00:00Z"),
-				isRecurringTemplate: true,
+				isRecurringEventTemplate: true,
 				organizationId: input.organizationId,
 			};
 
@@ -284,7 +284,7 @@ suite("eventMaterialization", () => {
 				name: "Test Event",
 				startAt: new Date("2025-01-01T10:00:00Z"),
 				endAt: new Date("2025-01-01T11:00:00Z"),
-				isRecurringTemplate: true,
+				isRecurringEventTemplate: true,
 				organizationId: input.organizationId,
 			};
 

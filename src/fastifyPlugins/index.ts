@@ -1,5 +1,5 @@
 import fastifyPlugin from "fastify-plugin";
-import backgroundWorkers from "./backgroundWorkers";
+// import backgroundWorkers from "./backgroundWorkers";
 import drizzleClient from "./drizzleClient";
 import minioClient from "./minioClient";
 import pluginSystem from "./pluginSystem";
@@ -11,7 +11,7 @@ export const plugins = fastifyPlugin(async (fastify) => {
 	await fastify.register(pluginSystem); // Initialize plugin system after database
 	await fastify.register(seedInitialData);
 	// Register background workers after drizzle client is available
-	await fastify.register(backgroundWorkers);
+	// await fastify.register(backgroundWorkers);
 });
 
 export default plugins;

@@ -61,7 +61,7 @@ describe("Organization Events Resolver Tests", () => {
 			location: "Test Location",
 			registrationClosesAt: new Date(),
 			attachments: [],
-			isRecurringTemplate: false,
+			isRecurringEventTemplate: false,
 			recurringEventId: null,
 		},
 		{
@@ -84,7 +84,7 @@ describe("Organization Events Resolver Tests", () => {
 			location: "Test Location",
 			registrationClosesAt: new Date(),
 			attachments: [],
-			isRecurringTemplate: false,
+			isRecurringEventTemplate: false,
 			recurringEventId: null,
 		},
 	];
@@ -421,7 +421,7 @@ describe("Organization Events Resolver Tests", () => {
 				location: "Test Location",
 				registrationClosesAt: new Date(),
 				attachments: [],
-				isRecurringTemplate: false,
+				isRecurringEventTemplate: false,
 				recurringEventId: null,
 			}));
 
@@ -484,7 +484,7 @@ describe("Organization Events Resolver Tests", () => {
 					location: "Test Location",
 					registrationClosesAt: new Date(),
 					attachments: [],
-					isRecurringTemplate: false,
+					isRecurringEventTemplate: false,
 					recurringEventId: null,
 				},
 				...mockEvents,

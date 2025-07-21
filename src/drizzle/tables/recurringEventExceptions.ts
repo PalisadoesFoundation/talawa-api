@@ -51,7 +51,7 @@ export const eventExceptionsTable = pgTable(
 		 * Foreign key reference to the base recurring event (template).
 		 * Links back to the original template to understand what changed.
 		 */
-		recurringEventId: uuid("recurring_event_id")
+		baseRecurringEventId: uuid("recurring_event_id")
 			.notNull()
 			.references(() => eventsTable.id, {
 				onDelete: "cascade",
@@ -138,7 +138,7 @@ export const eventExceptionsTable = pgTable(
 			self.eventInstanceId,
 		),
 		recurringEventIdIdx: index("ee_recurring_event_id_idx").on(
-			self.recurringEventId,
+			self.baseRecurringEventId,
 		),
 		instanceStartTimeIdx: index("ee_instance_start_time_idx").on(
 			self.instanceStartTime,
@@ -149,7 +149,7 @@ export const eventExceptionsTable = pgTable(
 
 		// Composite index for finding exceptions for a specific recurring event and instance
 		recurringEventInstanceIdx: index("ee_recurring_event_instance_idx").on(
-			self.recurringEventId,
+			self.baseRecurringEventId,
 			self.instanceStartTime,
 		),
 	}),
@@ -170,8 +170,8 @@ export const eventExceptionsTableRelations = relations(
 		/**
 		 * Many to one relationship from event_exceptions to events table (template).
 		 */
-		recurringEvent: one(eventsTable, {
-			fields: [eventExceptionsTable.recurringEventId],
+		baseRecurringEvent: one(eventsTable, {
+			fields: [eventExceptionsTable.baseRecurringEventId],
 			references: [eventsTable.id],
 			relationName: "event_exceptions.recurring_event_id:events.id",
 		}),
@@ -205,7 +205,7 @@ export const eventExceptionsTableRelations = relations(
 	}),
 );
 
-export const eventExceptionsTableInsertSchema = createInsertSchema(
+export const recurringEventExceptionsTableInsertSchema = createInsertSchema(
 	eventExceptionsTable,
 	{
 		exceptionData: z.record(z.any()), // JSON object with any structure

@@ -67,17 +67,30 @@ Event.implement({
 			description:
 				"The physical or virtual location where the event will take place.",
 		}),
-		isRecurringTemplate: t.boolean({
+		isRecurringEventTemplate: t.boolean({
 			description:
 				"A boolean flag indicating if this event serves as a template for a recurring series.",
 			resolve: (event) =>
-				"isRecurringTemplate" in event && event.isRecurringTemplate,
+				"isRecurringEventTemplate" in event && event.isRecurringEventTemplate,
 		}),
-		recurringEventId: t.id({
+		baseRecurringEvent: t.field({
 			description:
-				"The ID of the base recurring event if this is a materialized instance.",
-			resolve: (event) =>
-				"recurringEventId" in event ? event.recurringEventId : null,
+				"The base recurring event template if this is a materialized instance.",
+			type: Event,
+			nullable: true,
+			resolve: async (event, args, { drizzleClient }) => {
+				const recurringEventId =
+					"recurringEventId" in event ? event.recurringEventId : null;
+				if (recurringEventId) {
+					const baseEvent = await drizzleClient.query.eventsTable.findFirst({
+						where: (fields, { eq }) => eq(fields.id, recurringEventId),
+					});
+					if (baseEvent) {
+						return { ...baseEvent, attachments: [] };
+					}
+				}
+				return null;
+			},
 		}),
 		instanceStartTime: t.field({
 			description:
@@ -91,11 +104,24 @@ Event.implement({
 				"A boolean flag indicating if this event is a materialized instance of a recurring event.",
 			resolve: (event) => "baseRecurringEventId" in event,
 		}),
-		baseEventId: t.id({
+		baseEvent: t.field({
 			description:
-				"The ID of the base event from which this materialized instance was generated.",
-			resolve: (event) =>
-				"baseRecurringEventId" in event ? event.baseRecurringEventId : null,
+				"The base event from which this materialized instance was generated.",
+			type: Event,
+			nullable: true,
+			resolve: async (event, args, { drizzleClient }) => {
+				const baseRecurringEventId =
+					"baseRecurringEventId" in event ? event.baseRecurringEventId : null;
+				if (baseRecurringEventId) {
+					const baseEvent = await drizzleClient.query.eventsTable.findFirst({
+						where: (fields, { eq }) => eq(fields.id, baseRecurringEventId),
+					});
+					if (baseEvent) {
+						return { ...baseEvent, attachments: [] };
+					}
+				}
+				return null;
+			},
 		}),
 		hasExceptions: t.boolean({
 			description:

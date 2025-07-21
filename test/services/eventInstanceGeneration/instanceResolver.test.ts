@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
-import type { eventExceptionsTable } from "~/src/drizzle/tables/eventExceptions";
 import type { eventsTable } from "~/src/drizzle/tables/events";
+import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import {
 	createExceptionKey,
@@ -102,7 +102,8 @@ suite("instanceResolver", () => {
 		test("resolves instance with exception data applied", () => {
 			const mockException = {
 				id: faker.string.uuid(),
-				recurringEventId: mockGeneratedInstance.baseRecurringEventId,
+				eventInstanceId: mockGeneratedInstance.id,
+				baseRecurringEventId: mockGeneratedInstance.baseRecurringEventId,
 				instanceStartTime: mockGeneratedInstance.originalInstanceStartTime,
 				exceptionData: {
 					name: "Modified Event Name",
@@ -110,8 +111,12 @@ suite("instanceResolver", () => {
 					location: "Modified Location",
 					isCancelled: true,
 				},
+				exceptionType: "SINGLE_INSTANCE" as const,
+				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
+				updaterId: null,
 				createdAt: new Date(),
+				updatedAt: null,
 			} as typeof eventExceptionsTable.$inferSelect;
 
 			const input: ResolveInstanceInput = {
@@ -140,14 +145,19 @@ suite("instanceResolver", () => {
 
 			const mockException = {
 				id: faker.string.uuid(),
-				recurringEventId: mockGeneratedInstance.baseRecurringEventId,
+				eventInstanceId: mockGeneratedInstance.id,
+				baseRecurringEventId: mockGeneratedInstance.baseRecurringEventId,
 				instanceStartTime: mockGeneratedInstance.originalInstanceStartTime,
 				exceptionData: {
 					startAt: newStartTime,
 					endAt: newEndTime,
 				},
+				exceptionType: "SINGLE_INSTANCE" as const,
+				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
+				updaterId: null,
 				createdAt: new Date(),
+				updatedAt: null,
 			} as typeof eventExceptionsTable.$inferSelect;
 
 			const input: ResolveInstanceInput = {
@@ -165,15 +175,20 @@ suite("instanceResolver", () => {
 		test("ignores invalid exception fields", () => {
 			const mockException = {
 				id: faker.string.uuid(),
-				recurringEventId: mockGeneratedInstance.baseRecurringEventId,
+				eventInstanceId: mockGeneratedInstance.id,
+				baseRecurringEventId: mockGeneratedInstance.baseRecurringEventId,
 				instanceStartTime: mockGeneratedInstance.originalInstanceStartTime,
 				exceptionData: {
 					name: "Modified Event Name",
 					invalidField: "Should be ignored",
 					id: "Should not override ID",
 				},
+				exceptionType: "SINGLE_INSTANCE" as const,
+				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
+				updaterId: null,
 				createdAt: new Date(),
+				updatedAt: null,
 			} as typeof eventExceptionsTable.$inferSelect;
 
 			const input: ResolveInstanceInput = {
@@ -234,11 +249,16 @@ suite("instanceResolver", () => {
 		test("applies exceptions when found", () => {
 			const mockException = {
 				id: faker.string.uuid(),
-				recurringEventId: mockGeneratedInstance.baseRecurringEventId,
+				eventInstanceId: mockGeneratedInstance.id,
+				baseRecurringEventId: mockGeneratedInstance.baseRecurringEventId,
 				instanceStartTime: mockGeneratedInstance.originalInstanceStartTime,
 				exceptionData: { name: "Modified Event Name" },
+				exceptionType: "SINGLE_INSTANCE" as const,
+				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
+				updaterId: null,
 				createdAt: new Date(),
+				updatedAt: null,
 			} as typeof eventExceptionsTable.$inferSelect;
 
 			const instances = [mockGeneratedInstance];
@@ -299,19 +319,29 @@ suite("instanceResolver", () => {
 			const exceptions = [
 				{
 					id: faker.string.uuid(),
-					recurringEventId: faker.string.uuid(),
+					eventInstanceId: faker.string.uuid(),
+					baseRecurringEventId: faker.string.uuid(),
 					instanceStartTime: new Date("2025-01-01T10:00:00Z"),
 					exceptionData: { name: "Exception 1" },
+					exceptionType: "SINGLE_INSTANCE" as const,
+					organizationId: faker.string.uuid(),
 					creatorId: faker.string.uuid(),
+					updaterId: null,
 					createdAt: new Date(),
+					updatedAt: null,
 				},
 				{
 					id: faker.string.uuid(),
-					recurringEventId: faker.string.uuid(),
+					eventInstanceId: faker.string.uuid(),
+					baseRecurringEventId: faker.string.uuid(),
 					instanceStartTime: new Date("2025-01-01T11:00:00Z"),
 					exceptionData: { name: "Exception 2" },
+					exceptionType: "SINGLE_INSTANCE" as const,
+					organizationId: faker.string.uuid(),
 					creatorId: faker.string.uuid(),
+					updaterId: null,
 					createdAt: new Date(),
+					updatedAt: null,
 				},
 			] as (typeof eventExceptionsTable.$inferSelect)[];
 
@@ -324,11 +354,11 @@ suite("instanceResolver", () => {
 				throw new Error("Test data is missing");
 			}
 			const key1 = createExceptionKey(
-				exception1.recurringEventId,
+				exception1.baseRecurringEventId,
 				exception1.instanceStartTime,
 			);
 			const key2 = createExceptionKey(
-				exception2.recurringEventId,
+				exception2.baseRecurringEventId,
 				exception2.instanceStartTime,
 			);
 			expect(map.get(key1)).toBe(exceptions[0]);

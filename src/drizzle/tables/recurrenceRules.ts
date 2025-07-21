@@ -11,7 +11,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { frequencyEnum as frequencyZodEnum } from "~/src/drizzle/enums/recurrenceFrequency";
+import { recurrenceFrequencyEnum as frequencyZodEnum } from "~/src/drizzle/enums/recurrenceFrequency";
 import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
@@ -19,7 +19,7 @@ import { usersTable } from "./users";
 /**
  * Enum for recurrence frequency
  */
-export const frequencyEnum = pgEnum("frequency", [
+export const recurrenceFrequencyEnum = pgEnum("frequency", [
 	"DAILY",
 	"WEEKLY",
 	"MONTHLY",
@@ -48,7 +48,7 @@ export const recurrenceRulesTable = pgTable(
 		 * Frequency of recurrence (DAILY, WEEKLY, MONTHLY, YEARLY).
 		 * Stored separately for faster querying without parsing RRULE string.
 		 */
-		frequency: frequencyEnum("frequency").notNull(),
+		frequency: recurrenceFrequencyEnum("frequency").notNull(),
 
 		/**
 		 * Interval between recurrences (e.g., 2 for every 2 weeks).
