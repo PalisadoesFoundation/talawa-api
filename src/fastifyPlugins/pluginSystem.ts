@@ -16,8 +16,6 @@ declare module "fastify" {
  * throughout the application lifecycle.
  */
 export const pluginSystem = fastifyPlugin(async (fastify) => {
-	fastify.log.info("Initializing plugin system...");
-
 	try {
 		// Create plugin context with required dependencies
 		const pluginContext = createPluginContext({
@@ -39,8 +37,6 @@ export const pluginSystem = fastifyPlugin(async (fastify) => {
 		// Make plugin manager and context available to the fastify instance
 		fastify.decorate("pluginManager", pluginManager);
 		fastify.decorate("pluginContext", pluginContext);
-
-		fastify.log.info("Plugin system initialized successfully");
 
 		// Log loaded plugins
 		const loadedPlugins = pluginManager.getLoadedPlugins();

@@ -77,11 +77,13 @@ class PluginManager extends EventEmitter {
 			this.extensionRegistry,
 		);
 		this.registry = new PluginRegistry(this.pluginContext);
+	}
 
-		// Initialize plugin system
-		this.initializePlugins().catch((error) => {
-			console.error("Plugin system initialization failed:", error);
-		});
+	/**
+	 * Initialize the plugin system
+	 */
+	public async initialize(): Promise<void> {
+		return this.initializePlugins();
 	}
 
 	/**
