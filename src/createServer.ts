@@ -11,7 +11,7 @@ import {
 	envConfigSchema,
 	envSchemaAjv,
 } from "./envConfigSchema";
-import plugins from "./plugins/index";
+import plugins from "./fastifyPlugins/index";
 import routes from "./routes/index";
 
 // Currently fastify provides typescript integration through the usage of ambient typescript declarations where the type of global fastify instance is extended with our custom types. This approach is not sustainable for implementing scoped and encapsulated business logic which is meant to be the main advantage of fastify plugins. The fastify team is aware of this problem and is currently looking for a more elegant approach for typescript integration. More information can be found at this link: https://github.com/fastify/fastify/issues/5061
@@ -68,7 +68,16 @@ export const createServer = async (options?: {
 	fastify.register(fastifyRateLimit, {});
 
 	// More information at this link: https://github.com/fastify/fastify-cors
-	fastify.register(fastifyCors, {});
+	fastify.register(fastifyCors, {
+		origin: fastify.envConfig.FRONTEND_URL,
+		methods: ["GET", "POST", "OPTIONS"],
+		allowedHeaders: [
+			"Content-Type",
+			"Authorization",
+			"Apollo-Require-Preflight",
+		],
+		credentials: true,
+	});
 
 	// More information at this link: https://github.com/fastify/fastify-helmet
 	fastify.register(fastifyHelmet, {

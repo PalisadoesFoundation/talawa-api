@@ -11,7 +11,7 @@ type TableMethods<T> = {
 	count: Mock<() => Promise<number>>;
 };
 
-// QueryTables that match Drizzle’s expected structure
+// QueryTables that match Drizzle's expected structure
 type QueryTables = {
 	[K in keyof typeof drizzleSchema]: TableMethods<Record<string, unknown>>;
 };
@@ -45,6 +45,24 @@ export function createMockDrizzleClient() {
 				orderBy: vi.fn(() => ({
 					limit: vi.fn(() => Promise.resolve([])),
 				})),
+			})),
+		})),
+		// Global insert, update, delete methods
+		insert: vi.fn(() => ({
+			values: vi.fn(() => ({
+				returning: vi.fn(() => Promise.resolve([])),
+			})),
+		})),
+		update: vi.fn(() => ({
+			set: vi.fn(() => ({
+				where: vi.fn(() => ({
+					returning: vi.fn(() => Promise.resolve([])),
+				})),
+			})),
+		})),
+		delete: vi.fn(() => ({
+			where: vi.fn(() => ({
+				returning: vi.fn(() => Promise.resolve([])),
 			})),
 		})),
 	};
