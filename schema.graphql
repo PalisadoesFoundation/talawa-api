@@ -954,6 +954,11 @@ type Event {
   """
   updater: User
 
+   """
+  A flattened list of all agenda items for the event, across all folders.
+  """
+  agendaItems: [AgendaItem!]
+
   """
   GraphQL connection to traverse through the venues that are booked for the event.
   """

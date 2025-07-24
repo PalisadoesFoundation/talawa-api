@@ -4,6 +4,8 @@ import {
 	EventAttachment,
 	type EventAttachment as EventAttachmentType,
 } from "~/src/graphql/types/EventAttachment/EventAttachment";
+import { AgendaItem } from "../AgendaItem/AgendaItem";
+import { resolveAgendaItems } from "./agendaItems";
 
 export type Event = typeof eventsTable.$inferSelect & {
 	attachments: EventAttachmentType[] | null;
@@ -49,6 +51,12 @@ Event.implement({
 		}),
 		location: t.exposeString("location", {
 			description: "Physical or virtual location of the event.",
+		}),
+		agendaItems: t.field({
+			type: [AgendaItem],
+			description:
+				"A flattened list of all agenda items for the event, across all folders.",
+			resolve: resolveAgendaItems,
 		}),
 	}),
 });
