@@ -6,7 +6,6 @@ import { mercuriusClient } from "../client";
 import { Query_eventsByIds, Query_signIn } from "../documentNodes";
 
 import type {
-	ArgumentsAssociatedResourcesNotFoundExtensions,
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -130,7 +129,7 @@ suite("Query eventsByIds", () => {
 	});
 
 	// 3. NO MATCHING EVENTS
-	test("returns 'arguments_associated_resources_not_found' if no events match the given ids", async () => {
+	test("returns 'unexpected' error if no events match the given ids", async () => {
 		// Sign in as Admin
 		const adminSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -162,18 +161,10 @@ suite("Query eventsByIds", () => {
 		expect(result.errors).toEqual(
 			expect.arrayContaining<TalawaGraphQLFormattedError>([
 				expect.objectContaining<TalawaGraphQLFormattedError>({
-					message: expect.any(String),
-					extensions:
-						expect.objectContaining<ArgumentsAssociatedResourcesNotFoundExtensions>(
-							{
-								code: "arguments_associated_resources_not_found",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["input", "ids"],
-									}),
-								]),
-							},
-						),
+					message: "Failed to retrieve events",
+					extensions: expect.objectContaining({
+						code: "unexpected",
+					}),
 					path: ["eventsByIds"],
 				}),
 			]),

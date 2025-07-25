@@ -28,6 +28,9 @@ interface EventType {
 	isPublic: boolean;
 	isRegisterable: boolean;
 	location: string | null;
+	isRecurringEventTemplate: boolean;
+	recurringEventId: string | null;
+	instanceStartTime: Date | null;
 	attachments: Array<{
 		name: string;
 		createdAt: Date;
@@ -42,7 +45,7 @@ interface EventType {
 			| "image/webp"
 			| "video/mp4"
 			| "video/webm";
-	}> | null;
+	}>;
 }
 
 const eventsByOrganizationIdInputSchema = z.object({

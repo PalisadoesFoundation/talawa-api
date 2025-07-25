@@ -5,23 +5,31 @@ import {
 	queryEventInputSchema,
 } from "~/src/graphql/inputs/QueryEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
+import { getEventsByIds } from "~/src/graphql/types/Query/eventQueries";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+
 const queryEventArgumentsSchema = z.object({
 	input: queryEventInputSchema,
 });
 
+/**
+ * @description Defines the 'event' query field for fetching a single event by its ID.
+ * This query supports both standalone events and materialized instances of recurring events,
+ * ensuring a unified way to retrieve any event type.
+ */
 builder.queryField("event", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description: "Input containing the ID of the event to query.",
 				required: true,
 				type: QueryEventInput,
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-		description: "Query field to read an event.",
+		description:
+			"Retrieves a single event by its ID, supporting both standalone events and materialized recurring instances.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -50,46 +58,18 @@ builder.queryField("event", (t) =>
 			}
 
 			const currentUserId = ctx.currentClient.user.id;
+			const eventId = parsedArgs.input.id;
 
-			const [currentUser, existingEvent] = await Promise.all([
-				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-				}),
-				ctx.drizzleClient.query.eventsTable.findFirst({
-					with: {
-						attachmentsWhereEvent: true,
-						organization: {
-							columns: {
-								countryCode: true,
-							},
-							with: {
-								membershipsWhereOrganization: {
-									columns: {
-										role: true,
-									},
-									where: (fields, operators) =>
-										operators.eq(fields.memberId, currentUserId),
-								},
-							},
-						},
-					},
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.id),
-				}),
-			]);
+			// Use the unified getEventsByIds function to fetch the event
+			const events = await getEventsByIds(
+				[eventId],
+				ctx.drizzleClient,
+				ctx.log,
+			);
 
-			if (currentUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
+			const event = events[0];
 
-			if (existingEvent === undefined) {
+			if (!event) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -102,13 +82,35 @@ builder.queryField("event", (t) =>
 				});
 			}
 
-			const currentUserOrganizationMembership =
-				existingEvent.organization.membershipsWhereOrganization[0];
+			// Perform authorization check
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
 
-			if (
-				currentUser.role !== "administrator" &&
-				currentUserOrganizationMembership === undefined
-			) {
+			if (!currentUser) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
+
+			const membership =
+				await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
+					columns: {
+						role: true,
+					},
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.organizationId, event.organizationId),
+							operators.eq(fields.memberId, currentUserId),
+						),
+				});
+
+			if (currentUser.role !== "administrator" && !membership) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",
@@ -121,9 +123,7 @@ builder.queryField("event", (t) =>
 				});
 			}
 
-			return Object.assign(existingEvent, {
-				attachments: existingEvent.attachmentsWhereEvent,
-			});
+			return event;
 		},
 		type: Event,
 	}),

@@ -921,7 +921,6 @@ export const Mutation_createActionItem = gql(`
         id
         name
       }
-      updatedAt
       event {
         id
         name
