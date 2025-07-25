@@ -1339,3 +1339,115 @@ export const Mutation_deleteChat = gql(`
     }
   }
 `);
+
+export const Mutation_deleteStandaloneEvent = gql(`
+  mutation Mutation_deleteStandaloneEvent($input: MutationDeleteStandaloneEventInput!) {
+    deleteStandaloneEvent(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+      allDay
+      location
+      isPublic
+      isRegisterable
+      isRecurringEventTemplate
+      organization {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteSingleEventInstance = gql(`
+  mutation Mutation_deleteSingleEventInstance($input: MutationDeleteSingleEventInstanceInput!) {
+    deleteSingleEventInstance(input: $input) {
+      id
+      name
+      description
+      location
+      allDay
+      isPublic
+      isRegisterable
+      startAt
+      endAt
+      isMaterialized
+      hasExceptions
+      instanceStartTime
+      sequenceNumber
+      totalCount
+      organization {
+        id
+        name
+      }
+      baseRecurringEvent {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteThisAndFollowingEvents = gql(`
+  mutation Mutation_deleteThisAndFollowingEvents($input: MutationDeleteThisAndFollowingEventsInput!) {
+    deleteThisAndFollowingEvents(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+      isMaterialized
+      hasExceptions
+      instanceStartTime
+      sequenceNumber
+      totalCount
+      organization {
+        id
+        name
+      }
+      baseRecurringEvent {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteEntireRecurringEventSeries = gql(`
+  mutation Mutation_deleteEntireRecurringEventSeries($input: MutationDeleteEntireRecurringEventSeriesInput!) {
+    deleteEntireRecurringEventSeries(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+      allDay
+      location
+      isPublic
+      isRegisterable
+      isRecurringEventTemplate
+      organization {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);
