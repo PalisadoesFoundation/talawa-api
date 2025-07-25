@@ -533,13 +533,6 @@ export const Mutation_createEvent =
     }
 }`);
 
-export const Mutation_deleteEvent =
-	gql(`mutation Mutation_deleteEvent($input: MutationDeleteEventInput!) {
-    deleteEvent(input: $input) {
-        id
-    }
-}`);
-
 export const Mutation_updateEvent =
 	gql(`mutation Mutation_updateEvent($input: MutationUpdateEventInput!) {
     updateEvent(input: $input) {
