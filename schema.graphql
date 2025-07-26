@@ -564,13 +564,6 @@ type Event {
   """
   agendaFolders(after: String, before: String, first: Int, last: Int): EventAgendaFoldersConnection
 
-  """Indicates if the event spans the entire day."""
-  allDay: Boolean
-
-  """Array of attachments."""
-  attachments: [EventAttachment!]
-
-
   """A boolean flag indicating if the event lasts for the entire day."""
   allDay: Boolean
 
@@ -591,25 +584,6 @@ type Event {
   """User who created the event."""
   creator: User
 
-  """Custom information about the event."""
-  description: String
-
-  """Date time at the time the event ends at."""
-  endAt: DateTime
-
-  """Global identifier of the event."""
-  id: ID!
-
-  """Indicates if the event is publicly visible."""
-  isPublic: Boolean
-
-  """Indicates if users can register for this event."""
-  isRegisterable: Boolean
-
-  """Physical or virtual location of the event."""
-  location: String
-
-  """Name of the event."""
   """
   A detailed description of the event, providing custom information and context.
   """
@@ -659,9 +633,6 @@ type Event {
 
   """Organization the event belongs to."""
   organization: Organization
-
-  """Date time at the time the event starts at."""
-  startAt: DateTime!
 
   """
   A human-readable label indicating the progress of this instance in the series, such as '5 of 12' or 'Episode #7'.
@@ -757,10 +728,6 @@ input FileMetadataInput {
   """Object name used in storage"""
   objectName: String!
 }
-
-type Fund {
-  """GraphQL connection to traverse through the campaigns for the fund."""
-  campaigns(after: String, before: String, first: Int, last: Int): FundCampaignsConnection
 
 """Possible variants of the frequency of a recurring event."""
 enum Frequency {
@@ -3220,7 +3187,6 @@ type Organization {
     where: PostWhereInput
   ): [Post!]
 
-type Organization {
   """
   GraphQL connection to traverse through the action item categories belonging to the organization.
   """
@@ -3280,7 +3246,6 @@ type Organization {
   """
   GraphQL connection to traverse through the events belonging to the organization. Includes both standalone events and materialized instances from recurring events. Uses pure materialized approach - no virtual instances.
   """
-  events(after: String, before: String, first: Int, last: Int): OrganizationEventsConnection
   events(
     after: String
     before: String
@@ -3786,10 +3751,6 @@ type Query {
   """Query field to read a user."""
   currentUser: User
 
-  """Query field to read an event."""
-  event(input: QueryEventInput!): Event
-
-  """Fetch multiple events by their IDs."""
   """
   Retrieves a single event by its ID, supporting both standalone events and materialized recurring instances.
   """
@@ -4047,12 +4008,6 @@ input QueryPledgeWhereInput {
   name_contains: String
 }
 
-""""""
-input QueryPostInput {
-  """Global id of the post."""
-  id: String!
-}
-
 input QueryPluginInput {
   id: String!
 }
@@ -4112,10 +4067,6 @@ type ReadNotificationResponse {
   message: String
   success: Boolean!
 }
-
-type RejectMembershipResponse {
-  """Success or error message"""
-  message: String
 
 """
 Input type for defining recurrence rules for events. Must specify exactly one end condition: endDate, count, or never.
@@ -4277,9 +4228,6 @@ enum UpdateInviteStatus {
   declined
   no_response
 }
-
-"""The `Upload` scalar type represents a file upload."""
-scalar Upload
 
 input UpdatePluginInput {
   backup: Boolean
