@@ -412,14 +412,14 @@ builder.mutationField("createEvent", (t) =>
 						isPublic: createdEvent.isPublic ?? false,
 						isRegisterable: createdEvent.isRegisterable ?? false,
 					});
-					// Emit notification for event creation
-					await notificationEventBus.emitEventCreated(
+
+					notificationEventBus.emitEventCreated(
 						{
-							eventId: createdEventResult.id,
-							eventName: createdEventResult.name,
-							organizationId: createdEventResult.organizationId,
+							eventId: finalEvent.id,
+							eventName: finalEvent.name,
+							organizationId: finalEvent.organizationId,
 							organizationName: existingOrganization.name,
-							startDate: createdEventResult.startAt.toISOString(),
+							startDate: finalEvent.startAt.toISOString(),
 							creatorName: currentUser.name,
 						},
 						ctx,
