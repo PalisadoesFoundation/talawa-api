@@ -209,9 +209,6 @@ builder.mutationField("createEvent", (t) =>
 							location: parsedArgs.input.location,
 							// Set as recurring template if recurrence is provided
 							isRecurringEventTemplate: !!parsedArgs.input.recurrence,
-							// For recurring events, these are null (template only)
-							recurringEventId: null,
-							instanceStartTime: null,
 						})
 						.returning();
 

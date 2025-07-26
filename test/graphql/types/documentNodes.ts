@@ -1374,16 +1374,10 @@ export const Mutation_deleteSingleEventInstance = gql(`
       isRegisterable
       startAt
       endAt
-      isMaterialized
       hasExceptions
-      instanceStartTime
       sequenceNumber
       totalCount
       organization {
-        id
-        name
-      }
-      baseRecurringEvent {
         id
         name
       }
@@ -1399,16 +1393,10 @@ export const Mutation_deleteThisAndFollowingEvents = gql(`
       description
       startAt
       endAt
-      isMaterialized
       hasExceptions
-      instanceStartTime
       sequenceNumber
       totalCount
       organization {
-        id
-        name
-      }
-      baseRecurringEvent {
         id
         name
       }

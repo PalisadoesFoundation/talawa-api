@@ -64,7 +64,6 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 					columns: {
 						startAt: true,
 						isRecurringEventTemplate: true,
-						recurringEventId: true,
 					},
 					with: {
 						attachmentsWhereEvent: true,
@@ -110,10 +109,7 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 			}
 
 			// Validate this is a standalone event (not recurring)
-			if (
-				existingEvent.isRecurringEventTemplate ||
-				existingEvent.recurringEventId !== null
-			) {
+			if (existingEvent.isRecurringEventTemplate) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",

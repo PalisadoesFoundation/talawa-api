@@ -68,7 +68,6 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 					columns: {
 						id: true,
 						isRecurringEventTemplate: true,
-						recurringEventId: true,
 					},
 					with: {
 						attachmentsWhereEvent: true,
@@ -114,10 +113,7 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 			}
 
 			// Validate this is a recurring event template
-			if (
-				!existingEvent.isRecurringEventTemplate ||
-				existingEvent.recurringEventId !== null
-			) {
+			if (!existingEvent.isRecurringEventTemplate) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",

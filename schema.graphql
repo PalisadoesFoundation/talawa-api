@@ -575,9 +575,6 @@ type Event {
   """The base event from which this materialized instance was generated."""
   baseEvent: Event
 
-  """The base recurring event template if this is a materialized instance."""
-  baseRecurringEvent: Event
-
   """Date time at the time the event was created."""
   createdAt: DateTime
 
@@ -603,16 +600,6 @@ type Event {
   The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.
   """
   id: ID!
-
-  """
-  The original start time of this instance as defined by the recurrence rule.
-  """
-  instanceStartTime: DateTime
-
-  """
-  A boolean flag indicating if this event is a materialized instance of a recurring event.
-  """
-  isMaterialized: Boolean
 
   """A boolean flag indicating if the event is visible to the public."""
   isPublic: Boolean

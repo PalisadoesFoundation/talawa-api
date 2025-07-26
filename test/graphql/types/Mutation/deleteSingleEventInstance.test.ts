@@ -438,7 +438,6 @@ suite("Mutation field deleteSingleEventInstance", () => {
 				id: instanceIds[1],
 				name: "Daily Standup",
 				description: "Daily team standup meeting",
-				isMaterialized: true,
 			});
 
 			// Verify that all instances still exist but the target is cancelled
@@ -524,7 +523,6 @@ suite("Mutation field deleteSingleEventInstance", () => {
 				id: instanceIds[0],
 				name: "Daily Standup",
 				description: "Daily team standup meeting",
-				isMaterialized: true,
 			});
 
 			// Verify that the instance is cancelled
@@ -584,7 +582,6 @@ suite("Mutation field deleteSingleEventInstance", () => {
 				allDay: false,
 				isPublic: true,
 				isRegisterable: false,
-				isMaterialized: true,
 				hasExceptions: false,
 				sequenceNumber: 3,
 				organization: {

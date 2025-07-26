@@ -76,8 +76,6 @@ const mockEvent: EventType = {
 	creatorId: "user-admin",
 	updaterId: null,
 	isRecurringEventTemplate: false,
-	recurringEventId: null,
-	instanceStartTime: null,
 	attachments: [],
 };
 

@@ -28,8 +28,6 @@ const MockEvent = {
 	isRegisterable: true,
 	location: "Test Location",
 	isRecurringEventTemplate: false,
-	recurringEventId: null,
-	instanceStartTime: null,
 	attachments: [],
 };
 
