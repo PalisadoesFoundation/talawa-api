@@ -16,6 +16,14 @@
     "linkedRouteName": "/event/{eventId}"
   },
   {
+    "name": "New Post Created",
+    "eventType": "post_created",
+    "title": "New post by {authorName}",
+    "body": "{authorName} has created a new post in {organizationName}: \"{postCaption}\"",
+    "channelType": "in_app",
+    "linkedRouteName": "/post/{postId}"
+  },
+  {
     "name": "Join Request Submitted",
     "eventType": "join_request_submitted",
     "title": "New membership request for {organizationName}",
