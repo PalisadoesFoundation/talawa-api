@@ -72,7 +72,6 @@ export class NotificationEngine {
 			? this.ctx.currentClient.user.id
 			: null;
 
-
 		type NotificationTemplate = typeof notificationTemplatesTable.$inferSelect;
 
 		const template: NotificationTemplate | undefined =

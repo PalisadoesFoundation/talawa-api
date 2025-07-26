@@ -147,7 +147,7 @@ class NotificationEventBus extends EventEmitter {
 						requestId: data.requestId,
 					},
 					{
-						targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+						targetType: NotificationTargetType.ORGANIZATION,
 						targetIds: [data.organizationId],
 					},
 					NotificationChannelType.IN_APP,
@@ -184,7 +184,7 @@ class NotificationEventBus extends EventEmitter {
 						organizationId: data.organizationId,
 					},
 					{
-						targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+						targetType: NotificationTargetType.ORGANIZATION,
 						targetIds: [data.organizationId],
 					},
 					NotificationChannelType.IN_APP,
@@ -300,7 +300,7 @@ class NotificationEventBus extends EventEmitter {
 						creatorName: data.creatorName,
 					},
 					{
-						targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+						targetType: NotificationTargetType.ORGANIZATION,
 						targetIds: [data.organizationId],
 					},
 					NotificationChannelType.IN_APP,
@@ -345,7 +345,7 @@ class NotificationEventBus extends EventEmitter {
 						currencyCode: data.currencyCode,
 					},
 					{
-						targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+						targetType: NotificationTargetType.ORGANIZATION,
 						targetIds: [data.organizationId],
 					},
 					NotificationChannelType.IN_APP,
@@ -391,7 +391,7 @@ class NotificationEventBus extends EventEmitter {
 						currencyCode: data.currencyCode,
 					},
 					{
-						targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+						targetType: NotificationTargetType.ORGANIZATION,
 						targetIds: [data.organizationId],
 					},
 					NotificationChannelType.IN_APP,
