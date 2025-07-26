@@ -10,6 +10,7 @@ import {
 	MutationCreateEventInput,
 	mutationCreateEventInputSchema,
 } from "~/src/graphql/inputs/MutationCreateEventInput";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { Event } from "~/src/graphql/types/Event/Event";
 import {
 	generateInstancesForRecurringEvent,
@@ -411,6 +412,18 @@ builder.mutationField("createEvent", (t) =>
 						isPublic: createdEvent.isPublic ?? false,
 						isRegisterable: createdEvent.isRegisterable ?? false,
 					});
+					// Emit notification for event creation
+					await notificationEventBus.emitEventCreated(
+						{
+							eventId: createdEventResult.id,
+							eventName: createdEventResult.name,
+							organizationId: createdEventResult.organizationId,
+							organizationName: existingOrganization.name,
+							startDate: createdEventResult.startAt.toISOString(),
+							creatorName: currentUser.name,
+						},
+						ctx,
+					);
 
 					return finalEvent;
 				},

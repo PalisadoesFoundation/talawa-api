@@ -86,14 +86,14 @@ builder.mutationField("readNotification", (t) =>
 			try {
 				updateResult = await ctx.drizzleClient
 					.update(notificationAudienceTable)
-					.set({ isRead: true })
+					.set({ isRead: true, readAt: new Date() })
 					.where(
 						and(
 							inArray(
 								notificationAudienceTable.notificationId,
 								notificationIds,
 							),
-							eq(notificationAudienceTable.targetId, currentUserid),
+							eq(notificationAudienceTable.userId, currentUserid),
 						),
 					);
 			} catch (error) {

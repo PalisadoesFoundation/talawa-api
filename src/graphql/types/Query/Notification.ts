@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, or } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import z from "zod";
 import { notificationAudienceTable } from "~/src/drizzle/tables/NotificationAudience";
 import { notificationLogsTable } from "~/src/drizzle/tables/NotificationLog";
@@ -72,13 +72,6 @@ User.implement({
 						},
 					});
 				}
-				const userOrgs =
-					await ctx.drizzleClient.query.organizationMembershipsTable.findMany({
-						columns: { organizationId: true },
-						where: (fields, operators) =>
-							operators.eq(fields.memberId, currentUserid),
-					});
-				const orgIds = userOrgs.map((org) => org.organizationId);
 
 				const rawNotifications = await ctx.drizzleClient
 					.select({
@@ -100,23 +93,7 @@ User.implement({
 					)
 					.where(
 						and(
-							or(
-								and(
-									eq(notificationAudienceTable.targetType, "user"),
-									eq(notificationAudienceTable.targetId, parent.id),
-								),
-								and(
-									eq(notificationAudienceTable.targetType, "organization"),
-									inArray(notificationAudienceTable.targetId, orgIds),
-								),
-								and(
-									eq(
-										notificationAudienceTable.targetType,
-										"organization_admin",
-									),
-									inArray(notificationAudienceTable.targetId, orgIds),
-								),
-							),
+							eq(notificationAudienceTable.userId, currentUserid),
 							eq(notificationLogsTable.channel, "in_app"),
 						),
 					)

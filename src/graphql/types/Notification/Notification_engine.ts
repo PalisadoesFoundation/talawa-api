@@ -68,13 +68,11 @@ export class NotificationEngine {
 		audience: NotificationAudience | NotificationAudience[],
 		channelType: NotificationChannelType = NotificationChannelType.IN_APP,
 	): Promise<string> {
-		// Get the current user as sender
 		const senderId = this.ctx.currentClient.isAuthenticated
 			? this.ctx.currentClient.user.id
 			: null;
 
-		// Find appropriate template
-		// Define an interface for the template result
+
 		type NotificationTemplate = typeof notificationTemplatesTable.$inferSelect;
 
 		const template: NotificationTemplate | undefined =
@@ -92,10 +90,8 @@ export class NotificationEngine {
 			);
 		}
 
-		// Render the content by replacing variables in template
 		const renderedContent = this.renderTemplate(template, variables);
 
-		// Create notification log entry
 		const [notificationLog] = await this.ctx.drizzleClient
 			.insert(notificationLogsTable)
 			.values({
@@ -118,10 +114,8 @@ export class NotificationEngine {
 			throw new Error("Failed to create notification log");
 		}
 
-		// Process each audience specification
 		const audiences = Array.isArray(audience) ? audience : [audience];
 
-		// Create audience entries for all recipients
 		for (const audienceSpec of audiences) {
 			await this.createAudienceEntries(notificationLog.id, audienceSpec);
 		}
@@ -140,24 +134,16 @@ export class NotificationEngine {
 		audience: NotificationAudience,
 	): Promise<void> {
 		const { targetType, targetIds } = audience;
+		const senderId = this.ctx.currentClient.isAuthenticated
+			? this.ctx.currentClient.user.id
+			: null;
 
-		// Direct targeting of specific users or entities
-		if (targetIds.length > 0) {
-			await this.ctx.drizzleClient.insert(notificationAudienceTable).values(
-				targetIds.map((targetId) => ({
-					notificationId,
-					targetType,
-					targetId,
-					isRead: false,
-				})),
-			);
-			return;
-		}
+		let userIds: string[] = [];
 
-		// Handle special audience types that need resolution
-		if (targetType === NotificationTargetType.ORGANIZATION_ADMIN) {
-			const orgId = audience.targetIds[0];
-
+		if (targetType === NotificationTargetType.USER) {
+			userIds = targetIds.filter((id) => id !== senderId);
+		} else if (targetType === NotificationTargetType.ORGANIZATION_ADMIN) {
+			const orgId = targetIds[0];
 			if (!orgId) return;
 
 			const adminMembers =
@@ -172,16 +158,9 @@ export class NotificationEngine {
 					},
 				);
 
-			if (adminMembers.length > 0) {
-				await this.ctx.drizzleClient.insert(notificationAudienceTable).values(
-					adminMembers.map((member) => ({
-						notificationId,
-						targetType: NotificationTargetType.USER,
-						targetId: member.memberId,
-						isRead: false,
-					})),
-				);
-			}
+			userIds = adminMembers
+				.map((member) => member.memberId)
+				.filter((id) => id !== senderId); // Exclude sender
 		} else if (targetType === NotificationTargetType.ADMIN) {
 			const admins = await this.ctx.drizzleClient.query.usersTable.findMany({
 				columns: { id: true },
@@ -189,20 +168,9 @@ export class NotificationEngine {
 					operators.eq(fields.role, "administrator"),
 			});
 
-			if (admins.length > 0) {
-				await this.ctx.drizzleClient.insert(notificationAudienceTable).values(
-					admins.map((admin) => ({
-						notificationId,
-						targetType: NotificationTargetType.USER,
-						targetId: admin.id,
-						isRead: false,
-					})),
-				);
-			}
+			userIds = admins.map((admin) => admin.id).filter((id) => id !== senderId);
 		} else if (targetType === NotificationTargetType.ORGANIZATION) {
-			// For an entire organization, query all members
-			const orgId = audience.targetIds[0];
-
+			const orgId = targetIds[0];
 			if (!orgId) return;
 
 			const members =
@@ -214,16 +182,19 @@ export class NotificationEngine {
 					},
 				);
 
-			if (members.length > 0) {
-				await this.ctx.drizzleClient.insert(notificationAudienceTable).values(
-					members.map((member) => ({
-						notificationId,
-						targetType: NotificationTargetType.USER,
-						targetId: member.memberId,
-						isRead: false,
-					})),
-				);
-			}
+			userIds = members
+				.map((member) => member.memberId)
+				.filter((id) => id !== senderId);
+		}
+
+		if (userIds.length > 0) {
+			await this.ctx.drizzleClient.insert(notificationAudienceTable).values(
+				userIds.map((userId) => ({
+					notificationId,
+					userId,
+					isRead: false,
+				})),
+			);
 		}
 	}
 

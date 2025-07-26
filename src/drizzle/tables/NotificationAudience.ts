@@ -4,13 +4,11 @@ import {
 	index,
 	pgTable,
 	primaryKey,
-	text,
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { notificationLogsTable } from "./NotificationLog";
-import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
 /**
@@ -30,14 +28,14 @@ export const notificationAudienceTable = pgTable(
 			}),
 
 		/**
-		 * Type of target (organization, user, admins, group chat, etc.).
+		 * ID of the user who should receive this notification.
 		 */
-		targetType: text("target_type").notNull(),
-
-		/**
-		 * ID of the target (user_id, org_id, etc.).
-		 */
-		targetId: uuid("target_id").notNull(),
+		userId: uuid("user_id")
+			.notNull()
+			.references(() => usersTable.id, {
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			}),
 
 		/**
 		 * Whether the notification has been read by the target.
@@ -66,11 +64,10 @@ export const notificationAudienceTable = pgTable(
 	},
 	(self) => [
 		index().on(self.notificationId),
-		index().on(self.targetType),
-		index().on(self.targetId),
+		index().on(self.userId),
 		index().on(self.isRead),
 		primaryKey({
-			columns: [self.notificationId, self.targetType, self.targetId],
+			columns: [self.notificationId, self.userId],
 		}),
 	],
 );
@@ -89,21 +86,12 @@ export const notificationAudienceTableRelations = relations(
 		}),
 
 		/**
-		 * Many to one relationship from `notification_audience` table to `users` table when target is a user.
+		 * Many to one relationship from `notification_audience` table to `users` table.
 		 */
-		userTarget: one(usersTable, {
-			fields: [notificationAudienceTable.targetId],
+		user: one(usersTable, {
+			fields: [notificationAudienceTable.userId],
 			references: [usersTable.id],
-			relationName: "notification_audience.target_id:users.id",
-		}),
-
-		/**
-		 * Many to one relationship from `notification_audience` table to `organizations` table when target is an organization.
-		 */
-		organizationTarget: one(organizationsTable, {
-			fields: [notificationAudienceTable.targetId],
-			references: [organizationsTable.id],
-			relationName: "notification_audience.target_id:organizations.id",
+			relationName: "notification_audience.user_id:users.id",
 		}),
 	}),
 );
@@ -111,7 +99,6 @@ export const notificationAudienceTableRelations = relations(
 export const notificationAudienceTableInsertSchema = createInsertSchema(
 	notificationAudienceTable,
 	{
-		targetType: (schema) => schema.min(1).max(64),
 		isRead: (schema) => schema.optional(),
 	},
 );
