@@ -1,5 +1,6 @@
 import { and } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
+import { emailNotificationsTable } from "~/src/drizzle/tables/EmailNotification";
 import { notificationAudienceTable } from "~/src/drizzle/tables/NotificationAudience";
 import { notificationLogsTable } from "~/src/drizzle/tables/NotificationLog";
 import type { notificationTemplatesTable } from "~/src/drizzle/tables/NotificationTemplate";
@@ -115,11 +116,162 @@ export class NotificationEngine {
 
 		const audiences = Array.isArray(audience) ? audience : [audience];
 
-		for (const audienceSpec of audiences) {
-			await this.createAudienceEntries(notificationLog.id, audienceSpec);
+		if (channelType === NotificationChannelType.EMAIL) {
+			// Handle email notifications
+			await this.createEmailNotifications(
+				notificationLog.id,
+				audiences,
+				template,
+				variables,
+			);
+		} else {
+			// Handle in-app notifications
+			for (const audienceSpec of audiences) {
+				await this.createAudienceEntries(notificationLog.id, audienceSpec);
+			}
 		}
 
 		return notificationLog.id;
+	}
+
+	/**
+	 * Creates email notification entries for a notification
+	 *
+	 * @param notificationLogId - ID of the notification log
+	 * @param audiences - Array of audience specifications
+	 * @param template - The notification template
+	 * @param variables - Variables for template rendering
+	 */
+	private async createEmailNotifications(
+		notificationLogId: string,
+		audiences: NotificationAudience[],
+		template: typeof notificationTemplatesTable.$inferSelect,
+		variables: NotificationVariables,
+	): Promise<void> {
+		const senderId = this.ctx.currentClient.isAuthenticated
+			? this.ctx.currentClient.user.id
+			: null;
+
+		// Resolve all audiences to user IDs
+		let allUserIds: string[] = [];
+		for (const audienceSpec of audiences) {
+			const userIds = await this.resolveAudienceToUserIds(
+				audienceSpec,
+				senderId,
+			);
+			allUserIds = [...allUserIds, ...userIds];
+		}
+
+		// Remove duplicates
+		const uniqueUserIds = [...new Set(allUserIds)];
+
+		if (uniqueUserIds.length === 0) {
+			this.ctx.log.warn("No users found for email notification");
+			return;
+		}
+
+		// Get users with email addresses
+		const users = await this.ctx.drizzleClient.query.usersTable.findMany({
+			columns: { id: true, emailAddress: true },
+			where: (fields, operators) => operators.inArray(fields.id, uniqueUserIds),
+		});
+
+		// Filter users with valid email addresses
+		const usersWithEmail = users.filter(
+			(user) => user.emailAddress && user.emailAddress.trim() !== "",
+		);
+
+		if (usersWithEmail.length === 0) {
+			this.ctx.log.warn("No users found with valid email addresses");
+			return;
+		}
+
+		// Render email subject and body
+		const renderedTemplate = this.renderTemplate(template, variables);
+		const subject = renderedTemplate.title; // Use title as email subject
+		const htmlBody = renderedTemplate.body; // Use body as email content
+
+		// Create email notification records
+		const emailNotifications = usersWithEmail.map((user) => ({
+			id: uuidv7(),
+			notificationLogId,
+			userId: user.id,
+			email: user.emailAddress,
+			subject,
+			htmlBody,
+			status: "pending" as const,
+			retryCount: 0,
+			maxRetries: 3,
+		}));
+
+		// Insert email notifications
+		await this.ctx.drizzleClient
+			.insert(emailNotificationsTable)
+			.values(emailNotifications);
+
+		this.ctx.log.info(
+			`Created ${emailNotifications.length} email notifications`,
+		);
+	}
+
+	/**
+	 * Resolves audience specification to user IDs
+	 */
+	private async resolveAudienceToUserIds(
+		audience: NotificationAudience,
+		senderId: string | null,
+	): Promise<string[]> {
+		const { targetType, targetIds } = audience;
+		let userIds: string[] = [];
+
+		if (targetType === NotificationTargetType.USER) {
+			userIds = targetIds.filter((id) => id !== senderId);
+		} else if (targetType === NotificationTargetType.ORGANIZATION_ADMIN) {
+			const orgId = targetIds[0];
+			if (!orgId) return [];
+
+			const adminMembers =
+				await this.ctx.drizzleClient.query.organizationMembershipsTable.findMany(
+					{
+						columns: { memberId: true },
+						where: (fields, operators) =>
+							and(
+								operators.eq(fields.organizationId, orgId),
+								operators.eq(fields.role, "administrator"),
+							),
+					},
+				);
+
+			userIds = adminMembers
+				.map((member) => member.memberId)
+				.filter((id) => id !== senderId);
+		} else if (targetType === NotificationTargetType.ADMIN) {
+			const admins = await this.ctx.drizzleClient.query.usersTable.findMany({
+				columns: { id: true },
+				where: (fields, operators) =>
+					operators.eq(fields.role, "administrator"),
+			});
+
+			userIds = admins.map((admin) => admin.id).filter((id) => id !== senderId);
+		} else if (targetType === NotificationTargetType.ORGANIZATION) {
+			const orgId = targetIds[0];
+			if (!orgId) return [];
+
+			const members =
+				await this.ctx.drizzleClient.query.organizationMembershipsTable.findMany(
+					{
+						columns: { memberId: true },
+						where: (fields, operators) =>
+							operators.eq(fields.organizationId, orgId),
+					},
+				);
+
+			userIds = members
+				.map((member) => member.memberId)
+				.filter((id) => id !== senderId);
+		}
+
+		return userIds;
 	}
 
 	/**

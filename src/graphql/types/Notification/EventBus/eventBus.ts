@@ -138,23 +138,43 @@ class NotificationEventBus extends EventEmitter {
 		setImmediate(async () => {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
-				await notificationEngine.createNotification(
-					"join_request_submitted",
-					{
-						userName: data.userName,
-						organizationName: data.organizationName,
-						organizationId: data.organizationId,
-						requestId: data.requestId,
-					},
-					{
-						targetType: NotificationTargetType.ORGANIZATION,
-						targetIds: [data.organizationId],
-					},
-					NotificationChannelType.IN_APP,
-				);
+
+				// Send both in-app AND email notifications for join requests
+				await Promise.all([
+					// In-app notification
+					notificationEngine.createNotification(
+						"join_request_submitted",
+						{
+							userName: data.userName,
+							organizationName: data.organizationName,
+							organizationId: data.organizationId,
+							requestId: data.requestId,
+						},
+						{
+							targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+							targetIds: [data.organizationId],
+						},
+						NotificationChannelType.IN_APP,
+					),
+					// Email notification to organization admins
+					notificationEngine.createNotification(
+						"join_request_submitted",
+						{
+							userName: data.userName,
+							organizationName: data.organizationName,
+							organizationId: data.organizationId,
+							requestId: data.requestId,
+						},
+						{
+							targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+							targetIds: [data.organizationId],
+						},
+						NotificationChannelType.EMAIL,
+					),
+				]);
 
 				ctx.log.info(
-					`Join request notification sent for user ${data.userId} to organization ${data.organizationId}`,
+					`Join request notifications (in-app + email) sent for user ${data.userId} to organization ${data.organizationId}`,
 				);
 			} catch (error) {
 				ctx.log.error("Failed to send join request notification:", error);

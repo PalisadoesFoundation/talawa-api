@@ -32,6 +32,14 @@
     "linkedRouteName": "/organization/{organizationId}/requests"
   },
   {
+    "name": "Join Request Submitted Email",
+    "eventType": "join_request_submitted",
+    "title": "New Membership Request - {organizationName}",
+    "body": "<html><body><h2>New Membership Request</h2><p>Hello,</p><p><strong>{userName}</strong> has requested to join <strong>{organizationName}</strong>.</p><p>Please log in to review and approve/reject this request.</p><p><a href='#' style='background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;'>Review Request</a></p><p>Best regards,<br>Talawa Team</p></body></html>",
+    "channelType": "email",
+    "linkedRouteName": "/organization/{organizationId}/requests"
+  },
+  {
     "name": "New Organization Member",
     "eventType": "new_member_joined",
     "title": "New member joined {organizationName}",
