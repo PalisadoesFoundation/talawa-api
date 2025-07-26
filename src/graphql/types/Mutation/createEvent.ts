@@ -11,7 +11,6 @@ import {
 	mutationCreateEventInputSchema,
 } from "~/src/graphql/inputs/MutationCreateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
