@@ -4,6 +4,7 @@ import { z } from "zod";
 import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
+import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationCreateEventInput,
@@ -11,8 +12,16 @@ import {
 } from "~/src/graphql/inputs/MutationCreateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
 import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
+import {
+	generateInstancesForRecurringEvent,
+	initializeGenerationWindow,
+} from "~/src/services/eventGeneration";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import {
+	buildRRuleString,
+	validateRecurrenceInput,
+} from "~/src/utilities/recurringEventHelpers";
 
 const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
@@ -97,6 +106,26 @@ builder.mutationField("createEvent", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
+			// Validate recurrence input if provided
+			if (parsedArgs.input.recurrence) {
+				const validation = validateRecurrenceInput(
+					parsedArgs.input.recurrence,
+					parsedArgs.input.startAt,
+				);
+
+				if (!validation.isValid) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: validation.errors.map((error) => ({
+								argumentPath: ["input", "recurrence"],
+								message: error,
+							})),
+						},
+					});
+				}
+			}
+
 			const [currentUser, existingOrganization] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
@@ -165,90 +194,230 @@ builder.mutationField("createEvent", (t) =>
 				});
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [createdEvent] = await tx
-					.insert(eventsTable)
-					.values({
-						creatorId: currentUserId,
-						description: parsedArgs.input.description,
-						endAt: parsedArgs.input.endAt,
-						name: parsedArgs.input.name,
-						organizationId: parsedArgs.input.organizationId,
-						startAt: parsedArgs.input.startAt,
-						allDay: parsedArgs.input.allDay ?? false,
-						isPublic: parsedArgs.input.isPublic ?? false,
-						isRegisterable: parsedArgs.input.isRegisterable ?? false,
-						location: parsedArgs.input.location,
-					})
-					.returning();
-
-				// Inserted event not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
-				if (createdEvent === undefined) {
-					ctx.log.error(
-						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-					);
-
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
-				notificationEventBus.emitEventCreated(
-					{
-						eventId: createdEvent.id,
-						eventName: createdEvent.name,
-						organizationId: parsedArgs.input.organizationId,
-						organizationName: existingOrganization.name,
-						startDate: createdEvent.startAt.toISOString(),
-						creatorName: currentUser.name,
-					},
-					ctx,
-				);
-
-				if (parsedArgs.input.attachments !== undefined) {
-					const attachments = parsedArgs.input.attachments;
-
-					const createdEventAttachments = await tx
-						.insert(eventAttachmentsTable)
-						.values(
-							attachments.map((attachment) => ({
-								creatorId: currentUserId,
-								eventId: createdEvent.id,
-								mimeType: attachment.mimetype,
-								name: ulid(),
-							})),
-						)
+			const createdEventResult = await ctx.drizzleClient.transaction(
+				async (tx) => {
+					// Create the base event (template for recurring, or standalone event)
+					const [createdEvent] = await tx
+						.insert(eventsTable)
+						.values({
+							creatorId: currentUserId,
+							description: parsedArgs.input.description,
+							endAt: parsedArgs.input.endAt,
+							name: parsedArgs.input.name,
+							organizationId: parsedArgs.input.organizationId,
+							startAt: parsedArgs.input.startAt,
+							allDay: parsedArgs.input.allDay ?? false,
+							isPublic: parsedArgs.input.isPublic ?? false,
+							isRegisterable: parsedArgs.input.isRegisterable ?? false,
+							location: parsedArgs.input.location,
+							// Set as recurring template if recurrence is provided
+							isRecurringEventTemplate: !!parsedArgs.input.recurrence,
+							// For recurring events, these are null (template only)
+							recurringEventId: null,
+							instanceStartTime: null,
+						})
 						.returning();
 
-					await Promise.all(
-						createdEventAttachments.map((attachment, index) => {
-							if (attachments[index] !== undefined) {
-								return ctx.minio.client.putObject(
-									ctx.minio.bucketName,
-									attachment.name,
-									attachments[index].createReadStream(),
-									undefined,
-									{
-										"content-type": attachment.mimeType,
-									},
-								);
+					// Inserted event not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
+					if (createdEvent === undefined) {
+						ctx.log.error(
+							"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+						);
+
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
+					// Handle recurring event: Create recurrence rule AND immediately generate instances
+					if (parsedArgs.input.recurrence) {
+						// Build RRULE string
+						const rruleString = buildRRuleString(
+							parsedArgs.input.recurrence,
+							parsedArgs.input.startAt,
+						);
+
+						// Create recurrence rule
+						const [createdRecurrenceRule] = await tx
+							.insert(recurrenceRulesTable)
+							.values({
+								recurrenceRuleString: rruleString,
+								frequency: parsedArgs.input.recurrence.frequency,
+								interval: parsedArgs.input.recurrence.interval || 1,
+								recurrenceStartDate: parsedArgs.input.startAt,
+								recurrenceEndDate: parsedArgs.input.recurrence.endDate || null, // null for never-ending events
+								count: parsedArgs.input.recurrence.count || null, // null for never-ending events
+								latestInstanceDate: parsedArgs.input.startAt,
+								byDay: parsedArgs.input.recurrence.byDay,
+								byMonth: parsedArgs.input.recurrence.byMonth,
+								byMonthDay: parsedArgs.input.recurrence.byMonthDay,
+								baseRecurringEventId: createdEvent.id,
+								organizationId: parsedArgs.input.organizationId,
+								creatorId: currentUserId,
+							})
+							.returning();
+
+						if (createdRecurrenceRule === undefined) {
+							ctx.log.error(
+								"Failed to create recurrence rule for recurring event.",
+							);
+
+							throw new TalawaGraphQLError({
+								extensions: {
+									code: "unexpected",
+								},
+							});
+						}
+
+						ctx.log.info(
+							"Created recurring event template and recurrence rule",
+							{
+								baseEventId: createdEvent.id,
+								recurrenceRuleId: createdRecurrenceRule.id,
+								rruleString: rruleString,
+							},
+						);
+
+						// Ensure generation window exists for the organization
+						let windowConfig =
+							await ctx.drizzleClient.query.eventGenerationWindowsTable.findFirst(
+								{
+									where: (fields, operators) =>
+										operators.eq(
+											fields.organizationId,
+											parsedArgs.input.organizationId,
+										),
+								},
+							);
+
+						if (!windowConfig) {
+							// Initialize generation window for the organization
+							windowConfig = await initializeGenerationWindow(
+								{
+									organizationId: parsedArgs.input.organizationId,
+									createdById: currentUserId,
+									// Fixed global settings will be applied automatically
+								},
+								tx,
+								ctx.log,
+							);
+						}
+
+						//  Determine materialization window based on recurrence pattern
+						// Window should start from event start time, not current time
+						const windowStartDate = new Date(parsedArgs.input.startAt);
+						let windowEndDate: Date;
+
+						ctx.log.debug("FIXED: Window calculation", {
+							eventStartAt: parsedArgs.input.startAt.toISOString(),
+							windowStartDate: windowStartDate.toISOString(),
+							currentTime: new Date().toISOString(),
+						});
+
+						if (parsedArgs.input.recurrence.endDate) {
+							// For events with end dates, materialize up to the end date
+							windowEndDate = new Date(parsedArgs.input.recurrence.endDate);
+
+							// If end date is within the default window, use the window end instead
+							const defaultWindowEnd = new Date();
+							defaultWindowEnd.setMonth(
+								defaultWindowEnd.getMonth() + 12, // Fixed 12 months
+							);
+
+							if (windowEndDate > defaultWindowEnd) {
+								windowEndDate = defaultWindowEnd;
 							}
-						}),
-					);
+						} else if (parsedArgs.input.recurrence.count) {
+							// For count-based recurrence, estimate end date and use window
+							const defaultWindowEnd = new Date();
+							defaultWindowEnd.setMonth(
+								defaultWindowEnd.getMonth() + 12, // Fixed 12 months
+							);
+							windowEndDate = defaultWindowEnd;
+						} else {
+							// For never-ending events, use the materialization window
+							const defaultWindowEnd = new Date();
+							defaultWindowEnd.setMonth(
+								defaultWindowEnd.getMonth() + 12, // Fixed 12 months
+							);
+							windowEndDate = defaultWindowEnd;
+						}
 
-					return Object.assign(createdEvent, {
+						// Immediately materialize instances for the new recurring event
+						await generateInstancesForRecurringEvent(
+							{
+								baseRecurringEventId: createdEvent.id,
+								organizationId: parsedArgs.input.organizationId,
+								windowStartDate,
+								windowEndDate,
+							},
+							tx,
+							ctx.log,
+						);
+
+						ctx.log.info("Materialized initial instances for recurring event", {
+							baseEventId: createdEvent.id,
+							windowStart: windowStartDate.toISOString(),
+							windowEnd: windowEndDate.toISOString(),
+							recurrenceType: parsedArgs.input.recurrence.never
+								? "never-ending"
+								: parsedArgs.input.recurrence.endDate
+									? "end-date"
+									: "count-based",
+							originalRecurrenceInput: parsedArgs.input.recurrence,
+							createdRecurrenceRuleId: createdRecurrenceRule.id,
+						});
+					}
+
+					// Handle attachments (same logic for both recurring and standalone events)
+					let createdEventAttachments: (typeof eventAttachmentsTable.$inferSelect)[] =
+						[];
+					if (parsedArgs.input.attachments !== undefined) {
+						const attachments = parsedArgs.input.attachments;
+
+						createdEventAttachments = await tx
+							.insert(eventAttachmentsTable)
+							.values(
+								attachments.map((attachment) => ({
+									creatorId: currentUserId,
+									eventId: createdEvent.id,
+									mimeType: attachment.mimetype,
+									name: ulid(),
+								})),
+							)
+							.returning();
+
+						await Promise.all(
+							createdEventAttachments.map((attachment, index) => {
+								if (attachments[index] !== undefined) {
+									return ctx.minio.client.putObject(
+										ctx.minio.bucketName,
+										attachment.name,
+										attachments[index].createReadStream(),
+										undefined,
+										{
+											"content-type": attachment.mimeType,
+										},
+									);
+								}
+							}),
+						);
+					}
+
+					const finalEvent = Object.assign(createdEvent, {
 						attachments: createdEventAttachments,
+						allDay: createdEvent.allDay ?? false,
+						isPublic: createdEvent.isPublic ?? false,
+						isRegisterable: createdEvent.isRegisterable ?? false,
 					});
-				}
 
-				return Object.assign(createdEvent, {
-					attachments: [],
-					allDay: createdEvent.allDay ?? false,
-					isPublic: createdEvent.isPublic ?? false,
-					isRegisterable: createdEvent.isRegisterable ?? false,
-				});
-			});
+					return finalEvent;
+				},
+			);
+
+			return createdEventResult;
 		},
 		type: Event,
 	}),

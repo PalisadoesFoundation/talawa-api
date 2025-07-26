@@ -25,6 +25,7 @@ import "./MutationCreateTagInput";
 import "./MutationCreateUserInput";
 import "./MutationCreateVenueBookingInput";
 import "./MutationCreateVenueInput";
+import "./RecurrenceInput";
 import "./MutationDeleteAdvertisementInput";
 import "./MutationDeleteAgendaFolderInput";
 import "./MutationDeleteAgendaItemInput";

@@ -520,6 +520,13 @@ input CreateActionItemInput {
   preCompletionNotes: String
 }
 
+input CreatePluginInput {
+  backup: Boolean
+  isActivated: Boolean
+  isInstalled: Boolean
+  pluginId: String!
+}
+
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -529,6 +536,10 @@ scalar Date
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
 scalar DateTime
+
+input DeletePluginInput {
+  id: String!
+}
 
 """Possible statuses for a membership request."""
 enum DrizzleMembershipRequestStatus {
@@ -559,6 +570,21 @@ type Event {
   """Array of attachments."""
   attachments: [EventAttachment!]
 
+
+  """A boolean flag indicating if the event lasts for the entire day."""
+  allDay: Boolean
+
+  """
+  A list of attachments associated with the event, such as images or documents.
+  """
+  attachments: [EventAttachment!]
+
+  """The base event from which this materialized instance was generated."""
+  baseEvent: Event
+
+  """The base recurring event template if this is a materialized instance."""
+  baseRecurringEvent: Event
+
   """Date time at the time the event was created."""
   createdAt: DateTime
 
@@ -584,6 +610,51 @@ type Event {
   location: String
 
   """Name of the event."""
+  """
+  A detailed description of the event, providing custom information and context.
+  """
+  description: String
+
+  """
+  The date and time when the event is scheduled to end. For materialized instances, this reflects the actual end time if modified.
+  """
+  endAt: DateTime
+
+  """
+  A boolean flag indicating if this materialized instance has any exceptions applied to it.
+  """
+  hasExceptions: Boolean
+
+  """
+  The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.
+  """
+  id: ID!
+
+  """
+  The original start time of this instance as defined by the recurrence rule.
+  """
+  instanceStartTime: DateTime
+
+  """
+  A boolean flag indicating if this event is a materialized instance of a recurring event.
+  """
+  isMaterialized: Boolean
+
+  """A boolean flag indicating if the event is visible to the public."""
+  isPublic: Boolean
+
+  """
+  A boolean flag indicating if this event serves as a template for a recurring series.
+  """
+  isRecurringEventTemplate: Boolean
+
+  """A boolean flag indicating if users can register for this event."""
+  isRegisterable: Boolean
+
+  """The physical or virtual location where the event will take place."""
+  location: String
+
+  """The name or title of the event."""
   name: String
 
   """Organization the event belongs to."""
@@ -591,6 +662,26 @@ type Event {
 
   """Date time at the time the event starts at."""
   startAt: DateTime!
+
+  """
+  A human-readable label indicating the progress of this instance in the series, such as '5 of 12' or 'Episode #7'.
+  """
+  progressLabel: String
+
+  """
+  The sequence number of this instance within its recurring series (e.g., 1, 2, 3, ...).
+  """
+  sequenceNumber: Int
+
+  """
+  The date and time when the event is scheduled to start. For materialized instances, this reflects the actual start time if modified.
+  """
+  startAt: DateTime!
+
+  """
+  The total number of instances in the complete recurring series. This will be null for infinite series.
+  """
+  totalCount: Int
 
   """Date time at the time the event was last updated."""
   updatedAt: DateTime
@@ -665,6 +756,18 @@ input FileMetadataInput {
 
   """Object name used in storage"""
   objectName: String!
+}
+
+type Fund {
+  """GraphQL connection to traverse through the campaigns for the fund."""
+  campaigns(after: String, before: String, first: Int, last: Int): FundCampaignsConnection
+
+"""Possible variants of the frequency of a recurring event."""
+enum Frequency {
+  DAILY
+  MONTHLY
+  WEEKLY
+  YEARLY
 }
 
 type Fund {
@@ -1571,6 +1674,7 @@ type Mutation {
 
   """Mutation field to create an organization membership."""
   createOrganizationMembership(input: MutationCreateOrganizationMembershipInput!): Organization
+  createPlugin(input: CreatePluginInput!): Plugin
 
   """Mutation field to create a post."""
   createPost(input: MutationCreatePostInput!): Post
@@ -1652,6 +1756,7 @@ type Mutation {
 
   """Mutation field to delete an organization membership."""
   deleteOrganizationMembership(input: MutationDeleteOrganizationMembershipInput!): Organization
+  deletePlugin(input: DeletePluginInput!): Plugin
 
   """Mutation field to delete a post."""
   deletePost(input: MutationDeletePostInput!): Post
@@ -1767,6 +1872,7 @@ type Mutation {
 
   """Mutation field to update an organization membership."""
   updateOrganizationMembership(input: MutationUpdateOrganizationMembershipInput!): Organization
+  updatePlugin(input: UpdatePluginInput!): Plugin
 
   """Mutation field to update a post."""
   updatePost(input: MutationUpdatePostInput!): Post
@@ -1785,6 +1891,9 @@ type Mutation {
 
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
+
+  """Upload and install a plugin from a zip file"""
+  uploadPluginZip(input: UploadPluginZipInput!): Plugin
 }
 
 input MutationAcceptMembershipRequestInput {
@@ -1975,6 +2084,11 @@ input MutationCreateEventInput {
 
   """Global identifier of the associated organization."""
   organizationId: ID!
+
+  """
+  Recurrence pattern for the event. If provided, creates a recurring event.
+  """
+  recurrence: RecurrenceInput
 
   """Date time at the time the event starts at."""
   startAt: DateTime!
@@ -3106,6 +3220,7 @@ type Organization {
     where: PostWhereInput
   ): [Post!]
 
+type Organization {
   """
   GraphQL connection to traverse through the action item categories belonging to the organization.
   """
@@ -3163,9 +3278,26 @@ type Organization {
   description: String
 
   """
-  GraphQL connection to traverse through the events belonging to the organization.
+  GraphQL connection to traverse through the events belonging to the organization. Includes both standalone events and materialized instances from recurring events. Uses pure materialized approach - no virtual instances.
   """
   events(after: String, before: String, first: Int, last: Int): OrganizationEventsConnection
+  events(
+    after: String
+    before: String
+
+    """End date for filtering events (defaults to 3 months from now)"""
+    endDate: DateTime
+    first: Int
+
+    """
+    Whether to include materialized instances from recurring events (default: true)
+    """
+    includeRecurring: Boolean
+    last: Int
+
+    """Start date for filtering events (defaults to today)"""
+    startDate: DateTime
+  ): OrganizationEventsConnection
 
   """
   GraphQL connection to traverse through the funds belonging to the organization.
@@ -3435,6 +3567,32 @@ A field whose value conforms to the standard E.164 format as specified in: https
 """
 scalar PhoneNumber
 
+"""
+Represents a plugin in the system with its installation and activation status
+"""
+type Plugin {
+  """Whether the plugin has an existing backup"""
+  backup: Boolean
+
+  """Timestamp when the plugin record was created"""
+  createdAt: DateTime
+
+  """Unique identifier for the plugin record"""
+  id: ID
+
+  """Whether the plugin is currently activated"""
+  isActivated: Boolean
+
+  """Whether the plugin is installed in the system"""
+  isInstalled: Boolean
+
+  """The unique identifier/name of the plugin"""
+  pluginId: String
+
+  """Timestamp when the plugin record was last updated"""
+  updatedAt: DateTime
+}
+
 type Post {
   """Array of attachments."""
   attachments: [PostAttachment!]
@@ -3616,14 +3774,10 @@ type Query {
   """Query field to read a chat message."""
   chatMessage(input: QueryChatMessageInput!): ChatMessage
 
-  """
-  Query field to read all chats a user is a member of.
-  """
+  """Query field to read all chats the current user is a member of."""
   chatsByUser: [Chat!]
 
-  """
-  Query field to read a comment.
-  """
+  """Query field to read a comment."""
   comment(input: QueryCommentInput!): Comment
 
   """Query field to read the community."""
@@ -3636,6 +3790,17 @@ type Query {
   event(input: QueryEventInput!): Event
 
   """Fetch multiple events by their IDs."""
+  """
+  Retrieves a single event by its ID, supporting both standalone events and materialized recurring instances.
+  """
+  event(
+    """Input containing the ID of the event to query."""
+    input: QueryEventInput!
+  ): Event
+
+  """
+  Fetches multiple events by their IDs, supporting both standalone events and materialized recurring instances.
+  """
   eventsByIds(input: QueryEventsByIdsInput!): [Event!]
 
   """Fetch all events that belong to a given organization."""
@@ -3675,6 +3840,18 @@ type Query {
     """Filter criteria for pledges"""
     where: QueryPledgeWhereInput
   ): [FundCampaignPledge!]
+
+  """Query field to fetch a single plugin by ID."""
+  getPluginById(
+    """Input parameters to fetch a plugin by ID."""
+    input: QueryPluginInput!
+  ): Plugin
+
+  """Query field to fetch multiple plugins with optional filtering."""
+  getPlugins(
+    """Input parameters to fetch plugins with optional filtering."""
+    input: QueryPluginsInput
+  ): [Plugin!]
 
   """Query field to read a post vote."""
   hasUserVoted(input: QueryHasUserVotedInput!): HasUserVoted
@@ -3876,6 +4053,22 @@ input QueryPostInput {
   id: String!
 }
 
+input QueryPluginInput {
+  id: String!
+}
+
+input QueryPluginsInput {
+  isActivated: Boolean
+  isInstalled: Boolean
+  pluginId: String
+}
+
+""""""
+input QueryPostInput {
+  """Global id of the post."""
+  id: String!
+}
+
 """"""
 input QuerySignInInput {
   """Email address of the user."""
@@ -3918,6 +4111,41 @@ input QueryVolunteerGroupAssignmentsInput {
 type ReadNotificationResponse {
   message: String
   success: Boolean!
+}
+
+type RejectMembershipResponse {
+  """Success or error message"""
+  message: String
+
+"""
+Input type for defining recurrence rules for events. Must specify exactly one end condition: endDate, count, or never.
+"""
+input RecurrenceInput {
+  """Days of the week (e.g., ['MO', 'WE', 'FR'])."""
+  byDay: [String!]
+
+  """Months of the year (1-12)."""
+  byMonth: [Int!]
+
+  """Days of the month (-31 to 31, excluding 0)."""
+  byMonthDay: [Int!]
+
+  """Number of occurrences."""
+  count: Int
+
+  """Date when the recurrence ends."""
+  endDate: DateTime
+
+  """Frequency of recurrence (DAILY, WEEKLY, MONTHLY, YEARLY)."""
+  frequency: Frequency!
+
+  """
+  Interval between recurrences (e.g., 2 for every 2 weeks). Defaults to 1.
+  """
+  interval: Int
+
+  """Indicates if the event recurs indefinitely (never ends)."""
+  never: Boolean
 }
 
 type RejectMembershipResponse {
@@ -4052,6 +4280,26 @@ enum UpdateInviteStatus {
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
+
+input UpdatePluginInput {
+  backup: Boolean
+  id: String!
+  isActivated: Boolean
+  isInstalled: Boolean
+  pluginId: String
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+"""Input for uploading a plugin zip file"""
+input UploadPluginZipInput {
+  """Whether to activate the plugin after installation"""
+  activate: Boolean
+
+  """The plugin zip file to upload"""
+  pluginZip: Upload!
+}
 
 """UploadUrlResponse"""
 type UploadUrlResponse {

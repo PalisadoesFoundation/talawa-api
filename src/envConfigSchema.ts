@@ -292,6 +292,26 @@ export const envConfigSchema = Type.Object({
 	API_RATE_LIMIT_REFILL_RATE: Type.Number({
 		minimum: 0,
 	}),
+
+	/**
+	 * Cron schedule for the recurring event instance generation background worker.
+	 * Default: "0 * * * *" (every hour at minute 0)
+	 */
+	RECURRING_EVENT_GENERATION_CRON_SCHEDULE: Type.Optional(
+		Type.String({
+			minLength: 9, // Minimum valid cron: "* * * * *"
+		}),
+	),
+
+	/**
+	 * Cron schedule for the old event instance cleanup background worker.
+	 * Default: "0 2 * * *" (daily at 2 AM UTC)
+	 */
+	OLD_EVENT_INSTANCES_CLEANUP_CRON_SCHEDULE: Type.Optional(
+		Type.String({
+			minLength: 9, // Minimum valid cron: "* * * * *"
+		}),
+	),
 });
 
 /**
