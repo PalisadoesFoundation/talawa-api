@@ -29,8 +29,6 @@ interface EventType {
 	isRegisterable: boolean;
 	location: string | null;
 	isRecurringEventTemplate: boolean;
-	recurringEventId: string | null;
-	instanceStartTime: Date | null;
 	attachments: Array<{
 		name: string;
 		createdAt: Date;

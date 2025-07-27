@@ -84,7 +84,6 @@ export async function getUnifiedEventsInDateRange(
 			...standaloneEvents.map((event) => ({
 				...event,
 				eventType: "standalone" as const,
-				isMaterialized: false,
 			})),
 		);
 
@@ -125,8 +124,6 @@ export async function getUnifiedEventsInDateRange(
 
 					// Generated instance metadata
 					isRecurringEventTemplate: false, // Instances are never templates
-					recurringEventId: instance.baseRecurringEventId, // Reference to base template
-					instanceStartTime: instance.originalInstanceStartTime, // Original scheduled time
 
 					// Additional generated properties
 					baseRecurringEventId: instance.baseRecurringEventId,
@@ -244,8 +241,6 @@ export async function getEventsByIds(
 					createdAt: resolvedInstance.createdAt,
 					updatedAt: resolvedInstance.updatedAt,
 					isRecurringEventTemplate: false,
-					recurringEventId: resolvedInstance.baseRecurringEventId,
-					instanceStartTime: resolvedInstance.originalInstanceStartTime,
 					baseRecurringEventId: resolvedInstance.baseRecurringEventId,
 					sequenceNumber: resolvedInstance.sequenceNumber,
 					totalCount: resolvedInstance.totalCount,
