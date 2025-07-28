@@ -1137,6 +1137,13 @@ describe("ChatMembershipResolver", () => {
 
 		// Test successful authorization scenarios
 		describe("Authorization Success Tests", () => {
+			/*
+			 * NOTE: These tests validate the ChatMembershipResolver.createChatMembership function,
+			 * which only performs basic validation (input validation, resource existence checks).
+			 * Full authorization logic (global admin, org admin, chat member permissions) is
+			 * implemented in the GraphQL field resolver, not in this resolver function.
+			 * These tests verify that basic validation passes for various user permission levels.
+			 */
 			beforeEach(() => {
 				// Add chatMembershipsTable to mock context
 				(
@@ -1258,7 +1265,7 @@ describe("ChatMembershipResolver", () => {
 				expect(result).toBe(mockChat);
 			});
 
-			it("should throw unauthorized_action when user has no permissions", async () => {
+			it("should return chat when user has no elevated permissions (basic validation only)", async () => {
 				const mockChat = {
 					id: "00000000-0000-0000-0000-000000000001",
 					chatMembershipsWhereChat: [],
@@ -1284,9 +1291,10 @@ describe("ChatMembershipResolver", () => {
 					);
 				}
 
-				// Note: The ChatMembershipResolver.createChatMembership function doesn't have
-				// the full authorization logic - it just returns the chat if basic validation passes.
-				// The real authorization happens in the GraphQL field resolver.
+				// Note: This tests a regular user with no elevated permissions (not global admin,
+				// org admin, or chat admin). The ChatMembershipResolver.createChatMembership function
+				// still allows the operation as it only does basic validation - full authorization
+				// logic happens in the GraphQL field resolver.
 				const result = await ChatMembershipResolver.createChatMembership(
 					{},
 					{

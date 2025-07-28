@@ -60,6 +60,8 @@ export const resolveUpdatedAt = async (
 
 	if (chatMembership === undefined) {
 		throw new TalawaGraphQLError({
+			message:
+				"You must be a member of this chat to access timestamp information.",
 			extensions: {
 				code: "unauthorized_action",
 			},
