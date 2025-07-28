@@ -623,6 +623,50 @@ export async function insertCollections(
 					);
 					break;
 				}
+				case "agenda_folders": {
+					const agendaFolders = JSON.parse(fileContent).map(
+						(folder: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...folder,
+							createdAt: parseDate(folder.createdAt),
+							updatedAt: parseDate(folder.updatedAt),
+						}),
+					) as (typeof schema.agendaFoldersTable.$inferInsert)[];
+					await checkAndInsertData(
+						schema.agendaFoldersTable,
+						agendaFolders,
+						schema.agendaFoldersTable.id,
+						1000,
+					);
+					console.log(
+						"\x1b[35mAdded: Agenda Folders table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+				case "agenda_items": {
+					const agendaItems = JSON.parse(fileContent).map(
+						(item: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...item,
+							createdAt: parseDate(item.createdAt),
+							updatedAt: parseDate(item.updatedAt),
+						}),
+					) as (typeof schema.agendaItemsTable.$inferInsert)[];
+					await checkAndInsertData(
+						schema.agendaItemsTable,
+						agendaItems,
+						schema.agendaItemsTable.id,
+						1000,
+					);
+					console.log(
+						"\x1b[35mAdded: Agenda Items table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
 
 				default:
 					console.log(`\x1b[31mInvalid table name: ${collection}\x1b[0m`);
@@ -670,6 +714,8 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "action_items", table: schema.actionsTable },
 			{ name: "events", table: schema.eventsTable },
 			{ name: "action_categories", table: schema.actionCategoriesTable },
+			{ name: "agenda_items", table: schema.agendaItemsTable },
+			{ name: "agenda_folders", table: schema.agendaFoldersTable },
 		];
 
 		console.log(`\nRecord Counts ${stage} Import:\n`);

@@ -5,6 +5,8 @@ import {
 	EventAttachment,
 	type EventAttachment as EventAttachmentType,
 } from "~/src/graphql/types/EventAttachment/EventAttachment";
+import { AgendaItem } from "../AgendaItem/AgendaItem";
+import { resolveAgendaItems } from "./agendaItems";
 
 // Unified Event type supporting both standalone events and materialized instances
 export type Event =
@@ -66,6 +68,12 @@ Event.implement({
 		location: t.exposeString("location", {
 			description:
 				"The physical or virtual location where the event will take place.",
+		}),
+		agendaItems: t.field({
+			type: [AgendaItem],
+			description:
+				"A flattened list of all agenda items for the event, across all folders.",
+			resolve: resolveAgendaItems,
 		}),
 		isRecurringEventTemplate: t.boolean({
 			description:

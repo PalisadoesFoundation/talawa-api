@@ -1,0 +1,152 @@
+[
+  {
+    "id": "f01de401-face-4401-8001-000000000001",
+    "eventId": "01960b97-00c0-7508-915b-7f4875a3d84a",
+    "name": "Agenda for Event #1",
+    "isAgendaItemFolder": false,
+    "parentFolderId": null,
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:00:00.000Z",
+    "updatedAt": "2025-07-21T10:00:00.000Z"
+  },
+  {
+    "id": "f01de401-c11d-4402-8002-000000000001",
+    "eventId": "01960b97-00c0-7508-915b-7f4875a3d84a",
+    "name": "Opening Session",
+    "isAgendaItemFolder": true,
+    "parentFolderId": "f01de401-face-4401-8001-000000000001",
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:01:00.000Z",
+    "updatedAt": "2025-07-21T10:01:00.000Z"
+  },
+  {
+    "id": "f01de401-c11d-4403-8003-000000000001",
+    "eventId": "01960b97-00c0-7508-915b-7f4875a3d84a",
+    "name": "Main Presentation",
+    "isAgendaItemFolder": true,
+    "parentFolderId": "f01de401-face-4401-8001-000000000001",
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:02:00.000Z",
+    "updatedAt": "2025-07-21T10:02:00.000Z"
+  },
+  {
+    "id": "f01de402-face-4401-8001-000000000002",
+    "eventId": "01960b97-00c0-7c17-a591-298872003f06",
+    "name": "Agenda for Event #2",
+    "isAgendaItemFolder": false,
+    "parentFolderId": null,
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:00:00.000Z",
+    "updatedAt": "2025-07-21T10:00:00.000Z"
+  },
+  {
+    "id": "f01de402-c11d-4402-8002-000000000002",
+    "eventId": "01960b97-00c0-7c17-a591-298872003f06",
+    "name": "Welcome & Setup",
+    "isAgendaItemFolder": true,
+    "parentFolderId": "f01de402-face-4401-8001-000000000002",
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:01:00.000Z",
+    "updatedAt": "2025-07-21T10:01:00.000Z"
+  },
+  {
+    "id": "f01de402-c11d-4403-8003-000000000002",
+    "eventId": "01960b97-00c0-7c17-a591-298872003f06",
+    "name": "Keynote & Q&A",
+    "isAgendaItemFolder": true,
+    "parentFolderId": "f01de402-face-4401-8001-000000000002",
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:02:00.000Z",
+    "updatedAt": "2025-07-21T10:02:00.000Z"
+  },
+  {
+    "id": "f01de403-face-4401-8001-000000000003",
+    "eventId": "01960b97-00c0-71cc-be08-65aea93474a9",
+    "name": "Agenda for Event #3",
+    "isAgendaItemFolder": false,
+    "parentFolderId": null,
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:00:00.000Z",
+    "updatedAt": "2025-07-21T10:00:00.000Z"
+  },
+  {
+    "id": "f01de403-c11d-4402-8002-000000000003",
+    "eventId": "01960b97-00c0-71cc-be08-65aea93474a9",
+    "name": "Session One",
+    "isAgendaItemFolder": true,
+    "parentFolderId": "f01de403-face-4401-8001-000000000003",
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:01:00.000Z",
+    "updatedAt": "2025-07-21T10:01:00.000Z"
+  },
+  {
+    "id": "f01de403-c11d-4403-8003-000000000003",
+    "eventId": "01960b97-00c0-71cc-be08-65aea93474a9",
+    "name": "Session Two",
+    "isAgendaItemFolder": true,
+    "parentFolderId": "f01de403-face-4401-8001-000000000003",
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:02:00.000Z",
+    "updatedAt": "2025-07-21T10:02:00.000Z"
+  },
+  {
+    "id": "f01de404-face-4401-8001-000000000004",
+    "eventId": "01960b97-00c0-7821-aadc-87e51cf656fe",
+    "name": "Agenda for Event #4",
+    "isAgendaItemFolder": false,
+    "parentFolderId": null,
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:00:00.000Z",
+    "updatedAt": "2025-07-21T10:00:00.000Z"
+  },
+  {
+    "id": "f01de404-c11d-4402-8002-000000000004",
+    "eventId": "01960b97-00c0-7821-aadc-87e51cf656fe",
+    "name": "Morning Track",
+    "isAgendaItemFolder": true,
+    "parentFolderId": "f01de404-face-4401-8001-000000000004",
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:01:00.000Z",
+    "updatedAt": "2025-07-21T10:01:00.000Z"
+  },
+  {
+    "id": "f01de404-c11d-4403-8003-000000000004",
+    "eventId": "01960b97-00c0-7821-aadc-87e51cf656fe",
+    "name": "Afternoon Track",
+    "isAgendaItemFolder": true,
+    "parentFolderId": "f01de404-face-4401-8001-000000000004",
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:02:00.000Z",
+    "updatedAt": "2025-07-21T10:02:00.000Z"
+  },
+  {
+    "id": "f01de405-face-4401-8001-000000000005",
+    "eventId": "01960b97-00c0-7709-ba16-fcc379d46036",
+    "name": "Agenda for Event #5",
+    "isAgendaItemFolder": false,
+    "parentFolderId": null,
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:00:00.000Z",
+    "updatedAt": "2025-07-21T10:00:00.000Z"
+  },
+  {
+    "id": "f01de405-c11d-4402-8002-000000000005",
+    "eventId": "01960b97-00c0-7709-ba16-fcc379d46036",
+    "name": "Part 1",
+    "isAgendaItemFolder": true,
+    "parentFolderId": "f01de405-face-4401-8001-000000000005",
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:01:00.000Z",
+    "updatedAt": "2025-07-21T10:01:00.000Z"
+  },
+  {
+    "id": "f01de405-c11d-4403-8003-000000000005",
+    "eventId": "01960b97-00c0-7709-ba16-fcc379d46036",
+    "name": "Part 2",
+    "isAgendaItemFolder": true,
+    "parentFolderId": "f01de405-face-4401-8001-000000000005",
+    "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
+    "createdAt": "2025-07-21T10:02:00.000Z",
+    "updatedAt": "2025-07-21T10:02:00.000Z"
+  }
+]
