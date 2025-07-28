@@ -34,6 +34,8 @@ suite("addSampleData main function tests", () => {
 			"comment_votes",
 			"action_categories",
 			"events",
+			"agenda_folders",
+			"agenda_items",
 			"action_items",
 		]);
 

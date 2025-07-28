@@ -70,6 +70,7 @@ Event.implement({
 				"The physical or virtual location where the event will take place.",
 		}),
 		agendaItems: t.field({
+			nullable: false,
 			type: [AgendaItem],
 			description:
 				"A flattened list of all agenda items for the event, across all folders.",

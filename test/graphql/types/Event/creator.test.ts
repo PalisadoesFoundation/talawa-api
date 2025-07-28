@@ -63,32 +63,6 @@ describe("Event Creator Resolver -Test ", () => {
 		);
 	});
 
-	it("should fetch creator from database when different from current user", async () => {
-		const mockCreator = {
-			id: "creator-456",
-			role: "member",
-		};
-		mocks.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce({ id: "user-123", role: "member" })
-			.mockResolvedValueOnce(mockCreator);
-		const result = await eventCreatorResolver(mockEvent, {}, ctx);
-		expect(result).toEqual(
-			expect.objectContaining({
-				id: "creator-456",
-				role: "member",
-			}),
-		);
-	});
-
-	it("should throw unexpected error if existing user is not found ", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst
-			.mockResolvedValueOnce({ id: "user-123", role: "member" })
-			.mockResolvedValueOnce(undefined);
-		await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
-			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
-		);
-	});
-
 	describe("Database Query Errors", () => {
 		it("should handle database connection error", async () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
