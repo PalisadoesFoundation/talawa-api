@@ -8,37 +8,46 @@ export const eventCreatorResolver = async (
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
-	if (!ctx.currentClient.isAuthenticated) {
+	try {
+		if (!ctx.currentClient.isAuthenticated) {
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "unauthenticated",
+				},
+			});
+		}
+
+		if (parent.creatorId === null) {
+			return null;
+		}
+
+		const creatorId = parent.creatorId;
+
+		const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
+			where: (fields, operators) => operators.eq(fields.id, creatorId),
+		});
+
+		if (existingUser === undefined) {
+			ctx.log.error(
+				"Postgres select operation returned an empty array for an event's creator id that isn't null.",
+			);
+
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "unexpected",
+				},
+			});
+		}
+
+		return existingUser;
+	} catch (error) {
+		if (error instanceof TalawaGraphQLError) throw error;
+		ctx.log?.error?.(error);
 		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthenticated",
-			},
+			message: "Internal server error",
+			extensions: { code: "unexpected" },
 		});
 	}
-
-	if (parent.creatorId === null) {
-		return null;
-	}
-
-	const creatorId = parent.creatorId;
-
-	const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		where: (fields, operators) => operators.eq(fields.id, creatorId),
-	});
-
-	if (existingUser === undefined) {
-		ctx.log.error(
-			"Postgres select operation returned an empty array for an event's creator id that isn't null.",
-		);
-
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unexpected",
-			},
-		});
-	}
-
-	return existingUser;
 };
 
 Event.implement({
