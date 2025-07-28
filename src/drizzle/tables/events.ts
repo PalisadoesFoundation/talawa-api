@@ -1,6 +1,5 @@
 import { relations, sql } from "drizzle-orm";
 import {
-	type AnyPgColumn,
 	boolean,
 	index,
 	pgTable,
@@ -121,29 +120,6 @@ export const eventsTable = pgTable(
 		isRecurringEventTemplate: boolean("is_recurring_template")
 			.notNull()
 			.default(false),
-
-		/**
-		 * Foreign key reference to the base recurring event (template).
-		 * Only set for event instances, null for standalone events and templates.
-		 */
-		recurringEventId: uuid("recurring_event_id").references(
-			(): AnyPgColumn => eventsTable.id,
-			{
-				onDelete: "cascade",
-				onUpdate: "cascade",
-			},
-		),
-
-		/**
-		 * Timestamp identifying this specific instance of a recurring event.
-		 * Used to identify which instance when applying exceptions.
-		 * Only set for event instances, null for standalone events and templates.
-		 */
-		instanceStartTime: timestamp("instance_start_time", {
-			mode: "date",
-			precision: 3,
-			withTimezone: true,
-		}),
 	},
 	(self) => ({
 		// Existing indexes with better naming
@@ -164,12 +140,6 @@ export const eventsTable = pgTable(
 		// New recurring event indexes
 		isRecurringEventTemplateIdx: index("events_is_recurring_template_idx").on(
 			self.isRecurringEventTemplate,
-		),
-		recurringEventIdIdx: index("events_recurring_event_id_idx").on(
-			self.recurringEventId,
-		),
-		instanceStartTimeIdx: index("events_instance_start_time_idx").on(
-			self.instanceStartTime,
 		),
 	}),
 );
@@ -224,23 +194,6 @@ export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 		relationName: "events.id:venue_bookings.event_id",
 	}),
 
-	// RECURRING EVENT RELATIONSHIPS
-	/**
-	 * Many to one relationship from event instances to their base recurring event (template).
-	 */
-	baseRecurringEvent: one(eventsTable, {
-		fields: [eventsTable.recurringEventId],
-		references: [eventsTable.id],
-		relationName: "events.recurring_event_id:events.id",
-	}),
-
-	/**
-	 * One to many relationship from base recurring event (template) to its instances.
-	 */
-	recurringEventInstances: many(eventsTable, {
-		relationName: "events.recurring_event_id:events.id",
-	}),
-
 	// EVENT EXCEPTION RELATIONSHIPS
 	/**
 	 * One to many relationship from events table to event_exceptions table (as instance).
@@ -266,6 +219,4 @@ export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 	location: (schema) => schema.min(1).max(1024).optional(),
 	// Recurring event fields validation
 	isRecurringEventTemplate: z.boolean().optional(),
-	recurringEventId: z.string().uuid().optional(),
-	instanceStartTime: z.date().optional(),
 });

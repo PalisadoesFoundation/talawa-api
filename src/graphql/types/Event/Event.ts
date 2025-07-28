@@ -81,43 +81,12 @@ Event.implement({
 			resolve: (event) =>
 				"isRecurringEventTemplate" in event && event.isRecurringEventTemplate,
 		}),
-		baseRecurringEvent: t.field({
-			description:
-				"The base recurring event template if this is a materialized instance.",
-			type: Event,
-			nullable: true,
-			resolve: async (event, args, { drizzleClient }) => {
-				const recurringEventId =
-					"recurringEventId" in event ? event.recurringEventId : null;
-				if (recurringEventId) {
-					const baseEvent = await drizzleClient.query.eventsTable.findFirst({
-						where: (fields, { eq }) => eq(fields.id, recurringEventId),
-					});
-					if (baseEvent) {
-						return { ...baseEvent, attachments: [] };
-					}
-				}
-				return null;
-			},
-		}),
-		instanceStartTime: t.field({
-			description:
-				"The original start time of this instance as defined by the recurrence rule.",
-			type: "DateTime",
-			resolve: (event) =>
-				"instanceStartTime" in event ? event.instanceStartTime : null,
-		}),
-		isMaterialized: t.boolean({
-			description:
-				"A boolean flag indicating if this event is a materialized instance of a recurring event.",
-			resolve: (event) => "baseRecurringEventId" in event,
-		}),
 		baseEvent: t.field({
 			description:
 				"The base event from which this materialized instance was generated.",
 			type: Event,
 			nullable: true,
-			resolve: async (event, args, { drizzleClient }) => {
+			resolve: async (event, _args, { drizzleClient }) => {
 				const baseRecurringEventId =
 					"baseRecurringEventId" in event ? event.baseRecurringEventId : null;
 				if (baseRecurringEventId) {

@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, inArray, isNull, lte, or } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lte, or } from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
@@ -45,8 +45,6 @@ export async function getStandaloneEventsInDateRange(
 		const whereConditions = [
 			eq(eventsTable.organizationId, organizationId),
 			eq(eventsTable.isRecurringEventTemplate, false),
-			// Only get events that are NOT instances of recurring events
-			isNull(eventsTable.recurringEventId),
 			// Event overlaps with date range
 			or(
 				// Event starts within range
@@ -135,7 +133,6 @@ export async function getStandaloneEventsByIds(
 			where: and(
 				inArray(eventsTable.id, eventIds),
 				eq(eventsTable.isRecurringEventTemplate, false),
-				isNull(eventsTable.recurringEventId),
 			),
 			with: {
 				attachmentsWhereEvent: true,

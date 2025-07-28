@@ -1,5 +1,5 @@
 {
-  "id": "0d96cfae-7739-4df2-a660-0fd5ab93bb01",
+  "id": "f66f55f7-293d-475f-8bcd-9063f0d7a928",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -3255,18 +3255,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
-        },
-        "recurring_event_id": {
-          "name": "recurring_event_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "instance_start_time": {
-          "name": "instance_start_time",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -3419,36 +3407,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "events_recurring_event_id_idx": {
-          "name": "events_recurring_event_id_idx",
-          "columns": [
-            {
-              "expression": "recurring_event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "events_instance_start_time_idx": {
-          "name": "events_instance_start_time_idx",
-          "columns": [
-            {
-              "expression": "instance_start_time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -3489,19 +3447,6 @@
             "id"
           ],
           "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
-        "events_recurring_event_id_events_id_fk": {
-          "name": "events_recurring_event_id_events_id_fk",
-          "tableFrom": "events",
-          "tableTo": "events",
-          "columnsFrom": [
-            "recurring_event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
           "onUpdate": "cascade"
         }
       },

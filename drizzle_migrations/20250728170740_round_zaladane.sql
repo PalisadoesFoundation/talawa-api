@@ -229,9 +229,7 @@ CREATE TABLE "events" (
 	"location" text,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid,
-	"is_recurring_template" boolean DEFAULT false NOT NULL,
-	"recurring_event_id" uuid,
-	"instance_start_time" timestamp (3) with time zone
+	"is_recurring_template" boolean DEFAULT false NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "families" (
@@ -583,7 +581,6 @@ ALTER TABLE "event_generation_windows" ADD CONSTRAINT "event_generation_windows_
 ALTER TABLE "events" ADD CONSTRAINT "events_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "events" ADD CONSTRAINT "events_recurring_event_id_events_id_fk" FOREIGN KEY ("recurring_event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "families" ADD CONSTRAINT "families_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "families" ADD CONSTRAINT "families_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "families" ADD CONSTRAINT "families_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
@@ -740,8 +737,6 @@ CREATE INDEX "events_all_day_idx" ON "events" USING btree ("all_day");--> statem
 CREATE INDEX "events_is_public_idx" ON "events" USING btree ("is_public");--> statement-breakpoint
 CREATE INDEX "events_is_registerable_idx" ON "events" USING btree ("is_registerable");--> statement-breakpoint
 CREATE INDEX "events_is_recurring_template_idx" ON "events" USING btree ("is_recurring_template");--> statement-breakpoint
-CREATE INDEX "events_recurring_event_id_idx" ON "events" USING btree ("recurring_event_id");--> statement-breakpoint
-CREATE INDEX "events_instance_start_time_idx" ON "events" USING btree ("instance_start_time");--> statement-breakpoint
 CREATE INDEX "families_created_at_index" ON "families" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "families_creator_id_index" ON "families" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "families_name_index" ON "families" USING btree ("name");--> statement-breakpoint

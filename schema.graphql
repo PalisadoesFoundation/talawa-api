@@ -580,9 +580,6 @@ type Event {
   """The base event from which this materialized instance was generated."""
   baseEvent: Event
 
-  """The base recurring event template if this is a materialized instance."""
-  baseRecurringEvent: Event
-
   """Date time at the time the event was created."""
   createdAt: DateTime
 
@@ -608,16 +605,6 @@ type Event {
   The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.
   """
   id: ID!
-
-  """
-  The original start time of this instance as defined by the recurrence rule.
-  """
-  instanceStartTime: DateTime
-
-  """
-  A boolean flag indicating if this event is a materialized instance of a recurring event.
-  """
-  isMaterialized: Boolean
 
   """A boolean flag indicating if the event is visible to the public."""
   isPublic: Boolean
@@ -1708,8 +1695,13 @@ type Mutation {
   """Mutation field to delete the current user."""
   deleteCurrentUser: User
 
-  """Mutation field to delete an event."""
-  deleteEvent(input: MutationDeleteEventInput!): Event
+  """
+  Mutation field to delete an entire recurring event series (template and all instances).
+  """
+  deleteEntireRecurringEventSeries(
+    """Input for deleting entire recurring event series."""
+    input: MutationDeleteEntireRecurringEventSeriesInput!
+  ): Event
 
   """Mutation field to delete a volunteer group."""
   deleteEventVolunteerGroup(input: MutationDeleteEventVolunteerGroupInput!): VolunteerGroups
@@ -1736,11 +1728,33 @@ type Mutation {
   """Mutation field to delete a post vote."""
   deletePostVote(input: MutationDeletePostVoteInput!): Post
 
+  """
+  Mutation field to delete (cancel) a single instance of a recurring event.
+  """
+  deleteSingleEventInstance(
+    """Input for deleting a single instance of a recurring event."""
+    input: MutationDeleteSingleEventInstanceInput!
+  ): Event
+
+  """Mutation field to delete a standalone (non-recurring) event."""
+  deleteStandaloneEvent(
+    """Input for deleting a standalone event."""
+    input: MutationDeleteStandaloneEventInput!
+  ): Event
+
   """Mutation field to delete a tag."""
   deleteTag(input: MutationDeleteTagInput!): Tag
 
   """Mutation field to delete a tagFolder."""
   deleteTagFolder(input: MutationDeleteTagFolderInput!): TagFolder
+
+  """
+  Mutation field to delete the current instance and all following instances of a recurring event.
+  """
+  deleteThisAndFollowingEvents(
+    """Input for deleting this and following event instances."""
+    input: MutationDeleteThisAndFollowingEventsInput!
+  ): Event
 
   """Mutation field to delete a user."""
   deleteUser(input: MutationDeleteUserInput!): User
@@ -2424,6 +2438,16 @@ input MutationDeleteCommentVoteInput {
   creatorId: ID!
 }
 
+"""
+Input for deleting an entire recurring event series (template + all instances).
+"""
+input MutationDeleteEntireRecurringEventSeriesInput {
+  """
+  Global identifier of the recurring event template to delete the entire series.
+  """
+  id: ID!
+}
+
 """"""
 input MutationDeleteEventInput {
   """Global identifier of the event."""
@@ -2484,6 +2508,18 @@ input MutationDeletePostVoteInput {
   postId: ID!
 }
 
+"""Input for deleting a single instance of a recurring event."""
+input MutationDeleteSingleEventInstanceInput {
+  """Global identifier of the recurring event instance to delete."""
+  id: ID!
+}
+
+"""Input for deleting a standalone (non-recurring) event."""
+input MutationDeleteStandaloneEventInput {
+  """Global identifier of the standalone event to delete."""
+  id: ID!
+}
+
 """"""
 input MutationDeleteTagFolderInput {
   """Global identifier of the tag folder."""
@@ -2493,6 +2529,16 @@ input MutationDeleteTagFolderInput {
 """"""
 input MutationDeleteTagInput {
   """Global identifier of the tag."""
+  id: ID!
+}
+
+"""
+Input for deleting the current instance and all following instances of a recurring event.
+"""
+input MutationDeleteThisAndFollowingEventsInput {
+  """
+  Global identifier of the recurring event instance from which to delete this and following instances.
+  """
   id: ID!
 }
 
