@@ -1,8 +1,4 @@
-import { eq } from "drizzle-orm";
-import { usersTable } from "~/src/drizzle/schema";
-import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
 import type { chatsTable } from "~/src/drizzle/tables/chats";
-import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
@@ -23,44 +19,50 @@ export const resolveUpdatedAt = async (
 
 	const currentUserId = ctx.currentClient.user.id;
 
+	// Check if the current user exists
 	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		columns: { role: true },
-		with: {
-			chatMembershipsWhereMember: {
-				columns: { role: true },
-				where: eq(chatMembershipsTable.chatId, parent.id),
-			},
-			organizationMembershipsWhereMember: {
-				columns: { role: true },
-				where: eq(
-					organizationMembershipsTable.organizationId,
-					parent.organizationId,
-				),
-			},
+		columns: {
+			role: true,
 		},
-		where: eq(usersTable.id, currentUserId),
+		where: (fields, operators) => operators.eq(fields.id, currentUserId),
 	});
 
-	if (!currentUser) {
+	if (currentUser === undefined) {
 		throw new TalawaGraphQLError({
-			message: "User not found in the system",
-			extensions: { code: "unauthenticated" },
+			extensions: {
+				code: "unauthenticated",
+			},
 		});
 	}
 
-	const currentUserOrganizationMembership =
-		currentUser.organizationMembershipsWhereMember[0];
-	const currentUserChatMembership = currentUser.chatMembershipsWhereMember[0];
+	// Allow administrators to access all chat updatedAt fields
+	if (currentUser.role === "administrator") {
+		return parent.updatedAt;
+	}
 
-	const isGlobalAdmin = currentUser.role === "administrator";
-	const isOrgAdmin =
-		currentUserOrganizationMembership?.role === "administrator";
-	const isChatAdmin = currentUserChatMembership?.role === "administrator";
+	// Allow the creator of the chat to access updatedAt field
+	if (parent.creatorId === currentUserId) {
+		return parent.updatedAt;
+	}
 
-	if (!isGlobalAdmin && !isOrgAdmin && !isChatAdmin) {
+	// Check if the user is a member of this chat
+	const chatMembership =
+		await ctx.drizzleClient.query.chatMembershipsTable.findFirst({
+			columns: {
+				chatId: true,
+			},
+			where: (fields, operators) =>
+				operators.and(
+					operators.eq(fields.chatId, parent.id),
+					operators.eq(fields.memberId, currentUserId),
+				),
+		});
+
+	if (chatMembership === undefined) {
 		throw new TalawaGraphQLError({
-			message: "You must be an administrator to view chat details",
-			extensions: { code: "unauthorized_action" },
+			extensions: {
+				code: "unauthorized_action",
+			},
 		});
 	}
 
