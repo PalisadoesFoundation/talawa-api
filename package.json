@@ -32,7 +32,7 @@
     "mercurius-upload": "^8.0.0",
     "minio": "^8.0.5",
     "node-cron": "^3.0.3",
-    "postgres": "^3.4.5",
+    "postgres": "^3.4.7",
     "ulidx": "^2.4.1",
     "uuidv7": "^1.0.2",
     "yauzl": "^3.2.0",
