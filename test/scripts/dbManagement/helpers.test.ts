@@ -446,3 +446,108 @@ suite("disconnect integration test", () => {
 		queryClient.end = originalEnd;
 	});
 });
+
+suite.concurrent("insertCollections - agenda_folders and agenda_items", () => {
+	test.concurrent(
+		"should insert agenda_folders and agenda_items and log success",
+		async () => {
+			vi.spyOn(helpers, "parseDate").mockImplementation(
+				(date) => new Date(date),
+			);
+			vi.spyOn(helpers, "checkAndInsertData").mockResolvedValue(true);
+			vi.spyOn(helpers, "checkDataSize").mockResolvedValue(true);
+			vi.spyOn(console, "log").mockImplementation(() => {});
+			vi.spyOn(fs, "readFile").mockImplementation(async (path, ...args) => {
+				if (typeof path === "string" && path.includes("agenda_folders"))
+					return JSON.stringify([
+						{
+							createdAt: "2024-01-01T00:00:00Z",
+							updatedAt: "2024-01-02T00:00:00Z",
+							creatorId: "123e4567-e89b-12d3-a456-426614174010",
+							eventId: "123e4567-e89b-12d3-a456-426614174011",
+							isAgendaItemFolder: true,
+							name: "Test Folder 1",
+							parentFolderId: "123e4567-e89b-12d3-a456-426614174099",
+							updaterId: "123e4567-e89b-12d3-a456-426614174012",
+						},
+						{
+							createdAt: "2024-01-03T00:00:00Z",
+							updatedAt: "2024-01-04T00:00:00Z",
+							creatorId: "123e4567-e89b-12d3-a456-426614174013",
+							eventId: "123e4567-e89b-12d3-a456-426614174014",
+							isAgendaItemFolder: true,
+							name: "Test Folder 2",
+							parentFolderId: "123e4567-e89b-12d3-a456-426614174099",
+							updaterId: "123e4567-e89b-12d3-a456-426614174015",
+						},
+					]);
+				if (typeof path === "string" && path.includes("agenda_items"))
+					return JSON.stringify([
+						{
+							createdAt: "2024-01-05T00:00:00Z",
+							updatedAt: "2024-01-06T00:00:00Z",
+							folderId: "123e4567-e89b-12d3-a456-426614174001",
+							name: "Test Item 1",
+							creatorId: "123e4567-e89b-12d3-a456-426614174016",
+							updaterId: "123e4567-e89b-12d3-a456-426614174017",
+						},
+						{
+							createdAt: "2024-01-07T00:00:00Z",
+							updatedAt: "2024-01-08T00:00:00Z",
+							folderId: "123e4567-e89b-12d3-a456-426614174002",
+							name: "Test Item 2",
+							creatorId: "123e4567-e89b-12d3-a456-426614174018",
+							updaterId: "123e4567-e89b-12d3-a456-426614174019",
+						},
+					]);
+				return "[]";
+			});
+
+			const result = await helpers.insertCollections([
+				"agenda_folders",
+				"agenda_items",
+			]);
+			expect(result).toBe(true);
+			expect(helpers.checkAndInsertData).toHaveBeenCalledTimes(2);
+			expect(console.log).toHaveBeenCalledWith(
+				expect.stringContaining("Added: Agenda Folders table data"),
+			);
+			expect(console.log).toHaveBeenCalledWith(
+				expect.stringContaining("Added: Agenda Items table data"),
+			);
+		},
+	);
+
+	test.concurrent(
+		"should handle error in agenda_folders insertion",
+		async () => {
+			vi.spyOn(helpers, "parseDate").mockImplementation(
+				(date) => new Date(date),
+			);
+			vi.spyOn(helpers, "checkAndInsertData").mockRejectedValue(
+				new Error("fail"),
+			);
+			vi.spyOn(helpers, "checkDataSize").mockResolvedValue(true);
+			vi.spyOn(fs, "readFile").mockImplementation(async (path, ...args) => {
+				if (typeof path === "string" && path.includes("agenda_folders"))
+					return JSON.stringify([
+						{
+							createdAt: "2024-01-01T00:00:00Z",
+							updatedAt: "2024-01-02T00:00:00Z",
+							creatorId: "123e4567-e89b-12d3-a456-426614174020",
+							eventId: "123e4567-e89b-12d3-a456-426614174021",
+							isAgendaItemFolder: true,
+							name: "Test Folder Error",
+							parentFolderId: "123e4567-e89b-12d3-a456-426614174099",
+							updaterId: "123e4567-e89b-12d3-a456-426614174022",
+						},
+					]);
+				return "[]";
+			});
+
+			await expect(
+				helpers.insertCollections(["agenda_folders"]),
+			).rejects.toThrow(/Error adding data to tables/);
+		},
+	);
+});
