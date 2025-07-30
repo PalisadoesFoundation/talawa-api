@@ -63,6 +63,18 @@ describe("Event Creator Resolver -Test ", () => {
 		);
 	});
 
+	it("should throw TalawaGraphQLError and log error if creator not found", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			undefined,
+		);
+		await expect(eventCreatorResolver(mockEvent, {}, ctx)).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unexpected" } }),
+		);
+		expect(ctx.log.error).toHaveBeenCalledWith(
+			"Postgres select operation returned an empty array for an event's creator id that isn't null.",
+		);
+	});
+
 	describe("Database Query Errors", () => {
 		it("should handle database connection error", async () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValueOnce(
