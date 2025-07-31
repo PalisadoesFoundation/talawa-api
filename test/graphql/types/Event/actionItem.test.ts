@@ -75,6 +75,7 @@ const mockEvent: EventType = {
 	updatedAt: new Date("2024-01-01T00:00:00Z"),
 	creatorId: "user-admin",
 	updaterId: null,
+	isRecurringEventTemplate: false,
 	attachments: [],
 };
 

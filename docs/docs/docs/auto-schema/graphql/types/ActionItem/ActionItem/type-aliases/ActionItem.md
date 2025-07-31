@@ -4,6 +4,6 @@
 
 # Type Alias: ActionItem
 
-> **ActionItem** = *typeof* `actionsTable.$inferSelect`
+> **ActionItem**: *typeof* `actionsTable.$inferSelect`
 
-Defined in: [src/graphql/types/ActionItem/ActionItem.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/a4f57b3a64e82c74809b195eb7bde9c04b2a5e89/src/graphql/types/ActionItem/ActionItem.ts#L4)
+Defined in: src/graphql/types/ActionItem/ActionItem.ts:4

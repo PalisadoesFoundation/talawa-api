@@ -1,54 +1,127 @@
 import type { eventsTable } from "~/src/drizzle/tables/events";
+import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
 import { builder } from "~/src/graphql/builder";
 import {
 	EventAttachment,
 	type EventAttachment as EventAttachmentType,
 } from "~/src/graphql/types/EventAttachment/EventAttachment";
 
-export type Event = typeof eventsTable.$inferSelect & {
-	attachments: EventAttachmentType[] | null;
-};
+// Unified Event type supporting both standalone events and materialized instances
+export type Event =
+	| (typeof eventsTable.$inferSelect & { attachments: EventAttachmentType[] })
+	| (ResolvedRecurringEventInstance & {
+			attachments: EventAttachmentType[];
+	  });
 
 export const Event = builder.objectRef<Event>("Event");
 
 Event.implement({
 	description:
-		"Events are occurrences that take place for specific purposes at specific times.",
+		"Represents an event, which can be a standalone occurrence or a materialized instance of a recurring series. This unified type allows for consistent handling of all events.",
 	fields: (t) => ({
 		attachments: t.expose("attachments", {
-			description: "Array of attachments.",
+			description:
+				"A list of attachments associated with the event, such as images or documents.",
 			type: t.listRef(EventAttachment),
 		}),
 		description: t.exposeString("description", {
-			description: "Custom information about the event.",
+			description:
+				"A detailed description of the event, providing custom information and context.",
 		}),
-		endAt: t.expose("endAt", {
-			description: "Date time at the time the event ends at.",
+		endAt: t.field({
+			description:
+				"The date and time when the event is scheduled to end. For materialized instances, this reflects the actual end time if modified.",
 			type: "DateTime",
+			resolve: (event) =>
+				"actualEndTime" in event ? event.actualEndTime : event.endAt,
 		}),
 		id: t.exposeID("id", {
-			description: "Global identifier of the event.",
+			description:
+				"The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.",
 			nullable: false,
 		}),
 		name: t.exposeString("name", {
-			description: "Name of the event.",
+			description: "The name or title of the event.",
 		}),
-		startAt: t.expose("startAt", {
-			description: "Date time at the time the event starts at.",
+		startAt: t.field({
+			description:
+				"The date and time when the event is scheduled to start. For materialized instances, this reflects the actual start time if modified.",
 			type: "DateTime",
 			nullable: false,
+			resolve: (event) =>
+				"actualStartTime" in event ? event.actualStartTime : event.startAt,
 		}),
 		allDay: t.exposeBoolean("allDay", {
-			description: "Indicates if the event spans the entire day.",
+			description:
+				"A boolean flag indicating if the event lasts for the entire day.",
 		}),
 		isPublic: t.exposeBoolean("isPublic", {
-			description: "Indicates if the event is publicly visible.",
+			description:
+				"A boolean flag indicating if the event is visible to the public.",
 		}),
 		isRegisterable: t.exposeBoolean("isRegisterable", {
-			description: "Indicates if users can register for this event.",
+			description:
+				"A boolean flag indicating if users can register for this event.",
 		}),
 		location: t.exposeString("location", {
-			description: "Physical or virtual location of the event.",
+			description:
+				"The physical or virtual location where the event will take place.",
+		}),
+		isRecurringEventTemplate: t.boolean({
+			description:
+				"A boolean flag indicating if this event serves as a template for a recurring series.",
+			resolve: (event) =>
+				"isRecurringEventTemplate" in event && event.isRecurringEventTemplate,
+		}),
+		baseEvent: t.field({
+			description:
+				"The base event from which this materialized instance was generated.",
+			type: Event,
+			nullable: true,
+			resolve: async (event, _args, { drizzleClient }) => {
+				const baseRecurringEventId =
+					"baseRecurringEventId" in event ? event.baseRecurringEventId : null;
+				if (baseRecurringEventId) {
+					const baseEvent = await drizzleClient.query.eventsTable.findFirst({
+						where: (fields, { eq }) => eq(fields.id, baseRecurringEventId),
+					});
+					if (baseEvent) {
+						return { ...baseEvent, attachments: [] };
+					}
+				}
+				return null;
+			},
+		}),
+		hasExceptions: t.boolean({
+			description:
+				"A boolean flag indicating if this materialized instance has any exceptions applied to it.",
+			resolve: (event) => "hasExceptions" in event && event.hasExceptions,
+		}),
+		sequenceNumber: t.int({
+			description:
+				"The sequence number of this instance within its recurring series (e.g., 1, 2, 3, ...).",
+			resolve: (event) =>
+				"sequenceNumber" in event ? event.sequenceNumber : null,
+		}),
+		totalCount: t.int({
+			description:
+				"The total number of instances in the complete recurring series. This will be null for infinite series.",
+			resolve: (event) => ("totalCount" in event ? event.totalCount : null),
+		}),
+		progressLabel: t.string({
+			description:
+				"A human-readable label indicating the progress of this instance in the series, such as '5 of 12' or 'Episode #7'.",
+			resolve: (event) => {
+				if ("sequenceNumber" in event && "totalCount" in event) {
+					const sequence = event.sequenceNumber;
+					const total = event.totalCount;
+					if (total) {
+						return `${sequence} of ${total}`;
+					}
+					return `#${sequence}`;
+				}
+				return null;
+			},
 		}),
 	}),
 });
