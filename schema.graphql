@@ -1033,7 +1033,7 @@ input FileMetadataInput {
   """
   MIME type of the file
   """
-  mimetype: PostAttachmentMimeType!
+  mimeType: PostAttachmentMimeType!
 
   """
   Name of the file
