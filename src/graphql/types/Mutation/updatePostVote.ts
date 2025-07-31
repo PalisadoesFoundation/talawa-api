@@ -112,10 +112,10 @@ builder.mutationField("updatePostVote", (t) =>
 				});
 			}
 
-			let voteResult;
+			let voteResult = undefined;
 
 			if (existingVote) {
-				// ✅ UPDATE the vote
+				//  UPDATE the vote
 				[voteResult] = await ctx.drizzleClient
 					.update(postVotesTable)
 					.set({ type: parsedArgs.input.type })
@@ -123,11 +123,11 @@ builder.mutationField("updatePostVote", (t) =>
 						and(
 							eq(postVotesTable.creatorId, currentUserId),
 							eq(postVotesTable.postId, parsedArgs.input.postId),
-						)
+						),
 					)
 					.returning();
 			} else {
-				// ✅ CREATE new vote
+				// CREATE new vote
 				[voteResult] = await ctx.drizzleClient
 					.insert(postVotesTable)
 					.values({
