@@ -54,8 +54,8 @@ importers:
         specifier: ^0.44.1
         version: 0.44.1(gel@2.0.1)(postgres@3.4.7)
       drizzle-zod:
-        specifier: 0.6.1
-        version: 0.6.1(drizzle-orm@0.44.1(gel@2.0.1)(postgres@3.4.7))(zod@3.24.2)
+        specifier: 0.7.1
+        version: 0.7.1(drizzle-orm@0.44.1(gel@2.0.1)(postgres@3.4.7))(zod@3.24.2)
       env-schema:
         specifier: ^6.0.1
         version: 6.0.1
@@ -2009,8 +2009,8 @@ packages:
       drizzle-orm:
         optional: true
 
-  drizzle-zod@0.6.1:
-    resolution: {integrity: sha512-huEbUgnsuR8tupnmLiyB2F1I2H9dswI3GfM36IbIqx9i0YUeYjRsDpJVyFVeziUvI1ogT9JHRL2Q03cC4QmvxA==}
+  drizzle-zod@0.7.1:
+    resolution: {integrity: sha512-nZzALOdz44/AL2U005UlmMqaQ1qe5JfanvLujiTHiiT8+vZJTBFhj3pY4Vk+L6UWyKFfNmLhk602Hn4kCTynKQ==}
     peerDependencies:
       drizzle-orm: '>=0.36.0'
       zod: '>=3.0.0'
@@ -4801,7 +4801,7 @@ snapshots:
     optionalDependencies:
       drizzle-orm: 0.44.1(gel@2.0.1)(postgres@3.4.7)
 
-  drizzle-zod@0.6.1(drizzle-orm@0.44.1(gel@2.0.1)(postgres@3.4.7))(zod@3.24.2):
+  drizzle-zod@0.7.1(drizzle-orm@0.44.1(gel@2.0.1)(postgres@3.4.7))(zod@3.24.2):
     dependencies:
       drizzle-orm: 0.44.1(gel@2.0.1)(postgres@3.4.7)
       zod: 3.24.2
