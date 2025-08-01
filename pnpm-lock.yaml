@@ -25,7 +25,7 @@ importers:
         version: 7.0.2
       '@fastify/type-provider-typebox':
         specifier: ^5.1.0
-        version: 5.1.0(@sinclair/typebox@0.34.28)
+        version: 5.1.0(@sinclair/typebox@0.34.38)
       '@node-rs/argon2':
         specifier: ^2.0.2
         version: 2.0.2
@@ -39,8 +39,8 @@ importers:
         specifier: ^4.3.0
         version: 4.4.0(@pothos/core@4.5.0(graphql@16.10.0))(graphql@16.10.0)
       '@sinclair/typebox':
-        specifier: ^0.34.15
-        version: 0.34.28
+        specifier: ^0.34.38
+        version: 0.34.38
       ajv-formats:
         specifier: ^3.0.1
         version: 3.0.1(ajv@8.17.1)
@@ -1291,8 +1291,8 @@ packages:
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
 
-  '@sinclair/typebox@0.34.28':
-    resolution: {integrity: sha512-e2B9vmvaa5ym5hWgCHw5CstP54au6AOLXrhZErLsOyyRzuWJtXl/8TszKtc5x8rw/b+oY7HKS9m9iRI53RK0WQ==}
+  '@sinclair/typebox@0.34.38':
+    resolution: {integrity: sha512-HpkxMmc2XmZKhvaKIZZThlHmx1L0I/V1hWK1NubtlFnr6ZqdiOpV72TKudZUNQjZNsyDBay72qFEhEvb+bcwcA==}
 
   '@sindresorhus/is@5.6.0':
     resolution: {integrity: sha512-TV7t8GKYaJWsn00tFDqBw8+Uqmr8A0fRU1tvTQhyZzGv0sJCGRQL3JGMI3ucuKo3XIZdUP+Lx7/gh2t3lewy7g==}
@@ -3669,9 +3669,9 @@ snapshots:
       fastq: 1.19.1
       glob: 11.0.1
 
-  '@fastify/type-provider-typebox@5.1.0(@sinclair/typebox@0.34.28)':
+  '@fastify/type-provider-typebox@5.1.0(@sinclair/typebox@0.34.38)':
     dependencies:
-      '@sinclair/typebox': 0.34.28
+      '@sinclair/typebox': 0.34.38
 
   '@fastify/websocket@11.0.2':
     dependencies:
@@ -4101,7 +4101,7 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.0.2': {}
 
-  '@sinclair/typebox@0.34.28': {}
+  '@sinclair/typebox@0.34.38': {}
 
   '@sindresorhus/is@5.6.0': {}
 
