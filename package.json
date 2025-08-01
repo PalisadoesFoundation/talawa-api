@@ -14,7 +14,7 @@
     "@pothos/core": "^4.5.0",
     "@pothos/plugin-complexity": "^4.1.0",
     "@pothos/plugin-relay": "^4.3.0",
-    "@sinclair/typebox": "^0.34.15",
+    "@sinclair/typebox": "^0.34.38",
     "ajv-formats": "^3.0.1",
     "close-with-grace": "^2.2.0",
     "dotenv": "^17.0.0",
