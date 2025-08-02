@@ -257,11 +257,9 @@ suite("instanceResolver", () => {
 			const templatesMap = new Map([
 				[mockGeneratedInstance.baseRecurringEventId, mockBaseTemplate],
 			]);
-			const exceptionKey = createExceptionKey(
-				mockGeneratedInstance.baseRecurringEventId,
-				mockGeneratedInstance.originalInstanceStartTime,
-			);
-			const exceptionsMap = new Map([[exceptionKey, mockException]]);
+			const exceptionsMap = new Map([
+				[mockGeneratedInstance.id, mockException],
+			]);
 
 			const result = resolveMultipleInstances(
 				instances,
@@ -391,6 +389,7 @@ suite("instanceResolver", () => {
 			const validInstance: Partial<ResolvedEventInstance> = {
 				id: faker.string.uuid(),
 				baseRecurringEventId: faker.string.uuid(),
+				originalSeriesId: faker.string.uuid(),
 				originalInstanceStartTime: new Date(),
 				actualStartTime: new Date(),
 				actualEndTime: new Date(),
@@ -410,7 +409,8 @@ suite("instanceResolver", () => {
 			const invalidInstance: Partial<ResolvedEventInstance> = {
 				id: faker.string.uuid(),
 				baseRecurringEventId: faker.string.uuid(),
-				// Missing originalInstanceStartTime
+				// Missing originalSeriesId
+				originalInstanceStartTime: new Date(),
 				actualStartTime: new Date(),
 				actualEndTime: new Date(),
 				organizationId: faker.string.uuid(),
@@ -424,7 +424,7 @@ suite("instanceResolver", () => {
 
 			expect(result).toBe(false);
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Missing required field in resolved instance: originalInstanceStartTime",
+				"Missing required field in resolved instance: originalSeriesId",
 			);
 		});
 
@@ -436,7 +436,8 @@ suite("instanceResolver", () => {
 				actualStartTime: new Date(),
 				actualEndTime: new Date(),
 				organizationId: faker.string.uuid(),
-				name: undefined, // Undefined required field
+				name: "Test Event",
+				originalSeriesId: undefined, // Undefined required field
 			};
 
 			const result = validateResolvedInstance(
@@ -446,7 +447,7 @@ suite("instanceResolver", () => {
 
 			expect(result).toBe(false);
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Missing required field in resolved instance: name",
+				"Missing required field in resolved instance: originalSeriesId",
 			);
 		});
 	});

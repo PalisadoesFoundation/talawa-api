@@ -406,8 +406,10 @@ suite("Mutation field deleteEntireRecurringEventSeries", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
-							code: "invalid_arguments",
+							code: "arguments_associated_resources_not_found",
 						}),
+						message:
+							"No recurrence rule found for this recurring event template.",
 					}),
 				]),
 			);
