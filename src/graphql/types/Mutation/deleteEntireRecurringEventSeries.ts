@@ -1,6 +1,9 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { eventsTable } from "~/src/drizzle/tables/events";
+import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
+import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
+import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { builder } from "~/src/graphql/builder";
 import {
 	MutationDeleteEntireRecurringEventSeriesInput,
@@ -57,7 +60,7 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingEvent] = await Promise.all([
+			const [currentUser, existingEvent, recurrenceRule] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
@@ -89,6 +92,13 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.id),
 				}),
+				ctx.drizzleClient.query.recurrenceRulesTable.findFirst({
+					columns: {
+						originalSeriesId: true,
+					},
+					where: (fields, operators) =>
+						operators.eq(fields.baseRecurringEventId, parsedArgs.input.id),
+				}),
 			]);
 
 			if (currentUser === undefined) {
@@ -109,6 +119,21 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 							},
 						],
 					},
+				});
+			}
+
+			if (recurrenceRule === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "arguments_associated_resources_not_found",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
+					},
+					message:
+						"No recurrence rule found for this recurring event template.",
 				});
 			}
 
@@ -150,10 +175,57 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
-				// Delete the template (this will cascade delete all instances via foreign key constraints)
+				// Use the originalSeriesId from the recurrence rule we fetched
+				const originalSeriesId = recurrenceRule.originalSeriesId;
+
+				// Find all templates that belong to the same logical series
+				const allTemplatesInSeries = await tx
+					.select({
+						id: eventsTable.id,
+						attachments: eventsTable.id, // We'll use this to fetch attachments later
+					})
+					.from(eventsTable)
+					.innerJoin(
+						recurrenceRulesTable,
+						eq(eventsTable.id, recurrenceRulesTable.baseRecurringEventId),
+					)
+					.where(eq(recurrenceRulesTable.originalSeriesId, originalSeriesId));
+
+				// Get all instances that belong to this logical series for exception cleanup
+				const allInstancesInSeries = await tx
+					.select({ id: recurringEventInstancesTable.id })
+					.from(recurringEventInstancesTable)
+					.where(
+						eq(recurringEventInstancesTable.originalSeriesId, originalSeriesId),
+					);
+
+				// Delete exceptions for all instances in the series
+				if (allInstancesInSeries.length > 0) {
+					await tx.delete(eventExceptionsTable).where(
+						inArray(
+							eventExceptionsTable.recurringEventInstanceId,
+							allInstancesInSeries.map((instance) => instance.id),
+						),
+					);
+				}
+
+				// Delete all instances in the series
+				await tx
+					.delete(recurringEventInstancesTable)
+					.where(
+						eq(recurringEventInstancesTable.originalSeriesId, originalSeriesId),
+					);
+
+				// Delete all recurrence rules in the series
+				await tx
+					.delete(recurrenceRulesTable)
+					.where(eq(recurrenceRulesTable.originalSeriesId, originalSeriesId));
+
+				// Delete all templates in the series
+				const templateIds = allTemplatesInSeries.map((template) => template.id);
 				const [deletedEvent] = await tx
 					.delete(eventsTable)
-					.where(eq(eventsTable.id, parsedArgs.input.id))
+					.where(inArray(eventsTable.id, templateIds))
 					.returning();
 
 				if (deletedEvent === undefined) {
@@ -164,11 +236,13 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 					});
 				}
 
-				// Clean up attachments
+				// Clean up attachments for the original template
+				// Note: We only clean up attachments for the original template that was requested
+				// Other templates in the series may have their own attachments managed separately
 				await ctx.minio.client.removeObjects(
 					ctx.minio.bucketName,
 					existingEvent.attachmentsWhereEvent.map(
-						(attachment) => attachment.name,
+						(attachment: { name: string }) => attachment.name,
 					),
 				);
 

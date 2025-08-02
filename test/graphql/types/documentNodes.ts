@@ -1432,3 +1432,72 @@ export const Mutation_deleteEntireRecurringEventSeries = gql(`
     }
   }
 `);
+
+export const Mutation_updateSingleRecurringEventInstance = gql(`
+  mutation Mutation_updateSingleRecurringEventInstance($input: MutationUpdateSingleRecurringEventInstanceInput!) {
+    updateSingleRecurringEventInstance(input: $input) {
+      id
+      name
+      description
+      location
+      startAt
+      endAt
+      allDay
+      isPublic
+      isRegisterable
+      hasExceptions
+      sequenceNumber
+      totalCount
+      organization {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Mutation_updateStandaloneEvent = gql(`
+  mutation Mutation_updateStandaloneEvent($input: MutationUpdateEventInput!) {
+    updateStandaloneEvent(input: $input) {
+      id
+      name
+      description
+      location
+      startAt
+      endAt
+      allDay
+      isPublic
+      isRegisterable
+      organization {
+        id
+        name
+      }
+      attachments {
+        mimeType
+      }
+    }
+  }
+`);
+
+export const Mutation_updateThisAndFollowingEvents = gql(`
+  mutation Mutation_updateThisAndFollowingEvents($input: MutationUpdateThisAndFollowingEventsInput!) {
+    updateThisAndFollowingEvents(input: $input) {
+      id
+      name
+      description
+      location
+      startAt
+      endAt
+      allDay
+      isPublic
+      isRegisterable
+      hasExceptions
+      sequenceNumber
+      totalCount
+      organization {
+        id
+        name
+      }
+    }
+  }
+`);

@@ -1,5 +1,5 @@
 {
-  "id": "45c466a4-c49b-40a2-965d-195bb3c917b2",
+  "id": "266cfacf-bba2-4ac0-98ae-08b75f3ed72d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -2642,34 +2642,15 @@
           "primaryKey": true,
           "notNull": true
         },
-        "event_instance_id": {
-          "name": "event_instance_id",
+        "recurring_event_instance_id": {
+          "name": "recurring_event_instance_id",
           "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "recurring_event_id": {
-          "name": "recurring_event_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "instance_start_time": {
-          "name": "instance_start_time",
-          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": true
         },
         "exception_data": {
           "name": "exception_data",
           "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "exception_type": {
-          "name": "exception_type",
-          "type": "exception_type",
-          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -2706,41 +2687,11 @@
         }
       },
       "indexes": {
-        "ee_event_instance_id_idx": {
-          "name": "ee_event_instance_id_idx",
+        "ee_recurring_event_instance_id_idx": {
+          "name": "ee_recurring_event_instance_id_idx",
           "columns": [
             {
-              "expression": "event_instance_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "ee_recurring_event_id_idx": {
-          "name": "ee_recurring_event_id_idx",
-          "columns": [
-            {
-              "expression": "recurring_event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "ee_instance_start_time_idx": {
-          "name": "ee_instance_start_time_idx",
-          "columns": [
-            {
-              "expression": "instance_start_time",
+              "expression": "recurring_event_instance_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -2766,21 +2717,6 @@
           "method": "btree",
           "with": {}
         },
-        "ee_exception_type_idx": {
-          "name": "ee_exception_type_idx",
-          "columns": [
-            {
-              "expression": "exception_type",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "ee_creator_id_idx": {
           "name": "ee_creator_id_idx",
           "columns": [
@@ -2795,49 +2731,15 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "ee_recurring_event_instance_idx": {
-          "name": "ee_recurring_event_instance_idx",
-          "columns": [
-            {
-              "expression": "recurring_event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "instance_start_time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
-        "event_exceptions_event_instance_id_events_id_fk": {
-          "name": "event_exceptions_event_instance_id_events_id_fk",
+        "event_exceptions_recurring_event_instance_id_recurring_event_instances_id_fk": {
+          "name": "event_exceptions_recurring_event_instance_id_recurring_event_instances_id_fk",
           "tableFrom": "event_exceptions",
-          "tableTo": "events",
+          "tableTo": "recurring_event_instances",
           "columnsFrom": [
-            "event_instance_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "event_exceptions_recurring_event_id_events_id_fk": {
-          "name": "event_exceptions_recurring_event_id_events_id_fk",
-          "tableFrom": "event_exceptions",
-          "tableTo": "events",
-          "columnsFrom": [
-            "recurring_event_id"
+            "recurring_event_instance_id"
           ],
           "columnsTo": [
             "id"
@@ -5603,6 +5505,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "original_series_id": {
+          "name": "original_series_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "organization_id": {
           "name": "organization_id",
           "type": "uuid",
@@ -5824,6 +5732,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "original_series_id": {
+          "name": "original_series_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "original_instance_start_time": {
           "name": "original_instance_start_time",
           "type": "timestamp (3) with time zone",
@@ -5981,6 +5895,21 @@
           "columns": [
             {
               "expression": "recurrence_rule_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reei_original_series_idx": {
+          "name": "reei_original_series_idx",
+          "columns": [
+            {
+              "expression": "original_series_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -7798,14 +7727,6 @@
     }
   },
   "enums": {
-    "public.exception_type": {
-      "name": "exception_type",
-      "schema": "public",
-      "values": [
-        "SINGLE_INSTANCE",
-        "THIS_AND_FUTURE"
-      ]
-    },
     "public.frequency": {
       "name": "frequency",
       "schema": "public",

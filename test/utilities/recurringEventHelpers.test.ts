@@ -102,6 +102,7 @@ describe("recurringEventHelpers", () => {
 		const baseRule: typeof recurrenceRulesTable.$inferSelect = {
 			id: "1",
 			baseRecurringEventId: "1",
+			originalSeriesId: "1",
 			organizationId: "1",
 			creatorId: "1",
 			updaterId: null,
@@ -173,6 +174,7 @@ describe("recurringEventHelpers", () => {
 		const baseRule: typeof recurrenceRulesTable.$inferSelect = {
 			id: "1",
 			baseRecurringEventId: "1",
+			originalSeriesId: "1",
 			organizationId: "1",
 			creatorId: "1",
 			updaterId: null,
@@ -230,6 +232,7 @@ describe("recurringEventHelpers", () => {
 		const baseRule: typeof recurrenceRulesTable.$inferSelect = {
 			id: "1",
 			baseRecurringEventId: "1",
+			originalSeriesId: "1",
 			organizationId: "1",
 			creatorId: "1",
 			updaterId: null,
@@ -300,6 +303,7 @@ describe("recurringEventHelpers", () => {
 		const baseRule: typeof recurrenceRulesTable.$inferSelect = {
 			id: "1",
 			baseRecurringEventId: "1",
+			originalSeriesId: "1",
 			organizationId: "1",
 			creatorId: "1",
 			updaterId: null,

@@ -105,36 +105,40 @@ export async function getUnifiedEventsInDateRange(
 
 			// Transform generated instances to unified format
 			const enrichedGeneratedInstances: EventWithAttachments[] =
-				generatedInstances.map((instance) => ({
-					// Core event properties (resolved from template + exceptions)
-					id: instance.id, // Use generated instance ID
-					name: instance.name,
-					description: instance.description,
-					startAt: instance.actualStartTime,
-					endAt: instance.actualEndTime,
-					location: instance.location,
-					allDay: instance.allDay,
-					isPublic: instance.isPublic,
-					isRegisterable: instance.isRegisterable,
-					organizationId: instance.organizationId,
-					creatorId: instance.creatorId,
-					updaterId: instance.updaterId,
-					createdAt: instance.createdAt,
-					updatedAt: instance.updatedAt,
+				generatedInstances.map((instance) => {
+					const transformedInstance = {
+						// Core event properties (resolved from template + exceptions)
+						id: instance.id, // Use generated instance ID
+						name: instance.name,
+						description: instance.description,
+						startAt: instance.actualStartTime,
+						endAt: instance.actualEndTime,
+						location: instance.location,
+						allDay: instance.allDay,
+						isPublic: instance.isPublic,
+						isRegisterable: instance.isRegisterable,
+						organizationId: instance.organizationId,
+						creatorId: instance.creatorId,
+						updaterId: instance.updaterId,
+						createdAt: instance.createdAt,
+						updatedAt: instance.updatedAt,
 
-					// Generated instance metadata
-					isRecurringEventTemplate: false, // Instances are never templates
+						// Generated instance metadata
+						isRecurringEventTemplate: false, // Instances are never templates
 
-					// Additional generated properties
-					baseRecurringEventId: instance.baseRecurringEventId,
-					sequenceNumber: instance.sequenceNumber,
-					totalCount: instance.totalCount,
-					hasExceptions: instance.hasExceptions,
-					isGenerated: true,
+						// Additional generated properties
+						baseRecurringEventId: instance.baseRecurringEventId,
+						sequenceNumber: instance.sequenceNumber,
+						totalCount: instance.totalCount,
+						hasExceptions: instance.hasExceptions,
+						isGenerated: true,
 
-					attachments: [],
-					eventType: "generated" as const,
-				}));
+						attachments: [],
+						eventType: "generated" as const,
+					};
+
+					return transformedInstance;
+				});
 
 			allEvents.push(...enrichedGeneratedInstances);
 		}

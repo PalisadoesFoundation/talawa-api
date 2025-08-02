@@ -51,6 +51,7 @@ describe("eventCleanupWorker", () => {
 		id: "instance1",
 		organizationId: "org1",
 		baseRecurringEventId: "event1",
+		originalSeriesId: "event1",
 		recurrenceRuleId: "rule1",
 		originalInstanceStartTime: new Date("2024-01-01"),
 		actualStartTime: new Date("2024-01-01"),
