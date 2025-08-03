@@ -1683,20 +1683,6 @@ describe("ChatMembershipResolver", () => {
 							mockContext,
 						);
 						expect(result).toBe(mockChat);
-					} else {
-						// This else branch is now unused since all test cases should succeed
-						// in ChatMembershipResolver.createChatMembership (basic validation only)
-						const result = await ChatMembershipResolver.createChatMembership(
-							{},
-							{
-								input: {
-									memberId: "00000000-0000-0000-0000-000000000002",
-									chatId: "00000000-0000-0000-0000-000000000001",
-								},
-							},
-							mockContext,
-						);
-						expect(result).toBe(mockChat);
 					}
 				}
 			});
@@ -1734,14 +1720,6 @@ describe("ChatMembershipResolver", () => {
 			});
 
 			it("should successfully create chat membership and return chat", async () => {
-				const mockChatMembership = {
-					id: "00000000-0000-0000-0000-000000000001",
-					creatorId: "00000000-0000-0000-0000-000000000003",
-					memberId: "00000000-0000-0000-0000-000000000004",
-					chatId: "00000000-0000-0000-0000-000000000002",
-					role: "regular",
-				};
-
 				const mockChat = {
 					id: "00000000-0000-0000-0000-000000000002",
 					chatMembershipsWhereChat: [],
@@ -1772,12 +1750,6 @@ describe("ChatMembershipResolver", () => {
 				additionalMockContext.drizzleClient.query.chatMembershipsTable.findFirst.mockResolvedValue(
 					undefined,
 				);
-
-				additionalMockContext.drizzleClient.insert.mockReturnValue({
-					values: vi.fn().mockReturnValue({
-						returning: vi.fn().mockResolvedValue([mockChatMembership]),
-					}),
-				});
 
 				const result = await ChatMembershipResolver.createChatMembership(
 					{},
