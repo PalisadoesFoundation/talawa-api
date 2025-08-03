@@ -8,9 +8,10 @@ import {
 	vi,
 } from "vitest";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import { ChatMembershipResolver } from "../../../../src/graphql/types/Mutation/createChatMembership";
 
-vi.mock("../../../utils", () => ({
+vi.mock("~/src/utilities/getKeyPathsWithNonUndefinedValues", () => ({
 	getKeyPathsWithNonUndefinedValues: vi.fn(),
 }));
 
@@ -66,6 +67,9 @@ describe("ChatMembershipResolver", () => {
 		};
 
 		beforeEach(() => {
+			// Set up default mock for getKeyPathsWithNonUndefinedValues
+			(getKeyPathsWithNonUndefinedValues as Mock).mockReturnValue([]);
+
 			mockParent = {
 				id: "chat-membership-1",
 				chatId: "chat-1",
@@ -119,6 +123,8 @@ describe("ChatMembershipResolver", () => {
 
 		afterEach(() => {
 			vi.clearAllMocks();
+			// Reset the mock to return empty array by default
+			(getKeyPathsWithNonUndefinedValues as Mock).mockReturnValue([]);
 		});
 
 		it("should throw unauthenticated error when user is not authenticated", async () => {
@@ -673,6 +679,11 @@ describe("ChatMembershipResolver", () => {
 		});
 
 		it("should throw unauthorized_arguments when non-admin tries to set role", async () => {
+			// Mock for this specific test to return unauthorized path
+			(getKeyPathsWithNonUndefinedValues as Mock).mockReturnValue([
+				["input", "role"],
+			]);
+
 			mockContext.drizzleClient.query.usersTable.findFirst
 				.mockResolvedValueOnce({
 					role: "regular",
@@ -1400,6 +1411,11 @@ describe("ChatMembershipResolver", () => {
 			});
 
 			it("should restrict non-admin from setting non-regular roles", async () => {
+				// Mock for this specific test to return unauthorized path
+				(getKeyPathsWithNonUndefinedValues as Mock).mockReturnValue([
+					["input", "role"],
+				]);
+
 				const mockChat = {
 					id: "00000000-0000-0000-0000-000000000001",
 					chatMembershipsWhereChat: [],
@@ -1450,6 +1466,11 @@ describe("ChatMembershipResolver", () => {
 			});
 
 			it("should reject non-admin trying to set any role", async () => {
+				// Mock for this specific test to return unauthorized path
+				(getKeyPathsWithNonUndefinedValues as Mock).mockReturnValue([
+					["input", "role"],
+				]);
+
 				const mockChat = {
 					id: "00000000-0000-0000-0000-000000000001",
 					chatMembershipsWhereChat: [],
@@ -1678,6 +1699,157 @@ describe("ChatMembershipResolver", () => {
 						expect(result).toBe(mockChat);
 					}
 				}
+			});
+		});
+
+		describe("Additional createChatMembership tests", () => {
+			let additionalMockContext: typeof mockContext & {
+				drizzleClient: typeof mockContext.drizzleClient & {
+					insert: Mock;
+					query: typeof mockContext.drizzleClient.query & {
+						chatMembershipsTable: {
+							findFirst: Mock;
+						};
+					};
+				};
+			};
+
+			beforeEach(() => {
+				// Set up default mock for getKeyPathsWithNonUndefinedValues
+				(getKeyPathsWithNonUndefinedValues as Mock).mockReturnValue([]);
+
+				additionalMockContext = {
+					...mockContext,
+					drizzleClient: {
+						...mockContext.drizzleClient,
+						insert: vi.fn(),
+						query: {
+							...mockContext.drizzleClient.query,
+							chatMembershipsTable: {
+								findFirst: vi.fn(),
+							},
+						},
+					},
+				};
+			});
+
+			it("should successfully create chat membership and return chat", async () => {
+				const mockChatMembership = {
+					id: "00000000-0000-0000-0000-000000000001",
+					creatorId: "00000000-0000-0000-0000-000000000003",
+					memberId: "00000000-0000-0000-0000-000000000004",
+					chatId: "00000000-0000-0000-0000-000000000002",
+					role: "regular",
+				};
+
+				const mockChat = {
+					id: "00000000-0000-0000-0000-000000000002",
+					chatMembershipsWhereChat: [],
+					organization: {
+						countryCode: "US",
+						membershipsWhereOrganization: [{ role: "administrator" }],
+					},
+				};
+
+				const mockCurrentUser = {
+					id: "00000000-0000-0000-0000-000000000003",
+					role: "administrator",
+				};
+				const mockMember = {
+					id: "00000000-0000-0000-0000-000000000004",
+					role: "regular",
+				};
+
+				// Setup mocks for the successful path
+				additionalMockContext.drizzleClient.query.usersTable.findFirst
+					.mockResolvedValueOnce(mockCurrentUser) // Current user lookup
+					.mockResolvedValueOnce(mockMember); // Member lookup
+
+				additionalMockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
+					mockChat,
+				);
+
+				additionalMockContext.drizzleClient.query.chatMembershipsTable.findFirst.mockResolvedValue(
+					undefined,
+				);
+
+				additionalMockContext.drizzleClient.insert.mockReturnValue({
+					values: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue([mockChatMembership]),
+					}),
+				});
+
+				const result = await ChatMembershipResolver.createChatMembership(
+					{},
+					{
+						input: {
+							memberId: "00000000-0000-0000-0000-000000000004",
+							chatId: "00000000-0000-0000-0000-000000000002",
+							role: "regular",
+						},
+					},
+					additionalMockContext,
+				);
+
+				expect(result).toEqual(mockChat);
+			});
+
+			it("should test role authorization for non-admin setting non-regular role", async () => {
+				const mockChat = {
+					id: "00000000-0000-0000-0000-000000000002",
+					chatMembershipsWhereChat: [],
+					organization: {
+						countryCode: "US",
+						membershipsWhereOrganization: [{ role: "member" }], // Regular org member
+					},
+				};
+
+				const mockCurrentUser = {
+					id: "00000000-0000-0000-0000-000000000003",
+					role: "regular",
+				};
+				const mockMember = {
+					id: "00000000-0000-0000-0000-000000000004",
+					role: "regular",
+				};
+
+				// Setup mocks
+				additionalMockContext.drizzleClient.query.usersTable.findFirst
+					.mockResolvedValueOnce(mockCurrentUser)
+					.mockResolvedValueOnce(mockMember);
+
+				additionalMockContext.drizzleClient.query.chatsTable.findFirst.mockResolvedValue(
+					mockChat,
+				);
+
+				additionalMockContext.drizzleClient.query.chatMembershipsTable.findFirst.mockResolvedValue(
+					{ role: "member" }, // Regular chat member
+				);
+
+				// Mock getKeyPathsWithNonUndefinedValues to return non-empty array
+				(getKeyPathsWithNonUndefinedValues as Mock).mockReturnValue([
+					["input", "role"],
+				]);
+
+				await expect(
+					ChatMembershipResolver.createChatMembership(
+						{},
+						{
+							input: {
+								memberId: "00000000-0000-0000-0000-000000000004",
+								chatId: "00000000-0000-0000-0000-000000000002",
+								role: "administrator", // Non-regular role
+							},
+						},
+						additionalMockContext,
+					),
+				).rejects.toThrow(
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthorized_arguments",
+						}),
+					}),
+				);
 			});
 		});
 	});
