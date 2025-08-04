@@ -310,7 +310,6 @@ suite("instanceResolver", () => {
 				{
 					id: faker.string.uuid(),
 					recurringEventInstanceId: faker.string.uuid(),
-					baseRecurringEventId: faker.string.uuid(),
 					exceptionData: { name: "Exception 1" },
 					organizationId: faker.string.uuid(),
 					creatorId: faker.string.uuid(),
@@ -321,7 +320,6 @@ suite("instanceResolver", () => {
 				{
 					id: faker.string.uuid(),
 					recurringEventInstanceId: faker.string.uuid(),
-					baseRecurringEventId: faker.string.uuid(),
 					exceptionData: { name: "Exception 2" },
 					organizationId: faker.string.uuid(),
 					creatorId: faker.string.uuid(),

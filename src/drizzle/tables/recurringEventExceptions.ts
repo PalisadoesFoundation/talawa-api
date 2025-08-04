@@ -3,7 +3,6 @@ import { index, jsonb, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
@@ -36,13 +35,6 @@ export const eventExceptionsTable = pgTable(
 		recurringEventInstanceId: uuid("recurring_event_instance_id")
 			.notNull()
 			.references(() => recurringEventInstancesTable.id, {
-				onDelete: "cascade",
-				onUpdate: "cascade",
-			}),
-
-		baseRecurringEventId: uuid("base_recurring_event_id")
-			.notNull()
-			.references(() => eventsTable.id, {
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
@@ -162,7 +154,6 @@ export const recurringEventExceptionsTableInsertSchema = createInsertSchema(
 	{
 		exceptionData: z.record(z.any()), // JSON object with any structure
 		recurringEventInstanceId: z.string().uuid(),
-		baseRecurringEventId: z.string().uuid(),
 		organizationId: z.string().uuid(),
 		creatorId: z.string().uuid(),
 		updaterId: z.string().uuid().optional(),

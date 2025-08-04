@@ -271,7 +271,6 @@ builder.mutationField("updateSingleRecurringEventInstance", (t) =>
 					// Create new exception
 					await tx.insert(eventExceptionsTable).values({
 						recurringEventInstanceId: parsedArgs.input.id,
-						baseRecurringEventId: existingInstance.baseRecurringEventId,
 						exceptionData,
 						organizationId: existingInstance.organizationId,
 						creatorId: currentUserId,
