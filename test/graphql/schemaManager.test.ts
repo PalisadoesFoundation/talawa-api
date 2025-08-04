@@ -99,24 +99,26 @@ describe("GraphQLSchemaManager", () => {
 
 			const mockExtensionRegistry: IExtensionRegistry = {
 				graphql: {
-					queries: {
-						getPluginData: {
+					builderExtensions: [
+						{
 							pluginId: "plugin1",
-							resolver: vi.fn(),
+							type: "query",
+							fieldName: "getPluginData",
+							builderFunction: vi.fn(),
 						},
-						getInactivePluginData: {
+						{
 							pluginId: "inactive_plugin",
-							resolver: vi.fn(),
+							type: "query",
+							fieldName: "getInactivePluginData",
+							builderFunction: vi.fn(),
 						},
-					},
-					mutations: {
-						createPluginData: {
+						{
 							pluginId: "plugin1",
-							resolver: vi.fn(),
+							type: "mutation",
+							fieldName: "createPluginData",
+							builderFunction: vi.fn(),
 						},
-					},
-					subscriptions: {},
-					types: {},
+					],
 				},
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },
@@ -172,10 +174,7 @@ describe("GraphQLSchemaManager", () => {
 
 			const mockExtensionRegistry: IExtensionRegistry = {
 				graphql: {
-					queries: {},
-					mutations: {},
-					subscriptions: {},
-					types: {},
+					builderExtensions: [],
 				},
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },

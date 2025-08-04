@@ -5,10 +5,12 @@
  * without requiring server restarts.
  */
 
+import path from "node:path";
 import type { GraphQLSchema } from "graphql";
 
+import { builder } from "~/src/graphql/builder";
 import { getPluginManagerInstance } from "~/src/plugin/registry";
-import { builder } from "./builder";
+import type { IExtensionRegistry } from "~/src/plugin/types";
 
 class GraphQLSchemaManager {
 	private currentSchema: GraphQLSchema | null = null;
@@ -98,8 +100,8 @@ class GraphQLSchemaManager {
 			// This ensures the base API schema is always available
 
 			// Import all core schema files - this will register all types with the builder
-			await import("./enums/index");
 			await import("./scalars/index");
+			await import("./enums/index");
 			await import("./inputs/index");
 			await import("./types/index");
 			// Note: interfaces and unions directories have empty index files, so skipping them
@@ -128,199 +130,94 @@ class GraphQLSchemaManager {
 			return;
 		}
 
-		// Register queries
-		for (const [queryName, queryExtension] of Object.entries(
-			extensionRegistry.graphql.queries,
-		) as [
-			string,
-			{
-				pluginId: string;
-				resolver: (parent: unknown, args: unknown, context: unknown) => unknown;
-			},
-		][]) {
-			if (pluginManager.isPluginActive(queryExtension.pluginId)) {
-				this.registerGraphQLField(
-					queryExtension.pluginId,
-					"query",
-					queryName,
-					queryExtension,
-				);
-			}
-		}
-
-		// Register mutations
-		for (const [mutationName, mutationExtension] of Object.entries(
-			extensionRegistry.graphql.mutations,
-		) as [
-			string,
-			{
-				pluginId: string;
-				resolver: (parent: unknown, args: unknown, context: unknown) => unknown;
-			},
-		][]) {
-			if (pluginManager.isPluginActive(mutationExtension.pluginId)) {
-				this.registerGraphQLField(
-					mutationExtension.pluginId,
-					"mutation",
-					mutationName,
-					mutationExtension,
-				);
-			}
-		}
-
-		// Register subscriptions
-		for (const [subscriptionName, subscriptionExtension] of Object.entries(
-			extensionRegistry.graphql.subscriptions,
-		) as [
-			string,
-			{
-				pluginId: string;
-				resolver: (parent: unknown, args: unknown, context: unknown) => unknown;
-			},
-		][]) {
-			if (pluginManager.isPluginActive(subscriptionExtension.pluginId)) {
-				this.registerGraphQLField(
-					subscriptionExtension.pluginId,
-					"subscription",
-					subscriptionName,
-					subscriptionExtension,
-				);
-			}
-		}
-
-		// Plugin extensions registered successfully
+		// Register builder-first extensions
+		await this.registerBuilderExtensions(extensionRegistry);
 	}
 
 	/**
-	 * Register a GraphQL field from a plugin
+	 * Register builder-first GraphQL extensions using Pothos builder
 	 */
-	private registerGraphQLField(
-		pluginId: string,
-		type: "query" | "mutation" | "subscription",
-		fieldName: string,
-		extension: {
-			pluginId: string;
-			resolver: (parent: unknown, args: unknown, context: unknown) => unknown;
-		},
-	): void {
-		const namespacedFieldName = `${pluginId}_${fieldName}`;
+	private async registerBuilderExtensions(
+		extensionRegistry: IExtensionRegistry,
+	): Promise<void> {
+		const pluginManager = getPluginManagerInstance();
+		if (!pluginManager) return;
 
-		try {
-			if (type === "query") {
-				builder.queryField(namespacedFieldName, (t) =>
-					t.string({
-						description: `Plugin ${pluginId} query: ${fieldName}`,
-						resolve: async (parent, args, ctx) => {
-							// Create plugin context from the main GraphQL context
-							const pluginContext = {
-								db: ctx.drizzleClient,
-								graphql: null,
-								pubsub: ctx.pubsub,
-								logger: ctx.log,
-								currentClient: ctx.currentClient,
-								drizzleClient: ctx.drizzleClient,
-								envConfig: ctx.envConfig,
-								jwt: ctx.jwt,
-								log: ctx.log,
-								minio: ctx.minio,
-							};
+		const builderExtensions = extensionRegistry.graphql.builderExtensions || [];
 
-							const result = await extension.resolver(
-								parent,
-								args,
-								pluginContext,
-							);
-							return JSON.stringify(result);
-						},
-					}),
-				);
-			} else if (type === "mutation") {
-				builder.mutationField(namespacedFieldName, (t) =>
-					t.string({
-						description: `Plugin ${pluginId} mutation: ${fieldName}`,
-						args: {
-							input: t.arg.string({
-								required: false,
-								description: `Input for ${pluginId} ${fieldName} mutation`,
-							}),
-						},
-						resolve: async (parent, args, ctx) => {
-							// Parse input if provided and structure it properly for plugin resolvers
-							let formattedArgs = {};
-							if (args.input && args.input !== null) {
-								try {
-									const parsedInput = JSON.parse(args.input);
-									// Plugin resolvers expect args.input structure
-									formattedArgs = { input: parsedInput };
-								} catch (error) {
-									throw new Error(`Invalid JSON input: ${error}`);
-								}
-							}
+		for (const extension of builderExtensions) {
+			if (pluginManager.isPluginActive(extension.pluginId)) {
+				try {
+					// Import plugin types first to ensure they're registered with the builder
+					const pluginsDirectory = pluginManager.getPluginsDirectory();
+					const pluginPath = path.join(pluginsDirectory, extension.pluginId);
 
-							// Create plugin context from the main GraphQL context
-							const pluginContext = {
-								db: ctx.drizzleClient,
-								graphql: null,
-								pubsub: ctx.pubsub,
-								logger: ctx.log,
-								currentClient: ctx.currentClient,
-								drizzleClient: ctx.drizzleClient,
-								envConfig: ctx.envConfig,
-								jwt: ctx.jwt,
-								log: ctx.log,
-								minio: ctx.minio,
-							};
+					try {
+						// Import the plugin's types file if it exists
+						await import(`${pluginPath}/graphql/types`);
+					} catch (error) {
+						// Plugin types file doesn't exist, continue without it
+						console.log(`No types file found for plugin ${extension.pluginId}`);
+					}
 
-							const result = await extension.resolver(
-								parent,
-								formattedArgs,
-								pluginContext,
-							);
-							return JSON.stringify(result);
-						},
-					}),
-				);
-			} else if (type === "subscription") {
-				builder.subscriptionField(namespacedFieldName, (t) =>
-					t.string({
-						description: `Plugin ${pluginId} subscription: ${fieldName}`,
-						subscribe: async () => {
-							async function* subscriptionGenerator() {
-								yield "Plugin subscription placeholder";
-							}
-							return subscriptionGenerator();
-						},
-						resolve: async (parent, args, ctx) => {
-							// Create plugin context from the main GraphQL context
-							const pluginContext = {
-								db: ctx.drizzleClient,
-								graphql: null,
-								pubsub: ctx.pubsub,
-								logger: ctx.log,
-								currentClient: ctx.currentClient,
-								drizzleClient: ctx.drizzleClient,
-								envConfig: ctx.envConfig,
-								jwt: ctx.jwt,
-								log: ctx.log,
-								minio: ctx.minio,
-							};
+					// Create a namespaced builder wrapper that automatically prefixes field names
+					const namespacedBuilder = this.createNamespacedBuilder(
+						extension.pluginId,
+						builder,
+					);
 
-							const result = await extension.resolver(
-								parent,
-								args,
-								pluginContext,
-							);
-							return JSON.stringify(result);
-						},
-					}),
-				);
+					// Execute the builder function with the namespaced builder
+					extension.builderFunction(namespacedBuilder);
+					console.log(
+						`Registered builder extension: ${extension.pluginId}.${extension.fieldName}`,
+					);
+				} catch (error) {
+					console.error(
+						`Failed to register builder extension ${extension.pluginId}.${extension.fieldName}:`,
+						error,
+					);
+				}
 			}
-		} catch (error) {
-			console.error(
-				`Failed to register plugin GraphQL field ${pluginId}.${fieldName}:`,
-				error,
-			);
 		}
+	}
+
+	/**
+	 * Create a namespaced builder that automatically prefixes field names with plugin ID
+	 */
+	private createNamespacedBuilder(
+		pluginId: string,
+		originalBuilder: typeof builder,
+	): {
+		queryField: typeof builder.queryField;
+		mutationField: typeof builder.mutationField;
+		subscriptionField: typeof builder.subscriptionField;
+	} {
+		return {
+			queryField: (
+				fieldName: string,
+				fieldConfig: Parameters<typeof builder.queryField>[1],
+			) => {
+				const namespacedFieldName = `${pluginId}_${fieldName}`;
+				return originalBuilder.queryField(namespacedFieldName, fieldConfig);
+			},
+			mutationField: (
+				fieldName: string,
+				fieldConfig: Parameters<typeof builder.mutationField>[1],
+			) => {
+				const namespacedFieldName = `${pluginId}_${fieldName}`;
+				return originalBuilder.mutationField(namespacedFieldName, fieldConfig);
+			},
+			subscriptionField: (
+				fieldName: string,
+				fieldConfig: Parameters<typeof builder.subscriptionField>[1],
+			) => {
+				const namespacedFieldName = `${pluginId}_${fieldName}`;
+				return originalBuilder.subscriptionField(
+					namespacedFieldName,
+					fieldConfig,
+				);
+			},
+		};
 	}
 
 	/**

@@ -42,10 +42,7 @@ describe("ExtensionLoader basic", () => {
 		});
 		mockExtensionRegistry = {
 			graphql: {
-				queries: {},
-				mutations: {},
-				subscriptions: {},
-				types: {},
+				builderExtensions: [],
 			},
 			database: {
 				tables: {},
@@ -74,7 +71,12 @@ describe("ExtensionLoader basic", () => {
 			main: "index.js",
 			extensionPoints: {
 				graphql: [
-					{ name: "q", type: "query", resolver: "res", file: "index.js" },
+					{
+						name: "q",
+						type: "query",
+						builderDefinition: "res",
+						file: "index.js",
+					},
 				],
 				database: [{ name: "tbl", type: "table", file: "index.js" }],
 				hooks: [{ type: "pre", event: "evt", handler: "hnd" }],
@@ -109,7 +111,7 @@ describe("ExtensionLoader basic", () => {
 		const ext: IGraphQLExtension = {
 			name: "q",
 			type: "query",
-			resolver: "res",
+			builderDefinition: "res",
 			file: "index.js",
 		};
 		(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
@@ -192,7 +194,7 @@ describe("ExtensionLoader basic", () => {
 		const ext: IGraphQLExtension = {
 			name: "q",
 			type: "query",
-			resolver: "res",
+			builderDefinition: "res",
 			file: "index.js",
 		};
 		(safeRequire as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
@@ -495,7 +497,7 @@ describe("ExtensionLoader basic", () => {
 					{
 						name: "testQuery",
 						type: "query",
-						resolver: "testResolver",
+						builderDefinition: "testResolver",
 						file: "resolvers.js",
 					},
 				],
@@ -535,7 +537,7 @@ describe("ExtensionLoader basic", () => {
 					{
 						name: "testMutation",
 						type: "mutation",
-						resolver: "testResolver",
+						builderDefinition: "testResolver",
 						file: "resolvers.js",
 					},
 				],
@@ -573,7 +575,7 @@ describe("ExtensionLoader basic", () => {
 					{
 						name: "testSubscription",
 						type: "subscription",
-						resolver: "testResolver",
+						builderDefinition: "testResolver",
 						file: "resolvers.js",
 					},
 				],
@@ -611,7 +613,7 @@ describe("ExtensionLoader basic", () => {
 					{
 						name: "testType",
 						type: "query",
-						resolver: "testResolver",
+						builderDefinition: "testResolver",
 						file: "resolvers.js",
 					},
 				],
@@ -649,7 +651,7 @@ describe("ExtensionLoader basic", () => {
 					{
 						name: "testUnknown",
 						type: "unknown" as "query" | "mutation" | "subscription",
-						resolver: "testResolver",
+						builderDefinition: "testResolver",
 						file: "resolvers.js",
 					},
 				],

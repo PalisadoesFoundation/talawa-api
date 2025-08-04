@@ -9,6 +9,7 @@ import path from "node:path";
 import type {
 	IDatabaseExtension,
 	IExtensionRegistry,
+	IGraphQLBuilderExtension,
 	IGraphQLExtension,
 	IHookExtension,
 	ILoadedPlugin,
@@ -35,11 +36,21 @@ export class ExtensionLoader {
 		if (!plugin) return;
 
 		try {
-			// Load GraphQL extensions
+			// Load GraphQL extensions (builder-first approach only)
 			if (manifest.extensionPoints?.graphql) {
 				for (const extension of manifest.extensionPoints.graphql) {
 					try {
-						await this.loadGraphQLExtension(pluginId, extension, pluginModule);
+						if (!extension.builderDefinition) {
+							throw new Error(
+								`Plugin ${pluginId} must use builder-first approach. Missing 'builderDefinition' for extension ${extension.name}`,
+							);
+						}
+
+						await this.loadBuilderGraphQLExtension(
+							pluginId,
+							extension,
+							pluginModule,
+						);
 					} catch (error) {
 						console.error(
 							`Failed to load GraphQL extension ${extension.name} for plugin ${pluginId}:`,
@@ -77,23 +88,19 @@ export class ExtensionLoader {
 	}
 
 	/**
-	 * Load GraphQL extension
+	 * Load builder-first GraphQL extension using Pothos builder
 	 */
-	private async loadGraphQLExtension(
+	private async loadBuilderGraphQLExtension(
 		pluginId: string,
 		extension: IGraphQLExtension,
 		pluginModule: Record<string, unknown>,
 	): Promise<void> {
-		let resolver: unknown;
+		let builderFunction: unknown;
 
-		// Load GraphQL resolver
-
-		// If extension specifies a file, load from that file directly
+		// Load builder function
 		if (extension.file) {
 			const pluginPath = path.join(this.pluginsDirectory, pluginId);
 			const extensionFilePath = path.join(pluginPath, extension.file);
-
-			// Load resolver from dedicated file
 
 			try {
 				const extensionModule = await safeRequire(extensionFilePath);
@@ -103,60 +110,53 @@ export class ExtensionLoader {
 					);
 				}
 
-				resolver = (extensionModule as Record<string, unknown>)[
-					extension.resolver
+				if (!extension.builderDefinition) {
+					throw new Error(
+						`Builder definition not specified for extension ${extension.name}`,
+					);
+				}
+				builderFunction = (extensionModule as Record<string, unknown>)[
+					extension.builderDefinition
 				];
-
-				// Resolver loaded successfully
 			} catch (error) {
 				throw new Error(
-					`Failed to load GraphQL extension from ${extension.file}: ${error}`,
+					`Failed to load GraphQL builder extension from ${extension.file}: ${error}`,
 				);
 			}
 		} else {
 			// Load from main plugin module
-			resolver = pluginModule[extension.resolver];
+			if (!extension.builderDefinition) {
+				throw new Error(
+					`Builder definition not specified for extension ${extension.name}`,
+				);
+			}
+			builderFunction = pluginModule[extension.builderDefinition];
 		}
 
-		if (!resolver) {
+		if (!builderFunction || typeof builderFunction !== "function") {
 			throw new Error(
-				`GraphQL resolver '${extension.resolver}' not found in plugin ${pluginId}`,
+				`GraphQL builder function '${extension.builderDefinition}' not found or not a function in plugin ${pluginId}`,
 			);
 		}
 
-		// Re-fetch plugin object to ensure we have the latest reference
-		const plugin = this.loadedPlugins.get(pluginId);
-		if (!plugin) {
-			throw new Error(`Plugin ${pluginId} not found in loaded plugins`);
+		// Register in extension registry as builder extension
+		if (!this.extensionRegistry.graphql.builderExtensions) {
+			this.extensionRegistry.graphql.builderExtensions = [];
 		}
 
-		// Initialize graphqlResolvers if needed
-		if (
-			!plugin.graphqlResolvers ||
-			typeof plugin.graphqlResolvers !== "object"
-		) {
-			plugin.graphqlResolvers = {};
-		}
-
-		// Assign resolver to plugin
-		plugin.graphqlResolvers[extension.name] = resolver;
-
-		// Register in extension registry
-		this.extensionRegistry.graphql[
-			this.getExtensionRegistryKey(
-				extension.type,
-				"graphql",
-			) as keyof typeof this.extensionRegistry.graphql
-		][extension.name] = {
+		const builderExtension: IGraphQLBuilderExtension = {
 			pluginId,
-			resolver,
-			name: extension.name,
 			type: extension.type,
-			file: extension.file,
+			fieldName: extension.name,
+			builderFunction: builderFunction as (builder: unknown) => void,
 			description: extension.description,
 		};
 
-		// Extension registered successfully
+		this.extensionRegistry.graphql.builderExtensions.push(builderExtension);
+
+		console.log(
+			`Registered builder-first GraphQL extension: ${pluginId}.${extension.name}`,
+		);
 	}
 
 	/**
@@ -214,12 +214,10 @@ export class ExtensionLoader {
 		] = tableDefinition as Record<string, unknown>;
 
 		// Register in extension registry
-		this.extensionRegistry.database[
-			this.getExtensionRegistryKey(
-				extension.type,
-				"database",
-			) as keyof typeof this.extensionRegistry.database
-		][extension.name] = {
+		const registryKey = this.getDatabaseExtensionRegistryKey(
+			extension.type,
+		) as keyof typeof this.extensionRegistry.database;
+		this.extensionRegistry.database[registryKey][extension.name] = {
 			pluginId,
 			definition: tableDefinition,
 			...extension,
@@ -293,38 +291,18 @@ export class ExtensionLoader {
 	}
 
 	/**
-	 * Map extension types to their registry keys
+	 * Map database extension types to their registry keys
 	 */
-	private getExtensionRegistryKey(
-		type: string,
-		registryType: "graphql" | "database",
-	): string {
-		if (registryType === "graphql") {
-			switch (type) {
-				case "query":
-					return "queries";
-				case "mutation":
-					return "mutations";
-				case "subscription":
-					return "subscriptions";
-				case "type":
-					return "types";
-				default:
-					throw new Error(`Unknown GraphQL extension type: ${type}`);
-			}
+	private getDatabaseExtensionRegistryKey(type: string): string {
+		switch (type) {
+			case "table":
+				return "tables";
+			case "enum":
+				return "enums";
+			case "relation":
+				return "relations";
+			default:
+				throw new Error(`Unknown database extension type: ${type}`);
 		}
-		if (registryType === "database") {
-			switch (type) {
-				case "table":
-					return "tables";
-				case "enum":
-					return "enums";
-				case "relation":
-					return "relations";
-				default:
-					throw new Error(`Unknown database extension type: ${type}`);
-			}
-		}
-		throw new Error(`Unknown registry type: ${registryType}`);
 	}
 }

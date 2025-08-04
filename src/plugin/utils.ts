@@ -291,6 +291,21 @@ export function generateCreateTableSQL(
 		pluginId && !originalTableName.startsWith(`${pluginId}_`)
 			? `${pluginId}_${originalTableName.replace(/^plugin_/, "")}`
 			: originalTableName;
+
+	// Warn if table name was automatically prefixed
+	if (
+		pluginId &&
+		!originalTableName.startsWith(`${pluginId}_`) &&
+		tableName !== originalTableName
+	) {
+		console.warn(
+			`⚠️  Plugin table name automatically prefixed: "${originalTableName}" -> "${tableName}" (plugin: ${pluginId})`,
+		);
+		console.warn(
+			"Consider using prefixed table names in your plugin code to avoid connectivity issues.",
+		);
+	}
+
 	const columns =
 		(tableDefinition[
 			drizzleColumnsSymbol as unknown as keyof typeof tableDefinition
@@ -390,6 +405,21 @@ export function generateCreateIndexSQL(
 		pluginId && !originalTableName.startsWith(`${pluginId}_`)
 			? `${pluginId}_${originalTableName.replace(/^plugin_/, "")}`
 			: originalTableName;
+
+	// Warn if table name was automatically prefixed
+	if (
+		pluginId &&
+		!originalTableName.startsWith(`${pluginId}_`) &&
+		tableName !== originalTableName
+	) {
+		console.warn(
+			`⚠️  Plugin table name automatically prefixed: "${originalTableName}" -> "${tableName}" (plugin: ${pluginId})`,
+		);
+		console.warn(
+			"Consider using prefixed table names in your plugin code to avoid connectivity issues.",
+		);
+	}
+
 	const indexes =
 		(tableDefinition[
 			drizzleIndexesSymbol as unknown as keyof typeof tableDefinition
