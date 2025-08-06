@@ -533,13 +533,6 @@ export const Mutation_createEvent =
     }
 }`);
 
-export const Mutation_deleteEvent =
-	gql(`mutation Mutation_deleteEvent($input: MutationDeleteEventInput!) {
-    deleteEvent(input: $input) {
-        id
-    }
-}`);
-
 export const Mutation_updateEvent =
 	gql(`mutation Mutation_updateEvent($input: MutationUpdateEventInput!) {
     updateEvent(input: $input) {
@@ -1336,6 +1329,106 @@ export const Mutation_deleteChat = gql(`
     deleteChat(input: $input) {
       id
       name
+    }
+  }
+`);
+
+export const Mutation_deleteStandaloneEvent = gql(`
+  mutation Mutation_deleteStandaloneEvent($input: MutationDeleteStandaloneEventInput!) {
+    deleteStandaloneEvent(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+      allDay
+      location
+      isPublic
+      isRegisterable
+      isRecurringEventTemplate
+      organization {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteSingleEventInstance = gql(`
+  mutation Mutation_deleteSingleEventInstance($input: MutationDeleteSingleEventInstanceInput!) {
+    deleteSingleEventInstance(input: $input) {
+      id
+      name
+      description
+      location
+      allDay
+      isPublic
+      isRegisterable
+      startAt
+      endAt
+      hasExceptions
+      sequenceNumber
+      totalCount
+      organization {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteThisAndFollowingEvents = gql(`
+  mutation Mutation_deleteThisAndFollowingEvents($input: MutationDeleteThisAndFollowingEventsInput!) {
+    deleteThisAndFollowingEvents(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+      hasExceptions
+      sequenceNumber
+      totalCount
+      organization {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteEntireRecurringEventSeries = gql(`
+  mutation Mutation_deleteEntireRecurringEventSeries($input: MutationDeleteEntireRecurringEventSeriesInput!) {
+    deleteEntireRecurringEventSeries(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+      allDay
+      location
+      isPublic
+      isRegisterable
+      isRecurringEventTemplate
+      organization {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      attachments {
+        mimeType
+        url
+      }
     }
   }
 `);

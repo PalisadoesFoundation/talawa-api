@@ -977,7 +977,10 @@ END \$\$;"
 #### 2. Remove Old Schema
 
 ```bash
-docker exec -it talawa-postgres-1 psql -U talawa -d talawa -c "DROP SCHEMA IF EXISTS drizzle CASCADE;"
+  docker exec -it talawa-postgres-1 psql -U talawa -d talawa -c "
+  DROP SCHEMA IF EXISTS drizzle CASCADE;
+  DROP TYPE IF EXISTS exception_type CASCADE;
+  DROP TYPE IF EXISTS frequency CASCADE;"
 ```
 
 #### 3. Remove Old Drizzle Migrations

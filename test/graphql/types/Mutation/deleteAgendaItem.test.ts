@@ -19,9 +19,9 @@ import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_deleteAgendaItem,
-	Mutation_deleteEvent,
 	Mutation_deleteOrganization,
 	Mutation_deleteOrganizationMembership,
+	Mutation_deleteStandaloneEvent,
 	Query_signIn,
 } from "../documentNodes";
 // Helper Types
@@ -69,7 +69,9 @@ async function getAdminAuthTokenAndId(): Promise<{
 		// Check for GraphQL errors
 		if (adminSignInResult.errors) {
 			throw new Error(
-				`Admin authentication failed: ${adminSignInResult.errors[0]?.message || "Unknown error"}`,
+				`Admin authentication failed: ${
+					adminSignInResult.errors[0]?.message || "Unknown error"
+				}`,
 			);
 		}
 		// Check for missing data
@@ -89,7 +91,9 @@ async function getAdminAuthTokenAndId(): Promise<{
 	} catch (error) {
 		// Wrap and rethrow with more context
 		throw new Error(
-			`Failed to get admin authentication token: ${error instanceof Error ? error.message : "Unknown error"}`,
+			`Failed to get admin authentication token: ${
+				error instanceof Error ? error.message : "Unknown error"
+			}`,
 		);
 	}
 }
@@ -198,7 +202,7 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 				console.error("Failed to delete agenda item:", error);
 			}
 			try {
-				await mercuriusClient.mutate(Mutation_deleteEvent, {
+				await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: eventId } },
 				});
