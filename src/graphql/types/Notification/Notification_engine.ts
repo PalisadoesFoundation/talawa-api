@@ -117,7 +117,6 @@ export class NotificationEngine {
 		const audiences = Array.isArray(audience) ? audience : [audience];
 
 		if (channelType === NotificationChannelType.EMAIL) {
-			// Handle email notifications
 			await this.createEmailNotifications(
 				notificationLog.id,
 				audiences,
@@ -125,7 +124,6 @@ export class NotificationEngine {
 				variables,
 			);
 		} else {
-			// Handle in-app notifications
 			for (const audienceSpec of audiences) {
 				await this.createAudienceEntries(notificationLog.id, audienceSpec);
 			}
@@ -152,7 +150,6 @@ export class NotificationEngine {
 			? this.ctx.currentClient.user.id
 			: null;
 
-		// Resolve all audiences to user IDs
 		let allUserIds: string[] = [];
 		for (const audienceSpec of audiences) {
 			const userIds = await this.resolveAudienceToUserIds(
