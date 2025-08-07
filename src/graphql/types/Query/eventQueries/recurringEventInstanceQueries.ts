@@ -186,7 +186,7 @@ export async function getRecurringEventInstanceById(
 		return resolveInstanceWithInheritance({
 			generatedInstance: instance,
 			baseTemplate,
-			exception,
+			exception: exception || null,
 		});
 	} catch (error) {
 		logger.error(
