@@ -488,7 +488,7 @@ describe("getRecurringEventInstanceById", () => {
 		expect(mockResolveInstanceWithInheritance).toHaveBeenCalledWith({
 			generatedInstance: mockRawInstance,
 			baseTemplate: mockBaseTemplate,
-			exception: null,
+			exception: undefined,
 		});
 
 		expect(result?.hasExceptions).toBe(false);
