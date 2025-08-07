@@ -97,11 +97,13 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 								id: true,
 								frequency: true,
 								interval: true,
+								recurrenceStartDate: true,
 								recurrenceEndDate: true,
 								count: true,
 								byDay: true,
 								byMonth: true,
 								byMonthDay: true,
+								originalSeriesId: true,
 							},
 						},
 					},
@@ -175,6 +177,9 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 				const newEndDate = new Date(
 					existingInstance.actualStartTime.getTime() - 1,
 				);
+
+				// Note: We allow ending the recurrence before the original start date
+				// because we're splitting the series and the old rule may have no valid instances left
 
 				await tx
 					.update(recurrenceRulesTable)
@@ -290,7 +295,9 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 						byMonth: recurrenceInput.byMonth,
 						byMonthDay: recurrenceInput.byMonthDay,
 						baseRecurringEventId: createdEvent.id,
-						originalSeriesId: existingInstance.originalSeriesId, // Preserve original series ID
+						originalSeriesId:
+							existingInstance.recurrenceRule.originalSeriesId ||
+							existingInstance.recurrenceRuleId,
 						organizationId: originalEvent.organizationId,
 						creatorId: currentUserId,
 					})

@@ -178,6 +178,21 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 				// Use the originalSeriesId from the recurrence rule we fetched
 				const originalSeriesId = recurrenceRule.originalSeriesId;
 
+				// Handle case where originalSeriesId is null
+				if (originalSeriesId === null) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "id"],
+									message: "Recurrence rule missing original series ID.",
+								},
+							],
+						},
+					});
+				}
+
 				// Find all templates that belong to the same logical series
 				const allTemplatesInSeries = await tx
 					.select({

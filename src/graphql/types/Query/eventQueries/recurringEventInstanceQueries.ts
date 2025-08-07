@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, lte } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lte, or } from "drizzle-orm";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
@@ -45,7 +45,7 @@ export async function getRecurringEventInstancesInDateRange(
 		startDate,
 		endDate,
 		includeCancelled = false,
-		limit = 100,
+		limit = 1000,
 	} = input;
 
 	try {
@@ -212,8 +212,24 @@ async function fetchRecurringEventInstances(
 
 	const whereConditions = [
 		eq(recurringEventInstancesTable.organizationId, organizationId),
-		lte(recurringEventInstancesTable.actualStartTime, endDate),
-		gte(recurringEventInstancesTable.actualEndTime, startDate),
+		// Event overlaps with date range - same logic as standalone events
+		or(
+			// Event starts within range
+			and(
+				gte(recurringEventInstancesTable.actualStartTime, startDate),
+				lte(recurringEventInstancesTable.actualStartTime, endDate),
+			),
+			// Event ends within range
+			and(
+				gte(recurringEventInstancesTable.actualEndTime, startDate),
+				lte(recurringEventInstancesTable.actualEndTime, endDate),
+			),
+			// Event spans the entire range
+			and(
+				lte(recurringEventInstancesTable.actualStartTime, startDate),
+				gte(recurringEventInstancesTable.actualEndTime, endDate),
+			),
+		),
 	];
 
 	if (!includeCancelled) {
@@ -222,7 +238,10 @@ async function fetchRecurringEventInstances(
 
 	return await drizzleClient.query.recurringEventInstancesTable.findMany({
 		where: and(...whereConditions),
-		orderBy: [desc(recurringEventInstancesTable.actualStartTime)],
+		orderBy: [
+			asc(recurringEventInstancesTable.actualStartTime),
+			asc(recurringEventInstancesTable.id),
+		],
 		limit,
 	});
 }

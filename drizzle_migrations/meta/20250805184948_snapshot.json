@@ -1,5 +1,5 @@
 {
-  "id": "266cfacf-bba2-4ac0-98ae-08b75f3ed72d",
+  "id": "12fc2106-e390-4ba4-bdbc-cc05423baa43",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -5509,7 +5509,7 @@
           "name": "original_series_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "organization_id": {
           "name": "organization_id",

@@ -125,7 +125,7 @@ export const recurrenceRulesTable = pgTable(
 		 * When "update this and following" creates a new template, the new recurrence rule
 		 * inherits this ID from the original series.
 		 */
-		originalSeriesId: uuid("original_series_id").notNull(),
+		originalSeriesId: uuid("original_series_id"),
 
 		/**
 		 * Foreign key reference to organization for data isolation.

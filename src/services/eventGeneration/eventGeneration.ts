@@ -134,6 +134,17 @@ export async function generateInstancesForRecurringEvent(
 			},
 		);
 
+		// Handle case where originalSeriesId is null
+		if (recurrenceRule.originalSeriesId === null) {
+			logger.error(
+				`Recurrence rule for ${baseRecurringEventId} has null originalSeriesId`,
+				{ recurrenceRuleId: recurrenceRule.id },
+			);
+			throw new Error(
+				`Recurrence rule for ${baseRecurringEventId} has null originalSeriesId`,
+			);
+		}
+
 		// Filter out existing instances and create new ones
 		const newInstancesCount = await createNewGeneratedInstances(
 			occurrences,

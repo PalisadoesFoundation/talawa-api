@@ -65,12 +65,12 @@ export async function getUnifiedEventsInDateRange(
 	try {
 		let allEvents: EventWithAttachments[] = [];
 
-		// Step 1: Get standalone events
+		// Step 1: Get standalone events - use requested limit
 		const standaloneEventsInput: GetStandaloneEventsInput = {
 			organizationId,
 			startDate,
 			endDate,
-			limit: Math.floor(limit * 0.6), // Reserve 60% of limit for standalone events
+			limit: limit,
 		};
 
 		const standaloneEvents = await getStandaloneEventsInDateRange(
@@ -94,7 +94,7 @@ export async function getUnifiedEventsInDateRange(
 				startDate,
 				endDate,
 				includeCancelled: false,
-				limit: Math.floor(limit * 0.4), // Reserve 40% of limit for generated instances
+				limit: limit,
 			};
 
 			const generatedInstances = await getRecurringEventInstancesInDateRange(
@@ -153,23 +153,10 @@ export async function getUnifiedEventsInDateRange(
 			return aTime - bTime;
 		});
 
-		// Step 4: Apply final limit
+		// Step 4: Apply final limit after sorting - this ensures we get the earliest events regardless of type
 		if (allEvents.length > limit) {
 			allEvents = allEvents.slice(0, limit);
 		}
-
-		logger.debug("Retrieved unified events", {
-			organizationId,
-			standaloneCount: standaloneEvents.length,
-			generatedCount: includeRecurring
-				? allEvents.filter((e) => e.eventType === "generated").length
-				: 0,
-			totalCount: allEvents.length,
-			dateRange: {
-				start: startDate.toISOString(),
-				end: endDate.toISOString(),
-			},
-		});
 
 		return allEvents;
 	} catch (error) {

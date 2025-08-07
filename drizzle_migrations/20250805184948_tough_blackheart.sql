@@ -383,7 +383,7 @@ CREATE TABLE "recurrence_rules" (
 	"by_month" integer[],
 	"by_month_day" integer[],
 	"base_recurring_event_id" uuid NOT NULL,
-	"original_series_id" uuid NOT NULL,
+	"original_series_id" uuid,
 	"organization_id" uuid NOT NULL,
 	"creator_id" uuid NOT NULL,
 	"updater_id" uuid,
