@@ -1,2 +1,0 @@
-import "./AdvertisementAttachment";
-import "./url";

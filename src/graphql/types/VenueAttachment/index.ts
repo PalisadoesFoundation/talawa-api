@@ -1,2 +1,0 @@
-import "./VenueAttachment";
-import "./url";
