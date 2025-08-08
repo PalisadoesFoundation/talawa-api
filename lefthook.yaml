@@ -1,0 +1,42 @@
+pre-commit:
+  commands:
+    1_upgrade_drizzle_metadata:
+      run: |
+        set -e
+        pnpm run upgrade_drizzle_metadata
+        git add ./drizzle_migrations
+    2_generate_drizzle_migrations:
+      run: |
+        set -e
+        pnpm run generate_drizzle_migrations
+        git add ./drizzle_migrations
+    3_check_drizzle_migrations:
+      run: pnpm run check_drizzle_migrations
+    4_generate_graphql_sdl_file:
+      run: |
+        set -e
+        pnpm generate_graphql_sdl_file
+        git add ./schema.graphql
+    5_generate_gql_tada_files:
+      run: |
+        set -e
+        pnpm generate_gql_tada
+        git add ./test/graphql/types/gql.tada-cache.d.ts
+    6_check_gql_tada:
+      run: pnpm check_gql_tada
+    7_fix_code_quality:
+      run: |
+        set -e
+        pnpm fix_code_quality
+        git add {staged_files}
+    8_check_type_errors:
+      run: pnpm check_type_errors
+
+    # commenting out because postgenerate script is not present in develop branch
+    # 9_generate_docs:
+    #   run: |
+    #     set -e
+    #     pnpm generate:docs
+    #     git add ./docs/docs/docs/auto-schema
+  
+  piped: true
