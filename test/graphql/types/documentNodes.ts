@@ -1432,3 +1432,30 @@ export const Mutation_deleteEntireRecurringEventSeries = gql(`
     }
   }
 `);
+
+export const Mutation_readNotification = gql(`
+  mutation Mutation_readNotification($input: MutationReadNotificationInput!) {
+    readNotification(input: $input) {
+      success
+      message
+    }
+  }
+`);
+
+export const Query_user_notifications = gql(`
+  query Query_user_notifications($input: QueryUserInput!, $notificationInput: QueryNotificationInput) {
+    user(input: $input) {
+      id
+      notifications(input: $notificationInput) {
+        id
+        isRead
+        readAt
+        navigation
+        title
+        body
+        createdAt
+        eventType
+      }
+    }
+  }
+`);
