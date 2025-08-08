@@ -26,7 +26,6 @@ builder.queryField("signIn", (t) =>
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Query field for a client to sign in to talawa.",
 		resolve: async (_parent, args, ctx) => {
-			console.log(ctx);
 			if (ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -99,12 +98,9 @@ builder.queryField("signIn", (t) =>
 					});
 
 				const isAdmin = adminMemberships.length > 0;
-				console.log("***");
-				console.log(isAdmin);
 				if (isAdmin) {
 					existingUser.role = "administrator";
 				}
-				console.log(existingUser);
 			}
 
 			// TODO: The following code is necessary for continuing the expected graph traversal for unauthenticated clients that triggered this operation because of absence of an authentication context for those clients. This should be removed when authentication flows are seperated from the graphql implementation.

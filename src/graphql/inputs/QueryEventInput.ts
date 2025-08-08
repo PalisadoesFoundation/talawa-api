@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { eventsTableInsertSchema } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
 
 export const queryEventInputSchema = z.object({
-	id: eventsTableInsertSchema.shape.id.unwrap(),
+	// Allow both UUID (real events) and virtual instance IDs (base-id:timestamp)
+	id: z.string().min(1),
 });
 
 export const QueryEventInput = builder

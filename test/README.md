@@ -184,3 +184,9 @@ suite.concurrent("non-flaky concurrent tests", async () => {
 	});
 });
 ```
+
+# Running tests for specific files in container
+
+```bash
+pnpm exec vitest run test/{file or folders path}
+```

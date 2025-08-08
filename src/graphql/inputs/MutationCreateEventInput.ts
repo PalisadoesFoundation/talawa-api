@@ -2,6 +2,7 @@ import type { FileUpload } from "graphql-upload-minimal";
 import { z } from "zod";
 import { eventsTableInsertSchema } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
+import { RecurrenceInput, recurrenceInputSchema } from "./RecurrenceInput";
 
 export const mutationCreateEventInputSchema = eventsTableInsertSchema
 	.pick({
@@ -18,6 +19,11 @@ export const mutationCreateEventInputSchema = eventsTableInsertSchema
 			.min(1)
 			.max(20)
 			.optional(),
+		allDay: z.boolean().optional(),
+		isPublic: z.boolean().optional(),
+		isRegisterable: z.boolean().optional(),
+		location: z.string().min(1).max(1024).optional(),
+		recurrence: recurrenceInputSchema.optional(),
 	})
 	.superRefine((arg, ctx) => {
 		if (arg.endAt <= arg.startAt) {
@@ -60,6 +66,28 @@ export const MutationCreateEventInput = builder
 				description: "Date time at the time the event starts at.",
 				required: true,
 				type: "DateTime",
+			}),
+			allDay: t.boolean({
+				description: "Indicates if the event spans the entire day",
+				required: false,
+			}),
+			isPublic: t.boolean({
+				description: "Indicates if the event is publicly visible",
+				required: false,
+			}),
+			isRegisterable: t.boolean({
+				description: "Indicates if users can register for this event",
+				required: false,
+			}),
+			location: t.string({
+				description: "Physical or virtual location of the event",
+				required: false,
+			}),
+			recurrence: t.field({
+				description:
+					"Recurrence pattern for the event. If provided, creates a recurring event.",
+				required: false,
+				type: RecurrenceInput,
 			}),
 		}),
 	});
