@@ -33,7 +33,6 @@ describe("NotificationEventBus", () => {
 			drizzleClient: {},
 		} as unknown as GraphQLContext;
 
-		// Spy on NotificationEngine methods
 		createNotificationSpy = vi
 			.spyOn(NotificationEngine.prototype, "createNotification")
 			.mockResolvedValue("mock-notification-id");
