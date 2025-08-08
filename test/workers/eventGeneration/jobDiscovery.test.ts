@@ -69,7 +69,6 @@ describe("jobDiscovery", () => {
 		updaterId: null,
 		organizationId: "org1",
 		isRecurringEventTemplate: true,
-		instanceStartTime: null,
 		instanceEndTime: null,
 		startDate: new Date("2024-01-01"),
 		endDate: new Date("2024-01-02"),
@@ -82,7 +81,6 @@ describe("jobDiscovery", () => {
 		attendees: [],
 		isPublic: true,
 		isRegisterable: false,
-		recurringEventId: null,
 		...overrides,
 	});
 

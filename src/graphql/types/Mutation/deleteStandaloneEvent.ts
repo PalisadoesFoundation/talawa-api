@@ -3,27 +3,27 @@ import { z } from "zod";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
 import {
-	MutationDeleteEventInput,
-	mutationDeleteEventInputSchema,
-} from "~/src/graphql/inputs/MutationDeleteEventInput";
+	MutationDeleteStandaloneEventInput,
+	mutationDeleteStandaloneEventInputSchema,
+} from "~/src/graphql/inputs/MutationDeleteStandaloneEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-const mutationDeleteEventArgumentsSchema = z.object({
-	input: mutationDeleteEventInputSchema,
+const mutationDeleteStandaloneEventArgumentsSchema = z.object({
+	input: mutationDeleteStandaloneEventInputSchema,
 });
 
-builder.mutationField("deleteEvent", (t) =>
+builder.mutationField("deleteStandaloneEvent", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description: "Input for deleting a standalone event.",
 				required: true,
-				type: MutationDeleteEventInput,
+				type: MutationDeleteStandaloneEventInput,
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-		description: "Mutation field to delete an event.",
+		description: "Mutation field to delete a standalone (non-recurring) event.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -37,7 +37,7 @@ builder.mutationField("deleteEvent", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationDeleteEventArgumentsSchema.safeParse(args);
+			} = mutationDeleteStandaloneEventArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -63,6 +63,7 @@ builder.mutationField("deleteEvent", (t) =>
 				ctx.drizzleClient.query.eventsTable.findFirst({
 					columns: {
 						startAt: true,
+						isRecurringEventTemplate: true,
 					},
 					with: {
 						attachmentsWhereEvent: true,
@@ -101,6 +102,22 @@ builder.mutationField("deleteEvent", (t) =>
 						issues: [
 							{
 								argumentPath: ["input", "id"],
+							},
+						],
+					},
+				});
+			}
+
+			// Validate this is a standalone event (not recurring)
+			if (existingEvent.isRecurringEventTemplate) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+								message:
+									"Event is not a standalone event. Use specific mutations for recurring events: deleteEntireRecurringEventSeries, deleteSingleEventInstance, or deleteThisAndFollowingEvents.",
 							},
 						],
 					},

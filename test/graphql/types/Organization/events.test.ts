@@ -54,7 +54,6 @@ describe("Organization Events Resolver Tests", () => {
 			description: "description",
 			updatedAt: null,
 			updaterId: null,
-			instanceStartTime: null,
 			allDay: false,
 			isPublic: true,
 			isRegisterable: true,
@@ -62,7 +61,6 @@ describe("Organization Events Resolver Tests", () => {
 			registrationClosesAt: new Date(),
 			attachments: [],
 			isRecurringEventTemplate: false,
-			recurringEventId: null,
 		},
 		{
 			id: "event-2",
@@ -77,7 +75,6 @@ describe("Organization Events Resolver Tests", () => {
 			description: "description",
 			updatedAt: null,
 			updaterId: null,
-			instanceStartTime: null,
 			allDay: false,
 			isPublic: true,
 			isRegisterable: true,
@@ -85,7 +82,6 @@ describe("Organization Events Resolver Tests", () => {
 			registrationClosesAt: new Date(),
 			attachments: [],
 			isRecurringEventTemplate: false,
-			recurringEventId: null,
 		},
 	];
 
@@ -414,7 +410,6 @@ describe("Organization Events Resolver Tests", () => {
 				description: "description",
 				updatedAt: null,
 				updaterId: null,
-				instanceStartTime: null,
 				allDay: false,
 				isPublic: true,
 				isRegisterable: true,
@@ -422,7 +417,6 @@ describe("Organization Events Resolver Tests", () => {
 				registrationClosesAt: new Date(),
 				attachments: [],
 				isRecurringEventTemplate: false,
-				recurringEventId: null,
 			}));
 
 			mockGetUnifiedEventsInDateRange.mockResolvedValue(manyEvents);
@@ -477,7 +471,6 @@ describe("Organization Events Resolver Tests", () => {
 					description: "description",
 					updatedAt: null,
 					updaterId: null,
-					instanceStartTime: null,
 					allDay: false,
 					isPublic: true,
 					isRegisterable: true,
@@ -485,7 +478,6 @@ describe("Organization Events Resolver Tests", () => {
 					registrationClosesAt: new Date(),
 					attachments: [],
 					isRecurringEventTemplate: false,
-					recurringEventId: null,
 				},
 				...mockEvents,
 			];

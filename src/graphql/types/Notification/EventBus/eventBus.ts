@@ -6,7 +6,7 @@ import {
 	NotificationTargetType,
 } from "../Notification_engine";
 
-class NotificationEventBus extends EventEmitter {
+export class NotificationEventBus extends EventEmitter {
 	async emitPostCreated(
 		data: {
 			postId: string;
