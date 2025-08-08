@@ -42,7 +42,7 @@ export default defineConfig({
 		prefix: "timestamp",
 	},
 	// https://orm.drizzle.team/docs/drizzle-config-file#out
-	out: "./drizzle_migrations",
+	out: "./drizzle_migrations/sql",
 	// https://orm.drizzle.team/docs/drizzle-config-file#schema
 	schema: "./src/drizzle/schema.ts",
 	// https://orm.drizzle.team/docs/drizzle-config-file#strict
