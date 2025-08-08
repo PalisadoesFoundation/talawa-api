@@ -17,10 +17,8 @@ describe("NotificationEventBus", () => {
 	let errorSpy: MockInstance;
 
 	beforeEach(() => {
-		// Create fresh bus instance for each test
 		bus = new NotificationEventBus();
 
-		// Create mock GraphQL context
 		mockCtx = {
 			log: {
 				info: vi.fn(),
