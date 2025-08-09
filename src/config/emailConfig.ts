@@ -1,4 +1,4 @@
-import type { EmailConfig } from "~/src/services/EmailService";
+import type { EmailConfig } from "~/src/services/ses/EmailService";
 
 /**
  * Email configuration from environment variables

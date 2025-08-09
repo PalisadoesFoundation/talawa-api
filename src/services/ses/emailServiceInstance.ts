@@ -1,7 +1,7 @@
 import { emailConfig } from "~/src/config/emailConfig";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { EmailQueueProcessor } from "~/src/services/EmailQueueProcessor";
-import { EmailService } from "~/src/services/EmailService";
+import { EmailQueueProcessor } from "~/src/services/ses/EmailQueueProcessor";
+import { EmailService } from "~/src/services/ses/EmailService";
 
 // Global email service instance
 export const emailService = new EmailService(emailConfig);
@@ -12,7 +12,9 @@ let emailQueueProcessor: EmailQueueProcessor | null = null;
 /**
  * Initialize email queue processor
  */
-export function initializeEmailQueue(ctx: GraphQLContext): void {
+export function initializeEmailQueue(
+	ctx: Pick<GraphQLContext, "drizzleClient" | "log">,
+): void {
 	if (!emailQueueProcessor) {
 		emailQueueProcessor = new EmailQueueProcessor(emailService, ctx);
 		emailQueueProcessor.startBackgroundProcessing();

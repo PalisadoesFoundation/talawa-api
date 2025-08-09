@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { emailNotificationsTable } from "~/src/drizzle/tables/EmailNotification";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { EmailJob, EmailService } from "~/src/services/EmailService";
+import type { EmailJob, EmailService } from "~/src/services/ses/EmailService";
 
 type EmailNotification = typeof emailNotificationsTable.$inferSelect;
 
@@ -10,10 +10,13 @@ type EmailNotification = typeof emailNotificationsTable.$inferSelect;
  */
 export class EmailQueueProcessor {
 	private emailService: EmailService;
-	private ctx: GraphQLContext;
+	private ctx: Pick<GraphQLContext, "drizzleClient" | "log">;
 	private isProcessing = false;
 
-	constructor(emailService: EmailService, ctx: GraphQLContext) {
+	constructor(
+		emailService: EmailService,
+		ctx: Pick<GraphQLContext, "drizzleClient" | "log">,
+	) {
 		this.emailService = emailService;
 		this.ctx = ctx;
 	}
