@@ -68,7 +68,7 @@ export class NotificationEventBus extends EventEmitter {
 						targetType: NotificationTargetType.USER,
 						targetIds: [data.userId],
 					},
-					NotificationChannelType.IN_APP,
+					NotificationChannelType.EMAIL,
 				);
 				ctx.log.info(
 					`Membership acceptance notification sent to user ${data.userId}`,

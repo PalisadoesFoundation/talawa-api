@@ -15,6 +15,13 @@
       "when": 1754547882351,
       "tag": "20250807062442_curved_psylocke",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1754719182474,
+      "tag": "20250809055942_sour_thena",
+      "breakpoints": true
     }
   ]
 }

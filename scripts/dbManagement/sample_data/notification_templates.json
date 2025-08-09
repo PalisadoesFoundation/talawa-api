@@ -8,6 +8,14 @@
     "linkedRouteName": "/organization/{organizationId}"
   },
   {
+    "name": "Membership Request Accepted Email",
+    "eventType": "membership_request_accepted",
+    "title": "Your membership was accepted in {organizationName}",
+    "body": "<html><body><h2>Welcome to {organizationName}</h2><p>Your membership request has been approved.</p><p><a href='/organization/{organizationId}' style='background:#16a34a;color:#ffffff;padding:10px 16px;border-radius:6px;text-decoration:none;'>Open organization</a></p><p>— Talawa</p></body></html>",
+    "channelType": "email",
+    "linkedRouteName": "/organization/{organizationId}"
+  },
+  {
     "name": "New Event Created",
     "eventType": "event_created",
     "title": "New event: {eventName}",

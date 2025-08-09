@@ -79,7 +79,7 @@ export class EmailService {
 
 			// Send email
 			const response = await sesClient.send(command);
-
+			console.log(`Email sent: ${response}`);
 			return {
 				id: job.id,
 				success: true,
