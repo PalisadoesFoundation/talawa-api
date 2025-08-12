@@ -135,200 +135,192 @@ suite("Mutation field createChatMembership (integration)", () => {
 		} catch {}
 	});
 
-	suite("unauthenticated client", () => {
-		test("returns unauthenticated error", async () => {
+	test("unauthenticated client returns unauthenticated error", async () => {
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			variables: { input: { chatId, memberId: user1Id } },
+		});
+		expect(res.data?.createChatMembership).toBeNull();
+		expect(res.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					path: ["createChatMembership"],
+					extensions: expect.objectContaining({ code: "unauthenticated" }),
+				}),
+			]),
+		);
+	});
+
+	test("admin adds member to chat", async () => {
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { chatId, memberId: user1Id } },
+		});
+		expect(res.errors).toBeUndefined();
+		assertToBeNonNullish(res.data?.createChatMembership);
+		// Assert the chat membership id is present
+		expect(res.data.createChatMembership.id).toBeDefined();
+	});
+
+	test("invalid UUIDs -> invalid_arguments", async () => {
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { chatId: "not-a-uuid", memberId: "also-bad" } },
+		});
+		expect(res.data?.createChatMembership).toBeNull();
+		expect(res.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					path: ["createChatMembership"],
+					extensions: expect.objectContaining({ code: "invalid_arguments" }),
+				}),
+			]),
+		);
+	});
+
+	test("non-admin setting role -> unauthorized_arguments", async () => {
+		// Create a fresh regular user and add them to the org
+		const newUser = await createUser(adminToken);
+		try {
+			await addOrgMember(adminToken, newUser.userId, orgId, "regular");
+
+			// The new regular user attempts to set role while adding themselves to the chat
 			const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
-				variables: { input: { chatId, memberId: user1Id } },
+				headers: { authorization: `bearer ${newUser.authToken}` },
+				variables: {
+					input: { chatId, memberId: newUser.userId, role: "administrator" },
+				},
 			});
 			expect(res.data?.createChatMembership).toBeNull();
 			expect(res.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
 						path: ["createChatMembership"],
-						extensions: expect.objectContaining({ code: "unauthenticated" }),
+						extensions: expect.objectContaining({
+							code: "unauthorized_arguments",
+						}),
 					}),
 				]),
 			);
-		});
-	});
-
-	suite("happy path", () => {
-		test("admin adds member to chat", async () => {
-			const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { chatId, memberId: user1Id } },
-			});
-			expect(res.errors).toBeUndefined();
-			assertToBeNonNullish(res.data?.createChatMembership);
-			// Assert the chat association on the created membership
-			expect(res.data.createChatMembership.chat.id).toBe(chatId);
-	});
-
-	suite("validation and constraints", () => {
-		test("invalid UUIDs -> invalid_arguments", async () => {
-			const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { chatId: "not-a-uuid", memberId: "also-bad" } },
-			});
-			expect(res.data?.createChatMembership).toBeNull();
-			expect(res.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						path: ["createChatMembership"],
-						extensions: expect.objectContaining({ code: "invalid_arguments" }),
-					}),
-				]),
-			);
-		});
-
-		test("non-admin setting role -> unauthorized_arguments", async () => {
-			// Create a fresh regular user and add them to the org
-			const newUser = await createUser(adminToken);
+		} finally {
+			// Cleanup the ephemeral user created for this test
 			try {
-				await addOrgMember(adminToken, newUser.userId, orgId, "regular");
-
-				// The new regular user attempts to set role while adding themselves to the chat
-				const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
-					headers: { authorization: `bearer ${newUser.authToken}` },
-					variables: {
-						input: { chatId, memberId: newUser.userId, role: "administrator" },
-					},
-				});
-				expect(res.data?.createChatMembership).toBeNull();
-				expect(res.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							path: ["createChatMembership"],
-							extensions: expect.objectContaining({
-								code: "unauthorized_arguments",
-							}),
-						}),
-					]),
-				);
-			} finally {
-				// Cleanup the ephemeral user created for this test
-				try {
-					await mercuriusClient.mutate(Mutation_deleteUser, {
-						headers: { authorization: `bearer ${adminToken}` },
-						variables: { input: { id: newUser.userId } },
-					});
-				} catch {}
-			}
-		});
-
-		test("duplicate membership -> forbidden_action_on_arguments_associated_resources", async () => {
-			// First add via admin (should succeed if not already added by happy path)
-			const first = await mercuriusClient.mutate(
-				Mutation_createChatMembership,
-				{
+				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: { authorization: `bearer ${adminToken}` },
-					variables: { input: { chatId, memberId: user1Id } },
-				},
-			);
-			// Ignore errors if already added in happy path
-			if (!first.data?.createChatMembership) {
-				expect(first.errors).toBeDefined();
-			}
+					variables: { input: { id: newUser.userId } },
+				});
+			} catch {}
+		}
+	});
 
-			// Try adding again -> should error
-			const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { chatId, memberId: user1Id } },
-			});
-			expect(res.data?.createChatMembership).toBeNull();
-			expect(res.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						path: ["createChatMembership"],
-						extensions: expect.objectContaining({
-							code: "forbidden_action_on_arguments_associated_resources",
-						}),
-					}),
-				]),
-			);
+	test("duplicate membership -> forbidden_action_on_arguments_associated_resources", async () => {
+		// First add via admin (should succeed if not already added by happy path)
+		const first = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { chatId, memberId: user1Id } },
 		});
+		// Ignore errors if already added in happy path
+		if (!first.data?.createChatMembership) {
+			expect(first.errors).toBeDefined();
+		}
 
-		test("both chatId and memberId not found -> arguments_associated_resources_not_found", async () => {
-			const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: {
-						chatId: faker.string.uuid(),
-						memberId: faker.string.uuid(),
-					},
-				},
-			});
-			expect(res.data?.createChatMembership).toBeNull();
-			expect(res.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						path: ["createChatMembership"],
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "memberId"],
-								}),
-								expect.objectContaining({ argumentPath: ["input", "chatId"] }),
-							]),
-						}),
-					}),
-				]),
-			);
+		// Try adding again -> should error
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { chatId, memberId: user1Id } },
 		});
+		expect(res.data?.createChatMembership).toBeNull();
+		expect(res.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					path: ["createChatMembership"],
+					extensions: expect.objectContaining({
+						code: "forbidden_action_on_arguments_associated_resources",
+					}),
+				}),
+			]),
+		);
+	});
 
-		test("chatId not found -> arguments_associated_resources_not_found", async () => {
-			const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: {
-						chatId: faker.string.uuid(),
-						memberId: user1Id, // existing user
-					},
+	test("both chatId and memberId not found -> arguments_associated_resources_not_found", async () => {
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					chatId: faker.string.uuid(),
+					memberId: faker.string.uuid(),
 				},
-			});
-			expect(res.data?.createChatMembership).toBeNull();
-			expect(res.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						path: ["createChatMembership"],
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-							issues: expect.arrayContaining([
-								expect.objectContaining({ argumentPath: ["input", "chatId"] }),
-							]),
-						}),
-					}),
-				]),
-			);
+			},
 		});
+		expect(res.data?.createChatMembership).toBeNull();
+		expect(res.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					path: ["createChatMembership"],
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "memberId"],
+							}),
+							expect.objectContaining({ argumentPath: ["input", "chatId"] }),
+						]),
+					}),
+				}),
+			]),
+		);
+	});
 
-		test("memberId not found -> arguments_associated_resources_not_found", async () => {
-			const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: {
-					input: {
-						chatId, // existing chat
-						memberId: faker.string.uuid(),
-					},
+	test("chatId not found -> arguments_associated_resources_not_found", async () => {
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					chatId: faker.string.uuid(),
+					memberId: user1Id, // existing user
 				},
-			});
-			expect(res.data?.createChatMembership).toBeNull();
-			expect(res.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						path: ["createChatMembership"],
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["input", "memberId"],
-								}),
-							]),
-						}),
-					}),
-				]),
-			);
+			},
 		});
+		expect(res.data?.createChatMembership).toBeNull();
+		expect(res.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					path: ["createChatMembership"],
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({ argumentPath: ["input", "chatId"] }),
+						]),
+					}),
+				}),
+			]),
+		);
+	});
+
+	test("memberId not found -> arguments_associated_resources_not_found", async () => {
+		const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					chatId, // existing chat
+					memberId: faker.string.uuid(),
+				},
+			},
+		});
+		expect(res.data?.createChatMembership).toBeNull();
+		expect(res.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					path: ["createChatMembership"],
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["input", "memberId"],
+							}),
+						]),
+					}),
+				}),
+			]),
+		);
 	});
 });
