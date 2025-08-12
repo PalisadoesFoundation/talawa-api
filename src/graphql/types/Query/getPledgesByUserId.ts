@@ -5,28 +5,27 @@ import { fundCampaignsTable } from "~/src/drizzle/tables/fundCampaigns";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
+	QueryFundCampaignPledgesByUserInput,
 	QueryPledgeOrderByInput,
 	QueryPledgeWhereInput,
+	queryFundCampaignPledgesByUserInputSchema,
 } from "~/src/graphql/inputs/QueryFundCampaignPledgeInput";
-import {
-	QueryUserInput,
-	queryUserInputSchema,
-} from "~/src/graphql/inputs/QueryUserInput";
 import { FundCampaignPledge } from "~/src/graphql/types/FundCampaignPledge/FundCampaignPledge";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { ParsedDefaultGraphQLConnectionArgumentsWithWhere } from "~/src/utilities/defaultGraphQLConnection";
+import envConfig from "~/src/utilities/graphqLimits";
 
 const queryFundCampaignPledgeArgumentsSchema = z.object({
-	userId: queryUserInputSchema,
+	input: queryFundCampaignPledgesByUserInputSchema,
 });
 
 builder.queryField("getPledgesByUserId", (t) =>
 	t.field({
 		args: {
-			userId: t.arg({
+			input: t.arg({
 				description: "Global id of the user.",
 				required: true,
-				type: QueryUserInput,
+				type: QueryFundCampaignPledgesByUserInput,
 			}),
 			where: t.arg({
 				description: "Filter criteria for pledges",
@@ -50,6 +49,7 @@ builder.queryField("getPledgesByUserId", (t) =>
 				type: "Int",
 			}),
 		},
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description:
 			"Query field to get fund campaign pledge associated to a user.",
 		resolve: async (_parent, args, ctx) => {
@@ -78,7 +78,7 @@ builder.queryField("getPledgesByUserId", (t) =>
 				});
 			}
 
-			const UserId = parsedArgs.userId.id;
+			const UserId = parsedArgs.input.userId;
 			const currentUserId = ctx.currentClient.user.id;
 
 			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
@@ -112,7 +112,6 @@ builder.queryField("getPledgesByUserId", (t) =>
 					endAt: Date;
 				};
 			}
-
 			let sortInTs:
 				| ((
 						a: ExtendedFundCampaignPledge,
@@ -239,16 +238,7 @@ builder.queryField("getPledgesByUserId", (t) =>
 			}
 
 			if (!existingFundCampaignPledge.length) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["userId", "id"],
-							},
-						],
-					},
-				});
+				return [];
 			}
 
 			const firstPledge = existingFundCampaignPledge[0];
@@ -267,7 +257,7 @@ builder.queryField("getPledgesByUserId", (t) =>
 						code: "unauthorized_action_on_arguments_associated_resources",
 						issues: [
 							{
-								argumentPath: ["userId", "id"],
+								argumentPath: ["input", "id"],
 							},
 						],
 					},
