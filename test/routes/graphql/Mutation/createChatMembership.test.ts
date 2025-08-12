@@ -160,9 +160,8 @@ suite("Mutation field createChatMembership (integration)", () => {
 			});
 			expect(res.errors).toBeUndefined();
 			assertToBeNonNullish(res.data?.createChatMembership);
-			// The mutation returns Chat object; ensure id matches
-			expect(res.data.createChatMembership.id).toBe(chatId);
-		});
+			// Assert the chat association on the created membership
+			expect(res.data.createChatMembership.chat.id).toBe(chatId);
 	});
 
 	suite("validation and constraints", () => {
