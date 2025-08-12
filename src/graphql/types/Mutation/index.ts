@@ -71,6 +71,7 @@ import "./updateOrganization";
 import "./updateOrganizationMembership";
 import "./updateSingleRecurringEventInstance";
 import "./updateThisAndFollowingEvents";
+import "./updateEntireRecurringEventSeries";
 import "./uploadPluginZip";
 import "./createPresignedUrl";
 import "./joinPublicOrganization";

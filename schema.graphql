@@ -627,6 +627,11 @@ type Event {
   progressLabel: String
 
   """
+  A human-readable description of the recurrence pattern, such as 'Daily', 'Weekly on Monday', 'Monthly on the 15th', etc. Available for recurring event templates and instances.
+  """
+  recurrenceDescription: String
+
+  """
   The sequence number of this instance within its recurring series (e.g., 1, 2, 3, ...).
   """
   sequenceNumber: Int
@@ -1829,6 +1834,14 @@ type Mutation {
   """Mutation field to update the current user."""
   updateCurrentUser(input: MutationUpdateCurrentUserInput!): User
 
+  """
+  Mutation field to update all events (past, present, and future) in a recurring event series with conditional field restrictions.
+  """
+  updateEntireRecurringEventSeries(
+    """Input for updating all events in a recurring event series."""
+    input: MutationUpdateEntireRecurringEventSeriesInput!
+  ): Event
+
   """Mutation field to update a volunteer group."""
   updateEventVolunteerGroup(input: MutationUpdateEventVolunteerGroupInput!): VolunteerGroups
 
@@ -2923,6 +2936,20 @@ input MutationUpdateCurrentUserInput {
   The phone number to use to communicate with the user while they're at work.
   """
   workPhoneNumber: PhoneNumber
+}
+
+"""Input for updating all events in a recurring event series."""
+input MutationUpdateEntireRecurringEventSeriesInput {
+  """Updated description for all events in the series."""
+  description: String
+
+  """
+  Global identifier of any recurring event instance in the series to update.
+  """
+  id: ID!
+
+  """Updated name for all events in the series."""
+  name: String
 }
 
 """"""

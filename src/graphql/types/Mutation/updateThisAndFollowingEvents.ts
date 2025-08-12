@@ -90,6 +90,8 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 								isPublic: true,
 								isRegisterable: true,
 								organizationId: true,
+								startAt: true,
+								endAt: true,
 							},
 						},
 						recurrenceRule: {
@@ -149,6 +151,213 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 					});
 				}
 
+				// Only split when there's a recurrence pattern change
+				// Timing and metadata changes can be applied to the existing template
+				const needsSplit = parsedArgs.input.recurrence !== undefined;
+
+				if (!needsSplit) {
+					// Update template and apply timing changes to future instances only
+					const baseEventUpdateData: Partial<typeof eventsTable.$inferInsert> =
+						{
+							updaterId: currentUserId,
+						};
+
+					// Update metadata fields
+					if (parsedArgs.input.name !== undefined) {
+						baseEventUpdateData.name = parsedArgs.input.name;
+					}
+					if (parsedArgs.input.description !== undefined) {
+						baseEventUpdateData.description = parsedArgs.input.description;
+					}
+					if (parsedArgs.input.location !== undefined) {
+						baseEventUpdateData.location = parsedArgs.input.location;
+					}
+					if (parsedArgs.input.allDay !== undefined) {
+						baseEventUpdateData.allDay = parsedArgs.input.allDay;
+					}
+					if (parsedArgs.input.isPublic !== undefined) {
+						baseEventUpdateData.isPublic = parsedArgs.input.isPublic;
+					}
+					if (parsedArgs.input.isRegisterable !== undefined) {
+						baseEventUpdateData.isRegisterable =
+							parsedArgs.input.isRegisterable;
+					}
+
+					// Handle timing changes
+					if (
+						parsedArgs.input.startAt !== undefined ||
+						parsedArgs.input.endAt !== undefined
+					) {
+						// Calculate timing deltas for existing template
+						const originalStartTime =
+							existingInstance.baseRecurringEvent.startAt;
+						const originalEndTime = existingInstance.baseRecurringEvent.endAt;
+						const originalDuration =
+							originalEndTime.getTime() - originalStartTime.getTime();
+
+						const newStartTime = parsedArgs.input.startAt || originalStartTime;
+						const newEndTime =
+							parsedArgs.input.endAt ||
+							new Date(newStartTime.getTime() + originalDuration);
+
+						baseEventUpdateData.startAt = newStartTime;
+						baseEventUpdateData.endAt = newEndTime;
+
+						// Calculate deltas for updating future instances
+						const startTimeDelta =
+							newStartTime.getTime() - originalStartTime.getTime();
+						const endTimeDelta =
+							newEndTime.getTime() - originalEndTime.getTime();
+
+						// Update future instances with new timing
+						const futureInstances = await tx
+							.select({
+								id: recurringEventInstancesTable.id,
+								actualStartTime: recurringEventInstancesTable.actualStartTime,
+								actualEndTime: recurringEventInstancesTable.actualEndTime,
+							})
+							.from(recurringEventInstancesTable)
+							.where(
+								and(
+									eq(
+										recurringEventInstancesTable.baseRecurringEventId,
+										existingInstance.baseRecurringEventId,
+									),
+									gte(
+										recurringEventInstancesTable.actualStartTime,
+										existingInstance.actualStartTime,
+									),
+								),
+							);
+
+						// Update each future instance with new timing
+						for (const instance of futureInstances) {
+							const newInstanceStartTime = new Date(
+								instance.actualStartTime.getTime() + startTimeDelta,
+							);
+							const newInstanceEndTime = new Date(
+								instance.actualEndTime.getTime() + endTimeDelta,
+							);
+
+							await tx
+								.update(recurringEventInstancesTable)
+								.set({
+									actualStartTime: newInstanceStartTime,
+									actualEndTime: newInstanceEndTime,
+									lastUpdatedAt: new Date(),
+								})
+								.where(eq(recurringEventInstancesTable.id, instance.id));
+						}
+
+						ctx.log.info("Updated timing for future instances", {
+							futureInstancesCount: futureInstances.length,
+							startTimeDelta,
+							endTimeDelta,
+						});
+					} else {
+						// Just update timestamps for future instances
+						await tx
+							.update(recurringEventInstancesTable)
+							.set({
+								lastUpdatedAt: new Date(),
+							})
+							.where(
+								and(
+									eq(
+										recurringEventInstancesTable.baseRecurringEventId,
+										existingInstance.baseRecurringEventId,
+									),
+									gte(
+										recurringEventInstancesTable.actualStartTime,
+										existingInstance.actualStartTime,
+									),
+								),
+							);
+					}
+
+					// Update the base template
+					await tx
+						.update(eventsTable)
+						.set(baseEventUpdateData)
+						.where(eq(eventsTable.id, existingInstance.baseRecurringEventId));
+
+					ctx.log.info("Updated base template and future instances", {
+						baseRecurringEventId: existingInstance.baseRecurringEventId,
+						updatedFields: Object.keys(baseEventUpdateData),
+					});
+
+					// Return the same instance with updated metadata
+					const updatedInstance =
+						await tx.query.recurringEventInstancesTable.findFirst({
+							columns: {
+								id: true,
+								actualStartTime: true,
+								actualEndTime: true,
+								baseRecurringEventId: true,
+								isCancelled: true,
+								organizationId: true,
+								generatedAt: true,
+								lastUpdatedAt: true,
+								version: true,
+								sequenceNumber: true,
+								totalCount: true,
+								recurrenceRuleId: true,
+								originalInstanceStartTime: true,
+							},
+							with: {
+								baseRecurringEvent: {
+									columns: {
+										id: true,
+										name: true,
+										description: true,
+										location: true,
+										allDay: true,
+										isPublic: true,
+										isRegisterable: true,
+										creatorId: true,
+										updaterId: true,
+										createdAt: true,
+										updatedAt: true,
+									},
+								},
+							},
+							where: (fields, operators) =>
+								operators.eq(fields.id, existingInstance.id),
+						});
+
+					if (updatedInstance === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
+					const { id: _baseEventId, ...baseEventData } =
+						updatedInstance.baseRecurringEvent;
+
+					return {
+						...updatedInstance,
+						...baseEventData,
+						id: updatedInstance.id,
+						baseRecurringEventId: updatedInstance.baseRecurringEventId,
+						startAt: updatedInstance.actualStartTime,
+						endAt: updatedInstance.actualEndTime,
+						recurrenceRuleId: updatedInstance.recurrenceRuleId,
+						originalSeriesId:
+							existingInstance.recurrenceRule.originalSeriesId ||
+							existingInstance.recurrenceRuleId,
+						originalInstanceStartTime:
+							updatedInstance.originalInstanceStartTime,
+						hasExceptions: false,
+						appliedExceptionData: null,
+						exceptionCreatedBy: null,
+						exceptionCreatedAt: null,
+						attachments: [],
+					};
+				}
+
+				// Complex changes requiring split - use original logic
 				// Step 1: Delete all instances from this one forward (including this instance)
 				// First delete the instances to avoid constraint issues
 				const deletedInstances = await tx

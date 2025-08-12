@@ -377,14 +377,17 @@ export function applyRecurrenceOverrides(
 
 		if (newDayOfWeek) {
 			if (recurrence.frequency === "WEEKLY") {
-				// For weekly events, always override byDay with the new day from startAt
-				recurrence.byDay = [newDayOfWeek];
+				// For weekly events, only override byDay if not explicitly provided in input
+				if (!inputRecurrence?.byDay) {
+					recurrence.byDay = [newDayOfWeek];
+				}
 			} else if (recurrence.frequency === "MONTHLY") {
 				// For monthly events, if byDay was previously set, update it
 				// Also set it if no byDay was originally set but we have a new start day
 				if (
-					(originalRecurrence.byDay && originalRecurrence.byDay.length > 0) ||
-					!originalRecurrence.byMonthDay
+					!inputRecurrence?.byDay &&
+					((originalRecurrence.byDay && originalRecurrence.byDay.length > 0) ||
+						!originalRecurrence.byMonthDay)
 				) {
 					recurrence.byDay = [newDayOfWeek];
 				}

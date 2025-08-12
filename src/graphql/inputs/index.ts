@@ -74,6 +74,7 @@ import "./MutationUpdatePostInput";
 import "./MutationUpdatePostVoteInput";
 import "./MutationUpdateSingleRecurringEventInstanceInput";
 import "./MutationUpdateThisAndFollowingEventsInput";
+import "./MutationUpdateEntireRecurringEventSeriesInput";
 import "./MutationUpdateTagFolderInput";
 import "./MutationUpdateTagInput";
 import "./MutationUpdateUserInput";
