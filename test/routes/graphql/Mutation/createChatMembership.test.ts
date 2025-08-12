@@ -184,26 +184,36 @@ suite("Mutation field createChatMembership (integration)", () => {
 		test("non-admin setting role -> unauthorized_arguments", async () => {
 			// Create a fresh regular user and add them to the org
 			const newUser = await createUser(adminToken);
-			await addOrgMember(adminToken, newUser.userId, orgId, "regular");
+			try {
+				await addOrgMember(adminToken, newUser.userId, orgId, "regular");
 
-			// The new regular user attempts to set role while adding themselves to the chat
-			const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
-				headers: { authorization: `bearer ${newUser.authToken}` },
-				variables: {
-					input: { chatId, memberId: newUser.userId, role: "administrator" },
-				},
-			});
-			expect(res.data?.createChatMembership).toBeNull();
-			expect(res.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						path: ["createChatMembership"],
-						extensions: expect.objectContaining({
-							code: "unauthorized_arguments",
+				// The new regular user attempts to set role while adding themselves to the chat
+				const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+					headers: { authorization: `bearer ${newUser.authToken}` },
+					variables: {
+						input: { chatId, memberId: newUser.userId, role: "administrator" },
+					},
+				});
+				expect(res.data?.createChatMembership).toBeNull();
+				expect(res.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							path: ["createChatMembership"],
+							extensions: expect.objectContaining({
+								code: "unauthorized_arguments",
+							}),
 						}),
-					}),
-				]),
-			);
+					]),
+				);
+			} finally {
+				// Cleanup the ephemeral user created for this test
+				try {
+					await mercuriusClient.mutate(Mutation_deleteUser, {
+						headers: { authorization: `bearer ${adminToken}` },
+						variables: { input: { id: newUser.userId } },
+					});
+				} catch {}
+			}
 		});
 
 		test("duplicate membership -> forbidden_action_on_arguments_associated_resources", async () => {
