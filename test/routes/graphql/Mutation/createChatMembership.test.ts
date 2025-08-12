@@ -44,6 +44,8 @@ async function createUser(adminToken: string) {
 		},
 	});
 	assertToBeNonNullish(res.data?.createUser);
+	assertToBeNonNullish(res.data.createUser.user?.id);
+	assertToBeNonNullish(res.data.createUser.authenticationToken);
 	return {
 		userId: res.data.createUser.user?.id as string,
 		authToken: res.data.createUser.authenticationToken as string,
