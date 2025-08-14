@@ -3950,7 +3950,7 @@ input QueryFundCampaignPledgeInput {
 
 """Input schema for querying FundCampaignPledges assigned to a user."""
 input QueryFundCampaignPledgesByUserInput {
-  """ID of the user to fetch assigned pledges for."""
+  """ID of the user to fetch FundCampaignPledges."""
   userId: String!
 }
 

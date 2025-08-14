@@ -257,7 +257,7 @@ builder.queryField("getPledgesByUserId", (t) =>
 						code: "unauthorized_action_on_arguments_associated_resources",
 						issues: [
 							{
-								argumentPath: ["input", "id"],
+								argumentPath: ["input", "userId"],
 							},
 						],
 					},
