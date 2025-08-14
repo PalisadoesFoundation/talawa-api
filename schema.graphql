@@ -2345,6 +2345,9 @@ input MutationCreateVenueInput {
   """Attachments of the venue."""
   attachments: [Upload!]
 
+  """Capacity of the venue."""
+  capacity: Int
+
   """Custom information about the venue."""
   description: String
 
@@ -3164,6 +3167,12 @@ input MutationUpdateUserInput {
 
 """"""
 input MutationUpdateVenueInput {
+  """Attachments of the venue."""
+  attachments: [Upload!]
+
+  """Capacity of the venue."""
+  capacity: Int
+
   """Custom information about the venue."""
   description: String
 
@@ -4397,6 +4406,9 @@ input UsersByIdsInput {
 type Venue {
   """Array of attachments."""
   attachments: [VenueAttachment!]
+
+  """Capacity of the venue."""
+  capacity: Int
 
   """Date time at the time the venue was created."""
   createdAt: DateTime

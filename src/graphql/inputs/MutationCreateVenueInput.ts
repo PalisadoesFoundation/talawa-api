@@ -5,6 +5,7 @@ import { builder } from "~/src/graphql/builder";
 
 export const mutationCreateVenueInputSchema = venuesTableInsertSchema
 	.pick({
+		capacity: true,
 		description: true,
 		name: true,
 		organizationId: true,
@@ -25,6 +26,9 @@ export const MutationCreateVenueInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
+			capacity: t.int({
+				description: "Capacity of the venue.",
+			}),
 			attachments: t.field({
 				description: "Attachments of the venue.",
 				type: t.listRef("Upload"),

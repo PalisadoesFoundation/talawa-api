@@ -7,6 +7,7 @@ import {
 	uniqueIndex,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { organizationsTable } from "./organizations";
@@ -20,6 +21,10 @@ import { venueBookingsTable } from "./venueBookings";
 export const venuesTable = pgTable(
 	"venues",
 	{
+		/**
+		 * capacity of the venue.
+		 */
+		capacity: integer("capacity"),
 		/**
 		 * Date time at the time the venue was created.
 		 */
