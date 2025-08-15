@@ -11,7 +11,6 @@ import {
 	mutationCreateEventInputSchema,
 } from "~/src/graphql/inputs/MutationCreateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
@@ -130,14 +129,12 @@ builder.mutationField("createEvent", (t) =>
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
-						name: true,
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
 					columns: {
 						countryCode: true,
-						name: true,
 					},
 					with: {
 						membershipsWhereOrganization: {
@@ -409,18 +406,6 @@ builder.mutationField("createEvent", (t) =>
 						isPublic: createdEvent.isPublic ?? false,
 						isRegisterable: createdEvent.isRegisterable ?? false,
 					});
-
-					notificationEventBus.emitEventCreated(
-						{
-							eventId: finalEvent.id,
-							eventName: finalEvent.name,
-							organizationId: finalEvent.organizationId,
-							organizationName: existingOrganization.name,
-							startDate: finalEvent.startAt.toISOString(),
-							creatorName: currentUser.name,
-						},
-						ctx,
-					);
 
 					return finalEvent;
 				},
