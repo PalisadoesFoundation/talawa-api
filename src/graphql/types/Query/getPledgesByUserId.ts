@@ -25,7 +25,7 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 		t.field({
 			args: {
 				input: t.arg({
-					description: "Global id of the user.",
+					description: "Input parameters to fetch pledges by userId.",
 					required: true,
 					type: QueryFundCampaignPledgesByUserInput,
 				}),
@@ -80,7 +80,7 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 					});
 				}
 
-				const userId = parsedArgs.input.userId as string;
+				const userId = parsedArgs.input.userId;
 				const currentUserId = ctx.currentClient.user.id;
 
 				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
@@ -254,10 +254,6 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 				if (currentUserId === parsedArgs.input.userId) {
 					return fundCampaignPledges;
 				}
-				console.log({
-					currentUserId,
-					id: parsedArgs.input.userId,
-				});
 
 				// If current user is an admin, they can see any user's pledges
 				if (currentUser.role === "administrator") {

@@ -1,6 +1,7 @@
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import type { GraphQLContext } from "../../context";
 import { FundCampaignPledge } from "./FundCampaignPledge";
 FundCampaignPledge.implement({
 	fields: (t) => ({
@@ -18,15 +19,14 @@ FundCampaignPledge.implement({
 
 				const currentUserId = ctx.currentClient.user.id;
 
-				// Allow users to see pledger for their own pledges
-				if (parent.pledgerId === currentUserId) {
-					const currentUser =
-						await ctx.drizzleClient.query.usersTable.findFirst({
-							where: (fields, operators) =>
-								operators.eq(fields.id, currentUserId),
-						});
-
-					if (currentUser === undefined) {
+				const fetchCurrentUser = async (
+					ctx: GraphQLContext,
+					userId: string,
+				) => {
+					const user = await ctx.drizzleClient.query.usersTable.findFirst({
+						where: (fields, operators) => operators.eq(fields.id, userId),
+					});
+					if (user === undefined) {
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "unauthenticated",
@@ -34,14 +34,16 @@ FundCampaignPledge.implement({
 						});
 					}
 
-					return currentUser;
+					return user;
+				};
+
+				// Allow users to see pledger for their own pledges
+				if (parent.pledgerId === currentUserId) {
+					return await fetchCurrentUser(ctx, currentUserId);
 				}
 
 				const [currentUser, existingFundCampaign] = await Promise.all([
-					ctx.drizzleClient.query.usersTable.findFirst({
-						where: (fields, operators) =>
-							operators.eq(fields.id, currentUserId),
-					}),
+					fetchCurrentUser(ctx, currentUserId),
 					ctx.drizzleClient.query.fundCampaignsTable.findFirst({
 						columns: {
 							currencyCode: true,
