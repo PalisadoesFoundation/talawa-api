@@ -53,7 +53,7 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 			},
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 			description:
-				"Query field to get fund campaign pledge associated to a user.",
+				"Query field to get fund campaign pledges associated with a user.",
 			resolve: async (_parent, args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -112,7 +112,7 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "arguments_associated_resources_not_found",
-							issues: [{ argumentPath: ["userId", "id"] }],
+							issues: [{ argumentPath: ["input", "userId"] }],
 						},
 					});
 				}
@@ -244,8 +244,8 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 							return andOp(...conditions);
 						},
 						orderBy: orderBy,
-						limit: args.limit ?? undefined,
-						offset: args.offset ?? undefined,
+						limit: sortInTs ? undefined : (args.limit ?? undefined),
+						offset: sortInTs ? undefined : (args.offset ?? undefined),
 					});
 
 				// Execute the query
@@ -254,6 +254,12 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 				// Perform in-memory sorting as nested sort still not supported in drizzle see https://github.com/drizzle-team/drizzle-orm/issues/2297 and https://www.answeroverflow.com/m/1240834016140066896
 				if (sortInTs) {
 					fundCampaignPledges.sort(sortInTs);
+					const start = (args.offset as number | undefined) ?? 0;
+					const end =
+						(args.limit as number | undefined) !== undefined
+						? start + (args.limit as number)
+						: undefined;
+					return fundCampaignPledges.slice(start, end);
 				}
 
 				if (!fundCampaignPledges.length) {
@@ -265,7 +271,7 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "arguments_associated_resources_not_found",
-								issues: [{ argumentPath: ["userId", "id"] }],
+								issues: [{ argumentPath: ["input", "userId"] }],
 							},
 						});
 					}
