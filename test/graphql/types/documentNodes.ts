@@ -1417,6 +1417,38 @@ export const Mutation_deleteEntireRecurringEventSeries = gql(`
   }
 `);
 
+export const Mutation_updateEntireRecurringEventSeries = gql(`
+  mutation Mutation_updateEntireRecurringEventSeries($input: MutationUpdateEntireRecurringEventSeriesInput!) {
+    updateEntireRecurringEventSeries(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+      allDay
+      location
+      isPublic
+      isRegisterable
+      creator {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      organization {
+        id
+        name
+      }
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);
+
 export const Mutation_updateSingleRecurringEventInstance = gql(`
   mutation Mutation_updateSingleRecurringEventInstance($input: MutationUpdateSingleRecurringEventInstanceInput!) {
     updateSingleRecurringEventInstance(input: $input) {

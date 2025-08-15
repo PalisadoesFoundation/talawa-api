@@ -5,6 +5,7 @@ import {
 	EventAttachment,
 	type EventAttachment as EventAttachmentType,
 } from "~/src/graphql/types/EventAttachment/EventAttachment";
+import { RecurrenceRule } from "~/src/graphql/types/RecurrenceRule/RecurrenceRule";
 import { formatRecurrenceDescription } from "~/src/utilities/recurrenceFormatter";
 
 // Unified Event type supporting both standalone events and materialized instances
@@ -122,6 +123,46 @@ Event.implement({
 					return `#${sequence}`;
 				}
 				return null;
+			},
+		}),
+		recurrenceRule: t.field({
+			description: "The recurrence rule object for recurring events.",
+			type: RecurrenceRule,
+			nullable: true,
+			resolve: async (event, _args, { drizzleClient }) => {
+				let recurrenceRule = null;
+
+				// Case 1: Recurring event instance (has recurrenceRuleId field)
+				if ("recurrenceRuleId" in event && event.recurrenceRuleId) {
+					recurrenceRule =
+						await drizzleClient.query.recurrenceRulesTable.findFirst({
+							where: (fields, { eq }) => eq(fields.id, event.recurrenceRuleId),
+						});
+				}
+				// Case 2: Recurring event instance (has baseRecurringEventId field)
+				else if (
+					"baseRecurringEventId" in event &&
+					event.baseRecurringEventId
+				) {
+					recurrenceRule =
+						await drizzleClient.query.recurrenceRulesTable.findFirst({
+							where: (fields, { eq }) =>
+								eq(fields.baseRecurringEventId, event.baseRecurringEventId),
+						});
+				}
+				// Case 3: Recurring event template (look up by this event's ID as baseRecurringEventId)
+				else if (
+					"isRecurringEventTemplate" in event &&
+					event.isRecurringEventTemplate
+				) {
+					recurrenceRule =
+						await drizzleClient.query.recurrenceRulesTable.findFirst({
+							where: (fields, { eq }) =>
+								eq(fields.baseRecurringEventId, event.id),
+						});
+				}
+
+				return recurrenceRule;
 			},
 		}),
 		recurrenceDescription: t.string({

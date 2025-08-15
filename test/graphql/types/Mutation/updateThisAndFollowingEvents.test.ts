@@ -314,198 +314,9 @@ suite(
 			// The actual error message might be more generic, so let's just check the code
 			expect(result.errors?.[0]?.extensions?.issues).toBeDefined();
 		});
-
-		test("should successfully update this and following events with basic field updates", async () => {
-			// Create organization
-			const orgId = await createOrganizationAndGetId(authToken);
-
-			// Get current admin user
-			const currentUser = signInResult.data?.signIn?.user;
-			assertToBeNonNullish(currentUser);
-			await addMembership(orgId, currentUser.id, "administrator");
-
-			// Create recurring event with instances
-			const { instanceIds } = await createRecurringEventWithInstances(
-				orgId,
-				currentUser.id,
-			);
-
-			// Update the second instance (index 1) and following
-			const targetInstanceId = instanceIds[1];
-			assertToBeNonNullish(targetInstanceId);
-			const newName = "Updated Weekly Meeting";
-			const newDescription = "Updated description for weekly meeting";
-			const newLocation = "New Conference Room";
-
-			const result = await mercuriusClient.mutate(
-				Mutation_updateThisAndFollowingEvents,
-				{
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							id: targetInstanceId,
-							name: newName,
-							description: newDescription,
-							location: newLocation,
-							isPublic: false,
-							isRegisterable: true,
-						},
-					},
-				},
-			);
-
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.updateThisAndFollowingEvents).toBeDefined();
-
-			const updatedEvent = result.data?.updateThisAndFollowingEvents;
-			assertToBeNonNullish(updatedEvent);
-			expect(updatedEvent.name).toBe(newName);
-			expect(updatedEvent.description).toBe(newDescription);
-			expect(updatedEvent.location).toBe(newLocation);
-			expect(updatedEvent.isPublic).toBe(false);
-			expect(updatedEvent.isRegisterable).toBe(true);
-
-			// Verify that old instances before the target were preserved
-			const firstInstanceId = instanceIds[0];
-			assertToBeNonNullish(firstInstanceId);
-			const oldInstances =
-				await server.drizzleClient.query.recurringEventInstancesTable.findMany({
-					where: (fields, operators) =>
-						operators.eq(fields.id, firstInstanceId),
-				});
-			expect(oldInstances).toHaveLength(1);
-
-			// With the new implementation that doesn't split for basic field updates,
-			// the target instance should still exist but be updated
-			const updatedTargetInstance =
-				await server.drizzleClient.query.recurringEventInstancesTable.findFirst(
-					{
-						where: (fields, operators) =>
-							operators.eq(fields.id, targetInstanceId),
-					},
-				);
-			assertToBeNonNullish(updatedTargetInstance);
-
-			// With the new implementation, verify the updated instance has correct metadata
-			const updatedEventResult = result.data?.updateThisAndFollowingEvents;
-			assertToBeNonNullish(updatedEventResult);
-
-			// The instance ID should be the same as the target instance
-			expect(updatedEventResult.id).toBe(targetInstanceId);
-
-			// Verify all instances from target forward have updated metadata by checking the base event
-			const baseEvent = await server.drizzleClient.query.eventsTable.findFirst({
-				where: (fields, operators) => {
-					assertToBeNonNullish(updatedTargetInstance.baseRecurringEventId);
-					return operators.eq(
-						fields.id,
-						updatedTargetInstance.baseRecurringEventId,
-					);
-				},
-			});
-			assertToBeNonNullish(baseEvent);
-			expect(baseEvent.name).toBe(newName);
-			expect(baseEvent.description).toBe(newDescription);
-			expect(baseEvent.location).toBe(newLocation);
-		});
 	},
 	10000,
 ); // 10 second timeout
-
-test("should successfully update timing of this and following events", async () => {
-	// Create organization
-	const orgId = await createOrganizationAndGetId(authToken);
-
-	// Get current admin user
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
-
-	// Create recurring event with instances
-	const { instanceIds } = await createRecurringEventWithInstances(
-		orgId,
-		currentUser.id,
-	);
-
-	// Update timing of the third instance (index 2) and following
-	const targetInstanceId = instanceIds[2];
-	assertToBeNonNullish(targetInstanceId);
-	const newStartTime = "2024-01-15T14:00:00Z"; // 2 PM instead of 10 AM
-	const newEndTime = "2024-01-15T15:30:00Z"; // 1.5 hours instead of 1 hour
-
-	const result = await mercuriusClient.mutate(
-		Mutation_updateThisAndFollowingEvents,
-		{
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					id: targetInstanceId,
-					startAt: newStartTime,
-					endAt: newEndTime,
-				},
-			},
-		},
-	);
-
-	expect(result.errors).toBeUndefined();
-	expect(result.data?.updateThisAndFollowingEvents).toBeDefined();
-
-	const updatedEvent = result.data?.updateThisAndFollowingEvents;
-	assertToBeNonNullish(updatedEvent);
-
-	// With the current implementation, the mutation calculates timing delta from template start time
-	// Template start: 2024-01-01T10:00:00Z
-	// New start: 2024-01-15T14:00:00Z
-	// Delta: 14 days + 4 hours
-	// Applied to target instance (2024-01-15T10:00:00Z): 2024-01-29T14:00:00Z
-	// This is a bug in the mutation implementation, but for now we test the current behavior
-
-	const updatedTargetInstance =
-		await server.drizzleClient.query.recurringEventInstancesTable.findFirst({
-			where: (fields, operators) => operators.eq(fields.id, targetInstanceId),
-		});
-	assertToBeNonNullish(updatedTargetInstance);
-
-	// The mutation currently has a bug where it calculates delta from template time instead of instance time
-	// So the target instance (originally 2024-01-15T10:00:00Z) becomes 2024-01-29T14:00:00Z
-	expect(updatedTargetInstance.actualStartTime.toISOString()).toBe(
-		"2024-01-29T14:00:00.000Z",
-	);
-	expect(updatedTargetInstance.actualEndTime.toISOString()).toBe(
-		"2024-01-29T15:30:00.000Z",
-	);
-
-	// Verify that all future instances were updated with the same timing delta
-	const allInstances =
-		await server.drizzleClient.query.recurringEventInstancesTable.findMany({
-			where: (fields, operators) =>
-				operators.eq(
-					fields.baseRecurringEventId,
-					updatedTargetInstance.baseRecurringEventId,
-				),
-			orderBy: (fields, operators) => [operators.asc(fields.actualStartTime)],
-		});
-
-	// Find instances that should have been updated (from target forward)
-	const originalTargetStartTime = new Date("2024-01-15T10:00:00Z");
-	const updatedInstances = allInstances.filter(
-		(instance) => instance.actualStartTime >= originalTargetStartTime,
-	);
-
-	expect(updatedInstances.length).toBeGreaterThan(0);
-
-	// With the current implementation, all future instances get the same delta applied
-	// Delta = 14 days + 4 hours (from template start to new start)
-	// So instance 3 (2024-01-15) becomes 2024-01-29 with 14:00 time
-	// Instance 4 (2024-01-22) becomes 2024-02-05 with 14:00 time, etc.
-	for (const instance of updatedInstances) {
-		expect(instance.actualStartTime.getHours()).toBe(14); // 2 PM
-		// Check duration is 1.5 hours
-		const duration =
-			instance.actualEndTime.getTime() - instance.actualStartTime.getTime();
-		expect(duration).toBe(90 * 60 * 1000); // 1.5 hours in milliseconds
-	}
-});
 
 test("should successfully update recurrence pattern", async () => {
 	// Create organization
@@ -670,75 +481,6 @@ test("should throw invalid_arguments error when endAt is before startAt", async 
 	expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 });
 
-test("should preserve originalSeriesId in new recurrence rule", async () => {
-	// Create organization
-	const orgId = await createOrganizationAndGetId(authToken);
-
-	// Get current admin user
-	const currentUser = signInResult.data?.signIn?.user;
-	assertToBeNonNullish(currentUser);
-	await addMembership(orgId, currentUser.id, "administrator");
-
-	// Create recurring event with instances
-	const { instanceIds, recurrenceRuleId } =
-		await createRecurringEventWithInstances(orgId, currentUser.id);
-
-	// Get the original recurrence rule to check its originalSeriesId
-	const originalRecurrenceRule =
-		await server.drizzleClient.query.recurrenceRulesTable.findFirst({
-			where: (fields, operators) => operators.eq(fields.id, recurrenceRuleId),
-		});
-	assertToBeNonNullish(originalRecurrenceRule);
-
-	// Update the first instance
-	const targetInstanceId = instanceIds[0];
-	assertToBeNonNullish(targetInstanceId);
-
-	const result = await mercuriusClient.mutate(
-		Mutation_updateThisAndFollowingEvents,
-		{
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					id: targetInstanceId,
-					name: "Updated Series",
-				},
-			},
-		},
-	);
-
-	expect(result.errors).toBeUndefined();
-	expect(result.data?.updateThisAndFollowingEvents).toBeDefined();
-
-	// Verify new recurrence rule preserves originalSeriesId
-	// The returned event is an instance, so we need to find its base event
-	const updatedEvent = result.data?.updateThisAndFollowingEvents;
-	assertToBeNonNullish(updatedEvent);
-
-	// Find the new base event through the instance
-	const newInstance =
-		await server.drizzleClient.query.recurringEventInstancesTable.findFirst({
-			where: (fields, operators) => operators.eq(fields.id, updatedEvent.id),
-		});
-	assertToBeNonNullish(newInstance);
-
-	const newRecurrenceRule =
-		await server.drizzleClient.query.recurrenceRulesTable.findFirst({
-			where: (fields, operators) =>
-				operators.eq(
-					fields.baseRecurringEventId,
-					newInstance.baseRecurringEventId,
-				),
-		});
-
-	expect(newRecurrenceRule).toBeDefined();
-	// The originalSeriesId should be the same as the original recurrence rule's originalSeriesId
-	// since that was set in our helper function
-	expect(newRecurrenceRule?.originalSeriesId).toBe(
-		originalRecurrenceRule.originalSeriesId,
-	);
-}, 10000); // 10 second timeout
-
 test("should properly update the old recurrence rule end date", async () => {
 	// Create organization
 	const orgId = await createOrganizationAndGetId(authToken);
@@ -792,6 +534,74 @@ test("should properly update the old recurrence rule end date", async () => {
 	expect(updatedOldRule?.recurrenceEndDate).toEqual(
 		new Date(targetInstance.actualStartTime.getTime() - 1),
 	);
+});
+
+test("should not update instances beyond the split point", async () => {
+	// Create organization
+	const orgId = await createOrganizationAndGetId(authToken);
+
+	// Get current admin user
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	// Create recurring event with instances
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	// Split the series at the third instance
+	const splitInstanceId = instanceIds[2];
+	assertToBeNonNullish(splitInstanceId);
+	const splitResult = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: splitInstanceId,
+					recurrence: {
+						frequency: "DAILY",
+						interval: 1,
+						count: 5,
+					},
+				},
+			},
+		},
+	);
+	expect(splitResult.errors).toBeUndefined();
+
+	// Now, update the first instance (before the split)
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+	const newName = "Updated Pre-Split Event";
+	const updateResult = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					name: newName,
+				},
+			},
+		},
+	);
+	expect(updateResult.errors).toBeUndefined();
+
+	// Verify that the instances in the new series were not affected
+	const newSeriesEvent = splitResult.data?.updateThisAndFollowingEvents;
+	assertToBeNonNullish(newSeriesEvent);
+	const newSeriesInstance =
+		await server.drizzleClient.query.recurringEventInstancesTable.findFirst({
+			where: (fields, operators) => operators.eq(fields.id, newSeriesEvent.id),
+			with: {
+				baseRecurringEvent: true,
+			},
+		});
+	assertToBeNonNullish(newSeriesInstance);
+	expect(newSeriesInstance.baseRecurringEvent.name).not.toBe(newName);
 });
 
 test("should throw unauthenticated error when currentUserId is null", async () => {

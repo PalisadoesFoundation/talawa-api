@@ -631,6 +631,9 @@ type Event {
   """
   recurrenceDescription: String
 
+  """The recurrence rule object for recurring events."""
+  recurrenceRule: RecurrenceRule
+
   """
   The sequence number of this instance within its recurring series (e.g., 1, 2, 3, ...).
   """
@@ -4182,6 +4185,25 @@ input RecurrenceInput {
 
   """Indicates if the event recurs indefinitely (never ends)."""
   never: Boolean
+}
+
+type RecurrenceRule {
+  byDay: [String!]
+  byMonth: [Int!]
+  byMonthDay: [Int!]
+  count: Int
+  frequency: RecurrenceRuleFrequency
+  id: ID
+  interval: Int
+  recurrenceEndDate: DateTime
+  recurrenceStartDate: DateTime
+}
+
+enum RecurrenceRuleFrequency {
+  DAILY
+  MONTHLY
+  WEEKLY
+  YEARLY
 }
 
 type RejectMembershipResponse {
