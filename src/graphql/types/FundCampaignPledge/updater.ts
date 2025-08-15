@@ -44,7 +44,7 @@ export const resolveUpdater = async (
 		}
 
 		const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-			where: (fields, operators) => operators.eq(fields.id, updaterId!),
+			where: (fields, operators) => operators.eq(fields.id, updaterId),
 		});
 
 		if (existingUser === undefined) {

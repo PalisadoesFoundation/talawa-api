@@ -128,7 +128,7 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 				let orderBy: SQL<unknown>[] = [];
 
 				type SortablePledge = { campaign: { endAt: Date | string } };
- 				let sortInTs:
+				let sortInTs:
 					| ((a: SortablePledge, b: SortablePledge) => number)
 					| null = null;
 
