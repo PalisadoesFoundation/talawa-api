@@ -3773,7 +3773,7 @@ type Query {
 
   """Query field to get fund campaign pledge associated to a user."""
   getPledgesByUserId(
-    """Global id of the user."""
+    """Input parameters to fetch pledges by userId."""
     input: QueryFundCampaignPledgesByUserInput!
 
     """Maximum number of results to return."""

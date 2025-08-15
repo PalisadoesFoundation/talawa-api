@@ -127,17 +127,9 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 
 				let orderBy: SQL<unknown>[] = [];
 
-				// As FundCampaignPledge type does not contain campaign
-				interface ExtendedFundCampaignPledge extends FundCampaignPledge {
-					campaign: {
-						endAt: Date;
-					};
-				}
-				let sortInTs:
-					| ((
-							a: ExtendedFundCampaignPledge,
-							b: ExtendedFundCampaignPledge,
-					  ) => number)
+				type SortablePledge = { campaign: { endAt: Date | string } };
+ 				let sortInTs:
+					| ((a: SortablePledge, b: SortablePledge) => number)
 					| null = null;
 
 				switch (sortOrder) {
