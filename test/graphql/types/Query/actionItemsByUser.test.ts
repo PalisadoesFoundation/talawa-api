@@ -1,7 +1,10 @@
 import { faker } from "@faker-js/faker";
-import { sql } from "drizzle-orm";
+import { hash } from "@node-rs/argon2";
+import { eq, sql } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
 import { beforeAll, beforeEach, expect, suite, test } from "vitest";
 import { actionsTable } from "~/src/drizzle/tables/actions";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -54,7 +57,8 @@ const Query_actionItemsByUser = `
 let globalAuth: { authToken: string; userId: string };
 
 async function globalSignInAndGetToken() {
-	const result = await mercuriusClient.query(Query_signIn, {
+	// First attempt: sign in with the server-seeded administrator credentials
+	let result = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
 				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
@@ -62,6 +66,66 @@ async function globalSignInAndGetToken() {
 			},
 		},
 	});
+	// If sign-in failed, the CI database might have a stale admin password or role.
+	// Force-sync the admin user password/role and retry once to stabilize CI runs.
+	if (!result.data?.signIn) {
+		const adminEmail = server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;
+		const adminPassword = server.envConfig.API_ADMINISTRATOR_USER_PASSWORD;
+		const adminName = server.envConfig.API_ADMINISTRATOR_USER_NAME;
+
+		// Update if exists; ensure role and password match env.
+		await server.drizzleClient
+			.update(usersTable)
+			.set({
+				passwordHash: await hash(adminPassword),
+				role: "administrator",
+				isEmailAddressVerified: true,
+				name: adminName,
+			})
+			.where(eq(usersTable.emailAddress, adminEmail))
+			.execute();
+
+		// Retry sign-in after update
+		result = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: adminEmail,
+					password: adminPassword,
+				},
+			},
+		});
+
+		// As a last resort, insert the admin if still missing (e.g., empty DB with inconsistent seed execution order)
+		if (!result.data?.signIn) {
+			const id = uuidv7();
+			await server.drizzleClient
+				.insert(usersTable)
+				.values({
+					id,
+					creatorId: id,
+					emailAddress: adminEmail,
+					name: adminName,
+					isEmailAddressVerified: true,
+					passwordHash: await hash(adminPassword),
+					role: "administrator",
+					addressLine1: null,
+					addressLine2: null,
+					city: null,
+					description: null,
+					postalCode: null,
+					state: null,
+					avatarName: null,
+				})
+				.execute();
+
+			result = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: { emailAddress: adminEmail, password: adminPassword },
+				},
+			});
+		}
+	}
+
 	assertToBeNonNullish(result.data?.signIn);
 	const authToken = result.data.signIn.authenticationToken;
 	assertToBeNonNullish(authToken);
