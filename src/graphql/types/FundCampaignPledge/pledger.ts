@@ -39,7 +39,7 @@ FundCampaignPledge.implement({
 
 				// Allow users to see pledger for their own pledges
 				if (parent.pledgerId === currentUserId) {
-					return await fetchCurrentUser(ctx, currentUserId);
+					return fetchCurrentUser(ctx, currentUserId);
 				}
 
 				const [currentUser, existingFundCampaign] = await Promise.all([

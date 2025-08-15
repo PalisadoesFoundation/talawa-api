@@ -274,7 +274,7 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 
 				// Check permissions
 				// If current user is the target user, they can see their own pledges
-				if (currentUserId === parsedArgs.input.userId) {
+				if (currentUserId === userId) {
 					return fundCampaignPledges;
 				}
 
