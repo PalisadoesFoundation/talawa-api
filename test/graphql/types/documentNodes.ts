@@ -389,24 +389,13 @@ export const Query_getPledgesByUserId =
 	gql(`query Query_getPledgesByUserId($input: QueryFundCampaignPledgesByUserInput! , $where: QueryPledgeWhereInput, $orderBy: QueryPledgeOrderByInput) {
   getPledgesByUserId(input: $input , where: $where , orderBy: $orderBy) {
     id
-    amount
     note
-    updatedAt
+    amount
     campaign {
-      id
-      name
-      startAt
-      endAt
-      currencyCode
-      goalAmount
+    endAt
     }
     pledger {
-      id
-      name
-      avatarURL
-    }
-    updater {
-      id
+    id
     }
   }
 }`);

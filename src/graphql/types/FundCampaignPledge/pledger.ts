@@ -18,6 +18,24 @@ FundCampaignPledge.implement({
 
 				const currentUserId = ctx.currentClient.user.id;
 
+				// Allow users to see pledger for their own pledges
+				if (parent.pledgerId === currentUserId) {
+					const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+						where: (fields, operators) =>
+							operators.eq(fields.id, currentUserId),
+					});
+
+					if (currentUser === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthenticated",
+							},
+						});
+					}
+
+					return currentUser;
+				}
+
 				const [currentUser, existingFundCampaign] = await Promise.all([
 					ctx.drizzleClient.query.usersTable.findFirst({
 						where: (fields, operators) =>
@@ -90,10 +108,6 @@ FundCampaignPledge.implement({
 							code: "unauthorized_action",
 						},
 					});
-				}
-
-				if (parent.pledgerId === currentUserId) {
-					return currentUser;
 				}
 
 				const pledgerId = parent.pledgerId;

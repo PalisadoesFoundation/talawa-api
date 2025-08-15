@@ -66,7 +66,7 @@ export const QueryFundCampaignPledgesByUserInput = builder
 	)
 	.implement({
 		description:
-			"Input schema for querying FundCampaignPledges assigned to a user.",
+			"Input type for querying FundCampaignPledges assigned to a user.",
 		fields: (t) => ({
 			userId: t.string({
 				description: "ID of the user to fetch FundCampaignPledges.",

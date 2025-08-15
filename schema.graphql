@@ -3948,7 +3948,7 @@ input QueryFundCampaignPledgeInput {
   id: String!
 }
 
-"""Input schema for querying FundCampaignPledges assigned to a user."""
+"""Input type for querying FundCampaignPledges assigned to a user."""
 input QueryFundCampaignPledgesByUserInput {
   """ID of the user to fetch FundCampaignPledges."""
   userId: String!
