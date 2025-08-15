@@ -83,17 +83,36 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 				const userId = parsedArgs.input.userId;
 				const currentUserId = ctx.currentClient.user.id;
 
-				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-				});
+				const [currentUser, targetUser] = await Promise.all([
+					ctx.drizzleClient.query.usersTable.findFirst({
+						columns: {
+							role: true,
+						},
+						where: (fields, operators) =>
+							operators.eq(fields.id, currentUserId),
+					}),
+					ctx.drizzleClient.query.usersTable.findFirst({
+						columns: {
+							id: true,
+						},
+						where: (fields, operators) => operators.eq(fields.id, userId),
+					}),
+				]);
 
 				if (currentUser === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthenticated",
+						},
+					});
+				}
+
+				// Validate that the target user exists
+				if (targetUser === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [{ argumentPath: ["userId", "id"] }],
 						},
 					});
 				}
@@ -246,6 +265,18 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 				}
 
 				if (!fundCampaignPledges.length) {
+					// If filters were applied but no results found, throw an error
+					if (
+						where?.name_contains !== undefined ||
+						where?.firstName_contains !== undefined
+					) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "arguments_associated_resources_not_found",
+								issues: [{ argumentPath: ["userId", "id"] }],
+							},
+						});
+					}
 					return [];
 				}
 

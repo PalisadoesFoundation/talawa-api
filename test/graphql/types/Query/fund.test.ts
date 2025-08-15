@@ -606,7 +606,7 @@ suite("Query field get fund Campaign Pledges by id", () => {
 					},
 					variables: {
 						input: {
-							userId: regularUserResult.userId,
+							userId: fundCampaignPledgeId,
 						},
 					},
 				},
