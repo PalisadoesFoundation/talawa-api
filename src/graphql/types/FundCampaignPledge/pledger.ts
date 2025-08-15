@@ -20,10 +20,11 @@ FundCampaignPledge.implement({
 
 				// Allow users to see pledger for their own pledges
 				if (parent.pledgerId === currentUserId) {
-					const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-						where: (fields, operators) =>
-							operators.eq(fields.id, currentUserId),
-					});
+					const currentUser =
+						await ctx.drizzleClient.query.usersTable.findFirst({
+							where: (fields, operators) =>
+								operators.eq(fields.id, currentUserId),
+						});
 
 					if (currentUser === undefined) {
 						throw new TalawaGraphQLError({
