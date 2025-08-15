@@ -44,7 +44,7 @@ export const resolveUpdater = async (
 		}
 
 		const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-			where: (fields, operators) => operators.eq(fields.id, parent.updaterId!),
+			where: (fields, operators) => operators.eq(fields.id, updaterId),
 		});
 
 		if (existingUser === undefined) {
@@ -137,8 +137,10 @@ export const resolveUpdater = async (
 		return currentUser;
 	}
 
+	const updaterId = parent.updaterId;
+
 	const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		where: (fields, operators) => operators.eq(fields.id, parent.updaterId!),
+		where: (fields, operators) => operators.eq(fields.id, updaterId),
 	});
 
 	if (existingUser === undefined) {
