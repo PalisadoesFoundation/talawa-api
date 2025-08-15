@@ -662,7 +662,7 @@ suite("Query field get fund Campaign Pledges by id", () => {
 									code: "arguments_associated_resources_not_found",
 									issues: [
 										{
-											argumentPath: ["userId", "id"],
+											argumentPath: ["input", "userId"],
 										},
 									],
 								},
@@ -1160,7 +1160,7 @@ suite("Query field get fund Campaign Pledges by id", () => {
 								code: "arguments_associated_resources_not_found",
 								issues: [
 									{
-										argumentPath: ["userId", "id"],
+										argumentPath: ["input", "userId"],
 									},
 								],
 							},
