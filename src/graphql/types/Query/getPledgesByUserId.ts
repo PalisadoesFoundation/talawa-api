@@ -257,8 +257,8 @@ export const queryFundCampaignPledgesByUser = builder.queryField(
 					const start = (args.offset as number | undefined) ?? 0;
 					const end =
 						(args.limit as number | undefined) !== undefined
-						? start + (args.limit as number)
-						: undefined;
+							? start + (args.limit as number)
+							: undefined;
 					return fundCampaignPledges.slice(start, end);
 				}
 
