@@ -57,8 +57,8 @@ async function globalSignInAndGetToken() {
 	const result = await mercuriusClient.query(Query_signIn, {
 		variables: {
 			input: {
-				emailAddress: process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ?? "",
-				password: process.env.API_ADMINISTRATOR_USER_PASSWORD ?? "",
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 			},
 		},
 	});

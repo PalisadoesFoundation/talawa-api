@@ -160,7 +160,7 @@ describe("NotificationEventBus", () => {
 					targetType: NotificationTargetType.USER,
 					targetIds: ["user-123"],
 				},
-				NotificationChannelType.IN_APP,
+				NotificationChannelType.EMAIL,
 			);
 		});
 
@@ -246,10 +246,26 @@ describe("NotificationEventBus", () => {
 					requestId: "request-123",
 				},
 				{
-					targetType: NotificationTargetType.ORGANIZATION,
+					targetType: NotificationTargetType.ORGANIZATION_ADMIN,
 					targetIds: ["org-456"],
 				},
 				NotificationChannelType.IN_APP,
+			);
+
+			// And also email to organization admins
+			expect(createNotificationSpy).toHaveBeenCalledWith(
+				"join_request_submitted",
+				{
+					userName: "Bob Johnson",
+					organizationName: "Test Organization",
+					organizationId: "org-456",
+					requestId: "request-123",
+				},
+				{
+					targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+					targetIds: ["org-456"],
+				},
+				NotificationChannelType.EMAIL,
 			);
 		});
 	});
