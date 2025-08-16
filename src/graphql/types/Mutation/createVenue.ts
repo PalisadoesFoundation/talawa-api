@@ -191,6 +191,7 @@ builder.mutationField("createVenue", (t) =>
 						description: parsedArgs.input.description,
 						name: parsedArgs.input.name,
 						organizationId: parsedArgs.input.organizationId,
+						capacity: parsedArgs.input.capacity,
 					})
 					.returning();
 
