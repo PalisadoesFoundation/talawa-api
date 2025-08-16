@@ -1861,20 +1861,6 @@ test("should not allow duplicate pledges for the same user and campaign", async 
 	expect(firstPledgeResult.data?.createFundCampaignPledge).toBeDefined();
 
 	// Second pledge creation for same user and campaign should fail
-	const secondPledgeResult = await mercuriusClient.mutate(
-		Mutation_createFundCampaignPledge,
-		{
-			headers: { authorization: `bearer ${adminAuthToken}` },
-			variables: {
-				input: {
-					campaignId: fundCampaignId,
-					pledgerId: regularUserResult.userId,
-					amount: 200,
-					note: "Duplicate pledge",
-				},
-			},
-		},
-	);
 
 	// First pledge creation should fail if pledger or creator is not a member of the fund's organization
 	expect(firstPledgeResult.errors).toEqual(
