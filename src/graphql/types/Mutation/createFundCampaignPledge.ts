@@ -210,31 +210,6 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 				});
 			}
 
-			const [currentUserOrganizationMembership, pledgerOrganizationMembership] =
-				[currentUserId, parsedArgs.input.pledgerId].map((id) =>
-					existingFundCampaign.fund.organization.membershipsWhereOrganization.find(
-						(membership) => membership.memberId === id,
-					),
-				);
-
-			if (
-				currentUserOrganizationMembership === undefined ||
-				pledgerOrganizationMembership === undefined
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "forbidden_action_on_arguments_associated_resources",
-						issues: [
-							{
-								argumentPath: ["input", "campaignId"],
-								message:
-									"Both the pledger and the creator must be members of the fund's organization.",
-							},
-						],
-					},
-				});
-			}
-
 			const [createdFundCampaignPledge] = await ctx.drizzleClient
 				.insert(fundCampaignPledgesTable)
 				.values({
