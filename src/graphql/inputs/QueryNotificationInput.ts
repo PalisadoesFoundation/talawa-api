@@ -18,10 +18,12 @@ export const QueryNotificationInput = builder
 				description:
 					"Number of notifications to return (default: 20, max: 100).",
 				required: false,
+				defaultValue: 20,
 			}),
 			skip: t.int({
 				description: "Number of notifications to skip for pagination.",
 				required: false,
+				defaultValue: 0,
 			}),
 			isRead: t.boolean({
 				description: "Filter by read status (true for read, false for unread).",

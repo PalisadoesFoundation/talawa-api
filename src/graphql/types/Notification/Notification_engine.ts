@@ -117,7 +117,7 @@ export class NotificationEngine {
 		const audiences = Array.isArray(audience) ? audience : [audience];
 
 		if (channelType === NotificationChannelType.EMAIL) {
-			console.log(`Sending email notification for event: ${eventType}`);
+			this.ctx.log.info({ eventType }, "Sending email notification");
 			await this.createEmailNotifications(
 				notificationLog.id,
 				audiences,

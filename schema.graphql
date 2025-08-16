@@ -3221,18 +3221,6 @@ type Notification {
 }
 
 type Organization {
-  """Posts for this organization"""
-  Orgposts(
-    """Number of items to return"""
-    first: Int
-
-    """Number of items to skip"""
-    skip: Int
-
-    """Filter criteria for posts"""
-    where: PostWhereInput
-  ): [Post!]
-
   """
   GraphQL connection to traverse through the action item categories belonging to the organization.
   """
@@ -3725,17 +3713,6 @@ type PostUpVotersConnectionEdge {
 enum PostVoteType {
   down_vote
   up_vote
-}
-
-input PostWhereInput {
-  """Filter by caption containing this string"""
-  caption_contains: String
-
-  """Filter by creator ID"""
-  creatorId: String
-
-  """Filter pinned/unpinned posts"""
-  isPinned: Boolean
 }
 
 type Query {

@@ -40,12 +40,14 @@ Notification.implement({
 		}),
 		title: t.string({
 			description: "Notification title for display.",
+			nullable: false,
 			resolve: (parent) => {
 				return parent.renderedContent?.title || "Notification";
 			},
 		}),
 		body: t.string({
 			description: "Notification message body.",
+			nullable: false,
 			resolve: (parent) => {
 				return parent.renderedContent?.body || "";
 			},

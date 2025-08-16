@@ -1,11 +1,8 @@
-import z from "zod";
+import {z} from "zod";
 import { builder } from "~/src/graphql/builder";
 
 export const mutationReadNotificationInputSchema = z.object({
-	notificationIds: z.union([
-		z.string().uuid(),
-		z.array(z.string().uuid()).min(1),
-	]),
+	notificationIds: z.array(z.string().uuid()).min(1),
 });
 
 export const MutationReadNotificationInput = builder
