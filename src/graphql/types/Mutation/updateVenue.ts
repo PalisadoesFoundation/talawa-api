@@ -226,21 +226,9 @@ builder.mutationField("updateVenue", (t) =>
 				if (parsedArgs.input.attachments !== undefined) {
 					const attachments = parsedArgs.input.attachments;
 
-					// Delete existing attachments and their files
+					// Delete existing attachment records (files will be removed after commit)
 					const existingAttachments = existingVenue.attachmentsWhereVenue;
-
 					if (existingAttachments.length > 0) {
-						// Delete files from MinIO
-						await Promise.all(
-							existingAttachments.map((attachment) =>
-								ctx.minio.client.removeObject(
-									ctx.minio.bucketName,
-									attachment.name,
-								),
-							),
-						);
-
-						// Delete attachment records from database
 						await tx
 							.delete(venueAttachmentsTable)
 							.where(eq(venueAttachmentsTable.venueId, parsedArgs.input.id));
@@ -260,21 +248,32 @@ builder.mutationField("updateVenue", (t) =>
 						.returning();
 
 					// Upload new files to MinIO
-					await Promise.all(
-						createdVenueAttachments.map((attachment, index) => {
-							if (attachments[index] !== undefined) {
-								return ctx.minio.client.putObject(
-									ctx.minio.bucketName,
-									attachment.name,
-									attachments[index].createReadStream(),
-									undefined,
-									{
-										"content-type": attachment.mimeType,
-									},
-								);
-							}
-						}),
-					);
+					const uploaded: string[] = [];
+					try {
+						await Promise.all(
+							createdVenueAttachments.map((attachment, index) => {
+								if (attachments[index] !== undefined) {
+									return ctx.minio.client
+										.putObject(
+											ctx.minio.bucketName,
+											attachment.name,
+											attachments[index].createReadStream(),
+											undefined,
+											{ "content-type": attachment.mimeType },
+										)
+										.then(() => uploaded.push(attachment.name));
+								}
+							}),
+						);
+					} catch (e) {
+						// Best-effort cleanup of partially uploaded files
+						await Promise.all(
+							uploaded.map((name) =>
+								ctx.minio.client.removeObject(ctx.minio.bucketName, name),
+							),
+						);
+						throw e;
+					}
 
 					return Object.assign(updatedVenue, {
 						attachments: createdVenueAttachments,

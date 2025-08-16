@@ -39,7 +39,9 @@ export const MutationUpdateVenueInput = builder
 			}),
 			attachments: t.field({
 				description: "Attachments of the venue.",
-				type: t.listRef("Upload"),
+				type: ["Upload"],
+				// Keep the list optional...
+				required: false,
 			}),
 			description: t.string({
 				description: "Custom information about the venue.",
