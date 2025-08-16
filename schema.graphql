@@ -3782,6 +3782,9 @@ type Query {
 
   """Query field to get fund campaign pledge associated to a user."""
   getPledgesByUserId(
+    """Input parameters to fetch pledges by userId."""
+    input: QueryFundCampaignPledgesByUserInput!
+
     """Maximum number of results to return."""
     limit: Int
 
@@ -3792,9 +3795,6 @@ type Query {
     Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
     """
     orderBy: QueryPledgeOrderByInput
-
-    """Global id of the user."""
-    userId: QueryUserInput!
 
     """Filter criteria for pledges"""
     where: QueryPledgeWhereInput
@@ -3955,6 +3955,12 @@ input QueryFundCampaignInput {
 input QueryFundCampaignPledgeInput {
   """Global id of the fund campaign pledge."""
   id: String!
+}
+
+"""Input type for querying FundCampaignPledges assigned to a user."""
+input QueryFundCampaignPledgesByUserInput {
+  """ID of the user to fetch FundCampaignPledges."""
+  userId: String!
 }
 
 """"""
