@@ -217,70 +217,22 @@ builder.mutationField("createFundCampaignPledge", (t) =>
 					),
 				);
 
-			if (currentUser.role === "administrator") {
-				if (
-					currentUserId !== parsedArgs.input.pledgerId &&
-					pledgerOrganizationMembership === undefined
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "pledgerId"],
-									message:
-										"This user is not a member of the organization associated to the fund campaign.",
-								},
-							],
-						},
-					});
-				}
-			} else {
-				if (currentUserOrganizationMembership === undefined) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "campaignId"],
-								},
-							],
-						},
-					});
-				}
-
-				if (currentUserOrganizationMembership.role === "administrator") {
-					if (
-						currentUserId !== parsedArgs.input.pledgerId &&
-						pledgerOrganizationMembership === undefined
-					) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "forbidden_action_on_arguments_associated_resources",
-								issues: [
-									{
-										argumentPath: ["input", "pledgerId"],
-										message:
-											"This user is not a member of the organization associated to the fund campaign.",
-									},
-								],
+			if (
+				currentUserOrganizationMembership === undefined ||
+				pledgerOrganizationMembership === undefined
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "campaignId"],
+								message:
+									"Both the pledger and the creator must be members of the fund's organization.",
 							},
-						});
-					}
-				} else {
-					if (currentUserId !== parsedArgs.input.pledgerId) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unauthorized_action_on_arguments_associated_resources",
-								issues: [
-									{
-										argumentPath: ["input", "campaignId"],
-									},
-								],
-							},
-						});
-					}
-				}
+						],
+					},
+				});
 			}
 
 			const [createdFundCampaignPledge] = await ctx.drizzleClient

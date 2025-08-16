@@ -3791,6 +3791,12 @@ type Query {
     where: QueryPledgeWhereInput
   ): [FundCampaignPledge!]
 
+
+  """
+  Get pledges for the current user in a specific campaign.
+  """
+  getMyPledgesForCampaign(campaignId: ID!): [FundCampaignPledge!]
+
   """Query field to fetch a single plugin by ID."""
   getPluginById(
     """Input parameters to fetch a plugin by ID."""

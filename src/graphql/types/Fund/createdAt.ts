@@ -47,8 +47,7 @@ Fund.implement({
 
 				if (
 					currentUser.role !== "administrator" &&
-					(currentUserOrganizationMembership === undefined ||
-						currentUserOrganizationMembership.role !== "administrator")
+					currentUserOrganizationMembership === undefined
 				) {
 					throw new TalawaGraphQLError({
 						extensions: {
