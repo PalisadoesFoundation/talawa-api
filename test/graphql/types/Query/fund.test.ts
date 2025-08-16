@@ -563,8 +563,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 				Query_getPledgesByUserId,
 				{
 					variables: {
-						userId: {
-							id: faker.string.uuid(),
+						input: {
+							userId: faker.string.uuid(),
 						},
 					},
 				},
@@ -605,8 +605,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 						authorization: `bearer ${regularUserResult.authToken}`,
 					},
 					variables: {
-						userId: {
-							id: fundCampaignPledgeId,
+						input: {
+							userId: fundCampaignPledgeId,
 						},
 					},
 				},
@@ -645,8 +645,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 						authorization: `bearer ${adminSignInResult.data.signIn.authenticationToken}`,
 					},
 					variables: {
-						userId: {
-							id: faker.string.uuid(),
+						input: {
+							userId: faker.string.uuid(),
 						},
 					},
 				},
@@ -662,7 +662,7 @@ suite("Query field get fund Campaign Pledges by id", () => {
 									code: "arguments_associated_resources_not_found",
 									issues: [
 										{
-											argumentPath: ["userId", "id"],
+											argumentPath: ["input", "userId"],
 										},
 									],
 								},
@@ -687,8 +687,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 						authorization: `bearer ${invalidToken}`,
 					},
 					variables: {
-						userId: {
-							id: faker.string.uuid(),
+						input: {
+							userId: faker.string.uuid(),
 						},
 					},
 				},
@@ -727,8 +727,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 						authorization: `bearer ${expiredToken}`,
 					},
 					variables: {
-						userId: {
-							id: faker.string.uuid(),
+						input: {
+							userId: faker.string.uuid(),
 						},
 					},
 				},
@@ -767,8 +767,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 					authorization: `bearer ${regularUserResult.authToken}`,
 				},
 				variables: {
-					userId: {
-						id: regularUserResult.userId,
+					input: {
+						userId: regularUserResult.userId,
 					},
 				},
 			},
@@ -810,8 +810,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 					authorization: `bearer ${regularUserResult.authToken}`,
 				},
 				variables: {
-					userId: {
-						id: regularUserResult.userId,
+					input: {
+						userId: regularUserResult.userId,
 					},
 				},
 			},
@@ -874,8 +874,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 					authorization: `bearer ${regularUserResult.authToken}`,
 				},
 				variables: {
-					userId: {
-						id: regularUserResult.userId,
+					input: {
+						userId: regularUserResult.userId,
 					},
 					where: {
 						name_contains: fundCampaignResult?.data?.fundCampaign?.name,
@@ -938,8 +938,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 					authorization: `bearer ${regularUserResult.authToken}`,
 				},
 				variables: {
-					userId: {
-						id: regularUserResult.userId,
+					input: {
+						userId: regularUserResult.userId,
 					},
 					orderBy: "amount_DESC",
 				},
@@ -961,8 +961,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 					authorization: `bearer ${regularUserResult.authToken}`,
 				},
 				variables: {
-					userId: {
-						id: regularUserResult.userId,
+					input: {
+						userId: regularUserResult.userId,
 					},
 					orderBy: "amount_ASC",
 				},
@@ -1015,8 +1015,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 					authorization: `bearer ${regularUserResult.authToken}`,
 				},
 				variables: {
-					userId: {
-						id: regularUserResult.userId,
+					input: {
+						userId: regularUserResult.userId,
 					},
 					orderBy: "endDate_DESC",
 				},
@@ -1043,8 +1043,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 					authorization: `bearer ${regularUserResult.authToken}`,
 				},
 				variables: {
-					userId: {
-						id: regularUserResult.userId,
+					input: {
+						userId: regularUserResult.userId,
 					},
 					orderBy: "endDate_ASC",
 				},
@@ -1103,8 +1103,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 					authorization: `bearer ${regularUserResult.authToken}`,
 				},
 				variables: {
-					userId: {
-						id: regularUserResult.userId,
+					input: {
+						userId: regularUserResult.userId,
 					},
 					where: {
 						firstName_contains: regularUserResult.name,
@@ -1139,8 +1139,8 @@ suite("Query field get fund Campaign Pledges by id", () => {
 					authorization: `bearer ${regularUserResult.authToken}`,
 				},
 				variables: {
-					userId: {
-						id: regularUserResult.userId,
+					input: {
+						userId: regularUserResult.userId,
 					},
 					where: {
 						firstName_contains: faker.string.uuid(),
@@ -1160,7 +1160,7 @@ suite("Query field get fund Campaign Pledges by id", () => {
 								code: "arguments_associated_resources_not_found",
 								issues: [
 									{
-										argumentPath: ["userId", "id"],
+										argumentPath: ["input", "userId"],
 									},
 								],
 							},
