@@ -1832,3 +1832,69 @@ async function addUserToOrg(
 		throw error;
 	}
 }
+
+test("should not allow duplicate pledges for the same user and campaign", async () => {
+	const adminAuthToken = await getAdminAuthToken();
+	const { fundId, orgId } = await createFund();
+	const { fundCampaignId } = await createFundCampaign(fundId);
+	const regularUserResult = await createRegularUser();
+
+	await addUserToOrg(regularUserResult.userId, orgId);
+
+	// First pledge creation should succeed
+	const firstPledgeResult = await mercuriusClient.mutate(
+		Mutation_createFundCampaignPledge,
+		{
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: {
+				input: {
+					campaignId: fundCampaignId,
+					pledgerId: regularUserResult.userId,
+					amount: 100,
+					note: "First pledge",
+				},
+			},
+		},
+	);
+
+	expect(firstPledgeResult.errors).toBeUndefined();
+	expect(firstPledgeResult.data?.createFundCampaignPledge).toBeDefined();
+
+	// Second pledge creation for same user and campaign should fail
+	const secondPledgeResult = await mercuriusClient.mutate(
+		Mutation_createFundCampaignPledge,
+		{
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: {
+				input: {
+					campaignId: fundCampaignId,
+					pledgerId: regularUserResult.userId,
+					amount: 200,
+					note: "Duplicate pledge",
+				},
+			},
+		},
+	);
+
+	// First pledge creation should fail if pledger or creator is not a member of the fund's organization
+	expect(firstPledgeResult.errors).toEqual(
+		expect.arrayContaining([
+			expect.objectContaining({
+				extensions: expect.objectContaining({
+					code: "forbidden_action_on_arguments_associated_resources",
+					issues: expect.arrayContaining([
+						expect.objectContaining({
+							argumentPath: ["input", "campaignId"],
+							message: expect.stringContaining(
+								"Both the pledger and the creator must be members of the fund's organization.",
+							),
+						}),
+					]),
+				}),
+				message: expect.stringContaining("forbidden"),
+				path: ["createFundCampaignPledge"],
+			}),
+		]),
+	);
+	expect(firstPledgeResult.data?.createFundCampaignPledge).toBeNull();
+});
