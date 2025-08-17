@@ -33,10 +33,7 @@ class PluginManager extends EventEmitter {
 	private loadedPlugins: Map<string, ILoadedPlugin> = new Map();
 	private extensionRegistry: IExtensionRegistry = {
 		graphql: {
-			queries: {},
-			mutations: {},
-			subscriptions: {},
-			types: {},
+			builderExtensions: [],
 		},
 		database: {
 			tables: {},

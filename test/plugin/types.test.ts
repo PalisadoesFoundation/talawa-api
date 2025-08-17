@@ -68,7 +68,7 @@ describe("Plugin Types", () => {
 				type: "query",
 				name: "testQuery",
 				file: "test.js",
-				resolver: "testResolver",
+				builderDefinition: "testResolver",
 			};
 
 			expect(extension.type).toBe("query");
@@ -104,7 +104,7 @@ describe("Plugin Types", () => {
 						type: "query",
 						name: "testQuery",
 						file: "test.js",
-						resolver: "testResolver",
+						builderDefinition: "testResolver",
 					},
 				],
 				database: [
@@ -178,10 +178,7 @@ describe("Plugin Types", () => {
 		it("should create valid IExtensionRegistry objects", () => {
 			const registry: IExtensionRegistry = {
 				graphql: {
-					queries: {},
-					mutations: {},
-					subscriptions: {},
-					types: {},
+					builderExtensions: [],
 				},
 				database: {
 					tables: {},
