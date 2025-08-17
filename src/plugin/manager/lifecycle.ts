@@ -227,17 +227,11 @@ export class PluginLifecycle {
 	 * Remove plugin from extension registry
 	 */
 	private removeFromExtensionRegistry(pluginId: string): void {
-		// Remove GraphQL extensions
-		for (const type of Object.keys(this.extensionRegistry.graphql)) {
-			const extensions = this.extensionRegistry.graphql[
-				type as keyof typeof this.extensionRegistry.graphql
-			] as Record<string, { pluginId: string }>;
-			for (const name of Object.keys(extensions)) {
-				if (extensions[name]?.pluginId === pluginId) {
-					delete extensions[name];
-				}
-			}
-		}
+		// Remove GraphQL builder extensions
+		this.extensionRegistry.graphql.builderExtensions =
+			this.extensionRegistry.graphql.builderExtensions.filter(
+				(extension) => extension.pluginId !== pluginId,
+			);
 
 		// Remove Database extensions
 		for (const type of Object.keys(this.extensionRegistry.database)) {
