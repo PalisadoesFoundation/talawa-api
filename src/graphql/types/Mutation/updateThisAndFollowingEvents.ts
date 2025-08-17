@@ -92,6 +92,7 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 								organizationId: true,
 								startAt: true,
 								endAt: true,
+								creatorId: true,
 							},
 						},
 						recurrenceRule: {
@@ -140,17 +141,57 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 				});
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const currentUserId = ctx.currentClient.user?.id;
-
-				if (!currentUserId) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthenticated",
+			const currentUserId = ctx.currentClient.user.id;
+			const [currentUser, currentUserOrganizationMembership] =
+				await Promise.all([
+					ctx.drizzleClient.query.usersTable.findFirst({
+						columns: {
+							role: true,
 						},
-					});
-				}
+						where: (fields, operators) =>
+							operators.eq(fields.id, currentUserId),
+					}),
+					ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
+						columns: {
+							role: true,
+						},
+						where: (fields, operators) =>
+							operators.and(
+								operators.eq(fields.memberId, currentUserId),
+								operators.eq(
+									fields.organizationId,
+									existingInstance.organizationId,
+								),
+							),
+					}),
+				]);
 
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
+
+			if (
+				(currentUserOrganizationMembership === undefined ||
+					currentUserOrganizationMembership.role !== "administrator") &&
+				existingInstance.baseRecurringEvent.creatorId !== currentUserId
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "id"],
+							},
+						],
+					},
+				});
+			}
+
+			return await ctx.drizzleClient.transaction(async (tx) => {
 				// Always split for "this and following" updates
 				// Step 1: Delete all instances from this one forward (including this instance)
 				// First delete the instances to avoid constraint issues

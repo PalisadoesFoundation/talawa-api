@@ -175,11 +175,7 @@ builder.mutationField("createEvent", (t) =>
 			const currentUserOrganizationMembership =
 				existingOrganization.membershipsWhereOrganization[0];
 
-			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
-			) {
+			if (currentUserOrganizationMembership === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",

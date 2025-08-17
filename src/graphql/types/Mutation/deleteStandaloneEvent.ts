@@ -64,6 +64,7 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 					columns: {
 						startAt: true,
 						isRecurringEventTemplate: true,
+						creatorId: true,
 					},
 					with: {
 						attachmentsWhereEvent: true,
@@ -128,9 +129,9 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 				existingEvent.organization.membershipsWhereOrganization[0];
 
 			if (
-				currentUser.role !== "administrator" &&
 				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
+					currentUserOrganizationMembership.role !== "administrator") &&
+				existingEvent.creatorId !== currentUserId
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {

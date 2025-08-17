@@ -71,6 +71,7 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 					columns: {
 						id: true,
 						isRecurringEventTemplate: true,
+						creatorId: true,
 					},
 					with: {
 						attachmentsWhereEvent: true,
@@ -158,9 +159,9 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 
 			// Authorization check
 			if (
-				currentUser.role !== "administrator" &&
 				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
+					currentUserOrganizationMembership.role !== "administrator") &&
+				existingEvent.creatorId !== currentUserId
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {
