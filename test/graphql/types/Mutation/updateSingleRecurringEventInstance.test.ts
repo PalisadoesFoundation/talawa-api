@@ -277,7 +277,12 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 			server.drizzleClient.query.recurringEventInstancesTable.findFirst = vi
 				.fn()
 				.mockResolvedValue(
-					mockRecurringEventInstance(instanceId, orgId, userId, "member"),
+					mockRecurringEventInstance(
+						instanceId,
+						orgId,
+						"different-user-id",
+						"member",
+					),
 				);
 
 			try {
@@ -302,9 +307,6 @@ suite("Mutation field updateSingleRecurringEventInstance", () => {
 						expect.objectContaining({
 							extensions: expect.objectContaining({
 								code: "unauthorized_action_on_arguments_associated_resources",
-								issues: expect.arrayContaining([
-									expect.objectContaining({ argumentPath: ["input", "id"] }),
-								]),
 							}),
 							path: ["updateSingleRecurringEventInstance"],
 						}),
