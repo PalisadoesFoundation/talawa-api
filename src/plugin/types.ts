@@ -29,8 +29,9 @@ export interface IGraphQLExtension {
 	type: "query" | "mutation" | "subscription";
 	name: string;
 	file: string;
-	resolver: string;
 	description?: string;
+	// Builder-first approach
+	builderDefinition: string; // Function name that defines the GraphQL field using Pothos builder
 }
 
 export interface IDatabaseExtension {
@@ -57,17 +58,19 @@ export interface ILoadedPlugin {
 	errorMessage?: string;
 }
 
-export interface IGraphQLExtensionResolver {
+// Builder-first GraphQL extension interface
+export interface IGraphQLBuilderExtension {
 	pluginId: string;
-	resolver: (parent: unknown, args: unknown, context: unknown) => unknown;
+	type: "query" | "mutation" | "subscription";
+	fieldName: string;
+	builderFunction: (builder: unknown) => void; // Function that registers with Pothos builder
+	description?: string;
 }
 
 export interface IExtensionRegistry {
 	graphql: {
-		queries: Record<string, IGraphQLExtensionResolver>;
-		mutations: Record<string, IGraphQLExtensionResolver>;
-		subscriptions: Record<string, IGraphQLExtensionResolver>;
-		types: Record<string, unknown>;
+		// Builder-first extensions only
+		builderExtensions: IGraphQLBuilderExtension[];
 	};
 	database: {
 		tables: Record<string, unknown>;

@@ -16,6 +16,26 @@ vi.mock("../../../src/plugin/utils", () => ({
 	safeRequire: vi.fn(),
 }));
 
+// Mock schema manager to prevent schema rebuild errors
+vi.mock("../../../src/graphql/schemaManager", () => ({
+	GraphQLSchemaManager: class MockSchemaManager {
+		rebuildSchema() {
+			return Promise.resolve();
+		}
+		getCurrentSchema() {
+			return null;
+		}
+	},
+	schemaManager: {
+		rebuildSchema() {
+			return Promise.resolve();
+		},
+		getCurrentSchema() {
+			return null;
+		},
+	},
+}));
+
 import {
 	directoryExists,
 	isValidPluginId,
@@ -58,6 +78,17 @@ function createPluginContext(installedPlugins: unknown[] = [mockDbPlugin]) {
 					where: vi.fn(() => Promise.resolve(installedPlugins)),
 				})),
 			})),
+			update: vi.fn(() => ({
+				set: vi.fn(() => ({
+					where: vi.fn(() => Promise.resolve()),
+				})),
+			})),
+			insert: vi.fn(() => ({
+				values: vi.fn(() => Promise.resolve()),
+			})),
+			delete: vi.fn(() => ({
+				where: vi.fn(() => Promise.resolve()),
+			})),
 		},
 		logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
 		graphql: {},
@@ -91,7 +122,7 @@ describe("PluginManager", () => {
 		const context = createPluginContext();
 		const manager = new PluginManager(context, "/plugins");
 		// Wait for async initialization
-		await new Promise((resolve) => setTimeout(resolve, 10));
+		await new Promise((resolve) => setTimeout(resolve, 50));
 		expect(manager.isSystemInitialized()).toBe(true);
 		expect(manager.getLoadedPluginIds()).toContain("test-plugin");
 		expect(manager.getPlugin("test-plugin")).toBeDefined();
@@ -385,5 +416,115 @@ describe("PluginManager", () => {
 		const plugin = manager.getPlugin("test-plugin");
 		if (plugin) plugin.status = PluginStatus.INACTIVE;
 		expect(manager.getActivePlugins()).toHaveLength(0);
+	});
+
+	it("should handle plugin not found in getPlugin", async () => {
+		const context = createPluginContext();
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(manager.getPlugin("non-existent-plugin")).toBeUndefined();
+	});
+
+	it("should return false for isPluginLoaded when plugin not found", async () => {
+		const context = createPluginContext();
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(manager.isPluginLoaded("non-existent-plugin")).toBe(false);
+	});
+
+	it("should return false for isPluginActive when plugin not found", async () => {
+		const context = createPluginContext();
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(manager.isPluginActive("non-existent-plugin")).toBe(false);
+	});
+
+	it("should handle empty hooks in executePreHooks", async () => {
+		const context = createPluginContext();
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		manager.getExtensionRegistry().hooks.pre.event = [];
+		const result = await manager.executePreHooks("event", 1);
+		expect(result).toBe(1);
+	});
+
+	it("should handle empty hooks in executePostHooks", async () => {
+		const context = createPluginContext();
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		manager.getExtensionRegistry().hooks.post.event = [];
+		await expect(manager.executePostHooks("event", 1)).resolves.toBeUndefined();
+	});
+
+	it("should handle lifecycle activation failure", async () => {
+		const context = createPluginContext();
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		vi.spyOn(manager.getTestLifecycle(), "activatePlugin").mockResolvedValue(
+			false,
+		);
+		await expect(manager.activatePlugin("test-plugin")).resolves.toBe(false);
+	});
+
+	it("should handle lifecycle deactivation failure", async () => {
+		const context = createPluginContext();
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		vi.spyOn(manager.getTestLifecycle(), "deactivatePlugin").mockResolvedValue(
+			false,
+		);
+		await expect(manager.deactivatePlugin("test-plugin")).resolves.toBe(false);
+	});
+
+	it("should handle lifecycle unload failure", async () => {
+		const context = createPluginContext();
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		vi.spyOn(manager.getTestLifecycle(), "unloadPlugin").mockResolvedValue(
+			false,
+		);
+		await expect(manager.unloadPlugin("test-plugin")).resolves.toBe(false);
+	});
+
+	it("should handle plugin not found in lifecycle operations", async () => {
+		const context = createPluginContext();
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		await expect(manager.activatePlugin("non-existent-plugin")).rejects.toThrow(
+			"Plugin non-existent-plugin is not loaded",
+		);
+		await expect(
+			manager.deactivatePlugin("non-existent-plugin"),
+		).rejects.toThrow("Plugin non-existent-plugin is not loaded");
+		// unloadPlugin returns true for non-existent plugins (already unloaded)
+		await expect(manager.unloadPlugin("non-existent-plugin")).resolves.toBe(
+			true,
+		);
+	});
+
+	it("should handle loadPlugin for non-existent plugin", async () => {
+		const context = createPluginContext();
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		// loadPlugin returns true for non-existent plugins (tries to load them)
+		await expect(manager.loadPlugin("non-existent-plugin")).resolves.toBe(true);
+	});
+
+	it("should return correct plugin count in getLoadedPlugins", async () => {
+		const context = createPluginContext();
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		const plugins = manager.getLoadedPlugins();
+		expect(plugins).toHaveLength(1);
+		expect(plugins[0]?.manifest.pluginId).toBe("test-plugin");
+	});
+
+	it("should return correct plugin IDs in getLoadedPluginIds", async () => {
+		const context = createPluginContext();
+		const manager = new TestablePluginManager(context, "/plugins");
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		const pluginIds = manager.getLoadedPluginIds();
+		expect(pluginIds).toContain("test-plugin");
+		expect(pluginIds).toHaveLength(1);
 	});
 });

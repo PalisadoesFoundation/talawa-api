@@ -15,6 +15,9 @@ Venue.implement({
 	description:
 		"Venues are physical locations associated to organizations where they conduct their events.",
 	fields: (t) => ({
+		capacity: t.exposeInt("capacity", {
+			description: "Capacity of the venue.",
+		}),
 		attachments: t.expose("attachments", {
 			description: "Array of attachments.",
 			type: t.listRef(VenueAttachment),

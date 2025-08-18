@@ -38,9 +38,12 @@ interface MockExtensionRegistry {
 		types: Record<string, { pluginId: string }>;
 		mutations: Record<string, { pluginId: string }>;
 		queries: Record<string, { pluginId: string }>;
+		builderExtensions: Array<{ pluginId: string; fieldName: string }>;
 	};
 	database: {
 		tables: Record<string, { pluginId: string }>;
+		enums: Record<string, { pluginId: string }>;
+		relations: Record<string, { pluginId: string }>;
 	};
 	hooks: {
 		pre: Record<
@@ -106,9 +109,12 @@ describe("PluginLifecycle", () => {
 				types: {},
 				mutations: {},
 				queries: {},
+				builderExtensions: [],
 			},
 			database: {
 				tables: {},
+				enums: {},
+				relations: {},
 			},
 			hooks: {
 				pre: {},
@@ -482,10 +488,10 @@ describe("PluginLifecycle", () => {
 
 		it("should remove plugin from extension registry", async () => {
 			// Setup extension registry with plugin extensions
-			mockExtensionRegistry.graphql.types = {
-				TestType: { pluginId: "test-plugin" },
-				OtherType: { pluginId: "other-plugin" },
-			};
+			mockExtensionRegistry.graphql.builderExtensions = [
+				{ pluginId: "test-plugin", fieldName: "testField" },
+				{ pluginId: "other-plugin", fieldName: "otherField" },
+			];
 			mockExtensionRegistry.database.tables = {
 				TestTable: { pluginId: "test-plugin" },
 				OtherTable: { pluginId: "other-plugin" },
@@ -508,8 +514,10 @@ describe("PluginLifecycle", () => {
 			);
 
 			// Check that test-plugin extensions were removed
-			expect(mockExtensionRegistry.graphql.types.TestType).toBeUndefined();
-			expect(mockExtensionRegistry.graphql.types.OtherType).toBeDefined();
+			expect(mockExtensionRegistry.graphql.builderExtensions).toHaveLength(1);
+			expect(mockExtensionRegistry.graphql.builderExtensions[0]?.pluginId).toBe(
+				"other-plugin",
+			);
 			expect(mockExtensionRegistry.database.tables.TestTable).toBeUndefined();
 			expect(mockExtensionRegistry.database.tables.OtherTable).toBeDefined();
 			const testEventHandlers = mockExtensionRegistry.hooks.pre.testEvent;
@@ -560,14 +568,10 @@ describe("PluginLifecycle", () => {
 	describe("removeFromExtensionRegistry", () => {
 		it("should remove all plugin extensions from registry", () => {
 			// Setup extension registry with plugin extensions
-			mockExtensionRegistry.graphql.types = {
-				TestType: { pluginId: "test-plugin" },
-				OtherType: { pluginId: "other-plugin" },
-			};
-			mockExtensionRegistry.graphql.mutations = {
-				TestMutation: { pluginId: "test-plugin" },
-				OtherMutation: { pluginId: "other-plugin" },
-			};
+			mockExtensionRegistry.graphql.builderExtensions = [
+				{ pluginId: "test-plugin", fieldName: "testField" },
+				{ pluginId: "other-plugin", fieldName: "otherField" },
+			];
 			mockExtensionRegistry.database.tables = {
 				TestTable: { pluginId: "test-plugin" },
 				OtherTable: { pluginId: "other-plugin" },
@@ -589,14 +593,10 @@ describe("PluginLifecycle", () => {
 			).removeFromExtensionRegistry("test-plugin");
 
 			// Check that test-plugin extensions were removed
-			expect(mockExtensionRegistry.graphql.types.TestType).toBeUndefined();
-			expect(mockExtensionRegistry.graphql.types.OtherType).toBeDefined();
-			expect(
-				mockExtensionRegistry.graphql.mutations.TestMutation,
-			).toBeUndefined();
-			expect(
-				mockExtensionRegistry.graphql.mutations.OtherMutation,
-			).toBeDefined();
+			expect(mockExtensionRegistry.graphql.builderExtensions).toHaveLength(1);
+			expect(mockExtensionRegistry.graphql.builderExtensions[0]?.pluginId).toBe(
+				"other-plugin",
+			);
 			expect(mockExtensionRegistry.database.tables.TestTable).toBeUndefined();
 			expect(mockExtensionRegistry.database.tables.OtherTable).toBeDefined();
 			const testEventHandlers = mockExtensionRegistry.hooks.pre.testEvent;

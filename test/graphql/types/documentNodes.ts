@@ -386,13 +386,16 @@ export const Query_fundCampaignPledge =
 }`);
 
 export const Query_getPledgesByUserId =
-	gql(`query Query_getPledgesByUserId($userId: QueryUserInput! , $where: QueryPledgeWhereInput, $orderBy: QueryPledgeOrderByInput) {
-  getPledgesByUserId(userId: $userId , where: $where , orderBy: $orderBy) {
+	gql(`query Query_getPledgesByUserId($input: QueryFundCampaignPledgesByUserInput! , $where: QueryPledgeWhereInput, $orderBy: QueryPledgeOrderByInput) {
+  getPledgesByUserId(input: $input , where: $where , orderBy: $orderBy) {
     id
     note
     amount
     campaign {
     endAt
+    }
+    pledger {
+    id
     }
   }
 }`);
