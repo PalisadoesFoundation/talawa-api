@@ -11,6 +11,7 @@ import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
+	Mutation_createUser,
 	Mutation_updateThisAndFollowingEvents,
 	Query_signIn,
 } from "../documentNodes";
@@ -313,6 +314,72 @@ suite(
 			expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 			// The actual error message might be more generic, so let's just check the code
 			expect(result.errors?.[0]?.extensions?.issues).toBeDefined();
+		});
+
+		test("should throw unauthorized_action_on_arguments_associated_resources error for non-admin and non-creator", async () => {
+			const orgId = await createOrganizationAndGetId(authToken);
+
+			const currentUser = signInResult.data?.signIn?.user;
+			assertToBeNonNullish(currentUser);
+			await addMembership(orgId, currentUser.id, "administrator");
+
+			const { instanceIds } = await createRecurringEventWithInstances(
+				orgId,
+				currentUser.id,
+			);
+
+			const regularUserEmail = faker.internet.email();
+			const regularUserPassword = "password123";
+			await mercuriusClient.mutate(Mutation_createUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						emailAddress: regularUserEmail,
+						password: regularUserPassword,
+						name: "Regular User",
+						role: "regular",
+						isEmailAddressVerified: true,
+					},
+				},
+			});
+
+			const regularUserSignInResult = await mercuriusClient.query(
+				Query_signIn,
+				{
+					variables: {
+						input: {
+							emailAddress: regularUserEmail,
+							password: regularUserPassword,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(regularUserSignInResult.data?.signIn);
+			const regularUserAuthToken =
+				regularUserSignInResult.data.signIn.authenticationToken;
+			assertToBeNonNullish(regularUserAuthToken);
+			const regularUser = regularUserSignInResult.data.signIn.user;
+			assertToBeNonNullish(regularUser);
+
+			await addMembership(orgId, regularUser.id, "regular");
+
+			const result = await mercuriusClient.mutate(
+				Mutation_updateThisAndFollowingEvents,
+				{
+					headers: { authorization: `bearer ${regularUserAuthToken}` },
+					variables: {
+						input: {
+							id: instanceIds[0] as string,
+							name: "Updated Event",
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeDefined();
+			expect(result.errors?.[0]?.extensions?.code).toBe(
+				"unauthorized_action_on_arguments_associated_resources",
+			);
 		});
 	},
 	10000,
@@ -648,11 +715,63 @@ test("should throw invalid_arguments error for invalid recurrence validation", a
 		currentUser.id,
 	);
 
-	// Try to update with invalid recurrence pattern (negative interval)
 	const targetInstanceId = instanceIds[0];
 	assertToBeNonNullish(targetInstanceId);
 
-	const result = await mercuriusClient.mutate(
+	// Test 1: End date before start date
+	const resultEndDateError = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					startAt: "2024-06-01T10:00:00Z",
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						endDate: "2024-05-01T10:00:00Z", // End date before start date
+					},
+				},
+			},
+		},
+	);
+
+	expect(resultEndDateError.errors).toBeDefined();
+	expect(resultEndDateError.errors?.[0]?.extensions?.code).toBe(
+		"invalid_arguments",
+	);
+	expect(resultEndDateError.errors?.[0]?.extensions?.issues).toBeDefined();
+	const endDateIssues = resultEndDateError.errors?.[0]?.extensions?.issues as {
+		argumentPath: string[];
+		message: string;
+	}[];
+	expect(
+		endDateIssues.some(
+			(issue) =>
+				issue.argumentPath?.includes("recurrence") &&
+				issue.message.includes("end date must be after"),
+		),
+	).toBe(true);
+});
+
+test("should throw invalid_arguments error for zero or negative count", async () => {
+	// This test covers count validation in validateRecurrenceInput
+	const orgId = await createOrganizationAndGetId(authToken);
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	// Test: Zero count - this will be caught by Zod validation at input level
+	const resultZeroCount = await mercuriusClient.mutate(
 		Mutation_updateThisAndFollowingEvents,
 		{
 			headers: { authorization: `bearer ${authToken}` },
@@ -661,22 +780,259 @@ test("should throw invalid_arguments error for invalid recurrence validation", a
 					id: targetInstanceId,
 					recurrence: {
 						frequency: "WEEKLY",
-						interval: -1, // Invalid - negative interval
+						interval: 1,
+						count: 0, // Invalid - count must be at least 1 (caught by Zod)
 					},
 				},
 			},
 		},
 	);
 
-	expect(result.errors).toBeDefined();
-	expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
-	expect(result.errors?.[0]?.extensions?.issues).toBeDefined();
-	// Check that the issue points to the recurrence argument
-	const issues = result.errors?.[0]?.extensions?.issues as {
+	expect(resultZeroCount.errors).toBeDefined();
+	expect(resultZeroCount.errors?.[0]?.extensions?.code).toBe(
+		"invalid_arguments",
+	);
+	// The error will be from Zod validation, not from validateRecurrenceInput
+	// This still tests the invalid_arguments error path, just at a different validation layer
+});
+
+test("should throw invalid_arguments error for never-ending yearly events", async () => {
+	// This test covers yearly event validation in validateRecurrenceInput
+	const orgId = await createOrganizationAndGetId(authToken);
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	// Test: Never-ending yearly event
+	const resultYearlyNever = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					recurrence: {
+						frequency: "YEARLY",
+						interval: 1,
+						never: true, // Invalid - yearly events cannot be never-ending
+					},
+				},
+			},
+		},
+	);
+
+	expect(resultYearlyNever.errors).toBeDefined();
+	expect(resultYearlyNever.errors?.[0]?.extensions?.code).toBe(
+		"invalid_arguments",
+	);
+	const yearlyIssues = resultYearlyNever.errors?.[0]?.extensions?.issues as {
 		argumentPath: string[];
+		message: string;
 	}[];
 	expect(
-		issues.some((issue) => issue.argumentPath?.includes("recurrence")),
+		yearlyIssues.some(
+			(issue) =>
+				issue.argumentPath?.includes("recurrence") &&
+				issue.message.includes("Yearly events cannot be never-ending"),
+		),
+	).toBe(true);
+});
+
+test("should throw invalid_arguments error for invalid day codes", async () => {
+	// This test covers byDay validation in validateRecurrenceInput
+	const orgId = await createOrganizationAndGetId(authToken);
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	// Test: Invalid day code
+	const resultInvalidDay = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						never: true,
+						byDay: ["MO", "INVALID"], // Invalid day code
+					},
+				},
+			},
+		},
+	);
+
+	expect(resultInvalidDay.errors).toBeDefined();
+	expect(resultInvalidDay.errors?.[0]?.extensions?.code).toBe(
+		"invalid_arguments",
+	);
+	const dayIssues = resultInvalidDay.errors?.[0]?.extensions?.issues as {
+		argumentPath: string[];
+		message: string;
+	}[];
+	expect(
+		dayIssues.some(
+			(issue) =>
+				issue.argumentPath?.includes("recurrence") &&
+				issue.message.includes("Invalid day code"),
+		),
+	).toBe(true);
+});
+
+test("should throw invalid_arguments error for invalid month values", async () => {
+	// This test covers byMonth validation - but values are validated by Zod first
+	const orgId = await createOrganizationAndGetId(authToken);
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	// Test: Invalid month value - this will be caught by Zod validation at input level
+	const resultInvalidMonth = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					recurrence: {
+						frequency: "YEARLY",
+						interval: 1,
+						count: 5,
+						byMonth: [1, 13], // Invalid month (13 > 12) - caught by Zod
+					},
+				},
+			},
+		},
+	);
+
+	expect(resultInvalidMonth.errors).toBeDefined();
+	expect(resultInvalidMonth.errors?.[0]?.extensions?.code).toBe(
+		"invalid_arguments",
+	);
+	// The error will be from Zod validation, not from validateRecurrenceInput
+	// This still tests the invalid_arguments error path, just at a different validation layer
+});
+
+test("should throw invalid_arguments error for invalid month day values", async () => {
+	// This test covers byMonthDay validation - but values are validated by Zod first
+	const orgId = await createOrganizationAndGetId(authToken);
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	// Test: Invalid month day value (zero) - this will be caught by Zod validation
+	const resultInvalidMonthDay = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					recurrence: {
+						frequency: "MONTHLY",
+						interval: 1,
+						count: 5,
+						byMonthDay: [1, 0], // Invalid month day (0 is not allowed) - caught by Zod
+					},
+				},
+			},
+		},
+	);
+
+	expect(resultInvalidMonthDay.errors).toBeDefined();
+	expect(resultInvalidMonthDay.errors?.[0]?.extensions?.code).toBe(
+		"invalid_arguments",
+	);
+	// The error will be from Zod validation, not from validateRecurrenceInput
+	// This still tests the invalid_arguments error path, just at a different validation layer
+});
+
+test("should throw invalid_arguments error for business logic validation failures", async () => {
+	// This test specifically targets the validateRecurrenceInput function
+	// by using values that pass Zod validation but fail business logic validation
+	const orgId = await createOrganizationAndGetId(authToken);
+	const currentUser = signInResult.data?.signIn?.user;
+	assertToBeNonNullish(currentUser);
+	await addMembership(orgId, currentUser.id, "administrator");
+
+	const { instanceIds } = await createRecurringEventWithInstances(
+		orgId,
+		currentUser.id,
+	);
+
+	const targetInstanceId = instanceIds[0];
+	assertToBeNonNullish(targetInstanceId);
+
+	// Test case that should trigger validateRecurrenceInput: using invalid byDay values
+	// The values pass Zod validation (strings) but fail business logic validation
+	const resultInvalidDay = await mercuriusClient.mutate(
+		Mutation_updateThisAndFollowingEvents,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: targetInstanceId,
+					recurrence: {
+						frequency: "WEEKLY",
+						interval: 1,
+						never: true,
+						byDay: ["MO", "INVALID_DAY"], // Invalid day code - should trigger validateRecurrenceInput
+					},
+				},
+			},
+		},
+	);
+
+	expect(resultInvalidDay.errors).toBeDefined();
+	expect(resultInvalidDay.errors?.[0]?.extensions?.code).toBe(
+		"invalid_arguments",
+	);
+
+	// Check that this error comes from validateRecurrenceInput by looking for the specific error structure
+	const dayIssues = resultInvalidDay.errors?.[0]?.extensions?.issues as {
+		argumentPath: string[];
+		message: string;
+	}[];
+	expect(
+		dayIssues.some(
+			(issue) =>
+				issue.argumentPath?.includes("recurrence") &&
+				issue.message.includes("Invalid day code"),
+		),
 	).toBe(true);
 });
 
