@@ -99,11 +99,14 @@ suite("occurrenceCalculator", () => {
 		test("applies exceptions to cancel an occurrence", () => {
 			const canceledException = {
 				id: faker.string.uuid(),
-				eventInstanceId: faker.string.uuid(),
+				recurringEventInstanceId: faker.string.uuid(),
 				baseRecurringEventId: mockBaseEvent.id,
-				instanceStartTime: new Date("2025-01-08T10:00:00Z"),
-				exceptionData: { isCancelled: true },
-				exceptionType: "SINGLE_INSTANCE" as const,
+				exceptionData: {
+					isCancelled: true,
+					originalInstanceStartTime: new Date(
+						"2025-01-08T10:00:00Z",
+					).toISOString(),
+				},
 				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 				updaterId: null,
@@ -126,7 +129,7 @@ suite("occurrenceCalculator", () => {
 			const cancelledOccurrence = result.find(
 				(r) =>
 					r.originalStartTime.getTime() ===
-					canceledException.instanceStartTime.getTime(),
+					new Date("2025-01-08T10:00:00Z").getTime(),
 			);
 			expect(cancelledOccurrence).toBeDefined();
 			expect(cancelledOccurrence?.isCancelled).toBe(true);
@@ -135,14 +138,15 @@ suite("occurrenceCalculator", () => {
 		test("applies exceptions to modify occurrence times", () => {
 			const modifiedException = {
 				id: faker.string.uuid(),
-				eventInstanceId: faker.string.uuid(),
+				recurringEventInstanceId: faker.string.uuid(),
 				baseRecurringEventId: mockBaseEvent.id,
-				instanceStartTime: new Date("2025-01-08T10:00:00Z"),
 				exceptionData: {
 					startAt: new Date("2025-01-08T14:00:00Z"),
 					endAt: new Date("2025-01-08T15:00:00Z"),
+					originalInstanceStartTime: new Date(
+						"2025-01-08T10:00:00Z",
+					).toISOString(),
 				},
-				exceptionType: "SINGLE_INSTANCE" as const,
 				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 				updaterId: null,
@@ -164,7 +168,7 @@ suite("occurrenceCalculator", () => {
 			const modifiedOccurrence = result.find(
 				(r) =>
 					r.originalStartTime.getTime() ===
-					modifiedException.instanceStartTime.getTime(),
+					new Date("2025-01-08T10:00:00Z").getTime(),
 			);
 			expect(modifiedOccurrence).toBeDefined();
 			expect(modifiedOccurrence?.actualStartTime).toEqual(

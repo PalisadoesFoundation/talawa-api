@@ -536,22 +536,6 @@ export const Mutation_createEvent =
     }
 }`);
 
-export const Mutation_updateEvent =
-	gql(`mutation Mutation_updateEvent($input: MutationUpdateEventInput!) {
-    updateEvent(input: $input) {
-        id
-        name
-        description
-        startAt
-        endAt
-        updatedAt
-        organization {
-            id
-            countryCode
-        }
-    }
-}`);
-
 export const Query_tag = gql(`
     query tag($input:QueryTagInput!) {
   tag(input: $input) {
@@ -1431,6 +1415,107 @@ export const Mutation_deleteEntireRecurringEventSeries = gql(`
       attachments {
         mimeType
         url
+      }
+    }
+  }
+`);
+
+export const Mutation_updateEntireRecurringEventSeries = gql(`
+  mutation Mutation_updateEntireRecurringEventSeries($input: MutationUpdateEntireRecurringEventSeriesInput!) {
+    updateEntireRecurringEventSeries(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+      allDay
+      location
+      isPublic
+      isRegisterable
+      creator {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      organization {
+        id
+        name
+      }
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);
+
+export const Mutation_updateSingleRecurringEventInstance = gql(`
+  mutation Mutation_updateSingleRecurringEventInstance($input: MutationUpdateSingleRecurringEventInstanceInput!) {
+    updateSingleRecurringEventInstance(input: $input) {
+      id
+      name
+      description
+      location
+      startAt
+      endAt
+      allDay
+      isPublic
+      isRegisterable
+      hasExceptions
+      sequenceNumber
+      totalCount
+      organization {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Mutation_updateStandaloneEvent = gql(`
+  mutation Mutation_updateStandaloneEvent($input: MutationUpdateEventInput!) {
+    updateStandaloneEvent(input: $input) {
+      id
+      name
+      description
+      location
+      startAt
+      endAt
+      allDay
+      isPublic
+      isRegisterable
+      organization {
+        id
+        name
+      }
+      attachments {
+        mimeType
+      }
+    }
+  }
+`);
+
+export const Mutation_updateThisAndFollowingEvents = gql(`
+  mutation Mutation_updateThisAndFollowingEvents($input: MutationUpdateThisAndFollowingEventsInput!) {
+    updateThisAndFollowingEvents(input: $input) {
+      id
+      name
+      description
+      location
+      startAt
+      endAt
+      allDay
+      isPublic
+      isRegisterable
+      hasExceptions
+      sequenceNumber
+      totalCount
+      organization {
+        id
+        name
       }
     }
   }

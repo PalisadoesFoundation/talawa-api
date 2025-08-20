@@ -59,6 +59,7 @@ async function createRecurringEventWithInstances(
 	organizationId: string,
 	creatorId: string,
 ): Promise<{ templateId: string; instanceIds: string[] }> {
+	const originalSeriesId = faker.string.uuid();
 	// Create recurring event template
 	const [template] = await server.drizzleClient
 		.insert(eventsTable)
@@ -84,6 +85,7 @@ async function createRecurringEventWithInstances(
 		.insert(recurrenceRulesTable)
 		.values({
 			baseRecurringEventId: template.id,
+			originalSeriesId,
 			recurrenceStartDate: new Date("2024-01-01"),
 			recurrenceEndDate: new Date("2024-01-31"),
 			frequency: "DAILY",
@@ -102,6 +104,7 @@ async function createRecurringEventWithInstances(
 		{
 			baseRecurringEventId: template.id,
 			recurrenceRuleId: recurrenceRule.id,
+			originalSeriesId,
 			organizationId,
 			originalInstanceStartTime: new Date("2024-01-01T09:00:00Z"),
 			actualStartTime: new Date("2024-01-01T09:00:00Z"),
@@ -111,6 +114,7 @@ async function createRecurringEventWithInstances(
 		{
 			baseRecurringEventId: template.id,
 			recurrenceRuleId: recurrenceRule.id,
+			originalSeriesId,
 			organizationId,
 			originalInstanceStartTime: new Date("2024-01-02T09:00:00Z"),
 			actualStartTime: new Date("2024-01-02T09:00:00Z"),
@@ -120,6 +124,7 @@ async function createRecurringEventWithInstances(
 		{
 			baseRecurringEventId: template.id,
 			recurrenceRuleId: recurrenceRule.id,
+			originalSeriesId,
 			organizationId,
 			originalInstanceStartTime: new Date("2024-01-03T09:00:00Z"),
 			actualStartTime: new Date("2024-01-03T09:00:00Z"),

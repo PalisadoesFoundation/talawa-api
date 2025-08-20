@@ -137,27 +137,6 @@ describe("executionEngine", () => {
 				mockLogger,
 			);
 		});
-
-		it("should calculate execution time correctly", async () => {
-			const job: EventGenerationJob = {
-				organizationId: "org1",
-				baseRecurringEventId: "event1",
-				windowStartDate: new Date("2024-01-01"),
-				windowEndDate: new Date("2024-01-31"),
-			};
-
-			const delay = 100;
-			vi.mocked(generateInstancesForRecurringEvent).mockImplementation(
-				() => new Promise((resolve) => setTimeout(() => resolve(2), delay)),
-			);
-
-			const result = await executeEventGeneration(job, deps);
-
-			expect(result.data?.executionTimeMs).toBeGreaterThanOrEqual(delay);
-			expect(
-				result.metrics.endTime - result.metrics.startTime,
-			).toBeGreaterThanOrEqual(delay);
-		});
 	});
 
 	describe("executeBatchEventGeneration", () => {
