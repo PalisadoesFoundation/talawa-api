@@ -167,7 +167,15 @@ function buildRecurrenceContext(
 		typeof eventExceptionsTable.$inferSelect
 	>();
 	for (const exception of exceptions) {
-		exceptionsByTime.set(exception.instanceStartTime.toISOString(), exception);
+		// Try to extract the original instance start time from exception data
+		// For time-based exceptions, the key should be the original start time
+		const exceptionData = exception.exceptionData as Record<string, unknown>;
+		if (exceptionData.originalInstanceStartTime) {
+			const startTime = new Date(
+				exceptionData.originalInstanceStartTime as string | number | Date,
+			);
+			exceptionsByTime.set(startTime.toISOString(), exception);
+		}
 	}
 
 	// Safety limit to prevent infinite loops

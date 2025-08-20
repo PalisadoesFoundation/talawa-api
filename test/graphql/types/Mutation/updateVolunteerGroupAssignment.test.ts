@@ -27,6 +27,7 @@ async function addMembership(
 			memberId,
 			role,
 		})
+		.onConflictDoNothing()
 		.execute();
 }
 
@@ -55,8 +56,6 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 async function createEventAndGetId(
 	authToken: string,
 	organizationId: string,
-	creatorId: string,
-	sr: string,
 ): Promise<string> {
 	const eventName = `Test Event ${faker.string.uuid()}`;
 	const startDate = new Date();
@@ -149,7 +148,9 @@ const adminUserId = signInResult.data.signIn.user.id;
 assertToBeNonNullish(adminUserId);
 
 const orgId = await createOrganizationAndGetId(authToken);
-const eventId = await createEventAndGetId(authToken, orgId, adminUserId, "ad");
+// Add admin user as organization member to allow event creation
+await addMembership(orgId, adminUserId, "administrator");
+const eventId = await createEventAndGetId(authToken, orgId);
 const groupId = await createVolunteerGroupAndGetId(
 	authToken,
 	eventId,

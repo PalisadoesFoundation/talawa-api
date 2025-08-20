@@ -63,6 +63,14 @@ export const recurringEventInstancesTable = pgTable(
 			}),
 
 		/**
+		 * Original series ID for tracking logical event series across template splits.
+		 * When "update this and following" creates a new template, all instances
+		 * from the same original recurring event share this ID.
+		 * This enables delete operations to work across template boundaries.
+		 */
+		originalSeriesId: uuid("original_series_id").notNull(),
+
+		/**
 		 * The original scheduled start time for this specific instance.
 		 * This represents when this occurrence was supposed to happen according
 		 * to the recurrence pattern, before any exceptions are applied.
@@ -180,6 +188,9 @@ export const recurringEventInstancesTable = pgTable(
 		recurrenceRuleIdx: index("reei_recurrence_rule_idx").on(
 			self.recurrenceRuleId,
 		),
+		originalSeriesIdx: index("reei_original_series_idx").on(
+			self.originalSeriesId,
+		),
 
 		// Indexes for filtering and status queries
 		isCancelledIdx: index("reei_is_cancelled_idx").on(self.isCancelled),
@@ -278,6 +289,7 @@ export const recurringEventInstancesTableInsertSchema = createInsertSchema(
 	{
 		baseRecurringEventId: z.string().uuid(),
 		recurrenceRuleId: z.string().uuid(),
+		originalSeriesId: z.string().uuid(),
 		originalInstanceStartTime: z.date(),
 		actualStartTime: z.date(),
 		actualEndTime: z.date(),
@@ -298,6 +310,7 @@ export type ResolvedRecurringEventInstance = {
 	id: string;
 	baseRecurringEventId: string;
 	recurrenceRuleId: string;
+	originalSeriesId: string;
 	originalInstanceStartTime: Date;
 	actualStartTime: Date;
 	actualEndTime: Date;
@@ -336,6 +349,7 @@ export type ResolvedRecurringEventInstance = {
 export type CreateRecurringEventInstanceInput = {
 	baseRecurringEventId: string;
 	recurrenceRuleId: string;
+	originalSeriesId: string;
 	originalInstanceStartTime: Date;
 	actualStartTime: Date;
 	actualEndTime: Date;

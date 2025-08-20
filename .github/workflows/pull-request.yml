@@ -231,7 +231,7 @@ jobs:
         uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
           path: "./coverage/lcov.info"
-          min_coverage: 57.0
+          min_coverage: 67.0
 
   Test-Docusaurus-Deployment:
     name: Test Deployment to https://docs-api.talawa.io
