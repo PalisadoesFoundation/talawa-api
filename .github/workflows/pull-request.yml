@@ -107,7 +107,7 @@ jobs:
             --env-file ./envFiles/.env.ci \
             -v ${{ github.workspace }}:/home/talawa/api \
             -w /home/talawa/api \
-            ${{ env.IMAGE_ID }} pnpm check_drizzle_migrations
+            ${{ env.IMAGE_ID }} sh -c "pnpm install --frozen-lockfile && pnpm check_drizzle_migrations"
 
   check_type_errors:
     name: Check type errors
