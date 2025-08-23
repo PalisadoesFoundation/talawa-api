@@ -44,7 +44,9 @@ export const MutationCreateEventInput = builder
 		fields: (t) => ({
 			attachments: t.field({
 				description: "Attachments of the event.",
-				type: t.listRef("Upload"),
+				type: t.listRef("Upload", { required: true }),
+				// Keep the list optional...
+				required: false,
 			}),
 			description: t.string({
 				description: "Custom information about the event.",

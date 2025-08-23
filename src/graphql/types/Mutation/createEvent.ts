@@ -1,5 +1,6 @@
 import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
+import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
 import { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
@@ -177,11 +178,7 @@ builder.mutationField("createEvent", (t) =>
 			const currentUserOrganizationMembership =
 				existingOrganization.membershipsWhereOrganization[0];
 
-			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
-			) {
+			if (currentUserOrganizationMembership === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",
@@ -237,9 +234,12 @@ builder.mutationField("createEvent", (t) =>
 						);
 
 						// Create recurrence rule
+						// For new events, the originalSeriesId is the same as the rule's own ID
+						const ruleId = uuidv7();
 						const [createdRecurrenceRule] = await tx
 							.insert(recurrenceRulesTable)
 							.values({
+								id: ruleId,
 								recurrenceRuleString: rruleString,
 								frequency: parsedArgs.input.recurrence.frequency,
 								interval: parsedArgs.input.recurrence.interval || 1,
@@ -251,6 +251,7 @@ builder.mutationField("createEvent", (t) =>
 								byMonth: parsedArgs.input.recurrence.byMonth,
 								byMonthDay: parsedArgs.input.recurrence.byMonthDay,
 								baseRecurringEventId: createdEvent.id,
+								originalSeriesId: ruleId, // For new events, originalSeriesId is the rule's own ID
 								organizationId: parsedArgs.input.organizationId,
 								creatorId: currentUserId,
 							})

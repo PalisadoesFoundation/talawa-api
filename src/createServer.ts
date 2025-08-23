@@ -49,6 +49,7 @@ export const createServer = async (options?: {
 	const fastify = Fastify({
 		// Maximum size in bytes of the body of any request that the server will accept. More information here: https://fastify.dev/docs/latest/Reference/Server/#bodylimit.This limit is defined on a global server context therefore it will be applied to all requests to the server. This is not practical for all use cases and should instead be applied on a per-route/per-module basis. For example, 50 megabytes might not be sufficient for many static file transfers, similarly, 50 megabytes is too big for simple JSON requests.
 		bodyLimit: 52428800,
+		pluginTimeout: 30000,
 
 		// Increase plugin timeout to handle heavy schema imports (5 minutes)
 		pluginTimeout: 300000,

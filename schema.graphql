@@ -627,6 +627,14 @@ type Event {
   progressLabel: String
 
   """
+  A human-readable description of the recurrence pattern, such as 'Daily', 'Weekly on Monday', 'Monthly on the 15th', etc. Available for recurring event templates and instances.
+  """
+  recurrenceDescription: String
+
+  """The recurrence rule object for recurring events."""
+  recurrenceRule: RecurrenceRule
+
+  """
   The sequence number of this instance within its recurring series (e.g., 1, 2, 3, ...).
   """
   sequenceNumber: Int
@@ -1830,8 +1838,13 @@ type Mutation {
   """Mutation field to update the current user."""
   updateCurrentUser(input: MutationUpdateCurrentUserInput!): User
 
-  """Mutation field to update an event."""
-  updateEvent(input: MutationUpdateEventInput!): Event
+  """
+  Mutation field to update all events (past, present, and future) in a recurring event series with conditional field restrictions.
+  """
+  updateEntireRecurringEventSeries(
+    """Input for updating all events in a recurring event series."""
+    input: MutationUpdateEntireRecurringEventSeriesInput!
+  ): Event
 
   """Mutation field to update a volunteer group."""
   updateEventVolunteerGroup(input: MutationUpdateEventVolunteerGroupInput!): VolunteerGroups
@@ -1861,11 +1874,33 @@ type Mutation {
   """Mutation field to update a post vote."""
   updatePostVote(input: MutationUpdatePostVoteInput!): Post
 
+  """
+  Mutation field to update a single instance of a recurring event without affecting other instances.
+  """
+  updateSingleRecurringEventInstance(
+    """Input for updating a single instance of a recurring event."""
+    input: MutationUpdateSingleRecurringEventInstanceInput!
+  ): Event
+
+  """Mutation field to update a standalone (non-recurring) event."""
+  updateStandaloneEvent(
+    """Input for updating a standalone event."""
+    input: MutationUpdateEventInput!
+  ): Event
+
   """Mutation field to update a tag."""
   updateTag(input: MutationUpdateTagInput!): Tag
 
   """Mutation field to update a tag folder."""
   updateTagFolder(input: MutationUpdateTagFolderInput!): TagFolder
+
+  """
+  Mutation field to update the current instance and all following instances of a recurring event using the split strategy.
+  """
+  updateThisAndFollowingEvents(
+    """Input for updating this and following instances of a recurring event."""
+    input: MutationUpdateThisAndFollowingEventsInput!
+  ): Event
 
   """Mutation field to update a user."""
   updateUser(input: MutationUpdateUserInput!): User
@@ -2345,6 +2380,9 @@ input MutationCreateVenueBookingInput {
 input MutationCreateVenueInput {
   """Attachments of the venue."""
   attachments: [Upload!]
+
+  """Capacity of the venue."""
+  capacity: Int
 
   """Custom information about the venue."""
   description: String
@@ -2913,6 +2951,20 @@ input MutationUpdateCurrentUserInput {
   workPhoneNumber: PhoneNumber
 }
 
+"""Input for updating all events in a recurring event series."""
+input MutationUpdateEntireRecurringEventSeriesInput {
+  """Updated description for all events in the series."""
+  description: String
+
+  """
+  Global identifier of any recurring event instance in the series to update.
+  """
+  id: ID!
+
+  """Updated name for all events in the series."""
+  name: String
+}
+
 """"""
 input MutationUpdateEventInput {
   """Indicates if the event spans the entire day."""
@@ -3069,6 +3121,36 @@ input MutationUpdatePostVoteInput {
   type: PostVoteType!
 }
 
+"""Input for updating a single instance of a recurring event."""
+input MutationUpdateSingleRecurringEventInstanceInput {
+  """Whether this specific event instance spans the entire day."""
+  allDay: Boolean
+
+  """Updated description for this specific event instance."""
+  description: String
+
+  """Updated end time for this specific event instance."""
+  endAt: DateTime
+
+  """Global identifier of the recurring event instance to update."""
+  id: ID!
+
+  """Whether this specific event instance is publicly visible."""
+  isPublic: Boolean
+
+  """Whether users can register for this specific event instance."""
+  isRegisterable: Boolean
+
+  """Updated location for this specific event instance."""
+  location: String
+
+  """Updated name for this specific event instance."""
+  name: String
+
+  """Updated start time for this specific event instance."""
+  startAt: DateTime
+}
+
 """"""
 input MutationUpdateTagFolderInput {
   """Global identifier of the tag folder."""
@@ -3091,6 +3173,43 @@ input MutationUpdateTagInput {
 
   """Name of the tag."""
   name: String
+}
+
+"""Input for updating this and following instances of a recurring event."""
+input MutationUpdateThisAndFollowingEventsInput {
+  """Whether this and following event instances span the entire day."""
+  allDay: Boolean
+
+  """Updated description for this and following event instances."""
+  description: String
+
+  """Updated end time for this and following event instances."""
+  endAt: DateTime
+
+  """
+  Global identifier of the recurring event instance from which to update this and following instances.
+  """
+  id: ID!
+
+  """Whether this and following event instances are publicly visible."""
+  isPublic: Boolean
+
+  """Whether users can register for this and following event instances."""
+  isRegisterable: Boolean
+
+  """Updated location for this and following event instances."""
+  location: String
+
+  """Updated name for this and following event instances."""
+  name: String
+
+  """
+  Updated recurrence pattern for the new series starting from this instance.
+  """
+  recurrence: RecurrenceInput
+
+  """Updated start time for this and following event instances."""
+  startAt: DateTime
 }
 
 """"""
@@ -3171,6 +3290,12 @@ input MutationUpdateUserInput {
 
 """"""
 input MutationUpdateVenueInput {
+  """Attachments of the venue."""
+  attachments: [Upload!]
+
+  """Capacity of the venue."""
+  capacity: Int
+
   """Custom information about the venue."""
   description: String
 
@@ -3807,6 +3932,9 @@ type Query {
 
   """Query field to get fund campaign pledge associated to a user."""
   getPledgesByUserId(
+    """Input parameters to fetch pledges by userId."""
+    input: QueryFundCampaignPledgesByUserInput!
+
     """Maximum number of results to return."""
     limit: Int
 
@@ -3817,9 +3945,6 @@ type Query {
     Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
     """
     orderBy: QueryPledgeOrderByInput
-
-    """Global id of the user."""
-    userId: QueryUserInput!
 
     """Filter criteria for pledges"""
     where: QueryPledgeWhereInput
@@ -3982,6 +4107,12 @@ input QueryFundCampaignPledgeInput {
   id: String!
 }
 
+"""Input type for querying FundCampaignPledges assigned to a user."""
+input QueryFundCampaignPledgesByUserInput {
+  """ID of the user to fetch FundCampaignPledges."""
+  userId: String!
+}
+
 """"""
 input QueryFundInput {
   """Global id of the fund."""
@@ -4120,6 +4251,25 @@ input RecurrenceInput {
 
   """Indicates if the event recurs indefinitely (never ends)."""
   never: Boolean
+}
+
+type RecurrenceRule {
+  byDay: [String!]
+  byMonth: [Int!]
+  byMonthDay: [Int!]
+  count: Int
+  frequency: RecurrenceRuleFrequency
+  id: ID
+  interval: Int
+  recurrenceEndDate: DateTime
+  recurrenceStartDate: DateTime
+}
+
+enum RecurrenceRuleFrequency {
+  DAILY
+  MONTHLY
+  WEEKLY
+  YEARLY
 }
 
 type RejectMembershipResponse {
@@ -4454,6 +4604,9 @@ input UsersByIdsInput {
 type Venue {
   """Array of attachments."""
   attachments: [VenueAttachment!]
+
+  """Capacity of the venue."""
+  capacity: Int
 
   """Date time at the time the venue was created."""
   createdAt: DateTime

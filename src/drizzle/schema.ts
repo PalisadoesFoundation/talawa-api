@@ -55,7 +55,6 @@ export {
 export {
 	eventExceptionsTable,
 	eventExceptionsTableRelations,
-	exceptionTypeEnum,
 } from "./tables/recurringEventExceptions";
 export { eventsTable, eventsTableRelations } from "./tables/events";
 export {

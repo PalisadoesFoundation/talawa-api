@@ -3,6 +3,7 @@ import type { z } from "zod";
 import type { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import type { recurrenceInputSchema } from "~/src/graphql/inputs/RecurrenceInput";
 import {
+	applyRecurrenceOverrides,
 	buildRRuleString,
 	calculateCompletionDateFromCount,
 	calculateInstancesPerMonth,
@@ -102,6 +103,7 @@ describe("recurringEventHelpers", () => {
 		const baseRule: typeof recurrenceRulesTable.$inferSelect = {
 			id: "1",
 			baseRecurringEventId: "1",
+			originalSeriesId: "1",
 			organizationId: "1",
 			creatorId: "1",
 			updaterId: null,
@@ -173,6 +175,7 @@ describe("recurringEventHelpers", () => {
 		const baseRule: typeof recurrenceRulesTable.$inferSelect = {
 			id: "1",
 			baseRecurringEventId: "1",
+			originalSeriesId: "1",
 			organizationId: "1",
 			creatorId: "1",
 			updaterId: null,
@@ -230,6 +233,7 @@ describe("recurringEventHelpers", () => {
 		const baseRule: typeof recurrenceRulesTable.$inferSelect = {
 			id: "1",
 			baseRecurringEventId: "1",
+			originalSeriesId: "1",
 			organizationId: "1",
 			creatorId: "1",
 			updaterId: null,
@@ -300,6 +304,7 @@ describe("recurringEventHelpers", () => {
 		const baseRule: typeof recurrenceRulesTable.$inferSelect = {
 			id: "1",
 			baseRecurringEventId: "1",
+			originalSeriesId: "1",
 			organizationId: "1",
 			creatorId: "1",
 			updaterId: null,
@@ -336,6 +341,407 @@ describe("recurringEventHelpers", () => {
 			);
 			expect(result.isValid).toBe(isValid);
 			expect(result.errors).toEqual(errors);
+		});
+	});
+
+	describe("applyRecurrenceOverrides", () => {
+		const baseOriginalRecurrence = {
+			frequency: "WEEKLY",
+			interval: 1,
+			recurrenceEndDate: new Date("2025-06-01T00:00:00.000Z"),
+			count: null,
+			byDay: ["MO"],
+			byMonth: null,
+			byMonthDay: null,
+		} as Pick<
+			typeof recurrenceRulesTable.$inferSelect,
+			| "frequency"
+			| "interval"
+			| "recurrenceEndDate"
+			| "count"
+			| "byDay"
+			| "byMonth"
+			| "byMonthDay"
+		>;
+
+		describe("newStartAt parameter scenarios", () => {
+			it("should derive byDay from newStartAt for WEEKLY frequency", () => {
+				const newStartAt = new Date("2025-01-07T10:00:00.000Z"); // Tuesday
+				const result = applyRecurrenceOverrides(
+					newStartAt,
+					baseOriginalRecurrence,
+				);
+
+				expect(result.byDay).toEqual(["TU"]);
+				expect(result.frequency).toBe("WEEKLY");
+			});
+
+			it("should derive byDay from newStartAt for MONTHLY frequency when original had byDay", () => {
+				const newStartAt = new Date("2025-01-08T10:00:00.000Z"); // Wednesday
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "MONTHLY" as const,
+					byDay: ["MO"],
+				};
+				const result = applyRecurrenceOverrides(newStartAt, originalRecurrence);
+
+				expect(result.byDay).toEqual(["WE"]);
+				expect(result.frequency).toBe("MONTHLY");
+			});
+
+			it("should derive byDay from newStartAt for MONTHLY frequency when original had no byMonthDay", () => {
+				const newStartAt = new Date("2025-01-09T10:00:00.000Z"); // Thursday
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "MONTHLY" as const,
+					byDay: null,
+					byMonthDay: null,
+				};
+				const result = applyRecurrenceOverrides(newStartAt, originalRecurrence);
+
+				expect(result.byDay).toEqual(["TH"]);
+			});
+
+			it("should not override byDay for MONTHLY frequency when original had byMonthDay", () => {
+				const newStartAt = new Date("2025-01-10T10:00:00.000Z"); // Friday
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "MONTHLY" as const,
+					byDay: null,
+					byMonthDay: [15],
+				};
+				const result = applyRecurrenceOverrides(newStartAt, originalRecurrence);
+
+				expect(result.byDay).toBeUndefined();
+			});
+
+			it("should update byMonthDay from newStartAt for MONTHLY frequency", () => {
+				const newStartAt = new Date("2025-01-15T10:00:00.000Z"); // 15th day
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "MONTHLY" as const,
+					byMonthDay: [10],
+				};
+				const result = applyRecurrenceOverrides(newStartAt, originalRecurrence);
+
+				expect(result.byMonthDay).toEqual([15]);
+			});
+
+			it("should update byMonth from newStartAt for YEARLY frequency", () => {
+				const newStartAt = new Date("2025-03-15T10:00:00.000Z"); // March (month 3)
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "YEARLY" as const,
+					byMonth: [6], // June
+				};
+				const result = applyRecurrenceOverrides(newStartAt, originalRecurrence);
+
+				expect(result.byMonth).toEqual([3]);
+			});
+
+			it("should throw error for invalid day index", () => {
+				// This test covers the error condition, though it's unlikely to happen in practice
+				// We'll need to mock getDay() to return an invalid value
+				const invalidDate = {
+					getDay: () => -1,
+					getDate: () => 15,
+					getMonth: () => 2,
+				} as unknown as Date;
+
+				expect(() => {
+					applyRecurrenceOverrides(invalidDate, baseOriginalRecurrence);
+				}).toThrow("Invalid day of week derived from startAt");
+			});
+
+			it("should handle edge case when dayIndex is at boundary", () => {
+				const sundayDate = new Date("2025-01-05T10:00:00.000Z"); // Sunday (day 0)
+				const result = applyRecurrenceOverrides(
+					sundayDate,
+					baseOriginalRecurrence,
+				);
+
+				expect(result.byDay).toEqual(["SU"]);
+			});
+
+			it("should handle Saturday edge case", () => {
+				const saturdayDate = new Date("2025-01-04T10:00:00.000Z"); // Saturday (day 6)
+				const result = applyRecurrenceOverrides(
+					saturdayDate,
+					baseOriginalRecurrence,
+				);
+
+				expect(result.byDay).toEqual(["SA"]);
+			});
+		});
+
+		describe("originalRecurrence parameter scenarios", () => {
+			it("should use originalRecurrence when no inputRecurrence provided", () => {
+				const originalRecurrence = {
+					frequency: "DAILY" as const,
+					interval: 2,
+					recurrenceEndDate: new Date("2025-12-31T00:00:00.000Z"),
+					count: 50,
+					byDay: ["MO", "WE", "FR"],
+					byMonth: [1, 6, 12],
+					byMonthDay: [1, 15],
+				};
+
+				const result = applyRecurrenceOverrides(undefined, originalRecurrence);
+
+				expect(result.frequency).toBe("DAILY");
+				expect(result.interval).toBe(2);
+				expect(result.endDate).toEqual(new Date("2025-12-31T00:00:00.000Z"));
+				expect(result.count).toBe(50);
+				expect(result.never).toBe(false);
+				expect(result.byDay).toEqual(["MO", "WE", "FR"]);
+				expect(result.byMonth).toEqual([1, 6, 12]);
+				expect(result.byMonthDay).toEqual([1, 15]);
+			});
+
+			it("should set never=true when no endDate and no count", () => {
+				const originalRecurrence = {
+					frequency: "WEEKLY" as const,
+					interval: 1,
+					recurrenceEndDate: null,
+					count: null,
+					byDay: null,
+					byMonth: null,
+					byMonthDay: null,
+				};
+
+				const result = applyRecurrenceOverrides(undefined, originalRecurrence);
+
+				expect(result.never).toBe(true);
+				expect(result.endDate).toBeUndefined();
+				expect(result.count).toBeUndefined();
+			});
+
+			it("should handle null/undefined values in originalRecurrence", () => {
+				const originalRecurrence = {
+					frequency: "MONTHLY" as const,
+					interval: 1,
+					recurrenceEndDate: null,
+					count: null,
+					byDay: null,
+					byMonth: null,
+					byMonthDay: null,
+				};
+
+				const result = applyRecurrenceOverrides(undefined, originalRecurrence);
+
+				expect(result.byDay).toBeUndefined();
+				expect(result.byMonth).toBeUndefined();
+				expect(result.byMonthDay).toBeUndefined();
+			});
+		});
+
+		describe("inputRecurrence override scenarios", () => {
+			it("should use inputRecurrence when provided", () => {
+				const inputRecurrence = {
+					frequency: "DAILY",
+					interval: 3,
+					endDate: new Date("2025-12-25T00:00:00.000Z"),
+					count: 25,
+					never: false,
+					byDay: ["TU", "TH"],
+					byMonth: [3, 9],
+					byMonthDay: [5, 20],
+				} as z.infer<typeof recurrenceInputSchema>;
+
+				const result = applyRecurrenceOverrides(
+					undefined,
+					baseOriginalRecurrence,
+					inputRecurrence,
+				);
+
+				expect(result).toEqual(inputRecurrence);
+			});
+
+			it("should use inputRecurrence.byDay when startAt not provided", () => {
+				const inputRecurrence = {
+					frequency: "WEEKLY",
+					interval: 1,
+					never: true,
+					byDay: ["FR", "SA"],
+				} as z.infer<typeof recurrenceInputSchema>;
+
+				const result = applyRecurrenceOverrides(
+					undefined,
+					baseOriginalRecurrence,
+					inputRecurrence,
+				);
+
+				expect(result.byDay).toEqual(["FR", "SA"]);
+			});
+
+			it("should use inputRecurrence.byMonthDay when provided", () => {
+				const inputRecurrence = {
+					frequency: "MONTHLY",
+					interval: 1,
+					never: true,
+					byMonthDay: [10, 25],
+				} as z.infer<typeof recurrenceInputSchema>;
+
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "MONTHLY" as const,
+				};
+
+				const result = applyRecurrenceOverrides(
+					new Date("2025-01-15T10:00:00.000Z"),
+					originalRecurrence,
+					inputRecurrence,
+				);
+
+				expect(result.byMonthDay).toEqual([10, 25]);
+			});
+
+			it("should use inputRecurrence.byMonth when provided", () => {
+				const inputRecurrence = {
+					frequency: "YEARLY",
+					interval: 1,
+					never: true,
+					byMonth: [4, 8, 12],
+				} as z.infer<typeof recurrenceInputSchema>;
+
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "YEARLY" as const,
+				};
+
+				const result = applyRecurrenceOverrides(
+					new Date("2025-03-15T10:00:00.000Z"),
+					originalRecurrence,
+					inputRecurrence,
+				);
+
+				expect(result.byMonth).toEqual([4, 8, 12]);
+			});
+		});
+
+		describe("frequency-specific logic", () => {
+			it("should handle WEEKLY frequency with newStartAt override", () => {
+				const newStartAt = new Date("2025-01-03T10:00:00.000Z"); // Friday
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "WEEKLY" as const,
+					byDay: ["MO", "WE"],
+				};
+
+				const result = applyRecurrenceOverrides(newStartAt, originalRecurrence);
+
+				expect(result.byDay).toEqual(["FR"]);
+			});
+
+			it("should not override byMonthDay for MONTHLY when no original byMonthDay", () => {
+				const newStartAt = new Date("2025-01-20T10:00:00.000Z");
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "MONTHLY" as const,
+					byMonthDay: null,
+				};
+
+				const result = applyRecurrenceOverrides(newStartAt, originalRecurrence);
+
+				expect(result.byMonthDay).toBeUndefined();
+			});
+
+			it("should not override byMonth for YEARLY when no original byMonth", () => {
+				const newStartAt = new Date("2025-05-15T10:00:00.000Z");
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "YEARLY" as const,
+					byMonth: null,
+				};
+
+				const result = applyRecurrenceOverrides(newStartAt, originalRecurrence);
+
+				expect(result.byMonth).toBeUndefined();
+			});
+
+			it("should not affect other frequency types", () => {
+				const newStartAt = new Date("2025-01-15T10:00:00.000Z");
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "DAILY" as const,
+				};
+
+				const result = applyRecurrenceOverrides(newStartAt, originalRecurrence);
+
+				// For DAILY, byDay should remain unchanged unless specifically overridden
+				expect(result.byDay).toEqual(["MO"]);
+			});
+		});
+
+		describe("complex scenarios", () => {
+			it("should handle newStartAt with inputRecurrence overrides", () => {
+				const newStartAt = new Date("2025-01-08T10:00:00.000Z"); // Wednesday
+				const inputRecurrence = {
+					frequency: "WEEKLY",
+					interval: 2,
+					count: 10,
+					never: false,
+				} as z.infer<typeof recurrenceInputSchema>;
+
+				const result = applyRecurrenceOverrides(
+					newStartAt,
+					baseOriginalRecurrence,
+					inputRecurrence,
+				);
+
+				// newStartAt should override byDay even with inputRecurrence provided
+				expect(result.byDay).toEqual(["WE"]);
+				expect(result.interval).toBe(2);
+				expect(result.count).toBe(10);
+			});
+
+			it("should handle MONTHLY with both byDay and byMonthDay scenarios", () => {
+				const newStartAt = new Date("2025-01-20T10:00:00.000Z"); // Monday, 20th
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "MONTHLY" as const,
+					byDay: ["WE"],
+					byMonthDay: [15],
+				};
+
+				const result = applyRecurrenceOverrides(newStartAt, originalRecurrence);
+
+				// Should update both byDay (because original had byDay) and byMonthDay (because original had byMonthDay)
+				expect(result.byDay).toEqual(["MO"]);
+				expect(result.byMonthDay).toEqual([20]);
+			});
+
+			it("should handle YEARLY with byMonth update", () => {
+				const newStartAt = new Date("2025-07-04T10:00:00.000Z"); // July (month 7)
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "YEARLY" as const,
+					byMonth: [1, 12],
+				};
+
+				const result = applyRecurrenceOverrides(newStartAt, originalRecurrence);
+
+				expect(result.byMonth).toEqual([7]);
+			});
+
+			it("should handle empty arrays in original recurrence", () => {
+				const newStartAt = new Date("2025-01-15T10:00:00.000Z");
+				const originalRecurrence = {
+					...baseOriginalRecurrence,
+					frequency: "MONTHLY" as const,
+					byDay: [],
+					byMonthDay: [],
+					byMonth: [],
+				};
+
+				const result = applyRecurrenceOverrides(newStartAt, originalRecurrence);
+
+				// Empty arrays should be treated as having no data, but the array exists
+				// So byDay won't be set because !originalRecurrence.byMonthDay is false (empty array is truthy)
+				expect(result.byDay).toEqual([]); // Empty array from original
+				expect(result.byMonthDay).toEqual([]); // Empty array from original
+				expect(result.byMonth).toEqual([]); // Empty array from original
+			});
 		});
 	});
 });
