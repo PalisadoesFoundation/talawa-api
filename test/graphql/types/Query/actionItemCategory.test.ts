@@ -11,7 +11,6 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-
 describe("Query field actionItemCategory", () => {
 	test('returns graphql error with "unauthenticated" if not authenticated', async () => {
 		const randomId = faker.string.uuid();
