@@ -51,9 +51,6 @@ export const createServer = async (options?: {
 		bodyLimit: 52428800,
 		pluginTimeout: 30000,
 
-		// Increase plugin timeout to handle heavy schema imports (5 minutes)
-		pluginTimeout: 300000,
-
 		// For configuring the pino.js logger that comes integrated with fastify. More information at this link: https://fastify.dev/docs/latest/Reference/Logging/
 		logger: {
 			level: envConfig.API_LOG_LEVEL,
