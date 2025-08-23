@@ -19,14 +19,27 @@ async function addMembership(
 	memberId: string,
 	role: "administrator" | "regular",
 ) {
-	await server.drizzleClient
-		.insert(organizationMembershipsTable)
-		.values({
-			organizationId,
-			memberId,
-			role,
-		})
-		.execute();
+	try {
+		await server.drizzleClient
+			.insert(organizationMembershipsTable)
+			.values({
+				organizationId,
+				memberId,
+				role,
+			})
+			.execute();
+	} catch (error) {
+		// If the membership already exists, that's fine - ignore the error
+		if (
+			error instanceof Error &&
+			error.message.includes("duplicate key value violates unique constraint")
+		) {
+			// Membership already exists, which is what we want
+			return;
+		}
+		// Re-throw other errors
+		throw error;
+	}
 }
 
 async function createOrganizationAndGetId(authToken: string): Promise<string> {
@@ -54,8 +67,6 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 async function createEventAndGetId(
 	authToken: string,
 	organizationId: string,
-	creatorId: string,
-	sr: string,
 ): Promise<string> {
 	const eventName = `Test Event ${faker.string.uuid()}`;
 	const startDate = new Date();
@@ -148,7 +159,9 @@ const adminUserId = signInResult.data.signIn.user.id;
 assertToBeNonNullish(adminUserId);
 
 const orgId = await createOrganizationAndGetId(authToken);
-const eventId = await createEventAndGetId(authToken, orgId, adminUserId, "ad");
+// Add admin user as organization member to allow event creation
+await addMembership(orgId, adminUserId, "administrator");
+const eventId = await createEventAndGetId(authToken, orgId);
 const groupId = await createVolunteerGroupAndGetId(
 	authToken,
 	eventId,

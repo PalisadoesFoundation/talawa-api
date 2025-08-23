@@ -2,6 +2,7 @@ import "./ActionItem/index";
 import "./ActionItemCategory/index";
 import "./Advertisement/index";
 import "./AdvertisementAttachment/index";
+import "./RecurrenceRule/index";
 import "./AgendaFolder/index";
 import "./AgendaItem/index";
 import "./AuthenticationPayload";

@@ -156,9 +156,9 @@ builder.mutationField("deleteSingleEventInstance", (t) =>
 				existingInstance.organization.membershipsWhereOrganization[0];
 
 			if (
-				currentUser.role !== "administrator" &&
 				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
+					currentUserOrganizationMembership.role !== "administrator") &&
+				existingInstance.baseRecurringEvent.creatorId !== currentUserId
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {

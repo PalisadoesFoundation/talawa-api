@@ -59,7 +59,6 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 async function createEventAndGetId(
 	authToken: string,
 	organizationId: string,
-	creatorId: string,
 ): Promise<string> {
 	const eventName = `Test Event ${faker.string.uuid()}`;
 	const startDate = new Date();
@@ -128,7 +127,9 @@ assertToBeNonNullish(adminUserId);
 
 // Create common test resources
 const orgId = await createOrganizationAndGetId(authToken);
-const eventId = await createEventAndGetId(authToken, orgId, adminUserId);
+// Add admin user as organization member to allow event creation
+await addMembership(orgId, adminUserId, "administrator");
+const eventId = await createEventAndGetId(authToken, orgId);
 
 // Create multiple volunteer groups for testing
 const groupName1 = `Test Group 1 ${faker.string.uuid()}`;

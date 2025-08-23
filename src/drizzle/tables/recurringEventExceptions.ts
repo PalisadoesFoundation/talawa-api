@@ -1,32 +1,23 @@
 import { relations, sql } from "drizzle-orm";
-import {
-	index,
-	jsonb,
-	pgEnum,
-	pgTable,
-	timestamp,
-	uuid,
-} from "drizzle-orm/pg-core";
+import { index, jsonb, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
+import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
 /**
- * Enum for exception types
- */
-export const exceptionTypeEnum = pgEnum("exception_type", [
-	"SINGLE_INSTANCE",
-	"THIS_AND_FUTURE",
-]);
-
-/**
- * Drizzle ORM postgres table definition for event exceptions.
+ * Drizzle ORM postgres table definition for recurring event exceptions.
  * This table stores instance-specific modifications to recurring events.
  * When a user modifies a single instance or "this and future" instances,
  * the changes are stored here as differences from the template.
+ *
+ * Clean design principles:
+ * - Direct reference to recurring_event_instances.id for precise targeting
+ * - JSON-based exception data for flexible field modifications
+ * - Template reference can be derived via instance.baseRecurringEventId (no redundant storage)
+ * - All exceptions are single-instance modifications (no type differentiation needed)
  */
 export const eventExceptionsTable = pgTable(
 	"event_exceptions",
@@ -37,36 +28,16 @@ export const eventExceptionsTable = pgTable(
 		id: uuid("id").primaryKey().$default(uuidv7),
 
 		/**
-		 * Foreign key reference to the specific event instance that has exceptions.
-		 * This is the actual event record in the events table.
+		 * Foreign key reference to the specific recurring event instance.
+		 * This directly identifies which instance this exception modifies.
+		 * Primary identifier for precise exception targeting.
 		 */
-		eventInstanceId: uuid("event_instance_id")
+		recurringEventInstanceId: uuid("recurring_event_instance_id")
 			.notNull()
-			.references(() => eventsTable.id, {
+			.references(() => recurringEventInstancesTable.id, {
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
-
-		/**
-		 * Foreign key reference to the base recurring event (template).
-		 * Links back to the original template to understand what changed.
-		 */
-		baseRecurringEventId: uuid("recurring_event_id")
-			.notNull()
-			.references(() => eventsTable.id, {
-				onDelete: "cascade",
-				onUpdate: "cascade",
-			}),
-
-		/**
-		 * Timestamp identifying this specific instance of the recurring event.
-		 * Used to identify which occurrence this exception applies to.
-		 */
-		instanceStartTime: timestamp("instance_start_time", {
-			mode: "date",
-			precision: 3,
-			withTimezone: true,
-		}).notNull(),
 
 		/**
 		 * JSON object storing the field differences from the template.
@@ -74,13 +45,6 @@ export const eventExceptionsTable = pgTable(
 		 * Example: { "name": "Special Meeting", "startAt": "2024-01-15T15:00:00Z" }
 		 */
 		exceptionData: jsonb("exception_data").notNull(),
-
-		/**
-		 * Type of exception:
-		 * - SINGLE_INSTANCE: Only this specific instance is modified
-		 * - THIS_AND_FUTURE: This instance and all future instances are modified
-		 */
-		exceptionType: exceptionTypeEnum("exception_type").notNull(),
 
 		/**
 		 * Foreign key reference to organization for data isolation.
@@ -133,25 +97,12 @@ export const eventExceptionsTable = pgTable(
 			.$onUpdate(() => new Date()),
 	},
 	(self) => ({
-		// Indexes for performance
-		eventInstanceIdIdx: index("ee_event_instance_id_idx").on(
-			self.eventInstanceId,
-		),
-		recurringEventIdIdx: index("ee_recurring_event_id_idx").on(
-			self.baseRecurringEventId,
-		),
-		instanceStartTimeIdx: index("ee_instance_start_time_idx").on(
-			self.instanceStartTime,
+		// Primary indexes for optimal performance
+		recurringEventInstanceIdIdx: index("ee_recurring_event_instance_id_idx").on(
+			self.recurringEventInstanceId,
 		),
 		organizationIdIdx: index("ee_organization_id_idx").on(self.organizationId),
-		exceptionTypeIdx: index("ee_exception_type_idx").on(self.exceptionType),
 		creatorIdIdx: index("ee_creator_id_idx").on(self.creatorId),
-
-		// Composite index for finding exceptions for a specific recurring event and instance
-		recurringEventInstanceIdx: index("ee_recurring_event_instance_idx").on(
-			self.baseRecurringEventId,
-			self.instanceStartTime,
-		),
 	}),
 );
 
@@ -159,21 +110,14 @@ export const eventExceptionsTableRelations = relations(
 	eventExceptionsTable,
 	({ one }) => ({
 		/**
-		 * Many to one relationship from event_exceptions to events table (instance).
+		 * Many to one relationship from event_exceptions to recurring_event_instances table.
+		 * This is the primary relationship for identifying which instance is modified.
 		 */
-		eventInstance: one(eventsTable, {
-			fields: [eventExceptionsTable.eventInstanceId],
-			references: [eventsTable.id],
-			relationName: "event_exceptions.event_instance_id:events.id",
-		}),
-
-		/**
-		 * Many to one relationship from event_exceptions to events table (template).
-		 */
-		baseRecurringEvent: one(eventsTable, {
-			fields: [eventExceptionsTable.baseRecurringEventId],
-			references: [eventsTable.id],
-			relationName: "event_exceptions.recurring_event_id:events.id",
+		recurringEventInstance: one(recurringEventInstancesTable, {
+			fields: [eventExceptionsTable.recurringEventInstanceId],
+			references: [recurringEventInstancesTable.id],
+			relationName:
+				"event_exceptions.recurring_event_instance_id:recurring_event_instances.id",
 		}),
 
 		/**
@@ -209,6 +153,9 @@ export const recurringEventExceptionsTableInsertSchema = createInsertSchema(
 	eventExceptionsTable,
 	{
 		exceptionData: z.record(z.any()), // JSON object with any structure
-		instanceStartTime: z.date(),
+		recurringEventInstanceId: z.string().uuid(),
+		organizationId: z.string().uuid(),
+		creatorId: z.string().uuid(),
+		updaterId: z.string().uuid().optional(),
 	},
 );

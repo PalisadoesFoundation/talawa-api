@@ -38,6 +38,7 @@ async function addMembership(
 			memberId,
 			role,
 		})
+		.onConflictDoNothing()
 		.execute();
 }
 

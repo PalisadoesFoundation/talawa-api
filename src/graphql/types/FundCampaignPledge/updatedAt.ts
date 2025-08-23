@@ -18,6 +18,11 @@ FundCampaignPledge.implement({
 
 				const currentUserId = ctx.currentClient.user.id;
 
+				// Allow users to see updatedAt for their own pledges
+				if (parent.pledgerId === currentUserId) {
+					return parent.updatedAt;
+				}
+
 				const [currentUser, existingFundCampaign] = await Promise.all([
 					ctx.drizzleClient.query.usersTable.findFirst({
 						columns: {
