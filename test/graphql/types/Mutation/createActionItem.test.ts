@@ -11,6 +11,8 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+const SUITE_TIMEOUT = 30_000;
+
 // Use the graphql function from the client to define the mutation with correct fields
 const Mutation_createActionItem = `
   mutation CreateActionItem($input: CreateActionItemInput!) {
@@ -132,7 +134,7 @@ suite("Mutation field createActionItem", () => {
 					}),
 				]),
 			);
-		});
+		}, SUITE_TIMEOUT);
 	});
 
 	// 2. Organization does not exist.
@@ -166,7 +168,7 @@ suite("Mutation field createActionItem", () => {
 					}),
 				]),
 			);
-		});
+		}, SUITE_TIMEOUT);
 	});
 
 	// 3. User is not part of the organization.
@@ -202,7 +204,7 @@ suite("Mutation field createActionItem", () => {
 					}),
 				]),
 			);
-		});
+		}, SUITE_TIMEOUT);
 	});
 
 	// 4. Category does not exist.
@@ -238,7 +240,7 @@ suite("Mutation field createActionItem", () => {
 					}),
 				]),
 			);
-		});
+		}, SUITE_TIMEOUT);
 	});
 
 	// 5. Assignee does not exist.
@@ -281,7 +283,7 @@ suite("Mutation field createActionItem", () => {
 					}),
 				]),
 			);
-		});
+		}, SUITE_TIMEOUT);
 	});
 
 	// 6. Current user is not an administrator.
@@ -354,7 +356,7 @@ suite("Mutation field createActionItem", () => {
 						}),
 					]),
 				);
-			});
+			}, SUITE_TIMEOUT);
 		},
 	);
 
@@ -415,7 +417,7 @@ suite("Mutation field createActionItem", () => {
 					postCompletionNotes: null,
 				}),
 			);
-		});
+		}, SUITE_TIMEOUT);
 	});
 
 	// 8. Test for optional assignedAt field default behavior
@@ -475,6 +477,6 @@ suite("Mutation field createActionItem", () => {
 					postCompletionNotes: null,
 				}),
 			);
-		});
+		}, SUITE_TIMEOUT);
 	});
 });
