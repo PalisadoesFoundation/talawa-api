@@ -5,10 +5,10 @@ import {
 	EventAttachment,
 	type EventAttachment as EventAttachmentType,
 } from "~/src/graphql/types/EventAttachment/EventAttachment";
-import { AgendaItem } from "../AgendaItem/AgendaItem";
-import { resolveAgendaItems } from "./agendaItems";
 import { RecurrenceRule } from "~/src/graphql/types/RecurrenceRule/RecurrenceRule";
 import { formatRecurrenceDescription } from "~/src/utilities/recurrenceFormatter";
+import { AgendaItem } from "../AgendaItem/AgendaItem";
+import { resolveAgendaItems } from "./agendaItems";
 
 // Unified Event type supporting both standalone events and materialized instances
 export type Event =
