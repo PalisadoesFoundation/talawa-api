@@ -11,21 +11,21 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
 
-const mutationUpdateEventArgumentsSchema = z.object({
+const mutationUpdateStandaloneEventArgumentsSchema = z.object({
 	input: mutationUpdateEventInputSchema,
 });
 
-builder.mutationField("updateEvent", (t) =>
+builder.mutationField("updateStandaloneEvent", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
-				description: "",
+				description: "Input for updating a standalone event.",
 				required: true,
 				type: MutationUpdateEventInput,
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-		description: "Mutation field to update an event.",
+		description: "Mutation field to update a standalone (non-recurring) event.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -39,7 +39,7 @@ builder.mutationField("updateEvent", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationUpdateEventArgumentsSchema.safeParse(args);
+			} = mutationUpdateStandaloneEventArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -71,6 +71,7 @@ builder.mutationField("updateEvent", (t) =>
 						isPublic: true,
 						isRegisterable: true,
 						location: true,
+						creatorId: true,
 					},
 					with: {
 						attachmentsWhereEvent: true,
@@ -155,9 +156,9 @@ builder.mutationField("updateEvent", (t) =>
 				existingEvent.organization.membershipsWhereOrganization[0];
 
 			if (
-				currentUser.role !== "administrator" &&
 				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
+					currentUserOrganizationMembership.role !== "administrator") &&
+				existingEvent.creatorId !== currentUserId
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {

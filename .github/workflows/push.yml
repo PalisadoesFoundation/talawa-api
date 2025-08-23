@@ -1,6 +1,7 @@
 name: Push Workflow for develop
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - develop
@@ -34,7 +35,7 @@ jobs:
 
       # Upload coverage to Codecov
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
@@ -42,7 +43,7 @@ jobs:
 
       # Test acceptable level of code coverage
       - name: Test acceptable level of code coverage
-        uses: VeryGoodOpenSource/very_good_coverage@v2
+        uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
           path: "./coverage/lcov.info"
           min_coverage: 39.0

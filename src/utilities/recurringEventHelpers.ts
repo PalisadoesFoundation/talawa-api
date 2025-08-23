@@ -325,6 +325,120 @@ export function getEventType(
 }
 
 /**
+ * Applies calendar-style override logic for recurring event updates.
+ * This function implements the following rules:
+ * 1. If startAt is provided and byDay is not specified in recurrence,
+ *    derive byDay from the new startAt day of week
+ * 2. If byDay is explicitly provided in recurrence, use it as-is
+ * 3. For monthly/yearly events, similar logic applies to byMonthDay/byMonth
+ *
+ * @param newStartAt - The new start time for the event (if provided)
+ * @param originalRecurrence - The original recurrence rule from the database
+ * @param inputRecurrence - The recurrence input from the user (if provided)
+ * @returns The updated recurrence configuration with proper overrides applied
+ */
+export function applyRecurrenceOverrides(
+	newStartAt: Date | undefined,
+	originalRecurrence: Pick<
+		typeof recurrenceRulesTable.$inferSelect,
+		| "frequency"
+		| "interval"
+		| "recurrenceEndDate"
+		| "count"
+		| "byDay"
+		| "byMonth"
+		| "byMonthDay"
+	>,
+	inputRecurrence?: z.infer<typeof recurrenceInputSchema>,
+): z.infer<typeof recurrenceInputSchema> {
+	// Start with the provided recurrence input or create from original
+	const recurrence = inputRecurrence ?? {
+		frequency: originalRecurrence.frequency,
+		interval: originalRecurrence.interval,
+		endDate: originalRecurrence.recurrenceEndDate ?? undefined,
+		count: originalRecurrence.count ?? undefined,
+		never: !originalRecurrence.recurrenceEndDate && !originalRecurrence.count,
+		byDay: originalRecurrence.byDay ?? undefined,
+		byMonth: originalRecurrence.byMonth ?? undefined,
+		byMonthDay: originalRecurrence.byMonthDay ?? undefined,
+	};
+
+	// Override logic: startAt always wins if provided, otherwise use byDay
+	if (newStartAt) {
+		// If startAt is provided, derive byDay from it regardless of input byDay
+		const dayMap = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+		const dayIndex = newStartAt.getDay();
+
+		if (dayIndex < 0 || dayIndex >= dayMap.length) {
+			// This case should ideally not happen with valid Date objects
+			throw new Error("Invalid day of week derived from startAt");
+		}
+		const newDayOfWeek = dayMap[dayIndex];
+
+		if (newDayOfWeek) {
+			if (recurrence.frequency === "WEEKLY") {
+				// For weekly events, only override byDay if not explicitly provided in input
+				if (!inputRecurrence?.byDay) {
+					recurrence.byDay = [newDayOfWeek];
+				}
+			} else if (recurrence.frequency === "MONTHLY") {
+				// For monthly events, if byDay was previously set, update it
+				// Also set it if no byDay was originally set but we have a new start day
+				if (
+					!inputRecurrence?.byDay &&
+					((originalRecurrence.byDay && originalRecurrence.byDay.length > 0) ||
+						!originalRecurrence.byMonthDay)
+				) {
+					recurrence.byDay = [newDayOfWeek];
+				}
+			}
+		}
+	} else if (inputRecurrence?.byDay) {
+		// If startAt is not provided but byDay is, use byDay
+		recurrence.byDay = inputRecurrence.byDay;
+	}
+
+	// For monthly events, handle byMonthDay override logic
+	if (
+		newStartAt &&
+		!inputRecurrence?.byMonthDay &&
+		recurrence.frequency === "MONTHLY"
+	) {
+		// If byMonthDay was previously set and no new byMonthDay provided, update it
+		if (
+			originalRecurrence.byMonthDay &&
+			originalRecurrence.byMonthDay.length > 0
+		) {
+			recurrence.byMonthDay = [newStartAt.getDate()];
+		}
+	}
+
+	// If byMonthDay is explicitly provided in input, use it
+	if (inputRecurrence?.byMonthDay) {
+		recurrence.byMonthDay = inputRecurrence.byMonthDay;
+	}
+
+	// For yearly events, handle byMonth override logic
+	if (
+		newStartAt &&
+		!inputRecurrence?.byMonth &&
+		recurrence.frequency === "YEARLY"
+	) {
+		// If byMonth was previously set and no new byMonth provided, update it
+		if (originalRecurrence.byMonth && originalRecurrence.byMonth.length > 0) {
+			recurrence.byMonth = [newStartAt.getMonth() + 1]; // JavaScript months are 0-indexed
+		}
+	}
+
+	// If byMonth is explicitly provided in input, use it
+	if (inputRecurrence?.byMonth) {
+		recurrence.byMonth = inputRecurrence.byMonth;
+	}
+
+	return recurrence;
+}
+
+/**
  * Calculates the estimated number of instances per month for a given frequency and interval.
  * This is useful for resource planning, performance estimations, and other calculations
  * where an average monthly occurrence rate is needed.

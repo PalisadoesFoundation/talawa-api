@@ -466,22 +466,6 @@ export const Mutation_createEvent =
     }
 }`);
 
-export const Mutation_updateEvent =
-	gql(`mutation Mutation_updateEvent($input: MutationUpdateEventInput!) {
-    updateEvent(input: $input) {
-        id
-        name
-        description
-        startAt
-        endAt
-        updatedAt
-        organization {
-            id
-            countryCode
-        }
-    }
-}`);
-
 export const Query_tag = gql(`
     query tag($input:QueryTagInput!) {
   tag(input: $input) {
