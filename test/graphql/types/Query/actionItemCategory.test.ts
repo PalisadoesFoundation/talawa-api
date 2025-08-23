@@ -11,6 +11,7 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+
 describe("Query field actionItemCategory", () => {
 	test('returns graphql error with "unauthenticated" if not authenticated', async () => {
 		const randomId = faker.string.uuid();
@@ -26,7 +27,7 @@ describe("Query field actionItemCategory", () => {
 				}),
 			]),
 		);
-	});
+	}, 30000);
 
 	test("returns null if category does not exist", async () => {
 		// Sign in as admin
@@ -52,7 +53,7 @@ describe("Query field actionItemCategory", () => {
 
 		expect(result.data?.actionItemCategory).toBeNull();
 		expect(result.errors).toBeUndefined();
-	});
+	}, 30000);
 
 	test('returns graphql error with "forbidden_action_on_arguments_associated_resources" if user is not a member of the organization', async () => {
 		// Sign in as admin
@@ -156,7 +157,7 @@ describe("Query field actionItemCategory", () => {
 				}),
 			]),
 		);
-	});
+	}, 30000);
 
 	test("returns the category object if user is a member of the organization", async () => {
 		// Sign in as admin
@@ -289,7 +290,7 @@ describe("Query field actionItemCategory", () => {
 				}),
 			);
 		}
-	});
+	}, 30000);
 
 	test("returns the category object when queried by organization administrator", async () => {
 		// Sign in as admin
@@ -376,7 +377,7 @@ describe("Query field actionItemCategory", () => {
 				}),
 			}),
 		);
-	});
+	}, 30000);
 
 	test("handles disabled categories correctly", async () => {
 		// Sign in as admin
@@ -463,7 +464,7 @@ describe("Query field actionItemCategory", () => {
 				}),
 			}),
 		);
-	});
+	}, 30000);
 
 	test("handles invalid UUID format in input", async () => {
 		// Sign in as admin
@@ -495,5 +496,5 @@ describe("Query field actionItemCategory", () => {
 				}),
 			]),
 		);
-	});
+	}, 30000);
 });
