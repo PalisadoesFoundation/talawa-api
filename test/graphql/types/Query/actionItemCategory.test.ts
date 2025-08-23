@@ -11,7 +11,7 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-const SUITE_TIMEOUT = 30000;
+const SUITE_TIMEOUT = 30_000;
 
 describe("Query field actionItemCategory", () => {
 	test(
