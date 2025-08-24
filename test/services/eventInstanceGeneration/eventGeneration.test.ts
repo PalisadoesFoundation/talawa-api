@@ -3,7 +3,6 @@ import { and, eq } from "drizzle-orm";
 import { type Mock, expect, suite, test, vi } from "vitest";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
-import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import { generateInstancesForRecurringEvent } from "~/src/services/eventGeneration";
 import type {
 	GenerateInstancesInput,
@@ -71,6 +70,7 @@ suite("eventMaterialization", () => {
 
 			const mockRecurrenceRule = {
 				id: faker.string.uuid(),
+				originalSeriesId: faker.string.uuid(),
 				baseRecurringEventId: input.baseRecurringEventId,
 				frequency: "WEEKLY",
 				interval: 1,
@@ -125,16 +125,20 @@ suite("eventMaterialization", () => {
 			expect(
 				mockDrizzleClient.query.recurrenceRulesTable.findFirst,
 			).toHaveBeenCalledWith({
+				columns: {
+					id: true,
+					originalSeriesId: true,
+					frequency: true,
+					interval: true,
+					recurrenceStartDate: true,
+					recurrenceEndDate: true,
+					count: true,
+					byDay: true,
+					byMonth: true,
+					byMonthDay: true,
+				},
 				where: eq(
 					recurrenceRulesTable.baseRecurringEventId,
-					input.baseRecurringEventId,
-				),
-			});
-			expect(
-				mockDrizzleClient.query.eventExceptionsTable.findMany,
-			).toHaveBeenCalledWith({
-				where: eq(
-					eventExceptionsTable.baseRecurringEventId,
 					input.baseRecurringEventId,
 				),
 			});
@@ -230,6 +234,7 @@ suite("eventMaterialization", () => {
 
 			const mockRecurrenceRule = {
 				id: faker.string.uuid(),
+				originalSeriesId: faker.string.uuid(),
 				baseRecurringEventId: input.baseRecurringEventId,
 				frequency: "WEEKLY",
 				interval: 1,
@@ -290,6 +295,7 @@ suite("eventMaterialization", () => {
 
 			const mockRecurrenceRule = {
 				id: faker.string.uuid(),
+				originalSeriesId: faker.string.uuid(),
 				baseRecurringEventId: input.baseRecurringEventId,
 				frequency: "WEEKLY",
 				interval: 1,

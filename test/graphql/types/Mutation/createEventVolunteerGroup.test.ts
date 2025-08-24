@@ -26,6 +26,7 @@ async function addMembership(
 			memberId,
 			role,
 		})
+		.onConflictDoNothing()
 		.execute();
 }
 
@@ -54,10 +55,10 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 	return orgId;
 }
 
+// Helper to create an event and return its id
 async function createEventAndGetId(
 	authToken: string,
 	organizationId: string,
-	creatorId: string,
 ): Promise<string> {
 	const eventName = `Test Event ${faker.string.uuid()}`;
 	const startDate = new Date();
@@ -75,6 +76,13 @@ async function createEventAndGetId(
 			},
 		},
 	});
+
+	if (result.errors) {
+		console.error("createEvent mutation failed:", result.errors);
+		throw new Error(
+			`createEvent mutation failed: ${JSON.stringify(result.errors)}`,
+		);
+	}
 
 	const eventId = result.data?.createEvent?.id;
 	assertToBeNonNullish(eventId);
@@ -97,7 +105,9 @@ assertToBeNonNullish(signInResult.data.signIn.user);
 const adminUserId = signInResult.data.signIn.user.id;
 assertToBeNonNullish(adminUserId);
 const orgIdn = await createOrganizationAndGetId(authToken);
-const eventIdn = await createEventAndGetId(authToken, orgIdn, adminUserId);
+// Add admin user as organization member to allow event creation
+await addMembership(orgIdn, adminUserId, "administrator");
+const eventIdn = await createEventAndGetId(authToken, orgIdn);
 
 suite("Mutation field createEventVolunteerGroup", () => {
 	suite("when the client is not authenticated", () => {

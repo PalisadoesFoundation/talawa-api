@@ -14,7 +14,6 @@ import { agendaFoldersTable } from "./agendaFolders";
 import { eventAttachmentsTable } from "./eventAttachments";
 import { eventAttendancesTable } from "./eventAttendances";
 import { organizationsTable } from "./organizations";
-import { eventExceptionsTable } from "./recurringEventExceptions";
 import { usersTable } from "./users";
 import { venueBookingsTable } from "./venueBookings";
 
@@ -192,21 +191,6 @@ export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 	 */
 	venueBookingsWhereEvent: many(venueBookingsTable, {
 		relationName: "events.id:venue_bookings.event_id",
-	}),
-
-	// EVENT EXCEPTION RELATIONSHIPS
-	/**
-	 * One to many relationship from events table to event_exceptions table (as instance).
-	 */
-	exceptionsWhereEventInstance: many(eventExceptionsTable, {
-		relationName: "event_exceptions.event_instance_id:events.id",
-	}),
-
-	/**
-	 * One to many relationship from events table to event_exceptions table (as template).
-	 */
-	exceptionsWhereRecurringEvent: many(eventExceptionsTable, {
-		relationName: "event_exceptions.recurring_event_id:events.id",
 	}),
 }));
 

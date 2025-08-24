@@ -59,6 +59,7 @@ async function createRecurringEventWithInstances(
 	organizationId: string,
 	creatorId: string,
 ): Promise<{ templateId: string; instanceIds: string[] }> {
+	const originalSeriesId = faker.string.uuid();
 	// Create recurring event template
 	const [template] = await server.drizzleClient
 		.insert(eventsTable)
@@ -84,6 +85,7 @@ async function createRecurringEventWithInstances(
 		.insert(recurrenceRulesTable)
 		.values({
 			baseRecurringEventId: template.id,
+			originalSeriesId,
 			recurrenceStartDate: new Date("2024-01-15"),
 			recurrenceEndDate: new Date("2024-12-15"),
 			frequency: "MONTHLY",
@@ -102,6 +104,7 @@ async function createRecurringEventWithInstances(
 		{
 			baseRecurringEventId: template.id,
 			recurrenceRuleId: recurrenceRule.id,
+			originalSeriesId,
 			organizationId,
 			originalInstanceStartTime: new Date("2024-01-15T14:00:00Z"),
 			actualStartTime: new Date("2024-01-15T14:00:00Z"),
@@ -111,6 +114,7 @@ async function createRecurringEventWithInstances(
 		{
 			baseRecurringEventId: template.id,
 			recurrenceRuleId: recurrenceRule.id,
+			originalSeriesId,
 			organizationId,
 			originalInstanceStartTime: new Date("2024-02-15T14:00:00Z"),
 			actualStartTime: new Date("2024-02-15T14:00:00Z"),
@@ -120,6 +124,7 @@ async function createRecurringEventWithInstances(
 		{
 			baseRecurringEventId: template.id,
 			recurrenceRuleId: recurrenceRule.id,
+			originalSeriesId,
 			organizationId,
 			originalInstanceStartTime: new Date("2024-03-15T14:00:00Z"),
 			actualStartTime: new Date("2024-03-15T14:00:00Z"),
@@ -401,7 +406,108 @@ suite("Mutation field deleteEntireRecurringEventSeries", () => {
 				expect.arrayContaining([
 					expect.objectContaining({
 						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
+						}),
+						message:
+							"No recurrence rule found for this recurring event template.",
+					}),
+				]),
+			);
+		});
+
+		test("should return an error if the event is not a recurring event template", async () => {
+			const organizationId = await createOrganizationAndGetId(authToken);
+			const adminSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			assertToBeNonNullish(adminSignIn.data?.signIn?.user);
+			const adminUserId = adminSignIn.data.signIn.user.id;
+			const { templateId } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+			);
+
+			// Manually update the event to not be a recurring event template
+			await server.drizzleClient
+				.update(eventsTable)
+				.set({ isRecurringEventTemplate: false })
+				.where(eq(eventsTable.id, templateId));
+
+			const result = await mercuriusClient.mutate(
+				Mutation_deleteEntireRecurringEventSeries,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: templateId } },
+				},
+			);
+
+			expect(result.data?.deleteEntireRecurringEventSeries).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
 							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "id"],
+									message:
+										"Event is not a recurring event template. Use deleteEvent for standalone events or other delete mutations for instances.",
+								}),
+							]),
+						}),
+					}),
+				]),
+			);
+		});
+
+		test("should return an error if the recurrence rule is missing an original series ID", async () => {
+			const organizationId = await createOrganizationAndGetId(authToken);
+			const adminSignIn = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			assertToBeNonNullish(adminSignIn.data?.signIn?.user);
+			const adminUserId = adminSignIn.data.signIn.user.id;
+			const { templateId } = await createRecurringEventWithInstances(
+				organizationId,
+				adminUserId,
+			);
+
+			// Manually update the recurrence rule to have a null originalSeriesId
+			await server.drizzleClient
+				.update(recurrenceRulesTable)
+				.set({ originalSeriesId: null })
+				.where(eq(recurrenceRulesTable.baseRecurringEventId, templateId));
+
+			const result = await mercuriusClient.mutate(
+				Mutation_deleteEntireRecurringEventSeries,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: templateId } },
+				},
+			);
+
+			expect(result.data?.deleteEntireRecurringEventSeries).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "invalid_arguments",
+							issues: expect.arrayContaining([
+								expect.objectContaining({
+									argumentPath: ["input", "id"],
+									message: "Recurrence rule missing original series ID.",
+								}),
+							]),
 						}),
 					}),
 				]),

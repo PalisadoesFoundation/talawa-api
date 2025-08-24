@@ -102,7 +102,8 @@ async function getAdminAuthTokenAndId(): Promise<{
 }
 
 async function createTestAgendaItem(): Promise<TestAgendaItem> {
-	const { cachedAdminToken: adminAuthToken } = await getAdminAuthTokenAndId();
+	const { cachedAdminToken: adminAuthToken, cachedAdminId: adminId } =
+		await getAdminAuthTokenAndId();
 
 	// Create organization
 	const createOrgResult = await mercuriusClient.mutate(
@@ -123,6 +124,31 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 	assertToBeNonNullish(createOrgResult.data);
 	assertToBeNonNullish(createOrgResult.data.createOrganization);
 	const orgId = createOrgResult.data.createOrganization.id;
+
+	// Create organization membership for the admin user
+	const membershipResult = await mercuriusClient.mutate(
+		Mutation_createOrganizationMembership,
+		{
+			headers: {
+				authorization: `bearer ${adminAuthToken}`,
+			},
+			variables: {
+				input: {
+					organizationId: orgId,
+					memberId: adminId,
+					role: "administrator",
+				},
+			},
+		},
+	);
+
+	if (membershipResult.errors) {
+		throw new Error(
+			`Failed to create organization membership. Errors: ${JSON.stringify(
+				membershipResult.errors,
+			)}`,
+		);
+	}
 
 	// Create event
 	const createEventResult = await mercuriusClient.mutate(Mutation_createEvent, {

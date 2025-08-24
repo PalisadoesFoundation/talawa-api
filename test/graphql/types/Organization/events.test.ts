@@ -387,7 +387,10 @@ describe("Organization Events Resolver Tests", () => {
 			expect(mockGetUnifiedEventsInDateRange).toHaveBeenCalledWith(
 				expect.objectContaining({
 					organizationId: mockOrganization.id,
-					limit: 5,
+					startDate: expect.any(Date),
+					endDate: expect.any(Date),
+					includeRecurring: true,
+					limit: 6,
 				}),
 				ctx.drizzleClient,
 				ctx.log,

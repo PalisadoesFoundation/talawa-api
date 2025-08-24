@@ -4,6 +4,7 @@ import { afterEach, expect, suite, test } from "vitest";
 
 import { eq } from "drizzle-orm";
 import { usersTable } from "~/src/drizzle/schema";
+import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -17,13 +18,29 @@ import {
 	Mutation_createAgendaItem,
 	Mutation_createEvent,
 	Mutation_createOrganization,
-	Mutation_createOrganizationMembership,
 	Mutation_deleteAgendaItem,
 	Mutation_deleteOrganization,
-	Mutation_deleteOrganizationMembership,
 	Mutation_deleteStandaloneEvent,
 	Query_signIn,
 } from "../documentNodes";
+
+// Helper function to add membership with conflict handling
+async function addMembership(
+	organizationId: string,
+	memberId: string,
+	role: "administrator" | "regular",
+) {
+	await server.drizzleClient
+		.insert(organizationMembershipsTable)
+		.values({
+			organizationId,
+			memberId,
+			role,
+		})
+		.onConflictDoNothing()
+		.execute();
+}
+
 // Helper Types
 interface TestAgendaItem {
 	agendaItemId: string;
@@ -99,7 +116,8 @@ async function getAdminAuthTokenAndId(): Promise<{
 }
 
 async function createTestAgendaItem(): Promise<TestAgendaItem> {
-	const { cachedAdminToken: adminAuthToken } = await getAdminAuthTokenAndId();
+	const { cachedAdminToken: adminAuthToken, cachedAdminId: adminId } =
+		await getAdminAuthTokenAndId();
 
 	// Create organization
 	const createOrgResult = await mercuriusClient.mutate(
@@ -120,6 +138,9 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 	assertToBeNonNullish(createOrgResult.data);
 	assertToBeNonNullish(createOrgResult.data.createOrganization);
 	const orgId = createOrgResult.data.createOrganization.id;
+
+	// Create organization membership for the admin user
+	await addMembership(orgId, adminId, "administrator");
 
 	// Create event
 	const createEventResult = await mercuriusClient.mutate(Mutation_createEvent, {
@@ -226,54 +247,6 @@ async function createTestAgendaItem(): Promise<TestAgendaItem> {
 	};
 }
 
-async function createOrganizationMembership(
-	authToken: string,
-	memberId: string,
-	orgId: string,
-	role?: "administrator" | "regular",
-) {
-	const createOrganizationMembershipResult = await mercuriusClient.mutate(
-		Mutation_createOrganizationMembership,
-		{
-			headers: {
-				authorization: `bearer ${authToken}`,
-			},
-			variables: {
-				input: {
-					memberId,
-					organizationId: orgId,
-					role,
-				},
-			},
-		},
-	);
-
-	assertToBeNonNullish(createOrganizationMembershipResult.data);
-	assertToBeNonNullish(
-		createOrganizationMembershipResult.data.createOrganizationMembership,
-	);
-	assertToBeNonNullish(
-		createOrganizationMembershipResult.data.createOrganizationMembership.id,
-	);
-	const organizationMembershipId =
-		createOrganizationMembershipResult.data.createOrganizationMembership.id;
-	return {
-		organizationMembershipId,
-		cleanup: async () => {
-			await mercuriusClient.mutate(Mutation_deleteOrganizationMembership, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						memberId,
-						organizationId: orgId,
-					},
-				},
-			});
-		},
-	};
-}
 suite("Mutation field deleteAgendaItem", () => {
 	suite("Authorization and Authentication", () => {
 		const testCleanupFunctions: Array<() => Promise<void>> = [];
@@ -394,12 +367,7 @@ suite("Mutation field deleteAgendaItem", () => {
 			testCleanupFunctions.push(agendaItem.cleanup);
 			// create organization membership
 
-			const orgMemberShip = await createOrganizationMembership(
-				regularUser.authToken,
-				regularUser.userId,
-				agendaItem.orgId,
-			);
-			testCleanupFunctions.push(orgMemberShip.cleanup);
+			await addMembership(agendaItem.orgId, regularUser.userId, "regular");
 			// delete the agendaItem
 
 			const agendaItemResult = await mercuriusClient.mutate(
@@ -468,12 +436,7 @@ suite("Mutation field deleteAgendaItem", () => {
 			const agendaItem = await createTestAgendaItem();
 			testCleanupFunctions.push(agendaItem.cleanup);
 			// create organization membership
-			const orgMemberShip = await createOrganizationMembership(
-				adminAuthToken,
-				adminId,
-				agendaItem.orgId,
-			);
-			testCleanupFunctions.push(orgMemberShip.cleanup);
+			await addMembership(agendaItem.orgId, adminId, "administrator");
 			// delete the agendaItem
 
 			const agendaItemResult = await mercuriusClient.mutate(
@@ -554,12 +517,7 @@ suite("Mutation field deleteAgendaItem", () => {
 			const agendaItem = await createTestAgendaItem();
 			testCleanupFunctions.push(agendaItem.cleanup);
 			// create organization membership
-			const orgMemberShip = await createOrganizationMembership(
-				adminAuthToken,
-				adminId,
-				agendaItem.orgId,
-			);
-			testCleanupFunctions.push(orgMemberShip.cleanup);
+			await addMembership(agendaItem.orgId, adminId, "administrator");
 			// delete the agendaItem
 			const agendaItemResult = await mercuriusClient.mutate(
 				Mutation_deleteAgendaItem,

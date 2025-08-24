@@ -1,4 +1,3 @@
-CREATE TYPE "public"."exception_type" AS ENUM('SINGLE_INSTANCE', 'THIS_AND_FUTURE');--> statement-breakpoint
 CREATE TYPE "public"."frequency" AS ENUM('DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY');--> statement-breakpoint
 CREATE TABLE "action_categories" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
@@ -183,11 +182,8 @@ CREATE TABLE "event_attendances" (
 --> statement-breakpoint
 CREATE TABLE "event_exceptions" (
 	"id" uuid PRIMARY KEY NOT NULL,
-	"event_instance_id" uuid NOT NULL,
-	"recurring_event_id" uuid NOT NULL,
-	"instance_start_time" timestamp (3) with time zone NOT NULL,
+	"recurring_event_instance_id" uuid NOT NULL,
 	"exception_data" jsonb NOT NULL,
-	"exception_type" "exception_type" NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"creator_id" uuid NOT NULL,
 	"updater_id" uuid,
@@ -387,6 +383,7 @@ CREATE TABLE "recurrence_rules" (
 	"by_month" integer[],
 	"by_month_day" integer[],
 	"base_recurring_event_id" uuid NOT NULL,
+	"original_series_id" uuid,
 	"organization_id" uuid NOT NULL,
 	"creator_id" uuid NOT NULL,
 	"updater_id" uuid,
@@ -398,6 +395,7 @@ CREATE TABLE "recurring_event_instances" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"base_recurring_event_id" uuid NOT NULL,
 	"recurrence_rule_id" uuid NOT NULL,
+	"original_series_id" uuid NOT NULL,
 	"original_instance_start_time" timestamp (3) with time zone NOT NULL,
 	"actual_start_time" timestamp (3) with time zone NOT NULL,
 	"actual_end_time" timestamp (3) with time zone NOT NULL,
@@ -570,8 +568,7 @@ ALTER TABLE "event_attendances" ADD CONSTRAINT "event_attendances_attendee_id_us
 ALTER TABLE "event_attendances" ADD CONSTRAINT "event_attendances_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_attendances" ADD CONSTRAINT "event_attendances_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_attendances" ADD CONSTRAINT "event_attendances_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_exceptions" ADD CONSTRAINT "event_exceptions_event_instance_id_events_id_fk" FOREIGN KEY ("event_instance_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_exceptions" ADD CONSTRAINT "event_exceptions_recurring_event_id_events_id_fk" FOREIGN KEY ("recurring_event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "event_exceptions" ADD CONSTRAINT "event_exceptions_recurring_event_instance_id_recurring_event_instances_id_fk" FOREIGN KEY ("recurring_event_instance_id") REFERENCES "public"."recurring_event_instances"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_exceptions" ADD CONSTRAINT "event_exceptions_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_exceptions" ADD CONSTRAINT "event_exceptions_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_exceptions" ADD CONSTRAINT "event_exceptions_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
@@ -714,13 +711,9 @@ CREATE INDEX "event_attendances_check_out_at_index" ON "event_attendances" USING
 CREATE INDEX "event_attendances_created_at_index" ON "event_attendances" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "event_attendances_creator_id_index" ON "event_attendances" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "event_attendances_event_id_index" ON "event_attendances" USING btree ("event_id");--> statement-breakpoint
-CREATE INDEX "ee_event_instance_id_idx" ON "event_exceptions" USING btree ("event_instance_id");--> statement-breakpoint
-CREATE INDEX "ee_recurring_event_id_idx" ON "event_exceptions" USING btree ("recurring_event_id");--> statement-breakpoint
-CREATE INDEX "ee_instance_start_time_idx" ON "event_exceptions" USING btree ("instance_start_time");--> statement-breakpoint
+CREATE INDEX "ee_recurring_event_instance_id_idx" ON "event_exceptions" USING btree ("recurring_event_instance_id");--> statement-breakpoint
 CREATE INDEX "ee_organization_id_idx" ON "event_exceptions" USING btree ("organization_id");--> statement-breakpoint
-CREATE INDEX "ee_exception_type_idx" ON "event_exceptions" USING btree ("exception_type");--> statement-breakpoint
 CREATE INDEX "ee_creator_id_idx" ON "event_exceptions" USING btree ("creator_id");--> statement-breakpoint
-CREATE INDEX "ee_recurring_event_instance_idx" ON "event_exceptions" USING btree ("recurring_event_id","instance_start_time");--> statement-breakpoint
 CREATE INDEX "egw_organization_id_unique_idx" ON "event_generation_windows" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "egw_enabled_windows_idx" ON "event_generation_windows" USING btree ("is_enabled","processing_priority");--> statement-breakpoint
 CREATE INDEX "egw_last_processed_at_idx" ON "event_generation_windows" USING btree ("last_processed_at");--> statement-breakpoint
@@ -801,6 +794,7 @@ CREATE INDEX "reei_actual_start_time_idx" ON "recurring_event_instances" USING b
 CREATE INDEX "reei_actual_end_time_idx" ON "recurring_event_instances" USING btree ("actual_end_time");--> statement-breakpoint
 CREATE INDEX "reei_original_instance_start_time_idx" ON "recurring_event_instances" USING btree ("original_instance_start_time");--> statement-breakpoint
 CREATE INDEX "reei_recurrence_rule_idx" ON "recurring_event_instances" USING btree ("recurrence_rule_id");--> statement-breakpoint
+CREATE INDEX "reei_original_series_idx" ON "recurring_event_instances" USING btree ("original_series_id");--> statement-breakpoint
 CREATE INDEX "reei_is_cancelled_idx" ON "recurring_event_instances" USING btree ("is_cancelled");--> statement-breakpoint
 CREATE INDEX "reei_recurringEventd_at_idx" ON "recurring_event_instances" USING btree ("recurringEventd_at");--> statement-breakpoint
 CREATE INDEX "reei_org_active_instances_idx" ON "recurring_event_instances" USING btree ("organization_id","is_cancelled","actual_start_time");--> statement-breakpoint

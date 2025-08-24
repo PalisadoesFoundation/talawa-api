@@ -101,6 +101,7 @@ describe("jobDiscovery", () => {
 		weekDays: null,
 		bySetPos: null,
 		baseRecurringEventId: "event1",
+		originalSeriesId: "event1",
 		latestInstanceDate: new Date("2024-01-01"), // Set to a date instead of null
 		byDay: null,
 		byMonth: null,

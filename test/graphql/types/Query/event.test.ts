@@ -11,6 +11,7 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Query_event,
@@ -18,8 +19,8 @@ import {
 } from "../documentNodes";
 
 suite("Query field event", () => {
-	// Helper function to get admin auth token
-	async function getAdminToken() {
+	// Helper function to get admin auth token and user ID
+	async function getAdminTokenAndUserId() {
 		const signInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
@@ -30,12 +31,27 @@ suite("Query field event", () => {
 		});
 
 		const authToken = signInResult.data?.signIn?.authenticationToken;
+		const userId = signInResult.data?.signIn?.user?.id;
+		if (!authToken || !userId) {
+			throw new Error(
+				`Failed to sign in as admin. Errors: ${JSON.stringify(
+					signInResult.errors,
+				)}`,
+			);
+		}
 		assertToBeNonNullish(authToken);
+		assertToBeNonNullish(userId);
+		return { authToken, userId };
+	}
+
+	// Helper function to get admin auth token
+	async function getAdminToken() {
+		const { authToken } = await getAdminTokenAndUserId();
 		return authToken;
 	}
 
 	// Helper function to create an organization
-	async function createTestOrganization(authToken: string) {
+	async function createTestOrganization(authToken: string, userId: string) {
 		const orgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
@@ -52,7 +68,40 @@ suite("Query field event", () => {
 		);
 
 		const organization = orgResult.data?.createOrganization;
+		if (!organization) {
+			throw new Error(
+				`Failed to create organization. Errors: ${JSON.stringify(
+					orgResult.errors,
+				)}`,
+			);
+		}
 		assertToBeNonNullish(organization);
+
+		// Create organization membership for the admin user
+		const membershipResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						organizationId: organization.id,
+						memberId: userId,
+						role: "administrator",
+					},
+				},
+			},
+		);
+
+		if (membershipResult.errors) {
+			throw new Error(
+				`Failed to create organization membership. Errors: ${JSON.stringify(
+					membershipResult.errors,
+				)}`,
+			);
+		}
+
 		return organization;
 	}
 
@@ -94,12 +143,17 @@ suite("Query field event", () => {
 		});
 
 		const event = eventResult.data?.createEvent;
+		if (!event) {
+			throw new Error(
+				`Failed to create event. Errors: ${JSON.stringify(eventResult.errors)}`,
+			);
+		}
 		assertToBeNonNullish(event);
 		return event;
 	}
 
-	async function setupTestData(authToken: string) {
-		const organization = await createTestOrganization(authToken);
+	async function setupTestData(authToken: string, userId: string) {
+		const organization = await createTestOrganization(authToken, userId);
 		const event = await createTestEvent(authToken, organization.id);
 		return { organization, event };
 	}
@@ -167,8 +221,8 @@ suite("Query field event", () => {
 			});
 
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
-				const authToken = await getAdminToken();
-				const { event } = await setupTestData(authToken);
+				const { authToken, userId } = await getAdminTokenAndUserId();
+				const { event } = await setupTestData(authToken, userId);
 				const deletedUser = await createAndDeleteTestUser(authToken);
 
 				// Try to access event with deleted user's token
@@ -286,8 +340,12 @@ suite("Query field event", () => {
 	);
 
 	test("unauthorized regular user cannot access event from an organization they are not a member of", async () => {
-		const adminAuthToken = await getAdminToken();
-		const organization = await createTestOrganization(adminAuthToken);
+		const { authToken: adminAuthToken, userId: adminUserId } =
+			await getAdminTokenAndUserId();
+		const organization = await createTestOrganization(
+			adminAuthToken,
+			adminUserId,
+		);
 		const event = await createTestEvent(adminAuthToken, organization.id);
 
 		// Create a regular user who is not a member of the organization
@@ -346,26 +404,14 @@ suite("Query field event", () => {
 
 	// Then refactor the "admin user can access event" test to:
 	test("admin user can access event from any organization", async () => {
-		const adminAuthToken = await getAdminToken();
+		const { authToken: adminAuthToken, userId: adminUserId } =
+			await getAdminTokenAndUserId();
 
 		// Create test organization
-		const orgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						countryCode: "us",
-						name: `Test Organization ${faker.string.alphanumeric(8)}`,
-					},
-				},
-			},
+		const organization = await createTestOrganization(
+			adminAuthToken,
+			adminUserId,
 		);
-
-		const organization = orgResult.data?.createOrganization;
-		assertToBeNonNullish(organization);
 
 		// Create test event using helper
 		const event = await createTestEvent(adminAuthToken, organization.id);
@@ -392,8 +438,8 @@ suite("Query field event", () => {
 	// These additional test cases do not improve coverage from the actual files, However -> They help testing the application better
 	suite("Additional event tests", () => {
 		test("handles events with past dates correctly", async () => {
-			const authToken = await getAdminToken();
-			const organization = await createTestOrganization(authToken);
+			const { authToken, userId } = await getAdminTokenAndUserId();
+			const organization = await createTestOrganization(authToken, userId);
 
 			// Create an event in the past
 			const pastEventResult = await mercuriusClient.mutate(
@@ -445,8 +491,8 @@ suite("Query field event", () => {
 		});
 
 		test("handles multi-day events correctly", async () => {
-			const authToken = await getAdminToken();
-			const organization = await createTestOrganization(authToken);
+			const { authToken, userId } = await getAdminTokenAndUserId();
+			const organization = await createTestOrganization(authToken, userId);
 
 			// Create a multi-day event
 			const multiDayEventResult = await mercuriusClient.mutate(
@@ -499,8 +545,8 @@ suite("Query field event", () => {
 		});
 
 		test("handles events with minimal fields correctly", async () => {
-			const authToken = await getAdminToken();
-			const organization = await createTestOrganization(authToken);
+			const { authToken, userId } = await getAdminTokenAndUserId();
+			const organization = await createTestOrganization(authToken, userId);
 
 			// Create an event with only required fields
 			const minimalEventResult = await mercuriusClient.mutate(
@@ -543,8 +589,8 @@ suite("Query field event", () => {
 		});
 
 		test("handles concurrent access patterns correctly", async () => {
-			const authToken = await getAdminToken();
-			const organization = await createTestOrganization(authToken);
+			const { authToken, userId } = await getAdminTokenAndUserId();
+			const organization = await createTestOrganization(authToken, userId);
 
 			// Create an initial event
 			const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {

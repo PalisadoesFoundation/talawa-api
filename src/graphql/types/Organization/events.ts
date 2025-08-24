@@ -299,7 +299,7 @@ Organization.implement({
 								startDate: dateRange.start,
 								endDate: dateRange.end,
 								includeRecurring,
-								limit: limit - 1, // Reserve one spot for pagination logic
+								limit: limit, // Use full limit including the +1 for pagination detection
 							},
 							ctx.drizzleClient,
 							ctx.log,

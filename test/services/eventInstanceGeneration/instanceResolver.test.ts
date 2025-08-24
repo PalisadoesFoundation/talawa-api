@@ -102,16 +102,14 @@ suite("instanceResolver", () => {
 		test("resolves instance with exception data applied", () => {
 			const mockException = {
 				id: faker.string.uuid(),
-				eventInstanceId: mockGeneratedInstance.id,
+				recurringEventInstanceId: mockGeneratedInstance.id,
 				baseRecurringEventId: mockGeneratedInstance.baseRecurringEventId,
-				instanceStartTime: mockGeneratedInstance.originalInstanceStartTime,
 				exceptionData: {
 					name: "Modified Event Name",
 					description: "Modified Description",
 					location: "Modified Location",
 					isCancelled: true,
 				},
-				exceptionType: "SINGLE_INSTANCE" as const,
 				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 				updaterId: null,
@@ -145,14 +143,12 @@ suite("instanceResolver", () => {
 
 			const mockException = {
 				id: faker.string.uuid(),
-				eventInstanceId: mockGeneratedInstance.id,
+				recurringEventInstanceId: mockGeneratedInstance.id,
 				baseRecurringEventId: mockGeneratedInstance.baseRecurringEventId,
-				instanceStartTime: mockGeneratedInstance.originalInstanceStartTime,
 				exceptionData: {
 					startAt: newStartTime,
 					endAt: newEndTime,
 				},
-				exceptionType: "SINGLE_INSTANCE" as const,
 				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 				updaterId: null,
@@ -175,15 +171,13 @@ suite("instanceResolver", () => {
 		test("ignores invalid exception fields", () => {
 			const mockException = {
 				id: faker.string.uuid(),
-				eventInstanceId: mockGeneratedInstance.id,
+				recurringEventInstanceId: mockGeneratedInstance.id,
 				baseRecurringEventId: mockGeneratedInstance.baseRecurringEventId,
-				instanceStartTime: mockGeneratedInstance.originalInstanceStartTime,
 				exceptionData: {
 					name: "Modified Event Name",
 					invalidField: "Should be ignored",
 					id: "Should not override ID",
 				},
-				exceptionType: "SINGLE_INSTANCE" as const,
 				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 				updaterId: null,
@@ -249,11 +243,9 @@ suite("instanceResolver", () => {
 		test("applies exceptions when found", () => {
 			const mockException = {
 				id: faker.string.uuid(),
-				eventInstanceId: mockGeneratedInstance.id,
+				recurringEventInstanceId: mockGeneratedInstance.id,
 				baseRecurringEventId: mockGeneratedInstance.baseRecurringEventId,
-				instanceStartTime: mockGeneratedInstance.originalInstanceStartTime,
 				exceptionData: { name: "Modified Event Name" },
-				exceptionType: "SINGLE_INSTANCE" as const,
 				organizationId: faker.string.uuid(),
 				creatorId: faker.string.uuid(),
 				updaterId: null,
@@ -265,11 +257,9 @@ suite("instanceResolver", () => {
 			const templatesMap = new Map([
 				[mockGeneratedInstance.baseRecurringEventId, mockBaseTemplate],
 			]);
-			const exceptionKey = createExceptionKey(
-				mockGeneratedInstance.baseRecurringEventId,
-				mockGeneratedInstance.originalInstanceStartTime,
-			);
-			const exceptionsMap = new Map([[exceptionKey, mockException]]);
+			const exceptionsMap = new Map([
+				[mockGeneratedInstance.id, mockException],
+			]);
 
 			const result = resolveMultipleInstances(
 				instances,
@@ -319,11 +309,8 @@ suite("instanceResolver", () => {
 			const exceptions = [
 				{
 					id: faker.string.uuid(),
-					eventInstanceId: faker.string.uuid(),
-					baseRecurringEventId: faker.string.uuid(),
-					instanceStartTime: new Date("2025-01-01T10:00:00Z"),
+					recurringEventInstanceId: faker.string.uuid(),
 					exceptionData: { name: "Exception 1" },
-					exceptionType: "SINGLE_INSTANCE" as const,
 					organizationId: faker.string.uuid(),
 					creatorId: faker.string.uuid(),
 					updaterId: null,
@@ -332,11 +319,8 @@ suite("instanceResolver", () => {
 				},
 				{
 					id: faker.string.uuid(),
-					eventInstanceId: faker.string.uuid(),
-					baseRecurringEventId: faker.string.uuid(),
-					instanceStartTime: new Date("2025-01-01T11:00:00Z"),
+					recurringEventInstanceId: faker.string.uuid(),
 					exceptionData: { name: "Exception 2" },
-					exceptionType: "SINGLE_INSTANCE" as const,
 					organizationId: faker.string.uuid(),
 					creatorId: faker.string.uuid(),
 					updaterId: null,
@@ -353,14 +337,8 @@ suite("instanceResolver", () => {
 			if (!exception1 || !exception2) {
 				throw new Error("Test data is missing");
 			}
-			const key1 = createExceptionKey(
-				exception1.baseRecurringEventId,
-				exception1.instanceStartTime,
-			);
-			const key2 = createExceptionKey(
-				exception2.baseRecurringEventId,
-				exception2.instanceStartTime,
-			);
+			const key1 = exception1.recurringEventInstanceId;
+			const key2 = exception2.recurringEventInstanceId;
 			expect(map.get(key1)).toBe(exceptions[0]);
 			expect(map.get(key2)).toBe(exceptions[1]);
 		});
@@ -409,6 +387,7 @@ suite("instanceResolver", () => {
 			const validInstance: Partial<ResolvedEventInstance> = {
 				id: faker.string.uuid(),
 				baseRecurringEventId: faker.string.uuid(),
+				originalSeriesId: faker.string.uuid(),
 				originalInstanceStartTime: new Date(),
 				actualStartTime: new Date(),
 				actualEndTime: new Date(),
@@ -428,7 +407,8 @@ suite("instanceResolver", () => {
 			const invalidInstance: Partial<ResolvedEventInstance> = {
 				id: faker.string.uuid(),
 				baseRecurringEventId: faker.string.uuid(),
-				// Missing originalInstanceStartTime
+				// Missing originalSeriesId
+				originalInstanceStartTime: new Date(),
 				actualStartTime: new Date(),
 				actualEndTime: new Date(),
 				organizationId: faker.string.uuid(),
@@ -442,7 +422,7 @@ suite("instanceResolver", () => {
 
 			expect(result).toBe(false);
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Missing required field in resolved instance: originalInstanceStartTime",
+				"Missing required field in resolved instance: originalSeriesId",
 			);
 		});
 
@@ -454,7 +434,8 @@ suite("instanceResolver", () => {
 				actualStartTime: new Date(),
 				actualEndTime: new Date(),
 				organizationId: faker.string.uuid(),
-				name: undefined, // Undefined required field
+				name: "Test Event",
+				originalSeriesId: undefined, // Undefined required field
 			};
 
 			const result = validateResolvedInstance(
@@ -464,7 +445,7 @@ suite("instanceResolver", () => {
 
 			expect(result).toBe(false);
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Missing required field in resolved instance: name",
+				"Missing required field in resolved instance: originalSeriesId",
 			);
 		});
 	});
