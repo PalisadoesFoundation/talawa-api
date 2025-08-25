@@ -261,6 +261,7 @@ suite("Mutation field updatePostVote", () => {
 						membershipsWhereOrganization: [{ role: "member", userId }],
 					},
 				});
+			console.log("originalFindFirst", originalFindFirst);
 
 			// Mock the insert method
 			const originalInsert = server.drizzleClient.insert;
@@ -278,6 +279,7 @@ suite("Mutation field updatePostVote", () => {
 					]),
 				}),
 			});
+			console.log("originalInsert", originalInsert);
 		});
 
 		test("should update existing vote", async () => {
@@ -301,6 +303,7 @@ suite("Mutation field updatePostVote", () => {
 						membershipsWhereOrganization: [{ role: "member", userId }],
 					},
 				});
+			console.log("originalFindFirst", originalFindFirst);
 
 			// Mock the update method
 			const originalUpdate = server.drizzleClient.update;
@@ -320,6 +323,8 @@ suite("Mutation field updatePostVote", () => {
 					}),
 				}),
 			});
+
+			console.log("originalUpdate", originalUpdate);
 		});
 
 		test("should return unexpected if DB operation throws", async () => {
@@ -636,6 +641,7 @@ suite("Mutation field updatePostVote", () => {
 						input: { postId, type: "up_vote" },
 					},
 				});
+				console.log("result", result);
 			} finally {
 				server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
 				server.drizzleClient.update = originalUpdate;
