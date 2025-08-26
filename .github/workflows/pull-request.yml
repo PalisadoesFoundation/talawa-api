@@ -218,7 +218,7 @@ jobs:
       - name: Wait for services
         run: sleep 30  # wait 30 seconds (adjust as needed)
       - name: Run tests
-        run: docker compose run --rm api npm test
+        run: docker compose run --rm api pnpm run_tests
 
       - name: Copy coverage from container
         run: |
