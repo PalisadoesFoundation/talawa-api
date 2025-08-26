@@ -293,109 +293,105 @@ suite("Query field actionCategoriesByOrganization", () => {
 	suite(
 		"returns the correct action item categories for a valid organization id",
 		() => {
-			test(
-				"returns an empty array when no action categories exist for the organization",
-				async () => {
-					const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			test("returns an empty array when no action categories exist for the organization", async () => {
+				const adminSignIn = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				});
+				if (!adminSignIn.data?.signIn) {
+					throw new Error("Failed to sign in as admin");
+				}
+				const adminToken = adminSignIn.data.signIn.authenticationToken;
+				mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
+
+				const userPassword = faker.internet.password();
+				const createUserResult = await mercuriusClient.mutate(
+					Mutation_createUser,
+					{
 						variables: {
 							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					});
-					if (!adminSignIn.data?.signIn) {
-						throw new Error("Failed to sign in as admin");
-					}
-					const adminToken = adminSignIn.data.signIn.authenticationToken;
-					mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
-
-					const userPassword = faker.internet.password();
-					const createUserResult = await mercuriusClient.mutate(
-						Mutation_createUser,
-						{
-							variables: {
-								input: {
-									name: faker.person.fullName(),
-									emailAddress: faker.internet.email(),
-									password: userPassword,
-									role: "regular",
-									isEmailAddressVerified: false,
-								},
-							},
-						},
-					);
-					if (!createUserResult.data?.createUser) {
-						throw new Error("Failed to create test user");
-					}
-					const { user: createdUser } = createUserResult.data.createUser;
-
-					mercuriusClient.setHeaders({});
-
-					const userSignIn = await mercuriusClient.query(Query_signIn, {
-						variables: {
-							input: {
-								emailAddress: createdUser?.emailAddress ?? "",
+								name: faker.person.fullName(),
+								emailAddress: faker.internet.email(),
 								password: userPassword,
+								role: "regular",
+								isEmailAddressVerified: false,
 							},
 						},
-					});
-					if (!userSignIn.data?.signIn) {
-						throw new Error("Failed to sign in with test user");
-					}
-					const userToken = userSignIn.data.signIn.authenticationToken;
-					mercuriusClient.setHeaders({ authorization: `Bearer ${userToken}` });
+					},
+				);
+				if (!createUserResult.data?.createUser) {
+					throw new Error("Failed to create test user");
+				}
+				const { user: createdUser } = createUserResult.data.createUser;
 
-					const emptyOrgId = faker.string.uuid();
-					const result = await mercuriusClient.query(ACTION_ITEM_CATEGORY, {
-						variables: { input: { organizationId: emptyOrgId } },
-					});
+				mercuriusClient.setHeaders({});
 
-					if (
-						result.errors?.some(
-							(err) =>
-								err.extensions?.code ===
-								"arguments_associated_resources_not_found",
-						)
-					) {
-						console.log(
-							`Skipping empty array assertion because the organization [${emptyOrgId}] does not exist.`,
-						);
-					} else {
-						expect(result.data?.actionCategoriesByOrganization).toEqual([]);
-						expect(result.errors).toBeUndefined();
-					}
-
-					mercuriusClient.setHeaders({});
-					const adminSignIn2 = await mercuriusClient.query(Query_signIn, {
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
+				const userSignIn = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress: createdUser?.emailAddress ?? "",
+							password: userPassword,
 						},
-					});
-					if (!adminSignIn2.data?.signIn) {
-						throw new Error("Failed to sign in as admin for cleanup");
-					}
-					const adminToken2 = adminSignIn2.data.signIn.authenticationToken;
-					mercuriusClient.setHeaders({
-						authorization: `Bearer ${adminToken2}`,
-					});
+					},
+				});
+				if (!userSignIn.data?.signIn) {
+					throw new Error("Failed to sign in with test user");
+				}
+				const userToken = userSignIn.data.signIn.authenticationToken;
+				mercuriusClient.setHeaders({ authorization: `Bearer ${userToken}` });
 
-					if (!createdUser || !createdUser.id) {
-						throw new Error("No user ID found to delete");
-					}
-					await mercuriusClient.mutate(Mutation_deleteUser, {
-						variables: { input: { id: createdUser.id } },
-					});
+				const emptyOrgId = faker.string.uuid();
+				const result = await mercuriusClient.query(ACTION_ITEM_CATEGORY, {
+					variables: { input: { organizationId: emptyOrgId } },
+				});
 
-					mercuriusClient.setHeaders({});
-				},
-				SUITE_TIMEOUT,
-			);
+				if (
+					result.errors?.some(
+						(err) =>
+							err.extensions?.code ===
+							"arguments_associated_resources_not_found",
+					)
+				) {
+					console.log(
+						`Skipping empty array assertion because the organization [${emptyOrgId}] does not exist.`,
+					);
+				} else {
+					expect(result.data?.actionCategoriesByOrganization).toEqual([]);
+					expect(result.errors).toBeUndefined();
+				}
+
+				mercuriusClient.setHeaders({});
+				const adminSignIn2 = await mercuriusClient.query(Query_signIn, {
+					variables: {
+						input: {
+							emailAddress:
+								server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+							password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+						},
+					},
+				});
+				if (!adminSignIn2.data?.signIn) {
+					throw new Error("Failed to sign in as admin for cleanup");
+				}
+				const adminToken2 = adminSignIn2.data.signIn.authenticationToken;
+				mercuriusClient.setHeaders({
+					authorization: `Bearer ${adminToken2}`,
+				});
+
+				if (!createdUser || !createdUser.id) {
+					throw new Error("No user ID found to delete");
+				}
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					variables: { input: { id: createdUser.id } },
+				});
+
+				mercuriusClient.setHeaders({});
+			});
 
 			test(
 				"returns all action categories for the organization",
@@ -520,6 +516,7 @@ suite("Query field actionCategoriesByOrganization", () => {
 				},
 				SUITE_TIMEOUT,
 			);
+			SUITE_TIMEOUT;
 		},
 	);
 });
