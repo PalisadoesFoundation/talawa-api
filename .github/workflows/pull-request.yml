@@ -234,8 +234,8 @@ jobs:
             echo "API not ready yet, retrying..."
             sleep 2
           done
-      - name: Run tests serially
-        run: docker compose exec -T api pnpm vitest run --maxThreads=1
+      - name: Run tests
+        run: docker compose up --exit-code-from api
       - name: Copy coverage from container
         run: |
           CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
