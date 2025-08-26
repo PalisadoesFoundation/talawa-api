@@ -213,8 +213,29 @@ jobs:
         run: cp ./envFiles/.env.ci ./.env
       - name: Build talawa api compose testing environment
         run: docker compose build
-      - name: Run tests
-        run: docker compose up --exit-code-from api
+      - name: Wait for Postgres to be ready
+        run: |
+          echo "Waiting for Postgres..."
+          for i in {1..60}; do 
+            docker compose exec -T postgres pg_isready -U postgres && break
+            echo "Postgres not ready, retrying..."
+            sleep 2
+          done
+      - name: Wait for API container to start
+        run: |
+          echo "Starting API container..."
+          docker compose up -d api
+          for i in {1..60}; do
+            RESPONSE=$(docker compose exec -T api curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' || echo "fail")
+            if [[ "$RESPONSE" == *"__typename"* ]]; then
+             echo "API ready!"
+             break
+            fi
+            echo "API not ready yet, retrying..."
+            sleep 2
+          done
+      - name: Run tests serially
+        run: docker compose exec -T api pnpm vitest run --maxThreads=1
       - name: Copy coverage from container
         run: |
           CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
