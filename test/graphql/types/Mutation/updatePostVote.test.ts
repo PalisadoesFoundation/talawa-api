@@ -610,7 +610,6 @@ suite("Mutation field updatePostVote", () => {
 
 		const postId = faker.string.uuid();
 
-		// Mock the post find
 		const originalFindFirst = server.drizzleClient.query.postsTable.findFirst;
 		server.drizzleClient.query.postsTable.findFirst = vi
 			.fn()
