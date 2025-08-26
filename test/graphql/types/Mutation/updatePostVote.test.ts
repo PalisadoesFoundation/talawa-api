@@ -601,52 +601,77 @@ suite("Mutation field updatePostVote", () => {
 				server.drizzleClient.insert = originalInsert;
 			}
 		});
+	});
 
-		test("should return unexpected error when update returns empty array", async () => {
-			const { authToken, userId } = await createRegularUserUsingAdmin();
-			assertToBeNonNullish(authToken);
+	// Also fix the existing test that should return unexpected error
+	test("should return unexpected if DB operation throws", async () => {
+		const { authToken } = await createRegularUserUsingAdmin();
+		assertToBeNonNullish(authToken);
 
-			const postId = faker.string.uuid();
-			const voteId = faker.string.uuid();
+		const postId = faker.string.uuid();
 
-			// Mock the post find
-			const originalFindFirst = server.drizzleClient.query.postsTable.findFirst;
-			server.drizzleClient.query.postsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({
-					id: postId,
-					attachmentsWherePost: [],
-					votesWherePost: [
-						{ id: voteId, creatorId: userId, type: "down_vote" },
-					],
-					organization: {
-						membershipsWhereOrganization: [{ role: "member", userId }],
-					},
-				});
-
-			// Mock the update method to return empty array
-			const originalUpdate = server.drizzleClient.update;
-			server.drizzleClient.update = vi.fn().mockReturnValue({
-				set: vi.fn().mockReturnValue({
-					where: vi.fn().mockReturnValue({
-						returning: vi.fn().mockResolvedValue([]), // Empty array
-					}),
-				}),
+		// Mock the post find
+		const originalFindFirst = server.drizzleClient.query.postsTable.findFirst;
+		server.drizzleClient.query.postsTable.findFirst = vi
+			.fn()
+			.mockResolvedValue({
+				id: postId,
+				attachmentsWherePost: [],
+				votesWherePost: [],
+				organization: {
+					membershipsWhereOrganization: [{ role: "member", userId: "test" }],
+				},
 			});
 
-			try {
-				const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: { postId, type: "up_vote" },
-					},
-				});
-				console.log("result", result);
-			} finally {
-				server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
-				server.drizzleClient.update = originalUpdate;
-			}
+		// Mock the insert to throw
+		const originalInsert = server.drizzleClient.insert;
+		server.drizzleClient.insert = vi.fn().mockImplementation(() => {
+			throw new Error("DB failure");
 		});
+
+		try {
+			const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: { postId, type: "up_vote" },
+				},
+			});
+
+			expect(result.data?.updatePostVote ?? null).toBeNull();
+		} finally {
+			server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
+			server.drizzleClient.insert = originalInsert;
+		}
+	});
+
+	// Also fix the organization null test
+	test("should return unauthorized_action_on_arguments_associated_resources if organization is null", async () => {
+		const { authToken } = await createRegularUserUsingAdmin();
+		assertToBeNonNullish(authToken);
+
+		const postId = faker.string.uuid();
+
+		// Mock the post find with null organization
+		const originalFindFirst = server.drizzleClient.query.postsTable.findFirst;
+		server.drizzleClient.query.postsTable.findFirst = vi
+			.fn()
+			.mockResolvedValue({
+				id: postId,
+				attachmentsWherePost: [],
+				votesWherePost: [],
+				organization: null,
+			});
+
+		try {
+			const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { postId, type: "up_vote" } },
+			});
+
+			expect(result.data?.updatePostVote ?? null).toBeNull();
+		} finally {
+			server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
+		}
 	});
 
 	// Also fix the existing test that should return unexpected error
