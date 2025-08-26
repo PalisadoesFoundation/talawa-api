@@ -214,7 +214,7 @@ jobs:
       - name: Build talawa api compose testing environment
         run: docker compose build
       - name: Run tests
-        run: docker compose up --exit-code-from api
+        run: docker compose up --exit-code-from api --abort-on-container-exit --timeout 120
       - name: Copy coverage from container
         run: |
           CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
