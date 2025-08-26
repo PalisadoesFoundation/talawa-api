@@ -550,5 +550,6 @@ suite("Mutation field createActionItem", () => {
 			},
 			SUITE_TIMEOUT,
 		);
+		SUITE_TIMEOUT;
 	});
 });

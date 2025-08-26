@@ -570,4 +570,5 @@ suite("Query: actionItemsByUser", () => {
 		},
 		SUITE_TIMEOUT,
 	);
+	SUITE_TIMEOUT;
 });
