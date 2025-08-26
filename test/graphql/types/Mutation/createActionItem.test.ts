@@ -112,199 +112,236 @@ assertToBeNonNullish(adminUserId);
 
 suite("Mutation field createActionItem", () => {
 	// 1. Unauthenticated: user not logged in.
-	suite("when the client is not authenticated", () => {
-		test(
-			"should return an error with unauthenticated code",
-			async () => {
-				const result = await mercuriusClient.mutate(Mutation_createActionItem, {
-					variables: {
-						input: {
-							categoryId: faker.string.uuid(),
-							assigneeId: faker.string.uuid(),
-							organizationId: faker.string.uuid(),
-							preCompletionNotes: "Test note",
-							assignedAt: "2025-04-01T00:00:00Z",
+	suite(
+		"when the client is not authenticated",
+		() => {
+			test(
+				"should return an error with unauthenticated code",
+				async () => {
+					const result = await mercuriusClient.mutate(
+						Mutation_createActionItem,
+						{
+							variables: {
+								input: {
+									categoryId: faker.string.uuid(),
+									assigneeId: faker.string.uuid(),
+									organizationId: faker.string.uuid(),
+									preCompletionNotes: "Test note",
+									assignedAt: "2025-04-01T00:00:00Z",
+								},
+							},
 						},
-					},
-				});
-				expect(result.data?.createActionItem).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({ code: "unauthenticated" }),
-							path: ["createActionItem"],
-						}),
-					]),
-				);
-			},
-			SUITE_TIMEOUT,
-		);
-	});
+					);
+					expect(result.data?.createActionItem).toBeNull();
+					expect(result.errors).toEqual(
+						expect.arrayContaining([
+							expect.objectContaining({
+								extensions: expect.objectContaining({
+									code: "unauthenticated",
+								}),
+								path: ["createActionItem"],
+							}),
+						]),
+					);
+				},
+				SUITE_TIMEOUT,
+			);
+		},
+		SUITE_TIMEOUT,
+	);
 
 	// 2. Organization does not exist.
-	suite("when the specified organization does not exist", () => {
-		test(
-			"should return an error with arguments_associated_resources_not_found for organization",
-			async () => {
-				const result = await mercuriusClient.mutate(Mutation_createActionItem, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							categoryId: faker.string.uuid(),
-							assigneeId: faker.string.uuid(),
-							organizationId: faker.string.uuid(), // non-existent organization
-							preCompletionNotes: "Test note",
-							assignedAt: "2025-04-01T00:00:00Z",
+	suite(
+		"when the specified organization does not exist",
+		() => {
+			test(
+				"should return an error with arguments_associated_resources_not_found for organization",
+				async () => {
+					const result = await mercuriusClient.mutate(
+						Mutation_createActionItem,
+						{
+							headers: { authorization: `bearer ${authToken}` },
+							variables: {
+								input: {
+									categoryId: faker.string.uuid(),
+									assigneeId: faker.string.uuid(),
+									organizationId: faker.string.uuid(), // non-existent organization
+									preCompletionNotes: "Test note",
+									assignedAt: "2025-04-01T00:00:00Z",
+								},
+							},
 						},
-					},
-				});
-				expect(result.data?.createActionItem).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "arguments_associated_resources_not_found",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["input", "organizationId"],
-									}),
-								]),
+					);
+					expect(result.data?.createActionItem).toBeNull();
+					expect(result.errors).toEqual(
+						expect.arrayContaining([
+							expect.objectContaining({
+								extensions: expect.objectContaining({
+									code: "arguments_associated_resources_not_found",
+									issues: expect.arrayContaining([
+										expect.objectContaining({
+											argumentPath: ["input", "organizationId"],
+										}),
+									]),
+								}),
+								path: ["createActionItem"],
 							}),
-							path: ["createActionItem"],
-						}),
-					]),
-				);
-			},
-			SUITE_TIMEOUT,
-		);
-	});
+						]),
+					);
+				},
+				SUITE_TIMEOUT,
+			);
+		},
+		SUITE_TIMEOUT,
+	);
 
 	// 3. User is not part of the organization.
-	suite("when the user is not part of the organization", () => {
-		test(
-			"should return an error with unauthorized_action_on_arguments_associated_resources for organization",
-			async () => {
-				const orgId = await createOrganizationAndGetId(authToken);
-				// Note: We intentionally do not add a membership for the current user.
-				const result = await mercuriusClient.mutate(Mutation_createActionItem, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							categoryId: faker.string.uuid(),
-							assigneeId: faker.string.uuid(),
-							organizationId: orgId,
-							preCompletionNotes: "Test note",
-							assignedAt: "2025-04-01T00:00:00Z",
+	suite(
+		"when the user is not part of the organization",
+		() => {
+			test(
+				"should return an error with unauthorized_action_on_arguments_associated_resources for organization",
+				async () => {
+					const orgId = await createOrganizationAndGetId(authToken);
+					// Note: We intentionally do not add a membership for the current user.
+					const result = await mercuriusClient.mutate(
+						Mutation_createActionItem,
+						{
+							headers: { authorization: `bearer ${authToken}` },
+							variables: {
+								input: {
+									categoryId: faker.string.uuid(),
+									assigneeId: faker.string.uuid(),
+									organizationId: orgId,
+									preCompletionNotes: "Test note",
+									assignedAt: "2025-04-01T00:00:00Z",
+								},
+							},
 						},
-					},
-				});
-				expect(result.data?.createActionItem).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "unauthorized_action_on_arguments_associated_resources",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["input", "organizationId"],
-									}),
-								]),
+					);
+					expect(result.data?.createActionItem).toBeNull();
+					expect(result.errors).toEqual(
+						expect.arrayContaining([
+							expect.objectContaining({
+								extensions: expect.objectContaining({
+									code: "unauthorized_action_on_arguments_associated_resources",
+									issues: expect.arrayContaining([
+										expect.objectContaining({
+											argumentPath: ["input", "organizationId"],
+										}),
+									]),
+								}),
+								path: ["createActionItem"],
 							}),
-							path: ["createActionItem"],
-						}),
-					]),
-				);
-			},
-			SUITE_TIMEOUT,
-		);
-	});
+						]),
+					);
+				},
+				SUITE_TIMEOUT,
+			);
+		},
+		SUITE_TIMEOUT,
+	);
 
 	// 4. Category does not exist.
-	suite("when the specified category does not exist", () => {
-		test(
-			"should return an error with arguments_associated_resources_not_found for category",
-			async () => {
-				const orgId = await createOrganizationAndGetId(authToken);
-				await addMembership(orgId, adminUserId, "administrator");
-				const result = await mercuriusClient.mutate(Mutation_createActionItem, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							categoryId: faker.string.uuid(), // non-existent category
-							assigneeId: faker.string.uuid(), // dummy value
-							organizationId: orgId,
-							preCompletionNotes: "Test note",
-							assignedAt: "2025-04-01T00:00:00Z",
+	suite(
+		"when the specified category does not exist",
+		() => {
+			test(
+				"should return an error with arguments_associated_resources_not_found for category",
+				async () => {
+					const orgId = await createOrganizationAndGetId(authToken);
+					await addMembership(orgId, adminUserId, "administrator");
+					const result = await mercuriusClient.mutate(
+						Mutation_createActionItem,
+						{
+							headers: { authorization: `bearer ${authToken}` },
+							variables: {
+								input: {
+									categoryId: faker.string.uuid(), // non-existent category
+									assigneeId: faker.string.uuid(), // dummy value
+									organizationId: orgId,
+									preCompletionNotes: "Test note",
+									assignedAt: "2025-04-01T00:00:00Z",
+								},
+							},
 						},
-					},
-				});
-				expect(result.data?.createActionItem).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "arguments_associated_resources_not_found",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["input", "categoryId"],
-									}),
-								]),
+					);
+					expect(result.data?.createActionItem).toBeNull();
+					expect(result.errors).toEqual(
+						expect.arrayContaining([
+							expect.objectContaining({
+								extensions: expect.objectContaining({
+									code: "arguments_associated_resources_not_found",
+									issues: expect.arrayContaining([
+										expect.objectContaining({
+											argumentPath: ["input", "categoryId"],
+										}),
+									]),
+								}),
+								path: ["createActionItem"],
 							}),
-							path: ["createActionItem"],
-						}),
-					]),
-				);
-			},
-			SUITE_TIMEOUT,
-		);
-	});
+						]),
+					);
+				},
+				SUITE_TIMEOUT,
+			);
+		},
+		SUITE_TIMEOUT,
+	);
 
 	// 5. Assignee does not exist.
-	suite("when the specified assignee does not exist", () => {
-		test(
-			"should return an error with arguments_associated_resources_not_found for assignee",
-			async () => {
-				const orgId = await createOrganizationAndGetId(authToken);
+	suite(
+		"when the specified assignee does not exist",
+		() => {
+			test(
+				"should return an error with arguments_associated_resources_not_found for assignee",
+				async () => {
+					const orgId = await createOrganizationAndGetId(authToken);
 
-				// Create a valid category first
-				const categoryId = await createActionItemCategory(
-					authToken,
-					orgId,
-					adminUserId,
-				);
+					// Create a valid category first
+					const categoryId = await createActionItemCategory(
+						authToken,
+						orgId,
+						adminUserId,
+					);
 
-				const result = await mercuriusClient.mutate(Mutation_createActionItem, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: {
-							categoryId: categoryId,
-							assigneeId: faker.string.uuid(), // non-existent assignee
-							organizationId: orgId,
-							preCompletionNotes: "Test note",
-							assignedAt: "2025-04-01T00:00:00Z",
+					const result = await mercuriusClient.mutate(
+						Mutation_createActionItem,
+						{
+							headers: { authorization: `bearer ${authToken}` },
+							variables: {
+								input: {
+									categoryId: categoryId,
+									assigneeId: faker.string.uuid(), // non-existent assignee
+									organizationId: orgId,
+									preCompletionNotes: "Test note",
+									assignedAt: "2025-04-01T00:00:00Z",
+								},
+							},
 						},
-					},
-				});
-				expect(result.data?.createActionItem).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "arguments_associated_resources_not_found",
-								issues: expect.arrayContaining([
-									expect.objectContaining({
-										argumentPath: ["input", "assigneeId"],
-									}),
-								]),
+					);
+					expect(result.data?.createActionItem).toBeNull();
+					expect(result.errors).toEqual(
+						expect.arrayContaining([
+							expect.objectContaining({
+								extensions: expect.objectContaining({
+									code: "arguments_associated_resources_not_found",
+									issues: expect.arrayContaining([
+										expect.objectContaining({
+											argumentPath: ["input", "assigneeId"],
+										}),
+									]),
+								}),
+								path: ["createActionItem"],
 							}),
-							path: ["createActionItem"],
-						}),
-					]),
-				);
-			},
-			SUITE_TIMEOUT,
-		);
-	});
+						]),
+					);
+				},
+				SUITE_TIMEOUT,
+			);
+		},
+		SUITE_TIMEOUT,
+	);
 
 	// 6. Current user is not an administrator.
 	suite(
