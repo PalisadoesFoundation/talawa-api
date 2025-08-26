@@ -213,13 +213,8 @@ jobs:
         run: cp ./envFiles/.env.ci ./.env
       - name: Build talawa api compose testing environment
         run: docker compose build
-      - name: Start containers
-        run: docker compose up -d
-      - name: Wait for services
-        run: sleep 30  # wait 30 seconds (adjust as needed)
       - name: Run tests
-        run: docker compose run --rm api pnpm run_tests
-
+        run: docker compose up --exit-code-from api
       - name: Copy coverage from container
         run: |
           CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
