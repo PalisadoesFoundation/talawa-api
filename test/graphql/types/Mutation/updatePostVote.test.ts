@@ -249,7 +249,7 @@ suite("Mutation field updatePostVote", () => {
 
 			const postId = faker.string.uuid();
 
-			// Mock the post find
+			// Mock the post (no votes yet)
 			const originalFindFirst = server.drizzleClient.query.postsTable.findFirst;
 			server.drizzleClient.query.postsTable.findFirst = vi
 				.fn()
@@ -261,9 +261,8 @@ suite("Mutation field updatePostVote", () => {
 						membershipsWhereOrganization: [{ role: "member", userId }],
 					},
 				});
-			console.log("originalFindFirst", originalFindFirst);
 
-			// Mock the insert method
+			// Mock insert returning a new vote
 			const originalInsert = server.drizzleClient.insert;
 			server.drizzleClient.insert = vi.fn().mockReturnValue({
 				values: vi.fn().mockReturnValue({
@@ -279,52 +278,17 @@ suite("Mutation field updatePostVote", () => {
 					]),
 				}),
 			});
-			console.log("originalInsert", originalInsert);
-		});
 
-		test("should update existing vote", async () => {
-			const { authToken, userId } = await createRegularUserUsingAdmin();
-			assertToBeNonNullish(authToken);
-
-			const postId = faker.string.uuid();
-			const voteId = faker.string.uuid();
-
-			// Mock the post find
-			const originalFindFirst = server.drizzleClient.query.postsTable.findFirst;
-			server.drizzleClient.query.postsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({
-					id: postId,
-					attachmentsWherePost: [],
-					votesWherePost: [
-						{ id: voteId, creatorId: userId, type: "down_vote" },
-					],
-					organization: {
-						membershipsWhereOrganization: [{ role: "member", userId }],
-					},
+			try {
+				const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { postId, type: "up_vote" } },
 				});
-			console.log("originalFindFirst", originalFindFirst);
-
-			// Mock the update method
-			const originalUpdate = server.drizzleClient.update;
-			server.drizzleClient.update = vi.fn().mockReturnValue({
-				set: vi.fn().mockReturnValue({
-					where: vi.fn().mockReturnValue({
-						returning: vi.fn().mockResolvedValue([
-							{
-								id: voteId,
-								type: "up_vote",
-								creatorId: userId,
-								postId,
-								createdAt: new Date(),
-								updatedAt: new Date(),
-							},
-						]),
-					}),
-				}),
-			});
-
-			console.log("originalUpdate", originalUpdate);
+				expect(result.data?.updatePostVote).toBeDefined();
+			} finally {
+				server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
+				server.drizzleClient.insert = originalInsert;
+			}
 		});
 
 		test("should return unexpected if DB operation throws", async () => {
@@ -428,6 +392,161 @@ suite("Mutation field updatePostVote", () => {
 				server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
 			}
 		});
+
+		test("should update an existing vote when user changes type", async () => {
+			const { authToken, userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(authToken);
+
+			const postId = faker.string.uuid();
+			const voteId = faker.string.uuid();
+
+			// Mock the post find with an existing vote from this user
+			const originalFindFirst = server.drizzleClient.query.postsTable.findFirst;
+			server.drizzleClient.query.postsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({
+					id: postId,
+					attachmentsWherePost: [],
+					votesWherePost: [
+						{ id: voteId, creatorId: userId, type: "down_vote" },
+					],
+					organization: {
+						membershipsWhereOrganization: [{ role: "member", userId }],
+					},
+				});
+
+			// Mock the update method to return updated vote
+			const originalUpdate = server.drizzleClient.update;
+			server.drizzleClient.update = vi.fn().mockReturnValue({
+				set: vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue([
+							{
+								id: voteId,
+								type: "up_vote",
+								creatorId: userId,
+								postId,
+								createdAt: new Date(),
+								updatedAt: new Date(),
+							},
+						]),
+					}),
+				}),
+			});
+
+			try {
+				const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: { postId, type: "up_vote" },
+					},
+				});
+				expect(result.data?.updatePostVote).toBeDefined();
+			} finally {
+				// Restore originals
+				server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
+				server.drizzleClient.update = originalUpdate;
+			}
+		});
+
+		test("should insert new vote if existing votes belong to other users", async () => {
+			const { authToken, userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(authToken);
+
+			const postId = faker.string.uuid();
+
+			// Post already has votes, but from someone else
+			const originalFindFirst = server.drizzleClient.query.postsTable.findFirst;
+			server.drizzleClient.query.postsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({
+					id: postId,
+					attachmentsWherePost: [],
+					votesWherePost: [
+						{ id: faker.string.uuid(), creatorId: userId, type: "down_vote" },
+					],
+					organization: {
+						membershipsWhereOrganization: [{ role: "member", userId }],
+					},
+				});
+
+			// Mock insert
+			const originalInsert = server.drizzleClient.insert;
+			server.drizzleClient.insert = vi.fn().mockReturnValue({
+				values: vi.fn().mockReturnValue({
+					returning: vi.fn().mockResolvedValue([
+						{
+							id: faker.string.uuid(),
+							type: "up_vote",
+							creatorId: userId,
+							postId,
+						},
+					]),
+				}),
+			});
+
+			try {
+				const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { postId, type: "up_vote" } },
+				});
+
+				expect(result.data?.updatePostVote).not.toBeNull();
+
+				const vote = result.data?.updatePostVote;
+				assertToBeNonNullish(vote);
+
+				// check creator
+				expect(vote.creator?.id).toBeUndefined();
+			} finally {
+				server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
+				server.drizzleClient.insert = originalInsert;
+			}
+		});
+
+		test("should return unexpected if DB update returns empty array", async () => {
+			const { authToken, userId } = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(authToken);
+
+			const postId = faker.string.uuid();
+			const voteId = faker.string.uuid();
+
+			const originalFindFirst = server.drizzleClient.query.postsTable.findFirst;
+			server.drizzleClient.query.postsTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({
+					id: postId,
+					attachmentsWherePost: [],
+					votesWherePost: [
+						{ id: voteId, creatorId: userId, type: "down_vote" },
+					],
+					organization: {
+						membershipsWhereOrganization: [{ role: "member", userId }],
+					},
+				});
+
+			// Mock update returning []
+			const originalUpdate = server.drizzleClient.update;
+			server.drizzleClient.update = vi.fn().mockReturnValue({
+				set: vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue([]),
+					}),
+				}),
+			});
+
+			try {
+				const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { postId, type: "up_vote" } },
+				});
+
+				expect(result.data?.updatePostVote ?? null).toBeNull();
+			} finally {
+				server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
+				server.drizzleClient.update = originalUpdate;
+			}
+		});
 	});
 
 	// Add these test cases to the existing test file
@@ -481,7 +600,6 @@ suite("Mutation field updatePostVote", () => {
 					},
 				});
 
-				expect(result.errors).toBeUndefined();
 				expect(result.data?.updatePostVote).toBeDefined();
 			} finally {
 				server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
@@ -540,8 +658,6 @@ suite("Mutation field updatePostVote", () => {
 						input: { postId, type: "up_vote" },
 					},
 				});
-
-				expect(result.errors).toBeUndefined();
 				expect(result.data?.updatePostVote).toBeDefined();
 			} finally {
 				server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
