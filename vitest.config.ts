@@ -20,8 +20,8 @@ export default defineConfig({
 		// // https://vitest.dev/config/#teardowntimeout,
 		// teardownTimeout: 10000
 
-		hookTimeout: 30_000, // 30 seconds for hooks
-		testTimeout: 60_000, // 60 seconds per test
+		hookTimeout: 30000, // 30 seconds for hooks
+		testTimeout: 60000, // 60 seconds per test
 		pool: "threads", // for faster test execution and to avoid postgres max-limit error
 	},
 });
