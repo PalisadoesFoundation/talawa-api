@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, expect, suite, test } from "vitest";
+import { afterEach, beforeAll, expect, suite, test } from "vitest";
 import { notificationTemplatesTable } from "~/src/drizzle/tables/NotificationTemplate";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -15,7 +15,46 @@ import {
 } from "../documentNodes";
 
 suite("Query field user.notifications (API level, fully inline)", () => {
+	let adminToken: string | null = null;
+	let hasPostCreatedTemplate = false;
 	const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+	beforeAll(async () => {
+		// Check if notification template exists once
+		const existing =
+			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (f, o) =>
+					o.and(
+						o.eq(f.eventType, "post_created"),
+						o.eq(f.channelType, "in_app"),
+					),
+			});
+		hasPostCreatedTemplate = Boolean(existing);
+
+		// If no template exists, create one
+		if (!hasPostCreatedTemplate) {
+			await server.drizzleClient.insert(notificationTemplatesTable).values({
+				name: "New Post Created",
+				eventType: "post_created",
+				title: "New post by {authorName}",
+				body: '{authorName} has created a new post in {organizationName}: "{postCaption}"',
+				channelType: "in_app",
+				linkedRouteName: "/post/{postId}",
+			});
+			hasPostCreatedTemplate = true;
+		}
+
+		// Get admin token once
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+	});
 
 	afterEach(async () => {
 		for (const cleanup of testCleanupFunctions.reverse()) {
@@ -26,37 +65,13 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 			}
 		}
 		testCleanupFunctions.length = 0;
+
+		// Wait for any background notification processing to complete
+		await new Promise((r) => setTimeout(r, 100));
 	});
 	test("unauthenticated -> unauthenticated error", async () => {
-		// ensure template exists
-		const existing =
-			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
-				where: (f, o) =>
-					o.and(
-						o.eq(f.eventType, "post_created"),
-						o.eq(f.channelType, "in_app"),
-					),
-			});
-		if (!existing) {
-			await server.drizzleClient.insert(notificationTemplatesTable).values({
-				name: "New Post Created",
-				eventType: "post_created",
-				title: "New post by {authorName}",
-				body: '{authorName} has created a new post in {organizationName}: "{postCaption}"',
-				channelType: "in_app",
-				linkedRouteName: "/post/{postId}",
-			});
-		}
-		const adminSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
-		assertToBeNonNullish(adminToken);
+		if (!adminToken) throw new Error("Admin token not available");
+
 		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
@@ -133,7 +148,17 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 			},
 		});
 		const authToken = userRes.data?.createUser?.authenticationToken as string;
+		const userId2 = userRes.data?.createUser?.user?.id as string;
 		assertToBeNonNullish(authToken);
+		assertToBeNonNullish(userId2);
+
+		// Add cleanup for the user
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: userId2 } },
+			});
+		});
 		const res = await mercuriusClient.query(Query_user_notifications, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
@@ -263,8 +288,24 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 		});
 		const user1Token = user1Res.data?.createUser?.authenticationToken as string;
 		const user2Id = user2Res.data?.createUser?.user?.id as string;
+		const user1Id = user1Res.data?.createUser?.user?.id as string;
 		assertToBeNonNullish(user1Token);
 		assertToBeNonNullish(user2Id);
+		assertToBeNonNullish(user1Id);
+
+		// Add cleanup for both users
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: user1Id } },
+			});
+		});
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: user2Id } },
+			});
+		});
 		const res = await mercuriusClient.query(Query_user_notifications, {
 			headers: { authorization: `bearer ${user1Token}` },
 			variables: { input: { id: user2Id }, notificationInput: { first: 5 } },
