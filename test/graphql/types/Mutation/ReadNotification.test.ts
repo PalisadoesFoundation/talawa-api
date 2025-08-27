@@ -299,7 +299,6 @@ suite("Mutation readNotification", () => {
 		});
 
 		test("Returns an error when the user is present in the token but not found in the database", async () => {
-			// Create a regular user
 			const testUser = await createTestUser();
 			testCleanupFunctions.push(testUser.cleanup);
 

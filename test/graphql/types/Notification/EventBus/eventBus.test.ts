@@ -40,7 +40,6 @@ describe("NotificationEventBus", () => {
 	});
 
 	afterEach(() => {
-		// Clean up spies and remove all listeners
 		vi.restoreAllMocks();
 		bus.removeAllListeners();
 	});

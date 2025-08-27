@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 
 export const queryNotificationInputSchema = z.object({

@@ -19,7 +19,6 @@ describe("Notification flow (API level)", () => {
 	const cleanups: Array<() => Promise<void>> = [];
 
 	beforeAll(async () => {
-		// Ensure the post_created in_app template exists; don't insert here
 		const tpl =
 			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
 				where: (fields, operators) =>
@@ -30,7 +29,6 @@ describe("Notification flow (API level)", () => {
 			});
 		hasPostCreatedTemplate = Boolean(tpl);
 
-		// Admin sign-in from server.envConfig
 		const adminRes = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
@@ -48,15 +46,13 @@ describe("Notification flow (API level)", () => {
 			try {
 				if (fn) await fn();
 			} catch {
-				// ignore cleanup errors
 			}
 		}
 	});
 
 	test("creates a post and user receives in-app notification", async () => {
-		if (!hasPostCreatedTemplate || !adminToken) return; // skip if not configured
+		if (!hasPostCreatedTemplate || !adminToken) return; 
 
-		// 1) Create org (as admin)
 		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
@@ -72,7 +68,6 @@ describe("Notification flow (API level)", () => {
 			});
 		});
 
-		// 2) Create a regular user (as admin)
 		const userPassword = faker.internet.password();
 		const createUserRes = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `bearer ${adminToken}` },
@@ -95,7 +90,6 @@ describe("Notification flow (API level)", () => {
 			});
 		});
 
-		// 3) User sign-in
 		const userSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
@@ -107,7 +101,6 @@ describe("Notification flow (API level)", () => {
 		const userToken = userSignIn.data?.signIn?.authenticationToken as string;
 		expect(userToken).toBeTruthy();
 
-		// 4) Add user as org member (admin)
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
@@ -119,7 +112,6 @@ describe("Notification flow (API level)", () => {
 			},
 		});
 
-		// 5) Create a post in the org (admin) -> triggers post_created
 		const postRes = await mercuriusClient.mutate(Mutation_createPost, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
@@ -139,7 +131,6 @@ describe("Notification flow (API level)", () => {
 		});
 		expect(postRes.errors).toBeUndefined();
 
-		// 6) Poll notifications for the user
 		const start = Date.now();
 		let notifications: Array<{ id: string | null }> = [];
 		while (Date.now() - start < 10000) {
