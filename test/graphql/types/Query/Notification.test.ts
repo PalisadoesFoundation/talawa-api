@@ -122,7 +122,10 @@ describe("Notification minimal API flow", () => {
 		while (Date.now() - start < 6000) {
 			const res = await mercuriusClient.query(Query_user_notifications, {
 				headers: { authorization: `bearer ${userToken}` },
-				variables: { input: { id: userId as string }, notificationInput: { first: 5 } },
+				variables: {
+					input: { id: userId as string },
+					notificationInput: { first: 5 },
+				},
 			});
 			notifications = res.data?.user?.notifications ?? [];
 			if (notifications.length) break;

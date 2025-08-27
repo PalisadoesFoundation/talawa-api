@@ -91,6 +91,8 @@ export class NotificationEngine {
 		}
 
 		const renderedContent = this.renderTemplate(template, variables);
+		const initialStatus =
+			channelType === NotificationChannelType.EMAIL ? "pending" : "delivered";
 
 		const [notificationLog] = await this.ctx.drizzleClient
 			.insert(notificationLogsTable)
@@ -106,7 +108,7 @@ export class NotificationEngine {
 				navigation: template.linkedRouteName,
 				eventType: eventType,
 				channel: channelType,
-				status: "delivered",
+				status: initialStatus,
 			})
 			.returning();
 
