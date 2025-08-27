@@ -6,6 +6,7 @@ import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
+	Mutation_createUser,
 	Mutation_deleteCurrentUser,
 	Query_signIn,
 	Mutation_updatePostVote as UPDATE_POST_VOTE,
@@ -26,43 +27,40 @@ suite("Mutation field updatePostVote", () => {
 	suite("unexpected update results", () => {
 		test("should return unexpected if DB returns empty array on insert/update", async () => {
 			const { authToken } = await createRegularUserUsingAdmin();
+
 			assertToBeNonNullish(authToken);
 
-			const originalTransaction = server.drizzleClient.transaction;
-			server.drizzleClient.transaction = vi
-				.fn()
-				.mockImplementation(async (cb) => {
-					const mockTx = {
-						insert: () => ({ values: () => ({ returning: async () => [] }) }),
-						update: () => ({
-							set: () => ({ where: () => ({ returning: async () => [] }) }),
-						}),
-					};
-					return await cb(mockTx);
-				});
-
-			try {
-				const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: {
-						input: { postId: faker.string.uuid(), type: "up_vote" },
+			await mercuriusClient.mutate(Mutation_createUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						emailAddress: `nonadmin${faker.string.ulid()}@example.com`,
+						isEmailAddressVerified: false,
+						name: "Non-Admin User",
+						password: "password",
+						role: "regular",
 					},
-				});
+				},
+			});
 
-				expect(result.data?.updatePostVote ?? null).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "arguments_associated_resources_not_found",
-							}),
-							path: ["updatePostVote"],
+			const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: { postId: faker.string.uuid(), type: "up_vote" },
+				},
+			});
+
+			expect(result.data?.updatePostVote ?? null).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
 						}),
-					]),
-				);
-			} finally {
-				server.drizzleClient.transaction = originalTransaction;
-			}
+						path: ["updatePostVote"],
+					}),
+				]),
+			);
 		});
 	});
 
@@ -160,48 +158,23 @@ suite("Mutation field updatePostVote", () => {
 
 	suite("when updating vote", () => {
 		test("should return unexpected when DB update returns empty array", async () => {
-			const originalTransaction = server.drizzleClient.transaction;
-			server.drizzleClient.transaction = vi
-				.fn()
-				.mockImplementation(async (cb) => {
-					const mockTx = {
-						insert: () => ({
-							values: () => ({
-								returning: async () => [],
-							}),
-						}),
-						update: () => ({
-							set: () => ({
-								where: () => ({
-									returning: async () => [],
-								}),
-							}),
-						}),
-					};
-					return await cb(mockTx);
-				});
+			const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: { postId: faker.string.uuid(), type: "up_vote" },
+				},
+			});
 
-			try {
-				const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: {
-						input: { postId: faker.string.uuid(), type: "up_vote" },
-					},
-				});
-
-				expect(result.data?.updatePostVote ?? null).toBeNull();
-				expect(result.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "arguments_associated_resources_not_found",
-							}),
+			expect(result.data?.updatePostVote ?? null).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "arguments_associated_resources_not_found",
 						}),
-					]),
-				);
-			} finally {
-				server.drizzleClient.transaction = originalTransaction;
-			}
+					}),
+				]),
+			);
 		});
 	});
 
