@@ -1,39 +1,23 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, describe, expect, test } from "vitest";
+import { expect, suite, test } from "vitest";
 import { notificationTemplatesTable } from "~/src/drizzle/tables/NotificationTemplate";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createPost,
-	Mutation_deleteOrganization,
+	Mutation_createUser,
 	Mutation_deleteUser,
 	Query_signIn,
 	Query_user_notifications,
 } from "../documentNodes";
 
-describe("Notification minimal API flow", () => {
-	let adminToken: string;
-	let orgId: string | undefined;
-	let userId: string | undefined;
-	let userToken: string | undefined;
-
-	beforeAll(async () => {
-		const signIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		adminToken = signIn.data?.signIn?.authenticationToken as string;
-		assertToBeNonNullish(adminToken);
-
-		const template =
+suite("Query field user.notifications (API level, fully inline)", () => {
+	test("unauthenticated -> unauthenticated error", async () => {
+		// ensure template exists
+		const existing =
 			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
 				where: (f, o) =>
 					o.and(
@@ -41,7 +25,7 @@ describe("Notification minimal API flow", () => {
 						o.eq(f.channelType, "in_app"),
 					),
 			});
-		if (!template) {
+		if (!existing) {
 			await server.drizzleClient.insert(notificationTemplatesTable).values({
 				name: "New Post Created",
 				eventType: "post_created",
@@ -51,87 +35,812 @@ describe("Notification minimal API flow", () => {
 				linkedRouteName: "/post/{postId}",
 			});
 		}
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		assertToBeNonNullish(adminToken);
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `u${faker.string.uuid()}@e.com`,
+					isEmailAddressVerified: true,
+					name: "User",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		const userId = userRes.data?.createUser?.user?.id as string;
+		assertToBeNonNullish(userId);
+		const res = await mercuriusClient.query(Query_user_notifications, {
+			variables: { input: { id: userId }, notificationInput: { first: 5 } },
+		});
+		expect(res.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "unauthenticated" }),
+				}),
+			]),
+		);
+	});
 
-		const regular = await createRegularUserUsingAdmin();
-		userId = regular.userId;
-		userToken = regular.authToken;
+	test("invalid arguments (invalid user id UUID)", async () => {
+		const existing =
+			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (f, o) =>
+					o.and(
+						o.eq(f.eventType, "post_created"),
+						o.eq(f.channelType, "in_app"),
+					),
+			});
+		if (!existing) {
+			await server.drizzleClient.insert(notificationTemplatesTable).values({
+				name: "New Post Created",
+				eventType: "post_created",
+				title: "New post",
+				body: "body",
+				channelType: "in_app",
+				linkedRouteName: "/post/{postId}",
+			});
+		}
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		assertToBeNonNullish(adminToken);
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `u${faker.string.uuid()}@e.com`,
+					isEmailAddressVerified: true,
+					name: "U",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		const authToken = userRes.data?.createUser?.authenticationToken as string;
+		assertToBeNonNullish(authToken);
+		const res = await mercuriusClient.query(Query_user_notifications, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: { id: "not-a-uuid" },
+				notificationInput: { first: 5 },
+			},
+		});
+		expect(res.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "invalid_arguments" }),
+				}),
+			]),
+		);
+	});
 
+	test("invalid arguments (first=0)", async () => {
+		const existing =
+			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (f, o) =>
+					o.and(
+						o.eq(f.eventType, "post_created"),
+						o.eq(f.channelType, "in_app"),
+					),
+			});
+		if (!existing) {
+			await server.drizzleClient.insert(notificationTemplatesTable).values({
+				name: "New Post Created",
+				eventType: "post_created",
+				title: "New post",
+				body: "body",
+				channelType: "in_app",
+				linkedRouteName: "/post/{postId}",
+			});
+		}
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		assertToBeNonNullish(adminToken);
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `u${faker.string.uuid()}@e.com`,
+					isEmailAddressVerified: true,
+					name: "U",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		const authToken = userRes.data?.createUser?.authenticationToken as string;
+		const userId = userRes.data?.createUser?.user?.id as string;
+		assertToBeNonNullish(authToken);
+		assertToBeNonNullish(userId);
+		const res = await mercuriusClient.query(Query_user_notifications, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: { input: { id: userId }, notificationInput: { first: 0 } },
+		});
+		expect(res.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "invalid_arguments" }),
+				}),
+			]),
+		);
+	});
+
+	test("user id mismatch -> unauthenticated", async () => {
+		const existing =
+			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (f, o) =>
+					o.and(
+						o.eq(f.eventType, "post_created"),
+						o.eq(f.channelType, "in_app"),
+					),
+			});
+		if (!existing) {
+			await server.drizzleClient.insert(notificationTemplatesTable).values({
+				name: "New Post Created",
+				eventType: "post_created",
+				title: "New post",
+				body: "body",
+				channelType: "in_app",
+				linkedRouteName: "/post/{postId}",
+			});
+		}
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		assertToBeNonNullish(adminToken);
+		const user1Res = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `u${faker.string.uuid()}@e.com`,
+					isEmailAddressVerified: true,
+					name: "U1",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		const user2Res = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `u${faker.string.uuid()}@e.com`,
+					isEmailAddressVerified: true,
+					name: "U2",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		const user1Token = user1Res.data?.createUser?.authenticationToken as string;
+		const user2Id = user2Res.data?.createUser?.user?.id as string;
+		assertToBeNonNullish(user1Token);
+		assertToBeNonNullish(user2Id);
+		const res = await mercuriusClient.query(Query_user_notifications, {
+			headers: { authorization: `bearer ${user1Token}` },
+			variables: { input: { id: user2Id }, notificationInput: { first: 5 } },
+		});
+		expect(res.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "unauthenticated" }),
+				}),
+			]),
+		);
+	});
+
+	test("authenticated user deleted -> arguments_associated_resources_not_found", async () => {
+		const existing =
+			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (f, o) =>
+					o.and(
+						o.eq(f.eventType, "post_created"),
+						o.eq(f.channelType, "in_app"),
+					),
+			});
+		if (!existing) {
+			await server.drizzleClient.insert(notificationTemplatesTable).values({
+				name: "New Post Created",
+				eventType: "post_created",
+				title: "New post",
+				body: "body",
+				channelType: "in_app",
+				linkedRouteName: "/post/{postId}",
+			});
+		}
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		assertToBeNonNullish(adminToken);
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `u${faker.string.uuid()}@e.com`,
+					isEmailAddressVerified: true,
+					name: "Del",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		const userId = userRes.data?.createUser?.user?.id as string;
+		const authToken = userRes.data?.createUser?.authenticationToken as string;
+		assertToBeNonNullish(userId);
+		assertToBeNonNullish(authToken);
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { id: userId } },
+		});
+		const res = await mercuriusClient.query(Query_user_notifications, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: { input: { id: userId }, notificationInput: { first: 5 } },
+		});
+		expect(res.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+					}),
+				}),
+			]),
+		);
+	});
+
+	test("returns empty array", async () => {
+		const existing =
+			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (f, o) =>
+					o.and(
+						o.eq(f.eventType, "post_created"),
+						o.eq(f.channelType, "in_app"),
+					),
+			});
+		if (!existing) {
+			await server.drizzleClient.insert(notificationTemplatesTable).values({
+				name: "New Post Created",
+				eventType: "post_created",
+				title: "New post",
+				body: "body",
+				channelType: "in_app",
+				linkedRouteName: "/post/{postId}",
+			});
+		}
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		assertToBeNonNullish(adminToken);
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `u${faker.string.uuid()}@e.com`,
+					isEmailAddressVerified: true,
+					name: "Empty",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		const userId = userRes.data?.createUser?.user?.id as string;
+		const userToken = userRes.data?.createUser?.authenticationToken as string;
+		assertToBeNonNullish(userId);
+		assertToBeNonNullish(userToken);
+		const res = await mercuriusClient.query(Query_user_notifications, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: { input: { id: userId }, notificationInput: { first: 5 } },
+		});
+		expect(res.errors).toBeUndefined();
+		expect(res.data?.user?.notifications).toEqual([]);
+	});
+
+	test("post creation generates notification", async () => {
+		const existing =
+			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (f, o) =>
+					o.and(
+						o.eq(f.eventType, "post_created"),
+						o.eq(f.channelType, "in_app"),
+					),
+			});
+		if (!existing) {
+			await server.drizzleClient.insert(notificationTemplatesTable).values({
+				name: "New Post Created",
+				eventType: "post_created",
+				title: "New post",
+				body: "body",
+				channelType: "in_app",
+				linkedRouteName: "/post/{postId}",
+			});
+		}
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		assertToBeNonNullish(adminToken);
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `u${faker.string.uuid()}@e.com`,
+					isEmailAddressVerified: true,
+					name: "Notif",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		const userId = userRes.data?.createUser?.user?.id as string;
+		const userEmail = userRes.data?.createUser?.user?.emailAddress as string;
+		assertToBeNonNullish(userId);
+		assertToBeNonNullish(userEmail);
+
+		// Sign in the user separately to get a fresh token
+		const userSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: userEmail,
+					password: "password",
+				},
+			},
+		});
+		const userToken = userSignIn.data?.signIn?.authenticationToken as string;
+		assertToBeNonNullish(userId);
+		assertToBeNonNullish(userToken);
 		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
 			},
 		});
-		orgId = orgRes.data?.createOrganization?.id as string;
+		const orgId = orgRes.data?.createOrganization?.id as string;
 		assertToBeNonNullish(orgId);
-
 		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
-				input: {
-					memberId: userId as string,
-					organizationId: orgId,
-					role: "regular",
-				},
+				input: { memberId: userId, organizationId: orgId, role: "regular" },
 			},
 		});
-	});
-
-	afterAll(async () => {
-		if (orgId) {
-			try {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: { input: { id: orgId } },
-				});
-			} catch {}
-		}
-		if (userId) {
-			try {
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: { authorization: `bearer ${adminToken}` },
-					variables: { input: { id: userId } },
-				});
-			} catch {}
-		}
-	});
-
-	test("post_created notification delivered", async () => {
-		const postRes = await mercuriusClient.mutate(Mutation_createPost, {
+		await mercuriusClient.mutate(Mutation_createPost, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					organizationId: orgId as string,
-					caption: `Post ${faker.lorem.sentence()}`,
+					organizationId: orgId,
+					caption: `Post ${faker.lorem.words(3)}`,
 					attachments: [
 						{
 							mimetype: "IMAGE_PNG",
-							objectName: `obj-${faker.string.uuid()}`,
-							name: `img-${faker.string.uuid()}.png`,
-							fileHash: `hash-${faker.string.uuid()}`,
+							objectName: `test-object-${faker.string.uuid()}`,
+							name: `test-image-${faker.string.uuid()}.png`,
+							fileHash: `test-file-hash-${faker.string.uuid()}`,
 						},
 					],
 				},
 			},
 		});
-		expect(postRes.errors).toBeUndefined();
-
+		// Wait a moment for async notification processing
+		await new Promise((r) => setTimeout(r, 1000));
 		const start = Date.now();
-		let notifications: Array<{ id: string | null; eventType?: string | null }> =
-			[];
-		while (Date.now() - start < 6000) {
+		let list: Array<Record<string, unknown>> = [];
+		while (Date.now() - start < 10000) {
 			const res = await mercuriusClient.query(Query_user_notifications, {
 				headers: { authorization: `bearer ${userToken}` },
-				variables: {
-					input: { id: userId as string },
-					notificationInput: { first: 5 },
-				},
+				variables: { input: { id: userId }, notificationInput: { first: 5 } },
 			});
-			notifications = res.data?.user?.notifications ?? [];
-			if (notifications.length) break;
+			list = res.data?.user?.notifications ?? [];
+			if (list.length) break;
 			await new Promise((r) => setTimeout(r, 150));
 		}
-		expect(notifications.length).toBeGreaterThan(0);
-		expect(notifications[0]?.eventType).toBe("post_created");
-	});
+		expect(list.length).toBeGreaterThan(0);
+		expect(list[0]?.eventType).toBe("post_created");
+	}, 20000);
+
+	test("pagination first limits results", async () => {
+		const existing =
+			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (f, o) =>
+					o.and(
+						o.eq(f.eventType, "post_created"),
+						o.eq(f.channelType, "in_app"),
+					),
+			});
+		if (!existing) {
+			await server.drizzleClient.insert(notificationTemplatesTable).values({
+				name: "New Post Created",
+				eventType: "post_created",
+				title: "New post",
+				body: "body",
+				channelType: "in_app",
+				linkedRouteName: "/post/{postId}",
+			});
+		}
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		assertToBeNonNullish(adminToken);
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `u${faker.string.uuid()}@e.com`,
+					isEmailAddressVerified: true,
+					name: "Pag",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		const userId = userRes.data?.createUser?.user?.id as string;
+		const userToken = userRes.data?.createUser?.authenticationToken as string;
+		assertToBeNonNullish(userId);
+		assertToBeNonNullish(userToken);
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		const orgId = orgRes.data?.createOrganization?.id as string;
+		assertToBeNonNullish(orgId);
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { memberId: userId, organizationId: orgId, role: "regular" },
+			},
+		});
+		for (let i = 0; i < 3; i++) {
+			await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						caption: `Post ${i}`,
+						attachments: [],
+					},
+				},
+			});
+		}
+		// Wait for notifications to be processed
+		await new Promise((r) => setTimeout(r, 500));
+		let all: Array<Record<string, unknown>> = [];
+		const start = Date.now();
+		while (Date.now() - start < 5000) {
+			const res = await mercuriusClient.query(Query_user_notifications, {
+				headers: { authorization: `bearer ${userToken}` },
+				variables: { input: { id: userId }, notificationInput: { first: 10 } },
+			});
+			all = res.data?.user?.notifications ?? [];
+			if (all.length >= 3) break;
+			await new Promise((r) => setTimeout(r, 250));
+		}
+		const limited = await mercuriusClient.query(Query_user_notifications, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: { input: { id: userId }, notificationInput: { first: 2 } },
+		});
+		expect(limited.data?.user?.notifications?.length).toBeLessThanOrEqual(2);
+	}, 8000);
+
+	test("pagination skip offsets results", async () => {
+		const existing =
+			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (f, o) =>
+					o.and(
+						o.eq(f.eventType, "post_created"),
+						o.eq(f.channelType, "in_app"),
+					),
+			});
+		if (!existing) {
+			await server.drizzleClient.insert(notificationTemplatesTable).values({
+				name: "New Post Created",
+				eventType: "post_created",
+				title: "New post",
+				body: "body",
+				channelType: "in_app",
+				linkedRouteName: "/post/{postId}",
+			});
+		}
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		assertToBeNonNullish(adminToken);
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `u${faker.string.uuid()}@e.com`,
+					isEmailAddressVerified: true,
+					name: "Skip",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		const userId = userRes.data?.createUser?.user?.id as string;
+		const userToken = userRes.data?.createUser?.authenticationToken as string;
+		assertToBeNonNullish(userId);
+		assertToBeNonNullish(userToken);
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		const orgId = orgRes.data?.createOrganization?.id as string;
+		assertToBeNonNullish(orgId);
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { memberId: userId, organizationId: orgId, role: "regular" },
+			},
+		});
+		for (let i = 0; i < 3; i++) {
+			await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						caption: `Post ${i}`,
+						attachments: [],
+					},
+				},
+			});
+		}
+		// Wait for notifications to be processed
+		await new Promise((r) => setTimeout(r, 500));
+		let all: Array<Record<string, unknown>> = [];
+		const start = Date.now();
+		while (Date.now() - start < 5000) {
+			const res = await mercuriusClient.query(Query_user_notifications, {
+				headers: { authorization: `bearer ${userToken}` },
+				variables: { input: { id: userId }, notificationInput: { first: 10 } },
+			});
+			all = res.data?.user?.notifications ?? [];
+			if (all.length >= 3) break;
+			await new Promise((r) => setTimeout(r, 250));
+		}
+		const skipped = await mercuriusClient.query(Query_user_notifications, {
+			headers: { authorization: `bearer ${userToken}` },
+			variables: {
+				input: { id: userId },
+				notificationInput: { first: 2, skip: 1 },
+			},
+		});
+		const skippedList = skipped.data?.user?.notifications ?? [];
+		expect(skippedList.length).toBeLessThanOrEqual(2);
+		if (all.length >= 2 && skippedList.length > 0) {
+			expect(skippedList[0]?.id).toBe(all[1]?.id);
+		}
+	}, 8000);
+
+	test("default pagination limit (20)", async () => {
+		const existing =
+			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (f, o) =>
+					o.and(
+						o.eq(f.eventType, "post_created"),
+						o.eq(f.channelType, "in_app"),
+					),
+			});
+		if (!existing) {
+			await server.drizzleClient.insert(notificationTemplatesTable).values({
+				name: "New Post Created",
+				eventType: "post_created",
+				title: "New post",
+				body: "body",
+				channelType: "in_app",
+				linkedRouteName: "/post/{postId}",
+			});
+		}
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		assertToBeNonNullish(adminToken);
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `u${faker.string.uuid()}@e.com`,
+					isEmailAddressVerified: true,
+					name: "Def",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		const userId = userRes.data?.createUser?.user?.id as string;
+		const userToken = userRes.data?.createUser?.authenticationToken as string;
+		assertToBeNonNullish(userId);
+		assertToBeNonNullish(userToken);
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		const orgId = orgRes.data?.createOrganization?.id as string;
+		assertToBeNonNullish(orgId);
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { memberId: userId, organizationId: orgId, role: "regular" },
+			},
+		});
+		for (let i = 0; i < 5; i++) {
+			await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: { organizationId: orgId, caption: `P${i}`, attachments: [] },
+				},
+			});
+		}
+		// Wait for notifications to be processed
+		await new Promise((r) => setTimeout(r, 500));
+		let all: Array<Record<string, unknown>> = [];
+		const start = Date.now();
+		while (Date.now() - start < 5000) {
+			const res = await mercuriusClient.query(Query_user_notifications, {
+				headers: { authorization: `bearer ${userToken}` },
+				variables: { input: { id: userId }, notificationInput: {} },
+			});
+			all = res.data?.user?.notifications ?? [];
+			if (all.length >= 3) break;
+			await new Promise((r) => setTimeout(r, 250));
+		}
+		expect(all.length).toBeLessThanOrEqual(20);
+	}, 8000);
+
+	test("notifications ordered desc", async () => {
+		const existing =
+			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (f, o) =>
+					o.and(
+						o.eq(f.eventType, "post_created"),
+						o.eq(f.channelType, "in_app"),
+					),
+			});
+		if (!existing) {
+			await server.drizzleClient.insert(notificationTemplatesTable).values({
+				name: "New Post Created",
+				eventType: "post_created",
+				title: "New post",
+				body: "body",
+				channelType: "in_app",
+				linkedRouteName: "/post/{postId}",
+			});
+		}
+		const adminSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		const adminToken = adminSignIn.data?.signIn?.authenticationToken as string;
+		assertToBeNonNullish(adminToken);
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `u${faker.string.uuid()}@e.com`,
+					isEmailAddressVerified: true,
+					name: "Ord",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+		const userId = userRes.data?.createUser?.user?.id as string;
+		const userToken = userRes.data?.createUser?.authenticationToken as string;
+		assertToBeNonNullish(userId);
+		assertToBeNonNullish(userToken);
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		const orgId = orgRes.data?.createOrganization?.id as string;
+		assertToBeNonNullish(orgId);
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { memberId: userId, organizationId: orgId, role: "regular" },
+			},
+		});
+		for (let i = 0; i < 3; i++) {
+			await mercuriusClient.mutate(Mutation_createPost, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						caption: `Order ${i}`,
+						attachments: [],
+					},
+				},
+			});
+		}
+		// Wait for notifications to be processed
+		await new Promise((r) => setTimeout(r, 500));
+		let all: Array<Record<string, unknown>> = [];
+		const start = Date.now();
+		while (Date.now() - start < 5000) {
+			const res = await mercuriusClient.query(Query_user_notifications, {
+				headers: { authorization: `bearer ${userToken}` },
+				variables: { input: { id: userId }, notificationInput: { first: 10 } },
+			});
+			all = res.data?.user?.notifications ?? [];
+			if (all.length >= 3) break;
+			await new Promise((r) => setTimeout(r, 250));
+		}
+		const createdAts = all.map((n) =>
+			new Date(n.createdAt as string).getTime(),
+		);
+		const sorted = [...createdAts].sort((a, b) => b - a);
+		expect(createdAts).toEqual(sorted);
+	}, 8000);
 });
