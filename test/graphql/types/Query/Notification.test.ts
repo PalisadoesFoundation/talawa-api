@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test } from "vitest";
 import { notificationTemplatesTable } from "~/src/drizzle/tables/NotificationTemplate";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -15,6 +15,18 @@ import {
 } from "../documentNodes";
 
 suite("Query field user.notifications (API level, fully inline)", () => {
+	const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+	afterEach(async () => {
+		for (const cleanup of testCleanupFunctions.reverse()) {
+			try {
+				await cleanup();
+			} catch (error) {
+				console.error("Cleanup failed:", error);
+			}
+		}
+		testCleanupFunctions.length = 0;
+	});
 	test("unauthenticated -> unauthenticated error", async () => {
 		// ensure template exists
 		const existing =
@@ -59,6 +71,14 @@ suite("Query field user.notifications (API level, fully inline)", () => {
 		});
 		const userId = userRes.data?.createUser?.user?.id as string;
 		assertToBeNonNullish(userId);
+
+		// Add cleanup for the user
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: userId } },
+			});
+		});
 		const res = await mercuriusClient.query(Query_user_notifications, {
 			variables: { input: { id: userId }, notificationInput: { first: 5 } },
 		});
