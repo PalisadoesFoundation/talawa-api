@@ -90,10 +90,7 @@ export class NotificationEngine {
 			);
 		}
 
-		// Render once (with HTML escaping) and reuse for all channels to avoid drift / double work
-		const renderedContent = this.renderTemplate(template, variables, {
-			escape: true,
-		});
+		const renderedContent = this.renderTemplate(template, variables);
 		const initialStatus =
 			channelType === NotificationChannelType.EMAIL ? "pending" : "delivered";
 
@@ -126,7 +123,8 @@ export class NotificationEngine {
 			await this.createEmailNotifications(
 				notificationLog.id,
 				audiences,
-				renderedContent,
+				template,
+				variables,
 			);
 		} else {
 			for (const audienceSpec of audiences) {
@@ -148,7 +146,8 @@ export class NotificationEngine {
 	private async createEmailNotifications(
 		notificationLogId: string,
 		audiences: NotificationAudience[],
-		rendered: { title: string; body: string },
+		template: typeof notificationTemplatesTable.$inferSelect,
+		variables: NotificationVariables,
 	): Promise<void> {
 		const senderId = this.ctx.currentClient.isAuthenticated
 			? this.ctx.currentClient.user.id
@@ -177,6 +176,7 @@ export class NotificationEngine {
 			where: (fields, operators) => operators.inArray(fields.id, uniqueUserIds),
 		});
 
+		// Filter users with valid email addresses
 		const usersWithEmail = users.filter(
 			(user) => user.emailAddress && user.emailAddress.trim() !== "",
 		);
@@ -186,9 +186,10 @@ export class NotificationEngine {
 			return;
 		}
 
-		// Reuse already-rendered (escaped) content from createNotification
-		const subject = rendered.title; // title as email subject
-		const htmlBody = rendered.body; // body as email content
+		// Render email subject and body
+		const renderedTemplate = this.renderTemplate(template, variables);
+		const subject = renderedTemplate.title; // Use title as email subject
+		const htmlBody = renderedTemplate.body; // Use body as email content
 
 		// Create email notification records
 		const emailNotifications = usersWithEmail.map((user) => ({
@@ -283,17 +284,69 @@ export class NotificationEngine {
 		notificationId: string,
 		audience: NotificationAudience,
 	): Promise<void> {
+		const { targetType, targetIds } = audience;
 		const senderId = this.ctx.currentClient.isAuthenticated
 			? this.ctx.currentClient.user.id
 			: null;
-		const userIds = await this.resolveAudienceToUserIds(audience, senderId);
-		if (!userIds.length) return;
-		const unique = [...new Set(userIds)];
-		await this.ctx.drizzleClient
-			.insert(notificationAudienceTable)
-			.values(
-				unique.map((userId) => ({ notificationId, userId, isRead: false })),
+
+		let userIds: string[] = [];
+
+		if (targetType === NotificationTargetType.USER) {
+			userIds = targetIds.filter((id) => id !== senderId);
+		} else if (targetType === NotificationTargetType.ORGANIZATION_ADMIN) {
+			const orgId = targetIds[0];
+			if (!orgId) return;
+
+			const adminMembers =
+				await this.ctx.drizzleClient.query.organizationMembershipsTable.findMany(
+					{
+						columns: { memberId: true },
+						where: (fields, operators) =>
+							and(
+								operators.eq(fields.organizationId, orgId),
+								operators.eq(fields.role, "administrator"),
+							),
+					},
+				);
+
+			userIds = adminMembers
+				.map((member) => member.memberId)
+				.filter((id) => id !== senderId); // Exclude sender
+		} else if (targetType === NotificationTargetType.ADMIN) {
+			const admins = await this.ctx.drizzleClient.query.usersTable.findMany({
+				columns: { id: true },
+				where: (fields, operators) =>
+					operators.eq(fields.role, "administrator"),
+			});
+
+			userIds = admins.map((admin) => admin.id).filter((id) => id !== senderId);
+		} else if (targetType === NotificationTargetType.ORGANIZATION) {
+			const orgId = targetIds[0];
+			if (!orgId) return;
+
+			const members =
+				await this.ctx.drizzleClient.query.organizationMembershipsTable.findMany(
+					{
+						columns: { memberId: true },
+						where: (fields, operators) =>
+							operators.eq(fields.organizationId, orgId),
+					},
+				);
+
+			userIds = members
+				.map((member) => member.memberId)
+				.filter((id) => id !== senderId);
+		}
+
+		if (userIds.length > 0) {
+			await this.ctx.drizzleClient.insert(notificationAudienceTable).values(
+				userIds.map((userId) => ({
+					notificationId,
+					userId,
+					isRead: false,
+				})),
 			);
+		}
 	}
 
 	/**
@@ -306,31 +359,16 @@ export class NotificationEngine {
 	private renderTemplate(
 		template: typeof notificationTemplatesTable.$inferSelect,
 		variables: NotificationVariables,
-		options?: { escape?: boolean },
 	): { title: string; body: string } {
-		const shouldEscape = options?.escape !== false; // default true
 		let title = template.title;
 		let body = template.body;
 
 		for (const [key, value] of Object.entries(variables)) {
 			if (value === null || value === undefined) continue;
 			const placeholder = new RegExp(`{${key}}`, "g");
-			const safe = shouldEscape
-				? this.htmlEscape(String(value))
-				: String(value);
-			title = title.replace(placeholder, safe);
-			body = body.replace(placeholder, safe);
+			title = title.replace(placeholder, String(value));
+			body = body.replace(placeholder, String(value));
 		}
 		return { title, body };
-	}
-
-	/** Basic HTML entity escaping */
-	private htmlEscape(input: string): string {
-		return input
-			.replace(/&/g, "&amp;")
-			.replace(/</g, "&lt;")
-			.replace(/>/g, "&gt;")
-			.replace(/"/g, "&quot;")
-			.replace(/'/g, "&#39;");
 	}
 }
