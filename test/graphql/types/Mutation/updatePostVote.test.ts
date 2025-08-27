@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
+import { postVotesTable } from "~/src/drizzle/tables/postVotes";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -274,6 +275,8 @@ suite("Mutation field updatePostVote", () => {
 							postId,
 							createdAt: new Date(),
 							updatedAt: new Date(),
+							upVotesCount: 1,
+							downVotesCount: 0,
 						},
 					]),
 				}),
@@ -428,6 +431,8 @@ suite("Mutation field updatePostVote", () => {
 								postId,
 								createdAt: new Date(),
 								updatedAt: new Date(),
+								upVotesCount: 1,
+								downVotesCount: 0,
 							},
 						]),
 					}),
@@ -452,10 +457,10 @@ suite("Mutation field updatePostVote", () => {
 		test("should insert new vote if existing votes belong to other users", async () => {
 			const { authToken, userId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(authToken);
-
 			const postId = faker.string.uuid();
 
-			// Post already has votes, but from someone else
+			// Post already has votes, but from someone else (different userId)
+			const otherUserId = faker.string.uuid(); // Different user ID
 			const originalFindFirst = server.drizzleClient.query.postsTable.findFirst;
 			server.drizzleClient.query.postsTable.findFirst = vi
 				.fn()
@@ -463,14 +468,18 @@ suite("Mutation field updatePostVote", () => {
 					id: postId,
 					attachmentsWherePost: [],
 					votesWherePost: [
-						{ id: faker.string.uuid(), creatorId: userId, type: "down_vote" },
+						{
+							id: faker.string.uuid(),
+							creatorId: otherUserId,
+							type: "down_vote",
+						}, // Different user
 					],
 					organization: {
 						membershipsWhereOrganization: [{ role: "member", userId }],
 					},
 				});
 
-			// Mock insert
+			// Mock insert (should be called since no existing vote from current user)
 			const originalInsert = server.drizzleClient.insert;
 			server.drizzleClient.insert = vi.fn().mockReturnValue({
 				values: vi.fn().mockReturnValue({
@@ -480,10 +489,16 @@ suite("Mutation field updatePostVote", () => {
 							type: "up_vote",
 							creatorId: userId,
 							postId,
+							upVotesCount: 1,
+							downVotesCount: 0,
 						},
 					]),
 				}),
 			});
+
+			// Mock update (should NOT be called since no existing vote from current user)
+			const originalUpdate = server.drizzleClient.update;
+			const updateSpy = vi.spyOn(server.drizzleClient, "update");
 
 			try {
 				const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
@@ -492,15 +507,19 @@ suite("Mutation field updatePostVote", () => {
 				});
 
 				expect(result.data?.updatePostVote).not.toBeNull();
-
 				const vote = result.data?.updatePostVote;
 				assertToBeNonNullish(vote);
+
+				// Verify that INSERT was called (not UPDATE)
+				expect(server.drizzleClient.insert).toHaveBeenCalled();
+				expect(updateSpy).not.toHaveBeenCalled();
 
 				// check creator
 				expect(vote.creator?.id).toBeUndefined();
 			} finally {
 				server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
 				server.drizzleClient.insert = originalInsert;
+				updateSpy.mockRestore();
 			}
 		});
 
@@ -583,6 +602,8 @@ suite("Mutation field updatePostVote", () => {
 								postId,
 								createdAt: new Date(),
 								updatedAt: new Date(),
+								upVotesCount: 1,
+								downVotesCount: 0,
 							},
 						]),
 					}),
@@ -611,47 +632,89 @@ suite("Mutation field updatePostVote", () => {
 			}
 		});
 
-		test("should not update if user already has same vote type", async () => {
+		test("should update the vote when an existing one is found", async () => {
 			const { authToken, userId } = await createRegularUserUsingAdmin();
 			assertToBeNonNullish(authToken);
 
 			const postId = faker.string.uuid();
-			const voteId = faker.string.uuid();
+			const existingVoteId = faker.string.uuid();
 
-			// Mock post with an existing up_vote from the same user
-			const originalFindFirst = server.drizzleClient.query.postsTable.findFirst;
+			// Mock: post exists with membership
+			const originalPostFindFirst =
+				server.drizzleClient.query.postsTable.findFirst;
 			server.drizzleClient.query.postsTable.findFirst = vi
 				.fn()
 				.mockResolvedValue({
 					id: postId,
 					attachmentsWherePost: [],
-					votesWherePost: [{ id: voteId, creatorId: userId, type: "up_vote" }],
 					organization: {
 						membershipsWhereOrganization: [{ role: "member", userId }],
 					},
 				});
 
-			// Just spy (don’t throw)
-			const updateSpy = vi.spyOn(server.drizzleClient, "update");
-			const insertSpy = vi.spyOn(server.drizzleClient, "insert");
+			// Mock: existing vote exists for this user
+			const originalVoteFindFirst =
+				server.drizzleClient.query.postVotesTable.findFirst;
+			server.drizzleClient.query.postVotesTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({
+					id: existingVoteId,
+					creatorId: userId,
+					postId,
+					type: "down_vote",
+				});
+
+			// Mock: update flow
+			const returningSpy = vi.fn().mockResolvedValue([
+				{
+					id: existingVoteId,
+					type: "up_vote",
+					creatorId: userId,
+					postId,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+			]);
+			const whereSpy = vi.fn().mockReturnValue({ returning: returningSpy });
+			const setSpy = vi.fn().mockReturnValue({ where: whereSpy });
+			const updateSpy = vi.fn().mockReturnValue({ set: setSpy });
+
+			const originalUpdate = server.drizzleClient.update;
+			server.drizzleClient.update = updateSpy;
+
+			const originalUserFindFirst =
+				server.drizzleClient.query.usersTable.findFirst;
+			server.drizzleClient.query.usersTable.findFirst = vi
+				.fn()
+				.mockResolvedValue({
+					id: userId,
+					name: faker.person.fullName(),
+					emailAddress: faker.internet.email(),
+				});
 
 			try {
+				// Act
 				const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
 					headers: { authorization: `bearer ${authToken}` },
 					variables: { input: { postId, type: "up_vote" } },
 				});
 
-				expect(result.data?.updatePostVote?.id).toBeUndefined();
+				// Assert GraphQL response fields
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.updatePostVote?.id).toBe(postId);
 
-				// Current behavior: insert is called (since resolver always inserts/updates)
-				// Future behavior (after resolver change): neither called.
-				// To keep test stable now, check "not updated" and leave insert flexible:
-				expect(updateSpy).not.toHaveBeenCalled();
-				// Don’t assert insertSpy here strictly, since resolver doesn’t yet skip it
+				// Assert update flow was triggered
+				expect(updateSpy).toHaveBeenCalledWith(postVotesTable);
+				expect(setSpy).toHaveBeenCalledWith({ type: "up_vote" });
+				expect(whereSpy).toHaveBeenCalled();
+				expect(returningSpy).toHaveBeenCalled();
 			} finally {
-				server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
-				updateSpy.mockRestore();
-				insertSpy.mockRestore();
+				// Restore originals
+				server.drizzleClient.query.postsTable.findFirst = originalPostFindFirst;
+				server.drizzleClient.query.postVotesTable.findFirst =
+					originalVoteFindFirst;
+				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
+				server.drizzleClient.update = originalUpdate;
 			}
 		});
 	});
@@ -694,6 +757,8 @@ suite("Mutation field updatePostVote", () => {
 							postId,
 							createdAt: new Date(),
 							updatedAt: new Date(),
+							upVotesCount: 1,
+							downVotesCount: 0,
 						},
 					]),
 				}),
@@ -753,6 +818,8 @@ suite("Mutation field updatePostVote", () => {
 							postId,
 							createdAt: new Date(),
 							updatedAt: new Date(),
+							upVotesCount: 1,
+							downVotesCount: 0,
 						},
 					]),
 				}),

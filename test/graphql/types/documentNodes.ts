@@ -787,6 +787,8 @@ export const Mutation_updatePostVote = gql(`
 mutation Mutation_updatePostVote($input:MutationUpdatePostVoteInput!){
     updatePostVote(input: $input) {
     id
+    upVotesCount
+    downVotesCount
     creator{
       id
     }
