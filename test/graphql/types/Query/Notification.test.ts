@@ -1,12 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { inArray } from "drizzle-orm";
 import { afterEach, beforeEach, expect, suite, test } from "vitest";
-import {
-	notificationAudienceTable,
-	organizationMembershipsTable,
-	postsTable,
-	usersTable,
-} from "~/src/drizzle/schema";
 import { notificationTemplatesTable } from "~/src/drizzle/tables/NotificationTemplate";
 import type {
 	TalawaGraphQLFormattedError,
@@ -29,12 +22,6 @@ import {
 /** Helper function to get admin auth token with proper error handling */
 let cachedAdminToken: string | null = null;
 let cachedAdminId: string | null = null;
-
-// Track created artifacts for stronger cleanup (fallback to direct deletion if GraphQL cleanup missed something)
-const trackedUserIds = new Set<string>();
-const trackedOrganizationIds = new Set<string>();
-const trackedPostIds = new Set<string>();
-
 async function getAdminAuthTokenAndId(): Promise<{
 	cachedAdminToken: string;
 	cachedAdminId: string;
@@ -85,103 +72,6 @@ async function getAdminAuthTokenAndId(): Promise<{
 	}
 }
 
-async function deepCleanup() {
-	const dc = server.drizzleClient;
-	const errors: Error[] = [];
-
-	// Posts first
-	if (trackedPostIds.size) {
-		try {
-			await dc
-				.delete(postsTable)
-				.where(inArray(postsTable.id, [...trackedPostIds]));
-		} catch (e) {
-			errors.push(e as Error);
-		}
-	}
-
-	// Memberships referencing tracked orgs/users
-	if (trackedOrganizationIds.size || trackedUserIds.size) {
-		try {
-			if (trackedOrganizationIds.size) {
-				await dc
-					.delete(organizationMembershipsTable)
-					.where(
-						inArray(organizationMembershipsTable.organizationId, [
-							...trackedOrganizationIds,
-						]),
-					);
-			}
-			if (trackedUserIds.size) {
-				await dc
-					.delete(organizationMembershipsTable)
-					.where(
-						inArray(organizationMembershipsTable.memberId, [...trackedUserIds]),
-					);
-			}
-		} catch (e) {
-			errors.push(e as Error);
-		}
-	}
-
-	// Notification audience rows for tracked users
-	if (trackedUserIds.size) {
-		try {
-			await dc
-				.delete(notificationAudienceTable)
-				.where(inArray(notificationAudienceTable.userId, [...trackedUserIds]));
-		} catch (e) {
-			errors.push(e as Error);
-		}
-	}
-
-	// Delete organizations via GraphQL (preferred)
-	for (const orgId of trackedOrganizationIds) {
-		try {
-			if (!cachedAdminToken) await getAdminAuthTokenAndId();
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: cachedAdminToken
-					? { authorization: `bearer ${cachedAdminToken}` }
-					: undefined,
-				variables: { input: { id: orgId } },
-			});
-		} catch (e) {
-			errors.push(e as Error);
-		}
-	}
-
-	// Delete users via GraphQL else direct DB
-	for (const userId of trackedUserIds) {
-		try {
-			if (!cachedAdminToken) await getAdminAuthTokenAndId();
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: cachedAdminToken
-					? { authorization: `bearer ${cachedAdminToken}` }
-					: undefined,
-				variables: { input: { id: userId } },
-			});
-		} catch (e) {
-			try {
-				await dc.delete(usersTable).where(inArray(usersTable.id, [userId]));
-			} catch (inner) {
-				errors.push(inner as Error);
-			}
-		}
-	}
-
-	trackedUserIds.clear();
-	trackedOrganizationIds.clear();
-	trackedPostIds.clear();
-
-	if (errors.length) {
-		// eslint-disable-next-line no-console
-		console.error(
-			"Deep cleanup encountered issues:",
-			errors.map((e) => e.message),
-		);
-	}
-}
-
 // Helper Types
 interface TestOrganization {
 	orgId: string;
@@ -228,30 +118,33 @@ async function createTestOrganization(): Promise<TestOrganization> {
 	assertToBeNonNullish(createOrgResult.data);
 	assertToBeNonNullish(createOrgResult.data.createOrganization);
 	const orgId = createOrgResult.data.createOrganization.id;
-	trackedOrganizationIds.add(orgId);
 
 	return {
 		orgId,
 		cleanup: async () => {
+			const errors: Error[] = [];
 			try {
 				await mercuriusClient.mutate(Mutation_deleteOrganization, {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch {}
-			trackedOrganizationIds.delete(orgId);
+			} catch (error) {
+				errors.push(error as Error);
+				console.error("Failed to delete organization:", error);
+			}
+			if (errors.length > 0) {
+				throw new AggregateError(errors, "One or more cleanup steps failed");
+			}
 		},
 	};
 }
 
 async function createTestUser(): Promise<TestUser> {
 	const regularUser = await createRegularUserUsingAdmin();
-	trackedUserIds.add(regularUser.userId);
 	return {
 		userId: regularUser.userId,
 		authToken: regularUser.authToken,
 		cleanup: async () => {
-			// Best-effort cleanup via GraphQL delete (admin privileges required)
 			try {
 				const { cachedAdminToken } = await getAdminAuthTokenAndId();
 				await mercuriusClient.mutate(Mutation_deleteUser, {
@@ -259,7 +152,6 @@ async function createTestUser(): Promise<TestUser> {
 					variables: { input: { id: regularUser.userId } },
 				});
 			} catch {}
-			trackedUserIds.delete(regularUser.userId);
 		},
 	};
 }
@@ -299,13 +191,10 @@ async function createTestPost(
 	assertToBeNonNullish(createPostResult.data);
 	assertToBeNonNullish(createPostResult.data.createPost);
 	const postId = createPostResult.data.createPost.id;
-	trackedPostIds.add(postId);
 
 	return {
 		postId,
-		cleanup: async () => {
-			trackedPostIds.delete(postId);
-		},
+		cleanup: async () => {},
 	};
 }
 
@@ -372,13 +261,11 @@ suite("Query user notifications", () => {
 				try {
 					await cleanup();
 				} catch (error) {
-					// eslint-disable-next-line no-console
 					console.error("Cleanup failed:", error);
 				}
 			}
 			// Reset the cleanup functions array
 			testCleanupFunctions.length = 0;
-			await deepCleanup();
 		});
 
 		test("Returns an error when the user is unauthenticated", async () => {
@@ -414,7 +301,7 @@ suite("Query user notifications", () => {
 			const testUser = await createTestUser();
 			testCleanupFunctions.push(testUser.cleanup);
 
-			// Delete the user from database via GraphQL mutation using admin auth
+			// Delete the user from database via GraphQL mutation (admin privileges)
 			const { cachedAdminToken: adminAuthForDelete } =
 				await getAdminAuthTokenAndId();
 			await mercuriusClient.mutate(Mutation_deleteUser, {
@@ -501,13 +388,11 @@ suite("Query user notifications", () => {
 				try {
 					await cleanup();
 				} catch (error) {
-					// eslint-disable-next-line no-console
 					console.error("Cleanup failed:", error);
 				}
 			}
 			// Reset the cleanup functions array
 			testCleanupFunctions.length = 0;
-			await deepCleanup();
 		});
 
 		test("Returns an error when userId is not a valid UUID", async () => {
@@ -659,12 +544,10 @@ suite("Query user notifications", () => {
 				try {
 					await cleanup();
 				} catch (error) {
-					// eslint-disable-next-line no-console
 					console.error("Cleanup failed:", error);
 				}
 			}
 			testCleanupFunctions.length = 0;
-			await deepCleanup();
 		});
 
 		test("Returns empty array when user has no notifications", async () => {
@@ -697,10 +580,10 @@ suite("Query user notifications", () => {
 			const testUser = await createTestUser();
 			testCleanupFunctions.push(testUser.cleanup);
 
-			const { cachedAdminToken: adminAuthMembership1 } =
+			const { cachedAdminToken: adminAuthMembership } =
 				await getAdminAuthTokenAndId();
 			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `bearer ${adminAuthMembership1}` },
+				headers: { authorization: `bearer ${adminAuthMembership}` },
 				variables: {
 					input: {
 						memberId: testUser.userId,
