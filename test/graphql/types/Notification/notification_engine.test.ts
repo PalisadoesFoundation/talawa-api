@@ -45,13 +45,12 @@ describe("Notification flow (API level)", () => {
 			const fn = cleanups.pop();
 			try {
 				if (fn) await fn();
-			} catch {
-			}
+			} catch {}
 		}
 	});
 
 	test("creates a post and user receives in-app notification", async () => {
-		if (!hasPostCreatedTemplate || !adminToken) return; 
+		if (!hasPostCreatedTemplate || !adminToken) return;
 
 		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
 			headers: { authorization: `bearer ${adminToken}` },
