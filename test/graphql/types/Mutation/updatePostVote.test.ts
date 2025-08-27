@@ -497,7 +497,6 @@ suite("Mutation field updatePostVote", () => {
 			});
 
 			// Mock update (should NOT be called since no existing vote from current user)
-			const originalUpdate = server.drizzleClient.update;
 			const updateSpy = vi.spyOn(server.drizzleClient, "update");
 
 			try {
