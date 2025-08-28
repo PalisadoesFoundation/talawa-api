@@ -21,7 +21,9 @@ export const emailNotificationsTable = pgTable(
 		/**
 		 * Primary unique identifier of the email notification.
 		 */
-		id: uuid("id").primaryKey().$default(uuidv7),
+		id: uuid("id")
+			.primaryKey()
+			.$defaultFn(() => uuidv7()),
 
 		/**
 		 * Foreign key reference to the notification log.

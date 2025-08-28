@@ -13,12 +13,26 @@ let emailQueueProcessor: EmailQueueProcessor | null = null;
  * Initialize email queue processor
  */
 export function initializeEmailQueue(
-	ctx: Pick<GraphQLContext, "drizzleClient" | "log">,
+	ctx: Pick<GraphQLContext, "drizzleClient" | "log"> & {
+		envConfig: { API_ENABLE_EMAIL_QUEUE: boolean };
+	},
 ): void {
+	if (!ctx.envConfig.API_ENABLE_EMAIL_QUEUE) {
+		ctx.log.info("Email queue disabled by API_ENABLE_EMAIL_QUEUE env var");
+		return;
+	}
 	if (!emailQueueProcessor) {
 		emailQueueProcessor = new EmailQueueProcessor(emailService, ctx);
 		emailQueueProcessor.startBackgroundProcessing();
 		ctx.log.info("Email queue processor initialized");
+	}
+}
+
+export function stopEmailQueue(log?: { info: (msg: string) => void }): void {
+	if (emailQueueProcessor) {
+		emailQueueProcessor.stopBackgroundProcessing();
+		log?.info("Email queue processor stopped (stopEmailQueue)");
+		emailQueueProcessor = null;
 	}
 }
 

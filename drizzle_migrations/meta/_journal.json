@@ -22,6 +22,20 @@
       "when": 1754719182474,
       "tag": "20250809055942_sour_thena",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1756348850045,
+      "tag": "20250828024050_old_the_stranger",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1756349013613,
+      "tag": "20250828024333_superb_prowler",
+      "breakpoints": true
     }
   ]
 }

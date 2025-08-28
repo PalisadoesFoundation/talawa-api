@@ -294,6 +294,11 @@ export const envConfigSchema = Type.Object({
 	}),
 
 	/**
+	 * Enables the background email queue processor. Default should be false in tests / local unless explicitly needed.
+	 */
+	API_ENABLE_EMAIL_QUEUE: Type.Boolean({}),
+
+	/**
 	 * Cron schedule for the recurring event instance generation background worker.
 	 * Default: "0 * * * *" (every hour at minute 0)
 	 */

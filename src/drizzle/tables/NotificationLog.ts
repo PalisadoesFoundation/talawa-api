@@ -70,7 +70,7 @@ export const notificationLogsTable = pgTable(
 		/**
 		 * Status of the notification.
 		 */
-		status: text("status").notNull().default("delivered"),
+		status: text("status").notNull().default("created"),
 
 		/**
 		 * Date time at the time the notification was created.

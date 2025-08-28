@@ -33,9 +33,39 @@ export interface EmailResult {
  */
 export class EmailService {
 	private config: EmailConfig;
+	private sesClient: {
+		send: (command: unknown) => Promise<{ MessageId?: string }>;
+	} | null = null;
+	private SendEmailCommandCtor: ((input: unknown) => unknown) | null = null;
 
 	constructor(config: EmailConfig) {
 		this.config = config;
+	}
+
+	private async getSesArtifacts(): Promise<{
+		client: { send: (command: unknown) => Promise<{ MessageId?: string }> };
+		SendEmailCommand: (input: unknown) => unknown;
+	}> {
+		if (!this.sesClient || !this.SendEmailCommandCtor) {
+			const mod = await import("@aws-sdk/client-ses");
+			this.sesClient = new mod.SESClient({ region: this.config.region }) as {
+				send: (command: unknown) => Promise<{ MessageId?: string }>;
+			};
+			type MinimalSendEmailCommandInput = {
+				Source: string;
+				Destination: { ToAddresses: string[] };
+				Message: {
+					Subject: { Data: string; Charset?: string };
+					Body: { Html: { Data: string; Charset?: string } };
+				};
+			};
+			this.SendEmailCommandCtor = ((input: MinimalSendEmailCommandInput) =>
+				new mod.SendEmailCommand(input)) as (input: unknown) => unknown;
+		}
+		return {
+			client: this.sesClient,
+			SendEmailCommand: this.SendEmailCommandCtor,
+		};
 	}
 
 	/**
@@ -43,48 +73,25 @@ export class EmailService {
 	 */
 	async sendEmail(job: EmailJob): Promise<EmailResult> {
 		try {
-			// Import AWS SDK dynamically to avoid loading if not needed
-			const { SESClient, SendEmailCommand } = await import(
-				"@aws-sdk/client-ses"
-			);
+			const { client, SendEmailCommand } = await this.getSesArtifacts();
 
-			// Create SES client with default credentials
-			const sesClient = new SESClient({
-				region: this.config.region,
-			});
-
-			// Prepare email command
 			const fromAddress = this.config.fromName
 				? `${this.config.fromName} <${this.config.fromEmail}>`
 				: this.config.fromEmail;
 
-			const command = new SendEmailCommand({
+			const command = SendEmailCommand({
 				Source: fromAddress,
-				Destination: {
-					ToAddresses: [job.email],
-				},
+				Destination: { ToAddresses: [job.email] },
 				Message: {
-					Subject: {
-						Data: job.subject,
-						Charset: "UTF-8",
-					},
+					Subject: { Data: job.subject, Charset: "UTF-8" },
 					Body: {
-						Html: {
-							Data: job.htmlBody,
-							Charset: "UTF-8",
-						},
+						Html: { Data: job.htmlBody, Charset: "UTF-8" },
 					},
 				},
 			});
 
-			// Send email
-			const response = await sesClient.send(command);
-			console.log(`Email sent: ${response}`);
-			return {
-				id: job.id,
-				success: true,
-				messageId: response.MessageId,
-			};
+			const response = await client.send(command);
+			return { id: job.id, success: true, messageId: response.MessageId };
 		} catch (error) {
 			return {
 				id: job.id,
@@ -99,18 +106,14 @@ export class EmailService {
 	 */
 	async sendBulkEmails(jobs: EmailJob[]): Promise<EmailResult[]> {
 		const results: EmailResult[] = [];
-
-		// Send emails sequentially to avoid rate limits
-		for (const job of jobs) {
-			const result = await this.sendEmail(job);
-			results.push(result);
-
-			// Small delay between emails to respect SES rate limits
-			if (jobs.length > 1) {
-				await new Promise((resolve) => setTimeout(resolve, 100));
+		for (let i = 0; i < jobs.length; i++) {
+			const job = jobs[i];
+			if (!job) continue;
+			results.push(await this.sendEmail(job));
+			if (i < jobs.length - 1 && jobs.length > 1) {
+				await new Promise((r) => setTimeout(r, 100));
 			}
 		}
-
 		return results;
 	}
 }

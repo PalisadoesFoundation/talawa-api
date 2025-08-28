@@ -12,6 +12,7 @@ export class EmailQueueProcessor {
 	private emailService: EmailService;
 	private ctx: Pick<GraphQLContext, "drizzleClient" | "log">;
 	private isProcessing = false;
+	private intervalHandle: NodeJS.Timeout | null = null;
 
 	constructor(
 		emailService: EmailService,
@@ -99,7 +100,7 @@ export class EmailQueueProcessor {
 		email: EmailNotification,
 		error: string,
 	): Promise<void> {
-		const newRetryCount = email.retryCount + 1;
+		const newRetryCount = (email.retryCount ?? 0) + 1;
 
 		if (newRetryCount >= email.maxRetries) {
 			// Max retries reached, mark as failed
@@ -129,12 +130,22 @@ export class EmailQueueProcessor {
 	 * Start background processor - simple setInterval approach
 	 */
 	startBackgroundProcessing(intervalMs = 30000): void {
-		setInterval(() => {
-			this.processPendingEmails().catch(console.error);
+		if (this.intervalHandle) return;
+		this.intervalHandle = setInterval(() => {
+			this.processPendingEmails().catch((err) => {
+				this.ctx.log.error({ err }, "Email queue tick failed");
+			});
 		}, intervalMs);
-
 		this.ctx.log.info(
 			`Email queue processor started with ${intervalMs}ms interval`,
 		);
+	}
+
+	stopBackgroundProcessing(): void {
+		if (this.intervalHandle) {
+			clearInterval(this.intervalHandle);
+			this.intervalHandle = null;
+			this.ctx.log.info("Email queue processor stopped");
+		}
 	}
 }
