@@ -50,13 +50,19 @@ async function createOrganizationAndGetId(
 		},
 	});
 	if (!result.data?.createOrganization?.id) {
-		console.error("createOrganization failed:", result.errors);
+		console.error(
+			"createOrganization failed:",
+			JSON.stringify(result.errors, null, 2),
+		);
 	}
 	const orgId = result.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
 
 	// The user creating the organization is an admin and the creator of the organization,
 	// so they are already a member. No need to add them again.
+	// HACK: There seems to be a race condition in the test environment where the database transaction for creating the organization
+	// may not be fully committed before the next operation is executed. Adding a small delay to mitigate this.
+	await new Promise((resolve) => setTimeout(resolve, 100));
 	await addMembership(orgId, adminUserId, "administrator", authToken);
 
 	return orgId;
