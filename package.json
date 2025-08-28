@@ -101,7 +101,7 @@
     "add:sample_data": "tsx ./scripts/dbManagement/addSampleData.ts",
     "push_drizzle_schema": "drizzle-kit push",
     "push_drizzle_test_schema": "drizzle-kit push --config=./test/drizzle.config.ts",
-    "run_tests": "vitest --coverage",
+    "run_tests": "vitest --coverage --maxWorkers=1",
     "check_tests": "vitest run",
     "start_development_server": "tsx watch ./src/index.ts",
     "start_development_server_with_debugger": "tsx watch --inspect=${API_DEBUGGER_HOST:-127.0.0.1}:${API_DEBUGGER_PORT:-9230} ./src/index.ts",
