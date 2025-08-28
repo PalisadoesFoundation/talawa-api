@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { afterAll, afterEach, beforeAll, expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -11,6 +11,11 @@ import {
 } from "../documentNodes";
 
 suite("Query field allUsers", () => {
+	afterEach(async () => {
+		// HACK: There seems to be a race condition in the test environment where the database transaction for creating the organization
+		// may not be fully committed before the next operation is executed. Adding a small delay to mitigate this.
+		await new Promise((resolve) => setTimeout(resolve, 100));
+	});
 	let adminAuthToken: string;
 	let regularUserAuthToken: string;
 	let regularUserId: string;
