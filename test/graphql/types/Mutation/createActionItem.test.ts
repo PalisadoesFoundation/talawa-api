@@ -36,7 +36,10 @@ async function addMembership(
 }
 
 // Helper to create an organization with a unique name and return its id.
-async function createOrganizationAndGetId(authToken: string): Promise<string> {
+async function createOrganizationAndGetId(
+	authToken: string,
+	adminUserId: string,
+): Promise<string> {
 	const uniqueName = `Test Org ${faker.string.uuid()}`;
 	const result = await mercuriusClient.mutate(Mutation_createOrganization, {
 		headers: { authorization: `bearer ${authToken}` },
@@ -51,6 +54,11 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 	}
 	const orgId = result.data?.createOrganization?.id;
 	assertToBeNonNullish(orgId);
+
+	// The user creating the organization is an admin and the creator of the organization,
+	// so they are already a member. No need to add them again.
+	await addMembership(orgId, adminUserId, "administrator", authToken);
+
 	return orgId;
 }
 
@@ -58,11 +66,7 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 async function createActionItemCategory(
 	authToken: string,
 	organizationId: string,
-	adminUserId: string,
 ): Promise<string> {
-	// Make sure admin is a member of the organization first
-	await addMembership(organizationId, adminUserId, "administrator", authToken);
-
 	const result = await mercuriusClient.mutate(
 		Mutation_createActionItemCategory,
 		{
@@ -165,10 +169,31 @@ suite("Mutation field createActionItem", () => {
 	// 3. User is not part of the organization.
 	suite("when the user is not part of the organization", () => {
 		test("should return an error with unauthorized_action_on_arguments_associated_resources for organization", async () => {
-			const orgId = await createOrganizationAndGetId(authToken);
-			// Note: We intentionally do not add a membership for the current user.
+			const orgId = await createOrganizationAndGetId(authToken, adminUserId);
+			// Create a new user who is not a member of the organization
+			const createUserResult = await mercuriusClient.mutate(
+				Mutation_createUser,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							emailAddress: `notamember${faker.string.ulid()}@example.com`,
+							isEmailAddressVerified: false,
+							name: "Not A Member User",
+							password: "password",
+							role: "regular",
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(createUserResult.data?.createUser);
+			assertToBeNonNullish(createUserResult.data.createUser.user);
+			const nonMemberToken =
+				createUserResult.data.createUser.authenticationToken;
+			assertToBeNonNullish(nonMemberToken);
+
 			const result = await mercuriusClient.mutate(Mutation_createActionItem, {
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `bearer ${nonMemberToken}` }, // Use the non-member's token
 				variables: {
 					input: {
 						categoryId: faker.string.uuid(),
@@ -201,8 +226,7 @@ suite("Mutation field createActionItem", () => {
 	// 4. Category does not exist.
 	suite("when the specified category does not exist", () => {
 		test("should return an error with arguments_associated_resources_not_found for category", async () => {
-			const orgId = await createOrganizationAndGetId(authToken);
-			await addMembership(orgId, adminUserId, "administrator", authToken);
+			const orgId = await createOrganizationAndGetId(authToken, adminUserId);
 			const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -237,14 +261,10 @@ suite("Mutation field createActionItem", () => {
 	// 5. Assignee does not exist.
 	suite("when the specified assignee does not exist", () => {
 		test("should return an error with arguments_associated_resources_not_found for assignee", async () => {
-			const orgId = await createOrganizationAndGetId(authToken);
+			const orgId = await createOrganizationAndGetId(authToken, adminUserId);
 
 			// Create a valid category first
-			const categoryId = await createActionItemCategory(
-				authToken,
-				orgId,
-				adminUserId,
-			);
+			const categoryId = await createActionItemCategory(authToken, orgId);
 
 			const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 				headers: { authorization: `bearer ${authToken}` },
@@ -307,16 +327,12 @@ suite("Mutation field createActionItem", () => {
 				assertToBeNonNullish(nonAdminToken);
 				assertToBeNonNullish(nonAdminUserId);
 
-				const orgId = await createOrganizationAndGetId(authToken);
+				const orgId = await createOrganizationAndGetId(authToken, adminUserId);
 				// Add membership for the non-admin user with "regular" role.
 				await addMembership(orgId, nonAdminUserId, "regular", authToken);
 
 				// Create a valid category as admin
-				const categoryId = await createActionItemCategory(
-					authToken,
-					orgId,
-					adminUserId,
-				);
+				const categoryId = await createActionItemCategory(authToken, orgId);
 
 				const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 					headers: { authorization: `bearer ${nonAdminToken}` },
@@ -354,7 +370,7 @@ suite("Mutation field createActionItem", () => {
 	// 7. Successful creation.
 	suite("when action item is created successfully", () => {
 		test("should return a valid action item", async () => {
-			const orgId = await createOrganizationAndGetId(authToken);
+			const orgId = await createOrganizationAndGetId(authToken, adminUserId);
 
 			// Create an assignee user.
 			const createUserResult = await mercuriusClient.mutate(
@@ -378,11 +394,7 @@ suite("Mutation field createActionItem", () => {
 			assertToBeNonNullish(assigneeId);
 
 			// Create a valid category
-			const categoryId = await createActionItemCategory(
-				authToken,
-				orgId,
-				adminUserId,
-			);
+			const categoryId = await createActionItemCategory(authToken, orgId);
 
 			const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 				headers: { authorization: `bearer ${authToken}` },
@@ -414,7 +426,7 @@ suite("Mutation field createActionItem", () => {
 	// 8. Test for optional assignedAt field default behavior
 	suite("when assignedAt is not provided", () => {
 		test("should use current timestamp as default", async () => {
-			const orgId = await createOrganizationAndGetId(authToken);
+			const orgId = await createOrganizationAndGetId(authToken, adminUserId);
 
 			// Create an assignee user.
 			const createUserResult = await mercuriusClient.mutate(
@@ -438,11 +450,7 @@ suite("Mutation field createActionItem", () => {
 			assertToBeNonNullish(assigneeId);
 
 			// Create a valid category
-			const categoryId = await createActionItemCategory(
-				authToken,
-				orgId,
-				adminUserId,
-			);
+			const categoryId = await createActionItemCategory(authToken, orgId);
 
 			const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 				headers: { authorization: `bearer ${authToken}` },
