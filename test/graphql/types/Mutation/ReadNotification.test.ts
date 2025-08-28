@@ -184,8 +184,6 @@ async function waitForNotifications(
 }
 
 const LONG_TEST_TIMEOUT = 20000;
-const testCleanup: Array<() => Promise<void>> = [];
-
 beforeAll(async () => {
 	await ensureAdminAuth();
 	// Ensure notification template exists (API-level create via drizzle is allowed here because template table lacks exposed mutation; retain one-time setup)
@@ -207,17 +205,6 @@ beforeAll(async () => {
 });
 
 suite("Mutation readNotification", () => {
-	afterEach(async () => {
-		for (const fn of testCleanup.reverse()) {
-			try {
-				await fn();
-			} catch (e) {
-				console.error("cleanup failed", e);
-			}
-		}
-		testCleanup.length = 0;
-		await new Promise((r) => setTimeout(r, 50));
-	});
 	suite("Authentication", () => {
 		const testCleanupFunctions: Array<() => Promise<void>> = [];
 
@@ -260,7 +247,7 @@ suite("Mutation readNotification", () => {
 
 		test("Returns an error when the user is present in token but deleted (simulated)", async () => {
 			const testUser = await createTestUser();
-			testCleanup.push(testUser.cleanup);
+			testCleanupFunctions.push(testUser.cleanup);
 			// Delete the user via API
 			const { token } = await ensureAdminAuth();
 			await mercuriusClient.mutate(Mutation_deleteUser, {
