@@ -33,6 +33,9 @@ async function addMembership(
 		},
 	);
 	assertToBeNonNullish(result.data?.createOrganizationMembership?.id);
+	// HACK: There seems to be a race condition in the test environment where the database transaction for creating the organization
+	// may not be fully committed before the next operation is executed. Adding a small delay to mitigate this.
+	await new Promise((resolve) => setTimeout(resolve, 100));
 }
 
 // Helper to create an organization with a unique name and return its id.
