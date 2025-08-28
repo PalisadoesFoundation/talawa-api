@@ -499,7 +499,7 @@ class PluginManager extends EventEmitter {
 		try {
 			// Get all loaded plugin IDs
 			const pluginIds = Array.from(this.loadedPlugins.keys());
-			
+
 			// Call onUnload lifecycle hooks for each plugin without deactivation
 			await Promise.allSettled(
 				pluginIds.map(async (pluginId) => {
@@ -521,9 +521,12 @@ class PluginManager extends EventEmitter {
 
 						this.emit("plugin:unloaded", pluginId);
 					} catch (error) {
-						console.error(`Error during graceful shutdown of plugin ${pluginId}:`, error);
+						console.error(
+							`Error during graceful shutdown of plugin ${pluginId}:`,
+							error,
+						);
 					}
-				})
+				}),
 			);
 
 			// Clear extension registry
