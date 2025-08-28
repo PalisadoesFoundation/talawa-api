@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { sql } from "drizzle-orm";
-import { beforeAll, beforeEach, expect, suite, test } from "vitest";
+import { afterEach, beforeAll, beforeEach, expect, suite, test } from "vitest";
 import { actionsTable } from "~/src/drizzle/tables/actions";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -181,6 +181,11 @@ beforeAll(async () => {
 });
 
 suite("Query: actionItemsByUser", () => {
+	afterEach(async () => {
+		// HACK: There seems to be a race condition in the test environment where the database transaction for creating the organization
+		// may not be fully committed before the next operation is executed. Adding a small delay to mitigate this.
+		await new Promise((resolve) => setTimeout(resolve, 100));
+	});
 	let regularUser: { authToken: string; userId: string };
 	let organizationId: string;
 	let nonMemberUser: { authToken: string; userId: string };

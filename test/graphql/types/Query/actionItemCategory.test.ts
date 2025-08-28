@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test } from "vitest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -14,6 +14,11 @@ import {
 const SUITE_TIMEOUT = 30_000;
 
 describe("Query field actionItemCategory", () => {
+	afterEach(async () => {
+		// HACK: There seems to be a race condition in the test environment where the database transaction for creating the organization
+		// may not be fully committed before the next operation is executed. Adding a small delay to mitigate this.
+		await new Promise((resolve) => setTimeout(resolve, 100));
+	});
 	test(
 		'returns graphql error with "unauthenticated" if not authenticated',
 		async () => {
