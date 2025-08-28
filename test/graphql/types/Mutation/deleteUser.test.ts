@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test } from "vitest";
 import type {
 	ArgumentsAssociatedResourcesNotFoundExtensions,
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
@@ -18,6 +18,11 @@ import {
 } from "../documentNodes";
 
 suite("Mutation field deleteUser", () => {
+	afterEach(async () => {
+		// HACK: There seems to be a race condition in the test environment where the database transaction for creating the organization
+		// may not be fully committed before the next operation is executed. Adding a small delay to mitigate this.
+		await new Promise((resolve) => setTimeout(resolve, 100));
+	});
 	suite(
 		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.deleteUser" field if`,
 		() => {
