@@ -15,20 +15,26 @@ export const setup = async (_ctx: GlobalSetupContext) => {
  * Function that runs after all tests are ran. It re-runs each time one or more tests or javascript modules used within them are mutated in watch mode. More information at this link: {@link https://vitest.dev/config/#globalsetup}
  */
 export const teardown = async () => {
-	// Clean up notification system BEFORE database reset
+	// Clean up notification system
 	try {
-		// Stop email background processing
 		stopEmailQueue();
-
-		// Clear all event listeners from singleton
 		notificationEventBus.removeAllListeners();
-
-		// Wait for any pending setImmediate callbacks to complete
 		await new Promise((resolve) => setImmediate(resolve));
-
-		console.log("✅ Notification system cleaned up");
+		console.log("Notification system cleaned up");
 	} catch (error) {
-		console.warn("⚠️ Notification cleanup failed:", error);
+		console.warn("Notification cleanup failed:", error);
+	}
+
+	// *** NEW: Clean up Redis rate limiting state ***
+	try {
+		// Clear all rate limiting buckets from Redis
+		const keys = await server.redis.keys("rate-limit:*");
+		if (keys.length > 0) {
+			await server.redis.del(...keys);
+			console.log(`Cleared ${keys.length} rate limit buckets from Redis`);
+		}
+	} catch (error) {
+		console.warn("Redis cleanup failed:", error);
 	}
 
 	// Original cleanup
