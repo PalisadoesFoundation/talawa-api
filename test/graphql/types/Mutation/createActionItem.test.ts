@@ -1,45 +1,38 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
-import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
+	Mutation_createActionItem,
 	Mutation_createActionItemCategory,
 	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Query_signIn,
 } from "../documentNodes";
-
-// Use the graphql function from the client to define the mutation with correct fields
-const Mutation_createActionItem = `
-  mutation CreateActionItem($input: CreateActionItemInput!) {
-    createActionItem(input: $input) {
-      id
-      isCompleted
-      assignedAt
-      completionAt
-      preCompletionNotes
-      postCompletionNotes
-    }
-  }
-`;
 
 // Helper to add membership to organization
 async function addMembership(
 	organizationId: string,
 	memberId: string,
 	role: "administrator" | "regular",
+	authToken: string,
 ) {
-	await server.drizzleClient
-		.insert(organizationMembershipsTable)
-		.values({
-			organizationId,
-			memberId,
-			role,
-		})
-		.onConflictDoNothing()
-		.execute();
+	const result = await mercuriusClient.mutate(
+		Mutation_createOrganizationMembership,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					organizationId,
+					memberId,
+					role,
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(result.data?.createOrganizationMembership?.id);
 }
 
 // Helper to create an organization with a unique name and return its id.
@@ -68,7 +61,7 @@ async function createActionItemCategory(
 	adminUserId: string,
 ): Promise<string> {
 	// Make sure admin is a member of the organization first
-	await addMembership(organizationId, adminUserId, "administrator");
+	await addMembership(organizationId, adminUserId, "administrator", authToken);
 
 	const result = await mercuriusClient.mutate(
 		Mutation_createActionItemCategory,
@@ -209,7 +202,7 @@ suite("Mutation field createActionItem", () => {
 	suite("when the specified category does not exist", () => {
 		test("should return an error with arguments_associated_resources_not_found for category", async () => {
 			const orgId = await createOrganizationAndGetId(authToken);
-			await addMembership(orgId, adminUserId, "administrator");
+			await addMembership(orgId, adminUserId, "administrator", authToken);
 			const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
@@ -316,7 +309,7 @@ suite("Mutation field createActionItem", () => {
 
 				const orgId = await createOrganizationAndGetId(authToken);
 				// Add membership for the non-admin user with "regular" role.
-				await addMembership(orgId, nonAdminUserId, "regular");
+				await addMembership(orgId, nonAdminUserId, "regular", authToken);
 
 				// Create a valid category as admin
 				const categoryId = await createActionItemCategory(

@@ -873,7 +873,7 @@ export const Mutation_joinPublicOrganization = gql(`
 `);
 
 export const Mutation_createActionItem = gql(`
-  mutation CreateActionItem($input: CreateActionItemInput!) {
+  mutation Mutation_createActionItem($input: CreateActionItemInput!) {
     createActionItem(input: $input) {
       id
       assignedAt
