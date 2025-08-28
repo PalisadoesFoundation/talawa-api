@@ -59,13 +59,8 @@ export const pluginSystem = fastifyPlugin(async (fastify) => {
 			try {
 				fastify.log.info("Shutting down plugin system...");
 
-				// Unload all plugins
-				const pluginIds = pluginManager.getLoadedPluginIds();
-				await Promise.all(
-					pluginIds.map((pluginId: string) =>
-						pluginManager.unloadPlugin(pluginId),
-					),
-				);
+				// Use graceful shutdown to avoid unnecessary deactivation and schema updates
+				await pluginManager.gracefulShutdown();
 
 				fastify.log.info("Plugin system shut down successfully");
 			} catch (error) {

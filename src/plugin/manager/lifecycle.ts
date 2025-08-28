@@ -206,7 +206,7 @@ export class PluginLifecycle {
 	/**
 	 * Get plugin module for lifecycle hooks
 	 */
-	private async getPluginModule(
+	public async getPluginModule(
 		pluginId: string,
 	): Promise<IPluginLifecycle | null> {
 		const plugin = this.loadedPlugins.get(pluginId);
@@ -226,7 +226,7 @@ export class PluginLifecycle {
 	/**
 	 * Remove plugin from extension registry
 	 */
-	private removeFromExtensionRegistry(pluginId: string): void {
+	public removeFromExtensionRegistry(pluginId: string): void {
 		// Remove GraphQL builder extensions
 		this.extensionRegistry.graphql.builderExtensions =
 			this.extensionRegistry.graphql.builderExtensions.filter(

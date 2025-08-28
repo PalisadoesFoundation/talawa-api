@@ -490,6 +490,64 @@ class PluginManager extends EventEmitter {
 	public getPluginContext(): IPluginContext {
 		return this.pluginContext;
 	}
+
+	/**
+	 * Gracefully shutdown plugin system without triggering deactivation or schema updates
+	 * This is used during server shutdown to avoid unnecessary operations
+	 */
+	public async gracefulShutdown(): Promise<void> {
+		try {
+			// Get all loaded plugin IDs
+			const pluginIds = Array.from(this.loadedPlugins.keys());
+			
+			// Call onUnload lifecycle hooks for each plugin without deactivation
+			await Promise.allSettled(
+				pluginIds.map(async (pluginId) => {
+					try {
+						const plugin = this.loadedPlugins.get(pluginId);
+						if (!plugin) return;
+
+						// Call plugin lifecycle hook if available
+						const pluginModule = await this.lifecycle.getPluginModule(pluginId);
+						if (pluginModule?.onUnload) {
+							await pluginModule.onUnload(this.pluginContext);
+						}
+
+						// Remove from extension registry
+						this.lifecycle.removeFromExtensionRegistry(pluginId);
+
+						// Remove from loaded plugins
+						this.loadedPlugins.delete(pluginId);
+
+						this.emit("plugin:unloaded", pluginId);
+					} catch (error) {
+						console.error(`Error during graceful shutdown of plugin ${pluginId}:`, error);
+					}
+				})
+			);
+
+			// Clear extension registry
+			this.extensionRegistry = {
+				graphql: {
+					builderExtensions: [],
+				},
+				database: {
+					tables: {},
+					enums: {},
+					relations: {},
+				},
+				hooks: {
+					pre: {},
+					post: {},
+				},
+			};
+
+			// Remove all listeners
+			this.removeAllListeners();
+		} catch (error) {
+			console.error("Error during graceful plugin system shutdown:", error);
+		}
+	}
 }
 
 export default PluginManager;
