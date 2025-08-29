@@ -305,6 +305,13 @@ class PluginManager extends EventEmitter {
 	}
 
 	/**
+	 * Install a plugin
+	 */
+	public async installPlugin(pluginId: string): Promise<boolean> {
+		return this.lifecycle.installPlugin(pluginId, this);
+	}
+
+	/**
 	 * Activate a plugin
 	 */
 	public async activatePlugin(pluginId: string): Promise<boolean> {
@@ -314,18 +321,15 @@ class PluginManager extends EventEmitter {
 	/**
 	 * Deactivate a plugin
 	 */
-	public async deactivatePlugin(
-		pluginId: string,
-		dropTables = false,
-	): Promise<boolean> {
-		return this.lifecycle.deactivatePlugin(pluginId, this, dropTables);
+	public async deactivatePlugin(pluginId: string): Promise<boolean> {
+		return this.lifecycle.deactivatePlugin(pluginId, this);
 	}
 
 	/**
-	 * Unload a plugin
+	 * Uninstall a plugin
 	 */
-	public async unloadPlugin(pluginId: string): Promise<boolean> {
-		return this.lifecycle.unloadPlugin(pluginId, this);
+	public async uninstallPlugin(pluginId: string): Promise<boolean> {
+		return this.lifecycle.uninstallPlugin(pluginId, this);
 	}
 
 	/**

@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { builder } from "~/src/graphql/builder";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
+import { getPluginManagerInstance } from "~/src/plugin/registry";
 import { removePluginDirectory } from "~/src/plugin/utils";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
@@ -43,6 +44,27 @@ builder.mutationField("deletePlugin", (t) =>
 
 
 
+
+			// Handle plugin manager integration for uninstallation
+			const pluginManager = getPluginManagerInstance();
+			if (pluginManager) {
+				try {
+					console.log("Uninstalling plugin via lifecycle manager:", existingPlugin.pluginId);
+					
+					// Use the plugin manager to handle uninstallation
+					const success = await pluginManager.uninstallPlugin(existingPlugin.pluginId);
+					
+					if (!success) {
+						console.error("Plugin uninstallation failed in lifecycle manager:", existingPlugin.pluginId);
+						// Continue with deletion even if lifecycle fails
+					} else {
+						console.log("Plugin uninstalled successfully via lifecycle manager:", existingPlugin.pluginId);
+					}
+				} catch (error) {
+					console.error("Error during plugin lifecycle uninstallation:", error);
+					// Continue with deletion even if lifecycle fails
+				}
+			}
 
 			// Remove plugin directory from filesystem first
 			try {

@@ -77,114 +77,6 @@ builder.mutationField("installPlugin", (t) =>
 			}
 
 			try {
-				// Load plugin manifest from available folder
-				const pluginsDirectory = path.join(
-					process.cwd(),
-					"src",
-					"plugin",
-					"available",
-				);
-				const pluginPath = path.join(pluginsDirectory, pluginId);
-
-				console.log("Loading plugin manifest for:", pluginId);
-				let manifest: IPluginManifest;
-				try {
-					manifest = await loadPluginManifest(pluginPath);
-					console.log("Plugin manifest loaded:", manifest);
-				} catch (error) {
-					console.error(`Failed to load manifest for ${pluginId}:`, error);
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "pluginId"],
-									message:
-										"Plugin manifest not found or invalid. Ensure plugin files are properly installed in available folder.",
-								},
-							],
-						},
-					});
-				}
-
-				// Create plugin-defined tables during installation
-				if (
-					manifest.extensionPoints?.database &&
-					manifest.extensionPoints.database.length > 0
-				) {
-					console.log(`Creating plugin-defined tables for: ${pluginId}`);
-
-					const tableDefinitions: Record<
-						string,
-						Record<string, unknown>
-					> = {};
-
-					// Load each table definition
-					for (const tableExtension of manifest.extensionPoints.database) {
-						console.log(
-							"Loading table definition:",
-							tableExtension.name,
-							"from",
-							tableExtension.file,
-						);
-
-						const tableFilePath = path.join(pluginPath, tableExtension.file);
-						const tableModule =
-							await safeRequire<Record<string, Record<string, unknown>>>(
-								tableFilePath,
-							);
-
-						if (!tableModule) {
-							throw new Error(
-								`Failed to load table file: ${tableExtension.file}`,
-							);
-						}
-
-						const tableDefinition = tableModule[
-							tableExtension.name
-						] as Record<string, unknown>;
-						if (!tableDefinition) {
-							throw new Error(
-								`Table '${tableExtension.name}' not found in file: ${tableExtension.file}`,
-							);
-						}
-
-						tableDefinitions[tableExtension.name] = tableDefinition;
-						console.log("Table definition loaded:", tableExtension.name);
-					}
-
-					// Create the plugin-defined tables
-					try {
-						await createPluginTables(
-							ctx.drizzleClient as unknown as {
-								execute: (sql: string) => Promise<unknown>;
-							},
-							pluginId,
-							tableDefinitions,
-							console, // Using console as logger
-						);
-						console.log(
-							"Successfully created plugin-defined tables for:",
-							pluginId,
-						);
-					} catch (error) {
-						console.error(`Failed to create tables for ${pluginId}:`, error);
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "forbidden_action_on_arguments_associated_resources",
-								issues: [
-									{
-										argumentPath: ["input", "pluginId"],
-										message: "Failed to create plugin database tables",
-									},
-								],
-							},
-						});
-					}
-				} else {
-					console.log("No plugin-defined tables found for:", pluginId);
-				}
-
 				// Update plugin record to mark as installed
 				const [updatedPlugin] = await ctx.drizzleClient
 					.update(pluginsTable)
@@ -198,17 +90,21 @@ builder.mutationField("installPlugin", (t) =>
 				const pluginManager = getPluginManagerInstance();
 				if (pluginManager) {
 					try {
-						console.log("Loading plugin in plugin manager:", pluginId);
-
-						// Load plugin if not already loaded
-						if (!pluginManager.isPluginLoaded(pluginId)) {
-							await pluginManager.loadPlugin(pluginId);
+						console.log("Installing plugin via lifecycle manager:", pluginId);
+						
+						// Use the plugin manager to handle installation
+						const success = await pluginManager.installPlugin(pluginId);
+						
+						if (!success) {
+							console.error("Plugin installation failed in lifecycle manager:", pluginId);
+							// Don't throw error here - plugin is marked as installed but lifecycle failed
+							// User can retry activation later
+						} else {
+							console.log("Plugin installed successfully via lifecycle manager:", pluginId);
 						}
-
-						console.log("Plugin loaded successfully in plugin manager:", pluginId);
 					} catch (error) {
-						console.error("Error during plugin manager integration:", error);
-						// Don't throw error here - plugin is installed but manager integration failed
+						console.error("Error during plugin lifecycle installation:", error);
+						// Don't throw error here - plugin is installed but lifecycle failed
 						// User can retry activation later
 					}
 				}
