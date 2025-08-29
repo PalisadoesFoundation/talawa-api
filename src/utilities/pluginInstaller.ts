@@ -428,7 +428,7 @@ export async function installPluginFromZip(
 			const [updatedPlugin] = await options.drizzleClient
 				.update(pluginsTable)
 				.set({
-					isInstalled: true,
+					isInstalled: false, // Changed from true to false - installation handled separately
 					updatedAt: new Date(),
 				})
 				.where(eq(pluginsTable.id, (existingPlugin as { id: string }).id))
@@ -441,7 +441,7 @@ export async function installPluginFromZip(
 					id: ulid(),
 					pluginId,
 					isActivated: false,
-					isInstalled: true,
+					isInstalled: false, // Changed from true to false - installation handled separately
 					backup: false,
 					createdAt: new Date(),
 					updatedAt: new Date(),
