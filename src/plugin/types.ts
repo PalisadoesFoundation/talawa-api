@@ -115,9 +115,11 @@ export interface IPluginContext {
 
 // Plugin Lifecycle Types
 export interface IPluginLifecycle {
+	onInstall?(context: IPluginContext): Promise<void>;
 	onLoad?(context: IPluginContext): Promise<void>;
 	onActivate?(context: IPluginContext): Promise<void>;
 	onDeactivate?(context: IPluginContext): Promise<void>;
+	onUninstall?(context: IPluginContext): Promise<void>;
 	onUnload?(context: IPluginContext): Promise<void>;
 }
 
