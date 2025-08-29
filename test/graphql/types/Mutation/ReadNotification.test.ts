@@ -100,7 +100,6 @@ async function createTestOrganization(): Promise<TestOrganization> {
 }
 
 async function createTestUser(): Promise<TestUser> {
-	// Use existing helper (already uses GraphQL API)
 	const regularUser = await createRegularUserUsingAdmin();
 	return {
 		userId: regularUser.userId,

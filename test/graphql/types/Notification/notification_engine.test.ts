@@ -1,149 +1,571 @@
-import { faker } from "@faker-js/faker";
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
-import { server } from "../../../server";
-import { mercuriusClient } from "../client";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { emailNotificationsTable } from "~/src/drizzle/tables/EmailNotification";
+import { notificationAudienceTable } from "~/src/drizzle/tables/NotificationAudience";
+import { notificationLogsTable } from "~/src/drizzle/tables/NotificationLog";
+import type { GraphQLContext } from "~/src/graphql/context";
 import {
-	Mutation_createOrganization,
-	Mutation_createOrganizationMembership,
-	Mutation_createPost,
-	Mutation_createUser,
-	Mutation_deleteOrganization,
-	Mutation_deleteUser,
-	Query_signIn,
-	Query_user_notifications,
-} from "../documentNodes";
+	NotificationChannelType,
+	NotificationEngine,
+	NotificationTargetType,
+} from "~/src/graphql/types/Notification/Notification_engine";
 
-describe("Notification flow (API level)", () => {
-	let adminToken: string | null = null;
-	let hasPostCreatedTemplate = false;
-	const cleanups: Array<() => Promise<void>> = [];
+// Unit Tests for NotificationEngine
+describe("NotificationEngine (unit tests)", () => {
+	// Helper to create a mock template
+	function createMockTemplate(
+		overrides: Partial<Record<string, unknown>> = {},
+	) {
+		return {
+			id: overrides.id ?? "tpl_001",
+			title: overrides.title ?? "Hello {name}",
+			body: overrides.body ?? "Body for {name} - {message}",
+			linkedRouteName: overrides.linkedRouteName ?? null,
+			eventType: overrides.eventType ?? "test_event",
+			channelType: overrides.channelType ?? "in_app",
+			...overrides,
+		};
+	}
 
-	beforeAll(async () => {
-		const tpl =
-			await server.drizzleClient.query.notificationTemplatesTable.findFirst({
-				where: (fields, operators) =>
-					operators.and(
-						operators.eq(fields.eventType, "post_created"),
-						operators.eq(fields.channelType, "in_app"),
-					),
-			});
-		hasPostCreatedTemplate = Boolean(tpl);
-
-		const adminRes = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-				},
-			},
-		});
-		adminToken = adminRes.data?.signIn?.authenticationToken ?? null;
-	});
-
-	afterEach(async () => {
-		while (cleanups.length) {
-			const fn = cleanups.pop();
-			try {
-				if (fn) await fn();
-			} catch {}
+	// Helper to create a mock GraphQL context
+	function createMockContext(
+		options: {
+			template?: Record<string, unknown>;
+			currentClient?: GraphQLContext["currentClient"];
+			orgMembers?: Record<string, unknown>[];
+			users?: Record<string, unknown>[];
+		} = {},
+	) {
+		const template = options.template ?? createMockTemplate();
+		interface InsertRecord {
+			[k: string]: unknown;
 		}
-	});
+		const inserts: Array<{ table: string; values: InsertRecord[] }> = [];
 
-	test("creates a post and user receives in-app notification", async () => {
-		if (!hasPostCreatedTemplate || !adminToken) return;
+		// simulate simple where filtering function for mocks
+		type PredicateFn = (row: InsertRecord) => boolean;
+		type WhereBuilder = (
+			fields: Record<string, unknown>,
+			ops: Record<string, unknown>,
+		) => { test: PredicateFn } | unknown;
+		const buildPredicate = (whereFn: WhereBuilder): PredicateFn | null => {
+			const conditions: {
+				field: string;
+				value: unknown;
+				isInArray?: boolean;
+			}[] = [];
 
-		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
-			headers: { authorization: `bearer ${adminToken}` },
-			variables: {
-				input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
-			},
-		});
-		const orgId = orgRes.data?.createOrganization?.id as string;
-		expect(orgId).toBeTruthy();
-		cleanups.push(async () => {
-			await mercuriusClient.mutate(Mutation_deleteOrganization, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: orgId } },
-			});
-		});
-
-		const userPassword = faker.internet.password();
-		const createUserRes = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${adminToken}` },
-			variables: {
-				input: {
-					name: faker.person.fullName(),
-					emailAddress: faker.internet.email(),
-					password: userPassword,
-					role: "regular",
-					isEmailAddressVerified: true,
+			const fieldProxy = new Proxy(
+				{},
+				{
+					get(_target, prop) {
+						return { _col: prop };
+					},
 				},
-			},
-		});
-		const user = createUserRes.data?.createUser?.user;
-		expect(user?.id).toBeTruthy();
-		cleanups.push(async () => {
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: user?.id as string } },
-			});
-		});
+			) as Record<string, { _col: string }>;
 
-		const userSignIn = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: user?.emailAddress as string,
-					password: userPassword,
+			// Create the and function for complex queries
+			const and = (...args: unknown[]) => {
+				return {
+					test: (row: InsertRecord) => {
+						return conditions.every(({ field, value, isInArray }) => {
+							if (isInArray) {
+								const matches =
+									Array.isArray(value) && value.includes(row[field] as never);
+								return matches;
+							}
+							const matches = row[field] === value;
+							return matches;
+						});
+					},
+				};
+			};
+
+			const ops = {
+				eq: (f: { _col: string }, v: unknown) => {
+					conditions.push({ field: f._col, value: v });
+					return {
+						_isEq: true,
+						_field: f._col,
+						_value: v,
+					};
 				},
-			},
-		});
-		const userToken = userSignIn.data?.signIn?.authenticationToken as string;
-		expect(userToken).toBeTruthy();
-
-		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-			headers: { authorization: `bearer ${adminToken}` },
-			variables: {
-				input: {
-					memberId: user?.id as string,
-					organizationId: orgId,
-					role: "regular",
+				inArray: (f: { _col: string }, arr: unknown[]) => {
+					conditions.push({ field: f._col, value: arr, isInArray: true });
+					return {
+						_isInArray: true,
+						_field: f._col,
+						_values: arr,
+					};
 				},
-			},
-		});
+				and,
+			};
 
-		const postRes = await mercuriusClient.mutate(Mutation_createPost, {
-			headers: { authorization: `bearer ${adminToken}` },
-			variables: {
-				input: {
-					organizationId: orgId,
-					caption: `Test post ${faker.lorem.sentence()}`,
-					attachments: [
-						{
-							mimetype: "IMAGE_PNG",
-							objectName: `test-object-${faker.string.uuid()}`,
-							name: `test-image-${faker.string.uuid()}.png`,
-							fileHash: `test-file-hash-${faker.string.uuid()}`,
+			const predObj = whereFn(
+				fieldProxy,
+				ops as unknown as Record<string, unknown>,
+			);
+
+			// If it's an AND result, return its test function
+			if (predObj && typeof predObj === "object" && "test" in predObj) {
+				return predObj.test as PredicateFn;
+			}
+
+			// Otherwise, create a test function from the tracked conditions
+			return (row: InsertRecord) => {
+				return conditions.every(({ field, value, isInArray }) => {
+					if (isInArray) {
+						return Array.isArray(value) && value.includes(row[field] as never);
+					}
+					return row[field] === value;
+				});
+			};
+		};
+		let logIdCounter = 1;
+		function makeInsert(tableName: string) {
+			return {
+				values(rawVals: InsertRecord[] | InsertRecord) {
+					const arr = Array.isArray(rawVals) ? [...rawVals] : [rawVals];
+					const withIds =
+						tableName === "notificationLogsTable"
+							? arr.map((v) => ({ id: `log_${logIdCounter++}`, ...v }))
+							: arr;
+					inserts.push({ table: tableName, values: withIds });
+					return {
+						returning() {
+							if (tableName === "notificationLogsTable")
+								return Promise.resolve(withIds);
+							return Promise.resolve([]);
 						},
-					],
+					};
+				},
+			};
+		}
+
+		const ctx = {
+			currentClient: options.currentClient ?? {
+				isAuthenticated: true,
+				user: { id: "sender_123" },
+			},
+			drizzleClient: {
+				query: {
+					notificationTemplatesTable: {
+						findFirst: vi
+							.fn()
+							.mockImplementation((args?: { where?: WhereBuilder }) => {
+								if (!args?.where) return Promise.resolve(template);
+								const pred = buildPredicate(args.where);
+								const result = pred?.(template);
+								return Promise.resolve(result ? template : undefined);
+							}),
+					},
+					organizationMembershipsTable: {
+						findMany: vi
+							.fn()
+							.mockImplementation((args?: { where?: WhereBuilder }) => {
+								const data = options.orgMembers ?? [];
+								if (!args?.where) return Promise.resolve(data);
+								const pred = buildPredicate(args.where);
+								return Promise.resolve(
+									pred ? data.filter((r) => pred(r)) : data,
+								);
+							}),
+					},
+					usersTable: {
+						findMany: vi.fn().mockImplementation(
+							(args?: {
+								where?: WhereBuilder;
+								columns?: Record<string, boolean>;
+							}) => {
+								let data: InsertRecord[] = options.users ?? [];
+								if (args?.where) {
+									const pred = buildPredicate(args.where);
+									if (pred) data = data.filter((r) => pred(r));
+								}
+								if (args?.columns) {
+									const cols = args.columns;
+									data = data.map((r) => {
+										const o: InsertRecord = {};
+										for (const key of Object.keys(cols)) {
+											if (cols[key]) o[key] = r[key];
+										}
+										return o;
+									});
+								}
+								return Promise.resolve(data);
+							},
+						),
+					},
+				},
+				insert: (table: unknown) => {
+					if (table === notificationLogsTable) {
+						return makeInsert("notificationLogsTable");
+					}
+					if (table === notificationAudienceTable) {
+						return makeInsert("notificationAudienceTable");
+					}
+					if (table === emailNotificationsTable) {
+						return makeInsert("emailNotificationsTable");
+					}
+					return makeInsert("unknown");
 				},
 			},
-		});
-		expect(postRes.errors).toBeUndefined();
+			log: {
+				info: vi.fn(),
+				warn: vi.fn(),
+			},
+			envConfig: { API_BASE_URL: "http://localhost" },
+			jwt: { sign: () => "test_token" },
+			minio: {},
+			pubsub: {},
+		} as unknown as GraphQLContext;
 
-		const start = Date.now();
-		let notifications: Array<{ id: string | null }> = [];
-		while (Date.now() - start < 10000) {
-			const notifRes = await mercuriusClient.query(Query_user_notifications, {
-				headers: { authorization: `bearer ${userToken}` },
-				variables: {
-					input: { id: user?.id as string },
-					notificationInput: { first: 10 },
+		return { ctx, inserts, template };
+	}
+
+	afterEach(() => {
+		vi.clearAllMocks();
+	});
+
+	test("throws error when template not found", async () => {
+		const { ctx } = createMockContext();
+		// Mock template not found
+		(
+			ctx.drizzleClient.query.notificationTemplatesTable
+				.findFirst as ReturnType<typeof vi.fn>
+		).mockResolvedValueOnce(undefined);
+
+		const engine = new NotificationEngine(ctx);
+
+		await expect(
+			engine.createNotification(
+				"non_existent_event",
+				{ name: "Alice" },
+				{ targetType: NotificationTargetType.USER, targetIds: ["user_001"] },
+			),
+		).rejects.toThrow(/No notification template/);
+	});
+
+	test("creates in-app notification for USER target, excluding sender", async () => {
+		const { ctx, inserts } = createMockContext({
+			template: createMockTemplate({
+				eventType: "test_event",
+				channelType: "in_app",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		await engine.createNotification(
+			"test_event",
+			{ name: "Bob" },
+			{
+				targetType: NotificationTargetType.USER,
+				targetIds: ["sender_123", "user_456"],
+			},
+		);
+
+		// Check notification log was created
+		const logInsert = inserts.find((i) => i.table === "notificationLogsTable");
+		expect(logInsert?.values).toHaveLength(1);
+		expect(logInsert?.values[0]).toMatchObject({
+			eventType: "test_event",
+			channel: "in_app",
+			status: "delivered",
+		});
+
+		// Check audience entry was created (sender should be filtered out)
+		const audienceInsert = inserts.find(
+			(i) => i.table === "notificationAudienceTable",
+		);
+		expect(audienceInsert?.values).toEqual([
+			expect.objectContaining({ userId: "user_456", isRead: false }),
+		]);
+	});
+
+	test("resolves ORGANIZATION target to organization members", async () => {
+		const mockMembers = [
+			{ memberId: "member_001", organizationId: "org_001" },
+			{ memberId: "member_002", organizationId: "org_001" },
+			{ memberId: "sender_123", organizationId: "org_001" }, // Should be filtered out
+		];
+
+		const { ctx, inserts } = createMockContext({
+			orgMembers: mockMembers,
+			template: createMockTemplate({
+				eventType: "org_event",
+				channelType: "in_app",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		await engine.createNotification(
+			"org_event",
+			{},
+			{
+				targetType: NotificationTargetType.ORGANIZATION,
+				targetIds: ["org_001"],
+			},
+		);
+
+		// Verify organization members query was called
+		expect(
+			ctx.drizzleClient.query.organizationMembershipsTable.findMany,
+		).toHaveBeenCalled();
+
+		// Check audience entries (sender should be excluded)
+		const audienceInsert = inserts.find(
+			(i) => i.table === "notificationAudienceTable",
+		);
+		expect(audienceInsert?.values).toEqual([
+			expect.objectContaining({ userId: "member_001" }),
+			expect.objectContaining({ userId: "member_002" }),
+		]);
+	});
+
+	test("resolves ORGANIZATION_ADMIN target to admin members only", async () => {
+		const mockMembers = [
+			{
+				memberId: "admin_001",
+				role: "administrator",
+				organizationId: "org_001",
+			},
+			{ memberId: "regular_001", role: "regular", organizationId: "org_001" },
+			{
+				memberId: "sender_123",
+				role: "administrator",
+				organizationId: "org_001",
+			}, // Should be filtered out
+		];
+
+		const { ctx, inserts } = createMockContext({
+			orgMembers: mockMembers,
+			template: createMockTemplate({
+				eventType: "admin_event",
+				channelType: "in_app",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		await engine.createNotification(
+			"admin_event",
+			{},
+			{
+				targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+				targetIds: ["org_001"],
+			},
+		);
+
+		// Check audience entries (only admins, excluding sender)
+		const audienceInsert = inserts.find(
+			(i) => i.table === "notificationAudienceTable",
+		);
+		expect(audienceInsert?.values).toEqual([
+			expect.objectContaining({ userId: "admin_001" }),
+		]);
+	});
+
+	test("resolves ADMIN target to global administrators", async () => {
+		const mockUsers = [
+			{ id: "global_admin_001", role: "administrator" },
+			{ id: "global_admin_002", role: "administrator" },
+			{ id: "sender_123", role: "administrator" }, // Should be filtered out
+		];
+
+		const { ctx, inserts } = createMockContext({
+			users: mockUsers,
+			template: createMockTemplate({
+				eventType: "global_admin_event",
+				channelType: "in_app",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		await engine.createNotification(
+			"global_admin_event",
+			{},
+			{ targetType: NotificationTargetType.ADMIN, targetIds: [] },
+		);
+
+		// Check audience entries (excluding sender)
+		const audienceInsert = inserts.find(
+			(i) => i.table === "notificationAudienceTable",
+		);
+		expect(audienceInsert?.values).toEqual([
+			expect.objectContaining({ userId: "global_admin_001" }),
+			expect.objectContaining({ userId: "global_admin_002" }),
+		]);
+	});
+
+	test("creates email notifications with deduplication and sender exclusion", async () => {
+		const mockUsers = [
+			{ id: "user_001", emailAddress: "user1@example.com" },
+			{ id: "user_002", emailAddress: "user2@example.com" },
+			{ id: "sender_123", emailAddress: "sender@example.com" },
+		];
+
+		const { ctx, inserts } = createMockContext({
+			users: mockUsers,
+			template: createMockTemplate({
+				eventType: "email_event",
+				channelType: "email",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		await engine.createNotification(
+			"email_event",
+			{ message: "Test email" },
+			[
+				{
+					targetType: NotificationTargetType.USER,
+					targetIds: ["user_001", "user_002"],
 				},
-			});
-			notifications = notifRes.data?.user?.notifications ?? [];
-			if (notifications.length > 0) break;
-			await new Promise((r) => setTimeout(r, 150));
-		}
-		expect(notifications.length > 0).toBe(true);
+				{
+					targetType: NotificationTargetType.USER,
+					targetIds: ["user_002", "sender_123"],
+				}, // user_002 duplicate, sender should be excluded
+			],
+			NotificationChannelType.EMAIL,
+		);
+
+		// Check email notifications were created (deduplicated, sender excluded)
+		const emailInsert = inserts.find(
+			(i) => i.table === "emailNotificationsTable",
+		);
+		expect(emailInsert?.values).toHaveLength(2);
+
+		const userIds = emailInsert?.values.map((v) => v.userId as string).sort();
+		expect(userIds).toEqual(["user_001", "user_002"]);
+	});
+
+	test("warns when no email recipients found", async () => {
+		const { ctx, inserts } = createMockContext({
+			users: [],
+			template: createMockTemplate({
+				eventType: "email_event",
+				channelType: "email",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		await engine.createNotification(
+			"email_event",
+			{},
+			{
+				targetType: NotificationTargetType.USER,
+				targetIds: ["nonexistent_user"],
+			},
+			NotificationChannelType.EMAIL,
+		);
+
+		// No email notifications should be created
+		const emailInsert = inserts.find(
+			(i) => i.table === "emailNotificationsTable",
+		);
+		expect(emailInsert).toBeUndefined();
+
+		// Warning should be logged
+		expect(ctx.log.warn).toHaveBeenCalled();
+	});
+
+	test("renders template variables correctly", async () => {
+		const template = createMockTemplate({
+			eventType: "test_event",
+			channelType: "in_app",
+			title: "Hello {name}!",
+			body: "Welcome {name}, you have {count} new messages.",
+		});
+
+		const { ctx, inserts } = createMockContext({ template });
+		const engine = new NotificationEngine(ctx);
+
+		await engine.createNotification(
+			"test_event",
+			{ name: "Alice", count: 5 },
+			{ targetType: NotificationTargetType.USER, targetIds: ["user_001"] },
+		);
+
+		const logInsert = inserts.find((i) => i.table === "notificationLogsTable");
+		expect(logInsert?.values?.[0]?.renderedContent).toEqual({
+			title: "Hello Alice!",
+			body: "Welcome Alice, you have 5 new messages.",
+		});
+	});
+
+	test("handles multiple audience specifications", async () => {
+		const mockMembers = [
+			{ memberId: "org_member_001", organizationId: "org_001" },
+		];
+		const mockUsers = [{ id: "global_admin_001", role: "administrator" }];
+
+		const { ctx, inserts } = createMockContext({
+			orgMembers: mockMembers,
+			users: mockUsers,
+			template: createMockTemplate({
+				eventType: "multi_audience_event",
+				channelType: "in_app",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		await engine.createNotification("multi_audience_event", {}, [
+			{
+				targetType: NotificationTargetType.ORGANIZATION,
+				targetIds: ["org_001"],
+			},
+			{ targetType: NotificationTargetType.ADMIN, targetIds: [] },
+			{
+				targetType: NotificationTargetType.USER,
+				targetIds: ["direct_user_001"],
+			},
+		]);
+
+		// Check that audience entries were created for all target types
+		const audienceInserts = inserts.filter(
+			(i) => i.table === "notificationAudienceTable",
+		);
+
+		// Collect all user IDs from all audience inserts
+		const allValues = audienceInserts.flatMap((insert) => insert.values);
+		expect(allValues).toHaveLength(3);
+
+		const userIds = allValues.map((v) => v.userId as string).sort();
+		expect(userIds).toEqual([
+			"direct_user_001",
+			"global_admin_001",
+			"org_member_001",
+		]);
+	});
+
+	test("does not exclude sender when unauthenticated", async () => {
+		const { ctx, inserts } = createMockContext({
+			currentClient: {
+				isAuthenticated: false,
+			} as GraphQLContext["currentClient"],
+			template: createMockTemplate({
+				eventType: "guest_event",
+				channelType: "in_app",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		await engine.createNotification(
+			"guest_event",
+			{},
+			{
+				targetType: NotificationTargetType.USER,
+				targetIds: ["guest_user", "other_user"],
+			},
+		);
+
+		// When unauthenticated, no sender filtering should occur
+		const audienceInsert = inserts.find(
+			(i) => i.table === "notificationAudienceTable",
+		);
+		expect(audienceInsert?.values).toHaveLength(2);
+
+		const userIds = audienceInsert?.values
+			.map((v) => v.userId as string)
+			.sort();
+		expect(userIds).toEqual(["guest_user", "other_user"]);
 	});
 });
