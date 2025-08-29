@@ -223,7 +223,7 @@ describe("NotificationEngine (unit tests)", () => {
 	}
 
 	afterEach(() => {
-		vi.clearAllMocks();
+		vi.restoreAllMocks();
 	});
 
 	test("throws error when template not found", async () => {
@@ -567,5 +567,178 @@ describe("NotificationEngine (unit tests)", () => {
 			.map((v) => v.userId as string)
 			.sort();
 		expect(userIds).toEqual(["guest_user", "other_user"]);
+	});
+
+	test("handles users with empty or null email addresses (line 169-171 coverage)", async () => {
+		const mockUsers = [
+			{ id: "user_001", emailAddress: "" }, // Empty email
+			{ id: "user_002", emailAddress: null }, // Null email
+			{ id: "user_003", emailAddress: "   " }, // Whitespace only
+		];
+
+		const { ctx, inserts } = createMockContext({
+			users: mockUsers,
+			template: createMockTemplate({
+				eventType: "email_event",
+				channelType: "email",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		await engine.createNotification(
+			"email_event",
+			{ message: "Test email" },
+			{
+				targetType: NotificationTargetType.USER,
+				targetIds: ["user_001", "user_002", "user_003"],
+			},
+			NotificationChannelType.EMAIL,
+		);
+
+		// No email notifications should be created due to invalid emails
+		const emailInsert = inserts.find(
+			(i) => i.table === "emailNotificationsTable",
+		);
+		expect(emailInsert).toBeUndefined();
+
+		// Warning should be logged for no valid email addresses
+		expect(ctx.log.warn).toHaveBeenCalledWith(
+			"No users found with valid email addresses",
+		);
+	});
+
+	test("covers resolveAudienceToUserIds with empty organization ID (line 230-272 coverage)", async () => {
+		const { ctx, inserts } = createMockContext({
+			template: createMockTemplate({
+				eventType: "org_event",
+				channelType: "in_app",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		// Test ORGANIZATION_ADMIN with empty targetIds array
+		await engine.createNotification(
+			"org_event",
+			{},
+			{
+				targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+				targetIds: [], // Empty array - should trigger early return
+			},
+		);
+
+		// No audience entries should be created
+		const audienceInsert = inserts.find(
+			(i) => i.table === "notificationAudienceTable",
+		);
+		expect(audienceInsert).toBeUndefined();
+	});
+
+	test("covers resolveAudienceToUserIds ORGANIZATION path with empty targetIds (line 230-272 coverage)", async () => {
+		const { ctx, inserts } = createMockContext({
+			template: createMockTemplate({
+				eventType: "org_event",
+				channelType: "in_app",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		// Test ORGANIZATION with empty targetIds array
+		await engine.createNotification(
+			"org_event",
+			{},
+			{
+				targetType: NotificationTargetType.ORGANIZATION,
+				targetIds: [], // Empty array - should trigger early return
+			},
+		);
+
+		// No audience entries should be created
+		const audienceInsert = inserts.find(
+			(i) => i.table === "notificationAudienceTable",
+		);
+		expect(audienceInsert).toBeUndefined();
+	});
+
+	test("covers createAudienceEntries with empty organization ID (line 230-272 coverage)", async () => {
+		const { ctx, inserts } = createMockContext({
+			template: createMockTemplate({
+				eventType: "org_admin_event",
+				channelType: "in_app",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		// Test ORGANIZATION_ADMIN in createAudienceEntries with empty targetIds
+		await engine.createNotification(
+			"org_admin_event",
+			{},
+			{
+				targetType: NotificationTargetType.ORGANIZATION_ADMIN,
+				targetIds: [], // Empty array - should trigger early return in createAudienceEntries
+			},
+		);
+
+		// No audience entries should be created due to empty orgId
+		const audienceInsert = inserts.find(
+			(i) => i.table === "notificationAudienceTable",
+		);
+		expect(audienceInsert).toBeUndefined();
+	});
+
+	test("covers createAudienceEntries ORGANIZATION path with empty targetIds (line 230-272 coverage)", async () => {
+		const { ctx, inserts } = createMockContext({
+			template: createMockTemplate({
+				eventType: "org_event",
+				channelType: "in_app",
+			}),
+		});
+		const engine = new NotificationEngine(ctx);
+
+		// Test ORGANIZATION in createAudienceEntries with empty targetIds
+		await engine.createNotification(
+			"org_event",
+			{},
+			{
+				targetType: NotificationTargetType.ORGANIZATION,
+				targetIds: [], // Empty array - should trigger early return in createAudienceEntries
+			},
+		);
+
+		// No audience entries should be created due to empty orgId
+		const audienceInsert = inserts.find(
+			(i) => i.table === "notificationAudienceTable",
+		);
+		expect(audienceInsert).toBeUndefined();
+	});
+
+	test("covers template variable rendering with null and undefined values", async () => {
+		const template = createMockTemplate({
+			eventType: "test_event",
+			channelType: "in_app",
+			title: "Hello {name}! Welcome {greeting}",
+			body: "Message: {message}, Count: {count}, Status: {status}",
+		});
+
+		const { ctx, inserts } = createMockContext({ template });
+		const engine = new NotificationEngine(ctx);
+
+		// Test with null and undefined values - these should be skipped
+		await engine.createNotification(
+			"test_event",
+			{
+				name: "Alice",
+				greeting: null, // Should be skipped
+				message: undefined, // Should be skipped
+				count: 0, // Should be rendered as "0"
+				status: "", // Should be rendered as empty string
+			},
+			{ targetType: NotificationTargetType.USER, targetIds: ["user_001"] },
+		);
+
+		const logInsert = inserts.find((i) => i.table === "notificationLogsTable");
+		expect(logInsert?.values?.[0]?.renderedContent).toEqual({
+			title: "Hello Alice! Welcome {greeting}", // null value placeholder not replaced
+			body: "Message: {message}, Count: 0, Status: ", // undefined not replaced, 0 and empty string replaced
+		});
 	});
 });

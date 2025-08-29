@@ -4,6 +4,11 @@ import type { GraphQLContext } from "~/src/graphql/context";
 import { EmailQueueProcessor } from "~/src/services/ses/EmailQueueProcessor";
 import { EmailService } from "~/src/services/ses/EmailService";
 
+type ProcessorWithPrivates = {
+	isProcessing: boolean;
+	ctx: Pick<GraphQLContext, "drizzleClient" | "log">;
+};
+
 interface FakeEmailRow {
 	id: string;
 	email: string;
@@ -114,5 +119,241 @@ describe("EmailQueueProcessor", () => {
 		vi.advanceTimersByTime(5000);
 		expect(spy.mock.calls.length).toBe(countAtStop);
 		vi.useRealTimers();
+	});
+
+	it("handles early return when already processing (lines 30-31)", async () => {
+		(processor as unknown as ProcessorWithPrivates).isProcessing = true;
+
+		const spy = vi.spyOn(emailService, "sendBulkEmails");
+		await processor.processPendingEmails();
+
+		expect(spy).not.toHaveBeenCalled();
+
+		(processor as unknown as ProcessorWithPrivates).isProcessing = false;
+	});
+
+	it("handles email sending failures (lines 82-83)", async () => {
+		rows.push(buildRow({ id: "fail-email", retryCount: 0, maxRetries: 3 }));
+
+		vi.spyOn(emailService, "sendBulkEmails").mockResolvedValueOnce([
+			{
+				id: "fail-email",
+				success: false,
+				error: "SMTP connection failed",
+			},
+		]);
+
+		const updateSpy = vi.fn().mockReturnValue({
+			set: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue(undefined),
+			}),
+		});
+		(processor as unknown as ProcessorWithPrivates).ctx.drizzleClient.update =
+			updateSpy;
+
+		await processor.processPendingEmails();
+
+		expect(updateSpy).toHaveBeenCalled();
+	});
+
+	it("handles errors during email processing (line 90)", async () => {
+		rows.push(buildRow({ id: "error-email" }));
+
+		vi.spyOn(emailService, "sendBulkEmails").mockRejectedValueOnce(
+			new Error("Database connection lost"),
+		);
+
+		const logSpy = vi.spyOn(
+			(processor as unknown as ProcessorWithPrivates).ctx.log,
+			"error",
+		);
+
+		await processor.processPendingEmails();
+
+		expect(logSpy).toHaveBeenCalledWith(
+			"Error processing email queue:",
+			expect.any(Error),
+		);
+	});
+
+	it("handles email failure with retry logic - increment retry count (lines 100-127)", async () => {
+		const email = buildRow({ id: "retry-email", retryCount: 1, maxRetries: 3 });
+		rows.push(email);
+
+		vi.spyOn(emailService, "sendBulkEmails").mockResolvedValueOnce([
+			{
+				id: "retry-email",
+				success: false,
+				error: "Temporary network error",
+			},
+		]);
+
+		const updateSpy = vi.fn().mockReturnValue({
+			set: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue(undefined),
+			}),
+		});
+		(processor as unknown as ProcessorWithPrivates).ctx.drizzleClient.update =
+			updateSpy;
+
+		await processor.processPendingEmails();
+
+		const setCall = updateSpy().set;
+		expect(setCall).toHaveBeenCalledWith({
+			retryCount: 2,
+			errorMessage: "Temporary network error",
+			updatedAt: expect.any(Date),
+		});
+	});
+
+	it("handles email failure when max retries reached (lines 100-127)", async () => {
+		const email = buildRow({
+			id: "max-retry-email",
+			retryCount: 2,
+			maxRetries: 3,
+		});
+		rows.push(email);
+
+		vi.spyOn(emailService, "sendBulkEmails").mockResolvedValueOnce([
+			{
+				id: "max-retry-email",
+				success: false,
+				error: "Permanent delivery failure",
+			},
+		]);
+
+		const updateSpy = vi.fn().mockReturnValue({
+			set: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue(undefined),
+			}),
+		});
+		(processor as unknown as ProcessorWithPrivates).ctx.drizzleClient.update =
+			updateSpy;
+
+		await processor.processPendingEmails();
+
+		const setCall = updateSpy().set;
+		expect(setCall).toHaveBeenCalledWith({
+			status: "failed",
+			errorMessage: "Permanent delivery failure",
+			failedAt: expect.any(Date),
+			updatedAt: expect.any(Date),
+		});
+	});
+
+	it("handles error in background processing tick (line 136)", async () => {
+		const mockError = new Error("Background processing error");
+		vi.spyOn(processor, "processPendingEmails").mockRejectedValue(mockError);
+
+		const logSpy = vi.spyOn(
+			(processor as unknown as ProcessorWithPrivates).ctx.log,
+			"error",
+		);
+
+		processor.startBackgroundProcessing(10);
+
+		await new Promise((resolve) => setTimeout(resolve, 50));
+
+		processor.stopBackgroundProcessing();
+
+		expect(logSpy).toHaveBeenCalledWith(
+			{ err: mockError },
+			"Email queue tick failed",
+		);
+	});
+
+	it("handles email with null retry count (lines 100-127)", async () => {
+		const email = buildRow({
+			id: "null-retry-email",
+			retryCount: null,
+			maxRetries: 3,
+		});
+		rows.push(email);
+
+		vi.spyOn(emailService, "sendBulkEmails").mockResolvedValueOnce([
+			{
+				id: "null-retry-email",
+				success: false,
+				error: "Network timeout",
+			},
+		]);
+
+		const updateSpy = vi.fn().mockReturnValue({
+			set: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue(undefined),
+			}),
+		});
+		(processor as unknown as ProcessorWithPrivates).ctx.drizzleClient.update =
+			updateSpy;
+
+		await processor.processPendingEmails();
+
+		const setCall = updateSpy().set;
+		expect(setCall).toHaveBeenCalledWith({
+			retryCount: 1,
+			errorMessage: "Network timeout",
+			updatedAt: expect.any(Date),
+		});
+	});
+
+	it("handles email failure with undefined error (lines 82-83)", async () => {
+		rows.push(
+			buildRow({ id: "undefined-error", retryCount: 0, maxRetries: 3 }),
+		);
+
+		vi.spyOn(emailService, "sendBulkEmails").mockResolvedValueOnce([
+			{
+				id: "undefined-error",
+				success: false,
+			},
+		]);
+
+		const updateSpy = vi.fn().mockReturnValue({
+			set: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue(undefined),
+			}),
+		});
+		(processor as unknown as ProcessorWithPrivates).ctx.drizzleClient.update =
+			updateSpy;
+
+		await processor.processPendingEmails();
+
+		const setCall = updateSpy().set;
+		expect(setCall).toHaveBeenCalledWith({
+			retryCount: 1,
+			errorMessage: "Unknown error",
+			updatedAt: expect.any(Date),
+		});
+	});
+
+	it("prevents starting background processing twice", async () => {
+		vi.useFakeTimers();
+
+		const logSpy = vi.spyOn(
+			(processor as unknown as ProcessorWithPrivates).ctx.log,
+			"info",
+		);
+
+		processor.startBackgroundProcessing(1000);
+		processor.startBackgroundProcessing(1000);
+
+		expect(logSpy).toHaveBeenCalledTimes(1);
+		expect(logSpy).toHaveBeenCalledWith(
+			"Email queue processor started with 1000ms interval",
+		);
+
+		processor.stopBackgroundProcessing();
+		vi.useRealTimers();
+	});
+
+	it("handles stopping background processing when not started", () => {
+		const logSpy = vi.spyOn(
+			(processor as unknown as ProcessorWithPrivates).ctx.log,
+			"info",
+		);
+
+		processor.stopBackgroundProcessing();
+
+		expect(logSpy).not.toHaveBeenCalledWith("Email queue processor stopped");
 	});
 });

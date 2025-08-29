@@ -482,4 +482,145 @@ describe("NotificationEventBus", () => {
 			);
 		});
 	});
+
+	describe("emitFundCreated error handling", () => {
+		it("should log error when fund notification fails (lines 333-334)", async () => {
+			const error = new Error("Fund notification failed");
+			createNotificationSpy.mockRejectedValueOnce(error);
+
+			const data = {
+				fundId: "fund-error-123",
+				fundName: "Error Fund",
+				organizationId: "org-456",
+				organizationName: "Test Organization",
+				creatorName: "Fund Manager",
+			};
+
+			await bus.emitFundCreated(data, mockCtx);
+			await waitForSetImmediate();
+
+			expect(errorSpy).toHaveBeenCalledWith(
+				"Failed to send fund creation notification:",
+				error,
+			);
+		});
+	});
+
+	describe("emitFundCampaignCreated error handling", () => {
+		it("should log error when fund campaign notification fails (lines 378-382)", async () => {
+			const error = new Error("Fund campaign notification failed");
+			createNotificationSpy.mockRejectedValueOnce(error);
+
+			const data = {
+				campaignId: "campaign-error-123",
+				campaignName: "Error Campaign",
+				fundName: "Environmental Fund",
+				organizationId: "org-456",
+				organizationName: "Test Organization",
+				creatorName: "Campaign Manager",
+				goalAmount: "10000",
+				currencyCode: "USD",
+			};
+
+			await bus.emitFundCampaignCreated(data, mockCtx);
+			await waitForSetImmediate();
+
+			expect(errorSpy).toHaveBeenCalledWith(
+				"Failed to send fund campaign creation notification:",
+				error,
+			);
+		});
+	});
+
+	describe("emitFundCampaignPledgeCreated error handling", () => {
+		it("should log error when fund campaign pledge notification fails (lines 424-428)", async () => {
+			const error = new Error("Fund campaign pledge notification failed");
+			createNotificationSpy.mockRejectedValueOnce(error);
+
+			const data = {
+				pledgeId: "pledge-error-123",
+				campaignName: "Error Campaign",
+				organizationId: "org-456",
+				organizationName: "Test Organization",
+				pledgerName: "Error Donor",
+				amount: "500",
+				currencyCode: "USD",
+			};
+
+			await bus.emitFundCampaignPledgeCreated(data, mockCtx);
+			await waitForSetImmediate();
+
+			expect(errorSpy).toHaveBeenCalledWith(
+				"Failed to send fund campaign pledge notification:",
+				error,
+			);
+		});
+	});
+
+	describe("additional error handling coverage", () => {
+		it("should handle all event methods gracefully when notifications fail", async () => {
+			// Mock all notification calls to fail
+			const commonError = new Error("Notification service down");
+			createNotificationSpy.mockRejectedValue(commonError);
+
+			const eventData = {
+				eventId: "event-error",
+				eventName: "Error Event",
+				organizationId: "org-456",
+				organizationName: "Test Organization",
+				startDate: "2025-08-15T10:00:00Z",
+				creatorName: "Event Creator",
+			};
+
+			const joinRequestData = {
+				requestId: "request-error",
+				userId: "user-error",
+				userName: "Error User",
+				organizationId: "org-456",
+				organizationName: "Test Organization",
+			};
+
+			const memberData = {
+				userId: "member-error",
+				userName: "Error Member",
+				organizationId: "org-456",
+				organizationName: "Test Organization",
+			};
+
+			const blockData = {
+				userId: "blocked-error",
+				userName: "Blocked User",
+				organizationId: "org-456",
+				organizationName: "Test Organization",
+			};
+
+			// Execute all event emitters
+			await Promise.all([
+				bus.emitEventCreated(eventData, mockCtx),
+				bus.emitJoinRequestSubmitted(joinRequestData, mockCtx),
+				bus.emitNewMemberJoined(memberData, mockCtx),
+				bus.emitUserBlocked(blockData, mockCtx),
+			]);
+
+			await waitForSetImmediate();
+
+			// All should log errors appropriately
+			expect(errorSpy).toHaveBeenCalledWith(
+				"Failed to send event creation notification:",
+				commonError,
+			);
+			expect(errorSpy).toHaveBeenCalledWith(
+				"Failed to send join request notification:",
+				commonError,
+			);
+			expect(errorSpy).toHaveBeenCalledWith(
+				"Failed to send new member notification:",
+				commonError,
+			);
+			expect(errorSpy).toHaveBeenCalledWith(
+				"Failed to send user blocked notification:",
+				commonError,
+			);
+		});
+	});
 });
