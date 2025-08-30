@@ -213,6 +213,25 @@ jobs:
         run: cp ./envFiles/.env.ci ./.env
       - name: Build talawa api compose testing environment
         run: docker compose build
+      - name: Start containers
+        run: docker compose up -d
+      - name: Wait for Postgres to be ready
+        run: |
+          echo "Waiting for postgres..."
+          timeout=30
+          until docker compose exec talawa-postgres-1 pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Postgres not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "Error: Postgres failed to start"
+            docker compose logs talawa-postgres-1
+            docker compose down -v
+            exit 1
+          else
+            echo "Postgres is ready inside devcontainer!"
+          fi
       - name: Run tests
         run: docker compose up --exit-code-from api
       - name: Copy coverage from container
@@ -355,6 +374,20 @@ jobs:
         run: cp envFiles/.env.devcontainer .env
       - name: Bring up devcontainer
         run: devcontainer up --workspace-folder .
+      - name: Wait for Postgres in devcontainer
+        run: |
+          echo "Waiting for Postgres container..."
+          for i in {1..30}; do
+            if docker exec talawa-api-1 pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1; then
+              echo "Postgres is ready inside devcontainer!"
+              exit 0
+            fi
+            echo "Postgres not ready yet... ($((30-i)) seconds remaining)"
+            sleep 1
+          done
+          echo "Error: Postgres failed to start in devcontainer"
+          docker logs talawa-api-1
+          exit 1
       - name: Wait for Devcontainer to be ready
         run: |
           echo "Waiting for devcontainer services to be ready..."
