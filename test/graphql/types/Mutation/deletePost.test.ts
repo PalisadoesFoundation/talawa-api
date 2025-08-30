@@ -13,6 +13,8 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+const SUITE_TIMEOUT = 40_000;
+
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
 		input: {
@@ -50,169 +52,277 @@ suite("Mutation field deletePost", () => {
 	});
 
 	suite("when the specified post does not exist", () => {
-		test("should return an error with arguments_associated_resources_not_found extensions code", async () => {
-			const randomPostId = faker.string.uuid();
+		test(
+			"should return an error with arguments_associated_resources_not_found extensions code",
+			async () => {
+				const randomPostId = faker.string.uuid();
 
-			const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
-				headers: {
-					authorization: `bearer ${adminauthToken}`,
-				},
-				variables: {
-					input: { id: randomPostId },
-				},
-			});
+				const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
+					headers: {
+						authorization: `bearer ${adminauthToken}`,
+					},
+					variables: {
+						input: { id: randomPostId },
+					},
+				});
 
-			expect(deleteResult.data?.deletePost).toBeNull();
-			expect(deleteResult.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
+				expect(deleteResult.data?.deletePost).toBeNull();
+				expect(deleteResult.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "arguments_associated_resources_not_found",
+							}),
+							path: ["deletePost"],
 						}),
-						path: ["deletePost"],
-					}),
-				]),
-			);
-		});
+					]),
+				);
+			},
+			SUITE_TIMEOUT,
+		);
 	});
 
 	suite("when the client is not authorized to delete the post", () => {
-		test("should return an error with unauthorized_action_on_arguments_associated_resources extensions code", async () => {
-			const createOrganizationResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: {
-						authorization: `bearer ${adminauthToken}`,
-					},
-					variables: {
-						input: {
-							name: "test",
-							description: "test",
-							countryCode: "us",
-							state: "test",
-							city: "test",
-							postalCode: "test",
-							addressLine1: "test",
-							addressLine2: "test",
+		test(
+			"should return an error with unauthorized_action_on_arguments_associated_resources extensions code",
+			async () => {
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${adminauthToken}`,
+						},
+						variables: {
+							input: {
+								name: "test",
+								description: "test",
+								countryCode: "us",
+								state: "test",
+								city: "test",
+								postalCode: "test",
+								addressLine1: "test",
+								addressLine2: "test",
+							},
 						},
 					},
-				},
-			);
-			const existingOrganizationId =
-				createOrganizationResult.data?.createOrganization?.id;
-			assertToBeNonNullish(existingOrganizationId);
+				);
+				const existingOrganizationId =
+					createOrganizationResult.data?.createOrganization?.id;
+				assertToBeNonNullish(existingOrganizationId);
 
-			const createPostResult = await mercuriusClient.mutate(
-				Mutation_createPost,
-				{
-					headers: {
-						authorization: `bearer ${adminauthToken}`,
-					},
-					variables: {
-						input: {
-							caption: "Unauthorized deletion test",
-							organizationId: existingOrganizationId,
-							isPinned: false,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: "test-object",
-									fileHash: "test-hash",
-									name: "test.png",
-								},
-							],
+				const createPostResult = await mercuriusClient.mutate(
+					Mutation_createPost,
+					{
+						headers: {
+							authorization: `bearer ${adminauthToken}`,
+						},
+						variables: {
+							input: {
+								caption: "Unauthorized deletion test",
+								organizationId: existingOrganizationId,
+								isPinned: false,
+								attachments: [
+									{
+										mimetype: "IMAGE_PNG",
+										objectName: "test-object",
+										fileHash: "test-hash",
+										name: "test.png",
+									},
+								],
+							},
 						},
 					},
-				},
-			);
-			const postId = createPostResult.data?.createPost?.id;
-			assertToBeNonNullish(postId);
+				);
+				const postId = createPostResult.data?.createPost?.id;
+				assertToBeNonNullish(postId);
 
-			const { authToken: regularAuthToken } =
-				await createRegularUserUsingAdmin();
+				const { authToken: regularAuthToken } =
+					await createRegularUserUsingAdmin();
 
-			const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
-				headers: { authorization: `bearer ${regularAuthToken}` },
-				variables: { input: { id: postId } },
-			});
+				const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
+					headers: { authorization: `bearer ${regularAuthToken}` },
+					variables: { input: { id: postId } },
+				});
 
-			expect(deleteResult.data?.deletePost).toBeNull();
-			expect(deleteResult.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unauthorized_action_on_arguments_associated_resources",
+				expect(deleteResult.data?.deletePost).toBeNull();
+				expect(deleteResult.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unauthorized_action_on_arguments_associated_resources",
+							}),
+							path: ["deletePost"],
 						}),
-						path: ["deletePost"],
-					}),
-				]),
-			);
-		});
+					]),
+				);
+			},
+			SUITE_TIMEOUT,
+		);
 	});
 
 	suite("when the arguments are invalid", () => {
-		test("should return an error with invalid_arguments extensions code", async () => {
-			const result = await mercuriusClient.mutate(Mutation_deletePost, {
-				headers: { authorization: `bearer ${adminauthToken}` },
-				variables: {
-					input: { id: "invalid-uuid" },
-				},
-			});
+		test(
+			"should return an error with invalid_arguments extensions code",
+			async () => {
+				const result = await mercuriusClient.mutate(Mutation_deletePost, {
+					headers: { authorization: `bearer ${adminauthToken}` },
+					variables: {
+						input: { id: "invalid-uuid" },
+					},
+				});
 
-			expect(result.data?.deletePost ?? null).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "invalid_arguments",
+				expect(result.data?.deletePost ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "invalid_arguments",
+							}),
+							path: ["deletePost"],
 						}),
-						path: ["deletePost"],
-					}),
-				]),
-			);
-		});
+					]),
+				);
+			},
+			SUITE_TIMEOUT,
+		);
 	});
 
 	suite("when the current user does not exist in the database", () => {
-		test("should return an error with unauthenticated extensions code", async () => {
-			const { authToken } = await createRegularUserUsingAdmin();
+		test(
+			"should return an error with unauthenticated extensions code",
+			async () => {
+				const { authToken } = await createRegularUserUsingAdmin();
 
-			await mercuriusClient.mutate(Mutation_deleteCurrentUser, {
-				headers: { authorization: `bearer ${authToken}` },
-			});
+				await mercuriusClient.mutate(Mutation_deleteCurrentUser, {
+					headers: { authorization: `bearer ${authToken}` },
+				});
 
-			const randomPostId = faker.string.uuid();
-			const result = await mercuriusClient.mutate(Mutation_deletePost, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: { input: { id: randomPostId } },
-			});
+				const randomPostId = faker.string.uuid();
+				const result = await mercuriusClient.mutate(Mutation_deletePost, {
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { input: { id: randomPostId } },
+				});
 
-			expect(result.data?.deletePost ?? null).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unauthenticated",
+				expect(result.data?.deletePost ?? null).toBeNull();
+				expect(result.errors).toEqual(
+					expect.arrayContaining([
+						expect.objectContaining({
+							extensions: expect.objectContaining({
+								code: "unauthenticated",
+							}),
+							path: ["deletePost"],
 						}),
-						path: ["deletePost"],
-					}),
-				]),
-			);
-		});
+					]),
+				);
+			},
+			SUITE_TIMEOUT,
+		);
 	});
 
 	suite(
 		"when a non-admin member attempts to delete another user's post",
 		() => {
-			test("should return an error with unauthorized_action_on_arguments_associated_resources extensions code", async () => {
+			test(
+				"should return an error with unauthorized_action_on_arguments_associated_resources extensions code",
+				async () => {
+					const createOrgResult = await mercuriusClient.mutate(
+						Mutation_createOrganization,
+						{
+							headers: { authorization: `bearer ${adminauthToken}` },
+							variables: {
+								input: {
+									name: "test-membership",
+									description: "test-membership",
+									countryCode: "us",
+									state: "test",
+									city: "test",
+									postalCode: "test",
+									addressLine1: "test",
+									addressLine2: "test",
+								},
+							},
+						},
+					);
+					const orgId = createOrgResult.data?.createOrganization?.id;
+					assertToBeNonNullish(orgId);
+
+					const createPostResult = await mercuriusClient.mutate(
+						Mutation_createPost,
+						{
+							headers: { authorization: `bearer ${adminauthToken}` },
+							variables: {
+								input: {
+									caption: "Test membership unauthorized deletion",
+									organizationId: orgId,
+									isPinned: false,
+									attachments: [
+										{
+											mimetype: "IMAGE_PNG",
+											objectName: "test-object-2",
+											fileHash: "test-hash-2",
+											name: "test.png",
+										},
+									],
+								},
+							},
+						},
+					);
+					const postId = createPostResult.data?.createPost?.id;
+					assertToBeNonNullish(postId);
+
+					const { authToken: regularAuthToken, userId: regularUserId } =
+						await createRegularUserUsingAdmin();
+
+					await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+						headers: { authorization: `bearer ${adminauthToken}` },
+						variables: {
+							input: {
+								role: "regular",
+								organizationId: orgId,
+								memberId: regularUserId,
+							},
+						},
+					});
+
+					// Attempt to delete the post as the regular user.
+					const deleteResult = await mercuriusClient.mutate(
+						Mutation_deletePost,
+						{
+							headers: { authorization: `bearer ${regularAuthToken}` },
+							variables: { input: { id: postId } },
+						},
+					);
+
+					expect(deleteResult.data?.deletePost).toBeNull();
+					expect(deleteResult.errors).toEqual(
+						expect.arrayContaining([
+							expect.objectContaining({
+								extensions: expect.objectContaining({
+									code: "unauthorized_action_on_arguments_associated_resources",
+								}),
+								path: ["deletePost"],
+							}),
+						]),
+					);
+				},
+				SUITE_TIMEOUT,
+			);
+		},
+	);
+
+	suite("when the deletion transaction returns no deleted post", () => {
+		test(
+			"should return an error with unexpected extensions code",
+			async () => {
+				// Create organization and post as admin.
 				const createOrgResult = await mercuriusClient.mutate(
 					Mutation_createOrganization,
 					{
 						headers: { authorization: `bearer ${adminauthToken}` },
 						variables: {
 							input: {
-								name: "test-membership",
-								description: "test-membership",
+								name: "test-transaction",
+								description: "test-transaction",
 								countryCode: "us",
 								state: "test",
 								city: "test",
@@ -232,14 +342,14 @@ suite("Mutation field deletePost", () => {
 						headers: { authorization: `bearer ${adminauthToken}` },
 						variables: {
 							input: {
-								caption: "Test membership unauthorized deletion",
+								caption: "Test deletion transaction",
 								organizationId: orgId,
 								isPinned: false,
 								attachments: [
 									{
 										mimetype: "IMAGE_PNG",
-										objectName: "test-object-2",
-										fileHash: "test-hash-2",
+										objectName: "test-object-3",
+										fileHash: "test-hash-3",
 										name: "test.png",
 									},
 								],
@@ -250,261 +360,194 @@ suite("Mutation field deletePost", () => {
 				const postId = createPostResult.data?.createPost?.id;
 				assertToBeNonNullish(postId);
 
-				const { authToken: regularAuthToken, userId: regularUserId } =
-					await createRegularUserUsingAdmin();
-
-				await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-					headers: { authorization: `bearer ${adminauthToken}` },
-					variables: {
-						input: {
-							role: "regular",
-							organizationId: orgId,
-							memberId: regularUserId,
-						},
-					},
-				});
-
-				// Attempt to delete the post as the regular user.
-				const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
-					headers: { authorization: `bearer ${regularAuthToken}` },
-					variables: { input: { id: postId } },
-				});
-
-				expect(deleteResult.data?.deletePost).toBeNull();
-				expect(deleteResult.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "unauthorized_action_on_arguments_associated_resources",
-							}),
-							path: ["deletePost"],
-						}),
-					]),
-				);
-			});
-		},
-	);
-
-	suite("when the deletion transaction returns no deleted post", () => {
-		test("should return an error with unexpected extensions code", async () => {
-			// Create organization and post as admin.
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${adminauthToken}` },
-					variables: {
-						input: {
-							name: "test-transaction",
-							description: "test-transaction",
-							countryCode: "us",
-							state: "test",
-							city: "test",
-							postalCode: "test",
-							addressLine1: "test",
-							addressLine2: "test",
-						},
-					},
-				},
-			);
-			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
-
-			const createPostResult = await mercuriusClient.mutate(
-				Mutation_createPost,
-				{
-					headers: { authorization: `bearer ${adminauthToken}` },
-					variables: {
-						input: {
-							caption: "Test deletion transaction",
-							organizationId: orgId,
-							isPinned: false,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: "test-object-3",
-									fileHash: "test-hash-3",
-									name: "test.png",
+				const originalTransaction = server.drizzleClient.transaction;
+				const fakeTransaction = async <T>(
+					fn: (tx: unknown) => Promise<T>,
+				): Promise<T> => {
+					return await fn({
+						delete: () => ({
+							where: () => ({
+								returning: async () => {
+									return [];
 								},
-							],
-						},
-					},
-				},
-			);
-			const postId = createPostResult.data?.createPost?.id;
-			assertToBeNonNullish(postId);
-
-			const originalTransaction = server.drizzleClient.transaction;
-			const fakeTransaction = async <T>(
-				fn: (tx: unknown) => Promise<T>,
-			): Promise<T> => {
-				return await fn({
-					delete: () => ({
-						where: () => ({
-							returning: async () => {
-								return [];
-							},
-						}),
-					}),
-				});
-			};
-
-			try {
-				server.drizzleClient.transaction =
-					fakeTransaction as typeof server.drizzleClient.transaction;
-
-				const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
-					headers: { authorization: `bearer ${adminauthToken}` },
-					variables: { input: { id: postId } },
-				});
-
-				expect(deleteResult.data?.deletePost ?? null).toBeNull();
-				expect(deleteResult.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "unexpected",
 							}),
-							path: ["deletePost"],
 						}),
-					]),
-				);
-			} finally {
-				server.drizzleClient.transaction = originalTransaction;
-			}
-		});
+					});
+				};
+
+				try {
+					server.drizzleClient.transaction =
+						fakeTransaction as typeof server.drizzleClient.transaction;
+
+					const deleteResult = await mercuriusClient.mutate(
+						Mutation_deletePost,
+						{
+							headers: { authorization: `bearer ${adminauthToken}` },
+							variables: { input: { id: postId } },
+						},
+					);
+
+					expect(deleteResult.data?.deletePost ?? null).toBeNull();
+					expect(deleteResult.errors).toEqual(
+						expect.arrayContaining([
+							expect.objectContaining({
+								extensions: expect.objectContaining({
+									code: "unexpected",
+								}),
+								path: ["deletePost"],
+							}),
+						]),
+					);
+				} finally {
+					server.drizzleClient.transaction = originalTransaction;
+				}
+			},
+			SUITE_TIMEOUT,
+		);
 	});
 
 	suite("when minio removal fails", () => {
-		test("should bubble up an error from the minio removal and not delete the post", async () => {
-			const createOrgResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${adminauthToken}` },
-					variables: {
-						input: {
-							name: "test-minio-failure",
-							description: "test-minio-failure",
-							countryCode: "us",
-							state: "test",
-							city: "test",
-							postalCode: "test",
-							addressLine1: "test",
-							addressLine2: "test",
+		test(
+			"should bubble up an error from the minio removal and not delete the post",
+			async () => {
+				const createOrgResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: { authorization: `bearer ${adminauthToken}` },
+						variables: {
+							input: {
+								name: "test-minio-failure",
+								description: "test-minio-failure",
+								countryCode: "us",
+								state: "test",
+								city: "test",
+								postalCode: "test",
+								addressLine1: "test",
+								addressLine2: "test",
+							},
 						},
 					},
-				},
-			);
-			const orgId = createOrgResult.data?.createOrganization?.id;
-			assertToBeNonNullish(orgId);
+				);
+				const orgId = createOrgResult.data?.createOrganization?.id;
+				assertToBeNonNullish(orgId);
 
-			const createPostResult = await mercuriusClient.mutate(
-				Mutation_createPost,
-				{
-					headers: { authorization: `bearer ${adminauthToken}` },
-					variables: {
-						input: {
-							caption: "Test minio failure",
-							organizationId: orgId,
-							isPinned: false,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: "test-object-4",
-									fileHash: "test-hash-4",
-									name: "test.png",
-								},
-							],
+				const createPostResult = await mercuriusClient.mutate(
+					Mutation_createPost,
+					{
+						headers: { authorization: `bearer ${adminauthToken}` },
+						variables: {
+							input: {
+								caption: "Test minio failure",
+								organizationId: orgId,
+								isPinned: false,
+								attachments: [
+									{
+										mimetype: "IMAGE_PNG",
+										objectName: "test-object-4",
+										fileHash: "test-hash-4",
+										name: "test.png",
+									},
+								],
+							},
 						},
 					},
-				},
-			);
-			const postId = createPostResult.data?.createPost?.id;
-			assertToBeNonNullish(postId);
+				);
+				const postId = createPostResult.data?.createPost?.id;
+				assertToBeNonNullish(postId);
 
-			const originalRemoveObjects = server.minio.client.removeObjects;
-			try {
-				server.minio.client.removeObjects = async () => {
-					throw new Error("Minio removal error");
-				};
+				const originalRemoveObjects = server.minio.client.removeObjects;
+				try {
+					server.minio.client.removeObjects = async () => {
+						throw new Error("Minio removal error");
+					};
+
+					const deleteResult = await mercuriusClient.mutate(
+						Mutation_deletePost,
+						{
+							headers: { authorization: `bearer ${adminauthToken}` },
+							variables: { input: { id: postId } },
+						},
+					);
+
+					expect(deleteResult.data?.deletePost ?? null).toBeNull();
+					expect(deleteResult.errors).toBeDefined();
+					expect(deleteResult.errors?.[0]?.message).toContain(
+						"Minio removal error",
+					);
+				} finally {
+					server.minio.client.removeObjects = originalRemoveObjects;
+				}
+			},
+			SUITE_TIMEOUT,
+		);
+	});
+
+	suite("when the client is authorized and the post exists", () => {
+		test(
+			"should delete the post and return the deleted post data",
+			async () => {
+				const createOrganizationResult = await mercuriusClient.mutate(
+					Mutation_createOrganization,
+					{
+						headers: {
+							authorization: `bearer ${adminauthToken}`,
+						},
+						variables: {
+							input: {
+								name: "test-2",
+								description: "test-2",
+								countryCode: "us",
+								state: "test-2",
+								city: "test-2",
+								postalCode: "test-2",
+								addressLine1: "test-2",
+								addressLine2: "test-2",
+							},
+						},
+					},
+				);
+				const existingOrganizationId =
+					createOrganizationResult.data?.createOrganization?.id;
+				assertToBeNonNullish(existingOrganizationId);
+
+				const createPostResult = await mercuriusClient.mutate(
+					Mutation_createPost,
+					{
+						headers: {
+							authorization: `bearer ${adminauthToken}`,
+						},
+						variables: {
+							input: {
+								caption: "Unauthorized deletion test",
+								organizationId: existingOrganizationId,
+								isPinned: false,
+								attachments: [
+									{
+										mimetype: "IMAGE_PNG",
+										objectName: "test-object-5",
+										fileHash: "test-hash-5gt",
+										name: "test.png",
+									},
+								],
+							},
+						},
+					},
+				);
+				const postId = createPostResult.data?.createPost?.id;
+				assertToBeNonNullish(postId);
 
 				const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
 					headers: { authorization: `bearer ${adminauthToken}` },
 					variables: { input: { id: postId } },
 				});
+				assertToBeNonNullish(deleteResult.data.deletePost);
 
-				expect(deleteResult.data?.deletePost ?? null).toBeNull();
-				expect(deleteResult.errors).toBeDefined();
-				expect(deleteResult.errors?.[0]?.message).toContain(
-					"Minio removal error",
+				expect(deleteResult.data.deletePost.id).toEqual(postId);
+				expect(Array.isArray(deleteResult.data.deletePost.attachments)).toBe(
+					true,
 				);
-			} finally {
-				server.minio.client.removeObjects = originalRemoveObjects;
-			}
-		});
-	});
-
-	suite("when the client is authorized and the post exists", () => {
-		test("should delete the post and return the deleted post data", async () => {
-			const createOrganizationResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: {
-						authorization: `bearer ${adminauthToken}`,
-					},
-					variables: {
-						input: {
-							name: "test-2",
-							description: "test-2",
-							countryCode: "us",
-							state: "test-2",
-							city: "test-2",
-							postalCode: "test-2",
-							addressLine1: "test-2",
-							addressLine2: "test-2",
-						},
-					},
-				},
-			);
-			const existingOrganizationId =
-				createOrganizationResult.data?.createOrganization?.id;
-			assertToBeNonNullish(existingOrganizationId);
-
-			const createPostResult = await mercuriusClient.mutate(
-				Mutation_createPost,
-				{
-					headers: {
-						authorization: `bearer ${adminauthToken}`,
-					},
-					variables: {
-						input: {
-							caption: "Unauthorized deletion test",
-							organizationId: existingOrganizationId,
-							isPinned: false,
-							attachments: [
-								{
-									mimetype: "IMAGE_PNG",
-									objectName: "test-object-5",
-									fileHash: "test-hash-5gt",
-									name: "test.png",
-								},
-							],
-						},
-					},
-				},
-			);
-			const postId = createPostResult.data?.createPost?.id;
-			assertToBeNonNullish(postId);
-
-			const deleteResult = await mercuriusClient.mutate(Mutation_deletePost, {
-				headers: { authorization: `bearer ${adminauthToken}` },
-				variables: { input: { id: postId } },
-			});
-			assertToBeNonNullish(deleteResult.data.deletePost);
-
-			expect(deleteResult.data.deletePost.id).toEqual(postId);
-			expect(Array.isArray(deleteResult.data.deletePost.attachments)).toBe(
-				true,
-			);
-		});
+			},
+			SUITE_TIMEOUT,
+		);
 	});
 });

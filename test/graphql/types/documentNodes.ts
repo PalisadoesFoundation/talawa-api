@@ -783,6 +783,26 @@ export const Mutation_updatePost = gql(`
   }
 `);
 
+export const Mutation_updatePostVote = gql(`
+mutation Mutation_updatePostVote($input:MutationUpdatePostVoteInput!){
+    updatePostVote(input: $input) {
+    id
+    upVotesCount
+    downVotesCount
+    creator{
+      id
+    }
+    upVoters(first: 10) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+}
+  `);
+
 export const Mutation_createChat = gql(`
   mutation Mutation_createChat($input: MutationCreateChatInput!) {
     createChat(input: $input) {
