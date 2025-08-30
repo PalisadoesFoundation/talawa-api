@@ -33,11 +33,10 @@ export class EmailQueueProcessor {
 		this.isProcessing = true;
 
 		try {
-			// Get pending emails
 			const pendingEmails =
 				await this.ctx.drizzleClient.query.emailNotificationsTable.findMany({
 					where: (fields, operators) => operators.eq(fields.status, "pending"),
-					limit: 10, // Process in small batches
+					limit: 10,
 					orderBy: (fields, operators) => [operators.asc(fields.createdAt)],
 				});
 
@@ -45,7 +44,6 @@ export class EmailQueueProcessor {
 				return;
 			}
 
-			// Convert to email jobs
 			const emailJobs: EmailJob[] = pendingEmails.map(
 				(email: EmailNotification) => ({
 					id: email.id,
@@ -56,10 +54,8 @@ export class EmailQueueProcessor {
 				}),
 			);
 
-			// Send emails
 			const results = await this.emailService.sendBulkEmails(emailJobs);
 
-			// Update email statuses based on results
 			for (const result of results) {
 				const email = pendingEmails.find(
 					(e: EmailNotification) => e.id === result.id,
@@ -78,7 +74,6 @@ export class EmailQueueProcessor {
 						})
 						.where(eq(emailNotificationsTable.id, result.id));
 				} else {
-					// Handle failure
 					await this.handleEmailFailure(email, result.error || "Unknown error");
 				}
 			}
@@ -103,7 +98,6 @@ export class EmailQueueProcessor {
 		const newRetryCount = (email.retryCount ?? 0) + 1;
 
 		if (newRetryCount >= email.maxRetries) {
-			// Max retries reached, mark as failed
 			await this.ctx.drizzleClient
 				.update(emailNotificationsTable)
 				.set({
@@ -114,7 +108,6 @@ export class EmailQueueProcessor {
 				})
 				.where(eq(emailNotificationsTable.id, email.id));
 		} else {
-			// Increment retry count and keep as pending
 			await this.ctx.drizzleClient
 				.update(emailNotificationsTable)
 				.set({

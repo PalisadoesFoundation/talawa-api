@@ -188,8 +188,8 @@ export class NotificationEngine {
 
 		// Render email subject and body
 		const renderedTemplate = this.renderTemplate(template, variables);
-		const subject = renderedTemplate.title; // Use title as email subject
-		const htmlBody = renderedTemplate.body; // Use body as email content
+		const subject = renderedTemplate.title;
+		const htmlBody = renderedTemplate.body;
 
 		// Create email notification records
 		const emailNotifications = usersWithEmail.map((user) => ({
@@ -311,7 +311,7 @@ export class NotificationEngine {
 
 			userIds = adminMembers
 				.map((member) => member.memberId)
-				.filter((id) => id !== senderId); // Exclude sender
+				.filter((id) => id !== senderId);
 		} else if (targetType === NotificationTargetType.ADMIN) {
 			const admins = await this.ctx.drizzleClient.query.usersTable.findMany({
 				columns: { id: true },

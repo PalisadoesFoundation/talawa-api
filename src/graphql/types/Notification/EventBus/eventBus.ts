@@ -139,9 +139,7 @@ export class NotificationEventBus extends EventEmitter {
 			try {
 				const notificationEngine = new NotificationEngine(ctx);
 
-				// Send both in-app AND email notifications for join requests
 				await Promise.all([
-					// In-app notification
 					notificationEngine.createNotification(
 						"join_request_submitted",
 						{
@@ -156,7 +154,6 @@ export class NotificationEventBus extends EventEmitter {
 						},
 						NotificationChannelType.IN_APP,
 					),
-					// Email notification to organization admins
 					notificationEngine.createNotification(
 						"join_request_submitted",
 						{
