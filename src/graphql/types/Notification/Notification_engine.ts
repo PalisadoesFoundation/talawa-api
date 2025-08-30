@@ -207,7 +207,8 @@ export class NotificationEngine {
 		// Insert email notifications
 		await this.ctx.drizzleClient
 			.insert(emailNotificationsTable)
-			.values(emailNotifications);
+			.values(emailNotifications)
+			.onConflictDoNothing();
 
 		this.ctx.log.info(
 			`Created ${emailNotifications.length} email notifications`,
