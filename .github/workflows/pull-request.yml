@@ -366,6 +366,11 @@ jobs:
       - name: Start server and monitor logs
         run: |
           docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server' &
+          APP_STATUS=$?
+          if [ $APP_STATUS -ne 0 ]; then
+            echo "Talawa API application failed to start"
+            exit 1
+          fi
           sleep 10
       - name: Wait for GraphQL endpoint to become available
         if: always()
