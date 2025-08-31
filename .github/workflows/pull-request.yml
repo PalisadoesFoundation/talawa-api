@@ -379,8 +379,9 @@ jobs:
       - name: Wait for Postgres in devcontainer
         run: |
           set -euo pipefail
-          POSTGRES_USER=postgres
-          echo "Waiting for Postgres service via compose..."
+          POSTGRES_USER="${POSTGRES_USER:-postgres}"
+          POSTGRES_PORT="${POSTGRES_PORT:-5432}"
+          echo "Waiting for Postgres (service: postgres) on port ${POSTGRES_PORT}…"
           timeout=90
           until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" >/dev/null 2>&1 || [ "$timeout" -le 0 ]; do
             echo "Postgres not ready ($timeout s left)"
@@ -390,9 +391,21 @@ jobs:
           if [ "$timeout" -eq 0 ]; then
             echo "Error: Postgres failed to start"
             docker compose ps
+            docker compose logs --since 5m postgres
             docker logs postgres
             exit 1
+          else
+            echo "Postgres is ready."
           fi
+
+          if docker compose ps | grep -q "api"; then
+            echo "running migration validation..."
+            if ! docker compose exec -T api pnpm check_drizzle_migrations; then
+              echo "Migration validation failed!"
+              exit 1
+            fi
+            echo "Migration validation succeeded."
+            fi
       - name: Wait for Devcontainer to be ready
         run: |
           echo "Waiting for devcontainer services to be ready..."
