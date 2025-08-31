@@ -380,8 +380,8 @@ jobs:
         run: |
           set -euo pipefail
           echo "Waiting for Postgres service via compose..."
-          timeout=60
-          until docker compose exec -T talawa-postgres-1 pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" >/dev/null 2>&1 || [ "$timeout" -le 0 ]; do
+          timeout=90
+          until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" >/dev/null 2>&1 || [ "$timeout" -le 0 ]; do
             echo "Postgres not ready ($timeout s left)"
             sleep 1
             ((timeout--))
@@ -389,7 +389,7 @@ jobs:
           if [ "$timeout" -eq 0 ]; then
             echo "Error: Postgres failed to start"
             docker compose ps
-            docker logs talawa-postgres-1
+            docker logs postgres
             exit 1
           fi
       - name: Wait for Devcontainer to be ready
