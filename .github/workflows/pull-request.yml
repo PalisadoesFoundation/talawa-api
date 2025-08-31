@@ -213,8 +213,8 @@ jobs:
         run: cp ./envFiles/.env.ci ./.env
       - name: Build talawa api compose testing environment
         run: docker compose build
-      - name: Start containers
-        run: docker compose up -d
+      - name: Start Postgres service
+        run: docker compose up -d talawa-postgres-1
       - name: Wait for Postgres to be ready
         run: |
           set -euo pipefail
