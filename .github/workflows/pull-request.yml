@@ -431,3 +431,4 @@ jobs:
       - name: Cleanup - Free ports by stopping containers
         if: always()
         run: docker compose down
+        
