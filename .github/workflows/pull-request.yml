@@ -214,7 +214,7 @@ jobs:
       - name: Build talawa api compose testing environment
         run: docker compose build
       - name: Start Postgres service
-        run: docker compose up -d talawa-postgres-1
+        run: docker compose up -d postgres
       - name: Wait for Postgres to be ready
         run: |
           set -euo pipefail
@@ -431,4 +431,3 @@ jobs:
       - name: Cleanup - Free ports by stopping containers
         if: always()
         run: docker compose down
-        
