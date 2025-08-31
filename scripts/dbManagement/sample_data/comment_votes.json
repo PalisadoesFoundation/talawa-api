@@ -4,7 +4,7 @@
     "commentId": "3b53564b-e696-4aca-8042-4de38ba65564",
     "createdAt": "2025-03-30T13:00:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -12,7 +12,7 @@
     "commentId": "a99ac6a9-fec5-4fa6-8ea2-1a22f04c9a42",
     "createdAt": "2025-03-30T13:03:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -20,7 +20,7 @@
     "commentId": "a556e054-212a-49d2-8e52-0d57753c5293",
     "createdAt": "2025-03-30T13:06:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -28,7 +28,7 @@
     "commentId": "e27c81d8-9714-4a02-a52a-215a5ac9c8fc",
     "createdAt": "2025-03-30T13:09:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -36,7 +36,7 @@
     "commentId": "31ed58b6-e328-4427-80e9-4f27bb16c655",
     "createdAt": "2025-03-30T13:12:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -44,7 +44,7 @@
     "commentId": "c86600d9-731f-43d5-b468-51452bbb19e0",
     "createdAt": "2025-03-30T13:15:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -52,7 +52,7 @@
     "commentId": "55dff51d-cbd1-4396-b33d-066c38b2e1ed",
     "createdAt": "2025-03-30T13:18:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -60,7 +60,7 @@
     "commentId": "2dc82ac8-8dee-4e33-b988-f6fa3d63289f",
     "createdAt": "2025-03-30T13:21:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -68,7 +68,7 @@
     "commentId": "9d752fb6-7b7b-445e-afe0-0b5ab99af59d",
     "createdAt": "2025-03-30T13:24:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -76,7 +76,7 @@
     "commentId": "ab1ad1b0-00dd-445f-9505-9a01c684fbe7",
     "createdAt": "2025-03-30T13:27:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -84,7 +84,7 @@
     "commentId": "b3ecb046-4d29-4624-96d4-1c2337f583b2",
     "createdAt": "2025-03-30T13:30:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -92,7 +92,7 @@
     "commentId": "fe37600a-235a-4ce0-8765-12cf59103b5d",
     "createdAt": "2025-03-30T13:33:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -100,7 +100,7 @@
     "commentId": "2fa105dd-bc97-4a54-8eea-e57b369f0c0a",
     "createdAt": "2025-03-30T13:36:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -108,7 +108,7 @@
     "commentId": "9ea25ac1-c6f0-4f22-9c7a-e2a956f63f38",
     "createdAt": "2025-03-30T13:39:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -116,7 +116,7 @@
     "commentId": "705ffc4f-d037-4c9b-b448-b123dd3c0d1a",
     "createdAt": "2025-03-30T13:42:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000005",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -124,7 +124,7 @@
     "commentId": "aff836ae-c334-4c19-bc4b-32d88d783c3a",
     "createdAt": "2025-03-30T13:30:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -132,7 +132,7 @@
     "commentId": "93cce39d-f63a-4adf-b624-558beb063db5",
     "createdAt": "2025-03-30T13:33:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -140,7 +140,7 @@
     "commentId": "42dc5741-2943-491b-a38d-75c3d0731b16",
     "createdAt": "2025-03-30T13:36:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -148,7 +148,7 @@
     "commentId": "5d4ca4b5-c5b3-4992-ae6e-e2b0b9c7dcd5",
     "createdAt": "2025-03-30T13:39:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -156,7 +156,7 @@
     "commentId": "4b8576fd-a691-4d10-af83-bc13a42625d0",
     "createdAt": "2025-03-30T13:42:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -164,7 +164,7 @@
     "commentId": "4140bb72-24d1-4fff-ab9b-c2ecbb4575ee",
     "createdAt": "2025-03-30T13:45:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -172,7 +172,7 @@
     "commentId": "7238a22e-cfe2-4d72-b33e-da4db82830fa",
     "createdAt": "2025-03-30T13:48:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -180,7 +180,7 @@
     "commentId": "bacc0dc1-155f-45c2-b612-6258d129cf56",
     "createdAt": "2025-03-30T13:51:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -188,7 +188,7 @@
     "commentId": "67773b71-a0da-4ef9-b763-bae4b631c64a",
     "createdAt": "2025-03-30T13:54:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -196,7 +196,7 @@
     "commentId": "feab2643-a1dc-4e0b-bcc3-f4a0f686e567",
     "createdAt": "2025-03-30T13:57:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -204,7 +204,7 @@
     "commentId": "40d9f814-2edc-4509-b23c-25bbd71156ce",
     "createdAt": "2025-03-30T14:00:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -212,7 +212,7 @@
     "commentId": "f10ec027-0ae9-46f5-b24b-69878997c851",
     "createdAt": "2025-03-30T14:03:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -220,7 +220,7 @@
     "commentId": "096786cb-c68e-4d67-8b5c-c21b8dd7cbfa",
     "createdAt": "2025-03-30T14:06:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -228,7 +228,7 @@
     "commentId": "3b32fe0b-255e-4fed-8a05-ee5c815ce2d4",
     "createdAt": "2025-03-30T14:09:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -236,7 +236,7 @@
     "commentId": "d0c22318-b465-45ba-b7ee-2368554d9be0",
     "createdAt": "2025-03-30T14:12:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000006",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -244,7 +244,7 @@
     "commentId": "e6ebc5e0-6431-451c-964a-b90202107081",
     "createdAt": "2025-03-30T15:00:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -252,7 +252,7 @@
     "commentId": "642ae535-fbcf-4bb5-b339-e83f67352bad",
     "createdAt": "2025-03-30T15:03:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -260,7 +260,7 @@
     "commentId": "94fc2eb5-fd64-4c4e-a1e7-67175ad1b9ad",
     "createdAt": "2025-03-30T15:06:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -268,7 +268,7 @@
     "commentId": "faf044cd-f304-4ec3-9791-074237553806",
     "createdAt": "2025-03-30T15:09:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -276,7 +276,7 @@
     "commentId": "791c5a64-220b-4fea-bfe5-647cf2e0230c",
     "createdAt": "2025-03-30T15:12:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -284,7 +284,7 @@
     "commentId": "3477c843-eaf7-470e-8dc1-7d1b466a54cf",
     "createdAt": "2025-03-30T15:15:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -292,7 +292,7 @@
     "commentId": "acf4885b-971f-4bf9-9978-25c513d10949",
     "createdAt": "2025-03-30T15:18:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -300,7 +300,7 @@
     "commentId": "eaef2441-6bb4-4910-bcd3-654642f1cbac",
     "createdAt": "2025-03-30T15:21:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -308,7 +308,7 @@
     "commentId": "72f54224-16ae-4f29-87ab-0f5547ff3ef6",
     "createdAt": "2025-03-30T15:24:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -316,7 +316,7 @@
     "commentId": "4e1ff76c-77a2-4449-a221-e87cb9b86b03",
     "createdAt": "2025-03-30T15:27:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -324,7 +324,7 @@
     "commentId": "722f3020-2f74-4437-b480-b408bc0daaa2",
     "createdAt": "2025-03-30T15:30:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -332,7 +332,7 @@
     "commentId": "270581e7-6d3f-4876-b04d-91c6ff774e6f",
     "createdAt": "2025-03-30T15:33:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -340,7 +340,7 @@
     "commentId": "fef3319d-39c8-4614-bace-f7f902e40f70",
     "createdAt": "2025-03-30T15:36:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -348,7 +348,7 @@
     "commentId": "26d401b4-1508-4b60-9b5a-08ef7dd18e56",
     "createdAt": "2025-03-30T15:39:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -356,7 +356,7 @@
     "commentId": "0ce0d4d3-a89f-4458-853f-17bc35b81d69",
     "createdAt": "2025-03-30T15:42:00Z",
     "creatorId": "67378abd-8500-8f17-1cf2-990d00000007",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -364,7 +364,7 @@
     "commentId": "72151ed5-9905-49c2-b468-63315f1daeff",
     "createdAt": "2025-03-30T16:30:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -372,7 +372,7 @@
     "commentId": "06c42193-6bd9-4b49-ade2-054efcfb5278",
     "createdAt": "2025-03-30T16:33:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -380,7 +380,7 @@
     "commentId": "61870cc3-503e-41b1-a857-5686c57aeedd",
     "createdAt": "2025-03-30T16:36:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -388,7 +388,7 @@
     "commentId": "2c25a560-ead3-49b6-96be-6fad7736009d",
     "createdAt": "2025-03-30T16:39:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -396,7 +396,7 @@
     "commentId": "53e823cf-2dd1-44d1-9cf9-9bf7d22e2db3",
     "createdAt": "2025-03-30T16:42:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -404,7 +404,7 @@
     "commentId": "42a3a7d6-bc54-4604-8ce4-ab55ad0bb042",
     "createdAt": "2025-03-30T16:45:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -412,7 +412,7 @@
     "commentId": "ca8bab8d-ab8f-4f06-bef3-13b52aa177cb",
     "createdAt": "2025-03-30T16:48:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -420,7 +420,7 @@
     "commentId": "5e73875f-7912-48d8-8b06-7eb1ec3088a7",
     "createdAt": "2025-03-30T16:51:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -428,7 +428,7 @@
     "commentId": "5d1fa989-8771-423e-ba15-f2c6e4593c43",
     "createdAt": "2025-03-30T16:54:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -436,7 +436,7 @@
     "commentId": "1e92e08b-e1c6-4873-8a35-2c031b1052b3",
     "createdAt": "2025-03-30T16:57:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -444,7 +444,7 @@
     "commentId": "01dfc03f-436a-4c7f-895a-9e278bf11ac4",
     "createdAt": "2025-03-30T17:00:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -452,7 +452,7 @@
     "commentId": "8c3567a4-c8e3-4a1f-983a-18b87bf2f1f7",
     "createdAt": "2025-03-30T17:03:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -460,7 +460,7 @@
     "commentId": "56753e7b-b291-4e80-a838-c426726aca11",
     "createdAt": "2025-03-30T17:06:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -468,7 +468,7 @@
     "commentId": "e9c286a7-265e-411a-8db6-e3d5e3f8627f",
     "createdAt": "2025-03-30T17:09:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -476,7 +476,7 @@
     "commentId": "7301ea98-453d-467b-a069-e9d456f6cda5",
     "createdAt": "2025-03-30T17:12:00Z",
     "creatorId": "658930fd-2caa-9d8d-6908-745c00000008",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -484,7 +484,7 @@
     "commentId": "98eebfdc-0c4f-4944-a538-8ddb1df0b90a",
     "createdAt": "2025-03-30T18:00:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -492,7 +492,7 @@
     "commentId": "1a60f07f-c285-4467-99e0-a96d254873f6",
     "createdAt": "2025-03-30T18:03:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -500,7 +500,7 @@
     "commentId": "a15e4fe0-4da7-400f-b02b-c61ae49a4382",
     "createdAt": "2025-03-30T18:06:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -508,7 +508,7 @@
     "commentId": "c19ecc34-8351-423b-afad-86c34113bfb1",
     "createdAt": "2025-03-30T18:09:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -516,7 +516,7 @@
     "commentId": "b17ad36e-3275-4961-8c38-a13dcaf9d43f",
     "createdAt": "2025-03-30T18:12:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -524,7 +524,7 @@
     "commentId": "4b4698eb-9b9d-4550-8a5c-7245a7b370b1",
     "createdAt": "2025-03-30T18:15:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -532,7 +532,7 @@
     "commentId": "bd6cdb68-79fc-49f8-a7ee-3effee6750ee",
     "createdAt": "2025-03-30T18:18:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -540,7 +540,7 @@
     "commentId": "0b7f6c83-ae69-48d6-abe7-a32613ae3f3f",
     "createdAt": "2025-03-30T18:21:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -548,7 +548,7 @@
     "commentId": "e760c511-b0e4-495e-9590-7c38deac6738",
     "createdAt": "2025-03-30T18:24:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -556,7 +556,7 @@
     "commentId": "df133207-5bf0-4f38-8160-2d5051a2291f",
     "createdAt": "2025-03-30T18:27:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -564,7 +564,7 @@
     "commentId": "0fe48cd5-8cf3-4f7a-b2fb-b3975296a472",
     "createdAt": "2025-03-30T18:30:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -572,7 +572,7 @@
     "commentId": "4ce4b12b-2096-4b84-a4b8-fefa82b656e9",
     "createdAt": "2025-03-30T18:33:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -580,7 +580,7 @@
     "commentId": "59557d81-af77-4885-b867-90327f86a7e8",
     "createdAt": "2025-03-30T18:36:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -588,7 +588,7 @@
     "commentId": "b3b01fcd-eaf1-42c6-a1c4-e0534a1818a6",
     "createdAt": "2025-03-30T18:39:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -596,7 +596,7 @@
     "commentId": "27d38b41-8d89-4237-a146-93d439323b79",
     "createdAt": "2025-03-30T18:42:00Z",
     "creatorId": "6589386a-2caa-9d8d-6908-748400000009",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -604,7 +604,7 @@
     "commentId": "0ccbb35f-a037-446d-b09b-f1abb9e006d5",
     "createdAt": "2025-03-30T19:30:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -612,7 +612,7 @@
     "commentId": "c9a56caa-cf06-4a5b-9b09-6feade456834",
     "createdAt": "2025-03-30T19:33:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -620,7 +620,7 @@
     "commentId": "37966618-86d7-4cec-acd7-4fb244019cab",
     "createdAt": "2025-03-30T19:36:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -628,7 +628,7 @@
     "commentId": "97ce159f-ce03-439a-973a-a4e439fd29ea",
     "createdAt": "2025-03-30T19:39:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -636,7 +636,7 @@
     "commentId": "225b7531-241d-46e5-892c-62f8f4803d6e",
     "createdAt": "2025-03-30T19:42:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -644,7 +644,7 @@
     "commentId": "47d3f76b-90cd-476c-bddf-b81350b302d0",
     "createdAt": "2025-03-30T19:45:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -652,7 +652,7 @@
     "commentId": "03518d32-52a2-4257-862d-335f42f0d94c",
     "createdAt": "2025-03-30T19:48:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -660,7 +660,7 @@
     "commentId": "21f4abf6-0cec-4fd2-bb7d-3d4f43f94767",
     "createdAt": "2025-03-30T19:51:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -668,7 +668,7 @@
     "commentId": "c8d096f2-bb12-4a51-967b-25f23f3864e0",
     "createdAt": "2025-03-30T19:54:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -676,7 +676,7 @@
     "commentId": "5894ec5d-9045-42d1-b2a6-286f9ce9d107",
     "createdAt": "2025-03-30T19:57:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -684,7 +684,7 @@
     "commentId": "7f64db50-d454-4053-b578-a68501abc5fc",
     "createdAt": "2025-03-30T20:00:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -692,7 +692,7 @@
     "commentId": "5c401885-22b0-418b-90b5-c9c6ded05c6b",
     "createdAt": "2025-03-30T20:03:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -700,7 +700,7 @@
     "commentId": "62b5a880-43dc-48b1-9894-e62389cdb398",
     "createdAt": "2025-03-30T20:06:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -708,7 +708,7 @@
     "commentId": "e5008153-cf8f-41f5-82b9-afd79ab9d462",
     "createdAt": "2025-03-30T20:09:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -716,7 +716,7 @@
     "commentId": "fc03d9a9-0a36-442e-9d4f-e0a72563f6e2",
     "createdAt": "2025-03-30T20:12:00Z",
     "creatorId": "6589387e-2caa-9d8d-6908-74850000000a",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -724,7 +724,7 @@
     "commentId": "11952443-2ae8-4bde-a62b-82b7417aeb17",
     "createdAt": "2025-03-30T21:00:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -732,7 +732,7 @@
     "commentId": "746113c9-cf90-4a2f-97ab-78ac23811d9e",
     "createdAt": "2025-03-30T21:03:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -740,7 +740,7 @@
     "commentId": "fe81aeea-3fe2-4b1f-ac1b-53f566e69ceb",
     "createdAt": "2025-03-30T21:06:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -748,7 +748,7 @@
     "commentId": "b0e3da6b-c122-4810-a13f-e5d260d477e9",
     "createdAt": "2025-03-30T21:09:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -756,7 +756,7 @@
     "commentId": "0dd684aa-2551-4e61-9ab1-f73e6c69059f",
     "createdAt": "2025-03-30T21:12:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -764,7 +764,7 @@
     "commentId": "5469116a-0d79-4b06-9730-3c03163e3a77",
     "createdAt": "2025-03-30T21:15:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -772,7 +772,7 @@
     "commentId": "8bac3125-a923-45c4-a63b-7e507fbb5eb0",
     "createdAt": "2025-03-30T21:18:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -780,7 +780,7 @@
     "commentId": "89619393-9cca-45a9-9055-e603cce5927a",
     "createdAt": "2025-03-30T21:21:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -788,7 +788,7 @@
     "commentId": "e1106824-a678-4f4f-9ac6-21263dcc77cc",
     "createdAt": "2025-03-30T21:24:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -796,7 +796,7 @@
     "commentId": "1c3de0e9-f580-405a-b1d0-fed94d7fd923",
     "createdAt": "2025-03-30T21:27:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -804,7 +804,7 @@
     "commentId": "e6fa65b6-75b0-4901-b9c1-948c012507d3",
     "createdAt": "2025-03-30T21:30:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -812,7 +812,7 @@
     "commentId": "6525c5ac-39e5-4e78-a1db-4eecc2b2a3fb",
     "createdAt": "2025-03-30T21:33:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -820,7 +820,7 @@
     "commentId": "e7d6f98e-1f56-4d81-9c6b-48800c2b938f",
     "createdAt": "2025-03-30T21:36:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -828,7 +828,7 @@
     "commentId": "6ac664fe-f296-4ca1-b9b3-03756a2f1741",
     "createdAt": "2025-03-30T21:39:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -836,7 +836,7 @@
     "commentId": "641bd782-40a5-4f9d-80f1-9657cb5272a6",
     "createdAt": "2025-03-30T21:42:00Z",
     "creatorId": "6589388b-2caa-9d8d-6908-74860000000b",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -844,7 +844,7 @@
     "commentId": "3bcfa74e-016b-4bb6-8a0f-a75dde4c3c1b",
     "createdAt": "2025-03-30T22:30:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -852,7 +852,7 @@
     "commentId": "5153f7e1-7e69-4e11-874c-3309106a5c4f",
     "createdAt": "2025-03-30T22:33:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -860,7 +860,7 @@
     "commentId": "dc2b8a78-88ed-4aec-85ec-fab27bfc3c2c",
     "createdAt": "2025-03-30T22:36:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -868,7 +868,7 @@
     "commentId": "e94d7ac3-94db-4f9a-ac39-75401dcdb823",
     "createdAt": "2025-03-30T22:39:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -876,7 +876,7 @@
     "commentId": "bbd76a08-b8ff-49a9-b955-37e13719b63d",
     "createdAt": "2025-03-30T22:42:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -884,7 +884,7 @@
     "commentId": "a96efad4-6626-4ada-ab58-07e6d4e42d6a",
     "createdAt": "2025-03-30T22:45:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -892,7 +892,7 @@
     "commentId": "6b9ddb0d-714e-4dce-b9ca-0669cf4dc543",
     "createdAt": "2025-03-30T22:48:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -900,7 +900,7 @@
     "commentId": "3ca7c9a9-ff94-48a9-8169-a4db9c3de0b0",
     "createdAt": "2025-03-30T22:51:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -908,7 +908,7 @@
     "commentId": "607cd8f5-ac49-4095-a2a5-f21c98ff8528",
     "createdAt": "2025-03-30T22:54:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -916,7 +916,7 @@
     "commentId": "de72e828-a83a-4634-a2ec-2ecbe75b7470",
     "createdAt": "2025-03-30T22:57:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -924,7 +924,7 @@
     "commentId": "be0b7185-7d8d-4629-be2e-464cd70bc246",
     "createdAt": "2025-03-30T23:00:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -932,7 +932,7 @@
     "commentId": "4ac650b0-45a1-4e98-b631-d9d28cccec78",
     "createdAt": "2025-03-30T23:03:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -940,7 +940,7 @@
     "commentId": "0ebc72b1-1d53-41b0-89e9-ce80a50057c1",
     "createdAt": "2025-03-30T23:06:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -948,7 +948,7 @@
     "commentId": "4d1a872c-bfcb-408f-b368-1a2a62d2c832",
     "createdAt": "2025-03-30T23:09:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -956,7 +956,7 @@
     "commentId": "2d6ecee6-c82a-4980-af09-daa573f6d6ba",
     "createdAt": "2025-03-30T23:12:00Z",
     "creatorId": "6589389d-2caa-9d8d-6908-74870000000c",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -964,7 +964,7 @@
     "commentId": "3ca1a9bb-845f-4d40-a6c6-17a7d2f27b67",
     "createdAt": "2025-03-31T00:00:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -972,7 +972,7 @@
     "commentId": "ea5d31f8-f289-458f-ae73-47dd569e0b52",
     "createdAt": "2025-03-31T00:03:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -980,7 +980,7 @@
     "commentId": "bbb993f4-cf16-4c1f-ae9f-19729215018b",
     "createdAt": "2025-03-31T00:06:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -988,7 +988,7 @@
     "commentId": "438dcc02-f3a9-45dc-bcb0-307f87616c8a",
     "createdAt": "2025-03-31T00:09:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -996,7 +996,7 @@
     "commentId": "b9eb9bc0-58f5-4f31-a9e1-a7827ea99e86",
     "createdAt": "2025-03-31T00:12:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1004,7 +1004,7 @@
     "commentId": "2efd5a3b-48bc-41f4-90b4-a968d2965ec1",
     "createdAt": "2025-03-31T00:15:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1012,7 +1012,7 @@
     "commentId": "8049f87e-4268-4601-908e-4da6a541645e",
     "createdAt": "2025-03-31T00:18:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1020,7 +1020,7 @@
     "commentId": "df1cc335-0bc0-402e-b147-3ae0d5d9a112",
     "createdAt": "2025-03-31T00:21:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1028,7 +1028,7 @@
     "commentId": "e4fa3042-40ba-4a4e-911e-af069b67bc8d",
     "createdAt": "2025-03-31T00:24:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1036,7 +1036,7 @@
     "commentId": "9da36833-73a1-4048-8f26-7c12f5a1f460",
     "createdAt": "2025-03-31T00:27:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1044,7 +1044,7 @@
     "commentId": "1c3f51ba-390e-4829-9b16-e2904cb174d1",
     "createdAt": "2025-03-31T00:30:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1052,7 +1052,7 @@
     "commentId": "db976f05-d34d-444c-8fb5-d69382e099a6",
     "createdAt": "2025-03-31T00:33:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1060,7 +1060,7 @@
     "commentId": "ac08cc30-42f2-4d17-8b9b-f8a776d02a58",
     "createdAt": "2025-03-31T00:36:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1068,7 +1068,7 @@
     "commentId": "59921570-c4cf-4929-a74e-78fb5205e733",
     "createdAt": "2025-03-31T00:39:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1076,7 +1076,7 @@
     "commentId": "1563002b-de4d-4fba-a722-a087ade2ef99",
     "createdAt": "2025-03-31T00:42:00Z",
     "creatorId": "658938a6-2caa-9d8d-6908-74880000000d",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1084,7 +1084,7 @@
     "commentId": "2fed81c5-e23b-48a6-9cfe-192c8b581249",
     "createdAt": "2025-03-31T01:30:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1092,7 +1092,7 @@
     "commentId": "dd87afa6-eb09-43a3-8181-33125dc8b98d",
     "createdAt": "2025-03-31T01:33:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1100,7 +1100,7 @@
     "commentId": "323a21dc-3b9b-4e9d-b500-ebe356295222",
     "createdAt": "2025-03-31T01:36:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1108,7 +1108,7 @@
     "commentId": "d6e4270b-e792-4aa5-848d-995aa73519ce",
     "createdAt": "2025-03-31T01:39:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1116,7 +1116,7 @@
     "commentId": "5a259a7a-0194-4e31-8b40-06b3f4f8a052",
     "createdAt": "2025-03-31T01:42:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1124,7 +1124,7 @@
     "commentId": "48f3d1a5-cd95-4111-b976-17ab10802150",
     "createdAt": "2025-03-31T01:45:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1132,7 +1132,7 @@
     "commentId": "72a53f38-705e-4cc1-bc1f-93b2c1a5b8e5",
     "createdAt": "2025-03-31T01:48:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1140,7 +1140,7 @@
     "commentId": "6446274e-29d8-47dc-80ec-d82fb4f57e17",
     "createdAt": "2025-03-31T01:51:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1148,7 +1148,7 @@
     "commentId": "c684d886-3b62-4253-abd4-b9b416145735",
     "createdAt": "2025-03-31T01:54:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1156,7 +1156,7 @@
     "commentId": "cb600c69-dc18-48ba-bd50-af14e2dba496",
     "createdAt": "2025-03-31T01:57:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1164,7 +1164,7 @@
     "commentId": "15e15049-7c9b-4427-877c-378b1ff2d76c",
     "createdAt": "2025-03-31T02:00:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1172,7 +1172,7 @@
     "commentId": "07dc250c-0b3f-4518-be5d-6b920a14b6d5",
     "createdAt": "2025-03-31T02:03:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1180,7 +1180,7 @@
     "commentId": "15b29228-69c4-4f65-a005-2ab685d70420",
     "createdAt": "2025-03-31T02:06:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1188,7 +1188,7 @@
     "commentId": "b58e301f-37cd-484c-8fa3-00d32e5c2312",
     "createdAt": "2025-03-31T02:09:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1196,7 +1196,7 @@
     "commentId": "ab2660d8-02ce-4a16-9cdc-b12bfcad7dd9",
     "createdAt": "2025-03-31T02:12:00Z",
     "creatorId": "658938b0-2caa-9d8d-6908-74890000000e",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1204,7 +1204,7 @@
     "commentId": "3b7f4deb-0596-46ab-976d-72ff4705de19",
     "createdAt": "2025-03-31T03:00:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1212,7 +1212,7 @@
     "commentId": "2005927a-52a2-4a47-8efb-1602ca2946a0",
     "createdAt": "2025-03-31T03:03:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1220,7 +1220,7 @@
     "commentId": "642b2616-20de-49d6-b6f0-7927fea1bc7c",
     "createdAt": "2025-03-31T03:06:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1228,7 +1228,7 @@
     "commentId": "777c5eb2-2057-4320-8d22-34d4f9d4434d",
     "createdAt": "2025-03-31T03:09:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1236,7 +1236,7 @@
     "commentId": "2098d760-1773-4fe3-bd3e-e97163fed191",
     "createdAt": "2025-03-31T03:12:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1244,7 +1244,7 @@
     "commentId": "66f089c2-e070-4d62-a3d8-65d1d2fe25c1",
     "createdAt": "2025-03-31T03:15:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1252,7 +1252,7 @@
     "commentId": "46cfa6e4-6285-4c6a-af33-8f9bb57cab14",
     "createdAt": "2025-03-31T03:18:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1260,7 +1260,7 @@
     "commentId": "b3b4fe67-eceb-4659-b68c-ddf5ec94a80f",
     "createdAt": "2025-03-31T03:21:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1268,7 +1268,7 @@
     "commentId": "df328143-aa7f-4140-98fb-e32ae9124c06",
     "createdAt": "2025-03-31T03:24:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1276,7 +1276,7 @@
     "commentId": "34fb8836-5262-4d82-8b30-119f20fe9f36",
     "createdAt": "2025-03-31T03:27:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1284,7 +1284,7 @@
     "commentId": "31feac6d-9e3b-41f8-a9ed-db2c995b2f50",
     "createdAt": "2025-03-31T03:30:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1292,7 +1292,7 @@
     "commentId": "964b2288-90b8-4d6d-b7c6-306e3316f887",
     "createdAt": "2025-03-31T03:33:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1300,7 +1300,7 @@
     "commentId": "b2d45ea9-609c-4482-b3b5-71d680e1fdda",
     "createdAt": "2025-03-31T03:36:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1308,7 +1308,7 @@
     "commentId": "4434a12e-0c6a-4e7b-8001-583ed480ecb5",
     "createdAt": "2025-03-31T03:39:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   },
   {
@@ -1316,7 +1316,7 @@
     "commentId": "a1167bde-df11-4845-bac5-0d54a465875d",
     "createdAt": "2025-03-31T03:42:00Z",
     "creatorId": "658938ba-2caa-9d8d-6908-748a0000000f",
-    "type": "up",
+    "type": "up_vote",
     "updatedAt": null
   }
 ]
