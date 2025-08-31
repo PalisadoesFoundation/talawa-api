@@ -45,7 +45,7 @@ jobs:
           echo "Source Branch ${{ github.event.pull_request.head.ref }}"
           echo "Target Branch ${{ github.event.pull_request.base.ref }}"
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
-          echo "Error: Close this PR and try again."          
+          echo "Error: Close this PR and try again."
           exit 1
 
   python_checks:
@@ -347,14 +347,14 @@ jobs:
           echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
 
       - name: Echo number of changed files
-        env: 
+        env:
           CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
         run: |
           echo "Number of files changed: $CHANGED_FILES_COUNT"
 
       - name: Check if the number of changed files is less than 100
         if: steps.changed-files.outputs.all_changed_files_count > 100
-        env: 
+        env:
           CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
         run: |
           echo "Error: Too many files (greater than 100) changed in the pull request."
@@ -378,7 +378,7 @@ jobs:
         run: devcontainer up --workspace-folder .
       - name: Wait for Postgres in devcontainer
         run: |
-          set -euo pipefail 
+          set -euo pipefail
           echo "Waiting for Postgres service via compose..."
           timeout=60
           until docker compose exec -T talawa-postgres-1 pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" >/dev/null 2>&1 || [ "$timeout" -le 0 ]; do
