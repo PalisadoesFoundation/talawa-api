@@ -388,9 +388,10 @@ jobs:
         run: |
           docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server' &
           APP_JOB=$!
-          if ! ps -p "$API_JOB" > /dev/null; then
+          sleep 5
+          if ! ps -p "$APP_JOB" > /dev/null; then
             # Background exec terminated early; get its exit code if available
-            wait "$API_JOB" 2>/dev/null
+            wait "$APP_JOB" 2>/dev/null
             APP_STATUS=$?
             echo "Talawa API application failed to start (exit code: ${APP_STATUS:-unknown})"
             # Show quick process snapshot for debugging
