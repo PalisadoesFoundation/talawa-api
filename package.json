@@ -48,7 +48,7 @@
     "@types/node-cron": "^3.0.11",
     "@types/yauzl": "^2.10.3",
     "@vitest/coverage-v8": "^3.1.1",
-    "drizzle-kit": "^0.30.6",
+    "drizzle-kit": "^0.31.4",
     "drizzle-seed": "^0.3.1",
     "gql.tada": "^1.8.12",
     "lefthook": "^1.12.2",
