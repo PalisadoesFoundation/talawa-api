@@ -45,7 +45,7 @@ jobs:
           echo "Source Branch ${{ github.event.pull_request.head.ref }}"
           echo "Target Branch ${{ github.event.pull_request.base.ref }}"
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
-          echo "Error: Close this PR and try again."          
+          echo "Error: Close this PR and try again."
           exit 1
 
   python_checks:
@@ -216,7 +216,7 @@ jobs:
       - name: Wait for Postgres to be ready
         run: |
           echo "Waiting for Postgres..."
-          for i in {1..60}; do 
+          for i in {1..60}; do
             docker compose exec -T postgres pg_isready -U postgres && break
             echo "Postgres not ready, retrying..."
             sleep 2
@@ -347,14 +347,14 @@ jobs:
           echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
 
       - name: Echo number of changed files
-        env: 
+        env:
           CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
         run: |
           echo "Number of files changed: $CHANGED_FILES_COUNT"
 
       - name: Check if the number of changed files is less than 100
         if: steps.changed-files.outputs.all_changed_files_count > 100
-        env: 
+        env:
           CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
         run: |
           echo "Error: Too many files (greater than 100) changed in the pull request."
@@ -388,7 +388,7 @@ jobs:
         run: |
           docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server' &
           APP_JOB=$!
-          if ! ps -p "$API_JOB" > /dev/null; then 
+          if ! ps -p "$API_JOB" > /dev/null; then
             # Background exec terminated early; get its exit code if available
             wait "$API_JOB" 2>/dev/null
             APP_STATUS=$?
