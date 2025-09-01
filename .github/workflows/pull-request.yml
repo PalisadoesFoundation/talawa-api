@@ -410,13 +410,6 @@ jobs:
               sleep 2
               continue
             fi
-            # Fail fast if background job exited
-            if ! ps -p "$API_JOB" > /dev/null; then
-              echo "API process exited before readiness. Tail of logs:"
-              tail -n 200 api-start.log || true
-              wait "$API_JOB" || true
-              exit 1
-            fi
             docker exec talawa-api-1 which curl >/dev/null 2>&1 || {
               docker exec talawa-api-1 apt-get update && docker exec talawa-api-1 apt-get install -y curl
             }
