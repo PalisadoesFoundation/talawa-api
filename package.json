@@ -28,7 +28,7 @@
     "graphql-tag": "^2.12.6",
     "graphql-upload-minimal": "^1.6.1",
     "inquirer": "^12.9.0",
-    "mercurius": "^16.0.1",
+    "mercurius": "^16.2.0",
     "mercurius-upload": "^8.0.0",
     "minio": "^8.0.5",
     "node-cron": "^3.0.3",
