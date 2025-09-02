@@ -33,8 +33,8 @@ importers:
         specifier: ^4.5.0
         version: 4.5.0(graphql@16.10.0)
       '@pothos/plugin-complexity':
-        specifier: ^4.1.0
-        version: 4.1.0(@pothos/core@4.5.0(graphql@16.10.0))(graphql@16.10.0)
+        specifier: ^4.1.2
+        version: 4.1.2(@pothos/core@4.5.0(graphql@16.10.0))(graphql@16.10.0)
       '@pothos/plugin-relay':
         specifier: ^4.3.0
         version: 4.4.0(@pothos/core@4.5.0(graphql@16.10.0))(graphql@16.10.0)
@@ -1189,11 +1189,11 @@ packages:
     peerDependencies:
       graphql: '>=16.6.0'
 
-  '@pothos/plugin-complexity@4.1.0':
-    resolution: {integrity: sha512-huETiKiFuyNIzuZRFgTKkcUyYJOhn9UC/+lhGk5R6L0mhlCwutYfuycK/LDkqVIgQ+BTj0QnnQXvnTLHSLKOAQ==}
+  '@pothos/plugin-complexity@4.1.2':
+    resolution: {integrity: sha512-0RUiYvhcR7bWlcnr49nK1rbT7nTlfjUaL+ISrDZ+aB5E5Te1iUbY1tcaukA/NRPV4vEd4Pwt+CmgIPvGml7gOA==}
     peerDependencies:
       '@pothos/core': '*'
-      graphql: '>=16.6.0'
+      graphql: ^16.10.0
 
   '@pothos/plugin-relay@4.4.0':
     resolution: {integrity: sha512-ifCnRkBvqlQG9/Inx/Z1+spyecvGllf4hjTsE8vpnyQt1zsgcjdMfWTcw04Jr5LqSiST7Z5NbfVd56TjAOkMPg==}
@@ -4073,7 +4073,7 @@ snapshots:
     dependencies:
       graphql: 16.10.0
 
-  '@pothos/plugin-complexity@4.1.0(@pothos/core@4.5.0(graphql@16.10.0))(graphql@16.10.0)':
+  '@pothos/plugin-complexity@4.1.2(@pothos/core@4.5.0(graphql@16.10.0))(graphql@16.10.0)':
     dependencies:
       '@pothos/core': 4.5.0(graphql@16.10.0)
       graphql: 16.10.0
