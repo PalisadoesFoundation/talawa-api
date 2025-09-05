@@ -1,17 +1,13 @@
-import path from "node:path";
 import { eq } from "drizzle-orm";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { builder } from "~/src/graphql/builder";
 import { Plugin } from "~/src/graphql/types/Plugin/Plugin";
 import { getPluginManagerInstance } from "~/src/plugin/registry";
-import type { IPluginManifest } from "~/src/plugin/types";
-import {
-	createPluginTables,
-	loadPluginManifest,
-	safeRequire,
-} from "~/src/plugin/utils";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { installPluginInputSchema, InstallPluginInput } from "../../Plugin/inputs";
+import {
+	InstallPluginInput,
+	installPluginInputSchema,
+} from "../../Plugin/inputs";
 
 builder.mutationField("installPlugin", (t) =>
 	t.field({
@@ -91,16 +87,22 @@ builder.mutationField("installPlugin", (t) =>
 				if (pluginManager) {
 					try {
 						console.log("Installing plugin via lifecycle manager:", pluginId);
-						
+
 						// Use the plugin manager to handle installation
 						const success = await pluginManager.installPlugin(pluginId);
-						
+
 						if (!success) {
-							console.error("Plugin installation failed in lifecycle manager:", pluginId);
+							console.error(
+								"Plugin installation failed in lifecycle manager:",
+								pluginId,
+							);
 							// Don't throw error here - plugin is marked as installed but lifecycle failed
 							// User can retry activation later
 						} else {
-							console.log("Plugin installed successfully via lifecycle manager:", pluginId);
+							console.log(
+								"Plugin installed successfully via lifecycle manager:",
+								pluginId,
+							);
 						}
 					} catch (error) {
 						console.error("Error during plugin lifecycle installation:", error);

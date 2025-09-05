@@ -127,7 +127,13 @@ export interface IPluginLifecycle {
 export interface IPluginError {
 	pluginId: string;
 	error: Error;
-	phase: "load" | "activate" | "deactivate" | "unload";
+	phase:
+		| "load"
+		| "activate"
+		| "deactivate"
+		| "unload"
+		| "install"
+		| "uninstall";
 	timestamp: Date;
 }
 

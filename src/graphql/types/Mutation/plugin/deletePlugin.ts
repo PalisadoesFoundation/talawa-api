@@ -41,24 +41,31 @@ builder.mutationField("deletePlugin", (t) =>
 				});
 			}
 
-
-
-
-
 			// Handle plugin manager integration for uninstallation
 			const pluginManager = getPluginManagerInstance();
 			if (pluginManager) {
 				try {
-					console.log("Uninstalling plugin via lifecycle manager:", existingPlugin.pluginId);
-					
+					console.log(
+						"Uninstalling plugin via lifecycle manager:",
+						existingPlugin.pluginId,
+					);
+
 					// Use the plugin manager to handle uninstallation
-					const success = await pluginManager.uninstallPlugin(existingPlugin.pluginId);
-					
+					const success = await pluginManager.uninstallPlugin(
+						existingPlugin.pluginId,
+					);
+
 					if (!success) {
-						console.error("Plugin uninstallation failed in lifecycle manager:", existingPlugin.pluginId);
+						console.error(
+							"Plugin uninstallation failed in lifecycle manager:",
+							existingPlugin.pluginId,
+						);
 						// Continue with deletion even if lifecycle fails
 					} else {
-						console.log("Plugin uninstalled successfully via lifecycle manager:", existingPlugin.pluginId);
+						console.log(
+							"Plugin uninstalled successfully via lifecycle manager:",
+							existingPlugin.pluginId,
+						);
 					}
 				} catch (error) {
 					console.error("Error during plugin lifecycle uninstallation:", error);

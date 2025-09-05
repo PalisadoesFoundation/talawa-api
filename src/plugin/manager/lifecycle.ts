@@ -19,6 +19,7 @@ import type {
 	ILoadedPlugin,
 	IPluginContext,
 	IPluginLifecycle,
+	IPluginManifest,
 } from "../types";
 
 // Type for plugin manager with emit method
@@ -26,9 +27,9 @@ interface IPluginManager {
 	emit(event: string, ...args: unknown[]): boolean;
 }
 
-import { PluginStatus } from "../types";
-import { dropPluginTables, safeRequire, createPluginTables } from "../utils";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { PluginStatus } from "../types";
+import { createPluginTables, dropPluginTables, safeRequire } from "../utils";
 
 export class PluginLifecycle {
 	constructor(
@@ -155,6 +156,7 @@ export class PluginLifecycle {
 	public async deactivatePlugin(
 		pluginId: string,
 		pluginManager: IPluginManager,
+		dropTables = false,
 	): Promise<boolean> {
 		const plugin = this.loadedPlugins.get(pluginId);
 		if (!plugin) {
@@ -177,6 +179,11 @@ export class PluginLifecycle {
 			// Update database
 			await this.updatePluginInDatabase(pluginId, { isActivated: false });
 
+			// Optionally drop plugin tables
+			if (dropTables) {
+				await this.removePluginDatabases(pluginId);
+			}
+
 			// Trigger schema rebuild to remove plugin extensions
 			await this.triggerSchemaRebuild();
 
@@ -190,14 +197,10 @@ export class PluginLifecycle {
 		}
 	}
 
-
-
-
-
 	/**
 	 * Load plugin manifest
 	 */
-	private async loadPluginManifest(pluginId: string): Promise<any> {
+	private async loadPluginManifest(pluginId: string): Promise<IPluginManifest> {
 		const pluginPath = path.join(
 			process.cwd(),
 			"src",
@@ -206,13 +209,20 @@ export class PluginLifecycle {
 			pluginId,
 		);
 		const manifestPath = path.join(pluginPath, "manifest.json");
-		return await safeRequire(manifestPath);
+		const manifest = await safeRequire(manifestPath);
+		if (!manifest) {
+			throw new Error(`Failed to load manifest for plugin ${pluginId}`);
+		}
+		return manifest as IPluginManifest;
 	}
 
 	/**
 	 * Create plugin-defined databases
 	 */
-	private async createPluginDatabases(pluginId: string, manifest: any): Promise<void> {
+	private async createPluginDatabases(
+		pluginId: string,
+		manifest: IPluginManifest,
+	): Promise<void> {
 		if (
 			manifest.extensionPoints?.database &&
 			manifest.extensionPoints.database.length > 0
@@ -244,14 +254,13 @@ export class PluginLifecycle {
 					);
 
 				if (!tableModule) {
-					throw new Error(
-						`Failed to load table file: ${tableExtension.file}`,
-					);
+					throw new Error(`Failed to load table file: ${tableExtension.file}`);
 				}
 
-				const tableDefinition = tableModule[
-					tableExtension.name
-				] as Record<string, unknown>;
+				const tableDefinition = tableModule[tableExtension.name] as Record<
+					string,
+					unknown
+				>;
 				if (!tableDefinition) {
 					throw new Error(
 						`Table '${tableExtension.name}' not found in file: ${tableExtension.file}`,
@@ -311,7 +320,9 @@ export class PluginLifecycle {
 				plugin.databaseTables as Record<string, Record<string, unknown>>,
 				this.pluginContext.logger as { info?: (message: string) => void },
 			);
-			console.log(`Successfully removed plugin-defined tables for: ${pluginId}`);
+			console.log(
+				`Successfully removed plugin-defined tables for: ${pluginId}`,
+			);
 		} catch (error) {
 			console.error(`Failed to remove tables for ${pluginId}:`, error);
 		}
@@ -405,7 +416,10 @@ export class PluginLifecycle {
 				await pluginModule.onInstall(this.pluginContext);
 			}
 		} catch (error) {
-			console.error(`Error calling onInstall lifecycle hook for plugin ${pluginId}:`, error);
+			console.error(
+				`Error calling onInstall lifecycle hook for plugin ${pluginId}:`,
+				error,
+			);
 		}
 	}
 
@@ -419,7 +433,10 @@ export class PluginLifecycle {
 				await pluginModule.onActivate(this.pluginContext);
 			}
 		} catch (error) {
-			console.error(`Error calling onActivate lifecycle hook for plugin ${pluginId}:`, error);
+			console.error(
+				`Error calling onActivate lifecycle hook for plugin ${pluginId}:`,
+				error,
+			);
 		}
 	}
 
@@ -433,7 +450,10 @@ export class PluginLifecycle {
 				await pluginModule.onDeactivate(this.pluginContext);
 			}
 		} catch (error) {
-			console.error(`Error calling onDeactivate lifecycle hook for plugin ${pluginId}:`, error);
+			console.error(
+				`Error calling onDeactivate lifecycle hook for plugin ${pluginId}:`,
+				error,
+			);
 		}
 	}
 
@@ -447,7 +467,60 @@ export class PluginLifecycle {
 				await pluginModule.onUninstall(this.pluginContext);
 			}
 		} catch (error) {
-			console.error(`Error calling onUninstall lifecycle hook for plugin ${pluginId}:`, error);
+			console.error(
+				`Error calling onUninstall lifecycle hook for plugin ${pluginId}:`,
+				error,
+			);
+		}
+	}
+
+	/**
+	 * Unload a plugin - remove from memory without database changes
+	 */
+	public async unloadPlugin(
+		pluginId: string,
+		pluginManager: IPluginManager,
+	): Promise<boolean> {
+		const plugin = this.loadedPlugins.get(pluginId);
+		if (!plugin) {
+			// Plugin is already unloaded
+			return true;
+		}
+
+		try {
+			pluginManager.emit("plugin:unloading", pluginId);
+
+			// Call plugin lifecycle hook
+			await this.callOnUnloadHook(pluginId);
+
+			// Remove from extension registry
+			this.removeFromExtensionRegistry(pluginId);
+
+			// Remove from loaded plugins
+			this.loadedPlugins.delete(pluginId);
+
+			pluginManager.emit("plugin:unloaded", pluginId);
+			return true;
+		} catch (error) {
+			this.handlePluginError(pluginId, error as Error, "unload");
+			return false;
+		}
+	}
+
+	/**
+	 * Call the onUnload lifecycle hook for a plugin
+	 */
+	private async callOnUnloadHook(pluginId: string): Promise<void> {
+		try {
+			const pluginModule = await this.getPluginModule(pluginId);
+			if (pluginModule?.onUnload) {
+				await pluginModule.onUnload(this.pluginContext);
+			}
+		} catch (error) {
+			console.error(
+				`Error calling onUnload lifecycle hook for plugin ${pluginId}:`,
+				error,
+			);
 		}
 	}
 
@@ -457,7 +530,7 @@ export class PluginLifecycle {
 	private handlePluginError(
 		pluginId: string,
 		error: Error,
-		phase: "install" | "activate" | "deactivate" | "uninstall",
+		phase: "install" | "activate" | "deactivate" | "uninstall" | "unload",
 	): void {
 		console.error(`Plugin ${pluginId} error during ${phase}:`, error);
 	}
