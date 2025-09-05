@@ -535,7 +535,7 @@ describe("PluginManager", () => {
 			const fs = await import("node:fs/promises");
 			const mkdirSpy = vi.spyOn(fs, "mkdir").mockResolvedValue(undefined);
 
-			const manager = new TestablePluginManager(context, "/plugins");
+			new TestablePluginManager(context, "/plugins");
 			await new Promise((resolve) => setTimeout(resolve, 10));
 
 			expect(mkdirSpy).toHaveBeenCalledWith("/plugins", { recursive: true });
@@ -700,9 +700,7 @@ describe("PluginManager", () => {
 			await new Promise((resolve) => setTimeout(resolve, 10));
 
 			const fs = await import("node:fs/promises");
-			const accessSpy = vi
-				.spyOn(fs, "access")
-				.mockRejectedValue(new Error("File not found"));
+			vi.spyOn(fs, "access").mockRejectedValue(new Error("File not found"));
 			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 			const result = await manager.loadPlugin("test-plugin");
@@ -896,11 +894,9 @@ describe("PluginManager", () => {
 
 			// Mock lifecycle to throw error
 			const lifecycle = manager.getTestLifecycle();
-			const getPluginModuleSpy = vi
-				.spyOn(lifecycle, "getPluginModule")
-				.mockImplementation(() => {
-					throw new Error("Lifecycle error");
-				});
+			vi.spyOn(lifecycle, "getPluginModule").mockImplementation(() => {
+				throw new Error("Lifecycle error");
+			});
 			const consoleSpy = vi
 				.spyOn(console, "error")
 				.mockImplementation(() => {});

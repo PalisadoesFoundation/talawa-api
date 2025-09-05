@@ -43,8 +43,14 @@ describe("PluginSystem Fastify Plugin", () => {
 			log: {
 				info: vi.fn(),
 				error: vi.fn(),
-			},
-			drizzleClient: {} as any,
+				child: vi.fn(),
+				level: "info",
+				fatal: vi.fn(),
+				warn: vi.fn(),
+				debug: vi.fn(),
+				trace: vi.fn(),
+			} as unknown,
+			drizzleClient: {} as unknown,
 			decorate: vi.fn(),
 			addHook: vi.fn(),
 		};
@@ -56,7 +62,9 @@ describe("PluginSystem Fastify Plugin", () => {
 		(initializePluginSystem as ReturnType<typeof vi.fn>).mockResolvedValue(
 			mockPluginManager,
 		);
-		(fastifyPlugin as ReturnType<typeof vi.fn>).mockImplementation((fn) => fn);
+		(fastifyPlugin as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+			(fn: unknown) => fn,
+		);
 	});
 
 	afterEach(() => {
@@ -158,10 +166,10 @@ describe("PluginSystem Fastify Plugin", () => {
 
 			// Get the onClose hook function
 			const onCloseHook = (mockFastify.addHook as ReturnType<typeof vi.fn>).mock
-				.calls[0][1];
+				?.calls[0]?.[1];
 
 			// Execute the hook
-			await onCloseHook();
+			await onCloseHook?.();
 
 			expect(mockFastify.log?.info).toHaveBeenCalledWith(
 				"Shutting down plugin system...",
@@ -182,10 +190,10 @@ describe("PluginSystem Fastify Plugin", () => {
 
 			// Get the onClose hook function
 			const onCloseHook = (mockFastify.addHook as ReturnType<typeof vi.fn>).mock
-				.calls[0][1];
+				?.calls[0]?.[1];
 
 			// Execute the hook
-			await onCloseHook();
+			await onCloseHook?.();
 
 			expect(mockFastify.log?.error).toHaveBeenCalledWith(
 				{ error: shutdownError },
