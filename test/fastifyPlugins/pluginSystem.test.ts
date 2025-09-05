@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { pluginSystem } from "../../src/fastifyPlugins/pluginSystem";
 import type PluginManager from "../../src/plugin/manager";
 import type { IPluginContext } from "../../src/plugin/types";
@@ -14,9 +14,9 @@ vi.mock("fastify-plugin", () => ({
 	default: vi.fn((fn) => fn),
 }));
 
+import fastifyPlugin from "fastify-plugin";
 // Import mocked modules
 import { createPluginContext, initializePluginSystem } from "../../src/plugin";
-import fastifyPlugin from "fastify-plugin";
 
 describe("PluginSystem Fastify Plugin", () => {
 	let mockFastify: Partial<FastifyInstance>;
@@ -99,9 +99,9 @@ describe("PluginSystem Fastify Plugin", () => {
 				{ id: "plugin2" },
 				{ id: "plugin3" },
 			];
-			(mockPluginManager.getLoadedPlugins as ReturnType<typeof vi.fn>).mockReturnValue(
-				mockLoadedPlugins,
-			);
+			(
+				mockPluginManager.getLoadedPlugins as ReturnType<typeof vi.fn>
+			).mockReturnValue(mockLoadedPlugins);
 
 			await pluginSystem(mockFastify as FastifyInstance);
 
@@ -111,9 +111,9 @@ describe("PluginSystem Fastify Plugin", () => {
 		});
 
 		it("should log no plugins when no plugins are loaded", async () => {
-			(mockPluginManager.getLoadedPlugins as ReturnType<typeof vi.fn>).mockReturnValue(
-				[],
-			);
+			(
+				mockPluginManager.getLoadedPlugins as ReturnType<typeof vi.fn>
+			).mockReturnValue([]);
 
 			await pluginSystem(mockFastify as FastifyInstance);
 
@@ -174,9 +174,9 @@ describe("PluginSystem Fastify Plugin", () => {
 
 		it("should handle errors during graceful shutdown", async () => {
 			const shutdownError = new Error("Shutdown failed");
-			(mockPluginManager.gracefulShutdown as ReturnType<typeof vi.fn>).mockRejectedValue(
-				shutdownError,
-			);
+			(
+				mockPluginManager.gracefulShutdown as ReturnType<typeof vi.fn>
+			).mockRejectedValue(shutdownError);
 
 			await pluginSystem(mockFastify as FastifyInstance);
 
@@ -197,13 +197,15 @@ describe("PluginSystem Fastify Plugin", () => {
 	describe("Error Handling", () => {
 		it("should handle plugin context creation failure", async () => {
 			const contextError = new Error("Context creation failed");
-			(createPluginContext as ReturnType<typeof vi.fn>).mockImplementation(() => {
-				throw contextError;
-			});
-
-			await expect(pluginSystem(mockFastify as FastifyInstance)).rejects.toThrow(
-				"Plugin system initialization failed",
+			(createPluginContext as ReturnType<typeof vi.fn>).mockImplementation(
+				() => {
+					throw contextError;
+				},
 			);
+
+			await expect(
+				pluginSystem(mockFastify as FastifyInstance),
+			).rejects.toThrow("Plugin system initialization failed");
 
 			expect(mockFastify.log?.error).toHaveBeenCalledWith(
 				{ error: contextError },
@@ -217,9 +219,9 @@ describe("PluginSystem Fastify Plugin", () => {
 				initError,
 			);
 
-			await expect(pluginSystem(mockFastify as FastifyInstance)).rejects.toThrow(
-				"Plugin system initialization failed",
-			);
+			await expect(
+				pluginSystem(mockFastify as FastifyInstance),
+			).rejects.toThrow("Plugin system initialization failed");
 
 			expect(mockFastify.log?.error).toHaveBeenCalledWith(
 				{ error: initError },
@@ -229,13 +231,15 @@ describe("PluginSystem Fastify Plugin", () => {
 
 		it("should handle fastify decoration failure", async () => {
 			const decorationError = new Error("Decoration failed");
-			(mockFastify.decorate as ReturnType<typeof vi.fn>).mockImplementation(() => {
-				throw decorationError;
-			});
-
-			await expect(pluginSystem(mockFastify as FastifyInstance)).rejects.toThrow(
-				"Plugin system initialization failed",
+			(mockFastify.decorate as ReturnType<typeof vi.fn>).mockImplementation(
+				() => {
+					throw decorationError;
+				},
 			);
+
+			await expect(
+				pluginSystem(mockFastify as FastifyInstance),
+			).rejects.toThrow("Plugin system initialization failed");
 
 			expect(mockFastify.log?.error).toHaveBeenCalledWith(
 				{ error: decorationError },
@@ -245,13 +249,15 @@ describe("PluginSystem Fastify Plugin", () => {
 
 		it("should handle hook addition failure", async () => {
 			const hookError = new Error("Hook addition failed");
-			(mockFastify.addHook as ReturnType<typeof vi.fn>).mockImplementation(() => {
-				throw hookError;
-			});
-
-			await expect(pluginSystem(mockFastify as FastifyInstance)).rejects.toThrow(
-				"Plugin system initialization failed",
+			(mockFastify.addHook as ReturnType<typeof vi.fn>).mockImplementation(
+				() => {
+					throw hookError;
+				},
 			);
+
+			await expect(
+				pluginSystem(mockFastify as FastifyInstance),
+			).rejects.toThrow("Plugin system initialization failed");
 
 			expect(mockFastify.log?.error).toHaveBeenCalledWith(
 				{ error: hookError },
@@ -298,9 +304,9 @@ describe("PluginSystem Fastify Plugin", () => {
 
 		it("should log plugin loading information", async () => {
 			const mockLoadedPlugins = [{ id: "test-plugin" }];
-			(mockPluginManager.getLoadedPlugins as ReturnType<typeof vi.fn>).mockReturnValue(
-				mockLoadedPlugins,
-			);
+			(
+				mockPluginManager.getLoadedPlugins as ReturnType<typeof vi.fn>
+			).mockReturnValue(mockLoadedPlugins);
 
 			await pluginSystem(mockFastify as FastifyInstance);
 
@@ -312,9 +318,9 @@ describe("PluginSystem Fastify Plugin", () => {
 
 	describe("Edge Cases", () => {
 		it("should handle empty plugin list", async () => {
-			(mockPluginManager.getLoadedPlugins as ReturnType<typeof vi.fn>).mockReturnValue(
-				[],
-			);
+			(
+				mockPluginManager.getLoadedPlugins as ReturnType<typeof vi.fn>
+			).mockReturnValue([]);
 
 			await pluginSystem(mockFastify as FastifyInstance);
 
@@ -323,9 +329,9 @@ describe("PluginSystem Fastify Plugin", () => {
 
 		it("should handle plugins with undefined id", async () => {
 			const mockLoadedPlugins = [{ id: undefined }, { id: "valid-plugin" }];
-			(mockPluginManager.getLoadedPlugins as ReturnType<typeof vi.fn>).mockReturnValue(
-				mockLoadedPlugins,
-			);
+			(
+				mockPluginManager.getLoadedPlugins as ReturnType<typeof vi.fn>
+			).mockReturnValue(mockLoadedPlugins);
 
 			await pluginSystem(mockFastify as FastifyInstance);
 
@@ -336,9 +342,9 @@ describe("PluginSystem Fastify Plugin", () => {
 
 		it("should handle single plugin", async () => {
 			const mockLoadedPlugins = [{ id: "single-plugin" }];
-			(mockPluginManager.getLoadedPlugins as ReturnType<typeof vi.fn>).mockReturnValue(
-				mockLoadedPlugins,
-			);
+			(
+				mockPluginManager.getLoadedPlugins as ReturnType<typeof vi.fn>
+			).mockReturnValue(mockLoadedPlugins);
 
 			await pluginSystem(mockFastify as FastifyInstance);
 
