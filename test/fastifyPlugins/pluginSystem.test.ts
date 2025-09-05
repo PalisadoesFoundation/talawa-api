@@ -4,6 +4,24 @@ import { pluginSystem } from "../../src/fastifyPlugins/pluginSystem";
 import type PluginManager from "../../src/plugin/manager";
 import type { IPluginContext } from "../../src/plugin/types";
 
+// Type for mock Fastify instance to avoid 'any' usage
+type MockFastifyInstance = Partial<FastifyInstance> & {
+	log: {
+		info: ReturnType<typeof vi.fn>;
+		error: ReturnType<typeof vi.fn>;
+		child: ReturnType<typeof vi.fn>;
+		level: string;
+		fatal: ReturnType<typeof vi.fn>;
+		warn: ReturnType<typeof vi.fn>;
+		debug: ReturnType<typeof vi.fn>;
+		trace: ReturnType<typeof vi.fn>;
+		silent: ReturnType<typeof vi.fn>;
+	};
+	drizzleClient: unknown;
+	decorate: ReturnType<typeof vi.fn>;
+	addHook: ReturnType<typeof vi.fn>;
+};
+
 // Mock the plugin system modules
 vi.mock("../../src/plugin", () => ({
 	createPluginContext: vi.fn(),
@@ -19,7 +37,7 @@ import fastifyPlugin from "fastify-plugin";
 import { createPluginContext, initializePluginSystem } from "../../src/plugin";
 
 describe("PluginSystem Fastify Plugin", () => {
-	let mockFastify: Partial<FastifyInstance>;
+	let mockFastify: MockFastifyInstance;
 	let mockPluginManager: Partial<PluginManager>;
 	let mockPluginContext: Partial<IPluginContext>;
 
@@ -49,11 +67,12 @@ describe("PluginSystem Fastify Plugin", () => {
 				warn: vi.fn(),
 				debug: vi.fn(),
 				trace: vi.fn(),
-			} as unknown,
-			drizzleClient: {} as unknown,
+				silent: vi.fn(),
+			},
+			drizzleClient: {},
 			decorate: vi.fn(),
 			addHook: vi.fn(),
-		};
+		} as MockFastifyInstance;
 
 		// Setup mocks
 		(createPluginContext as ReturnType<typeof vi.fn>).mockReturnValue(
