@@ -317,7 +317,7 @@ describe("installPlugin mutation", () => {
 				update: vi.fn().mockImplementation(() => {
 					throw new TalawaGraphQLError({
 						extensions: {
-							code: "test_error",
+							code: "unexpected",
 							issues: [],
 						},
 					});
