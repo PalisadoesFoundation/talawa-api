@@ -14,6 +14,7 @@ import {
 	safeRequire,
 } from "~/src/plugin/utils";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { installPluginDependenciesWithErrorHandling } from "~/src/utilities/pluginDependencyInstaller";
 
 import type { Readable } from "node:stream";
 
@@ -320,6 +321,10 @@ export async function installPluginFromZip(
 					},
 				});
 			}
+
+			// Install plugin dependencies first
+			console.log(`Installing dependencies for plugin: ${pluginId}`);
+			await installPluginDependenciesWithErrorHandling(pluginId, console);
 
 			// Create plugin-defined tables if they exist
 			if (

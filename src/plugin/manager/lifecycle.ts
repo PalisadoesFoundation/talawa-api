@@ -28,6 +28,7 @@ interface IPluginManager {
 }
 
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { installPluginDependenciesWithErrorHandling } from "~/src/utilities/pluginDependencyInstaller";
 import { PluginStatus } from "../types";
 import { createPluginTables, dropPluginTables, safeRequire } from "../utils";
 
@@ -39,7 +40,7 @@ export class PluginLifecycle {
 	) {}
 
 	/**
-	 * Install a plugin - create plugin-defined databases
+	 * Install a plugin - install dependencies and create plugin-defined databases
 	 */
 	public async installPlugin(
 		pluginId: string,
@@ -53,6 +54,10 @@ export class PluginLifecycle {
 			if (!manifest) {
 				throw new Error(`Failed to load manifest for plugin ${pluginId}`);
 			}
+
+			// Install plugin dependencies first
+			console.log(`Installing dependencies for plugin: ${pluginId}`);
+			await installPluginDependenciesWithErrorHandling(pluginId, console);
 
 			// Create plugin-defined databases if specified
 			await this.createPluginDatabases(pluginId, manifest);
