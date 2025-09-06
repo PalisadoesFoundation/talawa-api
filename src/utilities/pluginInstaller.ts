@@ -8,13 +8,7 @@ import { ulid } from "ulidx";
 import { pluginsTable } from "~/src/drizzle/tables/plugins";
 import { getPluginManagerInstance } from "~/src/plugin/registry";
 import type { IPluginManifest } from "~/src/plugin/types";
-import {
-	createPluginTables,
-	loadPluginManifest,
-	safeRequire,
-} from "~/src/plugin/utils";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import { installPluginDependenciesWithErrorHandling } from "~/src/utilities/pluginDependencyInstaller";
 
 import type { Readable } from "node:stream";
 
@@ -290,142 +284,7 @@ export async function installPluginFromZip(
 		// Extract plugin files
 		await extractPluginZip(tempPath, pluginId, structure);
 
-		// Create plugin-defined database tables after file extraction
-		try {
-			// Load plugin manifest from extracted files
-			const pluginsDirectory = join(
-				process.cwd(),
-				"src",
-				"plugin",
-				"available",
-			);
-			const pluginPath = join(pluginsDirectory, pluginId);
-
-			console.log("Loading plugin manifest for table creation:", pluginId);
-			let manifest: IPluginManifest;
-			try {
-				manifest = await loadPluginManifest(pluginPath);
-				console.log("Plugin manifest loaded:", manifest);
-			} catch (error) {
-				console.error(`Failed to load manifest for ${pluginId}:`, error);
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "forbidden_action_on_arguments_associated_resources",
-						issues: [
-							{
-								argumentPath: ["input", "pluginZip"],
-								message:
-									"Plugin manifest not found or invalid after extraction. Ensure plugin structure is correct.",
-							},
-						],
-					},
-				});
-			}
-
-			// Install plugin dependencies first
-			console.log(`Installing dependencies for plugin: ${pluginId}`);
-			await installPluginDependenciesWithErrorHandling(pluginId, console);
-
-			// Create plugin-defined tables if they exist
-			if (
-				manifest.extensionPoints?.database &&
-				manifest.extensionPoints.database.length > 0
-			) {
-				console.log(`Creating plugin-defined tables for: ${pluginId}`);
-
-				const tableDefinitions: Record<string, Record<string, unknown>> = {};
-
-				// Load each table definition
-				for (const tableExtension of manifest.extensionPoints.database) {
-					console.log(
-						"Loading table definition:",
-						tableExtension.name,
-						"from",
-						tableExtension.file,
-					);
-
-					const tableFilePath = join(pluginPath, tableExtension.file);
-					const tableModule =
-						await safeRequire<Record<string, Record<string, unknown>>>(
-							tableFilePath,
-						);
-
-					if (!tableModule) {
-						throw new Error(
-							`Failed to load table file: ${tableExtension.file}`,
-						);
-					}
-
-					const tableDefinition = tableModule[tableExtension.name] as Record<
-						string,
-						unknown
-					>;
-					if (!tableDefinition) {
-						throw new Error(
-							`Table '${tableExtension.name}' not found in file: ${tableExtension.file}`,
-						);
-					}
-
-					tableDefinitions[tableExtension.name] = tableDefinition;
-					console.log("Table definition loaded:", tableExtension.name);
-				}
-
-				// Create the plugin-defined tables
-				try {
-					await createPluginTables(
-						options.drizzleClient as {
-							execute: (sql: string) => Promise<unknown>;
-						},
-						pluginId,
-						tableDefinitions,
-						console, // Using console as logger
-					);
-					console.log(
-						"Successfully created plugin-defined tables for:",
-						pluginId,
-					);
-				} catch (error) {
-					console.error(`Failed to create tables for ${pluginId}:`, error);
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "forbidden_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "pluginZip"],
-									message:
-										"Failed to create plugin database tables during installation",
-								},
-							],
-						},
-					});
-				}
-			} else {
-				console.log("No plugin-defined tables found for:", pluginId);
-			}
-		} catch (error) {
-			// Re-throw TalawaGraphQLError as-is
-			if (error instanceof TalawaGraphQLError) {
-				throw error;
-			}
-			// Handle other errors
-			console.error(
-				`Error during plugin table creation for ${pluginId}:`,
-				error,
-			);
-			throw new TalawaGraphQLError({
-				extensions: {
-					code: "forbidden_action_on_arguments_associated_resources",
-					issues: [
-						{
-							argumentPath: ["input", "pluginZip"],
-							message: `Plugin table creation failed: ${
-								error instanceof Error ? error.message : "Unknown error"
-							}`,
-						},
-					],
-				},
-			});
-		}
+		console.log(`Plugin files extracted successfully for: ${pluginId}`);
 
 		// Create or update plugin record in database
 		let plugin: unknown;
