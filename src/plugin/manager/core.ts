@@ -44,6 +44,9 @@ class PluginManager extends EventEmitter {
 			pre: {},
 			post: {},
 		},
+		webhooks: {
+			handlers: {},
+		},
 	};
 	private pluginContext: IPluginContext;
 	private pluginsDirectory: string;
@@ -240,6 +243,7 @@ class PluginManager extends EventEmitter {
 				graphqlResolvers: {},
 				databaseTables: {} as Record<string, Record<string, unknown>>,
 				hooks: {},
+				webhooks: {},
 				status: PluginStatus.LOADING,
 			};
 
@@ -556,6 +560,9 @@ class PluginManager extends EventEmitter {
 				hooks: {
 					pre: {},
 					post: {},
+				},
+				webhooks: {
+					handlers: {},
 				},
 			};
 

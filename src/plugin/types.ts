@@ -23,6 +23,7 @@ export interface IExtensionPoints {
 	graphql?: IGraphQLExtension[];
 	database?: IDatabaseExtension[];
 	hooks?: IHookExtension[];
+	webhooks?: IWebhookExtension[];
 }
 
 export interface IGraphQLExtension {
@@ -47,6 +48,13 @@ export interface IHookExtension {
 	file?: string;
 }
 
+export interface IWebhookExtension {
+	path: string;
+	handler: string;
+	method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+	description?: string;
+}
+
 // Plugin Manager Types
 export interface ILoadedPlugin {
 	id: string;
@@ -54,6 +62,7 @@ export interface ILoadedPlugin {
 	graphqlResolvers: Record<string, unknown>;
 	databaseTables: Record<string, Record<string, unknown>>;
 	hooks: Record<string, (...args: unknown[]) => unknown>;
+	webhooks: Record<string, (request: unknown, reply: unknown) => Promise<unknown>>;
 	status: PluginStatus;
 	errorMessage?: string;
 }
@@ -80,6 +89,9 @@ export interface IExtensionRegistry {
 	hooks: {
 		pre: Record<string, ((...args: unknown[]) => unknown)[]>;
 		post: Record<string, ((...args: unknown[]) => unknown)[]>;
+	};
+	webhooks: {
+		handlers: Record<string, (request: unknown, reply: unknown) => Promise<unknown>>;
 	};
 }
 

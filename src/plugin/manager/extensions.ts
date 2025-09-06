@@ -14,6 +14,7 @@ import type {
 	IHookExtension,
 	ILoadedPlugin,
 	IPluginManifest,
+	IWebhookExtension,
 } from "../types";
 import { safeRequire } from "../utils";
 
@@ -72,6 +73,13 @@ export class ExtensionLoader {
 			if (manifest.extensionPoints?.hooks) {
 				for (const extension of manifest.extensionPoints.hooks) {
 					await this.loadHookExtension(pluginId, extension, pluginModule);
+				}
+			}
+
+			// Load Webhook extensions (no logging)
+			if (manifest.extensionPoints?.webhooks) {
+				for (const extension of manifest.extensionPoints.webhooks) {
+					await this.loadWebhookExtension(pluginId, extension, pluginModule);
 				}
 			}
 		} catch (error) {
@@ -288,6 +296,43 @@ export class ExtensionLoader {
 		if (hooks) {
 			hooks.push(handler as (...args: unknown[]) => unknown);
 		}
+	}
+
+	private async loadWebhookExtension(
+		pluginId: string,
+		extension: IWebhookExtension,
+		pluginModule: Record<string, unknown>,
+	): Promise<void> {
+		let handler: unknown;
+
+		// Try to get from main plugin module
+		handler = pluginModule[extension.handler];
+
+		if (!handler || typeof handler !== "function") {
+			throw new Error(
+				`Webhook handler '${extension.handler}' not found or not a function in plugin ${pluginId}`,
+			);
+		}
+
+		const plugin = this.loadedPlugins.get(pluginId);
+		if (!plugin) {
+			throw new Error(`Plugin ${pluginId} not found in loaded plugins`);
+		}
+
+		// Ensure webhooks is initialized
+		if (!plugin.webhooks) {
+			plugin.webhooks = {} as Record<string, (request: unknown, reply: unknown) => Promise<unknown>>;
+		}
+
+		// Create webhook key from plugin ID and path
+		const webhookKey = `${pluginId}:${extension.path}`;
+		plugin.webhooks[webhookKey] = handler as (request: unknown, reply: unknown) => Promise<unknown>;
+
+		// Register in extension registry
+		this.extensionRegistry.webhooks.handlers[webhookKey] = handler as (request: unknown, reply: unknown) => Promise<unknown>;
+
+		// Log webhook registration
+		console.log(`🔗 Webhook registered: ${extension.method || 'POST'} /api/plugins/${pluginId}/webhook${extension.path} (${extension.description || 'No description'})`);
 	}
 
 	/**
