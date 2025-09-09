@@ -714,8 +714,11 @@ input FileMetadataInput {
   """Hash of the file for deduplication"""
   fileHash: String!
 
-  """MIME type of the file"""
-  mimetype: PostAttachmentMimeType!
+  """
+  MIME type of the file
+  """
+  mimeType: PostAttachmentMimeType!
+
 
   """Name of the file"""
   name: String!

@@ -76,36 +76,55 @@ describe("Chat.updatedAt resolver", () => {
 		expect(result).toEqual(mockParent.updatedAt);
 	});
 
-	it("returns updatedAt when user is an administrator in the organization and not global administrator", async () => {
+	it("returns updatedAt when user is the creator of the chat", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			role: "regular",
-			chatMembershipsWhereMember: [{ role: "regular" }],
-			organizationMembershipsWhereMember: [{ role: "administrator" }],
+			chatMembershipsWhereMember: [],
+			organizationMembershipsWhereMember: [],
+		});
+
+		// Mock parent with current user as creator
+		const mockParentWithCreator = {
+			...mockParent,
+			creatorId: "user-123", // Same as authenticated user ID
+		};
+
+		const result = await resolveUpdatedAt(
+			mockParentWithCreator,
+			{},
+			authenticatedContext,
+		);
+		expect(result).toEqual(mockParentWithCreator.updatedAt);
+	});
+
+	it("returns updatedAt when user is a chat member", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			role: "regular",
+		});
+
+		mocks.drizzleClient.query.chatMembershipsTable.findFirst.mockResolvedValue({
+			chatId: "chat_1",
 		});
 
 		const result = await resolveUpdatedAt(mockParent, {}, authenticatedContext);
 		expect(result).toEqual(mockParent.updatedAt);
 	});
 
-	it("returns updatedAt when user is a chat administrator and not global administrator", async () => {
+	it("throws unauthorized error when user is not creator, not admin, and not chat member", async () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			role: "regular",
-			chatMembershipsWhereMember: [{ role: "administrator" }],
-			organizationMembershipsWhereMember: [{ role: "regular" }],
 		});
 
-		const result = await resolveUpdatedAt(mockParent, {}, authenticatedContext);
-		expect(result).toEqual(mockParent.updatedAt);
-	});
+		mocks.drizzleClient.query.chatMembershipsTable.findFirst.mockResolvedValue(
+			undefined,
+		);
 
-	it("returns updatedAt when user is both organization and chat admin", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			role: "regular",
-			chatMembershipsWhereMember: [{ role: "administrator" }],
-			organizationMembershipsWhereMember: [{ role: "administrator" }],
-		});
-
-		const result = await resolveUpdatedAt(mockParent, {}, authenticatedContext);
-		expect(result).toEqual(mockParent.updatedAt);
+		await expect(
+			resolveUpdatedAt(mockParent, {}, authenticatedContext),
+		).rejects.toThrow(
+			expect.objectContaining({
+				extensions: { code: "unauthorized_action" },
+			}),
+		);
 	});
 });
