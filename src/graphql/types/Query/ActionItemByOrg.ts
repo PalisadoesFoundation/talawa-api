@@ -60,7 +60,7 @@ export const actionItemsByOrganization = builder.queryField(
 				const currentUserId = ctx.currentClient.user.id;
 
 				// Fetch the current user and action items by organizationId
-				const [currentUser, actionItems] = await Promise.all([
+				const [currentUser, organization] = await Promise.all([
 					ctx.drizzleClient.query.usersTable.findFirst({
 						columns: {
 							role: true,
@@ -68,51 +68,27 @@ export const actionItemsByOrganization = builder.queryField(
 						where: (fields, operators) =>
 							operators.eq(fields.id, currentUserId),
 					}),
-					ctx.drizzleClient.query.actionsTable.findMany({
-						with: {
-							assignee: true,
-							category: true,
-							creator: true,
-							event: true,
-							organization: {
-								columns: {
-									countryCode: true,
-								},
-								with: {
-									membershipsWhereOrganization: {
-										columns: {
-											role: true,
-										},
-										where: (fields, operators) =>
-											operators.eq(fields.memberId, currentUserId),
-									},
-								},
-							},
+					ctx.drizzleClient.query.organizationsTable.findFirst({
+						columns: {
+							id: true,
 						},
-						where: (fields, operators) => {
-							if (!parsedArgs.input.organizationId) {
-								throw new TalawaGraphQLError({
-									message: "Organization ID is required but was not provided.",
-									extensions: {
-										code: "invalid_arguments",
-										issues: [
-											{
-												argumentPath: ["input", "organizationId"],
-												message: "organizationId must be a non-empty string",
-											},
-										],
-									},
-								});
-							}
-							return operators.eq(
-								fields.organizationId,
+						where: (fields, operators) =>
+							operators.eq(
+								fields.id,
 								parsedArgs.input.organizationId,
-							);
+							),
+						with: {
+							membershipsWhereOrganization: {
+								columns: {
+									role: true,
+								},
+								where: (fields, operators) =>
+									operators.eq(fields.memberId, currentUserId),
+							},
 						},
 					}),
 				]);
 
-				// Validate if the user exists
 				if (currentUser === undefined) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -121,18 +97,22 @@ export const actionItemsByOrganization = builder.queryField(
 					});
 				}
 
-				// If no action items found, return an empty array
-				if (!actionItems.length) {
-					return [];
+				if (organization === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [{ argumentPath: ["input", "organizationId"] }],
+						},
+					});
 				}
 
-				// Check if the user is authorized to view these action items
 				const currentUserOrganizationMembership =
-					actionItems.length > 0
-						? actionItems[0]?.organization?.membershipsWhereOrganization?.[0]
-						: undefined;
+					organization.membershipsWhereOrganization[0];
 
-				if (!currentUserOrganizationMembership) {
+				if (
+					currentUser.role !== "administrator" &&
+					!currentUserOrganizationMembership
+				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action_on_arguments_associated_resources",
@@ -141,23 +121,14 @@ export const actionItemsByOrganization = builder.queryField(
 					});
 				}
 
-				if (
-					currentUser.role !== "administrator" &&
-					currentUserOrganizationMembership === undefined
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [
-								{
-									argumentPath: ["input", "organizationId"],
-								},
-							],
-						},
-					});
-				}
+				const actionItems = await ctx.drizzleClient.query.actionsTable.findMany({
+					where: (fields, operators) =>
+						operators.eq(
+							fields.organizationId,
+							parsedArgs.input.organizationId,
+						),
+				});
 
-				// Return all action items for the given organization
 				return actionItems;
 			},
 			type: [ActionItem], // Returns an array of ActionItems

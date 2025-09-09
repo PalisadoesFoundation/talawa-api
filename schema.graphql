@@ -45,6 +45,12 @@ type ActionItem {
   """Notes added before completing the action item."""
   preCompletionNotes: String
 
+  """The recurring event instance associated with this action item."""
+  recurringEventInstance: Event
+
+  """The ID of the recurring event instance."""
+  recurringEventInstanceId: String
+
   """User who last updated the action item."""
   updater: User
 }
@@ -518,6 +524,8 @@ input CreateActionItemInput {
   eventId: ID
   organizationId: ID!
   preCompletionNotes: String
+  recurringEventInstanceId: ID
+  templateActionItemId: ID
 }
 
 input CreatePluginInput {
@@ -536,6 +544,11 @@ scalar Date
 A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
 scalar DateTime
+
+input DeleteActionItemInput {
+  deleteForInstance: Boolean
+  id: ID!
+}
 
 input DeletePluginInput {
   id: String!
@@ -1665,7 +1678,7 @@ type Mutation {
   """Mutation field to delete an action item."""
   deleteActionItem(
     """Delete an action item"""
-    input: MutationDeleteActionItemInput!
+    input: DeleteActionItemInput!
   ): ActionItem
 
   """Mutation field to delete an action item category."""
@@ -1801,7 +1814,7 @@ type Mutation {
   """Mutation to update an action item"""
   updateActionItem(
     """Update an action item"""
-    input: MutationUpdateActionItemInput!
+    input: UpdateActionItemInput!
   ): ActionItem
 
   """Mutation field to update an action item category."""
@@ -3896,7 +3909,7 @@ type Query {
   """Query field to get all volunteer groups for an event."""
   getEventVolunteerGroups(input: QueryEventVolunteerGroupsInput!): [VolunteerGroups!]
 
-  """Query field to get fund campaign pledge associated to a user."""
+  """Query field to get fund campaign pledges associated with a user."""
   getPledgesByUserId(
     """Input parameters to fetch pledges by userId."""
     input: QueryFundCampaignPledgesByUserInput!
@@ -4343,6 +4356,16 @@ type TagFolderTagsConnection {
 type TagFolderTagsConnectionEdge {
   cursor: String!
   node: Tag
+}
+
+input UpdateActionItemInput {
+  assigneeId: ID
+  categoryId: ID
+  id: ID!
+  isCompleted: Boolean!
+  postCompletionNotes: String
+  preCompletionNotes: String
+  updateForInstance: Boolean
 }
 
 enum UpdateInviteStatus {

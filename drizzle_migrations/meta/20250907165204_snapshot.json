@@ -1,5 +1,5 @@
 {
-  "id": "12fc2106-e390-4ba4-bdbc-cc05423baa43",
+  "id": "b334bb82-a3b6-4d79-a77b-4efcf89918f1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -226,6 +226,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "recurring_event_instance_id": {
+          "name": "recurring_event_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "id": {
           "name": "id",
           "type": "uuid",
@@ -237,6 +243,13 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": true
+        },
+        "is_deleted": {
+          "name": "is_deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "organization_id": {
           "name": "organization_id",
@@ -267,9 +280,30 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
+        },
+        "template_action_item_id": {
+          "name": "template_action_item_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
+        "actions_template_action_item_id_index": {
+          "name": "actions_template_action_item_id_index",
+          "columns": [
+            {
+              "expression": "template_action_item_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "actions_assigned_at_index": {
           "name": "actions_assigned_at_index",
           "columns": [
@@ -429,6 +463,19 @@
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
+        "actions_recurring_event_instance_id_recurring_event_instances_id_fk": {
+          "name": "actions_recurring_event_instance_id_recurring_event_instances_id_fk",
+          "tableFrom": "actions",
+          "tableTo": "recurring_event_instances",
+          "columnsFrom": [
+            "recurring_event_instance_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
         "actions_organization_id_organizations_id_fk": {
           "name": "actions_organization_id_organizations_id_fk",
           "tableFrom": "actions",
@@ -448,6 +495,19 @@
           "tableTo": "users",
           "columnsFrom": [
             "updater_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "actions_template_action_item_id_actions_id_fk": {
+          "name": "actions_template_action_item_id_actions_id_fk",
+          "tableFrom": "actions",
+          "tableTo": "actions",
+          "columnsFrom": [
+            "template_action_item_id"
           ],
           "columnsTo": [
             "id"
@@ -7164,6 +7224,12 @@
       "name": "venues",
       "schema": "",
       "columns": {
+        "capacity": {
+          "name": "capacity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3) with time zone",

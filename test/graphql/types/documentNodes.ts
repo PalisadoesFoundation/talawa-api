@@ -1520,3 +1520,95 @@ export const Mutation_updateThisAndFollowingEvents = gql(`
     }
   }
 `);
+
+export const Query_actionItems = gql(`
+    query ActionItems($id: String!) {
+        actionItemCategory(input: { id: $id }) {
+            actionItems {
+                id
+                isCompleted
+            }
+        }
+    }
+`);
+
+export const Query_eventActionItems = gql(`
+    query EventActionItems($id: String!, $first: Int, $after: String, $last: Int, $before: String) {
+        event(input: { id: $id }) {
+            actionItems(first: $first, after: $after, last: $last, before: $before) {
+                edges {
+                    node {
+                        id
+                        isCompleted
+                    }
+                }
+                pageInfo {
+                    hasNextPage
+                    hasPreviousPage
+                    startCursor
+                    endCursor
+                }
+            }
+        }
+    }
+`);
+
+export const Query_organizationActionItemCategories = gql(`
+    query OrganizationActionItemCategories($id: String!, $first: Int, $after: String, $last: Int, $before: String) {
+        organization(input: { id: $id }) {
+            actionItemCategories(first: $first, after: $after, last: $last, before: $before) {
+                edges {
+                    node {
+                        id
+                        name
+                        isDisabled
+                    }
+                }
+                pageInfo {
+                    hasNextPage
+                    hasPreviousPage
+                    startCursor
+                    endCursor
+                }
+            }
+        }
+    }
+`);
+
+export const Query_actionItemsByUser = gql(`
+  query ActionItemsByUser($input: QueryActionItemsByUserInput!) {
+    actionItemsByUser(input: $input) {
+      id
+      preCompletionNotes
+      isCompleted
+      assignedAt
+      completionAt
+      postCompletionNotes
+      category {
+        id
+        name
+      }
+      assignee {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      organization {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      createdAt
+    }
+  }
+`);

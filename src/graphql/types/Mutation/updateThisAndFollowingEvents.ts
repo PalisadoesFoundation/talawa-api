@@ -1,5 +1,6 @@
-import { and, eq, gte } from "drizzle-orm";
+import { and, eq, gte, inArray } from "drizzle-orm";
 import { z } from "zod";
+import { actionsTable } from "~/src/drizzle/tables/actions";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -194,9 +195,11 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				// Always split for "this and following" updates
 				// Step 1: Delete all instances from this one forward (including this instance)
-				// First delete the instances to avoid constraint issues
-				const deletedInstances = await tx
-					.delete(recurringEventInstancesTable)
+
+				// First, find all the instances that need to be deleted.
+				const instancesToDelete = await tx
+					.select({ id: recurringEventInstancesTable.id })
+					.from(recurringEventInstancesTable)
 					.where(
 						and(
 							eq(
@@ -208,12 +211,34 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 								existingInstance.actualStartTime,
 							),
 						),
-					)
-					.returning({ id: recurringEventInstancesTable.id });
+					);
 
-				ctx.log.info("Deleted old instances", {
+				if (instancesToDelete.length > 0) {
+					const instanceIdsToDelete = instancesToDelete.map(
+						(instance) => instance.id,
+					);
+
+					// Delete action items associated with the instances first
+					await tx
+						.delete(actionsTable)
+						.where(
+							inArray(
+								actionsTable.recurringEventInstanceId,
+								instanceIdsToDelete,
+							),
+						);
+
+					// Now delete the instances
+					await tx
+						.delete(recurringEventInstancesTable)
+						.where(
+							inArray(recurringEventInstancesTable.id, instanceIdsToDelete),
+						);
+				}
+
+				ctx.log.info("Deleted old instances and their action items", {
 					baseRecurringEventId: existingInstance.baseRecurringEventId,
-					deletedCount: deletedInstances.length,
+					deletedCount: instancesToDelete.length,
 					fromStartTime: existingInstance.actualStartTime.toISOString(),
 				});
 

@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import type { z } from "zod";
 import {
 	actionsTable,
@@ -133,76 +133,25 @@ export const resolveActionItemsPaginated = async (
 
 	const { cursor, isInversed, limit } = parsedArgs;
 
-	// Order by assignedAt and then by id for stable pagination
-	const orderBy = isInversed
-		? [desc(actionsTable.assignedAt), desc(actionsTable.id)]
-		: [asc(actionsTable.assignedAt), asc(actionsTable.id)];
-
-	let where: SQL | undefined;
-
-	if (isInversed) {
-		if (cursor !== undefined) {
-			where = and(
-				exists(
-					ctx.drizzleClient
-						.select()
-						.from(actionsTable)
-						.where(
-							and(
-								eq(actionsTable.eventId, parent.id),
-								eq(actionsTable.id, cursor.id),
-								eq(actionsTable.assignedAt, cursor.assignedAt),
-							),
-						),
-				),
-				eq(actionsTable.eventId, parent.id),
-				or(
-					and(
-						eq(actionsTable.assignedAt, cursor.assignedAt),
-						lt(actionsTable.id, cursor.id),
-					),
-					lt(actionsTable.assignedAt, cursor.assignedAt),
-				),
-			);
-		} else {
-			where = eq(actionsTable.eventId, parent.id);
-		}
-	} else {
-		if (cursor !== undefined) {
-			where = and(
-				exists(
-					ctx.drizzleClient
-						.select()
-						.from(actionsTable)
-						.where(
-							and(
-								eq(actionsTable.eventId, parent.id),
-								eq(actionsTable.id, cursor.id),
-								eq(actionsTable.assignedAt, cursor.assignedAt),
-							),
-						),
-				),
-				eq(actionsTable.eventId, parent.id),
-				or(
-					and(
-						eq(actionsTable.assignedAt, cursor.assignedAt),
-						gt(actionsTable.id, cursor.id),
-					),
-					gt(actionsTable.assignedAt, cursor.assignedAt),
-				),
-			);
-		} else {
-			where = eq(actionsTable.eventId, parent.id);
-		}
-	}
+	const baseEventId =
+		"baseRecurringEventId" in parent && parent.baseRecurringEventId
+			? parent.baseRecurringEventId
+			: parent.id;
 
 	const actionItems = await ctx.drizzleClient.query.actionsTable.findMany({
-		limit,
-		orderBy,
-		where,
+		where: and(
+			eq(actionsTable.organizationId, parent.organizationId),
+			or(
+				eq(actionsTable.eventId, baseEventId),
+				and(eq(actionsTable.recurringEventInstanceId, parent.id)),
+			),
+		),
 	});
 
-	if (cursor !== undefined && actionItems.length === 0) {
+	// Apply pagination to the final list of action items
+	const paginatedActionItems = actionItems.slice(0, limit);
+
+	if (cursor !== undefined && paginatedActionItems.length === 0) {
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "arguments_associated_resources_not_found",
@@ -225,7 +174,7 @@ export const resolveActionItemsPaginated = async (
 			).toString("base64url"),
 		createNode: (actionItem) => actionItem,
 		parsedArgs,
-		rawNodes: actionItems,
+		rawNodes: paginatedActionItems,
 	});
 };
 

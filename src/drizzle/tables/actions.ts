@@ -12,6 +12,7 @@ import { uuidv7 } from "uuidv7";
 import { actionCategoriesTable } from "./actionCategories";
 import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
+import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
 export const actionsTable = pgTable(
@@ -50,6 +51,13 @@ export const actionsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
+		recurringEventInstanceId: uuid("recurring_event_instance_id").references(
+			() => recurringEventInstancesTable.id,
+			{
+				onDelete: "set null",
+				onUpdate: "cascade",
+			},
+		),
 		id: uuid("id").primaryKey().$default(uuidv7),
 		isCompleted: boolean("is_completed").notNull(),
 		organizationId: uuid("organization_id")

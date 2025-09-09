@@ -12,6 +12,7 @@ const mutationCreateActionItemArgumentsSchema = z.object({
 		assigneeId: z.string().uuid(),
 		preCompletionNotes: z.string().optional(),
 		eventId: z.string().uuid().optional(),
+		recurringEventInstanceId: z.string().uuid().optional(),
 		organizationId: z.string().uuid(),
 		assignedAt: z.string().optional(), // 🆕 Added assignedAt field
 	}),
@@ -29,6 +30,7 @@ builder.mutationField("createActionItem", (t) =>
 						assigneeId: t.field({ type: "ID", required: true }),
 						preCompletionNotes: t.field({ type: "String" }),
 						eventId: t.field({ type: "ID" }),
+						recurringEventInstanceId: t.field({ type: "ID" }),
 						organizationId: t.field({ type: "ID", required: true }),
 						assignedAt: t.field({ type: "String" }), // 🆕 Added assignedAt field
 					}),
@@ -37,6 +39,9 @@ builder.mutationField("createActionItem", (t) =>
 		},
 		description: "Mutation field to create an action item.",
 		resolve: async (_parent, args, ctx) => {
+			// Log the arguments to inspect the input
+			ctx.log.info(args.input, "createActionItem arguments");
+
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: { code: "unauthenticated" },
@@ -148,6 +153,8 @@ builder.mutationField("createActionItem", (t) =>
 					postCompletionNotes: null,
 					isCompleted: false,
 					eventId: parsedArgs.input.eventId ?? null,
+					recurringEventInstanceId:
+						parsedArgs.input.recurringEventInstanceId ?? null,
 					organizationId: parsedArgs.input.organizationId,
 					updatedAt: new Date(),
 					updaterId: currentUserId,

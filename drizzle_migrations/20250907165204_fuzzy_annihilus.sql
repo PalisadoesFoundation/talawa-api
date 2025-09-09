@@ -19,13 +19,16 @@ CREATE TABLE "actions" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
 	"event_id" uuid,
+	"recurring_event_instance_id" uuid,
 	"id" uuid PRIMARY KEY NOT NULL,
 	"is_completed" boolean NOT NULL,
+	"is_deleted" boolean DEFAULT false NOT NULL,
 	"organization_id" uuid NOT NULL,
 	"post_completion_notes" text,
 	"pre_completion_notes" text,
 	"updated_at" timestamp (3) with time zone,
-	"updater_id" uuid
+	"updater_id" uuid,
+	"template_action_item_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE "advertisement_attachments" (
@@ -489,6 +492,7 @@ CREATE TABLE "venue_bookings" (
 );
 --> statement-breakpoint
 CREATE TABLE "venues" (
+	"capacity" integer,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
 	"description" text,
@@ -529,8 +533,10 @@ ALTER TABLE "actions" ADD CONSTRAINT "actions_actor_id_users_id_fk" FOREIGN KEY 
 ALTER TABLE "actions" ADD CONSTRAINT "actions_category_id_action_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."action_categories"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "actions" ADD CONSTRAINT "actions_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "actions" ADD CONSTRAINT "actions_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "actions" ADD CONSTRAINT "actions_recurring_event_instance_id_recurring_event_instances_id_fk" FOREIGN KEY ("recurring_event_instance_id") REFERENCES "public"."recurring_event_instances"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "actions" ADD CONSTRAINT "actions_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "actions" ADD CONSTRAINT "actions_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "actions" ADD CONSTRAINT "actions_template_action_item_id_actions_id_fk" FOREIGN KEY ("template_action_item_id") REFERENCES "public"."actions"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "advertisement_attachments" ADD CONSTRAINT "advertisement_attachments_advertisement_id_advertisements_id_fk" FOREIGN KEY ("advertisement_id") REFERENCES "public"."advertisements"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "advertisement_attachments" ADD CONSTRAINT "advertisement_attachments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "advertisement_attachments" ADD CONSTRAINT "advertisement_attachments_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
@@ -652,6 +658,7 @@ CREATE INDEX "action_categories_created_at_index" ON "action_categories" USING b
 CREATE INDEX "action_categories_creator_id_index" ON "action_categories" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "action_categories_name_index" ON "action_categories" USING btree ("name");--> statement-breakpoint
 CREATE UNIQUE INDEX "action_categories_name_organization_id_index" ON "action_categories" USING btree ("name","organization_id");--> statement-breakpoint
+CREATE INDEX "actions_template_action_item_id_index" ON "actions" USING btree ("template_action_item_id");--> statement-breakpoint
 CREATE INDEX "actions_assigned_at_index" ON "actions" USING btree ("assigned_at");--> statement-breakpoint
 CREATE INDEX "actions_actor_id_index" ON "actions" USING btree ("actor_id");--> statement-breakpoint
 CREATE INDEX "actions_category_id_index" ON "actions" USING btree ("category_id");--> statement-breakpoint
