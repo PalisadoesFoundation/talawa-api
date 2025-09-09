@@ -446,3 +446,39 @@ suite("disconnect integration test", () => {
 		queryClient.end = originalEnd;
 	});
 });
+
+suite.concurrent("insertCollections - agenda_folders and agenda_items", () => {
+	test.concurrent(
+		"should handle error in agenda_folders insertion",
+		async () => {
+			vi.spyOn(helpers, "parseDate").mockImplementation(
+				(date) => new Date(date),
+			);
+			vi.spyOn(helpers, "checkAndInsertData").mockRejectedValue(
+				new Error("fail"),
+			);
+			vi.spyOn(helpers, "checkDataSize").mockResolvedValue(true);
+			vi.spyOn(fs, "readFile").mockImplementation(async (path, ...args) => {
+				if (typeof path === "string" && path.includes("agenda_folders"))
+					return JSON.stringify([
+						{
+							id: "123e4567-e89b-12d3-a456-426614174005",
+							createdAt: "2024-01-01T00:00:00Z",
+							updatedAt: "2024-01-02T00:00:00Z",
+							creatorId: "123e4567-e89b-12d3-a456-426614174020",
+							eventId: "123e4567-e89b-12d3-a456-426614174021",
+							isAgendaItemFolder: true,
+							name: "Test Folder Error",
+							parentFolderId: "123e4567-e89b-12d3-a456-426614174099",
+							updaterId: "123e4567-e89b-12d3-a456-426614174022",
+						},
+					]);
+				return "[]";
+			});
+
+			await expect(
+				helpers.insertCollections(["agenda_folders"]),
+			).rejects.toThrow(/Error adding data to tables/);
+		},
+	);
+});

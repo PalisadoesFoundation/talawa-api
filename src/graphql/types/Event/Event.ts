@@ -7,6 +7,8 @@ import {
 } from "~/src/graphql/types/EventAttachment/EventAttachment";
 import { RecurrenceRule } from "~/src/graphql/types/RecurrenceRule/RecurrenceRule";
 import { formatRecurrenceDescription } from "~/src/utilities/recurrenceFormatter";
+import { AgendaItem } from "../AgendaItem/AgendaItem";
+import { resolveAgendaItems } from "./agendaItems";
 
 // Unified Event type supporting both standalone events and materialized instances
 export type Event =
@@ -68,6 +70,13 @@ Event.implement({
 		location: t.exposeString("location", {
 			description:
 				"The physical or virtual location where the event will take place.",
+		}),
+		agendaItems: t.field({
+			nullable: false,
+			type: [AgendaItem],
+			description:
+				"A flattened list of all agenda items for the event, across all folders.",
+			resolve: resolveAgendaItems,
 		}),
 		isRecurringEventTemplate: t.boolean({
 			description:
