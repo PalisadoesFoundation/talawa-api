@@ -511,10 +511,45 @@ builder.mutationField("createChatMembership", (t) =>
 			const currentUserOrganizationMembership =
 				existingChat.organization.membershipsWhereOrganization[0];
 
+			// Check if user is a member of the organization or has a chat membership
+			const currentUserChatMembership =
+				await ctx.drizzleClient.query.chatMembershipsTable.findFirst({
+					columns: { role: true },
+					where: (fields, operators) =>
+						operators.and(
+							operators.eq(fields.chatId, parsedArgs.input.chatId),
+							operators.eq(fields.memberId, currentUserId),
+						),
+				});
+
+			// Allow if user is: global admin, org member, or existing chat member
+			const canCreateMembership =
+				currentUser.role === "administrator" ||
+				currentUserOrganizationMembership !== undefined ||
+				currentUserChatMembership !== undefined;
+
+			if (!canCreateMembership) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "chatId"],
+							},
+						],
+					},
+				});
+			}
+
+			// Only admins can set roles other than "regular"
 			if (
+				parsedArgs.input.role !== undefined &&
+				parsedArgs.input.role !== "regular" &&
 				currentUser.role !== "administrator" &&
 				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
+					currentUserOrganizationMembership.role !== "administrator") &&
+				(currentUserChatMembership === undefined ||
+					currentUserChatMembership.role !== "administrator")
 			) {
 				const unauthorizedArgumentPaths = getKeyPathsWithNonUndefinedValues({
 					keyPaths: [["input", "role"]],
