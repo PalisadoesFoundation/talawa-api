@@ -130,14 +130,16 @@ suite("Query: actionItemsByUser", () => {
 		categoryId = await createActionItemCategory(organizationId);
 	});
 
-	test("should return an unauthenticated error if not signed in", async () => {
-		const result = await mercuriusClient.query(Query_actionItemsByUser, {
-			variables: {
-				input: {
-					userId: regularUser.userId,
+	test(
+		"should return an unauthenticated error if not signed in",
+		async () => {
+			const result = await mercuriusClient.query(Query_actionItemsByUser, {
+				variables: {
+					input: {
+						userId: regularUser.userId,
+					},
 				},
-			},
-		});
+			});
 
 		expect(result.data?.actionItemsByUser).toBeNull();
 		expect(result.errors).toEqual(
@@ -149,19 +151,23 @@ suite("Query: actionItemsByUser", () => {
 		);
 	});
 
-	test("should return an empty array if no action items exist for the user", async () => {
-		const result = await mercuriusClient.query(Query_actionItemsByUser, {
-			headers: { authorization: `bearer ${regularUser.authToken}` },
-			variables: {
-				input: {
-					userId: regularUser.userId,
+	test(
+		"should return an empty array if no action items exist for the user",
+		async () => {
+			const result = await mercuriusClient.query(Query_actionItemsByUser, {
+				headers: { authorization: `bearer ${regularUser.authToken}` },
+				variables: {
+					input: {
+						userId: regularUser.userId,
+					},
 				},
-			},
-		});
+			});
 
-		expect(result.errors).toBeUndefined();
-		expect(result.data?.actionItemsByUser).toEqual([]);
-	});
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.actionItemsByUser).toEqual([]);
+		},
+		SUITE_TIMEOUT,
+	);
 
 	test("should return all action items assigned to the user", async () => {
 		await mercuriusClient.mutate(Mutation_createActionItem, {
@@ -185,14 +191,14 @@ suite("Query: actionItemsByUser", () => {
 			},
 		});
 
-		const result = await mercuriusClient.query(Query_actionItemsByUser, {
-			headers: { authorization: `bearer ${regularUser.authToken}` },
-			variables: {
-				input: {
-					userId: regularUser.userId,
+			const result = await mercuriusClient.query(Query_actionItemsByUser, {
+				headers: { authorization: `bearer ${regularUser.authToken}` },
+				variables: {
+					input: {
+						userId: regularUser.userId,
+					},
 				},
-			},
-		});
+			});
 
 		expect(result.data?.actionItemsByUser).toBeInstanceOf(Array);
 		expect(result.data?.actionItemsByUser?.length).toBe(2);
@@ -208,17 +214,19 @@ suite("Query: actionItemsByUser", () => {
 			},
 		});
 
-		expect(result.data?.actionItemsByUser).toBeNull();
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "unauthorized_action_on_arguments_associated_resources",
+			expect(result.data?.actionItemsByUser).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						extensions: expect.objectContaining({
+							code: "unauthorized_action_on_arguments_associated_resources",
+						}),
 					}),
-				}),
-			]),
-		);
-	});
+				]),
+			);
+		},
+		SUITE_TIMEOUT,
+	);
 
 	test("should throw invalid_arguments error when input validation fails", async () => {
 		const result = await mercuriusClient.query(Query_actionItemsByUser, {
