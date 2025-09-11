@@ -244,23 +244,20 @@ suite("Query: actionItemsByUser", () => {
 
 	test("should throw unauthenticated error when currentUser is undefined", async () => {
 		// Create a test user
-		const createUserResult = await mercuriusClient.mutate(
-			Mutation_createUser,
-			{
-				headers: {
-					authorization: `bearer ${globalAuth.authToken}`,
-				},
-				variables: {
-					input: {
-						emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
-						isEmailAddressVerified: false,
-						name: "Test User",
-						password: "password",
-						role: "regular",
-					},
+		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: {
+				authorization: `bearer ${globalAuth.authToken}`,
+			},
+			variables: {
+				input: {
+					emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+					isEmailAddressVerified: false,
+					name: "Test User",
+					password: "password",
+					role: "regular",
 				},
 			},
-		);
+		});
 
 		assertToBeNonNullish(createUserResult.data.createUser?.authenticationToken);
 		assertToBeNonNullish(createUserResult.data.createUser.user?.id);
@@ -325,7 +322,9 @@ suite("Query: actionItemsByUser", () => {
 				}),
 			]),
 		);
-		expect(result.errors?.[0]?.message).toBe("The specified user does not exist.");
+		expect(result.errors?.[0]?.message).toBe(
+			"The specified user does not exist.",
+		);
 	});
 
 	test("should filter action items by organization when organizationId is provided", async () => {
@@ -371,17 +370,22 @@ suite("Query: actionItemsByUser", () => {
 		expect(resultAll.data?.actionItemsByUser).toHaveLength(2);
 
 		// Query with organization filter - should return only items from that organization
-		const resultFiltered = await mercuriusClient.query(Query_actionItemsByUser, {
-			headers: { authorization: `bearer ${regularUser.authToken}` },
-			variables: {
-				input: {
-					userId: regularUser.userId,
-					organizationId,
+		const resultFiltered = await mercuriusClient.query(
+			Query_actionItemsByUser,
+			{
+				headers: { authorization: `bearer ${regularUser.authToken}` },
+				variables: {
+					input: {
+						userId: regularUser.userId,
+						organizationId,
+					},
 				},
 			},
-		});
+		);
 
 		expect(resultFiltered.data?.actionItemsByUser).toHaveLength(1);
-		expect(resultFiltered.data?.actionItemsByUser?.[0]?.organization?.id).toBe(organizationId);
+		expect(resultFiltered.data?.actionItemsByUser?.[0]?.organization?.id).toBe(
+			organizationId,
+		);
 	});
 });

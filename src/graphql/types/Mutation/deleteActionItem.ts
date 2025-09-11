@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { actionExceptionsTable } from "~/src/drizzle/tables/actionExceptions";
 import { actionsTable } from "~/src/drizzle/tables/actions";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
@@ -91,6 +92,12 @@ builder.mutationField("deleteActionItem", (t) =>
 				});
 			}
 
+			// First, delete all action exceptions for this action item
+			await ctx.drizzleClient
+				.delete(actionExceptionsTable)
+				.where(eq(actionExceptionsTable.actionId, parsedArgs.input.id));
+
+			// Then delete the main action item
 			const [deletedActionItem] = await ctx.drizzleClient
 				.delete(actionsTable)
 				.where(eq(actionsTable.id, parsedArgs.input.id))

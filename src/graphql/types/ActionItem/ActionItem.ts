@@ -70,5 +70,30 @@ ActionItem.implement({
 				return { ...baseEvent, ...instance, attachments: [] };
 			},
 		}),
+		hasExceptions: t.field({
+			type: "Boolean",
+			description:
+				"Indicates whether this action item has instance-specific exceptions.",
+			resolve: async (parent, _args, ctx) => {
+				// Check if there are any action exceptions for this action item
+				const exception =
+					await ctx.drizzleClient.query.actionExceptionsTable.findFirst({
+						where: (fields, operators) =>
+							operators.eq(fields.actionId, parent.id),
+					});
+				return Boolean(exception);
+			},
+		}),
+		isInstanceException: t.field({
+			type: "Boolean",
+			description:
+				"Indicates whether this action item is currently showing instance-specific exception data.",
+			resolve: (parent) => {
+				// This field will be set by the resolver when exceptions are applied
+				return Boolean(
+					(parent as { isInstanceException?: boolean }).isInstanceException,
+				);
+			},
+		}),
 	}),
 });

@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
-import { and, eq, or } from "drizzle-orm";
+import { and, eq, inArray, or } from "drizzle-orm";
 import type { z } from "zod";
+import { actionExceptionsTable } from "~/src/drizzle/tables/actionExceptions";
 import {
 	actionsTable,
 	actionsTableInsertSchema,
@@ -147,6 +148,64 @@ export const resolveActionItemsPaginated = async (
 			),
 		),
 	});
+
+	const actionItemIds = actionItems.map((actionItem) => actionItem.id);
+
+	if (actionItemIds.length > 0) {
+		const exceptions =
+			await ctx.drizzleClient.query.actionExceptionsTable.findMany({
+				where: and(
+					inArray(actionExceptionsTable.actionId, actionItemIds),
+					eq(actionExceptionsTable.eventId, parent.id),
+				),
+			});
+
+		const exceptionsMap = new Map(
+			exceptions.map((exception) => [exception.actionId, exception]),
+		);
+
+		// Filter out deleted items and apply exceptions
+		const filteredActionItems = actionItems.filter((actionItem) => {
+			const exception = exceptionsMap.get(actionItem.id);
+
+			// If the action item is marked as deleted for this instance, exclude it
+			if (exception?.deleted === true) {
+				return false;
+			}
+
+			// Apply exception overrides if they exist
+			if (exception) {
+				actionItem.isCompleted = exception.completed ?? actionItem.isCompleted;
+				actionItem.postCompletionNotes =
+					exception.postCompletionNotes ?? actionItem.postCompletionNotes;
+				actionItem.preCompletionNotes =
+					exception.preCompletionNotes ?? actionItem.preCompletionNotes;
+				// Override with instance-specific values if they exist
+				if (exception.assigneeId !== null) {
+					actionItem.assigneeId = exception.assigneeId;
+				}
+				if (exception.categoryId !== null) {
+					actionItem.categoryId = exception.categoryId;
+				}
+				if (exception.assignedAt !== null) {
+					actionItem.assignedAt = exception.assignedAt;
+				}
+
+				// Mark this action item as showing instance-specific exception data
+				// @ts-ignore - adding this field dynamically for the GraphQL resolver
+				actionItem.isInstanceException = true;
+			} else {
+				// @ts-ignore - adding this field dynamically for the GraphQL resolver
+				actionItem.isInstanceException = false;
+			}
+
+			return true;
+		});
+
+		// Replace the original actionItems array with the filtered one
+		actionItems.length = 0;
+		actionItems.push(...filteredActionItems);
+	}
 
 	// Apply pagination to the final list of action items
 	const paginatedActionItems = actionItems.slice(0, limit);

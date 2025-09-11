@@ -1,0 +1,1 @@
+ALTER TABLE "action_exceptions" ADD COLUMN "pre_completion_notes" text;

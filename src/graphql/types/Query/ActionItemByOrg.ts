@@ -73,10 +73,7 @@ export const actionItemsByOrganization = builder.queryField(
 							id: true,
 						},
 						where: (fields, operators) =>
-							operators.eq(
-								fields.id,
-								parsedArgs.input.organizationId,
-							),
+							operators.eq(fields.id, parsedArgs.input.organizationId),
 						with: {
 							membershipsWhereOrganization: {
 								columns: {
@@ -121,13 +118,15 @@ export const actionItemsByOrganization = builder.queryField(
 					});
 				}
 
-				const actionItems = await ctx.drizzleClient.query.actionsTable.findMany({
-					where: (fields, operators) =>
-						operators.eq(
-							fields.organizationId,
-							parsedArgs.input.organizationId,
-						),
-				});
+				const actionItems = await ctx.drizzleClient.query.actionsTable.findMany(
+					{
+						where: (fields, operators) =>
+							operators.eq(
+								fields.organizationId,
+								parsedArgs.input.organizationId,
+							),
+					},
+				);
 
 				return actionItems;
 			},

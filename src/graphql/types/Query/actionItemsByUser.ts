@@ -111,10 +111,7 @@ export const actionItemsByUser = builder.queryField("actionItemsByUser", (t) =>
 			const actionItems = await ctx.drizzleClient.query.actionsTable.findMany({
 				where: (fields, operators) => {
 					const conditions = [
-						operators.eq(
-							fields.assigneeId,
-							parsedArgs.input.userId as string,
-						),
+						operators.eq(fields.assigneeId, parsedArgs.input.userId as string),
 					];
 					if (parsedArgs.input.organizationId) {
 						conditions.push(

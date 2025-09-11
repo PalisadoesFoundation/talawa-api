@@ -1,5 +1,11 @@
+import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
+import { resolveActionItemCategories } from "../../../../src/graphql/types/Organization/actionItemCategories";
+import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
+import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
 import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../../types/client";
 import {
 	Mutation_createActionItemCategory,
 	Mutation_createOrganization,
@@ -7,12 +13,6 @@ import {
 	Query_organizationActionItemCategories,
 	Query_signIn,
 } from "../documentNodes";
-import { server } from "../../../server";
-import { mercuriusClient } from "../../types/client";
-import { faker } from "@faker-js/faker";
-import { resolveActionItemCategories } from "../../../../src/graphql/types/Organization/actionItemCategories";
-import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
-import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
 
 const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -204,7 +204,9 @@ suite("Organization.actionItemCategories", () => {
 			role: "member", // Not administrator
 			organizationMembershipsWhereMember: [], // No membership in the organization
 		};
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
 
 		await expect(
 			resolveActionItemCategories(mockOrganization, { first: 10 }, context),
@@ -251,7 +253,9 @@ suite("Organization.actionItemCategories", () => {
 				},
 			],
 		};
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
 
 		await expect(
 			resolveActionItemCategories(mockOrganization, { first: 10 }, context),
@@ -294,12 +298,20 @@ suite("Organization.actionItemCategories", () => {
 			role: "administrator",
 			organizationMembershipsWhereMember: [],
 		};
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
 
 		// Mock action item categories query to return empty array
-		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue([]);
+		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue(
+			[],
+		);
 
-		const result = await resolveActionItemCategories(mockOrganization, { first: 10 }, context);
+		const result = await resolveActionItemCategories(
+			mockOrganization,
+			{ first: 10 },
+			context,
+		);
 
 		// Verify the resolver allows access for global admins
 		expect(result).toBeDefined();
@@ -340,12 +352,20 @@ suite("Organization.actionItemCategories", () => {
 				},
 			],
 		};
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
 
 		// Mock action item categories query to return empty array
-		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue([]);
+		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue(
+			[],
+		);
 
-		const result = await resolveActionItemCategories(mockOrganization, { first: 10 }, context);
+		const result = await resolveActionItemCategories(
+			mockOrganization,
+			{ first: 10 },
+			context,
+		);
 
 		// Verify the resolver allows access for organization admins
 		expect(result).toBeDefined();
@@ -386,7 +406,9 @@ suite("Organization.actionItemCategories", () => {
 				},
 			],
 		};
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
 
 		// Mock action item categories query to return one result (to avoid empty cursor error)
 		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue([
@@ -400,24 +422,30 @@ suite("Organization.actionItemCategories", () => {
 				updatedAt: new Date(),
 				creatorId: "creator-123",
 				updaterId: "updater-123",
-			}
+			},
 		]);
 
 		// Create a valid cursor using base64url encoding
 		const validCursorData = {
 			name: "Test Category",
 		};
-		const validCursor = Buffer.from(
-			JSON.stringify(validCursorData)
-		).toString("base64url");
+		const validCursor = Buffer.from(JSON.stringify(validCursorData)).toString(
+			"base64url",
+		);
 
-		await resolveActionItemCategories(mockOrganization, {
-			first: 10,
-			after: validCursor,
-		}, context);
+		await resolveActionItemCategories(
+			mockOrganization,
+			{
+				first: 10,
+				after: validCursor,
+			},
+			context,
+		);
 
 		// Verify that findMany was called with parsed cursor data
-		expect(mocks.drizzleClient.query.actionCategoriesTable.findMany).toHaveBeenCalled();
+		expect(
+			mocks.drizzleClient.query.actionCategoriesTable.findMany,
+		).toHaveBeenCalled();
 	});
 
 	test("should throw invalid_arguments error when cursor is malformed", async () => {
@@ -454,13 +482,19 @@ suite("Organization.actionItemCategories", () => {
 				},
 			],
 		};
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
 
 		await expect(
-			resolveActionItemCategories(mockOrganization, {
-				first: 10,
-				after: "invalid-cursor-data",
-			}, context),
+			resolveActionItemCategories(
+				mockOrganization,
+				{
+					first: 10,
+					after: "invalid-cursor-data",
+				},
+				context,
+			),
 		).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
@@ -510,16 +544,23 @@ suite("Organization.actionItemCategories", () => {
 				},
 			],
 		};
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
 
 		// Create a cursor with invalid JSON (valid base64url but invalid JSON)
-		const invalidCursor = Buffer.from("invalid json data").toString("base64url");
+		const invalidCursor =
+			Buffer.from("invalid json data").toString("base64url");
 
 		await expect(
-			resolveActionItemCategories(mockOrganization, {
-				first: 10,
-				after: invalidCursor,
-			}, context),
+			resolveActionItemCategories(
+				mockOrganization,
+				{
+					first: 10,
+					after: invalidCursor,
+				},
+				context,
+			),
 		).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
@@ -569,24 +610,32 @@ suite("Organization.actionItemCategories", () => {
 				},
 			],
 		};
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
 
 		// Mock database to return empty results (simulating no action item categories found)
-		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue([]);
+		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue(
+			[],
+		);
 
 		// Create a valid cursor using base64url encoding
 		const validCursorData = {
 			name: "Some Category",
 		};
-		const validCursor = Buffer.from(
-			JSON.stringify(validCursorData)
-		).toString("base64url");
+		const validCursor = Buffer.from(JSON.stringify(validCursorData)).toString(
+			"base64url",
+		);
 
 		await expect(
-			resolveActionItemCategories(mockOrganization, {
-				first: 10,
-				after: validCursor,
-			}, context),
+			resolveActionItemCategories(
+				mockOrganization,
+				{
+					first: 10,
+					after: validCursor,
+				},
+				context,
+			),
 		).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
@@ -635,24 +684,32 @@ suite("Organization.actionItemCategories", () => {
 				},
 			],
 		};
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
+			mockUserData,
+		);
 
 		// Mock database to return empty results (simulating no action item categories found)
-		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue([]);
+		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue(
+			[],
+		);
 
 		// Create a valid cursor using base64url encoding
 		const validCursorData = {
 			name: "Some Category",
 		};
-		const validCursor = Buffer.from(
-			JSON.stringify(validCursorData)
-		).toString("base64url");
+		const validCursor = Buffer.from(JSON.stringify(validCursorData)).toString(
+			"base64url",
+		);
 
 		await expect(
-			resolveActionItemCategories(mockOrganization, {
-				last: 10, // Use 'last' to trigger isInversed=true
-				before: validCursor,
-			}, context),
+			resolveActionItemCategories(
+				mockOrganization,
+				{
+					last: 10, // Use 'last' to trigger isInversed=true
+					before: validCursor,
+				},
+				context,
+			),
 		).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {

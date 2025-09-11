@@ -1,5 +1,5 @@
 {
-  "id": "b334bb82-a3b6-4d79-a77b-4efcf89918f1",
+  "id": "7f2ca203-75fd-4703-bccd-66355cd3c750",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -179,6 +179,158 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.action_exceptions": {
+      "name": "action_exceptions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "action_id": {
+          "name": "action_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assignee_id": {
+          "name": "assignee_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "category_id": {
+          "name": "category_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assigned_at": {
+          "name": "assigned_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pre_completion_notes": {
+          "name": "pre_completion_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "post_completion_notes": {
+          "name": "post_completion_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed": {
+          "name": "completed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "deleted": {
+          "name": "deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "action_exceptions_action_id_actions_id_fk": {
+          "name": "action_exceptions_action_id_actions_id_fk",
+          "tableFrom": "action_exceptions",
+          "tableTo": "actions",
+          "columnsFrom": [
+            "action_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "action_exceptions_event_id_recurring_event_instances_id_fk": {
+          "name": "action_exceptions_event_id_recurring_event_instances_id_fk",
+          "tableFrom": "action_exceptions",
+          "tableTo": "recurring_event_instances",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "action_exceptions_assignee_id_users_id_fk": {
+          "name": "action_exceptions_assignee_id_users_id_fk",
+          "tableFrom": "action_exceptions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "assignee_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "action_exceptions_category_id_action_categories_id_fk": {
+          "name": "action_exceptions_category_id_action_categories_id_fk",
+          "tableFrom": "action_exceptions",
+          "tableTo": "action_categories",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "action_exceptions_action_id_event_id_unique": {
+          "name": "action_exceptions_action_id_event_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "action_id",
+            "event_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.actions": {
       "name": "actions",
       "schema": "",
@@ -244,13 +396,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "is_deleted": {
-          "name": "is_deleted",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
         "organization_id": {
           "name": "organization_id",
           "type": "uuid",
@@ -280,30 +425,9 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "template_action_item_id": {
-          "name": "template_action_item_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
-        "actions_template_action_item_id_index": {
-          "name": "actions_template_action_item_id_index",
-          "columns": [
-            {
-              "expression": "template_action_item_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "actions_assigned_at_index": {
           "name": "actions_assigned_at_index",
           "columns": [
@@ -495,19 +619,6 @@
           "tableTo": "users",
           "columnsFrom": [
             "updater_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
-        "actions_template_action_item_id_actions_id_fk": {
-          "name": "actions_template_action_item_id_actions_id_fk",
-          "tableFrom": "actions",
-          "tableTo": "actions",
-          "columnsFrom": [
-            "template_action_item_id"
           ],
           "columnsTo": [
             "id"

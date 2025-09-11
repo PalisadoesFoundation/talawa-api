@@ -1,5 +1,11 @@
+import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
+import { resolveActionItems } from "../../../../src/graphql/types/ActionItemCategory/actionItems";
+import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
+import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
 import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../../types/client";
 import {
 	Mutation_createActionItem,
 	Mutation_createActionItemCategory,
@@ -8,12 +14,6 @@ import {
 	Query_actionItems,
 	Query_signIn,
 } from "../documentNodes";
-import { server } from "../../../server";
-import { mercuriusClient } from "../../types/client";
-import { faker } from "@faker-js/faker";
-import { resolveActionItems } from "../../../../src/graphql/types/ActionItemCategory/actionItems";
-import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
-import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
 
 const signInResult = await mercuriusClient.query(Query_signIn, {
 	variables: {
@@ -88,12 +88,13 @@ suite("ActionItemCategory.actionItems", () => {
 	test("should return action items for a category", async () => {
 		const organization = await createOrg();
 		const category = await createCategory(organization.id);
+		assertToBeNonNullish(category.id);
 
 		await mercuriusClient.mutate(Mutation_createActionItem, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
 				input: {
-					categoryId: category.id!,
+					categoryId: category.id,
 					assigneeId: adminUser.id,
 					organizationId: organization.id,
 					assignedAt: new Date().toISOString(),
@@ -104,7 +105,7 @@ suite("ActionItemCategory.actionItems", () => {
 		const result = await mercuriusClient.query(Query_actionItems, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
-				id: category.id!,
+				id: category.id,
 			},
 		});
 
@@ -115,11 +116,12 @@ suite("ActionItemCategory.actionItems", () => {
 	test("should return empty array when no action items exist", async () => {
 		const organization = await createOrg();
 		const category = await createCategory(organization.id);
+		assertToBeNonNullish(category.id);
 
 		const result = await mercuriusClient.query(Query_actionItems, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
-				id: category.id!,
+				id: category.id,
 			},
 		});
 
@@ -130,10 +132,11 @@ suite("ActionItemCategory.actionItems", () => {
 	test("should throw unauthenticated error when user is not authenticated", async () => {
 		const organization = await createOrg();
 		const category = await createCategory(organization.id);
+		assertToBeNonNullish(category.id);
 
 		const result = await mercuriusClient.query(Query_actionItems, {
 			variables: {
-				id: category.id!,
+				id: category.id,
 			},
 		});
 

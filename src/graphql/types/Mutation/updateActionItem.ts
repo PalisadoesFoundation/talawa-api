@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { actionExceptionsTable } from "~/src/drizzle/tables/actionExceptions";
 import { actionsTable } from "~/src/drizzle/tables/actions";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
@@ -210,6 +211,18 @@ builder.mutationField("updateActionItem", (t) =>
 				.where(eq(actionsTable.id, actionItemId))
 				.returning();
 
+			if (updatedActionItem) {
+				await ctx.drizzleClient
+					.delete(actionExceptionsTable)
+					.where(eq(actionExceptionsTable.actionId, actionItemId));
+			}
+
+			if (updatedActionItem) {
+				await ctx.drizzleClient
+					.delete(actionExceptionsTable)
+					.where(eq(actionExceptionsTable.actionId, actionItemId));
+			}
+
 			if (!updatedActionItem) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -289,6 +302,18 @@ builder.mutationField("markActionItemAsPending", (t) =>
 				})
 				.where(eq(actionsTable.id, input.id))
 				.returning();
+
+			if (updatedActionItem) {
+				await ctx.drizzleClient
+					.delete(actionExceptionsTable)
+					.where(eq(actionExceptionsTable.actionId, input.id));
+			}
+
+			if (updatedActionItem) {
+				await ctx.drizzleClient
+					.delete(actionExceptionsTable)
+					.where(eq(actionExceptionsTable.actionId, input.id));
+			}
 
 			if (!updatedActionItem) {
 				throw new TalawaGraphQLError({
