@@ -4,6 +4,7 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
+	MARK_ACTION_ITEM_AS_PENDING_MUTATION,
 	Mutation_createActionItem,
 	Mutation_createActionItemCategory,
 	Mutation_createOrganization,
@@ -12,7 +13,6 @@ import {
 	Mutation_deleteUser,
 	Query_signIn,
 	UPDATE_ACTION_ITEM_MUTATION,
-	MARK_ACTION_ITEM_AS_PENDING_MUTATION,
 } from "../documentNodes";
 
 // Sign in as admin to get an authentication token and admin user id.
@@ -152,7 +152,7 @@ suite("Mutation field updateActionItem", () => {
 		});
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors![0]!.extensions!.code).toBe("unauthenticated");
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 	});
 
 	test("should throw invalid_arguments error for invalid input", async () => {
@@ -168,7 +168,7 @@ suite("Mutation field updateActionItem", () => {
 		});
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors![0]!.extensions!.code).toBe("invalid_arguments");
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 	});
 
 	test("should throw arguments_associated_resources_not_found error when action item does not exist", async () => {
@@ -184,7 +184,7 @@ suite("Mutation field updateActionItem", () => {
 		});
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors![0]!.extensions!.code).toBe(
+		expect(result.errors?.[0]?.extensions?.code).toBe(
 			"arguments_associated_resources_not_found",
 		);
 	});
@@ -230,7 +230,7 @@ suite("Mutation field updateActionItem", () => {
 		});
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors![0]!.extensions!.code).toBe("unauthenticated");
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 	});
 
 	test("should throw forbidden_action error when completing without postCompletionNotes", async () => {
@@ -282,10 +282,10 @@ suite("Mutation field updateActionItem", () => {
 		});
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors![0]!.extensions!.code).toBe(
+		expect(result.errors?.[0]?.extensions?.code).toBe(
 			"forbidden_action_on_arguments_associated_resources",
 		);
-		expect(result.errors![0]!.extensions!.issues).toEqual(
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
 					argumentPath: ["input", "postCompletionNotes"],
@@ -346,10 +346,10 @@ suite("Mutation field updateActionItem", () => {
 		});
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors![0]!.extensions!.code).toBe(
+		expect(result.errors?.[0]?.extensions?.code).toBe(
 			"arguments_associated_resources_not_found",
 		);
-		expect(result.errors![0]!.extensions!.issues).toEqual(
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
 					argumentPath: ["input", "categoryId"],
@@ -397,18 +397,21 @@ suite("Mutation field updateActionItem", () => {
 		assertToBeNonNullish(actionItemId);
 
 		// Create a regular user
-		const regularUserResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: {
-					emailAddress: `regular${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "Regular User",
-					password: "password",
-					role: "regular",
+		const regularUserResult = await mercuriusClient.mutate(
+			Mutation_createUser,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						emailAddress: `regular${faker.string.ulid()}@example.com`,
+						isEmailAddressVerified: true,
+						name: "Regular User",
+						password: "password",
+						role: "regular",
+					},
 				},
 			},
-		});
+		);
 		assertToBeNonNullish(regularUserResult.data?.createUser);
 		assertToBeNonNullish(regularUserResult.data.createUser.authenticationToken);
 		const regularUserToken =
@@ -427,7 +430,7 @@ suite("Mutation field updateActionItem", () => {
 		});
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors![0]!.extensions!.code).toBe(
+		expect(result.errors?.[0]?.extensions?.code).toBe(
 			"unauthorized_action_on_arguments_associated_resources",
 		);
 	});
@@ -495,7 +498,7 @@ suite("Mutation field updateActionItem", () => {
 			});
 
 			expect(result.errors).toBeDefined();
-			expect(result.errors![0]!.extensions!.code).toBe("unexpected");
+			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 		} finally {
 			server.drizzleClient.update = originalUpdate;
 		}
@@ -565,7 +568,7 @@ suite("Mutation field markActionItemAsPending", () => {
 		);
 
 		expect(result.errors).toBeUndefined();
-		expect(result.data!.markActionItemAsPending!.isCompleted).toBe(false);
+		expect(result.data?.markActionItemAsPending?.isCompleted).toBe(false);
 	});
 
 	test("should throw unauthenticated error when client is not authenticated", async () => {
@@ -581,7 +584,7 @@ suite("Mutation field markActionItemAsPending", () => {
 		);
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors![0]!.extensions!.code).toBe("unauthenticated");
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 	});
 
 	test("should throw arguments_associated_resources_not_found error when action item does not exist", async () => {
@@ -598,7 +601,7 @@ suite("Mutation field markActionItemAsPending", () => {
 		);
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors![0]!.extensions!.code).toBe(
+		expect(result.errors?.[0]?.extensions?.code).toBe(
 			"arguments_associated_resources_not_found",
 		);
 	});
@@ -654,7 +657,7 @@ suite("Mutation field markActionItemAsPending", () => {
 		);
 
 		expect(result.errors).toBeDefined();
-		expect(result.errors![0]!.extensions!.code).toBe(
+		expect(result.errors?.[0]?.extensions?.code).toBe(
 			"forbidden_action_on_arguments_associated_resources",
 		);
 	});
@@ -734,7 +737,7 @@ suite("Mutation field markActionItemAsPending", () => {
 			);
 
 			expect(result.errors).toBeDefined();
-			expect(result.errors![0]!.extensions!.code).toBe("unexpected");
+			expect(result.errors?.[0]?.extensions?.code).toBe("unexpected");
 		} finally {
 			server.drizzleClient.update = originalUpdate;
 		}

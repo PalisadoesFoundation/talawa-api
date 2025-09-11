@@ -75,7 +75,6 @@ builder.mutationField("completeActionForInstance", (t) =>
 				}),
 			]);
 
-
 			if (!existingActionItem) {
 				throw new TalawaGraphQLError({
 					message: "The specified action item does not exist.",

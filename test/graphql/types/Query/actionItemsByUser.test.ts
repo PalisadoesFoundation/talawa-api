@@ -17,6 +17,8 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+const SUITE_TIMEOUT = 30_000;
+
 let globalAuth: { authToken: string; userId: string };
 
 async function globalSignInAndGetToken() {
@@ -130,16 +132,14 @@ suite("Query: actionItemsByUser", () => {
 		categoryId = await createActionItemCategory(organizationId);
 	});
 
-	test(
-		"should return an unauthenticated error if not signed in",
-		async () => {
-			const result = await mercuriusClient.query(Query_actionItemsByUser, {
-				variables: {
-					input: {
-						userId: regularUser.userId,
-					},
+	test("should return an unauthenticated error if not signed in", async () => {
+		const result = await mercuriusClient.query(Query_actionItemsByUser, {
+			variables: {
+				input: {
+					userId: regularUser.userId,
 				},
-			});
+			},
+		});
 
 		expect(result.data?.actionItemsByUser).toBeNull();
 		expect(result.errors).toEqual(
@@ -191,28 +191,30 @@ suite("Query: actionItemsByUser", () => {
 			},
 		});
 
-			const result = await mercuriusClient.query(Query_actionItemsByUser, {
-				headers: { authorization: `bearer ${regularUser.authToken}` },
-				variables: {
-					input: {
-						userId: regularUser.userId,
-					},
+		const result = await mercuriusClient.query(Query_actionItemsByUser, {
+			headers: { authorization: `bearer ${regularUser.authToken}` },
+			variables: {
+				input: {
+					userId: regularUser.userId,
 				},
-			});
+			},
+		});
 
 		expect(result.data?.actionItemsByUser).toBeInstanceOf(Array);
 		expect(result.data?.actionItemsByUser?.length).toBe(2);
 	});
 
-	test("should throw unauthorized error if regular user tries to view another user's action items", async () => {
-		const result = await mercuriusClient.query(Query_actionItemsByUser, {
-			headers: { authorization: `bearer ${regularUser.authToken}` },
-			variables: {
-				input: {
-					userId: nonMemberUser.userId,
+	test(
+		"should throw unauthorized error if regular user tries to view another user's action items",
+		async () => {
+			const result = await mercuriusClient.query(Query_actionItemsByUser, {
+				headers: { authorization: `bearer ${regularUser.authToken}` },
+				variables: {
+					input: {
+						userId: nonMemberUser.userId,
+					},
 				},
-			},
-		});
+			});
 
 			expect(result.data?.actionItemsByUser).toBeNull();
 			expect(result.errors).toEqual(
