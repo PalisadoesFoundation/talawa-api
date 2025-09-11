@@ -192,9 +192,11 @@ export const resolveActionItemsPaginated = async (
 				}
 
 				// Mark this action item as showing instance-specific exception data
-				(actionItem as { isInstanceException?: boolean }).isInstanceException = true;
+				(actionItem as { isInstanceException?: boolean }).isInstanceException =
+					true;
 			} else {
-				(actionItem as { isInstanceException?: boolean }).isInstanceException = false;
+				(actionItem as { isInstanceException?: boolean }).isInstanceException =
+					false;
 			}
 
 			return true;
