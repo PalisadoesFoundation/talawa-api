@@ -192,11 +192,9 @@ export const resolveActionItemsPaginated = async (
 				}
 
 				// Mark this action item as showing instance-specific exception data
-				// @ts-ignore - adding this field dynamically for the GraphQL resolver
-				actionItem.isInstanceException = true;
+				(actionItem as { isInstanceException?: boolean }).isInstanceException = true;
 			} else {
-				// @ts-ignore - adding this field dynamically for the GraphQL resolver
-				actionItem.isInstanceException = false;
+				(actionItem as { isInstanceException?: boolean }).isInstanceException = false;
 			}
 
 			return true;
