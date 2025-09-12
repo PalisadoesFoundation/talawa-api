@@ -30,11 +30,22 @@ type ActionItem {
   """
   event: Event
 
+  """Indicates whether this action item has instance-specific exceptions."""
+  hasExceptions: Boolean
+
   """Unique identifier for the action item."""
   id: ID
 
   """Indicates whether the action item is completed."""
   isCompleted: Boolean
+
+  """
+  Indicates whether this action item is currently showing instance-specific exception data.
+  """
+  isInstanceException: Boolean
+
+  """Indicates whether the action item is a template for recurring events."""
+  isTemplate: Boolean
 
   """The organization the action item belongs to."""
   organization: Organization
@@ -522,6 +533,7 @@ input CreateActionItemInput {
   assigneeId: ID!
   categoryId: ID!
   eventId: ID
+  isTemplate: Boolean
   organizationId: ID!
   preCompletionNotes: String
   recurringEventInstanceId: ID
@@ -721,11 +733,8 @@ input FileMetadataInput {
   """Hash of the file for deduplication"""
   fileHash: String!
 
-  """
-  MIME type of the file
-  """
-  mimeType: PostAttachmentMimeType!
-
+  """MIME type of the file"""
+  mimetype: PostAttachmentMimeType!
 
   """Name of the file"""
   name: String!
@@ -1904,7 +1913,7 @@ type Mutation {
   """Mutation field to update a post."""
   updatePost(input: MutationUpdatePostInput!): Post
 
-  """Mutation field to update a post vote."""
+  """Mutation field to create or update a post vote."""
   updatePostVote(input: MutationUpdatePostVoteInput!): Post
 
   """

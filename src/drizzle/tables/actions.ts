@@ -60,6 +60,7 @@ export const actionsTable = pgTable(
 		),
 		id: uuid("id").primaryKey().$default(uuidv7),
 		isCompleted: boolean("is_completed").notNull(),
+		isTemplate: boolean("is_template").default(false),
 		organizationId: uuid("organization_id")
 			.notNull()
 			.references(() => organizationsTable.id, {

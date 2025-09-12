@@ -18,6 +18,10 @@ ActionItem.implement({
 		isCompleted: t.exposeBoolean("isCompleted", {
 			description: "Indicates whether the action item is completed.",
 		}),
+		isTemplate: t.exposeBoolean("isTemplate", {
+			description: "Indicates whether the action item is a template for recurring events.",
+			nullable: true,
+		}),
 		assignedAt: t.expose("assignedAt", {
 			description: "Timestamp when the action item was assigned.",
 			type: "DateTime",

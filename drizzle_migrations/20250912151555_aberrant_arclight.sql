@@ -1,0 +1,1 @@
+ALTER TABLE "actions" ADD COLUMN "is_template" boolean DEFAULT false;

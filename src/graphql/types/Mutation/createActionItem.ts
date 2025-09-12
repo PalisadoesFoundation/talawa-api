@@ -14,7 +14,8 @@ const mutationCreateActionItemArgumentsSchema = z.object({
 		eventId: z.string().uuid().optional(),
 		recurringEventInstanceId: z.string().uuid().optional(),
 		organizationId: z.string().uuid(),
-		assignedAt: z.string().optional(), // 🆕 Added assignedAt field
+		assignedAt: z.string().optional(), 
+		isTemplate: z.boolean().optional(),
 	}),
 });
 
@@ -32,7 +33,8 @@ builder.mutationField("createActionItem", (t) =>
 						eventId: t.field({ type: "ID" }),
 						recurringEventInstanceId: t.field({ type: "ID" }),
 						organizationId: t.field({ type: "ID", required: true }),
-						assignedAt: t.field({ type: "String" }), // 🆕 Added assignedAt field
+						assignedAt: t.field({ type: "String" }), 
+						isTemplate: t.field({ type: "Boolean" }),
 					}),
 				}),
 			}),
@@ -156,6 +158,7 @@ builder.mutationField("createActionItem", (t) =>
 					recurringEventInstanceId:
 						parsedArgs.input.recurringEventInstanceId ?? null,
 					organizationId: parsedArgs.input.organizationId,
+					isTemplate: parsedArgs.input.isTemplate ?? false,
 					updatedAt: new Date(),
 					updaterId: currentUserId,
 				})
