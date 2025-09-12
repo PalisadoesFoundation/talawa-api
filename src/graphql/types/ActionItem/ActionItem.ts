@@ -19,7 +19,8 @@ ActionItem.implement({
 			description: "Indicates whether the action item is completed.",
 		}),
 		isTemplate: t.exposeBoolean("isTemplate", {
-			description: "Indicates whether the action item is a template for recurring events.",
+			description:
+				"Indicates whether the action item is a template for recurring events.",
 			nullable: true,
 		}),
 		assignedAt: t.expose("assignedAt", {
