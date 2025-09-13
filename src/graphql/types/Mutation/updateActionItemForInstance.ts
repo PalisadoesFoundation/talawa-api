@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { actionItemExceptionsTable } from "../../../drizzle/tables/actionItemExceptions";
-import { builder } from "../../../graphql/builder";
 import { TalawaGraphQLError } from "../../../utilities/TalawaGraphQLError";
+import { builder } from "../../builder";
 import { ActionItem } from "../ActionItem/ActionItem";
 
-const MutationUpdateActionForInstanceInput = builder.inputType(
-	"MutationUpdateActionForInstanceInput",
+const MutationUpdateActionItemForInstanceInput = builder.inputType(
+	"MutationUpdateActionItemForInstanceInput",
 	{
 		fields: (t) => ({
 			actionId: t.id({ required: true }),
@@ -18,7 +18,7 @@ const MutationUpdateActionForInstanceInput = builder.inputType(
 	},
 );
 
-const mutationUpdateActionForInstanceArgumentsSchema = z.object({
+const mutationUpdateActionItemForInstanceArgumentsSchema = z.object({
 	input: z.object({
 		actionId: z.string().uuid(),
 		eventId: z.string().uuid(),
@@ -29,13 +29,13 @@ const mutationUpdateActionForInstanceArgumentsSchema = z.object({
 	}),
 });
 
-builder.mutationField("updateActionForInstance", (t) =>
+builder.mutationField("updateActionItemForInstance", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
 				description: "Update an action item for a single instance",
 				required: true,
-				type: MutationUpdateActionForInstanceInput,
+				type: MutationUpdateActionItemForInstanceInput,
 			}),
 		},
 		description: "Mutation to update an action item for a single instance",
@@ -52,7 +52,7 @@ builder.mutationField("updateActionForInstance", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationUpdateActionForInstanceArgumentsSchema.safeParse(args);
+			} = mutationUpdateActionItemForInstanceArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({

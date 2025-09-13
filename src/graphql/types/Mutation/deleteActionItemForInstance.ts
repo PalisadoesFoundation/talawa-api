@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { actionItemExceptionsTable } from "../../../drizzle/tables/actionItemExceptions";
-import { builder } from "../../../graphql/builder";
 import { TalawaGraphQLError } from "../../../utilities/TalawaGraphQLError";
+import { builder } from "../../builder";
 import { ActionItem } from "../ActionItem/ActionItem";
 
-const MutationDeleteActionForInstanceInput = builder.inputType(
-	"MutationDeleteActionForInstanceInput",
+const MutationDeleteActionItemForInstanceInput = builder.inputType(
+	"MutationDeleteActionItemForInstanceInput",
 	{
 		fields: (t) => ({
 			actionId: t.id({ required: true }),
@@ -14,20 +14,20 @@ const MutationDeleteActionForInstanceInput = builder.inputType(
 	},
 );
 
-const mutationDeleteActionForInstanceArgumentsSchema = z.object({
+const mutationDeleteActionItemForInstanceArgumentsSchema = z.object({
 	input: z.object({
 		actionId: z.string().uuid(),
 		eventId: z.string().uuid(),
 	}),
 });
 
-builder.mutationField("deleteActionForInstance", (t) =>
+builder.mutationField("deleteActionItemForInstance", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
 				description: "Delete an action item for a single instance",
 				required: true,
-				type: MutationDeleteActionForInstanceInput,
+				type: MutationDeleteActionItemForInstanceInput,
 			}),
 		},
 		description: "Mutation to delete an action item for a single instance",
@@ -44,7 +44,7 @@ builder.mutationField("deleteActionForInstance", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationDeleteActionForInstanceArgumentsSchema.safeParse(args);
+			} = mutationDeleteActionItemForInstanceArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({

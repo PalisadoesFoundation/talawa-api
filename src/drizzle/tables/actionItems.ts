@@ -128,6 +128,5 @@ export const actionItemsTableRelations = relations(
 	}),
 );
 
-// ✅ Export the actionItemsTableInsertSchema
 export const actionItemsTableInsertSchema =
 	createInsertSchema(actionItemsTable);

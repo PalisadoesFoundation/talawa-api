@@ -30,9 +30,6 @@ type ActionItem {
   """
   event: Event
 
-  """Indicates whether this action item has instance-specific exceptions."""
-  hasExceptions: Boolean
-
   """Unique identifier for the action item."""
   id: ID
 
@@ -1581,6 +1578,12 @@ input MembershipRequestWhereInput {
 }
 
 type Mutation {
+  """Mutation to complete an action item for a single instance"""
+  CompleteActionItemForInstance(
+    """Complete an action item for a single instance"""
+    input: MutationCompleteActionForInstanceInput!
+  ): ActionItem
+
   """Mutation field to accept a membership request by an admin."""
   acceptMembershipRequest(
     """Input to accept a membership request"""
@@ -1598,12 +1601,6 @@ type Mutation {
     """Input to cancel a membership request"""
     input: MutationCancelMembershipRequestInput!
   ): CancelMembershipResponse
-
-  """Mutation to complete an action item for a single instance"""
-  completeActionForInstance(
-    """Complete an action item for a single instance"""
-    input: MutationCompleteActionForInstanceInput!
-  ): ActionItem
 
   """Mutation field to create an action item."""
   createActionItem(input: CreateActionItemInput!): ActionItem
@@ -1687,12 +1684,6 @@ type Mutation {
   """Mutation field to create a venue booking."""
   createVenueBooking(input: MutationCreateVenueBookingInput!): Venue
 
-  """Mutation to delete an action item for a single instance"""
-  deleteActionForInstance(
-    """Delete an action item for a single instance"""
-    input: MutationDeleteActionForInstanceInput!
-  ): ActionItem
-
   """Mutation field to delete an action item."""
   deleteActionItem(
     """Delete an action item"""
@@ -1701,6 +1692,12 @@ type Mutation {
 
   """Mutation field to delete an action item category."""
   deleteActionItemCategory(input: MutationDeleteActionItemCategoryInput!): ActionItemCategory
+
+  """Mutation to delete an action item for a single instance"""
+  deleteActionItemForInstance(
+    """Delete an action item for a single instance"""
+    input: MutationDeleteActionItemForInstanceInput!
+  ): ActionItem
 
   """Mutation field to delete an advertisement."""
   deleteAdvertisement(input: MutationDeleteAdvertisementInput!): Advertisement
@@ -1805,14 +1802,14 @@ type Mutation {
     input: MutationJoinPublicOrganizationInput!
   ): OrganizationMembershipObject
 
+  """Mutation to mark a completed action item as pending"""
+  markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
+
   """Mutation to mark an action item as pending for a single instance"""
-  markActionAsPendingForInstance(
+  markActionItemAsPendingForInstance(
     """Mark an action item as pending for a single instance"""
     input: MutationMarkActionAsPendingForInstanceInput!
   ): ActionItem
-
-  """Mutation to mark a completed action item as pending"""
-  markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
 
   """Mutation field to reject a membership request by an admin."""
   rejectMembershipRequest(
@@ -1835,12 +1832,6 @@ type Mutation {
   """Mutation field to unblock a user from an organization."""
   unblockUser(organizationId: ID!, userId: ID!): Boolean
 
-  """Mutation to update an action item for a single instance"""
-  updateActionForInstance(
-    """Update an action item for a single instance"""
-    input: MutationUpdateActionForInstanceInput!
-  ): ActionItem
-
   """Mutation to update an action item"""
   updateActionItem(
     """Update an action item"""
@@ -1849,6 +1840,12 @@ type Mutation {
 
   """Mutation field to update an action item category."""
   updateActionItemCategory(input: MutationUpdateActionItemCategoryInput!): ActionItemCategory
+
+  """Mutation to update an action item for a single instance"""
+  updateActionItemForInstance(
+    """Update an action item for a single instance"""
+    input: MutationUpdateActionItemForInstanceInput!
+  ): ActionItem
 
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
@@ -2454,15 +2451,15 @@ input MutationCreateVolunteerGroupAssignmentsInput {
   inviteStatus: InviteStatus!
 }
 
-input MutationDeleteActionForInstanceInput {
-  actionId: ID!
-  eventId: ID!
-}
-
 """Input for deleting an action item category."""
 input MutationDeleteActionItemCategoryInput {
   """ID of the action item category to delete."""
   id: ID!
+}
+
+input MutationDeleteActionItemForInstanceInput {
+  actionId: ID!
+  eventId: ID!
 }
 
 """Input for deleting an action item."""
@@ -2748,15 +2745,6 @@ input MutationUnblockUserInput {
   userId: ID!
 }
 
-input MutationUpdateActionForInstanceInput {
-  actionId: ID!
-  assignedAt: String
-  assigneeId: ID
-  categoryId: ID
-  eventId: ID!
-  preCompletionNotes: String
-}
-
 """Input for updating an action item category."""
 input MutationUpdateActionItemCategoryInput {
   """New description of the action item category."""
@@ -2770,6 +2758,15 @@ input MutationUpdateActionItemCategoryInput {
 
   """New name of the action item category."""
   name: String
+}
+
+input MutationUpdateActionItemForInstanceInput {
+  actionId: ID!
+  assignedAt: String
+  assigneeId: ID
+  categoryId: ID
+  eventId: ID!
+  preCompletionNotes: String
 }
 
 input MutationUpdateActionItemInput {

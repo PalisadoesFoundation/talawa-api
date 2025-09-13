@@ -23,7 +23,7 @@ const mutationCompleteActionForInstanceArgumentsSchema = z.object({
 	}),
 });
 
-builder.mutationField("completeActionForInstance", (t) =>
+builder.mutationField("CompleteActionItemForInstance", (t) =>
 	t.field({
 		args: {
 			input: t.arg({

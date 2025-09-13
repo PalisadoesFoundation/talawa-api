@@ -21,7 +21,7 @@ const mutationMarkActionAsPendingForInstanceArgumentsSchema = z.object({
 	}),
 });
 
-builder.mutationField("markActionAsPendingForInstance", (t) =>
+builder.mutationField("markActionItemAsPendingForInstance", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
