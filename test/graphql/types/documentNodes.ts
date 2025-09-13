@@ -1651,15 +1651,15 @@ export const MARK_ACTION_ITEM_AS_PENDING_MUTATION = gql(`
 `);
 
 export const MARK_ACTION_AS_PENDING_FOR_INSTANCE_MUTATION = gql(`
-  mutation markActionAsPendingForInstance($input: MutationMarkActionAsPendingForInstanceInput!) {
-    markActionAsPendingForInstance(input: $input) {
+  mutation markActionItemAsPendingForInstance($input: MutationMarkActionAsPendingForInstanceInput!) {
+    markActionItemAsPendingForInstance(input: $input) {
       id
     }
   }
 `);
 
 export const DELETE_ACTION_FOR_INSTANCE_MUTATION = gql(`
-  mutation deleteActionForInstance($input: MutationUpdateActionItemForInstanceInput!) {
+  mutation deleteActionForInstance($input: MutationDeleteActionItemForInstanceInput!) {
     deleteActionItemForInstance(input: $input) {
       id
     }
