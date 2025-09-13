@@ -122,7 +122,7 @@ async function createUser(): Promise<string> {
 	return userId;
 }
 
-suite("Mutation field deleteActionForInstance", () => {
+suite("Mutation field deleteActionItemForInstance", () => {
 	// 1. Unauthenticated: user not logged in.
 	suite("when the client is not authenticated", () => {
 		test("should return an error with unauthenticated code", async () => {
@@ -137,7 +137,7 @@ suite("Mutation field deleteActionForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.deleteActionForInstance).toBeNull();
+			expect(result.data?.deleteActionItemForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -163,7 +163,7 @@ suite("Mutation field deleteActionForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.deleteActionForInstance).toBeNull();
+			expect(result.data?.deleteActionItemForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -189,7 +189,7 @@ suite("Mutation field deleteActionForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.deleteActionForInstance).toBeNull();
+			expect(result.data?.deleteActionItemForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -221,7 +221,7 @@ suite("Mutation field deleteActionForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.deleteActionForInstance).toBeNull();
+			expect(result.data?.deleteActionItemForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -316,7 +316,7 @@ suite("Mutation field deleteActionForInstance", () => {
 					},
 				);
 
-				expect(result.data?.deleteActionForInstance).toBeNull();
+				expect(result.data?.deleteActionItemForInstance).toBeNull();
 				expect(result.errors).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
@@ -400,7 +400,7 @@ suite("Mutation field deleteActionForInstance", () => {
 			);
 
 			expect(result.errors).toBeUndefined();
-			expect(result.data?.deleteActionForInstance).toEqual(
+			expect(result.data?.deleteActionItemForInstance).toEqual(
 				expect.objectContaining({
 					id: expect.any(String),
 				}),

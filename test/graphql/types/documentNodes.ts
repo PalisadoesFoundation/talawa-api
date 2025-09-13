@@ -1634,8 +1634,8 @@ export const Query_actionItemsByUser = gql(`
 `);
 
 export const COMPLETE_ACTION_FOR_INSTANCE_MUTATION = gql(`
-  mutation completeActionForInstance($input: MutationCompleteActionForInstanceInput!) {
-    completeActionForInstance(input: $input) {
+  mutation completeActionForInstance($input: MutationCompleteActionItemForInstanceInput!) {
+    completeActionItemForInstance(input: $input) {
       id
     }
   }
@@ -1659,16 +1659,16 @@ export const MARK_ACTION_AS_PENDING_FOR_INSTANCE_MUTATION = gql(`
 `);
 
 export const DELETE_ACTION_FOR_INSTANCE_MUTATION = gql(`
-  mutation deleteActionForInstance($input: MutationDeleteActionForInstanceInput!) {
-    deleteActionForInstance(input: $input) {
+  mutation deleteActionForInstance($input: MutationUpdateActionItemForInstanceInput!) {
+    deleteActionItemForInstance(input: $input) {
       id
     }
   }
 `);
 
 export const UPDATE_ACTION_FOR_INSTANCE_MUTATION = gql(`
-  mutation updateActionForInstance($input: MutationUpdateActionForInstanceInput!) {
-    updateActionForInstance(input: $input) {
+  mutation updateActionForInstance($input: MutationUpdateActionItemForInstanceInput!) {
+    updateActionItemForInstance(input: $input) {
       id
     }
   }

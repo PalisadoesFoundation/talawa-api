@@ -122,7 +122,7 @@ async function createUser(): Promise<string> {
 	return userId;
 }
 
-suite("Mutation field completeActionForInstance", () => {
+suite("Mutation field completeActionItemForInstance", () => {
 	// 1. Unauthenticated: user not logged in.
 	suite("when the client is not authenticated", () => {
 		test("should return an error with unauthenticated code", async () => {
@@ -138,7 +138,7 @@ suite("Mutation field completeActionForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.completeActionForInstance).toBeNull();
+			expect(result.data?.completeActionItemForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -165,7 +165,7 @@ suite("Mutation field completeActionForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.completeActionForInstance).toBeNull();
+			expect(result.data?.completeActionItemForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -192,7 +192,7 @@ suite("Mutation field completeActionForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.completeActionForInstance).toBeNull();
+			expect(result.data?.completeActionItemForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -225,7 +225,7 @@ suite("Mutation field completeActionForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.completeActionForInstance).toBeNull();
+			expect(result.data?.completeActionItemForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -321,7 +321,7 @@ suite("Mutation field completeActionForInstance", () => {
 					},
 				);
 
-				expect(result.data?.completeActionForInstance).toBeNull();
+				expect(result.data?.completeActionItemForInstance).toBeNull();
 				expect(result.errors).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
@@ -406,7 +406,7 @@ suite("Mutation field completeActionForInstance", () => {
 			);
 
 			expect(result.errors).toBeUndefined();
-			expect(result.data?.completeActionForInstance).toEqual(
+			expect(result.data?.completeActionItemForInstance).toEqual(
 				expect.objectContaining({
 					id: expect.any(String),
 				}),

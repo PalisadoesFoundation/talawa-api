@@ -122,7 +122,7 @@ async function createUser(): Promise<string> {
 	return userId;
 }
 
-suite("Mutation field updateActionForInstance", () => {
+suite("Mutation field updateActionItemForInstance", () => {
 	// 1. Unauthenticated: user not logged in.
 	suite("when the client is not authenticated", () => {
 		test("should return an error with unauthenticated code", async () => {
@@ -137,7 +137,7 @@ suite("Mutation field updateActionForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.updateActionForInstance).toBeNull();
+			expect(result.data?.updateActionItemForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -163,7 +163,7 @@ suite("Mutation field updateActionForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.updateActionForInstance).toBeNull();
+			expect(result.data?.updateActionItemForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -189,7 +189,7 @@ suite("Mutation field updateActionForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.updateActionForInstance).toBeNull();
+			expect(result.data?.updateActionItemForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -221,7 +221,7 @@ suite("Mutation field updateActionForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.updateActionForInstance).toBeNull();
+			expect(result.data?.updateActionItemForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -320,7 +320,7 @@ suite("Mutation field updateActionForInstance", () => {
 					},
 				);
 
-				expect(result.data?.updateActionForInstance).toBeNull();
+				expect(result.data?.updateActionItemForInstance).toBeNull();
 				expect(result.errors).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
@@ -409,7 +409,7 @@ suite("Mutation field updateActionForInstance", () => {
 			);
 
 			expect(result.errors).toBeUndefined();
-			expect(result.data?.updateActionForInstance).toEqual(
+			expect(result.data?.updateActionItemForInstance).toEqual(
 				expect.objectContaining({
 					id: expect.any(String),
 				}),
