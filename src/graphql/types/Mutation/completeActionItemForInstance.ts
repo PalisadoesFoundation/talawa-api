@@ -4,8 +4,8 @@ import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
-const MutationCompleteActionForInstanceInput = builder.inputType(
-	"MutationCompleteActionForInstanceInput",
+const MutationCompleteActionItemForInstanceInput = builder.inputType(
+	"MutationCompleteActionItemForInstanceInput",
 	{
 		fields: (t) => ({
 			actionId: t.id({ required: true }),
@@ -15,7 +15,7 @@ const MutationCompleteActionForInstanceInput = builder.inputType(
 	},
 );
 
-const mutationCompleteActionForInstanceArgumentsSchema = z.object({
+const mutationCompleteActionItemForInstanceArgumentsSchema = z.object({
 	input: z.object({
 		actionId: z.string(),
 		eventId: z.string(),
@@ -23,13 +23,13 @@ const mutationCompleteActionForInstanceArgumentsSchema = z.object({
 	}),
 });
 
-builder.mutationField("CompleteActionItemForInstance", (t) =>
+builder.mutationField("completeActionItemForInstance", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
 				description: "Complete an action item for a single instance",
 				required: true,
-				type: MutationCompleteActionForInstanceInput,
+				type: MutationCompleteActionItemForInstanceInput,
 			}),
 		},
 		description: "Mutation to complete an action item for a single instance",
@@ -46,7 +46,7 @@ builder.mutationField("CompleteActionItemForInstance", (t) =>
 				data: parsedArgs,
 				error,
 				success,
-			} = mutationCompleteActionForInstanceArgumentsSchema.safeParse(args);
+			} = mutationCompleteActionItemForInstanceArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({

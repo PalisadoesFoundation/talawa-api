@@ -1578,12 +1578,6 @@ input MembershipRequestWhereInput {
 }
 
 type Mutation {
-  """Mutation to complete an action item for a single instance"""
-  CompleteActionItemForInstance(
-    """Complete an action item for a single instance"""
-    input: MutationCompleteActionForInstanceInput!
-  ): ActionItem
-
   """Mutation field to accept a membership request by an admin."""
   acceptMembershipRequest(
     """Input to accept a membership request"""
@@ -1601,6 +1595,12 @@ type Mutation {
     """Input to cancel a membership request"""
     input: MutationCancelMembershipRequestInput!
   ): CancelMembershipResponse
+
+  """Mutation to complete an action item for a single instance"""
+  completeActionItemForInstance(
+    """Complete an action item for a single instance"""
+    input: MutationCompleteActionItemForInstanceInput!
+  ): ActionItem
 
   """Mutation field to create an action item."""
   createActionItem(input: CreateActionItemInput!): ActionItem
@@ -1971,7 +1971,7 @@ input MutationCancelMembershipRequestInput {
   membershipRequestId: ID!
 }
 
-input MutationCompleteActionForInstanceInput {
+input MutationCompleteActionItemForInstanceInput {
   actionId: ID!
   eventId: ID!
   postCompletionNotes: String!
