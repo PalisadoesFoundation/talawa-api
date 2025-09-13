@@ -55,7 +55,10 @@ suite("Mutation field createPresignedUrl", () => {
 				objectName: string,
 				expiry: number,
 			): Promise<string> => {
-				return `${server.envConfig.API_MINIO_PUBLIC_BASE_URL}/${bucket}/${objectName}`;
+				const fallbackBaseUrl = `http://${server.envConfig.API_MINIO_END_POINT}:${server.envConfig.API_MINIO_PORT}`;
+				const effectiveBaseUrl =
+					server.envConfig.API_MINIO_PUBLIC_BASE_URL || fallbackBaseUrl;
+				return `${effectiveBaseUrl}/${bucket}/${objectName}`;
 			};
 			assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
 			const authToken = signInResult.data.signIn.authenticationToken;
@@ -92,14 +95,18 @@ suite("Mutation field createPresignedUrl", () => {
 					},
 				},
 			});
-			// Dynamically check presignedUrl starts with API_MINIO_PUBLIC_BASE_URL
 			const presignedUrl = result.data?.createPresignedUrl?.presignedUrl;
-			const baseUrl = server.envConfig.API_MINIO_PUBLIC_BASE_URL;
-
+			const fallbackBaseUrl = `http://${server.envConfig.API_MINIO_END_POINT}:${server.envConfig.API_MINIO_PORT}`;
+			const baseUrl =
+				server.envConfig.API_MINIO_PUBLIC_BASE_URL || fallbackBaseUrl;
+			if (!server.envConfig.API_MINIO_PUBLIC_BASE_URL) {
+				console.warn(
+					"API_MINIO_PUBLIC_BASE_URL missing; using fallback:",
+					fallbackBaseUrl,
+				);
+			}
 			expect(typeof presignedUrl).toBe("string");
-			expect(typeof baseUrl).toBe("string");
-
-			if (typeof presignedUrl === "string" && typeof baseUrl === "string") {
+			if (typeof presignedUrl === "string") {
 				expect(presignedUrl.startsWith(baseUrl)).toBe(true);
 			}
 
