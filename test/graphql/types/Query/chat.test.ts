@@ -178,6 +178,7 @@ suite("Query field chat", () => {
 			},
 		});
 		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
+		const adminUserId = adminSignInResult.data.signIn.user.id;
 
 		// Create test users
 		const user1 = await createTestUser(adminAuthToken, "regular");
@@ -190,6 +191,14 @@ suite("Query field chat", () => {
 
 		// Create test organization
 		organizationId = await createTestOrganization(adminAuthToken);
+
+		// Add admin to organization (needed for chat creation)
+		await createOrganizationMembership(
+			adminAuthToken,
+			adminUserId,
+			organizationId,
+			"administrator",
+		);
 
 		// Add user1 to organization
 		await createOrganizationMembership(
@@ -489,6 +498,7 @@ suite("Query field chatsByUser", () => {
 			},
 		});
 		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
+		const adminUserId = adminSignInResult.data.signIn.user.id;
 
 		// Create test users
 		const user1 = await createTestUser(adminAuthToken, "regular");
@@ -501,6 +511,14 @@ suite("Query field chatsByUser", () => {
 
 		// Create test organization
 		organizationId = await createTestOrganization(adminAuthToken);
+
+		// Add admin to organization as well
+		await createOrganizationMembership(
+			adminAuthToken,
+			adminUserId,
+			organizationId,
+			"administrator",
+		);
 
 		// Add user1 to organization
 		await createOrganizationMembership(
