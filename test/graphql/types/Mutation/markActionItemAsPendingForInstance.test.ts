@@ -122,7 +122,7 @@ async function createUser(): Promise<string> {
 	return userId;
 }
 
-suite("Mutation field markActionAsPendingForInstance", () => {
+suite("Mutation field markActionItemAsPendingForInstance", () => {
 	// 1. Unauthenticated: user not logged in.
 	suite("when the client is not authenticated", () => {
 		test("should return an error with unauthenticated code", async () => {
@@ -137,7 +137,7 @@ suite("Mutation field markActionAsPendingForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.markActionAsPendingForInstance).toBeNull();
+			expect(result.data?.markActionItemAsPendingForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -163,7 +163,7 @@ suite("Mutation field markActionAsPendingForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.markActionAsPendingForInstance).toBeNull();
+			expect(result.data?.markActionItemAsPendingForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -189,7 +189,7 @@ suite("Mutation field markActionAsPendingForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.markActionAsPendingForInstance).toBeNull();
+			expect(result.data?.markActionItemAsPendingForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -221,7 +221,7 @@ suite("Mutation field markActionAsPendingForInstance", () => {
 					},
 				},
 			);
-			expect(result.data?.markActionAsPendingForInstance).toBeNull();
+			expect(result.data?.markActionItemAsPendingForInstance).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -319,7 +319,7 @@ suite("Mutation field markActionAsPendingForInstance", () => {
 					},
 				);
 
-				expect(result.data?.markActionAsPendingForInstance).toBeNull();
+				expect(result.data?.markActionItemAsPendingForInstance).toBeNull();
 				expect(result.errors).toEqual(
 					expect.arrayContaining([
 						expect.objectContaining({
@@ -411,7 +411,7 @@ suite("Mutation field markActionAsPendingForInstance", () => {
 				);
 
 				expect(result.errors).toBeUndefined();
-				expect(result.data?.markActionAsPendingForInstance).toEqual(
+				expect(result.data?.markActionItemAsPendingForInstance).toEqual(
 					expect.objectContaining({
 						id: expect.any(String),
 					}),
