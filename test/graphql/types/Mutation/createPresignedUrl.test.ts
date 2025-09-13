@@ -55,7 +55,7 @@ suite("Mutation field createPresignedUrl", () => {
 				objectName: string,
 				expiry: number,
 			): Promise<string> => {
-				return "https://example.com/presigned-url";
+				return `${server.envConfig.API_MINIO_PUBLIC_BASE_URL}/${bucket}/${objectName}`;
 			};
 			assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
 			const authToken = signInResult.data.signIn.authenticationToken;
@@ -92,10 +92,18 @@ suite("Mutation field createPresignedUrl", () => {
 					},
 				},
 			});
-			expect(result.data?.createPresignedUrl).toMatchObject({
-				presignedUrl: "https://example.com/presigned-url",
-				requiresUpload: true,
-			});
+			// Dynamically check presignedUrl starts with API_MINIO_PUBLIC_BASE_URL
+			const presignedUrl = result.data?.createPresignedUrl?.presignedUrl;
+			const baseUrl = server.envConfig.API_MINIO_PUBLIC_BASE_URL;
+
+			expect(typeof presignedUrl).toBe("string");
+			expect(typeof baseUrl).toBe("string");
+
+			if (typeof presignedUrl === "string" && typeof baseUrl === "string") {
+				expect(presignedUrl.startsWith(baseUrl)).toBe(true);
+			}
+
+			expect(result.data?.createPresignedUrl?.requiresUpload).toBe(true);
 
 			assertToBeNonNullish(result.data?.createPresignedUrl);
 			expect(result.data.createPresignedUrl.objectName).toMatch(

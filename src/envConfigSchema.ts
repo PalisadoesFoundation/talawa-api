@@ -192,6 +192,12 @@ export const envConfigSchema = Type.Object({
 	 * More information can be found at: {@link https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client}
 	 */
 	API_MINIO_USE_SSL: Type.Boolean(),
+	API_MINIO_PUBLIC_BASE_URL: Type.Optional(
+		Type.String({
+			minLength: 1,
+			format: "uri",
+		}),
+	),
 	/**
 	 * Used for providing the port of the domain on which the server will run.
 	 */
