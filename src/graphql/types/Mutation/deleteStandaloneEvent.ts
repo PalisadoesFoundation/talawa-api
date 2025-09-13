@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { actionsTable } from "~/src/drizzle/tables/actions";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -149,8 +149,8 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				// First, delete any action items associated with the event
 				await tx
-					.delete(actionsTable)
-					.where(eq(actionsTable.eventId, parsedArgs.input.id));
+					.delete(actionItemsTable)
+					.where(eq(actionItemsTable.eventId, parsedArgs.input.id));
 
 				const [deletedEvent] = await tx
 					.delete(eventsTable)

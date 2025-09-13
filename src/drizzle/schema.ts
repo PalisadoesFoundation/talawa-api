@@ -5,7 +5,10 @@ export {
 	actionCategoriesTable,
 	actionCategoriesTableRelations,
 } from "./tables/actionCategories";
-export { actionsTable, actionsTableRelations } from "./tables/actions";
+export {
+	actionItemsTable,
+	actionItemsTableRelations,
+} from "./tables/actionItems";
 export {
 	actionItemExceptionsTable,
 	actionItemExceptionsTableRelations,

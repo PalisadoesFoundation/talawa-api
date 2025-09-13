@@ -3,9 +3,9 @@ import { and, eq, inArray, or } from "drizzle-orm";
 import type { z } from "zod";
 import { actionItemExceptionsTable } from "~/src/drizzle/tables/actionItemExceptions";
 import {
-	actionsTable,
-	actionsTableInsertSchema,
-} from "~/src/drizzle/tables/actions";
+	actionItemsTable,
+	actionItemsTableInsertSchema,
+} from "~/src/drizzle/tables/actionItems";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -45,12 +45,12 @@ const actionItemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	});
 
 // Simple cursor schema using assignedAt for ordering
-const cursorSchema = actionsTableInsertSchema
+const cursorSchema = actionItemsTableInsertSchema
 	.pick({
 		assignedAt: true,
 	})
 	.extend({
-		id: actionsTableInsertSchema.shape.id.unwrap(),
+		id: actionItemsTableInsertSchema.shape.id.unwrap(),
 	});
 
 type ActionItemsArgs = z.input<typeof defaultGraphQLConnectionArgumentsSchema>;
@@ -139,12 +139,12 @@ export const resolveActionItemsPaginated = async (
 			? parent.baseRecurringEventId
 			: parent.id;
 
-	const actionItems = await ctx.drizzleClient.query.actionsTable.findMany({
+	const actionItems = await ctx.drizzleClient.query.actionItemsTable.findMany({
 		where: and(
-			eq(actionsTable.organizationId, parent.organizationId),
+			eq(actionItemsTable.organizationId, parent.organizationId),
 			or(
-				eq(actionsTable.eventId, baseEventId),
-				and(eq(actionsTable.recurringEventInstanceId, parent.id)),
+				eq(actionItemsTable.eventId, baseEventId),
+				and(eq(actionItemsTable.recurringEventInstanceId, parent.id)),
 			),
 		),
 	});

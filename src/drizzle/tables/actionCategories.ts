@@ -10,7 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { actionsTable } from "./actions";
+import { actionItemsTable } from "./actionItems";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
@@ -61,7 +61,7 @@ export const actionCategoriesTable = pgTable(
 export const actionCategoriesTableRelations = relations(
 	actionCategoriesTable,
 	({ many, one }) => ({
-		actionsWhereCategory: many(actionsTable, {
+		actionsWhereCategory: many(actionItemsTable, {
 			relationName: "action_categories.id:actions.category_id",
 		}),
 		creator: one(usersTable, {

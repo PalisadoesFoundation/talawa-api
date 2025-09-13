@@ -1,8 +1,8 @@
-import type { actionsTable } from "~/src/drizzle/tables/actions";
+import type { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 import { Event } from "~/src/graphql/types/Event/Event";
 
-export type ActionItem = typeof actionsTable.$inferSelect & {
+export type ActionItem = typeof actionItemsTable.$inferSelect & {
 	isInstanceException?: boolean;
 };
 

@@ -1,6 +1,6 @@
 import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { actionsTable } from "~/src/drizzle/tables/actions";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
@@ -223,13 +223,15 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 				// This includes items linked to the base templates and individual instances
 				if (templateIds.length > 0) {
 					await tx
-						.delete(actionsTable)
-						.where(inArray(actionsTable.eventId, templateIds));
+						.delete(actionItemsTable)
+						.where(inArray(actionItemsTable.eventId, templateIds));
 				}
 				if (instanceIds.length > 0) {
 					await tx
-						.delete(actionsTable)
-						.where(inArray(actionsTable.recurringEventInstanceId, instanceIds));
+						.delete(actionItemsTable)
+						.where(
+							inArray(actionItemsTable.recurringEventInstanceId, instanceIds),
+						);
 				}
 
 				// Delete exceptions for all instances in the series

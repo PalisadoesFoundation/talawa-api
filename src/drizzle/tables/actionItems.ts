@@ -15,7 +15,7 @@ import { organizationsTable } from "./organizations";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
-export const actionsTable = pgTable(
+export const actionItemsTable = pgTable(
 	"actions",
 	{
 		assignedAt: timestamp("assigned_at", {
@@ -92,38 +92,42 @@ export const actionsTable = pgTable(
 	],
 );
 
-export const actionsTableRelations = relations(actionsTable, ({ one }) => ({
-	assignee: one(usersTable, {
-		fields: [actionsTable.assigneeId],
-		references: [usersTable.id],
-		relationName: "actions.assignee_id:users.id",
+export const actionItemsTableRelations = relations(
+	actionItemsTable,
+	({ one }) => ({
+		assignee: one(usersTable, {
+			fields: [actionItemsTable.assigneeId],
+			references: [usersTable.id],
+			relationName: "actions.assignee_id:users.id",
+		}),
+		category: one(actionCategoriesTable, {
+			fields: [actionItemsTable.categoryId],
+			references: [actionCategoriesTable.id],
+			relationName: "action_categories.id:actions.category_id",
+		}),
+		creator: one(usersTable, {
+			fields: [actionItemsTable.creatorId],
+			references: [usersTable.id],
+			relationName: "actions.creator_id:users.id",
+		}),
+		event: one(eventsTable, {
+			fields: [actionItemsTable.eventId],
+			references: [eventsTable.id],
+			relationName: "actions.event_id:events.id",
+		}),
+		organization: one(organizationsTable, {
+			fields: [actionItemsTable.organizationId],
+			references: [organizationsTable.id],
+			relationName: "actions.organization_id:organizations.id",
+		}),
+		updater: one(usersTable, {
+			fields: [actionItemsTable.updaterId],
+			references: [usersTable.id],
+			relationName: "actions.updater_id:users.id",
+		}),
 	}),
-	category: one(actionCategoriesTable, {
-		fields: [actionsTable.categoryId],
-		references: [actionCategoriesTable.id],
-		relationName: "action_categories.id:actions.category_id",
-	}),
-	creator: one(usersTable, {
-		fields: [actionsTable.creatorId],
-		references: [usersTable.id],
-		relationName: "actions.creator_id:users.id",
-	}),
-	event: one(eventsTable, {
-		fields: [actionsTable.eventId],
-		references: [eventsTable.id],
-		relationName: "actions.event_id:events.id",
-	}),
-	organization: one(organizationsTable, {
-		fields: [actionsTable.organizationId],
-		references: [organizationsTable.id],
-		relationName: "actions.organization_id:organizations.id",
-	}),
-	updater: one(usersTable, {
-		fields: [actionsTable.updaterId],
-		references: [usersTable.id],
-		relationName: "actions.updater_id:users.id",
-	}),
-}));
+);
 
-// ✅ Export the actionsTableInsertSchema
-export const actionsTableInsertSchema = createInsertSchema(actionsTable);
+// ✅ Export the actionItemsTableInsertSchema
+export const actionItemsTableInsertSchema =
+	createInsertSchema(actionItemsTable);

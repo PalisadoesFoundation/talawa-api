@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { actionsTable } from "~/src/drizzle/tables/actions";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -176,9 +176,9 @@ builder.mutationField("deleteSingleEventInstance", (t) =>
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				// First, delete action items associated with this specific instance
 				await tx
-					.delete(actionsTable)
+					.delete(actionItemsTable)
 					.where(
-						eq(actionsTable.recurringEventInstanceId, parsedArgs.input.id),
+						eq(actionItemsTable.recurringEventInstanceId, parsedArgs.input.id),
 					);
 
 				const [updatedInstance] = await tx

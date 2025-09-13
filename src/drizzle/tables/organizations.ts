@@ -12,7 +12,7 @@ import { uuidv7 } from "uuidv7";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
 import { iso3166Alpha2CountryCodeEnum } from "~/src/drizzle/enums/iso3166Alpha2CountryCode";
 import { actionCategoriesTable } from "./actionCategories";
-import { actionsTable } from "./actions";
+import { actionItemsTable } from "./actionItems";
 import { advertisementsTable } from "./advertisements";
 import { chatsTable } from "./chats";
 import { eventsTable } from "./events";
@@ -133,7 +133,7 @@ export const organizationsTableRelations = relations(
 		/**
 		 * One to many relationship from `organizations` table to `actions` table.
 		 */
-		actionsWhereOrganization: many(actionsTable, {
+		actionsWhereOrganization: many(actionItemsTable, {
 			relationName: "actions.organization_id:organizations.id",
 		}),
 		/**

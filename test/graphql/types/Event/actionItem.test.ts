@@ -424,13 +424,13 @@ suite("Event.actionItems", () => {
 		);
 
 		// Mock action items query to return empty array
-		mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
+		mocks.drizzleClient.query.actionItemsTable.findMany.mockResolvedValue([]);
 
 		await resolveActionItemsPaginated(mockEvent, { first: 10 }, context);
 
 		// Verify that findMany was called - this proves the baseRecurringEventId logic was executed
 		expect(
-			mocks.drizzleClient.query.actionsTable.findMany,
+			mocks.drizzleClient.query.actionItemsTable.findMany,
 		).toHaveBeenCalledTimes(1);
 	});
 
@@ -467,13 +467,13 @@ suite("Event.actionItems", () => {
 		);
 
 		// Mock action items query to return empty array
-		mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
+		mocks.drizzleClient.query.actionItemsTable.findMany.mockResolvedValue([]);
 
 		await resolveActionItemsPaginated(mockEvent, { first: 10 }, context);
 
 		// Verify that findMany was called - this proves the baseRecurringEventId logic was executed
 		expect(
-			mocks.drizzleClient.query.actionsTable.findMany,
+			mocks.drizzleClient.query.actionItemsTable.findMany,
 		).toHaveBeenCalledTimes(1);
 	});
 
@@ -510,13 +510,13 @@ suite("Event.actionItems", () => {
 		);
 
 		// Mock action items query to return empty array
-		mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
+		mocks.drizzleClient.query.actionItemsTable.findMany.mockResolvedValue([]);
 
 		await resolveActionItemsPaginated(mockEvent, { first: 10 }, context);
 
 		// Verify that findMany was called - this proves the baseRecurringEventId logic was executed
 		expect(
-			mocks.drizzleClient.query.actionsTable.findMany,
+			mocks.drizzleClient.query.actionItemsTable.findMany,
 		).toHaveBeenCalledTimes(1);
 	});
 
@@ -554,7 +554,7 @@ suite("Event.actionItems", () => {
 		);
 
 		// Mock action items query to return empty array
-		mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
+		mocks.drizzleClient.query.actionItemsTable.findMany.mockResolvedValue([]);
 
 		// Test that the resolver handles empty results properly with baseRecurringEventId
 		const result = await resolveActionItemsPaginated(
@@ -600,14 +600,14 @@ suite("Event.actionItems", () => {
 		);
 
 		// Mock action items query to return empty array
-		mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue([]);
+		mocks.drizzleClient.query.actionItemsTable.findMany.mockResolvedValue([]);
 
 		// Test without cursor first to understand the control flow
 		await resolveActionItemsPaginated(mockEvent, { last: 10 }, context);
 
 		// The test validates that the resolver functions properly with the baseRecurringEventId logic
 		expect(
-			mocks.drizzleClient.query.actionsTable.findMany,
+			mocks.drizzleClient.query.actionItemsTable.findMany,
 		).toHaveBeenCalledTimes(1);
 	});
 
@@ -675,7 +675,7 @@ suite("Event.actionItems", () => {
 				recurringEventInstanceId: null,
 			},
 		];
-		mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue(
+		mocks.drizzleClient.query.actionItemsTable.findMany.mockResolvedValue(
 			mockActionItems,
 		);
 
@@ -790,7 +790,7 @@ suite("Event.actionItems", () => {
 				recurringEventInstanceId: null,
 			},
 		];
-		mocks.drizzleClient.query.actionsTable.findMany.mockResolvedValue(
+		mocks.drizzleClient.query.actionItemsTable.findMany.mockResolvedValue(
 			mockActionItems,
 		);
 

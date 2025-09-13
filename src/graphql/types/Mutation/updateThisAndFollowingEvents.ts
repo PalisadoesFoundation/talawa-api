@@ -1,6 +1,6 @@
 import { and, eq, gte, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { actionsTable } from "~/src/drizzle/tables/actions";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -220,10 +220,10 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 
 					// Delete action items associated with the instances first
 					await tx
-						.delete(actionsTable)
+						.delete(actionItemsTable)
 						.where(
 							inArray(
-								actionsTable.recurringEventInstanceId,
+								actionItemsTable.recurringEventInstanceId,
 								instanceIdsToDelete,
 							),
 						);

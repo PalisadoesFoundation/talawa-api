@@ -108,22 +108,26 @@ export const actionItemsByUser = builder.queryField("actionItemsByUser", (t) =>
 			}
 
 			// Build the query for action items
-			const actionItems = await ctx.drizzleClient.query.actionsTable.findMany({
-				where: (fields, operators) => {
-					const conditions = [
-						operators.eq(fields.assigneeId, parsedArgs.input.userId as string),
-					];
-					if (parsedArgs.input.organizationId) {
-						conditions.push(
+			const actionItems =
+				await ctx.drizzleClient.query.actionItemsTable.findMany({
+					where: (fields, operators) => {
+						const conditions = [
 							operators.eq(
-								fields.organizationId,
-								parsedArgs.input.organizationId,
+								fields.assigneeId,
+								parsedArgs.input.userId as string,
 							),
-						);
-					}
-					return operators.and(...conditions);
-				},
-			});
+						];
+						if (parsedArgs.input.organizationId) {
+							conditions.push(
+								operators.eq(
+									fields.organizationId,
+									parsedArgs.input.organizationId,
+								),
+							);
+						}
+						return operators.and(...conditions);
+					},
+				});
 
 			return actionItems;
 		},

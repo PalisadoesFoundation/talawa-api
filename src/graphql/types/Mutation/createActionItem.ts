@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { actionsTable } from "~/src/drizzle/tables/actions";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -141,7 +141,7 @@ builder.mutationField("createActionItem", (t) =>
 			}
 
 			const [createdActionItem] = await ctx.drizzleClient
-				.insert(actionsTable)
+				.insert(actionItemsTable)
 				.values({
 					id: uuidv7(),
 					creatorId: currentUserId,

@@ -361,11 +361,12 @@ suite.concurrent("insertCollections", () => {
 				isCompleted: false,
 			};
 
-			let capturedData: (typeof schema.actionsTable.$inferInsert)[] = [];
+			let capturedData: (typeof schema.actionItemsTable.$inferInsert)[] = [];
 			const checkAndInsertDataSpy = vi
 				.spyOn(helpers, "checkAndInsertData")
 				.mockImplementation((table, data) => {
-					capturedData = data as (typeof schema.actionsTable.$inferInsert)[];
+					capturedData =
+						data as (typeof schema.actionItemsTable.$inferInsert)[];
 					return Promise.resolve(true);
 				});
 
@@ -379,9 +380,9 @@ suite.concurrent("insertCollections", () => {
 			};
 
 			await helpers.checkAndInsertData(
-				schema.actionsTable,
+				schema.actionItemsTable,
 				[actionItemWithUuid],
-				schema.actionsTable.id,
+				schema.actionItemsTable.id,
 				1000,
 			);
 

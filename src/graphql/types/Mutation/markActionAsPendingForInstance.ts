@@ -62,7 +62,7 @@ builder.mutationField("markActionAsPendingForInstance", (t) =>
 			const { actionId, eventId } = parsedArgs.input;
 
 			const [existingActionItem, existingEventInstance] = await Promise.all([
-				ctx.drizzleClient.query.actionsTable.findFirst({
+				ctx.drizzleClient.query.actionItemsTable.findFirst({
 					where: (fields, { eq }) => eq(fields.id, actionId),
 				}),
 				ctx.drizzleClient.query.recurringEventInstancesTable.findFirst({

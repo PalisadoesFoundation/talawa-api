@@ -8,7 +8,7 @@ import {
 	uuid,
 } from "drizzle-orm/pg-core";
 import { actionCategoriesTable } from "./actionCategories";
-import { actionsTable } from "./actions";
+import { actionItemsTable } from "./actionItems";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
@@ -18,7 +18,7 @@ export const actionItemExceptionsTable = pgTable(
 		id: uuid("id").primaryKey().defaultRandom(),
 		actionId: uuid("action_id")
 			.notNull()
-			.references(() => actionsTable.id),
+			.references(() => actionItemsTable.id),
 		eventId: uuid("event_id")
 			.notNull()
 			.references(() => recurringEventInstancesTable.id),
@@ -52,9 +52,9 @@ export const actionItemExceptionsTable = pgTable(
 export const actionItemExceptionsTableRelations = relations(
 	actionItemExceptionsTable,
 	({ one }) => ({
-		action: one(actionsTable, {
+		action: one(actionItemsTable, {
 			fields: [actionItemExceptionsTable.actionId],
-			references: [actionsTable.id],
+			references: [actionItemsTable.id],
 		}),
 		event: one(recurringEventInstancesTable, {
 			fields: [actionItemExceptionsTable.eventId],

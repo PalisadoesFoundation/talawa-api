@@ -118,15 +118,14 @@ export const actionItemsByOrganization = builder.queryField(
 					});
 				}
 
-				const actionItems = await ctx.drizzleClient.query.actionsTable.findMany(
-					{
+				const actionItems =
+					await ctx.drizzleClient.query.actionItemsTable.findMany({
 						where: (fields, operators) =>
 							operators.eq(
 								fields.organizationId,
 								parsedArgs.input.organizationId,
 							),
-					},
-				);
+					});
 
 				return actionItems;
 			},
