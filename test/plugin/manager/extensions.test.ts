@@ -37,6 +37,7 @@ describe("ExtensionLoader basic", () => {
 			graphqlResolvers: {},
 			databaseTables: {},
 			hooks: {},
+			webhooks: {},
 			status: PluginStatus.ACTIVE,
 		});
 		mockExtensionRegistry = {
@@ -51,6 +52,9 @@ describe("ExtensionLoader basic", () => {
 			hooks: {
 				pre: {},
 				post: {},
+			},
+			webhooks: {
+				handlers: {},
 			},
 		};
 		extensionLoader = new ExtensionLoader(

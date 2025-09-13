@@ -303,10 +303,8 @@ export class ExtensionLoader {
 		extension: IWebhookExtension,
 		pluginModule: Record<string, unknown>,
 	): Promise<void> {
-		let handler: unknown;
-
 		// Try to get from main plugin module
-		handler = pluginModule[extension.handler];
+		const handler: unknown = pluginModule[extension.handler];
 
 		if (!handler || typeof handler !== "function") {
 			throw new Error(
@@ -321,18 +319,29 @@ export class ExtensionLoader {
 
 		// Ensure webhooks is initialized
 		if (!plugin.webhooks) {
-			plugin.webhooks = {} as Record<string, (request: unknown, reply: unknown) => Promise<unknown>>;
+			plugin.webhooks = {} as Record<
+				string,
+				(request: unknown, reply: unknown) => Promise<unknown>
+			>;
 		}
 
 		// Create webhook key from plugin ID and path
 		const webhookKey = `${pluginId}:${extension.path}`;
-		plugin.webhooks[webhookKey] = handler as (request: unknown, reply: unknown) => Promise<unknown>;
+		plugin.webhooks[webhookKey] = handler as (
+			request: unknown,
+			reply: unknown,
+		) => Promise<unknown>;
 
 		// Register in extension registry
-		this.extensionRegistry.webhooks.handlers[webhookKey] = handler as (request: unknown, reply: unknown) => Promise<unknown>;
+		this.extensionRegistry.webhooks.handlers[webhookKey] = handler as (
+			request: unknown,
+			reply: unknown,
+		) => Promise<unknown>;
 
 		// Log webhook registration
-		console.log(`🔗 Webhook registered: ${extension.method || 'POST'} /api/plugins/${pluginId}/webhook${extension.path} (${extension.description || 'No description'})`);
+		console.log(
+			`🔗 Webhook registered: ${extension.method || "POST"} /api/plugins/${pluginId}/webhook${extension.path} (${extension.description || "No description"})`,
+		);
 	}
 
 	/**

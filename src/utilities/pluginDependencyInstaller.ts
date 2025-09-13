@@ -1,13 +1,13 @@
 /**
  * Plugin Dependency Installer Utility
- * 
+ *
  * Handles installation of plugin dependencies using pnpm before plugin installation.
  * This ensures that all required dependencies are available before database creation.
  */
 
 import { exec } from "node:child_process";
-import { promisify } from "node:util";
 import path from "node:path";
+import { promisify } from "node:util";
 import { TalawaGraphQLError } from "./TalawaGraphQLError";
 
 const execAsync = promisify(exec);
@@ -26,14 +26,17 @@ export interface DependencyInstallationResult {
  */
 export async function installPluginDependencies(
 	pluginId: string,
-	logger?: { info?: (message: string) => void; error?: (message: string) => void }
+	logger?: {
+		info?: (message: string) => void;
+		error?: (message: string) => void;
+	},
 ): Promise<DependencyInstallationResult> {
 	const pluginPath = path.join(
 		process.cwd(),
 		"src",
 		"plugin",
 		"available",
-		pluginId
+		pluginId,
 	);
 
 	const packageJsonPath = path.join(pluginPath, "package.json");
@@ -45,7 +48,9 @@ export async function installPluginDependencies(
 			await fs.access(packageJsonPath);
 		} catch {
 			// No package.json found, skip dependency installation
-			logger?.info?.(`No package.json found for plugin ${pluginId}, skipping dependency installation`);
+			logger?.info?.(
+				`No package.json found for plugin ${pluginId}, skipping dependency installation`,
+			);
 			return { success: true };
 		}
 
@@ -53,29 +58,35 @@ export async function installPluginDependencies(
 
 		// Change to plugin directory and run pnpm install
 		const command = `cd "${pluginPath}" && pnpm install --frozen-lockfile`;
-		
+
 		const { stdout, stderr } = await execAsync(command, {
 			cwd: pluginPath,
 			timeout: 300000, // 5 minutes timeout
 		});
 
 		if (stderr && !stderr.includes("warning")) {
-			logger?.error?.(`Dependency installation warnings for ${pluginId}: ${stderr}`);
+			logger?.error?.(
+				`Dependency installation warnings for ${pluginId}: ${stderr}`,
+			);
 		}
 
-		logger?.info?.(`Successfully installed dependencies for plugin ${pluginId}`);
-		return { 
-			success: true, 
-			output: stdout 
+		logger?.info?.(
+			`Successfully installed dependencies for plugin ${pluginId}`,
+		);
+		return {
+			success: true,
+			output: stdout,
 		};
-
 	} catch (error) {
-		const errorMessage = error instanceof Error ? error.message : "Unknown error";
-		logger?.error?.(`Failed to install dependencies for plugin ${pluginId}: ${errorMessage}`);
-		
+		const errorMessage =
+			error instanceof Error ? error.message : "Unknown error";
+		logger?.error?.(
+			`Failed to install dependencies for plugin ${pluginId}: ${errorMessage}`,
+		);
+
 		return {
 			success: false,
-			error: errorMessage
+			error: errorMessage,
 		};
 	}
 }
@@ -88,10 +99,13 @@ export async function installPluginDependencies(
  */
 export async function installPluginDependenciesWithErrorHandling(
 	pluginId: string,
-	logger?: { info?: (message: string) => void; error?: (message: string) => void }
+	logger?: {
+		info?: (message: string) => void;
+		error?: (message: string) => void;
+	},
 ): Promise<void> {
 	const result = await installPluginDependencies(pluginId, logger);
-	
+
 	if (!result.success) {
 		throw new TalawaGraphQLError({
 			extensions: {

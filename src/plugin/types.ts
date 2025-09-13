@@ -62,7 +62,10 @@ export interface ILoadedPlugin {
 	graphqlResolvers: Record<string, unknown>;
 	databaseTables: Record<string, Record<string, unknown>>;
 	hooks: Record<string, (...args: unknown[]) => unknown>;
-	webhooks: Record<string, (request: unknown, reply: unknown) => Promise<unknown>>;
+	webhooks: Record<
+		string,
+		(request: unknown, reply: unknown) => Promise<unknown>
+	>;
 	status: PluginStatus;
 	errorMessage?: string;
 }
@@ -91,7 +94,10 @@ export interface IExtensionRegistry {
 		post: Record<string, ((...args: unknown[]) => unknown)[]>;
 	};
 	webhooks: {
-		handlers: Record<string, (request: unknown, reply: unknown) => Promise<unknown>>;
+		handlers: Record<
+			string,
+			(request: unknown, reply: unknown) => Promise<unknown>
+		>;
 	};
 }
 
