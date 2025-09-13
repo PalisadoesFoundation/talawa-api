@@ -45,13 +45,17 @@ User.implement({
 
 				const membershipRequests =
 					await ctx.drizzleClient.query.membershipRequestsTable.findMany({
-						columns: {
-							organizationId: true,
-						},
+						columns: { organizationId: true },
 						where: (fields, operators) =>
-							operators.eq(fields.userId, parent.id),
+							operators.and(
+								operators.eq(fields.userId, parent.id),
+								operators.eq(fields.status, "pending"),
+							),
 					});
-				return membershipRequests.map((request) => request.organizationId);
+				const ids = Array.from(
+					new Set(membershipRequests.map((r) => r.organizationId)),
+				);
+				return ids;
 			},
 			type: ["String"],
 		}),
