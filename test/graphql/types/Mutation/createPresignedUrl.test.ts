@@ -97,13 +97,10 @@ suite("Mutation field createPresignedUrl", () => {
 			const baseUrl = server.envConfig.API_MINIO_PUBLIC_BASE_URL;
 
 			expect(typeof presignedUrl).toBe("string");
+			expect(typeof baseUrl).toBe("string");
 
 			if (typeof presignedUrl === "string" && typeof baseUrl === "string") {
-				// When a public base URL is configured we expect the presigned URL to start with it.
 				expect(presignedUrl.startsWith(baseUrl)).toBe(true);
-			} else if (typeof presignedUrl === "string" && baseUrl === undefined) {
-				// In CI or environments where API_MINIO_PUBLIC_BASE_URL isn't set, just ensure it looks like a URL.
-				expect(() => new URL(presignedUrl)).not.toThrow();
 			}
 
 			expect(result.data?.createPresignedUrl?.requiresUpload).toBe(true);
