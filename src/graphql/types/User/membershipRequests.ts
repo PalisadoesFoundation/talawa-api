@@ -1,5 +1,5 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import envConfig from "~/src/utilities/graphqLimits";
+import envConfig from "~/src/utilities/graphqlLimits";
 import { User } from "./User";
 User.implement({
 	fields: (t) => ({
