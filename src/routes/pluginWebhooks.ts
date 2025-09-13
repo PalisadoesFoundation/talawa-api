@@ -15,9 +15,13 @@ export const pluginWebhooks = fastifyPlugin(
 					const { pluginId } = request.params as { pluginId: string };
 					const url = request.url;
 
+					// Strip query parameters from URL for webhook key lookup
+					const urlWithoutQuery = url.split("?")[0] || url;
+
 					// Extract the webhook path after /api/plugins/:pluginId/webhook/
 					const webhookPath =
-						url.replace(`/api/plugins/${pluginId}/webhook`, "") || "/";
+						urlWithoutQuery.replace(`/api/plugins/${pluginId}/webhook`, "") ||
+						"/";
 					// Normalize path - ensure it starts with / for root path, otherwise remove leading slash
 					const normalizedPath =
 						webhookPath === "/"

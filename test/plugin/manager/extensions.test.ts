@@ -1301,4 +1301,595 @@ describe("ExtensionLoader basic", () => {
 			),
 		).resolves.toBeUndefined(); // Should return early without error
 	});
+
+	describe("Webhook Extensions", () => {
+		it("should load webhook extension from main plugin module", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test-plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					webhooks: [
+						{
+							path: "/webhook-endpoint",
+							method: "POST",
+							handler: "webhookHandler",
+							description: "Test webhook",
+						},
+					],
+				},
+			};
+
+			const mockWebhookHandler = vi.fn();
+			const pluginModule = {
+				webhookHandler: mockWebhookHandler,
+			};
+
+			await expect(
+				extensionLoader.loadExtensionPoints(
+					"test-plugin",
+					manifest,
+					pluginModule,
+				),
+			).resolves.toBeUndefined();
+
+			expect(mockLoadedPlugins.get("test-plugin")?.webhooks).toBeDefined();
+			expect(
+				mockLoadedPlugins.get("test-plugin")?.webhooks[
+					"test-plugin:/webhook-endpoint"
+				],
+			).toBe(mockWebhookHandler);
+			expect(
+				mockExtensionRegistry.webhooks.handlers[
+					"test-plugin:/webhook-endpoint"
+				],
+			).toBe(mockWebhookHandler);
+		});
+
+		it("should handle webhook extension when handler is not found", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test-plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					webhooks: [
+						{
+							path: "/webhook-endpoint",
+							method: "POST",
+							handler: "missingHandler",
+							description: "Test webhook",
+						},
+					],
+				},
+			};
+
+			const pluginModule = {
+				otherHandler: vi.fn(),
+			};
+
+			await expect(
+				extensionLoader.loadExtensionPoints(
+					"test-plugin",
+					manifest,
+					pluginModule,
+				),
+			).rejects.toThrow(
+				"Failed to load extension points: Webhook handler 'missingHandler' not found or not a function in plugin test-plugin",
+			);
+		});
+
+		it("should handle webhook extension when handler is not a function", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test-plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					webhooks: [
+						{
+							path: "/webhook-endpoint",
+							method: "POST",
+							handler: "notAFunction",
+							description: "Test webhook",
+						},
+					],
+				},
+			};
+
+			const pluginModule = {
+				notAFunction: "not a function",
+			};
+
+			await expect(
+				extensionLoader.loadExtensionPoints(
+					"test-plugin",
+					manifest,
+					pluginModule,
+				),
+			).rejects.toThrow(
+				"Failed to load extension points: Webhook handler 'notAFunction' not found or not a function in plugin test-plugin",
+			);
+		});
+
+		it("should handle webhook extension when plugin not found", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "non-existent",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					webhooks: [
+						{
+							path: "/webhook-endpoint",
+							method: "POST",
+							handler: "webhookHandler",
+							description: "Test webhook",
+						},
+					],
+				},
+			};
+
+			const pluginModule = {
+				webhookHandler: vi.fn(),
+			};
+
+			await expect(
+				extensionLoader.loadExtensionPoints(
+					"non-existent",
+					manifest,
+					pluginModule,
+				),
+			).resolves.toBeUndefined(); // Should return early without error
+		});
+
+		it("should initialize webhooks if not present", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test-plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					webhooks: [
+						{
+							path: "/webhook-endpoint",
+							method: "POST",
+							handler: "webhookHandler",
+							description: "Test webhook",
+						},
+					],
+				},
+			};
+
+			const mockWebhookHandler = vi.fn();
+			const pluginModule = {
+				webhookHandler: mockWebhookHandler,
+			};
+
+			const plugin = mockLoadedPlugins.get("test-plugin");
+			if (plugin) {
+				plugin.webhooks = undefined as unknown as Record<
+					string,
+					(request: unknown, reply: unknown) => Promise<unknown>
+				>;
+			}
+
+			await extensionLoader.loadExtensionPoints(
+				"test-plugin",
+				manifest,
+				pluginModule,
+			);
+
+			expect(mockLoadedPlugins.get("test-plugin")?.webhooks).toBeDefined();
+			expect(
+				mockLoadedPlugins.get("test-plugin")?.webhooks[
+					"test-plugin:/webhook-endpoint"
+				],
+			).toBe(mockWebhookHandler);
+		});
+
+		it("should handle multiple webhook extensions", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test-plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					webhooks: [
+						{
+							path: "/webhook1",
+							method: "POST",
+							handler: "webhookHandler1",
+							description: "First webhook",
+						},
+						{
+							path: "/webhook2",
+							method: "GET",
+							handler: "webhookHandler2",
+							description: "Second webhook",
+						},
+					],
+				},
+			};
+
+			const mockWebhookHandler1 = vi.fn();
+			const mockWebhookHandler2 = vi.fn();
+			const pluginModule = {
+				webhookHandler1: mockWebhookHandler1,
+				webhookHandler2: mockWebhookHandler2,
+			};
+
+			await expect(
+				extensionLoader.loadExtensionPoints(
+					"test-plugin",
+					manifest,
+					pluginModule,
+				),
+			).resolves.toBeUndefined();
+
+			expect(
+				mockLoadedPlugins.get("test-plugin")?.webhooks["test-plugin:/webhook1"],
+			).toBe(mockWebhookHandler1);
+			expect(
+				mockLoadedPlugins.get("test-plugin")?.webhooks["test-plugin:/webhook2"],
+			).toBe(mockWebhookHandler2);
+			expect(
+				mockExtensionRegistry.webhooks.handlers["test-plugin:/webhook1"],
+			).toBe(mockWebhookHandler1);
+			expect(
+				mockExtensionRegistry.webhooks.handlers["test-plugin:/webhook2"],
+			).toBe(mockWebhookHandler2);
+		});
+
+		it("should handle webhook with different HTTP methods", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test-plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					webhooks: [
+						{
+							path: "/get-endpoint",
+							method: "GET",
+							handler: "getHandler",
+							description: "GET webhook",
+						},
+						{
+							path: "/post-endpoint",
+							method: "POST",
+							handler: "postHandler",
+							description: "POST webhook",
+						},
+						{
+							path: "/put-endpoint",
+							method: "PUT",
+							handler: "putHandler",
+							description: "PUT webhook",
+						},
+						{
+							path: "/delete-endpoint",
+							method: "DELETE",
+							handler: "deleteHandler",
+							description: "DELETE webhook",
+						},
+					],
+				},
+			};
+
+			const pluginModule = {
+				getHandler: vi.fn(),
+				postHandler: vi.fn(),
+				putHandler: vi.fn(),
+				deleteHandler: vi.fn(),
+			};
+
+			await expect(
+				extensionLoader.loadExtensionPoints(
+					"test-plugin",
+					manifest,
+					pluginModule,
+				),
+			).resolves.toBeUndefined();
+
+			expect(
+				mockExtensionRegistry.webhooks.handlers["test-plugin:/get-endpoint"],
+			).toBeDefined();
+			expect(
+				mockExtensionRegistry.webhooks.handlers["test-plugin:/post-endpoint"],
+			).toBeDefined();
+			expect(
+				mockExtensionRegistry.webhooks.handlers["test-plugin:/put-endpoint"],
+			).toBeDefined();
+			expect(
+				mockExtensionRegistry.webhooks.handlers["test-plugin:/delete-endpoint"],
+			).toBeDefined();
+		});
+
+		it("should handle webhook with complex paths", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test-plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					webhooks: [
+						{
+							path: "/api/v1/users/:id/actions",
+							method: "POST",
+							handler: "complexHandler",
+							description: "Complex path webhook",
+						},
+					],
+				},
+			};
+
+			const mockComplexHandler = vi.fn();
+			const pluginModule = {
+				complexHandler: mockComplexHandler,
+			};
+
+			await expect(
+				extensionLoader.loadExtensionPoints(
+					"test-plugin",
+					manifest,
+					pluginModule,
+				),
+			).resolves.toBeUndefined();
+
+			expect(
+				mockExtensionRegistry.webhooks.handlers[
+					"test-plugin:/api/v1/users/:id/actions"
+				],
+			).toBe(mockComplexHandler);
+		});
+
+		it("should handle webhook without description", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test-plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					webhooks: [
+						{
+							path: "/no-description",
+							method: "POST",
+							handler: "noDescHandler",
+							// No description provided
+						},
+					],
+				},
+			};
+
+			const mockHandler = vi.fn();
+			const pluginModule = {
+				noDescHandler: mockHandler,
+			};
+
+			await expect(
+				extensionLoader.loadExtensionPoints(
+					"test-plugin",
+					manifest,
+					pluginModule,
+				),
+			).resolves.toBeUndefined();
+
+			expect(
+				mockExtensionRegistry.webhooks.handlers["test-plugin:/no-description"],
+			).toBe(mockHandler);
+		});
+
+		it("should handle webhook without method specified", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test-plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					webhooks: [
+						{
+							path: "/default-method",
+							handler: "defaultHandler",
+							description: "Default method webhook",
+							// No method specified, should default to POST
+						},
+					],
+				},
+			};
+
+			const mockHandler = vi.fn();
+			const pluginModule = {
+				defaultHandler: mockHandler,
+			};
+
+			await expect(
+				extensionLoader.loadExtensionPoints(
+					"test-plugin",
+					manifest,
+					pluginModule,
+				),
+			).resolves.toBeUndefined();
+
+			expect(
+				mockExtensionRegistry.webhooks.handlers["test-plugin:/default-method"],
+			).toBe(mockHandler);
+		});
+	});
+
+	describe("Mixed Extension Types", () => {
+		it("should load all extension types together", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test-plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					graphql: [
+						{
+							name: "testQuery",
+							type: "query",
+							builderDefinition: "queryResolver",
+							file: "",
+						},
+					],
+					database: [
+						{
+							name: "testTable",
+							type: "table",
+							file: "",
+						},
+					],
+					hooks: [
+						{
+							type: "pre",
+							event: "testEvent",
+							handler: "hookHandler",
+						},
+					],
+					webhooks: [
+						{
+							path: "/webhook",
+							method: "POST",
+							handler: "webhookHandler",
+							description: "Test webhook",
+						},
+					],
+				},
+			};
+
+			const pluginModule = {
+				queryResolver: vi.fn(),
+				testTable: { columns: {} },
+				hookHandler: vi.fn(),
+				webhookHandler: vi.fn(),
+			};
+
+			await expect(
+				extensionLoader.loadExtensionPoints(
+					"test-plugin",
+					manifest,
+					pluginModule,
+				),
+			).resolves.toBeUndefined();
+
+			// Check all extension types were loaded
+			expect(mockExtensionRegistry.graphql.builderExtensions).toHaveLength(1);
+			expect(mockExtensionRegistry.database.tables.testTable).toBeDefined();
+			expect(mockExtensionRegistry.hooks.pre.testEvent).toBeDefined();
+			expect(
+				mockExtensionRegistry.webhooks.handlers["test-plugin:/webhook"],
+			).toBeDefined();
+		});
+
+		it("should handle partial failures in mixed extensions", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test-plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					graphql: [
+						{
+							name: "testQuery",
+							type: "query",
+							builderDefinition: "queryResolver",
+							file: "",
+						},
+					],
+					webhooks: [
+						{
+							path: "/webhook",
+							method: "POST",
+							handler: "missingHandler", // This will fail
+							description: "Test webhook",
+						},
+					],
+				},
+			};
+
+			const pluginModule = {
+				queryResolver: vi.fn(),
+				// missingHandler is not provided
+			};
+
+			await expect(
+				extensionLoader.loadExtensionPoints(
+					"test-plugin",
+					manifest,
+					pluginModule,
+				),
+			).rejects.toThrow(
+				"Failed to load extension points: Webhook handler 'missingHandler' not found or not a function in plugin test-plugin",
+			);
+		});
+	});
+
+	describe("Builder Extensions Initialization", () => {
+		it("should initialize builderExtensions array if not present", async () => {
+			const manifest: IPluginManifest = {
+				name: "Test Plugin",
+				pluginId: "test-plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					graphql: [
+						{
+							name: "testQuery",
+							type: "query",
+							builderDefinition: "queryResolver",
+							file: "",
+						},
+					],
+				},
+			};
+
+			const pluginModule = {
+				queryResolver: vi.fn(),
+			};
+
+			// Remove builderExtensions array to test initialization
+			mockExtensionRegistry.graphql.builderExtensions =
+				undefined as unknown as typeof mockExtensionRegistry.graphql.builderExtensions;
+
+			await extensionLoader.loadExtensionPoints(
+				"test-plugin",
+				manifest,
+				pluginModule,
+			);
+
+			expect(mockExtensionRegistry.graphql.builderExtensions).toBeDefined();
+			expect(
+				Array.isArray(mockExtensionRegistry.graphql.builderExtensions),
+			).toBe(true);
+			expect(mockExtensionRegistry.graphql.builderExtensions).toHaveLength(1);
+		});
+	});
 });
