@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { actionExceptionsTable } from "~/src/drizzle/tables/actionExceptions";
+import { actionItemExceptionsTable } from "~/src/drizzle/tables/actionItemExceptions";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -104,7 +104,7 @@ builder.mutationField("completeActionForInstance", (t) =>
 			}
 
 			const [createdActionException] = await ctx.drizzleClient
-				.insert(actionExceptionsTable)
+				.insert(actionItemExceptionsTable)
 				.values({
 					actionId,
 					eventId,
@@ -113,8 +113,8 @@ builder.mutationField("completeActionForInstance", (t) =>
 				})
 				.onConflictDoUpdate({
 					target: [
-						actionExceptionsTable.actionId,
-						actionExceptionsTable.eventId,
+						actionItemExceptionsTable.actionId,
+						actionItemExceptionsTable.eventId,
 					],
 					set: {
 						completed: true,

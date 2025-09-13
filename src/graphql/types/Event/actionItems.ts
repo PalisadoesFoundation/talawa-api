@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 import { and, eq, inArray, or } from "drizzle-orm";
 import type { z } from "zod";
-import { actionExceptionsTable } from "~/src/drizzle/tables/actionExceptions";
+import { actionItemExceptionsTable } from "~/src/drizzle/tables/actionItemExceptions";
 import {
 	actionsTable,
 	actionsTableInsertSchema,
@@ -153,10 +153,10 @@ export const resolveActionItemsPaginated = async (
 
 	if (actionItemIds.length > 0) {
 		const exceptions =
-			await ctx.drizzleClient.query.actionExceptionsTable.findMany({
+			await ctx.drizzleClient.query.actionItemExceptionsTable.findMany({
 				where: and(
-					inArray(actionExceptionsTable.actionId, actionItemIds),
-					eq(actionExceptionsTable.eventId, parent.id),
+					inArray(actionItemExceptionsTable.actionId, actionItemIds),
+					eq(actionItemExceptionsTable.eventId, parent.id),
 				),
 			});
 

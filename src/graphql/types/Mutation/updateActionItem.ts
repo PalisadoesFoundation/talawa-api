@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { actionExceptionsTable } from "~/src/drizzle/tables/actionExceptions";
+import { actionItemExceptionsTable } from "~/src/drizzle/tables/actionItemExceptions";
 import { actionsTable } from "~/src/drizzle/tables/actions";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
@@ -213,14 +213,14 @@ builder.mutationField("updateActionItem", (t) =>
 
 			if (updatedActionItem) {
 				await ctx.drizzleClient
-					.delete(actionExceptionsTable)
-					.where(eq(actionExceptionsTable.actionId, actionItemId));
+					.delete(actionItemExceptionsTable)
+					.where(eq(actionItemExceptionsTable.actionId, actionItemId));
 			}
 
 			if (updatedActionItem) {
 				await ctx.drizzleClient
-					.delete(actionExceptionsTable)
-					.where(eq(actionExceptionsTable.actionId, actionItemId));
+					.delete(actionItemExceptionsTable)
+					.where(eq(actionItemExceptionsTable.actionId, actionItemId));
 			}
 
 			if (!updatedActionItem) {
@@ -305,14 +305,14 @@ builder.mutationField("markActionItemAsPending", (t) =>
 
 			if (updatedActionItem) {
 				await ctx.drizzleClient
-					.delete(actionExceptionsTable)
-					.where(eq(actionExceptionsTable.actionId, input.id));
+					.delete(actionItemExceptionsTable)
+					.where(eq(actionItemExceptionsTable.actionId, input.id));
 			}
 
 			if (updatedActionItem) {
 				await ctx.drizzleClient
-					.delete(actionExceptionsTable)
-					.where(eq(actionExceptionsTable.actionId, input.id));
+					.delete(actionItemExceptionsTable)
+					.where(eq(actionItemExceptionsTable.actionId, input.id));
 			}
 
 			if (!updatedActionItem) {

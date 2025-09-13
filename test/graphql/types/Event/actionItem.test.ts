@@ -705,7 +705,7 @@ suite("Event.actionItems", () => {
 				assignedAt: new Date(),
 			},
 		];
-		mocks.drizzleClient.query.actionExceptionsTable.findMany.mockResolvedValue(
+		mocks.drizzleClient.query.actionItemExceptionsTable.findMany.mockResolvedValue(
 			mockExceptions,
 		);
 
@@ -808,7 +808,7 @@ suite("Event.actionItems", () => {
 				assignedAt: new Date(Date.now() + 1000),
 			},
 		];
-		mocks.drizzleClient.query.actionExceptionsTable.findMany.mockResolvedValue(
+		mocks.drizzleClient.query.actionItemExceptionsTable.findMany.mockResolvedValue(
 			mockExceptions,
 		);
 

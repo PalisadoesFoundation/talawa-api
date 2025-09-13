@@ -84,7 +84,7 @@ ActionItem.implement({
 			resolve: async (parent, _args, ctx) => {
 				// Check if there are any action exceptions for this action item
 				const exception =
-					await ctx.drizzleClient.query.actionExceptionsTable.findFirst({
+					await ctx.drizzleClient.query.actionItemExceptionsTable.findFirst({
 						where: (fields, operators) =>
 							operators.eq(fields.actionId, parent.id),
 					});

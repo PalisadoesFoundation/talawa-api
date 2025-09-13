@@ -12,7 +12,7 @@ import { actionsTable } from "./actions";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
-export const actionExceptionsTable = pgTable(
+export const actionItemExceptionsTable = pgTable(
 	"action_exceptions",
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
@@ -49,23 +49,23 @@ export const actionExceptionsTable = pgTable(
 	},
 );
 
-export const actionExceptionsTableRelations = relations(
-	actionExceptionsTable,
+export const actionItemExceptionsTableRelations = relations(
+	actionItemExceptionsTable,
 	({ one }) => ({
 		action: one(actionsTable, {
-			fields: [actionExceptionsTable.actionId],
+			fields: [actionItemExceptionsTable.actionId],
 			references: [actionsTable.id],
 		}),
 		event: one(recurringEventInstancesTable, {
-			fields: [actionExceptionsTable.eventId],
+			fields: [actionItemExceptionsTable.eventId],
 			references: [recurringEventInstancesTable.id],
 		}),
 		assignee: one(usersTable, {
-			fields: [actionExceptionsTable.assigneeId],
+			fields: [actionItemExceptionsTable.assigneeId],
 			references: [usersTable.id],
 		}),
 		category: one(actionCategoriesTable, {
-			fields: [actionExceptionsTable.categoryId],
+			fields: [actionItemExceptionsTable.categoryId],
 			references: [actionCategoriesTable.id],
 		}),
 	}),

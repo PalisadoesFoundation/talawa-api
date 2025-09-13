@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { actionExceptionsTable } from "../../../drizzle/tables/actionExceptions";
+import { actionItemExceptionsTable } from "../../../drizzle/tables/actionItemExceptions";
 import { builder } from "../../../graphql/builder";
 import { TalawaGraphQLError } from "../../../utilities/TalawaGraphQLError";
 import { ActionItem } from "../ActionItem/ActionItem";
@@ -99,7 +99,7 @@ builder.mutationField("deleteActionForInstance", (t) =>
 
 			// Create or update exception to mark as deleted for this instance
 			const [deletedActionException] = await ctx.drizzleClient
-				.insert(actionExceptionsTable)
+				.insert(actionItemExceptionsTable)
 				.values({
 					actionId,
 					eventId,
@@ -107,8 +107,8 @@ builder.mutationField("deleteActionForInstance", (t) =>
 				})
 				.onConflictDoUpdate({
 					target: [
-						actionExceptionsTable.actionId,
-						actionExceptionsTable.eventId,
+						actionItemExceptionsTable.actionId,
+						actionItemExceptionsTable.eventId,
 					],
 					set: {
 						deleted: true,

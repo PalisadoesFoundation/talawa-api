@@ -7,9 +7,9 @@ export {
 } from "./tables/actionCategories";
 export { actionsTable, actionsTableRelations } from "./tables/actions";
 export {
-	actionExceptionsTable,
-	actionExceptionsTableRelations,
-} from "./tables/actionExceptions";
+	actionItemExceptionsTable,
+	actionItemExceptionsTableRelations,
+} from "./tables/actionItemExceptions";
 export {
 	advertisementAttachmentsTable,
 	advertisementAttachmentsTableRelations,
