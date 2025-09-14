@@ -1,5 +1,5 @@
 {
-  "id": "41e67e34-71bb-4bfd-85f2-7ffa52cd8ab6",
+  "id": "d5ae55d5-6171-48cc-8135-3371f46e0bb8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -5037,7 +5037,7 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "default": true
+          "default": false
         },
         "backup": {
           "name": "backup",

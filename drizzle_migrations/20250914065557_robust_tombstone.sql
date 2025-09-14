@@ -348,7 +348,7 @@ CREATE TABLE "plugins" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"plugin_id" text NOT NULL,
 	"is_activated" boolean DEFAULT false NOT NULL,
-	"is_installed" boolean DEFAULT true NOT NULL,
+	"is_installed" boolean DEFAULT false NOT NULL,
 	"backup" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp (3) with time zone DEFAULT now(),

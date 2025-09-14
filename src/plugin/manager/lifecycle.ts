@@ -1,8 +1,12 @@
 /**
  * Plugin Lifecycle Manager
  *
- * Handles plugin activation, deactivation, and unloading operations
- * including database updates and schema integration.
+ * Handles isolated plugin lifecycle processes:
+ * - Plugin creation: No manager-specific actions
+ * - Plugin installation: Create plugin-defined databases
+ * - Plugin activation: Trigger schema rebuild
+ * - Plugin deactivation: Trigger schema rebuild
+ * - Plugin uninstall: Remove tables and cleanup
  */
 
 import path from "node:path";
@@ -15,14 +19,18 @@ import type {
 	ILoadedPlugin,
 	IPluginContext,
 	IPluginLifecycle,
+	IPluginManifest,
 } from "../types";
 
 // Type for plugin manager with emit method
 interface IPluginManager {
 	emit(event: string, ...args: unknown[]): boolean;
 }
+
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+import { installPluginDependenciesWithErrorHandling } from "~/src/utilities/pluginDependencyInstaller";
 import { PluginStatus } from "../types";
-import { dropPluginTables, safeRequire } from "../utils";
+import { createPluginTables, dropPluginTables, safeRequire } from "../utils";
 
 export class PluginLifecycle {
 	constructor(
@@ -32,7 +40,74 @@ export class PluginLifecycle {
 	) {}
 
 	/**
-	 * Activate a plugin
+	 * Install a plugin - install dependencies and create plugin-defined databases
+	 */
+	public async installPlugin(
+		pluginId: string,
+		pluginManager: IPluginManager,
+	): Promise<boolean> {
+		try {
+			pluginManager.emit("plugin:installing", pluginId);
+
+			// Load plugin manifest to get database definitions
+			const manifest = await this.loadPluginManifest(pluginId);
+			if (!manifest) {
+				throw new Error(`Failed to load manifest for plugin ${pluginId}`);
+			}
+
+			// Install plugin dependencies first
+			console.log(`Installing dependencies for plugin: ${pluginId}`);
+			await installPluginDependenciesWithErrorHandling(pluginId, console);
+
+			// Create plugin-defined databases if specified
+			await this.createPluginDatabases(pluginId, manifest);
+
+			// Call plugin lifecycle hook
+			await this.callOnInstallHook(pluginId);
+
+			pluginManager.emit("plugin:installed", pluginId);
+			return true;
+		} catch (error) {
+			this.handlePluginError(pluginId, error as Error, "install");
+			return false;
+		}
+	}
+
+	/**
+	 * Uninstall a plugin - remove tables and cleanup
+	 */
+	public async uninstallPlugin(
+		pluginId: string,
+		pluginManager: IPluginManager,
+	): Promise<boolean> {
+		try {
+			pluginManager.emit("plugin:uninstalling", pluginId);
+
+			// Call plugin lifecycle hook first
+			await this.callOnUninstallHook(pluginId);
+
+			// Remove plugin-defined databases
+			await this.removePluginDatabases(pluginId);
+
+			// Remove from extension registry
+			this.removeFromExtensionRegistry(pluginId);
+
+			// Remove from loaded plugins
+			this.loadedPlugins.delete(pluginId);
+
+			// Trigger schema rebuild to ensure complete cleanup
+			await this.triggerSchemaRebuild();
+
+			pluginManager.emit("plugin:uninstalled", pluginId);
+			return true;
+		} catch (error) {
+			this.handlePluginError(pluginId, error as Error, "uninstall");
+			return false;
+		}
+	}
+
+	/**
+	 * Activate a plugin - trigger schema rebuild
 	 */
 	public async activatePlugin(
 		pluginId: string,
@@ -46,20 +121,17 @@ export class PluginLifecycle {
 		try {
 			pluginManager.emit("plugin:activating", pluginId);
 
-			// Update plugin status FIRST - before triggering schema integration
-			plugin.status = PluginStatus.ACTIVE;
-
 			// Call plugin lifecycle hook
-			const pluginModule = await this.getPluginModule(pluginId);
-			if (pluginModule?.onActivate) {
-				await pluginModule.onActivate(this.pluginContext);
-			}
+			await this.callOnActivateHook(pluginId);
+
+			// Update plugin status
+			plugin.status = PluginStatus.ACTIVE;
 
 			// Update database
 			await this.updatePluginInDatabase(pluginId, { isActivated: true });
 
-			// Integrate GraphQL extensions into the main API schema AFTER status is set
-			await this.integrateGraphQLExtensions(pluginId);
+			// Trigger schema rebuild to integrate plugin extensions
+			await this.triggerSchemaRebuild();
 
 			pluginManager.emit("plugin:activated", pluginId);
 			return true;
@@ -72,20 +144,19 @@ export class PluginLifecycle {
 	}
 
 	/**
-	 * Integrate GraphQL extensions from a plugin into the main API schema
+	 * Trigger schema rebuild to integrate/remove plugin extensions
 	 */
-	private async integrateGraphQLExtensions(pluginId: string): Promise<void> {
-		// Trigger schema rebuild to integrate plugin extensions
+	private async triggerSchemaRebuild(): Promise<void> {
 		try {
 			const { schemaManager } = await import("../../graphql/schemaManager");
 			await schemaManager.rebuildSchema();
 		} catch (error) {
-			console.error(`Schema rebuild failed for plugin ${pluginId}:`, error);
+			console.error("Schema rebuild failed:", error);
 		}
 	}
 
 	/**
-	 * Deactivate a plugin
+	 * Deactivate a plugin - trigger schema rebuild
 	 */
 	public async deactivatePlugin(
 		pluginId: string,
@@ -104,32 +175,22 @@ export class PluginLifecycle {
 		try {
 			pluginManager.emit("plugin:deactivating", pluginId);
 
-			// Update plugin status FIRST to ensure schema rebuild excludes it
-			plugin.status = PluginStatus.INACTIVE;
-
 			// Call plugin lifecycle hook
-			const pluginModule = await this.getPluginModule(pluginId);
-			if (pluginModule?.onDeactivate) {
-				await pluginModule.onDeactivate(this.pluginContext);
-			}
+			await this.callOnDeactivateHook(pluginId);
 
-			// Optionally drop database tables (data will be lost!)
-			if (dropTables && Object.keys(plugin.databaseTables).length > 0) {
-				await dropPluginTables(
-					this.pluginContext.db as {
-						execute: (sql: string) => Promise<unknown>;
-					},
-					pluginId,
-					plugin.databaseTables as Record<string, Record<string, unknown>>,
-					this.pluginContext.logger as { info?: (message: string) => void },
-				);
-			}
+			// Update plugin status
+			plugin.status = PluginStatus.INACTIVE;
 
 			// Update database
 			await this.updatePluginInDatabase(pluginId, { isActivated: false });
 
+			// Optionally drop plugin tables
+			if (dropTables) {
+				await this.removePluginDatabases(pluginId);
+			}
+
 			// Trigger schema rebuild to remove plugin extensions
-			await this.triggerSchemaRebuildForDeactivation(pluginId);
+			await this.triggerSchemaRebuild();
 
 			pluginManager.emit("plugin:deactivated", pluginId);
 			return true;
@@ -142,71 +203,140 @@ export class PluginLifecycle {
 	}
 
 	/**
-	 * Unload a plugin
+	 * Load plugin manifest
 	 */
-	public async unloadPlugin(
-		pluginId: string,
-		pluginManager: IPluginManager,
-	): Promise<boolean> {
-		const plugin = this.loadedPlugins.get(pluginId);
-		if (!plugin) {
-			return true; // Already unloaded
+	private async loadPluginManifest(pluginId: string): Promise<IPluginManifest> {
+		const pluginPath = path.join(
+			process.cwd(),
+			"src",
+			"plugin",
+			"available",
+			pluginId,
+		);
+		const manifestPath = path.join(pluginPath, "manifest.json");
+		const manifest = await safeRequire(manifestPath);
+		if (!manifest) {
+			throw new Error(`Failed to load manifest for plugin ${pluginId}`);
 		}
+		return manifest as IPluginManifest;
+	}
 
-		try {
-			pluginManager.emit("plugin:unloading", pluginId);
+	/**
+	 * Create plugin-defined databases
+	 */
+	private async createPluginDatabases(
+		pluginId: string,
+		manifest: IPluginManifest,
+	): Promise<void> {
+		if (
+			manifest.extensionPoints?.database &&
+			manifest.extensionPoints.database.length > 0
+		) {
+			console.log(`Creating plugin-defined tables for: ${pluginId}`);
 
-			// Deactivate first if active
-			if (plugin.status === PluginStatus.ACTIVE) {
-				await this.deactivatePlugin(pluginId, pluginManager, false);
+			const tableDefinitions: Record<string, Record<string, unknown>> = {};
+			const pluginPath = path.join(
+				process.cwd(),
+				"src",
+				"plugin",
+				"available",
+				pluginId,
+			);
+
+			// Load each table definition
+			for (const tableExtension of manifest.extensionPoints.database) {
+				console.log(
+					"Loading table definition:",
+					tableExtension.name,
+					"from",
+					tableExtension.file,
+				);
+
+				const tableFilePath = path.join(pluginPath, tableExtension.file);
+				const tableModule =
+					await safeRequire<Record<string, Record<string, unknown>>>(
+						tableFilePath,
+					);
+
+				if (!tableModule) {
+					throw new Error(`Failed to load table file: ${tableExtension.file}`);
+				}
+
+				const tableDefinition = tableModule[tableExtension.name] as Record<
+					string,
+					unknown
+				>;
+				if (!tableDefinition) {
+					throw new Error(
+						`Table '${tableExtension.name}' not found in file: ${tableExtension.file}`,
+					);
+				}
+
+				tableDefinitions[tableExtension.name] = tableDefinition;
+				console.log("Table definition loaded:", tableExtension.name);
 			}
 
-			// Call plugin lifecycle hook
-			const pluginModule = await this.getPluginModule(pluginId);
-			if (pluginModule?.onUnload) {
-				await pluginModule.onUnload(this.pluginContext);
+			// Create the plugin-defined tables
+			try {
+				await createPluginTables(
+					this.pluginContext.db as unknown as {
+						execute: (sql: string) => Promise<unknown>;
+					},
+					pluginId,
+					tableDefinitions,
+					console, // Using console as logger
+				);
+				console.log(
+					"Successfully created plugin-defined tables for:",
+					pluginId,
+				);
+			} catch (error) {
+				console.error(`Failed to create tables for ${pluginId}:`, error);
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "forbidden_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "pluginId"],
+								message: "Failed to create plugin database tables",
+							},
+						],
+					},
+				});
 			}
-
-			// Remove from extension registry
-			this.removeFromExtensionRegistry(pluginId);
-
-			// Remove from loaded plugins
-			this.loadedPlugins.delete(pluginId);
-
-			// Trigger final schema rebuild to ensure complete cleanup
-			await this.triggerSchemaRebuildForDeactivation(pluginId);
-
-			pluginManager.emit("plugin:unloaded", pluginId);
-			return true;
-		} catch (error) {
-			this.handlePluginError(pluginId, error as Error, "unload");
-			return false;
+		} else {
+			console.log("No plugin-defined tables found for:", pluginId);
 		}
 	}
 
 	/**
-	 * Trigger schema rebuild for plugin deactivation/unloading
+	 * Remove plugin-defined databases
 	 */
-	private async triggerSchemaRebuildForDeactivation(
-		pluginId: string,
-	): Promise<void> {
+	private async removePluginDatabases(pluginId: string): Promise<void> {
+		const plugin = this.loadedPlugins.get(pluginId);
+		if (!plugin || !plugin.databaseTables) return;
+
 		try {
-			// Trigger schema rebuild to remove plugin extensions
-			const { schemaManager } = await import("../../graphql/schemaManager");
-			await schemaManager.rebuildSchema();
-		} catch (error) {
-			console.error(
-				`❌ Schema rebuild failed after plugin deactivation ${pluginId}:`,
-				error,
+			await dropPluginTables(
+				this.pluginContext.db as {
+					execute: (sql: string) => Promise<unknown>;
+				},
+				pluginId,
+				plugin.databaseTables as Record<string, Record<string, unknown>>,
+				this.pluginContext.logger as { info?: (message: string) => void },
 			);
-			// Don't throw - this shouldn't break the deactivation process
+			console.log(
+				`Successfully removed plugin-defined tables for: ${pluginId}`,
+			);
+		} catch (error) {
+			console.error(`Failed to remove tables for ${pluginId}:`, error);
 		}
 	}
 
 	/**
 	 * Get plugin module for lifecycle hooks
 	 */
-	private async getPluginModule(
+	public async getPluginModule(
 		pluginId: string,
 	): Promise<IPluginLifecycle | null> {
 		const plugin = this.loadedPlugins.get(pluginId);
@@ -226,7 +356,7 @@ export class PluginLifecycle {
 	/**
 	 * Remove plugin from extension registry
 	 */
-	private removeFromExtensionRegistry(pluginId: string): void {
+	public removeFromExtensionRegistry(pluginId: string): void {
 		// Remove GraphQL builder extensions
 		this.extensionRegistry.graphql.builderExtensions =
 			this.extensionRegistry.graphql.builderExtensions.filter(
@@ -282,12 +412,130 @@ export class PluginLifecycle {
 	}
 
 	/**
+	 * Call the onInstall lifecycle hook for a plugin
+	 */
+	private async callOnInstallHook(pluginId: string): Promise<void> {
+		try {
+			const pluginModule = await this.getPluginModule(pluginId);
+			if (pluginModule?.onInstall) {
+				await pluginModule.onInstall(this.pluginContext);
+			}
+		} catch (error) {
+			console.error(
+				`Error calling onInstall lifecycle hook for plugin ${pluginId}:`,
+				error,
+			);
+		}
+	}
+
+	/**
+	 * Call the onActivate lifecycle hook for a plugin
+	 */
+	private async callOnActivateHook(pluginId: string): Promise<void> {
+		try {
+			const pluginModule = await this.getPluginModule(pluginId);
+			if (pluginModule?.onActivate) {
+				await pluginModule.onActivate(this.pluginContext);
+			}
+		} catch (error) {
+			console.error(
+				`Error calling onActivate lifecycle hook for plugin ${pluginId}:`,
+				error,
+			);
+		}
+	}
+
+	/**
+	 * Call the onDeactivate lifecycle hook for a plugin
+	 */
+	private async callOnDeactivateHook(pluginId: string): Promise<void> {
+		try {
+			const pluginModule = await this.getPluginModule(pluginId);
+			if (pluginModule?.onDeactivate) {
+				await pluginModule.onDeactivate(this.pluginContext);
+			}
+		} catch (error) {
+			console.error(
+				`Error calling onDeactivate lifecycle hook for plugin ${pluginId}:`,
+				error,
+			);
+		}
+	}
+
+	/**
+	 * Call the onUninstall lifecycle hook for a plugin
+	 */
+	private async callOnUninstallHook(pluginId: string): Promise<void> {
+		try {
+			const pluginModule = await this.getPluginModule(pluginId);
+			if (pluginModule?.onUninstall) {
+				await pluginModule.onUninstall(this.pluginContext);
+			}
+		} catch (error) {
+			console.error(
+				`Error calling onUninstall lifecycle hook for plugin ${pluginId}:`,
+				error,
+			);
+		}
+	}
+
+	/**
+	 * Unload a plugin - remove from memory without database changes
+	 */
+	public async unloadPlugin(
+		pluginId: string,
+		pluginManager: IPluginManager,
+	): Promise<boolean> {
+		const plugin = this.loadedPlugins.get(pluginId);
+		if (!plugin) {
+			// Plugin is already unloaded
+			return true;
+		}
+
+		try {
+			pluginManager.emit("plugin:unloading", pluginId);
+
+			// Call plugin lifecycle hook
+			await this.callOnUnloadHook(pluginId);
+
+			// Remove from extension registry
+			this.removeFromExtensionRegistry(pluginId);
+
+			// Remove from loaded plugins
+			this.loadedPlugins.delete(pluginId);
+
+			pluginManager.emit("plugin:unloaded", pluginId);
+			return true;
+		} catch (error) {
+			this.handlePluginError(pluginId, error as Error, "unload");
+			return false;
+		}
+	}
+
+	/**
+	 * Call the onUnload lifecycle hook for a plugin
+	 */
+	private async callOnUnloadHook(pluginId: string): Promise<void> {
+		try {
+			const pluginModule = await this.getPluginModule(pluginId);
+			if (pluginModule?.onUnload) {
+				await pluginModule.onUnload(this.pluginContext);
+			}
+		} catch (error) {
+			console.error(
+				`Error calling onUnload lifecycle hook for plugin ${pluginId}:`,
+				error,
+			);
+		}
+	}
+
+	/**
 	 * Handle plugin errors
 	 */
 	private handlePluginError(
 		pluginId: string,
 		error: Error,
-		phase: "activate" | "deactivate" | "unload",
+		phase: "install" | "activate" | "deactivate" | "uninstall" | "unload",
 	): void {
 		console.error(`Plugin ${pluginId} error during ${phase}:`, error);
 	}
