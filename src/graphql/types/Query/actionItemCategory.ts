@@ -38,7 +38,7 @@ builder.queryField("actionItemCategory", (t) =>
 			const parsedArgs = queryActionItemCategoryInputSchema.parse(args.input);
 
 			const category =
-				await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+				await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 					where: (fields, operators) => operators.eq(fields.id, parsedArgs.id),
 				});
 

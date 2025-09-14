@@ -327,7 +327,7 @@ suite.concurrent("insertCollections", () => {
 
 			const categoryId = "123e4567-e89b-12d3-a456-426614174001";
 			await helpers.checkAndInsertData(
-				schema.actionCategoriesTable,
+				schema.actionItemCategoriesTable,
 				[
 					{
 						id: categoryId,
@@ -341,7 +341,7 @@ suite.concurrent("insertCollections", () => {
 						isDisabled: false,
 					},
 				],
-				schema.actionCategoriesTable.id,
+				schema.actionItemCategoriesTable.id,
 				1000,
 			);
 			const mockActionItem = {

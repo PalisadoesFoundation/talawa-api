@@ -19,7 +19,7 @@ import { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStat
 import { userMaritalStatusEnum } from "~/src/drizzle/enums/userMaritalStatus";
 import { userNatalSexEnum } from "~/src/drizzle/enums/userNatalSex";
 import { userRoleEnum } from "~/src/drizzle/enums/userRole";
-import { actionCategoriesTable } from "./actionCategories";
+import { actionItemCategoriesTable } from "./actionItemCategories";
 import { actionItemsTable } from "./actionItems";
 import { advertisementAttachmentsTable } from "./advertisementAttachments";
 import { advertisementsTable } from "./advertisements";
@@ -217,34 +217,34 @@ export const usersTable = pgTable(
 
 export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	/**
-	 * One to many relationship from `users` table to `actions` table.
+	 * One to many relationship from `users` table to `actionitems` table.
 	 */
-	actionsWhereAssignee: many(actionItemsTable, {
-		relationName: "actions.assignee_id:users.id",
+	actionItemsWhereAssignee: many(actionItemsTable, {
+		relationName: "actionitems.assignee_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `actions` table.
+	 * One to many relationship from `users` table to `actionitems` table.
 	 */
-	actionsWhereCreator: many(actionItemsTable, {
-		relationName: "actions.creator_id:users.id",
+	actionItemsWhereCreator: many(actionItemsTable, {
+		relationName: "actionitems.creator_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `actions` table.
+	 * One to many relationship from `users` table to `actionitems` table.
 	 */
-	actionsWhereUpdater: many(actionItemsTable, {
-		relationName: "actions.updater_id:users.id",
+	actionItemsWhereUpdater: many(actionItemsTable, {
+		relationName: "actionitems.updater_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `action_categories` table.
+	 * One to many relationship from `users` table to `actionitem_categories` table.
 	 */
-	actionCategoriesWhereCreator: many(actionCategoriesTable, {
-		relationName: "action_categories.creator_id:users.id",
+	actionItemCategoriesWhereCreator: many(actionItemCategoriesTable, {
+		relationName: "actionitem_categories.creator_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `action_categories` table.
+	 * One to many relationship from `users` table to `actionitem_categories` table.
 	 */
-	actionCategoriesWhereUpdater: many(actionCategoriesTable, {
-		relationName: "action_categories.updater_id:users.id",
+	actionItemCategoriesWhereUpdater: many(actionItemCategoriesTable, {
+		relationName: "actionitem_categories.updater_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `advertisement_attachments` table.

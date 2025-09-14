@@ -16,7 +16,7 @@ export const resolveCategory = async (
 	}
 
 	const existingCategory =
-		await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+		await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 			where: (fields, operators) =>
 				operators.eq(fields.id, parent.categoryId as string),
 		});

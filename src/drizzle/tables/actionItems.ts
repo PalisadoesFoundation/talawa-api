@@ -9,14 +9,14 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { actionCategoriesTable } from "./actionCategories";
+import { actionItemCategoriesTable } from "./actionItemCategories";
 import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
 export const actionItemsTable = pgTable(
-	"actions",
+	"actionitems",
 	{
 		assignedAt: timestamp("assigned_at", {
 			mode: "date",
@@ -27,10 +27,13 @@ export const actionItemsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
-		categoryId: uuid("category_id").references(() => actionCategoriesTable.id, {
-			onDelete: "set null",
-			onUpdate: "cascade",
-		}),
+		categoryId: uuid("category_id").references(
+			() => actionItemCategoriesTable.id,
+			{
+				onDelete: "set null",
+				onUpdate: "cascade",
+			},
+		),
 		completionAt: timestamp("completion_at", {
 			mode: "date",
 			precision: 3,
@@ -98,32 +101,32 @@ export const actionItemsTableRelations = relations(
 		assignee: one(usersTable, {
 			fields: [actionItemsTable.assigneeId],
 			references: [usersTable.id],
-			relationName: "actions.assignee_id:users.id",
+			relationName: "actionitems.assignee_id:users.id",
 		}),
-		category: one(actionCategoriesTable, {
+		category: one(actionItemCategoriesTable, {
 			fields: [actionItemsTable.categoryId],
-			references: [actionCategoriesTable.id],
-			relationName: "action_categories.id:actions.category_id",
+			references: [actionItemCategoriesTable.id],
+			relationName: "actionitem_categories.id:actionitems.category_id",
 		}),
 		creator: one(usersTable, {
 			fields: [actionItemsTable.creatorId],
 			references: [usersTable.id],
-			relationName: "actions.creator_id:users.id",
+			relationName: "actionitems.creator_id:users.id",
 		}),
 		event: one(eventsTable, {
 			fields: [actionItemsTable.eventId],
 			references: [eventsTable.id],
-			relationName: "actions.event_id:events.id",
+			relationName: "actionitems.event_id:events.id",
 		}),
 		organization: one(organizationsTable, {
 			fields: [actionItemsTable.organizationId],
 			references: [organizationsTable.id],
-			relationName: "actions.organization_id:organizations.id",
+			relationName: "actionitems.organization_id:organizations.id",
 		}),
 		updater: one(usersTable, {
 			fields: [actionItemsTable.updaterId],
 			references: [usersTable.id],
-			relationName: "actions.updater_id:users.id",
+			relationName: "actionitems.updater_id:users.id",
 		}),
 	}),
 );

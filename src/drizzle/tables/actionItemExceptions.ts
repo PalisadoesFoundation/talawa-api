@@ -7,13 +7,13 @@ import {
 	unique,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { actionCategoriesTable } from "./actionCategories";
+import { actionItemCategoriesTable } from "./actionItemCategories";
 import { actionItemsTable } from "./actionItems";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
 export const actionItemExceptionsTable = pgTable(
-	"action_exceptions",
+	"actionitem_exceptions",
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
 		actionId: uuid("action_id")
@@ -26,10 +26,13 @@ export const actionItemExceptionsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
-		categoryId: uuid("category_id").references(() => actionCategoriesTable.id, {
-			onDelete: "set null",
-			onUpdate: "cascade",
-		}),
+		categoryId: uuid("category_id").references(
+			() => actionItemCategoriesTable.id,
+			{
+				onDelete: "set null",
+				onUpdate: "cascade",
+			},
+		),
 		assignedAt: timestamp("assigned_at", {
 			mode: "date",
 			precision: 3,
@@ -64,9 +67,9 @@ export const actionItemExceptionsTableRelations = relations(
 			fields: [actionItemExceptionsTable.assigneeId],
 			references: [usersTable.id],
 		}),
-		category: one(actionCategoriesTable, {
+		category: one(actionItemCategoriesTable, {
 			fields: [actionItemExceptionsTable.categoryId],
-			references: [actionCategoriesTable.id],
+			references: [actionItemCategoriesTable.id],
 		}),
 	}),
 );
