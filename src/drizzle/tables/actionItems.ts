@@ -9,13 +9,14 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { actionCategoriesTable } from "./actionCategories";
+import { actionItemCategoriesTable } from "./actionItemCategories";
 import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
+import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
-export const actionsTable = pgTable(
-	"actions",
+export const actionItemsTable = pgTable(
+	"actionitems",
 	{
 		assignedAt: timestamp("assigned_at", {
 			mode: "date",
@@ -26,10 +27,13 @@ export const actionsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
-		categoryId: uuid("category_id").references(() => actionCategoriesTable.id, {
-			onDelete: "set null",
-			onUpdate: "cascade",
-		}),
+		categoryId: uuid("category_id").references(
+			() => actionItemCategoriesTable.id,
+			{
+				onDelete: "set null",
+				onUpdate: "cascade",
+			},
+		),
 		completionAt: timestamp("completion_at", {
 			mode: "date",
 			precision: 3,
@@ -50,8 +54,16 @@ export const actionsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
+		recurringEventInstanceId: uuid("recurring_event_instance_id").references(
+			() => recurringEventInstancesTable.id,
+			{
+				onDelete: "set null",
+				onUpdate: "cascade",
+			},
+		),
 		id: uuid("id").primaryKey().$default(uuidv7),
 		isCompleted: boolean("is_completed").notNull(),
+		isTemplate: boolean("is_template").default(false),
 		organizationId: uuid("organization_id")
 			.notNull()
 			.references(() => organizationsTable.id, {
@@ -83,38 +95,41 @@ export const actionsTable = pgTable(
 	],
 );
 
-export const actionsTableRelations = relations(actionsTable, ({ one }) => ({
-	assignee: one(usersTable, {
-		fields: [actionsTable.assigneeId],
-		references: [usersTable.id],
-		relationName: "actions.assignee_id:users.id",
+export const actionItemsTableRelations = relations(
+	actionItemsTable,
+	({ one }) => ({
+		assignee: one(usersTable, {
+			fields: [actionItemsTable.assigneeId],
+			references: [usersTable.id],
+			relationName: "actionitems.assignee_id:users.id",
+		}),
+		category: one(actionItemCategoriesTable, {
+			fields: [actionItemsTable.categoryId],
+			references: [actionItemCategoriesTable.id],
+			relationName: "actionitem_categories.id:actionitems.category_id",
+		}),
+		creator: one(usersTable, {
+			fields: [actionItemsTable.creatorId],
+			references: [usersTable.id],
+			relationName: "actionitems.creator_id:users.id",
+		}),
+		event: one(eventsTable, {
+			fields: [actionItemsTable.eventId],
+			references: [eventsTable.id],
+			relationName: "actionitems.event_id:events.id",
+		}),
+		organization: one(organizationsTable, {
+			fields: [actionItemsTable.organizationId],
+			references: [organizationsTable.id],
+			relationName: "actionitems.organization_id:organizations.id",
+		}),
+		updater: one(usersTable, {
+			fields: [actionItemsTable.updaterId],
+			references: [usersTable.id],
+			relationName: "actionitems.updater_id:users.id",
+		}),
 	}),
-	category: one(actionCategoriesTable, {
-		fields: [actionsTable.categoryId],
-		references: [actionCategoriesTable.id],
-		relationName: "action_categories.id:actions.category_id",
-	}),
-	creator: one(usersTable, {
-		fields: [actionsTable.creatorId],
-		references: [usersTable.id],
-		relationName: "actions.creator_id:users.id",
-	}),
-	event: one(eventsTable, {
-		fields: [actionsTable.eventId],
-		references: [eventsTable.id],
-		relationName: "actions.event_id:events.id",
-	}),
-	organization: one(organizationsTable, {
-		fields: [actionsTable.organizationId],
-		references: [organizationsTable.id],
-		relationName: "actions.organization_id:organizations.id",
-	}),
-	updater: one(usersTable, {
-		fields: [actionsTable.updaterId],
-		references: [usersTable.id],
-		relationName: "actions.updater_id:users.id",
-	}),
-}));
+);
 
-// ✅ Export the actionsTableInsertSchema
-export const actionsTableInsertSchema = createInsertSchema(actionsTable);
+export const actionItemsTableInsertSchema =
+	createInsertSchema(actionItemsTable);

@@ -1,11 +1,11 @@
 {
-  "id": "4359d958-9015-4de2-997d-53ebc22e3385",
+  "id": "d5ae55d5-6171-48cc-8135-3371f46e0bb8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.action_categories": {
-      "name": "action_categories",
+    "public.actionitem_categories": {
+      "name": "actionitem_categories",
       "schema": "",
       "columns": {
         "created_at": {
@@ -65,8 +65,8 @@
         }
       },
       "indexes": {
-        "action_categories_created_at_index": {
-          "name": "action_categories_created_at_index",
+        "actionitem_categories_created_at_index": {
+          "name": "actionitem_categories_created_at_index",
           "columns": [
             {
               "expression": "created_at",
@@ -80,8 +80,8 @@
           "method": "btree",
           "with": {}
         },
-        "action_categories_creator_id_index": {
-          "name": "action_categories_creator_id_index",
+        "actionitem_categories_creator_id_index": {
+          "name": "actionitem_categories_creator_id_index",
           "columns": [
             {
               "expression": "creator_id",
@@ -95,8 +95,8 @@
           "method": "btree",
           "with": {}
         },
-        "action_categories_name_index": {
-          "name": "action_categories_name_index",
+        "actionitem_categories_name_index": {
+          "name": "actionitem_categories_name_index",
           "columns": [
             {
               "expression": "name",
@@ -110,8 +110,8 @@
           "method": "btree",
           "with": {}
         },
-        "action_categories_name_organization_id_index": {
-          "name": "action_categories_name_organization_id_index",
+        "actionitem_categories_name_organization_id_index": {
+          "name": "actionitem_categories_name_organization_id_index",
           "columns": [
             {
               "expression": "name",
@@ -133,9 +133,9 @@
         }
       },
       "foreignKeys": {
-        "action_categories_creator_id_users_id_fk": {
-          "name": "action_categories_creator_id_users_id_fk",
-          "tableFrom": "action_categories",
+        "actionitem_categories_creator_id_users_id_fk": {
+          "name": "actionitem_categories_creator_id_users_id_fk",
+          "tableFrom": "actionitem_categories",
           "tableTo": "users",
           "columnsFrom": [
             "creator_id"
@@ -146,9 +146,9 @@
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
-        "action_categories_organization_id_organizations_id_fk": {
-          "name": "action_categories_organization_id_organizations_id_fk",
-          "tableFrom": "action_categories",
+        "actionitem_categories_organization_id_organizations_id_fk": {
+          "name": "actionitem_categories_organization_id_organizations_id_fk",
+          "tableFrom": "actionitem_categories",
           "tableTo": "organizations",
           "columnsFrom": [
             "organization_id"
@@ -159,9 +159,9 @@
           "onDelete": "cascade",
           "onUpdate": "cascade"
         },
-        "action_categories_updater_id_users_id_fk": {
-          "name": "action_categories_updater_id_users_id_fk",
-          "tableFrom": "action_categories",
+        "actionitem_categories_updater_id_users_id_fk": {
+          "name": "actionitem_categories_updater_id_users_id_fk",
+          "tableFrom": "actionitem_categories",
           "tableTo": "users",
           "columnsFrom": [
             "updater_id"
@@ -179,8 +179,160 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.actions": {
-      "name": "actions",
+    "public.actionitem_exceptions": {
+      "name": "actionitem_exceptions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "action_id": {
+          "name": "action_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assignee_id": {
+          "name": "assignee_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "category_id": {
+          "name": "category_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assigned_at": {
+          "name": "assigned_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pre_completion_notes": {
+          "name": "pre_completion_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "post_completion_notes": {
+          "name": "post_completion_notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed": {
+          "name": "completed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "deleted": {
+          "name": "deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "actionitem_exceptions_action_id_actionitems_id_fk": {
+          "name": "actionitem_exceptions_action_id_actionitems_id_fk",
+          "tableFrom": "actionitem_exceptions",
+          "tableTo": "actionitems",
+          "columnsFrom": [
+            "action_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "actionitem_exceptions_event_id_recurring_event_instances_id_fk": {
+          "name": "actionitem_exceptions_event_id_recurring_event_instances_id_fk",
+          "tableFrom": "actionitem_exceptions",
+          "tableTo": "recurring_event_instances",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "actionitem_exceptions_assignee_id_users_id_fk": {
+          "name": "actionitem_exceptions_assignee_id_users_id_fk",
+          "tableFrom": "actionitem_exceptions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "assignee_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "actionitem_exceptions_category_id_actionitem_categories_id_fk": {
+          "name": "actionitem_exceptions_category_id_actionitem_categories_id_fk",
+          "tableFrom": "actionitem_exceptions",
+          "tableTo": "actionitem_categories",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "actionitem_exceptions_action_id_event_id_unique": {
+          "name": "actionitem_exceptions_action_id_event_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "action_id",
+            "event_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.actionitems": {
+      "name": "actionitems",
       "schema": "",
       "columns": {
         "assigned_at": {
@@ -226,6 +378,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "recurring_event_instance_id": {
+          "name": "recurring_event_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "id": {
           "name": "id",
           "type": "uuid",
@@ -237,6 +395,13 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": true
+        },
+        "is_template": {
+          "name": "is_template",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         },
         "organization_id": {
           "name": "organization_id",
@@ -270,8 +435,8 @@
         }
       },
       "indexes": {
-        "actions_assigned_at_index": {
-          "name": "actions_assigned_at_index",
+        "actionitems_assigned_at_index": {
+          "name": "actionitems_assigned_at_index",
           "columns": [
             {
               "expression": "assigned_at",
@@ -285,8 +450,8 @@
           "method": "btree",
           "with": {}
         },
-        "actions_actor_id_index": {
-          "name": "actions_actor_id_index",
+        "actionitems_actor_id_index": {
+          "name": "actionitems_actor_id_index",
           "columns": [
             {
               "expression": "actor_id",
@@ -300,8 +465,8 @@
           "method": "btree",
           "with": {}
         },
-        "actions_category_id_index": {
-          "name": "actions_category_id_index",
+        "actionitems_category_id_index": {
+          "name": "actionitems_category_id_index",
           "columns": [
             {
               "expression": "category_id",
@@ -315,8 +480,8 @@
           "method": "btree",
           "with": {}
         },
-        "actions_completion_at_index": {
-          "name": "actions_completion_at_index",
+        "actionitems_completion_at_index": {
+          "name": "actionitems_completion_at_index",
           "columns": [
             {
               "expression": "completion_at",
@@ -330,8 +495,8 @@
           "method": "btree",
           "with": {}
         },
-        "actions_created_at_index": {
-          "name": "actions_created_at_index",
+        "actionitems_created_at_index": {
+          "name": "actionitems_created_at_index",
           "columns": [
             {
               "expression": "created_at",
@@ -345,8 +510,8 @@
           "method": "btree",
           "with": {}
         },
-        "actions_creator_id_index": {
-          "name": "actions_creator_id_index",
+        "actionitems_creator_id_index": {
+          "name": "actionitems_creator_id_index",
           "columns": [
             {
               "expression": "creator_id",
@@ -360,8 +525,8 @@
           "method": "btree",
           "with": {}
         },
-        "actions_organization_id_index": {
-          "name": "actions_organization_id_index",
+        "actionitems_organization_id_index": {
+          "name": "actionitems_organization_id_index",
           "columns": [
             {
               "expression": "organization_id",
@@ -377,9 +542,9 @@
         }
       },
       "foreignKeys": {
-        "actions_actor_id_users_id_fk": {
-          "name": "actions_actor_id_users_id_fk",
-          "tableFrom": "actions",
+        "actionitems_actor_id_users_id_fk": {
+          "name": "actionitems_actor_id_users_id_fk",
+          "tableFrom": "actionitems",
           "tableTo": "users",
           "columnsFrom": [
             "actor_id"
@@ -390,10 +555,10 @@
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
-        "actions_category_id_action_categories_id_fk": {
-          "name": "actions_category_id_action_categories_id_fk",
-          "tableFrom": "actions",
-          "tableTo": "action_categories",
+        "actionitems_category_id_actionitem_categories_id_fk": {
+          "name": "actionitems_category_id_actionitem_categories_id_fk",
+          "tableFrom": "actionitems",
+          "tableTo": "actionitem_categories",
           "columnsFrom": [
             "category_id"
           ],
@@ -403,9 +568,9 @@
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
-        "actions_creator_id_users_id_fk": {
-          "name": "actions_creator_id_users_id_fk",
-          "tableFrom": "actions",
+        "actionitems_creator_id_users_id_fk": {
+          "name": "actionitems_creator_id_users_id_fk",
+          "tableFrom": "actionitems",
           "tableTo": "users",
           "columnsFrom": [
             "creator_id"
@@ -416,9 +581,9 @@
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
-        "actions_event_id_events_id_fk": {
-          "name": "actions_event_id_events_id_fk",
-          "tableFrom": "actions",
+        "actionitems_event_id_events_id_fk": {
+          "name": "actionitems_event_id_events_id_fk",
+          "tableFrom": "actionitems",
           "tableTo": "events",
           "columnsFrom": [
             "event_id"
@@ -429,9 +594,22 @@
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
-        "actions_organization_id_organizations_id_fk": {
-          "name": "actions_organization_id_organizations_id_fk",
-          "tableFrom": "actions",
+        "actionitems_recurring_event_instance_id_recurring_event_instances_id_fk": {
+          "name": "actionitems_recurring_event_instance_id_recurring_event_instances_id_fk",
+          "tableFrom": "actionitems",
+          "tableTo": "recurring_event_instances",
+          "columnsFrom": [
+            "recurring_event_instance_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "actionitems_organization_id_organizations_id_fk": {
+          "name": "actionitems_organization_id_organizations_id_fk",
+          "tableFrom": "actionitems",
           "tableTo": "organizations",
           "columnsFrom": [
             "organization_id"
@@ -442,9 +620,9 @@
           "onDelete": "cascade",
           "onUpdate": "cascade"
         },
-        "actions_updater_id_users_id_fk": {
-          "name": "actions_updater_id_users_id_fk",
-          "tableFrom": "actions",
+        "actionitems_updater_id_users_id_fk": {
+          "name": "actionitems_updater_id_users_id_fk",
+          "tableFrom": "actionitems",
           "tableTo": "users",
           "columnsFrom": [
             "updater_id"

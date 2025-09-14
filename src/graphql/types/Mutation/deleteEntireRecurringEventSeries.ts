@@ -1,5 +1,6 @@
 import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
@@ -215,30 +216,54 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 						eq(recurringEventInstancesTable.originalSeriesId, originalSeriesId),
 					);
 
+				const templateIds = allTemplatesInSeries.map((template) => template.id);
+				const instanceIds = allInstancesInSeries.map((instance) => instance.id);
+
+				// First, delete all action items associated with the series
+				// This includes items linked to the base templates and individual instances
+				if (templateIds.length > 0) {
+					await tx
+						.delete(actionItemsTable)
+						.where(inArray(actionItemsTable.eventId, templateIds));
+				}
+				if (instanceIds.length > 0) {
+					await tx
+						.delete(actionItemsTable)
+						.where(
+							inArray(actionItemsTable.recurringEventInstanceId, instanceIds),
+						);
+				}
+
 				// Delete exceptions for all instances in the series
-				if (allInstancesInSeries.length > 0) {
-					await tx.delete(eventExceptionsTable).where(
-						inArray(
-							eventExceptionsTable.recurringEventInstanceId,
-							allInstancesInSeries.map((instance) => instance.id),
-						),
-					);
+				if (instanceIds.length > 0) {
+					await tx
+						.delete(eventExceptionsTable)
+						.where(
+							inArray(
+								eventExceptionsTable.recurringEventInstanceId,
+								instanceIds,
+							),
+						);
 				}
 
 				// Delete all instances in the series
-				await tx
-					.delete(recurringEventInstancesTable)
-					.where(
-						eq(recurringEventInstancesTable.originalSeriesId, originalSeriesId),
-					);
+				if (instanceIds.length > 0) {
+					await tx
+						.delete(recurringEventInstancesTable)
+						.where(
+							eq(
+								recurringEventInstancesTable.originalSeriesId,
+								originalSeriesId,
+							),
+						);
+				}
 
 				// Delete all recurrence rules in the series
 				await tx
 					.delete(recurrenceRulesTable)
 					.where(eq(recurrenceRulesTable.originalSeriesId, originalSeriesId));
 
-				// Delete all templates in the series
-				const templateIds = allTemplatesInSeries.map((template) => template.id);
+				// Finally, delete all templates in the series
 				const [deletedEvent] = await tx
 					.delete(eventsTable)
 					.where(inArray(eventsTable.id, templateIds))

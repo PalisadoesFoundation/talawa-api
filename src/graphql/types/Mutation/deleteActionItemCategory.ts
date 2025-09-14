@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { actionCategoriesTable } from "~/src/drizzle/tables/actionCategories";
+import { actionItemCategoriesTable } from "~/src/drizzle/tables/actionItemCategories";
 import { builder } from "~/src/graphql/builder";
 import { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/ActionItemCategory";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -36,9 +36,9 @@ builder.mutationField("deleteActionItemCategory", (t) =>
 
 			// Find the existing category
 			const existingCategory =
-				await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+				await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 					with: {
-						actionsWhereCategory: {
+						actionItemsWhereCategory: {
 							columns: { id: true },
 							limit: 1,
 						},
@@ -57,7 +57,7 @@ builder.mutationField("deleteActionItemCategory", (t) =>
 			}
 
 			// Check if category has associated action items
-			if (existingCategory.actionsWhereCategory.length > 0) {
+			if (existingCategory.actionItemsWhereCategory.length > 0) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "forbidden_action_on_arguments_associated_resources",
@@ -102,8 +102,8 @@ builder.mutationField("deleteActionItemCategory", (t) =>
 			}
 
 			const [deletedCategory] = await ctx.drizzleClient
-				.delete(actionCategoriesTable)
-				.where(eq(actionCategoriesTable.id, parsedArgs.input.id))
+				.delete(actionItemCategoriesTable)
+				.where(eq(actionItemCategoriesTable.id, parsedArgs.input.id))
 				.returning();
 
 			if (!deletedCategory) {
