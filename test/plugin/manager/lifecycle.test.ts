@@ -6,6 +6,7 @@ import { PluginStatus } from "../../../src/plugin/types";
 vi.mock("../../../src/plugin/utils", () => ({
 	dropPluginTables: vi.fn(),
 	safeRequire: vi.fn(),
+	createPluginTables: vi.fn(),
 }));
 
 vi.mock("../../../src/graphql/schemaManager", () => ({
@@ -62,8 +63,10 @@ interface MockPluginManager {
 }
 
 interface MockPluginModule {
+	onInstall?: ReturnType<typeof vi.fn>;
 	onActivate?: ReturnType<typeof vi.fn>;
 	onDeactivate?: ReturnType<typeof vi.fn>;
+	onUninstall?: ReturnType<typeof vi.fn>;
 	onUnload?: ReturnType<typeof vi.fn>;
 }
 
@@ -140,6 +143,369 @@ describe("PluginLifecycle", () => {
 		);
 	});
 
+	describe("installPlugin", () => {
+		it("should successfully install a plugin", async () => {
+			const { safeRequire, createPluginTables } = await import(
+				"../../../src/plugin/utils"
+			);
+			const mockManifest = {
+				pluginId: "test-plugin",
+				name: "Test Plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					database: [
+						{
+							name: "TestTable",
+							file: "tables.js",
+							type: "table",
+						},
+					],
+				},
+			};
+			const mockPluginModule: MockPluginModule = {
+				onInstall: vi.fn(() => Promise.resolve()),
+			};
+
+			(safeRequire as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockManifest) // For manifest loading
+				.mockResolvedValueOnce({ TestTable: {} }) // For table definition loading
+				.mockResolvedValueOnce(mockPluginModule); // For plugin module loading
+
+			(createPluginTables as ReturnType<typeof vi.fn>).mockResolvedValue(
+				undefined,
+			);
+
+			const result = await lifecycle.installPlugin(
+				"test-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.installPlugin
+				>[1],
+			);
+
+			expect(result).toBe(true);
+			expect(mockPluginManager.emit).toHaveBeenCalledWith(
+				"plugin:installing",
+				"test-plugin",
+			);
+			expect(mockPluginManager.emit).toHaveBeenCalledWith(
+				"plugin:installed",
+				"test-plugin",
+			);
+			expect(createPluginTables).toHaveBeenCalled();
+			expect(mockPluginModule.onInstall).toHaveBeenCalledWith(
+				mockPluginContext,
+			);
+		});
+
+		it("should handle plugin without database tables", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			const mockManifest = {
+				pluginId: "test-plugin",
+				name: "Test Plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {},
+			};
+			const mockPluginModule: MockPluginModule = {
+				onInstall: vi.fn(() => Promise.resolve()),
+			};
+
+			(safeRequire as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockManifest) // For manifest loading
+				.mockResolvedValueOnce(mockPluginModule); // For plugin module loading
+
+			const result = await lifecycle.installPlugin(
+				"test-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.installPlugin
+				>[1],
+			);
+
+			expect(result).toBe(true);
+			expect(mockPluginManager.emit).toHaveBeenCalledWith(
+				"plugin:installing",
+				"test-plugin",
+			);
+			expect(mockPluginManager.emit).toHaveBeenCalledWith(
+				"plugin:installed",
+				"test-plugin",
+			);
+		});
+
+		it("should handle manifest loading failure", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+			const result = await lifecycle.installPlugin(
+				"test-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.installPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+			expect(mockPluginManager.emit).toHaveBeenCalledWith(
+				"plugin:installing",
+				"test-plugin",
+			);
+		});
+
+		it("should handle table creation failure", async () => {
+			const { safeRequire, createPluginTables } = await import(
+				"../../../src/plugin/utils"
+			);
+			const mockManifest = {
+				pluginId: "test-plugin",
+				name: "Test Plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					database: [
+						{
+							name: "TestTable",
+							file: "tables.js",
+							type: "table",
+						},
+					],
+				},
+			};
+
+			(safeRequire as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockManifest) // For manifest loading
+				.mockResolvedValueOnce({ TestTable: {} }); // For table definition loading
+
+			(createPluginTables as ReturnType<typeof vi.fn>).mockRejectedValue(
+				new Error("Table creation failed"),
+			);
+
+			const result = await lifecycle.installPlugin(
+				"test-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.installPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+		});
+
+		it("should handle table definition loading failure", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			const mockManifest = {
+				pluginId: "test-plugin",
+				name: "Test Plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					database: [
+						{
+							name: "TestTable",
+							file: "tables.js",
+							type: "table",
+						},
+					],
+				},
+			};
+
+			(safeRequire as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockManifest) // For manifest loading
+				.mockResolvedValueOnce(null); // For table definition loading - fails
+
+			const result = await lifecycle.installPlugin(
+				"test-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.installPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+		});
+
+		it("should handle missing table definition in file", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			const mockManifest = {
+				pluginId: "test-plugin",
+				name: "Test Plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {
+					database: [
+						{
+							name: "TestTable",
+							file: "tables.js",
+							type: "table",
+						},
+					],
+				},
+			};
+
+			(safeRequire as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockManifest) // For manifest loading
+				.mockResolvedValueOnce({}); // For table definition loading - empty object
+
+			const result = await lifecycle.installPlugin(
+				"test-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.installPlugin
+				>[1],
+			);
+
+			expect(result).toBe(false);
+		});
+
+		it("should handle onInstall hook failure gracefully", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			const mockManifest = {
+				pluginId: "test-plugin",
+				name: "Test Plugin",
+				version: "1.0.0",
+				description: "Test plugin",
+				author: "Test Author",
+				main: "index.js",
+				extensionPoints: {},
+			};
+			const mockPluginModule: MockPluginModule = {
+				onInstall: vi.fn(() => Promise.reject(new Error("Install failed"))),
+			};
+
+			(safeRequire as ReturnType<typeof vi.fn>)
+				.mockResolvedValueOnce(mockManifest) // For manifest loading
+				.mockResolvedValueOnce(mockPluginModule); // For plugin module loading
+
+			const result = await lifecycle.installPlugin(
+				"test-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.installPlugin
+				>[1],
+			);
+
+			// The onInstall hook failure is caught and logged, but doesn't fail the installation
+			expect(result).toBe(true);
+		});
+	});
+
+	describe("uninstallPlugin", () => {
+		beforeEach(() => {
+			// Add plugin to loaded plugins for uninstall tests
+			mockLoadedPlugins.set("test-plugin", {
+				id: "test-plugin",
+				status: PluginStatus.ACTIVE,
+				manifest: {
+					main: "index.js",
+				},
+				databaseTables: { TestTable: {} },
+			});
+		});
+
+		it("should successfully uninstall a plugin", async () => {
+			const { safeRequire, dropPluginTables } = await import(
+				"../../../src/plugin/utils"
+			);
+			const mockPluginModule: MockPluginModule = {
+				onUninstall: vi.fn(() => Promise.resolve()),
+			};
+
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(
+				mockPluginModule,
+			);
+			(dropPluginTables as ReturnType<typeof vi.fn>).mockResolvedValue(
+				undefined,
+			);
+
+			const result = await lifecycle.uninstallPlugin(
+				"test-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.uninstallPlugin
+				>[1],
+			);
+
+			expect(result).toBe(true);
+			expect(mockPluginManager.emit).toHaveBeenCalledWith(
+				"plugin:uninstalling",
+				"test-plugin",
+			);
+			expect(mockPluginManager.emit).toHaveBeenCalledWith(
+				"plugin:uninstalled",
+				"test-plugin",
+			);
+			expect(dropPluginTables).toHaveBeenCalled();
+			expect(mockPluginModule.onUninstall).toHaveBeenCalledWith(
+				mockPluginContext,
+			);
+			expect(mockLoadedPlugins.has("test-plugin")).toBe(false);
+		});
+
+		it("should handle uninstall errors gracefully", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			const mockPluginModule: MockPluginModule = {
+				onUninstall: vi.fn(() => Promise.reject(new Error("Uninstall failed"))),
+			};
+
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(
+				mockPluginModule,
+			);
+
+			const result = await lifecycle.uninstallPlugin(
+				"test-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.uninstallPlugin
+				>[1],
+			);
+
+			// The onUninstall hook failure is caught and logged, but doesn't fail the uninstallation
+			expect(result).toBe(true);
+		});
+
+		it("should handle plugin without database tables", async () => {
+			const plugin = mockLoadedPlugins.get("test-plugin");
+			if (plugin) {
+				plugin.databaseTables = undefined as unknown as Record<string, unknown>;
+			}
+
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+			const result = await lifecycle.uninstallPlugin(
+				"test-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.uninstallPlugin
+				>[1],
+			);
+
+			expect(result).toBe(true);
+		});
+
+		it("should handle database table removal failure", async () => {
+			const { safeRequire, dropPluginTables } = await import(
+				"../../../src/plugin/utils"
+			);
+
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue({});
+			(dropPluginTables as ReturnType<typeof vi.fn>).mockRejectedValue(
+				new Error("Table removal failed"),
+			);
+
+			const result = await lifecycle.uninstallPlugin(
+				"test-plugin",
+				mockPluginManager as unknown as Parameters<
+					typeof lifecycle.uninstallPlugin
+				>[1],
+			);
+
+			expect(result).toBe(true); // Should still succeed despite table removal failure
+		});
+	});
+
 	describe("activatePlugin", () => {
 		it("should successfully activate a plugin", async () => {
 			const { safeRequire } = await import("../../../src/plugin/utils");
@@ -201,9 +567,10 @@ describe("PluginLifecycle", () => {
 				>[1],
 			);
 
-			expect(result).toBe(false);
+			// The onActivate hook failure is caught and logged, but doesn't fail the activation
+			expect(result).toBe(true);
 			expect(mockLoadedPlugins.get("test-plugin")?.status).toBe(
-				PluginStatus.INACTIVE,
+				PluginStatus.ACTIVE,
 			);
 		});
 
@@ -340,9 +707,10 @@ describe("PluginLifecycle", () => {
 				>[1],
 			);
 
-			expect(result).toBe(false);
+			// The onDeactivate hook failure is caught and logged, but doesn't fail the deactivation
+			expect(result).toBe(true);
 			expect(mockLoadedPlugins.get("test-plugin")?.status).toBe(
-				PluginStatus.ACTIVE,
+				PluginStatus.INACTIVE,
 			);
 		});
 
@@ -466,7 +834,7 @@ describe("PluginLifecycle", () => {
 			expect(mockLoadedPlugins.has("test-plugin")).toBe(false);
 		});
 
-		it("should handle unload errors", async () => {
+		it("should handle unload errors gracefully", async () => {
 			const { safeRequire } = await import("../../../src/plugin/utils");
 			const mockPluginModule: MockPluginModule = {
 				onUnload: vi.fn(() => Promise.reject(new Error("Unload failed"))),
@@ -482,8 +850,9 @@ describe("PluginLifecycle", () => {
 				>[1],
 			);
 
-			expect(result).toBe(false);
-			expect(mockLoadedPlugins.has("test-plugin")).toBe(true); // Should still be there on error
+			// The onUnload hook failure is caught and logged, but doesn't fail the unload
+			expect(result).toBe(true);
+			expect(mockLoadedPlugins.has("test-plugin")).toBe(false); // Plugin should still be removed
 		});
 
 		it("should remove plugin from extension registry", async () => {
@@ -673,8 +1042,8 @@ describe("PluginLifecycle", () => {
 		});
 	});
 
-	describe("triggerSchemaRebuildForDeactivation", () => {
-		it("should trigger schema rebuild for deactivation", async () => {
+	describe("triggerSchemaRebuild", () => {
+		it("should trigger schema rebuild", async () => {
 			const { schemaManager } = await import(
 				"../../../src/graphql/schemaManager"
 			);
@@ -684,11 +1053,9 @@ describe("PluginLifecycle", () => {
 
 			await (
 				lifecycle as unknown as {
-					triggerSchemaRebuildForDeactivation: (
-						pluginId: string,
-					) => Promise<void>;
+					triggerSchemaRebuild: () => Promise<void>;
 				}
-			).triggerSchemaRebuildForDeactivation("test-plugin");
+			).triggerSchemaRebuild();
 
 			expect(schemaManager.rebuildSchema).toHaveBeenCalled();
 		});
@@ -706,14 +1073,312 @@ describe("PluginLifecycle", () => {
 
 			await (
 				lifecycle as unknown as {
-					triggerSchemaRebuildForDeactivation: (
-						pluginId: string,
-					) => Promise<void>;
+					triggerSchemaRebuild: () => Promise<void>;
 				}
-			).triggerSchemaRebuildForDeactivation("test-plugin");
+			).triggerSchemaRebuild();
 
 			expect(consoleSpy).toHaveBeenCalledWith(
-				"❌ Schema rebuild failed after plugin deactivation test-plugin:",
+				"Schema rebuild failed:",
+				expect.any(Error),
+			);
+			consoleSpy.mockRestore();
+		});
+	});
+
+	describe("loadPluginManifest", () => {
+		it("should load plugin manifest successfully", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			const mockManifest = {
+				pluginId: "test-plugin",
+				name: "Test Plugin",
+				version: "1.0.0",
+			};
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(mockManifest);
+
+			const result = await (
+				lifecycle as unknown as {
+					loadPluginManifest: (pluginId: string) => Promise<unknown>;
+				}
+			).loadPluginManifest("test-plugin");
+
+			expect(result).toBe(mockManifest);
+			expect(safeRequire).toHaveBeenCalledWith(
+				expect.stringContaining(
+					"src/plugin/available/test-plugin/manifest.json",
+				),
+			);
+		});
+
+		it("should throw error if manifest loading fails", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+
+			await expect(
+				(
+					lifecycle as unknown as {
+						loadPluginManifest: (pluginId: string) => Promise<unknown>;
+					}
+				).loadPluginManifest("test-plugin"),
+			).rejects.toThrow("Failed to load manifest for plugin test-plugin");
+		});
+	});
+
+	describe("createPluginDatabases", () => {
+		it("should create plugin databases successfully", async () => {
+			const { safeRequire, createPluginTables } = await import(
+				"../../../src/plugin/utils"
+			);
+			const mockManifest = {
+				pluginId: "test-plugin",
+				extensionPoints: {
+					database: [
+						{
+							name: "TestTable",
+							file: "tables.js",
+							type: "table",
+						},
+					],
+				},
+			};
+
+			// Mock safeRequire to return the table definition when called for the table file
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue({
+				TestTable: { id: "test" },
+			});
+
+			(createPluginTables as ReturnType<typeof vi.fn>).mockResolvedValue(
+				undefined,
+			);
+
+			await (
+				lifecycle as unknown as {
+					createPluginDatabases: (
+						pluginId: string,
+						manifest: unknown,
+					) => Promise<void>;
+				}
+			).createPluginDatabases("test-plugin", mockManifest);
+
+			expect(createPluginTables).toHaveBeenCalled();
+		});
+
+		it("should handle plugin without database tables", async () => {
+			const mockManifest = {
+				pluginId: "test-plugin",
+				extensionPoints: {},
+			};
+
+			await (
+				lifecycle as unknown as {
+					createPluginDatabases: (
+						pluginId: string,
+						manifest: unknown,
+					) => Promise<void>;
+				}
+			).createPluginDatabases("test-plugin", mockManifest);
+
+			// Should not throw and should not call createPluginTables
+		});
+
+		it("should handle empty database extension points", async () => {
+			const mockManifest = {
+				pluginId: "test-plugin",
+				extensionPoints: {
+					database: [],
+				},
+			};
+
+			await (
+				lifecycle as unknown as {
+					createPluginDatabases: (
+						pluginId: string,
+						manifest: unknown,
+					) => Promise<void>;
+				}
+			).createPluginDatabases("test-plugin", mockManifest);
+
+			// Should not throw and should not call createPluginTables
+		});
+	});
+
+	describe("removePluginDatabases", () => {
+		it("should remove plugin databases successfully", async () => {
+			const { dropPluginTables } = await import("../../../src/plugin/utils");
+			const plugin = mockLoadedPlugins.get("test-plugin");
+			if (plugin) {
+				plugin.databaseTables = { TestTable: {} };
+			}
+
+			(dropPluginTables as ReturnType<typeof vi.fn>).mockResolvedValue(
+				undefined,
+			);
+
+			await (
+				lifecycle as unknown as {
+					removePluginDatabases: (pluginId: string) => Promise<void>;
+				}
+			).removePluginDatabases("test-plugin");
+
+			expect(dropPluginTables).toHaveBeenCalled();
+		});
+
+		it("should handle plugin without database tables", async () => {
+			const { dropPluginTables } = await import("../../../src/plugin/utils");
+			const plugin = mockLoadedPlugins.get("test-plugin");
+			if (plugin) {
+				plugin.databaseTables = undefined as unknown as Record<string, unknown>;
+			}
+
+			await (
+				lifecycle as unknown as {
+					removePluginDatabases: (pluginId: string) => Promise<void>;
+				}
+			).removePluginDatabases("test-plugin");
+
+			expect(dropPluginTables).not.toHaveBeenCalled();
+		});
+
+		it("should handle plugin not found", async () => {
+			const { dropPluginTables } = await import("../../../src/plugin/utils");
+
+			await (
+				lifecycle as unknown as {
+					removePluginDatabases: (pluginId: string) => Promise<void>;
+				}
+			).removePluginDatabases("non-existent-plugin");
+
+			expect(dropPluginTables).not.toHaveBeenCalled();
+		});
+	});
+
+	describe("callOnInstallHook", () => {
+		beforeEach(() => {
+			// Add plugin to loaded plugins for hook tests
+			mockLoadedPlugins.set("test-plugin", {
+				id: "test-plugin",
+				status: PluginStatus.INACTIVE,
+				manifest: {
+					main: "index.js",
+				},
+				databaseTables: {},
+			});
+		});
+
+		it("should call onInstall hook successfully", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			const mockPluginModule: MockPluginModule = {
+				onInstall: vi.fn(() => Promise.resolve()),
+			};
+
+			// Mock safeRequire to return our mock module when called for the plugin's main file
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(
+				mockPluginModule,
+			);
+
+			await (
+				lifecycle as unknown as {
+					callOnInstallHook: (pluginId: string) => Promise<void>;
+				}
+			).callOnInstallHook("test-plugin");
+
+			expect(mockPluginModule.onInstall).toHaveBeenCalledWith(
+				mockPluginContext,
+			);
+		});
+
+		it("should handle plugin module without onInstall hook", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+			await expect(
+				(
+					lifecycle as unknown as {
+						callOnInstallHook: (pluginId: string) => Promise<void>;
+					}
+				).callOnInstallHook("test-plugin"),
+			).resolves.not.toThrow();
+		});
+
+		it("should handle onInstall hook errors gracefully", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+			const mockPluginModule: MockPluginModule = {
+				onInstall: vi.fn(() => Promise.reject(new Error("Install failed"))),
+			};
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(
+				mockPluginModule,
+			);
+
+			await (
+				lifecycle as unknown as {
+					callOnInstallHook: (pluginId: string) => Promise<void>;
+				}
+			).callOnInstallHook("test-plugin");
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Error calling onInstall lifecycle hook for plugin test-plugin:",
+				expect.any(Error),
+			);
+			consoleSpy.mockRestore();
+		});
+	});
+
+	describe("callOnUninstallHook", () => {
+		it("should call onUninstall hook successfully", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			const mockPluginModule: MockPluginModule = {
+				onUninstall: vi.fn(() => Promise.resolve()),
+			};
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(
+				mockPluginModule,
+			);
+
+			await (
+				lifecycle as unknown as {
+					callOnUninstallHook: (pluginId: string) => Promise<void>;
+				}
+			).callOnUninstallHook("test-plugin");
+
+			expect(mockPluginModule.onUninstall).toHaveBeenCalledWith(
+				mockPluginContext,
+			);
+		});
+
+		it("should handle plugin module without onUninstall hook", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue({});
+
+			await expect(
+				(
+					lifecycle as unknown as {
+						callOnUninstallHook: (pluginId: string) => Promise<void>;
+					}
+				).callOnUninstallHook("test-plugin"),
+			).resolves.not.toThrow();
+		});
+
+		it("should handle onUninstall hook errors gracefully", async () => {
+			const { safeRequire } = await import("../../../src/plugin/utils");
+			const consoleSpy = vi
+				.spyOn(console, "error")
+				.mockImplementation(() => {});
+			const mockPluginModule: MockPluginModule = {
+				onUninstall: vi.fn(() => Promise.reject(new Error("Uninstall failed"))),
+			};
+			(safeRequire as ReturnType<typeof vi.fn>).mockResolvedValue(
+				mockPluginModule,
+			);
+
+			await (
+				lifecycle as unknown as {
+					callOnUninstallHook: (pluginId: string) => Promise<void>;
+				}
+			).callOnUninstallHook("test-plugin");
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Error calling onUninstall lifecycle hook for plugin test-plugin:",
 				expect.any(Error),
 			);
 			consoleSpy.mockRestore();

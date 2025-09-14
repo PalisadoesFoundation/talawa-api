@@ -1,5 +1,5 @@
 import type { GraphQLSchema } from "graphql";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { builder } from "~/src/graphql/builder";
 import { GraphQLSchemaManager } from "~/src/graphql/schemaManager";
 import type PluginManager from "~/src/plugin/manager";
@@ -17,6 +17,13 @@ vi.mock("~/src/graphql/scalars/index", () => ({}));
 vi.mock("~/src/graphql/enums/index", () => ({}));
 vi.mock("~/src/graphql/inputs/index", () => ({}));
 vi.mock("~/src/graphql/types/index", () => ({}));
+
+// Mock path module for plugin type imports
+vi.mock("node:path", () => ({
+	default: {
+		join: vi.fn((base: string, pluginId: string) => `${base}/${pluginId}`),
+	},
+}));
 
 // Mock GraphQL builder - define inline to avoid hoisting issues
 vi.mock("~/src/graphql/builder", () => ({
@@ -130,6 +137,7 @@ describe("GraphQLSchemaManager", () => {
 					graphqlResolvers: {},
 					databaseTables: {},
 					hooks: {},
+					webhooks: {},
 					status: PluginStatus.ACTIVE,
 				},
 			];
@@ -159,6 +167,7 @@ describe("GraphQLSchemaManager", () => {
 				},
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
 			};
 
 			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
@@ -208,6 +217,7 @@ describe("GraphQLSchemaManager", () => {
 					graphqlResolvers: {},
 					databaseTables: {},
 					hooks: {},
+					webhooks: {},
 					status: PluginStatus.ACTIVE,
 				},
 			];
@@ -218,6 +228,7 @@ describe("GraphQLSchemaManager", () => {
 				},
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
 			};
 
 			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
@@ -256,6 +267,7 @@ describe("GraphQLSchemaManager", () => {
 				},
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
 			};
 
 			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
@@ -273,6 +285,7 @@ describe("GraphQLSchemaManager", () => {
 					graphqlResolvers: {},
 					databaseTables: {},
 					hooks: {},
+					webhooks: {},
 					status: PluginStatus.ACTIVE,
 				},
 			]);
@@ -317,6 +330,7 @@ describe("GraphQLSchemaManager", () => {
 				},
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
 			};
 
 			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
@@ -334,6 +348,7 @@ describe("GraphQLSchemaManager", () => {
 					graphqlResolvers: {},
 					databaseTables: {},
 					hooks: {},
+					webhooks: {},
 					status: PluginStatus.ACTIVE,
 				},
 			]);
@@ -403,6 +418,27 @@ describe("GraphQLSchemaManager", () => {
 		});
 	});
 
+	describe("Core Schema Import", () => {
+		it("should import core schema components successfully", async () => {
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue({
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			});
+
+			const importCoreSchema = (
+				schemaManager as unknown as {
+					importCoreSchema: () => Promise<void>;
+				}
+			).importCoreSchema.bind(schemaManager);
+
+			await expect(importCoreSchema()).resolves.not.toThrow();
+		});
+	});
+
 	describe("Schema Management", () => {
 		it("should build initial schema correctly", async () => {
 			const mockSchema = {} as GraphQLSchema;
@@ -414,12 +450,57 @@ describe("GraphQLSchemaManager", () => {
 				graphql: { builderExtensions: [] },
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
 			});
 
 			const result = await schemaManager.buildInitialSchema();
 
 			expect(result).toBe(mockSchema);
 			expect(vi.mocked(builder).toSchema).toHaveBeenCalled();
+			expect(vi.mocked(mockPluginManager.on)).toHaveBeenCalledWith(
+				"schema:rebuild",
+				expect.any(Function),
+			);
+			expect(vi.mocked(mockPluginManager.on)).toHaveBeenCalledWith(
+				"plugin:deactivated",
+				expect.any(Function),
+			);
+		});
+
+		it("should call setupPluginListeners and importCoreSchema during buildInitialSchema", async () => {
+			const mockSchema = {} as GraphQLSchema;
+			vi.mocked(builder).toSchema.mockReturnValue(mockSchema);
+
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue({
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			});
+
+			// Spy on the private methods
+			const setupPluginListenersSpy = vi.spyOn(
+				schemaManager as unknown as {
+					setupPluginListeners: () => Promise<void>;
+				},
+				"setupPluginListeners",
+			);
+			const importCoreSchemaSpy = vi.spyOn(
+				schemaManager as unknown as {
+					importCoreSchema: () => Promise<void>;
+				},
+				"importCoreSchema",
+			);
+
+			await schemaManager.buildInitialSchema();
+
+			expect(setupPluginListenersSpy).toHaveBeenCalled();
+			expect(importCoreSchemaSpy).toHaveBeenCalled();
+
+			setupPluginListenersSpy.mockRestore();
+			importCoreSchemaSpy.mockRestore();
 		});
 
 		it("should rebuild schema correctly", async () => {
@@ -432,12 +513,40 @@ describe("GraphQLSchemaManager", () => {
 				graphql: { builderExtensions: [] },
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
 			});
 
 			const result = await schemaManager.rebuildSchema();
 
 			expect(result).toBe(mockSchema);
 			expect(vi.mocked(builder).toSchema).toHaveBeenCalled();
+		});
+
+		it("should call importCoreSchema during rebuildSchema", async () => {
+			const mockSchema = {} as GraphQLSchema;
+			vi.mocked(builder).toSchema.mockReturnValue(mockSchema);
+
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue({
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			});
+
+			// Spy on the private method
+			const importCoreSchemaSpy = vi.spyOn(
+				schemaManager as unknown as {
+					importCoreSchema: () => Promise<void>;
+				},
+				"importCoreSchema",
+			);
+
+			await schemaManager.rebuildSchema();
+
+			expect(importCoreSchemaSpy).toHaveBeenCalled();
+			importCoreSchemaSpy.mockRestore();
 		});
 
 		it("should handle concurrent rebuild requests", async () => {
@@ -450,6 +559,7 @@ describe("GraphQLSchemaManager", () => {
 				graphql: { builderExtensions: [] },
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
 			});
 
 			// First rebuild to set current schema
@@ -459,6 +569,29 @@ describe("GraphQLSchemaManager", () => {
 			const result = await schemaManager.rebuildSchema();
 
 			expect(result).toBe(mockSchema);
+		});
+
+		it("should throw error when concurrent rebuild has no current schema", async () => {
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue({
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			});
+
+			// Set isRebuilding to true to simulate concurrent access
+			(schemaManager as unknown as { isRebuilding: boolean }).isRebuilding =
+				true;
+
+			await expect(schemaManager.rebuildSchema()).rejects.toThrow(
+				"No current schema available during rebuild",
+			);
+
+			// Reset for other tests
+			(schemaManager as unknown as { isRebuilding: boolean }).isRebuilding =
+				false;
 		});
 
 		it("should handle rebuild errors gracefully", async () => {
@@ -472,6 +605,7 @@ describe("GraphQLSchemaManager", () => {
 				graphql: { builderExtensions: [] },
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
 			});
 
 			await expect(schemaManager.rebuildSchema()).rejects.toThrow(
@@ -494,11 +628,58 @@ describe("GraphQLSchemaManager", () => {
 				graphql: { builderExtensions: [] },
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
 			});
 
 			await schemaManager.rebuildSchema();
 
 			expect(mockCallback).toHaveBeenCalledWith(mockSchema);
+		});
+
+		it("should notify multiple callbacks on schema update", async () => {
+			const mockCallback1 = vi.fn();
+			const mockCallback2 = vi.fn();
+			const mockSchema = {} as GraphQLSchema;
+
+			schemaManager.onSchemaUpdate(mockCallback1);
+			schemaManager.onSchemaUpdate(mockCallback2);
+
+			vi.mocked(builder).toSchema.mockReturnValue(mockSchema);
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue({
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			});
+
+			await schemaManager.rebuildSchema();
+
+			expect(mockCallback1).toHaveBeenCalledWith(mockSchema);
+			expect(mockCallback2).toHaveBeenCalledWith(mockSchema);
+		});
+
+		it("should not notify callbacks during buildInitialSchema", async () => {
+			const mockCallback = vi.fn();
+			const mockSchema = {} as GraphQLSchema;
+
+			schemaManager.onSchemaUpdate(mockCallback);
+
+			vi.mocked(builder).toSchema.mockReturnValue(mockSchema);
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue({
+				graphql: { builderExtensions: [] },
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			});
+
+			await schemaManager.buildInitialSchema();
+
+			// Should not be called during initial build
+			expect(mockCallback).not.toHaveBeenCalled();
 		});
 
 		it("should remove schema update callbacks", async () => {
@@ -515,6 +696,7 @@ describe("GraphQLSchemaManager", () => {
 				graphql: { builderExtensions: [] },
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
 			});
 
 			await schemaManager.rebuildSchema();
@@ -537,6 +719,7 @@ describe("GraphQLSchemaManager", () => {
 				graphql: { builderExtensions: [] },
 				database: { tables: {}, enums: {}, relations: {} },
 				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
 			});
 
 			// Should not throw
@@ -604,6 +787,16 @@ describe("GraphQLSchemaManager", () => {
 	});
 
 	describe("Error Handling", () => {
+		let consoleSpy: ReturnType<typeof vi.spyOn>;
+
+		beforeEach(() => {
+			consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		});
+
+		afterEach(() => {
+			consoleSpy.mockRestore();
+		});
+
 		it("should handle missing plugin manager during extension registration", async () => {
 			vi.mocked(getPluginManagerInstance).mockReturnValue(null);
 
@@ -613,6 +806,10 @@ describe("GraphQLSchemaManager", () => {
 				}
 			).registerActivePluginExtensions.bind(schemaManager);
 			await registerActivePluginExtensions();
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Plugin Manager Not Available or Not Initialized",
+			);
 		});
 
 		it("should handle uninitialized plugin manager during extension registration", async () => {
@@ -624,6 +821,143 @@ describe("GraphQLSchemaManager", () => {
 				}
 			).registerActivePluginExtensions.bind(schemaManager);
 			await registerActivePluginExtensions();
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Plugin Manager Not Available or Not Initialized",
+			);
+		});
+
+		it("should log when no plugins are loaded", async () => {
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([]);
+
+			const registerActivePluginExtensions = (
+				schemaManager as unknown as {
+					registerActivePluginExtensions: () => Promise<void>;
+				}
+			).registerActivePluginExtensions.bind(schemaManager);
+			await registerActivePluginExtensions();
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"No plugins loaded, skipping plugin extension registration",
+			);
+		});
+
+		it("should log when plugin types file is not found", async () => {
+			const mockBuilderFunction = vi.fn();
+			const mockExtensionRegistry: IExtensionRegistry = {
+				graphql: {
+					builderExtensions: [
+						{
+							pluginId: "test_plugin",
+							type: "query",
+							fieldName: "getTestData",
+							builderFunction: mockBuilderFunction,
+						},
+					],
+				},
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			};
+
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([
+				{
+					id: "test_plugin",
+					manifest: {
+						name: "Test Plugin",
+						pluginId: "test_plugin",
+						version: "1.0.0",
+						description: "Test plugin",
+						author: "Test Author",
+						main: "index.js",
+					},
+					graphqlResolvers: {},
+					databaseTables: {},
+					hooks: {},
+					webhooks: {},
+					status: PluginStatus.ACTIVE,
+				},
+			]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue(
+				mockExtensionRegistry,
+			);
+			vi.mocked(mockPluginManager.isPluginActive).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getPluginsDirectory).mockReturnValue(
+				"/test/plugins",
+			);
+
+			const registerActivePluginExtensions = (
+				schemaManager as unknown as {
+					registerActivePluginExtensions: () => Promise<void>;
+				}
+			).registerActivePluginExtensions.bind(schemaManager);
+			await registerActivePluginExtensions();
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"No types file found for plugin test_plugin",
+			);
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Registered builder extension: test_plugin.getTestData",
+			);
+		});
+
+		it("should log successful builder extension registration", async () => {
+			const mockBuilderFunction = vi.fn();
+			const mockExtensionRegistry: IExtensionRegistry = {
+				graphql: {
+					builderExtensions: [
+						{
+							pluginId: "test_plugin",
+							type: "query",
+							fieldName: "getTestData",
+							builderFunction: mockBuilderFunction,
+						},
+					],
+				},
+				database: { tables: {}, enums: {}, relations: {} },
+				hooks: { pre: {}, post: {} },
+				webhooks: { handlers: {} },
+			};
+
+			vi.mocked(mockPluginManager.isSystemInitialized).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getLoadedPlugins).mockReturnValue([
+				{
+					id: "test_plugin",
+					manifest: {
+						name: "Test Plugin",
+						pluginId: "test_plugin",
+						version: "1.0.0",
+						description: "Test plugin",
+						author: "Test Author",
+						main: "index.js",
+					},
+					graphqlResolvers: {},
+					databaseTables: {},
+					hooks: {},
+					webhooks: {},
+					status: PluginStatus.ACTIVE,
+				},
+			]);
+			vi.mocked(mockPluginManager.getExtensionRegistry).mockReturnValue(
+				mockExtensionRegistry,
+			);
+			vi.mocked(mockPluginManager.isPluginActive).mockReturnValue(true);
+			vi.mocked(mockPluginManager.getPluginsDirectory).mockReturnValue(
+				"/test/plugins",
+			);
+
+			const registerActivePluginExtensions = (
+				schemaManager as unknown as {
+					registerActivePluginExtensions: () => Promise<void>;
+				}
+			).registerActivePluginExtensions.bind(schemaManager);
+			await registerActivePluginExtensions();
+
+			expect(consoleSpy).toHaveBeenCalledWith(
+				"Registered builder extension: test_plugin.getTestData",
+			);
 		});
 	});
 });
