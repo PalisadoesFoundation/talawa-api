@@ -39,10 +39,6 @@ ActionItem.implement({
 			description: "Notes added after completing the action item.",
 			nullable: true,
 		}),
-		recurringEventInstanceId: t.exposeString("recurringEventInstanceId", {
-			description: "The ID of the recurring event instance.",
-			nullable: true,
-		}),
 		isInstanceException: t.field({
 			type: "Boolean",
 			description:
