@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { actionCategoriesTable } from "~/src/drizzle/tables/actionCategories";
+import { actionItemCategoriesTable } from "~/src/drizzle/tables/actionItemCategories";
 import { builder } from "~/src/graphql/builder";
 import { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/ActionItemCategory";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -113,7 +113,7 @@ builder.mutationField("createActionItemCategory", (t) =>
 
 			// Check if category name already exists in the organization
 			const existingCategory =
-				await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+				await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 					columns: { id: true },
 					where: (fields, operators) =>
 						sql`${operators.eq(
@@ -141,7 +141,7 @@ builder.mutationField("createActionItemCategory", (t) =>
 			}
 
 			const [createdCategory] = await ctx.drizzleClient
-				.insert(actionCategoriesTable)
+				.insert(actionItemCategoriesTable)
 				.values({
 					id: uuidv7(),
 					name: parsedArgs.input.name,
