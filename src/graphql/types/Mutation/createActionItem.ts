@@ -94,7 +94,7 @@ builder.mutationField("createActionItem", (t) =>
 			}
 
 			const existingCategory =
-				await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+				await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 					columns: { id: true },
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.categoryId),

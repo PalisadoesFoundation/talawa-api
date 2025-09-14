@@ -56,9 +56,6 @@ type ActionItem {
   """The recurring event instance associated with this action item."""
   recurringEventInstance: Event
 
-  """The ID of the recurring event instance."""
-  recurringEventInstanceId: String
-
   """User who last updated the action item."""
   updater: User
 }

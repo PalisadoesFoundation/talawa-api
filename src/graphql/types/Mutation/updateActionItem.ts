@@ -150,7 +150,7 @@ builder.mutationField("updateActionItem", (t) =>
 				const categoryId = parsedArgs.input.categoryId;
 
 				const existingCategory =
-					await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+					await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 						columns: {
 							name: true,
 						},

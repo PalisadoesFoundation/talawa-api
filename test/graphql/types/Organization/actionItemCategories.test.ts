@@ -303,7 +303,7 @@ suite("Organization.actionItemCategories", () => {
 		);
 
 		// Mock action item categories query to return empty array
-		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue(
+		mocks.drizzleClient.query.actionItemCategoriesTable.findMany.mockResolvedValue(
 			[],
 		);
 
@@ -357,7 +357,7 @@ suite("Organization.actionItemCategories", () => {
 		);
 
 		// Mock action item categories query to return empty array
-		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue(
+		mocks.drizzleClient.query.actionItemCategoriesTable.findMany.mockResolvedValue(
 			[],
 		);
 
@@ -411,19 +411,21 @@ suite("Organization.actionItemCategories", () => {
 		);
 
 		// Mock action item categories query to return one result (to avoid empty cursor error)
-		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue([
-			{
-				id: "cat-123",
-				name: "Existing Category",
-				description: "A test category",
-				organizationId: mockOrganization.id,
-				isDisabled: false,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-				creatorId: "creator-123",
-				updaterId: "updater-123",
-			},
-		]);
+		mocks.drizzleClient.query.actionItemCategoriesTable.findMany.mockResolvedValue(
+			[
+				{
+					id: "cat-123",
+					name: "Existing Category",
+					description: "A test category",
+					organizationId: mockOrganization.id,
+					isDisabled: false,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+					creatorId: "creator-123",
+					updaterId: "updater-123",
+				},
+			],
+		);
 
 		// Create a valid cursor using base64url encoding
 		const validCursorData = {
@@ -444,7 +446,7 @@ suite("Organization.actionItemCategories", () => {
 
 		// Verify that findMany was called with parsed cursor data
 		expect(
-			mocks.drizzleClient.query.actionCategoriesTable.findMany,
+			mocks.drizzleClient.query.actionItemCategoriesTable.findMany,
 		).toHaveBeenCalled();
 	});
 
@@ -615,7 +617,7 @@ suite("Organization.actionItemCategories", () => {
 		);
 
 		// Mock database to return empty results (simulating no action item categories found)
-		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue(
+		mocks.drizzleClient.query.actionItemCategoriesTable.findMany.mockResolvedValue(
 			[],
 		);
 
@@ -689,7 +691,7 @@ suite("Organization.actionItemCategories", () => {
 		);
 
 		// Mock database to return empty results (simulating no action item categories found)
-		mocks.drizzleClient.query.actionCategoriesTable.findMany.mockResolvedValue(
+		mocks.drizzleClient.query.actionItemCategoriesTable.findMany.mockResolvedValue(
 			[],
 		);
 
