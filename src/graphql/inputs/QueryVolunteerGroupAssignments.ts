@@ -1,9 +1,12 @@
 import { z } from "zod";
 import { volunteerGroupAssignmentsTableInsertSchema } from "~/src/drizzle/tables/volunteerGroupAssignments";
+import { volunteerGroupsTableInsertSchema } from "~/src/drizzle/tables/volunteerGroups";
 import { builder } from "~/src/graphql/builder";
 
 export const queryVolunteerGroupAssignmentsInputSchema = z.object({
-	groupId: volunteerGroupAssignmentsTableInsertSchema.shape.groupId,
+	groupId: volunteerGroupAssignmentsTableInsertSchema.shape.groupId.optional(),
+	eventId: volunteerGroupsTableInsertSchema.shape.eventId.optional(),
+	assigneeId: volunteerGroupAssignmentsTableInsertSchema.shape.assigneeId.optional(),
 });
 
 export const QueryVolunteerGroupAssignmentsInput = builder
@@ -15,7 +18,15 @@ export const QueryVolunteerGroupAssignmentsInput = builder
 		fields: (t) => ({
 			groupId: t.string({
 				description: "Global id of the group.",
-				required: true,
+				required: false,
+			}),
+			eventId: t.string({
+				description: "Global id of the event.",
+				required: false,
+			}),
+			assigneeId: t.string({
+				description: "Global id of the user.",
+				required: false,
 			}),
 		}),
 	});

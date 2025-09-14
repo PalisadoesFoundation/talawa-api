@@ -2444,6 +2444,9 @@ input MutationCreateVolunteerGroupAssignmentsInput {
   """Global identifier of the user."""
   assigneeId: ID!
 
+  """Global identifier of the event."""
+  eventId: ID!
+
   """Global identifier of the group."""
   groupId: ID!
 
@@ -4232,8 +4235,14 @@ input QueryVenueInput {
 
 """"""
 input QueryVolunteerGroupAssignmentsInput {
+  """Global id of the user."""
+  assigneeId: String
+
+  """Global id of the event."""
+  eventId: String
+
   """Global id of the group."""
-  groupId: String!
+  groupId: String
 }
 
 """
