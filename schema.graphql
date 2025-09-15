@@ -715,6 +715,77 @@ type EventVenuesConnectionEdge {
   node: Venue
 }
 
+type EventVolunteer {
+  """Date time at the time the event volunteer was created."""
+  createdAt: DateTime
+
+  """The user who created this volunteer record."""
+  creator: User
+
+  """The event being volunteered for."""
+  event: Event
+
+  """Boolean indicating if the volunteer has accepted the invitation."""
+  hasAccepted: Boolean
+
+  """Total hours volunteered by this volunteer for this event."""
+  hoursVolunteered: Float
+
+  """Primary unique identifier of the event volunteer."""
+  id: ID
+
+  """Boolean indicating if the volunteer profile is public."""
+  isPublic: Boolean
+
+  """Date time at the time the event volunteer was last updated."""
+  updatedAt: DateTime
+
+  """The user who last updated this volunteer record."""
+  updater: User
+
+  """The user who is volunteering for the event."""
+  user: User
+}
+
+"""Input for creating an event volunteer."""
+input EventVolunteerInput {
+  """The ID of the event being volunteered for."""
+  eventId: ID!
+
+  """Optional group ID for compatibility with old API."""
+  groupId: ID
+
+  """The ID of the user volunteering for the event."""
+  userId: ID!
+}
+
+"""Input for filtering event volunteers."""
+input EventVolunteerWhereInput {
+  """Filter by event ID."""
+  eventId: ID
+
+  """Filter by group ID (for compatibility)."""
+  groupId: ID
+
+  """Filter by acceptance status."""
+  hasAccepted: Boolean
+
+  """Filter by volunteer ID."""
+  id: ID
+
+  """Filter by volunteer name containing this string."""
+  name_contains: String
+}
+
+"""Enum for ordering event volunteers."""
+enum EventVolunteersOrderByInput {
+  """Order by hours volunteered in ascending order."""
+  hoursVolunteered_ASC
+
+  """Order by hours volunteered in descending order."""
+  hoursVolunteered_DESC
+}
+
 input EventsByOrganizationIdInput {
   organizationId: ID!
 }
@@ -1627,6 +1698,9 @@ type Mutation {
   """Mutation field to create an event."""
   createEvent(input: MutationCreateEventInput!): Event
 
+  """Mutation field to create an event volunteer."""
+  createEventVolunteer(data: EventVolunteerInput!): EventVolunteer
+
   """Mutation field to create a fund."""
   createFund(input: MutationCreateFundInput!): Fund
 
@@ -1719,6 +1793,12 @@ type Mutation {
     """Input for deleting entire recurring event series."""
     input: MutationDeleteEntireRecurringEventSeriesInput!
   ): Event
+
+  """Mutation field to delete an event volunteer."""
+  deleteEventVolunteer(
+    """The ID of the event volunteer to delete."""
+    id: ID!
+  ): EventVolunteer
 
   """Mutation field to delete a fund."""
   deleteFund(input: MutationDeleteFundInput!): Fund
@@ -1868,6 +1948,15 @@ type Mutation {
     """Input for updating all events in a recurring event series."""
     input: MutationUpdateEntireRecurringEventSeriesInput!
   ): Event
+
+  """Mutation field to update an event volunteer."""
+  updateEventVolunteer(
+    """The data to update the event volunteer with."""
+    data: UpdateEventVolunteerInput
+
+    """The ID of the event volunteer to update."""
+    id: ID!
+  ): EventVolunteer
 
   """Mutation field to update a fund."""
   updateFund(input: MutationUpdateFundInput!): Fund
@@ -3873,6 +3962,15 @@ type Query {
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Query field to get event volunteers."""
+  getEventVolunteers(
+    """Order criteria for event volunteers."""
+    orderBy: EventVolunteersOrderByInput
+
+    """Filter criteria for event volunteers."""
+    where: EventVolunteerWhereInput!
+  ): [EventVolunteer!]
+
   """Query field to get fund campaign pledges associated with a user."""
   getPledgesByUserId(
     """Input parameters to fetch pledges by userId."""
@@ -4308,6 +4406,18 @@ type TagFolderTagsConnection {
 type TagFolderTagsConnectionEdge {
   cursor: String!
   node: Tag
+}
+
+"""Input for updating an event volunteer."""
+input UpdateEventVolunteerInput {
+  """List of action item IDs assigned to the volunteer."""
+  assignments: [ID!]
+
+  """Whether the volunteer has accepted the invitation."""
+  hasAccepted: Boolean
+
+  """Whether the volunteer profile is public."""
+  isPublic: Boolean
 }
 
 input UpdatePluginInput {

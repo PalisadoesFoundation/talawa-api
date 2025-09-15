@@ -1238,7 +1238,6 @@ export const Mutation_createPostVote = gql(`
     }
   }`);
 
-
 export const Query_chat = gql(`
   query Query_chat($input: QueryChatInput!) {
     chat(input: $input) {

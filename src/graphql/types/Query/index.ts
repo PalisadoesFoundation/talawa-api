@@ -30,3 +30,4 @@ import "./organizations";
 import "./hasUserVoted";
 import "./actionItemCategory";
 import "./actionItemsByUser";
+import "./getEventVolunteers";

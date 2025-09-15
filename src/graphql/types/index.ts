@@ -13,6 +13,7 @@ import "./Comment/index";
 import "./Community/index";
 import "./Event/index";
 import "./EventAttachment/index";
+import "./EventVolunteer/index";
 import "./Fund/index";
 import "./FundCampaign/index";
 import "./FundCampaignPledge/index";

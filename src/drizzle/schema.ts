@@ -124,5 +124,9 @@ export {
 	venueBookingsTable,
 	venueBookingsTableRelations,
 } from "./tables/venueBookings";
+export {
+	eventVolunteersTable,
+	eventVolunteersTableRelations,
+} from "./tables/EventVolunteer";
 export { venuesTable, venuesTableRelations } from "./tables/venues";
 export { pluginsTable } from "./tables/plugins";
