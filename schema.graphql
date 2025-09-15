@@ -4514,7 +4514,7 @@ type User {
   """
   organizationsWhereMember(after: String, before: String, filter: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
 
-  """Organization where the user has requested membership"""
+   """IDs of organizations where the user currently has pending membership requests."""
   orgIdWhereMembershipRequested: [ID]!
 
   """Postal code of the user."""
