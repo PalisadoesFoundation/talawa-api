@@ -1,8 +1,8 @@
 import type { z } from "zod";
-import { actionsTableInsertSchema } from "~/src/drizzle/tables/actions";
+import { actionItemsTableInsertSchema } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 
-export const MutationUpdateActionItemInputSchema = actionsTableInsertSchema
+export const MutationUpdateActionItemInputSchema = actionItemsTableInsertSchema
 	.pick({
 		postCompletionNotes: true,
 		preCompletionNotes: true,
@@ -11,7 +11,7 @@ export const MutationUpdateActionItemInputSchema = actionsTableInsertSchema
 		isCompleted: true,
 	})
 	.extend({
-		id: actionsTableInsertSchema.shape.id.unwrap(), // require the id for update
+		id: actionItemsTableInsertSchema.shape.id.unwrap(), // require the id for update
 	});
 
 export const MutationUpdateActionItemInput = builder

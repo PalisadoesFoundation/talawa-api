@@ -306,7 +306,10 @@ suite("Organization.advertisement Field with Completion Status", () => {
 			const advertisements = result.data?.organization?.advertisements;
 			assertToBeNonNullish(advertisements);
 			expect(advertisements.edges).toHaveLength(2);
-			const adNames = advertisements?.edges?.map((edge) => edge?.node?.name);
+			const adNames = advertisements?.edges?.map(
+				(edge: { node?: { name?: string | null } | null } | null) =>
+					edge?.node?.name,
+			);
 			expect(adNames).toContain("Active Advertisement");
 			expect(adNames).toContain("Completed Advertisement");
 		});
@@ -482,12 +485,24 @@ suite("Organization.advertisement Field with Completion Status", () => {
 
 			const firstPageAdNames =
 				firstPage.edges
-					?.filter((edge) => edge?.node != null)
-					.map((edge) => edge?.node?.name) ?? [];
+					?.filter(
+						(edge: { node?: { name?: string | null } | null } | null) =>
+							edge?.node != null,
+					)
+					.map(
+						(edge: { node?: { name?: string | null } | null } | null) =>
+							edge?.node?.name,
+					) ?? [];
 			const secondPageAdNames =
 				secondPage.edges
-					?.filter((edge) => edge?.node != null)
-					.map((edge) => edge?.node?.name) ?? [];
+					?.filter(
+						(edge: { node?: { name?: string | null } | null } | null) =>
+							edge?.node != null,
+					)
+					.map(
+						(edge: { node?: { name?: string | null } | null } | null) =>
+							edge?.node?.name,
+					) ?? [];
 
 			if (secondPageAdNames) {
 				for (const name of secondPageAdNames) {

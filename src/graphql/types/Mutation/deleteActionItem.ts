@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { actionsTable } from "~/src/drizzle/tables/actions";
+import { actionItemExceptionsTable } from "~/src/drizzle/tables/actionItemExceptions";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -60,7 +61,7 @@ builder.mutationField("deleteActionItem", (t) =>
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
-				ctx.drizzleClient.query.actionsTable.findFirst({
+				ctx.drizzleClient.query.actionItemsTable.findFirst({
 					columns: {
 						organizationId: true,
 					},
@@ -91,9 +92,15 @@ builder.mutationField("deleteActionItem", (t) =>
 				});
 			}
 
+			// First, delete all action exceptions for this action item
+			await ctx.drizzleClient
+				.delete(actionItemExceptionsTable)
+				.where(eq(actionItemExceptionsTable.actionId, parsedArgs.input.id));
+
+			// Then delete the main action item
 			const [deletedActionItem] = await ctx.drizzleClient
-				.delete(actionsTable)
-				.where(eq(actionsTable.id, parsedArgs.input.id))
+				.delete(actionItemsTable)
+				.where(eq(actionItemsTable.id, parsedArgs.input.id))
 				.returning();
 
 			if (!deletedActionItem) {

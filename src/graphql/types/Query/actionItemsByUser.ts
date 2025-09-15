@@ -94,87 +94,11 @@ export const actionItemsByUser = builder.queryField("actionItemsByUser", (t) =>
 				});
 			}
 
-			// Build the query for action items
-			const actionItemsQueryBuilder =
-				ctx.drizzleClient.query.actionsTable.findMany({
-					with: {
-						assignee: true,
-						category: true,
-						creator: true,
-						event: true,
-						organization: {
-							columns: {
-								countryCode: true,
-							},
-							with: {
-								membershipsWhereOrganization: {
-									columns: {
-										role: true,
-									},
-									where: (fields, operators) =>
-										operators.eq(fields.memberId, currentUserId),
-								},
-							},
-						},
-					},
-					where: (fields, operators) => {
-						// Fix: Handle nullable fields properly
-						const userId = parsedArgs.input.userId as string;
-
-						// Start with the base condition
-						const baseCondition = operators.eq(fields.assigneeId, userId);
-
-						// Add organization filter if provided
-						if (parsedArgs.input.organizationId) {
-							const orgId = parsedArgs.input.organizationId;
-							return operators.and(
-								baseCondition,
-								operators.eq(fields.organizationId, orgId),
-							);
-						}
-
-						return baseCondition;
-					},
-				});
-
-			// Execute the query
-			const actionItems = await actionItemsQueryBuilder;
-
-			// If no action items found, return an empty array
-			if (!actionItems.length) {
-				return [];
-			}
-
-			// Check permissions
-			// If current user is the target user, they can see their own action items
-			if (currentUserId === parsedArgs.input.userId) {
-				return actionItems;
-			}
-
-			// If current user is an admin, they can see any user's action items
-			if (currentUser.role === "administrator") {
-				return actionItems;
-			}
-
-			// Check if organization ID was provided and validate membership
-			if (parsedArgs.input.organizationId) {
-				const currentUserOrganizationMembership =
-					actionItems[0]?.organization?.membershipsWhereOrganization?.[0];
-
-				// User must be an admin in the organization to view another user's action items
-				if (
-					!currentUserOrganizationMembership ||
-					currentUserOrganizationMembership.role !== "administrator"
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [{ argumentPath: ["input", "userId"] }],
-						},
-					});
-				}
-			} else {
-				// If no organization specified, only admins can view other users' action items
+			// Authorization check
+			if (
+				currentUserId !== parsedArgs.input.userId &&
+				currentUser.role !== "administrator"
+			) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unauthorized_action_on_arguments_associated_resources",
@@ -182,6 +106,28 @@ export const actionItemsByUser = builder.queryField("actionItemsByUser", (t) =>
 					},
 				});
 			}
+
+			// Build the query for action items
+			const actionItems =
+				await ctx.drizzleClient.query.actionItemsTable.findMany({
+					where: (fields, operators) => {
+						const conditions = [
+							operators.eq(
+								fields.assigneeId,
+								parsedArgs.input.userId as string,
+							),
+						];
+						if (parsedArgs.input.organizationId) {
+							conditions.push(
+								operators.eq(
+									fields.organizationId,
+									parsedArgs.input.organizationId,
+								),
+							);
+						}
+						return operators.and(...conditions);
+					},
+				});
 
 			return actionItems;
 		},
