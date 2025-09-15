@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { actionCategoriesTable } from "~/src/drizzle/tables/actionCategories";
+import { actionItemCategoriesTable } from "~/src/drizzle/tables/actionItemCategories";
 import { builder } from "~/src/graphql/builder";
 import { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/ActionItemCategory";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -45,7 +45,7 @@ builder.mutationField("updateActionItemCategory", (t) =>
 
 			// Find the existing category
 			const existingCategory =
-				await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+				await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.id),
 				});
@@ -96,7 +96,7 @@ builder.mutationField("updateActionItemCategory", (t) =>
 				const newName = parsedArgs.input.name;
 
 				const duplicateCategory =
-					await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+					await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 						columns: { id: true },
 						where: (fields, operators) =>
 							sql`${operators.eq(fields.name, newName)} AND ${operators.eq(
@@ -138,9 +138,9 @@ builder.mutationField("updateActionItemCategory", (t) =>
 			}
 
 			const [updatedCategory] = await ctx.drizzleClient
-				.update(actionCategoriesTable)
+				.update(actionItemCategoriesTable)
 				.set(updateData)
-				.where(eq(actionCategoriesTable.id, parsedArgs.input.id))
+				.where(eq(actionItemCategoriesTable.id, parsedArgs.input.id))
 				.returning();
 
 			if (!updatedCategory) {

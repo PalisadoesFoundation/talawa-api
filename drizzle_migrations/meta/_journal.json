@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1757832957902,
+      "tag": "20250914065557_robust_tombstone",
+      "breakpoints": true
+    }
+  ]
 }

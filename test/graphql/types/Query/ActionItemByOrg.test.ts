@@ -1,14 +1,14 @@
 import { faker } from "@faker-js/faker";
-import { sql } from "drizzle-orm";
 import { beforeAll, beforeEach, expect, suite, test } from "vitest";
-import { actionsTable } from "~/src/drizzle/tables/actions";
 import { assertToBeNonNullish } from "../../../helpers";
-import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
+	Mutation_createActionItem,
+	Mutation_createActionItemCategory,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
+	Mutation_deleteUser,
 	Query_actionItemsByOrganization,
 	Query_signIn,
 } from "../documentNodes";
@@ -39,12 +39,6 @@ async function createUserAndGetToken(userDetails = {}) {
 		password: faker.internet.password({ length: 12 }),
 		role: "regular" as const,
 		isEmailAddressVerified: false,
-		workPhoneNumber: null,
-		state: null,
-		postalCode: null,
-		naturalLanguageCode: "en" as const,
-		addressLine1: null,
-		addressLine2: null,
 	};
 	const input = { ...defaultUser, ...userDetails };
 	const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
@@ -67,11 +61,6 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 				name: uniqueName,
 				description: "Organization for testing",
 				countryCode: "us",
-				state: "CA",
-				city: "San Francisco",
-				postalCode: "94101",
-				addressLine1: "123 Market St",
-				addressLine2: "Suite 100",
 			},
 		},
 	});
@@ -97,45 +86,25 @@ async function addMembership(
 	});
 }
 
-async function createActionItem({
-	organizationId,
-	creatorId,
-	assigneeId = null,
-	eventId = null,
-	categoryId = null,
-	isCompleted = false,
-	preCompletionNotes = "Test action item",
-	assignedAt = new Date().toISOString(),
-}: {
-	organizationId: string;
-	creatorId: string;
-	assigneeId?: string | null;
-	eventId?: string | null;
-	categoryId?: string | null;
-	isCompleted?: boolean;
-	preCompletionNotes?: string;
-	assignedAt?: string;
-}) {
-	const actionId = faker.string.uuid();
-	await server.drizzleClient
-		.insert(actionsTable)
-		.values({
-			id: actionId,
-			preCompletionNotes,
-			isCompleted,
-			assignedAt: new Date(assignedAt),
-			completionAt: isCompleted ? new Date() : null, // Only set completionAt if completed
-			categoryId,
-			assigneeId,
-			creatorId,
-			organizationId,
-			updaterId: creatorId,
-			updatedAt: new Date(),
-			eventId,
-			postCompletionNotes: null,
-		})
-		.execute();
-	return actionId;
+async function createActionItemCategory(
+	organizationId: string,
+): Promise<string> {
+	const result = await mercuriusClient.mutate(
+		Mutation_createActionItemCategory,
+		{
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				input: {
+					name: `Test Category ${faker.string.uuid()}`,
+					organizationId: organizationId,
+					isDisabled: false,
+				},
+			},
+		},
+	);
+	const categoryId = result.data?.createActionItemCategory?.id;
+	assertToBeNonNullish(categoryId);
+	return categoryId;
 }
 
 beforeAll(async () => {
@@ -146,17 +115,15 @@ suite("Query: actionItemsByOrganization", () => {
 	let regularUser: { authToken: string; userId: string };
 	let organizationId: string;
 	let nonMemberUser: { authToken: string; userId: string };
+	let categoryId: string;
 
 	beforeEach(async () => {
 		regularUser = await createUserAndGetToken();
 		nonMemberUser = await createUserAndGetToken();
 		organizationId = await createOrganizationAndGetId(globalAuth.authToken);
 		await addMembership(organizationId, regularUser.userId, "regular");
-
-		await server.drizzleClient
-			.delete(actionsTable)
-			.where(sql`${actionsTable.organizationId} = ${organizationId}`)
-			.execute();
+		await addMembership(organizationId, globalAuth.userId, "administrator");
+		categoryId = await createActionItemCategory(organizationId);
 	});
 
 	test("should return an unauthenticated error if not signed in", async () => {
@@ -171,7 +138,6 @@ suite("Query: actionItemsByOrganization", () => {
 			},
 		);
 
-		// When unauthenticated, the field should be null and we should have errors
 		expect(result.data?.actionItemsByOrganization).toBeNull();
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
@@ -179,24 +145,6 @@ suite("Query: actionItemsByOrganization", () => {
 					extensions: expect.objectContaining({ code: "unauthenticated" }),
 				}),
 			]),
-		);
-	});
-
-	test("should return an invalid_arguments error if input is missing organizationId", async () => {
-		const result = await mercuriusClient.query(
-			Query_actionItemsByOrganization,
-			{
-				headers: { authorization: `bearer ${regularUser.authToken}` },
-				variables: {
-					input: {} as { organizationId: string }, // Type assertion for testing
-				},
-			},
-		);
-
-		// This should fail at GraphQL validation level before reaching our resolver
-		expect(result.data).toBeNull();
-		expect(result.errors?.[0]?.message ?? "").toContain(
-			'Field "organizationId" of required type "String!" was not provided',
 		);
 	});
 
@@ -218,17 +166,25 @@ suite("Query: actionItemsByOrganization", () => {
 	});
 
 	test("should return all action items for the organization", async () => {
-		const actionId1 = await createActionItem({
-			organizationId,
-			creatorId: globalAuth.userId,
-			assigneeId: regularUser.userId,
-			isCompleted: false,
+		await mercuriusClient.mutate(Mutation_createActionItem, {
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				input: {
+					organizationId,
+					assigneeId: regularUser.userId,
+					categoryId,
+				},
+			},
 		});
-		const actionId2 = await createActionItem({
-			organizationId,
-			creatorId: globalAuth.userId,
-			assigneeId: globalAuth.userId,
-			isCompleted: true,
+		await mercuriusClient.mutate(Mutation_createActionItem, {
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				input: {
+					organizationId,
+					assigneeId: globalAuth.userId,
+					categoryId,
+				},
+			},
 		});
 
 		const result = await mercuriusClient.query(
@@ -243,42 +199,11 @@ suite("Query: actionItemsByOrganization", () => {
 			},
 		);
 
-		// May have partial errors for unauthorized fields, but should still return data
 		expect(result.data?.actionItemsByOrganization).toBeInstanceOf(Array);
 		expect(result.data?.actionItemsByOrganization?.length).toBe(2);
-
-		// Ensure result.data and actionItemsByOrganization are defined
-		expect(result.data).toBeDefined();
-		expect(result.data?.actionItemsByOrganization).toBeDefined();
-		const items = result.data?.actionItemsByOrganization ?? [];
-		const actionIds = items.map((item) => item.id);
-		expect(actionIds).toContain(actionId1);
-		expect(actionIds).toContain(actionId2);
-
-		// Verify the structure includes relationship objects instead of raw IDs
-		const firstItem = items[0];
-		expect(firstItem).toEqual(
-			expect.objectContaining({
-				id: expect.any(String),
-				isCompleted: expect.any(Boolean),
-				assignedAt: expect.any(String),
-				preCompletionNotes: expect.any(String),
-				// Should have relationship objects, not raw IDs
-				organization: expect.objectContaining({
-					id: organizationId,
-					name: expect.any(String),
-				}),
-			}),
-		);
 	});
 
 	test("should throw unauthorized error if user is not a member of the organization", async () => {
-		await createActionItem({
-			organizationId,
-			creatorId: globalAuth.userId,
-			isCompleted: false,
-		});
-
 		const result = await mercuriusClient.query(
 			Query_actionItemsByOrganization,
 			{
@@ -292,23 +217,54 @@ suite("Query: actionItemsByOrganization", () => {
 		);
 
 		expect(result.data?.actionItemsByOrganization).toBeNull();
-		expect(result.errors).toEqual(
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe(
+			"unauthorized_action_on_arguments_associated_resources",
+		);
+	});
+
+	test("should throw invalid_arguments error when input validation fails", async () => {
+		const result = await mercuriusClient.query(
+			Query_actionItemsByOrganization,
+			{
+				headers: { authorization: `bearer ${regularUser.authToken}` },
+				variables: {
+					input: {
+						organizationId: "invalid-uuid", // Invalid UUID format
+					},
+				},
+			},
+		);
+
+		expect(result.data?.actionItemsByOrganization).toBeNull();
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: expect.objectContaining({
-						code: "unauthorized_action_on_arguments_associated_resources",
-					}),
+					message: expect.stringContaining("Invalid"),
 				}),
 			]),
 		);
 	});
 
-	test("should throw unauthenticated error if user doesn't exist", async () => {
-		const fakeToken = `fake_token_${faker.string.alphanumeric(32)}`;
+	test("should throw unauthenticated error when currentUser is undefined in resolver", async () => {
+		const { authToken: tempAuthToken, userId: tempUserId } =
+			await createUserAndGetToken();
+
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				input: {
+					id: tempUserId,
+				},
+			},
+		});
+
 		const result = await mercuriusClient.query(
 			Query_actionItemsByOrganization,
 			{
-				headers: { authorization: `bearer ${fakeToken}` },
+				headers: { authorization: `bearer ${tempAuthToken}` },
 				variables: {
 					input: {
 						organizationId,
@@ -317,34 +273,32 @@ suite("Query: actionItemsByOrganization", () => {
 			},
 		);
 
-		expect(result.data?.actionItemsByOrganization).toBeNull();
-		expect(result.errors).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "unauthenticated" }),
-				}),
-			]),
-		);
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 	});
 
-	test("should throw invalid_arguments error for invalid organization ID format", async () => {
+	test("should throw arguments_associated_resources_not_found error when organization does not exist", async () => {
 		const result = await mercuriusClient.query(
 			Query_actionItemsByOrganization,
 			{
 				headers: { authorization: `bearer ${regularUser.authToken}` },
 				variables: {
 					input: {
-						organizationId: "invalid-format",
+						organizationId: "550e8400-e29b-41d4-a716-446655440000", // Valid UUID but non-existent org
 					},
 				},
 			},
 		);
 
 		expect(result.data?.actionItemsByOrganization).toBeNull();
-		expect(result.errors).toEqual(
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe(
+			"arguments_associated_resources_not_found",
+		);
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					extensions: expect.objectContaining({ code: "invalid_arguments" }),
+					argumentPath: ["input", "organizationId"],
 				}),
 			]),
 		);

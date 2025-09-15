@@ -76,9 +76,11 @@ async function getAdminAuthTokenAndId(): Promise<{
 				"Admin authentication succeeded but no token or user ID was returned",
 			);
 		}
-		cachedAdminToken = adminSignInResult.data.signIn.authenticationToken;
-		cachedAdminUserId = adminSignInResult.data.signIn.user.id;
-		return { authToken: cachedAdminToken, userId: cachedAdminUserId };
+		const token = adminSignInResult.data.signIn.authenticationToken;
+		const id = adminSignInResult.data.signIn.user.id;
+		cachedAdminToken = token;
+		cachedAdminUserId = id;
+		return { authToken: token, userId: id };
 	} catch (error) {
 		// Wrap and rethrow with more context
 		throw new Error(

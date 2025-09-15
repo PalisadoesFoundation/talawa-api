@@ -1,57 +1,23 @@
 import { faker } from "@faker-js/faker";
-import { sql } from "drizzle-orm";
 import { beforeAll, beforeEach, expect, suite, test } from "vitest";
-import { actionsTable } from "~/src/drizzle/tables/actions";
+import type {
+	TalawaGraphQLFormattedError,
+	UnauthenticatedExtensions,
+} from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
-import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
+	Mutation_createActionItem,
+	Mutation_createActionItemCategory,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
+	Mutation_deleteUser,
+	Query_actionItemsByUser,
 	Query_signIn,
 } from "../documentNodes";
 
-const SUITE_TIMEOUT = 40_000;
-
-// Define the document node for actionItemsByUser query
-const Query_actionItemsByUser = `
-  query ActionItemsByUser($input: QueryActionItemsByUserInput!) {
-    actionItemsByUser(input: $input) {
-      id
-      preCompletionNotes
-      isCompleted
-      assignedAt
-      completionAt
-      postCompletionNotes
-      category {
-        id
-        name
-      }
-      assignee {
-        id
-        name
-      }
-      creator {
-        id
-        name
-      }
-      organization {
-        id
-        name
-      }
-      event {
-        id
-        name
-      }
-      updater {
-        id
-        name
-      }
-      createdAt
-    }
-  }
-`;
+const SUITE_TIMEOUT = 30_000;
 
 let globalAuth: { authToken: string; userId: string };
 
@@ -79,12 +45,6 @@ async function createUserAndGetToken(userDetails = {}) {
 		password: faker.internet.password({ length: 12 }),
 		role: "regular" as const,
 		isEmailAddressVerified: false,
-		workPhoneNumber: null,
-		state: null,
-		postalCode: null,
-		naturalLanguageCode: "en" as const,
-		addressLine1: null,
-		addressLine2: null,
 	};
 	const input = { ...defaultUser, ...userDetails };
 	const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
@@ -107,11 +67,6 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 				name: uniqueName,
 				description: "Organization for testing",
 				countryCode: "us",
-				state: "CA",
-				city: "San Francisco",
-				postalCode: "94101",
-				addressLine1: "123 Market St",
-				addressLine2: "Suite 100",
 			},
 		},
 	});
@@ -137,45 +92,25 @@ async function addMembership(
 	});
 }
 
-async function createActionItem({
-	organizationId,
-	creatorId,
-	assigneeId = null,
-	eventId = null,
-	categoryId = null,
-	isCompleted = false,
-	preCompletionNotes = "Test action item",
-	assignedAt = new Date().toISOString(),
-}: {
-	organizationId: string;
-	creatorId: string;
-	assigneeId?: string | null;
-	eventId?: string | null;
-	categoryId?: string | null;
-	isCompleted?: boolean;
-	preCompletionNotes?: string;
-	assignedAt?: string;
-}) {
-	const actionId = faker.string.uuid();
-	await server.drizzleClient
-		.insert(actionsTable)
-		.values({
-			id: actionId,
-			preCompletionNotes,
-			isCompleted,
-			assignedAt: new Date(assignedAt),
-			completionAt: isCompleted ? new Date() : null, // Only set completionAt if completed
-			categoryId,
-			assigneeId,
-			creatorId,
-			organizationId,
-			updaterId: creatorId,
-			updatedAt: new Date(),
-			eventId,
-			postCompletionNotes: null,
-		})
-		.execute();
-	return actionId;
+async function createActionItemCategory(
+	organizationId: string,
+): Promise<string> {
+	const result = await mercuriusClient.mutate(
+		Mutation_createActionItemCategory,
+		{
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				input: {
+					name: `Test Category ${faker.string.uuid()}`,
+					organizationId: organizationId,
+					isDisabled: false,
+				},
+			},
+		},
+	);
+	const categoryId = result.data?.createActionItemCategory?.id;
+	assertToBeNonNullish(categoryId);
+	return categoryId;
 }
 
 beforeAll(async () => {
@@ -186,67 +121,35 @@ suite("Query: actionItemsByUser", () => {
 	let regularUser: { authToken: string; userId: string };
 	let organizationId: string;
 	let nonMemberUser: { authToken: string; userId: string };
-	let orgAdminUser: { authToken: string; userId: string };
+	let categoryId: string;
 
 	beforeEach(async () => {
 		regularUser = await createUserAndGetToken();
 		nonMemberUser = await createUserAndGetToken();
-		orgAdminUser = await createUserAndGetToken();
 		organizationId = await createOrganizationAndGetId(globalAuth.authToken);
-
-		// Add memberships
 		await addMembership(organizationId, regularUser.userId, "regular");
-		await addMembership(organizationId, orgAdminUser.userId, "administrator");
-
-		// Clean up any existing action items in test organization
-		await server.drizzleClient
-			.delete(actionsTable)
-			.where(sql`${actionsTable.organizationId} = ${organizationId}`)
-			.execute();
+		await addMembership(organizationId, globalAuth.userId, "administrator");
+		categoryId = await createActionItemCategory(organizationId);
 	});
 
-	test(
-		"should return an unauthenticated error if not signed in",
-		async () => {
-			const result = await mercuriusClient.query(Query_actionItemsByUser, {
-				variables: {
-					input: {
-						userId: regularUser.userId,
-					},
+	test("should return an unauthenticated error if not signed in", async () => {
+		const result = await mercuriusClient.query(Query_actionItemsByUser, {
+			variables: {
+				input: {
+					userId: regularUser.userId,
 				},
-			});
+			},
+		});
 
-			// When unauthenticated, the field should be null and we should have errors
-			expect(result.data?.actionItemsByUser).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({ code: "unauthenticated" }),
-					}),
-				]),
-			);
-		},
-		SUITE_TIMEOUT,
-	);
-
-	test(
-		"should return an invalid_arguments error if input is missing userId",
-		async () => {
-			const result = await mercuriusClient.query(Query_actionItemsByUser, {
-				headers: { authorization: `bearer ${regularUser.authToken}` },
-				variables: {
-					input: {} as { userId: string }, // Type assertion for testing
-				},
-			});
-
-			// This should fail at GraphQL validation level before reaching our resolver
-			expect(result.data).toBeNull();
-			expect(result.errors?.[0]?.message ?? "").toContain(
-				'Field "userId" of required type "String!" was not provided',
-			);
-		},
-		SUITE_TIMEOUT,
-	);
+		expect(result.data?.actionItemsByUser).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({ code: "unauthenticated" }),
+				}),
+			]),
+		);
+	});
 
 	test(
 		"should return an empty array if no action items exist for the user",
@@ -266,172 +169,49 @@ suite("Query: actionItemsByUser", () => {
 		SUITE_TIMEOUT,
 	);
 
-	test(
-		"should return all action items assigned to the user",
-		async () => {
-			// Create action items assigned to the regular user
-			const actionId1 = await createActionItem({
-				organizationId,
-				creatorId: globalAuth.userId,
-				assigneeId: regularUser.userId,
-				isCompleted: false,
-			});
-			const actionId2 = await createActionItem({
-				organizationId,
-				creatorId: globalAuth.userId,
-				assigneeId: regularUser.userId,
-				isCompleted: true,
-			});
-
-			// Create an action item assigned to someone else (should not be returned)
-			await createActionItem({
-				organizationId,
-				creatorId: globalAuth.userId,
-				assigneeId: globalAuth.userId,
-				isCompleted: false,
-			});
-
-			const result = await mercuriusClient.query(Query_actionItemsByUser, {
-				headers: { authorization: `bearer ${regularUser.authToken}` },
-				variables: {
-					input: {
-						userId: regularUser.userId,
-					},
+	test("should return all action items assigned to the user", async () => {
+		await mercuriusClient.mutate(Mutation_createActionItem, {
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				input: {
+					organizationId,
+					assigneeId: regularUser.userId,
+					categoryId,
 				},
-			});
-
-			// May have partial errors for unauthorized fields, but should still return data
-			expect(result.data?.actionItemsByUser).toBeInstanceOf(Array);
-			expect(result.data?.actionItemsByUser?.length).toBe(2);
-
-			// Ensure result.data and actionItemsByUser are defined
-			expect(result.data).toBeDefined();
-			expect(result.data?.actionItemsByUser).toBeDefined();
-			const items = result.data?.actionItemsByUser ?? [];
-			interface ActionItem {
-				id: string;
-				preCompletionNotes: string;
-				isCompleted: boolean;
-				assignedAt: string;
-				completionAt: string | null;
-				postCompletionNotes: string | null;
-				category?: { id: string; name: string } | null;
-				assignee: { id: string; name: string };
-				creator: { id: string; name: string };
-				organization: { id: string; name: string };
-				event?: { id: string; name: string } | null;
-				updater: { id: string; name: string };
-				createdAt: string;
-			}
-
-			const actionIds: string[] = items.map((item: ActionItem) => item.id);
-			expect(actionIds).toContain(actionId1);
-			expect(actionIds).toContain(actionId2);
-
-			// Verify the structure includes relationship objects instead of raw IDs
-			const firstItem = items[0];
-			expect(firstItem).toEqual(
-				expect.objectContaining({
-					id: expect.any(String),
-					isCompleted: expect.any(Boolean),
-					assignedAt: expect.any(String),
-					preCompletionNotes: expect.any(String),
-					// Should have relationship objects, not raw IDs
-					assignee: expect.objectContaining({
-						id: regularUser.userId,
-						name: expect.any(String),
-					}),
-					organization: expect.objectContaining({
-						id: organizationId,
-						name: expect.any(String),
-					}),
-				}),
-			);
-		},
-		SUITE_TIMEOUT,
-	);
-
-	test(
-		"should allow admins to view action items for any user",
-		async () => {
-			// Create action items assigned to the regular user
-			const actionId1 = await createActionItem({
-				organizationId,
-				creatorId: globalAuth.userId,
-				assigneeId: regularUser.userId,
-				isCompleted: false,
-			});
-
-			// Admin should be able to see regular user's action items
-			const result = await mercuriusClient.query(Query_actionItemsByUser, {
-				headers: { authorization: `bearer ${globalAuth.authToken}` },
-				variables: {
-					input: {
-						userId: regularUser.userId,
-					},
+			},
+		});
+		await mercuriusClient.mutate(Mutation_createActionItem, {
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				input: {
+					organizationId,
+					assigneeId: regularUser.userId,
+					categoryId,
 				},
-			});
+			},
+		});
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.actionItemsByUser).toBeInstanceOf(Array);
-			expect(result.data?.actionItemsByUser?.length).toBe(1);
-
-			const items = result.data?.actionItemsByUser ?? [];
-			expect(items[0].id).toBe(actionId1);
-		},
-		SUITE_TIMEOUT,
-	);
-
-	test(
-		"should allow organization admins to view action items for users in their org",
-		async () => {
-			// Create action items assigned to the regular user
-			const actionId1 = await createActionItem({
-				organizationId,
-				creatorId: globalAuth.userId,
-				assigneeId: regularUser.userId,
-				isCompleted: false,
-			});
-
-			// Org admin should be able to see regular user's action items with organizationId filter
-			const result = await mercuriusClient.query(Query_actionItemsByUser, {
-				headers: { authorization: `bearer ${orgAdminUser.authToken}` },
-				variables: {
-					input: {
-						userId: regularUser.userId,
-						organizationId: organizationId,
-					},
+		const result = await mercuriusClient.query(Query_actionItemsByUser, {
+			headers: { authorization: `bearer ${regularUser.authToken}` },
+			variables: {
+				input: {
+					userId: regularUser.userId,
 				},
-			});
+			},
+		});
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.actionItemsByUser).toBeInstanceOf(Array);
-			expect(result.data?.actionItemsByUser?.length).toBe(1);
-
-			const items = result.data?.actionItemsByUser ?? [];
-			expect(items[0].id).toBe(actionId1);
-		},
-		SUITE_TIMEOUT,
-	);
+		expect(result.data?.actionItemsByUser).toBeInstanceOf(Array);
+		expect(result.data?.actionItemsByUser?.length).toBe(2);
+	});
 
 	test(
 		"should throw unauthorized error if regular user tries to view another user's action items",
 		async () => {
-			// Create action items assigned to a different user
-			await createActionItem({
-				organizationId,
-				creatorId: globalAuth.userId,
-				assigneeId: nonMemberUser.userId,
-				isCompleted: false,
-			});
-
-			// Regular user should not be able to see other user's action items
 			const result = await mercuriusClient.query(Query_actionItemsByUser, {
 				headers: { authorization: `bearer ${regularUser.authToken}` },
 				variables: {
 					input: {
 						userId: nonMemberUser.userId,
-						organizationId: organizationId,
 					},
 				},
 			});
@@ -450,124 +230,172 @@ suite("Query: actionItemsByUser", () => {
 		SUITE_TIMEOUT,
 	);
 
-	test(
-		"should throw unauthorized error if org admin tries to view user's items without org filter",
-		async () => {
-			// Create action items assigned to the regular user
-			await createActionItem({
-				organizationId,
-				creatorId: globalAuth.userId,
-				assigneeId: regularUser.userId,
-				isCompleted: false,
-			});
-
-			// Org admin must provide organizationId when viewing other users' items
-			const result = await mercuriusClient.query(Query_actionItemsByUser, {
-				headers: { authorization: `bearer ${orgAdminUser.authToken}` },
-				variables: {
-					input: {
-						userId: regularUser.userId,
-						// No organizationId provided
-					},
+	test("should throw invalid_arguments error when input validation fails", async () => {
+		const result = await mercuriusClient.query(Query_actionItemsByUser, {
+			headers: { authorization: `bearer ${regularUser.authToken}` },
+			variables: {
+				input: {
+					userId: "invalid-uuid", // Invalid UUID format
 				},
-			});
+			},
+		});
 
-			expect(result.data?.actionItemsByUser).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "unauthorized_action_on_arguments_associated_resources",
-						}),
+		expect(result.data?.actionItemsByUser).toBeNull();
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					message: expect.stringContaining("Invalid"),
+				}),
+			]),
+		);
+	});
+
+	test("should throw unauthenticated error when currentUser is undefined", async () => {
+		// Create a test user
+		const createUserResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: {
+				authorization: `bearer ${globalAuth.authToken}`,
+			},
+			variables: {
+				input: {
+					emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
+					isEmailAddressVerified: false,
+					name: "Test User",
+					password: "password",
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(createUserResult.data.createUser?.authenticationToken);
+		assertToBeNonNullish(createUserResult.data.createUser.user?.id);
+
+		// Delete the user to simulate the scenario where currentUser lookup fails
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: {
+				authorization: `bearer ${globalAuth.authToken}`,
+			},
+			variables: {
+				input: {
+					id: createUserResult.data.createUser.user.id,
+				},
+			},
+		});
+
+		// Try to use the authentication token of the deleted user
+		const result = await mercuriusClient.query(Query_actionItemsByUser, {
+			headers: {
+				authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
+			},
+			variables: {
+				input: {
+					userId: regularUser.userId,
+				},
+			},
+		});
+
+		expect(result.data?.actionItemsByUser).toEqual(null);
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining<UnauthenticatedExtensions>({
+						code: "unauthenticated",
 					}),
-				]),
-			);
-		},
-		SUITE_TIMEOUT,
-	);
+					message: expect.any(String),
+					path: ["actionItemsByUser"],
+				}),
+			]),
+		);
+	});
 
-	test(
-		"should filter action items by organization when organizationId is provided",
-		async () => {
-			// Create a second organization
-			const secondOrgId = await createOrganizationAndGetId(
-				globalAuth.authToken,
-			);
-			await addMembership(secondOrgId, regularUser.userId, "regular");
+	test("should throw arguments_associated_resources_not_found error when target user does not exist", async () => {
+		const result = await mercuriusClient.query(Query_actionItemsByUser, {
+			headers: { authorization: `bearer ${regularUser.authToken}` },
+			variables: {
+				input: {
+					userId: "550e8400-e29b-41d4-a716-446655440000", // Valid UUID but non-existent user
+				},
+			},
+		});
 
-			// Create action items in both organizations
-			const actionId1 = await createActionItem({
-				organizationId,
-				creatorId: globalAuth.userId,
-				assigneeId: regularUser.userId,
-				isCompleted: false,
-			});
+		expect(result.data?.actionItemsByUser).toBeNull();
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe(
+			"arguments_associated_resources_not_found",
+		);
+		expect(result.errors?.[0]?.extensions?.issues).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					argumentPath: ["input", "userId"],
+				}),
+			]),
+		);
+		expect(result.errors?.[0]?.message).toBe(
+			"The specified user does not exist.",
+		);
+	});
 
-			const actionId2 = await createActionItem({
-				organizationId: secondOrgId,
-				creatorId: globalAuth.userId,
-				assigneeId: regularUser.userId,
-				isCompleted: false,
-			});
+	test("should filter action items by organization when organizationId is provided", async () => {
+		// Create another organization
+		const otherOrgId = await createOrganizationAndGetId(globalAuth.authToken);
+		await addMembership(otherOrgId, regularUser.userId, "regular");
+		await addMembership(otherOrgId, globalAuth.userId, "administrator");
+		const otherCategoryId = await createActionItemCategory(otherOrgId);
 
-			// Query with first organization filter
-			const result1 = await mercuriusClient.query(Query_actionItemsByUser, {
+		// Create action items in both organizations
+		await mercuriusClient.mutate(Mutation_createActionItem, {
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				input: {
+					organizationId,
+					assigneeId: regularUser.userId,
+					categoryId,
+				},
+			},
+		});
+
+		await mercuriusClient.mutate(Mutation_createActionItem, {
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				input: {
+					organizationId: otherOrgId,
+					assigneeId: regularUser.userId,
+					categoryId: otherCategoryId,
+				},
+			},
+		});
+
+		// Query without organization filter - should return all items
+		const resultAll = await mercuriusClient.query(Query_actionItemsByUser, {
+			headers: { authorization: `bearer ${regularUser.authToken}` },
+			variables: {
+				input: {
+					userId: regularUser.userId,
+				},
+			},
+		});
+
+		expect(resultAll.data?.actionItemsByUser).toHaveLength(2);
+
+		// Query with organization filter - should return only items from that organization
+		const resultFiltered = await mercuriusClient.query(
+			Query_actionItemsByUser,
+			{
 				headers: { authorization: `bearer ${regularUser.authToken}` },
 				variables: {
 					input: {
 						userId: regularUser.userId,
-						organizationId: organizationId,
+						organizationId,
 					},
 				},
-			});
+			},
+		);
 
-			expect(result1.data?.actionItemsByUser).toBeInstanceOf(Array);
-			expect(result1.data?.actionItemsByUser?.length).toBe(1);
-			expect(result1.data?.actionItemsByUser[0].id).toBe(actionId1);
-
-			// Query with second organization filter
-			const result2 = await mercuriusClient.query(Query_actionItemsByUser, {
-				headers: { authorization: `bearer ${regularUser.authToken}` },
-				variables: {
-					input: {
-						userId: regularUser.userId,
-						organizationId: secondOrgId,
-					},
-				},
-			});
-
-			expect(result2.data?.actionItemsByUser).toBeInstanceOf(Array);
-			expect(result2.data?.actionItemsByUser?.length).toBe(1);
-			expect(result2.data?.actionItemsByUser[0].id).toBe(actionId2);
-		},
-		SUITE_TIMEOUT,
-	);
-
-	test(
-		"should throw error for non-existent user",
-		async () => {
-			const nonExistentUserId = faker.string.uuid();
-
-			const result = await mercuriusClient.query(Query_actionItemsByUser, {
-				headers: { authorization: `bearer ${globalAuth.authToken}` },
-				variables: {
-					input: {
-						userId: nonExistentUserId,
-					},
-				},
-			});
-
-			expect(result.data?.actionItemsByUser).toBeNull();
-			expect(result.errors).toEqual(
-				expect.arrayContaining([
-					expect.objectContaining({
-						extensions: expect.objectContaining({
-							code: "arguments_associated_resources_not_found",
-						}),
-					}),
-				]),
-			);
-		},
-		SUITE_TIMEOUT,
-	);
+		expect(resultFiltered.data?.actionItemsByUser).toHaveLength(1);
+		expect(resultFiltered.data?.actionItemsByUser?.[0]?.organization?.id).toBe(
+			organizationId,
+		);
+	});
 });

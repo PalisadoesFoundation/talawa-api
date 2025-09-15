@@ -36,6 +36,14 @@ type ActionItem {
   """Indicates whether the action item is completed."""
   isCompleted: Boolean
 
+  """
+  Indicates whether this action item is currently showing instance-specific exception data.
+  """
+  isInstanceException: Boolean
+
+  """Indicates whether the action item is a template for recurring events."""
+  isTemplate: Boolean
+
   """The organization the action item belongs to."""
   organization: Organization
 
@@ -44,6 +52,9 @@ type ActionItem {
 
   """Notes added before completing the action item."""
   preCompletionNotes: String
+
+  """The recurring event instance associated with this action item."""
+  recurringEventInstance: Event
 
   """User who last updated the action item."""
   updater: User
@@ -516,8 +527,10 @@ input CreateActionItemInput {
   assigneeId: ID!
   categoryId: ID!
   eventId: ID
+  isTemplate: Boolean
   organizationId: ID!
   preCompletionNotes: String
+  recurringEventInstanceId: ID
 }
 
 input CreatePluginInput {
@@ -714,11 +727,8 @@ input FileMetadataInput {
   """Hash of the file for deduplication"""
   fileHash: String!
 
-  """
-  MIME type of the file
-  """
-  mimeType: PostAttachmentMimeType!
-
+  """MIME type of the file"""
+  mimetype: PostAttachmentMimeType!
 
   """Name of the file"""
   name: String!
@@ -1583,6 +1593,12 @@ type Mutation {
     input: MutationCancelMembershipRequestInput!
   ): CancelMembershipResponse
 
+  """Mutation to complete an action item for a single instance"""
+  completeActionItemForInstance(
+    """Complete an action item for a single instance"""
+    input: MutationCompleteActionItemForInstanceInput!
+  ): ActionItem
+
   """Mutation field to create an action item."""
   createActionItem(input: CreateActionItemInput!): ActionItem
 
@@ -1673,6 +1689,12 @@ type Mutation {
 
   """Mutation field to delete an action item category."""
   deleteActionItemCategory(input: MutationDeleteActionItemCategoryInput!): ActionItemCategory
+
+  """Mutation to delete an action item for a single instance"""
+  deleteActionItemForInstance(
+    """Delete an action item for a single instance"""
+    input: MutationDeleteActionItemForInstanceInput!
+  ): ActionItem
 
   """Mutation field to delete an advertisement."""
   deleteAdvertisement(input: MutationDeleteAdvertisementInput!): Advertisement
@@ -1780,6 +1802,12 @@ type Mutation {
   """Mutation to mark a completed action item as pending"""
   markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
 
+  """Mutation to mark an action item as pending for a single instance"""
+  markActionItemAsPendingForInstance(
+    """Mark an action item as pending for a single instance"""
+    input: MutationMarkActionAsPendingForInstanceInput!
+  ): ActionItem
+
   """Mutation field to reject a membership request by an admin."""
   rejectMembershipRequest(
     """Input to reject a membership request"""
@@ -1809,6 +1837,12 @@ type Mutation {
 
   """Mutation field to update an action item category."""
   updateActionItemCategory(input: MutationUpdateActionItemCategoryInput!): ActionItemCategory
+
+  """Mutation to update an action item for a single instance"""
+  updateActionItemForInstance(
+    """Update an action item for a single instance"""
+    input: MutationUpdateActionItemForInstanceInput!
+  ): ActionItem
 
   """Mutation field to update an advertisement."""
   updateAdvertisement(input: MutationUpdateAdvertisementInput!): Advertisement
@@ -1873,7 +1907,7 @@ type Mutation {
   """Mutation field to update a post."""
   updatePost(input: MutationUpdatePostInput!): Post
 
-  """Mutation field to update a post vote."""
+  """Mutation field to create or update a post vote."""
   updatePostVote(input: MutationUpdatePostVoteInput!): Post
 
   """
@@ -1932,6 +1966,12 @@ input MutationBlockUserInput {
 input MutationCancelMembershipRequestInput {
   """Global identifier of the membership request."""
   membershipRequestId: ID!
+}
+
+input MutationCompleteActionItemForInstanceInput {
+  actionId: ID!
+  eventId: ID!
+  postCompletionNotes: String!
 }
 
 """Input for creating a new action item category."""
@@ -2414,6 +2454,11 @@ input MutationDeleteActionItemCategoryInput {
   id: ID!
 }
 
+input MutationDeleteActionItemForInstanceInput {
+  actionId: ID!
+  eventId: ID!
+}
+
 """Input for deleting an action item."""
 input MutationDeleteActionItemInput {
   """Global identifier of the action item."""
@@ -2605,6 +2650,11 @@ input MutationJoinPublicOrganizationInput {
   organizationId: ID!
 }
 
+input MutationMarkActionAsPendingForInstanceInput {
+  actionId: ID!
+  eventId: ID!
+}
+
 input MutationRejectMembershipRequestInput {
   """ID of the membership request to reject"""
   membershipRequestId: ID!
@@ -2705,6 +2755,15 @@ input MutationUpdateActionItemCategoryInput {
 
   """New name of the action item category."""
   name: String
+}
+
+input MutationUpdateActionItemForInstanceInput {
+  actionId: ID!
+  assignedAt: String
+  assigneeId: ID
+  categoryId: ID
+  eventId: ID!
+  preCompletionNotes: String
 }
 
 input MutationUpdateActionItemInput {
@@ -3899,7 +3958,7 @@ type Query {
   """Query field to get all volunteer groups for an event."""
   getEventVolunteerGroups(input: QueryEventVolunteerGroupsInput!): [VolunteerGroups!]
 
-  """Query field to get fund campaign pledge associated to a user."""
+  """Query field to get fund campaign pledges associated with a user."""
   getPledgesByUserId(
     """Input parameters to fetch pledges by userId."""
     input: QueryFundCampaignPledgesByUserInput!

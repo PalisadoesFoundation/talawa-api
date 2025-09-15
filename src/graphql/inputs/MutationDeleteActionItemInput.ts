@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { actionsTableInsertSchema } from "~/src/drizzle/tables/actions";
+import { actionItemsTableInsertSchema } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 
 export const mutationDeleteActionItemInputSchema = z.object({
-	id: actionsTableInsertSchema.shape.id.unwrap(),
+	id: actionItemsTableInsertSchema.shape.id.unwrap(),
 });
 
 export const MutationDeleteActionItemInput = builder

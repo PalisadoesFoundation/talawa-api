@@ -44,7 +44,7 @@ describe("ActionItem Resolver - Category Field", () => {
 
 			expect(result).toBeNull();
 			expect(
-				mocks.drizzleClient.query.actionCategoriesTable.findFirst,
+				mocks.drizzleClient.query.actionItemCategoriesTable.findFirst,
 			).not.toHaveBeenCalled();
 		});
 
@@ -55,7 +55,7 @@ describe("ActionItem Resolver - Category Field", () => {
 
 			expect(result).toBeNull();
 			expect(
-				mocks.drizzleClient.query.actionCategoriesTable.findFirst,
+				mocks.drizzleClient.query.actionItemCategoriesTable.findFirst,
 			).not.toHaveBeenCalled();
 		});
 
@@ -72,7 +72,7 @@ describe("ActionItem Resolver - Category Field", () => {
 				updaterId: null,
 			};
 
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				mockCategory,
 			);
 
@@ -80,14 +80,14 @@ describe("ActionItem Resolver - Category Field", () => {
 
 			expect(result).toEqual(mockCategory);
 			expect(
-				mocks.drizzleClient.query.actionCategoriesTable.findFirst,
+				mocks.drizzleClient.query.actionItemCategoriesTable.findFirst,
 			).toHaveBeenCalledWith({
 				where: expect.any(Function),
 			});
 		});
 
 		it("should throw unexpected error when category does not exist", async () => {
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				undefined,
 			);
 
@@ -110,17 +110,17 @@ describe("ActionItem Resolver - Category Field", () => {
 				name: "Test Category",
 			};
 
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				mockCategory,
 			);
 
 			await resolveCategory(mockActionItem, {}, ctx);
 
 			expect(
-				mocks.drizzleClient.query.actionCategoriesTable.findFirst,
+				mocks.drizzleClient.query.actionItemCategoriesTable.findFirst,
 			).toHaveBeenCalledTimes(1);
 			expect(
-				mocks.drizzleClient.query.actionCategoriesTable.findFirst,
+				mocks.drizzleClient.query.actionItemCategoriesTable.findFirst,
 			).toHaveBeenCalledWith({
 				where: expect.any(Function),
 			});
@@ -139,7 +139,7 @@ describe("ActionItem Resolver - Category Field", () => {
 
 			// Test with first category ID
 			mockActionItem.categoryId = "category-111";
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValueOnce(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValueOnce(
 				mockCategory1,
 			);
 
@@ -148,7 +148,7 @@ describe("ActionItem Resolver - Category Field", () => {
 
 			// Test with second category ID
 			mockActionItem.categoryId = "category-222";
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValueOnce(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValueOnce(
 				mockCategory2,
 			);
 
@@ -157,13 +157,13 @@ describe("ActionItem Resolver - Category Field", () => {
 
 			// Verify both calls were made
 			expect(
-				mocks.drizzleClient.query.actionCategoriesTable.findFirst,
+				mocks.drizzleClient.query.actionItemCategoriesTable.findFirst,
 			).toHaveBeenCalledTimes(2);
 		});
 
 		it("should pass categoryId as string to database query", async () => {
 			const mockCategory = { id: "category-456", name: "Test" };
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				mockCategory,
 			);
 
@@ -173,7 +173,7 @@ describe("ActionItem Resolver - Category Field", () => {
 			await resolveCategory(mockActionItem, {}, ctx);
 
 			expect(
-				mocks.drizzleClient.query.actionCategoriesTable.findFirst,
+				mocks.drizzleClient.query.actionItemCategoriesTable.findFirst,
 			).toHaveBeenCalledWith({
 				where: expect.any(Function),
 			});
@@ -182,7 +182,7 @@ describe("ActionItem Resolver - Category Field", () => {
 
 	describe("Error Handling", () => {
 		it("should log error with correct message when category is not found", async () => {
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				undefined,
 			);
 
@@ -204,7 +204,7 @@ describe("ActionItem Resolver - Category Field", () => {
 
 		it("should handle database errors gracefully", async () => {
 			const databaseError = new Error("Database connection failed");
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockRejectedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockRejectedValue(
 				databaseError,
 			);
 
@@ -214,7 +214,7 @@ describe("ActionItem Resolver - Category Field", () => {
 
 			// Verify the query was attempted
 			expect(
-				mocks.drizzleClient.query.actionCategoriesTable.findFirst,
+				mocks.drizzleClient.query.actionItemCategoriesTable.findFirst,
 			).toHaveBeenCalledTimes(1);
 		});
 
@@ -224,7 +224,7 @@ describe("ActionItem Resolver - Category Field", () => {
 				name: "Success Category",
 			};
 
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				mockCategory,
 			);
 
@@ -236,7 +236,7 @@ describe("ActionItem Resolver - Category Field", () => {
 		it("should handle query timeout errors", async () => {
 			const timeoutError = new Error("Query timeout");
 			timeoutError.name = "TimeoutError";
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockRejectedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockRejectedValue(
 				timeoutError,
 			);
 
@@ -260,7 +260,7 @@ describe("ActionItem Resolver - Category Field", () => {
 				updaterId: "user-modifier",
 			};
 
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				mockCategory,
 			);
 
@@ -281,7 +281,7 @@ describe("ActionItem Resolver - Category Field", () => {
 				isDisabled: false,
 			};
 
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				minimalCategory,
 			);
 
@@ -307,7 +307,7 @@ describe("ActionItem Resolver - Category Field", () => {
 				metadata: { type: "special", priority: "high" },
 			};
 
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				complexCategory,
 			);
 
@@ -328,7 +328,7 @@ describe("ActionItem Resolver - Category Field", () => {
 			};
 
 			mockActionItem.categoryId = "category-special-123";
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				specialCategory,
 			);
 
@@ -345,7 +345,7 @@ describe("ActionItem Resolver - Category Field", () => {
 			};
 
 			mockActionItem.categoryId = longId;
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				longIdCategory,
 			);
 
@@ -363,7 +363,7 @@ describe("ActionItem Resolver - Category Field", () => {
 			};
 
 			mockActionItem.categoryId = uuidCategoryId;
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				uuidCategory,
 			);
 
@@ -381,7 +381,7 @@ describe("ActionItem Resolver - Category Field", () => {
 				description: "This category is disabled",
 			};
 
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				disabledCategory,
 			);
 
@@ -400,7 +400,7 @@ describe("ActionItem Resolver - Category Field", () => {
 				isDisabled: false,
 			};
 
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				categoryWithNulls,
 			);
 
@@ -424,20 +424,20 @@ describe("ActionItem Resolver - Category Field", () => {
 
 			// Verify no database queries were made
 			expect(
-				mocks.drizzleClient.query.actionCategoriesTable.findFirst,
+				mocks.drizzleClient.query.actionItemCategoriesTable.findFirst,
 			).not.toHaveBeenCalled();
 		});
 
 		it("should make exactly one database query for valid categoryId", async () => {
 			const mockCategory = { id: "category-456", name: "Test" };
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				mockCategory,
 			);
 
 			await resolveCategory(mockActionItem, {}, ctx);
 
 			expect(
-				mocks.drizzleClient.query.actionCategoriesTable.findFirst,
+				mocks.drizzleClient.query.actionItemCategoriesTable.findFirst,
 			).toHaveBeenCalledTimes(1);
 		});
 	});
@@ -445,7 +445,7 @@ describe("ActionItem Resolver - Category Field", () => {
 	describe("Type Safety", () => {
 		it("should handle categoryId type casting correctly", async () => {
 			const mockCategory = { id: "category-456", name: "Test" };
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				mockCategory,
 			);
 
@@ -454,7 +454,7 @@ describe("ActionItem Resolver - Category Field", () => {
 			await resolveCategory(mockActionItem, {}, ctx);
 
 			expect(
-				mocks.drizzleClient.query.actionCategoriesTable.findFirst,
+				mocks.drizzleClient.query.actionItemCategoriesTable.findFirst,
 			).toHaveBeenCalledWith({
 				where: expect.any(Function),
 			});
@@ -462,7 +462,7 @@ describe("ActionItem Resolver - Category Field", () => {
 
 		it("should preserve original categoryId value in query", async () => {
 			const mockCategory = { id: "test-category", name: "Test" };
-			mocks.drizzleClient.query.actionCategoriesTable.findFirst.mockResolvedValue(
+			mocks.drizzleClient.query.actionItemCategoriesTable.findFirst.mockResolvedValue(
 				mockCategory,
 			);
 
@@ -473,7 +473,7 @@ describe("ActionItem Resolver - Category Field", () => {
 
 			// Verify the original value was used (through type casting)
 			expect(
-				mocks.drizzleClient.query.actionCategoriesTable.findFirst,
+				mocks.drizzleClient.query.actionItemCategoriesTable.findFirst,
 			).toHaveBeenCalledWith({
 				where: expect.any(Function),
 			});
