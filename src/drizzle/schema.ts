@@ -125,12 +125,4 @@ export {
 	venueBookingsTableRelations,
 } from "./tables/venueBookings";
 export { venuesTable, venuesTableRelations } from "./tables/venues";
-export {
-	volunteerGroupAssignmentsTable,
-	volunteerGroupAssignmentsTableRelations,
-} from "./tables/volunteerGroupAssignments";
-export {
-	volunteerGroupsTable,
-	volunteerGroupsTableRelations,
-} from "./tables/volunteerGroups";
 export { pluginsTable } from "./tables/plugins";

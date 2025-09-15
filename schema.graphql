@@ -534,9 +534,6 @@ input CreateActionItemInput {
 }
 
 input CreatePluginInput {
-  backup: Boolean
-  isActivated: Boolean
-  isInstalled: Boolean
   pluginId: String!
 }
 
@@ -888,10 +885,8 @@ type HasUserVoted {
   voteType: PostVoteType
 }
 
-enum InviteStatus {
-  accepted
-  declined
-  no_response
+input InstallPluginInput {
+  pluginId: String!
 }
 
 """
@@ -1632,12 +1627,6 @@ type Mutation {
   """Mutation field to create an event."""
   createEvent(input: MutationCreateEventInput!): Event
 
-  """Mutation field to create a volunteer group."""
-  createEventVolunteerGroup(input: MutationCreateEventVolunteerGroupInput!): VolunteerGroups
-
-  """Mutation field to create a volunteer group assignments."""
-  createEventVolunteerGroupAssignments(input: MutationCreateVolunteerGroupAssignmentsInput!): VolunteerGroupAssignments
-
   """Mutation field to create a fund."""
   createFund(input: MutationCreateFundInput!): Fund
 
@@ -1731,9 +1720,6 @@ type Mutation {
     input: MutationDeleteEntireRecurringEventSeriesInput!
   ): Event
 
-  """Mutation field to delete a volunteer group."""
-  deleteEventVolunteerGroup(input: MutationDeleteEventVolunteerGroupInput!): VolunteerGroups
-
   """Mutation field to delete a fund."""
   deleteFund(input: MutationDeleteFundInput!): Fund
 
@@ -1792,6 +1778,7 @@ type Mutation {
 
   """Mutation field to delete a venue booking."""
   deleteVenueBooking(input: MutationDeleteVenueBookingInput!): Venue
+  installPlugin(input: InstallPluginInput!): Plugin
 
   """Mutation field to join a public organization."""
   joinPublicOrganization(
@@ -1881,12 +1868,6 @@ type Mutation {
     """Input for updating all events in a recurring event series."""
     input: MutationUpdateEntireRecurringEventSeriesInput!
   ): Event
-
-  """Mutation field to update a volunteer group."""
-  updateEventVolunteerGroup(input: MutationUpdateEventVolunteerGroupInput!): VolunteerGroups
-
-  """Mutation field to update a volunteer group assignments."""
-  updateEventVolunteerGroupAssignments(input: MutationUpdateVolunteerGroupAssignmentsInput!): VolunteerGroupAssignments
 
   """Mutation field to update a fund."""
   updateFund(input: MutationUpdateFundInput!): Fund
@@ -2150,21 +2131,6 @@ input MutationCreateEventInput {
 
   """Date time at the time the event starts at."""
   startAt: DateTime!
-}
-
-""""""
-input MutationCreateEventVolunteerGroupInput {
-  """Global identifier of the event that the group is to be made for."""
-  eventId: ID!
-
-  """Global identifier of the user that is assigned leader of the group."""
-  leaderId: ID!
-
-  """Max volunteers count"""
-  maxVolunteerCount: Int!
-
-  """Name of the group."""
-  name: String!
 }
 
 """"""
@@ -2436,21 +2402,6 @@ input MutationCreateVenueInput {
   organizationId: ID!
 }
 
-""""""
-input MutationCreateVolunteerGroupAssignmentsInput {
-  """Global identifier of the user."""
-  assigneeId: ID!
-
-  """Global identifier of the event."""
-  eventId: ID!
-
-  """Global identifier of the group."""
-  groupId: ID!
-
-  """Invitation Status."""
-  inviteStatus: InviteStatus!
-}
-
 """Input for deleting an action item category."""
 input MutationDeleteActionItemCategoryInput {
   """ID of the action item category to delete."""
@@ -2535,12 +2486,6 @@ input MutationDeleteEntireRecurringEventSeriesInput {
 """"""
 input MutationDeleteEventInput {
   """Global identifier of the event."""
-  id: ID!
-}
-
-""""""
-input MutationDeleteEventVolunteerGroupInput {
-  """Global identifier of the group."""
   id: ID!
 }
 
@@ -3054,21 +2999,6 @@ input MutationUpdateEventInput {
 }
 
 """"""
-input MutationUpdateEventVolunteerGroupInput {
-  """Global identifier of the group."""
-  id: ID!
-
-  """Global identifier of the user that is assigned leader of the group."""
-  leaderId: ID
-
-  """Max volunteers count"""
-  maxVolunteerCount: Int!
-
-  """Name of the Group."""
-  name: String
-}
-
-""""""
 input MutationUpdateFundCampaignInput {
   """Date time at the time the fund campaign ends at."""
   endAt: DateTime
@@ -3362,18 +3292,6 @@ input MutationUpdateVenueInput {
 
   """Name of the venue."""
   name: String
-}
-
-""""""
-input MutationUpdateVolunteerGroupAssignmentsInput {
-  """Global identifier of the user."""
-  assigneeId: ID!
-
-  """Global identifier of the group."""
-  groupId: ID!
-
-  """Invitation Status."""
-  inviteStatus: UpdateInviteStatus!
 }
 
 type Organization {
@@ -3955,12 +3873,6 @@ type Query {
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
-  """Query field to get all volunteer of a group."""
-  getEventVolunteerGroupAssignments(input: QueryVolunteerGroupAssignmentsInput!): [VolunteerGroupAssignments!]
-
-  """Query field to get all volunteer groups for an event."""
-  getEventVolunteerGroups(input: QueryEventVolunteerGroupsInput!): [VolunteerGroups!]
-
   """Query field to get fund campaign pledges associated with a user."""
   getPledgesByUserId(
     """Input parameters to fetch pledges by userId."""
@@ -4116,12 +4028,6 @@ input QueryEventInput {
   id: String!
 }
 
-""""""
-input QueryEventVolunteerGroupsInput {
-  """Global id of the event."""
-  eventId: String!
-}
-
 input QueryEventsByIdsInput {
   ids: [ID!]!
 }
@@ -4228,18 +4134,6 @@ input QueryUserInput {
 input QueryVenueInput {
   """Global id of the venue."""
   id: String!
-}
-
-""""""
-input QueryVolunteerGroupAssignmentsInput {
-  """Global id of the user."""
-  assigneeId: String
-
-  """Global id of the event."""
-  eventId: String
-
-  """Global id of the group."""
-  groupId: String
 }
 
 """
@@ -4414,12 +4308,6 @@ type TagFolderTagsConnection {
 type TagFolderTagsConnectionEdge {
   cursor: String!
   node: Tag
-}
-
-enum UpdateInviteStatus {
-  accepted
-  declined
-  no_response
 }
 
 input UpdatePluginInput {
@@ -4670,56 +4558,4 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
-}
-
-type VolunteerGroupAssignments {
-  """Volunteer group assignee."""
-  assignee: User
-
-  """Date time at the time the Group Assignment was created."""
-  createdAt: DateTime
-
-  """User who has created the Assignment."""
-  creator: User
-
-  """Volunteer group."""
-  group: VolunteerGroups
-
-  """Invitation status."""
-  inviteStatus: String
-
-  """Date time at the time the Group Assignment was last updated."""
-  updatedAt: DateTime
-
-  """User who has last updated the Assignment."""
-  updator: User
-}
-
-type VolunteerGroups {
-  """Date time at the time the Group was created."""
-  createdAt: DateTime
-
-  """User who has created the Group."""
-  creator: User
-
-  """Event for which Group was made."""
-  event: Event
-
-  """Global identifier of the group."""
-  id: ID!
-
-  """Leader assigned for the group."""
-  leader: User
-
-  """Maximum number of volunteers for this group."""
-  maxVolunteerCount: Int
-
-  """Name of the Group."""
-  name: String
-
-  """Date time at the time the Group was updated."""
-  updatedAt: DateTime
-
-  """User who has last updated the Group."""
-  updater: User
 }
