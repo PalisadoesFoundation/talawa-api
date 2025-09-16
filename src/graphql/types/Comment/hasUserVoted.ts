@@ -1,8 +1,8 @@
 import type { z } from "zod";
 import type { commentVoteTypeEnum } from "~/src/drizzle/enums/commentVoteType";
 import { builder } from "~/src/graphql/builder";
-import { CommentVoteType } from "../../enums/CommentVoteType";
 import envConfig from "~/src/utilities/graphqLimits";
+import { CommentVoteType } from "../../enums/CommentVoteType";
 import { Comment } from "./Comment";
 
 export const HasUserVotedComment = builder.objectRef<{
@@ -32,20 +32,23 @@ Comment.implement({
 		hasUserVoted: t.field({
 			args: {
 				userId: t.arg.id({
-					description: "The ID of the user to check if they have voted on this comment.",
+					description:
+						"The ID of the user to check if they have voted on this comment.",
 					required: true,
 				}),
 			},
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-			description: "Check if a specific user has voted on this comment and return vote details.",
+			description:
+				"Check if a specific user has voted on this comment and return vote details.",
 			resolve: async (parent, args, ctx) => {
-				const existingCommentVote = await ctx.drizzleClient.query.commentVotesTable.findFirst({
-					where: (fields, operators) =>
-						operators.and(
-							operators.eq(fields.commentId, parent.id),
-							operators.eq(fields.creatorId, args.userId),
-						),
-				});
+				const existingCommentVote =
+					await ctx.drizzleClient.query.commentVotesTable.findFirst({
+						where: (fields, operators) =>
+							operators.and(
+								operators.eq(fields.commentId, parent.id),
+								operators.eq(fields.creatorId, args.userId),
+							),
+					});
 
 				if (existingCommentVote === undefined) {
 					return {
