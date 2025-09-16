@@ -31,3 +31,5 @@ import "./hasUserVoted";
 import "./actionItemCategory";
 import "./actionItemsByUser";
 import "./getEventVolunteers";
+import "./getVolunteerMembership";
+import "./getEventVolunteerGroups";

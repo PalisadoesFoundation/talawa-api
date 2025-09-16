@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
+import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -169,6 +170,16 @@ builder.mutationField("createEventVolunteer", (t) =>
 					},
 				});
 			}
+
+			// Create a VolunteerMembership record for individual volunteer invitation
+			// This ensures the invitation shows up in the user portal
+			await ctx.drizzleClient.insert(volunteerMembershipsTable).values({
+				volunteerId: createdVolunteer.id,
+				groupId: null, // Individual volunteer (no group)
+				eventId: parsedArgs.data.eventId,
+				status: "invited", // Admin invited this user to volunteer
+				createdBy: currentUserId,
+			});
 
 			return createdVolunteer;
 		},

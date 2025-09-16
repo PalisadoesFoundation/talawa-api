@@ -135,7 +135,10 @@ builder.queryField("getEventVolunteers", (t) =>
 			}
 
 			// Build order by clause
-			let orderByClause;
+			let orderByClause:
+				| ReturnType<typeof asc>
+				| ReturnType<typeof desc>
+				| undefined;
 			if (parsedArgs.orderBy === "hoursVolunteered_ASC") {
 				orderByClause = asc(eventVolunteersTable.hoursVolunteered);
 			} else if (parsedArgs.orderBy === "hoursVolunteered_DESC") {

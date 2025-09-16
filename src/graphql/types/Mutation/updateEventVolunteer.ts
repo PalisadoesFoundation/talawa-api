@@ -86,7 +86,14 @@ builder.mutationField("updateEventVolunteer", (t) =>
 				});
 			}
 
-			const volunteer = existingVolunteer[0]!;
+			const volunteer = existingVolunteer[0];
+			if (!volunteer) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unexpected",
+					},
+				});
+			}
 
 			// Get event info for authorization check
 			const event = await ctx.drizzleClient.query.eventsTable.findFirst({

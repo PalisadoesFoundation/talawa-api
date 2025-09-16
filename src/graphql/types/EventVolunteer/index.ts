@@ -3,5 +3,7 @@ import "./user";
 import "./event";
 import "./creator";
 import "./updater";
+import "./groups";
 import "./createdAt";
 import "./updatedAt";
+import "./volunteerStatus";

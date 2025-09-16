@@ -128,5 +128,13 @@ export {
 	eventVolunteersTable,
 	eventVolunteersTableRelations,
 } from "./tables/EventVolunteer";
+export {
+	eventVolunteerGroupsTable,
+	eventVolunteerGroupsTableRelations,
+} from "./tables/EventVolunteerGroup";
+export {
+	volunteerMembershipsTable,
+	volunteerMembershipsTableRelations,
+} from "./tables/VolunteerMembership";
 export { venuesTable, venuesTableRelations } from "./tables/venues";
 export { pluginsTable } from "./tables/plugins";

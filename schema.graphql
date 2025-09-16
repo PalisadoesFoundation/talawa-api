@@ -669,6 +669,12 @@ type Event {
   GraphQL connection to traverse through the venues that are booked for the event.
   """
   venues(after: String, before: String, first: Int, last: Int): EventVenuesConnection
+
+  """List of volunteer groups associated with this event."""
+  volunteerGroups: [EventVolunteerGroup!]
+
+  """List of all volunteers associated with this event."""
+  volunteers: [EventVolunteer!]
 }
 
 """"""
@@ -725,6 +731,9 @@ type EventVolunteer {
   """The event being volunteered for."""
   event: Event
 
+  """List of volunteer groups this volunteer is a member of."""
+  groups: [EventVolunteerGroup!]
+
   """Boolean indicating if the volunteer has accepted the invitation."""
   hasAccepted: Boolean
 
@@ -745,6 +754,100 @@ type EventVolunteer {
 
   """The user who is volunteering for the event."""
   user: User
+
+  """
+  Computed status of the volunteer: accepted, rejected, or pending based on membership status.
+  """
+  volunteerStatus: String
+}
+
+type EventVolunteerGroup {
+  """Date time at the time the event volunteer group was created."""
+  createdAt: DateTime
+
+  """The user who created this volunteer group."""
+  creator: User
+
+  """Description of the volunteer group."""
+  description: String
+
+  """The event this volunteer group is for."""
+  event: Event
+
+  """Primary unique identifier of the event volunteer group."""
+  id: ID
+
+  """The leader of the volunteer group."""
+  leader: User
+
+  """Name of the volunteer group."""
+  name: String
+
+  """Date time at the time the event volunteer group was last updated."""
+  updatedAt: DateTime
+
+  """The user who last updated this volunteer group."""
+  updater: User
+
+  """List of volunteers who have accepted invitations to this group."""
+  volunteers: [EventVolunteer!]
+
+  """Number of volunteers required for this group."""
+  volunteersRequired: Int
+}
+
+"""Input for creating an event volunteer group."""
+input EventVolunteerGroupInput {
+  """The description of the volunteer group."""
+  description: String
+
+  """The ID of the event this group is for."""
+  eventId: ID!
+
+  """The ID of the user who will lead this group."""
+  leaderId: ID!
+
+  """The name of the volunteer group."""
+  name: String!
+
+  """List of user IDs to invite to this group (for batch invitation)."""
+  volunteerUserIds: [ID!]
+
+  """The number of volunteers required for this group."""
+  volunteersRequired: Int
+}
+
+"""Enum for ordering event volunteer groups."""
+enum EventVolunteerGroupOrderByInput {
+  """Order by number of assignments in ascending order."""
+  assignments_ASC
+
+  """Order by number of assignments in descending order."""
+  assignments_DESC
+
+  """Order by number of volunteers in ascending order."""
+  volunteers_ASC
+
+  """Order by number of volunteers in descending order."""
+  volunteers_DESC
+}
+
+"""Input for filtering event volunteer groups."""
+input EventVolunteerGroupWhereInput {
+  """Filter by event ID."""
+  eventId: ID
+
+  """Filter by leader name containing this string."""
+  leaderName: String
+
+  """Filter by group name containing this string."""
+  name_contains: String
+
+  """Filter by organization ID."""
+  orgId: ID
+
+  """Filter by user ID (for user's groups)."""
+  userId: ID
 }
 
 """Input for creating an event volunteer."""
@@ -1701,6 +1804,9 @@ type Mutation {
   """Mutation field to create an event volunteer."""
   createEventVolunteer(data: EventVolunteerInput!): EventVolunteer
 
+  """Mutation field to create an event volunteer group."""
+  createEventVolunteerGroup(data: EventVolunteerGroupInput!): EventVolunteerGroup
+
   """Mutation field to create a fund."""
   createFund(input: MutationCreateFundInput!): Fund
 
@@ -1743,6 +1849,9 @@ type Mutation {
 
   """Mutation field to create a venue booking."""
   createVenueBooking(input: MutationCreateVenueBookingInput!): Venue
+
+  """Mutation field to create a volunteer membership."""
+  createVolunteerMembership(data: VolunteerMembershipInput!): VolunteerMembership
 
   """Mutation field to delete an action item."""
   deleteActionItem(
@@ -1799,6 +1908,12 @@ type Mutation {
     """The ID of the event volunteer to delete."""
     id: ID!
   ): EventVolunteer
+
+  """Mutation field to delete an event volunteer group."""
+  deleteEventVolunteerGroup(
+    """The ID of the event volunteer group to delete."""
+    id: ID!
+  ): EventVolunteerGroup
 
   """Mutation field to delete a fund."""
   deleteFund(input: MutationDeleteFundInput!): Fund
@@ -1958,6 +2073,15 @@ type Mutation {
     id: ID!
   ): EventVolunteer
 
+  """Mutation field to update an event volunteer group."""
+  updateEventVolunteerGroup(
+    """The data to update the event volunteer group with."""
+    data: UpdateEventVolunteerGroupInput!
+
+    """The ID of the event volunteer group to update."""
+    id: ID!
+  ): EventVolunteerGroup
+
   """Mutation field to update a fund."""
   updateFund(input: MutationUpdateFundInput!): Fund
 
@@ -2013,6 +2137,15 @@ type Mutation {
 
   """Mutation field to update a venue."""
   updateVenue(input: MutationUpdateVenueInput!): Venue
+
+  """Mutation field to update a volunteer membership status."""
+  updateVolunteerMembership(
+    """The ID of the volunteer membership to update."""
+    id: ID!
+
+    """The new status for the membership."""
+    status: String!
+  ): VolunteerMembership
 
   """Upload and install a plugin from a zip file"""
   uploadPluginZip(input: UploadPluginZipInput!): Plugin
@@ -3459,6 +3592,11 @@ type Organization {
 
     """Start date for filtering events (defaults to today)"""
     startDate: DateTime
+
+    """
+    Filter to only show upcoming events (events that haven't ended yet). When true, overrides endDate to current date.
+    """
+    upcomingOnly: Boolean
   ): OrganizationEventsConnection
 
   """
@@ -3962,6 +4100,15 @@ type Query {
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Query field to get event volunteer groups."""
+  getEventVolunteerGroups(
+    """Order criteria for event volunteer groups."""
+    orderBy: EventVolunteerGroupOrderByInput
+
+    """Filter criteria for event volunteer groups."""
+    where: EventVolunteerGroupWhereInput!
+  ): [EventVolunteerGroup!]
+
   """Query field to get event volunteers."""
   getEventVolunteers(
     """Order criteria for event volunteers."""
@@ -4002,6 +4149,15 @@ type Query {
     """Input parameters to fetch plugins with optional filtering."""
     input: QueryPluginsInput
   ): [Plugin!]
+
+  """Query field to get volunteer memberships."""
+  getVolunteerMembership(
+    """Order criteria for volunteer memberships."""
+    orderBy: VolunteerMembershipOrderByInput
+
+    """Filter criteria for volunteer memberships."""
+    where: VolunteerMembershipWhereInput!
+  ): [VolunteerMembership!]
 
   """Query field to read a post vote."""
   hasUserVoted(input: QueryHasUserVotedInput!): HasUserVoted
@@ -4408,6 +4564,21 @@ type TagFolderTagsConnectionEdge {
   node: Tag
 }
 
+"""Input for updating an event volunteer group."""
+input UpdateEventVolunteerGroupInput {
+  """The updated description of the volunteer group."""
+  description: String
+
+  """The ID of the event (required for validation)."""
+  eventId: ID!
+
+  """The updated name of the volunteer group."""
+  name: String
+
+  """The updated number of volunteers required for this group."""
+  volunteersRequired: Int
+}
+
 """Input for updating an event volunteer."""
 input UpdateEventVolunteerInput {
   """List of action item IDs assigned to the volunteer."""
@@ -4668,4 +4839,111 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
+}
+
+type VolunteerMembership {
+  """Date time at the time the volunteer membership was created."""
+  createdAt: DateTime
+
+  """The user who created this membership."""
+  createdBy: User
+
+  """The event associated with this membership."""
+  event: Event
+
+  """
+  The volunteer group associated with this membership (null for individual volunteers).
+  """
+  group: EventVolunteerGroup
+
+  """Primary unique identifier of the volunteer membership."""
+  id: ID
+
+  """
+  Status of the volunteer membership (invited, requested, accepted, rejected).
+  """
+  status: String
+
+  """Date time at the time the volunteer membership was last updated."""
+  updatedAt: DateTime
+
+  """The user who last updated this membership."""
+  updatedBy: User
+
+  """The event volunteer associated with this membership."""
+  volunteer: EventVolunteer
+}
+
+"""Filter for volunteer membership type."""
+enum VolunteerMembershipFilter {
+  """Filter for group memberships."""
+  group
+
+  """Filter for individual volunteer memberships."""
+  individual
+}
+
+"""Input for creating a volunteer membership."""
+input VolunteerMembershipInput {
+  """The ID of the event."""
+  event: ID!
+
+  """
+  The ID of the volunteer group (optional for individual volunteers, null for individual volunteering).
+  """
+  group: ID
+
+  """The status of the membership."""
+  status: VolunteerMembershipStatus!
+
+  """The ID of the user."""
+  userId: ID!
+}
+
+"""Enum for ordering volunteer memberships."""
+enum VolunteerMembershipOrderByInput {
+  """Order by creation date in ascending order."""
+  createdAt_ASC
+
+  """Order by creation date in descending order."""
+  createdAt_DESC
+}
+
+"""Possible statuses for volunteer membership."""
+enum VolunteerMembershipStatus {
+  """Membership has been accepted."""
+  accepted
+
+  """Admin invited the volunteer to join a group."""
+  invited
+
+  """Membership has been rejected."""
+  rejected
+
+  """Volunteer requested to join a group."""
+  requested
+}
+
+"""Input for filtering volunteer memberships."""
+input VolunteerMembershipWhereInput {
+  """Filter by event ID."""
+  eventId: ID
+
+  """Filter by event title containing this string."""
+  eventTitle: String
+
+  """Filter by membership type (group or individual)."""
+  filter: VolunteerMembershipFilter
+
+  """Filter by group ID."""
+  groupId: ID
+
+  """Filter by membership status."""
+  status: VolunteerMembershipStatus
+
+  """Filter by user ID."""
+  userId: ID
+
+  """Filter by user name containing this string."""
+  userName: String
 }
