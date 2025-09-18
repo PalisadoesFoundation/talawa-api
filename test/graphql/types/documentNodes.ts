@@ -1230,6 +1230,18 @@ export const Query_hasUserVoted = gql(`
   }
 `);
 
+export const Query_postWithHasUserVoted = gql(`
+  query Query_postWithHasUserVoted($input: QueryPostInput!, $userId: ID!) {
+    post(input: $input) {
+      id
+      hasUserVoted(userId: $userId) {
+        voteType
+        hasVoted
+      }
+    }
+  }
+`);
+
 export const Mutation_createPostVote = gql(`
   mutation Mutation_createPostVote($input:MutationCreatePostVoteInput!){
     createPostVote(input : $input){
@@ -1672,4 +1684,60 @@ export const UPDATE_ACTION_FOR_INSTANCE_MUTATION = gql(`
       id
     }
   }
+`);
+
+export const Mutation_createComment = gql(`
+	mutation Mutation_createComment($input: MutationCreateCommentInput!) {
+		createComment(input: $input) {
+			id
+			body
+			post {
+				id
+			}
+			creator {
+				id
+			}
+		}
+	}
+`);
+
+export const Mutation_createCommentVote = gql(`
+	mutation Mutation_createCommentVote($input: MutationCreateCommentVoteInput!) {
+		createCommentVote(input: $input) {
+			id
+			body
+			creator {
+				id
+			}
+		}
+	}
+`);
+
+export const Query_comment = gql(`
+	query Query_comment($input: QueryCommentInput!) {
+		comment(input: $input) {
+			id
+			body
+			createdAt
+			post {
+				id
+			}
+			creator {
+				id
+			}
+		}
+	}
+`);
+
+export const Query_commentWithHasUserVoted = gql(`
+	query Query_commentWithHasUserVoted($input: QueryCommentInput!, $userId: ID!) {
+		comment(input: $input) {
+			id
+			body
+			hasUserVoted(userId: $userId) {
+				hasVoted
+				voteType
+			}
+		}
+	}
 `);

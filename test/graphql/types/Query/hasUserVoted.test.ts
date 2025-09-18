@@ -19,8 +19,15 @@ import {
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Query_hasUserVoted,
+	Query_postWithHasUserVoted,
 	Query_signIn,
 } from "../documentNodes";
+
+// TypeScript interfaces for GraphQL responses
+interface HasUserVotedResponse {
+	hasVoted: boolean;
+	voteType: string | null;
+}
 
 /**
  * Helper function to get admin auth token with proper error handling
@@ -134,6 +141,24 @@ async function createRegularUser(): Promise<TestUser> {
 			});
 		},
 	};
+}
+
+/**
+ * Helper function to safely extract hasUserVoted data from post response
+ */
+function getPostHasUserVotedData(response: {
+	data?: {
+		post?: {
+			hasUserVoted?: unknown;
+		} | null;
+	} | null;
+	errors?: Array<{ message: string }>;
+}): HasUserVotedResponse {
+	expect(response.errors).toBeUndefined();
+	assertToBeNonNullish(response.data);
+	assertToBeNonNullish(response.data.post);
+	assertToBeNonNullish(response.data.post.hasUserVoted);
+	return response.data.post.hasUserVoted as HasUserVotedResponse;
 }
 
 suite("Query: hasUserVoted", () => {
@@ -360,6 +385,77 @@ suite("Query: hasUserVoted", () => {
 				"down_vote",
 			);
 			expect(hasUserVotedResponse.data.hasUserVoted?.hasVoted).toEqual(true);
+		});
+	});
+	suite("Post hasUserVoted Field Tests", () => {
+		test("hasUserVoted field returns {voteType: null, hasVoted: false} when user has not voted on post", async () => {
+			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
+			// create a post
+			const { postId } = await createTestPost(cachedAdminUserId);
+
+			const postWithHasUserVotedResponse = await mercuriusClient.query(
+				Query_postWithHasUserVoted,
+				{
+					headers: {
+						authorization: `bearer ${cachedAdminToken}`,
+					},
+					variables: {
+						input: {
+							id: postId,
+						},
+						userId: cachedAdminUserId,
+					},
+				},
+			);
+
+			expect(postWithHasUserVotedResponse.data.post).not.toEqual(null);
+			expect(postWithHasUserVotedResponse.errors).toEqual(undefined);
+			const hasUserVotedData = getPostHasUserVotedData(
+				postWithHasUserVotedResponse,
+			);
+			expect(hasUserVotedData.voteType).toEqual(null);
+			expect(hasUserVotedData.hasVoted).toEqual(false);
+		});
+
+		test("hasUserVoted field returns {voteType: vote.type, hasVoted: true} when user has voted on post", async () => {
+			const { cachedAdminToken, cachedAdminUserId } = await getAdminAuthToken();
+			// create a post
+			const { postId } = await createTestPost(cachedAdminUserId);
+			// create a post vote
+			await mercuriusClient.mutate(Mutation_createPostVote, {
+				headers: {
+					authorization: `bearer ${cachedAdminToken}`,
+				},
+				variables: {
+					input: {
+						postId: postId,
+						type: "up_vote",
+					},
+				},
+			});
+
+			const postWithHasUserVotedResponse = await mercuriusClient.query(
+				Query_postWithHasUserVoted,
+				{
+					headers: {
+						authorization: `bearer ${cachedAdminToken}`,
+					},
+					variables: {
+						input: {
+							id: postId,
+						},
+						userId: cachedAdminUserId,
+					},
+				},
+			);
+
+			expect(postWithHasUserVotedResponse.data.post).not.toEqual(null);
+			expect(postWithHasUserVotedResponse.errors).toEqual(undefined);
+			const hasUserVotedData = getPostHasUserVotedData(
+				postWithHasUserVotedResponse,
+			);
+			expect(hasUserVotedData.voteType).toEqual("up_vote");
+			expect(hasUserVotedData.hasVoted).toEqual(true);
 		});
 	});
 });
