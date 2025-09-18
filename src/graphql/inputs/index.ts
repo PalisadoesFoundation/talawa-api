@@ -11,6 +11,7 @@ import "./MutationCreateCommentVoteInput";
 import "./MutationCreateEventInput";
 import "./EventVolunteerInput";
 import "./UpdateEventVolunteerInput";
+import "./DeleteEventVolunteerForInstanceInput";
 import "./EventVolunteerWhereInput";
 import "./EventVolunteersOrderByInput";
 import "./VolunteerMembershipInput";

@@ -10,6 +10,9 @@ export const eventVolunteerInputSchema = z.object({
 	userId: eventVolunteersTableInsertSchema.shape.userId,
 	eventId: eventVolunteersTableInsertSchema.shape.eventId,
 	groupId: z.string().uuid().optional(), // For compatibility with old API
+	// New fields for recurring events support
+	isTemplate: z.boolean().optional(),
+	recurringEventInstanceId: z.string().uuid().optional(),
 });
 
 /**
@@ -31,6 +34,15 @@ export const EventVolunteerInput = builder
 			}),
 			groupId: t.id({
 				description: "Optional group ID for compatibility with old API.",
+				required: false,
+			}),
+			isTemplate: t.boolean({
+				description:
+					"Whether this volunteer is a template for recurring events.",
+				required: false,
+			}),
+			recurringEventInstanceId: t.id({
+				description: "ID of specific recurring event instance (if applicable).",
 				required: false,
 			}),
 		}),

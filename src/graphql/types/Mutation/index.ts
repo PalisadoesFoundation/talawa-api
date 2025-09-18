@@ -96,6 +96,7 @@ import "./deleteActionItemForInstance";
 import "./createEventVolunteer";
 import "./updateEventVolunteer";
 import "./deleteEventVolunteer";
+import "./deleteEventVolunteerForInstance";
 import "./createVolunteerMembership";
 import "./updateVolunteerMembership";
 import "./createEventVolunteerGroup";

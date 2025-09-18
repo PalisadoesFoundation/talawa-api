@@ -4,6 +4,7 @@ import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
 import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -81,9 +82,29 @@ builder.mutationField("createEventVolunteer", (t) =>
 			}
 
 			// Check if event exists and get organization info
-			const event = await ctx.drizzleClient.query.eventsTable.findFirst({
+			// First try as regular event, then as recurring event instance
+			let event = await ctx.drizzleClient.query.eventsTable.findFirst({
 				where: eq(eventsTable.id, parsedArgs.data.eventId),
 			});
+
+			// If not found as regular event and recurringEventInstanceId is provided,
+			// this means we're creating for an instance, so get the base event
+			if (!event && parsedArgs.data.recurringEventInstanceId) {
+				const recurringInstance =
+					await ctx.drizzleClient.query.recurringEventInstancesTable.findFirst({
+						where: eq(
+							recurringEventInstancesTable.id,
+							parsedArgs.data.recurringEventInstanceId,
+						),
+					});
+
+				if (recurringInstance) {
+					// Get the base event for authorization and organization info
+					event = await ctx.drizzleClient.query.eventsTable.findFirst({
+						where: eq(eventsTable.id, recurringInstance.baseRecurringEventId),
+					});
+				}
+			}
 
 			if (!event) {
 				throw new TalawaGraphQLError({
@@ -157,6 +178,10 @@ builder.mutationField("createEventVolunteer", (t) =>
 					hasAccepted: false,
 					isPublic: true,
 					hoursVolunteered: "0",
+					// Add new fields for recurring events support
+					isTemplate: parsedArgs.data.isTemplate ?? false,
+					recurringEventInstanceId:
+						parsedArgs.data.recurringEventInstanceId ?? null,
 				})
 				.returning();
 

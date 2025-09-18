@@ -1,5 +1,5 @@
 {
-  "id": "fb270f05-a68b-44b6-a8ee-5070927f8747",
+  "id": "542c9969-e0e2-4c55-b692-da27c308beff",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -3237,6 +3237,151 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.event_volunteer_exceptions": {
+      "name": "event_volunteer_exceptions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "volunteer_id": {
+          "name": "volunteer_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recurring_event_instance_id": {
+          "name": "recurring_event_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "has_accepted": {
+          "name": "has_accepted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_public": {
+          "name": "is_public",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hours_volunteered": {
+          "name": "hours_volunteered",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted": {
+          "name": "deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "event_volunteer_exceptions_volunteer_id_event_volunteers_id_fk": {
+          "name": "event_volunteer_exceptions_volunteer_id_event_volunteers_id_fk",
+          "tableFrom": "event_volunteer_exceptions",
+          "tableTo": "event_volunteers",
+          "columnsFrom": [
+            "volunteer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "event_volunteer_exceptions_recurring_event_instance_id_recurring_event_instances_id_fk": {
+          "name": "event_volunteer_exceptions_recurring_event_instance_id_recurring_event_instances_id_fk",
+          "tableFrom": "event_volunteer_exceptions",
+          "tableTo": "recurring_event_instances",
+          "columnsFrom": [
+            "recurring_event_instance_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "event_volunteer_exceptions_created_by_users_id_fk": {
+          "name": "event_volunteer_exceptions_created_by_users_id_fk",
+          "tableFrom": "event_volunteer_exceptions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "event_volunteer_exceptions_updated_by_users_id_fk": {
+          "name": "event_volunteer_exceptions_updated_by_users_id_fk",
+          "tableFrom": "event_volunteer_exceptions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "event_volunteer_exceptions_volunteer_id_recurring_event_instance_id_unique": {
+          "name": "event_volunteer_exceptions_volunteer_id_recurring_event_instance_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "volunteer_id",
+            "recurring_event_instance_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.event_volunteer_groups": {
       "name": "event_volunteer_groups",
       "schema": "",
@@ -3495,6 +3640,19 @@
           "notNull": true,
           "default": "'0'"
         },
+        "is_template": {
+          "name": "is_template",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "recurring_event_instance_id": {
+          "name": "recurring_event_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3) with time zone",
@@ -3631,6 +3789,19 @@
           "tableTo": "users",
           "columnsFrom": [
             "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "event_volunteers_recurring_event_instance_id_recurring_event_instances_id_fk": {
+          "name": "event_volunteers_recurring_event_instance_id_recurring_event_instances_id_fk",
+          "tableFrom": "event_volunteers",
+          "tableTo": "recurring_event_instances",
+          "columnsFrom": [
+            "recurring_event_instance_id"
           ],
           "columnsTo": [
             "id"

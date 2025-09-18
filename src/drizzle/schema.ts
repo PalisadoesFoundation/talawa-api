@@ -133,6 +133,10 @@ export {
 	eventVolunteerGroupsTableRelations,
 } from "./tables/EventVolunteerGroup";
 export {
+	eventVolunteerExceptionsTable,
+	eventVolunteerExceptionsTableRelations,
+} from "./tables/eventVolunteerExceptions";
+export {
 	volunteerMembershipsTable,
 	volunteerMembershipsTableRelations,
 } from "./tables/VolunteerMembership";

@@ -547,6 +547,17 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTime
 
+"""
+Input for deleting a volunteer from a specific recurring event instance.
+"""
+input DeleteEventVolunteerForInstanceInput {
+  """The ID of the specific recurring event instance."""
+  recurringEventInstanceId: ID!
+
+  """The ID of the volunteer to delete from the instance."""
+  volunteerId: ID!
+}
+
 input DeletePluginInput {
   id: String!
 }
@@ -674,7 +685,13 @@ type Event {
   volunteerGroups: [EventVolunteerGroup!]
 
   """List of all volunteers associated with this event."""
-  volunteers: [EventVolunteer!]
+  volunteers(
+    """Order criteria for event volunteers."""
+    orderBy: EventVolunteersOrderByInput
+
+    """Filter criteria for event volunteers."""
+    where: EventVolunteerWhereInput
+  ): [EventVolunteer!]
 }
 
 """"""
@@ -743,8 +760,19 @@ type EventVolunteer {
   """Primary unique identifier of the event volunteer."""
   id: ID
 
+  """
+  Indicates whether this volunteer is currently showing instance-specific exception data.
+  """
+  isInstanceException: Boolean
+
   """Boolean indicating if the volunteer profile is public."""
   isPublic: Boolean
+
+  """Indicates whether this volunteer is a template for recurring events."""
+  isTemplate: Boolean
+
+  """The recurring event instance associated with this volunteer."""
+  recurringEventInstance: Event
 
   """Date time at the time the event volunteer was last updated."""
   updatedAt: DateTime
@@ -857,6 +885,12 @@ input EventVolunteerInput {
 
   """Optional group ID for compatibility with old API."""
   groupId: ID
+
+  """Whether this volunteer is a template for recurring events."""
+  isTemplate: Boolean
+
+  """ID of specific recurring event instance (if applicable)."""
+  recurringEventInstanceId: ID
 
   """The ID of the user volunteering for the event."""
   userId: ID!
@@ -1907,6 +1941,12 @@ type Mutation {
   deleteEventVolunteer(
     """The ID of the event volunteer to delete."""
     id: ID!
+  ): EventVolunteer
+
+  """Mutation to delete a volunteer for a single recurring event instance"""
+  deleteEventVolunteerForInstance(
+    """Delete a volunteer for a single recurring event instance"""
+    input: DeleteEventVolunteerForInstanceInput!
   ): EventVolunteer
 
   """Mutation field to delete an event volunteer group."""

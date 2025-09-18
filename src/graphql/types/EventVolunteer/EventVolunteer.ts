@@ -1,7 +1,9 @@
 import type { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
 import { builder } from "~/src/graphql/builder";
 
-export type EventVolunteer = typeof eventVolunteersTable.$inferSelect;
+export type EventVolunteer = typeof eventVolunteersTable.$inferSelect & {
+	isInstanceException?: boolean;
+};
 
 /**
  * GraphQL object reference for EventVolunteer.
@@ -45,6 +47,24 @@ EventVolunteer.implement({
 			type: "Float",
 			description: "Total hours volunteered by this volunteer for this event.",
 			resolve: (parent) => Number.parseFloat(parent.hoursVolunteered),
+		}),
+
+		isTemplate: t.exposeBoolean("isTemplate", {
+			description:
+				"Indicates whether this volunteer is a template for recurring events.",
+			nullable: true,
+		}),
+
+		isInstanceException: t.field({
+			type: "Boolean",
+			description:
+				"Indicates whether this volunteer is currently showing instance-specific exception data.",
+			resolve: (parent) => {
+				// This field will be set by the resolver when exceptions are applied
+				return Boolean(
+					(parent as { isInstanceException?: boolean }).isInstanceException,
+				);
+			},
 		}),
 	}),
 });

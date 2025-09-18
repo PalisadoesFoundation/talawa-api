@@ -7,3 +7,4 @@ import "./groups";
 import "./createdAt";
 import "./updatedAt";
 import "./volunteerStatus";
+import "./recurringEventInstance";
