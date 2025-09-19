@@ -7,3 +7,4 @@ export * from "./event";
 export * from "./organization";
 export * from "./actionItemCategory";
 export * from "./updater";
+export * from "./recurringEventInstance";

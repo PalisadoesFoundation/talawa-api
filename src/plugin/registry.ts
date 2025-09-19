@@ -83,16 +83,8 @@ export async function destroyPluginSystem(): Promise<void> {
 	}
 
 	try {
-		// Unload all plugins
-		const loadedPlugins = pluginManagerInstance.getLoadedPluginIds();
-		await Promise.all(
-			loadedPlugins.map((pluginId) =>
-				pluginManagerInstance?.unloadPlugin(pluginId),
-			),
-		);
-
-		// Remove all listeners
-		pluginManagerInstance.removeAllListeners();
+		// Use graceful shutdown to avoid unnecessary deactivation and schema updates
+		await pluginManagerInstance.gracefulShutdown();
 
 		pluginManagerInstance = null;
 	} catch (error) {

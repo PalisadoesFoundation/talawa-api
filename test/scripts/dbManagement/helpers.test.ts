@@ -327,7 +327,7 @@ suite.concurrent("insertCollections", () => {
 
 			const categoryId = "123e4567-e89b-12d3-a456-426614174001";
 			await helpers.checkAndInsertData(
-				schema.actionCategoriesTable,
+				schema.actionItemCategoriesTable,
 				[
 					{
 						id: categoryId,
@@ -341,7 +341,7 @@ suite.concurrent("insertCollections", () => {
 						isDisabled: false,
 					},
 				],
-				schema.actionCategoriesTable.id,
+				schema.actionItemCategoriesTable.id,
 				1000,
 			);
 			const mockActionItem = {
@@ -361,11 +361,12 @@ suite.concurrent("insertCollections", () => {
 				isCompleted: false,
 			};
 
-			let capturedData: (typeof schema.actionsTable.$inferInsert)[] = [];
+			let capturedData: (typeof schema.actionItemsTable.$inferInsert)[] = [];
 			const checkAndInsertDataSpy = vi
 				.spyOn(helpers, "checkAndInsertData")
 				.mockImplementation((table, data) => {
-					capturedData = data as (typeof schema.actionsTable.$inferInsert)[];
+					capturedData =
+						data as (typeof schema.actionItemsTable.$inferInsert)[];
 					return Promise.resolve(true);
 				});
 
@@ -379,9 +380,9 @@ suite.concurrent("insertCollections", () => {
 			};
 
 			await helpers.checkAndInsertData(
-				schema.actionsTable,
+				schema.actionItemsTable,
 				[actionItemWithUuid],
-				schema.actionsTable.id,
+				schema.actionItemsTable.id,
 				1000,
 			);
 

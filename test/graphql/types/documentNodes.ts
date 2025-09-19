@@ -783,6 +783,26 @@ export const Mutation_updatePost = gql(`
   }
 `);
 
+export const Mutation_updatePostVote = gql(`
+mutation Mutation_updatePostVote($input:MutationUpdatePostVoteInput!){
+    updatePostVote(input: $input) {
+    id
+    upVotesCount
+    downVotesCount
+    creator{
+      id
+    }
+    upVoters(first: 10) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+}
+  `);
+
 export const Mutation_createChat = gql(`
   mutation Mutation_createChat($input: MutationCreateChatInput!) {
     createChat(input: $input) {
@@ -1544,6 +1564,139 @@ export const Mutation_updateThisAndFollowingEvents = gql(`
         id
         name
       }
+    }
+  }
+`);
+
+export const Query_actionItems = gql(`
+    query ActionItems($id: String!) {
+        actionItemCategory(input: { id: $id }) {
+            actionItems {
+                id
+                isCompleted
+            }
+        }
+    }
+`);
+
+export const Query_eventActionItems = gql(`
+    query EventActionItems($id: String!, $first: Int, $after: String, $last: Int, $before: String) {
+        event(input: { id: $id }) {
+            actionItems(first: $first, after: $after, last: $last, before: $before) {
+                edges {
+                    node {
+                        id
+                        isCompleted
+                    }
+                }
+                pageInfo {
+                    hasNextPage
+                    hasPreviousPage
+                    startCursor
+                    endCursor
+                }
+            }
+        }
+    }
+`);
+
+export const Query_organizationActionItemCategories = gql(`
+    query OrganizationActionItemCategories($id: String!, $first: Int, $after: String, $last: Int, $before: String) {
+        organization(input: { id: $id }) {
+            actionItemCategories(first: $first, after: $after, last: $last, before: $before) {
+                edges {
+                    node {
+                        id
+                        name
+                        isDisabled
+                    }
+                }
+                pageInfo {
+                    hasNextPage
+                    hasPreviousPage
+                    startCursor
+                    endCursor
+                }
+            }
+        }
+    }
+`);
+
+export const Query_actionItemsByUser = gql(`
+  query ActionItemsByUser($input: QueryActionItemsByUserInput!) {
+    actionItemsByUser(input: $input) {
+      id
+      preCompletionNotes
+      isCompleted
+      assignedAt
+      completionAt
+      postCompletionNotes
+      category {
+        id
+        name
+      }
+      assignee {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      organization {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      createdAt
+    }
+  }
+`);
+
+export const COMPLETE_ACTION_FOR_INSTANCE_MUTATION = gql(`
+  mutation completeActionForInstance($input: MutationCompleteActionItemForInstanceInput!) {
+    completeActionItemForInstance(input: $input) {
+      id
+    }
+  }
+`);
+
+export const MARK_ACTION_ITEM_AS_PENDING_MUTATION = gql(`
+  mutation markActionItemAsPending($input: MarkActionItemAsPendingInput!) {
+    markActionItemAsPending(input: $input) {
+      id
+      isCompleted
+    }
+  }
+`);
+
+export const MARK_ACTION_AS_PENDING_FOR_INSTANCE_MUTATION = gql(`
+  mutation markActionItemAsPendingForInstance($input: MutationMarkActionAsPendingForInstanceInput!) {
+    markActionItemAsPendingForInstance(input: $input) {
+      id
+    }
+  }
+`);
+
+export const DELETE_ACTION_FOR_INSTANCE_MUTATION = gql(`
+  mutation deleteActionForInstance($input: MutationDeleteActionItemForInstanceInput!) {
+    deleteActionItemForInstance(input: $input) {
+      id
+    }
+  }
+`);
+
+export const UPDATE_ACTION_FOR_INSTANCE_MUTATION = gql(`
+  mutation updateActionForInstance($input: MutationUpdateActionItemForInstanceInput!) {
+    updateActionItemForInstance(input: $input) {
+      id
     }
   }
 `);

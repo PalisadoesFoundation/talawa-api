@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { actionsTable } from "~/src/drizzle/tables/actions";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -21,9 +21,9 @@ export const resolveActionItems = async (
 		});
 	}
 
-	const actionItems = await ctx.drizzleClient.query.actionsTable.findMany({
-		where: eq(actionsTable.categoryId, parent.id),
-		orderBy: [actionsTable.assignedAt, actionsTable.id],
+	const actionItems = await ctx.drizzleClient.query.actionItemsTable.findMany({
+		where: eq(actionItemsTable.categoryId, parent.id),
+		orderBy: [actionItemsTable.assignedAt, actionItemsTable.id],
 	});
 
 	return actionItems;

@@ -45,7 +45,7 @@ jobs:
           echo "Source Branch ${{ github.event.pull_request.head.ref }}"
           echo "Target Branch ${{ github.event.pull_request.base.ref }}"
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
-          echo "Error: Close this PR and try again."          
+          echo "Error: Close this PR and try again."
           exit 1
 
   python_checks:
@@ -213,6 +213,27 @@ jobs:
         run: cp ./envFiles/.env.ci ./.env
       - name: Build talawa api compose testing environment
         run: docker compose build
+      - name: Start Postgres service
+        run: docker compose up -d postgres
+      - name: Wait for Postgres to be ready
+        run: |
+          set -euo pipefail
+          echo "Waiting for Postgres (service: postgres)…"
+          timeout=90
+          until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Postgres not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "Error: Postgres failed to start"
+            docker compose ps
+            docker compose logs postgres
+            docker compose down -v
+            exit 1
+          else
+            echo "Postgres is ready."
+          fi
       - name: Run tests
         run: docker compose up --exit-code-from api
       - name: Copy coverage from container
@@ -326,14 +347,14 @@ jobs:
           echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
 
       - name: Echo number of changed files
-        env: 
+        env:
           CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
         run: |
           echo "Number of files changed: $CHANGED_FILES_COUNT"
 
       - name: Check if the number of changed files is less than 100
         if: steps.changed-files.outputs.all_changed_files_count > 100
-        env: 
+        env:
           CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
         run: |
           echo "Error: Too many files (greater than 100) changed in the pull request."
@@ -355,6 +376,23 @@ jobs:
         run: cp envFiles/.env.devcontainer .env
       - name: Bring up devcontainer
         run: devcontainer up --workspace-folder .
+      - name: Wait for Postgres in devcontainer
+        run: |
+          set -euo pipefail
+          POSTGRES_USER=postgres
+          echo "Waiting for Postgres service via compose..."
+          timeout=90
+          until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" >/dev/null 2>&1 || [ "$timeout" -le 0 ]; do
+            echo "Postgres not ready ($timeout s left)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ "$timeout" -eq 0 ]; then
+            echo "Error: Postgres failed to start"
+            docker compose ps
+            docker logs postgres
+            exit 1
+          fi
       - name: Wait for Devcontainer to be ready
         run: |
           echo "Waiting for devcontainer services to be ready..."

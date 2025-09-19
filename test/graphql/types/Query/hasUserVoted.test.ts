@@ -71,11 +71,13 @@ async function getAdminAuthToken(): Promise<{
 			);
 		}
 		assertToBeNonNullish(adminSignInResult.data.signIn.user);
-		cachedAdminToken = adminSignInResult.data.signIn.authenticationToken;
-		cachedAdminUserId = adminSignInResult.data.signIn.user.id;
+		const token = adminSignInResult.data.signIn.authenticationToken;
+		const id = adminSignInResult.data.signIn.user.id;
+		cachedAdminToken = token;
+		cachedAdminUserId = id;
 		return {
-			cachedAdminToken,
-			cachedAdminUserId,
+			cachedAdminToken: token,
+			cachedAdminUserId: id,
 		};
 	} catch (error) {
 		// Wrap and rethrow with more context
