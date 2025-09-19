@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { and, eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
 import { notificationTemplatesTable } from "~/src/drizzle/tables/NotificationTemplate";
 import type {
@@ -51,6 +52,8 @@ async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
 	}
 	adminToken = res.data.signIn.authenticationToken;
 	adminUserId = res.data.signIn.user.id;
+	assertToBeNonNullish(adminToken);
+	assertToBeNonNullish(adminUserId);
 	return { token: adminToken, userId: adminUserId };
 }
 
@@ -186,11 +189,16 @@ const LONG_TEST_TIMEOUT = 20000;
 beforeAll(async () => {
 	await ensureAdminAuth();
 	// Ensure notification template exists (API-level create via drizzle is allowed here because template table lacks exposed mutation; retain one-time setup)
-	const existing =
-		await server.drizzleClient.query.notificationTemplatesTable.findFirst({
-			where: (f, o) =>
-				o.and(o.eq(f.eventType, "post_created"), o.eq(f.channelType, "in_app")),
-		});
+	const [existing] = await server.drizzleClient
+		.select()
+		.from(notificationTemplatesTable)
+		.where(
+			and(
+				eq(notificationTemplatesTable.eventType, "post_created"),
+				eq(notificationTemplatesTable.channelType, "in_app"),
+			),
+		)
+		.limit(1);
 	if (!existing) {
 		await server.drizzleClient.insert(notificationTemplatesTable).values({
 			name: "New Post Created",
