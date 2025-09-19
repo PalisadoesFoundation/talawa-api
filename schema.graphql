@@ -2655,6 +2655,7 @@ input MutationJoinPublicOrganizationInput {
 input MutationReadNotificationInput {
   """One or more notification IDs to mark as read."""
   notificationIds: [ID!]!
+}
 input MutationMarkActionAsPendingForInstanceInput {
   actionId: ID!
   eventId: ID!
