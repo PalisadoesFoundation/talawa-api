@@ -10,12 +10,12 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { actionsTable } from "./actions";
+import { actionItemsTable } from "./actionItems";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
-export const actionCategoriesTable = pgTable(
-	"action_categories",
+export const actionItemCategoriesTable = pgTable(
+	"actionitem_categories",
 	{
 		createdAt: timestamp("created_at", {
 			mode: "date",
@@ -58,32 +58,32 @@ export const actionCategoriesTable = pgTable(
 	],
 );
 
-export const actionCategoriesTableRelations = relations(
-	actionCategoriesTable,
+export const actionItemCategoriesTableRelations = relations(
+	actionItemCategoriesTable,
 	({ many, one }) => ({
-		actionsWhereCategory: many(actionsTable, {
-			relationName: "action_categories.id:actions.category_id",
+		actionItemsWhereCategory: many(actionItemsTable, {
+			relationName: "actionitem_categories.id:actionitems.category_id",
 		}),
 		creator: one(usersTable, {
-			fields: [actionCategoriesTable.creatorId],
+			fields: [actionItemCategoriesTable.creatorId],
 			references: [usersTable.id],
-			relationName: "action_categories.creator_id:users.id",
+			relationName: "actionitem_categories.creator_id:users.id",
 		}),
 		organization: one(organizationsTable, {
-			fields: [actionCategoriesTable.organizationId],
+			fields: [actionItemCategoriesTable.organizationId],
 			references: [organizationsTable.id],
-			relationName: "action_categories.organization_id:organizations.id",
+			relationName: "actionitem_categories.organization_id:organizations.id",
 		}),
 		updater: one(usersTable, {
-			fields: [actionCategoriesTable.updaterId],
+			fields: [actionItemCategoriesTable.updaterId],
 			references: [usersTable.id],
-			relationName: "action_categories.updater_id:users.id",
+			relationName: "actionitem_categories.updater_id:users.id",
 		}),
 	}),
 );
 
-export const actionCategoriesTableInsertSchema = createInsertSchema(
-	actionCategoriesTable,
+export const actionItemCategoriesTableInsertSchema = createInsertSchema(
+	actionItemCategoriesTable,
 	{
 		description: (schema) => schema.min(1).max(2048).optional(),
 		name: (schema) => schema.min(1).max(256),

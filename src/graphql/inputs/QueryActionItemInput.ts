@@ -1,12 +1,12 @@
 import { z } from "zod";
-import { actionsTableInsertSchema } from "~/src/drizzle/tables/actions";
+import { actionItemsTableInsertSchema } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 
 /**
  * Defines the Zod validation schema for querying ActionItems by organizationId.
  */
 export const queryActionItemsByOrgInputSchema = z.object({
-	organizationId: actionsTableInsertSchema.shape.organizationId,
+	organizationId: actionItemsTableInsertSchema.shape.organizationId,
 });
 
 /**
@@ -30,8 +30,8 @@ export const QueryActionItemsByOrganizationInput = builder
  * Defines the Zod validation schema for querying ActionItems by userId.
  */
 export const queryActionItemsByUserInputSchema = z.object({
-	userId: actionsTableInsertSchema.shape.assigneeId.unwrap(), // Make userId required
-	organizationId: actionsTableInsertSchema.shape.organizationId.optional(), // Optional org filter
+	userId: actionItemsTableInsertSchema.shape.assigneeId.unwrap(), // Make userId required
+	organizationId: actionItemsTableInsertSchema.shape.organizationId.optional(), // Optional org filter
 });
 
 /**

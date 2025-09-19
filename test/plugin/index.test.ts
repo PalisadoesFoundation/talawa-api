@@ -205,6 +205,7 @@ describe("Plugin Index Integration", () => {
 				graphqlResolvers: {},
 				databaseTables: {},
 				hooks: {},
+				webhooks: {},
 			};
 
 			expect(loadedPlugin.id).toBe("test_plugin");
@@ -224,6 +225,9 @@ describe("Plugin Index Integration", () => {
 				hooks: {
 					pre: {},
 					post: {},
+				},
+				webhooks: {
+					handlers: {},
 				},
 			};
 

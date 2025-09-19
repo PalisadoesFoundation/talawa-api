@@ -14,6 +14,10 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+type Organization = {
+	id: string;
+};
+
 suite("Query field organizations", () => {
 	let adminAuth = "";
 	let regularUser1Email = "";
@@ -329,7 +333,9 @@ suite("Query field organizations", () => {
 		);
 		// Should not contain org2
 		expect(
-			result.data?.organizations?.find((org) => org.id === org2Id),
+			result.data?.organizations?.find(
+				(org: Organization) => org.id === org2Id,
+			),
 		).toBeUndefined();
 	});
 

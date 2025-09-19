@@ -34,7 +34,7 @@ export const pluginsTable = pgTable(
 		/**
 		 * Whether the plugin is installed.
 		 */
-		isInstalled: boolean("is_installed").notNull().default(true),
+		isInstalled: boolean("is_installed").notNull().default(false),
 
 		/**
 		 * Whether the plugin is a backup.

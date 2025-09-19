@@ -583,7 +583,8 @@ suite("Query field tag", () => {
 		const memberships =
 			organizationQueryResult.data?.organization?.members?.edges || [];
 		const isUserMember = memberships.some(
-			(membership) => membership?.node?.id === regularUserId,
+			(membership: { node?: { id?: string } | null } | null) =>
+				membership?.node?.id === regularUserId,
 		);
 
 		if (!isUserMember) {
