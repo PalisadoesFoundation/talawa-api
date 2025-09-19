@@ -13,8 +13,9 @@ export const testEnvConfigSchema = Type.Object({
 	/**
 	 * More information at this link: {@link https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNECT-HOST}
 	 */
-	API_MINIO_PUBLIC_BASE_URL:
+	API_MINIO_PUBLIC_BASE_URL: Type.Optional(
 		envConfigSchema.properties.API_MINIO_PUBLIC_BASE_URL,
+	),
 	API_POSTGRES_TEST_HOST: envConfigSchema.properties.API_POSTGRES_HOST,
 	API_REDIS_TEST_HOST: envConfigSchema.properties.API_REDIS_HOST,
 
