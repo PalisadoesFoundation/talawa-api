@@ -24,7 +24,6 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-// Custom GraphQL query for createEventVolunteerGroup
 
 // Admin auth (fetched once per suite)
 let adminToken: string | null = null;
