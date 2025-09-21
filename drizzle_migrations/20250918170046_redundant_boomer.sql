@@ -243,6 +243,22 @@ CREATE TABLE "event_volunteer_exceptions" (
 	CONSTRAINT "event_volunteer_exceptions_volunteer_id_recurring_event_instance_id_unique" UNIQUE("volunteer_id","recurring_event_instance_id")
 );
 --> statement-breakpoint
+CREATE TABLE "event_volunteer_group_exceptions" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"volunteer_group_id" uuid NOT NULL,
+	"recurring_event_instance_id" uuid NOT NULL,
+	"name" text,
+	"description" text,
+	"volunteers_required" integer,
+	"leader_id" uuid,
+	"deleted" boolean DEFAULT false,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"created_by" uuid,
+	"updated_by" uuid,
+	CONSTRAINT "event_volunteer_group_exceptions_volunteer_group_id_recurring_event_instance_id_unique" UNIQUE("volunteer_group_id","recurring_event_instance_id")
+);
+--> statement-breakpoint
 CREATE TABLE "event_volunteer_groups" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"event_id" uuid NOT NULL,
@@ -251,6 +267,8 @@ CREATE TABLE "event_volunteer_groups" (
 	"name" text NOT NULL,
 	"description" text,
 	"volunteers_required" integer,
+	"is_template" boolean DEFAULT false NOT NULL,
+	"recurring_event_instance_id" uuid,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
@@ -635,9 +653,15 @@ ALTER TABLE "event_volunteer_exceptions" ADD CONSTRAINT "event_volunteer_excepti
 ALTER TABLE "event_volunteer_exceptions" ADD CONSTRAINT "event_volunteer_exceptions_recurring_event_instance_id_recurring_event_instances_id_fk" FOREIGN KEY ("recurring_event_instance_id") REFERENCES "public"."recurring_event_instances"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteer_exceptions" ADD CONSTRAINT "event_volunteer_exceptions_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteer_exceptions" ADD CONSTRAINT "event_volunteer_exceptions_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "event_volunteer_group_exceptions" ADD CONSTRAINT "event_volunteer_group_exceptions_volunteer_group_id_event_volunteer_groups_id_fk" FOREIGN KEY ("volunteer_group_id") REFERENCES "public"."event_volunteer_groups"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "event_volunteer_group_exceptions" ADD CONSTRAINT "event_volunteer_group_exceptions_recurring_event_instance_id_recurring_event_instances_id_fk" FOREIGN KEY ("recurring_event_instance_id") REFERENCES "public"."recurring_event_instances"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "event_volunteer_group_exceptions" ADD CONSTRAINT "event_volunteer_group_exceptions_leader_id_users_id_fk" FOREIGN KEY ("leader_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "event_volunteer_group_exceptions" ADD CONSTRAINT "event_volunteer_group_exceptions_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "event_volunteer_group_exceptions" ADD CONSTRAINT "event_volunteer_group_exceptions_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_leader_id_users_id_fk" FOREIGN KEY ("leader_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_recurring_event_instance_id_recurring_event_instances_id_fk" FOREIGN KEY ("recurring_event_instance_id") REFERENCES "public"."recurring_event_instances"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteers" ADD CONSTRAINT "event_volunteers_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteers" ADD CONSTRAINT "event_volunteers_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint

@@ -102,6 +102,7 @@ import "./updateVolunteerMembership";
 import "./createEventVolunteerGroup";
 import "./updateEventVolunteerGroup";
 import "./deleteEventVolunteerGroup";
+import "./deleteEventVolunteerGroupForInstance";
 import "./createActionItemCategory";
 import "./updateActionItemCategory";
 import "./deleteActionItemCategory";

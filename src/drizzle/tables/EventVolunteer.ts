@@ -11,7 +11,6 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { eventsTable } from "./events";
-import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
 /**
@@ -73,22 +72,6 @@ export const eventVolunteersTable = pgTable(
 		})
 			.notNull()
 			.default("0"),
-
-		/**
-		 * Indicates whether this volunteer is a template for recurring events.
-		 */
-		isTemplate: boolean("is_template").notNull().default(false),
-
-		/**
-		 * Foreign key reference to specific recurring event instance (if applicable).
-		 */
-		recurringEventInstanceId: uuid("recurring_event_instance_id").references(
-			() => recurringEventInstancesTable.id,
-			{
-				onDelete: "set null",
-				onUpdate: "cascade",
-			},
-		),
 
 		/**
 		 * Date time at the time the event volunteer was created.
@@ -167,16 +150,6 @@ export const eventVolunteersTableRelations = relations(
 			fields: [eventVolunteersTable.updaterId],
 			references: [usersTable.id],
 			relationName: "event_volunteers.updater_id:users.id",
-		}),
-
-		/**
-		 * Many to one relationship from `event_volunteers` table to `recurring_event_instances` table.
-		 */
-		recurringEventInstance: one(recurringEventInstancesTable, {
-			fields: [eventVolunteersTable.recurringEventInstanceId],
-			references: [recurringEventInstancesTable.id],
-			relationName:
-				"event_volunteers.recurring_event_instance_id:recurring_event_instances.id",
 		}),
 	}),
 );

@@ -6,4 +6,4 @@ import "./volunteers";
 import "./createdAt";
 import "./updatedAt";
 import "./updater";
-import "./volunteers";
+import "./recurringEventInstance";

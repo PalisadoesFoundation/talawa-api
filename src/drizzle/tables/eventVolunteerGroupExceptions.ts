@@ -1,23 +1,24 @@
 import { relations } from "drizzle-orm";
 import {
 	boolean,
-	decimal,
+	integer,
 	pgTable,
+	text,
 	timestamp,
 	unique,
 	uuid,
 } from "drizzle-orm/pg-core";
-import { eventVolunteersTable } from "./EventVolunteer";
+import { eventVolunteerGroupsTable } from "./EventVolunteerGroup";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
-export const eventVolunteerExceptionsTable = pgTable(
-	"event_volunteer_exceptions",
+export const eventVolunteerGroupExceptionsTable = pgTable(
+	"event_volunteer_group_exceptions",
 	{
 		id: uuid("id").primaryKey().defaultRandom(),
-		volunteerId: uuid("volunteer_id")
+		volunteerGroupId: uuid("volunteer_group_id")
 			.notNull()
-			.references(() => eventVolunteersTable.id, {
+			.references(() => eventVolunteerGroupsTable.id, {
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
@@ -29,12 +30,13 @@ export const eventVolunteerExceptionsTable = pgTable(
 			}),
 		// Core participation field for template-first approach
 		participating: boolean("participating").notNull().default(true),
-		// Override fields for instance-specific volunteer data
-		hasAccepted: boolean("has_accepted"),
-		isPublic: boolean("is_public"),
-		hoursVolunteered: decimal("hours_volunteered", {
-			precision: 10,
-			scale: 2,
+		// Override fields for instance-specific volunteer group data
+		name: text("name"),
+		description: text("description"),
+		volunteersRequired: integer("volunteers_required"),
+		leaderId: uuid("leader_id").references(() => usersTable.id, {
+			onDelete: "set null",
+			onUpdate: "cascade",
 		}),
 		// Legacy deletion field (kept for backwards compatibility)
 		deleted: boolean("deleted").default(false),
@@ -51,28 +53,32 @@ export const eventVolunteerExceptionsTable = pgTable(
 	},
 	(table) => {
 		return {
-			unq: unique().on(table.volunteerId, table.recurringEventInstanceId),
+			unq: unique().on(table.volunteerGroupId, table.recurringEventInstanceId),
 		};
 	},
 );
 
-export const eventVolunteerExceptionsTableRelations = relations(
-	eventVolunteerExceptionsTable,
+export const eventVolunteerGroupExceptionsTableRelations = relations(
+	eventVolunteerGroupExceptionsTable,
 	({ one }) => ({
-		volunteer: one(eventVolunteersTable, {
-			fields: [eventVolunteerExceptionsTable.volunteerId],
-			references: [eventVolunteersTable.id],
+		volunteerGroup: one(eventVolunteerGroupsTable, {
+			fields: [eventVolunteerGroupExceptionsTable.volunteerGroupId],
+			references: [eventVolunteerGroupsTable.id],
 		}),
 		recurringEventInstance: one(recurringEventInstancesTable, {
-			fields: [eventVolunteerExceptionsTable.recurringEventInstanceId],
+			fields: [eventVolunteerGroupExceptionsTable.recurringEventInstanceId],
 			references: [recurringEventInstancesTable.id],
 		}),
+		leader: one(usersTable, {
+			fields: [eventVolunteerGroupExceptionsTable.leaderId],
+			references: [usersTable.id],
+		}),
 		createdByUser: one(usersTable, {
-			fields: [eventVolunteerExceptionsTable.createdBy],
+			fields: [eventVolunteerGroupExceptionsTable.createdBy],
 			references: [usersTable.id],
 		}),
 		updatedByUser: one(usersTable, {
-			fields: [eventVolunteerExceptionsTable.updatedBy],
+			fields: [eventVolunteerGroupExceptionsTable.updatedBy],
 			references: [usersTable.id],
 		}),
 	}),

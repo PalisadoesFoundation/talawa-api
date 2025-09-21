@@ -1,7 +1,11 @@
 import type { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
 import { builder } from "~/src/graphql/builder";
 
-export type EventVolunteerGroup = typeof eventVolunteerGroupsTable.$inferSelect;
+export type EventVolunteerGroup =
+	typeof eventVolunteerGroupsTable.$inferSelect & {
+		isInstanceException?: boolean;
+		recurringEventInstanceId?: string;
+	};
 
 /**
  * GraphQL object reference for EventVolunteerGroup.
@@ -46,6 +50,32 @@ EventVolunteerGroup.implement({
 		volunteersRequired: t.exposeInt("volunteersRequired", {
 			description: "Number of volunteers required for this group.",
 			nullable: true,
+		}),
+
+		/**
+		 * Indicates whether this volunteer group is a template for recurring events.
+		 */
+		isTemplate: t.field({
+			type: "Boolean",
+			description:
+				"Indicates whether this volunteer group is a template for recurring events.",
+			nullable: true,
+			resolve: (parent) => (parent as { isTemplate?: boolean }).isTemplate,
+		}),
+
+		/**
+		 * Indicates whether this volunteer group is currently showing instance-specific exception data.
+		 */
+		isInstanceException: t.field({
+			type: "Boolean",
+			description:
+				"Indicates whether this volunteer group is currently showing instance-specific exception data.",
+			resolve: (parent) => {
+				// This field will be set by the resolver when exceptions are applied
+				return Boolean(
+					(parent as { isInstanceException?: boolean }).isInstanceException,
+				);
+			},
 		}),
 	}),
 });

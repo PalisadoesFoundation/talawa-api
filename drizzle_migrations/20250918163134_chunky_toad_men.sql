@@ -1,0 +1,3 @@
+ALTER TABLE "event_volunteer_groups" ADD COLUMN "is_template" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "event_volunteer_groups" ADD COLUMN "recurring_event_instance_id" uuid;--> statement-breakpoint
+ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_recurring_event_instance_id_recurring_event_instances_id_fk" FOREIGN KEY ("recurring_event_instance_id") REFERENCES "public"."recurring_event_instances"("id") ON DELETE set null ON UPDATE cascade;

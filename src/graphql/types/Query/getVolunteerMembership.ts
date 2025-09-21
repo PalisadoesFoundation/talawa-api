@@ -1,8 +1,9 @@
-import { and, asc, desc, eq, ilike, isNotNull, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, isNotNull, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
 import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
 import { eventsTable } from "~/src/drizzle/tables/events";
+import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { VolunteerMembershipOrderByInput } from "~/src/graphql/inputs/VolunteerMembershipOrderByInput";
@@ -78,9 +79,34 @@ builder.queryField("getVolunteerMembership", (t) =>
 			}
 
 			if (parsedArgs.where.eventId) {
-				whereConditions.push(
-					eq(volunteerMembershipsTable.eventId, parsedArgs.where.eventId),
-				);
+				// Check if the requested event is a recurring instance
+				const instance =
+					await ctx.drizzleClient.query.recurringEventInstancesTable.findFirst({
+						where: eq(
+							recurringEventInstancesTable.id,
+							parsedArgs.where.eventId,
+						),
+					});
+
+				if (instance) {
+					// For recurring instances, show both:
+					// 1. Requests for this specific instance (THIS_INSTANCE_ONLY)
+					// 2. Requests for the entire series (ENTIRE_SERIES stored with base template ID)
+					whereConditions.push(
+						or(
+							eq(volunteerMembershipsTable.eventId, parsedArgs.where.eventId), // Instance requests
+							eq(
+								volunteerMembershipsTable.eventId,
+								instance.baseRecurringEventId,
+							), // Series requests
+						),
+					);
+				} else {
+					// For non-recurring events or base templates, use direct eventId matching
+					whereConditions.push(
+						eq(volunteerMembershipsTable.eventId, parsedArgs.where.eventId),
+					);
+				}
 			}
 
 			if (parsedArgs.where.groupId) {

@@ -19,6 +19,7 @@ import "./VolunteerMembershipWhereInput";
 import "./VolunteerMembershipOrderByInput";
 import "./EventVolunteerGroupInput";
 import "./UpdateEventVolunteerGroupInput";
+import "./DeleteEventVolunteerGroupForInstanceInput";
 import "./EventVolunteerGroupWhereInput";
 import "./MutationCreateFundCampaignInput";
 import "./MutationCreateFundCampaignPledgeInput";

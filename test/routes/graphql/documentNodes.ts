@@ -760,3 +760,14 @@ export const Mutation_createAdvertisement = gql(`
       }
   }
 `);
+
+export const Mutation_createEventVolunteer = gql(`
+  mutation Mutation_createEventVolunteer($data: EventVolunteerInput!) {
+    createEventVolunteer(data: $data) {
+      id
+      hasAccepted
+      isPublic
+      hoursVolunteered
+    }
+  }
+`);

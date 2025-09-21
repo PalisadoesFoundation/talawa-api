@@ -151,17 +151,6 @@ builder.mutationField("updateEventVolunteer", (t) =>
 				.where(eq(eventVolunteersTable.id, parsedArgs.id))
 				.returning();
 
-			if (updatedVolunteer === undefined) {
-				ctx.log.error(
-					"Postgres update operation did not return the updated event volunteer.",
-				);
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-				});
-			}
-
 			return updatedVolunteer;
 		},
 	}),

@@ -128,17 +128,6 @@ builder.mutationField("deleteEventVolunteerGroup", (t) =>
 				.where(eq(eventVolunteerGroupsTable.id, parsedArgs.id))
 				.returning();
 
-			if (deletedGroup === undefined) {
-				ctx.log.error(
-					"Postgres delete operation did not return the deleted event volunteer group.",
-				);
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-				});
-			}
-
 			return deletedGroup;
 		},
 	}),

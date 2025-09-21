@@ -3,6 +3,7 @@ import { z } from "zod";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
 import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
 import { eventsTable } from "~/src/drizzle/tables/events";
+import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -97,6 +98,113 @@ builder.mutationField("createVolunteerMembership", (t) =>
 				});
 			}
 
+			// Handle recurring event scope validation
+			let targetEventId = parsedArgs.data.event;
+			let isRecurringRelated = event.isRecurringEventTemplate;
+
+			// Check if this is a recurring event instance (has baseRecurringEventId)
+			if (!isRecurringRelated) {
+				const instance =
+					await ctx.drizzleClient.query.recurringEventInstancesTable.findFirst({
+						where: eq(recurringEventInstancesTable.id, parsedArgs.data.event),
+					});
+				if (instance) {
+					isRecurringRelated = true;
+					targetEventId = instance.baseRecurringEventId; // Use the base event for the volunteer record
+				}
+			}
+
+			if (parsedArgs.data.scope && isRecurringRelated) {
+				if (parsedArgs.data.scope === "THIS_INSTANCE_ONLY") {
+					// Validate that recurringEventInstanceId is provided
+					if (!parsedArgs.data.recurringEventInstanceId) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["data", "recurringEventInstanceId"],
+										message:
+											"recurringEventInstanceId is required when scope is THIS_INSTANCE_ONLY",
+									},
+								],
+							},
+						});
+					}
+
+					// Validate that the instance exists and belongs to this recurring event
+					const instance =
+						await ctx.drizzleClient.query.recurringEventInstancesTable.findFirst(
+							{
+								where: eq(
+									recurringEventInstancesTable.id,
+									parsedArgs.data.recurringEventInstanceId,
+								),
+							},
+						);
+
+					if (!instance) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "arguments_associated_resources_not_found",
+								issues: [
+									{
+										argumentPath: ["data", "recurringEventInstanceId"],
+									},
+								],
+							},
+						});
+					}
+
+					if (instance.baseRecurringEventId !== parsedArgs.data.event) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["data", "recurringEventInstanceId"],
+										message:
+											"Recurring event instance does not belong to the specified event",
+									},
+								],
+							},
+						});
+					}
+				} else if (parsedArgs.data.scope === "ENTIRE_SERIES") {
+					// For entire series, we work with the template event (which is already targetEventId)
+					if (parsedArgs.data.recurringEventInstanceId) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "invalid_arguments",
+								issues: [
+									{
+										argumentPath: ["data", "recurringEventInstanceId"],
+										message:
+											"recurringEventInstanceId should not be provided when scope is ENTIRE_SERIES",
+									},
+								],
+							},
+						});
+					}
+				}
+			} else if (parsedArgs.data.scope && !event.isRecurringEventTemplate) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["data", "scope"],
+								message: "scope should only be provided for recurring events",
+							},
+						],
+					},
+				});
+			} else if (!parsedArgs.data.scope && event.isRecurringEventTemplate) {
+				// For backwards compatibility, default to ENTIRE_SERIES for recurring events
+				parsedArgs.data.scope = "ENTIRE_SERIES";
+			}
+
+			// Always create the EventVolunteer record (matching old Talawa API behavior)
 			// Find or create EventVolunteer record
 			let volunteer = await ctx.drizzleClient
 				.select()
@@ -104,18 +212,19 @@ builder.mutationField("createVolunteerMembership", (t) =>
 				.where(
 					and(
 						eq(eventVolunteersTable.userId, parsedArgs.data.userId),
-						eq(eventVolunteersTable.eventId, parsedArgs.data.event),
+						eq(eventVolunteersTable.eventId, targetEventId),
 					),
 				)
 				.limit(1);
 
 			if (volunteer.length === 0) {
 				// Create EventVolunteer if it doesn't exist
+				// hasAccepted depends on status (false for requests, true for direct acceptance)
 				const [createdVolunteer] = await ctx.drizzleClient
 					.insert(eventVolunteersTable)
 					.values({
 						userId: parsedArgs.data.userId,
-						eventId: parsedArgs.data.event,
+						eventId: targetEventId,
 						creatorId: currentUserId,
 						hasAccepted: parsedArgs.data.status === "accepted",
 						isPublic: true,
@@ -134,7 +243,7 @@ builder.mutationField("createVolunteerMembership", (t) =>
 				volunteer = [createdVolunteer];
 			}
 
-			// Create the volunteer membership
+			// Create the volunteer membership record
 			if (!volunteer[0]) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -148,7 +257,7 @@ builder.mutationField("createVolunteerMembership", (t) =>
 				.values({
 					volunteerId: volunteer[0].id,
 					groupId: parsedArgs.data.group || null,
-					eventId: parsedArgs.data.event,
+					eventId: parsedArgs.data.event, // Keep original event ID (instance ID) for admin requests screen
 					status: parsedArgs.data.status,
 					createdBy: currentUserId,
 				})

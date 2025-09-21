@@ -140,5 +140,9 @@ export {
 	volunteerMembershipsTable,
 	volunteerMembershipsTableRelations,
 } from "./tables/VolunteerMembership";
+export {
+	eventVolunteerGroupExceptionsTable,
+	eventVolunteerGroupExceptionsTableRelations,
+} from "./tables/eventVolunteerGroupExceptions";
 export { venuesTable, venuesTableRelations } from "./tables/venues";
 export { pluginsTable } from "./tables/plugins";

@@ -1,6 +1,6 @@
 {
-  "id": "542c9969-e0e2-4c55-b692-da27c308beff",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "e96e7049-10aa-45ea-89f8-4ec8041106bc",
+  "prevId": "5ca6e912-6888-41bd-8a1c-e21aacbde91b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -3260,6 +3260,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "participating": {
+          "name": "participating",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
         "has_accepted": {
           "name": "has_accepted",
           "type": "boolean",
@@ -3374,6 +3381,177 @@
           "nullsNotDistinct": false,
           "columns": [
             "volunteer_id",
+            "recurring_event_instance_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.event_volunteer_group_exceptions": {
+      "name": "event_volunteer_group_exceptions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "volunteer_group_id": {
+          "name": "volunteer_group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recurring_event_instance_id": {
+          "name": "recurring_event_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "participating": {
+          "name": "participating",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "volunteers_required": {
+          "name": "volunteers_required",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "leader_id": {
+          "name": "leader_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted": {
+          "name": "deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_by": {
+          "name": "updated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "event_volunteer_group_exceptions_volunteer_group_id_event_volunteer_groups_id_fk": {
+          "name": "event_volunteer_group_exceptions_volunteer_group_id_event_volunteer_groups_id_fk",
+          "tableFrom": "event_volunteer_group_exceptions",
+          "tableTo": "event_volunteer_groups",
+          "columnsFrom": [
+            "volunteer_group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "event_volunteer_group_exceptions_recurring_event_instance_id_recurring_event_instances_id_fk": {
+          "name": "event_volunteer_group_exceptions_recurring_event_instance_id_recurring_event_instances_id_fk",
+          "tableFrom": "event_volunteer_group_exceptions",
+          "tableTo": "recurring_event_instances",
+          "columnsFrom": [
+            "recurring_event_instance_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "event_volunteer_group_exceptions_leader_id_users_id_fk": {
+          "name": "event_volunteer_group_exceptions_leader_id_users_id_fk",
+          "tableFrom": "event_volunteer_group_exceptions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "leader_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "event_volunteer_group_exceptions_created_by_users_id_fk": {
+          "name": "event_volunteer_group_exceptions_created_by_users_id_fk",
+          "tableFrom": "event_volunteer_group_exceptions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "event_volunteer_group_exceptions_updated_by_users_id_fk": {
+          "name": "event_volunteer_group_exceptions_updated_by_users_id_fk",
+          "tableFrom": "event_volunteer_group_exceptions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "updated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "event_volunteer_group_exceptions_volunteer_group_id_recurring_event_instance_id_unique": {
+          "name": "event_volunteer_group_exceptions_volunteer_group_id_recurring_event_instance_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "volunteer_group_id",
             "recurring_event_instance_id"
           ]
         }
@@ -3640,19 +3818,6 @@
           "notNull": true,
           "default": "'0'"
         },
-        "is_template": {
-          "name": "is_template",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "recurring_event_instance_id": {
-          "name": "recurring_event_instance_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp (3) with time zone",
@@ -3789,19 +3954,6 @@
           "tableTo": "users",
           "columnsFrom": [
             "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
-        "event_volunteers_recurring_event_instance_id_recurring_event_instances_id_fk": {
-          "name": "event_volunteers_recurring_event_instance_id_recurring_event_instances_id_fk",
-          "tableFrom": "event_volunteers",
-          "tableTo": "recurring_event_instances",
-          "columnsFrom": [
-            "recurring_event_instance_id"
           ],
           "columnsTo": [
             "id"

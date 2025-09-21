@@ -1612,3 +1612,260 @@ export const UPDATE_ACTION_FOR_INSTANCE_MUTATION = gql(`
     }
   }
 `);
+
+export const Mutation_createEventVolunteer = gql(`
+  mutation Mutation_createEventVolunteer($input: EventVolunteerInput!) {
+    createEventVolunteer(data: $input) {
+      id
+      hasAccepted
+      isPublic
+      hoursVolunteered
+      user {
+        id
+      }
+      event {
+        id
+      }
+    }
+  }
+`);
+
+export const Query_eventWithVolunteers =
+	gql(`query Query_eventWithVolunteers($input: QueryEventInput!) {
+    event(input: $input) {
+        id
+        name
+        description
+        startAt
+        endAt
+        creator {
+            id
+            name
+        }
+        organization {
+            id
+            countryCode
+        }
+        volunteers {
+          id
+          hasAccepted
+          isPublic
+          hoursVolunteered
+          isInstanceException
+        }
+    }
+}`);
+
+export const Mutation_createEventVolunteerGroup = gql(`
+  mutation CreateEventVolunteerGroup($data: EventVolunteerGroupInput!) {
+    createEventVolunteerGroup(data: $data) {
+      id
+      name
+      description
+      volunteersRequired
+      leader {
+        id
+        name
+      }
+      event {
+        id
+      }
+    }
+  }
+`);
+
+export const Mutation_createVolunteerMembership = gql(`
+  mutation CreateVolunteerMembership($data: VolunteerMembershipInput!) {
+    createVolunteerMembership(data: $data) {
+      id
+      status
+      volunteer {
+        id
+        user {
+          id
+        }
+      }
+      event {
+        id
+      }
+      group {
+        id
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteEventVolunteer = gql(`
+  mutation Mutation_deleteEventVolunteer($id: ID!) {
+    deleteEventVolunteer(id: $id) {
+      id
+      hasAccepted
+      isPublic
+      hoursVolunteered
+      user {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+      createdAt
+    }
+  }
+`);
+
+export const Mutation_deleteEventVolunteerForInstance = gql(`
+  mutation Mutation_deleteEventVolunteerForInstance($input: DeleteEventVolunteerForInstanceInput!) {
+    deleteEventVolunteerForInstance(input: $input) {
+      id
+      hasAccepted
+      isPublic
+      hoursVolunteered
+      user {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+      createdAt
+    }
+  }
+`);
+
+export const Mutation_deleteEventVolunteerGroup = gql(`
+  mutation Mutation_deleteEventVolunteerGroup($id: ID!) {
+    deleteEventVolunteerGroup(id: $id) {
+      id
+      name
+      description
+      volunteersRequired
+      leader {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_deleteEventVolunteerGroupForInstance = gql(`
+  mutation Mutation_deleteEventVolunteerGroupForInstance($input: DeleteEventVolunteerGroupForInstanceInput!) {
+    deleteEventVolunteerGroupForInstance(input: $input) {
+      id
+      name
+      description
+      volunteersRequired
+      leader {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_updateEventVolunteer = gql(`
+  mutation Mutation_updateEventVolunteer($id: ID!, $data: UpdateEventVolunteerInput) {
+    updateEventVolunteer(id: $id, data: $data) {
+      id
+      hasAccepted
+      isPublic
+      hoursVolunteered
+      user {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_updateEventVolunteerGroup = gql(`
+  mutation Mutation_updateEventVolunteerGroup($id: ID!, $data: UpdateEventVolunteerGroupInput!) {
+    updateEventVolunteerGroup(id: $id, data: $data) {
+      id
+      name
+      description
+      volunteersRequired
+      leader {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_updateVolunteerMembership = gql(`
+  mutation Mutation_updateVolunteerMembership($id: ID!, $status: String!) {
+    updateVolunteerMembership(id: $id, status: $status) {
+      id
+      status
+      volunteer {
+        id
+        hasAccepted
+        user {
+          id
+          name
+        }
+      }
+      event {
+        id
+        name
+      }
+      group {
+        id
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`);

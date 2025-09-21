@@ -1,4 +1,4 @@
-import { and, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, eq, ilike, inArray } from "drizzle-orm";
 
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
 import { eventVolunteerExceptionsTable } from "~/src/drizzle/tables/eventVolunteerExceptions";
@@ -94,32 +94,13 @@ export const EventVolunteersResolver = async (
 			? parent.baseRecurringEventId
 			: parent.id;
 
-	// Get volunteers from both template and instance-specific records
+	// Template-First Hierarchy: Get volunteers based on new pattern
 	let volunteers = await ctx.drizzleClient.query.eventVolunteersTable.findMany({
-		where: and(
-			or(
-				// Template volunteers from base event (for recurring instances)
-				...(recurringInstance
-					? [
-							and(
-								eq(eventVolunteersTable.eventId, baseEventId),
-								eq(eventVolunteersTable.isTemplate, true),
-							),
-						]
-					: []),
-				// Direct volunteers for this specific event/instance
+		where: recurringInstance
+			? // For recurring event instances: ALL volunteers come from the base event (templates by default)
+				eq(eventVolunteersTable.eventId, baseEventId)
+			: // For regular events: Get volunteers directly associated with this event
 				eq(eventVolunteersTable.eventId, parent.id),
-				// Instance-specific volunteers (with recurringEventInstanceId set)
-				...(recurringInstance
-					? [
-							and(
-								eq(eventVolunteersTable.eventId, baseEventId),
-								eq(eventVolunteersTable.recurringEventInstanceId, parent.id),
-							),
-						]
-					: []),
-			),
-		),
 	});
 
 	const volunteerIds = volunteers.map((volunteer) => volunteer.id);
@@ -138,12 +119,12 @@ export const EventVolunteersResolver = async (
 			exceptions.map((exception) => [exception.volunteerId, exception]),
 		);
 
-		// Filter out deleted volunteers and apply exceptions
+		// Filter out non-participating volunteers and apply exceptions
 		volunteers = volunteers.filter((volunteer) => {
 			const exception = exceptionsMap.get(volunteer.id);
 
-			// If the volunteer is marked as deleted for this instance, exclude it
-			if (exception?.deleted === true) {
+			// If the volunteer is marked as not participating for this instance, exclude it
+			if (exception?.participating === false || exception?.deleted === true) {
 				return false;
 			}
 

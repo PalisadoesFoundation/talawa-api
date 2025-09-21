@@ -558,6 +558,17 @@ input DeleteEventVolunteerForInstanceInput {
   volunteerId: ID!
 }
 
+"""
+Input for deleting a volunteer group from a specific recurring event instance.
+"""
+input DeleteEventVolunteerGroupForInstanceInput {
+  """The ID of the specific recurring event instance."""
+  recurringEventInstanceId: ID!
+
+  """The ID of the volunteer group to delete from the instance."""
+  volunteerGroupId: ID!
+}
+
 input DeletePluginInput {
   id: String!
 }
@@ -768,9 +779,6 @@ type EventVolunteer {
   """Boolean indicating if the volunteer profile is public."""
   isPublic: Boolean
 
-  """Indicates whether this volunteer is a template for recurring events."""
-  isTemplate: Boolean
-
   """The recurring event instance associated with this volunteer."""
   recurringEventInstance: Event
 
@@ -805,11 +813,24 @@ type EventVolunteerGroup {
   """Primary unique identifier of the event volunteer group."""
   id: ID
 
+  """
+  Indicates whether this volunteer group is currently showing instance-specific exception data.
+  """
+  isInstanceException: Boolean
+
+  """
+  Indicates whether this volunteer group is a template for recurring events.
+  """
+  isTemplate: Boolean
+
   """The leader of the volunteer group."""
   leader: User
 
   """Name of the volunteer group."""
   name: String
+
+  """The recurring event instance associated with this volunteer group."""
+  recurringEventInstance: Event
 
   """Date time at the time the event volunteer group was last updated."""
   updatedAt: DateTime
@@ -837,6 +858,16 @@ input EventVolunteerGroupInput {
 
   """The name of the volunteer group."""
   name: String!
+
+  """
+  ID of specific recurring event instance (for 'THIS_INSTANCE_ONLY' scope).
+  """
+  recurringEventInstanceId: ID
+
+  """
+  Whether this volunteer group applies to 'ENTIRE_SERIES' (template) or 'THIS_INSTANCE_ONLY'
+  """
+  scope: VolunteerGroupScope
 
   """List of user IDs to invite to this group (for batch invitation)."""
   volunteerUserIds: [ID!]
@@ -886,11 +917,15 @@ input EventVolunteerInput {
   """Optional group ID for compatibility with old API."""
   groupId: ID
 
-  """Whether this volunteer is a template for recurring events."""
-  isTemplate: Boolean
-
-  """ID of specific recurring event instance (if applicable)."""
+  """
+  ID of specific recurring event instance (for 'THIS_INSTANCE_ONLY' scope).
+  """
   recurringEventInstanceId: ID
+
+  """
+  Whether this volunteer applies to 'ENTIRE_SERIES' (template) or 'THIS_INSTANCE_ONLY'
+  """
+  scope: VolunteerScope
 
   """The ID of the user volunteering for the event."""
   userId: ID!
@@ -1953,6 +1988,14 @@ type Mutation {
   deleteEventVolunteerGroup(
     """The ID of the event volunteer group to delete."""
     id: ID!
+  ): EventVolunteerGroup
+
+  """
+  Mutation to delete a volunteer group for a single recurring event instance
+  """
+  deleteEventVolunteerGroupForInstance(
+    """Delete a volunteer group for a single recurring event instance"""
+    input: DeleteEventVolunteerGroupForInstanceInput!
   ): EventVolunteerGroup
 
   """Mutation field to delete a fund."""
@@ -4149,15 +4192,6 @@ type Query {
     where: EventVolunteerGroupWhereInput!
   ): [EventVolunteerGroup!]
 
-  """Query field to get event volunteers."""
-  getEventVolunteers(
-    """Order criteria for event volunteers."""
-    orderBy: EventVolunteersOrderByInput
-
-    """Filter criteria for event volunteers."""
-    where: EventVolunteerWhereInput!
-  ): [EventVolunteer!]
-
   """Query field to get fund campaign pledges associated with a user."""
   getPledgesByUserId(
     """Input parameters to fetch pledges by userId."""
@@ -4881,6 +4915,11 @@ type VenueEventsConnectionEdge {
   node: Event
 }
 
+enum VolunteerGroupScope {
+  ENTIRE_SERIES
+  THIS_INSTANCE_ONLY
+}
+
 type VolunteerMembership {
   """Date time at the time the volunteer membership was created."""
   createdAt: DateTime
@@ -4933,6 +4972,16 @@ input VolunteerMembershipInput {
   """
   group: ID
 
+  """
+  ID of specific recurring event instance (for 'THIS_INSTANCE_ONLY' scope).
+  """
+  recurringEventInstanceId: ID
+
+  """
+  Whether this volunteer membership applies to 'ENTIRE_SERIES' (template) or 'THIS_INSTANCE_ONLY'
+  """
+  scope: VolunteerMembershipScope
+
   """The status of the membership."""
   status: VolunteerMembershipStatus!
 
@@ -4947,6 +4996,11 @@ enum VolunteerMembershipOrderByInput {
 
   """Order by creation date in descending order."""
   createdAt_DESC
+}
+
+enum VolunteerMembershipScope {
+  ENTIRE_SERIES
+  THIS_INSTANCE_ONLY
 }
 
 """Possible statuses for volunteer membership."""
@@ -4986,4 +5040,9 @@ input VolunteerMembershipWhereInput {
 
   """Filter by user name containing this string."""
   userName: String
+}
+
+enum VolunteerScope {
+  ENTIRE_SERIES
+  THIS_INSTANCE_ONLY
 }

@@ -3,8 +3,10 @@ import { z } from "zod";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
 import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
 import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
+import { eventVolunteerGroupExceptionsTable } from "~/src/drizzle/tables/eventVolunteerGroupExceptions";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -82,12 +84,29 @@ builder.mutationField("createEventVolunteerGroup", (t) =>
 				});
 			}
 
-			// Check if event exists and get organization info
-			const event = await ctx.drizzleClient.query.eventsTable.findFirst({
+			// Template-First Hierarchy: Determine target event
+			let recurringInstance:
+				| typeof recurringEventInstancesTable.$inferSelect
+				| undefined;
+
+			// Template-First: eventId is always the base event, check if recurringEventInstanceId is provided
+			if (parsedArgs.data.recurringEventInstanceId) {
+				// Get the recurring instance
+				recurringInstance =
+					await ctx.drizzleClient.query.recurringEventInstancesTable.findFirst({
+						where: eq(
+							recurringEventInstancesTable.id,
+							parsedArgs.data.recurringEventInstanceId,
+						),
+					});
+			}
+
+			// Get the target event (base event)
+			const targetEvent = await ctx.drizzleClient.query.eventsTable.findFirst({
 				where: eq(eventsTable.id, parsedArgs.data.eventId),
 			});
 
-			if (!event) {
+			if (!targetEvent) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
@@ -100,6 +119,8 @@ builder.mutationField("createEventVolunteerGroup", (t) =>
 				});
 			}
 
+			const baseEvent = targetEvent;
+
 			// Check if current user is authorized (organization admin or event creator)
 			const currentUserMembership =
 				await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
@@ -107,13 +128,13 @@ builder.mutationField("createEventVolunteerGroup", (t) =>
 						eq(organizationMembershipsTable.memberId, currentUserId),
 						eq(
 							organizationMembershipsTable.organizationId,
-							event.organizationId,
+							targetEvent.organizationId,
 						),
 					),
 				});
 
 			const isOrgAdmin = currentUserMembership?.role === "administrator";
-			const isEventCreator = event.creatorId === currentUserId;
+			const isEventCreator = targetEvent.creatorId === currentUserId;
 
 			if (!isOrgAdmin && !isEventCreator) {
 				throw new TalawaGraphQLError({
@@ -123,120 +144,303 @@ builder.mutationField("createEventVolunteerGroup", (t) =>
 				});
 			}
 
-			// Check if group name already exists for this event
-			const existingGroup = await ctx.drizzleClient
-				.select()
-				.from(eventVolunteerGroupsTable)
-				.where(
-					and(
-						eq(eventVolunteerGroupsTable.eventId, parsedArgs.data.eventId),
-						eq(eventVolunteerGroupsTable.name, parsedArgs.data.name),
-					),
-				)
-				.limit(1);
+			// Template-First Hierarchy Implementation
+			const scope = parsedArgs.data.scope ?? "ENTIRE_SERIES";
 
-			if (existingGroup.length > 0) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "invalid_arguments",
-						issues: [
-							{
-								argumentPath: ["data", "name"],
-								message:
-									"A volunteer group with this name already exists for this event",
-							},
-						],
-					},
-				});
-			}
+			if (scope === "ENTIRE_SERIES") {
+				// Create group in base event (template by default)
+				const targetEventId = baseEvent.id;
 
-			// Create the volunteer group
-			const [createdGroup] = await ctx.drizzleClient
-				.insert(eventVolunteerGroupsTable)
-				.values({
-					eventId: parsedArgs.data.eventId,
-					leaderId: parsedArgs.data.leaderId,
-					creatorId: currentUserId,
-					name: parsedArgs.data.name,
-					description: parsedArgs.data.description || null,
-					volunteersRequired: parsedArgs.data.volunteersRequired || null,
-				})
-				.returning();
-
-			if (createdGroup === undefined) {
-				ctx.log.error(
-					"Postgres insert operation did not return the inserted event volunteer group.",
-				);
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-				});
-			}
-
-			// EXACT OLD API LOGIC: Fetch existing volunteers or create new ones
-			if (
-				parsedArgs.data.volunteerUserIds &&
-				parsedArgs.data.volunteerUserIds.length > 0
-			) {
-				// Step 1: Find existing EventVolunteer records (matches old API line 98-101)
-				const volunteers = await ctx.drizzleClient
+				// Check if group name already exists
+				const existingGroup = await ctx.drizzleClient
 					.select()
-					.from(eventVolunteersTable)
+					.from(eventVolunteerGroupsTable)
 					.where(
 						and(
-							inArray(
-								eventVolunteersTable.userId,
-								parsedArgs.data.volunteerUserIds,
-							),
-							eq(eventVolunteersTable.eventId, parsedArgs.data.eventId),
+							eq(eventVolunteerGroupsTable.eventId, targetEventId),
+							eq(eventVolunteerGroupsTable.name, parsedArgs.data.name),
 						),
-					);
-
-				// Step 2: Identify users who need new EventVolunteer records (matches old API line 103-106)
-				const existingVolunteerUserIds = volunteers.map((vol) => vol.userId);
-				const newVolunteerUserIds = parsedArgs.data.volunteerUserIds.filter(
-					(id) => !existingVolunteerUserIds.includes(id),
-				);
-
-				// Step 3: Bulk create new EventVolunteer records (matches old API line 109-116)
-				const newVolunteers = await ctx.drizzleClient
-					.insert(eventVolunteersTable)
-					.values(
-						newVolunteerUserIds.map((userId) => ({
-							userId,
-							eventId: parsedArgs.data.eventId,
-							creatorId: currentUserId,
-							hasAccepted: false,
-							isPublic: true,
-							hoursVolunteered: "0",
-						})),
 					)
+					.limit(1);
+
+				if (existingGroup.length > 0) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["data", "name"],
+									message:
+										"A volunteer group with this name already exists for this event series",
+								},
+							],
+						},
+					});
+				}
+
+				// Create template volunteer group
+				const [createdGroup] = await ctx.drizzleClient
+					.insert(eventVolunteerGroupsTable)
+					.values({
+						eventId: targetEventId,
+						leaderId: parsedArgs.data.leaderId,
+						creatorId: currentUserId,
+						name: parsedArgs.data.name,
+						description: parsedArgs.data.description || null,
+						volunteersRequired: parsedArgs.data.volunteersRequired || null,
+					})
 					.returning();
 
-				// Step 4: Get all volunteer IDs (matches old API line 118-121)
-				const allVolunteerIds = [
-					...volunteers.map((v) => v.id),
-					...newVolunteers.map((v) => v.id),
-				];
+				if (createdGroup === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
+					});
+				}
 
-				// Step 5: Bulk create VolunteerMembership records (matches old API line 124-132)
-				await ctx.drizzleClient.insert(volunteerMembershipsTable).values(
-					allVolunteerIds.map((volunteerId) => ({
-						volunteerId,
-						groupId: createdGroup.id, // GROUP membership
-						eventId: parsedArgs.data.eventId,
-						status: "invited" as const,
-						createdBy: currentUserId,
-					})),
-				);
+				// Handle volunteer assignments if provided
+				if (
+					parsedArgs.data.volunteerUserIds &&
+					parsedArgs.data.volunteerUserIds.length > 0
+				) {
+					// Find existing volunteers in the base event
+					const volunteers = await ctx.drizzleClient
+						.select()
+						.from(eventVolunteersTable)
+						.where(
+							and(
+								inArray(
+									eventVolunteersTable.userId,
+									parsedArgs.data.volunteerUserIds,
+								),
+								eq(eventVolunteersTable.eventId, targetEventId),
+							),
+						);
 
-				ctx.log.info(
-					`Created volunteer group with invitations: groupId=${createdGroup.id}, existingVolunteers=${volunteers.length}, newVolunteers=${newVolunteers.length}, totalInvited=${allVolunteerIds.length}`,
-				);
+					const existingVolunteerUserIds = volunteers.map((vol) => vol.userId);
+					const newVolunteerUserIds = parsedArgs.data.volunteerUserIds.filter(
+						(id) => !existingVolunteerUserIds.includes(id),
+					);
+
+					// Create new volunteers if needed
+					let newVolunteers: (typeof eventVolunteersTable.$inferSelect)[] = [];
+					if (newVolunteerUserIds.length > 0) {
+						newVolunteers = await ctx.drizzleClient
+							.insert(eventVolunteersTable)
+							.values(
+								newVolunteerUserIds.map((userId) => ({
+									userId,
+									eventId: targetEventId,
+									creatorId: currentUserId,
+									hasAccepted: false,
+									isPublic: true,
+									hoursVolunteered: "0",
+								})),
+							)
+							.returning();
+					}
+
+					const allVolunteerIds = [
+						...volunteers.map((v) => v.id),
+						...newVolunteers.map((v) => v.id),
+					];
+
+					// Create group memberships
+					await ctx.drizzleClient.insert(volunteerMembershipsTable).values(
+						allVolunteerIds.map((volunteerId) => ({
+							volunteerId,
+							groupId: createdGroup.id,
+							eventId: targetEventId,
+							status: "invited" as const,
+							createdBy: currentUserId,
+						})),
+					);
+				}
+
+				return createdGroup;
 			}
 
-			return createdGroup;
+			if (scope === "THIS_INSTANCE_ONLY") {
+				// Create template + exceptions for all OTHER instances
+				if (!parsedArgs.data.recurringEventInstanceId) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["data", "recurringEventInstanceId"],
+									message:
+										"recurringEventInstanceId is required for THIS_INSTANCE_ONLY scope",
+								},
+							],
+						},
+					});
+				}
+
+				// Validate that the recurringInstance exists
+				if (!recurringInstance) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [
+								{
+									argumentPath: ["data", "recurringEventInstanceId"],
+								},
+							],
+						},
+					});
+				}
+
+				const targetEventId = baseEvent.id;
+
+				// Check if template group already exists
+				const existingGroup = await ctx.drizzleClient
+					.select()
+					.from(eventVolunteerGroupsTable)
+					.where(
+						and(
+							eq(eventVolunteerGroupsTable.eventId, targetEventId),
+							eq(eventVolunteerGroupsTable.name, parsedArgs.data.name),
+						),
+					)
+					.limit(1);
+
+				let volunteerGroup: NonNullable<(typeof existingGroup)[0]>;
+				if (existingGroup.length > 0) {
+					volunteerGroup = existingGroup[0] as NonNullable<
+						(typeof existingGroup)[0]
+					>;
+				} else {
+					// Create template volunteer group
+					const [createdGroup] = await ctx.drizzleClient
+						.insert(eventVolunteerGroupsTable)
+						.values({
+							eventId: targetEventId,
+							leaderId: parsedArgs.data.leaderId,
+							creatorId: currentUserId,
+							name: parsedArgs.data.name,
+							description: parsedArgs.data.description || null,
+							volunteersRequired: parsedArgs.data.volunteersRequired || null,
+						})
+						.returning();
+
+					if (createdGroup === undefined) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
+					volunteerGroup = createdGroup;
+
+					// Handle volunteer assignments if provided
+					if (
+						parsedArgs.data.volunteerUserIds &&
+						parsedArgs.data.volunteerUserIds.length > 0
+					) {
+						// Find existing volunteers
+						const volunteers = await ctx.drizzleClient
+							.select()
+							.from(eventVolunteersTable)
+							.where(
+								and(
+									inArray(
+										eventVolunteersTable.userId,
+										parsedArgs.data.volunteerUserIds,
+									),
+									eq(eventVolunteersTable.eventId, targetEventId),
+								),
+							);
+
+						const existingVolunteerUserIds = volunteers.map(
+							(vol) => vol.userId,
+						);
+						const newVolunteerUserIds = parsedArgs.data.volunteerUserIds.filter(
+							(id) => !existingVolunteerUserIds.includes(id),
+						);
+
+						// Create new volunteers if needed
+						let newVolunteers: (typeof eventVolunteersTable.$inferSelect)[] =
+							[];
+						if (newVolunteerUserIds.length > 0) {
+							newVolunteers = await ctx.drizzleClient
+								.insert(eventVolunteersTable)
+								.values(
+									newVolunteerUserIds.map((userId) => ({
+										userId,
+										eventId: targetEventId,
+										creatorId: currentUserId,
+										hasAccepted: false,
+										isPublic: true,
+										hoursVolunteered: "0",
+									})),
+								)
+								.returning();
+						}
+
+						const allVolunteerIds = [
+							...volunteers.map((v) => v.id),
+							...newVolunteers.map((v) => v.id),
+						];
+
+						// Create group memberships
+						await ctx.drizzleClient.insert(volunteerMembershipsTable).values(
+							allVolunteerIds.map((volunteerId) => ({
+								volunteerId,
+								groupId: volunteerGroup.id,
+								eventId: targetEventId,
+								status: "invited" as const,
+								createdBy: currentUserId,
+							})),
+						);
+					}
+				}
+
+				// Get all OTHER recurring instances and create exceptions with deleted=true
+				const allInstances =
+					await ctx.drizzleClient.query.recurringEventInstancesTable.findMany({
+						where: eq(
+							recurringEventInstancesTable.baseRecurringEventId,
+							baseEvent.id,
+						),
+					});
+
+				const otherInstances = allInstances.filter(
+					(instance) =>
+						instance.id !== parsedArgs.data.recurringEventInstanceId,
+				);
+
+				// Create exceptions for all other instances (deleted=true means hidden from those instances)
+				if (otherInstances.length > 0) {
+					await ctx.drizzleClient
+						.insert(eventVolunteerGroupExceptionsTable)
+						.values(
+							otherInstances.map((instance) => ({
+								volunteerGroupId: volunteerGroup.id,
+								recurringEventInstanceId: instance.id,
+								participating: false, // Hide from all other instances
+								deleted: true, // Legacy field for backward compatibility
+								createdBy: currentUserId,
+							})),
+						)
+						.onConflictDoUpdate({
+							target: [
+								eventVolunteerGroupExceptionsTable.volunteerGroupId,
+								eventVolunteerGroupExceptionsTable.recurringEventInstanceId,
+							],
+							set: {
+								participating: false,
+								deleted: true, // Keep for backward compatibility
+								updatedBy: currentUserId,
+								updatedAt: new Date(),
+							},
+						});
+				}
+
+				return volunteerGroup;
+			}
 		},
 	}),
 );

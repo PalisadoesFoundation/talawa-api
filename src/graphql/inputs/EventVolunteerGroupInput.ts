@@ -3,6 +3,16 @@ import { eventVolunteerGroupsTableInsertSchema } from "~/src/drizzle/tables/Even
 import { builder } from "~/src/graphql/builder";
 
 /**
+ * GraphQL enum for volunteer group scope in recurring events.
+ */
+const VolunteerGroupScopeEnum = builder.enumType("VolunteerGroupScope", {
+	values: {
+		ENTIRE_SERIES: { value: "ENTIRE_SERIES" },
+		THIS_INSTANCE_ONLY: { value: "THIS_INSTANCE_ONLY" },
+	},
+});
+
+/**
  * Zod schema for EventVolunteerGroupInput validation.
  * Based on the old Talawa API EventVolunteerGroupInput structure.
  */
@@ -15,6 +25,9 @@ export const eventVolunteerGroupInputSchema = z.object({
 	volunteersRequired:
 		eventVolunteerGroupsTableInsertSchema.shape.volunteersRequired.optional(),
 	volunteerUserIds: z.array(z.string().uuid()).optional(), // For batch invitation in Chunk 5
+	// Template-First Hierarchy: scope defines whether this is for "entire series" or "this instance only"
+	scope: z.enum(["ENTIRE_SERIES", "THIS_INSTANCE_ONLY"]).optional(),
+	recurringEventInstanceId: z.string().uuid().optional(), // For "THIS_INSTANCE_ONLY" scope
 });
 
 /**
@@ -51,6 +64,17 @@ export const EventVolunteerGroupInput = builder
 			volunteerUserIds: t.idList({
 				description:
 					"List of user IDs to invite to this group (for batch invitation).",
+				required: false,
+			}),
+			scope: t.field({
+				type: VolunteerGroupScopeEnum,
+				description:
+					"Whether this volunteer group applies to 'ENTIRE_SERIES' (template) or 'THIS_INSTANCE_ONLY'",
+				required: false,
+			}),
+			recurringEventInstanceId: t.id({
+				description:
+					"ID of specific recurring event instance (for 'THIS_INSTANCE_ONLY' scope).",
 				required: false,
 			}),
 		}),

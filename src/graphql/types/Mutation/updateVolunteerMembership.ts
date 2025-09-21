@@ -101,19 +101,20 @@ builder.mutationField("updateVolunteerMembership", (t) =>
 				});
 			}
 
-			// CRITICAL FIX: Also update the EventVolunteer's hasAccepted field
-			// This ensures the admin screen shows the correct status
-			const hasAccepted = parsedArgs.status === "accepted";
-			await ctx.drizzleClient
-				.update(eventVolunteersTable)
-				.set({
-					hasAccepted,
-					updaterId: currentUserId,
-				})
-				.where(eq(eventVolunteersTable.id, updatedMembership.volunteerId));
+			// If there's an existing EventVolunteer, update its hasAccepted field
+			if (updatedMembership.volunteerId) {
+				const hasAccepted = parsedArgs.status === "accepted";
+				await ctx.drizzleClient
+					.update(eventVolunteersTable)
+					.set({
+						hasAccepted,
+						updaterId: currentUserId,
+					})
+					.where(eq(eventVolunteersTable.id, updatedMembership.volunteerId));
+			}
 
 			ctx.log.info(
-				`Updated volunteer membership status: membershipId=${parsedArgs.id}, status=${parsedArgs.status}, volunteerId=${updatedMembership.volunteerId}, hasAccepted=${hasAccepted}`,
+				`Updated volunteer membership status: membershipId=${parsedArgs.id}, status=${parsedArgs.status}, volunteerId=${updatedMembership.volunteerId}`,
 			);
 
 			return updatedMembership;
