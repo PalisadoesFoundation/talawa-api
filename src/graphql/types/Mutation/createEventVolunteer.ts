@@ -22,7 +22,7 @@ const mutationCreateEventVolunteerArgumentsSchema = z.object({
 
 /**
  * GraphQL mutation to create an event volunteer.
- * Based on the old Talawa API createEventVolunteer mutation.
+ * Based on the Talawa API createEventVolunteer mutation.
  */
 builder.mutationField("createEventVolunteer", (t) =>
 	t.field({
