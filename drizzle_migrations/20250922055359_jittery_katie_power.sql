@@ -232,6 +232,7 @@ CREATE TABLE "event_volunteer_exceptions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"volunteer_id" uuid NOT NULL,
 	"recurring_event_instance_id" uuid NOT NULL,
+	"participating" boolean DEFAULT true NOT NULL,
 	"has_accepted" boolean,
 	"is_public" boolean,
 	"hours_volunteered" numeric(10, 2),
@@ -247,6 +248,7 @@ CREATE TABLE "event_volunteer_group_exceptions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"volunteer_group_id" uuid NOT NULL,
 	"recurring_event_instance_id" uuid NOT NULL,
+	"participating" boolean DEFAULT true NOT NULL,
 	"name" text,
 	"description" text,
 	"volunteers_required" integer,
@@ -267,8 +269,6 @@ CREATE TABLE "event_volunteer_groups" (
 	"name" text NOT NULL,
 	"description" text,
 	"volunteers_required" integer,
-	"is_template" boolean DEFAULT false NOT NULL,
-	"recurring_event_instance_id" uuid,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
@@ -282,8 +282,6 @@ CREATE TABLE "event_volunteers" (
 	"has_accepted" boolean DEFAULT false NOT NULL,
 	"is_public" boolean DEFAULT true NOT NULL,
 	"hours_volunteered" numeric(10, 2) DEFAULT '0' NOT NULL,
-	"is_template" boolean DEFAULT false NOT NULL,
-	"recurring_event_instance_id" uuid,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp (3) with time zone,
 	"updater_id" uuid
@@ -661,12 +659,10 @@ ALTER TABLE "event_volunteer_group_exceptions" ADD CONSTRAINT "event_volunteer_g
 ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_leader_id_users_id_fk" FOREIGN KEY ("leader_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_recurring_event_instance_id_recurring_event_instances_id_fk" FOREIGN KEY ("recurring_event_instance_id") REFERENCES "public"."recurring_event_instances"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteers" ADD CONSTRAINT "event_volunteers_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteers" ADD CONSTRAINT "event_volunteers_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteers" ADD CONSTRAINT "event_volunteers_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteers" ADD CONSTRAINT "event_volunteers_recurring_event_instance_id_recurring_event_instances_id_fk" FOREIGN KEY ("recurring_event_instance_id") REFERENCES "public"."recurring_event_instances"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_volunteers" ADD CONSTRAINT "event_volunteers_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
