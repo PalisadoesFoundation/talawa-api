@@ -463,7 +463,7 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		const volunteers = eventWithVolunteersResult.data.event.volunteers;
 		expect(volunteers).toHaveLength(2);
 
-		const volunteerIds = volunteers.map((v) => v?.id);
+		const volunteerIds = volunteers.map((v: { id: string | null }) => v?.id);
 		expect(volunteerIds).toContain(
 			volunteer1Result.data?.createEventVolunteer?.id,
 		);
