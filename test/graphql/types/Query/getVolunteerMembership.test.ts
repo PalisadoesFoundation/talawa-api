@@ -25,7 +25,6 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-
 suite("Query field getVolunteerMembership", () => {
 	let adminAuthToken: string;
 	let adminUserId: string;
