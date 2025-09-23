@@ -646,6 +646,9 @@ suite("Query field getEventVolunteerGroups", () => {
 
 	suite("Ordering", () => {
 		test("should handle volunteers_ASC ordering", async () => {
+			// Extra long delay since this test runs after many previous tests
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
 			const result = await mercuriusClient.query(
 				Query_getEventVolunteerGroups,
 				{
@@ -667,6 +670,9 @@ suite("Query field getEventVolunteerGroups", () => {
 		});
 
 		test("should handle volunteers_DESC ordering", async () => {
+			// Extra long delay since this is the last test and rate limits accumulate
+			await new Promise((resolve) => setTimeout(resolve, 1200));
+
 			const result = await mercuriusClient.query(
 				Query_getEventVolunteerGroups,
 				{
