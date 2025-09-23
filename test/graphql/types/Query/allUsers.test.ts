@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { afterAll, afterEach, beforeAll, expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -116,45 +116,44 @@ suite("Query field allUsers", () => {
 
 	// Cleanup
 	afterAll(async () => {
-		if (regularUserId) {
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						id: regularUserId,
+		// Cleanup test users
+		const userIds = [regularUserId, regularUser2Id, regularUser3Id].filter(
+			Boolean,
+		);
+
+		for (const userId of userIds) {
+			try {
+				await mercuriusClient.mutate(Mutation_deleteUser, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
 					},
-				},
-			});
-		}
-		if (regularUser2Id) {
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						id: regularUser2Id,
+					variables: {
+						input: {
+							id: userId,
+						},
 					},
-				},
-			});
+				});
+			} catch (error) {
+				console.error(`Failed to cleanup user ${userId}:`, error);
+			}
 		}
-		if (regularUser3Id) {
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						id: regularUser3Id,
-					},
-				},
-			});
-		}
+
+
 	});
 
 	suite("Authentication and Authorization", () => {
+		const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+		afterEach(async () => {
+			for (const cleanup of testCleanupFunctions.reverse()) {
+				try {
+					await cleanup();
+				} catch (error) {
+					console.error("Cleanup failed:", error);
+				}
+			}
+			testCleanupFunctions.length = 0;
+		});
 		test(
 			"returns error when user is not authenticated",
 			async () => {
@@ -235,7 +234,22 @@ suite("Query field allUsers", () => {
 				const regularUser2AuthToken =
 					createUser2Result.data.createUser.authenticationToken || "";
 
+				// Add to cleanup functions
 				if (regularUser2Id) {
+					testCleanupFunctions.push(async () => {
+						await mercuriusClient.mutate(Mutation_deleteUser, {
+							headers: {
+								authorization: `bearer ${adminAuthToken}`,
+							},
+							variables: {
+								input: {
+									id: regularUser2Id,
+								},
+							},
+						});
+					});
+
+					// Delete immediately for the test logic
 					await mercuriusClient.mutate(Mutation_deleteUser, {
 						headers: {
 							authorization: `bearer ${adminAuthToken}`,
@@ -272,6 +286,18 @@ suite("Query field allUsers", () => {
 	});
 
 	suite("Pagination", () => {
+		const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+		afterEach(async () => {
+			for (const cleanup of testCleanupFunctions.reverse()) {
+				try {
+					await cleanup();
+				} catch (error) {
+					console.error("Cleanup failed:", error);
+				}
+			}
+			testCleanupFunctions.length = 0;
+		});
 		test(
 			"returns first page of results with default pagination",
 			async () => {
@@ -378,11 +404,23 @@ suite("Query field allUsers", () => {
 	});
 
 	suite("Name Search", () => {
+		const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+		afterEach(async () => {
+			for (const cleanup of testCleanupFunctions.reverse()) {
+				try {
+					await cleanup();
+				} catch (error) {
+					console.error("Cleanup failed:", error);
+				}
+			}
+			testCleanupFunctions.length = 0;
+		});
 		test(
 			"filters users by name search",
 			async () => {
 				const uniqueName = `Test${faker.string.alphanumeric(10)}`;
-				let userId: string | undefined;
+				let userId: string | undefined = undefined;
 
 				// Create a user with unique name
 				const createResult = await mercuriusClient.mutate(Mutation_createUser, {
@@ -402,6 +440,22 @@ suite("Query field allUsers", () => {
 
 				userId = createResult.data?.createUser?.user?.id;
 
+				// Add to cleanup functions
+				if (userId) {
+					testCleanupFunctions.push(async () => {
+						await mercuriusClient.mutate(Mutation_deleteUser, {
+							headers: {
+								authorization: `bearer ${adminAuthToken}`,
+							},
+							variables: {
+								input: {
+									id: userId,
+								},
+							},
+						});
+					});
+				}
+
 				const result = await mercuriusClient.query(Query_allUsers, {
 					headers: {
 						authorization: `bearer ${adminAuthToken}`,
@@ -419,20 +473,6 @@ suite("Query field allUsers", () => {
 					throw new Error("Failed to find user with unique name");
 				}
 				expect(result.data.allUsers.edges[0].node.name).toBe(uniqueName);
-
-				// Cleanup
-				if (userId) {
-					await mercuriusClient.mutate(Mutation_deleteUser, {
-						headers: {
-							authorization: `bearer ${adminAuthToken}`,
-						},
-						variables: {
-							input: {
-								id: userId,
-							},
-						},
-					});
-				}
 			},
 			SUITE_TIMEOUT,
 		);
@@ -481,6 +521,18 @@ suite("Query field allUsers", () => {
 	});
 
 	suite("Input Validation", () => {
+		const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+		afterEach(async () => {
+			for (const cleanup of testCleanupFunctions.reverse()) {
+				try {
+					await cleanup();
+				} catch (error) {
+					console.error("Cleanup failed:", error);
+				}
+			}
+			testCleanupFunctions.length = 0;
+		});
 		test(
 			"validates minimum name length",
 			async () => {
