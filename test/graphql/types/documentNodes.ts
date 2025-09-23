@@ -1869,3 +1869,55 @@ export const Mutation_updateVolunteerMembership = gql(`
     }
   }
 `);
+
+export const Query_getEventVolunteerGroups = gql(`
+  query Query_getEventVolunteerGroups($where: EventVolunteerGroupWhereInput!, $orderBy: EventVolunteerGroupOrderByInput) {
+    getEventVolunteerGroups(where: $where, orderBy: $orderBy) {
+      id
+      name
+      description
+      volunteersRequired
+      leader {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Query_getVolunteerMembership = gql(`
+  query Query_getVolunteerMembership($where: VolunteerMembershipWhereInput!, $orderBy: VolunteerMembershipOrderByInput) {
+    getVolunteerMembership(where: $where, orderBy: $orderBy) {
+      id
+      status
+      volunteer {
+        id
+        hasAccepted
+        user {
+          id
+          name
+        }
+      }
+      event {
+        id
+        name
+      }
+      group {
+        id
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`);
