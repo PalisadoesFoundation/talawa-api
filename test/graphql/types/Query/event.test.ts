@@ -607,8 +607,5 @@ suite("Query field event", () => {
 				(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
 			expect(durationInDays).toBeGreaterThan(1);
 		});
-
-
-	
 	});
 });
