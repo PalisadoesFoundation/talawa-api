@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { VolunteerMembershipVolunteerResolver } from "~/src/graphql/types/VolunteerMembership/volunteer";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -32,6 +32,10 @@ const mockEventVolunteer = {
 describe("VolunteerMembershipVolunteerResolver", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
 	});
 
 	describe("Authentication", () => {
