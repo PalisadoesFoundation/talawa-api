@@ -354,7 +354,7 @@ suite("Query field getVolunteerMembership", () => {
 			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
 				variables: {
 					where: {
-						eventId: "01234567-89ab-cdef-0123-456789abcdef",
+						eventId, // Use the real eventId from setup
 					},
 				},
 			});
@@ -379,6 +379,9 @@ suite("Query field getVolunteerMembership", () => {
 			await new Promise((resolve) => setTimeout(resolve, 300));
 
 			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
+				headers: {
+					authorization: `bearer ${adminAuthToken}`,
+				},
 				variables: {
 					where: {
 						userId: "invalid-uuid-format",
@@ -506,7 +509,7 @@ suite("Query field getVolunteerMembership", () => {
 		test("should handle non-existent resources gracefully", async () => {
 			await new Promise((resolve) => setTimeout(resolve, 500));
 
-			const fakeUserId = "01234567-89ab-cdef-0123-456789abcdef";
+			const fakeUserId = faker.string.uuid();
 
 			const result = await mercuriusClient.query(Query_getVolunteerMembership, {
 				headers: {
