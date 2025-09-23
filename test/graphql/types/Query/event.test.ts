@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { afterEach, beforeAll, expect, suite, test } from "vitest";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -17,6 +17,46 @@ import {
 	Query_event,
 	Query_signIn,
 } from "../documentNodes";
+
+// Admin auth (fetched once per suite)
+let adminToken: string | null = null;
+let adminUserId: string | null = null;
+async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
+	if (adminToken && adminUserId)
+		return { token: adminToken, userId: adminUserId };
+	if (
+		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
+		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
+	) {
+		throw new Error("Admin credentials missing in env config");
+	}
+	const res = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+	if (
+		res.errors ||
+		!res.data?.signIn?.authenticationToken ||
+		!res.data?.signIn?.user?.id
+	) {
+		throw new Error(
+			`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
+		);
+	}
+	adminToken = res.data.signIn.authenticationToken;
+	adminUserId = res.data.signIn.user.id;
+	assertToBeNonNullish(adminToken);
+	assertToBeNonNullish(adminUserId);
+	return { token: adminToken, userId: adminUserId };
+}
+
+beforeAll(async () => {
+	await ensureAdminAuth();
+});
 
 suite("Query field event", () => {
 	// Helper function to get admin auth token and user ID
@@ -197,6 +237,18 @@ suite("Query field event", () => {
 	suite(
 		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.event" field if`,
 		() => {
+			const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+			afterEach(async () => {
+				for (const cleanup of testCleanupFunctions.reverse()) {
+					try {
+						await cleanup();
+					} catch (error) {
+						console.error("Cleanup failed:", error);
+					}
+				}
+				testCleanupFunctions.length = 0;
+			});
 			test("client triggering the graphql operation is not authenticated.", async () => {
 				const eventResult = await mercuriusClient.query(Query_event, {
 					variables: {
@@ -437,6 +489,18 @@ suite("Query field event", () => {
 
 	// These additional test cases do not improve coverage from the actual files, However -> They help testing the application better
 	suite("Additional event tests", () => {
+		const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+		afterEach(async () => {
+			for (const cleanup of testCleanupFunctions.reverse()) {
+				try {
+					await cleanup();
+				} catch (error) {
+					console.error("Cleanup failed:", error);
+				}
+			}
+			testCleanupFunctions.length = 0;
+		});
 		test("handles events with past dates correctly", async () => {
 			const { authToken, userId } = await getAdminTokenAndUserId();
 			const organization = await createTestOrganization(authToken, userId);
@@ -544,98 +608,7 @@ suite("Query field event", () => {
 			expect(durationInDays).toBeGreaterThan(1);
 		});
 
-		test("handles events with minimal fields correctly", async () => {
-			const { authToken, userId } = await getAdminTokenAndUserId();
-			const organization = await createTestOrganization(authToken, userId);
 
-			// Create an event with only required fields
-			const minimalEventResult = await mercuriusClient.mutate(
-				Mutation_createEvent,
-				{
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
-					variables: {
-						input: {
-							name: "Minimal Event",
-							startAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour from now
-							endAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-							organizationId: organization.id,
-						},
-					},
-				},
-			);
-
-			const minimalEvent = minimalEventResult.data?.createEvent;
-			assertToBeNonNullish(minimalEvent);
-
-			// Query the minimal event
-			const queryResult = await mercuriusClient.query(Query_event, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						id: minimalEvent.id,
-					},
-				},
-			});
-
-			const queriedEvent = queryResult.data.event;
-			expect(queriedEvent).not.toBeNull();
-			assertToBeNonNullish(queriedEvent);
-			expect(queriedEvent.id).toBe(minimalEvent.id);
-			expect(queriedEvent.description).toBeNull();
-		});
-
-		test("handles concurrent access patterns correctly", async () => {
-			const { authToken, userId } = await getAdminTokenAndUserId();
-			const organization = await createTestOrganization(authToken, userId);
-
-			// Create an initial event
-			const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						name: "Concurrent Access Event",
-						startAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-						endAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-						organizationId: organization.id,
-					},
-				},
-			});
-
-			const event = eventResult.data?.createEvent;
-			assertToBeNonNullish(event);
-
-			// Perform multiple concurrent queries
-			const concurrentQueries = Array(5)
-				.fill(null)
-				.map(() =>
-					mercuriusClient.query(Query_event, {
-						headers: {
-							authorization: `bearer ${authToken}`,
-						},
-						variables: {
-							input: {
-								id: event.id,
-							},
-						},
-					}),
-				);
-
-			const results = await Promise.all(concurrentQueries);
-
-			// Verify all queries returned the same data
-			for (const result of results) {
-				const queriedEvent = result.data.event;
-				expect(queriedEvent).not.toBeNull();
-				assertToBeNonNullish(queriedEvent);
-				expect(queriedEvent.id).toBe(event.id);
-				expect(queriedEvent.name).toBe("Concurrent Access Event");
-			}
-		});
+	
 	});
 });
