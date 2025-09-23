@@ -39,7 +39,6 @@ suite("Query field getEventVolunteerGroups", () => {
 	let leaderUserAuthToken: string;
 	let volunteerGroupId: string;
 	let eventVolunteerId: string;
-	let volunteerMembershipId: string;
 
 	// Setup test data
 	beforeAll(async () => {
@@ -259,64 +258,101 @@ suite("Query field getEventVolunteerGroups", () => {
 		assertToBeNonNullish(
 			volunteerMembershipResult.data?.createVolunteerMembership,
 		);
-		volunteerMembershipId = volunteerMembershipResult.data
-			.createVolunteerMembership.id as string;
+		// Note: volunteerMembershipId not stored as it's not used in tests
 	});
 
-	// Cleanup
+	// Cleanup - Clean up in reverse order of creation with proper error handling
 	afterAll(async () => {
 		try {
-			// Clean up in reverse order of creation
-			if (volunteerMembershipId) {
-				await mercuriusClient.mutate(Mutation_deleteEventVolunteer, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: { id: eventVolunteerId },
-				});
+			// Delete volunteer memberships first (they depend on volunteers and groups)
+			// Note: VolunteerMemberships are typically deleted automatically when EventVolunteers are deleted
+
+			// Delete event volunteers (they depend on users and events)
+			if (eventVolunteerId) {
+				try {
+					await mercuriusClient.mutate(Mutation_deleteEventVolunteer, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: { id: eventVolunteerId },
+					});
+				} catch (error) {
+					console.warn(
+						`Failed to delete event volunteer ${eventVolunteerId}:`,
+						error,
+					);
+				}
 			}
 
+			// Delete volunteer groups (they depend on events and leaders)
 			if (volunteerGroupId) {
-				await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: { id: volunteerGroupId },
-				});
+				try {
+					await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: { id: volunteerGroupId },
+					});
+				} catch (error) {
+					console.warn(
+						`Failed to delete volunteer group ${volunteerGroupId}:`,
+						error,
+					);
+				}
 			}
 
-			if (eventId) {
-				// Note: Event cleanup would be handled by a delete event mutation if available
-			}
+			// Note: Events are typically not deleted in tests to avoid cascading issues
+			// They will be cleaned up when the organization is deleted
 
+			// Delete regular users (they depend on organizations through memberships)
 			if (regularUserId) {
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: { input: { id: regularUserId } },
-				});
+				try {
+					await mercuriusClient.mutate(Mutation_deleteUser, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: { input: { id: regularUserId } },
+					});
+				} catch (error) {
+					console.warn(
+						`Failed to delete regular user ${regularUserId}:`,
+						error,
+					);
+				}
 			}
 
+			// Delete leader user
 			if (leaderUserId) {
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: { input: { id: leaderUserId } },
-				});
+				try {
+					await mercuriusClient.mutate(Mutation_deleteUser, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: { input: { id: leaderUserId } },
+					});
+				} catch (error) {
+					console.warn(`Failed to delete leader user ${leaderUserId}:`, error);
+				}
 			}
 
+			// Delete organization last (it has dependencies from memberships, events, etc.)
 			if (organizationId) {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: { input: { id: organizationId } },
-				});
+				try {
+					await mercuriusClient.mutate(Mutation_deleteOrganization, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: { input: { id: organizationId } },
+					});
+				} catch (error) {
+					console.warn(
+						`Failed to delete organization ${organizationId}:`,
+						error,
+					);
+				}
 			}
 		} catch (error) {
-			console.warn("Cleanup failed:", error);
+			console.error("Cleanup failed:", error);
 		}
 	});
 
