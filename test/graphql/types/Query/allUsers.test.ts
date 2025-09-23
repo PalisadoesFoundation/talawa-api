@@ -137,8 +137,6 @@ suite("Query field allUsers", () => {
 				console.error(`Failed to cleanup user ${userId}:`, error);
 			}
 		}
-
-
 	});
 
 	suite("Authentication and Authorization", () => {
