@@ -22,6 +22,7 @@ import {
 	Mutation_deleteEventVolunteer,
 	Mutation_deleteEventVolunteerGroup,
 	Mutation_deleteOrganization,
+	Mutation_deleteOrganizationMembership,
 	Mutation_deleteUser,
 	Mutation_updateEventVolunteer,
 	Query_getEventVolunteerGroups,
@@ -184,39 +185,93 @@ suite("Query field getEventVolunteerGroups", () => {
 			.id as string;
 	});
 
-	// Cleanup with delays
+	// Comprehensive cleanup with proper order
 	afterAll(async () => {
 		try {
+			// Delete volunteer group first (depends on event and leader)
 			if (volunteerGroupId) {
-				await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: { id: volunteerGroupId },
-				});
+				try {
+					await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: { id: volunteerGroupId },
+					});
+				} catch (error) {
+					console.warn(`Failed to delete volunteer group: ${error}`);
+				}
 				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
 
+			// Delete organization memberships (prevents foreign key issues)
+			if (regularUserId && organizationId) {
+				try {
+					await mercuriusClient.mutate(Mutation_deleteOrganizationMembership, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								organizationId,
+								memberId: regularUserId,
+							},
+						},
+					});
+				} catch (error) {
+					console.warn(`Failed to delete regular user membership: ${error}`);
+				}
+				await new Promise((resolve) => setTimeout(resolve, 100));
+			}
+
+			if (adminUserId && organizationId) {
+				try {
+					await mercuriusClient.mutate(Mutation_deleteOrganizationMembership, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: {
+							input: {
+								organizationId,
+								memberId: adminUserId,
+							},
+						},
+					});
+				} catch (error) {
+					console.warn(`Failed to delete admin membership: ${error}`);
+				}
+				await new Promise((resolve) => setTimeout(resolve, 100));
+			}
+
+			// Delete regular user
 			if (regularUserId) {
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: { input: { id: regularUserId } },
-				});
+				try {
+					await mercuriusClient.mutate(Mutation_deleteUser, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: { input: { id: regularUserId } },
+					});
+				} catch (error) {
+					console.warn(`Failed to delete regular user: ${error}`);
+				}
 				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
 
+			// Delete organization last (it may have dependencies)
 			if (organizationId) {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: {
-						authorization: `bearer ${adminAuthToken}`,
-					},
-					variables: { input: { id: organizationId } },
-				});
+				try {
+					await mercuriusClient.mutate(Mutation_deleteOrganization, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: { input: { id: organizationId } },
+					});
+				} catch (error) {
+					console.warn(`Failed to delete organization: ${error}`);
+				}
 			}
 		} catch (error) {
-			console.warn("Cleanup failed:", error);
+			console.error("Cleanup failed:", error);
 		}
 	});
 
@@ -435,13 +490,18 @@ suite("Query field getEventVolunteerGroups", () => {
 			expect(Array.isArray(result.data?.getEventVolunteerGroups)).toBe(true);
 			expect(result.data?.getEventVolunteerGroups?.length).toBeGreaterThan(0);
 
-			// Cleanup
-			await mercuriusClient.mutate(Mutation_deleteEventVolunteer, {
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: { id: eventVolunteerId },
-			});
+			// Comprehensive cleanup - delete all created resources
+			try {
+				// VolunteerMemberships are typically auto-deleted when EventVolunteer is deleted
+				await mercuriusClient.mutate(Mutation_deleteEventVolunteer, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: { id: eventVolunteerId },
+				});
+			} catch (error) {
+				console.warn(`Failed to cleanup test resources: ${error}`);
+			}
 		});
 	});
 
