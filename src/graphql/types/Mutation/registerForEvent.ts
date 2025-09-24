@@ -11,7 +11,7 @@ const mutationRegisterForEventArgumentsSchema = z.object({
 });
 
 // Export the input type object for use in t.arg
-export const RegisterForEventInput = builder.inputType("RegisterForEventInput", {
+const RegisterForEventInput = builder.inputType("RegisterForEventInput", {
     fields: (t) => ({
         eventId: t.string({ required: true }),
     }),
