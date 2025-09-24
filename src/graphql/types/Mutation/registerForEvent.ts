@@ -60,3 +60,16 @@ builder.inputType("RegisterForEventInput", {
         eventId: t.string({ required: true }),
     }),
 });
+
+builder.mutationField("registerForEvent", (t) =>
+    t.field({
+        type: "Boolean",
+        args: {
+            input: t.arg({ type: "RegisterForEventInput" }),
+        },
+        description: "Register the current user for an event, enforcing capacity.",
+        resolve: async (_root: any, args: any, ctx: any) => {
+            // ... existing implementation
+        },
+    })
+);
