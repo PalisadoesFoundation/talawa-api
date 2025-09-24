@@ -39,7 +39,21 @@ builder.mutationField("registerForEvent", (t) =>
             return await ctx.drizzleClient.transaction(async (tx) => {
                 // Lock the event row for update
                 const [event] = await tx
-                    .select()
+                    .select({
+                        id: eventsTable.id,
+                        capacity: eventsTable.maxCapacity, // Use the correct column name as defined in your eventsTable schema.
+                        createdAt: eventsTable.createdAt,
+                        creatorId: eventsTable.creatorId,
+                        description: eventsTable.description,
+                        endAt: eventsTable.endAt,
+                        name: eventsTable.name,
+                        organizationId: eventsTable.organizationId,
+                        startAt: eventsTable.startAt,
+                        allDay: eventsTable.allDay,
+                        isPublic: eventsTable.isPublic,
+                        isRecurringEventTemplate: eventsTable.isRecurringEventTemplate,
+                        // add other fields as needed
+                    })
                     .from(eventsTable)
                     .where(eq(eventsTable.id, input.eventId))
                     .for("update")
@@ -50,10 +64,12 @@ builder.mutationField("registerForEvent", (t) =>
                 }
 
                 // Count current registrations
-                const [{ count: registrationCount }] = await tx
+                const registrationResult = await tx
                     .select({ count: count() })
                     .from(eventAttendancesTable)
                     .where(eq(eventAttendancesTable.eventId, input.eventId));
+
+                const registrationCount = registrationResult?.[0]?.count ?? 0;
 
                 if (event.capacity != null && registrationCount >= event.capacity) {
                     throw new Error("Event is full");
