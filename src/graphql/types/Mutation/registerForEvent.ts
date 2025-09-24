@@ -46,7 +46,7 @@ builder.mutationField("registerForEvent", (t) =>
 
 // Input type for GraphQL
 builder.inputType("RegisterForEventInput", {
-    fields: (t: any) => ({
+    fields: (t) => ({
         eventId: t.string({ required: true }),
     }),
 });
