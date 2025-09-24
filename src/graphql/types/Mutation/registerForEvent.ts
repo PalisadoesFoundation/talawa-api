@@ -4,14 +4,12 @@ import { builder } from "~/src/graphql/builder";
 import { eventAttendancesTable } from "~/src/drizzle/tables/eventAttendances";
 import { eventsTable } from "~/src/drizzle/tables/events";
 
-// Zod schema for argument validation
 const mutationRegisterForEventArgumentsSchema = z.object({
     input: z.object({
         eventId: z.string().uuid(),
     }),
 });
 
-// Export the input type object for use in t.arg
 export const RegisterForEventInput = builder.inputType("RegisterForEventInput", {
     fields: (t) => ({
         eventId: t.string({ required: true }),
@@ -28,7 +26,7 @@ builder.mutationField("registerForEvent", (t) =>
         resolve: async (_root, args, ctx) => {
             const { input } = mutationRegisterForEventArgumentsSchema.parse(args);
 
-            // Type guard for authenticated user
+            // Check authentication
             if (!ctx.currentClient.isAuthenticated || !ctx.currentClient.user) {
                 throw new Error("User not authenticated");
             }
