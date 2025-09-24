@@ -78,6 +78,7 @@ import "./joinPublicOrganization";
 import "./sendMembershipRequest";
 import "./cancelMembershipRequest";
 import "./rejectMembershipRequest";
+import "./registerForEvent";
 
 import "./updatePost";
 import "./updatePostVote";
