@@ -1,8 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { builder } from "~/src/graphql/builder";
 import { eventAttendancesTable } from "~/src/drizzle/tables/eventAttendances";
 import { eventsTable } from "~/src/drizzle/tables/events";
+import { builder } from "~/src/graphql/builder";
 
 const mutationRegisterForEventArgumentsSchema = z.object({
     input: z.object({
@@ -10,11 +10,14 @@ const mutationRegisterForEventArgumentsSchema = z.object({
     }),
 });
 
-export const RegisterForEventInput = builder.inputType("RegisterForEventInput", {
-    fields: (t) => ({
-        eventId: t.string({ required: true }),
-    }),
-});
+export const RegisterForEventInput = builder.inputType(
+    "RegisterForEventInput",
+    {
+        fields: (t) => ({
+            eventId: t.string({ required: true }),
+        }),
+    },
+);
 
 builder.mutationField("registerForEvent", (t) =>
     t.field({
