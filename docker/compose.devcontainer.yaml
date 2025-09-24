@@ -153,8 +153,8 @@ services:
     # https://docs.docker.com/reference/compose-file/services/#volumes
     volumes:
       - source: postgres_data
-      - target: /var/lib/postgresql/data
-      - type: volume
+        target: /var/lib/postgresql/data
+        type: volume
 
   postgres-test:
     ports:
