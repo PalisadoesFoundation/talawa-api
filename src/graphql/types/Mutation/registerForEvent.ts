@@ -1,6 +1,7 @@
-// @ts-nocheck
+import { count, eq } from "drizzle-orm";
 import { builder } from "~/src/graphql/builder";
 import { eventAttendancesTable } from "~/src/drizzle/tables/eventAttendances";
+import { eventsTable } from "~/src/drizzle/tables/events";
 import { z } from "zod";
 
 // Zod schema for argument validation
@@ -11,7 +12,7 @@ const mutationRegisterForEventArgumentsSchema = z.object({
 });
 
 // Export the input type object for use in t.arg
-const RegisterForEventInput = builder.inputType("RegisterForEventInput", {
+export const RegisterForEventInput = builder.inputType("RegisterForEventInput", {
     fields: (t) => ({
         eventId: t.string({ required: true }),
     }),
@@ -26,35 +27,46 @@ builder.mutationField("registerForEvent", (t) =>
         description: "Register the current user for an event, enforcing capacity.",
         resolve: async (_root, args, ctx) => {
             const { input } = mutationRegisterForEventArgumentsSchema.parse(args);
+
             // Type guard for authenticated user
             if (!ctx.currentClient.isAuthenticated || !ctx.currentClient.user) {
                 throw new Error("User not authenticated");
             }
+
             const userId: string = ctx.currentClient.user.id;
+
             // Transaction for atomic seat check and registration
-            return ctx.drizzleClient.transaction(async (tx: any) => {
+            return await ctx.drizzleClient.transaction(async (tx) => {
                 // Lock the event row for update
-                const event = await tx.query.eventsTable.findFirst({
-                    where: (fields: { id: string }, operators: { eq: (a: any, b: any) => boolean }) =>
-                        operators.eq(fields.id, input.eventId),
-                    lock: { mode: "update" },
-                });
-                if (!event) throw new Error("Event not found");
+                const [event] = await tx
+                    .select()
+                    .from(eventsTable)
+                    .where(eq(eventsTable.id, input.eventId))
+                    .for("update")
+                    .limit(1);
+
+                if (!event) {
+                    throw new Error("Event not found");
+                }
+
                 // Count current registrations
-                const count = await tx.query.eventAttendancesTable.count({
-                    where: (fields: { eventId: string }, operators: { eq: (a: any, b: any) => boolean }) =>
-                        operators.eq(fields.eventId, input.eventId),
-                });
-                if (event.capacity != null && count >= event.capacity) {
+                const [{ count: registrationCount }] = await tx
+                    .select({ count: count() })
+                    .from(eventAttendancesTable)
+                    .where(eq(eventAttendancesTable.eventId, input.eventId));
+
+                if (event.capacity != null && registrationCount >= event.capacity) {
                     throw new Error("Event is full");
                 }
+
                 // Register the user
                 await tx.insert(eventAttendancesTable).values({
                     eventId: input.eventId,
                     attendeeId: userId,
                 });
+
                 return true;
             });
         },
-    })
+    }),
 );
