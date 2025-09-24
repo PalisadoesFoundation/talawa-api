@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
 import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
 import { eventVolunteerGroupExceptionsTable } from "~/src/drizzle/tables/eventVolunteerGroupExceptions";
 import { eventsTable } from "~/src/drizzle/tables/events";
@@ -1084,6 +1085,164 @@ suite("Mutation createEventVolunteerGroup", () => {
 						authorization: `bearer ${adminAuthToken}`,
 					},
 					variables: { id: templateGroupId },
+				});
+			}
+		});
+
+		test("should create group with volunteer assignments in THIS_INSTANCE_ONLY scope", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 2400));
+
+			// Create recurring event template for THIS_INSTANCE_ONLY volunteer assignment test
+			const [template3] = await server.drizzleClient
+				.insert(eventsTable)
+				.values({
+					name: "Assignment Test Event",
+					description: "Event for testing volunteer assignments",
+					startAt: new Date("2024-12-01T14:00:00Z"),
+					endAt: new Date("2024-12-01T16:00:00Z"),
+					organizationId,
+					creatorId: adminUserId,
+					isPublic: true,
+					isRegisterable: true,
+					isRecurringEventTemplate: true,
+				})
+				.returning();
+
+			assertToBeNonNullish(template3);
+
+			const [rule3] = await server.drizzleClient
+				.insert(recurrenceRulesTable)
+				.values({
+					baseRecurringEventId: template3.id,
+					frequency: "WEEKLY",
+					interval: 1,
+					count: 2,
+					organizationId,
+					creatorId: adminUserId,
+					recurrenceRuleString: "RRULE:FREQ=WEEKLY;INTERVAL=1;COUNT=2",
+					recurrenceStartDate: new Date("2024-12-01T14:00:00Z"),
+					latestInstanceDate: new Date("2024-12-01T14:00:00Z"),
+				})
+				.returning();
+
+			assertToBeNonNullish(rule3);
+
+			const instances3 = await server.drizzleClient
+				.insert(recurringEventInstancesTable)
+				.values([
+					{
+						baseRecurringEventId: template3.id,
+						recurrenceRuleId: rule3.id,
+						originalSeriesId: template3.id,
+						originalInstanceStartTime: new Date("2024-12-01T14:00:00Z"),
+						actualStartTime: new Date("2024-12-01T14:00:00Z"),
+						actualEndTime: new Date("2024-12-01T16:00:00Z"),
+						organizationId,
+						sequenceNumber: 1,
+						totalCount: 2,
+					},
+					{
+						baseRecurringEventId: template3.id,
+						recurrenceRuleId: rule3.id,
+						originalSeriesId: template3.id,
+						originalInstanceStartTime: new Date("2024-12-08T14:00:00Z"),
+						actualStartTime: new Date("2024-12-08T14:00:00Z"),
+						actualEndTime: new Date("2024-12-08T16:00:00Z"),
+						organizationId,
+						sequenceNumber: 2,
+						totalCount: 2,
+					},
+				])
+				.returning();
+
+			expect(instances3).toHaveLength(2);
+
+			await new Promise((resolve) => setTimeout(resolve, 400));
+
+			// Pre-create one existing volunteer for the template event
+			const [existingVolunteer] = await server.drizzleClient
+				.insert(eventVolunteersTable)
+				.values({
+					userId: regularUserId, // This will be existing
+					eventId: template3.id,
+					creatorId: adminUserId,
+					hasAccepted: false,
+					isPublic: true,
+					hoursVolunteered: "0",
+				})
+				.returning();
+
+			assertToBeNonNullish(existingVolunteer);
+
+			await new Promise((resolve) => setTimeout(resolve, 400));
+
+			// Test THIS_INSTANCE_ONLY with volunteer assignments (covers all uncovered lines)
+			const result = await mercuriusClient.mutate(
+				Mutation_createEventVolunteerGroup,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						data: {
+							eventId: template3.id,
+							leaderId: leaderUserId,
+							name: `Assignment Group ${faker.string.alphanumeric(6)}`,
+							description:
+								"Group with volunteer assignments for THIS_INSTANCE_ONLY",
+							volunteersRequired: 3,
+							scope: "THIS_INSTANCE_ONLY",
+							recurringEventInstanceId: instances3[0]?.id,
+							volunteerUserIds: [regularUserId, leaderUserId], // Mix: existing + new
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.createEventVolunteerGroup).toBeDefined();
+
+			const group = result.data?.createEventVolunteerGroup;
+			expect(group?.id).toBeDefined();
+
+			if (group?.id) {
+				// Verify volunteer memberships were created
+				const memberships = await server.drizzleClient
+					.select()
+					.from(volunteerMembershipsTable)
+					.where(eq(volunteerMembershipsTable.groupId, group.id));
+
+				expect(memberships.length).toBe(2); // Both regularUser and leader
+				expect(memberships[0]?.status).toBe("invited");
+
+				// Verify that existing volunteer was reused and new volunteer was created
+				const allVolunteers = await server.drizzleClient
+					.select()
+					.from(eventVolunteersTable)
+					.where(eq(eventVolunteersTable.eventId, template3.id));
+
+				const volunteerUserIds = allVolunteers.map((v) => v.userId);
+				expect(volunteerUserIds).toContain(regularUserId); // Existing
+				expect(volunteerUserIds).toContain(leaderUserId); // New
+
+				// Verify exceptions were created for other instances
+				const exceptions = await server.drizzleClient
+					.select()
+					.from(eventVolunteerGroupExceptionsTable)
+					.where(
+						eq(eventVolunteerGroupExceptionsTable.volunteerGroupId, group.id),
+					);
+
+				expect(exceptions).toHaveLength(1); // 1 other instance
+				expect(exceptions[0]?.participating).toBe(false);
+				expect(exceptions[0]?.deleted).toBe(true);
+
+				// Cleanup
+				await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: { id: group.id },
 				});
 			}
 		});
