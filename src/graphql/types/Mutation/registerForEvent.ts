@@ -18,6 +18,14 @@ builder.mutationField("registerForEvent", (t) =>
         description: "Register the current user for an event, enforcing capacity.",
         resolve: async (_root: any, args: any, ctx: any) => {
             const { input } = mutationRegisterForEventArgumentsSchema.parse(args);
+            const { input } = mutationRegisterForEventArgumentsSchema.parse(args);
+            if (!ctx.currentClient?.user?.id) {
+                throw new GraphQLError("Authentication required", {
+                    extensions: {
+                        code: "UNAUTHENTICATED",
+                    },
+                });
+            }
             const userId = ctx.currentClient.user.id;
             // Transaction for atomic seat check and registration
             return await ctx.drizzleClient.transaction(async (tx: any) => {
