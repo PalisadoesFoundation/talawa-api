@@ -1,6 +1,7 @@
+import { z } from "zod";
+
 import { builder } from "~/src/graphql/builder";
 import { eventAttendancesTable } from "~/src/drizzle/tables/eventAttendances";
-import { z } from "zod";
 
 const mutationRegisterForEventArgumentsSchema = z.object({
     input: z.object({
