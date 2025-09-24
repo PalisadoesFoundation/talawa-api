@@ -32,7 +32,9 @@ builder.mutationField("registerForEvent", (t) =>
                     where: (fields: any, operators: any) =>
                         operators.eq(fields.eventId, input.eventId),
                 });
-                if (count >= event.capacity) throw new Error("Event is full");
+                if (event.capacity != null && count >= event.capacity) {
+                    throw new Error("Event is full");
+                }
                 // Register the user
                 await tx.insert(eventAttendancesTable).values({
                     eventId: input.eventId,
