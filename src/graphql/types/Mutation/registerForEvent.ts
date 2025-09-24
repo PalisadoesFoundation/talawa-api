@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { builder } from "~/src/graphql/builder";
 import { eventAttendancesTable } from "~/src/drizzle/tables/eventAttendances";
 import { z } from "zod";
