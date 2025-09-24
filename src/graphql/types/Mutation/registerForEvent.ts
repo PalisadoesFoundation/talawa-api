@@ -32,7 +32,7 @@ builder.mutationField("registerForEvent", (t) =>
             }
             const userId: string = ctx.currentClient.user.id;
             // Transaction for atomic seat check and registration
-            return await ctx.drizzleClient.transaction(async (tx: any) => {
+            return ctx.drizzleClient.transaction(async (tx: any) => {
                 // Lock the event row for update
                 const event = await tx.query.eventsTable.findFirst({
                     where: (fields: { id: string }, operators: { eq: (a: any, b: any) => boolean }) =>
