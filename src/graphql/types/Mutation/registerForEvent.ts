@@ -37,22 +37,11 @@ builder.mutationField("registerForEvent", (t) =>
 
             // Transaction for atomic seat check and registration
             return await ctx.drizzleClient.transaction(async (tx) => {
-                // Lock the event row for update
+                // Lock the event row for update and check if it exists
                 const [event] = await tx
                     .select({
                         id: eventsTable.id,
-                        capacity: eventsTable.maxCapacity, // Use the correct column name as defined in your eventsTable schema.
-                        createdAt: eventsTable.createdAt,
-                        creatorId: eventsTable.creatorId,
-                        description: eventsTable.description,
-                        endAt: eventsTable.endAt,
-                        name: eventsTable.name,
-                        organizationId: eventsTable.organizationId,
-                        startAt: eventsTable.startAt,
-                        allDay: eventsTable.allDay,
-                        isPublic: eventsTable.isPublic,
-                        isRecurringEventTemplate: eventsTable.isRecurringEventTemplate,
-                        // add other fields as needed
+                        isRegisterable: eventsTable.isRegisterable,
                     })
                     .from(eventsTable)
                     .where(eq(eventsTable.id, input.eventId))
@@ -63,16 +52,20 @@ builder.mutationField("registerForEvent", (t) =>
                     throw new Error("Event not found");
                 }
 
-                // Count current registrations
-                const registrationResult = await tx
-                    .select({ count: count() })
+                if (!event.isRegisterable) {
+                    throw new Error("Event is not open for registration");
+                }
+
+                // Check if user is already registered
+                const [existingAttendance] = await tx
+                    .select()
                     .from(eventAttendancesTable)
-                    .where(eq(eventAttendancesTable.eventId, input.eventId));
+                    .where(eq(eventAttendancesTable.attendeeId, userId))
+                    .where(eq(eventAttendancesTable.eventId, input.eventId))
+                    .limit(1);
 
-                const registrationCount = registrationResult?.[0]?.count ?? 0;
-
-                if (event.capacity != null && registrationCount >= event.capacity) {
-                    throw new Error("Event is full");
+                if (existingAttendance) {
+                    throw new Error("User is already registered for this event");
                 }
 
                 // Register the user
