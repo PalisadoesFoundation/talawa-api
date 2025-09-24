@@ -1,4 +1,4 @@
-import { count, eq } from "drizzle-orm";
+import { count, eq, and } from "drizzle-orm";
 import { builder } from "~/src/graphql/builder";
 import { eventAttendancesTable } from "~/src/drizzle/tables/eventAttendances";
 import { eventsTable } from "~/src/drizzle/tables/events";
@@ -56,12 +56,16 @@ builder.mutationField("registerForEvent", (t) =>
                     throw new Error("Event is not open for registration");
                 }
 
-                // Check if user is already registered
+                // Check if user is already registered using and() for multiple conditions
                 const [existingAttendance] = await tx
                     .select()
                     .from(eventAttendancesTable)
-                    .where(eq(eventAttendancesTable.attendeeId, userId))
-                    .where(eq(eventAttendancesTable.eventId, input.eventId))
+                    .where(
+                        and(
+                            eq(eventAttendancesTable.attendeeId, userId),
+                            eq(eventAttendancesTable.eventId, input.eventId)
+                        )
+                    )
                     .limit(1);
 
                 if (existingAttendance) {
