@@ -20,7 +20,7 @@ builder.mutationField("registerForEvent", (t) =>
     t.field({
         type: "Boolean",
         args: {
-            input: t.arg({ type: RegisterForEventInput }),
+            input: t.arg({ type: RegisterForEventInput, required: true }),
         },
         description: "Register the current user for an event, enforcing capacity.",
         resolve: async (_root, args, ctx) => {
