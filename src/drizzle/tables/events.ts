@@ -12,7 +12,6 @@ import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { agendaFoldersTable } from "./agendaFolders";
 import { eventAttachmentsTable } from "./eventAttachments";
-import { eventAttendancesTable } from "./eventAttendances";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 import { venueBookingsTable } from "./venueBookings";
@@ -164,12 +163,7 @@ export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 	attachmentsWhereEvent: many(eventAttachmentsTable, {
 		relationName: "event_attachments.event_id:events.id",
 	}),
-	/**
-	 * One to many relationship from `events` table to `event_attendances` table.
-	 */
-	eventAttendancesWhereEvent: many(eventAttendancesTable, {
-		relationName: "event_attendances.event_id:events.id",
-	}),
+
 	/**
 	 * Many to one relationship from `events` table to `organizations` table.
 	 */

@@ -55,10 +55,13 @@ export {
 	eventAttachmentsTable,
 	eventAttachmentsTableRelations,
 } from "./tables/eventAttachments";
+
 export {
-	eventAttendancesTable,
-	eventAttendancesTableRelations,
-} from "./tables/eventAttendances";
+	eventAttendeesTable,
+	eventAttendeesTableRelations,
+} from "./tables/eventAttendees";
+export { checkInsTable, checkInsTableRelations } from "./tables/checkIns";
+export { checkOutsTable, checkOutsTableRelations } from "./tables/checkOuts";
 export {
 	eventExceptionsTable,
 	eventExceptionsTableRelations,
