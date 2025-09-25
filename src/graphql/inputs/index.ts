@@ -107,3 +107,5 @@ import "./QueryUserInput";
 import "./QueryVenueInput";
 import "./SubscriptionChatMessageCreateInput";
 import "./QueryHasUserVotedInput";
+import "./EventAttendeeInput";
+import "./CheckInCheckOutInput";
