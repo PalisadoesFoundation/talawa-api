@@ -534,9 +534,6 @@ input CreateActionItemInput {
 }
 
 input CreatePluginInput {
-  backup: Boolean
-  isActivated: Boolean
-  isInstalled: Boolean
   pluginId: String!
 }
 
@@ -886,6 +883,10 @@ type HasUserVoted {
 
   """Type of the post vote, null if no vote exists"""
   voteType: PostVoteType
+}
+
+input InstallPluginInput {
+  pluginId: String!
 }
 
 enum InviteStatus {
@@ -1537,6 +1538,9 @@ input MembersRoleWhereInput {
 
 """Filter criteria for organization members"""
 input MembersWhereInput {
+  """Filter members whose name includes the provided value"""
+  name_contains: String
+
   """Filter members by role"""
   role: MembersRoleWhereInput
 }
@@ -1792,6 +1796,7 @@ type Mutation {
 
   """Mutation field to delete a venue booking."""
   deleteVenueBooking(input: MutationDeleteVenueBookingInput!): Venue
+  installPlugin(input: InstallPluginInput!): Plugin
 
   """Mutation field to join a public organization."""
   joinPublicOrganization(

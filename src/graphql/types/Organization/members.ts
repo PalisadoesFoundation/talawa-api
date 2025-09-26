@@ -6,6 +6,8 @@ import {
 	eq,
 	exists,
 	gt,
+	ilike,
+	inArray,
 	lt,
 	ne,
 	or,
@@ -16,6 +18,7 @@ import {
 	organizationMembershipsTable,
 	organizationMembershipsTableInsertSchema,
 } from "~/src/drizzle/tables/organizationMemberships";
+import { usersTable } from "~/src/drizzle/tables/users";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
@@ -29,6 +32,10 @@ import envConfig from "~/src/utilities/graphqLimits";
 import { MembersWhereInput } from "../../inputs/QueryOrganizationInput";
 import { Organization } from "./Organization";
 type UserRole = z.infer<typeof organizationMembershipRoleEnum>;
+type MembersWhere = {
+	name_contains?: string;
+	role?: { equal?: UserRole; notEqual?: UserRole };
+};
 const membersRoleWhereInputSchema = z.object({
 	equal: organizationMembershipRoleEnum.optional(),
 	notEqual: organizationMembershipRoleEnum.optional(),
@@ -37,6 +44,7 @@ const membersRoleWhereInputSchema = z.object({
 const organizationMembersWhereSchema = z
 	.object({
 		role: membersRoleWhereInputSchema.optional(),
+		name_contains: z.string().optional(),
 	})
 	.optional();
 
@@ -70,11 +78,21 @@ const membersArgumentsSchema = createGraphQLConnectionWithWhereSchema(
 		});
 	}
 
+	const rawWhere = (transformedArg.where || {}) as MembersWhere;
+	const trimmedNameContains =
+		typeof rawWhere.name_contains === "string"
+			? rawWhere.name_contains.trim()
+			: undefined;
+
+	const sanitizedWhere: MembersWhere = trimmedNameContains
+		? { ...rawWhere, name_contains: trimmedNameContains }
+		: (({ name_contains: _omitted, ...rest }) => rest)(rawWhere);
+
 	return {
 		cursor,
 		isInversed: transformedArg.isInversed,
 		limit: transformedArg.limit,
-		where: transformedArg.where || {}, // Default to empty object if where is undefined
+		where: sanitizedWhere, // Default to empty object if where is undefined
 	};
 });
 
@@ -181,7 +199,7 @@ Organization.implement({
 					const { cursor, isInversed, limit, where } =
 						parsedArgs as ParsedDefaultGraphQLConnectionArgumentsWithWhere<
 							{ createdAt: Date; memberId: string },
-							{ role?: { equal: UserRole; notEqual: UserRole } }
+							MembersWhere
 						>;
 
 					const orderBy = isInversed
@@ -210,6 +228,16 @@ Organization.implement({
 											where.role.notEqual as UserRole,
 										)
 									: undefined,
+							)
+						: undefined;
+
+					const nameFilter = where?.name_contains
+						? inArray(
+								organizationMembershipsTable.memberId,
+								ctx.drizzleClient
+									.select({ id: usersTable.id })
+									.from(usersTable)
+									.where(ilike(usersTable.name, `%${where.name_contains}%`)),
 							)
 						: undefined;
 
@@ -249,11 +277,13 @@ Organization.implement({
 									gt(organizationMembershipsTable.createdAt, cursor.createdAt),
 								),
 								roleFilter,
+								nameFilter,
 							);
 						} else {
 							queryWhere = and(
 								eq(organizationMembershipsTable.organizationId, parent.id),
 								roleFilter,
+								nameFilter,
 							);
 						}
 					} else {
@@ -293,11 +323,13 @@ Organization.implement({
 									lt(organizationMembershipsTable.createdAt, cursor.createdAt),
 								),
 								roleFilter,
+								nameFilter,
 							);
 						} else {
 							queryWhere = and(
 								eq(organizationMembershipsTable.organizationId, parent.id),
 								roleFilter,
+								nameFilter,
 							);
 						}
 					}
