@@ -52,7 +52,7 @@ export const chatsTable = pgTable(
 		/**
 		 * Name of the chat.
 		 */
-		name: text("name", {}).notNull().unique(),
+		name: text("name", {}).notNull(),
 		/**
 		 * Foreign key reference to the id of the organization associated to the chat.
 		 */
