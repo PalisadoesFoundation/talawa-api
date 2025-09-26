@@ -3,7 +3,6 @@ import type { ResultOf, VariablesOf } from "gql.tada";
 import { assertToBeNonNullish } from "test/helpers";
 import { afterEach, expect, suite, test, vi } from "vitest";
 import type {
-	ForbiddenActionExtensions,
 	ForbiddenActionOnArgumentsAssociatedResourcesExtensions,
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
@@ -147,9 +146,9 @@ async function createTestOrganization(
 
 suite("Mutation field signUp", () => {
 	suite(
-		`results in a graphql error with "forbidden_action" extensions code in the "errors" field and "null" as the value of "data.signUp" field if`,
+		`results in a graphql error with "forbidden_action_on_arguments_associated_resources" extensions code when authenticated administrator provides invalid organization`,
 		() => {
-			test("client triggering the graphql operation is already signed in.", async () => {
+			test("authenticated administrator tries to sign up user with non-existent organization.", async () => {
 				const administratorUserSignInResult = await mercuriusClient.query(
 					Query_signIn,
 					{
@@ -185,9 +184,18 @@ suite("Mutation field signUp", () => {
 				expect(signUpResult.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<ForbiddenActionExtensions>({
-								code: "forbidden_action",
-							}),
+							extensions:
+								expect.objectContaining<ForbiddenActionOnArgumentsAssociatedResourcesExtensions>(
+									{
+										code: "forbidden_action_on_arguments_associated_resources",
+										issues: expect.arrayContaining([
+											{
+												argumentPath: ["input", "selectedOrganization"],
+												message: expect.any(String),
+											},
+										]),
+									},
+								),
 							message: expect.any(String),
 							path: ["signUp"],
 						}),
