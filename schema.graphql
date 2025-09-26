@@ -402,6 +402,64 @@ type ChatMessagesConnectionEdge {
   node: ChatMessage
 }
 
+type CheckIn {
+  """The event associated with this check-in."""
+  event: Event
+
+  """The event attendee associated with this check-in."""
+  eventAttendee: EventAttendee!
+
+  """Indicates whether feedback has been submitted for this check-in."""
+  feedbackSubmitted: Boolean!
+
+  """Global identifier of the check-in record."""
+  id: ID!
+
+  """Date and time when the check-in occurred."""
+  time: DateTime!
+
+  """The user who checked in."""
+  user: User!
+}
+
+"""Input for check-in and check-out operations."""
+input CheckInCheckOutInput {
+  """The ID of the standalone event (for standalone events)."""
+  eventId: ID
+
+  """The ID of the recurring event instance (for recurring events)."""
+  recurringEventInstanceId: ID
+
+  """The ID of the user to check in/out."""
+  userId: ID!
+}
+
+"""Represents the check-in status of a user for an event."""
+type CheckInStatus {
+  """The check-in record if the user has checked in."""
+  checkIn: CheckIn
+
+  """Global identifier of the check-in status record."""
+  id: ID!
+
+  """The user associated with this check-in status."""
+  user: User!
+}
+
+type CheckOut {
+  """Date time when the check-out record was created."""
+  createdAt: DateTime!
+
+  """The event attendee associated with this check-out."""
+  eventAttendee: EventAttendee!
+
+  """Global identifier of the check-out record."""
+  id: ID!
+
+  """Date and time when the check-out occurred."""
+  time: DateTime!
+}
+
 type Comment {
   """Body of the comment."""
   body: String
@@ -735,6 +793,53 @@ type EventAttachment {
 
   """URL to the attachment."""
   url: String
+}
+
+type EventAttendee {
+  """The check-in record if the attendee has checked in."""
+  checkIn: CheckIn
+
+  """The check-out record if the attendee has checked out."""
+  checkOut: CheckOut
+
+  """Date time when the event attendee record was created."""
+  createdAt: DateTime!
+
+  """The event the attendee is associated with."""
+  event: Event
+
+  """Global identifier of the event attendee."""
+  id: ID!
+
+  """Indicates if the attendee has checked in to the event."""
+  isCheckedIn: Boolean!
+
+  """Indicates if the attendee has checked out from the event."""
+  isCheckedOut: Boolean!
+
+  """Indicates if the attendee is invited to the event."""
+  isInvited: Boolean!
+
+  """Indicates if the attendee is registered for the event."""
+  isRegistered: Boolean!
+
+  """Date time when the event attendee record was last updated."""
+  updatedAt: DateTime
+
+  """The user attending the event."""
+  user: User!
+}
+
+"""Input for event attendee operations."""
+input EventAttendeeInput {
+  """The ID of the standalone event (for standalone events)."""
+  eventId: ID
+
+  """The ID of the recurring event instance (for recurring events)."""
+  recurringEventInstanceId: ID
+
+  """The ID of the user."""
+  userId: ID!
 }
 
 """"""
@@ -1819,6 +1924,9 @@ type Mutation {
     input: MutationAcceptMembershipRequestInput!
   ): AcceptMembershipResponse
 
+  """Mutation field to add an event attendee."""
+  addEventAttendee(data: EventAttendeeInput!): User
+
   """Assign a tag to a user within an organization."""
   assignUserTag(assigneeId: ID!, tagId: ID!): Boolean
 
@@ -1830,6 +1938,12 @@ type Mutation {
     """Input to cancel a membership request"""
     input: MutationCancelMembershipRequestInput!
   ): CancelMembershipResponse
+
+  """Mutation field to check in an attendee to an event."""
+  checkIn(data: CheckInCheckOutInput!): CheckIn
+
+  """Mutation field to check out an attendee from an event."""
+  checkOut(data: CheckInCheckOutInput!): CheckOut
 
   """Mutation to complete an action item for a single instance"""
   completeActionItemForInstance(
@@ -2058,6 +2172,9 @@ type Mutation {
   deleteVenueBooking(input: MutationDeleteVenueBookingInput!): Venue
   installPlugin(input: InstallPluginInput!): Plugin
 
+  """Mutation field to invite a user to an event."""
+  inviteEventAttendee(data: EventAttendeeInput!): EventAttendee
+
   """Mutation field to join a public organization."""
   joinPublicOrganization(
     """Input to join a public organization"""
@@ -2073,11 +2190,23 @@ type Mutation {
     input: MutationMarkActionAsPendingForInstanceInput!
   ): ActionItem
 
+  """Mutation field to register a user for an event."""
+  registerEventAttendee(data: EventAttendeeInput!): EventAttendee
+
+  """Mutation field to register current user for an event."""
+  registerForEvent(
+    """ID of the event or recurring event instance to register for"""
+    id: ID!
+  ): EventAttendee
+
   """Mutation field to reject a membership request by an admin."""
   rejectMembershipRequest(
     """Input to reject a membership request"""
     input: MutationRejectMembershipRequestInput!
   ): RejectMembershipResponse
+
+  """Mutation field to remove an event attendee."""
+  removeEventAttendee(data: EventAttendeeInput!): User
 
   """Mutation field to send a membership request to an organization."""
   sendMembershipRequest(
@@ -2093,6 +2222,12 @@ type Mutation {
 
   """Mutation field to unblock a user from an organization."""
   unblockUser(organizationId: ID!, userId: ID!): Boolean
+
+  """Mutation field to unregister current user from an event."""
+  unregisterForEventByUser(
+    """ID of the event or recurring event instance to unregister from"""
+    id: ID!
+  ): Boolean
 
   """Mutation to update an action item"""
   updateActionItem(
@@ -4183,6 +4318,33 @@ type Query {
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Query field to get a specific event attendee record."""
+  getEventAttendee(
+    """ID of the standalone event"""
+    eventId: ID
+
+    """ID of the recurring event instance"""
+    recurringEventInstanceId: ID
+
+    """ID of the user"""
+    userId: ID!
+  ): EventAttendee
+
+  """Query field to get all event attendees for a specific event."""
+  getEventAttendeesByEventId(
+    """ID of the standalone event"""
+    eventId: ID
+
+    """ID of the recurring event instance"""
+    recurringEventInstanceId: ID
+  ): [EventAttendee!]
+
+  """Query field to get all event invitations for a specific user."""
+  getEventInvitesByUserId(
+    """ID of the user"""
+    userId: ID!
+  ): [EventAttendee!]!
+
   """Query field to get event volunteer groups."""
   getEventVolunteerGroups(
     """Order criteria for event volunteer groups."""
@@ -4232,6 +4394,18 @@ type Query {
     """Filter criteria for volunteer memberships."""
     where: VolunteerMembershipWhereInput!
   ): [VolunteerMembership!]
+
+  """Query field to check if a user has submitted feedback for an event."""
+  hasSubmittedFeedback(
+    """ID of the standalone event"""
+    eventId: ID
+
+    """ID of the recurring event instance"""
+    recurringEventInstanceId: ID
+
+    """ID of the user"""
+    userId: ID!
+  ): Boolean
 
   """Query field to read a post vote."""
   hasUserVoted(input: QueryHasUserVotedInput!): HasUserVoted

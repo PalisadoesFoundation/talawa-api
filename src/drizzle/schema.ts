@@ -76,6 +76,7 @@ export {
 	familyMembershipsTable,
 	familyMembershipsTableRelations,
 } from "./tables/familyMemberships";
+
 export {
 	fundCampaignsTable,
 	fundCampaignsTableRelations,

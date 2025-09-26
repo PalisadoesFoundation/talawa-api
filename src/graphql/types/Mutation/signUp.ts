@@ -66,12 +66,32 @@ builder.mutationField("signUp", (t) =>
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to sign up to talawa.",
 		resolve: async (_parent, args, ctx) => {
+			// Allow both unauthenticated users (self-registration) and authenticated administrators (creating users on spot)
 			if (ctx.currentClient.isAuthenticated) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "forbidden_action",
+				const currentUserId = ctx.currentClient.user.id;
+				const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+					columns: {
+						role: true,
 					},
+					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				});
+
+				if (currentUser === undefined) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthenticated",
+						},
+					});
+				}
+
+				// Only allow administrators to create users on behalf of others
+				if (currentUser.role !== "administrator") {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unauthorized_action",
+						},
+					});
+				}
 			}
 
 			const {

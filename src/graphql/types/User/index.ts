@@ -9,6 +9,7 @@ import "./creator";
 import "./educationGrade";
 import "./emailAddress";
 import "./employmentStatus";
+import "./eventsAttended";
 import "./homePhoneNumber";
 import "./isEmailAddressVerified";
 import "./maritalStatus";
