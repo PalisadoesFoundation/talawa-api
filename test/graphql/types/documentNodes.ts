@@ -1931,3 +1931,12 @@ export const Mutation_checkIn = gql(`
     }
   }
 `);
+
+export const Mutation_checkOut = gql(`
+  mutation Mutation_checkOut($data: CheckInCheckOutInput!) {
+    checkOut(data: $data) {
+      id
+      time
+    }
+  }
+`);
