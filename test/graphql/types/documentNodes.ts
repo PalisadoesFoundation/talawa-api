@@ -1969,6 +1969,19 @@ export const Mutation_inviteEventAttendee = gql(`
   }
 `);
 
+export const Mutation_addEventAttendee = gql(`
+  mutation Mutation_addEventAttendee($data: EventAttendeeInput!) {
+    addEventAttendee(data: $data) {
+      id
+      name
+      emailAddress
+      isEmailAddressVerified
+      role
+      createdAt
+    }
+  }
+`);
+
 export const Mutation_registerForEvent = gql(`
   mutation Mutation_registerForEvent($id: ID!) {
     registerForEvent(id: $id) {
