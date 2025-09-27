@@ -1921,3 +1921,13 @@ export const Query_getVolunteerMembership = gql(`
     }
   }
 `);
+
+export const Mutation_checkIn = gql(`
+  mutation Mutation_checkIn($data: CheckInCheckOutInput!) {
+    checkIn(data: $data) {
+      id
+      time
+      feedbackSubmitted
+    }
+  }
+`);

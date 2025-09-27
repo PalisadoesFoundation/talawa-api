@@ -662,6 +662,12 @@ type Event {
   """
   attachments: [EventAttachment!]
 
+  """List of users attending the event."""
+  attendees: [User!]
+
+  """Check-in status for all attendees of the event."""
+  attendeesCheckInStatus: [CheckInStatus!]!
+
   """The base event from which this materialized instance was generated."""
   baseEvent: Event
 
@@ -4908,6 +4914,9 @@ type User {
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
+
+  """List of events the user has attended or registered for."""
+  eventsAttended: [Event!]
 
   """The phone number to use to communicate with the user at their home."""
   homePhoneNumber: PhoneNumber
