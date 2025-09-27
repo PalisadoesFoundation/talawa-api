@@ -1250,6 +1250,14 @@ export const Mutation_createPostVote = gql(`
     }
   }`);
 
+export const Mutation_deletePostVote = gql(`
+  mutation Mutation_deletePostVote($input: MutationDeletePostVoteInput!){
+    deletePostVote(input: $input){
+      id
+      caption
+    }
+  }`);
+
 export const Mutation_createEventVolunteerGroup = gql(`
   mutation Mutation_createEventVolunteerGroup($input: MutationCreateEventVolunteerGroupInput!){
     createEventVolunteerGroup(input: $input) {
@@ -1704,6 +1712,18 @@ export const Mutation_createComment = gql(`
 export const Mutation_createCommentVote = gql(`
 	mutation Mutation_createCommentVote($input: MutationCreateCommentVoteInput!) {
 		createCommentVote(input: $input) {
+			id
+			body
+			creator {
+				id
+			}
+		}
+	}
+`);
+
+export const Mutation_deleteCommentVote = gql(`
+	mutation Mutation_deleteCommentVote($input: MutationDeleteCommentVoteInput!) {
+		deleteCommentVote(input: $input) {
 			id
 			body
 			creator {

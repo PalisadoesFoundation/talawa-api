@@ -17,6 +17,7 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createPostVote,
 	Mutation_createUser,
+	Mutation_deletePostVote,
 	Mutation_deleteUser,
 	Query_hasUserVoted,
 	Query_postWithHasUserVoted,
@@ -385,6 +386,19 @@ suite("Query: hasUserVoted", () => {
 				"down_vote",
 			);
 			expect(hasUserVotedResponse.data.hasUserVoted?.hasVoted).toEqual(true);
+
+			// Clean up: Delete the vote to prevent interference with other tests
+			await mercuriusClient.mutate(Mutation_deletePostVote, {
+				headers: {
+					authorization: `bearer ${cachedAdminToken}`,
+				},
+				variables: {
+					input: {
+						postId: postId,
+						creatorId: cachedAdminUserId,
+					},
+				},
+			});
 		});
 	});
 	suite("Post hasUserVoted Field Tests", () => {
@@ -456,6 +470,19 @@ suite("Query: hasUserVoted", () => {
 			);
 			expect(hasUserVotedData.voteType).toEqual("up_vote");
 			expect(hasUserVotedData.hasVoted).toEqual(true);
+
+			// Clean up: Delete the vote to prevent interference with other tests
+			await mercuriusClient.mutate(Mutation_deletePostVote, {
+				headers: {
+					authorization: `bearer ${cachedAdminToken}`,
+				},
+				variables: {
+					input: {
+						postId: postId,
+						creatorId: cachedAdminUserId,
+					},
+				},
+			});
 		});
 	});
 });
