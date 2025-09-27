@@ -1982,6 +1982,19 @@ export const Mutation_addEventAttendee = gql(`
   }
 `);
 
+export const Mutation_removeEventAttendee = gql(`
+  mutation Mutation_removeEventAttendee($data: EventAttendeeInput!) {
+    removeEventAttendee(data: $data) {
+      id
+      name
+      emailAddress
+      isEmailAddressVerified
+      role
+      createdAt
+    }
+  }
+`);
+
 export const Mutation_registerForEvent = gql(`
   mutation Mutation_registerForEvent($id: ID!) {
     registerForEvent(id: $id) {
