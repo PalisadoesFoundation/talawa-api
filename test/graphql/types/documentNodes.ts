@@ -2075,3 +2075,29 @@ export const Query_getEventAttendeesByEventId = gql(`
     }
   }
 `);
+
+export const Query_getEventInvitesByUserId = gql(`
+  query Query_getEventInvitesByUserId($userId: ID!) {
+    getEventInvitesByUserId(userId: $userId) {
+      id
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      createdAt
+      updatedAt
+      user {
+        id
+      }
+      event {
+        id
+      }
+      checkIn {
+        time
+      }
+      checkOut {
+        time
+      }
+    }
+  }
+`);
