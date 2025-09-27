@@ -2046,3 +2046,32 @@ export const Query_getEventAttendee = gql(`
     }
   }
 `);
+
+export const Query_getEventAttendeesByEventId = gql(`
+  query Query_getEventAttendeesByEventId($eventId: ID, $recurringEventInstanceId: ID) {
+    getEventAttendeesByEventId(eventId: $eventId, recurringEventInstanceId: $recurringEventInstanceId) {
+      id
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      createdAt
+      updatedAt
+      user {
+        id
+        name
+        emailAddress
+      }
+      event {
+        id
+        name
+      }
+      checkIn {
+        time
+      }
+      checkOut {
+        time
+      }
+    }
+  }
+`);
