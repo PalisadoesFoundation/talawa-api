@@ -2009,6 +2009,12 @@ export const Mutation_registerForEvent = gql(`
   }
 `);
 
+export const Mutation_unregisterForEventByUser = gql(`
+  mutation Mutation_unregisterForEventByUser($id: ID!) {
+    unregisterForEventByUser(id: $id)
+  }
+`);
+
 export const Query_hasSubmittedFeedback = gql(`
   query Query_hasSubmittedFeedback($userId: ID!, $eventId: ID, $recurringEventInstanceId: ID) {
     hasSubmittedFeedback(userId: $userId, eventId: $eventId, recurringEventInstanceId: $recurringEventInstanceId)
