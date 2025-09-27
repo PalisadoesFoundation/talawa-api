@@ -1940,3 +1940,17 @@ export const Mutation_checkOut = gql(`
     }
   }
 `);
+
+export const Mutation_registerEventAttendee = gql(`
+  mutation Mutation_registerEventAttendee($data: EventAttendeeInput!) {
+    registerEventAttendee(data: $data) {
+      id
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      createdAt
+      updatedAt
+    }
+  }
+`);
