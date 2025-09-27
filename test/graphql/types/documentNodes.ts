@@ -1954,3 +1954,17 @@ export const Mutation_registerEventAttendee = gql(`
     }
   }
 `);
+
+export const Mutation_registerForEvent = gql(`
+  mutation Mutation_registerForEvent($id: ID!) {
+    registerForEvent(id: $id) {
+      id
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      createdAt
+      updatedAt
+    }
+  }
+`);
