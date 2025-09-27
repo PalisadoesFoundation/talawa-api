@@ -1955,6 +1955,20 @@ export const Mutation_registerEventAttendee = gql(`
   }
 `);
 
+export const Mutation_inviteEventAttendee = gql(`
+  mutation Mutation_inviteEventAttendee($data: EventAttendeeInput!) {
+    inviteEventAttendee(data: $data) {
+      id
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
 export const Mutation_registerForEvent = gql(`
   mutation Mutation_registerForEvent($id: ID!) {
     registerForEvent(id: $id) {
