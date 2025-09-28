@@ -126,19 +126,64 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		path: "/graphql",
 		schema: initialSchema,
 		subscription: {
-			context: async (socket, request) =>
-				await createContext({
-					fastify,
-					isSubscription: true,
-					request,
-					socket: socket as unknown as WebSocket,
-				}),
-			// Intervals in milli-seconds to wait before sending the `GQL_CONNECTION_KEEP_ALIVE` message to the client to check if the connection is alive. This helps detect disconnected subscription clients and prevent unnecessary data transfer.
-			keepAlive: 1000 * 30,
-			//  A function which can be used to validate the `connection_init` payload. It should return a truthy value to authorize the connection. If it returns an object the subscription context will be extended with the returned object.
-			onConnect: (data) => {
-				return true;
+			// This is the gatekeeper. It runs ONLY ONCE when the client connects.
+			onConnect: async (data) => {
+				fastify.log.info(
+					{ onConnectPayload: data.payload },
+					"Subscription connection payload received",
+				);
+
+				// The client sends connectionParams as `payload`
+				const { payload } = data;
+
+				// Check for the authorization token sent by the client
+				if (!payload?.authorization) {
+					fastify.log.warn(
+						"Connection rejected: Missing authorization token in onConnect payload.",
+					);
+					// Returning false will reject the connection
+					return false;
+				}
+
+				try {
+					// Manually verify the JWT from the payload
+					const token = payload.authorization.replace("Bearer ", "");
+					const decoded =
+						await fastify.jwt.verify<ExplicitAuthenticationTokenPayload>(token);
+
+					fastify.log.info(
+						{ user: decoded.user },
+						"Subscription connection authorized.",
+					);
+
+					// Return the full context for authenticated subscriptions
+					return {
+						currentClient: {
+							isAuthenticated: true,
+							user: decoded.user,
+						},
+						drizzleClient: fastify.drizzleClient,
+						envConfig: fastify.envConfig,
+						jwt: {
+							sign: (payload: ExplicitAuthenticationTokenPayload) =>
+								fastify.jwt.sign(payload),
+						},
+						log: fastify.log,
+						minio: fastify.minio,
+					};
+				} catch (error) {
+					fastify.log.error(
+						{ error },
+						"Subscription connection rejected: Invalid token.",
+					);
+					return false;
+				}
 			},
+
+			// Context is provided by onConnect for authenticated connections
+
+			// KeepAlive is fine as it is
+			keepAlive: 1000 * 30,
 			// A function which is called with the subscription context of the connection after the connection gets disconnected.
 			onDisconnect: (ctx) => {},
 			// This function is used to validate incoming Websocket connections.

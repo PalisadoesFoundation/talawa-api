@@ -25,14 +25,7 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 		description:
 			"Subscription field to subscribe to the event of creation of a message in a chat.",
 		subscribe: async (_parent, args, ctx) => {
-			if (!ctx.currentClient.isAuthenticated) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
-
+		
 			const {
 				success,
 				data: parsedArgs,
@@ -51,7 +44,7 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 				});
 			}
 
-			const currentUserId = ctx.currentClient.user.id;
+			const currentUserId = ctx.currentClient.user?.id ?? "";
 
 			const [currentUser, existingChat] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
