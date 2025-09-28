@@ -56,14 +56,10 @@ export const resolveUpdater = async (
 
 	const currentUserOrganizationMembership =
 		currentUser.organizationMembershipsWhereMember[0];
-	const currentUserChatMembership = currentUser.chatMembershipsWhereMember[0];
-
 	const isGlobalAdmin = currentUser.role === "administrator";
-	const isOrgAdmin =
-		currentUserOrganizationMembership?.role === "administrator";
-	const isChatAdmin = currentUserChatMembership?.role === "administrator";
+	const isOrgMember = currentUserOrganizationMembership !== undefined;
 
-	if (!isGlobalAdmin && !isOrgAdmin && !isChatAdmin) {
+	if (!isGlobalAdmin && !isOrgMember) {
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unauthorized_action",
