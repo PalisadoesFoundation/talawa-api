@@ -339,6 +339,7 @@ suite("registerForEvent", () => {
             // Create a regular user
             const regularUserResult = await createRegularUserUsingAdmin();
             const regularUserToken = regularUserResult.authToken;
+            assertToBeNonNullish(regularUserToken);
 
             // Create an organization
             const organizationResult = await mercuriusClient.mutate(
