@@ -62,7 +62,7 @@ suite("registerForEvent", () => {
             const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
                 headers: { authorization: `bearer ${adminToken}` },
                 variables: { input: { eventId: "invalid-uuid-format" } },
-            } as any);
+            } as Parameters<typeof mercuriusClient.mutate>[1]);
             expect(result.data?.registerForEvent ?? null).toBeNull();
             expect(result.errors).toEqual(
                 expect.arrayContaining([
@@ -89,7 +89,7 @@ suite("registerForEvent", () => {
             const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
                 headers: { authorization: `bearer ${adminToken}` },
                 variables: { input: { eventId: "" } },
-            } as any);
+            } as Parameters<typeof mercuriusClient.mutate>[1]);
             expect(result.data?.registerForEvent ?? null).toBeNull();
             expect(result.errors).toEqual(
                 expect.arrayContaining([
@@ -118,7 +118,7 @@ suite("registerForEvent", () => {
             const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
                 headers: { authorization: `bearer ${adminToken}` },
                 variables: { input: { eventId: faker.string.uuid() } },
-            } as any);
+            } as Parameters<typeof mercuriusClient.mutate>[1]);
 
             expect(result.data?.registerForEvent ?? null).toBeNull();
             expect(result.errors).toEqual(
@@ -185,7 +185,7 @@ suite("registerForEvent", () => {
             const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
                 headers: { authorization: `bearer ${adminToken}` },
                 variables: { input: { eventId } },
-            } as any);
+            } as Parameters<typeof mercuriusClient.mutate>[1]);
 
             expect(result.data?.registerForEvent ?? null).toBeNull();
             expect(result.errors).toEqual(
@@ -253,7 +253,7 @@ suite("registerForEvent", () => {
                 {
                     headers: { authorization: `bearer ${adminToken}` },
                     variables: { input: { eventId } },
-                } as any,
+                } as Parameters<typeof mercuriusClient.mutate>[1],
             );
             expect(firstRegistration.data?.registerForEvent).toBe(true);
 
@@ -261,7 +261,7 @@ suite("registerForEvent", () => {
             const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
                 headers: { authorization: `bearer ${adminToken}` },
                 variables: { input: { eventId } },
-            } as any);
+            } as Parameters<typeof mercuriusClient.mutate>[1]);
 
             expect(result.data?.registerForEvent ?? null).toBeNull();
             expect(result.errors).toEqual(
@@ -327,7 +327,7 @@ suite("registerForEvent", () => {
             const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
                 headers: { authorization: `bearer ${adminToken}` },
                 variables: { input: { eventId } },
-            } as any);
+            } as Parameters<typeof mercuriusClient.mutate>[1]);
 
             expect(result.data?.registerForEvent).toBe(true);
             expect(result.errors).toBeUndefined();
@@ -390,7 +390,7 @@ suite("registerForEvent", () => {
                 {
                     headers: { authorization: `bearer ${adminToken}` },
                     variables: { input: { eventId } },
-                } as any,
+                } as Parameters<typeof mercuriusClient.mutate>[1],
             );
             expect(adminRegistration.data?.registerForEvent).toBe(true);
 
@@ -400,7 +400,7 @@ suite("registerForEvent", () => {
                 {
                     headers: { authorization: `bearer ${regularUserToken}` },
                     variables: { input: { eventId } },
-                } as any,
+                } as Parameters<typeof mercuriusClient.mutate>[1],
             );
             expect(userRegistration.data?.registerForEvent).toBe(true);
         });
