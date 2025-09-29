@@ -27,9 +27,13 @@ const MUTATION_REGISTER_FOR_EVENT = `
 suite("registerForEvent", () => {
     suite("registerForEvent - unauthenticated", () => {
         test("should return an error with unauthenticated extensions code", async () => {
-            const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
+            const mutationOptions: Parameters<typeof mercuriusClient.mutate>[1] = {
                 variables: { input: { eventId: faker.string.uuid() } },
-            } as any);
+            };
+            const result = await mercuriusClient.mutate(
+                MUTATION_REGISTER_FOR_EVENT,
+                mutationOptions,
+            );
             expect(result.data?.registerForEvent ?? null).toBeNull();
             expect(result.errors).toEqual(
                 expect.arrayContaining([
