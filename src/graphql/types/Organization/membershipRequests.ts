@@ -15,6 +15,7 @@ const membershipRequestsArgumentsSchema = z
 				user: z
 					.object({
 						name_contains: z.string().optional(),
+						userId: z.string().optional(),
 					})
 					.optional(),
 			})
@@ -30,6 +31,9 @@ const UserWhereInput = builder.inputType("UserWhereInput", {
 	fields: (t) => ({
 		name_contains: t.string({
 			description: "Filter by first name containing this string",
+		}),
+		userId: t.string({
+			description: "Filter by user ID containing this string",
 		}),
 	}),
 });
@@ -88,6 +92,9 @@ Organization.implement({
 				}
 
 				const currentUserId = ctx.currentClient.user.id;
+				const { skip, first, where } = parsedArgs;
+				const name_contains = where?.user?.name_contains;
+				const userId = where?.user?.userId;
 
 				const [currentUser, currentUserOrganizationMembership] =
 					await Promise.all([
@@ -118,23 +125,38 @@ Organization.implement({
 					});
 				}
 
-				if (
-					currentUser.role !== "administrator" &&
-					(currentUserOrganizationMembership === undefined ||
-						currentUserOrganizationMembership.role !== "administrator")
-				) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_action_on_arguments_associated_resources",
-							message:
-								"You must be an organization admin or system admin to view membership requests.",
-							issues: [{ argumentPath: [] }],
-						},
-					});
-				}
+				// Check if user is admin (system admin or org admin)
+				const isAdmin =
+					currentUser.role === "administrator" ||
+					(currentUserOrganizationMembership !== undefined &&
+						currentUserOrganizationMembership.role === "administrator");
 
-				const { skip, first, where } = parsedArgs;
-				const name_contains = where?.user?.name_contains;
+				// If not admin, check if they're querying their own userId
+				if (!isAdmin) {
+					// Non-admins must provide userId filter that matches their own ID
+					if (!userId || userId !== currentUserId) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthorized_action_on_arguments_associated_resources",
+								message:
+									"Non-admin users can only view their own membership requests by providing their userId in the filter.",
+								issues: [{ argumentPath: ["where", "user", "userId"] }],
+							},
+						});
+					}
+
+					// Non-admins cannot use name_contains filter
+					if (name_contains) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unauthorized_action_on_arguments_associated_resources",
+								message:
+									"Non-admin users cannot filter membership requests by name.",
+								issues: [{ argumentPath: ["where", "user", "name_contains"] }],
+							},
+						});
+					}
+				}
 
 				let query: SQL<unknown> = eq(
 					membershipRequestsTable.organizationId,
@@ -158,6 +180,12 @@ Organization.implement({
 					} else {
 						return [];
 					}
+				}
+				if (userId) {
+					query = and(
+						query,
+						eq(membershipRequestsTable.userId, userId),
+					) as SQL<unknown>;
 				}
 
 				const membershipRequests =
