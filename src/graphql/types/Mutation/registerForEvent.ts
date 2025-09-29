@@ -39,7 +39,10 @@ builder.mutationField("registerForEvent", (t) =>
 			// Atomic seat check + registration
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				const [event] = await tx
-					.select({ id: eventsTable.id, isRegisterable: eventsTable.isRegisterable })
+					.select({
+						id: eventsTable.id,
+						isRegisterable: eventsTable.isRegisterable,
+					})
 					.from(eventsTable)
 					.where(eq(eventsTable.id, input.eventId))
 					.for("update")
