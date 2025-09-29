@@ -420,6 +420,14 @@ type Comment {
   """Total number of down votes on the comment."""
   downVotesCount: Int
 
+  """
+  Check if a specific user has voted on this comment and return vote details.
+  """
+  hasUserVoted(
+    """The ID of the user to check if they have voted on this comment."""
+    userId: ID!
+  ): HasUserVotedComment
+
   """Global identifier of the comment."""
   id: ID!
 
@@ -4004,6 +4012,14 @@ type Post {
 
   """Total number of down votes on the post."""
   downVotesCount: Int
+
+  """
+  Check if a specific user has voted on this post and return vote details.
+  """
+  hasUserVoted(
+    """The ID of the user to check if they have voted on this post."""
+    userId: ID!
+  ): HasUserVoted
 
   """Global identifier of the post."""
   id: ID!

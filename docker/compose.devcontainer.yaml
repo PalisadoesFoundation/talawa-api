@@ -150,6 +150,12 @@ services:
         name: postgres
         published: ${POSTGRES_MAPPED_PORT:?error}
         target: 5432
+    # https://docs.docker.com/reference/compose-file/services/#volumes
+    volumes:
+      - source: postgres_data
+        target: /var/lib/postgresql/data
+        type: volume
+
   postgres-test:
     ports:
       - host_ip: ${POSTGRES_MAPPED_HOST_IP:?error}
@@ -184,5 +190,6 @@ volumes:
   api_pnpm_store:
   cloudbeaver_data:
   minio_test_data:
+  postgres_data:
   postgres_test_data:
   redis_test_data:
