@@ -37,7 +37,7 @@ const UserWhereInput = builder.inputType("UserWhereInput", {
 			description: "Filter by first name containing this string",
 		}),
 		userId: t.string({
-			description: "Filter by user ID containing this string",
+			description: "Filter by user ID",
 		}),
 	}),
 });

@@ -4628,7 +4628,7 @@ input UserWhereInput {
   """Filter by first name containing this string"""
   name_contains: String
 
-  """Filter by user ID containing this string"""
+  """Filter by user ID"""
   userId: String
 }
 
