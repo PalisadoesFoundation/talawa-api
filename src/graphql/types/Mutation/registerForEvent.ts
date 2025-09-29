@@ -36,14 +36,10 @@ builder.mutationField("registerForEvent", (t) =>
 
 			const userId: string = ctx.currentClient.user.id;
 
-			// Transaction for atomic seat check and registration
+			// Atomic seat check + registration
 			return await ctx.drizzleClient.transaction(async (tx) => {
-				// Lock the event row for update and check if it exists
 				const [event] = await tx
-					.select({
-						id: eventsTable.id,
-						isRegisterable: eventsTable.isRegisterable,
-					})
+					.select({ id: eventsTable.id, isRegisterable: eventsTable.isRegisterable })
 					.from(eventsTable)
 					.where(eq(eventsTable.id, input.eventId))
 					.for("update")
@@ -52,13 +48,11 @@ builder.mutationField("registerForEvent", (t) =>
 				if (!event) {
 					throw new Error("Event not found");
 				}
-
 				if (!event.isRegisterable) {
 					throw new Error("Event is not open for registration");
 				}
 
-				// Check if user is already registered
-				const [existingAttendance] = await tx
+				const [existing] = await tx
 					.select()
 					.from(eventAttendancesTable)
 					.where(
@@ -69,11 +63,10 @@ builder.mutationField("registerForEvent", (t) =>
 					)
 					.limit(1);
 
-				if (existingAttendance) {
+				if (existing) {
 					throw new Error("User is already registered for this event");
 				}
 
-				// Register the user
 				await tx.insert(eventAttendancesTable).values({
 					eventId: input.eventId,
 					attendeeId: userId,

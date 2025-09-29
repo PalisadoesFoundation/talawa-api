@@ -4,7 +4,10 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
-import { Mutation_createOrganization, Query_signIn } from "../documentNodes";
+import {
+	Mutation_createOrganization,
+	Query_signIn,
+} from "../documentNodes";
 
 // Inline the document nodes locally to avoid touching shared helpers (helps Codecov/patch).
 const MUTATION_CREATE_STANDALONE_EVENT = `
@@ -23,14 +26,10 @@ const MUTATION_REGISTER_FOR_EVENT = `
 
 suite("registerForEvent", () => {
 	suite("registerForEvent - unauthenticated", () => {
-		test("should return an error with unauthenticated extensions code", async () => {
-			const mutationOptions: Parameters<typeof mercuriusClient.mutate>[1] = {
+		test("returns unauthenticated error", async () => {
+			const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
 				variables: { input: { eventId: faker.string.uuid() } },
-			};
-			const result = await mercuriusClient.mutate(
-				MUTATION_REGISTER_FOR_EVENT,
-				mutationOptions,
-			);
+			} as any);
 			expect(result.data?.registerForEvent ?? null).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
@@ -44,7 +43,7 @@ suite("registerForEvent", () => {
 	});
 
 	suite("registerForEvent - invalid arguments", () => {
-		test("should return an error with invalid_arguments code for invalid UUID", async () => {
+		test("invalid UUID -> invalid_arguments", async () => {
 			const signInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -59,7 +58,7 @@ suite("registerForEvent", () => {
 			const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: { input: { eventId: "invalid-uuid-format" } },
-			} as Parameters<typeof mercuriusClient.mutate>[1]);
+			} as any);
 			expect(result.data?.registerForEvent ?? null).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
@@ -71,7 +70,7 @@ suite("registerForEvent", () => {
 			);
 		});
 
-		test("should return an error with invalid_arguments code for empty eventId", async () => {
+		test("empty eventId -> invalid_arguments", async () => {
 			const signInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -86,7 +85,7 @@ suite("registerForEvent", () => {
 			const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: { input: { eventId: "" } },
-			} as Parameters<typeof mercuriusClient.mutate>[1]);
+			} as any);
 			expect(result.data?.registerForEvent ?? null).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
@@ -100,7 +99,7 @@ suite("registerForEvent", () => {
 	});
 
 	suite("registerForEvent - event not found", () => {
-		test("should return an error with arguments_associated_resources_not_found", async () => {
+		test("arguments_associated_resources_not_found", async () => {
 			const signInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -115,7 +114,7 @@ suite("registerForEvent", () => {
 			const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: { input: { eventId: faker.string.uuid() } },
-			} as Parameters<typeof mercuriusClient.mutate>[1]);
+			} as any);
 
 			expect(result.data?.registerForEvent ?? null).toBeNull();
 			expect(result.errors).toEqual(
@@ -132,7 +131,7 @@ suite("registerForEvent", () => {
 	});
 
 	suite("registerForEvent - event not registerable", () => {
-		test("should return an error when event is not open for registration", async () => {
+		test("event not open for registration", async () => {
 			const signInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -182,7 +181,7 @@ suite("registerForEvent", () => {
 			const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: { input: { eventId } },
-			} as Parameters<typeof mercuriusClient.mutate>[1]);
+			} as any);
 
 			expect(result.data?.registerForEvent ?? null).toBeNull();
 			expect(result.errors).toEqual(
@@ -197,7 +196,7 @@ suite("registerForEvent", () => {
 	});
 
 	suite("registerForEvent - already registered", () => {
-		test("should return an error when user is already registered for event", async () => {
+		test("user is already registered for event", async () => {
 			const signInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -250,7 +249,7 @@ suite("registerForEvent", () => {
 				{
 					headers: { authorization: `bearer ${adminToken}` },
 					variables: { input: { eventId } },
-				} as Parameters<typeof mercuriusClient.mutate>[1],
+				} as any,
 			);
 			expect(firstRegistration.data?.registerForEvent).toBe(true);
 
@@ -258,7 +257,7 @@ suite("registerForEvent", () => {
 			const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: { input: { eventId } },
-			} as Parameters<typeof mercuriusClient.mutate>[1]);
+			} as any);
 
 			expect(result.data?.registerForEvent ?? null).toBeNull();
 			expect(result.errors).toEqual(
@@ -273,7 +272,7 @@ suite("registerForEvent", () => {
 	});
 
 	suite("registerForEvent - successful registration", () => {
-		test("should successfully register user for a registerable event", async () => {
+		test("registers user for a registerable event", async () => {
 			const signInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -324,13 +323,13 @@ suite("registerForEvent", () => {
 			const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: { input: { eventId } },
-			} as Parameters<typeof mercuriusClient.mutate>[1]);
+			} as any);
 
 			expect(result.data?.registerForEvent).toBe(true);
 			expect(result.errors).toBeUndefined();
 		});
 
-		test("should allow different users to register for the same event", async () => {
+		test("different users register for the same event", async () => {
 			const signInResult = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -387,7 +386,7 @@ suite("registerForEvent", () => {
 				{
 					headers: { authorization: `bearer ${adminToken}` },
 					variables: { input: { eventId } },
-				} as Parameters<typeof mercuriusClient.mutate>[1],
+				} as any,
 			);
 			expect(adminRegistration.data?.registerForEvent).toBe(true);
 
@@ -397,7 +396,7 @@ suite("registerForEvent", () => {
 				{
 					headers: { authorization: `bearer ${regularUserToken}` },
 					variables: { input: { eventId } },
-				} as Parameters<typeof mercuriusClient.mutate>[1],
+				} as any,
 			);
 			expect(userRegistration.data?.registerForEvent).toBe(true);
 		});
