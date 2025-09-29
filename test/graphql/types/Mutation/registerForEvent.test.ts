@@ -25,11 +25,11 @@ const MUTATION_REGISTER_FOR_EVENT = `
 // Generic error checker: data is null and at least one error on the expected path.
 // This avoids brittle checks on extension code strings while still validating failure.
 function expectGraphQLFailure(
-    result: { data?: unknown; errors?: Array<{ path?: readonly unknown[]; message?: string }> },
+    result: { data?: Record<string, unknown>; errors?: Array<{ path?: readonly unknown[]; message?: string }> },
     field: string,
 ) {
-    expect((result as any).data?.[field] ?? null).toBeNull();
-    expect(result.errors && result.errors.length).toBeTruthy();
+    expect(result.data?.[field] ?? null).toBeNull();
+    expect(result.errors?.length).toBeTruthy();
     expect(result.errors).toEqual(
         expect.arrayContaining([
             expect.objectContaining({ path: [field] }),
