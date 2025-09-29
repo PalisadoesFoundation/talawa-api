@@ -369,7 +369,7 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		expect(volunteer.hoursVolunteered).toBe(0); // Default value
 	});
 
-	test("Integration: Prevents duplicate volunteer records", async () => {
+	test("Integration: Returns existing volunteer for duplicate records", async () => {
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 
 		const organization = await createTestOrganization();
@@ -412,8 +412,9 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 
 		expect(firstResult.errors).toBeUndefined();
 		expect(firstResult.data?.createEventVolunteer).toBeDefined();
+		const firstVolunteerId = firstResult.data?.createEventVolunteer?.id;
 
-		// Try to create duplicate volunteer record
+		// Try to create duplicate volunteer record - should return existing
 		const duplicateResult = await mercuriusClient.mutate(
 			Mutation_createEventVolunteer,
 			{
@@ -427,22 +428,10 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 			},
 		);
 
-		expect(duplicateResult.errors).toBeDefined();
-		expect(duplicateResult.errors).toEqual(
-			expect.arrayContaining<TalawaGraphQLFormattedError>([
-				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								message: "User is already a volunteer for this event series",
-							}),
-						]),
-					}),
-					message: "You have provided invalid arguments for this action.",
-					path: ["createEventVolunteer"],
-				}),
-			]),
+		expect(duplicateResult.errors).toBeUndefined();
+		expect(duplicateResult.data?.createEventVolunteer).toBeDefined();
+		expect(duplicateResult.data?.createEventVolunteer?.id).toBe(
+			firstVolunteerId,
 		);
 	});
 

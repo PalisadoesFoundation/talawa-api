@@ -581,7 +581,7 @@ suite("Mutation createEventVolunteerGroup", () => {
 			}
 		});
 
-		test("should throw error for duplicate group name in same event", async () => {
+		test("should return existing group for duplicate group name in same event", async () => {
 			await new Promise((resolve) => setTimeout(resolve, 1200));
 
 			const groupName = `Unique Group ${faker.string.alphanumeric(8)}`;
@@ -631,24 +631,16 @@ suite("Mutation createEventVolunteerGroup", () => {
 				},
 			);
 
-			expect(duplicateResult.data?.createEventVolunteerGroup).toBeNull();
-			expect(duplicateResult.errors).toEqual(
-				expect.arrayContaining<TalawaGraphQLFormattedError>([
-					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions: expect.objectContaining<InvalidArgumentsExtensions>({
-							code: "invalid_arguments",
-							issues: expect.arrayContaining([
-								expect.objectContaining({
-									argumentPath: ["data", "name"],
-									message:
-										"A volunteer group with this name already exists for this event series",
-								}),
-							]),
-						}),
-						message: expect.any(String),
-						path: ["createEventVolunteerGroup"],
-					}),
-				]),
+			expect(duplicateResult.errors).toBeUndefined();
+			expect(duplicateResult.data?.createEventVolunteerGroup).toBeDefined();
+			assertToBeNonNullish(duplicateResult.data?.createEventVolunteerGroup);
+
+			// Should return the same group
+			expect(duplicateResult.data.createEventVolunteerGroup.id).toBe(
+				firstGroupId,
+			);
+			expect(duplicateResult.data.createEventVolunteerGroup.name).toBe(
+				groupName,
 			);
 
 			// Cleanup first group
