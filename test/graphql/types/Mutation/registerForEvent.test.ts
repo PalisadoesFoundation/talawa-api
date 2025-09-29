@@ -21,6 +21,7 @@ const MUTATION_REGISTER_FOR_EVENT = `
 
 // Generic error checker: data is null and at least one error on the expected path.
 // This avoids brittle checks on extension code strings while still validating failure.
+
 function expectGraphQLFailure(
     result: {
         data?: Record<string, unknown>;
@@ -34,6 +35,7 @@ function expectGraphQLFailure(
         expect.arrayContaining([expect.objectContaining({ path: [field] })]),
     );
 }
+
 
 suite("registerForEvent", () => {
     suite("unauthenticated", () => {
