@@ -2,8 +2,8 @@
 [default]
 extend-words = {
   registerable = "registerable",
-  isregisterable = "isregisterable",
-  mercurius = "mercurius",
+  isRegisterable = "isRegisterable",
+  mercurius     = "mercurius",
   drizzle = "drizzle",
   talawa = "talawa",
   zod = "zod",
