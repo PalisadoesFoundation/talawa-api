@@ -161,52 +161,61 @@ builder.mutationField("createEventVolunteer", (t) =>
 					)
 					.limit(1);
 
+				let volunteer: typeof eventVolunteersTable.$inferSelect;
+
 				if (existingVolunteer.length > 0) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "invalid_arguments",
-							issues: [
-								{
-									argumentPath: ["data"],
-									message: "User is already a volunteer for this event series",
-								},
-							],
-						},
-					});
-				}
+					// Volunteer already exists as template
+					const existing = existingVolunteer[0];
+					if (!existing) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+					volunteer = existing;
 
-				// Create template volunteer
-				const [createdVolunteer] = await ctx.drizzleClient
-					.insert(eventVolunteersTable)
-					.values({
-						userId: parsedArgs.data.userId,
+					// Remove any existing instance-specific exceptions
+					// Since ENTIRE_SERIES means they participate in all instances, instance-specific exceptions are no longer needed
+					await ctx.drizzleClient
+						.delete(eventVolunteerExceptionsTable)
+						.where(eq(eventVolunteerExceptionsTable.volunteerId, volunteer.id));
+				} else {
+					// Create new template volunteer
+					const [createdVolunteer] = await ctx.drizzleClient
+						.insert(eventVolunteersTable)
+						.values({
+							userId: parsedArgs.data.userId,
+							eventId: targetEventId,
+							creatorId: currentUserId,
+							hasAccepted: false,
+							isPublic: true,
+							hoursVolunteered: "0",
+						})
+						.returning();
+
+					// Assert that insert succeeded - should always return the created record
+					if (!createdVolunteer) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+
+					volunteer = createdVolunteer;
+
+					// Create volunteer membership record
+					await ctx.drizzleClient.insert(volunteerMembershipsTable).values({
+						volunteerId: volunteer.id,
+						groupId: null,
 						eventId: targetEventId,
-						creatorId: currentUserId,
-						hasAccepted: false,
-						isPublic: true,
-						hoursVolunteered: "0",
-					})
-					.returning();
-
-				// Assert that insert succeeded - should always return the created record
-				if (!createdVolunteer) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
+						status: "invited",
+						createdBy: currentUserId,
 					});
 				}
 
-				// Create volunteer membership record
-				await ctx.drizzleClient.insert(volunteerMembershipsTable).values({
-					volunteerId: createdVolunteer.id,
-					groupId: null,
-					eventId: targetEventId,
-					status: "invited",
-					createdBy: currentUserId,
-				});
-
-				return createdVolunteer;
+				return volunteer;
 			}
 
 			if (scope === "THIS_INSTANCE_ONLY") {

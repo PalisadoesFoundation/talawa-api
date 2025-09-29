@@ -164,21 +164,93 @@ builder.mutationField("createEventVolunteerGroup", (t) =>
 					.limit(1);
 
 				if (existingGroup.length > 0) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "invalid_arguments",
-							issues: [
-								{
-									argumentPath: ["data", "name"],
-									message:
-										"A volunteer group with this name already exists for this event series",
-								},
-							],
-						},
-					});
-				}
+					// Group already exists as template
+					const existing = existingGroup[0];
+					if (!existing) {
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
+					const volunteerGroup = existing;
 
-				// Create template volunteer group
+					// Remove any existing instance-specific exceptions
+					// Since ENTIRE_SERIES means the group participates in all instances, instance-specific exceptions are no longer needed
+					await ctx.drizzleClient
+						.delete(eventVolunteerGroupExceptionsTable)
+						.where(
+							eq(
+								eventVolunteerGroupExceptionsTable.volunteerGroupId,
+								volunteerGroup.id,
+							),
+						);
+
+					// Handle volunteer assignments if provided
+					if (
+						parsedArgs.data.volunteerUserIds &&
+						parsedArgs.data.volunteerUserIds.length > 0
+					) {
+						// Find existing volunteers in the base event
+						const volunteers = await ctx.drizzleClient
+							.select()
+							.from(eventVolunteersTable)
+							.where(
+								and(
+									inArray(
+										eventVolunteersTable.userId,
+										parsedArgs.data.volunteerUserIds,
+									),
+									eq(eventVolunteersTable.eventId, targetEventId),
+								),
+							);
+
+						const existingVolunteerUserIds = volunteers.map(
+							(vol) => vol.userId,
+						);
+						const newVolunteerUserIds = parsedArgs.data.volunteerUserIds.filter(
+							(id) => !existingVolunteerUserIds.includes(id),
+						);
+
+						// Create new volunteers if needed
+						let newVolunteers: (typeof eventVolunteersTable.$inferSelect)[] =
+							[];
+						if (newVolunteerUserIds.length > 0) {
+							newVolunteers = await ctx.drizzleClient
+								.insert(eventVolunteersTable)
+								.values(
+									newVolunteerUserIds.map((userId) => ({
+										userId,
+										eventId: targetEventId,
+										creatorId: currentUserId,
+										hasAccepted: false,
+										isPublic: true,
+										hoursVolunteered: "0",
+									})),
+								)
+								.returning();
+						}
+
+						const allVolunteerIds = [
+							...volunteers.map((v) => v.id),
+							...newVolunteers.map((v) => v.id),
+						];
+
+						// Create group memberships
+						await ctx.drizzleClient.insert(volunteerMembershipsTable).values(
+							allVolunteerIds.map((volunteerId) => ({
+								volunteerId,
+								groupId: volunteerGroup.id,
+								eventId: targetEventId,
+								status: "invited" as const,
+								createdBy: currentUserId,
+							})),
+						);
+					}
+
+					return volunteerGroup;
+				}
+				// Create new template volunteer group
 				const [createdGroup] = await ctx.drizzleClient
 					.insert(eventVolunteerGroupsTable)
 					.values({
