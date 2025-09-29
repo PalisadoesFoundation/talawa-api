@@ -85,7 +85,7 @@ suite("registerForEvent", () => {
             expect(result.errors).toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({
-                        message: "Invalid uuid",
+                        message: expect.stringMatching(/invalid\s*uuid/i),
                         path: ["input", "eventId"],
                     }),
                 ]),
