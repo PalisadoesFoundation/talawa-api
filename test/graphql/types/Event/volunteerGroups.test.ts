@@ -359,7 +359,7 @@ describe("EventVolunteerGroupsResolver", () => {
 				{
 					volunteerGroupId: "group-1",
 					recurringEventInstanceId: "recurring-instance-123",
-					participating: true,
+					isException: true,
 					name: "Modified Setup Team", // Override name
 					description: "Updated description for this instance", // Override description
 					volunteersRequired: 7, // Override from 5 to 7
@@ -441,7 +441,7 @@ describe("EventVolunteerGroupsResolver", () => {
 				{
 					volunteerGroupId: "group-1",
 					recurringEventInstanceId: "recurring-instance-123",
-					participating: false, // Exclude this group
+					isException: false, // Exclude this group
 					name: null,
 					description: null,
 					volunteersRequired: null,
@@ -451,7 +451,7 @@ describe("EventVolunteerGroupsResolver", () => {
 				{
 					volunteerGroupId: "group-2",
 					recurringEventInstanceId: "recurring-instance-123",
-					participating: true,
+					isException: true,
 					name: null,
 					description: null,
 					volunteersRequired: null,
@@ -505,7 +505,7 @@ describe("EventVolunteerGroupsResolver", () => {
 				{
 					volunteerGroupId: "group-1",
 					recurringEventInstanceId: "recurring-instance-123",
-					participating: true,
+					isException: true,
 					name: "Updated Name", // Only override name
 					description: null, // Keep original description
 					volunteersRequired: null, // Keep original volunteersRequired
@@ -687,7 +687,7 @@ describe("EventVolunteerGroupsResolver", () => {
 				{
 					volunteerGroupId: "group-1",
 					recurringEventInstanceId: "recurring-instance-123",
-					participating: true,
+					isException: true,
 					name: null, // No override
 					description: null, // No override
 					volunteersRequired: null, // No override
@@ -745,7 +745,7 @@ describe("EventVolunteerGroupsResolver", () => {
 				{
 					volunteerGroupId: "group-1",
 					recurringEventInstanceId: "recurring-instance-123",
-					participating: true,
+					isException: true,
 					name: "Exception Group 1",
 					description: null,
 					volunteersRequired: null,
@@ -755,7 +755,7 @@ describe("EventVolunteerGroupsResolver", () => {
 				{
 					volunteerGroupId: "group-3",
 					recurringEventInstanceId: "recurring-instance-123",
-					participating: true,
+					isException: true,
 					name: null,
 					description: "Exception Description 3",
 					volunteersRequired: null,
@@ -825,7 +825,7 @@ describe("EventVolunteerGroupsResolver", () => {
 				{
 					volunteerGroupId: "group-1",
 					recurringEventInstanceId: "recurring-instance-123",
-					participating: false, // Exclude
+					isException: false, // Exclude
 					name: null,
 					description: null,
 					volunteersRequired: null,
@@ -835,7 +835,7 @@ describe("EventVolunteerGroupsResolver", () => {
 				{
 					volunteerGroupId: "group-2",
 					recurringEventInstanceId: "recurring-instance-123",
-					participating: false, // Exclude
+					isException: false, // Exclude
 					name: null,
 					description: null,
 					volunteersRequired: null,

@@ -610,7 +610,7 @@ suite(
 					volunteerGroupId: group.groupId,
 					recurringEventInstanceId: recurringSetup.instanceId,
 					deleted: false,
-					participating: true,
+					isException: true,
 					name: "Modified Name",
 					description: "Modified Description",
 					volunteersRequired: 3,

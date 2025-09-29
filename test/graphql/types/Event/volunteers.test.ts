@@ -361,7 +361,7 @@ describe("EventVolunteersResolver", () => {
 				{
 					volunteerId: "volunteer-1",
 					recurringEventInstanceId: "recurring-instance-123",
-					participating: true,
+					isException: true,
 					hasAccepted: false, // Override from true to false
 					isPublic: null,
 					hoursVolunteered: "6.00", // Override from 5.50 to 6.00
@@ -439,7 +439,7 @@ describe("EventVolunteersResolver", () => {
 				{
 					volunteerId: "volunteer-1",
 					recurringEventInstanceId: "recurring-instance-123",
-					participating: false, // Exclude this volunteer
+					isException: false, // Exclude this volunteer
 					hasAccepted: null,
 					isPublic: null,
 					hoursVolunteered: null,
@@ -448,7 +448,7 @@ describe("EventVolunteersResolver", () => {
 				{
 					volunteerId: "volunteer-2",
 					recurringEventInstanceId: "recurring-instance-123",
-					participating: true,
+					isException: true,
 					hasAccepted: null,
 					isPublic: null,
 					hoursVolunteered: null,

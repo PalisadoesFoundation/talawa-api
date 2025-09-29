@@ -105,44 +105,62 @@ export const EventVolunteersResolver = async (
 
 	const volunteerIds = volunteers.map((volunteer) => volunteer.id);
 
-	// Get exceptions for this specific recurring instance
+	// Get exceptions for this specific recurring instance AND check if volunteers have any exceptions at all
 	if (volunteerIds.length > 0 && recurringInstance) {
-		const exceptions =
-			await ctx.drizzleClient.query.eventVolunteerExceptionsTable.findMany({
+		const [instanceExceptions, allExceptions] = await Promise.all([
+			// Exceptions for this specific instance
+			ctx.drizzleClient.query.eventVolunteerExceptionsTable.findMany({
 				where: and(
 					inArray(eventVolunteerExceptionsTable.volunteerId, volunteerIds),
 					eq(eventVolunteerExceptionsTable.recurringEventInstanceId, parent.id),
 				),
-			});
+			}),
+			// All exceptions for these volunteers (to determine if they're instance-specific)
+			ctx.drizzleClient.query.eventVolunteerExceptionsTable.findMany({
+				where: inArray(eventVolunteerExceptionsTable.volunteerId, volunteerIds),
+				columns: { volunteerId: true },
+			}),
+		]);
 
-		const exceptionsMap = new Map(
-			exceptions.map((exception) => [exception.volunteerId, exception]),
+		const instanceExceptionsMap = new Map(
+			instanceExceptions.map((exception) => [exception.volunteerId, exception]),
 		);
 
-		// Filter out non-participating volunteers and apply exceptions
-		volunteers = volunteers.filter((volunteer) => {
-			const exception = exceptionsMap.get(volunteer.id);
+		// Get set of volunteers that have any exceptions (instance-specific)
+		const volunteersWithExceptions = new Set(
+			allExceptions.map((exception) => exception.volunteerId),
+		);
 
-			// If the volunteer is marked as not participating for this instance, exclude it
-			if (exception?.participating === false || exception?.deleted === true) {
+		// Filter volunteers based on exception logic
+		volunteers = volunteers.filter((volunteer) => {
+			const instanceException = instanceExceptionsMap.get(volunteer.id);
+			const hasAnyExceptions = volunteersWithExceptions.has(volunteer.id);
+
+			// If volunteer has exceptions (instance-specific), only include if isException: true for this instance
+			if (hasAnyExceptions) {
+				if (
+					instanceException?.isException === true &&
+					!instanceException?.deleted
+				) {
+					// Apply exception overrides
+					volunteer.hasAccepted =
+						instanceException.hasAccepted ?? volunteer.hasAccepted;
+					volunteer.isPublic = instanceException.isPublic ?? volunteer.isPublic;
+					volunteer.hoursVolunteered =
+						instanceException.hoursVolunteered ?? volunteer.hoursVolunteered;
+
+					// Mark this volunteer as showing instance-specific exception data
+					(volunteer as { isInstanceException?: boolean }).isInstanceException =
+						true;
+					return true;
+				}
+				// Instance-specific volunteer without isException: true for this instance
 				return false;
 			}
 
-			// Apply exception overrides if they exist
-			if (exception) {
-				volunteer.hasAccepted = exception.hasAccepted ?? volunteer.hasAccepted;
-				volunteer.isPublic = exception.isPublic ?? volunteer.isPublic;
-				volunteer.hoursVolunteered =
-					exception.hoursVolunteered ?? volunteer.hoursVolunteered;
-
-				// Mark this volunteer as showing instance-specific exception data
-				(volunteer as { isInstanceException?: boolean }).isInstanceException =
-					true;
-			} else {
-				(volunteer as { isInstanceException?: boolean }).isInstanceException =
-					false;
-			}
-
+			// Template volunteer (no exceptions) - include by default
+			(volunteer as { isInstanceException?: boolean }).isInstanceException =
+				false;
 			return true;
 		});
 	}

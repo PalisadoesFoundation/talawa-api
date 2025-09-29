@@ -720,19 +720,17 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		expect(dbMembership[0]?.status).toBe("invited");
 		expect(dbMembership[0]?.groupId).toBeNull();
 
-		// Verify exceptions created for other instances (covers otherInstances.length > 0)
+		// Verify exception created for target instance
 		assertToBeNonNullish(volunteer.id);
 		const dbExceptions = await server.drizzleClient
 			.select()
 			.from(eventVolunteerExceptionsTable)
 			.where(eq(eventVolunteerExceptionsTable.volunteerId, volunteer.id));
 
-		expect(dbExceptions).toHaveLength(2); // 2 other instances
-		for (const exception of dbExceptions) {
-			expect(exception.participating).toBe(false);
-			expect(exception.deleted).toBe(true);
-			expect(exception.createdBy).toBe(creatorId);
-		}
+		expect(dbExceptions).toHaveLength(1); // 1 exception for target instance
+		expect(dbExceptions[0]?.isException).toBe(true);
+		expect(dbExceptions[0]?.recurringEventInstanceId).toBe(targetInstanceId);
+		expect(dbExceptions[0]?.createdBy).toBe(creatorId);
 	});
 
 	test("Integration: Reuses existing volunteer with THIS_INSTANCE_ONLY scope", async () => {
@@ -880,17 +878,16 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		expect(volunteer.user?.id).toBe(testUser.userId);
 		expect(volunteer.event?.id).toBe(template.id);
 
-		// Verify exceptions were created for other instances
+		// Verify exception was created for target instance
 		assertToBeNonNullish(volunteer.id);
 		const dbExceptions = await server.drizzleClient
 			.select()
 			.from(eventVolunteerExceptionsTable)
 			.where(eq(eventVolunteerExceptionsTable.volunteerId, volunteer.id));
 
-		expect(dbExceptions).toHaveLength(1); // One exception for other instance
-		expect(dbExceptions[0]?.participating).toBe(false);
-		expect(dbExceptions[0]?.deleted).toBe(true);
-		expect(dbExceptions[0]?.recurringEventInstanceId).toBe(instances[1]?.id);
+		expect(dbExceptions).toHaveLength(1); // One exception for target instance
+		expect(dbExceptions[0]?.isException).toBe(true);
+		expect(dbExceptions[0]?.recurringEventInstanceId).toBe(instances[0]?.id);
 	});
 
 	test("Integration: Input validation error triggers proper error mapping", async () => {

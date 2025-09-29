@@ -588,7 +588,7 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 				volunteerId: volunteer.volunteerId,
 				recurringEventInstanceId: recurringSetup.instanceId,
 				deleted: false,
-				participating: true,
+				isException: true,
 				createdBy: creatorId,
 				updatedBy: creatorId,
 			})

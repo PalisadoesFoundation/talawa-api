@@ -922,11 +922,9 @@ suite("Mutation createEventVolunteerGroup", () => {
 						eq(eventVolunteerGroupExceptionsTable.volunteerGroupId, group.id),
 					);
 
-				expect(exceptions).toHaveLength(2); // 2 other instances
-				for (const exception of exceptions) {
-					expect(exception.participating).toBe(false);
-					expect(exception.deleted).toBe(true);
-				}
+				expect(exceptions).toHaveLength(1); // 1 exception for target instance
+				expect(exceptions[0]?.isException).toBe(true);
+				expect(exceptions[0]?.recurringEventInstanceId).toBe(targetInstanceId);
 
 				// Cleanup
 				await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
@@ -1075,9 +1073,8 @@ suite("Mutation createEventVolunteerGroup", () => {
 						),
 					);
 
-				expect(exceptions).toHaveLength(1); // 1 other instance
-				expect(exceptions[0]?.participating).toBe(false);
-				expect(exceptions[0]?.deleted).toBe(true);
+				expect(exceptions).toHaveLength(1); // 1 exception for target instance
+				expect(exceptions[0]?.isException).toBe(true);
 
 				// Cleanup
 				await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
@@ -1233,9 +1230,9 @@ suite("Mutation createEventVolunteerGroup", () => {
 						eq(eventVolunteerGroupExceptionsTable.volunteerGroupId, group.id),
 					);
 
-				expect(exceptions).toHaveLength(1); // 1 other instance
-				expect(exceptions[0]?.participating).toBe(false);
-				expect(exceptions[0]?.deleted).toBe(true);
+				expect(exceptions).toHaveLength(1); // 1 exception for target instance
+				expect(exceptions[0]?.isException).toBe(true);
+				expect(exceptions[0]?.recurringEventInstanceId).toBe(instances3[0]?.id);
 
 				// Cleanup
 				await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {

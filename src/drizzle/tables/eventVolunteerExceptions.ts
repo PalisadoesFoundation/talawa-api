@@ -27,8 +27,8 @@ export const eventVolunteerExceptionsTable = pgTable(
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
-		// Core participation field for template-first approach
-		participating: boolean("participating").notNull().default(true),
+		// Core exception field for template-first approach
+		isException: boolean("is_exception").notNull().default(false),
 		// Override fields for instance-specific volunteer data
 		hasAccepted: boolean("has_accepted"),
 		isPublic: boolean("is_public"),

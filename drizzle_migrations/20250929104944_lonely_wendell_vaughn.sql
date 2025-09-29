@@ -1,0 +1,2 @@
+ALTER TABLE "event_volunteer_exceptions" RENAME COLUMN "participating" TO "is_exception";--> statement-breakpoint
+ALTER TABLE "event_volunteer_group_exceptions" RENAME COLUMN "participating" TO "is_exception";

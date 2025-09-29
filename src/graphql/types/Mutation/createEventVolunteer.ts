@@ -280,46 +280,13 @@ builder.mutationField("createEventVolunteer", (t) =>
 					});
 				}
 
-				// Get all OTHER recurring instances and create exceptions with deleted=true
-				const allInstances =
-					await ctx.drizzleClient.query.recurringEventInstancesTable.findMany({
-						where: eq(
-							recurringEventInstancesTable.baseRecurringEventId,
-							baseEvent.id,
-						),
-					});
-
-				const otherInstances = allInstances.filter(
-					(instance) =>
-						instance.id !== parsedArgs.data.recurringEventInstanceId,
-				);
-
-				// Create exceptions for all other instances (deleted=true means hidden from those instances)
-				if (otherInstances.length > 0) {
-					await ctx.drizzleClient
-						.insert(eventVolunteerExceptionsTable)
-						.values(
-							otherInstances.map((instance) => ({
-								volunteerId: volunteer.id,
-								recurringEventInstanceId: instance.id,
-								participating: false, // Hide from all other instances
-								deleted: true, // Legacy field for backward compatibility
-								createdBy: currentUserId,
-							})),
-						)
-						.onConflictDoUpdate({
-							target: [
-								eventVolunteerExceptionsTable.volunteerId,
-								eventVolunteerExceptionsTable.recurringEventInstanceId,
-							],
-							set: {
-								participating: false,
-								deleted: true, // Keep for backward compatibility
-								updatedBy: currentUserId,
-								updatedAt: new Date(),
-							},
-						});
-				}
+				// Create exception to allow participation only in this specific instance
+				await ctx.drizzleClient.insert(eventVolunteerExceptionsTable).values({
+					volunteerId: volunteer.id,
+					recurringEventInstanceId: parsedArgs.data.recurringEventInstanceId,
+					isException: true, // This is an exception - volunteer participates in this instance
+					createdBy: currentUserId,
+				});
 
 				return volunteer;
 			}

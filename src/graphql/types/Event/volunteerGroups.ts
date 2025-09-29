@@ -89,52 +89,74 @@ export const EventVolunteerGroupsResolver = async (
 
 	const volunteerGroupIds = volunteerGroups.map((group) => group.id);
 
-	// Get exceptions for this specific recurring instance
+	// Get exceptions for this specific recurring instance AND check if groups have any exceptions at all
 	if (volunteerGroupIds.length > 0 && recurringInstance) {
-		const exceptions =
-			await ctx.drizzleClient.query.eventVolunteerGroupExceptionsTable.findMany(
-				{
-					where: and(
-						inArray(
-							eventVolunteerGroupExceptionsTable.volunteerGroupId,
-							volunteerGroupIds,
-						),
-						eq(
-							eventVolunteerGroupExceptionsTable.recurringEventInstanceId,
-							parent.id,
-						),
+		const [instanceExceptions, allExceptions] = await Promise.all([
+			// Exceptions for this specific instance
+			ctx.drizzleClient.query.eventVolunteerGroupExceptionsTable.findMany({
+				where: and(
+					inArray(
+						eventVolunteerGroupExceptionsTable.volunteerGroupId,
+						volunteerGroupIds,
 					),
-				},
-			);
+					eq(
+						eventVolunteerGroupExceptionsTable.recurringEventInstanceId,
+						parent.id,
+					),
+				),
+			}),
+			// All exceptions for these groups (to determine if they're instance-specific)
+			ctx.drizzleClient.query.eventVolunteerGroupExceptionsTable.findMany({
+				where: inArray(
+					eventVolunteerGroupExceptionsTable.volunteerGroupId,
+					volunteerGroupIds,
+				),
+				columns: { volunteerGroupId: true },
+			}),
+		]);
 
-		const exceptionsMap = new Map(
-			exceptions.map((exception) => [exception.volunteerGroupId, exception]),
+		const instanceExceptionsMap = new Map(
+			instanceExceptions.map((exception) => [
+				exception.volunteerGroupId,
+				exception,
+			]),
 		);
 
-		// Filter out non-participating volunteer groups and apply exceptions
-		volunteerGroups = volunteerGroups.filter((group) => {
-			const exception = exceptionsMap.get(group.id);
+		// Get set of groups that have any exceptions (instance-specific)
+		const groupsWithExceptions = new Set(
+			allExceptions.map((exception) => exception.volunteerGroupId),
+		);
 
-			// If the volunteer group is marked as not participating for this instance, exclude it
-			if (exception?.participating === false || exception?.deleted === true) {
+		// Filter volunteer groups based on exception logic
+		volunteerGroups = volunteerGroups.filter((group) => {
+			const instanceException = instanceExceptionsMap.get(group.id);
+			const hasAnyExceptions = groupsWithExceptions.has(group.id);
+
+			// If group has exceptions (instance-specific), only include if isException: true for this instance
+			if (hasAnyExceptions) {
+				if (
+					instanceException?.isException === true &&
+					!instanceException?.deleted
+				) {
+					// Apply exception overrides
+					group.name = instanceException.name ?? group.name;
+					group.description =
+						instanceException.description ?? group.description;
+					group.volunteersRequired =
+						instanceException.volunteersRequired ?? group.volunteersRequired;
+					group.leaderId = instanceException.leaderId ?? group.leaderId;
+
+					// Mark this volunteer group as showing instance-specific exception data
+					(group as { isInstanceException?: boolean }).isInstanceException =
+						true;
+					return true;
+				}
+				// Instance-specific group without isException: true for this instance
 				return false;
 			}
 
-			// Apply exception overrides if they exist
-			if (exception) {
-				group.name = exception.name ?? group.name;
-				group.description = exception.description ?? group.description;
-				group.volunteersRequired =
-					exception.volunteersRequired ?? group.volunteersRequired;
-				group.leaderId = exception.leaderId ?? group.leaderId;
-
-				// Mark this volunteer group as showing instance-specific exception data
-				(group as { isInstanceException?: boolean }).isInstanceException = true;
-			} else {
-				(group as { isInstanceException?: boolean }).isInstanceException =
-					false;
-			}
-
+			// Template group (no exceptions) - include by default
+			(group as { isInstanceException?: boolean }).isInstanceException = false;
 			return true;
 		});
 	}
