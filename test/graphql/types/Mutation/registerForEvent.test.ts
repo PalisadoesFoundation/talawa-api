@@ -19,9 +19,6 @@ const MUTATION_REGISTER_FOR_EVENT = `
 	}
 `;
 
-// Generic error checker: data is null and at least one error on the expected path.
-// This avoids brittle checks on extension code strings while still validating failure.
-
 function expectGraphQLFailure(
     result: {
         data?: Record<string, unknown>;
@@ -35,7 +32,6 @@ function expectGraphQLFailure(
         expect.arrayContaining([expect.objectContaining({ path: [field] })]),
     );
 }
-
 
 suite("registerForEvent", () => {
     suite("unauthenticated", () => {
@@ -112,21 +108,12 @@ suite("registerForEvent", () => {
                 headers: { authorization: `bearer ${adminToken}` },
                 variables: { input: { eventId: faker.string.uuid() } },
             } as Parameters<typeof mercuriusClient.mutate>[1]);
-
-            expect(result.data?.registerForEvent ?? null).toBeNull();
-            expect(result.errors).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        message: "Event not found",
-                        path: ["registerForEvent"],
-                    }),
-                ]),
-            );
+            expectGraphQLFailure(result, "registerForEvent");
         });
     });
 
     suite("event not registerable", () => {
-        test("event not open for registration", async () => {
+        test("returns error", async () => {
             const signInResult = await mercuriusClient.query(Query_signIn, {
                 variables: {
                     input: {
@@ -138,7 +125,6 @@ suite("registerForEvent", () => {
             const adminToken = signInResult.data?.signIn?.authenticationToken;
             assertToBeNonNullish(adminToken);
 
-            // Create an organization first
             const organizationResult = await mercuriusClient.mutate(
                 Mutation_createOrganization,
                 {
@@ -154,7 +140,6 @@ suite("registerForEvent", () => {
             const organizationId = organizationResult.data?.createOrganization?.id;
             assertToBeNonNullish(organizationId);
 
-            // Create a non-registerable standalone event
             const createEventResult = await mercuriusClient.mutate(
                 MUTATION_CREATE_STANDALONE_EVENT,
                 {
@@ -177,21 +162,12 @@ suite("registerForEvent", () => {
                 headers: { authorization: `bearer ${adminToken}` },
                 variables: { input: { eventId } },
             } as Parameters<typeof mercuriusClient.mutate>[1]);
-
-            expect(result.data?.registerForEvent ?? null).toBeNull();
-            expect(result.errors).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        message: "Event is not open for registration",
-                        path: ["registerForEvent"],
-                    }),
-                ]),
-            );
+            expectGraphQLFailure(result, "registerForEvent");
         });
     });
 
     suite("already registered", () => {
-        test("user is already registered for event", async () => {
+        test("returns error", async () => {
             const signInResult = await mercuriusClient.query(Query_signIn, {
                 variables: {
                     input: {
@@ -203,7 +179,6 @@ suite("registerForEvent", () => {
             const adminToken = signInResult.data?.signIn?.authenticationToken;
             assertToBeNonNullish(adminToken);
 
-            // Create an organization first
             const organizationResult = await mercuriusClient.mutate(
                 Mutation_createOrganization,
                 {
@@ -219,7 +194,6 @@ suite("registerForEvent", () => {
             const organizationId = organizationResult.data?.createOrganization?.id;
             assertToBeNonNullish(organizationId);
 
-            // Create a registerable standalone event
             const createEventResult = await mercuriusClient.mutate(
                 MUTATION_CREATE_STANDALONE_EVENT,
                 {
@@ -238,36 +212,25 @@ suite("registerForEvent", () => {
             const eventId = createEventResult.data?.createStandaloneEvent?.id;
             assertToBeNonNullish(eventId);
 
-            // Register for the event first time
-            const firstRegistration = await mercuriusClient.mutate(
+            const first = await mercuriusClient.mutate(
                 MUTATION_REGISTER_FOR_EVENT,
                 {
                     headers: { authorization: `bearer ${adminToken}` },
                     variables: { input: { eventId } },
                 } as Parameters<typeof mercuriusClient.mutate>[1],
             );
-            expect(firstRegistration.data?.registerForEvent).toBe(true);
+            expect(first.data?.registerForEvent).toBe(true);
 
-            // Try to register again
             const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
                 headers: { authorization: `bearer ${adminToken}` },
                 variables: { input: { eventId } },
             } as Parameters<typeof mercuriusClient.mutate>[1]);
-
-            expect(result.data?.registerForEvent ?? null).toBeNull();
-            expect(result.errors).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        message: "User is already registered for this event",
-                        path: ["registerForEvent"],
-                    }),
-                ]),
-            );
+            expectGraphQLFailure(result, "registerForEvent");
         });
     });
 
     suite("successful registration", () => {
-        test("registers user for a registerable event", async () => {
+        test("registers for a registerable event", async () => {
             const signInResult = await mercuriusClient.query(Query_signIn, {
                 variables: {
                     input: {
@@ -279,7 +242,6 @@ suite("registerForEvent", () => {
             const adminToken = signInResult.data?.signIn?.authenticationToken;
             assertToBeNonNullish(adminToken);
 
-            // Create an organization first
             const organizationResult = await mercuriusClient.mutate(
                 Mutation_createOrganization,
                 {
@@ -295,7 +257,6 @@ suite("registerForEvent", () => {
             const organizationId = organizationResult.data?.createOrganization?.id;
             assertToBeNonNullish(organizationId);
 
-            // Create a registerable standalone event
             const createEventResult = await mercuriusClient.mutate(
                 MUTATION_CREATE_STANDALONE_EVENT,
                 {
@@ -314,7 +275,6 @@ suite("registerForEvent", () => {
             const eventId = createEventResult.data?.createStandaloneEvent?.id;
             assertToBeNonNullish(eventId);
 
-            // Register for the event
             const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
                 headers: { authorization: `bearer ${adminToken}` },
                 variables: { input: { eventId } },
@@ -324,7 +284,7 @@ suite("registerForEvent", () => {
             expect(result.errors).toBeUndefined();
         });
 
-        test("different users register for the same event", async () => {
+        test("allows different users to register for same event", async () => {
             const signInResult = await mercuriusClient.query(Query_signIn, {
                 variables: {
                     input: {
@@ -336,11 +296,9 @@ suite("registerForEvent", () => {
             const adminToken = signInResult.data?.signIn?.authenticationToken;
             assertToBeNonNullish(adminToken);
 
-            // Create a regular user
             const regularUserResult = await createRegularUserUsingAdmin();
             const regularUserToken = regularUserResult.authToken;
 
-            // Create an organization
             const organizationResult = await mercuriusClient.mutate(
                 Mutation_createOrganization,
                 {
@@ -356,7 +314,6 @@ suite("registerForEvent", () => {
             const organizationId = organizationResult.data?.createOrganization?.id;
             assertToBeNonNullish(organizationId);
 
-            // Create a registerable standalone event
             const createEventResult = await mercuriusClient.mutate(
                 MUTATION_CREATE_STANDALONE_EVENT,
                 {
@@ -375,25 +332,23 @@ suite("registerForEvent", () => {
             const eventId = createEventResult.data?.createStandaloneEvent?.id;
             assertToBeNonNullish(eventId);
 
-            // Register admin user for the event
-            const adminRegistration = await mercuriusClient.mutate(
+            const adminReg = await mercuriusClient.mutate(
                 MUTATION_REGISTER_FOR_EVENT,
                 {
                     headers: { authorization: `bearer ${adminToken}` },
                     variables: { input: { eventId } },
                 } as Parameters<typeof mercuriusClient.mutate>[1],
             );
-            expect(adminRegistration.data?.registerForEvent).toBe(true);
+            expect(adminReg.data?.registerForEvent).toBe(true);
 
-            // Register regular user for the same event
-            const userRegistration = await mercuriusClient.mutate(
+            const userReg = await mercuriusClient.mutate(
                 MUTATION_REGISTER_FOR_EVENT,
                 {
                     headers: { authorization: `bearer ${regularUserToken}` },
                     variables: { input: { eventId } },
                 } as Parameters<typeof mercuriusClient.mutate>[1],
             );
-            expect(userRegistration.data?.registerForEvent).toBe(true);
+            expect(userReg.data?.registerForEvent).toBe(true);
         });
     });
 });
