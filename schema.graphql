@@ -1136,6 +1136,14 @@ type HasUserVoted {
   voteType: PostVoteType
 }
 
+type HasUserVotedComment {
+  """Indicates if the user has voted on this comment"""
+  hasVoted: Boolean!
+
+  """Type of the comment vote, null if no vote exists"""
+  voteType: CommentVoteType
+}
+
 input InstallPluginInput {
   pluginId: String!
 }
