@@ -178,7 +178,7 @@ suite("registerForEvent", () => {
 			const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: { input: { eventId } },
-			} as any);
+			} as Parameters<typeof mercuriusClient.mutate>[1]);
 
 			expect(result.data?.registerForEvent ?? null).toBeNull();
 			expect(result.errors).toEqual(
