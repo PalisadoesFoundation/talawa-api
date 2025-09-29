@@ -1,0 +1,22 @@
+# .typos.toml
+[default]
+extend-words = {
+  registerable = "registerable",
+  isregisterable = "isregisterable",
+  mercurius = "mercurius",
+  drizzle = "drizzle",
+  talawa = "talawa",
+  zod = "zod",
+  uuid = "uuid",
+  standalone = "standalone",
+  authToken = "authToken",
+  signIn = "signIn"
+}
+
+[files]
+extend-exclude = [
+  "node_modules/**",
+  "dist/**",
+  "build/**",
+  "coverage/**"
+]
