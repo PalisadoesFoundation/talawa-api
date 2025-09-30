@@ -420,6 +420,14 @@ type Comment {
   """Total number of down votes on the comment."""
   downVotesCount: Int
 
+  """
+  Check if a specific user has voted on this comment and return vote details.
+  """
+  hasUserVoted(
+    """The ID of the user to check if they have voted on this comment."""
+    userId: ID!
+  ): HasUserVotedComment
+
   """Global identifier of the comment."""
   id: ID!
 
@@ -886,6 +894,14 @@ type HasUserVoted {
 
   """Type of the post vote, null if no vote exists"""
   voteType: PostVoteType
+}
+
+type HasUserVotedComment {
+  """Indicates if the user has voted on this comment"""
+  hasVoted: Boolean!
+
+  """Type of the comment vote, null if no vote exists"""
+  voteType: CommentVoteType
 }
 
 enum InviteStatus {
@@ -3138,6 +3154,9 @@ input MutationUpdateOrganizationInput {
 
   """Name of the state the organization resides in."""
   state: String
+
+  """Is user registration required for this organization?"""
+  userRegistrationRequired: Boolean
 }
 
 """"""
@@ -3773,6 +3792,14 @@ type Post {
 
   """Total number of down votes on the post."""
   downVotesCount: Int
+
+  """
+  Check if a specific user has voted on this post and return vote details.
+  """
+  hasUserVoted(
+    """The ID of the user to check if they have voted on this post."""
+    userId: ID!
+  ): HasUserVoted
 
   """Global identifier of the post."""
   id: ID!
@@ -4600,6 +4627,9 @@ enum UserRole {
 input UserWhereInput {
   """Filter by first name containing this string"""
   name_contains: String
+
+  """Filter by user ID"""
+  userId: String
 }
 
 input UsersByIdsInput {
