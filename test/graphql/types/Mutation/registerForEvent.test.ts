@@ -307,8 +307,10 @@ suite("registerForEvent", () => {
 			]);
 
 			// Exactly one should succeed, one should fail
-			const successes = [result1, result2].filter(r => r.data?.registerForEvent === true);
-			expect(successes).toHaveLength(1);
+					const successes = [result1, result2].filter(
+						(r) => r.data?.registerForEvent === true,
+					);
+					expect(successes).toHaveLength(1);
 		});
 	});
 
