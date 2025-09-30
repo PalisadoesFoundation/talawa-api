@@ -5,8 +5,8 @@ import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
-	Mutation_createOrganization,
 	Mutation_createEvent,
+	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Query_signIn,
 } from "../documentNodes";
@@ -25,14 +25,18 @@ function expectGraphQLFailure(
 		data?: Record<string, unknown> | null;
 		errors?: Array<{ path?: readonly unknown[]; message?: string }>;
 	},
-	field: string = "registerForEvent",
+	field = "registerForEvent",
 ) {
 	expect(result.data?.[field] ?? null).toBeNull();
 	expect(result.errors?.length).toBeTruthy();
 	// Accept either the top-level field or the actual error path returned by the API
 	const errorPaths = [[field], ["input", "eventId"]];
 	expect(
-		result.errors?.some(e => errorPaths.some(path => JSON.stringify(e.path) === JSON.stringify(path)))
+		result.errors?.some((e) =>
+			errorPaths.some(
+				(path) => JSON.stringify(e.path) === JSON.stringify(path),
+			),
+		),
 	).toBeTruthy();
 }
 
@@ -124,7 +128,10 @@ suite("registerForEvent", () => {
 			const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
-					input: { name: faker.company.name(), description: faker.lorem.paragraph() },
+					input: {
+						name: faker.company.name(),
+						description: faker.lorem.paragraph(),
+					},
 				},
 			});
 			const organizationId = orgRes.data?.createOrganization?.id;
@@ -184,7 +191,10 @@ suite("registerForEvent", () => {
 			const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
-					input: { name: faker.company.name(), description: faker.lorem.paragraph() },
+					input: {
+						name: faker.company.name(),
+						description: faker.lorem.paragraph(),
+					},
 				},
 			});
 			const organizationId = orgRes.data?.createOrganization?.id;
@@ -249,7 +259,10 @@ suite("registerForEvent", () => {
 			const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
-					input: { name: faker.company.name(), description: faker.lorem.paragraph() },
+					input: {
+						name: faker.company.name(),
+						description: faker.lorem.paragraph(),
+					},
 				},
 			});
 			const organizationId = orgRes.data?.createOrganization?.id;
@@ -310,7 +323,10 @@ suite("registerForEvent", () => {
 			const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
 				headers: { authorization: `bearer ${adminToken}` },
 				variables: {
-					input: { name: faker.company.name(), description: faker.lorem.paragraph() },
+					input: {
+						name: faker.company.name(),
+						description: faker.lorem.paragraph(),
+					},
 				},
 			});
 			const organizationId = orgRes.data?.createOrganization?.id;
@@ -345,16 +361,22 @@ suite("registerForEvent", () => {
 			const eventId = evRes.data?.createEvent?.id;
 			assertToBeNonNullish(eventId);
 
-			const adminReg = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
-				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { eventId } },
-			} as MutateOpts);
+			const adminReg = await mercuriusClient.mutate(
+				MUTATION_REGISTER_FOR_EVENT,
+				{
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { eventId } },
+				} as MutateOpts,
+			);
 			expect(adminReg.data?.registerForEvent).toBe(true);
 
-			const userReg = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
-				headers: { authorization: `bearer ${regularUserToken}` },
-				variables: { input: { eventId } },
-			} as MutateOpts);
+			const userReg = await mercuriusClient.mutate(
+				MUTATION_REGISTER_FOR_EVENT,
+				{
+					headers: { authorization: `bearer ${regularUserToken}` },
+					variables: { input: { eventId } },
+				} as MutateOpts,
+			);
 			expect(userReg.data?.registerForEvent).toBe(true);
 		});
 	});
