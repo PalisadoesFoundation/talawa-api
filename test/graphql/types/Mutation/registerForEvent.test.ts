@@ -241,6 +241,75 @@ suite("registerForEvent", () => {
 			} as MutateOpts);
 			expectGraphQLFailure(result);
 		});
+
+		test("prevents duplicate registration under concurrent requests", async () => {
+			const signInResult = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			const adminToken = signInResult.data?.signIn?.authenticationToken;
+			assertToBeNonNullish(adminToken);
+
+			const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						name: faker.company.name(),
+						description: faker.lorem.paragraph(),
+					},
+				},
+			});
+			const organizationId = orgRes.data?.createOrganization?.id;
+			assertToBeNonNullish(organizationId);
+			const adminUserId = signInResult.data?.signIn?.user?.id;
+			assertToBeNonNullish(adminUserId);
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId,
+						role: "administrator",
+					},
+				},
+			});
+			const startAt = faker.date.future();
+			const endAt = faker.date.future({ refDate: startAt });
+			const evRes = await mercuriusClient.mutate(Mutation_createEvent, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						name: faker.lorem.words(3),
+						description: faker.lorem.paragraph(),
+						organizationId,
+						isRegisterable: true,
+						startAt: startAt.toISOString(),
+						endAt: endAt.toISOString(),
+					},
+				},
+			});
+			const eventId = evRes.data?.createEvent?.id;
+			assertToBeNonNullish(eventId);
+
+			const [result1, result2] = await Promise.all([
+				mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { eventId } },
+				} as MutateOpts),
+				mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
+					headers: { authorization: `bearer ${adminToken}` },
+					variables: { input: { eventId } },
+				} as MutateOpts),
+			]);
+
+			// Exactly one should succeed, one should fail
+			const successes = [result1, result2].filter(r => r.data?.registerForEvent === true);
+			expect(successes).toHaveLength(1);
+		});
 	});
 
 	suite("successful registration", () => {
