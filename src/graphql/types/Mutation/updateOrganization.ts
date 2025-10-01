@@ -163,7 +163,6 @@ builder.mutationField("updateOrganization", (t) =>
 						postalCode: parsedArgs.input.postalCode,
 						state: parsedArgs.input.state,
 						updaterId: currentUserId,
-						userRegistrationRequired: parsedArgs.input.userRegistrationRequired,
 					})
 					.where(eq(organizationsTable.id, parsedArgs.input.id))
 					.returning();
