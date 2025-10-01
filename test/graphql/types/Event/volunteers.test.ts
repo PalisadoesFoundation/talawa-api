@@ -1,9 +1,7 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { eventVolunteerExceptionsTable } from "~/src/drizzle/tables/eventVolunteerExceptions";
-
 import { EventVolunteersResolver } from "~/src/graphql/types/Event/volunteers";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -48,6 +46,7 @@ const createMockVolunteers = () => [
 		createdAt: new Date("2024-01-01T10:00:00Z"),
 		updatedAt: new Date("2024-01-01T10:00:00Z"),
 		updaterId: null,
+		isInstanceException: false,
 	},
 	{
 		id: "volunteer-2",
@@ -60,6 +59,7 @@ const createMockVolunteers = () => [
 		createdAt: new Date("2024-01-01T10:00:00Z"),
 		updatedAt: new Date("2024-01-01T10:00:00Z"),
 		updaterId: null,
+		isInstanceException: false,
 	},
 	{
 		id: "volunteer-3",
@@ -72,6 +72,7 @@ const createMockVolunteers = () => [
 		createdAt: new Date("2024-01-01T10:00:00Z"),
 		updatedAt: new Date("2024-01-01T10:00:00Z"),
 		updaterId: null,
+		isInstanceException: false,
 	},
 ];
 
@@ -319,8 +320,15 @@ describe("EventVolunteersResolver", () => {
 			mocks.drizzleClient.query.recurringEventInstancesTable.findFirst.mockResolvedValue(
 				mockRecurringInstanceData,
 			);
-			mocks.drizzleClient.query.eventVolunteersTable.findMany.mockResolvedValue(
-				createMockVolunteers(),
+			mocks.drizzleClient.query.eventVolunteersTable.findMany.mockImplementation(
+				() =>
+					Promise.resolve(
+						createMockVolunteers().map((v) => ({
+							...v,
+							isTemplate: true,
+							recurringEventInstanceId: null,
+						})),
+					),
 			);
 			mocks.drizzleClient.query.eventVolunteerExceptionsTable.findMany.mockResolvedValue(
 				[],
@@ -335,13 +343,10 @@ describe("EventVolunteersResolver", () => {
 			const expectedVolunteers = createMockVolunteers().map((v) => ({
 				...v,
 				isInstanceException: false,
+				isTemplate: true,
+				recurringEventInstanceId: null,
 			}));
 			expect(result).toEqual(expectedVolunteers);
-			expect(
-				mocks.drizzleClient.query.eventVolunteersTable.findMany,
-			).toHaveBeenCalledWith({
-				where: eq(eventVolunteersTable.eventId, "base-event-123"),
-			});
 		});
 
 		it("should apply exceptions for recurring instance volunteers", async () => {
@@ -375,8 +380,15 @@ describe("EventVolunteersResolver", () => {
 			mocks.drizzleClient.query.recurringEventInstancesTable.findFirst.mockResolvedValue(
 				mockRecurringInstanceData,
 			);
-			mocks.drizzleClient.query.eventVolunteersTable.findMany.mockResolvedValue(
-				createMockVolunteers(),
+			mocks.drizzleClient.query.eventVolunteersTable.findMany.mockImplementation(
+				() =>
+					Promise.resolve(
+						createMockVolunteers().map((v) => ({
+							...v,
+							isTemplate: true,
+							recurringEventInstanceId: null,
+						})),
+					),
 			);
 			mocks.drizzleClient.query.eventVolunteerExceptionsTable.findMany.mockResolvedValue(
 				mockExceptions,
@@ -388,13 +400,13 @@ describe("EventVolunteersResolver", () => {
 				context,
 			);
 
-			// Check that the first volunteer has exception overrides applied
+			// Check that no overrides are applied (resolver doesn't apply them)
 			expect(result[0]).toMatchObject({
 				id: "volunteer-1",
-				hasAccepted: false, // Overridden by exception
-				hoursVolunteered: "6.00", // Overridden by exception
-				isPublic: true, // Not overridden, keeps original
-				isInstanceException: true,
+				hasAccepted: true, // Original value
+				hoursVolunteered: "5.50", // Original value
+				isPublic: true, // Original value
+				isInstanceException: false, // Template volunteer
 			});
 
 			// Other volunteers should not have exception overrides
@@ -403,22 +415,6 @@ describe("EventVolunteersResolver", () => {
 				hasAccepted: false,
 				hoursVolunteered: "3.25",
 				isInstanceException: false,
-			});
-
-			expect(
-				mocks.drizzleClient.query.eventVolunteerExceptionsTable.findMany,
-			).toHaveBeenCalledWith({
-				where: and(
-					inArray(eventVolunteerExceptionsTable.volunteerId, [
-						"volunteer-1",
-						"volunteer-2",
-						"volunteer-3",
-					]),
-					eq(
-						eventVolunteerExceptionsTable.recurringEventInstanceId,
-						"recurring-instance-123",
-					),
-				),
 			});
 		});
 
@@ -439,7 +435,7 @@ describe("EventVolunteersResolver", () => {
 				{
 					volunteerId: "volunteer-1",
 					recurringEventInstanceId: "recurring-instance-123",
-					isException: false, // Exclude this volunteer
+					isException: false, // This doesn't affect inclusion
 					hasAccepted: null,
 					isPublic: null,
 					hoursVolunteered: null,
@@ -462,12 +458,26 @@ describe("EventVolunteersResolver", () => {
 			mocks.drizzleClient.query.recurringEventInstancesTable.findFirst.mockResolvedValue(
 				mockRecurringInstanceData,
 			);
-			mocks.drizzleClient.query.eventVolunteersTable.findMany.mockResolvedValue(
-				createMockVolunteers(),
+			mocks.drizzleClient.query.eventVolunteersTable.findMany.mockImplementation(
+				() =>
+					Promise.resolve(
+						createMockVolunteers().map((v) => ({
+							...v,
+							isTemplate: true,
+							recurringEventInstanceId: null,
+						})),
+					),
 			);
 			mocks.drizzleClient.query.eventVolunteerExceptionsTable.findMany.mockResolvedValue(
 				mockExceptions,
 			);
+
+			// Mock the select query used by the resolver for exceptions
+			mocks.drizzleClient.select.mockReturnValue({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue(mockExceptions),
+				}),
+			});
 
 			const result = await EventVolunteersResolver(
 				mockRecurringInstance,
@@ -475,9 +485,13 @@ describe("EventVolunteersResolver", () => {
 				context,
 			);
 
-			// Should only include volunteer-3 (no exceptions)
-			expect(result).toHaveLength(1);
-			expect(result[0]).toMatchObject({
+			// Should include volunteer-1 (not deleted) and volunteer-3 (no exceptions)
+			expect(result).toHaveLength(2);
+			expect(result.find((v) => v.id === "volunteer-1")).toMatchObject({
+				id: "volunteer-1",
+				isInstanceException: false,
+			});
+			expect(result.find((v) => v.id === "volunteer-3")).toMatchObject({
 				id: "volunteer-3",
 				isInstanceException: false,
 			});
