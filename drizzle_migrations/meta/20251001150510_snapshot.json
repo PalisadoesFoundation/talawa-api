@@ -1,5 +1,5 @@
 {
-  "id": "c73e3008-2de1-411b-911a-46b30c78828f",
+  "id": "d7261c9e-bd11-478e-b4a9-a85b000a69f9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -3260,12 +3260,12 @@
           "primaryKey": false,
           "notNull": true
         },
-        "participating": {
-          "name": "participating",
+        "is_exception": {
+          "name": "is_exception",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "default": true
+          "default": false
         },
         "has_accepted": {
           "name": "has_accepted",
@@ -3412,12 +3412,12 @@
           "primaryKey": false,
           "notNull": true
         },
-        "participating": {
-          "name": "participating",
+        "is_exception": {
+          "name": "is_exception",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "default": true
+          "default": false
         },
         "name": {
           "name": "name",
@@ -3576,6 +3576,19 @@
           "primaryKey": false,
           "notNull": true
         },
+        "is_template": {
+          "name": "is_template",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "recurring_event_instance_id": {
+          "name": "recurring_event_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "leader_id": {
           "name": "leader_id",
           "type": "uuid",
@@ -3627,8 +3640,8 @@
         }
       },
       "indexes": {
-        "event_volunteer_groups_event_id_name_index": {
-          "name": "event_volunteer_groups_event_id_name_index",
+        "event_volunteer_groups_event_id_name_recurring_event_instance_id_index": {
+          "name": "event_volunteer_groups_event_id_name_recurring_event_instance_id_index",
           "columns": [
             {
               "expression": "event_id",
@@ -3638,6 +3651,12 @@
             },
             {
               "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "recurring_event_instance_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3707,6 +3726,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "event_volunteer_groups_is_template_index": {
+          "name": "event_volunteer_groups_is_template_index",
+          "columns": [
+            {
+              "expression": "is_template",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -3716,6 +3750,19 @@
           "tableTo": "events",
           "columnsFrom": [
             "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "event_volunteer_groups_recurring_event_instance_id_recurring_event_instances_id_fk": {
+          "name": "event_volunteer_groups_recurring_event_instance_id_recurring_event_instances_id_fk",
+          "tableFrom": "event_volunteer_groups",
+          "tableTo": "recurring_event_instances",
+          "columnsFrom": [
+            "recurring_event_instance_id"
           ],
           "columnsTo": [
             "id"
@@ -3791,6 +3838,19 @@
           "primaryKey": false,
           "notNull": true
         },
+        "is_template": {
+          "name": "is_template",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "recurring_event_instance_id": {
+          "name": "recurring_event_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "creator_id": {
           "name": "creator_id",
           "type": "uuid",
@@ -3839,8 +3899,8 @@
         }
       },
       "indexes": {
-        "event_volunteers_user_id_event_id_index": {
-          "name": "event_volunteers_user_id_event_id_index",
+        "event_volunteers_user_id_event_id_recurring_event_instance_id_index": {
+          "name": "event_volunteers_user_id_event_id_recurring_event_instance_id_index",
           "columns": [
             {
               "expression": "user_id",
@@ -3850,6 +3910,12 @@
             },
             {
               "expression": "event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "recurring_event_instance_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3919,6 +3985,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "event_volunteers_is_template_index": {
+          "name": "event_volunteers_is_template_index",
+          "columns": [
+            {
+              "expression": "is_template",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -3941,6 +4022,19 @@
           "tableTo": "events",
           "columnsFrom": [
             "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "event_volunteers_recurring_event_instance_id_recurring_event_instances_id_fk": {
+          "name": "event_volunteers_recurring_event_instance_id_recurring_event_instances_id_fk",
+          "tableFrom": "event_volunteers",
+          "tableTo": "recurring_event_instances",
+          "columnsFrom": [
+            "recurring_event_instance_id"
           ],
           "columnsTo": [
             "id"

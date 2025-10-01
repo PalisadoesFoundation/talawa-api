@@ -11,6 +11,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { eventsTable } from "./events";
+import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
 /**
@@ -44,6 +45,22 @@ export const eventVolunteersTable = pgTable(
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
+
+		/**
+		 * Boolean indicating if this is a template volunteer (for recurring events).
+		 */
+		isTemplate: boolean("is_template").notNull().default(true),
+
+		/**
+		 * Foreign key reference to the specific recurring event instance (null for templates).
+		 */
+		recurringEventInstanceId: uuid("recurring_event_instance_id").references(
+			() => recurringEventInstancesTable.id,
+			{
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			},
+		),
 
 		/**
 		 * Foreign key reference to the user who created this volunteer record.
@@ -104,12 +121,13 @@ export const eventVolunteersTable = pgTable(
 		}),
 	},
 	(self) => [
-		// Unique constraint: one volunteer record per user per event
-		uniqueIndex().on(self.userId, self.eventId),
+		// Unique constraint: one volunteer record per user per event per instance (or template)
+		uniqueIndex().on(self.userId, self.eventId, self.recurringEventInstanceId),
 		index().on(self.createdAt),
 		index().on(self.eventId),
 		index().on(self.userId),
 		index().on(self.hasAccepted),
+		index().on(self.isTemplate),
 	],
 );
 
@@ -132,6 +150,16 @@ export const eventVolunteersTableRelations = relations(
 			fields: [eventVolunteersTable.eventId],
 			references: [eventsTable.id],
 			relationName: "event_volunteers.event_id:events.id",
+		}),
+
+		/**
+		 * Many to one relationship from `event_volunteers` table to `recurring_event_instances` table.
+		 */
+		recurringEventInstance: one(recurringEventInstancesTable, {
+			fields: [eventVolunteersTable.recurringEventInstanceId],
+			references: [recurringEventInstancesTable.id],
+			relationName:
+				"event_volunteers.recurring_event_instance_id:recurring_event_instances.id",
 		}),
 
 		/**

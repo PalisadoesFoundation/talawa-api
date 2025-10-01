@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+	boolean,
 	index,
 	integer,
 	pgTable,
@@ -10,8 +11,9 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { volunteerMembershipsTable } from "./VolunteerMembership";
+import { volunteerMembershipsTable } from "./EventVolunteerMembership";
 import { eventsTable } from "./events";
+import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
 /**
@@ -35,6 +37,22 @@ export const eventVolunteerGroupsTable = pgTable(
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
+
+		/**
+		 * Boolean indicating if this is a template volunteer group (for recurring events).
+		 */
+		isTemplate: boolean("is_template").notNull().default(true),
+
+		/**
+		 * Foreign key reference to the specific recurring event instance (null for templates).
+		 */
+		recurringEventInstanceId: uuid("recurring_event_instance_id").references(
+			() => recurringEventInstancesTable.id,
+			{
+				onDelete: "cascade",
+				onUpdate: "cascade",
+			},
+		),
 
 		/**
 		 * Foreign key reference to the user who leads this group.
@@ -100,12 +118,13 @@ export const eventVolunteerGroupsTable = pgTable(
 		}),
 	},
 	(self) => [
-		// Unique constraint: one group name per event
-		uniqueIndex().on(self.eventId, self.name),
+		// Unique constraint: one group name per event per instance (or template)
+		uniqueIndex().on(self.eventId, self.name, self.recurringEventInstanceId),
 		index().on(self.createdAt),
 		index().on(self.eventId),
 		index().on(self.leaderId),
 		index().on(self.name),
+		index().on(self.isTemplate),
 	],
 );
 
@@ -119,6 +138,16 @@ export const eventVolunteerGroupsTableRelations = relations(
 			fields: [eventVolunteerGroupsTable.eventId],
 			references: [eventsTable.id],
 			relationName: "event_volunteer_groups.event_id:events.id",
+		}),
+
+		/**
+		 * Many to one relationship from `event_volunteer_groups` table to `recurring_event_instances` table.
+		 */
+		recurringEventInstance: one(recurringEventInstancesTable, {
+			fields: [eventVolunteerGroupsTable.recurringEventInstanceId],
+			references: [recurringEventInstancesTable.id],
+			relationName:
+				"event_volunteer_groups.recurring_event_instance_id:recurring_event_instances.id",
 		}),
 
 		/**

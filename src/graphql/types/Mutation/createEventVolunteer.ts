@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
+import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
 import { eventVolunteerExceptionsTable } from "~/src/drizzle/tables/eventVolunteerExceptions";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
@@ -146,41 +146,74 @@ builder.mutationField("createEventVolunteer", (t) =>
 			const scope = parsedArgs.data.scope ?? "ENTIRE_SERIES";
 
 			if (scope === "ENTIRE_SERIES") {
-				// Create volunteer in base event (template by default)
 				const targetEventId = baseEvent.id;
 
-				// Check if volunteer already exists
-				const existingVolunteer = await ctx.drizzleClient
+				// Check if template volunteer already exists
+				const existingTemplate = await ctx.drizzleClient
 					.select()
 					.from(eventVolunteersTable)
 					.where(
 						and(
 							eq(eventVolunteersTable.userId, parsedArgs.data.userId),
 							eq(eventVolunteersTable.eventId, targetEventId),
+							eq(eventVolunteersTable.isTemplate, true),
 						),
 					)
 					.limit(1);
 
+				// Check for any instance-specific volunteers that need to be converted
+				const existingInstanceSpecific = await ctx.drizzleClient
+					.select()
+					.from(eventVolunteersTable)
+					.where(
+						and(
+							eq(eventVolunteersTable.userId, parsedArgs.data.userId),
+							eq(eventVolunteersTable.eventId, targetEventId),
+							eq(eventVolunteersTable.isTemplate, false),
+						),
+					);
+
 				let volunteer: typeof eventVolunteersTable.$inferSelect;
 
-				if (existingVolunteer.length > 0) {
-					// Volunteer already exists as template
-					const existing = existingVolunteer[0];
-					if (!existing) {
+				if (existingTemplate.length > 0) {
+					// Template already exists
+					const templateVolunteer = existingTemplate[0];
+					if (!templateVolunteer) {
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "unexpected",
 							},
 						});
 					}
-					volunteer = existing;
+					volunteer = templateVolunteer;
 
-					// Remove any existing instance-specific exceptions
-					// Since ENTIRE_SERIES means they participate in all instances, instance-specific exceptions are no longer needed
-					await ctx.drizzleClient
-						.delete(eventVolunteerExceptionsTable)
-						.where(eq(eventVolunteerExceptionsTable.volunteerId, volunteer.id));
+					// Remove any instance-specific volunteers (conversion to template)
+					if (existingInstanceSpecific.length > 0) {
+						await ctx.drizzleClient
+							.delete(eventVolunteersTable)
+							.where(
+								and(
+									eq(eventVolunteersTable.userId, parsedArgs.data.userId),
+									eq(eventVolunteersTable.eventId, targetEventId),
+									eq(eventVolunteersTable.isTemplate, false),
+								),
+							);
+					}
 				} else {
+					// No template exists - create one
+					// First, remove any instance-specific volunteers
+					if (existingInstanceSpecific.length > 0) {
+						await ctx.drizzleClient
+							.delete(eventVolunteersTable)
+							.where(
+								and(
+									eq(eventVolunteersTable.userId, parsedArgs.data.userId),
+									eq(eventVolunteersTable.eventId, targetEventId),
+									eq(eventVolunteersTable.isTemplate, false),
+								),
+							);
+					}
+
 					// Create new template volunteer
 					const [createdVolunteer] = await ctx.drizzleClient
 						.insert(eventVolunteersTable)
@@ -191,10 +224,11 @@ builder.mutationField("createEventVolunteer", (t) =>
 							hasAccepted: false,
 							isPublic: true,
 							hoursVolunteered: "0",
+							isTemplate: true,
+							recurringEventInstanceId: null,
 						})
 						.returning();
 
-					// Assert that insert succeeded - should always return the created record
 					if (!createdVolunteer) {
 						throw new TalawaGraphQLError({
 							extensions: {
@@ -219,7 +253,7 @@ builder.mutationField("createEventVolunteer", (t) =>
 			}
 
 			if (scope === "THIS_INSTANCE_ONLY") {
-				// Create template + exceptions for all OTHER instances
+				// Template-First Hierarchy: THIS_INSTANCE_ONLY creates exceptions
 				if (!recurringInstance || !parsedArgs.data.recurringEventInstanceId) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -237,25 +271,28 @@ builder.mutationField("createEventVolunteer", (t) =>
 
 				const targetEventId = baseEvent.id;
 
-				// Check if template volunteer already exists
-				const existingVolunteer = await ctx.drizzleClient
+				// Check if template volunteer already exists for this user/event
+				const existingTemplate = await ctx.drizzleClient
 					.select()
 					.from(eventVolunteersTable)
 					.where(
 						and(
 							eq(eventVolunteersTable.userId, parsedArgs.data.userId),
 							eq(eventVolunteersTable.eventId, targetEventId),
+							eq(eventVolunteersTable.isTemplate, true),
 						),
 					)
 					.limit(1);
 
-				let volunteer: NonNullable<(typeof existingVolunteer)[0]>;
-				if (existingVolunteer.length > 0) {
-					volunteer = existingVolunteer[0] as NonNullable<
-						(typeof existingVolunteer)[0]
+				let volunteer: typeof eventVolunteersTable.$inferSelect;
+
+				if (existingTemplate.length > 0) {
+					// Template exists - reuse it
+					volunteer = existingTemplate[0] as NonNullable<
+						(typeof existingTemplate)[0]
 					>;
 				} else {
-					// Create template volunteer
+					// No template exists - create one
 					const [createdVolunteer] = await ctx.drizzleClient
 						.insert(eventVolunteersTable)
 						.values({
@@ -265,10 +302,11 @@ builder.mutationField("createEventVolunteer", (t) =>
 							hasAccepted: false,
 							isPublic: true,
 							hoursVolunteered: "0",
+							isTemplate: true,
+							recurringEventInstanceId: null,
 						})
 						.returning();
 
-					// Assert that insert succeeded - should always return the created record
 					if (!createdVolunteer) {
 						throw new TalawaGraphQLError({
 							extensions: {
@@ -289,11 +327,11 @@ builder.mutationField("createEventVolunteer", (t) =>
 					});
 				}
 
-				// Create exception to allow participation only in this specific instance
+				// Create exception record for this instance
 				await ctx.drizzleClient.insert(eventVolunteerExceptionsTable).values({
 					volunteerId: volunteer.id,
 					recurringEventInstanceId: parsedArgs.data.recurringEventInstanceId,
-					isException: true, // This is an exception - volunteer participates in this instance
+					isException: true,
 					createdBy: currentUserId,
 				});
 

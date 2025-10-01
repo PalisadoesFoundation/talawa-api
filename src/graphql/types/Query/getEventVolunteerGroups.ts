@@ -1,10 +1,11 @@
-import { and, asc, eq, ilike } from "drizzle-orm";
+import { and, asc, eq, ilike, or } from "drizzle-orm";
 import { z } from "zod";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
 import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
+import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { builder } from "~/src/graphql/builder";
 import { EventVolunteerGroupOrderByInput } from "~/src/graphql/enums/EventVolunteerGroupOrderByInput";
@@ -116,9 +117,35 @@ builder.queryField("getEventVolunteerGroups", (t) =>
 			const whereConditions = [];
 
 			if (parsedArgs.where.eventId) {
-				whereConditions.push(
-					eq(eventVolunteerGroupsTable.eventId, parsedArgs.where.eventId),
-				);
+				// Check if this is a recurring event instance
+				const instance =
+					await ctx.drizzleClient.query.recurringEventInstancesTable.findFirst({
+						where: eq(
+							recurringEventInstancesTable.id,
+							parsedArgs.where.eventId,
+						),
+					});
+
+				if (instance) {
+					// For recurring instances, show both instance-specific groups and template groups
+					whereConditions.push(
+						or(
+							eq(eventVolunteerGroupsTable.eventId, parsedArgs.where.eventId), // Instance-specific groups
+							and(
+								eq(
+									eventVolunteerGroupsTable.eventId,
+									instance.baseRecurringEventId,
+								), // Template groups
+								eq(eventVolunteerGroupsTable.isTemplate, true),
+							),
+						),
+					);
+				} else {
+					// For regular events or templates, use direct eventId matching
+					whereConditions.push(
+						eq(eventVolunteerGroupsTable.eventId, parsedArgs.where.eventId),
+					);
+				}
 			}
 
 			// If eventId is provided, check authorization for that event

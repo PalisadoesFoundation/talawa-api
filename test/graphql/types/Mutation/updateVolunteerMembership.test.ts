@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
+import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,

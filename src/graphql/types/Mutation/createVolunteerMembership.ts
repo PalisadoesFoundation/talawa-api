@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
+import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -10,7 +10,7 @@ import {
 	VolunteerMembershipInput,
 	volunteerMembershipInputSchema,
 } from "~/src/graphql/inputs/VolunteerMembershipInput";
-import { VolunteerMembership } from "~/src/graphql/types/VolunteerMembership/VolunteerMembership";
+import { VolunteerMembership } from "~/src/graphql/types/EventVolunteerMembership/EventVolunteerMembership";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 
@@ -220,16 +220,39 @@ builder.mutationField("createVolunteerMembership", (t) =>
 			if (volunteer.length === 0) {
 				// Create EventVolunteer if it doesn't exist
 				// hasAccepted depends on status (false for requests, true for direct acceptance)
+				const volunteerData: {
+					userId: string;
+					eventId: string;
+					creatorId: string;
+					hasAccepted: boolean;
+					isPublic: boolean;
+					hoursVolunteered: string;
+					isTemplate: boolean;
+					recurringEventInstanceId: string | null;
+				} = {
+					userId: parsedArgs.data.userId,
+					eventId: targetEventId,
+					creatorId: currentUserId,
+					hasAccepted: parsedArgs.data.status === "accepted",
+					isPublic: true,
+					hoursVolunteered: "0",
+					isTemplate: true, // Default to template
+					recurringEventInstanceId: null, // Default to null
+				};
+
+				// Set isTemplate and recurringEventInstanceId based on scope
+				if (parsedArgs.data.scope === "THIS_INSTANCE_ONLY") {
+					volunteerData.isTemplate = false;
+					volunteerData.recurringEventInstanceId =
+						parsedArgs.data.recurringEventInstanceId || null;
+				} else if (parsedArgs.data.scope === "ENTIRE_SERIES") {
+					volunteerData.isTemplate = true;
+					volunteerData.recurringEventInstanceId = null;
+				}
+
 				const [createdVolunteer] = await ctx.drizzleClient
 					.insert(eventVolunteersTable)
-					.values({
-						userId: parsedArgs.data.userId,
-						eventId: targetEventId,
-						creatorId: currentUserId,
-						hasAccepted: parsedArgs.data.status === "accepted",
-						isPublic: true,
-						hoursVolunteered: "0",
-					})
+					.values(volunteerData)
 					.returning();
 
 				if (createdVolunteer === undefined) {

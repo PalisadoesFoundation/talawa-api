@@ -30,4 +30,4 @@ import "./TagFolder/index";
 import "./User/index";
 import "./Venue/index";
 import "./VenueAttachment/index";
-import "./VolunteerMembership/index";
+import "./EventVolunteerMembership/index";

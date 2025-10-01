@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
+import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
 import { builder } from "~/src/graphql/builder";
-import { VolunteerMembership } from "~/src/graphql/types/VolunteerMembership/VolunteerMembership";
+import { VolunteerMembership } from "~/src/graphql/types/EventVolunteerMembership/EventVolunteerMembership";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 

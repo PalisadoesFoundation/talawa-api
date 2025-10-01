@@ -1,6 +1,6 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { VolunteerMembershipUpdatedByResolver } from "~/src/graphql/types/VolunteerMembership/updatedBy";
+import { VolunteerMembershipCreatedByResolver } from "~/src/graphql/types/EventVolunteerMembership/createdBy";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Mock parent VolunteerMembership
@@ -16,18 +16,18 @@ const mockVolunteerMembership = {
 	updatedAt: new Date("2024-01-01T12:00:00Z") as Date | null,
 };
 
-const mockVolunteerMembershipWithNullUpdatedBy = {
+const mockVolunteerMembershipWithNullCreatedBy = {
 	...mockVolunteerMembership,
-	updatedBy: null,
+	createdBy: null,
 };
 
-const mockUpdaterUser = {
-	id: "updater-123",
-	name: "Jane Updater",
-	emailAddress: "updater@example.com",
-	role: "member",
-	createdAt: new Date("2024-01-01T07:00:00Z"),
-	updatedAt: new Date("2024-01-01T08:00:00Z"),
+const mockCreatorUser = {
+	id: "creator-123",
+	name: "John Creator",
+	emailAddress: "creator@example.com",
+	role: "administrator",
+	createdAt: new Date("2024-01-01T08:00:00Z"),
+	updatedAt: new Date("2024-01-01T08:30:00Z"),
 	addressLine1: null,
 	addressLine2: null,
 	birthDate: null,
@@ -47,7 +47,7 @@ const mockUpdaterUser = {
 	updaterId: null,
 };
 
-describe("VolunteerMembershipUpdatedByResolver", () => {
+describe("VolunteerMembershipCreatedByResolver", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
@@ -61,7 +61,7 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			const { context } = createMockGraphQLContext(false);
 
 			await expect(
-				VolunteerMembershipUpdatedByResolver(
+				VolunteerMembershipCreatedByResolver(
 					mockVolunteerMembership,
 					{},
 					context,
@@ -69,7 +69,7 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			).rejects.toThrow(TalawaGraphQLError);
 
 			await expect(
-				VolunteerMembershipUpdatedByResolver(
+				VolunteerMembershipCreatedByResolver(
 					mockVolunteerMembership,
 					{},
 					context,
@@ -80,12 +80,12 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 		});
 	});
 
-	describe("UpdatedBy Retrieval", () => {
-		it("should return null when updatedBy is null", async () => {
+	describe("CreatedBy Retrieval", () => {
+		it("should return null when createdBy is null", async () => {
 			const { context } = createMockGraphQLContext(true, "user-123");
 
-			const result = await VolunteerMembershipUpdatedByResolver(
-				mockVolunteerMembershipWithNullUpdatedBy,
+			const result = await VolunteerMembershipCreatedByResolver(
+				mockVolunteerMembershipWithNullCreatedBy,
 				{},
 				context,
 			);
@@ -93,26 +93,26 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			expect(result).toBeNull();
 		});
 
-		it("should return updater user when updatedBy exists", async () => {
+		it("should return creator user when createdBy exists", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockUpdaterUser,
+				mockCreatorUser,
 			);
 
-			const result = await VolunteerMembershipUpdatedByResolver(
+			const result = await VolunteerMembershipCreatedByResolver(
 				mockVolunteerMembership,
 				{},
 				context,
 			);
 
-			expect(result).toEqual(mockUpdaterUser);
+			expect(result).toEqual(mockCreatorUser);
 			expect(
 				mocks.drizzleClient.query.usersTable.findFirst,
 			).toHaveBeenCalledTimes(1);
 		});
 
-		it("should throw unexpected error when updater is not found", async () => {
+		it("should throw unexpected error when creator is not found", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
@@ -120,7 +120,7 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			);
 
 			await expect(
-				VolunteerMembershipUpdatedByResolver(
+				VolunteerMembershipCreatedByResolver(
 					mockVolunteerMembership,
 					{},
 					context,
@@ -128,7 +128,7 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			).rejects.toThrow(TalawaGraphQLError);
 
 			await expect(
-				VolunteerMembershipUpdatedByResolver(
+				VolunteerMembershipCreatedByResolver(
 					mockVolunteerMembership,
 					{},
 					context,
@@ -138,18 +138,18 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			});
 
 			expect(context.log.warn).toHaveBeenCalledWith(
-				"Postgres select operation returned an empty array for a volunteer membership's updatedBy id that isn't null.",
+				"Postgres select operation returned an empty array for a volunteer membership's createdBy id that isn't null.",
 			);
 		});
 
-		it("should query database for updater with correct userId", async () => {
+		it("should query database for creator with correct userId", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockUpdaterUser,
+				mockCreatorUser,
 			);
 
-			await VolunteerMembershipUpdatedByResolver(
+			await VolunteerMembershipCreatedByResolver(
 				mockVolunteerMembership,
 				{},
 				context,
@@ -160,11 +160,11 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			).toHaveBeenCalledTimes(1);
 		});
 
-		it("should not query database when updatedBy is null", async () => {
+		it("should not query database when createdBy is null", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
-			await VolunteerMembershipUpdatedByResolver(
-				mockVolunteerMembershipWithNullUpdatedBy,
+			await VolunteerMembershipCreatedByResolver(
+				mockVolunteerMembershipWithNullCreatedBy,
 				{},
 				context,
 			);
@@ -176,32 +176,32 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 	});
 
 	describe("Edge Cases", () => {
-		it("should handle different updater IDs correctly", async () => {
+		it("should handle different creator IDs correctly", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
-			const differentUpdater = {
-				...mockUpdaterUser,
-				id: "different-updater-456",
-				name: "John Updater",
+			const differentCreator = {
+				...mockCreatorUser,
+				id: "different-creator-456",
+				name: "Jane Creator",
 			};
-			const membershipWithDifferentUpdater = {
+			const membershipWithDifferentCreator = {
 				...mockVolunteerMembership,
-				updatedBy: "different-updater-456" as string | null,
+				createdBy: "different-creator-456" as string | null,
 			};
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				differentUpdater,
+				differentCreator,
 			);
 
-			const result = await VolunteerMembershipUpdatedByResolver(
-				membershipWithDifferentUpdater,
+			const result = await VolunteerMembershipCreatedByResolver(
+				membershipWithDifferentCreator,
 				{},
 				context,
 			);
 
-			expect(result).toEqual(differentUpdater);
-			expect(result?.id).toBe("different-updater-456");
-			expect(result?.name).toBe("John Updater");
+			expect(result).toEqual(differentCreator);
+			expect(result?.id).toBe("different-creator-456");
+			expect(result?.name).toBe("Jane Creator");
 		});
 
 		it("should handle database connection issues", async () => {
@@ -212,7 +212,7 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			);
 
 			await expect(
-				VolunteerMembershipUpdatedByResolver(
+				VolunteerMembershipCreatedByResolver(
 					mockVolunteerMembership,
 					{},
 					context,
@@ -220,18 +220,18 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			).rejects.toThrow("Database connection failed");
 		});
 
-		it("should handle empty string updatedBy as null", async () => {
+		it("should handle empty string createdBy as null", async () => {
 			const { context } = createMockGraphQLContext(true, "user-123");
 
-			const membershipWithEmptyUpdatedBy = {
+			const membershipWithEmptyCreatedBy = {
 				...mockVolunteerMembership,
-				updatedBy: "" as string | null,
+				createdBy: "" as string | null,
 			};
 
 			// Should treat empty string as falsy and return null
-			if (!membershipWithEmptyUpdatedBy.updatedBy) {
-				const result = await VolunteerMembershipUpdatedByResolver(
-					{ ...membershipWithEmptyUpdatedBy, updatedBy: null },
+			if (!membershipWithEmptyCreatedBy.createdBy) {
+				const result = await VolunteerMembershipCreatedByResolver(
+					{ ...membershipWithEmptyCreatedBy, createdBy: null },
 					{},
 					context,
 				);
@@ -245,10 +245,10 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockUpdaterUser,
+				mockCreatorUser,
 			);
 
-			const result = await VolunteerMembershipUpdatedByResolver(
+			const result = await VolunteerMembershipCreatedByResolver(
 				mockVolunteerMembership,
 				{},
 				context,
@@ -268,21 +268,21 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockUpdaterUser,
+				mockCreatorUser,
 			);
 
-			const result = await VolunteerMembershipUpdatedByResolver(
+			const result = await VolunteerMembershipCreatedByResolver(
 				mockVolunteerMembership,
 				{},
 				context,
 			);
 
-			expect(result?.id).toBe(mockUpdaterUser.id);
-			expect(result?.name).toBe(mockUpdaterUser.name);
-			expect(result?.emailAddress).toBe(mockUpdaterUser.emailAddress);
-			expect(result?.role).toBe(mockUpdaterUser.role);
+			expect(result?.id).toBe(mockCreatorUser.id);
+			expect(result?.name).toBe(mockCreatorUser.name);
+			expect(result?.emailAddress).toBe(mockCreatorUser.emailAddress);
+			expect(result?.role).toBe(mockCreatorUser.role);
 			expect(result?.isEmailAddressVerified).toBe(
-				mockUpdaterUser.isEmailAddressVerified,
+				mockCreatorUser.isEmailAddressVerified,
 			);
 		});
 
@@ -290,7 +290,7 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
 			const userWithNulls = {
-				...mockUpdaterUser,
+				...mockCreatorUser,
 				description: null,
 				birthDate: null,
 				mobilePhoneNumber: null,
@@ -300,7 +300,7 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 				userWithNulls,
 			);
 
-			const result = await VolunteerMembershipUpdatedByResolver(
+			const result = await VolunteerMembershipCreatedByResolver(
 				mockVolunteerMembership,
 				{},
 				context,
@@ -313,11 +313,11 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 	});
 
 	describe("Nullable Return Type", () => {
-		it("should correctly handle nullable return type when updatedBy is null", async () => {
+		it("should correctly handle nullable return type when createdBy is null", async () => {
 			const { context } = createMockGraphQLContext(true, "user-123");
 
-			const result = await VolunteerMembershipUpdatedByResolver(
-				mockVolunteerMembershipWithNullUpdatedBy,
+			const result = await VolunteerMembershipCreatedByResolver(
+				mockVolunteerMembershipWithNullCreatedBy,
 				{},
 				context,
 			);
@@ -325,21 +325,21 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			expect(result).toBeNull();
 		});
 
-		it("should correctly return non-null user when updatedBy exists", async () => {
+		it("should correctly return non-null user when createdBy exists", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockUpdaterUser,
+				mockCreatorUser,
 			);
 
-			const result = await VolunteerMembershipUpdatedByResolver(
+			const result = await VolunteerMembershipCreatedByResolver(
 				mockVolunteerMembership,
 				{},
 				context,
 			);
 
 			expect(result).not.toBeNull();
-			expect(result).toEqual(mockUpdaterUser);
+			expect(result).toEqual(mockCreatorUser);
 		});
 	});
 
@@ -347,29 +347,29 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 		it("should handle different user roles correctly", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
-			const adminUser = {
-				...mockUpdaterUser,
-				role: "administrator",
+			const memberUser = {
+				...mockCreatorUser,
+				role: "member",
 			};
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				adminUser,
+				memberUser,
 			);
 
-			const result = await VolunteerMembershipUpdatedByResolver(
+			const result = await VolunteerMembershipCreatedByResolver(
 				mockVolunteerMembership,
 				{},
 				context,
 			);
 
-			expect(result?.role).toBe("administrator");
+			expect(result?.role).toBe("member");
 		});
 
 		it("should handle superadmin role", async () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
 			const superadminUser = {
-				...mockUpdaterUser,
+				...mockCreatorUser,
 				role: "superadmin",
 			};
 
@@ -377,7 +377,7 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 				superadminUser,
 			);
 
-			const result = await VolunteerMembershipUpdatedByResolver(
+			const result = await VolunteerMembershipCreatedByResolver(
 				mockVolunteerMembership,
 				{},
 				context,
@@ -392,10 +392,10 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockUpdaterUser,
+				mockCreatorUser,
 			);
 
-			const result = await VolunteerMembershipUpdatedByResolver(
+			const result = await VolunteerMembershipCreatedByResolver(
 				mockVolunteerMembership,
 				{},
 				context,
@@ -408,7 +408,7 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 			const { context, mocks } = createMockGraphQLContext(true, "user-123");
 
 			const unverifiedUser = {
-				...mockUpdaterUser,
+				...mockCreatorUser,
 				isEmailAddressVerified: false,
 			};
 
@@ -416,43 +416,13 @@ describe("VolunteerMembershipUpdatedByResolver", () => {
 				unverifiedUser,
 			);
 
-			const result = await VolunteerMembershipUpdatedByResolver(
+			const result = await VolunteerMembershipCreatedByResolver(
 				mockVolunteerMembership,
 				{},
 				context,
 			);
 
 			expect(result?.isEmailAddressVerified).toBe(false);
-		});
-	});
-
-	describe("Same User as Creator and Updater", () => {
-		it("should handle when creator and updater are the same user", async () => {
-			const { context, mocks } = createMockGraphQLContext(true, "user-123");
-
-			const sameUser = {
-				...mockUpdaterUser,
-				id: "creator-123",
-			};
-
-			const membershipWithSameCreatorUpdater = {
-				...mockVolunteerMembership,
-				createdBy: "creator-123" as string | null,
-				updatedBy: "creator-123" as string | null,
-			};
-
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				sameUser,
-			);
-
-			const result = await VolunteerMembershipUpdatedByResolver(
-				membershipWithSameCreatorUpdater,
-				{},
-				context,
-			);
-
-			expect(result?.id).toBe("creator-123");
-			expect(result).toEqual(sameUser);
 		});
 	});
 });

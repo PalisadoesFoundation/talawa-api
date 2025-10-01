@@ -4,10 +4,10 @@ import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-import { VolunteerMembership } from "./VolunteerMembership";
-import type { VolunteerMembership as VolunteerMembershipType } from "./VolunteerMembership";
+import { VolunteerMembership } from "./EventVolunteerMembership";
+import type { VolunteerMembership as VolunteerMembershipType } from "./EventVolunteerMembership";
 
-export const VolunteerMembershipUpdatedByResolver = async (
+export const VolunteerMembershipCreatedByResolver = async (
 	parent: VolunteerMembershipType,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
@@ -20,17 +20,17 @@ export const VolunteerMembershipUpdatedByResolver = async (
 		});
 	}
 
-	if (parent.updatedBy === null) {
+	if (parent.createdBy === null) {
 		return null;
 	}
 
-	const updatedByUser = await ctx.drizzleClient.query.usersTable.findFirst({
-		where: eq(usersTable.id, parent.updatedBy),
+	const createdByUser = await ctx.drizzleClient.query.usersTable.findFirst({
+		where: eq(usersTable.id, parent.createdBy),
 	});
 
-	if (updatedByUser === undefined) {
+	if (createdByUser === undefined) {
 		ctx.log.warn(
-			"Postgres select operation returned an empty array for a volunteer membership's updatedBy id that isn't null.",
+			"Postgres select operation returned an empty array for a volunteer membership's createdBy id that isn't null.",
 		);
 		throw new TalawaGraphQLError({
 			extensions: {
@@ -39,14 +39,14 @@ export const VolunteerMembershipUpdatedByResolver = async (
 		});
 	}
 
-	return updatedByUser;
+	return createdByUser;
 };
 
 VolunteerMembership.implement({
 	fields: (t) => ({
-		updatedBy: t.field({
-			description: "The user who last updated this membership.",
-			resolve: VolunteerMembershipUpdatedByResolver,
+		createdBy: t.field({
+			description: "The user who created this membership.",
+			resolve: VolunteerMembershipCreatedByResolver,
 			type: User,
 			nullable: true,
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,

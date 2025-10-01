@@ -15,6 +15,7 @@ const mockEventVolunteer = {
 	updatedAt: new Date("2024-01-01T12:00:00Z"),
 	updaterId: "updater-123",
 	recurringEventInstanceId: "recurring-instance-123",
+	isTemplate: false,
 };
 
 const mockRecurringEventInstance = {
@@ -73,7 +74,7 @@ describe("EventVolunteer RecurringEventInstanceResolver", () => {
 
 			const volunteerWithoutInstanceId = {
 				...mockEventVolunteer,
-				recurringEventInstanceId: undefined,
+				recurringEventInstanceId: null,
 			};
 
 			const result = await RecurringEventInstanceResolver(
@@ -276,7 +277,7 @@ describe("EventVolunteer RecurringEventInstanceResolver", () => {
 
 			const volunteerWithoutInstanceId = {
 				...mockEventVolunteer,
-				recurringEventInstanceId: undefined,
+				recurringEventInstanceId: null,
 			};
 
 			await RecurringEventInstanceResolver(

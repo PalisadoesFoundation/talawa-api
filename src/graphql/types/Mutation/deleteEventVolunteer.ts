@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
+import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
@@ -120,6 +121,11 @@ builder.mutationField("deleteEventVolunteer", (t) =>
 					},
 				});
 			}
+
+			// Delete related volunteer memberships first
+			await ctx.drizzleClient
+				.delete(volunteerMembershipsTable)
+				.where(eq(volunteerMembershipsTable.volunteerId, parsedArgs.id));
 
 			// Delete the volunteer
 			const [deletedVolunteer] = await ctx.drizzleClient

@@ -15,6 +15,8 @@ const mockAcceptedEventVolunteer = {
 	createdAt: new Date("2024-01-01T10:00:00Z"),
 	updatedAt: new Date("2024-01-01T10:00:00Z"),
 	updaterId: "updater-123",
+	recurringEventInstanceId: null,
+	isTemplate: false,
 };
 
 // Mock parent EventVolunteer with hasAccepted = false

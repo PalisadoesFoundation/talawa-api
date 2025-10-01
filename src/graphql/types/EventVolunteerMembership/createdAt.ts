@@ -1,10 +1,10 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-import { VolunteerMembership } from "./VolunteerMembership";
-import type { VolunteerMembership as VolunteerMembershipType } from "./VolunteerMembership";
+import { VolunteerMembership } from "./EventVolunteerMembership";
+import type { VolunteerMembership as VolunteerMembershipType } from "./EventVolunteerMembership";
 
-export const VolunteerMembershipUpdatedAtResolver = async (
+export const VolunteerMembershipCreatedAtResolver = async (
 	parent: VolunteerMembershipType,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
@@ -17,17 +17,16 @@ export const VolunteerMembershipUpdatedAtResolver = async (
 		});
 	}
 
-	return parent.updatedAt;
+	return parent.createdAt;
 };
 
 VolunteerMembership.implement({
 	fields: (t) => ({
-		updatedAt: t.field({
+		createdAt: t.field({
 			description:
-				"Date time at the time the volunteer membership was last updated.",
-			resolve: VolunteerMembershipUpdatedAtResolver,
+				"Date time at the time the volunteer membership was created.",
+			resolve: VolunteerMembershipCreatedAtResolver,
 			type: "DateTime",
-			nullable: true,
 			complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		}),
 	}),

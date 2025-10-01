@@ -94,75 +94,70 @@ export const EventVolunteersResolver = async (
 			? parent.baseRecurringEventId
 			: parent.id;
 
+	// For recurring instances, get exceptions to filter out deleted template volunteers
+	let exceptions: { volunteerId: string; deleted: boolean | null }[] = [];
+	if (recurringInstance) {
+		exceptions = await ctx.drizzleClient
+			.select({
+				volunteerId: eventVolunteerExceptionsTable.volunteerId,
+				deleted: eventVolunteerExceptionsTable.deleted,
+			})
+			.from(eventVolunteerExceptionsTable)
+			.where(
+				eq(eventVolunteerExceptionsTable.recurringEventInstanceId, parent.id),
+			);
+	}
+
 	// Template-First Hierarchy: Get volunteers based on new pattern
 	let volunteers = await ctx.drizzleClient.query.eventVolunteersTable.findMany({
 		where: recurringInstance
-			? // For recurring event instances: ALL volunteers come from the base event (templates by default)
-				eq(eventVolunteersTable.eventId, baseEventId)
-			: // For regular events: Get volunteers directly associated with this event
+			? // For recurring event instances: Get template volunteers + instance-specific volunteers for this instance
+				and(
+					eq(eventVolunteersTable.eventId, baseEventId),
+					// Include template volunteers OR instance-specific volunteers for this instance
+					// Template volunteers: isTemplate = true
+					// Instance-specific volunteers: isTemplate = false AND recurringEventInstanceId = parent.id
+				)
+			: // For regular events: Get all volunteers directly associated with this event
 				eq(eventVolunteersTable.eventId, parent.id),
 	});
 
-	const volunteerIds = volunteers.map((volunteer) => volunteer.id);
-
-	// Get exceptions for this specific recurring instance AND check if volunteers have any exceptions at all
-	if (volunteerIds.length > 0 && recurringInstance) {
-		const [instanceExceptions, allExceptions] = await Promise.all([
-			// Exceptions for this specific instance
-			ctx.drizzleClient.query.eventVolunteerExceptionsTable.findMany({
-				where: and(
-					inArray(eventVolunteerExceptionsTable.volunteerId, volunteerIds),
-					eq(eventVolunteerExceptionsTable.recurringEventInstanceId, parent.id),
-				),
-			}),
-			// All exceptions for these volunteers (to determine if they're instance-specific)
-			ctx.drizzleClient.query.eventVolunteerExceptionsTable.findMany({
-				where: inArray(eventVolunteerExceptionsTable.volunteerId, volunteerIds),
-				columns: { volunteerId: true },
-			}),
-		]);
-
-		const instanceExceptionsMap = new Map(
-			instanceExceptions.map((exception) => [exception.volunteerId, exception]),
+	// For recurring instances, we need to filter the results based on isTemplate, recurringEventInstanceId, and exceptions
+	if (recurringInstance) {
+		const exceptionVolunteerIds = new Set(
+			exceptions
+				.filter((ex) => ex.deleted === true)
+				.map((ex) => ex.volunteerId),
 		);
 
-		// Get set of volunteers that have any exceptions (instance-specific)
-		const volunteersWithExceptions = new Set(
-			allExceptions.map((exception) => exception.volunteerId),
-		);
-
-		// Filter volunteers based on exception logic
 		volunteers = volunteers.filter((volunteer) => {
-			const instanceException = instanceExceptionsMap.get(volunteer.id);
-			const hasAnyExceptions = volunteersWithExceptions.has(volunteer.id);
-
-			// If volunteer has exceptions (instance-specific), only include if isException: true for this instance
-			if (hasAnyExceptions) {
-				if (
-					instanceException?.isException === true &&
-					!instanceException?.deleted
-				) {
-					// Apply exception overrides
-					volunteer.hasAccepted =
-						instanceException.hasAccepted ?? volunteer.hasAccepted;
-					volunteer.isPublic = instanceException.isPublic ?? volunteer.isPublic;
-					volunteer.hoursVolunteered =
-						instanceException.hoursVolunteered ?? volunteer.hoursVolunteered;
-
-					// Mark this volunteer as showing instance-specific exception data
-					(volunteer as { isInstanceException?: boolean }).isInstanceException =
-						true;
-					return true;
+			// Include template volunteers (apply to all instances) UNLESS they have an exception for this instance
+			if (volunteer.isTemplate) {
+				if (exceptionVolunteerIds.has(volunteer.id)) {
+					// This template volunteer has been deleted for this instance
+					return false;
 				}
-				// Instance-specific volunteer without isException: true for this instance
-				return false;
+				(volunteer as { isInstanceException?: boolean }).isInstanceException =
+					false;
+				return true;
 			}
 
-			// Template volunteer (no exceptions) - include by default
+			// Include instance-specific volunteers for this specific instance
+			if (volunteer.recurringEventInstanceId === parent.id) {
+				(volunteer as { isInstanceException?: boolean }).isInstanceException =
+					true;
+				return true;
+			}
+
+			// Exclude instance-specific volunteers for other instances
+			return false;
+		});
+	} else {
+		// For regular events, mark all as not instance exceptions
+		for (const volunteer of volunteers) {
 			(volunteer as { isInstanceException?: boolean }).isInstanceException =
 				false;
-			return true;
-		});
+		}
 	}
 
 	// Apply filters from where input

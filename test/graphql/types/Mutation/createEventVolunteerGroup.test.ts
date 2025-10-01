@@ -1,8 +1,9 @@
 import { faker } from "@faker-js/faker";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
+import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
+import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
 import { eventVolunteerGroupExceptionsTable } from "~/src/drizzle/tables/eventVolunteerGroupExceptions";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
@@ -905,7 +906,7 @@ suite("Mutation createEventVolunteerGroup", () => {
 			expect(group?.id).toBeDefined();
 			expect(group?.name).toContain("Instance Group");
 
-			// Verify exceptions were created for other instances
+			// Verify no exceptions were created since this creates an instance-specific group
 			if (group?.id) {
 				const exceptions = await server.drizzleClient
 					.select()
@@ -914,9 +915,7 @@ suite("Mutation createEventVolunteerGroup", () => {
 						eq(eventVolunteerGroupExceptionsTable.volunteerGroupId, group.id),
 					);
 
-				expect(exceptions).toHaveLength(1); // 1 exception for target instance
-				expect(exceptions[0]?.isException).toBe(true);
-				expect(exceptions[0]?.recurringEventInstanceId).toBe(targetInstanceId);
+				expect(exceptions).toHaveLength(0); // No exceptions for instance-specific groups
 
 				// Cleanup
 				await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
@@ -1022,6 +1021,7 @@ suite("Mutation createEventVolunteerGroup", () => {
 			assertToBeNonNullish(templateGroupResult.data?.createEventVolunteerGroup);
 			const templateGroupId =
 				templateGroupResult.data.createEventVolunteerGroup.id;
+			assertToBeNonNullish(templateGroupId);
 
 			await new Promise((resolve) => setTimeout(resolve, 400));
 
@@ -1049,32 +1049,40 @@ suite("Mutation createEventVolunteerGroup", () => {
 			expect(instanceGroupResult.errors).toBeUndefined();
 			expect(instanceGroupResult.data?.createEventVolunteerGroup).toBeDefined();
 
-			// Should return the same group ID (reused)
+			// Should create a new instance-specific group (not reuse template)
 			const instanceGroup = instanceGroupResult.data?.createEventVolunteerGroup;
-			expect(instanceGroup?.id).toBe(templateGroupId);
+			expect(instanceGroup?.id).not.toBe(templateGroupId);
+			expect(instanceGroup?.id).toBeDefined();
 
-			// Verify exceptions were created for other instances
-			if (templateGroupId) {
+			// Verify no exceptions were created since this creates an instance-specific group
+			if (instanceGroup?.id) {
 				const exceptions = await server.drizzleClient
 					.select()
 					.from(eventVolunteerGroupExceptionsTable)
 					.where(
 						eq(
 							eventVolunteerGroupExceptionsTable.volunteerGroupId,
-							templateGroupId,
+							instanceGroup.id,
 						),
 					);
 
-				expect(exceptions).toHaveLength(1); // 1 exception for target instance
-				expect(exceptions[0]?.isException).toBe(true);
+				expect(exceptions).toHaveLength(0); // No exceptions for instance-specific groups
 
-				// Cleanup
+				// Cleanup both groups
 				await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
 					headers: {
 						authorization: `bearer ${adminAuthToken}`,
 					},
 					variables: { id: templateGroupId },
 				});
+				if (instanceGroup?.id) {
+					await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
+						headers: {
+							authorization: `bearer ${adminAuthToken}`,
+						},
+						variables: { id: instanceGroup.id },
+					});
+				}
 			}
 		});
 
@@ -1214,7 +1222,7 @@ suite("Mutation createEventVolunteerGroup", () => {
 				expect(volunteerUserIds).toContain(regularUserId); // Existing
 				expect(volunteerUserIds).toContain(leaderUserId); // New
 
-				// Verify exceptions were created for other instances
+				// Verify no exceptions were created since this creates an instance-specific group
 				const exceptions = await server.drizzleClient
 					.select()
 					.from(eventVolunteerGroupExceptionsTable)
@@ -1222,9 +1230,7 @@ suite("Mutation createEventVolunteerGroup", () => {
 						eq(eventVolunteerGroupExceptionsTable.volunteerGroupId, group.id),
 					);
 
-				expect(exceptions).toHaveLength(1); // 1 exception for target instance
-				expect(exceptions[0]?.isException).toBe(true);
-				expect(exceptions[0]?.recurringEventInstanceId).toBe(instances3[0]?.id);
+				expect(exceptions).toHaveLength(0); // No exceptions for instance-specific groups
 
 				// Cleanup
 				await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
@@ -1321,6 +1327,467 @@ suite("Mutation createEventVolunteerGroup", () => {
 						authorization: `bearer ${adminAuthToken}`,
 					},
 					variables: { id: group.id },
+				});
+			}
+		});
+
+		test("should delete existing instance-specific groups when creating ENTIRE_SERIES group", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 2600));
+
+			// Create recurring event template
+			const [template] = await server.drizzleClient
+				.insert(eventsTable)
+				.values({
+					name: "Coverage Test Event",
+					description: "Event for coverage testing",
+					startAt: new Date("2024-12-01T10:00:00Z"),
+					endAt: new Date("2024-12-01T11:00:00Z"),
+					organizationId,
+					creatorId: adminUserId,
+					isPublic: true,
+					isRegisterable: true,
+					isRecurringEventTemplate: true,
+				})
+				.returning();
+
+			assertToBeNonNullish(template);
+
+			const [rule] = await server.drizzleClient
+				.insert(recurrenceRulesTable)
+				.values({
+					baseRecurringEventId: template.id,
+					frequency: "DAILY",
+					interval: 1,
+					count: 2,
+					organizationId,
+					creatorId: adminUserId,
+					recurrenceRuleString: "RRULE:FREQ=DAILY;INTERVAL=1;COUNT=2",
+					recurrenceStartDate: new Date("2024-12-01T10:00:00Z"),
+					latestInstanceDate: new Date("2024-12-01T10:00:00Z"),
+				})
+				.returning();
+
+			assertToBeNonNullish(rule);
+
+			const instances = await server.drizzleClient
+				.insert(recurringEventInstancesTable)
+				.values([
+					{
+						baseRecurringEventId: template.id,
+						recurrenceRuleId: rule.id,
+						originalSeriesId: template.id,
+						originalInstanceStartTime: new Date("2024-12-01T10:00:00Z"),
+						actualStartTime: new Date("2024-12-01T10:00:00Z"),
+						actualEndTime: new Date("2024-12-01T11:00:00Z"),
+						organizationId,
+						sequenceNumber: 1,
+						totalCount: 2,
+					},
+					{
+						baseRecurringEventId: template.id,
+						recurrenceRuleId: rule.id,
+						originalSeriesId: template.id,
+						originalInstanceStartTime: new Date("2024-12-02T10:00:00Z"),
+						actualStartTime: new Date("2024-12-02T10:00:00Z"),
+						actualEndTime: new Date("2024-12-02T11:00:00Z"),
+						organizationId,
+						sequenceNumber: 2,
+						totalCount: 2,
+					},
+				])
+				.returning();
+
+			expect(instances).toHaveLength(2);
+
+			await new Promise((resolve) => setTimeout(resolve, 400));
+
+			// First create instance-specific groups
+			const instanceGroup1Result = await mercuriusClient.mutate(
+				Mutation_createEventVolunteerGroup,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						data: {
+							eventId: template.id,
+							leaderId: leaderUserId,
+							name: "Coverage Group",
+							description: "Group for coverage testing",
+							volunteersRequired: 2,
+							scope: "THIS_INSTANCE_ONLY",
+							recurringEventInstanceId: instances[0]?.id,
+						},
+					},
+				},
+			);
+
+			expect(instanceGroup1Result.errors).toBeUndefined();
+			assertToBeNonNullish(
+				instanceGroup1Result.data?.createEventVolunteerGroup,
+			);
+
+			await new Promise((resolve) => setTimeout(resolve, 400));
+
+			const instanceGroup2Result = await mercuriusClient.mutate(
+				Mutation_createEventVolunteerGroup,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						data: {
+							eventId: template.id,
+							leaderId: leaderUserId,
+							name: "Coverage Group",
+							description: "Another instance group",
+							volunteersRequired: 3,
+							scope: "THIS_INSTANCE_ONLY",
+							recurringEventInstanceId: instances[1]?.id,
+						},
+					},
+				},
+			);
+
+			expect(instanceGroup2Result.errors).toBeUndefined();
+			assertToBeNonNullish(
+				instanceGroup2Result.data?.createEventVolunteerGroup,
+			);
+
+			await new Promise((resolve) => setTimeout(resolve, 400));
+
+			// Verify both instance-specific groups exist
+			let existingGroups = await server.drizzleClient
+				.select()
+				.from(eventVolunteerGroupsTable)
+				.where(
+					and(
+						eq(eventVolunteerGroupsTable.eventId, template.id),
+						eq(eventVolunteerGroupsTable.name, "Coverage Group"),
+						eq(eventVolunteerGroupsTable.isTemplate, false),
+					),
+				);
+
+			expect(existingGroups).toHaveLength(2);
+
+			// Now create ENTIRE_SERIES group with same name - should delete instance-specific groups
+			const entireSeriesResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteerGroup,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						data: {
+							eventId: template.id,
+							leaderId: leaderUserId,
+							name: "Coverage Group",
+							description: "Template group that replaces instances",
+							volunteersRequired: 4,
+							scope: "ENTIRE_SERIES",
+						},
+					},
+				},
+			);
+
+			expect(entireSeriesResult.errors).toBeUndefined();
+			assertToBeNonNullish(entireSeriesResult.data?.createEventVolunteerGroup);
+			const templateGroupId =
+				entireSeriesResult.data.createEventVolunteerGroup.id;
+
+			// Verify instance-specific groups were deleted
+			existingGroups = await server.drizzleClient
+				.select()
+				.from(eventVolunteerGroupsTable)
+				.where(
+					and(
+						eq(eventVolunteerGroupsTable.eventId, template.id),
+						eq(eventVolunteerGroupsTable.name, "Coverage Group"),
+						eq(eventVolunteerGroupsTable.isTemplate, false),
+					),
+				);
+
+			expect(existingGroups).toHaveLength(0);
+
+			// Verify template group exists
+			const templateGroups = await server.drizzleClient
+				.select()
+				.from(eventVolunteerGroupsTable)
+				.where(
+					and(
+						eq(eventVolunteerGroupsTable.eventId, template.id),
+						eq(eventVolunteerGroupsTable.name, "Coverage Group"),
+						eq(eventVolunteerGroupsTable.isTemplate, true),
+					),
+				);
+
+			expect(templateGroups).toHaveLength(1);
+			expect(templateGroups[0]?.id).toBe(templateGroupId);
+
+			// Cleanup
+			if (templateGroupId) {
+				await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: { id: templateGroupId },
+				});
+			}
+		});
+
+		test("should reuse existing template and delete instance-specific groups when creating ENTIRE_SERIES group with volunteer assignments", async () => {
+			await new Promise((resolve) => setTimeout(resolve, 2700));
+
+			// Create recurring event template
+			const [template] = await server.drizzleClient
+				.insert(eventsTable)
+				.values({
+					name: "Reuse Template Event",
+					description: "Event for testing template reuse",
+					startAt: new Date("2024-12-01T12:00:00Z"),
+					endAt: new Date("2024-12-01T13:00:00Z"),
+					organizationId,
+					creatorId: adminUserId,
+					isPublic: true,
+					isRegisterable: true,
+					isRecurringEventTemplate: true,
+				})
+				.returning();
+
+			assertToBeNonNullish(template);
+
+			const [rule] = await server.drizzleClient
+				.insert(recurrenceRulesTable)
+				.values({
+					baseRecurringEventId: template.id,
+					frequency: "DAILY",
+					interval: 1,
+					count: 2,
+					organizationId,
+					creatorId: adminUserId,
+					recurrenceRuleString: "RRULE:FREQ=DAILY;INTERVAL=1;COUNT=2",
+					recurrenceStartDate: new Date("2024-12-01T12:00:00Z"),
+					latestInstanceDate: new Date("2024-12-01T12:00:00Z"),
+				})
+				.returning();
+
+			assertToBeNonNullish(rule);
+
+			const instances = await server.drizzleClient
+				.insert(recurringEventInstancesTable)
+				.values([
+					{
+						baseRecurringEventId: template.id,
+						recurrenceRuleId: rule.id,
+						originalSeriesId: template.id,
+						originalInstanceStartTime: new Date("2024-12-01T12:00:00Z"),
+						actualStartTime: new Date("2024-12-01T12:00:00Z"),
+						actualEndTime: new Date("2024-12-01T13:00:00Z"),
+						organizationId,
+						sequenceNumber: 1,
+						totalCount: 2,
+					},
+					{
+						baseRecurringEventId: template.id,
+						recurrenceRuleId: rule.id,
+						originalSeriesId: template.id,
+						originalInstanceStartTime: new Date("2024-12-02T12:00:00Z"),
+						actualStartTime: new Date("2024-12-02T12:00:00Z"),
+						actualEndTime: new Date("2024-12-02T13:00:00Z"),
+						organizationId,
+						sequenceNumber: 2,
+						totalCount: 2,
+					},
+				])
+				.returning();
+
+			expect(instances).toHaveLength(2);
+
+			await new Promise((resolve) => setTimeout(resolve, 400));
+
+			// First create ENTIRE_SERIES template group
+			const templateResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteerGroup,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						data: {
+							eventId: template.id,
+							leaderId: leaderUserId,
+							name: "Reuse Template Group",
+							description: "Template group to be reused",
+							volunteersRequired: 3,
+							scope: "ENTIRE_SERIES",
+						},
+					},
+				},
+			);
+
+			expect(templateResult.errors).toBeUndefined();
+			assertToBeNonNullish(templateResult.data?.createEventVolunteerGroup);
+			const originalTemplateId =
+				templateResult.data.createEventVolunteerGroup.id;
+
+			await new Promise((resolve) => setTimeout(resolve, 400));
+
+			// Create instance-specific groups with same name
+			const instanceGroup1Result = await mercuriusClient.mutate(
+				Mutation_createEventVolunteerGroup,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						data: {
+							eventId: template.id,
+							leaderId: leaderUserId,
+							name: "Reuse Template Group",
+							description: "Instance group 1",
+							volunteersRequired: 2,
+							scope: "THIS_INSTANCE_ONLY",
+							recurringEventInstanceId: instances[0]?.id,
+						},
+					},
+				},
+			);
+
+			expect(instanceGroup1Result.errors).toBeUndefined();
+			assertToBeNonNullish(
+				instanceGroup1Result.data?.createEventVolunteerGroup,
+			);
+
+			await new Promise((resolve) => setTimeout(resolve, 400));
+
+			const instanceGroup2Result = await mercuriusClient.mutate(
+				Mutation_createEventVolunteerGroup,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						data: {
+							eventId: template.id,
+							leaderId: leaderUserId,
+							name: "Reuse Template Group",
+							description: "Instance group 2",
+							volunteersRequired: 1,
+							scope: "THIS_INSTANCE_ONLY",
+							recurringEventInstanceId: instances[1]?.id,
+						},
+					},
+				},
+			);
+
+			expect(instanceGroup2Result.errors).toBeUndefined();
+			assertToBeNonNullish(
+				instanceGroup2Result.data?.createEventVolunteerGroup,
+			);
+
+			await new Promise((resolve) => setTimeout(resolve, 400));
+
+			// Verify we have 1 template and 2 instance-specific groups
+			let templateGroups = await server.drizzleClient
+				.select()
+				.from(eventVolunteerGroupsTable)
+				.where(
+					and(
+						eq(eventVolunteerGroupsTable.eventId, template.id),
+						eq(eventVolunteerGroupsTable.name, "Reuse Template Group"),
+						eq(eventVolunteerGroupsTable.isTemplate, true),
+					),
+				);
+
+			expect(templateGroups).toHaveLength(1);
+
+			let instanceGroups = await server.drizzleClient
+				.select()
+				.from(eventVolunteerGroupsTable)
+				.where(
+					and(
+						eq(eventVolunteerGroupsTable.eventId, template.id),
+						eq(eventVolunteerGroupsTable.name, "Reuse Template Group"),
+						eq(eventVolunteerGroupsTable.isTemplate, false),
+					),
+				);
+
+			expect(instanceGroups).toHaveLength(2);
+
+			// Now create another ENTIRE_SERIES group with same name and volunteer assignments
+			// This should reuse the existing template and delete instance-specific groups
+			const reuseResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteerGroup,
+				{
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: {
+						data: {
+							eventId: template.id,
+							leaderId: leaderUserId,
+							name: "Reuse Template Group",
+							description: "Reused template with assignments",
+							volunteersRequired: 4,
+							scope: "ENTIRE_SERIES",
+							volunteerUserIds: [regularUserId, leaderUserId],
+						},
+					},
+				},
+			);
+
+			expect(reuseResult.errors).toBeUndefined();
+			assertToBeNonNullish(reuseResult.data?.createEventVolunteerGroup);
+			const reusedTemplateId = reuseResult.data.createEventVolunteerGroup.id;
+			assertToBeNonNullish(reusedTemplateId);
+
+			// Should return the same template ID
+			expect(reusedTemplateId).toBe(originalTemplateId);
+
+			// Verify instance-specific groups were deleted
+			instanceGroups = await server.drizzleClient
+				.select()
+				.from(eventVolunteerGroupsTable)
+				.where(
+					and(
+						eq(eventVolunteerGroupsTable.eventId, template.id),
+						eq(eventVolunteerGroupsTable.name, "Reuse Template Group"),
+						eq(eventVolunteerGroupsTable.isTemplate, false),
+					),
+				);
+
+			expect(instanceGroups).toHaveLength(0);
+
+			// Verify template still exists
+			templateGroups = await server.drizzleClient
+				.select()
+				.from(eventVolunteerGroupsTable)
+				.where(
+					and(
+						eq(eventVolunteerGroupsTable.eventId, template.id),
+						eq(eventVolunteerGroupsTable.name, "Reuse Template Group"),
+						eq(eventVolunteerGroupsTable.isTemplate, true),
+					),
+				);
+
+			expect(templateGroups).toHaveLength(1);
+
+			// Verify volunteer memberships were created
+			const memberships = await server.drizzleClient
+				.select()
+				.from(volunteerMembershipsTable)
+				.where(eq(volunteerMembershipsTable.groupId, reusedTemplateId));
+
+			expect(memberships.length).toBe(2); // Both regularUser and leader
+			expect(memberships[0]?.status).toBe("invited");
+
+			// Cleanup
+			if (reusedTemplateId) {
+				await mercuriusClient.mutate(Mutation_deleteEventVolunteerGroup, {
+					headers: {
+						authorization: `bearer ${adminAuthToken}`,
+					},
+					variables: { id: reusedTemplateId },
 				});
 			}
 		});

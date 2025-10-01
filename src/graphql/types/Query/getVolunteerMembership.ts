@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, ilike, isNotNull, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/VolunteerMembership";
+import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -11,7 +11,7 @@ import {
 	VolunteerMembershipWhereInput,
 	volunteerMembershipWhereInputSchema,
 } from "~/src/graphql/inputs/VolunteerMembershipWhereInput";
-import { VolunteerMembership } from "~/src/graphql/types/VolunteerMembership/VolunteerMembership";
+import { VolunteerMembership } from "~/src/graphql/types/EventVolunteerMembership/EventVolunteerMembership";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 

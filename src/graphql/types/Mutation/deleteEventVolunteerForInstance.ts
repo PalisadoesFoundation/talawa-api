@@ -7,7 +7,6 @@ import {
 } from "~/src/graphql/inputs/DeleteEventVolunteerForInstanceInput";
 import { EventVolunteer } from "~/src/graphql/types/EventVolunteer/EventVolunteer";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-
 const mutationDeleteEventVolunteerForInstanceArgumentsSchema = z.object({
 	input: deleteEventVolunteerForInstanceInputSchema,
 });
@@ -125,7 +124,6 @@ builder.mutationField("deleteEventVolunteerForInstance", (t) =>
 					},
 				});
 			}
-
 			return existingVolunteer;
 		},
 		type: EventVolunteer,

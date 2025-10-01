@@ -1,6 +1,6 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { VolunteerMembershipEventResolver } from "~/src/graphql/types/VolunteerMembership/event";
+import { VolunteerMembershipEventResolver } from "~/src/graphql/types/EventVolunteerMembership/event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Mock parent VolunteerMembership

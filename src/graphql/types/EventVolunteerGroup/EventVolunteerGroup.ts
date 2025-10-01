@@ -4,7 +4,6 @@ import { builder } from "~/src/graphql/builder";
 export type EventVolunteerGroup =
 	typeof eventVolunteerGroupsTable.$inferSelect & {
 		isInstanceException?: boolean;
-		recurringEventInstanceId?: string;
 	};
 
 /**
@@ -53,14 +52,11 @@ EventVolunteerGroup.implement({
 		}),
 
 		/**
-		 * Indicates whether this volunteer group is a template for recurring events.
+		 * Boolean indicating if this is a template volunteer group (for recurring events).
 		 */
-		isTemplate: t.field({
-			type: "Boolean",
+		isTemplate: t.exposeBoolean("isTemplate", {
 			description:
-				"Indicates whether this volunteer group is a template for recurring events.",
-			nullable: true,
-			resolve: (parent) => (parent as { isTemplate?: boolean }).isTemplate,
+				"Boolean indicating if this is a template volunteer group (for recurring events).",
 		}),
 
 		/**

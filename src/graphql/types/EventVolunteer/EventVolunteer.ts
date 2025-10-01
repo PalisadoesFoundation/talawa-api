@@ -3,7 +3,6 @@ import { builder } from "~/src/graphql/builder";
 
 export type EventVolunteer = typeof eventVolunteersTable.$inferSelect & {
 	isInstanceException?: boolean;
-	recurringEventInstanceId?: string;
 };
 
 /**
@@ -48,6 +47,14 @@ EventVolunteer.implement({
 			type: "Float",
 			description: "Total hours volunteered by this volunteer for this event.",
 			resolve: (parent) => Number.parseFloat(parent.hoursVolunteered),
+		}),
+
+		/**
+		 * Boolean indicating if this is a template volunteer (for recurring events).
+		 */
+		isTemplate: t.exposeBoolean("isTemplate", {
+			description:
+				"Boolean indicating if this is a template volunteer (for recurring events).",
 		}),
 
 		isInstanceException: t.field({

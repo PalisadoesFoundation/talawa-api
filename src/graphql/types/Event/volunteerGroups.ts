@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
 import { eventVolunteerGroupExceptionsTable } from "~/src/drizzle/tables/eventVolunteerGroupExceptions";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -77,88 +77,73 @@ export const EventVolunteerGroupsResolver = async (
 		? recurringInstance.baseRecurringEventId
 		: parent.id;
 
+	// For recurring instances, get exceptions to filter out deleted template groups
+	let groupExceptions: { volunteerGroupId: string; deleted: boolean | null }[] =
+		[];
+	if (recurringInstance) {
+		groupExceptions = await ctx.drizzleClient
+			.select({
+				volunteerGroupId: eventVolunteerGroupExceptionsTable.volunteerGroupId,
+				deleted: eventVolunteerGroupExceptionsTable.deleted,
+			})
+			.from(eventVolunteerGroupExceptionsTable)
+			.where(
+				eq(
+					eventVolunteerGroupExceptionsTable.recurringEventInstanceId,
+					parent.id,
+				),
+			);
+	}
+
 	// Template-First Hierarchy: Get volunteer groups based on new pattern
 	let volunteerGroups =
 		await ctx.drizzleClient.query.eventVolunteerGroupsTable.findMany({
 			where: recurringInstance
-				? // For recurring event instances: ALL volunteer groups come from the base event (templates by default)
-					eq(eventVolunteerGroupsTable.eventId, baseEventId)
+				? // For recurring event instances: Get template groups + instance-specific groups for this instance
+					and(
+						eq(eventVolunteerGroupsTable.eventId, baseEventId),
+						// Include template groups OR instance-specific groups for this instance
+						// Template groups: isTemplate = true
+						// Instance-specific groups: isTemplate = false AND recurringEventInstanceId = parent.id
+					)
 				: // For regular events: Get volunteer groups directly associated with this event
 					eq(eventVolunteerGroupsTable.eventId, parent.id),
 		});
 
-	const volunteerGroupIds = volunteerGroups.map((group) => group.id);
-
-	// Get exceptions for this specific recurring instance AND check if groups have any exceptions at all
-	if (volunteerGroupIds.length > 0 && recurringInstance) {
-		const [instanceExceptions, allExceptions] = await Promise.all([
-			// Exceptions for this specific instance
-			ctx.drizzleClient.query.eventVolunteerGroupExceptionsTable.findMany({
-				where: and(
-					inArray(
-						eventVolunteerGroupExceptionsTable.volunteerGroupId,
-						volunteerGroupIds,
-					),
-					eq(
-						eventVolunteerGroupExceptionsTable.recurringEventInstanceId,
-						parent.id,
-					),
-				),
-			}),
-			// All exceptions for these groups (to determine if they're instance-specific)
-			ctx.drizzleClient.query.eventVolunteerGroupExceptionsTable.findMany({
-				where: inArray(
-					eventVolunteerGroupExceptionsTable.volunteerGroupId,
-					volunteerGroupIds,
-				),
-				columns: { volunteerGroupId: true },
-			}),
-		]);
-
-		const instanceExceptionsMap = new Map(
-			instanceExceptions.map((exception) => [
-				exception.volunteerGroupId,
-				exception,
-			]),
+	// For recurring instances, we need to filter the results based on isTemplate, recurringEventInstanceId, and exceptions
+	if (recurringInstance) {
+		const exceptionGroupIds = new Set(
+			groupExceptions
+				.filter((ex) => ex.deleted === true)
+				.map((ex) => ex.volunteerGroupId),
 		);
 
-		// Get set of groups that have any exceptions (instance-specific)
-		const groupsWithExceptions = new Set(
-			allExceptions.map((exception) => exception.volunteerGroupId),
-		);
-
-		// Filter volunteer groups based on exception logic
 		volunteerGroups = volunteerGroups.filter((group) => {
-			const instanceException = instanceExceptionsMap.get(group.id);
-			const hasAnyExceptions = groupsWithExceptions.has(group.id);
-
-			// If group has exceptions (instance-specific), only include if isException: true for this instance
-			if (hasAnyExceptions) {
-				if (
-					instanceException?.isException === true &&
-					!instanceException?.deleted
-				) {
-					// Apply exception overrides
-					group.name = instanceException.name ?? group.name;
-					group.description =
-						instanceException.description ?? group.description;
-					group.volunteersRequired =
-						instanceException.volunteersRequired ?? group.volunteersRequired;
-					group.leaderId = instanceException.leaderId ?? group.leaderId;
-
-					// Mark this volunteer group as showing instance-specific exception data
-					(group as { isInstanceException?: boolean }).isInstanceException =
-						true;
-					return true;
+			// Include template groups (apply to all instances) UNLESS they have an exception for this instance
+			if (group.isTemplate) {
+				if (exceptionGroupIds.has(group.id)) {
+					// This template group has been deleted for this instance
+					return false;
 				}
-				// Instance-specific group without isException: true for this instance
-				return false;
+				(group as { isInstanceException?: boolean }).isInstanceException =
+					false;
+				return true;
 			}
 
-			// Template group (no exceptions) - include by default
-			(group as { isInstanceException?: boolean }).isInstanceException = false;
-			return true;
+			// Include instance-specific groups for this specific instance
+			if (group.recurringEventInstanceId === parent.id) {
+				(group as { isInstanceException?: boolean }).isInstanceException = true;
+				return true;
+			}
+
+			// Exclude instance-specific groups for other instances
+			return false;
 		});
+	} else {
+		// For regular events, mark all as not instance exceptions
+		for (const group of volunteerGroups) {
+			(group as { isInstanceException?: boolean }).isInstanceException = false;
+		}
 	}
 
 	return volunteerGroups;

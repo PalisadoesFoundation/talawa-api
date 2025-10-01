@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
+import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
@@ -122,7 +123,12 @@ builder.mutationField("deleteEventVolunteerGroup", (t) =>
 				});
 			}
 
-			// Delete the group (cascade will handle related volunteer memberships)
+			// Delete related volunteer memberships first
+			await ctx.drizzleClient
+				.delete(volunteerMembershipsTable)
+				.where(eq(volunteerMembershipsTable.groupId, parsedArgs.id));
+
+			// Delete the group
 			const [deletedGroup] = await ctx.drizzleClient
 				.delete(eventVolunteerGroupsTable)
 				.where(eq(eventVolunteerGroupsTable.id, parsedArgs.id))

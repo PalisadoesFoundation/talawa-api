@@ -139,7 +139,7 @@ export {
 export {
 	volunteerMembershipsTable,
 	volunteerMembershipsTableRelations,
-} from "./tables/VolunteerMembership";
+} from "./tables/EventVolunteerMembership";
 export {
 	eventVolunteerGroupExceptionsTable,
 	eventVolunteerGroupExceptionsTableRelations,

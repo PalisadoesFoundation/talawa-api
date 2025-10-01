@@ -1,4 +1,4 @@
-import "./VolunteerMembership";
+import "./EventVolunteerMembership";
 import "./volunteer";
 import "./event";
 import "./group";
