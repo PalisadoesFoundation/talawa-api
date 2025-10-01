@@ -99,6 +99,10 @@ async function createTestOrganization(): Promise<TestOrganization> {
 	if (!res.data?.createOrganization?.id)
 		throw new Error(res.errors?.[0]?.message || "org create failed");
 	const orgId = res.data.createOrganization.id;
+
+	// Add delay to prevent rate limiting
+	await new Promise((resolve) => setTimeout(resolve, 1000));
+
 	return {
 		orgId,
 		cleanup: async () => {
@@ -143,6 +147,9 @@ async function createTestEvent(organizationId: string): Promise<TestEvent> {
 			},
 		},
 	});
+
+	// Add delay to prevent rate limiting
+	await new Promise((resolve) => setTimeout(resolve, 1000));
 
 	const res = await mercuriusClient.mutate(Mutation_createEvent, {
 		headers: { authorization: `bearer ${adminAuthToken}` },
@@ -362,6 +369,9 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 
 		const nonExistentVolunteerId = faker.string.uuid();
 
+		// Add delay to prevent rate limiting
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+
 		const deleteResult = await mercuriusClient.mutate(
 			Mutation_deleteEventVolunteerForInstance,
 			{
@@ -427,6 +437,9 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 		testCleanupFunctions.push(volunteer.cleanup);
 
 		const nonExistentInstanceId = faker.string.uuid();
+
+		// Add delay to prevent rate limiting
+		await new Promise((resolve) => setTimeout(resolve, 1000));
 
 		const deleteResult = await mercuriusClient.mutate(
 			Mutation_deleteEventVolunteerForInstance,
@@ -494,6 +507,9 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 			creatorId,
 		);
 		testCleanupFunctions.push(volunteer.cleanup);
+
+		// Add delay to prevent rate limiting
+		await new Promise((resolve) => setTimeout(resolve, 1000));
 
 		const deleteResult = await mercuriusClient.mutate(
 			Mutation_deleteEventVolunteerForInstance,
@@ -595,6 +611,9 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 			.returning();
 
 		assertToBeNonNullish(existingException);
+
+		// Add delay to prevent rate limiting
+		await new Promise((resolve) => setTimeout(resolve, 1000));
 
 		const deleteResult = await mercuriusClient.mutate(
 			Mutation_deleteEventVolunteerForInstance,
@@ -713,6 +732,9 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 		testCleanupFunctions.push(volunteer.cleanup);
 
 		// Use regular user's token instead of admin
+		// Add delay to prevent rate limiting
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+
 		const deleteResult = await mercuriusClient.mutate(
 			Mutation_deleteEventVolunteerForInstance,
 			{
@@ -789,6 +811,9 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 
 		assertToBeNonNullish(volunteer);
 
+		// Add delay to prevent rate limiting
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+
 		const deleteResult = await mercuriusClient.mutate(
 			Mutation_deleteEventVolunteerForInstance,
 			{
@@ -852,6 +877,9 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 			creatorId,
 		);
 		testCleanupFunctions.push(volunteer.cleanup);
+
+		// Add delay to prevent rate limiting
+		await new Promise((resolve) => setTimeout(resolve, 1000));
 
 		const deleteResult = await mercuriusClient.mutate(
 			Mutation_deleteEventVolunteerForInstance,
