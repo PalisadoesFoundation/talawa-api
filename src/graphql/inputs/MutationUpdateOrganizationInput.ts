@@ -19,6 +19,7 @@ export const mutationUpdateOrganizationInputSchema =
 			avatar: z.custom<Promise<FileUpload>>().nullish(),
 			id: organizationsTableInsertSchema.shape.id.unwrap(),
 			name: organizationsTableInsertSchema.shape.name.optional(),
+			userRegistrationRequired: z.boolean().optional(),
 		})
 		.refine(
 			({ id, ...remainingArg }) =>
@@ -68,6 +69,9 @@ export const MutationUpdateOrganizationInput = builder
 			}),
 			state: t.string({
 				description: "Name of the state the organization resides in.",
+			}),
+			userRegistrationRequired: t.boolean({
+				description: "Is user registration required for this organization?",
 			}),
 		}),
 	});

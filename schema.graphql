@@ -3154,6 +3154,9 @@ input MutationUpdateOrganizationInput {
 
   """Name of the state the organization resides in."""
   state: String
+
+  """Is user registration required for this organization?"""
+  userRegistrationRequired: Boolean
 }
 
 """"""
