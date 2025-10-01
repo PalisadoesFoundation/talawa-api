@@ -3154,9 +3154,6 @@ input MutationUpdateOrganizationInput {
 
   """Name of the state the organization resides in."""
   state: String
-
-  """Is user registration required for this organization?"""
-  userRegistrationRequired: Boolean
 }
 
 """"""
@@ -4627,9 +4624,6 @@ enum UserRole {
 input UserWhereInput {
   """Filter by first name containing this string"""
   name_contains: String
-
-  """Filter by user ID"""
-  userId: String
 }
 
 input UsersByIdsInput {
