@@ -46,7 +46,7 @@ const authToken = signInResult.data.signIn.authenticationToken;
 assertToBeNonNullish(authToken);
 
 suite("Mutation field updateOrganization", () => {
-	test("should return an error with unauthenticated extensions code", async () => {
+	test("should return an error with unauthenticated extensions code when user is deleted", async () => {
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
 			variables: {
 				input: {
@@ -311,6 +311,53 @@ suite("Mutation field updateOrganization", () => {
 			expect.objectContaining({
 				id: orgId,
 				isUserRegistrationRequired: true,
+			}),
+		);
+	});
+	test("should toggle userRegistrationRequired from true to false", async () => {
+		// Create organization
+		const createOrgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Toggle Test Org",
+						description: "Organization for toggle test",
+						countryCode: "us",
+						state: "NY",
+						city: "New York",
+						postalCode: "10001",
+						addressLine1: "123 Toggle St",
+						addressLine2: "Suite 300",
+					},
+				},
+			},
+		);
+		const orgId = createOrgResult.data?.createOrganization?.id;
+		assertToBeNonNullish(orgId);
+
+		// Set to true
+		await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: { id: orgId, userRegistrationRequired: true },
+			},
+		});
+
+		// Toggle back to false
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: { id: orgId, userRegistrationRequired: false },
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.updateOrganization).toEqual(
+			expect.objectContaining({
+				id: orgId,
+				isUserRegistrationRequired: false,
 			}),
 		);
 	});
