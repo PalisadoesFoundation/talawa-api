@@ -16,7 +16,7 @@
     "@pothos/plugin-relay": "^4.3.0",
     "@sinclair/typebox": "^0.34.38",
     "ajv-formats": "^3.0.1",
-    "close-with-grace": "^2.2.0",
+    "close-with-grace": "^2.3.0",
     "dotenv": "^17.2.1",
     "drizzle-orm": "^0.44.1",
     "drizzle-zod": "0.7.1",
