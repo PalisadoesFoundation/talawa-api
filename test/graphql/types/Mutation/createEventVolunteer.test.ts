@@ -696,6 +696,8 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		expect(dbVolunteer[0]?.hasAccepted).toBe(false);
 		expect(dbVolunteer[0]?.isPublic).toBe(true);
 		expect(dbVolunteer[0]?.hoursVolunteered).toBe("0.00");
+		expect(dbVolunteer[0]?.isTemplate).toBe(false); // Instance-specific volunteer
+		expect(dbVolunteer[0]?.recurringEventInstanceId).toBe(targetInstanceId);
 
 		// Verify volunteer membership creation
 		assertToBeNonNullish(volunteer.id);
@@ -709,17 +711,14 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		expect(dbMembership[0]?.status).toBe("invited");
 		expect(dbMembership[0]?.groupId).toBeNull();
 
-		// Verify exception created for target instance
+		// Instance-specific volunteers don't create exceptions
 		assertToBeNonNullish(volunteer.id);
 		const dbExceptions = await server.drizzleClient
 			.select()
 			.from(eventVolunteerExceptionsTable)
 			.where(eq(eventVolunteerExceptionsTable.volunteerId, volunteer.id));
 
-		expect(dbExceptions).toHaveLength(1); // 1 exception for target instance
-		expect(dbExceptions[0]?.isException).toBe(true);
-		expect(dbExceptions[0]?.recurringEventInstanceId).toBe(targetInstanceId);
-		expect(dbExceptions[0]?.createdBy).toBe(creatorId);
+		expect(dbExceptions).toHaveLength(0); // No exceptions for instance-specific volunteers
 	});
 
 	test("Integration: Reuses existing volunteer with THIS_INSTANCE_ONLY scope", async () => {
@@ -860,23 +859,33 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		assertToBeNonNullish(instanceVolunteerResult.data.createEventVolunteer);
 
 		const volunteer = instanceVolunteerResult.data.createEventVolunteer;
-		// Should reuse the same volunteer ID from first creation
-		expect(volunteer.id).toBe(
+		// Should create a new instance-specific volunteer (not reuse the template)
+		expect(volunteer.id).not.toBe(
 			firstVolunteerResult.data.createEventVolunteer.id,
 		);
 		expect(volunteer.user?.id).toBe(testUser.userId);
 		expect(volunteer.event?.id).toBe(template.id);
 
-		// Verify exception was created for target instance
+		// Verify instance-specific volunteer was created
+		assertToBeNonNullish(volunteer.id);
+		const dbVolunteer = await server.drizzleClient
+			.select()
+			.from(eventVolunteersTable)
+			.where(eq(eventVolunteersTable.id, volunteer.id))
+			.limit(1);
+
+		expect(dbVolunteer).toHaveLength(1);
+		expect(dbVolunteer[0]?.isTemplate).toBe(false);
+		expect(dbVolunteer[0]?.recurringEventInstanceId).toBe(instances[0]?.id);
+
+		// Instance-specific volunteers don't create exceptions
 		assertToBeNonNullish(volunteer.id);
 		const dbExceptions = await server.drizzleClient
 			.select()
 			.from(eventVolunteerExceptionsTable)
 			.where(eq(eventVolunteerExceptionsTable.volunteerId, volunteer.id));
 
-		expect(dbExceptions).toHaveLength(1); // One exception for target instance
-		expect(dbExceptions[0]?.isException).toBe(true);
-		expect(dbExceptions[0]?.recurringEventInstanceId).toBe(instances[0]?.id);
+		expect(dbExceptions).toHaveLength(0); // No exceptions for instance-specific volunteers
 	});
 
 	test("Integration: ENTIRE_SERIES scope removes existing instance-specific volunteers (template exists)", async () => {

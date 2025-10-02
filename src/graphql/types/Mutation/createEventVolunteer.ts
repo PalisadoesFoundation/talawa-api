@@ -2,7 +2,6 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
 import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
-import { eventVolunteerExceptionsTable } from "~/src/drizzle/tables/eventVolunteerExceptions";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -253,7 +252,7 @@ builder.mutationField("createEventVolunteer", (t) =>
 			}
 
 			if (scope === "THIS_INSTANCE_ONLY") {
-				// Template-First Hierarchy: THIS_INSTANCE_ONLY creates exceptions
+				// Create instance-specific volunteer directly in the main table
 				if (!recurringInstance || !parsedArgs.data.recurringEventInstanceId) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -271,71 +270,63 @@ builder.mutationField("createEventVolunteer", (t) =>
 
 				const targetEventId = baseEvent.id;
 
-				// Check if template volunteer already exists for this user/event
-				const existingTemplate = await ctx.drizzleClient
+				// Check if instance-specific volunteer already exists
+				const existingVolunteer = await ctx.drizzleClient
 					.select()
 					.from(eventVolunteersTable)
 					.where(
 						and(
 							eq(eventVolunteersTable.userId, parsedArgs.data.userId),
 							eq(eventVolunteersTable.eventId, targetEventId),
-							eq(eventVolunteersTable.isTemplate, true),
+							eq(
+								eventVolunteersTable.recurringEventInstanceId,
+								parsedArgs.data.recurringEventInstanceId,
+							),
+							eq(eventVolunteersTable.isTemplate, false),
 						),
 					)
 					.limit(1);
 
-				let volunteer: typeof eventVolunteersTable.$inferSelect;
-
-				if (existingTemplate.length > 0) {
-					// Template exists - reuse it
-					volunteer = existingTemplate[0] as NonNullable<
-						(typeof existingTemplate)[0]
+				if (existingVolunteer.length > 0) {
+					// Instance-specific volunteer already exists
+					return existingVolunteer[0] as NonNullable<
+						(typeof existingVolunteer)[0]
 					>;
-				} else {
-					// No template exists - create one
-					const [createdVolunteer] = await ctx.drizzleClient
-						.insert(eventVolunteersTable)
-						.values({
-							userId: parsedArgs.data.userId,
-							eventId: targetEventId,
-							creatorId: currentUserId,
-							hasAccepted: false,
-							isPublic: true,
-							hoursVolunteered: "0",
-							isTemplate: true,
-							recurringEventInstanceId: null,
-						})
-						.returning();
+				}
 
-					if (!createdVolunteer) {
-						throw new TalawaGraphQLError({
-							extensions: {
-								code: "unexpected",
-							},
-						});
-					}
-
-					volunteer = createdVolunteer;
-
-					// Create volunteer membership record
-					await ctx.drizzleClient.insert(volunteerMembershipsTable).values({
-						volunteerId: volunteer.id,
-						groupId: null,
+				// Create new instance-specific volunteer
+				const [createdVolunteer] = await ctx.drizzleClient
+					.insert(eventVolunteersTable)
+					.values({
+						userId: parsedArgs.data.userId,
 						eventId: targetEventId,
-						status: "invited",
-						createdBy: currentUserId,
+						creatorId: currentUserId,
+						hasAccepted: false,
+						isPublic: true,
+						hoursVolunteered: "0",
+						isTemplate: false,
+						recurringEventInstanceId: parsedArgs.data.recurringEventInstanceId,
+					})
+					.returning();
+
+				if (!createdVolunteer) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "unexpected",
+						},
 					});
 				}
 
-				// Create exception record for this instance
-				await ctx.drizzleClient.insert(eventVolunteerExceptionsTable).values({
-					volunteerId: volunteer.id,
-					recurringEventInstanceId: parsedArgs.data.recurringEventInstanceId,
-					isException: true,
+				// Create volunteer membership record
+				await ctx.drizzleClient.insert(volunteerMembershipsTable).values({
+					volunteerId: createdVolunteer.id,
+					groupId: null,
+					eventId: targetEventId,
+					status: "invited",
 					createdBy: currentUserId,
 				});
 
-				return volunteer;
+				return createdVolunteer;
 			}
 		},
 	}),
