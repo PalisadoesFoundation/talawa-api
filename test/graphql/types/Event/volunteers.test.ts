@@ -475,7 +475,12 @@ describe("EventVolunteersResolver", () => {
 			// Mock the select query used by the resolver for exceptions
 			mocks.drizzleClient.select.mockReturnValue({
 				from: vi.fn().mockReturnValue({
-					where: vi.fn().mockResolvedValue(mockExceptions),
+					where: vi.fn().mockResolvedValue(
+						mockExceptions.map((ex) => ({
+							volunteerId: ex.volunteerId,
+							isException: ex.isException,
+						})),
+					),
 				}),
 			});
 
