@@ -77,14 +77,12 @@ export const EventVolunteerGroupsResolver = async (
 		? recurringInstance.baseRecurringEventId
 		: parent.id;
 
-	// For recurring instances, get exceptions to filter out deleted template groups
-	let groupExceptions: { volunteerGroupId: string; deleted: boolean | null }[] =
-		[];
+	// For recurring instances, get exceptions to filter out excluded template groups
+	let groupExceptions: { volunteerGroupId: string }[] = [];
 	if (recurringInstance) {
 		groupExceptions = await ctx.drizzleClient
 			.select({
 				volunteerGroupId: eventVolunteerGroupExceptionsTable.volunteerGroupId,
-				deleted: eventVolunteerGroupExceptionsTable.deleted,
 			})
 			.from(eventVolunteerGroupExceptionsTable)
 			.where(
@@ -113,9 +111,7 @@ export const EventVolunteerGroupsResolver = async (
 	// For recurring instances, we need to filter the results based on isTemplate, recurringEventInstanceId, and exceptions
 	if (recurringInstance) {
 		const exceptionGroupIds = new Set(
-			groupExceptions
-				.filter((ex) => ex.deleted === true)
-				.map((ex) => ex.volunteerGroupId),
+			groupExceptions.map((ex) => ex.volunteerGroupId),
 		);
 
 		volunteerGroups = volunteerGroups.filter((group) => {

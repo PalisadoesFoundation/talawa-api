@@ -98,13 +98,12 @@ builder.mutationField("deleteEventVolunteerGroupForInstance", (t) =>
 				});
 			}
 
-			// Create an exception to mark this volunteer group as deleted for this specific instance
+			// Create an exception to mark this volunteer group as excluded for this specific instance
 			const [createdVolunteerGroupException] = await ctx.drizzleClient
 				.insert(eventVolunteerGroupExceptionsTable)
 				.values({
 					volunteerGroupId,
 					recurringEventInstanceId,
-					deleted: true,
 					createdBy: ctx.currentClient.user.id,
 					updatedBy: ctx.currentClient.user.id,
 				})
@@ -114,7 +113,6 @@ builder.mutationField("deleteEventVolunteerGroupForInstance", (t) =>
 						eventVolunteerGroupExceptionsTable.recurringEventInstanceId,
 					],
 					set: {
-						deleted: true,
 						updatedBy: ctx.currentClient.user.id,
 						updatedAt: new Date(),
 					},

@@ -38,8 +38,6 @@ export const eventVolunteerGroupExceptionsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
-		// Legacy deletion field (kept for backwards compatibility)
-		deleted: boolean("deleted").default(false),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at").defaultNow().notNull(),
 		createdBy: uuid("created_by").references(() => usersTable.id, {

@@ -1,5 +1,5 @@
 {
-  "id": "d7261c9e-bd11-478e-b4a9-a85b000a69f9",
+  "id": "a60dada4-56eb-41da-97b0-1583dc65eae0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -3285,13 +3285,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "deleted": {
-          "name": "deleted",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -3442,13 +3435,6 @@
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
-        },
-        "deleted": {
-          "name": "deleted",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
         },
         "created_at": {
           "name": "created_at",

@@ -550,7 +550,6 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 		expect(dbException[0]?.recurringEventInstanceId).toBe(
 			recurringSetup.instanceId,
 		);
-		expect(dbException[0]?.deleted).toBe(true);
 		expect(dbException[0]?.createdBy).toBe(creatorId);
 		expect(dbException[0]?.updatedBy).toBe(creatorId);
 
@@ -597,13 +596,12 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 		);
 		testCleanupFunctions.push(volunteer.cleanup);
 
-		// Pre-create an exception record with deleted: false
+		// Pre-create an exception record
 		const [existingException] = await server.drizzleClient
 			.insert(eventVolunteerExceptionsTable)
 			.values({
 				volunteerId: volunteer.volunteerId,
 				recurringEventInstanceId: recurringSetup.instanceId,
-				deleted: false,
 				isException: true,
 				createdBy: creatorId,
 				updatedBy: creatorId,
@@ -645,7 +643,6 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 
 		expect(dbExceptions).toHaveLength(1); // Still only one record
 		expect(dbExceptions[0]?.id).toBe(existingException.id); // Same ID
-		expect(dbExceptions[0]?.deleted).toBe(true); // Updated to true
 		expect(dbExceptions[0]?.updatedBy).toBe(creatorId);
 		expect(dbExceptions[0]?.updatedAt).not.toEqual(existingException.updatedAt); // Updated timestamp
 	});
@@ -765,7 +762,6 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 			.limit(1);
 
 		expect(dbException).toHaveLength(1);
-		expect(dbException[0]?.deleted).toBe(true);
 		expect(dbException[0]?.createdBy).toBe(testUser.userId);
 		expect(dbException[0]?.updatedBy).toBe(testUser.userId);
 	});
@@ -916,7 +912,6 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 			.limit(1);
 
 		expect(dbException).toHaveLength(1);
-		expect(dbException[0]?.deleted).toBe(true);
 		expect(dbException[0]?.createdBy).toBe(creatorId);
 	});
 });

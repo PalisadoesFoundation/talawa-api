@@ -556,7 +556,6 @@ suite(
 			expect(dbException[0]?.recurringEventInstanceId).toBe(
 				recurringSetup.instanceId,
 			);
-			expect(dbException[0]?.deleted).toBe(true);
 			expect(dbException[0]?.createdBy).toBe(creatorId);
 			expect(dbException[0]?.updatedBy).toBe(creatorId);
 
@@ -603,13 +602,12 @@ suite(
 			);
 			testCleanupFunctions.push(group.cleanup);
 
-			// Pre-create an exception record with deleted: false
+			// Pre-create an exception record
 			const [existingException] = await server.drizzleClient
 				.insert(eventVolunteerGroupExceptionsTable)
 				.values({
 					volunteerGroupId: group.groupId,
 					recurringEventInstanceId: recurringSetup.instanceId,
-					deleted: false,
 					isException: true,
 					name: "Modified Name",
 					description: "Modified Description",
@@ -657,7 +655,6 @@ suite(
 
 			expect(dbExceptions).toHaveLength(1); // Still only one record
 			expect(dbExceptions[0]?.id).toBe(existingException.id); // Same ID
-			expect(dbExceptions[0]?.deleted).toBe(true); // Updated to true
 			expect(dbExceptions[0]?.updatedBy).toBe(creatorId);
 			expect(dbExceptions[0]?.updatedAt).not.toEqual(
 				existingException.updatedAt,
@@ -785,7 +782,6 @@ suite(
 				.limit(1);
 
 			expect(dbException).toHaveLength(1);
-			expect(dbException[0]?.deleted).toBe(true);
 			expect(dbException[0]?.createdBy).toBe(testUser.userId);
 			expect(dbException[0]?.updatedBy).toBe(testUser.userId);
 		});
@@ -938,7 +934,6 @@ suite(
 				.limit(1);
 
 			expect(dbException).toHaveLength(1);
-			expect(dbException[0]?.deleted).toBe(true);
 			expect(dbException[0]?.createdBy).toBe(creatorId);
 		});
 
@@ -1038,7 +1033,6 @@ suite(
 			expect(dbException[0]?.recurringEventInstanceId).toBe(
 				recurringSetup.instanceId,
 			);
-			expect(dbException[0]?.deleted).toBe(true);
 			expect(dbException[0]?.createdBy).toBe(creatorId);
 			expect(dbException[0]?.updatedBy).toBe(creatorId);
 			expect(dbException[0]?.createdAt).toBeDefined();
