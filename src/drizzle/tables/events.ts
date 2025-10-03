@@ -2,7 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
 	index,
-	integer, // Remove this since it's unused
+	integer,
 	pgTable,
 	text,
 	timestamp,
