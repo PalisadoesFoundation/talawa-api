@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
-import { type Mock, expect, suite, test, vi } from "vitest";
+import { expect, type Mock, suite, test, vi } from "vitest";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { generateInstancesForRecurringEvent } from "~/src/services/eventGeneration";

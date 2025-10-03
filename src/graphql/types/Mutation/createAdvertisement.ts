@@ -10,8 +10,8 @@ import {
 	mutationCreateAdvertisementInputSchema,
 } from "~/src/graphql/inputs/MutationCreateAdvertisementInput";
 import { Advertisement } from "~/src/graphql/types/Advertisement/Advertisement";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateAdvertisementArgumentsSchema = z.object({
 	input: mutationCreateAdvertisementInputSchema.transform(async (arg, ctx) => {

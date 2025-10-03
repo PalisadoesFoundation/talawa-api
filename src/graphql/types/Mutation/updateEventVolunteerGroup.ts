@@ -4,13 +4,14 @@ import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { volunteerGroupsTable } from "~/src/drizzle/tables/volunteerGroups";
 import { builder } from "~/src/graphql/builder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	MutationUpdateEventVolunteerGrouptInput,
 	mutationUpdateEventVolunteerGroupInputSchema,
 } from "../../inputs/MutationUpdateEventVolunteerGroupInput";
 import { VolunteerGroups } from "../VolunteerGroup/VolunteerGroup";
+
 const mutationUpdateEventVolunteerGroupArgumentsSchema = z.object({
 	input: mutationUpdateEventVolunteerGroupInputSchema,
 });

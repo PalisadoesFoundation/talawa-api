@@ -1,9 +1,9 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { Post } from "./Post";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { Post as PostType } from "./Post";
+import { Post } from "./Post";
 
 export const resolveUpdater = async (
 	parent: PostType,

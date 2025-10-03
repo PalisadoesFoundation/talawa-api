@@ -8,7 +8,8 @@ import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 	UnauthorizedActionOnArgumentsAssociatedResourcesExtensions,
-} from "~/src/utilities/TalawaGraphQLError";
+} from "../../../../src/utilities/TalawaGraphQLError";
+
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";

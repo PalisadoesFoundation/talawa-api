@@ -1,7 +1,8 @@
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { FundCampaign } from "./FundCampaign";
+
 FundCampaign.implement({
 	fields: (t) => ({
 		creator: t.field({

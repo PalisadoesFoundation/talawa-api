@@ -1,23 +1,23 @@
-import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, lt, or, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import {
 	venueBookingsTable,
 	venueBookingsTableInsertSchema,
 } from "~/src/drizzle/tables/venueBookings";
 import { Venue } from "~/src/graphql/types/Venue/Venue";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Event } from "./Event";
 
 const venuesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+		let cursor: z.infer<typeof cursorSchema> | undefined;
 
 		try {
 			if (arg.cursor !== undefined) {
@@ -25,7 +25,7 @@ const venuesArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
 				);
 			}
-		} catch (error) {
+		} catch (_error) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Not a valid cursor.",

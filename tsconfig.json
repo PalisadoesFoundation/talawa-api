@@ -24,8 +24,8 @@
 				"schema": "./schema.graphql" /* https://gql-tada.0no.co/reference/config-format#schema */,
 				"shouldCheckForColocatedFragments": false /* https://gql-tada.0no.co/reference/config-format#shouldcheckforcolocatedfragments */,
 				"trackFieldUsage": false /* https://gql-tada.0no.co/reference/config-format#trackfieldusage */,
-				"tadaOutputLocation": "./test/graphql/types/gql.tada.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaoutputlocation */,
-				"tadaTurboLocation": "./test/graphql/types/gql.tada-cache.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaturbolocation */
+				"tadaOutputLocation": "./src/graphql/types/gql.tada.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaoutputlocation */,
+				"tadaTurboLocation": "./src/graphql/types/gql.tada-cache.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaturbolocation */
 			}
 		],
 		"noUncheckedIndexedAccess": true,
@@ -34,5 +34,6 @@
 		"target": "ESNext" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
 		"useUnknownInCatchVariables": true /* Default catch clause variables as 'unknown' instead of 'any'. */
 	},
-	"exclude": ["docs", "node_modules"]
+	"exclude": ["docs", "node_modules"],
+	"include": ["src/**/*.ts","./src/graphql/types/gql.tada.d.ts"]
 }

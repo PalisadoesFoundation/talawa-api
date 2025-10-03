@@ -6,8 +6,8 @@ import {
 } from "~/src/graphql/inputs/QueryEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
 import { getEventsByIds } from "~/src/graphql/types/Query/eventQueries";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const queryEventArgumentsSchema = z.object({
 	input: queryEventInputSchema,
