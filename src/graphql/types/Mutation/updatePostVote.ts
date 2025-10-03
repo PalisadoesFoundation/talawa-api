@@ -112,7 +112,7 @@ builder.mutationField("updatePostVote", (t) =>
 				});
 			}
 
-			let voteResult = undefined;
+			let voteResult = null;
 
 			if (existingVote) {
 				//  UPDATE the vote
