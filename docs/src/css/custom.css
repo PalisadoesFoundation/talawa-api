@@ -383,7 +383,7 @@ a:hover {
 	margin-left: 0;
 }
 
-.table-of-contents__link {
+.table-of-contents__link .toc {
 	border-left: 0.125rem solid #0000;
 	font-size: 0.875rem;
 	padding-left: 1.25rem;
@@ -398,9 +398,9 @@ a:hover {
 }
 
 .table-of-contents__link:hover,
-.table-of-contents__link:hover code,
+.table-of-contents__link:hover code .toc,
 .table-of-contents__link--active,
-.table-of-contents__link--active code {
+.table-of-contents__link--active code .toc-active {
 	color: var(--neutral-mid-0);
 }
 
@@ -626,12 +626,12 @@ html[data-theme="dark"] .header-youtube-link:before {
 	text-align: left !important;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
 	color: var(--secondary-blue-900);
 	margin: 20px 0 !important;
 }
