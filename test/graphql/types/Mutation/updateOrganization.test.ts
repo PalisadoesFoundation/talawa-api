@@ -338,13 +338,22 @@ suite("Mutation field updateOrganization", () => {
 		assertToBeNonNullish(orgId);
 
 		// Set to true
-		await mercuriusClient.mutate(Mutation_updateOrganization, {
-			headers: { authorization: `bearer ${authToken}` },
-			variables: {
-				input: { id: orgId, userRegistrationRequired: true },
+		const setTrueResult = await mercuriusClient.mutate(
+			Mutation_updateOrganization,
+			{
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: { id: orgId, userRegistrationRequired: true },
+				},
 			},
-		});
-
+		);
+		expect(setTrueResult.errors).toBeUndefined();
+		expect(setTrueResult.data?.updateOrganization).toEqual(
+			expect.objectContaining({
+				id: orgId,
+				isUserRegistrationRequired: true,
+			}),
+		);
 		// Toggle back to false
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
