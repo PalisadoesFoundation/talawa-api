@@ -21,6 +21,7 @@ import type {
 interface IPluginManager {
 	emit(event: string, ...args: unknown[]): boolean;
 }
+
 import { PluginStatus } from "../types";
 import { dropPluginTables, safeRequire } from "../utils";
 

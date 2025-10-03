@@ -1,7 +1,6 @@
 import { type Static, Type } from "@sinclair/typebox";
 import envSchema from "env-schema";
-import { envConfigSchema } from "~/src/envConfigSchema";
-import { envSchemaAjv } from "~/src/envConfigSchema";
+import { envConfigSchema, envSchemaAjv } from "~/src/envConfigSchema";
 /**
  * JSON schema of a record of environment variables accessible to the talawa api tests at runtime.
  */

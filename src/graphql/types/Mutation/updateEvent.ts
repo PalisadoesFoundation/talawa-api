@@ -7,9 +7,9 @@ import {
 	mutationUpdateEventInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateEventArgumentsSchema = z.object({
 	input: mutationUpdateEventInputSchema,

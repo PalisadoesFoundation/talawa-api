@@ -199,7 +199,7 @@ class PluginManager extends EventEmitter {
 
 			try {
 				await import("node:fs/promises").then((fs) => fs.access(manifestPath));
-			} catch (error) {
+			} catch (_error) {
 				console.warn(
 					`⚠️  Plugin ${pluginId} is in database but files are missing at ${pluginPath}`,
 				);

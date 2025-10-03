@@ -3,11 +3,11 @@ import type { FastifyBaseLogger } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as schema from "~/src/drizzle/schema";
 import {
-	type DiscoveredWorkload,
-	type JobDiscoveryConfig,
 	createDefaultJobDiscoveryConfig,
 	createEventGenerationJobs,
+	type DiscoveredWorkload,
 	discoverEventGenerationWorkloads,
+	type JobDiscoveryConfig,
 } from "~/src/workers/eventGeneration/jobDiscovery";
 import type { WorkerDependencies } from "~/src/workers/eventGeneration/types";
 

@@ -1,5 +1,11 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
+import type {
+	TalawaGraphQLFormattedError,
+	UnauthenticatedExtensions,
+} from "~/src/utilities/TalawaGraphQLError";
+import { createMockDrizzleClient } from "../../../_Mocks_/drizzleClientMock";
+import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
@@ -8,13 +14,6 @@ import {
 	Query_signIn,
 	UPDATE_ACTION_ITEM_MUTATION,
 } from "../documentNodes";
-
-import type {
-	TalawaGraphQLFormattedError,
-	UnauthenticatedExtensions,
-} from "~/src/utilities/TalawaGraphQLError";
-import { createMockDrizzleClient } from "../../../_Mocks_/drizzleClientMock";
-import { assertToBeNonNullish } from "../../../helpers";
 
 vi.mock("~/src/drizzle/client", () => {
 	return {

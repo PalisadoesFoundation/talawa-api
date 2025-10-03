@@ -334,7 +334,7 @@ describe("GraphQLSchemaManager", () => {
 			// Mock the query field to capture the resolver
 			let capturedResolver: unknown;
 			vi.mocked(builder).queryField.mockImplementation(
-				(name, builderFunction) => {
+				(_name, builderFunction) => {
 					// Create a mock 't' object that mimics the Pothos field builder
 					const mockT = {
 						string: vi.fn().mockImplementation((config) => {
@@ -391,7 +391,7 @@ describe("GraphQLSchemaManager", () => {
 			// Mock the mutation field to capture the resolver
 			let capturedResolver: unknown;
 			vi.mocked(builder).mutationField.mockImplementation(
-				(name, builderFunction) => {
+				(_name, builderFunction) => {
 					// Create a mock 't' object that mimics the Pothos field builder
 					const mockT = {
 						string: vi.fn().mockImplementation((config) => {
@@ -456,7 +456,7 @@ describe("GraphQLSchemaManager", () => {
 			// Mock the mutation field to capture the resolver
 			let capturedResolver: unknown;
 			vi.mocked(builder).mutationField.mockImplementation(
-				(name, builderFunction) => {
+				(_name, builderFunction) => {
 					// Create a mock 't' object that mimics the Pothos field builder
 					const mockT = {
 						string: vi.fn().mockImplementation((config) => {
@@ -523,7 +523,7 @@ describe("GraphQLSchemaManager", () => {
 			// Mock the mutation field to capture the resolver
 			let capturedResolver: unknown;
 			vi.mocked(builder).mutationField.mockImplementation(
-				(name, builderFunction) => {
+				(_name, builderFunction) => {
 					// Create a mock 't' object that mimics the Pothos field builder
 					const mockT = {
 						string: vi.fn().mockImplementation((config) => {
@@ -595,7 +595,7 @@ describe("GraphQLSchemaManager", () => {
 			// Mock the query field to capture the resolver
 			let capturedResolver: unknown;
 			vi.mocked(builder).queryField.mockImplementation(
-				(name, builderFunction) => {
+				(_name, builderFunction) => {
 					// Create a mock 't' object that mimics the Pothos field builder
 					const mockT = {
 						string: vi.fn().mockImplementation((config) => {

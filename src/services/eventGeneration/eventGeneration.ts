@@ -236,9 +236,9 @@ async function createNewGeneratedInstances(
 	return newOccurrences.length;
 }
 
-export {
-	initializeGenerationWindow,
-	cleanupOldGeneratedInstances,
-} from "./windowManager";
-export { calculateInstanceOccurrences } from "./occurrenceCalculator";
 export { resolveInstanceWithInheritance } from "./instanceResolver";
+export { calculateInstanceOccurrences } from "./occurrenceCalculator";
+export {
+	cleanupOldGeneratedInstances,
+	initializeGenerationWindow,
+} from "./windowManager";

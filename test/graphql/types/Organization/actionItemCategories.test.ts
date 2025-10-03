@@ -4,8 +4,8 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { actionCategoriesTable } from "~/src/drizzle/tables/actionCategories";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { Organization as OrganizationType } from "~/src/graphql/types/Organization/Organization";
 import { resolveActionItemCategories } from "~/src/graphql/types/Organization/actionItemCategories";
+import type { Organization as OrganizationType } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Mock data

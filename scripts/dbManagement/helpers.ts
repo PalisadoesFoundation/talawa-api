@@ -104,7 +104,7 @@ export async function formatDatabase(): Promise<boolean> {
 		});
 
 		return true;
-	} catch (error) {
+	} catch (_error) {
 		return false;
 	}
 }
@@ -116,14 +116,9 @@ export async function emptyMinioBucket(): Promise<boolean> {
 			(resolve, reject) => {
 				const objects: string[] = [];
 				const stream = minioClient.listObjects(bucketName, "", true);
-				stream.on(
-					"data",
-					(obj: {
-						name: string;
-					}) => {
-						objects.push(obj.name);
-					},
-				);
+				stream.on("data", (obj: { name: string }) => {
+					objects.push(obj.name);
+				});
 				stream.on("error", (err: Error) => {
 					console.error("Error listing objects in bucket:", err);
 					reject(err);
@@ -186,7 +181,7 @@ ${"|".padEnd(30, "-")}|----------------|
 export async function pingDB(): Promise<boolean> {
 	try {
 		await db.execute(sql`SELECT 1`);
-	} catch (error) {
+	} catch (_error) {
 		throw new Error("Unable to connect to the database.");
 	}
 	return true;
@@ -335,9 +330,7 @@ export async function insertCollections(
 
 				case "organization_memberships": {
 					const organizationMemberships = JSON.parse(fileContent).map(
-						(membership: {
-							createdAt: string | number | Date;
-						}) => ({
+						(membership: { createdAt: string | number | Date }) => ({
 							...membership,
 							createdAt: parseDate(membership.createdAt),
 						}),

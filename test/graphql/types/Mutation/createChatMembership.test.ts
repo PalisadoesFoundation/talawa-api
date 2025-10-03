@@ -1,10 +1,10 @@
 import {
-	type Mock,
 	afterEach,
 	beforeEach,
 	describe,
 	expect,
 	it,
+	type Mock,
 	vi,
 } from "vitest";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";

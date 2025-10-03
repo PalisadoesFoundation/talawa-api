@@ -3,8 +3,8 @@ import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { volunteerGroupsTable } from "~/src/drizzle/tables/volunteerGroups";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
 import { VolunteerGroups } from "../VolunteerGroup/VolunteerGroup";
 import {

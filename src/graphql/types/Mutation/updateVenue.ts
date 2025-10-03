@@ -7,9 +7,10 @@ import {
 	mutationUpdateVenueInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateVenueInput";
 import { Venue } from "~/src/graphql/types/Venue/Venue";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateVenueArgumentsSchema = z.object({
 	input: mutationUpdateVenueInputSchema,
 });

@@ -3,10 +3,11 @@ import { usersTable } from "~/src/drizzle/schema";
 import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
 import type { chatsTable } from "~/src/drizzle/tables/chats";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
 import { Chat } from "./Chat";
+
 type ChatsTable = typeof chatsTable.$inferSelect;
 
 export const resolveUpdatedAt = async (

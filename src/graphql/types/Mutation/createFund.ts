@@ -6,8 +6,9 @@ import {
 	mutationCreateFundInputSchema,
 } from "~/src/graphql/inputs/MutationCreateFundInput";
 import { Fund } from "~/src/graphql/types/Fund/Fund";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreateFundArgumentsSchema = z.object({
 	input: mutationCreateFundInputSchema,
 });

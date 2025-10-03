@@ -565,7 +565,7 @@ export async function removePluginDirectory(pluginId: string): Promise<void> {
  */
 export function clearPluginModuleCache(
 	pluginPath: string,
-	cacheObj?: Record<string, unknown>,
+	_cacheObj?: Record<string, unknown>,
 ): void {
 	try {
 		// In ES modules, we cannot access the module cache directly

@@ -59,7 +59,7 @@ async function createOrganizationAndGetId(authToken: string): Promise<string> {
 async function createEventAndGetId(
 	authToken: string,
 	organizationId: string,
-	creatorId: string,
+	_creatorId: string,
 ): Promise<string> {
 	const eventName = `Test Event ${faker.string.uuid()}`;
 	const startDate = new Date();

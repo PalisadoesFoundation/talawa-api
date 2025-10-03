@@ -1,5 +1,6 @@
 import envConfig from "~/src/utilities/graphqLimits";
 import { AdvertisementAttachment } from "./AdvertisementAttachment";
+
 AdvertisementAttachment.implement({
 	fields: (t) => ({
 		url: t.field({

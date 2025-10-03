@@ -102,7 +102,7 @@ suite.concurrent("action item ID generation", () => {
 suite.concurrent("askUserToContinue", () => {
 	test.concurrent("should resolve to true when user inputs 'y'", async () => {
 		const fakeInterface = {
-			question: (query: string, callback: (answer: string) => void) => {
+			question: (_query: string, callback: (answer: string) => void) => {
 				callback("y");
 			},
 			close: vi.fn(),
@@ -119,7 +119,7 @@ suite.concurrent("askUserToContinue", () => {
 
 	test.concurrent("should resolve to false when user inputs 'n'", async () => {
 		const fakeInterface = {
-			question: (query: string, callback: (answer: string) => void) => {
+			question: (_query: string, callback: (answer: string) => void) => {
 				callback("n");
 			},
 			close: vi.fn(),
@@ -136,7 +136,7 @@ suite.concurrent("askUserToContinue", () => {
 
 	test.concurrent("should trim and ignore case in the input", async () => {
 		const fakeInterface = {
-			question: (query: string, callback: (answer: string) => void) => {
+			question: (_query: string, callback: (answer: string) => void) => {
 				callback("  Y  ");
 			},
 			close: vi.fn(),
@@ -364,7 +364,7 @@ suite.concurrent("insertCollections", () => {
 			let capturedData: (typeof schema.actionsTable.$inferInsert)[] = [];
 			const checkAndInsertDataSpy = vi
 				.spyOn(helpers, "checkAndInsertData")
-				.mockImplementation((table, data) => {
+				.mockImplementation((_table, data) => {
 					capturedData = data as (typeof schema.actionsTable.$inferInsert)[];
 					return Promise.resolve(true);
 				});

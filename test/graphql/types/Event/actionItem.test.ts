@@ -4,8 +4,8 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { actionsTable } from "~/src/drizzle/tables/actions";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type { Event as EventType } from "~/src/graphql/types/Event/Event";
 import { resolveActionItemsPaginated } from "~/src/graphql/types/Event/actionItems";
+import type { Event as EventType } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Mock data

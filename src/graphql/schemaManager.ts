@@ -22,12 +22,12 @@ class GraphQLSchemaManager {
 		const pluginManager = getPluginManagerInstance();
 		if (pluginManager) {
 			// Listen for schema rebuild events
-			pluginManager.on("schema:rebuild", async (data) => {
+			pluginManager.on("schema:rebuild", async (_data) => {
 				await this.rebuildSchema();
 			});
 
 			// Listen for plugin deactivation to remove fields
-			pluginManager.on("plugin:deactivated", async (pluginId) => {
+			pluginManager.on("plugin:deactivated", async (_pluginId) => {
 				await this.rebuildSchema();
 			});
 		}

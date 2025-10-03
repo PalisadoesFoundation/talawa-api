@@ -1,8 +1,6 @@
 import { faker } from "@faker-js/faker";
-
-import { afterEach, expect, suite, test } from "vitest";
-
 import { eq } from "drizzle-orm";
+import { afterEach, expect, suite, test } from "vitest";
 import { usersTable } from "~/src/drizzle/schema";
 import type {
 	TalawaGraphQLFormattedError,
@@ -24,6 +22,7 @@ import {
 	Mutation_deleteStandaloneEvent,
 	Query_signIn,
 } from "../documentNodes";
+
 // Helper Types
 interface TestAgendaItem {
 	agendaItemId: string;

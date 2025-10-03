@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, exists, gt, lt, or, type SQL } from "drizzle-orm";
 import type { z } from "zod";
 import {
 	actionsTable,
@@ -7,20 +7,20 @@ import {
 } from "~/src/drizzle/tables/actions";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	defaultGraphQLConnectionArgumentsSchema,
 	transformDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
-import { Event } from "./Event";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { Event as EventType } from "./Event";
+import { Event } from "./Event";
 
 const actionItemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+		let cursor: z.infer<typeof cursorSchema> | undefined;
 
 		try {
 			if (arg.cursor !== undefined) {
@@ -28,7 +28,7 @@ const actionItemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 					JSON.parse(Buffer.from(arg.cursor, "base64url").toString("utf-8")),
 				);
 			}
-		} catch (error) {
+		} catch (_error) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Not a valid cursor.",
