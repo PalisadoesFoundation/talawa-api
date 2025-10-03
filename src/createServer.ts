@@ -6,6 +6,7 @@ import fastifyRedis from "@fastify/redis";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import envSchema from "env-schema";
 import Fastify from "fastify";
+
 import {
 	type EnvConfig,
 	envConfigSchema,
