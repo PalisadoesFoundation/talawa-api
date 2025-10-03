@@ -35,5 +35,5 @@
 		"useUnknownInCatchVariables": true /* Default catch clause variables as 'unknown' instead of 'any'. */
 	},
 	"exclude": ["docs", "node_modules"],
-	"include": ["src/**/*.ts","./src/graphql/types/gql.tada.d.ts"]
+	"include": ["src/**/*.ts", "./src/graphql/types/gql.tada.d.ts"]
 }
