@@ -41,7 +41,7 @@ builder.mutationField("registerForEvent", (t) =>
 					.select({
 						id: eventsTable.id,
 						isRegisterable: eventsTable.isRegisterable,
-						capacity: eventsTable.maxCapacity,
+						capacity: eventsTable.capacity, // This will now work
 					})
 					.from(eventsTable)
 					.where(eq(eventsTable.id, input.eventId))

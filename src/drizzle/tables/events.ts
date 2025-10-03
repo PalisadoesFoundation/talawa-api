@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import {
 	boolean,
 	index,
+	integer, // Remove this since it's unused
 	pgTable,
 	text,
 	timestamp,
@@ -119,6 +120,13 @@ export const eventsTable = pgTable(
 		isRecurringEventTemplate: boolean("is_recurring_template")
 			.notNull()
 			.default(false),
+
+		// ADD THIS FIELD - Event capacity
+		/**
+		 * Maximum number of attendees allowed for this event.
+		 * Null means unlimited capacity.
+		 */
+		capacity: integer("capacity"),
 	},
 	(self) => ({
 		// Existing indexes with better naming
@@ -140,6 +148,9 @@ export const eventsTable = pgTable(
 		isRecurringEventTemplateIdx: index("events_is_recurring_template_idx").on(
 			self.isRecurringEventTemplate,
 		),
+
+		// Add capacity index
+		capacityIdx: index("events_capacity_idx").on(self.capacity),
 	}),
 );
 
@@ -203,4 +214,6 @@ export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 	location: (schema) => schema.min(1).max(1024).optional(),
 	// Recurring event fields validation
 	isRecurringEventTemplate: z.boolean().optional(),
+	// Add capacity validation
+	capacity: z.number().int().nonnegative().optional().nullable(),
 });
