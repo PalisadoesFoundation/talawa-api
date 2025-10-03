@@ -46,7 +46,7 @@ const authToken = signInResult.data.signIn.authenticationToken;
 assertToBeNonNullish(authToken);
 
 suite("Mutation field updateOrganization", () => {
-	test("should return an error with unauthenticated extensions code when user is deleted", async () => {
+	test("should return an error with unauthenticated extensions code when no auth token provided", async () => {
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
 			variables: {
 				input: {
