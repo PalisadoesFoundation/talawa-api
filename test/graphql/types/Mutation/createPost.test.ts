@@ -595,7 +595,7 @@ suite("Mutation field createPost", () => {
 						caption: "Successful Post",
 						attachments: [
 							{
-								mimeTmimeType: "image/png",
+								mimeType: "image/png",
 								objectName: "test-object-name-99",
 								name: "test-image.png",
 								fileHash: "test-file-hash-99",
