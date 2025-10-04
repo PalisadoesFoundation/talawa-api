@@ -26,30 +26,30 @@ import {
 const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
 		let attachments: (FileUpload & { mimetype: z.infer<typeof eventAttachmentMimeTypeEnum> })[] | undefined = undefined;
-		if (arg.attachments !== undefined) {
-			const rawAttachments = await Promise.all(arg.attachments);
-			const result = eventAttachmentMimeTypeEnum
-				.array()
-				.safeParse(rawAttachments.map((attachment) => attachment.mimetype));
-			if (!result.success && result.error) {
-				for (const issue of result.error.issues) {
-					if (typeof issue.path[0] === "number") {
-						ctx.addIssue({
-							code: "custom",
-							path: ["attachments", issue.path[0]],
-							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype}" is not allowed.`,
-						});
+			if (arg.attachments !== undefined) {
+				const rawAttachments = await Promise.all(arg.attachments);
+				const result = eventAttachmentMimeTypeEnum
+					.array()
+					.safeParse(rawAttachments.map((attachment: FileUpload) => attachment.mimetype));
+				if (!result.success && result.error) {
+					for (const issue of result.error.issues) {
+						if (typeof issue.path[0] === "number") {
+							ctx.addIssue({
+								code: "custom",
+								path: ["attachments", issue.path[0]],
+								message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype}" is not allowed.`,
+							});
+						}
 					}
 				}
+				if (result.success && result.data) {
+					attachments = rawAttachments.map((attachment: FileUpload, index: number) =>
+						Object.assign(attachment, {
+							mimetype: result.data[index],
+						})
+					);
+				}
 			}
-			if (result.success && result.data) {
-				attachments = rawAttachments.map((attachment, index) =>
-					Object.assign(attachment, {
-						mimetype: result.data[index],
-					})
-				);
-			}
-		}
 		return {
 			...arg,
 			attachments,
@@ -368,12 +368,12 @@ builder.mutationField("createEvent", (t) =>
 						createdEventAttachments = await tx
 							.insert(eventAttachmentsTable)
 							.values(
-								attachments.map((attachment: any) => ({
+								attachments.map((attachment: FileUpload & { mimetype?: string }) => ({
 									creatorId: currentUserId,
 									eventId: createdEvent.id,
-									mimeType: attachment.mimetype,
+									mimeType: attachment.mimetype as z.infer<typeof eventAttachmentMimeTypeEnum>,
 									name: ulid(),
-								})),
+								}))
 							)
 							.returning();
 
