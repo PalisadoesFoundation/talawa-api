@@ -29,6 +29,7 @@ interface EventType {
 	isRegisterable: boolean;
 	location: string | null;
 	isRecurringEventTemplate: boolean;
+	capacity: number | null;
 	attachments: Array<{
 		name: string;
 		createdAt: Date;
@@ -37,12 +38,12 @@ interface EventType {
 		updaterId: string | null;
 		eventId: string;
 		mimeType:
-			| "image/avif"
-			| "image/jpeg"
-			| "image/png"
-			| "image/webp"
-			| "video/mp4"
-			| "video/webm";
+		| "image/avif"
+		| "image/jpeg"
+		| "image/png"
+		| "image/webp"
+		| "video/mp4"
+		| "video/webm";
 	}>;
 }
 
@@ -180,6 +181,7 @@ builder.queryField("eventsByOrganizationId", (t) =>
 
 				return events.map((event) => ({
 					...event,
+					capacity: event.capacity ?? null,
 					attachments:
 						event.attachmentsWhereEvent?.map((attachment) => ({
 							...attachment,

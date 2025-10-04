@@ -118,6 +118,7 @@ export async function getUnifiedEventsInDateRange(
 						isPublic: instance.isPublic,
 						isRegisterable: instance.isRegisterable,
 						organizationId: instance.organizationId,
+						capacity: null,
 						creatorId: instance.creatorId,
 						updaterId: instance.updaterId,
 						createdAt: instance.createdAt,
@@ -218,6 +219,7 @@ export async function getEventsByIds(
 			const generatedEvents: EventWithAttachments[] = resolvedInstances.map(
 				(resolvedInstance) => ({
 					id: resolvedInstance.id,
+					capacity: null,
 					name: resolvedInstance.name,
 					description: resolvedInstance.description,
 					startAt: resolvedInstance.actualStartTime,
