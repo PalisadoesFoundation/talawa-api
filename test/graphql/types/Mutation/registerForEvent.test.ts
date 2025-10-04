@@ -324,6 +324,12 @@ suite("registerForEvent", () => {
 				(r) => r.data?.registerForEvent === true && !r.errors,
 			);
 			expect(successes).toHaveLength(1);
+
+			const failures = [resultA, resultB].filter(
+				(r) => !(r.data?.registerForEvent === true && !r.errors),
+			);
+			expect(failures).toHaveLength(1);
+			expectGraphQLFailure(failures[0]);
 		});
 
 		test("rejects all registrations when capacity is zero", async () => {
