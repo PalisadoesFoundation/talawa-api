@@ -34,10 +34,14 @@ import {
 	getStandaloneEventsInDateRange,
 } from "~/src/graphql/types/Query/eventQueries/standaloneEventQueries";
 
-const mockGetStandaloneEventsInDateRange = getStandaloneEventsInDateRange as unknown as ReturnType<typeof vi.fn>;
-const mockGetRecurringEventInstancesInDateRange = getRecurringEventInstancesInDateRange as unknown as ReturnType<typeof vi.fn>;
-const mockGetStandaloneEventsByIds = getStandaloneEventsByIds as unknown as ReturnType<typeof vi.fn>;
-const mockGetRecurringEventInstancesByIds = getRecurringEventInstancesByIds as unknown as ReturnType<typeof vi.fn>;
+const mockGetStandaloneEventsInDateRange =
+	getStandaloneEventsInDateRange as unknown as ReturnType<typeof vi.fn>;
+const mockGetRecurringEventInstancesInDateRange =
+	getRecurringEventInstancesInDateRange as unknown as ReturnType<typeof vi.fn>;
+const mockGetStandaloneEventsByIds =
+	getStandaloneEventsByIds as unknown as ReturnType<typeof vi.fn>;
+const mockGetRecurringEventInstancesByIds =
+	getRecurringEventInstancesByIds as unknown as ReturnType<typeof vi.fn>;
 
 describe("getUnifiedEventsInDateRange", () => {
 	let mockDrizzleClient: ServiceDependencies["drizzleClient"];

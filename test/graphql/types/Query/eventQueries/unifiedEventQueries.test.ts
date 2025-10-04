@@ -1,13 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
-vi.mock("~/src/graphql/types/Query/eventQueries/standaloneEventQueries", () => ({
-	getStandaloneEventsByIds: vi.fn(),
-	getStandaloneEventsInDateRange: vi.fn(),
-}));
-vi.mock("~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries", () => ({
-	getRecurringEventInstancesByIds: vi.fn(),
-	getRecurringEventInstancesInDateRange: vi.fn(),
-}));
+vi.mock(
+	"~/src/graphql/types/Query/eventQueries/standaloneEventQueries",
+	() => ({
+		getStandaloneEventsByIds: vi.fn(),
+		getStandaloneEventsInDateRange: vi.fn(),
+	}),
+);
+vi.mock(
+	"~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries",
+	() => ({
+		getRecurringEventInstancesByIds: vi.fn(),
+		getRecurringEventInstancesInDateRange: vi.fn(),
+	}),
+);
 
 import {
 	getRecurringEventInstancesByIds,
@@ -46,10 +52,14 @@ const mockStandaloneEvent: EventWithAttachments = {
 	capacity: null,
 };
 
-const mockGetStandaloneEventsInDateRange = getStandaloneEventsInDateRange as unknown as ReturnType<typeof vi.fn>;
-const mockGetRecurringEventInstancesInDateRange = getRecurringEventInstancesInDateRange as unknown as ReturnType<typeof vi.fn>;
-const mockGetStandaloneEventsByIds = getStandaloneEventsByIds as unknown as ReturnType<typeof vi.fn>;
-const mockGetRecurringEventInstancesByIds = getRecurringEventInstancesByIds as unknown as ReturnType<typeof vi.fn>;
+const mockGetStandaloneEventsInDateRange =
+	getStandaloneEventsInDateRange as unknown as ReturnType<typeof vi.fn>;
+const mockGetRecurringEventInstancesInDateRange =
+	getRecurringEventInstancesInDateRange as unknown as ReturnType<typeof vi.fn>;
+const mockGetStandaloneEventsByIds =
+	getStandaloneEventsByIds as unknown as ReturnType<typeof vi.fn>;
+const mockGetRecurringEventInstancesByIds =
+	getRecurringEventInstancesByIds as unknown as ReturnType<typeof vi.fn>;
 
 describe("getUnifiedEventsInDateRange", () => {
 	let mockDrizzleClient: ServiceDependencies["drizzleClient"];
