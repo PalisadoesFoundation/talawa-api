@@ -37,13 +37,13 @@ interface EventType {
 		updatedAt: Date | null;
 		updaterId: string | null;
 		eventId: string;
-		mimeType:
-		| "image/avif"
-		| "image/jpeg"
-		| "image/png"
-		| "image/webp"
-		| "video/mp4"
-		| "video/webm";
+        mimeType:
+   			| "image/avif"
+   			| "image/jpeg"
+   			| "image/png"
+   			| "image/webp"
+   			| "video/mp4"
+   			| "video/webm";
 	}>;
 }
 
