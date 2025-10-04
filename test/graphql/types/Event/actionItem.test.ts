@@ -757,7 +757,7 @@ describe("getUnifiedEventsInDateRange", () => {
 });
 
 describe("getEventsByIds", () => {
-	let mockDrizzleClient: ServiceDependencies["drizzleClient"];
+		let mockDrizzleClient: ServiceDependencies["drizzleClient"];
 	let mockLogger: ServiceDependencies["logger"];
 
 	const mockStandaloneEvent: EventWithAttachments = {
@@ -1153,16 +1153,16 @@ describe("getEventsByIds", () => {
 				instanceWithNulls,
 			]);
 
-			const result = await getEventsByIds(
-				eventIds,
-				mockDrizzleClient,
-				mockLogger,
-			);
+					const resultByIds = await getEventsByIds(
+						eventIds,
+						mockDrizzleClient,
+						mockLogger,
+					);
 
-			expect(result[0]?.description).toBe(null);
-			expect(result[0]?.location).toBe(null);
-			expect(result[0]?.updaterId).toBe(null);
-			expect(result[0]?.totalCount).toBe(null);
+					expect(resultByIds[0]?.description).toBe(null);
+					expect(resultByIds[0]?.location).toBe(null);
+					expect(resultByIds[0]?.updaterId).toBe(null);
+					expect(resultByIds[0]?.totalCount).toBe(null);
+				});
+			});
 		});
-	});
-});
