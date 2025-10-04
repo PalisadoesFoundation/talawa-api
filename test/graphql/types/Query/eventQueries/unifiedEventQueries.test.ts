@@ -1,5 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
+vi.mock("~/src/graphql/types/Query/eventQueries/standaloneEventQueries", () => ({
+	getStandaloneEventsByIds: vi.fn(),
+	getStandaloneEventsInDateRange: vi.fn(),
+}));
+vi.mock("~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries", () => ({
+	getRecurringEventInstancesByIds: vi.fn(),
+	getRecurringEventInstancesInDateRange: vi.fn(),
+}));
+
 import {
 	getRecurringEventInstancesByIds,
 	getRecurringEventInstancesInDateRange,
@@ -37,16 +46,10 @@ const mockStandaloneEvent: EventWithAttachments = {
 	capacity: null,
 };
 
-const mockGetStandaloneEventsInDateRange = vi.mocked(
-	getStandaloneEventsInDateRange,
-);
-const mockGetRecurringEventInstancesInDateRange = vi.mocked(
-	getRecurringEventInstancesInDateRange,
-);
-const mockGetStandaloneEventsByIds = vi.mocked(getStandaloneEventsByIds);
-const mockGetRecurringEventInstancesByIds = vi.mocked(
-	getRecurringEventInstancesByIds,
-);
+const mockGetStandaloneEventsInDateRange = getStandaloneEventsInDateRange as unknown as ReturnType<typeof vi.fn>;
+const mockGetRecurringEventInstancesInDateRange = getRecurringEventInstancesInDateRange as unknown as ReturnType<typeof vi.fn>;
+const mockGetStandaloneEventsByIds = getStandaloneEventsByIds as unknown as ReturnType<typeof vi.fn>;
+const mockGetRecurringEventInstancesByIds = getRecurringEventInstancesByIds as unknown as ReturnType<typeof vi.fn>;
 
 describe("getUnifiedEventsInDateRange", () => {
 	let mockDrizzleClient: ServiceDependencies["drizzleClient"];
@@ -263,6 +266,7 @@ describe("getUnifiedEventsInDateRange", () => {
 			expect(result[0]).toEqual({
 				...standaloneEvent,
 				eventType: "standalone",
+				isGenerated: false,
 			});
 		});
 
