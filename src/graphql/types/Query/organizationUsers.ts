@@ -38,12 +38,12 @@ interface EventType {
 		updaterId: string | null;
 		eventId: string;
 		mimeType:
-			| "image/avif"
-			| "image/jpeg"
-			| "image/png"
-			| "image/webp"
-			| "video/mp4"
-			| "video/webm";
+		| "image/avif"
+		| "image/jpeg"
+		| "image/png"
+		| "image/webp"
+		| "video/mp4"
+		| "video/webm";
 	}>;
 }
 
