@@ -1,4 +1,5 @@
 import "./Mutation";
+import "./registerForEvent";
 import "./acceptMembershipRequest";
 import "./blockUser";
 import "./unblockUser";

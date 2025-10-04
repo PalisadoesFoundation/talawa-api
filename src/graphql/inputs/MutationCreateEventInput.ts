@@ -4,6 +4,7 @@ import { eventsTableInsertSchema } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
 import { RecurrenceInput, recurrenceInputSchema } from "./RecurrenceInput";
 
+
 export const mutationCreateEventInputSchema = eventsTableInsertSchema
 	.pick({
 		description: true,
@@ -11,6 +12,7 @@ export const mutationCreateEventInputSchema = eventsTableInsertSchema
 		name: true,
 		organizationId: true,
 		startAt: true,
+		capacity: true, // Allow capacity to be set via input
 	})
 	.extend({
 		attachments: z
@@ -42,6 +44,10 @@ export const MutationCreateEventInput = builder
 	.implement({
 		description: "",
 		fields: (t) => ({
+			capacity: t.int({
+				description: "Maximum number of attendees allowed for this event. Null means unlimited.",
+				required: false,
+			}),
 			attachments: t.field({
 				description: "Attachments of the event.",
 				type: t.listRef("Upload", { required: true }),

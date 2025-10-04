@@ -27,8 +27,8 @@ const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
 		let attachments:
 			| (FileUpload & {
-					mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
-			  })[]
+				mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
+			})[]
 			| undefined;
 
 		if (arg.attachments !== undefined) {
@@ -44,9 +44,8 @@ const mutationCreateEventArgumentsSchema = z.object({
 						ctx.addIssue({
 							code: "custom",
 							path: ["attachments", issue.path[0]],
-							message: `Mime type "${
-								rawAttachments[issue.path[0]]?.mimetype
-							}" is not allowed.`,
+							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype
+								}" is not allowed.`,
 						});
 					}
 				}
@@ -206,6 +205,7 @@ builder.mutationField("createEvent", (t) =>
 							location: parsedArgs.input.location,
 							// Set as recurring template if recurrence is provided
 							isRecurringEventTemplate: !!parsedArgs.input.recurrence,
+							capacity: parsedArgs.input.capacity ?? null,
 						})
 						.returning();
 

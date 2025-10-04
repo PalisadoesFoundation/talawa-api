@@ -164,8 +164,14 @@ suite("registerForEvent", () => {
 					},
 				},
 			});
+			if (!evRes.data?.createEvent?.id) {
+				// eslint-disable-next-line no-console
+				console.error("Event creation failed:", JSON.stringify(evRes, null, 2));
+			}
 			const eventId = evRes.data?.createEvent?.id;
-			assertToBeNonNullish(eventId);
+			if (!eventId) {
+				throw new Error("Failed to create event: eventId is undefined. Response: " + JSON.stringify(evRes));
+			}
 
 			const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
 				headers: { authorization: `bearer ${adminToken}` },
@@ -226,8 +232,14 @@ suite("registerForEvent", () => {
 					},
 				},
 			});
+			if (!evRes.data?.createEvent?.id) {
+				// eslint-disable-next-line no-console
+				console.error("Event creation failed:", JSON.stringify(evRes, null, 2));
+			}
 			const eventId = evRes.data?.createEvent?.id;
-			assertToBeNonNullish(eventId);
+			if (!eventId) {
+				throw new Error("Failed to create event: eventId is undefined. Response: " + JSON.stringify(evRes));
+			}
 
 			const first = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
 				headers: { authorization: `bearer ${adminToken}` },
@@ -294,11 +306,17 @@ suite("registerForEvent", () => {
 						organizationId,
 						capacity: 1,
 						isRegisterable: true,
+						isPublic: false,
+						allDay: false,
+						location: "Test Location",
 						startAt: startAt.toISOString(),
 						endAt: endAt.toISOString(),
 					},
 				},
 			});
+			if (!evRes.data?.createEvent?.id) {
+				console.error("createEvent mutation response:", JSON.stringify(evRes, null, 2));
+			}
 			const eventId = evRes.data?.createEvent?.id;
 			assertToBeNonNullish(eventId);
 
@@ -389,6 +407,9 @@ suite("registerForEvent", () => {
 						organizationId,
 						capacity: 0,
 						isRegisterable: true,
+						isPublic: false,
+						allDay: false,
+						location: "Test Location",
 						startAt: startAt.toISOString(),
 						endAt: endAt.toISOString(),
 					},
