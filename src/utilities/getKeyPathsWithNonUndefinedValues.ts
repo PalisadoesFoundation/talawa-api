@@ -63,9 +63,10 @@ export const getKeyPathsWithNonUndefinedValues = <
 	const keyPathsWithNonUndefinedValues: Paths<T>[] = [];
 
 	for (const keyPath of keyPaths) {
-		const value = keyPath.reduce((accumulator: any, key) => {
-			return accumulator && accumulator[key] !== undefined
-				? accumulator[key]
+		const value = keyPath.reduce((accumulator: unknown, key) => {
+			return accumulator &&
+				(accumulator as Record<string | number, unknown>)[key] !== undefined
+				? (accumulator as Record<string | number, unknown>)[key]
 				: undefined;
 		}, object);
 

@@ -2,7 +2,7 @@ import type React from "react";
 
 interface HeadingProps {
 	text: string;
-	[key: string]: any;
+	[key: string]: unknown;
 }
 
 const Heading: React.FC<HeadingProps> = ({ text, ...props }) => {
