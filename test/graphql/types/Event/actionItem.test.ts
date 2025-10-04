@@ -245,6 +245,7 @@ describe("getUnifiedEventsInDateRange", () => {
 				...mockStandaloneEvent,
 				id: "standalone-test",
 				name: "Test Standalone",
+				capacity: null,
 			};
 			mockGetStandaloneEventsInDateRange.mockResolvedValue([standaloneEvent]);
 			mockGetRecurringEventInstancesInDateRange.mockResolvedValue([]);
