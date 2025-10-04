@@ -1,5 +1,5 @@
-import { inArray } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { z } from "zod";
 import type { usersTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";
@@ -37,13 +37,13 @@ interface EventType {
 		updatedAt: Date | null;
 		updaterId: string | null;
 		eventId: string;
-        mimeType:
-   			| "image/avif"
-   			| "image/jpeg"
-   			| "image/png"
-   			| "image/webp"
-   			| "video/mp4"
-   			| "video/webm";
+		mimeType:
+			| "image/avif"
+			| "image/jpeg"
+			| "image/png"
+			| "image/webp"
+			| "video/mp4"
+			| "video/webm";
 	}>;
 }
 
