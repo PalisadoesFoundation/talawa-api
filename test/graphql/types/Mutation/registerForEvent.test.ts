@@ -302,28 +302,101 @@ suite("registerForEvent", () => {
 			const eventId = evRes.data?.createEvent?.id;
 			assertToBeNonNullish(eventId);
 
-			// Create a regular user
-			const regularUser = await createRegularUserUsingAdmin();
-			const userToken = regularUser.authToken;
-			assertToBeNonNullish(userToken);
+			// Create two regular users
+			const userA = await createRegularUserUsingAdmin();
+			const userB = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userA.authToken);
+			assertToBeNonNullish(userB.authToken);
 
 			// Race both users to register
-			const [adminResult, userResult] = await Promise.all([
+			const [resultA, resultB] = await Promise.all([
 				mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
-					headers: { authorization: `bearer ${adminToken}` },
+					headers: { authorization: `bearer ${userA.authToken}` },
 					variables: { input: { eventId } },
 				} as MutateOpts),
 				mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
-					headers: { authorization: `bearer ${userToken}` },
+					headers: { authorization: `bearer ${userB.authToken}` },
 					variables: { input: { eventId } },
 				} as MutateOpts),
 			]);
-
 			// Assert exactly one succeeds
-			const successes = [adminResult, userResult].filter(
+			const successes = [resultA, resultB].filter(
 				(r) => r.data?.registerForEvent === true && !r.errors,
 			);
 			expect(successes).toHaveLength(1);
+		});
+
+		test("rejects all registrations when capacity is zero", async () => {
+			// Setup: Create admin token
+			const signInResult = await mercuriusClient.query(Query_signIn, {
+				variables: {
+					input: {
+						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+					},
+				},
+			});
+			const adminToken = signInResult.data?.signIn?.authenticationToken;
+			assertToBeNonNullish(adminToken);
+
+			// Create organization
+			const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						name: faker.company.name(),
+						description: faker.lorem.paragraph(),
+					},
+				},
+			});
+			const organizationId = orgRes.data?.createOrganization?.id;
+			assertToBeNonNullish(organizationId);
+
+			// Add admin as administrator member
+			const adminUserId = signInResult.data?.signIn?.user?.id;
+			assertToBeNonNullish(adminUserId);
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						memberId: adminUserId,
+						organizationId,
+						role: "administrator",
+					},
+				},
+			});
+
+			// Create event with capacity: 0
+			const startAt = faker.date.future();
+			const endAt = faker.date.future({ refDate: startAt });
+			const evRes = await mercuriusClient.mutate(Mutation_createEvent, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: {
+					input: {
+						name: faker.lorem.words(3),
+						description: faker.lorem.paragraph(),
+						organizationId,
+						capacity: 0,
+						isRegisterable: true,
+						startAt: startAt.toISOString(),
+						endAt: endAt.toISOString(),
+					},
+				},
+			});
+			const eventId = evRes.data?.createEvent?.id;
+			assertToBeNonNullish(eventId);
+
+			// Create a regular user
+			const userA = await createRegularUserUsingAdmin();
+			assertToBeNonNullish(userA.authToken);
+
+			// Try to register
+			const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
+				headers: { authorization: `bearer ${userA.authToken}` },
+				variables: { input: { eventId } },
+			} as MutateOpts);
+			expect(result.data?.registerForEvent).not.toBe(true);
+			expect(result.errors?.length).toBeGreaterThan(0);
 		});
 	});
 
