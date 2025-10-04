@@ -170,7 +170,9 @@ suite("registerForEvent", () => {
 			}
 			const eventId = evRes.data?.createEvent?.id;
 			if (!eventId) {
-				throw new Error("Failed to create event: eventId is undefined. Response: " + JSON.stringify(evRes));
+				throw new Error(
+					`Failed to create event: eventId is undefined. Response: ${JSON.stringify(evRes)}`,
+				);
 			}
 
 			const result = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
@@ -238,7 +240,9 @@ suite("registerForEvent", () => {
 			}
 			const eventId = evRes.data?.createEvent?.id;
 			if (!eventId) {
-				throw new Error("Failed to create event: eventId is undefined. Response: " + JSON.stringify(evRes));
+				throw new Error(
+					`Failed to create event: eventId is undefined. Response: ${JSON.stringify(evRes)}`,
+				);
 			}
 
 			const first = await mercuriusClient.mutate(MUTATION_REGISTER_FOR_EVENT, {
@@ -315,7 +319,10 @@ suite("registerForEvent", () => {
 				},
 			});
 			if (!evRes.data?.createEvent?.id) {
-				console.error("createEvent mutation response:", JSON.stringify(evRes, null, 2));
+				console.error(
+					"createEvent mutation response:",
+					JSON.stringify(evRes, null, 2),
+				);
 			}
 			const eventId = evRes.data?.createEvent?.id;
 			assertToBeNonNullish(eventId);

@@ -11,7 +11,7 @@ import {
 	MutationCreateEventInput,
 	mutationCreateEventInputSchema,
 } from "~/src/graphql/inputs/MutationCreateEventInput";
-import { Event } from "~/src/graphql/types/Event/Event";
+// import { Event } from "~/src/graphql/types/Event/Event";
 import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
@@ -25,39 +25,31 @@ import {
 
 const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
-		let attachments:
-			| (FileUpload & {
-				mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
-			})[]
-			| undefined;
-
+		let attachments: (FileUpload & { mimetype: z.infer<typeof eventAttachmentMimeTypeEnum> })[] | undefined = undefined;
 		if (arg.attachments !== undefined) {
 			const rawAttachments = await Promise.all(arg.attachments);
-			const { data, error, success } = eventAttachmentMimeTypeEnum
+			const result = eventAttachmentMimeTypeEnum
 				.array()
 				.safeParse(rawAttachments.map((attachment) => attachment.mimetype));
-
-			if (!success) {
-				for (const issue of error.issues) {
-					// `issue.path[0]` would correspond to the numeric index of the attachment within `arg.attachments` array which contains the invalid mime type.
+			if (!result.success && result.error) {
+				for (const issue of result.error.issues) {
 					if (typeof issue.path[0] === "number") {
 						ctx.addIssue({
 							code: "custom",
 							path: ["attachments", issue.path[0]],
-							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype
-								}" is not allowed.`,
+							message: `Mime type "${rawAttachments[issue.path[0]]?.mimetype}" is not allowed.`,
 						});
 					}
 				}
-			} else {
+			}
+			if (result.success && result.data) {
 				attachments = rawAttachments.map((attachment, index) =>
 					Object.assign(attachment, {
-						mimetype: data[index],
-					}),
+						mimetype: result.data[index],
+					})
 				);
 			}
 		}
-
 		return {
 			...arg,
 			attachments,
@@ -67,6 +59,7 @@ const mutationCreateEventArgumentsSchema = z.object({
 
 builder.mutationField("createEvent", (t) =>
 	t.field({
+		type: builder.objectRef<{ id: string }>("CreateEventResult"),
 		args: {
 			input: t.arg({
 				description: "",
@@ -375,7 +368,7 @@ builder.mutationField("createEvent", (t) =>
 						createdEventAttachments = await tx
 							.insert(eventAttachmentsTable)
 							.values(
-								attachments.map((attachment) => ({
+								attachments.map((attachment: any) => ({
 									creatorId: currentUserId,
 									eventId: createdEvent.id,
 									mimeType: attachment.mimetype,
@@ -394,26 +387,18 @@ builder.mutationField("createEvent", (t) =>
 										undefined,
 										{
 											"content-type": attachment.mimeType,
-										},
+										}
 									);
 								}
-							}),
+								return undefined;
+							})
 						);
 					}
-
-					const finalEvent = Object.assign(createdEvent, {
-						attachments: createdEventAttachments,
-						allDay: createdEvent.allDay ?? false,
-						isPublic: createdEvent.isPublic ?? false,
-						isRegisterable: createdEvent.isRegisterable ?? false,
-					});
-
-					return finalEvent;
+					return createdEvent;
 				},
 			);
-
-			return createdEventResult;
-		},
-		type: Event,
-	}),
+			// Return the event in the expected GraphQL shape (e.g., { id })
+			return { id: createdEventResult.id };
+		}
+	})
 );

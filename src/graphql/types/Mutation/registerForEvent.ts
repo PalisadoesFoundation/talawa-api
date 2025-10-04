@@ -71,9 +71,7 @@ builder.mutationField("registerForEvent", (t) =>
 						message: "Event is not open for registration",
 						extensions: {
 							code: "invalid_arguments",
-							issues: [
-								{ argumentPath: ["input", "eventId"], message: "Event is not open for registration" }
-							]
+							issues: [{ argumentPath: ["input", "eventId"], message: "Event is not open for registration" }],
 						},
 					});
 				}
@@ -95,16 +93,17 @@ builder.mutationField("registerForEvent", (t) =>
 						message: "User is already registered for this event",
 						extensions: {
 							code: "invalid_arguments",
-							issues: [
-								{ argumentPath: ["input", "userId"], message: "User is already registered for this event" }
-							]
+							issues: [{ argumentPath: ["input", "userId"], message: "User is already registered for this event" }],
 						},
 					});
 				}
 
 				// Check capacity if it's set (null means unlimited capacity)
 				if (event.capacity !== null && event.capacity !== undefined) {
-					const capacityNum = typeof event.capacity === "string" ? parseInt(event.capacity, 10) : event.capacity;
+					const capacityNum =
+						typeof event.capacity === "string"
+							? Number.parseInt(event.capacity, 10)
+							: event.capacity;
 					const countResult = await tx
 						.select({ count: sql<number>`count(*)::int` })
 						.from(eventAttendancesTable)
@@ -113,14 +112,14 @@ builder.mutationField("registerForEvent", (t) =>
 					const currentCount = countResult[0]?.count ?? 0;
 
 					if (currentCount >= capacityNum) {
-						console.log(`[registerForEvent] capacity reached: currentCount=${currentCount}, capacity=${capacityNum}`);
+						console.log(
+							`[registerForEvent] capacity reached: currentCount=${currentCount}, capacity=${capacityNum}`,
+						);
 						throw new TalawaGraphQLError({
 							message: "Event has reached maximum capacity",
 							extensions: {
 								code: "invalid_arguments",
-								issues: [
-									{ argumentPath: ["input", "eventId"], message: "Event has reached maximum capacity" }
-								]
+								issues: [{ argumentPath: ["input", "eventId"], message: "Event has reached maximum capacity" }],
 							}
 						});
 					}

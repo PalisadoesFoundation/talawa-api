@@ -45,7 +45,8 @@ export const MutationCreateEventInput = builder
 		description: "",
 		fields: (t) => ({
 			capacity: t.int({
-				description: "Maximum number of attendees allowed for this event. Null means unlimited.",
+				description:
+					"Maximum number of attendees allowed for this event. Null means unlimited.",
 				required: false,
 			}),
 			attachments: t.field({
