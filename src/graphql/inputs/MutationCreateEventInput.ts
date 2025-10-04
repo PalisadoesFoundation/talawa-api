@@ -4,7 +4,6 @@ import { eventsTableInsertSchema } from "~/src/drizzle/tables/events";
 import { builder } from "~/src/graphql/builder";
 import { RecurrenceInput, recurrenceInputSchema } from "./RecurrenceInput";
 
-
 export const mutationCreateEventInputSchema = eventsTableInsertSchema
 	.pick({
 		description: true,

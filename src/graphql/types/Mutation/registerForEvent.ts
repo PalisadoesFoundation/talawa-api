@@ -30,7 +30,6 @@ builder.mutationField("registerForEvent", (t) =>
 		resolve: async (_root, args, ctx) => {
 			const { input } = mutationRegisterForEventArgumentsSchema.parse(args);
 
-
 			if (!ctx.currentClient.isAuthenticated || !ctx.currentClient.user) {
 				throw new TalawaGraphQLError({
 					message: "User not authenticated",
@@ -60,9 +59,7 @@ builder.mutationField("registerForEvent", (t) =>
 						message: "Event not found",
 						extensions: {
 							code: "arguments_associated_resources_not_found",
-							issues: [
-								{ argumentPath: ["input", "eventId"] }
-							]
+							issues: [{ argumentPath: ["input", "eventId"] }],
 						},
 					});
 				}
@@ -71,7 +68,12 @@ builder.mutationField("registerForEvent", (t) =>
 						message: "Event is not open for registration",
 						extensions: {
 							code: "invalid_arguments",
-							issues: [{ argumentPath: ["input", "eventId"], message: "Event is not open for registration" }],
+							issues: [
+								{
+									argumentPath: ["input", "eventId"],
+									message: "Event is not open for registration",
+								},
+							],
 						},
 					});
 				}
@@ -93,7 +95,12 @@ builder.mutationField("registerForEvent", (t) =>
 						message: "User is already registered for this event",
 						extensions: {
 							code: "invalid_arguments",
-							issues: [{ argumentPath: ["input", "userId"], message: "User is already registered for this event" }],
+							issues: [
+								{
+									argumentPath: ["input", "userId"],
+									message: "User is already registered for this event",
+								},
+							],
 						},
 					});
 				}
@@ -119,8 +126,13 @@ builder.mutationField("registerForEvent", (t) =>
 							message: "Event has reached maximum capacity",
 							extensions: {
 								code: "invalid_arguments",
-								issues: [{ argumentPath: ["input", "eventId"], message: "Event has reached maximum capacity" }],
-							}
+								issues: [
+									{
+										argumentPath: ["input", "eventId"],
+										message: "Event has reached maximum capacity",
+									},
+								],
+							},
 						});
 					}
 				}
