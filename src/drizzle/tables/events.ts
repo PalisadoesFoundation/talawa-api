@@ -149,8 +149,6 @@ export const eventsTable = pgTable(
 			self.isRecurringEventTemplate,
 		),
 
-		// Add capacity index
-		capacityIdx: index("events_capacity_idx").on(self.capacity),
 	}),
 );
 
