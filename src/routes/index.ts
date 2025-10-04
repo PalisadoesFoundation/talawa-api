@@ -2,7 +2,7 @@ import fastifyPlugin from "fastify-plugin";
 import graphql from "./graphql";
 import healthcheck from "./healthcheck";
 import objects from "./objects";
-import pluginWebhooks from "./pluginWebhooks";
+import pluginWebhooks from "../plugin/pluginWebhooks";
 
 /**
  * This fastify plugin function contains all talawa api routes within it.
