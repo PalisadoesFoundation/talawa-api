@@ -148,7 +148,6 @@ export const eventsTable = pgTable(
 		isRecurringEventTemplateIdx: index("events_is_recurring_template_idx").on(
 			self.isRecurringEventTemplate,
 		),
-
 	}),
 );
 
