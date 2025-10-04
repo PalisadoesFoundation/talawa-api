@@ -51,7 +51,7 @@ const drizzleClientMock = {
 				where(
 					{ memberId: "memberId", organizationId: "organizationId" },
 					{
-						and: (...conditions: boolean[]) => true,
+						and: (..._conditions: boolean[]) => true,
 						eq: (field: string, value: string) => {
 							if (field === "memberId") memberId = value;
 							if (field === "organizationId") organizationId = value;
@@ -84,7 +84,7 @@ const drizzleClientMock = {
 	},
 	transaction: vi.fn().mockImplementation(async (callback) => {
 		const mockTx = {
-			insert: (table: unknown) => ({
+			insert: (_table: unknown) => ({
 				values: (data: { tagId: string; assigneeId: string }) => {
 					const key = `${data.tagId}:${data.assigneeId}`;
 					mockDb.tagAssignments.set(key, {
@@ -110,7 +110,7 @@ let adminId = "";
 // Single mock implementation for mercuriusClient
 vi.mock("../client", () => ({
 	mercuriusClient: {
-		query: vi.fn().mockImplementation(async (document, options) => {
+		query: vi.fn().mockImplementation(async (document, _options) => {
 			const opName = document?.definitions?.[0]?.name?.value;
 
 			if (opName === "Query_signIn") {

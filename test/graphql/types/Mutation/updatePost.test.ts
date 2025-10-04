@@ -130,7 +130,7 @@ suite("Mutation field updatePost", () => {
 							organizationId: orgId,
 							attachments: [
 								{
-									mimetype: "IMAGE_PNG",
+									mimeType: "IMAGE_PNG",
 									objectName: "test-object-name-7",
 									name: "test-image.png-7",
 									fileHash: "test-file-hash-7",
@@ -228,7 +228,7 @@ suite("Mutation field updatePost", () => {
 								organizationId: orgId,
 								attachments: [
 									{
-										mimetype: "IMAGE_PNG",
+										mimeType: "IMAGE_PNG",
 										objectName: "test-object-name-3",
 										name: "test-image.png-3",
 										fileHash: "test-file-hash-3",
@@ -301,7 +301,7 @@ suite("Mutation field updatePost", () => {
 							isPinned: false,
 							attachments: [
 								{
-									mimetype: "IMAGE_PNG",
+									mimeType: "IMAGE_PNG",
 									objectName: "test-object-name-4",
 									name: "test-image.png-4",
 									fileHash: "test-file-hash-4",
@@ -402,7 +402,7 @@ suite("Mutation field updatePost", () => {
 							organizationId: orgId,
 							attachments: [
 								{
-									mimetype: "IMAGE_PNG",
+									mimeType: "IMAGE_PNG",
 									objectName: "unexpected-test-object",
 									name: "unexpected-test.png",
 									fileHash: "unexpected-test-hash",
@@ -699,13 +699,13 @@ suite("Mutation field updatePost", () => {
 
 			const initialAttachments = [
 				{
-					mimetype: "IMAGE_PNG" as const,
+					mimeType: "IMAGE_PNG" as const,
 					objectName: "initial-object-name-1",
 					name: "initial-image1.png",
 					fileHash: "initial-file-hash-1",
 				},
 				{
-					mimetype: "IMAGE_JPEG" as const,
+					mimeType: "IMAGE_JPEG" as const,
 					objectName: "initial-object-name-2",
 					name: "initial-image2.jpg",
 					fileHash: "initial-file-hash-2",
@@ -736,19 +736,19 @@ suite("Mutation field updatePost", () => {
 
 			const newAttachments = [
 				{
-					mimetype: "IMAGE_PNG" as const,
+					mimeType: "IMAGE_PNG" as const,
 					objectName: "new-object-name-1",
 					name: "new-image1.png",
 					fileHash: "new-file-hash-1",
 				},
 				{
-					mimetype: "IMAGE_JPEG" as const,
+					mimeType: "IMAGE_JPEG" as const,
 					objectName: "new-object-name-2",
 					name: "new-image2.jpg",
 					fileHash: "new-file-hash-2",
 				},
 				{
-					mimetype: "IMAGE_PNG" as const,
+					mimeType: "IMAGE_PNG" as const,
 					objectName: "new-object-name-3",
 					name: "new-document.png",
 					fileHash: "new-file-hash-3",
@@ -848,7 +848,7 @@ suite("Mutation field updatePost", () => {
 								organizationId: orgId,
 								attachments: [
 									{
-										mimetype: "IMAGE_PNG",
+										mimeType: "IMAGE_PNG",
 										objectName: "test-object-name",
 										name: "test-image.png",
 										fileHash: "test-file-hash",
@@ -889,7 +889,7 @@ suite("Mutation field updatePost", () => {
 									caption: "Updated Caption",
 									attachments: [
 										{
-											mimetype: "IMAGE_PNG",
+											mimeType: "IMAGE_PNG",
 											objectName: "test-object-name-1",
 											name: "test-image.png",
 											fileHash: "test-file-hash-1",
@@ -956,7 +956,7 @@ suite("Mutation field updatePost", () => {
 							isPinned: true,
 							attachments: [
 								{
-									mimetype: "IMAGE_PNG",
+									mimeType: "IMAGE_PNG",
 									objectName: "test-object-name",
 									name: "test-image.png",
 									fileHash: "test-file-hash",

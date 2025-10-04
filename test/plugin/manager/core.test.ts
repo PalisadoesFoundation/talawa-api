@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import PluginManager from "../../../src/plugin/manager/core";
 import type { ExtensionLoader } from "../../../src/plugin/manager/extensions";
 import type { PluginLifecycle } from "../../../src/plugin/manager/lifecycle";
-import { PluginStatus } from "../../../src/plugin/types";
 import type {
 	IPluginContext,
 	IPluginManifest,
 } from "../../../src/plugin/types";
+import { PluginStatus } from "../../../src/plugin/types";
 
 // Mocks
 vi.mock("../../../src/plugin/utils", () => ({

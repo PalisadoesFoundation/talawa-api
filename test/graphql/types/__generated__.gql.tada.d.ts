@@ -2,6 +2,138 @@
 /* prettier-ignore */
 
 export type introspection_types = {
+	AcceptMembershipResponse: {
+		kind: "OBJECT";
+		name: "AcceptMembershipResponse";
+		fields: {
+			message: {
+				name: "message";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			success: {
+				name: "success";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+		};
+	};
+	ActionItem: {
+		kind: "OBJECT";
+		name: "ActionItem";
+		fields: {
+			assignedAt: {
+				name: "assignedAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+			assignee: {
+				name: "assignee";
+				type: { kind: "OBJECT"; name: "User"; ofType: null };
+			};
+			category: {
+				name: "category";
+				type: { kind: "OBJECT"; name: "ActionItemCategory"; ofType: null };
+			};
+			completionAt: {
+				name: "completionAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+			createdAt: {
+				name: "createdAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+			creator: {
+				name: "creator";
+				type: { kind: "OBJECT"; name: "User"; ofType: null };
+			};
+			event: {
+				name: "event";
+				type: { kind: "OBJECT"; name: "Event"; ofType: null };
+			};
+			id: { name: "id"; type: { kind: "SCALAR"; name: "ID"; ofType: null } };
+			isCompleted: {
+				name: "isCompleted";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			isInstanceException: {
+				name: "isInstanceException";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			isTemplate: {
+				name: "isTemplate";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			organization: {
+				name: "organization";
+				type: { kind: "OBJECT"; name: "Organization"; ofType: null };
+			};
+			postCompletionNotes: {
+				name: "postCompletionNotes";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			preCompletionNotes: {
+				name: "preCompletionNotes";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			recurringEventInstance: {
+				name: "recurringEventInstance";
+				type: { kind: "OBJECT"; name: "Event"; ofType: null };
+			};
+			updater: {
+				name: "updater";
+				type: { kind: "OBJECT"; name: "User"; ofType: null };
+			};
+		};
+	};
+	ActionItemCategory: {
+		kind: "OBJECT";
+		name: "ActionItemCategory";
+		fields: {
+			actionItems: {
+				name: "actionItems";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "OBJECT"; name: "ActionItem"; ofType: null };
+					};
+				};
+			};
+			createdAt: {
+				name: "createdAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+			creator: {
+				name: "creator";
+				type: { kind: "OBJECT"; name: "User"; ofType: null };
+			};
+			description: {
+				name: "description";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			id: { name: "id"; type: { kind: "SCALAR"; name: "ID"; ofType: null } };
+			isDisabled: {
+				name: "isDisabled";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			name: {
+				name: "name";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			organization: {
+				name: "organization";
+				type: { kind: "OBJECT"; name: "Organization"; ofType: null };
+			};
+			updatedAt: {
+				name: "updatedAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+			updater: {
+				name: "updater";
+				type: { kind: "OBJECT"; name: "User"; ofType: null };
+			};
+		};
+	};
 	Advertisement: {
 		kind: "OBJECT";
 		name: "Advertisement";
@@ -89,6 +221,18 @@ export type introspection_types = {
 	AdvertisementType: {
 		name: "AdvertisementType";
 		enumValues: "banner" | "menu" | "pop_up";
+	};
+	AdvertisementWhereInput: {
+		kind: "INPUT_OBJECT";
+		name: "AdvertisementWhereInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "isCompleted";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+		];
 	};
 	AgendaFolder: {
 		kind: "OBJECT";
@@ -298,31 +442,6 @@ export type introspection_types = {
 		name: "AgendaItemType";
 		enumValues: "general" | "note" | "scripture" | "song";
 	};
-	AttachmentInput: {
-		kind: "INPUT_OBJECT";
-		name: "AttachmentInput";
-		isOneOf: false;
-		inputFields: [
-			{
-				name: "mimeType";
-				type: {
-					kind: "NON_NULL";
-					name: never;
-					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
-				};
-				defaultValue: null;
-			},
-			{
-				name: "url";
-				type: {
-					kind: "NON_NULL";
-					name: never;
-					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
-				};
-				defaultValue: null;
-			},
-		];
-	};
 	AuthenticationPayload: {
 		kind: "OBJECT";
 		name: "AuthenticationPayload";
@@ -344,7 +463,7 @@ export type introspection_types = {
 		fields: {
 			createdAt: {
 				name: "createdAt";
-				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+				type: { kind: "SCALAR"; name: "Date"; ofType: null };
 			};
 			id: { name: "id"; type: { kind: "SCALAR"; name: "ID"; ofType: null } };
 			organization: {
@@ -358,6 +477,44 @@ export type introspection_types = {
 		};
 	};
 	Boolean: unknown;
+	CancelMembershipResponse: {
+		kind: "OBJECT";
+		name: "CancelMembershipResponse";
+		fields: {
+			message: {
+				name: "message";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			success: {
+				name: "success";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+		};
+	};
+	CategoriesByIdsInput: {
+		kind: "INPUT_OBJECT";
+		name: "CategoriesByIdsInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "ids";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: {
+						kind: "LIST";
+						name: never;
+						ofType: {
+							kind: "NON_NULL";
+							name: never;
+							ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+						};
+					};
+				};
+				defaultValue: null;
+			},
+		];
+	};
 	Chat: {
 		kind: "OBJECT";
 		name: "Chat";
@@ -774,13 +931,131 @@ export type introspection_types = {
 			};
 		};
 	};
+	CreateActionItemInput: {
+		kind: "INPUT_OBJECT";
+		name: "CreateActionItemInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "assignedAt";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "assigneeId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "categoryId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "eventId";
+				type: { kind: "SCALAR"; name: "ID"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "isTemplate";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "organizationId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "preCompletionNotes";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "recurringEventInstanceId";
+				type: { kind: "SCALAR"; name: "ID"; ofType: null };
+				defaultValue: null;
+			},
+		];
+	};
+	CreatePluginInput: {
+		kind: "INPUT_OBJECT";
+		name: "CreatePluginInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "backup";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "isActivated";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "isInstalled";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "pluginId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
 	Date: unknown;
 	DateTime: unknown;
+	DeletePluginInput: {
+		kind: "INPUT_OBJECT";
+		name: "DeletePluginInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	DrizzleMembershipRequestStatus: {
+		name: "DrizzleMembershipRequestStatus";
+		enumValues: "approved" | "pending" | "rejected";
+	};
 	EmailAddress: unknown;
 	Event: {
 		kind: "OBJECT";
 		name: "Event";
 		fields: {
+			actionItems: {
+				name: "actionItems";
+				type: {
+					kind: "OBJECT";
+					name: "EventActionItemsConnection";
+					ofType: null;
+				};
+			};
 			agendaFolders: {
 				name: "agendaFolders";
 				type: {
@@ -788,6 +1063,10 @@ export type introspection_types = {
 					name: "EventAgendaFoldersConnection";
 					ofType: null;
 				};
+			};
+			allDay: {
+				name: "allDay";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
 			};
 			attachments: {
 				name: "attachments";
@@ -800,6 +1079,10 @@ export type introspection_types = {
 						ofType: { kind: "OBJECT"; name: "EventAttachment"; ofType: null };
 					};
 				};
+			};
+			baseEvent: {
+				name: "baseEvent";
+				type: { kind: "OBJECT"; name: "Event"; ofType: null };
 			};
 			createdAt: {
 				name: "createdAt";
@@ -817,6 +1100,10 @@ export type introspection_types = {
 				name: "endAt";
 				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
 			};
+			hasExceptions: {
+				name: "hasExceptions";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
 			id: {
 				name: "id";
 				type: {
@@ -824,6 +1111,22 @@ export type introspection_types = {
 					name: never;
 					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
 				};
+			};
+			isPublic: {
+				name: "isPublic";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			isRecurringEventTemplate: {
+				name: "isRecurringEventTemplate";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			isRegisterable: {
+				name: "isRegisterable";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			location: {
+				name: "location";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
 			};
 			name: {
 				name: "name";
@@ -833,9 +1136,33 @@ export type introspection_types = {
 				name: "organization";
 				type: { kind: "OBJECT"; name: "Organization"; ofType: null };
 			};
+			progressLabel: {
+				name: "progressLabel";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			recurrenceDescription: {
+				name: "recurrenceDescription";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			recurrenceRule: {
+				name: "recurrenceRule";
+				type: { kind: "OBJECT"; name: "RecurrenceRule"; ofType: null };
+			};
+			sequenceNumber: {
+				name: "sequenceNumber";
+				type: { kind: "SCALAR"; name: "Int"; ofType: null };
+			};
 			startAt: {
 				name: "startAt";
-				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+				};
+			};
+			totalCount: {
+				name: "totalCount";
+				type: { kind: "SCALAR"; name: "Int"; ofType: null };
 			};
 			updatedAt: {
 				name: "updatedAt";
@@ -848,6 +1175,50 @@ export type introspection_types = {
 			venues: {
 				name: "venues";
 				type: { kind: "OBJECT"; name: "EventVenuesConnection"; ofType: null };
+			};
+		};
+	};
+	EventActionItemsConnection: {
+		kind: "OBJECT";
+		name: "EventActionItemsConnection";
+		fields: {
+			edges: {
+				name: "edges";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "OBJECT";
+						name: "EventActionItemsConnectionEdge";
+						ofType: null;
+					};
+				};
+			};
+			pageInfo: {
+				name: "pageInfo";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "OBJECT"; name: "PageInfo"; ofType: null };
+				};
+			};
+		};
+	};
+	EventActionItemsConnectionEdge: {
+		kind: "OBJECT";
+		name: "EventActionItemsConnectionEdge";
+		fields: {
+			cursor: {
+				name: "cursor";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+			};
+			node: {
+				name: "node";
+				type: { kind: "OBJECT"; name: "ActionItem"; ofType: null };
 			};
 		};
 	};
@@ -953,6 +1324,22 @@ export type introspection_types = {
 			};
 		};
 	};
+	EventsByOrganizationIdInput: {
+		kind: "INPUT_OBJECT";
+		name: "EventsByOrganizationIdInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "organizationId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
 	FileMetadataInput: {
 		kind: "INPUT_OBJECT";
 		name: "FileMetadataInput";
@@ -968,7 +1355,7 @@ export type introspection_types = {
 				defaultValue: null;
 			},
 			{
-				name: "mimetype";
+				name: "mimeType";
 				type: {
 					kind: "NON_NULL";
 					name: never;
@@ -977,6 +1364,15 @@ export type introspection_types = {
 						name: "PostAttachmentMimeType";
 						ofType: null;
 					};
+				};
+				defaultValue: null;
+			},
+			{
+				name: "name";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
 				};
 				defaultValue: null;
 			},
@@ -990,6 +1386,10 @@ export type introspection_types = {
 				defaultValue: null;
 			},
 		];
+	};
+	Frequency: {
+		name: "Frequency";
+		enumValues: "DAILY" | "MONTHLY" | "WEEKLY" | "YEARLY";
 	};
 	Fund: {
 		kind: "OBJECT";
@@ -1268,8 +1668,30 @@ export type introspection_types = {
 			};
 		};
 	};
+	HasUserVoted: {
+		kind: "OBJECT";
+		name: "HasUserVoted";
+		fields: {
+			hasVoted: {
+				name: "hasVoted";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				};
+			};
+			voteType: {
+				name: "voteType";
+				type: { kind: "ENUM"; name: "PostVoteType"; ofType: null };
+			};
+		};
+	};
 	ID: unknown;
 	Int: unknown;
+	InviteStatus: {
+		name: "InviteStatus";
+		enumValues: "accepted" | "declined" | "no_response";
+	};
 	Iso3166Alpha2CountryCode: {
 		name: "Iso3166Alpha2CountryCode";
 		enumValues:
@@ -1892,6 +2314,22 @@ export type introspection_types = {
 			| "zh"
 			| "zu";
 	};
+	MarkActionItemAsPendingInput: {
+		kind: "INPUT_OBJECT";
+		name: "MarkActionItemAsPendingInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
 	MembersRoleWhereInput: {
 		kind: "INPUT_OBJECT";
 		name: "MembersRoleWhereInput";
@@ -1933,13 +2371,91 @@ export type introspection_types = {
 			},
 		];
 	};
+	MembershipRequest: {
+		kind: "OBJECT";
+		name: "MembershipRequest";
+		fields: {
+			createdAt: {
+				name: "createdAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+			membershipRequestId: {
+				name: "membershipRequestId";
+				type: { kind: "SCALAR"; name: "ID"; ofType: null };
+			};
+			organizationId: {
+				name: "organizationId";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			status: {
+				name: "status";
+				type: { kind: "ENUM"; name: "MembershipRequestStatus"; ofType: null };
+			};
+			user: {
+				name: "user";
+				type: { kind: "OBJECT"; name: "User"; ofType: null };
+			};
+			userId: {
+				name: "userId";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+		};
+	};
+	MembershipRequestStatus: {
+		name: "MembershipRequestStatus";
+		enumValues: "approved" | "pending" | "rejected";
+	};
+	MembershipRequestWhereInput: {
+		kind: "INPUT_OBJECT";
+		name: "MembershipRequestWhereInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "user";
+				type: { kind: "INPUT_OBJECT"; name: "UserWhereInput"; ofType: null };
+				defaultValue: null;
+			},
+		];
+	};
 	Mutation: {
 		kind: "OBJECT";
 		name: "Mutation";
 		fields: {
+			acceptMembershipRequest: {
+				name: "acceptMembershipRequest";
+				type: {
+					kind: "OBJECT";
+					name: "AcceptMembershipResponse";
+					ofType: null;
+				};
+			};
+			assignUserTag: {
+				name: "assignUserTag";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
 			blockUser: {
 				name: "blockUser";
 				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			cancelMembershipRequest: {
+				name: "cancelMembershipRequest";
+				type: {
+					kind: "OBJECT";
+					name: "CancelMembershipResponse";
+					ofType: null;
+				};
+			};
+			completeActionItemForInstance: {
+				name: "completeActionItemForInstance";
+				type: { kind: "OBJECT"; name: "ActionItem"; ofType: null };
+			};
+			createActionItem: {
+				name: "createActionItem";
+				type: { kind: "OBJECT"; name: "ActionItem"; ofType: null };
+			};
+			createActionItemCategory: {
+				name: "createActionItemCategory";
+				type: { kind: "OBJECT"; name: "ActionItemCategory"; ofType: null };
 			};
 			createAdvertisement: {
 				name: "createAdvertisement";
@@ -1977,6 +2493,18 @@ export type introspection_types = {
 				name: "createEvent";
 				type: { kind: "OBJECT"; name: "Event"; ofType: null };
 			};
+			createEventVolunteerGroup: {
+				name: "createEventVolunteerGroup";
+				type: { kind: "OBJECT"; name: "VolunteerGroups"; ofType: null };
+			};
+			createEventVolunteerGroupAssignments: {
+				name: "createEventVolunteerGroupAssignments";
+				type: {
+					kind: "OBJECT";
+					name: "VolunteerGroupAssignments";
+					ofType: null;
+				};
+			};
 			createFund: {
 				name: "createFund";
 				type: { kind: "OBJECT"; name: "Fund"; ofType: null };
@@ -2000,6 +2528,10 @@ export type introspection_types = {
 			createOrganizationMembership: {
 				name: "createOrganizationMembership";
 				type: { kind: "OBJECT"; name: "Organization"; ofType: null };
+			};
+			createPlugin: {
+				name: "createPlugin";
+				type: { kind: "OBJECT"; name: "Plugin"; ofType: null };
 			};
 			createPost: {
 				name: "createPost";
@@ -2032,6 +2564,18 @@ export type introspection_types = {
 			createVenueBooking: {
 				name: "createVenueBooking";
 				type: { kind: "OBJECT"; name: "Venue"; ofType: null };
+			};
+			deleteActionItem: {
+				name: "deleteActionItem";
+				type: { kind: "OBJECT"; name: "ActionItem"; ofType: null };
+			};
+			deleteActionItemCategory: {
+				name: "deleteActionItemCategory";
+				type: { kind: "OBJECT"; name: "ActionItemCategory"; ofType: null };
+			};
+			deleteActionItemForInstance: {
+				name: "deleteActionItemForInstance";
+				type: { kind: "OBJECT"; name: "ActionItem"; ofType: null };
 			};
 			deleteAdvertisement: {
 				name: "deleteAdvertisement";
@@ -2069,9 +2613,13 @@ export type introspection_types = {
 				name: "deleteCurrentUser";
 				type: { kind: "OBJECT"; name: "User"; ofType: null };
 			};
-			deleteEvent: {
-				name: "deleteEvent";
+			deleteEntireRecurringEventSeries: {
+				name: "deleteEntireRecurringEventSeries";
 				type: { kind: "OBJECT"; name: "Event"; ofType: null };
+			};
+			deleteEventVolunteerGroup: {
+				name: "deleteEventVolunteerGroup";
+				type: { kind: "OBJECT"; name: "VolunteerGroups"; ofType: null };
 			};
 			deleteFund: {
 				name: "deleteFund";
@@ -2093,6 +2641,10 @@ export type introspection_types = {
 				name: "deleteOrganizationMembership";
 				type: { kind: "OBJECT"; name: "Organization"; ofType: null };
 			};
+			deletePlugin: {
+				name: "deletePlugin";
+				type: { kind: "OBJECT"; name: "Plugin"; ofType: null };
+			};
 			deletePost: {
 				name: "deletePost";
 				type: { kind: "OBJECT"; name: "Post"; ofType: null };
@@ -2101,6 +2653,14 @@ export type introspection_types = {
 				name: "deletePostVote";
 				type: { kind: "OBJECT"; name: "Post"; ofType: null };
 			};
+			deleteSingleEventInstance: {
+				name: "deleteSingleEventInstance";
+				type: { kind: "OBJECT"; name: "Event"; ofType: null };
+			};
+			deleteStandaloneEvent: {
+				name: "deleteStandaloneEvent";
+				type: { kind: "OBJECT"; name: "Event"; ofType: null };
+			};
 			deleteTag: {
 				name: "deleteTag";
 				type: { kind: "OBJECT"; name: "Tag"; ofType: null };
@@ -2108,6 +2668,10 @@ export type introspection_types = {
 			deleteTagFolder: {
 				name: "deleteTagFolder";
 				type: { kind: "OBJECT"; name: "TagFolder"; ofType: null };
+			};
+			deleteThisAndFollowingEvents: {
+				name: "deleteThisAndFollowingEvents";
+				type: { kind: "OBJECT"; name: "Event"; ofType: null };
 			};
 			deleteUser: {
 				name: "deleteUser";
@@ -2121,13 +2685,57 @@ export type introspection_types = {
 				name: "deleteVenueBooking";
 				type: { kind: "OBJECT"; name: "Venue"; ofType: null };
 			};
+			joinPublicOrganization: {
+				name: "joinPublicOrganization";
+				type: {
+					kind: "OBJECT";
+					name: "OrganizationMembershipObject";
+					ofType: null;
+				};
+			};
+			markActionItemAsPending: {
+				name: "markActionItemAsPending";
+				type: { kind: "OBJECT"; name: "ActionItem"; ofType: null };
+			};
+			markActionItemAsPendingForInstance: {
+				name: "markActionItemAsPendingForInstance";
+				type: { kind: "OBJECT"; name: "ActionItem"; ofType: null };
+			};
+			rejectMembershipRequest: {
+				name: "rejectMembershipRequest";
+				type: {
+					kind: "OBJECT";
+					name: "RejectMembershipResponse";
+					ofType: null;
+				};
+			};
+			sendMembershipRequest: {
+				name: "sendMembershipRequest";
+				type: { kind: "OBJECT"; name: "MembershipRequest"; ofType: null };
+			};
 			signUp: {
 				name: "signUp";
 				type: { kind: "OBJECT"; name: "AuthenticationPayload"; ofType: null };
 			};
+			unassignUserTag: {
+				name: "unassignUserTag";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
 			unblockUser: {
 				name: "unblockUser";
 				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			updateActionItem: {
+				name: "updateActionItem";
+				type: { kind: "OBJECT"; name: "ActionItem"; ofType: null };
+			};
+			updateActionItemCategory: {
+				name: "updateActionItemCategory";
+				type: { kind: "OBJECT"; name: "ActionItemCategory"; ofType: null };
+			};
+			updateActionItemForInstance: {
+				name: "updateActionItemForInstance";
+				type: { kind: "OBJECT"; name: "ActionItem"; ofType: null };
 			};
 			updateAdvertisement: {
 				name: "updateAdvertisement";
@@ -2169,9 +2777,21 @@ export type introspection_types = {
 				name: "updateCurrentUser";
 				type: { kind: "OBJECT"; name: "User"; ofType: null };
 			};
-			updateEvent: {
-				name: "updateEvent";
+			updateEntireRecurringEventSeries: {
+				name: "updateEntireRecurringEventSeries";
 				type: { kind: "OBJECT"; name: "Event"; ofType: null };
+			};
+			updateEventVolunteerGroup: {
+				name: "updateEventVolunteerGroup";
+				type: { kind: "OBJECT"; name: "VolunteerGroups"; ofType: null };
+			};
+			updateEventVolunteerGroupAssignments: {
+				name: "updateEventVolunteerGroupAssignments";
+				type: {
+					kind: "OBJECT";
+					name: "VolunteerGroupAssignments";
+					ofType: null;
+				};
 			};
 			updateFund: {
 				name: "updateFund";
@@ -2193,6 +2813,10 @@ export type introspection_types = {
 				name: "updateOrganizationMembership";
 				type: { kind: "OBJECT"; name: "Organization"; ofType: null };
 			};
+			updatePlugin: {
+				name: "updatePlugin";
+				type: { kind: "OBJECT"; name: "Plugin"; ofType: null };
+			};
 			updatePost: {
 				name: "updatePost";
 				type: { kind: "OBJECT"; name: "Post"; ofType: null };
@@ -2200,6 +2824,14 @@ export type introspection_types = {
 			updatePostVote: {
 				name: "updatePostVote";
 				type: { kind: "OBJECT"; name: "Post"; ofType: null };
+			};
+			updateSingleRecurringEventInstance: {
+				name: "updateSingleRecurringEventInstance";
+				type: { kind: "OBJECT"; name: "Event"; ofType: null };
+			};
+			updateStandaloneEvent: {
+				name: "updateStandaloneEvent";
+				type: { kind: "OBJECT"; name: "Event"; ofType: null };
 			};
 			updateTag: {
 				name: "updateTag";
@@ -2209,6 +2841,10 @@ export type introspection_types = {
 				name: "updateTagFolder";
 				type: { kind: "OBJECT"; name: "TagFolder"; ofType: null };
 			};
+			updateThisAndFollowingEvents: {
+				name: "updateThisAndFollowingEvents";
+				type: { kind: "OBJECT"; name: "Event"; ofType: null };
+			};
 			updateUser: {
 				name: "updateUser";
 				type: { kind: "OBJECT"; name: "User"; ofType: null };
@@ -2217,7 +2853,27 @@ export type introspection_types = {
 				name: "updateVenue";
 				type: { kind: "OBJECT"; name: "Venue"; ofType: null };
 			};
+			uploadPluginZip: {
+				name: "uploadPluginZip";
+				type: { kind: "OBJECT"; name: "Plugin"; ofType: null };
+			};
 		};
+	};
+	MutationAcceptMembershipRequestInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationAcceptMembershipRequestInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "membershipRequestId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
 	};
 	MutationBlockUserInput: {
 		kind: "INPUT_OBJECT";
@@ -2235,6 +2891,95 @@ export type introspection_types = {
 			},
 			{
 				name: "userId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationCancelMembershipRequestInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationCancelMembershipRequestInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "membershipRequestId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationCompleteActionItemForInstanceInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationCompleteActionItemForInstanceInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "actionId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "eventId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "postCompletionNotes";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationCreateActionItemCategoryInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationCreateActionItemCategoryInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "description";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "isDisabled";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "name";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "organizationId";
 				type: {
 					kind: "NON_NULL";
 					name: never;
@@ -2492,11 +3237,7 @@ export type introspection_types = {
 			},
 			{
 				name: "parentMessageId";
-				type: {
-					kind: "NON_NULL";
-					name: never;
-					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
-				};
+				type: { kind: "SCALAR"; name: "ID"; ofType: null };
 				defaultValue: null;
 			},
 		];
@@ -2557,6 +3298,11 @@ export type introspection_types = {
 		isOneOf: false;
 		inputFields: [
 			{
+				name: "allDay";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
 				name: "attachments";
 				type: {
 					kind: "LIST";
@@ -2584,6 +3330,21 @@ export type introspection_types = {
 				defaultValue: null;
 			},
 			{
+				name: "isPublic";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "isRegisterable";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "location";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
 				name: "name";
 				type: {
 					kind: "NON_NULL";
@@ -2602,11 +3363,59 @@ export type introspection_types = {
 				defaultValue: null;
 			},
 			{
+				name: "recurrence";
+				type: { kind: "INPUT_OBJECT"; name: "RecurrenceInput"; ofType: null };
+				defaultValue: null;
+			},
+			{
 				name: "startAt";
 				type: {
 					kind: "NON_NULL";
 					name: never;
 					ofType: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationCreateEventVolunteerGroupInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationCreateEventVolunteerGroupInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "eventId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "leaderId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "maxVolunteerCount";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "Int"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "name";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
 				};
 				defaultValue: null;
 			},
@@ -2803,6 +3612,11 @@ export type introspection_types = {
 				defaultValue: null;
 			},
 			{
+				name: "isUserRegistrationRequired";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
 				name: "name";
 				type: {
 					kind: "NON_NULL";
@@ -2865,15 +3679,19 @@ export type introspection_types = {
 			{
 				name: "attachments";
 				type: {
-					kind: "LIST";
+					kind: "NON_NULL";
 					name: never;
 					ofType: {
-						kind: "NON_NULL";
+						kind: "LIST";
 						name: never;
 						ofType: {
-							kind: "INPUT_OBJECT";
-							name: "FileMetadataInput";
-							ofType: null;
+							kind: "NON_NULL";
+							name: never;
+							ofType: {
+								kind: "INPUT_OBJECT";
+								name: "FileMetadataInput";
+								ofType: null;
+							};
 						};
 					};
 				};
@@ -3209,6 +4027,11 @@ export type introspection_types = {
 				defaultValue: null;
 			},
 			{
+				name: "capacity";
+				type: { kind: "SCALAR"; name: "Int"; ofType: null };
+				defaultValue: null;
+			},
+			{
 				name: "description";
 				type: { kind: "SCALAR"; name: "String"; ofType: null };
 				defaultValue: null;
@@ -3224,6 +4047,97 @@ export type introspection_types = {
 			},
 			{
 				name: "organizationId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationCreateVolunteerGroupAssignmentsInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationCreateVolunteerGroupAssignmentsInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "assigneeId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "groupId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "inviteStatus";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "ENUM"; name: "InviteStatus"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationDeleteActionItemCategoryInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationDeleteActionItemCategoryInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationDeleteActionItemForInstanceInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationDeleteActionItemForInstanceInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "actionId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "eventId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationDeleteActionItemInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationDeleteActionItemInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "id";
 				type: {
 					kind: "NON_NULL";
 					name: never;
@@ -3379,9 +4293,41 @@ export type introspection_types = {
 			},
 		];
 	};
+	MutationDeleteEntireRecurringEventSeriesInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationDeleteEntireRecurringEventSeriesInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
 	MutationDeleteEventInput: {
 		kind: "INPUT_OBJECT";
 		name: "MutationDeleteEventInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationDeleteEventVolunteerGroupInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationDeleteEventVolunteerGroupInput";
 		isOneOf: false;
 		inputFields: [
 			{
@@ -3525,6 +4471,38 @@ export type introspection_types = {
 			},
 		];
 	};
+	MutationDeleteSingleEventInstanceInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationDeleteSingleEventInstanceInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationDeleteStandaloneEventInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationDeleteStandaloneEventInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
 	MutationDeleteTagFolderInput: {
 		kind: "INPUT_OBJECT";
 		name: "MutationDeleteTagFolderInput";
@@ -3544,6 +4522,22 @@ export type introspection_types = {
 	MutationDeleteTagInput: {
 		kind: "INPUT_OBJECT";
 		name: "MutationDeleteTagInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationDeleteThisAndFollowingEventsInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationDeleteThisAndFollowingEventsInput";
 		isOneOf: false;
 		inputFields: [
 			{
@@ -3605,6 +4599,79 @@ export type introspection_types = {
 		inputFields: [
 			{
 				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationJoinPublicOrganizationInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationJoinPublicOrganizationInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "organizationId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationMarkActionAsPendingForInstanceInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationMarkActionAsPendingForInstanceInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "actionId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "eventId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationRejectMembershipRequestInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationRejectMembershipRequestInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "membershipRequestId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationSendMembershipRequestInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationSendMembershipRequestInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "organizationId";
 				type: {
 					kind: "NON_NULL";
 					name: never;
@@ -3717,6 +4784,15 @@ export type introspection_types = {
 				defaultValue: null;
 			},
 			{
+				name: "selectedOrganization";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
 				name: "state";
 				type: { kind: "SCALAR"; name: "String"; ofType: null };
 				defaultValue: null;
@@ -3749,6 +4825,127 @@ export type introspection_types = {
 					name: never;
 					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
 				};
+				defaultValue: null;
+			},
+		];
+	};
+	MutationUpdateActionItemCategoryInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationUpdateActionItemCategoryInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "description";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "isDisabled";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "name";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+		];
+	};
+	MutationUpdateActionItemForInstanceInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationUpdateActionItemForInstanceInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "actionId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "assignedAt";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "assigneeId";
+				type: { kind: "SCALAR"; name: "ID"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "categoryId";
+				type: { kind: "SCALAR"; name: "ID"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "eventId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "preCompletionNotes";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+		];
+	};
+	MutationUpdateActionItemInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationUpdateActionItemInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "assigneeId";
+				type: { kind: "SCALAR"; name: "ID"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "categoryId";
+				type: { kind: "SCALAR"; name: "ID"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "isCompleted";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "postCompletionNotes";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "preCompletionNotes";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
 				defaultValue: null;
 			},
 		];
@@ -4171,11 +5368,42 @@ export type introspection_types = {
 			},
 		];
 	};
+	MutationUpdateEntireRecurringEventSeriesInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationUpdateEntireRecurringEventSeriesInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "description";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "name";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+		];
+	};
 	MutationUpdateEventInput: {
 		kind: "INPUT_OBJECT";
 		name: "MutationUpdateEventInput";
 		isOneOf: false;
 		inputFields: [
+			{
+				name: "allDay";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
 			{
 				name: "description";
 				type: { kind: "SCALAR"; name: "String"; ofType: null };
@@ -4196,6 +5424,21 @@ export type introspection_types = {
 				defaultValue: null;
 			},
 			{
+				name: "isPublic";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "isRegisterable";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "location";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
 				name: "name";
 				type: { kind: "SCALAR"; name: "String"; ofType: null };
 				defaultValue: null;
@@ -4203,6 +5446,41 @@ export type introspection_types = {
 			{
 				name: "startAt";
 				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+				defaultValue: null;
+			},
+		];
+	};
+	MutationUpdateEventVolunteerGroupInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationUpdateEventVolunteerGroupInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "leaderId";
+				type: { kind: "SCALAR"; name: "ID"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "maxVolunteerCount";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "Int"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "name";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
 				defaultValue: null;
 			},
 		];
@@ -4405,7 +5683,7 @@ export type introspection_types = {
 						name: never;
 						ofType: {
 							kind: "INPUT_OBJECT";
-							name: "AttachmentInput";
+							name: "FileMetadataInput";
 							ofType: null;
 						};
 					};
@@ -4458,6 +5736,62 @@ export type introspection_types = {
 			},
 		];
 	};
+	MutationUpdateSingleRecurringEventInstanceInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationUpdateSingleRecurringEventInstanceInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "allDay";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "description";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "endAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "isPublic";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "isRegisterable";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "location";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "name";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "startAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+				defaultValue: null;
+			},
+		];
+	};
 	MutationUpdateTagFolderInput: {
 		kind: "INPUT_OBJECT";
 		name: "MutationUpdateTagFolderInput";
@@ -4506,6 +5840,67 @@ export type introspection_types = {
 			{
 				name: "name";
 				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+		];
+	};
+	MutationUpdateThisAndFollowingEventsInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationUpdateThisAndFollowingEventsInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "allDay";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "description";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "endAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "isPublic";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "isRegisterable";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "location";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "name";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "recurrence";
+				type: { kind: "INPUT_OBJECT"; name: "RecurrenceInput"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "startAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
 				defaultValue: null;
 			},
 		];
@@ -4642,6 +6037,24 @@ export type introspection_types = {
 		isOneOf: false;
 		inputFields: [
 			{
+				name: "attachments";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "SCALAR"; name: "Upload"; ofType: null };
+					};
+				};
+				defaultValue: null;
+			},
+			{
+				name: "capacity";
+				type: { kind: "SCALAR"; name: "Int"; ofType: null };
+				defaultValue: null;
+			},
+			{
 				name: "description";
 				type: { kind: "SCALAR"; name: "String"; ofType: null };
 				defaultValue: null;
@@ -4662,10 +6075,52 @@ export type introspection_types = {
 			},
 		];
 	};
+	MutationUpdateVolunteerGroupAssignmentsInput: {
+		kind: "INPUT_OBJECT";
+		name: "MutationUpdateVolunteerGroupAssignmentsInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "assigneeId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "groupId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "inviteStatus";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "ENUM"; name: "UpdateInviteStatus"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
 	Organization: {
 		kind: "OBJECT";
 		name: "Organization";
 		fields: {
+			actionItemCategories: {
+				name: "actionItemCategories";
+				type: {
+					kind: "OBJECT";
+					name: "OrganizationActionItemCategoriesConnection";
+					ofType: null;
+				};
+			};
 			addressLine1: {
 				name: "addressLine1";
 				type: { kind: "SCALAR"; name: "String"; ofType: null };
@@ -4673,6 +6128,10 @@ export type introspection_types = {
 			addressLine2: {
 				name: "addressLine2";
 				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			adminsCount: {
+				name: "adminsCount";
+				type: { kind: "SCALAR"; name: "Int"; ofType: null };
 			};
 			advertisements: {
 				name: "advertisements";
@@ -4750,12 +6209,36 @@ export type introspection_types = {
 					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
 				};
 			};
+			isMember: {
+				name: "isMember";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			isUserRegistrationRequired: {
+				name: "isUserRegistrationRequired";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
 			members: {
 				name: "members";
 				type: {
 					kind: "OBJECT";
 					name: "OrganizationMembersConnection";
 					ofType: null;
+				};
+			};
+			membersCount: {
+				name: "membersCount";
+				type: { kind: "SCALAR"; name: "Int"; ofType: null };
+			};
+			membershipRequests: {
+				name: "membershipRequests";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "OBJECT"; name: "MembershipRequest"; ofType: null };
+					};
 				};
 			};
 			name: {
@@ -4825,6 +6308,50 @@ export type introspection_types = {
 					name: "OrganizationVenuesConnection";
 					ofType: null;
 				};
+			};
+		};
+	};
+	OrganizationActionItemCategoriesConnection: {
+		kind: "OBJECT";
+		name: "OrganizationActionItemCategoriesConnection";
+		fields: {
+			edges: {
+				name: "edges";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "OBJECT";
+						name: "OrganizationActionItemCategoriesConnectionEdge";
+						ofType: null;
+					};
+				};
+			};
+			pageInfo: {
+				name: "pageInfo";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "OBJECT"; name: "PageInfo"; ofType: null };
+				};
+			};
+		};
+	};
+	OrganizationActionItemCategoriesConnectionEdge: {
+		kind: "OBJECT";
+		name: "OrganizationActionItemCategoriesConnectionEdge";
+		fields: {
+			cursor: {
+				name: "cursor";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+			};
+			node: {
+				name: "node";
+				type: { kind: "OBJECT"; name: "ActionItemCategory"; ofType: null };
 			};
 		};
 	};
@@ -5092,6 +6619,28 @@ export type introspection_types = {
 			};
 		};
 	};
+	OrganizationMembershipObject: {
+		kind: "OBJECT";
+		name: "OrganizationMembershipObject";
+		fields: {
+			creatorId: {
+				name: "creatorId";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			memberId: {
+				name: "memberId";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			organizationId: {
+				name: "organizationId";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			role: {
+				name: "role";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+		};
+	};
 	OrganizationMembershipRole: {
 		name: "OrganizationMembershipRole";
 		enumValues: "administrator" | "regular";
@@ -5347,6 +6896,37 @@ export type introspection_types = {
 		};
 	};
 	PhoneNumber: unknown;
+	Plugin: {
+		kind: "OBJECT";
+		name: "Plugin";
+		fields: {
+			backup: {
+				name: "backup";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			createdAt: {
+				name: "createdAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+			id: { name: "id"; type: { kind: "SCALAR"; name: "ID"; ofType: null } };
+			isActivated: {
+				name: "isActivated";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			isInstalled: {
+				name: "isInstalled";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+			pluginId: {
+				name: "pluginId";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			updatedAt: {
+				name: "updatedAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+		};
+	};
 	Post: {
 		kind: "OBJECT";
 		name: "Post";
@@ -5437,6 +7017,14 @@ export type introspection_types = {
 				name: "fileHash";
 				type: { kind: "SCALAR"; name: "String"; ofType: null };
 			};
+			id: {
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+			};
 			mimeType: {
 				name: "mimeType";
 				type: { kind: "SCALAR"; name: "String"; ofType: null };
@@ -5447,10 +7035,6 @@ export type introspection_types = {
 			};
 			objectName: {
 				name: "objectName";
-				type: { kind: "SCALAR"; name: "String"; ofType: null };
-			};
-			url: {
-				name: "url";
 				type: { kind: "SCALAR"; name: "String"; ofType: null };
 			};
 		};
@@ -5602,6 +7186,50 @@ export type introspection_types = {
 		kind: "OBJECT";
 		name: "Query";
 		fields: {
+			actionCategoriesByOrganization: {
+				name: "actionCategoriesByOrganization";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: {
+							kind: "OBJECT";
+							name: "ActionItemCategory";
+							ofType: null;
+						};
+					};
+				};
+			};
+			actionItemCategory: {
+				name: "actionItemCategory";
+				type: { kind: "OBJECT"; name: "ActionItemCategory"; ofType: null };
+			};
+			actionItemsByOrganization: {
+				name: "actionItemsByOrganization";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "OBJECT"; name: "ActionItem"; ofType: null };
+					};
+				};
+			};
+			actionItemsByUser: {
+				name: "actionItemsByUser";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "OBJECT"; name: "ActionItem"; ofType: null };
+					};
+				};
+			};
 			advertisement: {
 				name: "advertisement";
 				type: { kind: "OBJECT"; name: "Advertisement"; ofType: null };
@@ -5618,6 +7246,22 @@ export type introspection_types = {
 				name: "allUsers";
 				type: { kind: "OBJECT"; name: "QueryAllUsersConnection"; ofType: null };
 			};
+			categoriesByIds: {
+				name: "categoriesByIds";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: {
+							kind: "OBJECT";
+							name: "ActionItemCategory";
+							ofType: null;
+						};
+					};
+				};
+			};
 			chat: {
 				name: "chat";
 				type: { kind: "OBJECT"; name: "Chat"; ofType: null };
@@ -5625,6 +7269,18 @@ export type introspection_types = {
 			chatMessage: {
 				name: "chatMessage";
 				type: { kind: "OBJECT"; name: "ChatMessage"; ofType: null };
+			};
+			chatsByUser: {
+				name: "chatsByUser";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "OBJECT"; name: "Chat"; ofType: null };
+					};
+				};
 			};
 			comment: {
 				name: "comment";
@@ -5642,6 +7298,30 @@ export type introspection_types = {
 				name: "event";
 				type: { kind: "OBJECT"; name: "Event"; ofType: null };
 			};
+			eventsByIds: {
+				name: "eventsByIds";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "OBJECT"; name: "Event"; ofType: null };
+					};
+				};
+			};
+			eventsByOrganizationId: {
+				name: "eventsByOrganizationId";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "OBJECT"; name: "Event"; ofType: null };
+					};
+				};
+			};
 			fund: {
 				name: "fund";
 				type: { kind: "OBJECT"; name: "Fund"; ofType: null };
@@ -5653,6 +7333,70 @@ export type introspection_types = {
 			fundCampaignPledge: {
 				name: "fundCampaignPledge";
 				type: { kind: "OBJECT"; name: "FundCampaignPledge"; ofType: null };
+			};
+			getEventVolunteerGroupAssignments: {
+				name: "getEventVolunteerGroupAssignments";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: {
+							kind: "OBJECT";
+							name: "VolunteerGroupAssignments";
+							ofType: null;
+						};
+					};
+				};
+			};
+			getEventVolunteerGroups: {
+				name: "getEventVolunteerGroups";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "OBJECT"; name: "VolunteerGroups"; ofType: null };
+					};
+				};
+			};
+			getPledgesByUserId: {
+				name: "getPledgesByUserId";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: {
+							kind: "OBJECT";
+							name: "FundCampaignPledge";
+							ofType: null;
+						};
+					};
+				};
+			};
+			getPluginById: {
+				name: "getPluginById";
+				type: { kind: "OBJECT"; name: "Plugin"; ofType: null };
+			};
+			getPlugins: {
+				name: "getPlugins";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "OBJECT"; name: "Plugin"; ofType: null };
+					};
+				};
+			};
+			hasUserVoted: {
+				name: "hasUserVoted";
+				type: { kind: "OBJECT"; name: "HasUserVoted"; ofType: null };
 			};
 			organization: {
 				name: "organization";
@@ -5703,11 +7447,104 @@ export type introspection_types = {
 				name: "user";
 				type: { kind: "OBJECT"; name: "User"; ofType: null };
 			};
+			usersByIds: {
+				name: "usersByIds";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "OBJECT"; name: "User"; ofType: null };
+					};
+				};
+			};
+			usersByOrganizationId: {
+				name: "usersByOrganizationId";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "OBJECT"; name: "User"; ofType: null };
+					};
+				};
+			};
 			venue: {
 				name: "venue";
 				type: { kind: "OBJECT"; name: "Venue"; ofType: null };
 			};
 		};
+	};
+	QueryActionCategoriesByOrganizationInput: {
+		kind: "INPUT_OBJECT";
+		name: "QueryActionCategoriesByOrganizationInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "organizationId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	QueryActionItemCategoryInput: {
+		kind: "INPUT_OBJECT";
+		name: "QueryActionItemCategoryInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	QueryActionItemsByOrganizationInput: {
+		kind: "INPUT_OBJECT";
+		name: "QueryActionItemsByOrganizationInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "organizationId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	QueryActionItemsByUserInput: {
+		kind: "INPUT_OBJECT";
+		name: "QueryActionItemsByUserInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "organizationId";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "userId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
 	};
 	QueryAdvertisementInput: {
 		kind: "INPUT_OBJECT";
@@ -5877,6 +7714,46 @@ export type introspection_types = {
 			},
 		];
 	};
+	QueryEventVolunteerGroupsInput: {
+		kind: "INPUT_OBJECT";
+		name: "QueryEventVolunteerGroupsInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "eventId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	QueryEventsByIdsInput: {
+		kind: "INPUT_OBJECT";
+		name: "QueryEventsByIdsInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "ids";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: {
+						kind: "LIST";
+						name: never;
+						ofType: {
+							kind: "NON_NULL";
+							name: never;
+							ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+						};
+					};
+				};
+				defaultValue: null;
+			},
+		];
+	};
 	QueryFundCampaignInput: {
 		kind: "INPUT_OBJECT";
 		name: "QueryFundCampaignInput";
@@ -5909,40 +7786,20 @@ export type introspection_types = {
 			},
 		];
 	};
-	QueryPledgeWhereInput: {
+	QueryFundCampaignPledgesByUserInput: {
 		kind: "INPUT_OBJECT";
-		name: "QueryPledgeWhereInput";
+		name: "QueryFundCampaignPledgesByUserInput";
 		isOneOf: false;
 		inputFields: [
 			{
-				name: "firstName_contains";
+				name: "userId";
 				type: {
-					kind: "SCALAR";
-					name: "String";
-					ofType: null;
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
 				};
 				defaultValue: null;
 			},
-			{
-				name: "name_contains";
-				type: {
-					kind: "SCALAR";
-					name: "String";
-					ofType: null;
-				};
-				defaultValue: null;
-			},
-		];
-	};
-	QueryPledgeOrderByInput: {
-		kind: "ENUM";
-		name: "QueryPledgeOrderByInput";
-		description: "Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'";
-		enumValues: [
-			{ name: "amount_ASC"; isDeprecated: false; deprecationReason: null },
-			{ name: "amount_DESC"; isDeprecated: false; deprecationReason: null },
-			{ name: "endDate_ASC"; isDeprecated: false; deprecationReason: null },
-			{ name: "endDate_DESC"; isDeprecated: false; deprecationReason: null },
 		];
 	};
 	QueryFundInput: {
@@ -5952,6 +7809,22 @@ export type introspection_types = {
 		inputFields: [
 			{
 				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	QueryHasUserVotedInput: {
+		kind: "INPUT_OBJECT";
+		name: "QueryHasUserVotedInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "postId";
 				type: {
 					kind: "NON_NULL";
 					name: never;
@@ -5973,6 +7846,65 @@ export type introspection_types = {
 					name: never;
 					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
 				};
+				defaultValue: null;
+			},
+		];
+	};
+	QueryPledgeOrderByInput: {
+		name: "QueryPledgeOrderByInput";
+		enumValues: "amount_ASC" | "amount_DESC" | "endDate_ASC" | "endDate_DESC";
+	};
+	QueryPledgeWhereInput: {
+		kind: "INPUT_OBJECT";
+		name: "QueryPledgeWhereInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "firstName_contains";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "name_contains";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+		];
+	};
+	QueryPluginInput: {
+		kind: "INPUT_OBJECT";
+		name: "QueryPluginInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	QueryPluginsInput: {
+		kind: "INPUT_OBJECT";
+		name: "QueryPluginsInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "isActivated";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "isInstalled";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "pluginId";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
 				defaultValue: null;
 			},
 		];
@@ -6081,6 +8013,178 @@ export type introspection_types = {
 				defaultValue: null;
 			},
 		];
+	};
+	QueryVolunteerGroupAssignmentsInput: {
+		kind: "INPUT_OBJECT";
+		name: "QueryVolunteerGroupAssignmentsInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "groupId";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
+	RecurrenceInput: {
+		kind: "INPUT_OBJECT";
+		name: "RecurrenceInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "byDay";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+					};
+				};
+				defaultValue: null;
+			},
+			{
+				name: "byMonth";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "SCALAR"; name: "Int"; ofType: null };
+					};
+				};
+				defaultValue: null;
+			},
+			{
+				name: "byMonthDay";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "SCALAR"; name: "Int"; ofType: null };
+					};
+				};
+				defaultValue: null;
+			},
+			{
+				name: "count";
+				type: { kind: "SCALAR"; name: "Int"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "endDate";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "frequency";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "ENUM"; name: "Frequency"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "interval";
+				type: { kind: "SCALAR"; name: "Int"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "never";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+		];
+	};
+	RecurrenceRule: {
+		kind: "OBJECT";
+		name: "RecurrenceRule";
+		fields: {
+			byDay: {
+				name: "byDay";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+					};
+				};
+			};
+			byMonth: {
+				name: "byMonth";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "SCALAR"; name: "Int"; ofType: null };
+					};
+				};
+			};
+			byMonthDay: {
+				name: "byMonthDay";
+				type: {
+					kind: "LIST";
+					name: never;
+					ofType: {
+						kind: "NON_NULL";
+						name: never;
+						ofType: { kind: "SCALAR"; name: "Int"; ofType: null };
+					};
+				};
+			};
+			count: {
+				name: "count";
+				type: { kind: "SCALAR"; name: "Int"; ofType: null };
+			};
+			frequency: {
+				name: "frequency";
+				type: { kind: "ENUM"; name: "RecurrenceRuleFrequency"; ofType: null };
+			};
+			id: { name: "id"; type: { kind: "SCALAR"; name: "ID"; ofType: null } };
+			interval: {
+				name: "interval";
+				type: { kind: "SCALAR"; name: "Int"; ofType: null };
+			};
+			recurrenceEndDate: {
+				name: "recurrenceEndDate";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+			recurrenceStartDate: {
+				name: "recurrenceStartDate";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+		};
+	};
+	RecurrenceRuleFrequency: {
+		name: "RecurrenceRuleFrequency";
+		enumValues: "DAILY" | "MONTHLY" | "WEEKLY" | "YEARLY";
+	};
+	RejectMembershipResponse: {
+		kind: "OBJECT";
+		name: "RejectMembershipResponse";
+		fields: {
+			message: {
+				name: "message";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			success: {
+				name: "success";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+			};
+		};
 	};
 	String: unknown;
 	Subscription: {
@@ -6341,7 +8445,68 @@ export type introspection_types = {
 			};
 		};
 	};
+	UpdateInviteStatus: {
+		name: "UpdateInviteStatus";
+		enumValues: "accepted" | "declined" | "no_response";
+	};
+	UpdatePluginInput: {
+		kind: "INPUT_OBJECT";
+		name: "UpdatePluginInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "backup";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "String"; ofType: null };
+				};
+				defaultValue: null;
+			},
+			{
+				name: "isActivated";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "isInstalled";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "pluginId";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+		];
+	};
 	Upload: unknown;
+	UploadPluginZipInput: {
+		kind: "INPUT_OBJECT";
+		name: "UploadPluginZipInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "activate";
+				type: { kind: "SCALAR"; name: "Boolean"; ofType: null };
+				defaultValue: null;
+			},
+			{
+				name: "pluginZip";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "Upload"; ofType: null };
+				};
+				defaultValue: null;
+			},
+		];
+	};
 	UploadUrlResponse: {
 		kind: "OBJECT";
 		name: "UploadUrlResponse";
@@ -6581,6 +8746,42 @@ export type introspection_types = {
 		};
 	};
 	UserRole: { name: "UserRole"; enumValues: "administrator" | "regular" };
+	UserWhereInput: {
+		kind: "INPUT_OBJECT";
+		name: "UserWhereInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "name_contains";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+				defaultValue: null;
+			},
+		];
+	};
+	UsersByIdsInput: {
+		kind: "INPUT_OBJECT";
+		name: "UsersByIdsInput";
+		isOneOf: false;
+		inputFields: [
+			{
+				name: "ids";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: {
+						kind: "LIST";
+						name: never;
+						ofType: {
+							kind: "NON_NULL";
+							name: never;
+							ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+						};
+					};
+				};
+				defaultValue: null;
+			},
+		];
+	};
 	Venue: {
 		kind: "OBJECT";
 		name: "Venue";
@@ -6596,6 +8797,10 @@ export type introspection_types = {
 						ofType: { kind: "OBJECT"; name: "VenueAttachment"; ofType: null };
 					};
 				};
+			};
+			capacity: {
+				name: "capacity";
+				type: { kind: "SCALAR"; name: "Int"; ofType: null };
 			};
 			createdAt: {
 				name: "createdAt";
@@ -6694,6 +8899,86 @@ export type introspection_types = {
 			node: {
 				name: "node";
 				type: { kind: "OBJECT"; name: "Event"; ofType: null };
+			};
+		};
+	};
+	VolunteerGroupAssignments: {
+		kind: "OBJECT";
+		name: "VolunteerGroupAssignments";
+		fields: {
+			assignee: {
+				name: "assignee";
+				type: { kind: "OBJECT"; name: "User"; ofType: null };
+			};
+			createdAt: {
+				name: "createdAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+			creator: {
+				name: "creator";
+				type: { kind: "OBJECT"; name: "User"; ofType: null };
+			};
+			group: {
+				name: "group";
+				type: { kind: "OBJECT"; name: "VolunteerGroups"; ofType: null };
+			};
+			inviteStatus: {
+				name: "inviteStatus";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			updatedAt: {
+				name: "updatedAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+			updator: {
+				name: "updator";
+				type: { kind: "OBJECT"; name: "User"; ofType: null };
+			};
+		};
+	};
+	VolunteerGroups: {
+		kind: "OBJECT";
+		name: "VolunteerGroups";
+		fields: {
+			createdAt: {
+				name: "createdAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+			creator: {
+				name: "creator";
+				type: { kind: "OBJECT"; name: "User"; ofType: null };
+			};
+			event: {
+				name: "event";
+				type: { kind: "OBJECT"; name: "Event"; ofType: null };
+			};
+			id: {
+				name: "id";
+				type: {
+					kind: "NON_NULL";
+					name: never;
+					ofType: { kind: "SCALAR"; name: "ID"; ofType: null };
+				};
+			};
+			leader: {
+				name: "leader";
+				type: { kind: "OBJECT"; name: "User"; ofType: null };
+			};
+			maxVolunteerCount: {
+				name: "maxVolunteerCount";
+				type: { kind: "SCALAR"; name: "Int"; ofType: null };
+			};
+			name: {
+				name: "name";
+				type: { kind: "SCALAR"; name: "String"; ofType: null };
+			};
+			updatedAt: {
+				name: "updatedAt";
+				type: { kind: "SCALAR"; name: "DateTime"; ofType: null };
+			};
+			updater: {
+				name: "updater";
+				type: { kind: "OBJECT"; name: "User"; ofType: null };
 			};
 		};
 	};

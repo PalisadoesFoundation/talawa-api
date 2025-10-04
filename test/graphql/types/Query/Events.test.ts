@@ -1,15 +1,13 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
-import { server } from "../../../server";
-import { mercuriusClient } from "../client";
-
-import { Query_eventsByIds, Query_signIn } from "../documentNodes";
-
 import type {
 	InvalidArgumentsExtensions,
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
 } from "~/src/utilities/TalawaGraphQLError";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import { Query_eventsByIds, Query_signIn } from "../documentNodes";
 
 /**
  * Updated test suite with partial matching for error messages

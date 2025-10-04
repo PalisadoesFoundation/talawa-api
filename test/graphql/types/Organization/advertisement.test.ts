@@ -59,7 +59,7 @@ suite("Organization.advertisement Field with Completion Status", () => {
 					before: null,
 					where: {
 						isCompleted: false,
-					},
+					} as any,
 				},
 			});
 
@@ -97,7 +97,7 @@ suite("Organization.advertisement Field with Completion Status", () => {
 						before: null,
 						where: {
 							isCompleted: false,
-						},
+						} as any,
 					},
 				},
 			);
@@ -135,7 +135,7 @@ suite("Organization.advertisement Field with Completion Status", () => {
 						before: null,
 						where: {
 							isCompleted: false,
-						},
+						} as any,
 					},
 				},
 			);
@@ -191,7 +191,7 @@ suite("Organization.advertisement Field with Completion Status", () => {
 						before: null,
 						where: {
 							isCompleted: false,
-						},
+						} as any,
 					},
 				},
 			);
@@ -242,7 +242,7 @@ suite("Organization.advertisement Field with Completion Status", () => {
 						before: null,
 						where: {
 							isCompleted: true,
-						},
+						} as any,
 					},
 				},
 			);
@@ -354,7 +354,7 @@ suite("Organization.advertisement Field with Completion Status", () => {
 						before: null,
 						where: {
 							isCompleted: false,
-						},
+						} as any,
 					},
 				},
 			);
@@ -404,7 +404,7 @@ suite("Organization.advertisement Field with Completion Status", () => {
 						before: null,
 						where: {
 							isCompleted: true,
-						},
+						} as any,
 					},
 				},
 			);
@@ -449,7 +449,7 @@ suite("Organization.advertisement Field with Completion Status", () => {
 						before: null,
 						where: {
 							isCompleted: false,
-						},
+						} as any,
 					},
 				},
 			);
@@ -473,7 +473,7 @@ suite("Organization.advertisement Field with Completion Status", () => {
 						before: null,
 						where: {
 							isCompleted: false,
-						},
+						} as any,
 					},
 				},
 			);
@@ -556,7 +556,7 @@ suite("Organization.advertisement Field with Completion Status", () => {
 						before: null,
 						where: {
 							isCompleted: false,
-						},
+						} as any,
 					},
 				},
 			);
@@ -600,7 +600,7 @@ suite("Organization.advertisement Field with Completion Status", () => {
 					before: "invalid-cursor",
 					where: {
 						isCompleted: false,
-					},
+					} as any,
 				},
 			});
 
@@ -656,7 +656,7 @@ suite("Organization.advertisement Field with Completion Status", () => {
 					before: null,
 					where: {
 						isCompleted: false,
-					},
+					} as any,
 				},
 			});
 

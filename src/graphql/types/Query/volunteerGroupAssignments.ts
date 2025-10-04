@@ -5,13 +5,14 @@ import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationM
 import { usersTable } from "~/src/drizzle/tables/users";
 import { volunteerGroupsTable } from "~/src/drizzle/tables/volunteerGroups";
 import { builder } from "~/src/graphql/builder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	QueryVolunteerGroupAssignmentsInput,
 	queryVolunteerGroupAssignmentsInputSchema,
 } from "../../inputs/QueryVolunteerGroupAssignments";
 import { VolunteerGroupAssignments } from "../VolunteerGroupAssignment/VolunteerGroupAssignment";
+
 const queryEventVolunteerGroupAssignmentsArgumentsSchema = z.object({
 	input: queryVolunteerGroupAssignmentsInputSchema,
 });

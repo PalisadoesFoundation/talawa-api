@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { TalawaGraphQLError } from "../../src/utilities/TalawaGraphQLError";
 import {
 	installPluginDependencies,
 	installPluginDependenciesWithErrorHandling,
 } from "../../src/utilities/pluginDependencyInstaller";
+import { TalawaGraphQLError } from "../../src/utilities/TalawaGraphQLError";
 
 // Create hoisted mocks
 const mockExecAsync = vi.hoisted(() =>

@@ -4,10 +4,10 @@ import cron from "node-cron";
 import type * as schema from "~/src/drizzle/schema";
 import { cleanupOldInstances } from "./eventCleanupWorker";
 import {
-	type WorkerConfig,
-	type WorkerResult,
 	createDefaultWorkerConfig,
 	runMaterializationWorker,
+	type WorkerConfig,
+	type WorkerResult,
 } from "./eventGeneration/eventGenerationPipeline";
 
 let materializationTask: cron.ScheduledTask | undefined;

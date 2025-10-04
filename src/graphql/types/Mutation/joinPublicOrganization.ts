@@ -3,8 +3,8 @@ import { z } from "zod";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";
 import {
-	MutationJoinPublicOrganizationInput,
 	joinPublicOrganizationInputSchema,
+	MutationJoinPublicOrganizationInput,
 } from "~/src/graphql/inputs/MutationJoinPublicOrganizationInput";
 import { OrganizationMembershipObject } from "~/src/graphql/types/Organization/OrganizationMembership";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";

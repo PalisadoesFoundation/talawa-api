@@ -33,8 +33,8 @@ function replaceLinks(dir) {
 				console.log(`Processing file: ${filePath}`);
 				// Replace any README.md links with root directory ("/")
 				content = content.replace(
-					/\[([^\]]+)\]\((?:\.\.\/|\/)*README\.md(?:#[^\)]+)?\)/gi,
-					(match, linkText) => {
+					/\[([^\]]+)\]\((?:\.\.\/|\/)*README\.md(?:#[^)]+)?\)/gi,
+					(_match, _linkText) => {
 						console.log(`Replacing README.md link in ${filePath}`);
 						return "[Admin Docs](/)"; // Preserve original link text if needed
 					},

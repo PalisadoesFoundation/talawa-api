@@ -8,8 +8,8 @@ import {
 	mutationUpdateEntireRecurringEventSeriesInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateEntireRecurringEventSeriesInput";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateEntireRecurringEventSeriesArgumentsSchema = z.object({
 	input: mutationUpdateEntireRecurringEventSeriesInputSchema,

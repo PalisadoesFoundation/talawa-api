@@ -34,7 +34,7 @@ suite("Mutation field createPost", () => {
 						organizationId: faker.string.uuid(),
 						attachments: [
 							{
-								mimetype: "IMAGE_PNG",
+								mimeType: "IMAGE_PNG",
 								objectName: "test-object-name-isPinned",
 								name: "test-image.png",
 								fileHash: "test-file-hash-isPinned",
@@ -65,7 +65,7 @@ suite("Mutation field createPost", () => {
 						organizationId: faker.string.uuid(),
 						attachments: [
 							{
-								mimetype: "IMAGE_PNG",
+								mimeType: "IMAGE_PNG",
 								objectName: "test-object-name-isPinned",
 								name: "test-image.png",
 								fileHash: "test-file-hash-isPinned",
@@ -135,7 +135,7 @@ suite("Mutation field createPost", () => {
 						isPinned: true,
 						attachments: [
 							{
-								mimetype: "IMAGE_PNG",
+								mimeType: "IMAGE_PNG",
 								objectName: "test-object-name-3",
 								name: "test-image.png",
 								fileHash: "test-file-hash-3",
@@ -189,7 +189,7 @@ suite("Mutation field createPost", () => {
 						isPinned: true,
 						attachments: [
 							{
-								mimetype: "IMAGE_PNG",
+								mimeType: "IMAGE_PNG",
 								objectName: "test-object-name-4",
 								name: "test-image.png",
 								fileHash: "test-file-hash-4",
@@ -240,7 +240,7 @@ suite("Mutation field createPost", () => {
 						isPinned: false,
 						attachments: [
 							{
-								mimetype: "IMAGE_PNG",
+								mimeType: "IMAGE_PNG",
 								objectName: "test-object-name-5",
 								name: "test-image.png",
 								fileHash: "test-file-hash-5",
@@ -311,7 +311,7 @@ suite("Mutation field createPost", () => {
 						organizationId: orgId,
 						attachments: [
 							{
-								mimetype: "IMAGE_PNG",
+								mimeType: "IMAGE_PNG",
 								objectName: "test-object-name-00",
 								name: "test-image.png",
 								fileHash: "test-file-hash-00",
@@ -344,7 +344,7 @@ suite("Mutation field createPost", () => {
 						organizationId: invalidOrganizationId,
 						attachments: [
 							{
-								mimetype: "IMAGE_PNG",
+								mimeType: "IMAGE_PNG",
 								objectName: "test-object-name-01",
 								name: "test-image.png",
 								fileHash: "test-file-hash-01",
@@ -440,7 +440,7 @@ suite("Mutation field createPost", () => {
 						isPinned: true,
 						attachments: [
 							{
-								mimetype: "IMAGE_PNG",
+								mimeType: "IMAGE_PNG",
 								objectName: "test-object-name-unauth",
 								name: "test-image.png",
 								fileHash: "test-file-hash-unauth",
@@ -519,7 +519,7 @@ suite("Mutation field createPost", () => {
 							organizationId: orgId,
 							attachments: [
 								{
-									mimetype: "IMAGE_PNG",
+									mimeType: "IMAGE_PNG",
 									objectName: "test-object-name-error",
 									name: "test-image.png",
 									fileHash: "test-file-hash-error",
@@ -579,7 +579,7 @@ suite("Mutation field createPost", () => {
 							organizationId: orgId,
 							attachments: [
 								{
-									mimetype: "IMAGE_PNG",
+									mimeType: "IMAGE_PNG",
 									objectName: "test-object-name-99",
 									name: "test-image.png",
 									fileHash: "test-file-hash-99",
@@ -595,7 +595,7 @@ suite("Mutation field createPost", () => {
 						caption: "Successful Post",
 						attachments: [
 							{
-								mimeType: "image/png",
+								mimeTmimeType: "image/png",
 								objectName: "test-object-name-99",
 								name: "test-image.png",
 								fileHash: "test-file-hash-99",
@@ -611,7 +611,7 @@ suite("Mutation field createPost", () => {
 
 			test("should create a post with attachments if provided", async () => {
 				const fakeAttachment: {
-					mimetype:
+					mimeType:
 						| "IMAGE_JPEG"
 						| "IMAGE_AVIF"
 						| "IMAGE_PNG"
@@ -622,7 +622,7 @@ suite("Mutation field createPost", () => {
 					fileHash: string;
 					name: string;
 				} = {
-					mimetype: "IMAGE_JPEG",
+					mimeType: "IMAGE_JPEG",
 					objectName: "fake-object-name",
 					fileHash: "fake-file-hash",
 					name: "fake-name",
@@ -664,7 +664,7 @@ suite("Mutation field createPost", () => {
 						caption: "Post with Attachments",
 						attachments: expect.arrayContaining([
 							expect.objectContaining({
-								mimeType: "image/jpeg",
+								mimeTmimeType: "image/jpeg",
 								objectName: fakeAttachment.objectName,
 								name: fakeAttachment.name,
 								fileHash: fakeAttachment.fileHash,

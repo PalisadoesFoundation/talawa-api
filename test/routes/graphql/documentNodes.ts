@@ -2,7 +2,7 @@
 
 import { initGraphQLTada } from "gql.tada";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
-import type { introspection } from "./../../../test/graphql/types/gql.tada";
+import type { introspection } from "./gql.tada";
 
 const gql = initGraphQLTada<{
 	introspection: introspection;

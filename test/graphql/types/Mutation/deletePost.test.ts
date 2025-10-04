@@ -123,7 +123,7 @@ suite("Mutation field deletePost", () => {
 								isPinned: false,
 								attachments: [
 									{
-										mimetype: "IMAGE_PNG",
+										mimeType: "IMAGE_PNG",
 										objectName: "test-object",
 										fileHash: "test-hash",
 										name: "test.png",
@@ -257,7 +257,7 @@ suite("Mutation field deletePost", () => {
 									isPinned: false,
 									attachments: [
 										{
-											mimetype: "IMAGE_PNG",
+											mimeType: "IMAGE_PNG",
 											objectName: "test-object-2",
 											fileHash: "test-hash-2",
 											name: "test.png",
@@ -347,7 +347,7 @@ suite("Mutation field deletePost", () => {
 								isPinned: false,
 								attachments: [
 									{
-										mimetype: "IMAGE_PNG",
+										mimeType: "IMAGE_PNG",
 										objectName: "test-object-3",
 										fileHash: "test-hash-3",
 										name: "test.png",
@@ -442,7 +442,7 @@ suite("Mutation field deletePost", () => {
 								isPinned: false,
 								attachments: [
 									{
-										mimetype: "IMAGE_PNG",
+										mimeType: "IMAGE_PNG",
 										objectName: "test-object-4",
 										fileHash: "test-hash-4",
 										name: "test.png",
@@ -523,7 +523,7 @@ suite("Mutation field deletePost", () => {
 								isPinned: false,
 								attachments: [
 									{
-										mimetype: "IMAGE_PNG",
+										mimeType: "IMAGE_PNG",
 										objectName: "test-object-5",
 										fileHash: "test-hash-5gt",
 										name: "test.png",

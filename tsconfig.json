@@ -24,7 +24,8 @@
 				"schema": "./schema.graphql" /* https://gql-tada.0no.co/reference/config-format#schema */,
 				"shouldCheckForColocatedFragments": false /* https://gql-tada.0no.co/reference/config-format#shouldcheckforcolocatedfragments */,
 				"trackFieldUsage": false /* https://gql-tada.0no.co/reference/config-format#trackfieldusage */,
-				"tadaOutputLocation": "./test/graphql/types/gql.tada.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaoutputlocation */,
+				"tadaOutputLocation": "./test/graphql/types/__generated__.gql.tada.d.ts",
+				// "tadaOutputLocation": "./test/graphql/types/gql.tada.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaoutputlocation */,
 				"tadaTurboLocation": "./test/graphql/types/gql.tada-cache.d.ts" /* https://gql-tada.0no.co/reference/config-format#tadaturbolocation */
 			}
 		],

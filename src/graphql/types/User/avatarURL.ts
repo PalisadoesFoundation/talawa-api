@@ -1,5 +1,6 @@
 import envConfig from "~/src/utilities/graphqLimits";
 import { User } from "./User";
+
 User.implement({
 	fields: (t) => ({
 		avatarURL: t.field({

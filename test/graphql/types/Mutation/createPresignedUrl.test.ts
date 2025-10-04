@@ -51,9 +51,9 @@ suite("Mutation field createPresignedUrl", () => {
 		test("should return a presignedUrl and objectName", async () => {
 			const originalPresignedPutObject = server.minio.client.presignedPutObject;
 			server.minio.client.presignedPutObject = async (
-				bucket: string,
-				objectName: string,
-				expiry: number,
+				_bucket: string,
+				_objectName: string,
+				_expiry: number,
 			): Promise<string> => {
 				return "https://example.com/presigned-url";
 			};
