@@ -60,6 +60,7 @@ describe("jobDiscovery", () => {
 
 	// Helper function to create mock event with all required properties
 	const createMockEvent = (overrides = {}) => ({
+		capacity: null,
 		createdAt: new Date("2024-01-01"),
 		name: "Event 1",
 		id: "event1",

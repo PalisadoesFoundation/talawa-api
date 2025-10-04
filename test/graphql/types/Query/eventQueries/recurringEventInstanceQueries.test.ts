@@ -52,6 +52,7 @@ const mockRawInstance: typeof recurringEventInstancesTable.$inferSelect = {
 };
 
 const mockBaseTemplate: typeof eventsTable.$inferSelect = {
+	capacity: null,
 	id: "base-event-1",
 	name: "Base Recurring Event",
 	description: "A base template for recurring events",

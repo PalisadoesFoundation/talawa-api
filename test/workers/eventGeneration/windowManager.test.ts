@@ -72,6 +72,7 @@ describe("windowManager", () => {
 
 	// Helper function to create mock event
 	const createMockEvent = (overrides = {}) => ({
+		capacity: null,
 		name: "Event 1",
 		id: "event1",
 		createdAt: new Date("2024-01-01"),

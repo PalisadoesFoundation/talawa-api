@@ -1,29 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	type EventWithAttachments,
-	type GetUnifiedEventsInput,
-	getEventsByIds,
-	getUnifiedEventsInDateRange,
-} from "~/src/graphql/types/Query/eventQueries/unifiedEventQueries";
-import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
-
-// Mock dependencies
-vi.mock(
-	"~/src/graphql/types/Query/eventQueries/standaloneEventQueries",
-	() => ({
-		getStandaloneEventsInDateRange: vi.fn(),
-		getStandaloneEventsByIds: vi.fn(),
-	}),
-);
-
-vi.mock(
-	"~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries",
-	() => ({
-		getRecurringEventInstancesInDateRange: vi.fn(),
-		getRecurringEventInstancesByIds: vi.fn(),
-	}),
-);
-
 import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
 import {
 	getRecurringEventInstancesByIds,
@@ -33,6 +8,34 @@ import {
 	getStandaloneEventsByIds,
 	getStandaloneEventsInDateRange,
 } from "~/src/graphql/types/Query/eventQueries/standaloneEventQueries";
+import {
+	type EventWithAttachments,
+	type GetUnifiedEventsInput,
+	getEventsByIds,
+	getUnifiedEventsInDateRange,
+} from "~/src/graphql/types/Query/eventQueries/unifiedEventQueries";
+import type { ServiceDependencies } from "~/src/services/eventGeneration/types";
+
+const mockStandaloneEvent: EventWithAttachments = {
+	id: "standalone-1",
+	name: "Standalone Event",
+	description: "A standalone event",
+	startAt: new Date("2025-01-15T10:00:00.000Z"),
+	endAt: new Date("2025-01-15T11:00:00.000Z"),
+	location: "Conference Room",
+	allDay: false,
+	isPublic: true,
+	isRegisterable: true,
+	organizationId: "org-1",
+	creatorId: "user-1",
+	updaterId: null,
+	createdAt: new Date("2025-01-01T00:00:00.000Z"),
+	updatedAt: null,
+	isRecurringEventTemplate: false,
+	attachments: [],
+	eventType: "standalone" as const,
+	capacity: null,
+};
 
 const mockGetStandaloneEventsInDateRange = vi.mocked(
 	getStandaloneEventsInDateRange,
@@ -68,6 +71,7 @@ describe("getUnifiedEventsInDateRange", () => {
 		isRecurringEventTemplate: false,
 		attachments: [],
 		eventType: "standalone" as const,
+		capacity: null,
 	};
 
 	const mockGeneratedInstance: ResolvedRecurringEventInstance = {
@@ -404,6 +408,7 @@ describe("getUnifiedEventsInDateRange", () => {
 				isGenerated: true,
 				eventType: "generated",
 				attachments: [],
+				capacity: null,
 			});
 		});
 
@@ -764,27 +769,6 @@ describe("getUnifiedEventsInDateRange", () => {
 describe("getEventsByIds", () => {
 	let mockDrizzleClient: ServiceDependencies["drizzleClient"];
 	let mockLogger: ServiceDependencies["logger"];
-
-	const mockStandaloneEvent: EventWithAttachments = {
-		id: "standalone-1",
-		name: "Standalone Event",
-		description: "A standalone event",
-		startAt: new Date("2025-01-15T10:00:00.000Z"),
-		endAt: new Date("2025-01-15T11:00:00.000Z"),
-		location: "Conference Room",
-		allDay: false,
-		isPublic: true,
-		isRegisterable: true,
-		organizationId: "org-1",
-		creatorId: "user-1",
-		updaterId: null,
-		createdAt: new Date("2025-01-01T00:00:00.000Z"),
-		updatedAt: null,
-		isRecurringEventTemplate: false,
-		attachments: [],
-		eventType: "standalone" as const,
-	};
-
 	const mockResolvedInstance: ResolvedRecurringEventInstance = {
 		// Core instance metadata
 		id: "generated-1",

@@ -13,6 +13,7 @@ type UserObject = {
 };
 
 const MockEvent = {
+	capacity: null,
 	createdAt: new Date(),
 	creatorId: "user_1",
 	description: "chat description",
