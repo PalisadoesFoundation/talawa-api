@@ -279,9 +279,9 @@ describe("getUnifiedEventsInDateRange", () => {
 
 		it("should handle multiple standalone events", async () => {
 			const events = [
-				{ ...mockStandaloneEvent, id: "standalone-1" },
-				{ ...mockStandaloneEvent, id: "standalone-2" },
-				{ ...mockStandaloneEvent, id: "standalone-3" },
+				{ ...mockStandaloneEvent, id: "standalone-1", capacity: null },
+				{ ...mockStandaloneEvent, id: "standalone-2", capacity: null },
+				{ ...mockStandaloneEvent, id: "standalone-3", capacity: null },
 			];
 			mockGetStandaloneEventsInDateRange.mockResolvedValue(events);
 			mockGetRecurringEventInstancesInDateRange.mockResolvedValue([]);
@@ -411,8 +411,8 @@ describe("getUnifiedEventsInDateRange", () => {
 
 		it("should handle both standalone and generated events together", async () => {
 			const standaloneEvents = [
-				{ ...mockStandaloneEvent, id: "standalone-1" },
-				{ ...mockStandaloneEvent, id: "standalone-2" },
+				{ ...mockStandaloneEvent, id: "standalone-1", capacity: null },
+				{ ...mockStandaloneEvent, id: "standalone-2", capacity: null },
 			];
 			const generatedInstances = [
 				createMockGeneratedInstance({ id: "generated-1" }),
@@ -621,7 +621,7 @@ describe("getUnifiedEventsInDateRange", () => {
 
 		it("should handle unexpected errors during processing", async () => {
 			// Mock a property that will cause an error during sort
-			const corruptedEvent = { ...mockStandaloneEvent };
+			const corruptedEvent = { ...mockStandaloneEvent, capacity: null };
 			Object.defineProperty(corruptedEvent, "startAt", {
 				get() {
 					throw new Error("Invalid date access");
@@ -725,6 +725,7 @@ describe("getUnifiedEventsInDateRange", () => {
 				startAt: new Date(
 					`2025-01-01T${String(i % 24).padStart(2, "0")}:00:00.000Z`,
 				),
+				capacity: null,
 			}));
 
 			const largeGeneratedArray = Array.from({ length: 500 }, (_, i) =>
@@ -986,7 +987,11 @@ describe("getEventsByIds", () => {
 	describe("Remaining IDs filtering", () => {
 		it("should filter out found standalone event IDs from recurring query", async () => {
 			const eventIds = ["standalone-1", "generated-1", "standalone-2"];
-			const standaloneEvent2 = { ...mockStandaloneEvent, id: "standalone-2" };
+			const standaloneEvent2 = {
+				...mockStandaloneEvent,
+				id: "standalone-2",
+				capacity: null,
+			};
 
 			mockGetStandaloneEventsByIds.mockResolvedValue([
 				mockStandaloneEvent,
