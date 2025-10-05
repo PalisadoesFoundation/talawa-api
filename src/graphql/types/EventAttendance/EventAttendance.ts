@@ -9,17 +9,14 @@ export const EventAttendance =
 EventAttendance.implement({
 	description: "Represents an event attendance record.",
 	fields: (t) => ({
-		eventId: t.string({
+		eventId: t.exposeID("eventId", {
 			description: "Event ID",
-			resolve: (attendance) => attendance.eventId,
 		}),
-		attendeeId: t.string({
+		attendeeId: t.exposeID("attendeeId", {
 			description: "User ID of attendee",
-			resolve: (attendance) => attendance.attendeeId,
 		}),
-		creatorId: t.string({
+		creatorId: t.exposeID("creatorId", {
 			description: "User ID of creator",
-			resolve: (attendance) => attendance.creatorId,
 		}),
 		createdAt: t.field({
 			type: "DateTime",
