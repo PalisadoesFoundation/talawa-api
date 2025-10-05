@@ -59,16 +59,16 @@ export class PluginLifecycle {
 			console.log(`Installing dependencies for plugin: ${pluginId}`);
 			await installPluginDependenciesWithErrorHandling(pluginId, console);
 
-		// Create plugin-defined databases if specified
-		await this.createPluginDatabases(pluginId, manifest);
+			// Create plugin-defined databases if specified
+			await this.createPluginDatabases(pluginId, manifest);
 
-		// Call plugin lifecycle hook
-		await this.callOnInstallHook(pluginId);
+			// Call plugin lifecycle hook
+			await this.callOnInstallHook(pluginId);
 
-		// Build container if docker enabled
-		await this.manageDocker(pluginId, manifest, "install");
+			// Build container if docker enabled
+			await this.manageDocker(pluginId, manifest, "install");
 
-		pluginManager.emit("plugin:installed", pluginId);
+			pluginManager.emit("plugin:installed", pluginId);
 			return true;
 		} catch (error) {
 			this.handlePluginError(pluginId, error as Error, "install");
@@ -86,20 +86,20 @@ export class PluginLifecycle {
 		try {
 			pluginManager.emit("plugin:uninstalling", pluginId);
 
-		// Call plugin lifecycle hook first
-		await this.callOnUninstallHook(pluginId);
+			// Call plugin lifecycle hook first
+			await this.callOnUninstallHook(pluginId);
 
-		// Load manifest for docker lifecycle
-		const manifest = await this.loadPluginManifest(pluginId);
+			// Load manifest for docker lifecycle
+			const manifest = await this.loadPluginManifest(pluginId);
 
-		// Remove container if docker enabled
-		await this.manageDocker(pluginId, manifest, "uninstall");
+			// Remove container if docker enabled
+			await this.manageDocker(pluginId, manifest, "uninstall");
 
-		// Remove plugin-defined databases
-		await this.removePluginDatabases(pluginId);
+			// Remove plugin-defined databases
+			await this.removePluginDatabases(pluginId);
 
-		// Remove from extension registry
-		this.removeFromExtensionRegistry(pluginId);
+			// Remove from extension registry
+			this.removeFromExtensionRegistry(pluginId);
 
 			// Remove from loaded plugins
 			this.loadedPlugins.delete(pluginId);
@@ -130,23 +130,23 @@ export class PluginLifecycle {
 		try {
 			pluginManager.emit("plugin:activating", pluginId);
 
-		// Call plugin lifecycle hook
-		await this.callOnActivateHook(pluginId);
+			// Call plugin lifecycle hook
+			await this.callOnActivateHook(pluginId);
 
-		// Load manifest for docker lifecycle
-		const manifest = await this.loadPluginManifest(pluginId);
+			// Load manifest for docker lifecycle
+			const manifest = await this.loadPluginManifest(pluginId);
 
-		// Start container if docker enabled
-		await this.manageDocker(pluginId, manifest, "activate");
+			// Start container if docker enabled
+			await this.manageDocker(pluginId, manifest, "activate");
 
-		// Update plugin status
-		plugin.status = PluginStatus.ACTIVE;
+			// Update plugin status
+			plugin.status = PluginStatus.ACTIVE;
 
-		// Update database
-		await this.updatePluginInDatabase(pluginId, { isActivated: true });
+			// Update database
+			await this.updatePluginInDatabase(pluginId, { isActivated: true });
 
-		// Trigger schema rebuild to integrate plugin extensions
-		await this.triggerSchemaRebuild();
+			// Trigger schema rebuild to integrate plugin extensions
+			await this.triggerSchemaRebuild();
 
 			pluginManager.emit("plugin:activated", pluginId);
 			return true;
@@ -190,28 +190,28 @@ export class PluginLifecycle {
 		try {
 			pluginManager.emit("plugin:deactivating", pluginId);
 
-		// Call plugin lifecycle hook
-		await this.callOnDeactivateHook(pluginId);
+			// Call plugin lifecycle hook
+			await this.callOnDeactivateHook(pluginId);
 
-		// Load manifest for docker lifecycle
-		const manifest = await this.loadPluginManifest(pluginId);
+			// Load manifest for docker lifecycle
+			const manifest = await this.loadPluginManifest(pluginId);
 
-		// Stop container if docker enabled
-		await this.manageDocker(pluginId, manifest, "deactivate");
+			// Stop container if docker enabled
+			await this.manageDocker(pluginId, manifest, "deactivate");
 
-		// Update plugin status
-		plugin.status = PluginStatus.INACTIVE;
+			// Update plugin status
+			plugin.status = PluginStatus.INACTIVE;
 
-		// Update database
-		await this.updatePluginInDatabase(pluginId, { isActivated: false });
+			// Update database
+			await this.updatePluginInDatabase(pluginId, { isActivated: false });
 
-		// Optionally drop plugin tables
-		if (dropTables) {
-			await this.removePluginDatabases(pluginId);
-		}
+			// Optionally drop plugin tables
+			if (dropTables) {
+				await this.removePluginDatabases(pluginId);
+			}
 
-		// Trigger schema rebuild to remove plugin extensions
-		await this.triggerSchemaRebuild();
+			// Trigger schema rebuild to remove plugin extensions
+			await this.triggerSchemaRebuild();
 
 			pluginManager.emit("plugin:deactivated", pluginId);
 			return true;
@@ -588,11 +588,14 @@ export class PluginLifecycle {
 			const { promisify } = await import("node:util");
 			const execAsync = promisify(exec);
 
-			const env = { ...process.env, ...(cfg.env || {}) } as Record<string, string>;
+			const env = { ...process.env, ...(cfg.env || {}) } as Record<
+				string,
+				string
+			>;
 
 			// Check docker availability
 			try {
-				await execAsync(`docker --version`, { cwd: pluginPath, env });
+				await execAsync("docker --version", { cwd: pluginPath, env });
 			} catch {
 				console.warn(
 					`Docker not available for plugin ${pluginId}. Skipping docker step '${action}'.`,
@@ -602,7 +605,7 @@ export class PluginLifecycle {
 
 			// Check docker compose availability
 			try {
-				await execAsync(`docker compose version`, { cwd: pluginPath, env });
+				await execAsync("docker compose version", { cwd: pluginPath, env });
 			} catch {
 				console.warn(
 					`'docker compose' not available for plugin ${pluginId}. Skipping docker step '${action}'.`,
@@ -611,27 +614,38 @@ export class PluginLifecycle {
 			}
 
 			const runCompose = async (subcommand: string) => {
-				await execAsync(`docker compose ${subcommand}`, { cwd: pluginPath, env });
+				await execAsync(`docker compose ${subcommand}`, {
+					cwd: pluginPath,
+					env,
+				});
 			};
 
 			if (action === "install" && (cfg.buildOnInstall ?? true)) {
 				console.log(`Building docker container for plugin ${pluginId}...`);
-				await runCompose(`-f "${fullComposePath}" build ${serviceArg.join(" ")}`);
+				await runCompose(
+					`-f "${fullComposePath}" build ${serviceArg.join(" ")}`,
+				);
 			}
 
 			if (action === "activate" && (cfg.upOnActivate ?? true)) {
 				console.log(`Starting docker container for plugin ${pluginId}...`);
-				await runCompose(`-f "${fullComposePath}" up -d ${serviceArg.join(" ")}`);
+				await runCompose(
+					`-f "${fullComposePath}" up -d ${serviceArg.join(" ")}`,
+				);
 			}
 
 			if (action === "deactivate" && (cfg.downOnDeactivate ?? true)) {
 				console.log(`Stopping docker container for plugin ${pluginId}...`);
-				await runCompose(`-f "${fullComposePath}" down ${serviceArg.join(" ")}`);
+				await runCompose(
+					`-f "${fullComposePath}" down ${serviceArg.join(" ")}`,
+				);
 			}
 
 			if (action === "uninstall" && (cfg.removeOnUninstall ?? true)) {
 				console.log(`Removing docker container for plugin ${pluginId}...`);
-				await runCompose(`-f "${fullComposePath}" down -v ${serviceArg.join(" ")}`);
+				await runCompose(
+					`-f "${fullComposePath}" down -v ${serviceArg.join(" ")}`,
+				);
 			}
 		} catch (error) {
 			console.warn(
