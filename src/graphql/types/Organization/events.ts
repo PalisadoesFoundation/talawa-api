@@ -4,12 +4,12 @@ import {
 	type EventWithAttachments,
 	getUnifiedEventsInDateRange,
 } from "~/src/graphql/types/Query/eventQueries";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	type ParsedDefaultGraphQLConnectionArguments,
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Organization } from "./Organization";
 
 /**
@@ -150,7 +150,7 @@ const eventsArgumentsSchema = eventsConnectionArgumentsSchema
 	})
 	.transform((arg, ctx) => {
 		const transformed = transformEventsConnectionArguments(arg, ctx);
-		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
+		let cursor: z.infer<typeof cursorSchema> | undefined;
 
 		try {
 			if (transformed.cursor !== undefined) {
@@ -160,7 +160,7 @@ const eventsArgumentsSchema = eventsConnectionArgumentsSchema
 					),
 				);
 			}
-		} catch (error) {
+		} catch (_error) {
 			ctx.addIssue({
 				code: "custom",
 				message: "Not a valid cursor.",
@@ -305,25 +305,31 @@ Organization.implement({
 							ctx.log,
 						);
 
-						ctx.log.debug("Retrieved unified events for organization", {
-							organizationId: parent.id,
-							totalEvents: allEvents.length,
-							standaloneEvents: allEvents.filter(
-								(e) => e.eventType === "standalone",
-							).length,
-							materializedEvents: allEvents.filter(
-								(e) => e.eventType === "generated",
-							).length,
-							dateRange: {
-								start: dateRange.start.toISOString(),
-								end: dateRange.end.toISOString(),
+						ctx.log.debug(
+							{
+								organizationId: parent.id,
+								totalEvents: allEvents.length,
+								standaloneEvents: allEvents.filter(
+									(e) => e.eventType === "standalone",
+								).length,
+								materializedEvents: allEvents.filter(
+									(e) => e.eventType === "generated",
+								).length,
+								dateRange: {
+									start: dateRange.start.toISOString(),
+									end: dateRange.end.toISOString(),
+								},
 							},
-						});
+							"Retrieved unified events for organization",
+						);
 					} catch (unifiedQueryError) {
-						ctx.log.error("Failed to retrieve unified events", {
-							organizationId: parent.id,
-							error: unifiedQueryError,
-						});
+						ctx.log.error(
+							{
+								organizationId: parent.id,
+								error: unifiedQueryError,
+							},
+							"Failed to retrieve unified events",
+						);
 						throw new TalawaGraphQLError({
 							message: "Failed to retrieve events",
 							extensions: {

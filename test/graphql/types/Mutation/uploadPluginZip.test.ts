@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { builder } from "../../../../src/graphql/builder";
 import { TalawaGraphQLError } from "../../../../src/utilities/TalawaGraphQLError";
 

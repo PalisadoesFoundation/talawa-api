@@ -21,6 +21,7 @@ vi.mock("node:path", async () => {
 });
 
 import { promises as fs } from "node:fs";
+
 const mockedFs = vi.mocked(fs);
 
 // --- validatePluginManifest ---
@@ -412,7 +413,7 @@ describe("clearPluginModuleCache", () => {
 		const badCache = new Proxy(
 			{},
 			{
-				get(target, prop) {
+				get(_target, prop) {
 					if (prop === "constructor") return Object;
 					return undefined;
 				},

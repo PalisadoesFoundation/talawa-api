@@ -148,6 +148,7 @@ async function createRegularUser(): Promise<{
 	assertToBeNonNullish(signInResult.data.signIn);
 
 	const authToken = signInResult.data.signIn.authenticationToken;
+	assertToBeNonNullish(authToken);
 
 	return { userId, authToken, emailAddress };
 }

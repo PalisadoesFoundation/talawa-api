@@ -1,12 +1,13 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	QueryEventVolunteerGroupsInput,
 	queryEventVolunteerGroupsInputSchema,
 } from "../../inputs/QueryEventVolunteerGroupsInput";
 import { VolunteerGroups } from "../VolunteerGroup/VolunteerGroup";
+
 // import { VolunteerGroupAssignment } from "../VolunteerGroupAssignment/VolunteerGroupAssignment";
 const queryEventVolunteerGroupsArgumentsSchema = z.object({
 	input: queryEventVolunteerGroupsInputSchema,

@@ -9,9 +9,10 @@ import {
 	mutationCreateOrganizationInputSchema,
 } from "~/src/graphql/inputs/MutationCreateOrganizationInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreateOrganizationArgumentsSchema = z.object({
 	input: mutationCreateOrganizationInputSchema.transform(async (arg, ctx) => {
 		let avatar:

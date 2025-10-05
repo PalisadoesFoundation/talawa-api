@@ -1,7 +1,8 @@
 import { Iso639Set1LanguageCode } from "~/src/graphql/enums/Iso639Set1LanguageCode";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { User } from "./User";
+
 User.implement({
 	fields: (t) => ({
 		naturalLanguageCode: t.field({

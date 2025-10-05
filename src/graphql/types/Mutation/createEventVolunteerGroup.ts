@@ -2,13 +2,14 @@ import { z } from "zod";
 import { volunteerGroupAssignmentsTable } from "~/src/drizzle/tables/volunteerGroupAssignments";
 import { volunteerGroupsTable } from "~/src/drizzle/tables/volunteerGroups";
 import { builder } from "~/src/graphql/builder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	MutationCreateVolunteerGroupInput,
 	mutationCreateVolunteerGroupInputSchema,
 } from "../../inputs/MutationCreateEventVolunteerGroupInput";
 import { VolunteerGroups } from "../VolunteerGroup/VolunteerGroup";
+
 const mutationCreateVolunteerGroupArgumentsSchema = z.object({
 	input: mutationCreateVolunteerGroupInputSchema,
 });

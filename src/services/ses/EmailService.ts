@@ -41,7 +41,6 @@ export class EmailService {
 	constructor(config: EmailConfig) {
 		this.config = config;
 	}
-
 	private async getSesArtifacts(): Promise<{
 		client: { send: (command: unknown) => Promise<{ MessageId?: string }> };
 		SendEmailCommand: (input: unknown) => unknown;

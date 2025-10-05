@@ -74,7 +74,7 @@ export const pluginWebhooks = fastifyPlugin(
 					// Execute webhook handler
 					await webhookHandler(request, reply);
 				} catch (error) {
-					fastify.log.error("Plugin webhook processing error:", error);
+					fastify.log.error({ error }, "Plugin webhook processing error:");
 					reply.status(500).send({
 						error: "Internal server error",
 						message: error instanceof Error ? error.message : "Unknown error",

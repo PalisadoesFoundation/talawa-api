@@ -5,7 +5,7 @@
 	// https://biomejs.dev/reference/configuration/#files
 	"files": {
 		// https://biomejs.dev/reference/configuration/#filesignore
-		"ignore": [
+		"experimentalScannerIgnores": [
 			"./drizzle_migrations",
 			"./node_modules",
 			"./package.json",
@@ -15,7 +15,9 @@
 			"./test/graphql/types/gql.tada-cache.d.ts",
 			"./docs/tsconfig.json",
 			"./docs/docusaurus.config.ts",
-			"./docs/src/**",
+			"./docs/src/components/**",
+			"./docs/src/pages/**/*.tsx",
+			"./docs/src/pages/**/*.jsx",
 			"./docs/sidebars.ts",
 			"./sample_data/**"
 		],
@@ -28,7 +30,7 @@
 		"enabled": true
 	},
 	// https://biomejs.dev/reference/configuration/#vcs
-	"organizeImports": {
+	"formatter": {
 		// https://biomejs.dev/reference/configuration/#organizeimportsenabled
 		"enabled": true
 	},

@@ -27,6 +27,9 @@ images/**
 video/**
 videos/**
 
+# gql.tada generated cache files (environment-specific paths)
+# test/graphql/types/gql.tada-cache.d.ts
+
 # Log files and directories
 logs/**
 log/**

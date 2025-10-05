@@ -542,9 +542,6 @@ input CreateActionItemInput {
 }
 
 input CreatePluginInput {
-  backup: Boolean
-  isActivated: Boolean
-  isInstalled: Boolean
   pluginId: String!
 }
 
@@ -902,6 +899,10 @@ type HasUserVotedComment {
 
   """Type of the comment vote, null if no vote exists"""
   voteType: CommentVoteType
+}
+
+input InstallPluginInput {
+  pluginId: String!
 }
 
 enum InviteStatus {
@@ -1808,6 +1809,7 @@ type Mutation {
 
   """Mutation field to delete a venue booking."""
   deleteVenueBooking(input: MutationDeleteVenueBookingInput!): Venue
+  installPlugin(input: InstallPluginInput!): Plugin
 
   """Mutation field to join a public organization."""
   joinPublicOrganization(
@@ -1817,13 +1819,13 @@ type Mutation {
 
   """Mutation to mark a completed action item as pending"""
   markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
-  readNotification(input: MutationReadNotificationInput!): ReadNotificationResponse
 
   """Mutation to mark an action item as pending for a single instance"""
   markActionItemAsPendingForInstance(
     """Mark an action item as pending for a single instance"""
     input: MutationMarkActionAsPendingForInstanceInput!
   ): ActionItem
+  readNotification(input: MutationReadNotificationInput!): ReadNotificationResponse
 
   """Mutation field to reject a membership request by an admin."""
   rejectMembershipRequest(
@@ -2667,14 +2669,15 @@ input MutationJoinPublicOrganizationInput {
   organizationId: ID!
 }
 
+input MutationMarkActionAsPendingForInstanceInput {
+  actionId: ID!
+  eventId: ID!
+}
+
 """Input for marking one or more notifications as read."""
 input MutationReadNotificationInput {
   """One or more notification IDs to mark as read."""
   notificationIds: [ID!]!
-}
-input MutationMarkActionAsPendingForInstanceInput {
-  actionId: ID!
-  eventId: ID!
 }
 
 input MutationRejectMembershipRequestInput {
@@ -3398,7 +3401,7 @@ input MutationUpdateVolunteerGroupAssignmentsInput {
 """Minimal notification data for user interfaces."""
 type Notification {
   """Notification message body."""
-  body: String
+  body: String!
 
   """When notification was created."""
   createdAt: DateTime
@@ -3419,7 +3422,7 @@ type Notification {
   readAt: DateTime
 
   """Notification title for display."""
-  title: String
+  title: String!
 }
 
 type Organization {
@@ -4213,13 +4216,13 @@ input QueryHasUserVotedInput {
 """Input type for querying notifications for a specific user."""
 input QueryNotificationInput {
   """Number of notifications to return (default: 20, max: 100)."""
-  first: Int
+  first: Int = 20
 
   """Filter by read status (true for read, false for unread)."""
   isRead: Boolean
 
   """Number of notifications to skip for pagination."""
-  skip: Int
+  skip: Int = 0
 }
 
 """"""

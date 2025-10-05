@@ -27,7 +27,7 @@ pre-commit:
     7_fix_code_quality:
       run: |
         set -e
-        pnpm fix_code_quality
+        pnpm biome check --error-on-warnings --write $(find . -name '*.ts' -o -name '*.js' -o -name '*.tsx' -o -name '*.jsx' -o -name '*.json' -o -name '*.jsonc' -o -name '*.css' | grep -v 'node_modules' | grep -v 'gql.tada' | grep -v 'drizzle_migrations' | tr '\n' ' '),
         git add {staged_files}
     8_check_type_errors:
       run: pnpm check_type_errors
