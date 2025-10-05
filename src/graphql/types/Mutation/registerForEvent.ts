@@ -107,10 +107,10 @@ builder.mutationField("registerForEvent", (t) =>
 
 				// Check capacity if it's set (null means unlimited capacity)
 				if (event.capacity !== null && event.capacity !== undefined) {
-					const capacityNum =
-						typeof event.capacity === "string"
-							? Number.parseInt(event.capacity, 10)
-							: event.capacity;
+-                const capacityNum =
+-                    typeof event.capacity === "string"
+-                        ? Number.parseInt(event.capacity, 10)
+                const capacityNum = event.capacity;
 					const countResult = await tx
 						.select({ count: sql<number>`count(*)::int` })
 						.from(eventAttendancesTable)
