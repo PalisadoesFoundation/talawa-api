@@ -84,14 +84,28 @@ builder.mutationField("registerForEvent", (t) =>
 					});
 				}
 				// Check if user already registered
+// at the top of src/graphql/types/Mutation/registerForEvent.ts
+import { and, eq, sql } from "drizzle-orm";
+
+…
+
+// around lines 87–94
+-				const [existing] = await tx
+-					.select()
+-					.from(eventAttendancesTable)
+-					.where(
+-						({ eventId: eid, attendeeId }) =>
+-							sql`${eid} = ${eventId} AND ${attendeeId} = ${userId}`,
 				const [existing] = await tx
 					.select()
 					.from(eventAttendancesTable)
 					.where(
-						({ eventId: eid, attendeeId }) =>
-							sql`${eid} = ${eventId} AND ${attendeeId} = ${userId}`,
+						and(
+							eq(eventAttendancesTable.eventId, eventId),
+							eq(eventAttendancesTable.attendeeId, userId),
+						),
 					);
-				if (existing) {
+ 				if (existing) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "forbidden_action",
