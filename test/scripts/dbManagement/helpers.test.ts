@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { createMockMinioClient } from "test/_Mocks_/mockMinioClient";
 import readline from "node:readline";
 import * as schema from "src/drizzle/schema";
 import type { TestEnvConfig } from "test/envConfigSchema";
@@ -198,6 +199,23 @@ suite.concurrent("listSampleData", () => {
 
 suite.concurrent("emptyMinioBucket", () => {
 	test.concurrent("should empty the Minio bucket and return true", async () => {
+		// Use the full Minio mock
+		const mockMinio = createMockMinioClient();
+		Object.defineProperty(helpers, "minioClient", {
+			value: mockMinio.client,
+			writable: true,
+		});
+		// Optionally, mock listObjects to return a stream with one object
+		mockMinio.client.listObjects = vi.fn(() => {
+			const { Readable } = require("node:stream");
+			const stream = new Readable({ objectMode: true, read() { } });
+			process.nextTick(() => {
+				stream.push({ name: "test-object" });
+				stream.push(null);
+			});
+			return stream;
+		});
+		// removeObject already resolves in the mock
 		const result = await helpers.emptyMinioBucket();
 		expect(result).toBe(true);
 	});
@@ -206,7 +224,7 @@ suite.concurrent("emptyMinioBucket", () => {
 		const originalListObjects = minioClient.listObjects;
 		minioClient.listObjects = () => {
 			const { Readable } = require("node:stream");
-			const stream = new Readable({ read() {} });
+			const stream = new Readable({ read() { } });
 			process.nextTick(() => {
 				stream.emit("error", new Error("Failed to list objects"));
 				stream.push(null);

@@ -124,17 +124,17 @@ const mockCtx = {
 	envConfig: { API_BASE_URL: "http://localhost:3000" },
 	jwt: { sign: () => "mock-jwt-token" },
 	log: {
-		info: () => {},
-		error: () => {},
-		warn: () => {},
-		debug: () => {},
+		info: () => { },
+		error: () => { },
+		warn: () => { },
+		debug: () => { },
 		child: function () {
 			return this;
 		},
 		level: "info",
-		fatal: () => {},
-		trace: () => {},
-		silent: () => {},
+		fatal: () => { },
+		trace: () => { },
+		silent: () => { },
 	},
 	minio: {
 		bucketName: "talawa" as const,
@@ -143,7 +143,7 @@ const mockCtx = {
 	},
 	pubsub: {
 		subscribe: async () => ({ dummy: undefined }) as PubSubSubscribeMock,
-		unsubscribe: () => {},
+		unsubscribe: () => { },
 	},
 };
 
