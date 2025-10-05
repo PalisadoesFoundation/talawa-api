@@ -1,7 +1,10 @@
 import { expect, test } from "vitest";
 import * as schema from "~/src/drizzle/schema";
 // Update the import path if the builder module is located elsewhere, for example:
-import { registerForEventResolver } from "~/src/graphql/types/Mutation/registerForEvent";
+import {
+	type RegisterForEventArgs,
+	registerForEventResolver,
+} from "~/src/graphql/types/Mutation/registerForEvent";
 // Example alternative:
 // import { builder } from "../../../src/builder";
 // import { builder } from "../../../../../src/graphql/builder";
@@ -159,7 +162,8 @@ test("registerForEvent: successful registration", async () => {
 });
 
 test("registerForEvent: missing eventId", async () => {
-	const args = { input: {} };
+	// Provide args with missing eventId, but cast to RegisterForEventArgs to satisfy type
+	const args = { input: {} } as unknown as RegisterForEventArgs;
 	await expect(
 		registerForEventResolver(
 			null,

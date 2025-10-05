@@ -18,7 +18,7 @@ const RegisterForEventInput = builder.inputType("RegisterForEventInput", {
 import type { eventsTable } from "../../../drizzle/tables/events";
 import type { GraphQLContext } from "../../context";
 
-type RegisterForEventArgs = { input: { eventId: string } };
+export type RegisterForEventArgs = { input: { eventId: string } };
 type EventType = typeof eventsTable.$inferSelect & {
 	capacity: number;
 	isRegisterable: boolean;
