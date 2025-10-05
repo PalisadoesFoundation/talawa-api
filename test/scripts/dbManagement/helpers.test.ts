@@ -201,11 +201,13 @@ suite.concurrent("emptyMinioBucket", () => {
 	test.concurrent("should empty the Minio bucket and return true", async () => {
 		// Use the full Minio mock
 		const mockMinio = createMockMinioClient();
+		// Ensure makeBucket exists
+		mockMinio.client.makeBucket = vi.fn(async () => Promise.resolve());
 		Object.defineProperty(helpers, "minioClient", {
 			value: mockMinio.client,
 			writable: true,
 		});
-		// Optionally, mock listObjects to return a stream with one object
+		// Mock listObjects to return a stream with one object
 		mockMinio.client.listObjects = vi.fn(() => {
 			const { Readable } = require("node:stream");
 			const stream = new Readable({ objectMode: true, read() {} });
@@ -316,9 +318,15 @@ suite.concurrent("insertCollections", () => {
 	test.concurrent(
 		"should throw error for an invalid collection name",
 		async () => {
+			const db = Reflect.get(helpers, "db");
+			const originalTransaction = db.transaction;
+			db.transaction = async () => {
+				throw new Error("Transaction failed");
+			};
 			await expect(
 				helpers.insertCollections(["invalid_collection"]),
 			).rejects.toThrow(/Error adding data to tables:/);
+			db.transaction = originalTransaction;
 		},
 	);
 

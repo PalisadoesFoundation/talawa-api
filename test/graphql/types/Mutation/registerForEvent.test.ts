@@ -44,6 +44,21 @@ const mockCtx = {
 		) =>
 			fn({
 				execute: async (query: unknown) => {
+					// Simulate all required resources for successful registration
+					if (
+						typeof query === "object" &&
+						query &&
+						String(query).includes("SELECT * FROM events WHERE id")
+					) {
+						return [
+							{
+								eventId: "event-1",
+								isRegisterable: true,
+								capacity: 100,
+								count: 0,
+							},
+						];
+					}
 					if (
 						typeof query === "object" &&
 						query &&

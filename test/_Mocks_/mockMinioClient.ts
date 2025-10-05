@@ -37,6 +37,7 @@ export const createMockMinioClient = (): MockMinioClient => {
 	mockClient.bucketExists = vi.fn(
 		async (bucketName: string) => bucketName === mockMinioConfig.bucketName,
 	);
+	// Always ensure makeBucket exists for plugin/tests compatibility
 	mockClient.makeBucket = vi.fn(async () => Promise.resolve());
 	mockClient.listBuckets = vi.fn(async () => [
 		{ name: mockMinioConfig.bucketName, creationDate: new Date() },
