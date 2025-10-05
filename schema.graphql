@@ -1817,6 +1817,7 @@ type Mutation {
 
   """Mutation to mark a completed action item as pending"""
   markActionItemAsPending(input: MarkActionItemAsPendingInput!): ActionItem
+  readNotification(input: MutationReadNotificationInput!): ReadNotificationResponse
 
   """Mutation to mark an action item as pending for a single instance"""
   markActionItemAsPendingForInstance(
@@ -2666,6 +2667,11 @@ input MutationJoinPublicOrganizationInput {
   organizationId: ID!
 }
 
+"""Input for marking one or more notifications as read."""
+input MutationReadNotificationInput {
+  """One or more notification IDs to mark as read."""
+  notificationIds: [ID!]!
+}
 input MutationMarkActionAsPendingForInstanceInput {
   actionId: ID!
   eventId: ID!
@@ -3390,6 +3396,33 @@ input MutationUpdateVolunteerGroupAssignmentsInput {
 
   """Invitation Status."""
   inviteStatus: UpdateInviteStatus!
+}
+
+"""Minimal notification data for user interfaces."""
+type Notification {
+  """Notification message body."""
+  body: String
+
+  """When notification was created."""
+  createdAt: DateTime
+
+  """Type of event (for categorization)."""
+  eventType: String
+
+  """Unique notification identifier."""
+  id: ID
+
+  """Whether user has read this notification."""
+  isRead: Boolean
+
+  """Route to navigate when notification is clicked."""
+  navigation: String
+
+  """When user read this notification."""
+  readAt: DateTime
+
+  """Notification title for display."""
+  title: String
 }
 
 type Organization {
@@ -4180,6 +4213,18 @@ input QueryHasUserVotedInput {
   postId: String!
 }
 
+"""Input type for querying notifications for a specific user."""
+input QueryNotificationInput {
+  """Number of notifications to return (default: 20, max: 100)."""
+  first: Int
+
+  """Filter by read status (true for read, false for unread)."""
+  isRead: Boolean
+
+  """Number of notifications to skip for pagination."""
+  skip: Int
+}
+
 """"""
 input QueryOrganizationInput {
   """Global id of the organization."""
@@ -4258,6 +4303,11 @@ input QueryVenueInput {
 input QueryVolunteerGroupAssignmentsInput {
   """Global id of the group."""
   groupId: String!
+}
+
+type ReadNotificationResponse {
+  message: String
+  success: Boolean!
 }
 
 """
@@ -4535,6 +4585,12 @@ type User {
 
   """Language code of the user's preferred natural language."""
   naturalLanguageCode: Iso639Set1LanguageCode
+
+  """Notifications for this user"""
+  notifications(
+    """Input for querying notifications"""
+    input: QueryNotificationInput
+  ): [Notification!]
 
   """
   GraphQL connection to traverse through the organizations the user is a member of.
