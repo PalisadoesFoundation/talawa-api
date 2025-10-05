@@ -41,21 +41,12 @@ builder.mutationField("registerForEvent", (t) =>
 			}
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				// Lock the event row for update to prevent race conditions
-				const [eventRaw] = await tx.execute(
+				const eventResult = await tx.execute(
 					sql`SELECT * FROM events WHERE id = ${eventId} FOR UPDATE`,
 				);
-				const event = eventRaw as
-					| { isRegisterable: boolean; capacity: number }
-					| undefined;
-				if (!event) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [{ argumentPath: ["eventId"] }],
-							message: "Event not found",
-						},
-					});
-				}
+				const event = (eventResult as {
+					rows: Array<{ isRegisterable: boolean; capacity: number | null }>;
+				}).rows[0];
 				if (!event.isRegisterable) {
 					throw new TalawaGraphQLError({
 						extensions: {
