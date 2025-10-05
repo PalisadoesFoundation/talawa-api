@@ -386,16 +386,17 @@ builder.mutationField("createEvent", (t) =>
 						createdEventAttachments = await tx
 							.insert(eventAttachmentsTable)
 							.values(
-								attachments.map(
-									(attachment: FileUpload & { mimetype?: string }) => ({
-										creatorId: currentUserId,
-										eventId: createdEvent.id,
-										mimeType: attachment.mimetype as z.infer<
-											typeof eventAttachmentMimeTypeEnum
-										>,
-										name: ulid(),
-									}),
-								),
+						createdEventAttachments = await tx
+							.insert(eventAttachmentsTable)
+							.values(
+								attachments.map((attachment) => ({
+									creatorId: currentUserId,
+									eventId: createdEvent.id,
+									mimeType: attachment.mimetype,
+									name: ulid(),
+								})),
+							)
+							.returning();
 							)
 							.returning();
 
