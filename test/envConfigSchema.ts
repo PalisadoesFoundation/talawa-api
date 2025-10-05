@@ -15,7 +15,9 @@ export const testEnvConfigSchema = Type.Object({
 	 */
 	API_POSTGRES_TEST_HOST: envConfigSchema.properties.API_POSTGRES_HOST,
 	API_REDIS_TEST_HOST: envConfigSchema.properties.API_REDIS_HOST,
-
+	API_ENABLE_EMAIL_QUEUE: Type.Optional(
+		envConfigSchema.properties.API_ENABLE_EMAIL_QUEUE,
+	),
 	MINIO_ROOT_USER: envConfigSchema.properties.MINIO_ROOT_USER,
 });
 export const testEnvConfig = envSchema<TestEnvConfig>({
