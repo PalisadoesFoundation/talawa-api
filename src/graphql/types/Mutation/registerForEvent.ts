@@ -68,13 +68,8 @@ builder.mutationField("registerForEvent", (t) =>
 				const countResult = await tx.execute(
 					sql`SELECT COUNT(*)::int AS count FROM event_attendances WHERE event_id = ${eventId}`,
 				);
-				const rawCount =
-					Array.isArray(countResult) &&
-					countResult.length > 0 &&
-					typeof countResult[0]?.count !== "undefined"
-						? countResult[0].count
-						: 0;
-				const count = Number(rawCount);
+				const countRow = (countResult as { rows: Array<{ count: number }> }).rows[0];
+				const count = Number(countRow?.count ?? 0);
 				if (count >= Number(event.capacity)) {
 					throw new TalawaGraphQLError({
 						extensions: {
