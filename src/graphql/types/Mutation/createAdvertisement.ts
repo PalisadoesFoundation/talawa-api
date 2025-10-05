@@ -239,6 +239,7 @@ builder.mutationField("createAdvertisement", (t) =>
 									},
 								);
 							}
+							return Promise.resolve();
 						}),
 					);
 

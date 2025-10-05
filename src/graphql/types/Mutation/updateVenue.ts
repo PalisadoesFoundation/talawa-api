@@ -264,6 +264,7 @@ builder.mutationField("updateVenue", (t) =>
 										)
 										.then(() => uploaded.push(attachment.name));
 								}
+								return Promise.resolve();
 							}),
 						);
 					} catch (e) {

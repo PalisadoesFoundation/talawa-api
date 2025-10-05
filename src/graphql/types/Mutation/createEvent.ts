@@ -406,6 +406,7 @@ builder.mutationField("createEvent", (t) =>
 										},
 									);
 								}
+								return Promise.resolve();
 							}),
 						);
 					}

@@ -133,7 +133,7 @@ html[data-theme="dark"] {
 	padding-bottom: 0;
 	/* padding-left: 0.3rem; */
 	font-weight: 800;
-	background: transparent !important;
+	background: transparent;
 }
 
 .menu__link:hover {
@@ -150,30 +150,30 @@ html[data-theme="dark"] {
 
 /* Target specifically the link text */
 .menu__link {
-	white-space: normal !important;
-	word-break: break-word !important;
-	overflow-wrap: break-word !important;
-	width: 100% !important;
-	max-width: 100% !important;
+	white-space: normal;
+	word-break: break-word;
+	overflow-wrap: break-word;
+	width: 100%;
+	max-width: 100%;
 	/* line-height: 1.2 !important; */
-	padding-right: 1rem !important;
+	padding-right: 1rem;
 }
 
 /* Target the container of menu items */
 .menu__list-item {
-	width: 95% !important;
-	padding-right: 0px !important;
+	width: 95%;
+	padding-right: 0px;
 }
 
 /* Ensure the menu itself has proper width */
 .menu__list {
-	width: 100% !important;
+	width: 100%;
 }
 
 /* Target the entire menu container */
 .theme-doc-sidebar-menu {
-	width: 100% !important;
-	max-width: 100% !important;
+	width: 100%;
+	max-width: 100%;
 }
 
 /* Markdown styles */
@@ -328,7 +328,7 @@ h1 {
 .Heading {
 	font-size: 1.5rem;
 	font-weight: 700;
-	text-align: center !important;
+	text-align: center;
 }
 
 a {
@@ -444,7 +444,7 @@ h1 {
 @media (min-width: 997px) {
 	.menu {
 		flex-grow: 1;
-		padding: 1rem !important;
+		padding: 1rem;
 	}
 }
 
@@ -629,7 +629,7 @@ html[data-theme="dark"] .header-youtube-link:before {
 .Heading {
 	font-size: 1.5rem;
 	font-weight: 700;
-	text-align: left !important;
+	text-align: left;
 }
 
 .markdown h1,
@@ -639,7 +639,7 @@ html[data-theme="dark"] .header-youtube-link:before {
 .markdown h5,
 .markdown h6 {
 	color: var(--secondary-blue-900);
-	margin: 20px 0 !important;
+	margin: 20px 0;
 }
 
 p,
@@ -676,7 +676,7 @@ textarea,
 /* Small Screen (max-width: 768px) */
 @media (max-width: 768px) {
 	.container > div > div:first-child {
-		padding: 1rem !important;
+		padding: 1rem;
 	}
 
 	.center {
@@ -776,7 +776,7 @@ textarea,
 /* Responsiveness for Medium to Extra Large Screens (min-width: 997px) and (max-width: 1327px) */
 @media (min-width: 997px) and (max-width: 1327px) {
 	.container > div > div:first-child {
-		padding-left: 4rem !important;
-		padding-right: 4rem !important;
+		padding-left: 4rem;
+		padding-right: 4rem;
 	}
 }

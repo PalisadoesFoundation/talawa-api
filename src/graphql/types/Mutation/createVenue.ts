@@ -237,6 +237,7 @@ builder.mutationField("createVenue", (t) =>
 									},
 								);
 							}
+							return Promise.resolve();
 						}),
 					);
 

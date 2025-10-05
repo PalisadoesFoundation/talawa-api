@@ -1,41 +1,41 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1757832957902,
-      "tag": "20250914065557_robust_tombstone",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1754547882351,
-      "tag": "20250807062442_curved_psylocke",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1754719182474,
-      "tag": "20250809055942_sour_thena",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1756360074111,
-      "tag": "20250828054754_pink_brother_voodoo",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1759688816635,
-      "tag": "20251005182656_omniscient_junta",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "postgresql",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "7",
+			"when": 1757832957902,
+			"tag": "20250914065557_robust_tombstone",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1754547882351,
+			"tag": "20250807062442_curved_psylocke",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1754719182474,
+			"tag": "20250809055942_sour_thena",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "7",
+			"when": 1756360074111,
+			"tag": "20250828054754_pink_brother_voodoo",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "7",
+			"when": 1759688816635,
+			"tag": "20251005182656_omniscient_junta",
+			"breakpoints": true
+		}
+	]
 }
