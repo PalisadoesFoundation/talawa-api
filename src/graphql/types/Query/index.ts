@@ -28,6 +28,7 @@ import "./organizationUsers";
 import "./Events";
 import "./organizations";
 import "./hasUserVoted";
+import "./Notification";
 import "./volunteerGroups";
 import "./volunteerGroupAssignments";
 import "./actionItemCategory";
