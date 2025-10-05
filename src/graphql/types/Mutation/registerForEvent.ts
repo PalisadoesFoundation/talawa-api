@@ -73,8 +73,8 @@ export const registerForEventResolver = async (
 		);
 		const rawCount =
 			Array.isArray(countResult) &&
-				countResult.length > 0 &&
-				typeof countResult[0]?.count !== "undefined"
+			countResult.length > 0 &&
+			typeof countResult[0]?.count !== "undefined"
 				? countResult[0].count
 				: 0;
 		const count = Number(rawCount);

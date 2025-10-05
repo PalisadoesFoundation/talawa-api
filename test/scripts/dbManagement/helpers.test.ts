@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
-import { createMockMinioClient } from "test/_Mocks_/mockMinioClient";
 import readline from "node:readline";
 import * as schema from "src/drizzle/schema";
+import { createMockMinioClient } from "test/_Mocks_/mockMinioClient";
 import type { TestEnvConfig } from "test/envConfigSchema";
 import { uuidv7 } from "uuidv7";
 import { beforeAll, expect, suite, test, vi } from "vitest";
@@ -208,7 +208,7 @@ suite.concurrent("emptyMinioBucket", () => {
 		// Optionally, mock listObjects to return a stream with one object
 		mockMinio.client.listObjects = vi.fn(() => {
 			const { Readable } = require("node:stream");
-			const stream = new Readable({ objectMode: true, read() { } });
+			const stream = new Readable({ objectMode: true, read() {} });
 			process.nextTick(() => {
 				stream.push({ name: "test-object" });
 				stream.push(null);
@@ -224,7 +224,7 @@ suite.concurrent("emptyMinioBucket", () => {
 		const originalListObjects = minioClient.listObjects;
 		minioClient.listObjects = () => {
 			const { Readable } = require("node:stream");
-			const stream = new Readable({ read() { } });
+			const stream = new Readable({ read() {} });
 			process.nextTick(() => {
 				stream.emit("error", new Error("Failed to list objects"));
 				stream.push(null);
@@ -275,6 +275,26 @@ suite.concurrent("insertCollections", () => {
 	test.concurrent(
 		"should insert collection data (for a valid collection) and return true",
 		async () => {
+			// Ensure admin user exists before running insertCollections
+			const adminEmail =
+				process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS || "admin@example.com";
+			await helpers.checkAndInsertData(
+				schema.usersTable,
+				[
+					{
+						id: uuidv7(),
+						emailAddress: adminEmail,
+						name: "Admin User",
+						passwordHash: "hashed_password_123",
+						isEmailAddressVerified: true,
+						role: "administrator",
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+				],
+				schema.usersTable.id,
+				1000,
+			);
 			const result = await helpers.insertCollections([
 				"users",
 				"organizations",
