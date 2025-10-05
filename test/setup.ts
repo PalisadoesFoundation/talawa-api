@@ -1,3 +1,11 @@
+import { vi } from "vitest";
+vi.mock("minio", () => ({
+	Client: vi.fn().mockImplementation(() => ({
+		makeRequestStreamAsync: vi.fn(),
+		getBucketRegionAsync: vi.fn(),
+		bucketExists: vi.fn(),
+	})),
+}));
 import { reset } from "drizzle-seed";
 import type { GlobalSetupContext } from "vitest/node";
 import * as schema from "~/src/drizzle/schema";

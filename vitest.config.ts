@@ -4,6 +4,8 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
 	plugins: [tsconfigPaths()],
 	test: {
+		include: ["test/**/*.test.ts"],
+		setupFiles: ["./test/minioMockSetup.ts"],
 		coverage: {
 			provider: "v8", // or 'istanbul' if you prefer
 			reporter: ["text", "lcov", "html"],
@@ -12,7 +14,6 @@ export default defineConfig({
 		// fileParallelism: true,
 
 		// https://vitest.dev/config/#globalsetup
-		globalSetup: ["./test/setup.ts"],
 
 		// https://vitest.dev/config/#passwithnotests
 		passWithNoTests: true,
