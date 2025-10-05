@@ -23,12 +23,22 @@ import {
 	validateRecurrenceInput,
 } from "~/src/utilities/recurringEventHelpers";
 
+
+// Define the CreateEventResult GraphQL object type correctly for Pothos
+export const CreateEventResultRef = builder.objectRef<{ id: string }>("CreateEventResult");
+CreateEventResultRef.implement({
+	description: "Result object for createEvent mutation",
+	fields: (t) => ({
+		id: t.exposeID("id", { description: "The ID of the created event" }),
+	}),
+});
+
 const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
 		let attachments:
 			| (FileUpload & {
-					mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
-			  })[]
+				mimetype: z.infer<typeof eventAttachmentMimeTypeEnum>;
+			})[]
 			| undefined = undefined;
 		if (arg.attachments !== undefined) {
 			const rawAttachments = await Promise.all(arg.attachments);
