@@ -1,10 +1,10 @@
-import { sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { eventAttendancesTable } from "../../../drizzle/tables/eventAttendances";
+import { TalawaGraphQLError } from "../../../utilities/TalawaGraphQLError";
 // import { eventsTable } from "../../../drizzle/tables/events"; // removed unused import
 // import { z } from "zod";
 import { builder } from "../../builder";
 import { EventAttendance } from "../EventAttendance/EventAttendance";
-import { TalawaGraphQLError } from "../../../utilities/TalawaGraphQLError";
 
 const RegisterForEventInput = builder.inputType("RegisterForEventInput", {
 	fields: (t) => ({
@@ -41,12 +41,21 @@ builder.mutationField("registerForEvent", (t) =>
 			}
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				// Lock the event row for update to prevent race conditions
-				const eventResult = await tx.execute(
+				const [eventRaw] = await tx.execute(
 					sql`SELECT * FROM events WHERE id = ${eventId} FOR UPDATE`,
 				);
-				const event = (eventResult as {
-					rows: Array<{ isRegisterable: boolean; capacity: number | null }>;
-				}).rows[0];
+				const event = eventRaw as
+					| { isRegisterable: boolean; capacity: number }
+					| undefined;
+				if (!event) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [{ argumentPath: ["eventId"] }],
+							message: "Event not found",
+						},
+					});
+				}
 				if (!event.isRegisterable) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -59,8 +68,13 @@ builder.mutationField("registerForEvent", (t) =>
 				const countResult = await tx.execute(
 					sql`SELECT COUNT(*)::int AS count FROM event_attendances WHERE event_id = ${eventId}`,
 				);
-				const countRow = (countResult as { rows: Array<{ count: number }> }).rows[0];
-				const count = Number(countRow?.count ?? 0);
+				const rawCount =
+					Array.isArray(countResult) &&
+					countResult.length > 0 &&
+					typeof countResult[0]?.count !== "undefined"
+						? countResult[0].count
+						: 0;
+				const count = Number(rawCount);
 				if (count >= Number(event.capacity)) {
 					throw new TalawaGraphQLError({
 						extensions: {
@@ -70,18 +84,6 @@ builder.mutationField("registerForEvent", (t) =>
 					});
 				}
 				// Check if user already registered
-// at the top of src/graphql/types/Mutation/registerForEvent.ts
-import { and, eq, sql } from "drizzle-orm";
-
-…
-
-// around lines 87–94
--				const [existing] = await tx
--					.select()
--					.from(eventAttendancesTable)
--					.where(
--						({ eventId: eid, attendeeId }) =>
--							sql`${eid} = ${eventId} AND ${attendeeId} = ${userId}`,
 				const [existing] = await tx
 					.select()
 					.from(eventAttendancesTable)
@@ -91,7 +93,7 @@ import { and, eq, sql } from "drizzle-orm";
 							eq(eventAttendancesTable.attendeeId, userId),
 						),
 					);
- 				if (existing) {
+				if (existing) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "forbidden_action",
