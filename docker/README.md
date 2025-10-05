@@ -21,7 +21,7 @@ sudo chmod 666 /var/run/docker.sock
 
 ```bash
 docker compose version
-docker ps
+docker info
 ```
 
 You should see a Compose version and the host containers listed.
