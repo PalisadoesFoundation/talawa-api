@@ -228,67 +228,6 @@ CREATE TABLE "event_generation_windows" (
 	"updated_at" timestamp (3) with time zone
 );
 --> statement-breakpoint
-CREATE TABLE "event_volunteer_exceptions" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"volunteer_id" uuid NOT NULL,
-	"recurring_event_instance_id" uuid NOT NULL,
-	"is_exception" boolean DEFAULT false NOT NULL,
-	"has_accepted" boolean,
-	"is_public" boolean,
-	"hours_volunteered" numeric(10, 2),
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"created_by" uuid,
-	"updated_by" uuid,
-	CONSTRAINT "event_volunteer_exceptions_volunteer_id_recurring_event_instance_id_unique" UNIQUE("volunteer_id","recurring_event_instance_id")
-);
---> statement-breakpoint
-CREATE TABLE "event_volunteer_group_exceptions" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"volunteer_group_id" uuid NOT NULL,
-	"recurring_event_instance_id" uuid NOT NULL,
-	"is_exception" boolean DEFAULT false NOT NULL,
-	"name" text,
-	"description" text,
-	"volunteers_required" integer,
-	"leader_id" uuid,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	"created_by" uuid,
-	"updated_by" uuid,
-	CONSTRAINT "event_volunteer_group_exceptions_volunteer_group_id_recurring_event_instance_id_unique" UNIQUE("volunteer_group_id","recurring_event_instance_id")
-);
---> statement-breakpoint
-CREATE TABLE "event_volunteer_groups" (
-	"id" uuid PRIMARY KEY NOT NULL,
-	"event_id" uuid NOT NULL,
-	"is_template" boolean DEFAULT true NOT NULL,
-	"recurring_event_instance_id" uuid,
-	"leader_id" uuid NOT NULL,
-	"creator_id" uuid,
-	"name" text NOT NULL,
-	"description" text,
-	"volunteers_required" integer,
-	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp (3) with time zone,
-	"updater_id" uuid
-);
---> statement-breakpoint
-CREATE TABLE "event_volunteers" (
-	"id" uuid PRIMARY KEY NOT NULL,
-	"user_id" uuid NOT NULL,
-	"event_id" uuid NOT NULL,
-	"is_template" boolean DEFAULT true NOT NULL,
-	"recurring_event_instance_id" uuid,
-	"creator_id" uuid,
-	"has_accepted" boolean DEFAULT false NOT NULL,
-	"is_public" boolean DEFAULT true NOT NULL,
-	"hours_volunteered" numeric(10, 2) DEFAULT '0' NOT NULL,
-	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp (3) with time zone,
-	"updater_id" uuid
-);
---> statement-breakpoint
 CREATE TABLE "events" (
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
 	"creator_id" uuid,
@@ -579,16 +518,27 @@ CREATE TABLE "venues" (
 	"updater_id" uuid
 );
 --> statement-breakpoint
-CREATE TABLE "volunteer_memberships" (
-	"id" uuid PRIMARY KEY NOT NULL,
-	"volunteer_id" uuid NOT NULL,
-	"group_id" uuid,
-	"event_id" uuid NOT NULL,
-	"status" text NOT NULL,
-	"created_by" uuid,
-	"updated_by" uuid,
+CREATE TABLE "volunteer_group_assignments" (
+	"assignee_id" uuid NOT NULL,
 	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp (3) with time zone
+	"creator_id" uuid,
+	"group_id" uuid NOT NULL,
+	"invite_status" text NOT NULL,
+	"updated_at" timestamp (3) with time zone,
+	"updater_id" uuid,
+	CONSTRAINT "volunteer_group_assignments_assignee_id_group_id_pk" PRIMARY KEY("assignee_id","group_id")
+);
+--> statement-breakpoint
+CREATE TABLE "volunteer_groups" (
+	"created_at" timestamp (3) with time zone DEFAULT now() NOT NULL,
+	"creator_id" uuid,
+	"event_id" uuid NOT NULL,
+	"id" uuid PRIMARY KEY NOT NULL,
+	"leader_id" uuid,
+	"max_volunteer_count" integer NOT NULL,
+	"name" text NOT NULL,
+	"updated_at" timestamp (3) with time zone,
+	"updater_id" uuid
 );
 --> statement-breakpoint
 ALTER TABLE "actionitem_categories" ADD CONSTRAINT "actionitem_categories_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
@@ -649,25 +599,6 @@ ALTER TABLE "event_exceptions" ADD CONSTRAINT "event_exceptions_updater_id_users
 ALTER TABLE "event_generation_windows" ADD CONSTRAINT "event_generation_windows_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_generation_windows" ADD CONSTRAINT "event_generation_windows_created_by_id_users_id_fk" FOREIGN KEY ("created_by_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "event_generation_windows" ADD CONSTRAINT "event_generation_windows_last_updated_by_id_users_id_fk" FOREIGN KEY ("last_updated_by_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_exceptions" ADD CONSTRAINT "event_volunteer_exceptions_volunteer_id_event_volunteers_id_fk" FOREIGN KEY ("volunteer_id") REFERENCES "public"."event_volunteers"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_exceptions" ADD CONSTRAINT "event_volunteer_exceptions_recurring_event_instance_id_recurring_event_instances_id_fk" FOREIGN KEY ("recurring_event_instance_id") REFERENCES "public"."recurring_event_instances"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_exceptions" ADD CONSTRAINT "event_volunteer_exceptions_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_exceptions" ADD CONSTRAINT "event_volunteer_exceptions_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_group_exceptions" ADD CONSTRAINT "event_volunteer_group_exceptions_volunteer_group_id_event_volunteer_groups_id_fk" FOREIGN KEY ("volunteer_group_id") REFERENCES "public"."event_volunteer_groups"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_group_exceptions" ADD CONSTRAINT "event_volunteer_group_exceptions_recurring_event_instance_id_recurring_event_instances_id_fk" FOREIGN KEY ("recurring_event_instance_id") REFERENCES "public"."recurring_event_instances"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_group_exceptions" ADD CONSTRAINT "event_volunteer_group_exceptions_leader_id_users_id_fk" FOREIGN KEY ("leader_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_group_exceptions" ADD CONSTRAINT "event_volunteer_group_exceptions_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_group_exceptions" ADD CONSTRAINT "event_volunteer_group_exceptions_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_recurring_event_instance_id_recurring_event_instances_id_fk" FOREIGN KEY ("recurring_event_instance_id") REFERENCES "public"."recurring_event_instances"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_leader_id_users_id_fk" FOREIGN KEY ("leader_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteer_groups" ADD CONSTRAINT "event_volunteer_groups_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteers" ADD CONSTRAINT "event_volunteers_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteers" ADD CONSTRAINT "event_volunteers_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteers" ADD CONSTRAINT "event_volunteers_recurring_event_instance_id_recurring_event_instances_id_fk" FOREIGN KEY ("recurring_event_instance_id") REFERENCES "public"."recurring_event_instances"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteers" ADD CONSTRAINT "event_volunteers_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "event_volunteers" ADD CONSTRAINT "event_volunteers_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "events" ADD CONSTRAINT "events_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
@@ -733,11 +664,14 @@ ALTER TABLE "venue_bookings" ADD CONSTRAINT "venue_bookings_venue_id_venues_id_f
 ALTER TABLE "venues" ADD CONSTRAINT "venues_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "venues" ADD CONSTRAINT "venues_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "venues" ADD CONSTRAINT "venues_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "volunteer_memberships" ADD CONSTRAINT "volunteer_memberships_volunteer_id_event_volunteers_id_fk" FOREIGN KEY ("volunteer_id") REFERENCES "public"."event_volunteers"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "volunteer_memberships" ADD CONSTRAINT "volunteer_memberships_group_id_event_volunteer_groups_id_fk" FOREIGN KEY ("group_id") REFERENCES "public"."event_volunteer_groups"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "volunteer_memberships" ADD CONSTRAINT "volunteer_memberships_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "volunteer_memberships" ADD CONSTRAINT "volunteer_memberships_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
-ALTER TABLE "volunteer_memberships" ADD CONSTRAINT "volunteer_memberships_updated_by_users_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "volunteer_group_assignments" ADD CONSTRAINT "volunteer_group_assignments_assignee_id_users_id_fk" FOREIGN KEY ("assignee_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "volunteer_group_assignments" ADD CONSTRAINT "volunteer_group_assignments_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "volunteer_group_assignments" ADD CONSTRAINT "volunteer_group_assignments_group_id_volunteer_groups_id_fk" FOREIGN KEY ("group_id") REFERENCES "public"."volunteer_groups"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "volunteer_group_assignments" ADD CONSTRAINT "volunteer_group_assignments_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "volunteer_groups" ADD CONSTRAINT "volunteer_groups_creator_id_users_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "volunteer_groups" ADD CONSTRAINT "volunteer_groups_event_id_events_id_fk" FOREIGN KEY ("event_id") REFERENCES "public"."events"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "volunteer_groups" ADD CONSTRAINT "volunteer_groups_leader_id_users_id_fk" FOREIGN KEY ("leader_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "volunteer_groups" ADD CONSTRAINT "volunteer_groups_updater_id_users_id_fk" FOREIGN KEY ("updater_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 CREATE INDEX "actionitem_categories_created_at_index" ON "actionitem_categories" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "actionitem_categories_creator_id_index" ON "actionitem_categories" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "actionitem_categories_name_index" ON "actionitem_categories" USING btree ("name");--> statement-breakpoint
@@ -810,18 +744,6 @@ CREATE INDEX "egw_last_processed_at_idx" ON "event_generation_windows" USING btr
 CREATE INDEX "egw_current_window_end_date_idx" ON "event_generation_windows" USING btree ("current_window_end_date");--> statement-breakpoint
 CREATE INDEX "egw_retention_start_date_idx" ON "event_generation_windows" USING btree ("retention_start_date");--> statement-breakpoint
 CREATE INDEX "egw_worker_processing_idx" ON "event_generation_windows" USING btree ("is_enabled","processing_priority","last_processed_at");--> statement-breakpoint
-CREATE UNIQUE INDEX "event_volunteer_groups_event_id_name_recurring_event_instance_id_index" ON "event_volunteer_groups" USING btree ("event_id","name","recurring_event_instance_id");--> statement-breakpoint
-CREATE INDEX "event_volunteer_groups_created_at_index" ON "event_volunteer_groups" USING btree ("created_at");--> statement-breakpoint
-CREATE INDEX "event_volunteer_groups_event_id_index" ON "event_volunteer_groups" USING btree ("event_id");--> statement-breakpoint
-CREATE INDEX "event_volunteer_groups_leader_id_index" ON "event_volunteer_groups" USING btree ("leader_id");--> statement-breakpoint
-CREATE INDEX "event_volunteer_groups_name_index" ON "event_volunteer_groups" USING btree ("name");--> statement-breakpoint
-CREATE INDEX "event_volunteer_groups_is_template_index" ON "event_volunteer_groups" USING btree ("is_template");--> statement-breakpoint
-CREATE UNIQUE INDEX "event_volunteers_user_id_event_id_recurring_event_instance_id_index" ON "event_volunteers" USING btree ("user_id","event_id","recurring_event_instance_id");--> statement-breakpoint
-CREATE INDEX "event_volunteers_created_at_index" ON "event_volunteers" USING btree ("created_at");--> statement-breakpoint
-CREATE INDEX "event_volunteers_event_id_index" ON "event_volunteers" USING btree ("event_id");--> statement-breakpoint
-CREATE INDEX "event_volunteers_user_id_index" ON "event_volunteers" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "event_volunteers_has_accepted_index" ON "event_volunteers" USING btree ("has_accepted");--> statement-breakpoint
-CREATE INDEX "event_volunteers_is_template_index" ON "event_volunteers" USING btree ("is_template");--> statement-breakpoint
 CREATE INDEX "events_created_at_idx" ON "events" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "events_creator_id_idx" ON "events" USING btree ("creator_id");--> statement-breakpoint
 CREATE INDEX "events_end_at_idx" ON "events" USING btree ("end_at");--> statement-breakpoint
@@ -931,8 +853,12 @@ CREATE INDEX "venues_creator_id_index" ON "venues" USING btree ("creator_id");--
 CREATE INDEX "venues_name_index" ON "venues" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "venues_organization_id_index" ON "venues" USING btree ("organization_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "venues_name_organization_id_index" ON "venues" USING btree ("name","organization_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "volunteer_memberships_volunteer_id_group_id_event_id_index" ON "volunteer_memberships" USING btree ("volunteer_id","group_id","event_id");--> statement-breakpoint
-CREATE INDEX "volunteer_memberships_created_at_index" ON "volunteer_memberships" USING btree ("created_at");--> statement-breakpoint
-CREATE INDEX "volunteer_memberships_event_id_index" ON "volunteer_memberships" USING btree ("event_id");--> statement-breakpoint
-CREATE INDEX "volunteer_memberships_volunteer_id_index" ON "volunteer_memberships" USING btree ("volunteer_id");--> statement-breakpoint
-CREATE INDEX "volunteer_memberships_status_index" ON "volunteer_memberships" USING btree ("status");
+CREATE INDEX "volunteer_group_assignments_created_at_index" ON "volunteer_group_assignments" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "volunteer_group_assignments_creator_id_index" ON "volunteer_group_assignments" USING btree ("creator_id");--> statement-breakpoint
+CREATE INDEX "volunteer_group_assignments_group_id_index" ON "volunteer_group_assignments" USING btree ("group_id");--> statement-breakpoint
+CREATE INDEX "volunteer_groups_created_at_index" ON "volunteer_groups" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "volunteer_groups_creator_id_index" ON "volunteer_groups" USING btree ("creator_id");--> statement-breakpoint
+CREATE INDEX "volunteer_groups_event_id_index" ON "volunteer_groups" USING btree ("event_id");--> statement-breakpoint
+CREATE INDEX "volunteer_groups_leader_id_index" ON "volunteer_groups" USING btree ("leader_id");--> statement-breakpoint
+CREATE INDEX "volunteer_groups_name_index" ON "volunteer_groups" USING btree ("name");--> statement-breakpoint
+CREATE UNIQUE INDEX "volunteer_groups_event_id_name_index" ON "volunteer_groups" USING btree ("event_id","name");
