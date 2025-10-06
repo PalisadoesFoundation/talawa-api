@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
+import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
 import { EventVolunteerGroup } from "~/src/graphql/types/EventVolunteerGroup/EventVolunteerGroup";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
@@ -28,13 +28,13 @@ export const EventVolunteerGroupsResolver = async (
 		})
 		.from(eventVolunteerGroupsTable)
 		.innerJoin(
-			volunteerMembershipsTable,
-			eq(volunteerMembershipsTable.groupId, eventVolunteerGroupsTable.id),
+			eventVolunteerMembershipsTable,
+			eq(eventVolunteerMembershipsTable.groupId, eventVolunteerGroupsTable.id),
 		)
 		.where(
 			and(
-				eq(volunteerMembershipsTable.volunteerId, parent.id),
-				eq(volunteerMembershipsTable.status, "accepted"), // Only accepted group memberships
+				eq(eventVolunteerMembershipsTable.volunteerId, parent.id),
+				eq(eventVolunteerMembershipsTable.status, "accepted"), // Only accepted group memberships
 			),
 		)
 		.execute();

@@ -1,4 +1,4 @@
-import type { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
+import type { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
 import { builder } from "~/src/graphql/builder";
 
 export type EventVolunteerGroup =

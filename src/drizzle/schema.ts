@@ -127,19 +127,19 @@ export {
 export {
 	eventVolunteersTable,
 	eventVolunteersTableRelations,
-} from "./tables/EventVolunteer";
+} from "./tables/eventVolunteers";
 export {
 	eventVolunteerGroupsTable,
 	eventVolunteerGroupsTableRelations,
-} from "./tables/EventVolunteerGroup";
+} from "./tables/eventVolunteerGroups";
 export {
 	eventVolunteerExceptionsTable,
 	eventVolunteerExceptionsTableRelations,
 } from "./tables/eventVolunteerExceptions";
 export {
-	volunteerMembershipsTable,
-	volunteerMembershipsTableRelations,
-} from "./tables/EventVolunteerMembership";
+	eventVolunteerMembershipsTable,
+	eventVolunteerMembershipsTableRelations,
+} from "./tables/eventVolunteerMemberships";
 export {
 	eventVolunteerGroupExceptionsTable,
 	eventVolunteerGroupExceptionsTableRelations,

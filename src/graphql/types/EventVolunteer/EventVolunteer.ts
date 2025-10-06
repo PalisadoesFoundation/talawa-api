@@ -1,4 +1,4 @@
-import type { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
+import type { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { builder } from "~/src/graphql/builder";
 
 export type EventVolunteer = typeof eventVolunteersTable.$inferSelect & {

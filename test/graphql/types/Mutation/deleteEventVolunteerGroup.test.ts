@@ -1,9 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
+import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import type {
 	TalawaGraphQLFormattedError,
@@ -784,7 +784,7 @@ suite("Mutation deleteEventVolunteerGroup - Integration Tests", () => {
 		assertToBeNonNullish(volunteer);
 
 		const [membership] = await server.drizzleClient
-			.insert(volunteerMembershipsTable)
+			.insert(eventVolunteerMembershipsTable)
 			.values({
 				volunteerId: volunteer.id,
 				eventId: event.eventId,
@@ -799,8 +799,8 @@ suite("Mutation deleteEventVolunteerGroup - Integration Tests", () => {
 		// Verify the membership exists before deletion
 		const membershipBefore = await server.drizzleClient
 			.select()
-			.from(volunteerMembershipsTable)
-			.where(eq(volunteerMembershipsTable.groupId, group.groupId));
+			.from(eventVolunteerMembershipsTable)
+			.where(eq(eventVolunteerMembershipsTable.groupId, group.groupId));
 
 		expect(membershipBefore).toHaveLength(1);
 
@@ -832,8 +832,8 @@ suite("Mutation deleteEventVolunteerGroup - Integration Tests", () => {
 		// Verify related volunteer memberships were cascade deleted
 		const membershipAfter = await server.drizzleClient
 			.select()
-			.from(volunteerMembershipsTable)
-			.where(eq(volunteerMembershipsTable.groupId, group.groupId));
+			.from(eventVolunteerMembershipsTable)
+			.where(eq(eventVolunteerMembershipsTable.groupId, group.groupId));
 
 		expect(membershipAfter).toHaveLength(0);
 

@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
-import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
 import { eventVolunteerGroupExceptionsTable } from "~/src/drizzle/tables/eventVolunteerGroupExceptions";
+import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -608,11 +608,6 @@ suite(
 				.values({
 					volunteerGroupId: group.groupId,
 					recurringEventInstanceId: recurringSetup.instanceId,
-					isException: true,
-					name: "Modified Name",
-					description: "Modified Description",
-					volunteersRequired: 3,
-					leaderId: testUser.userId,
 					createdBy: creatorId,
 					updatedBy: creatorId,
 				})
@@ -659,10 +654,6 @@ suite(
 			expect(dbExceptions[0]?.updatedAt).not.toEqual(
 				existingException.updatedAt,
 			); // Updated timestamp
-			// Other fields should remain unchanged from the update
-			expect(dbExceptions[0]?.name).toBe("Modified Name");
-			expect(dbExceptions[0]?.description).toBe("Modified Description");
-			expect(dbExceptions[0]?.volunteersRequired).toBe(3);
 		});
 
 		test("Integration: Multiple validation issues trigger comprehensive error mapping", async () => {

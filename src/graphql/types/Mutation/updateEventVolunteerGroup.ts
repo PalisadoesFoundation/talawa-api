@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
+import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { builder } from "~/src/graphql/builder";

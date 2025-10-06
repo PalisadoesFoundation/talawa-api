@@ -1,13 +1,6 @@
 import { relations } from "drizzle-orm";
-import {
-	boolean,
-	decimal,
-	pgTable,
-	timestamp,
-	unique,
-	uuid,
-} from "drizzle-orm/pg-core";
-import { eventVolunteersTable } from "./EventVolunteer";
+import { pgTable, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { eventVolunteersTable } from "./eventVolunteers";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
@@ -27,15 +20,6 @@ export const eventVolunteerExceptionsTable = pgTable(
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
-		// Core exception field for template-first approach
-		isException: boolean("is_exception").notNull().default(false),
-		// Override fields for instance-specific volunteer data
-		hasAccepted: boolean("has_accepted"),
-		isPublic: boolean("is_public"),
-		hoursVolunteered: decimal("hours_volunteered", {
-			precision: 10,
-			scale: 2,
-		}),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at").defaultNow().notNull(),
 		createdBy: uuid("created_by").references(() => usersTable.id, {

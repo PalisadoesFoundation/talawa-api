@@ -1,9 +1,9 @@
 import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
 import { eventVolunteerExceptionsTable } from "~/src/drizzle/tables/eventVolunteerExceptions";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -703,8 +703,8 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		assertToBeNonNullish(volunteer.id);
 		const dbMembership = await server.drizzleClient
 			.select()
-			.from(volunteerMembershipsTable)
-			.where(eq(volunteerMembershipsTable.volunteerId, volunteer.id));
+			.from(eventVolunteerMembershipsTable)
+			.where(eq(eventVolunteerMembershipsTable.volunteerId, volunteer.id));
 
 		expect(dbMembership).toHaveLength(1);
 		expect(dbMembership[0]?.eventId).toBe(template.id);
@@ -1040,7 +1040,7 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		assertToBeNonNullish(instanceVolunteer2);
 
 		// Create volunteer memberships for instance-specific volunteers
-		await server.drizzleClient.insert(volunteerMembershipsTable).values([
+		await server.drizzleClient.insert(eventVolunteerMembershipsTable).values([
 			{
 				volunteerId: instanceVolunteer1.id,
 				groupId: null,
@@ -1260,7 +1260,7 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 		assertToBeNonNullish(instanceVolunteer2);
 
 		// Create volunteer memberships for instance-specific volunteers
-		await server.drizzleClient.insert(volunteerMembershipsTable).values([
+		await server.drizzleClient.insert(eventVolunteerMembershipsTable).values([
 			{
 				volunteerId: instanceVolunteer1.id,
 				groupId: null,

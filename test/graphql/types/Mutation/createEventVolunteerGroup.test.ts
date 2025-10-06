@@ -1,10 +1,10 @@
 import { faker } from "@faker-js/faker";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
 import { eventVolunteerGroupExceptionsTable } from "~/src/drizzle/tables/eventVolunteerGroupExceptions";
+import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -685,8 +685,8 @@ suite("Mutation createEventVolunteerGroup", () => {
 			if (group?.id) {
 				const memberships = await server.drizzleClient
 					.select()
-					.from(volunteerMembershipsTable)
-					.where(eq(volunteerMembershipsTable.groupId, group.id));
+					.from(eventVolunteerMembershipsTable)
+					.where(eq(eventVolunteerMembershipsTable.groupId, group.id));
 
 				expect(memberships.length).toBeGreaterThan(0);
 				expect(memberships[0]?.status).toBe("invited");
@@ -1206,8 +1206,8 @@ suite("Mutation createEventVolunteerGroup", () => {
 				// Verify volunteer memberships were created
 				const memberships = await server.drizzleClient
 					.select()
-					.from(volunteerMembershipsTable)
-					.where(eq(volunteerMembershipsTable.groupId, group.id));
+					.from(eventVolunteerMembershipsTable)
+					.where(eq(eventVolunteerMembershipsTable.groupId, group.id));
 
 				expect(memberships.length).toBe(2); // Both regularUser and leader
 				expect(memberships[0]?.status).toBe("invited");
@@ -1775,8 +1775,8 @@ suite("Mutation createEventVolunteerGroup", () => {
 			// Verify volunteer memberships were created
 			const memberships = await server.drizzleClient
 				.select()
-				.from(volunteerMembershipsTable)
-				.where(eq(volunteerMembershipsTable.groupId, reusedTemplateId));
+				.from(eventVolunteerMembershipsTable)
+				.where(eq(eventVolunteerMembershipsTable.groupId, reusedTemplateId));
 
 			expect(memberships.length).toBe(2); // Both regularUser and leader
 			expect(memberships[0]?.status).toBe("invited");

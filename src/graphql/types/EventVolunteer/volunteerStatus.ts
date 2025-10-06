@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
@@ -26,12 +26,12 @@ export const EventVolunteerStatusResolver = async (
 
 	// Check if any VolunteerMembership for this volunteer has "rejected" status
 	const memberships = await ctx.drizzleClient
-		.select({ status: volunteerMembershipsTable.status })
-		.from(volunteerMembershipsTable)
+		.select({ status: eventVolunteerMembershipsTable.status })
+		.from(eventVolunteerMembershipsTable)
 		.where(
 			and(
-				eq(volunteerMembershipsTable.volunteerId, parent.id),
-				eq(volunteerMembershipsTable.eventId, parent.eventId),
+				eq(eventVolunteerMembershipsTable.volunteerId, parent.id),
+				eq(eventVolunteerMembershipsTable.eventId, parent.eventId),
 			),
 		)
 		.execute();

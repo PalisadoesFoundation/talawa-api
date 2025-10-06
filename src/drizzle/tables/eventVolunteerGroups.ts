@@ -11,7 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { volunteerMembershipsTable } from "./EventVolunteerMembership";
+import { eventVolunteerMembershipsTable } from "./eventVolunteerMemberships";
 import { eventsTable } from "./events";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
@@ -180,7 +180,7 @@ export const eventVolunteerGroupsTableRelations = relations(
 		/**
 		 * One to many relationship from `event_volunteer_groups` table to `volunteer_memberships` table.
 		 */
-		volunteerMemberships: many(volunteerMembershipsTable, {
+		volunteerMemberships: many(eventVolunteerMembershipsTable, {
 			relationName: "volunteer_memberships.group_id:event_volunteer_groups.id",
 		}),
 	}),

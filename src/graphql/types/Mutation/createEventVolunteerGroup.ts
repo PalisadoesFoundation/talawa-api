@@ -1,8 +1,8 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
+import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -254,15 +254,17 @@ builder.mutationField("createEventVolunteerGroup", (t) =>
 						];
 
 						// Create group memberships
-						await ctx.drizzleClient.insert(volunteerMembershipsTable).values(
-							allVolunteerIds.map((volunteerId) => ({
-								volunteerId,
-								groupId: volunteerGroup.id,
-								eventId: targetEventId,
-								status: "invited" as const,
-								createdBy: currentUserId,
-							})),
-						);
+						await ctx.drizzleClient
+							.insert(eventVolunteerMembershipsTable)
+							.values(
+								allVolunteerIds.map((volunteerId) => ({
+									volunteerId,
+									groupId: volunteerGroup.id,
+									eventId: targetEventId,
+									status: "invited" as const,
+									createdBy: currentUserId,
+								})),
+							);
 					}
 
 					return volunteerGroup;
@@ -357,7 +359,7 @@ builder.mutationField("createEventVolunteerGroup", (t) =>
 					];
 
 					// Create group memberships
-					await ctx.drizzleClient.insert(volunteerMembershipsTable).values(
+					await ctx.drizzleClient.insert(eventVolunteerMembershipsTable).values(
 						allVolunteerIds.map((volunteerId) => ({
 							volunteerId,
 							groupId: volunteerGroup.id,
@@ -501,7 +503,7 @@ builder.mutationField("createEventVolunteerGroup", (t) =>
 					];
 
 					// Create group memberships
-					await ctx.drizzleClient.insert(volunteerMembershipsTable).values(
+					await ctx.drizzleClient.insert(eventVolunteerMembershipsTable).values(
 						allVolunteerIds.map((volunteerId) => ({
 							volunteerId,
 							groupId: createdGroup.id,

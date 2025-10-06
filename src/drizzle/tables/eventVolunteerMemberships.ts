@@ -9,8 +9,8 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
-import { eventVolunteersTable } from "./EventVolunteer";
-import { eventVolunteerGroupsTable } from "./EventVolunteerGroup";
+import { eventVolunteerGroupsTable } from "./eventVolunteerGroups";
+import { eventVolunteersTable } from "./eventVolunteers";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
 
@@ -29,8 +29,8 @@ export const volunteerMembershipStatusEnum = [
  * Drizzle orm postgres table definition for volunteer memberships.
  * Represents the relationship between volunteers and volunteer groups.
  */
-export const volunteerMembershipsTable = pgTable(
-	"volunteer_memberships",
+export const eventVolunteerMembershipsTable = pgTable(
+	"event_volunteer_memberships",
 	{
 		/**
 		 * Primary unique identifier of the volunteer membership.
@@ -120,14 +120,14 @@ export const volunteerMembershipsTable = pgTable(
 	],
 );
 
-export const volunteerMembershipsTableRelations = relations(
-	volunteerMembershipsTable,
+export const eventVolunteerMembershipsTableRelations = relations(
+	eventVolunteerMembershipsTable,
 	({ one }) => ({
 		/**
 		 * Many to one relationship from `volunteer_memberships` table to `event_volunteers` table.
 		 */
 		volunteer: one(eventVolunteersTable, {
-			fields: [volunteerMembershipsTable.volunteerId],
+			fields: [eventVolunteerMembershipsTable.volunteerId],
 			references: [eventVolunteersTable.id],
 			relationName: "volunteer_memberships.volunteer_id:event_volunteers.id",
 		}),
@@ -136,7 +136,7 @@ export const volunteerMembershipsTableRelations = relations(
 		 * Many to one relationship from `volunteer_memberships` table to `events` table.
 		 */
 		event: one(eventsTable, {
-			fields: [volunteerMembershipsTable.eventId],
+			fields: [eventVolunteerMembershipsTable.eventId],
 			references: [eventsTable.id],
 			relationName: "volunteer_memberships.event_id:events.id",
 		}),
@@ -145,7 +145,7 @@ export const volunteerMembershipsTableRelations = relations(
 		 * Many to one relationship from `volunteer_memberships` table to `users` table for createdBy.
 		 */
 		createdByUser: one(usersTable, {
-			fields: [volunteerMembershipsTable.createdBy],
+			fields: [eventVolunteerMembershipsTable.createdBy],
 			references: [usersTable.id],
 			relationName: "volunteer_memberships.created_by:users.id",
 		}),
@@ -154,7 +154,7 @@ export const volunteerMembershipsTableRelations = relations(
 		 * Many to one relationship from `volunteer_memberships` table to `users` table for updatedBy.
 		 */
 		updatedByUser: one(usersTable, {
-			fields: [volunteerMembershipsTable.updatedBy],
+			fields: [eventVolunteerMembershipsTable.updatedBy],
 			references: [usersTable.id],
 			relationName: "volunteer_memberships.updated_by:users.id",
 		}),
@@ -163,13 +163,13 @@ export const volunteerMembershipsTableRelations = relations(
 		 * Many to one relationship from `volunteer_memberships` table to `event_volunteer_groups` table.
 		 */
 		group: one(eventVolunteerGroupsTable, {
-			fields: [volunteerMembershipsTable.groupId],
+			fields: [eventVolunteerMembershipsTable.groupId],
 			references: [eventVolunteerGroupsTable.id],
 			relationName: "volunteer_memberships.group_id:event_volunteer_groups.id",
 		}),
 	}),
 );
 
-export const volunteerMembershipsTableInsertSchema = createInsertSchema(
-	volunteerMembershipsTable,
+export const eventVolunteerMembershipsTableInsertSchema = createInsertSchema(
+	eventVolunteerMembershipsTable,
 );

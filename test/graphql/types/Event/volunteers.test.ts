@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { EventVolunteersResolver } from "~/src/graphql/types/Event/volunteers";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
@@ -433,22 +433,8 @@ describe("EventVolunteersResolver", () => {
 
 			const mockExceptions = [
 				{
-					volunteerId: "volunteer-1",
-					recurringEventInstanceId: "recurring-instance-123",
-					isException: false, // This doesn't affect inclusion
-					hasAccepted: null,
-					isPublic: null,
-					hoursVolunteered: null,
-					deleted: false,
-				},
-				{
 					volunteerId: "volunteer-2",
 					recurringEventInstanceId: "recurring-instance-123",
-					isException: true,
-					hasAccepted: null,
-					isPublic: null,
-					hoursVolunteered: null,
-					deleted: true, // Also exclude due to deleted flag
 				},
 			];
 
@@ -478,7 +464,6 @@ describe("EventVolunteersResolver", () => {
 					where: vi.fn().mockResolvedValue(
 						mockExceptions.map((ex) => ({
 							volunteerId: ex.volunteerId,
-							isException: ex.isException,
 						})),
 					),
 				}),

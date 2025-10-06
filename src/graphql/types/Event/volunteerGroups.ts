@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
 import { eventVolunteerGroupExceptionsTable } from "~/src/drizzle/tables/eventVolunteerGroupExceptions";
+import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { EventVolunteerGroup } from "~/src/graphql/types/EventVolunteerGroup/EventVolunteerGroup";

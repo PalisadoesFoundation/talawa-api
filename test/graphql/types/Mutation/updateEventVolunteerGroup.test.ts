@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
-import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
+import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import type {
 	TalawaGraphQLFormattedError,

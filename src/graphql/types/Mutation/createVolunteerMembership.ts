@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -276,7 +276,7 @@ builder.mutationField("createVolunteerMembership", (t) =>
 			}
 
 			const [createdMembership] = await ctx.drizzleClient
-				.insert(volunteerMembershipsTable)
+				.insert(eventVolunteerMembershipsTable)
 				.values({
 					volunteerId: volunteer[0].id,
 					groupId: parsedArgs.data.group || null,

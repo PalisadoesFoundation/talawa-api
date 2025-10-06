@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -613,8 +613,8 @@ suite("Mutation createVolunteerMembership - Integration Tests", () => {
 		assertToBeNonNullish(membership.id);
 		const dbMembership = await server.drizzleClient
 			.select()
-			.from(volunteerMembershipsTable)
-			.where(eq(volunteerMembershipsTable.id, membership.id))
+			.from(eventVolunteerMembershipsTable)
+			.where(eq(eventVolunteerMembershipsTable.id, membership.id))
 			.limit(1);
 
 		expect(dbMembership).toHaveLength(1);
@@ -1244,8 +1244,8 @@ suite("Mutation createVolunteerMembership - Integration Tests", () => {
 		assertToBeNonNullish(membership.id);
 		const dbMembership = await server.drizzleClient
 			.select()
-			.from(volunteerMembershipsTable)
-			.where(eq(volunteerMembershipsTable.id, membership.id))
+			.from(eventVolunteerMembershipsTable)
+			.where(eq(eventVolunteerMembershipsTable.id, membership.id))
 			.limit(1);
 
 		expect(dbMembership).toHaveLength(1);

@@ -1,8 +1,8 @@
 import { and, asc, eq, ilike, or } from "drizzle-orm";
 import { z } from "zod";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
+import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -89,12 +89,18 @@ builder.queryField("getEventVolunteerGroups", (t) =>
 					})
 					.from(eventVolunteerGroupsTable)
 					.innerJoin(
-						volunteerMembershipsTable,
-						eq(volunteerMembershipsTable.groupId, eventVolunteerGroupsTable.id),
+						eventVolunteerMembershipsTable,
+						eq(
+							eventVolunteerMembershipsTable.groupId,
+							eventVolunteerGroupsTable.id,
+						),
 					)
 					.innerJoin(
 						eventVolunteersTable,
-						eq(volunteerMembershipsTable.volunteerId, eventVolunteersTable.id),
+						eq(
+							eventVolunteerMembershipsTable.volunteerId,
+							eventVolunteersTable.id,
+						),
 					)
 					.innerJoin(
 						eventsTable,
@@ -104,7 +110,7 @@ builder.queryField("getEventVolunteerGroups", (t) =>
 						and(
 							eq(eventVolunteersTable.userId, parsedArgs.where.userId),
 							eq(eventVolunteersTable.hasAccepted, true), // SECURITY: Only accepted volunteers
-							eq(volunteerMembershipsTable.status, "accepted"), // SECURITY: Only accepted group memberships
+							eq(eventVolunteerMembershipsTable.status, "accepted"), // SECURITY: Only accepted group memberships
 							eq(eventsTable.organizationId, parsedArgs.where.orgId),
 						),
 					)

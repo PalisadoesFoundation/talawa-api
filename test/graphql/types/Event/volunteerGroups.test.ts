@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/EventVolunteerGroup";
+import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
 import { EventVolunteerGroupsResolver } from "~/src/graphql/types/Event/volunteerGroups";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 

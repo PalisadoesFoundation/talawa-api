@@ -1,7 +1,8 @@
-import type { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
+import type { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
 import { builder } from "~/src/graphql/builder";
 
-export type VolunteerMembership = typeof volunteerMembershipsTable.$inferSelect;
+export type VolunteerMembership =
+	typeof eventVolunteerMembershipsTable.$inferSelect;
 
 /**
  * GraphQL object reference for VolunteerMembership.

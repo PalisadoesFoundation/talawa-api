@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
 import { eventVolunteerExceptionsTable } from "~/src/drizzle/tables/eventVolunteerExceptions";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -602,7 +602,6 @@ suite("Mutation deleteEventVolunteerForInstance - Integration Tests", () => {
 			.values({
 				volunteerId: volunteer.volunteerId,
 				recurringEventInstanceId: recurringSetup.instanceId,
-				isException: true,
 				createdBy: creatorId,
 				updatedBy: creatorId,
 			})

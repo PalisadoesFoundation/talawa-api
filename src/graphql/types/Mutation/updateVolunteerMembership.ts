@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { builder } from "~/src/graphql/builder";
 import { VolunteerMembership } from "~/src/graphql/types/EventVolunteerMembership/EventVolunteerMembership";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -63,8 +63,8 @@ builder.mutationField("updateVolunteerMembership", (t) =>
 			// Check if membership exists
 			const existingMembership = await ctx.drizzleClient
 				.select()
-				.from(volunteerMembershipsTable)
-				.where(eq(volunteerMembershipsTable.id, parsedArgs.id))
+				.from(eventVolunteerMembershipsTable)
+				.where(eq(eventVolunteerMembershipsTable.id, parsedArgs.id))
 				.limit(1);
 
 			if (existingMembership.length === 0) {
@@ -82,12 +82,12 @@ builder.mutationField("updateVolunteerMembership", (t) =>
 
 			// Update the membership status
 			const [updatedMembership] = await ctx.drizzleClient
-				.update(volunteerMembershipsTable)
+				.update(eventVolunteerMembershipsTable)
 				.set({
 					status: parsedArgs.status,
 					updatedBy: currentUserId,
 				})
-				.where(eq(volunteerMembershipsTable.id, parsedArgs.id))
+				.where(eq(eventVolunteerMembershipsTable.id, parsedArgs.id))
 				.returning();
 
 			if (updatedMembership === undefined) {

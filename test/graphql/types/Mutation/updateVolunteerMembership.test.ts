@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, suite, test } from "vitest";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -183,7 +183,7 @@ async function createTestVolunteerMembership(
 
 	// Create membership
 	const [membership] = await server.drizzleClient
-		.insert(volunteerMembershipsTable)
+		.insert(eventVolunteerMembershipsTable)
 		.values({
 			volunteerId: volunteer.id,
 			eventId,
@@ -415,8 +415,8 @@ suite("Mutation updateVolunteerMembership - Integration Tests", () => {
 		// Verify database updates
 		const dbMembership = await server.drizzleClient
 			.select()
-			.from(volunteerMembershipsTable)
-			.where(eq(volunteerMembershipsTable.id, membership.membershipId))
+			.from(eventVolunteerMembershipsTable)
+			.where(eq(eventVolunteerMembershipsTable.id, membership.membershipId))
 			.limit(1);
 
 		expect(dbMembership).toHaveLength(1);
@@ -751,8 +751,8 @@ suite("Mutation updateVolunteerMembership - Integration Tests", () => {
 		// Verify database operation was successful
 		const dbMembership = await server.drizzleClient
 			.select()
-			.from(volunteerMembershipsTable)
-			.where(eq(volunteerMembershipsTable.id, membership.membershipId))
+			.from(eventVolunteerMembershipsTable)
+			.where(eq(eventVolunteerMembershipsTable.id, membership.membershipId))
 			.limit(1);
 
 		expect(dbMembership).toHaveLength(1);
@@ -818,8 +818,8 @@ suite("Mutation updateVolunteerMembership - Integration Tests", () => {
 
 		const dbMembership = await server.drizzleClient
 			.select()
-			.from(volunteerMembershipsTable)
-			.where(eq(volunteerMembershipsTable.id, membership.membershipId))
+			.from(eventVolunteerMembershipsTable)
+			.where(eq(eventVolunteerMembershipsTable.id, membership.membershipId))
 			.limit(1);
 
 		expect(dbMembership[0]?.updatedBy).toBe(testUser.userId); // Updated by regular user
@@ -893,8 +893,8 @@ suite("Mutation updateVolunteerMembership - Integration Tests", () => {
 		// Verify both membership and volunteer were updated correctly
 		const dbMembership = await server.drizzleClient
 			.select()
-			.from(volunteerMembershipsTable)
-			.where(eq(volunteerMembershipsTable.id, membership.membershipId))
+			.from(eventVolunteerMembershipsTable)
+			.where(eq(eventVolunteerMembershipsTable.id, membership.membershipId))
 			.limit(1);
 
 		expect(dbMembership[0]?.status).toBe("accepted");

@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -239,13 +239,15 @@ builder.mutationField("createEventVolunteer", (t) =>
 					volunteer = createdVolunteer;
 
 					// Create volunteer membership record
-					await ctx.drizzleClient.insert(volunteerMembershipsTable).values({
-						volunteerId: volunteer.id,
-						groupId: null,
-						eventId: targetEventId,
-						status: "invited",
-						createdBy: currentUserId,
-					});
+					await ctx.drizzleClient
+						.insert(eventVolunteerMembershipsTable)
+						.values({
+							volunteerId: volunteer.id,
+							groupId: null,
+							eventId: targetEventId,
+							status: "invited",
+							createdBy: currentUserId,
+						});
 				}
 
 				return volunteer;
@@ -318,7 +320,7 @@ builder.mutationField("createEventVolunteer", (t) =>
 				}
 
 				// Create volunteer membership record
-				await ctx.drizzleClient.insert(volunteerMembershipsTable).values({
+				await ctx.drizzleClient.insert(eventVolunteerMembershipsTable).values({
 					volunteerId: createdVolunteer.id,
 					groupId: null,
 					eventId: targetEventId,

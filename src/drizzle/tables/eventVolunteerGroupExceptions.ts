@@ -1,14 +1,6 @@
 import { relations } from "drizzle-orm";
-import {
-	boolean,
-	integer,
-	pgTable,
-	text,
-	timestamp,
-	unique,
-	uuid,
-} from "drizzle-orm/pg-core";
-import { eventVolunteerGroupsTable } from "./EventVolunteerGroup";
+import { pgTable, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { eventVolunteerGroupsTable } from "./eventVolunteerGroups";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
@@ -28,16 +20,6 @@ export const eventVolunteerGroupExceptionsTable = pgTable(
 				onDelete: "cascade",
 				onUpdate: "cascade",
 			}),
-		// Core exception field for template-first approach
-		isException: boolean("is_exception").notNull().default(false),
-		// Override fields for instance-specific volunteer group data
-		name: text("name"),
-		description: text("description"),
-		volunteersRequired: integer("volunteers_required"),
-		leaderId: uuid("leader_id").references(() => usersTable.id, {
-			onDelete: "set null",
-			onUpdate: "cascade",
-		}),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at").defaultNow().notNull(),
 		createdBy: uuid("created_by").references(() => usersTable.id, {
@@ -66,10 +48,6 @@ export const eventVolunteerGroupExceptionsTableRelations = relations(
 		recurringEventInstance: one(recurringEventInstancesTable, {
 			fields: [eventVolunteerGroupExceptionsTable.recurringEventInstanceId],
 			references: [recurringEventInstancesTable.id],
-		}),
-		leader: one(usersTable, {
-			fields: [eventVolunteerGroupExceptionsTable.leaderId],
-			references: [usersTable.id],
 		}),
 		createdByUser: one(usersTable, {
 			fields: [eventVolunteerGroupExceptionsTable.createdBy],

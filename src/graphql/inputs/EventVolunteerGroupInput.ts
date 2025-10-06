@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eventVolunteerGroupsTableInsertSchema } from "~/src/drizzle/tables/EventVolunteerGroup";
+import { eventVolunteerGroupsTableInsertSchema } from "~/src/drizzle/tables/eventVolunteerGroups";
 import { builder } from "~/src/graphql/builder";
 
 /**

@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, ilike, isNotNull, isNull, or } from "drizzle-orm";
 import { z } from "zod";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
-import { volunteerMembershipsTable } from "~/src/drizzle/tables/EventVolunteerMembership";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { usersTable } from "~/src/drizzle/tables/users";
@@ -94,9 +94,12 @@ builder.queryField("getVolunteerMembership", (t) =>
 					// 2. Requests for the entire series (ENTIRE_SERIES stored with base template ID)
 					whereConditions.push(
 						or(
-							eq(volunteerMembershipsTable.eventId, parsedArgs.where.eventId), // Instance requests
 							eq(
-								volunteerMembershipsTable.eventId,
+								eventVolunteerMembershipsTable.eventId,
+								parsedArgs.where.eventId,
+							), // Instance requests
+							eq(
+								eventVolunteerMembershipsTable.eventId,
 								instance.baseRecurringEventId,
 							), // Series requests
 						),
@@ -104,28 +107,31 @@ builder.queryField("getVolunteerMembership", (t) =>
 				} else {
 					// For non-recurring events or base templates, use direct eventId matching
 					whereConditions.push(
-						eq(volunteerMembershipsTable.eventId, parsedArgs.where.eventId),
+						eq(
+							eventVolunteerMembershipsTable.eventId,
+							parsedArgs.where.eventId,
+						),
 					);
 				}
 			}
 
 			if (parsedArgs.where.groupId) {
 				whereConditions.push(
-					eq(volunteerMembershipsTable.groupId, parsedArgs.where.groupId),
+					eq(eventVolunteerMembershipsTable.groupId, parsedArgs.where.groupId),
 				);
 			}
 
 			if (parsedArgs.where.status) {
 				whereConditions.push(
-					eq(volunteerMembershipsTable.status, parsedArgs.where.status),
+					eq(eventVolunteerMembershipsTable.status, parsedArgs.where.status),
 				);
 			}
 
 			// Handle filter for group vs individual memberships
 			if (parsedArgs.where.filter === "group") {
-				whereConditions.push(isNotNull(volunteerMembershipsTable.groupId));
+				whereConditions.push(isNotNull(eventVolunteerMembershipsTable.groupId));
 			} else if (parsedArgs.where.filter === "individual") {
-				whereConditions.push(isNull(volunteerMembershipsTable.groupId));
+				whereConditions.push(isNull(eventVolunteerMembershipsTable.groupId));
 			}
 
 			// Build order by clause
@@ -134,25 +140,28 @@ builder.queryField("getVolunteerMembership", (t) =>
 				| ReturnType<typeof desc>
 				| undefined;
 			if (parsedArgs.orderBy === "createdAt_ASC") {
-				orderByClause = asc(volunteerMembershipsTable.createdAt);
+				orderByClause = asc(eventVolunteerMembershipsTable.createdAt);
 			} else if (parsedArgs.orderBy === "createdAt_DESC") {
-				orderByClause = desc(volunteerMembershipsTable.createdAt);
+				orderByClause = desc(eventVolunteerMembershipsTable.createdAt);
 			}
 
 			// Query with joins for filtering
 			const memberships = await ctx.drizzleClient
 				.select({
-					membership: volunteerMembershipsTable,
+					membership: eventVolunteerMembershipsTable,
 				})
-				.from(volunteerMembershipsTable)
+				.from(eventVolunteerMembershipsTable)
 				.leftJoin(
 					eventVolunteersTable,
-					eq(volunteerMembershipsTable.volunteerId, eventVolunteersTable.id),
+					eq(
+						eventVolunteerMembershipsTable.volunteerId,
+						eventVolunteersTable.id,
+					),
 				)
 				.leftJoin(usersTable, eq(eventVolunteersTable.userId, usersTable.id))
 				.leftJoin(
 					eventsTable,
-					eq(volunteerMembershipsTable.eventId, eventsTable.id),
+					eq(eventVolunteerMembershipsTable.eventId, eventsTable.id),
 				)
 				.where(
 					and(
@@ -167,7 +176,7 @@ builder.queryField("getVolunteerMembership", (t) =>
 							: undefined,
 					),
 				)
-				.orderBy(orderByClause || asc(volunteerMembershipsTable.createdAt))
+				.orderBy(orderByClause || asc(eventVolunteerMembershipsTable.createdAt))
 				.execute();
 
 			return memberships.map((result) => result.membership);

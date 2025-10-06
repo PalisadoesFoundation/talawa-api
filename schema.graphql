@@ -787,6 +787,11 @@ type EventVolunteer {
   """Boolean indicating if the volunteer profile is public."""
   isPublic: Boolean
 
+  """
+  Boolean indicating if this is a template volunteer (for recurring events).
+  """
+  isTemplate: Boolean
+
   """The recurring event instance associated with this volunteer."""
   recurringEventInstance: Event
 
@@ -827,7 +832,7 @@ type EventVolunteerGroup {
   isInstanceException: Boolean
 
   """
-  Indicates whether this volunteer group is a template for recurring events.
+  Boolean indicating if this is a template volunteer group (for recurring events).
   """
   isTemplate: Boolean
 

@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { eventVolunteersTable } from "~/src/drizzle/tables/EventVolunteer";
+import { eventVolunteersTable } from "~/src/drizzle/tables/eventVolunteers";
 import { EventVolunteer } from "~/src/graphql/types/EventVolunteer/EventVolunteer";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
