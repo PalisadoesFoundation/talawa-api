@@ -50,8 +50,6 @@ import { tagsTable } from "./tags";
 import { venueAttachmentsTable } from "./venueAttachments";
 import { venueBookingsTable } from "./venueBookings";
 import { venuesTable } from "./venues";
-import { volunteerGroupAssignmentsTable } from "./volunteerGroupAssignments";
-import { volunteerGroupsTable } from "./volunteerGroups";
 
 /**
  * Drizzle orm postgres table definition for users.
@@ -609,42 +607,6 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	 */
 	venueBookingsWhereCreator: many(venueBookingsTable, {
 		relationName: "users.id:venue_bookings.creator_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `volunteer_groups` table.
-	 */
-	volunteerGroupsWhereCreator: many(volunteerGroupsTable, {
-		relationName: "users.id:volunteer_groups.creator_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `volunteer_groups` table.
-	 */
-	volunteerGroupsWhereLeader: many(volunteerGroupsTable, {
-		relationName: "users.id:volunteer_groups.leader_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `volunteer_groups` table.
-	 */
-	volunteerGroupsWhereUpdater: many(volunteerGroupsTable, {
-		relationName: "users.id:volunteer_groups.updater_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `volunteer_group_assignments` table.
-	 */
-	volunteerGroupAssignmentsWhereAssignee: many(volunteerGroupAssignmentsTable, {
-		relationName: "users.id:volunteer_group_assignments.assignee_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `volunteer_group_assignments` table.
-	 */
-	volunteerGroupAssignmentsWhereCreator: many(volunteerGroupAssignmentsTable, {
-		relationName: "users.id:volunteer_group_assignments.creator_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `volunteer_group_assignments` table.
-	 */
-	volunteerGroupAssignmentsWhereUpdater: many(volunteerGroupAssignmentsTable, {
-		relationName: "users.id:volunteer_group_assignments.updater_id",
 	}),
 }));
 
