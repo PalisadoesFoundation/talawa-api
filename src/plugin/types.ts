@@ -16,6 +16,16 @@ export interface IPluginManifest {
 	license?: string;
 	tags?: string[];
 	dependencies?: Record<string, string>;
+	docker?: {
+		enabled?: boolean;
+		composeFile?: string;
+		service?: string;
+		buildOnInstall?: boolean;
+		upOnActivate?: boolean;
+		downOnDeactivate?: boolean;
+		removeOnUninstall?: boolean;
+		env?: Record<string, string>;
+	};
 }
 
 // Extension Point Types
