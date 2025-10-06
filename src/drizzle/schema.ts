@@ -145,4 +145,20 @@ export {
 	eventVolunteerGroupExceptionsTableRelations,
 } from "./tables/eventVolunteerGroupExceptions";
 export { venuesTable, venuesTableRelations } from "./tables/venues";
+export {
+	notificationAudienceTable,
+	notificationAudienceTableRelations,
+} from "./tables/NotificationAudience";
+export {
+	notificationLogsTable,
+	notificationLogsTableRelations,
+} from "./tables/NotificationLog";
+export {
+	notificationTemplatesTable,
+	notificationTemplatesTableRelations,
+} from "./tables/NotificationTemplate";
+export {
+	emailNotificationsTable,
+	emailNotificationsTableRelations,
+} from "./tables/EmailNotification";
 export { pluginsTable } from "./tables/plugins";
