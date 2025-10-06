@@ -561,9 +561,6 @@ export class PluginLifecycle {
 		console.error(`Plugin ${pluginId} error during ${phase}:`, error);
 	}
 
-	/**
-	 * Manage Docker container lifecycle for plugins
-	 */
 	private async manageDocker(
 		pluginId: string,
 		manifest: IPluginManifest,
@@ -593,7 +590,6 @@ export class PluginLifecycle {
 				string
 			>;
 
-			// Check docker availability
 			try {
 				await execAsync("docker --version", { cwd: pluginPath, env });
 			} catch {
@@ -603,7 +599,6 @@ export class PluginLifecycle {
 				return;
 			}
 
-			// Check docker compose availability
 			try {
 				await execAsync("docker compose version", { cwd: pluginPath, env });
 			} catch {
