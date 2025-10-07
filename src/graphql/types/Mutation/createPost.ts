@@ -7,10 +7,12 @@ import {
 	MutationCreatePostInput,
 	mutationCreatePostInputSchema,
 } from "~/src/graphql/inputs/MutationCreatePostInput";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { Post } from "~/src/graphql/types/Post/Post";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
 import envConfig from "~/src/utilities/graphqLimits";
+
 const mutationCreatePostArgumentsSchema = z.object({
 	input: mutationCreatePostInputSchema,
 });
@@ -59,12 +61,14 @@ builder.mutationField("createPost", (t) =>
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
+						name: true,
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.organizationsTable.findFirst({
 					columns: {
 						countryCode: true,
+						name: true,
 					},
 					with: {
 						membershipsWhereOrganization: {
@@ -162,6 +166,10 @@ builder.mutationField("createPost", (t) =>
 					});
 				}
 
+				let finalPost: typeof createdPost & {
+					attachments: (typeof postAttachmentsTable.$inferSelect)[];
+				};
+
 				if (parsedArgs.input.attachments !== undefined) {
 					const attachments = parsedArgs.input.attachments;
 
@@ -180,14 +188,27 @@ builder.mutationField("createPost", (t) =>
 						)
 						.returning();
 
-					return Object.assign(createdPost, {
+					finalPost = Object.assign(createdPost, {
 						attachments: createdPostAttachments,
+					});
+				} else {
+					finalPost = Object.assign(createdPost, {
+						attachments: [],
 					});
 				}
 
-				return Object.assign(createdPost, {
-					attachments: [],
-				});
+				notificationEventBus.emitPostCreated(
+					{
+						postId: createdPost.id,
+						organizationId: parsedArgs.input.organizationId,
+						authorName: currentUser.name || "Anonymous",
+						organizationName: existingOrganization.name || "Organization",
+						postCaption: parsedArgs.input.caption || "New post",
+					},
+					ctx,
+				);
+
+				return finalPost;
 			});
 		},
 		type: Post,

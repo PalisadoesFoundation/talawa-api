@@ -169,6 +169,7 @@ describe("Plugin Types", () => {
 				graphqlResolvers: {},
 				databaseTables: {},
 				hooks: {},
+				webhooks: {},
 			};
 
 			expect(loadedPlugin.id).toBe("test_plugin");
@@ -188,6 +189,9 @@ describe("Plugin Types", () => {
 				hooks: {
 					pre: {},
 					post: {},
+				},
+				webhooks: {
+					handlers: {},
 				},
 			};
 

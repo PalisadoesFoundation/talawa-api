@@ -1,7 +1,9 @@
-import type { actionsTable } from "~/src/drizzle/tables/actions";
+import type { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 
-export type ActionItem = typeof actionsTable.$inferSelect;
+export type ActionItem = typeof actionItemsTable.$inferSelect & {
+	isInstanceException?: boolean;
+};
 
 export const ActionItem = builder.objectRef<ActionItem>("ActionItem");
 
@@ -14,6 +16,11 @@ ActionItem.implement({
 		}),
 		isCompleted: t.exposeBoolean("isCompleted", {
 			description: "Indicates whether the action item is completed.",
+		}),
+		isTemplate: t.exposeBoolean("isTemplate", {
+			description:
+				"Indicates whether the action item is a template for recurring events.",
+			nullable: true,
 		}),
 		assignedAt: t.expose("assignedAt", {
 			description: "Timestamp when the action item was assigned.",
@@ -31,6 +38,17 @@ ActionItem.implement({
 		postCompletionNotes: t.exposeString("postCompletionNotes", {
 			description: "Notes added after completing the action item.",
 			nullable: true,
+		}),
+		isInstanceException: t.field({
+			type: "Boolean",
+			description:
+				"Indicates whether this action item is currently showing instance-specific exception data.",
+			resolve: (parent) => {
+				// This field will be set by the resolver when exceptions are applied
+				return Boolean(
+					(parent as { isInstanceException?: boolean }).isInstanceException,
+				);
+			},
 		}),
 	}),
 });

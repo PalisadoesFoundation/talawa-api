@@ -191,7 +191,8 @@ export const envConfigSchema = Type.Object({
 	/**
 	 * More information can be found at: {@link https://github.com/minio/minio-js?tab=readme-ov-file#initialize-minio-client}
 	 */
-	API_MINIO_USE_SSL: Type.Boolean(),
+	API_MINIO_USE_SSL: Type.Optional(Type.Boolean()),
+	API_MINIO_PUBLIC_BASE_URL: Type.Optional(Type.String()),
 	/**
 	 * Used for providing the port of the domain on which the server will run.
 	 */
@@ -292,6 +293,11 @@ export const envConfigSchema = Type.Object({
 	API_RATE_LIMIT_REFILL_RATE: Type.Number({
 		minimum: 0,
 	}),
+
+	/**
+	 * Enables the background email queue processor. Default should be false in tests / local unless explicitly needed.
+	 */
+	API_ENABLE_EMAIL_QUEUE: Type.Optional(Type.Boolean()),
 
 	/**
 	 * Cron schedule for the recurring event instance generation background worker.

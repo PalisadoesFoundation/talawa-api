@@ -2,10 +2,17 @@
 // MAKE SURE TO NOT MISS ANY OF THE MODULES THAT ARE DIRECTLY CONCERNED WITH DRIZZLE DATABASE MIGRATIONS. FAILING TO DO SO WILL RESULT IN INCORRECT DRIZZLE DATABASE MIGRATIONS BEING GENERATED.
 
 export {
-	actionCategoriesTable,
-	actionCategoriesTableRelations,
-} from "./tables/actionCategories";
-export { actionsTable, actionsTableRelations } from "./tables/actions";
+	actionItemCategoriesTable,
+	actionItemCategoriesTableRelations,
+} from "./tables/actionItemCategories";
+export {
+	actionItemsTable,
+	actionItemsTableRelations,
+} from "./tables/actionItems";
+export {
+	actionItemExceptionsTable,
+	actionItemExceptionsTableRelations,
+} from "./tables/actionItemExceptions";
 export {
 	advertisementAttachmentsTable,
 	advertisementAttachmentsTableRelations,
@@ -117,13 +124,41 @@ export {
 	venueBookingsTable,
 	venueBookingsTableRelations,
 } from "./tables/venueBookings";
+export {
+	eventVolunteersTable,
+	eventVolunteersTableRelations,
+} from "./tables/eventVolunteers";
+export {
+	eventVolunteerGroupsTable,
+	eventVolunteerGroupsTableRelations,
+} from "./tables/eventVolunteerGroups";
+export {
+	eventVolunteerExceptionsTable,
+	eventVolunteerExceptionsTableRelations,
+} from "./tables/eventVolunteerExceptions";
+export {
+	eventVolunteerMembershipsTable,
+	eventVolunteerMembershipsTableRelations,
+} from "./tables/eventVolunteerMemberships";
+export {
+	eventVolunteerGroupExceptionsTable,
+	eventVolunteerGroupExceptionsTableRelations,
+} from "./tables/eventVolunteerGroupExceptions";
 export { venuesTable, venuesTableRelations } from "./tables/venues";
 export {
-	volunteerGroupAssignmentsTable,
-	volunteerGroupAssignmentsTableRelations,
-} from "./tables/volunteerGroupAssignments";
+	notificationAudienceTable,
+	notificationAudienceTableRelations,
+} from "./tables/NotificationAudience";
 export {
-	volunteerGroupsTable,
-	volunteerGroupsTableRelations,
-} from "./tables/volunteerGroups";
+	notificationLogsTable,
+	notificationLogsTableRelations,
+} from "./tables/NotificationLog";
+export {
+	notificationTemplatesTable,
+	notificationTemplatesTableRelations,
+} from "./tables/NotificationTemplate";
+export {
+	emailNotificationsTable,
+	emailNotificationsTableRelations,
+} from "./tables/EmailNotification";
 export { pluginsTable } from "./tables/plugins";

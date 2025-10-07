@@ -35,6 +35,7 @@ suite("addSampleData main function tests", () => {
 			"action_categories",
 			"events",
 			"action_items",
+			"notification_templates",
 		]);
 
 		// Verify that success messages are logged.

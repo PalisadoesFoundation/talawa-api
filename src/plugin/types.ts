@@ -16,6 +16,16 @@ export interface IPluginManifest {
 	license?: string;
 	tags?: string[];
 	dependencies?: Record<string, string>;
+	docker?: {
+		enabled?: boolean;
+		composeFile?: string;
+		service?: string;
+		buildOnInstall?: boolean;
+		upOnActivate?: boolean;
+		downOnDeactivate?: boolean;
+		removeOnUninstall?: boolean;
+		env?: Record<string, string>;
+	};
 }
 
 // Extension Point Types
@@ -23,6 +33,7 @@ export interface IExtensionPoints {
 	graphql?: IGraphQLExtension[];
 	database?: IDatabaseExtension[];
 	hooks?: IHookExtension[];
+	webhooks?: IWebhookExtension[];
 }
 
 export interface IGraphQLExtension {
@@ -47,6 +58,13 @@ export interface IHookExtension {
 	file?: string;
 }
 
+export interface IWebhookExtension {
+	path: string;
+	handler: string;
+	method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+	description?: string;
+}
+
 // Plugin Manager Types
 export interface ILoadedPlugin {
 	id: string;
@@ -54,6 +72,10 @@ export interface ILoadedPlugin {
 	graphqlResolvers: Record<string, unknown>;
 	databaseTables: Record<string, Record<string, unknown>>;
 	hooks: Record<string, (...args: unknown[]) => unknown>;
+	webhooks: Record<
+		string,
+		(request: unknown, reply: unknown) => Promise<unknown>
+	>;
 	status: PluginStatus;
 	errorMessage?: string;
 }
@@ -80,6 +102,12 @@ export interface IExtensionRegistry {
 	hooks: {
 		pre: Record<string, ((...args: unknown[]) => unknown)[]>;
 		post: Record<string, ((...args: unknown[]) => unknown)[]>;
+	};
+	webhooks: {
+		handlers: Record<
+			string,
+			(request: unknown, reply: unknown) => Promise<unknown>
+		>;
 	};
 }
 
@@ -115,9 +143,11 @@ export interface IPluginContext {
 
 // Plugin Lifecycle Types
 export interface IPluginLifecycle {
+	onInstall?(context: IPluginContext): Promise<void>;
 	onLoad?(context: IPluginContext): Promise<void>;
 	onActivate?(context: IPluginContext): Promise<void>;
 	onDeactivate?(context: IPluginContext): Promise<void>;
+	onUninstall?(context: IPluginContext): Promise<void>;
 	onUnload?(context: IPluginContext): Promise<void>;
 }
 
@@ -125,7 +155,13 @@ export interface IPluginLifecycle {
 export interface IPluginError {
 	pluginId: string;
 	error: Error;
-	phase: "load" | "activate" | "deactivate" | "unload";
+	phase:
+		| "load"
+		| "activate"
+		| "deactivate"
+		| "unload"
+		| "install"
+		| "uninstall";
 	timestamp: Date;
 }
 

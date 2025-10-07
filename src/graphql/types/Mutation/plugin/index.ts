@@ -1,4 +1,5 @@
 // Import plugin mutation files to register them with the GraphQL builder
-import "./createPlugin";
-import "./updatePlugin";
-import "./deletePlugin";
+export * from "./createPlugin";
+export * from "./updatePlugin";
+export * from "./deletePlugin";
+export * from "./installPlugin";

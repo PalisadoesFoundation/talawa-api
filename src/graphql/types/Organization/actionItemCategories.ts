@@ -2,9 +2,9 @@ import { Buffer } from "node:buffer";
 import { type SQL, and, asc, desc, eq, exists, gt, lt } from "drizzle-orm";
 import type { z } from "zod";
 import {
-	actionCategoriesTable,
-	actionCategoriesTableInsertSchema,
-} from "~/src/drizzle/tables/actionCategories";
+	actionItemCategoriesTable,
+	actionItemCategoriesTableInsertSchema,
+} from "~/src/drizzle/tables/actionItemCategories";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { ActionItemCategory } from "~/src/graphql/types/ActionItemCategory/ActionItemCategory";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -44,7 +44,7 @@ const actionItemCategoriesArgumentsSchema =
 			};
 		});
 
-const cursorSchema = actionCategoriesTableInsertSchema.pick({
+const cursorSchema = actionItemCategoriesTableInsertSchema.pick({
 	name: true,
 });
 
@@ -128,8 +128,8 @@ export const resolveActionItemCategories = async (
 	const { cursor, isInversed, limit } = parsedArgs;
 
 	const orderBy = isInversed
-		? [desc(actionCategoriesTable.name)]
-		: [asc(actionCategoriesTable.name)];
+		? [desc(actionItemCategoriesTable.name)]
+		: [asc(actionItemCategoriesTable.name)];
 
 	let where: SQL | undefined;
 
@@ -139,19 +139,19 @@ export const resolveActionItemCategories = async (
 				exists(
 					ctx.drizzleClient
 						.select()
-						.from(actionCategoriesTable)
+						.from(actionItemCategoriesTable)
 						.where(
 							and(
-								eq(actionCategoriesTable.name, cursor.name),
-								eq(actionCategoriesTable.organizationId, parent.id),
+								eq(actionItemCategoriesTable.name, cursor.name),
+								eq(actionItemCategoriesTable.organizationId, parent.id),
 							),
 						),
 				),
-				eq(actionCategoriesTable.organizationId, parent.id),
-				lt(actionCategoriesTable.name, cursor.name),
+				eq(actionItemCategoriesTable.organizationId, parent.id),
+				lt(actionItemCategoriesTable.name, cursor.name),
 			);
 		} else {
-			where = eq(actionCategoriesTable.organizationId, parent.id);
+			where = eq(actionItemCategoriesTable.organizationId, parent.id);
 		}
 	} else {
 		if (cursor !== undefined) {
@@ -159,24 +159,24 @@ export const resolveActionItemCategories = async (
 				exists(
 					ctx.drizzleClient
 						.select()
-						.from(actionCategoriesTable)
+						.from(actionItemCategoriesTable)
 						.where(
 							and(
-								eq(actionCategoriesTable.name, cursor.name),
-								eq(actionCategoriesTable.organizationId, parent.id),
+								eq(actionItemCategoriesTable.name, cursor.name),
+								eq(actionItemCategoriesTable.organizationId, parent.id),
 							),
 						),
 				),
-				eq(actionCategoriesTable.organizationId, parent.id),
-				gt(actionCategoriesTable.name, cursor.name),
+				eq(actionItemCategoriesTable.organizationId, parent.id),
+				gt(actionItemCategoriesTable.name, cursor.name),
 			);
 		} else {
-			where = eq(actionCategoriesTable.organizationId, parent.id);
+			where = eq(actionItemCategoriesTable.organizationId, parent.id);
 		}
 	}
 
 	const actionItemCategories =
-		await ctx.drizzleClient.query.actionCategoriesTable.findMany({
+		await ctx.drizzleClient.query.actionItemCategoriesTable.findMany({
 			limit,
 			orderBy,
 			where,

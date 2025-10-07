@@ -55,7 +55,10 @@ suite("Mutation field createPresignedUrl", () => {
 				objectName: string,
 				expiry: number,
 			): Promise<string> => {
-				return "https://example.com/presigned-url";
+				const fallbackBaseUrl = `http://${server.envConfig.API_MINIO_END_POINT}:${server.envConfig.API_MINIO_PORT}`;
+				const effectiveBaseUrl =
+					server.envConfig.API_MINIO_PUBLIC_BASE_URL || fallbackBaseUrl;
+				return `${effectiveBaseUrl}/${bucket}/${objectName}`;
 			};
 			assertToBeNonNullish(signInResult.data.signIn?.authenticationToken);
 			const authToken = signInResult.data.signIn.authenticationToken;
@@ -92,10 +95,22 @@ suite("Mutation field createPresignedUrl", () => {
 					},
 				},
 			});
-			expect(result.data?.createPresignedUrl).toMatchObject({
-				presignedUrl: "https://example.com/presigned-url",
-				requiresUpload: true,
-			});
+			const presignedUrl = result.data?.createPresignedUrl?.presignedUrl;
+			const fallbackBaseUrl = `http://${server.envConfig.API_MINIO_END_POINT}:${server.envConfig.API_MINIO_PORT}`;
+			const baseUrl =
+				server.envConfig.API_MINIO_PUBLIC_BASE_URL || fallbackBaseUrl;
+			if (!server.envConfig.API_MINIO_PUBLIC_BASE_URL) {
+				console.warn(
+					"API_MINIO_PUBLIC_BASE_URL missing; using fallback:",
+					fallbackBaseUrl,
+				);
+			}
+			expect(typeof presignedUrl).toBe("string");
+			if (typeof presignedUrl === "string") {
+				expect(presignedUrl.startsWith(baseUrl)).toBe(true);
+			}
+
+			expect(result.data?.createPresignedUrl?.requiresUpload).toBe(true);
 
 			assertToBeNonNullish(result.data?.createPresignedUrl);
 			expect(result.data.createPresignedUrl.objectName).toMatch(

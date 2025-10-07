@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
-import { actionsTable } from "~/src/drizzle/tables/actions";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
@@ -12,8 +12,10 @@ const mutationCreateActionItemArgumentsSchema = z.object({
 		assigneeId: z.string().uuid(),
 		preCompletionNotes: z.string().optional(),
 		eventId: z.string().uuid().optional(),
+		recurringEventInstanceId: z.string().uuid().optional(),
 		organizationId: z.string().uuid(),
-		assignedAt: z.string().optional(), // 🆕 Added assignedAt field
+		assignedAt: z.string().optional(),
+		isTemplate: z.boolean().optional(),
 	}),
 });
 
@@ -29,14 +31,19 @@ builder.mutationField("createActionItem", (t) =>
 						assigneeId: t.field({ type: "ID", required: true }),
 						preCompletionNotes: t.field({ type: "String" }),
 						eventId: t.field({ type: "ID" }),
+						recurringEventInstanceId: t.field({ type: "ID" }),
 						organizationId: t.field({ type: "ID", required: true }),
-						assignedAt: t.field({ type: "String" }), // 🆕 Added assignedAt field
+						assignedAt: t.field({ type: "String" }),
+						isTemplate: t.field({ type: "Boolean" }),
 					}),
 				}),
 			}),
 		},
 		description: "Mutation field to create an action item.",
 		resolve: async (_parent, args, ctx) => {
+			// Log the arguments to inspect the input
+			ctx.log.info(args.input, "createActionItem arguments");
+
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: { code: "unauthenticated" },
@@ -87,7 +94,7 @@ builder.mutationField("createActionItem", (t) =>
 			}
 
 			const existingCategory =
-				await ctx.drizzleClient.query.actionCategoriesTable.findFirst({
+				await ctx.drizzleClient.query.actionItemCategoriesTable.findFirst({
 					columns: { id: true },
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.categoryId),
@@ -134,7 +141,7 @@ builder.mutationField("createActionItem", (t) =>
 			}
 
 			const [createdActionItem] = await ctx.drizzleClient
-				.insert(actionsTable)
+				.insert(actionItemsTable)
 				.values({
 					id: uuidv7(),
 					creatorId: currentUserId,
@@ -148,7 +155,10 @@ builder.mutationField("createActionItem", (t) =>
 					postCompletionNotes: null,
 					isCompleted: false,
 					eventId: parsedArgs.input.eventId ?? null,
+					recurringEventInstanceId:
+						parsedArgs.input.recurringEventInstanceId ?? null,
 					organizationId: parsedArgs.input.organizationId,
+					isTemplate: parsedArgs.input.isTemplate ?? false,
 					updatedAt: new Date(),
 					updaterId: currentUserId,
 				})
