@@ -1543,6 +1543,9 @@ export const Query_getMyPledgesForCampaign = gql(`
         endAt
         currencyCode
       }
+    }
+  }
+`);
 
 export const Query_actionItems = gql(`
     query ActionItems($id: String!) {
