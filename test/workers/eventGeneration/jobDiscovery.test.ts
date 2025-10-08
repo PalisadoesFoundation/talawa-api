@@ -81,6 +81,7 @@ describe("jobDiscovery", () => {
 		attendees: [],
 		isPublic: true,
 		isRegisterable: false,
+		capacity: 100,
 		...overrides,
 	});
 
@@ -165,11 +166,13 @@ describe("jobDiscovery", () => {
 					id: "event1",
 					name: "Event 1",
 					organizationId: "org1",
+					capacity: 100,
 				}),
 				createMockEvent({
 					id: "event2",
 					name: "Event 2",
 					organizationId: "org1",
+					capacity: 100,
 				}),
 			];
 
@@ -347,11 +350,13 @@ describe("jobDiscovery", () => {
 					id: "event1",
 					name: "Event 1",
 					organizationId: "org1",
+					capacity: 100,
 				}),
 				createMockEvent({
 					id: "event2",
 					name: "Event 2",
 					organizationId: "org2",
+					capacity: 100,
 				}),
 			];
 

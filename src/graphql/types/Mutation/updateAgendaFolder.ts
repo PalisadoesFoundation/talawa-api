@@ -167,8 +167,17 @@ builder.mutationField("updateAgendaFolder", (t) =>
 				}
 			}
 
-			const currentUserOrganizationMembership =
-				existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
+			let currentUserOrganizationMembership = undefined;
+			if (
+				existingAgendaFolder.event.organization &&
+				Array.isArray(
+					existingAgendaFolder.event.organization.membershipsWhereOrganization,
+				)
+			) {
+				currentUserOrganizationMembership =
+					existingAgendaFolder.event.organization
+						.membershipsWhereOrganization[0];
+			}
 
 			if (
 				currentUser.role !== "administrator" &&

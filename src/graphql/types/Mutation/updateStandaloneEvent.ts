@@ -7,6 +7,7 @@ import {
 	mutationUpdateEventInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateEventInput";
 import { Event } from "~/src/graphql/types/Event/Event";
+import type { EventAttachment } from "~/src/graphql/types/EventAttachment/EventAttachment";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
@@ -152,8 +153,14 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 				});
 			}
 
-			const currentUserOrganizationMembership =
-				existingEvent.organization.membershipsWhereOrganization[0];
+			let currentUserOrganizationMembership = undefined;
+			if (
+				existingEvent.organization &&
+				Array.isArray(existingEvent.organization.membershipsWhereOrganization)
+			) {
+				currentUserOrganizationMembership =
+					existingEvent.organization.membershipsWhereOrganization[0];
+			}
 
 			if (
 				(currentUserOrganizationMembership === undefined ||
@@ -197,9 +204,17 @@ builder.mutationField("updateStandaloneEvent", (t) =>
 				});
 			}
 
-			return Object.assign(updatedEvent, {
-				attachments: existingEvent.attachmentsWhereEvent,
-			});
+			let attachments: EventAttachment[] = [];
+			if (
+				existingEvent.attachmentsWhereEvent &&
+				Array.isArray(existingEvent.attachmentsWhereEvent)
+			) {
+				attachments = existingEvent.attachmentsWhereEvent;
+			}
+			return {
+				...updatedEvent,
+				attachments,
+			};
 		},
 		type: Event,
 	}),

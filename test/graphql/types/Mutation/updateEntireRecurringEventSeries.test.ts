@@ -87,6 +87,7 @@ async function createRecurringEventWithInstances(
 			location: "Boardroom",
 			isPublic: false,
 			isRegisterable: true,
+			capacity: 100,
 		})
 		.returning();
 
@@ -177,6 +178,7 @@ async function createSplitSeriesScenario(
 			allDay: false,
 			location: "Conference Room",
 			isPublic: false,
+			capacity: 100,
 			isRegisterable: true,
 		})
 		.returning();

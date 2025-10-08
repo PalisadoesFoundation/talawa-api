@@ -162,6 +162,8 @@ async function createTestEvent(organizationId: string): Promise<TestEvent> {
 				endAt: endAt.toISOString(),
 				isPublic: true,
 				isRegisterable: true,
+				isRecurringEventTemplate: false,
+				capacity: 100,
 			},
 		},
 	});
@@ -195,6 +197,7 @@ async function createRecurringEventSetup(
 			isPublic: true,
 			isRegisterable: true,
 			isRecurringEventTemplate: true,
+			capacity: 100,
 		})
 		.returning();
 

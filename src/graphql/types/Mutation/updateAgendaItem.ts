@@ -223,9 +223,18 @@ builder.mutationField("updateAgendaItem", (t) =>
 				}
 			}
 
-			const currentUserOrganizationMembership =
-				existingAgendaItem.folder.event.organization
-					.membershipsWhereOrganization[0];
+			let currentUserOrganizationMembership = undefined;
+			if (
+				existingAgendaItem.folder.event.organization &&
+				Array.isArray(
+					existingAgendaItem.folder.event.organization
+						.membershipsWhereOrganization,
+				)
+			) {
+				currentUserOrganizationMembership =
+					existingAgendaItem.folder.event.organization
+						.membershipsWhereOrganization[0];
+			}
 
 			if (
 				currentUser.role !== "administrator" &&

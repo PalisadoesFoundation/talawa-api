@@ -29,6 +29,7 @@ const MockEvent = {
 	location: "Test Location",
 	isRecurringEventTemplate: false,
 	attachments: [],
+	capacity: 100,
 };
 
 describe("Event updater resolver - Tests", () => {

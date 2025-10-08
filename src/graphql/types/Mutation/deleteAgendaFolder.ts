@@ -100,21 +100,28 @@ builder.mutationField("deleteAgendaFolder", (t) =>
 				});
 			}
 
-			if (existingAgendaFolder === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [
-							{
-								argumentPath: ["input", "id"],
-							},
-						],
-					},
-				});
+			// After checks for currentUser and existingAgendaFolder
+			let currentUserOrganizationMembership: { role: string } | undefined =
+				undefined;
+			if (
+				existingAgendaFolder?.event?.organization &&
+				typeof existingAgendaFolder.event.organization === "object" &&
+				"membershipsWhereOrganization" in
+					existingAgendaFolder.event.organization &&
+				Array.isArray(
+					(
+						existingAgendaFolder.event.organization as {
+							membershipsWhereOrganization: { role: string }[];
+						}
+					).membershipsWhereOrganization,
+				)
+			) {
+				currentUserOrganizationMembership = (
+					existingAgendaFolder.event.organization as {
+						membershipsWhereOrganization: { role: string }[];
+					}
+				).membershipsWhereOrganization[0];
 			}
-
-			const currentUserOrganizationMembership =
-				existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
 
 			if (
 				currentUser.role !== "administrator" &&

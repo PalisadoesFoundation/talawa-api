@@ -23,6 +23,7 @@ const mockEvent = {
 	updaterId: null,
 	isRecurringEventTemplate: false,
 	attachments: [],
+	capacity: 100,
 };
 
 // Mock recurring event instance

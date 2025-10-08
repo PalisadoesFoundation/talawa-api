@@ -69,6 +69,7 @@ async function createRecurringEventWithInstances(
 			organizationId,
 			creatorId,
 			isRecurringEventTemplate: true,
+			capacity: 100,
 			startAt: new Date("2024-01-01T09:00:00Z"),
 			endAt: new Date("2024-01-01T09:30:00Z"),
 			allDay: false,
@@ -110,6 +111,7 @@ async function createRecurringEventWithInstances(
 			actualStartTime: new Date("2024-01-01T09:00:00Z"),
 			actualEndTime: new Date("2024-01-01T09:30:00Z"),
 			sequenceNumber: 1,
+			capacity: 100,
 		},
 		{
 			baseRecurringEventId: template.id,
@@ -120,6 +122,7 @@ async function createRecurringEventWithInstances(
 			actualStartTime: new Date("2024-01-02T09:00:00Z"),
 			actualEndTime: new Date("2024-01-02T09:30:00Z"),
 			sequenceNumber: 2,
+			capacity: 100,
 		},
 		{
 			baseRecurringEventId: template.id,
@@ -130,6 +133,7 @@ async function createRecurringEventWithInstances(
 			actualStartTime: new Date("2024-01-03T09:00:00Z"),
 			actualEndTime: new Date("2024-01-03T09:30:00Z"),
 			sequenceNumber: 3,
+			capacity: 100,
 		},
 	];
 

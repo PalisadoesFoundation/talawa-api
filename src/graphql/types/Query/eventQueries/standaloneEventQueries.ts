@@ -1,3 +1,16 @@
+// Type guard for valid event attachment objects
+function isValidAttachment(
+	a: unknown,
+): a is typeof eventAttachmentsTable.$inferSelect {
+	return (
+		!!a &&
+		typeof a === "object" &&
+		a !== null &&
+		typeof (a as { name?: unknown }).name === "string" &&
+		typeof (a as { mimeType?: unknown }).mimeType === "string" &&
+		typeof (a as { eventId?: unknown }).eventId === "string"
+	);
+}
 import { and, asc, eq, gte, inArray, lte, or } from "drizzle-orm";
 import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import { eventsTable } from "~/src/drizzle/tables/events";
@@ -69,20 +82,30 @@ export async function getStandaloneEventsInDateRange(
 
 		const standaloneEvents: (typeof eventsTable.$inferSelect & {
 			attachmentsWhereEvent: (typeof eventAttachmentsTable.$inferSelect)[];
-		})[] = await drizzleClient.query.eventsTable.findMany({
-			where: and(...whereConditions),
-			with: {
-				attachmentsWhereEvent: true,
-			},
-			orderBy: [asc(eventsTable.startAt), asc(eventsTable.id)],
-			limit,
-		});
+		})[] = (
+			await drizzleClient.query.eventsTable.findMany({
+				where: and(...whereConditions),
+				with: {
+					attachmentsWhereEvent: true,
+				},
+				orderBy: [asc(eventsTable.startAt), asc(eventsTable.id)],
+				limit,
+			})
+		).map((e) => ({
+			...e,
+			attachmentsWhereEvent: Array.isArray(e.attachmentsWhereEvent)
+				? e.attachmentsWhereEvent
+				: [],
+		}));
 
 		// Transform to include attachments in expected format
 		const eventsWithAttachments = standaloneEvents.map(
 			({ attachmentsWhereEvent, ...event }) => ({
 				...event,
-				attachments: attachmentsWhereEvent || [],
+				capacity: 100,
+				attachments: Array.isArray(attachmentsWhereEvent)
+					? attachmentsWhereEvent.filter(isValidAttachment)
+					: [],
 			}),
 		);
 
@@ -129,22 +152,37 @@ export async function getStandaloneEventsByIds(
 	try {
 		const standaloneEvents: (typeof eventsTable.$inferSelect & {
 			attachmentsWhereEvent: (typeof eventAttachmentsTable.$inferSelect)[];
-		})[] = await drizzleClient.query.eventsTable.findMany({
-			where: and(
-				inArray(eventsTable.id, eventIds),
-				eq(eventsTable.isRecurringEventTemplate, false),
-			),
-			with: {
-				attachmentsWhereEvent: true,
-			},
-		});
+		})[] = (
+			await drizzleClient.query.eventsTable.findMany({
+				where: and(
+					inArray(eventsTable.id, eventIds),
+					eq(eventsTable.isRecurringEventTemplate, false),
+				),
+				with: {
+					attachmentsWhereEvent: true,
+				},
+			})
+		).map((e) => ({
+			...e,
+			attachmentsWhereEvent: Array.isArray(e.attachmentsWhereEvent)
+				? e.attachmentsWhereEvent
+				: [],
+		}));
 
 		// Transform to include attachments in expected format
 		const eventsWithAttachments = standaloneEvents.map(
-			({ attachmentsWhereEvent, ...event }) => ({
-				...event,
-				attachments: attachmentsWhereEvent || [],
-			}),
+			({ attachmentsWhereEvent, ...event }) => {
+				const attachmentsArray = Array.isArray(attachmentsWhereEvent)
+					? attachmentsWhereEvent
+					: Array.isArray(attachmentsWhereEvent)
+						? attachmentsWhereEvent
+						: [];
+				return {
+					...event,
+					capacity: 100,
+					attachments: attachmentsArray.filter(isValidAttachment),
+				};
+			},
 		);
 
 		logger.debug("Retrieved standalone events by IDs", {

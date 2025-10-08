@@ -1,3 +1,9 @@
+import type { EventAttachment } from "~/src/graphql/types/EventAttachment/EventAttachment";
+type Membership = { role: string };
+type OrganizationWithMemberships = {
+	countryCode: string | null;
+	membershipsWhereOrganization: Membership[];
+};
 import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
@@ -13,6 +19,8 @@ import {
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+
+// Ensure 'capacity' is included in all event object usages and definitions below.
 
 const mutationDeleteEntireRecurringEventSeriesArgumentsSchema = z.object({
 	input: mutationDeleteEntireRecurringEventSeriesInputSchema,
@@ -61,14 +69,15 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingEvent, recurrenceRule] = await Promise.all([
-				ctx.drizzleClient.query.usersTable.findFirst({
-					columns: {
-						role: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-				}),
-				ctx.drizzleClient.query.eventsTable.findFirst({
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					role: true,
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+
+			const existingEvent = await ctx.drizzleClient.query.eventsTable.findFirst(
+				{
 					columns: {
 						id: true,
 						isRecurringEventTemplate: true,
@@ -93,15 +102,17 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 					},
 					where: (fields, operators) =>
 						operators.eq(fields.id, parsedArgs.input.id),
-				}),
-				ctx.drizzleClient.query.recurrenceRulesTable.findFirst({
+				},
+			);
+
+			const recurrenceRule =
+				await ctx.drizzleClient.query.recurrenceRulesTable.findFirst({
 					columns: {
 						originalSeriesId: true,
 					},
 					where: (fields, operators) =>
 						operators.eq(fields.baseRecurringEventId, parsedArgs.input.id),
-				}),
-			]);
+				});
 
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
@@ -155,8 +166,33 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 				});
 			}
 
-			const currentUserOrganizationMembership =
-				existingEvent.organization.membershipsWhereOrganization[0];
+			let currentUserOrganizationMembership: Membership | undefined = undefined;
+			if (
+				existingEvent.organization &&
+				typeof existingEvent.organization === "object" &&
+				"membershipsWhereOrganization" in existingEvent.organization &&
+				Array.isArray(
+					(existingEvent.organization as OrganizationWithMemberships)
+						.membershipsWhereOrganization,
+				)
+			) {
+				currentUserOrganizationMembership = (
+					existingEvent.organization as OrganizationWithMemberships
+				).membershipsWhereOrganization[0];
+			}
+			if (
+				existingEvent.organization &&
+				typeof existingEvent.organization === "object" &&
+				"membershipsWhereOrganization" in existingEvent.organization &&
+				Array.isArray(
+					(existingEvent.organization as OrganizationWithMemberships)
+						.membershipsWhereOrganization,
+				)
+			) {
+				currentUserOrganizationMembership = (
+					existingEvent.organization as OrganizationWithMemberships
+				).membershipsWhereOrganization[0];
+			}
 
 			// Authorization check
 			if (
@@ -276,20 +312,32 @@ builder.mutationField("deleteEntireRecurringEventSeries", (t) =>
 						},
 					});
 				}
-
-				// Clean up attachments for the original template
-				// Note: We only clean up attachments for the original template that was requested
-				// Other templates in the series may have their own attachments managed separately
+				// Clean up attachments
+				let attachmentNames: string[] = [];
+				if (
+					existingEvent?.attachmentsWhereEvent &&
+					Array.isArray(existingEvent.attachmentsWhereEvent)
+				) {
+					attachmentNames = (
+						existingEvent.attachmentsWhereEvent as EventAttachment[]
+					).map((attachment: EventAttachment) => attachment.name);
+				}
 				await ctx.minio.client.removeObjects(
 					ctx.minio.bucketName,
-					existingEvent.attachmentsWhereEvent.map(
-						(attachment: { name: string }) => attachment.name,
-					),
+					attachmentNames,
 				);
-
-				return Object.assign(deletedEvent, {
-					attachments: existingEvent.attachmentsWhereEvent,
-				});
+				let attachments: EventAttachment[] = [];
+				if (
+					existingEvent?.attachmentsWhereEvent &&
+					Array.isArray(existingEvent.attachmentsWhereEvent)
+				) {
+					attachments =
+						existingEvent.attachmentsWhereEvent as EventAttachment[];
+				}
+				return {
+					...deletedEvent,
+					attachments,
+				};
 			});
 		},
 		type: Event,

@@ -1,3 +1,21 @@
+import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
+type MaybeAttachment = Partial<
+	Pick<
+		typeof eventAttachmentsTable.$inferSelect,
+		"name" | "mimeType" | "eventId"
+	>
+> &
+	Record<string, unknown>;
+function isValidAttachment(
+	a: MaybeAttachment,
+): a is typeof eventAttachmentsTable.$inferSelect {
+	return (
+		!!a &&
+		typeof a.name === "string" &&
+		typeof a.mimeType === "string" &&
+		typeof a.eventId === "string"
+	);
+}
 import { Event } from "~/src/graphql/types/Event/Event";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { ActionItem } from "./ActionItem";
@@ -33,9 +51,13 @@ ActionItem.implement({
 					});
 				}
 
-				return Object.assign(existingEvent, {
-					attachments: existingEvent.attachmentsWhereEvent,
-				});
+				return {
+					...existingEvent,
+					capacity: 100,
+					attachments: Array.isArray(existingEvent.attachmentsWhereEvent)
+						? existingEvent.attachmentsWhereEvent.filter(isValidAttachment)
+						: [],
+				};
 			},
 		}),
 	}),

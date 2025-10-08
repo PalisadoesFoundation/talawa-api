@@ -146,6 +146,8 @@ async function createTestEvent(organizationId: string): Promise<TestEvent> {
 				endAt: endAt.toISOString(),
 				isPublic: true,
 				isRegisterable: true,
+				isRecurringEventTemplate: false,
+				capacity: 100,
 			},
 		},
 	});
@@ -669,6 +671,7 @@ suite("Mutation createVolunteerMembership - Integration Tests", () => {
 				isPublic: true,
 				isRegisterable: true,
 				isRecurringEventTemplate: true,
+				capacity: 100,
 			})
 			.returning();
 
@@ -833,6 +836,7 @@ suite("Mutation createVolunteerMembership - Integration Tests", () => {
 				organizationId: organization.orgId,
 				creatorId,
 				isPublic: true,
+				capacity: 100,
 				isRegisterable: true,
 				isRecurringEventTemplate: true,
 			})
@@ -850,6 +854,7 @@ suite("Mutation createVolunteerMembership - Integration Tests", () => {
 				isPublic: true,
 				isRegisterable: true,
 				isRecurringEventTemplate: true,
+				capacity: 100,
 			})
 			.returning();
 
@@ -1010,6 +1015,7 @@ suite("Mutation createVolunteerMembership - Integration Tests", () => {
 				isPublic: true,
 				isRegisterable: true,
 				isRecurringEventTemplate: true,
+				capacity: 100,
 			})
 			.returning();
 
@@ -1161,6 +1167,7 @@ suite("Mutation createVolunteerMembership - Integration Tests", () => {
 				isPublic: true,
 				isRegisterable: true,
 				isRecurringEventTemplate: true,
+				capacity: 100,
 			})
 			.returning();
 

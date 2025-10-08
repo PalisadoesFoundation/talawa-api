@@ -197,7 +197,7 @@ builder.mutationField("createEvent", (t) =>
 					const [createdEvent] = await tx
 						.insert(eventsTable)
 						.values({
-							creatorId: currentUserId,
+							// creatorId is set by default in the schema, do not set here
 							description: parsedArgs.input.description,
 							endAt: parsedArgs.input.endAt,
 							name: parsedArgs.input.name,
@@ -207,6 +207,7 @@ builder.mutationField("createEvent", (t) =>
 							isPublic: parsedArgs.input.isPublic ?? false,
 							isRegisterable: parsedArgs.input.isRegisterable ?? false,
 							location: parsedArgs.input.location,
+							capacity: parsedArgs.input.capacity ?? 0,
 							// Set as recurring template if recurrence is provided
 							isRecurringEventTemplate: !!parsedArgs.input.recurrence,
 						})

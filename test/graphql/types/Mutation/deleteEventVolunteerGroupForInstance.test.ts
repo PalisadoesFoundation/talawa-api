@@ -38,10 +38,8 @@ async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
 	}
 	const res = await mercuriusClient.query(Query_signIn, {
 		variables: {
-			input: {
-				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-			},
+			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 		},
 	});
 	if (
@@ -188,6 +186,7 @@ async function createRecurringEventSetup(
 			isPublic: true,
 			isRegisterable: true,
 			isRecurringEventTemplate: true,
+			capacity: 100,
 		})
 		.returning();
 

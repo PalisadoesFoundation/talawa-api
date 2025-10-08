@@ -1,3 +1,16 @@
+import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
+// Type guard for valid event attachment objects
+function isValidAttachment(
+	a: unknown,
+): a is typeof eventAttachmentsTable.$inferSelect {
+	return (
+		typeof a === "object" &&
+		a !== null &&
+		typeof (a as { name?: unknown }).name === "string" &&
+		typeof (a as { mimeType?: unknown }).mimeType === "string" &&
+		typeof (a as { eventId?: unknown }).eventId === "string"
+	);
+}
 import { inArray } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import { z } from "zod";
@@ -29,6 +42,7 @@ interface EventType {
 	isRegisterable: boolean;
 	location: string | null;
 	isRecurringEventTemplate: boolean;
+	capacity: number;
 	attachments: Array<{
 		name: string;
 		createdAt: Date;
@@ -180,10 +194,10 @@ builder.queryField("eventsByOrganizationId", (t) =>
 
 				return events.map((event) => ({
 					...event,
-					attachments:
-						event.attachmentsWhereEvent?.map((attachment) => ({
-							...attachment,
-						})) || [],
+					capacity: 100,
+					attachments: Array.isArray(event.attachmentsWhereEvent)
+						? event.attachmentsWhereEvent.filter(isValidAttachment)
+						: [],
 				})) as EventType[];
 			} catch (error) {
 				console.error("Error fetching events for organization:", error);

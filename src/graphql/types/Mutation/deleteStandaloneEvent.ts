@@ -1,3 +1,18 @@
+import type { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
+import type { organizationsTable } from "~/src/drizzle/tables/organizations";
+import type { EventAttachment } from "~/src/graphql/types/EventAttachment/EventAttachment";
+// removed duplicate import of eventsTable
+
+type OrganizationWithMemberships = typeof organizationsTable.$inferSelect & {
+	membershipsWhereOrganization: Array<
+		typeof organizationMembershipsTable.$inferSelect
+	>;
+};
+
+type EventWithOrganizationAndAttachments = typeof eventsTable.$inferSelect & {
+	organization?: OrganizationWithMemberships;
+	attachmentsWhereEvent?: EventAttachment[];
+};
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
@@ -54,7 +69,7 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [currentUser, existingEvent] = await Promise.all([
+			const [currentUser, existingEventRaw] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
@@ -88,6 +103,9 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 						operators.eq(fields.id, parsedArgs.input.id),
 				}),
 			]);
+			const existingEvent = existingEventRaw as
+				| EventWithOrganizationAndAttachments
+				| undefined;
 
 			if (currentUser === undefined) {
 				throw new TalawaGraphQLError({
@@ -126,8 +144,14 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 				});
 			}
 
-			const currentUserOrganizationMembership =
-				existingEvent.organization.membershipsWhereOrganization[0];
+			let currentUserOrganizationMembership = undefined;
+			if (
+				existingEvent.organization &&
+				Array.isArray(existingEvent.organization.membershipsWhereOrganization)
+			) {
+				currentUserOrganizationMembership =
+					existingEvent.organization.membershipsWhereOrganization[0];
+			}
 
 			if (
 				(currentUserOrganizationMembership === undefined ||
@@ -166,16 +190,25 @@ builder.mutationField("deleteStandaloneEvent", (t) =>
 					});
 				}
 
+				let attachmentNames: string[] = [];
+				let attachments: EventAttachment[] = [];
+				if (
+					existingEvent.attachmentsWhereEvent &&
+					Array.isArray(existingEvent.attachmentsWhereEvent)
+				) {
+					attachments = existingEvent.attachmentsWhereEvent;
+					attachmentNames = attachments.map(
+						(attachment: EventAttachment) => attachment.name,
+					);
+				}
 				await ctx.minio.client.removeObjects(
 					ctx.minio.bucketName,
-					existingEvent.attachmentsWhereEvent.map(
-						(attachment) => attachment.name,
-					),
+					attachmentNames,
 				);
-
-				return Object.assign(deletedEvent, {
-					attachments: existingEvent.attachmentsWhereEvent,
-				});
+				return {
+					...deletedEvent,
+					attachments,
+				};
 			});
 		},
 		type: Event,

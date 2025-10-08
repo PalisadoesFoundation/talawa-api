@@ -28,6 +28,11 @@ export const mutationUpdateThisAndFollowingEventsInputSchema = z
 		allDay: z.boolean().optional(),
 		isPublic: z.boolean().optional(),
 		isRegisterable: z.boolean().optional(),
+		capacity: z
+			.number()
+			.int()
+			.min(1, "Capacity must be at least 1.")
+			.optional(),
 		recurrence: recurrenceInputSchema.optional(),
 	})
 	.superRefine(({ id, ...remainingArgs }, ctx) => {
@@ -96,6 +101,10 @@ export const MutationUpdateThisAndFollowingEventsInput = builder
 			isRegisterable: t.boolean({
 				description:
 					"Whether users can register for this and following event instances.",
+			}),
+			capacity: t.int({
+				description:
+					"Maximum number of participants for this and following event instances.",
 			}),
 			recurrence: t.field({
 				description:

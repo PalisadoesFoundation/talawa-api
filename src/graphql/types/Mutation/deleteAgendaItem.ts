@@ -1,3 +1,8 @@
+type Membership = { role: string };
+type OrganizationWithMemberships = {
+	countryCode: string | null;
+	membershipsWhereOrganization: Membership[];
+};
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
@@ -120,9 +125,24 @@ builder.mutationField("deleteAgendaItem", (t) =>
 				});
 			}
 
-			const currentUserOrganizationMembership =
-				existingAgendaItem.folder.event.organization
-					.membershipsWhereOrganization[0];
+			let currentUserOrganizationMembership: Membership | undefined = undefined;
+			if (
+				existingAgendaItem.folder?.event?.organization &&
+				typeof existingAgendaItem.folder.event.organization === "object" &&
+				"membershipsWhereOrganization" in
+					existingAgendaItem.folder.event.organization &&
+				Array.isArray(
+					(
+						existingAgendaItem.folder.event
+							.organization as OrganizationWithMemberships
+					).membershipsWhereOrganization,
+				)
+			) {
+				currentUserOrganizationMembership = (
+					existingAgendaItem.folder.event
+						.organization as OrganizationWithMemberships
+				).membershipsWhereOrganization[0];
+			}
 
 			if (
 				currentUser.role !== "administrator" &&

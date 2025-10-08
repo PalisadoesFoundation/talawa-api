@@ -24,6 +24,7 @@ export const mutationCreateEventInputSchema = eventsTableInsertSchema
 		isRegisterable: z.boolean().optional(),
 		location: z.string().min(1).max(1024).optional(),
 		recurrence: recurrenceInputSchema.optional(),
+		capacity: z.number().int().min(0),
 	})
 	.superRefine((arg, ctx) => {
 		if (arg.endAt <= arg.startAt) {
@@ -50,6 +51,10 @@ export const MutationCreateEventInput = builder
 			}),
 			description: t.string({
 				description: "Custom information about the event.",
+			}),
+			capacity: t.int({
+				description: "Maximum number of attendees for the event.",
+				required: true,
 			}),
 			endAt: t.field({
 				description: "Date time at the time the event ends at.",

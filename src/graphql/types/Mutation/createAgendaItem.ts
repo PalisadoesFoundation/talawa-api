@@ -1,3 +1,5 @@
+// Type-safe interface for event/organization/memberships
+type Membership = { role: string };
 import { z } from "zod";
 import { agendaItemsTable } from "~/src/drizzle/tables/agendaItems";
 import { builder } from "~/src/graphql/builder";
@@ -24,6 +26,10 @@ builder.mutationField("createAgendaItem", (t) =>
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 		description: "Mutation field to create an agenda item.",
 		resolve: async (_parent, args, ctx) => {
+			type OrganizationWithMemberships = {
+				countryCode: string | null;
+				membershipsWhereOrganization: Membership[];
+			};
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -127,8 +133,26 @@ builder.mutationField("createAgendaItem", (t) =>
 				});
 			}
 
-			const currentUserOrganizationMembership =
-				existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
+			// Type-safe interface for event/organization/memberships
+			let currentUserOrganizationMembership: Membership | undefined = undefined;
+			if (
+				existingAgendaFolder.event.organization &&
+				Array.isArray(
+					(
+						existingAgendaFolder.event
+							.organization as OrganizationWithMemberships
+					).membershipsWhereOrganization,
+				)
+			) {
+				currentUserOrganizationMembership = (
+					existingAgendaFolder.event.organization as OrganizationWithMemberships
+				).membershipsWhereOrganization[0];
+			}
+
+			// All further duplicate declarations of these types/variables have been removed.
+
+			// Remove any further duplicate declarations below this point
+			// Type-safe interface for event/organization/memberships
 
 			if (
 				currentUser.role !== "administrator" &&

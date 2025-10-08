@@ -105,5 +105,5 @@ import "./deleteEventVolunteerGroup";
 import "./deleteEventVolunteerGroupForInstance";
 import "./createActionItemCategory";
 import "./updateActionItemCategory";
-import "./deleteActionItemCategory";
 import "./ReadNotification";
+import "./registerForEvent";

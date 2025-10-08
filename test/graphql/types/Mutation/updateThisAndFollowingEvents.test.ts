@@ -79,6 +79,7 @@ async function createRecurringEventWithInstances(
 			allDay: false,
 			location: "Conference Room",
 			isPublic: true,
+			capacity: 100,
 			isRegisterable: false,
 		})
 		.returning();
@@ -1072,6 +1073,7 @@ test("should handle missing generation window by initializing new one", async ()
 			allDay: false,
 			isPublic: true,
 			isRegisterable: false,
+			capacity: 100,
 		})
 		.returning();
 

@@ -92,6 +92,7 @@ describe("windowManager", () => {
 		longitude: null,
 		isPublic: true,
 		isRegisterable: false,
+		capacity: 100,
 		...overrides,
 	});
 
@@ -310,8 +311,8 @@ describe("windowManager", () => {
 			});
 
 			const mockRecurringEvents = [
-				createMockEvent({ id: "event1" }),
-				createMockEvent({ id: "event2" }),
+				createMockEvent({ id: "event1", capacity: 100 }),
+				createMockEvent({ id: "event2", capacity: 100 }),
 			];
 
 			const mockMaterializedInstances = [

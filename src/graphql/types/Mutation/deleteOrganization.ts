@@ -163,33 +163,78 @@ builder.mutationField("deleteOrganization", (t) =>
 					objectNames.push(existingOrganization.avatarName);
 				}
 
-				for (const advertisement of existingOrganization.advertisementsWhereOrganization) {
-					for (const attachment of advertisement.attachmentsWhereAdvertisement) {
-						objectNames.push(attachment.name);
+				if (
+					existingOrganization.advertisementsWhereOrganization &&
+					Array.isArray(existingOrganization.advertisementsWhereOrganization)
+				) {
+					for (const advertisement of existingOrganization.advertisementsWhereOrganization) {
+						if (
+							advertisement.attachmentsWhereAdvertisement &&
+							Array.isArray(advertisement.attachmentsWhereAdvertisement)
+						) {
+							for (const attachment of advertisement.attachmentsWhereAdvertisement) {
+								objectNames.push(attachment.name);
+							}
+						}
 					}
 				}
 
-				for (const chat of existingOrganization.chatsWhereOrganization) {
-					if (chat.avatarName !== null) {
-						objectNames.push(chat.avatarName);
+				if (
+					existingOrganization.chatsWhereOrganization &&
+					Array.isArray(existingOrganization.chatsWhereOrganization)
+				) {
+					for (const chat of existingOrganization.chatsWhereOrganization) {
+						if (chat.avatarName !== null) {
+							objectNames.push(chat.avatarName);
+						}
 					}
 				}
 
-				for (const event of existingOrganization.eventsWhereOrganization) {
-					for (const attachment of event.attachmentsWhereEvent) {
-						objectNames.push(attachment.name);
+				if (
+					existingOrganization.eventsWhereOrganization &&
+					Array.isArray(existingOrganization.eventsWhereOrganization)
+				) {
+					for (const event of existingOrganization.eventsWhereOrganization) {
+						if (
+							event.attachmentsWhereEvent &&
+							Array.isArray(event.attachmentsWhereEvent)
+						) {
+							for (const attachment of event.attachmentsWhereEvent) {
+								objectNames.push(attachment.name);
+							}
+						}
 					}
 				}
 
-				for (const post of existingOrganization.postsWhereOrganization) {
-					for (const attachment of post.attachmentsWherePost) {
-						objectNames.push(attachment.name);
+				if (
+					existingOrganization.postsWhereOrganization &&
+					Array.isArray(existingOrganization.postsWhereOrganization)
+				) {
+					for (const post of existingOrganization.postsWhereOrganization) {
+						if (
+							post.attachmentsWherePost &&
+							Array.isArray(post.attachmentsWherePost)
+						) {
+							for (const attachment of post.attachmentsWherePost) {
+								objectNames.push(attachment.name);
+							}
+						}
 					}
 				}
 
-				for (const venue of existingOrganization.venuesWhereOrganization) {
-					for (const attachment of venue.attachmentsWhereVenue) {
-						objectNames.push(attachment.name);
+				if (
+					existingOrganization.venuesWhereOrganization &&
+					Array.isArray(existingOrganization.venuesWhereOrganization)
+				) {
+					for (const venue of existingOrganization.venuesWhereOrganization) {
+						if (
+							venue.attachmentsWhereVenue &&
+							Array.isArray(venue.attachmentsWhereVenue)
+						) {
+							for (const attachment of venue.attachmentsWhereVenue) {
+								objectNames.push(attachment.name);
+							}
+						}
 					}
 				}
 

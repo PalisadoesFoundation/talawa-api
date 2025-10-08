@@ -42,6 +42,7 @@ describe("Organization Events Resolver Tests", () => {
 
 	const mockEvents = [
 		{
+			capacity: 100,
 			id: "event-1",
 			name: "Test Event 1",
 			startAt: new Date("2024-07-20T10:00:00Z"),
@@ -63,6 +64,7 @@ describe("Organization Events Resolver Tests", () => {
 			isRecurringEventTemplate: false,
 		},
 		{
+			capacity: 100,
 			id: "event-2",
 			name: "Test Event 2",
 			startAt: new Date("2024-07-21T14:00:00Z"),
@@ -400,12 +402,14 @@ describe("Organization Events Resolver Tests", () => {
 		it("should handle events exceeding limit and apply slice", async () => {
 			const manyEvents = Array.from({ length: 15 }, (_, i) => ({
 				id: `event-${i}`,
+				capacity: 100,
 				name: `Test Event ${i}`,
 				startAt: new Date(
 					`2024-07-${String(20 + i).padStart(2, "0")}T10:00:00Z`,
 				),
 				endAt: new Date(`2024-07-${String(20 + i).padStart(2, "0")}T11:00:00Z`),
-				eventType: "standalone" as const,
+				eventType:
+					i % 2 === 0 ? ("standalone" as const) : ("generated" as const),
 				title: `Test Event ${i}`,
 				organizationId: "987fbc97-4bed-5078-bf8c-64e9bb4b5f32",
 				createdAt: new Date(),
@@ -462,6 +466,7 @@ describe("Organization Events Resolver Tests", () => {
 
 			const extendedMockEvents = [
 				{
+					capacity: 100,
 					id: "event-0",
 					name: "Test Event 0",
 					startAt: new Date("2024-07-19T10:00:00Z"),
@@ -541,7 +546,9 @@ describe("Organization Events Resolver Tests", () => {
 		});
 
 		it("should handle inverse pagination without cursor", async () => {
-			const reversedEvents = [...mockEvents].reverse();
+			const reversedEvents = [...mockEvents]
+				.map((e) => ({ ...e, capacity: 100 }))
+				.reverse();
 			mockGetUnifiedEventsInDateRange.mockResolvedValue(reversedEvents);
 			const result = await eventsResolver(
 				mockOrganization,

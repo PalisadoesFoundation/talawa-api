@@ -588,6 +588,7 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 				organizationId: organization.orgId,
 				creatorId,
 				isPublic: true,
+				capacity: 100,
 				isRegisterable: true,
 				isRecurringEventTemplate: true,
 			})
@@ -765,6 +766,7 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 				organizationId: organization.orgId,
 				creatorId,
 				isPublic: true,
+				capacity: 100,
 				isRegisterable: true,
 				isRecurringEventTemplate: true,
 			})
@@ -935,6 +937,7 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 				organizationId: organization.orgId,
 				creatorId,
 				isPublic: true,
+				capacity: 100,
 				isRegisterable: true,
 				isRecurringEventTemplate: true,
 			})
@@ -1173,6 +1176,7 @@ suite("Mutation createEventVolunteer - Integration Tests", () => {
 				organizationId: organization.orgId,
 				creatorId,
 				isPublic: true,
+				capacity: 100,
 				isRegisterable: true,
 				isRecurringEventTemplate: true,
 			})

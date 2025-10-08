@@ -4,6 +4,21 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { AgendaItem } from "./AgendaItem";
 import type { AgendaItem as AgendaItemType } from "./AgendaItem";
+// Type for the nested agendaFolder/event/organization/memberships structure
+type Membership = { role: string };
+type OrganizationWithMemberships = {
+	countryCode: string | null;
+	membershipsWhereOrganization: Membership[];
+};
+type EventWithOrganization = {
+	startAt: Date;
+	organization?: OrganizationWithMemberships;
+};
+type AgendaFolderWithEvent = {
+	isAgendaItemFolder: boolean;
+	event?: EventWithOrganization;
+};
+
 export const resolveUpdater = async (
 	parent: AgendaItemType,
 	_args: Record<string, never>,
@@ -51,7 +66,7 @@ export const resolveUpdater = async (
 					},
 				},
 			},
-		}),
+		}) as Promise<AgendaFolderWithEvent | undefined>,
 	]);
 
 	if (currentUser === undefined) {
@@ -75,12 +90,20 @@ export const resolveUpdater = async (
 		});
 	}
 
-	const currentUserOrganizationMembership =
-		existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
+	let currentUserOrganizationMembership: Membership | undefined = undefined;
+	if (
+		existingAgendaFolder.event?.organization &&
+		Array.isArray(
+			existingAgendaFolder.event.organization.membershipsWhereOrganization,
+		)
+	) {
+		currentUserOrganizationMembership =
+			existingAgendaFolder.event.organization.membershipsWhereOrganization[0];
+	}
 
 	if (
 		currentUser.role !== "administrator" &&
-		(currentUserOrganizationMembership === undefined ||
+		(!currentUserOrganizationMembership ||
 			currentUserOrganizationMembership.role !== "administrator")
 	) {
 		throw new TalawaGraphQLError({

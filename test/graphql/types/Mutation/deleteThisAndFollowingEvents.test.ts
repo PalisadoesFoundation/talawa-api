@@ -68,6 +68,7 @@ async function createRecurringEventWithInstances(
 			description: "Weekly team meeting",
 			organizationId,
 			creatorId,
+			capacity: 100,
 			isRecurringEventTemplate: true,
 			startAt: new Date("2024-01-01T10:00:00Z"),
 			endAt: new Date("2024-01-01T11:00:00Z"),

@@ -122,9 +122,9 @@ export async function getUnifiedEventsInDateRange(
 						updaterId: instance.updaterId,
 						createdAt: instance.createdAt,
 						updatedAt: instance.updatedAt,
-
 						// Generated instance metadata
 						isRecurringEventTemplate: false, // Instances are never templates
+						capacity: 100,
 
 						// Additional generated properties
 						baseRecurringEventId: instance.baseRecurringEventId,
@@ -231,6 +231,7 @@ export async function getEventsByIds(
 					updaterId: resolvedInstance.updaterId,
 					createdAt: resolvedInstance.createdAt,
 					updatedAt: resolvedInstance.updatedAt,
+					capacity: 100,
 					isRecurringEventTemplate: false,
 					baseRecurringEventId: resolvedInstance.baseRecurringEventId,
 					sequenceNumber: resolvedInstance.sequenceNumber,

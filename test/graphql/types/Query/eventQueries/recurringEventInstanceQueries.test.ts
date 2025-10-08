@@ -58,6 +58,7 @@ const mockBaseTemplate: typeof eventsTable.$inferSelect = {
 	startAt: new Date("2025-01-15T10:00:00.000Z"),
 	endAt: new Date("2025-01-15T11:00:00.000Z"),
 	location: "Main Hall",
+	capacity: 100,
 	allDay: false,
 	isPublic: true,
 	isRegisterable: true,

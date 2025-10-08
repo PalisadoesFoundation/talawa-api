@@ -1,3 +1,7 @@
+import type {
+	SendEmailCommand,
+	SendEmailCommandInput,
+} from "@aws-sdk/client-ses";
 /**
  * Email configuration interface
  */
@@ -34,33 +38,29 @@ export interface EmailResult {
 export class EmailService {
 	private config: EmailConfig;
 	private sesClient: {
-		send: (command: unknown) => Promise<{ MessageId?: string }>;
+		send: (command: SendEmailCommand) => Promise<{ MessageId?: string }>;
 	} | null = null;
-	private SendEmailCommandCtor: ((input: unknown) => unknown) | null = null;
+	private SendEmailCommandCtor:
+		| ((input: SendEmailCommandInput) => SendEmailCommand)
+		| null = null;
 
 	constructor(config: EmailConfig) {
 		this.config = config;
 	}
 
 	private async getSesArtifacts(): Promise<{
-		client: { send: (command: unknown) => Promise<{ MessageId?: string }> };
-		SendEmailCommand: (input: unknown) => unknown;
+		client: {
+			send: (command: SendEmailCommand) => Promise<{ MessageId?: string }>;
+		};
+		SendEmailCommand: (input: SendEmailCommandInput) => SendEmailCommand;
 	}> {
 		if (!this.sesClient || !this.SendEmailCommandCtor) {
 			const mod = await import("@aws-sdk/client-ses");
 			this.sesClient = new mod.SESClient({ region: this.config.region }) as {
-				send: (command: unknown) => Promise<{ MessageId?: string }>;
+				send: (command: SendEmailCommand) => Promise<{ MessageId?: string }>;
 			};
-			type MinimalSendEmailCommandInput = {
-				Source: string;
-				Destination: { ToAddresses: string[] };
-				Message: {
-					Subject: { Data: string; Charset?: string };
-					Body: { Html: { Data: string; Charset?: string } };
-				};
-			};
-			this.SendEmailCommandCtor = ((input: MinimalSendEmailCommandInput) =>
-				new mod.SendEmailCommand(input)) as (input: unknown) => unknown;
+			this.SendEmailCommandCtor = (input: SendEmailCommandInput) =>
+				new mod.SendEmailCommand(input);
 		}
 		return {
 			client: this.sesClient,

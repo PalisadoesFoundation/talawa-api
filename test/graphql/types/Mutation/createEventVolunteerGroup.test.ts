@@ -810,6 +810,7 @@ suite("Mutation createEventVolunteerGroup", () => {
 					isPublic: true,
 					isRegisterable: true,
 					isRecurringEventTemplate: true,
+					capacity: 100,
 				})
 				.returning();
 
@@ -941,6 +942,7 @@ suite("Mutation createEventVolunteerGroup", () => {
 					organizationId,
 					creatorId: adminUserId,
 					isPublic: true,
+					capacity: 100,
 					isRegisterable: true,
 					isRecurringEventTemplate: true,
 				})
@@ -1100,6 +1102,7 @@ suite("Mutation createEventVolunteerGroup", () => {
 					organizationId,
 					creatorId: adminUserId,
 					isPublic: true,
+					capacity: 100,
 					isRegisterable: true,
 					isRecurringEventTemplate: true,
 				})
@@ -1345,6 +1348,7 @@ suite("Mutation createEventVolunteerGroup", () => {
 					organizationId,
 					creatorId: adminUserId,
 					isPublic: true,
+					capacity: 100,
 					isRegisterable: true,
 					isRecurringEventTemplate: true,
 				})
@@ -1549,6 +1553,7 @@ suite("Mutation createEventVolunteerGroup", () => {
 					organizationId,
 					creatorId: adminUserId,
 					isPublic: true,
+					capacity: 100,
 					isRegisterable: true,
 					isRecurringEventTemplate: true,
 				})

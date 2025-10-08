@@ -470,6 +470,7 @@ suite("Mutation updateEventVolunteerGroup - Integration Tests", () => {
 				creatorId: eventCreator.userId, // Event creator
 				isPublic: true,
 				isRegisterable: true,
+				capacity: 100,
 			})
 			.returning();
 

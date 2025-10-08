@@ -146,6 +146,8 @@ async function createTestEvent(organizationId: string): Promise<TestEvent> {
 				endAt: endAt.toISOString(),
 				isPublic: true,
 				isRegisterable: true,
+				isRecurringEventTemplate: false,
+				capacity: 100,
 			},
 		},
 	});
@@ -459,6 +461,8 @@ suite("Mutation updateEventVolunteer - Integration Tests", () => {
 				creatorId: eventCreator.userId, // Event creator
 				isPublic: true,
 				isRegisterable: true,
+				isRecurringEventTemplate: false,
+				capacity: 100,
 			})
 			.returning();
 
@@ -1168,6 +1172,8 @@ suite("Mutation updateEventVolunteer - Integration Tests", () => {
 				creatorId: eventCreator.userId, // Specific event creator
 				isPublic: true,
 				isRegisterable: true,
+				isRecurringEventTemplate: false,
+				capacity: 100,
 			})
 			.returning();
 

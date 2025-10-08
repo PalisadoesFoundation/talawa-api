@@ -1,6 +1,17 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { AgendaFolder } from "./AgendaFolder";
+// Type for the nested event/organization/memberships structure
+type Membership = { role: string };
+type OrganizationWithMemberships = {
+	countryCode: string | null;
+	membershipsWhereOrganization: Membership[];
+};
+type EventWithOrganization = {
+	startAt: Date;
+	organization?: OrganizationWithMemberships;
+};
+
 AgendaFolder.implement({
 	fields: (t) => ({
 		updatedAt: t.field({
@@ -47,7 +58,7 @@ AgendaFolder.implement({
 								},
 							},
 						},
-					}),
+					}) as Promise<EventWithOrganization | undefined>,
 				]);
 
 				if (currentUser === undefined) {
@@ -71,12 +82,19 @@ AgendaFolder.implement({
 					});
 				}
 
-				const currentUserOrganizationMembership =
-					existingEvent.organization.membershipsWhereOrganization[0];
+				let currentUserOrganizationMembership: Membership | undefined =
+					undefined;
+				if (
+					existingEvent.organization &&
+					Array.isArray(existingEvent.organization.membershipsWhereOrganization)
+				) {
+					currentUserOrganizationMembership =
+						existingEvent.organization.membershipsWhereOrganization[0];
+				}
 
 				if (
 					currentUser.role !== "administrator" &&
-					(currentUserOrganizationMembership === undefined ||
+					(!currentUserOrganizationMembership ||
 						currentUserOrganizationMembership.role !== "administrator")
 				) {
 					throw new TalawaGraphQLError({

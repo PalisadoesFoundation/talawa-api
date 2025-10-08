@@ -164,8 +164,24 @@ builder.mutationField("createAgendaFolder", (t) =>
 				}
 			}
 
-			const currentUserOrganizationMembership =
-				existingEvent.organization.membershipsWhereOrganization[0];
+			// Type-safe interface for organization with memberships
+			type Membership = { role: string };
+			type OrganizationWithMemberships = {
+				countryCode: string | null;
+				membershipsWhereOrganization: Membership[];
+			};
+			let currentUserOrganizationMembership: Membership | undefined = undefined;
+			if (
+				existingEvent.organization &&
+				Array.isArray(
+					(existingEvent.organization as OrganizationWithMemberships)
+						.membershipsWhereOrganization,
+				)
+			) {
+				currentUserOrganizationMembership = (
+					existingEvent.organization as OrganizationWithMemberships
+				).membershipsWhereOrganization[0];
+			}
 
 			if (
 				currentUser.role !== "administrator" &&

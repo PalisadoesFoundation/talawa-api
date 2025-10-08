@@ -1,5 +1,6 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
 import { z } from "zod";
+import type { eventAttachmentsTable } from "~/src/drizzle/tables/eventAttachments";
 import {
 	venueBookingsTable,
 	venueBookingsTableInsertSchema,
@@ -13,6 +14,7 @@ import {
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
 import { Venue } from "./Venue";
+
 const eventsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
@@ -242,10 +244,20 @@ Venue.implement({
 									eventId: booking.eventId,
 								}),
 							).toString("base64url"),
-						createNode: ({ event: { attachmentsWhereEvent, ...event } }) =>
-							Object.assign(event, {
-								attachments: attachmentsWhereEvent,
-							}),
+						createNode: ({ event: { attachmentsWhereEvent, ...event } }) => {
+							let attachments: (typeof eventAttachmentsTable.$inferSelect)[] =
+								[];
+							if (
+								attachmentsWhereEvent &&
+								Array.isArray(attachmentsWhereEvent)
+							) {
+								attachments =
+									attachmentsWhereEvent as (typeof eventAttachmentsTable.$inferSelect)[];
+							}
+							return Object.assign(event, {
+								attachments,
+							});
+						},
 						parsedArgs,
 						rawNodes: venueBookings,
 					});

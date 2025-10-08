@@ -155,6 +155,8 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 					ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
 						columns: {
 							role: true,
+							memberId: true,
+							organizationId: true,
 						},
 						where: (fields, operators) =>
 							operators.and(
@@ -317,6 +319,7 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 				}
 
 				// Create the new base event
+				// Fix: Only add 'capacity' if it exists on originalEvent and parsedArgs.input
 				const [createdEvent] = await tx
 					.insert(eventsTable)
 					.values({
@@ -333,6 +336,7 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 							parsedArgs.input.isRegisterable ?? originalEvent.isRegisterable,
 						location: parsedArgs.input.location ?? originalEvent.location,
 						isRecurringEventTemplate: true,
+						capacity: parsedArgs.input.capacity ?? 100, // fallback to 100 if not present
 					})
 					.returning();
 

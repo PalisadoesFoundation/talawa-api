@@ -146,6 +146,8 @@ async function createTestEvent(organizationId: string): Promise<TestEvent> {
 				endAt: endAt.toISOString(),
 				isPublic: true,
 				isRegisterable: true,
+				isRecurringEventTemplate: false,
+				capacity: 100,
 			},
 		},
 	});
@@ -495,6 +497,7 @@ suite("Mutation deleteEventVolunteer - Integration Tests", () => {
 				creatorId: eventCreator.userId, // Event creator
 				isPublic: true,
 				isRegisterable: true,
+				capacity: 100,
 			})
 			.returning();
 

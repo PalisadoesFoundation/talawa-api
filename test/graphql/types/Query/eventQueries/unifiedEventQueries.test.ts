@@ -68,6 +68,7 @@ describe("getUnifiedEventsInDateRange", () => {
 		isRecurringEventTemplate: false,
 		attachments: [],
 		eventType: "standalone" as const,
+		capacity: 100,
 	};
 
 	const mockGeneratedInstance: ResolvedRecurringEventInstance = {
@@ -100,7 +101,6 @@ describe("getUnifiedEventsInDateRange", () => {
 		updaterId: "user-2",
 		createdAt: new Date("2025-01-01T00:00:00.000Z"),
 		updatedAt: new Date("2025-01-02T00:00:00.000Z"),
-
 		// Exception metadata
 		hasExceptions: false,
 		appliedExceptionData: null,
@@ -783,6 +783,7 @@ describe("getEventsByIds", () => {
 		isRecurringEventTemplate: false,
 		attachments: [],
 		eventType: "standalone" as const,
+		capacity: 100,
 	};
 
 	const mockResolvedInstance: ResolvedRecurringEventInstance = {
@@ -815,7 +816,6 @@ describe("getEventsByIds", () => {
 		updaterId: "user-2",
 		createdAt: new Date("2025-01-01T00:00:00.000Z"),
 		updatedAt: new Date("2025-01-02T00:00:00.000Z"),
-
 		// Exception metadata
 		hasExceptions: false,
 		appliedExceptionData: null,
