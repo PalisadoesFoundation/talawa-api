@@ -12,6 +12,7 @@ import "./fund";
 import "./fundCampaign";
 import "./fundCampaignPledge";
 import "./getPledgesByUserId";
+import "./getUserPledgesByCampaignID";
 import "./organization";
 import "./plugins";
 import "./post";

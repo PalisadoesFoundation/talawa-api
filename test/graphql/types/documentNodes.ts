@@ -1527,6 +1527,26 @@ export const Mutation_updateThisAndFollowingEvents = gql(`
   }
 `);
 
+export const Query_getMyPledgesForCampaign = gql(`
+  query GetMyPledgesForCampaign($campaignId: ID!) {
+    getMyPledgesForCampaign(campaignId: $campaignId) {
+      id
+      amount
+      pledger {
+        id
+        name
+      }
+      campaign {
+        id
+        name
+        startAt
+        endAt
+        currencyCode
+      }
+    }
+  }
+`);
+
 export const Query_actionItems = gql(`
     query ActionItems($id: String!) {
         actionItemCategory(input: { id: $id }) {

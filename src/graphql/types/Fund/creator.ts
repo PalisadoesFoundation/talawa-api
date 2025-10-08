@@ -42,8 +42,7 @@ export const FundCreatorResolver = async (
 			currentUser.organizationMembershipsWhereMember[0];
 		if (
 			currentUser.role !== "administrator" &&
-			(currentUserOrganizationMembership === undefined ||
-				currentUserOrganizationMembership.role !== "administrator")
+			currentUserOrganizationMembership === undefined
 		) {
 			throw new TalawaGraphQLError({
 				extensions: {
