@@ -9,6 +9,7 @@ declare module "fastify" {
 			config: {
 				endPoint: string;
 				port: number;
+				publicBaseUrl?: string;
 			};
 		};
 	}
@@ -26,22 +27,21 @@ declare module "fastify" {
 export const minioClient = fastifyPlugin(async (fastify) => {
 	let ClientClass = MinioClient;
 
-	/**
-	 * Override the default request options for MinIO client.
-	 * This method customizes the request options by setting a specific host for local development.
-	 *
-	 * @param opts - Configuration options for the request
-	 * @param opts.region - Optional AWS region (defaults to "us-east-1")
-	 * @param opts.method - HTTP method for the request
-	 * @param opts.bucketName - Optional name of the bucket
-	 * @param opts.objectName - Optional name of the object
-	 * @param opts.queryParams - Optional key-value pairs for query parameters
-	 * @param opts.customHeaders - Optional custom HTTP headers
-	 *
-	 * @returns Modified request options with localhost:9000 as host
-	 * @override
-	 */
-	if (process.env.NODE_ENV !== "production") {
+	// Public URL that clients (web/mobile) will use to reach MinIO
+	const publicBaseUrl = process.env.API_MINIO_PUBLIC_BASE_URL;
+	let overrideHost: string | undefined;
+	if (publicBaseUrl) {
+		try {
+			overrideHost = new URL(publicBaseUrl).host; // includes port if any
+		} catch {
+			fastify.log.warn(
+				`Invalid API_MINIO_PUBLIC_BASE_URL: ${publicBaseUrl}. Falling back to internal endpoint.`,
+			);
+		}
+	}
+
+	// If a public URL is provided, sign requests using that host
+	if (overrideHost) {
 		ClientClass = class extends MinioClient {
 			protected override getRequestOptions(opts: {
 				region?: string;
@@ -53,7 +53,8 @@ export const minioClient = fastifyPlugin(async (fastify) => {
 			}) {
 				const options = { ...opts, region: opts.region || "us-east-1" };
 				const requestOptions = super.getRequestOptions(options);
-				requestOptions.headers.host = "localhost:9000";
+				requestOptions.headers.host =
+					overrideHost ?? requestOptions.headers.host;
 				return requestOptions;
 			}
 		};
@@ -110,6 +111,7 @@ export const minioClient = fastifyPlugin(async (fastify) => {
 		config: {
 			endPoint: fastify.envConfig.API_MINIO_END_POINT,
 			port: fastify.envConfig.API_MINIO_PORT,
+			publicBaseUrl: publicBaseUrl,
 		},
 	});
 }, {});
