@@ -609,7 +609,7 @@ export class PluginLifecycle {
 			}
 
 			const runCompose = async (subcommand: string) => {
-				await execAsync(`docker compose ${subcommand}`, {
+				await execAsync(`sudo docker compose ${subcommand}`, {
 					cwd: pluginPath,
 					env,
 				});

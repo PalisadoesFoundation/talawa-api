@@ -52,10 +52,7 @@ services:
         source: ./
         target: /home/talawa/api
         type: bind
-      # Mount Docker socket for plugin container management
-      - source: /var/run/docker.sock
-        target: /var/run/docker.sock
-        type: bind
+      - /var/run/docker.sock:/var/run/docker.sock
         # https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
       - source: api_bash_history
         target: /commandhistory
