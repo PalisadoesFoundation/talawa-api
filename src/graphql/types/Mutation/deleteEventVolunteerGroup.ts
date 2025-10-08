@@ -1,31 +1,33 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { eventVolunteerGroupsTable } from "~/src/drizzle/tables/eventVolunteerGroups";
+import { eventVolunteerMembershipsTable } from "~/src/drizzle/tables/eventVolunteerMemberships";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
-import { volunteerGroupsTable } from "~/src/drizzle/tables/volunteerGroups";
 import { builder } from "~/src/graphql/builder";
+import { EventVolunteerGroup } from "~/src/graphql/types/EventVolunteerGroup/EventVolunteerGroup";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import {
-	MutationDeleteEventVolunteerGroupInput,
-	mutationDeleteEventVolunteerGroupInputSchema,
-} from "../../inputs/MutationDeleteEventVolunteerGroupInput";
-import { VolunteerGroups } from "../VolunteerGroup/VolunteerGroup";
+
 const mutationDeleteEventVolunteerGroupArgumentsSchema = z.object({
-	input: mutationDeleteEventVolunteerGroupInputSchema,
+	id: z.string().uuid(),
 });
 
+/**
+ * GraphQL mutation to delete an event volunteer group.
+ * Based on the old Talawa API removeEventVolunteerGroup mutation.
+ */
 builder.mutationField("deleteEventVolunteerGroup", (t) =>
 	t.field({
+		type: EventVolunteerGroup,
 		args: {
-			input: t.arg({
-				description: "",
+			id: t.arg.id({
 				required: true,
-				type: MutationDeleteEventVolunteerGroupInput,
+				description: "The ID of the event volunteer group to delete.",
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-		description: "Mutation field to delete a volunteer group.",
+		description: "Mutation field to delete an event volunteer group.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -46,7 +48,7 @@ builder.mutationField("deleteEventVolunteerGroup", (t) =>
 					extensions: {
 						code: "invalid_arguments",
 						issues: error.issues.map((issue) => ({
-							argumentPath: issue.path,
+							argumentPath: issue.path.map(String),
 							message: issue.message,
 						})),
 					},
@@ -55,64 +57,28 @@ builder.mutationField("deleteEventVolunteerGroup", (t) =>
 
 			const currentUserId = ctx.currentClient.user.id;
 
-			const [volunteerGroupWithEventAndUser] = await ctx.drizzleClient
-				.select({
-					volunteerGroup: volunteerGroupsTable,
-					eventOrganizationId: eventsTable.organizationId,
-					eventCreatorId: eventsTable.creatorId,
-					organizationMembershipRole: organizationMembershipsTable.role,
-				})
-				.from(volunteerGroupsTable)
-				.leftJoin(eventsTable, eq(volunteerGroupsTable.eventId, eventsTable.id))
-				.leftJoin(
-					organizationMembershipsTable,
-					and(
-						eq(
-							organizationMembershipsTable.organizationId,
-							eventsTable.organizationId,
-						),
-						eq(organizationMembershipsTable.memberId, currentUserId),
-					),
-				)
-				.where(eq(volunteerGroupsTable.id, parsedArgs.input.id))
-				.execute();
+			// Check if group exists
+			const existingGroup = await ctx.drizzleClient
+				.select()
+				.from(eventVolunteerGroupsTable)
+				.where(eq(eventVolunteerGroupsTable.id, parsedArgs.id))
+				.limit(1);
 
-			if (!volunteerGroupWithEventAndUser) {
+			if (existingGroup.length === 0) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["input", "groupId"] }],
+						issues: [
+							{
+								argumentPath: ["id"],
+							},
+						],
 					},
 				});
 			}
 
-			const result = volunteerGroupWithEventAndUser;
-
-			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
-				columns: { role: true },
-				where: (fields, operators) => operators.eq(fields.id, currentUserId),
-			});
-
-			if (
-				currentUser?.role !== "administrator" &&
-				result.organizationMembershipRole !== "administrator" &&
-				currentUserId !== result.volunteerGroup.creatorId
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action_on_arguments_associated_resources",
-						issues: [{ argumentPath: ["input", "id"] }],
-					},
-				});
-			}
-
-			const [deletedGroup] = await ctx.drizzleClient
-				.delete(volunteerGroupsTable)
-				.where(eq(volunteerGroupsTable.id, parsedArgs.input.id))
-				.returning();
-
-			// Deleted group not being returned means that either it was deleted or its `id` column was changed by external entities before this delete operation could take place.
-			if (deletedGroup === undefined) {
+			const group = existingGroup[0];
+			if (!group) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",
@@ -120,8 +86,55 @@ builder.mutationField("deleteEventVolunteerGroup", (t) =>
 				});
 			}
 
+			// Get event info for authorization check
+			const event = await ctx.drizzleClient.query.eventsTable.findFirst({
+				where: eq(eventsTable.id, group.eventId),
+			});
+
+			if (!event) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unexpected",
+					},
+				});
+			}
+
+			// Check if current user is authorized (organization admin, event creator, or group creator)
+			const currentUserMembership =
+				await ctx.drizzleClient.query.organizationMembershipsTable.findFirst({
+					where: and(
+						eq(organizationMembershipsTable.memberId, currentUserId),
+						eq(
+							organizationMembershipsTable.organizationId,
+							event.organizationId,
+						),
+					),
+				});
+
+			const isOrgAdmin = currentUserMembership?.role === "administrator";
+			const isEventCreator = event.creatorId === currentUserId;
+			const isGroupCreator = group.creatorId === currentUserId;
+
+			if (!isOrgAdmin && !isEventCreator && !isGroupCreator) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action",
+					},
+				});
+			}
+
+			// Delete related volunteer memberships first
+			await ctx.drizzleClient
+				.delete(eventVolunteerMembershipsTable)
+				.where(eq(eventVolunteerMembershipsTable.groupId, parsedArgs.id));
+
+			// Delete the group
+			const [deletedGroup] = await ctx.drizzleClient
+				.delete(eventVolunteerGroupsTable)
+				.where(eq(eventVolunteerGroupsTable.id, parsedArgs.id))
+				.returning();
+
 			return deletedGroup;
 		},
-		type: VolunteerGroups,
 	}),
 );

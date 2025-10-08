@@ -6,6 +6,7 @@ import {
 	mutationCreateFundCampaignInputSchema,
 } from "~/src/graphql/inputs/MutationCreateFundCampaignInput";
 import { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
+import { notificationEventBus } from "~/src/graphql/types/Notification/EventBus/eventBus";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 const mutationCreateFundCampaignArgumentsSchema = z.object({
@@ -56,12 +57,14 @@ builder.mutationField("createFundCampaign", (t) =>
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
 						role: true,
+						name: true,
 					},
 					where: (fields, operators) => operators.eq(fields.id, currentUserId),
 				}),
 				ctx.drizzleClient.query.fundsTable.findFirst({
 					columns: {
 						isTaxDeductible: true,
+						name: true,
 					},
 					with: {
 						fundCampaignsWhereFund: {
@@ -74,6 +77,8 @@ builder.mutationField("createFundCampaign", (t) =>
 						organization: {
 							columns: {
 								countryCode: true,
+								name: true,
+								id: true,
 							},
 							with: {
 								membershipsWhereOrganization: {
@@ -173,6 +178,21 @@ builder.mutationField("createFundCampaign", (t) =>
 					},
 				});
 			}
+
+			// Send notification to organization admins
+			notificationEventBus.emitFundCampaignCreated(
+				{
+					campaignId: createdFundCampaign.id,
+					campaignName: createdFundCampaign.name,
+					fundName: existingFund.name,
+					organizationId: existingFund.organization.id,
+					organizationName: existingFund.organization.name,
+					creatorName: currentUser.name,
+					goalAmount: createdFundCampaign.goalAmount.toString(),
+					currencyCode: createdFundCampaign.currencyCode,
+				},
+				ctx,
+			);
 
 			return createdFundCampaign;
 		},

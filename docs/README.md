@@ -4,7 +4,7 @@
 
 ## Installation
 
-This document provides instructions on how to set up and start a running instance of the [talawa-api documentation website](https://docs-admin.talawa.io/) on your local system. The instructions are written to be followed in sequence so make sure to go through each of them step by step without skipping any sections.
+This document provides instructions on how to set up and start a running instance of the [talawa-api documentation website](https://docs-api.talawa.io/) on your local system. The instructions are written to be followed in sequence so make sure to go through each of them step by step without skipping any sections.
 
 ## Table of Contents
 
