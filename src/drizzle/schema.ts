@@ -38,6 +38,10 @@ export {
 	chatMembershipsTableRelations,
 } from "./tables/chatMemberships";
 export {
+	chatMessageReadReceiptsTable,
+	chatMessageReadReceiptsRelations
+} from "./tables/chatMessageReadReceipts";
+export {
 	chatMessagesTable,
 	chatMessagesTableRelations,
 } from "./tables/chatMessages";

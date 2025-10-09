@@ -1,1 +1,0 @@
-ALTER TABLE "chats" DROP CONSTRAINT "chats_name_unique";

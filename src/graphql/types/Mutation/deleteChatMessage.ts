@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { chatMessagesTable } from "~/src/drizzle/tables/chatMessages";
 import { builder } from "~/src/graphql/builder";
@@ -115,9 +115,28 @@ export async function deleteChatMessageResolver(
 		});
 	}
 
+	// Hard delete with a 2-hour window for the message creator.
+	// Admins/org-admins/chat-admins can delete at any time.
+	const isPrivileged =
+		currentUser.role === "administrator" ||
+		currentUserOrganizationMembership?.role === "administrator" ||
+		currentUserChatMembership?.role === "administrator";
+
+	const windowMs = 2 * 60 * 60 * 1000; // 2 hours
+
 	const [deletedChatMessage] = await ctx.drizzleClient
 		.delete(chatMessagesTable)
-		.where(eq(chatMessagesTable.id, parsedArgs.input.id))
+		.where(
+			and(
+				eq(chatMessagesTable.id, parsedArgs.input.id),
+				isPrivileged
+					? sql`TRUE`
+					: and(
+							eq(chatMessagesTable.creatorId, currentUserId),
+							sql`${chatMessagesTable.createdAt} >= (NOW() - (${windowMs}::int || ' milliseconds')::interval)`,
+						),
+			),
+		)
 		.returning();
 
 	if (deletedChatMessage === undefined) {

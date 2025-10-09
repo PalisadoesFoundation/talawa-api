@@ -97,13 +97,11 @@ builder.mutationField("createPresignedUrl", (t) =>
 						.then(resolve)
 						.catch(reject);
 				});
-
-				// If a public base URL is configured, ensure the URL sent to clients uses it
 				if (ctx.minio.config.publicBaseUrl) {
 					const u = new URL(presignedUrl);
 					const pub = new URL(ctx.minio.config.publicBaseUrl);
 					u.protocol = pub.protocol;
-					u.host = pub.host; // keeps port if present
+					u.host = pub.host;
 					presignedUrl = u.toString();
 				}
 				return { presignedUrl, objectName, requiresUpload: true };
