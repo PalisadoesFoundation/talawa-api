@@ -51,14 +51,24 @@ suite("Mutation field updateOrganization", () => {
 	const testCleanupFunctions: Array<() => Promise<void>> = [];
 
 	afterEach(async () => {
-		for (const cleanup of testCleanupFunctions.reverse()) {
+		let firstError: unknown;
+		while (testCleanupFunctions.length > 0) {
+			const cleanup = testCleanupFunctions.pop();
+			if (!cleanup) {
+				continue;
+			}
+
 			try {
 				await cleanup();
 			} catch (error) {
 				console.error("Cleanup failed:", error);
+				firstError ??= error;
 			}
 		}
-		testCleanupFunctions.length = 0;
+
+		if (firstError !== undefined) {
+			throw firstError;
+		}
 	});
 
 	test("should return an error with unauthenticated extensions code when no auth token provided", async () => {
