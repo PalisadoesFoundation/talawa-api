@@ -66,9 +66,10 @@
 		// https://github.com/devcontainers/features/tree/main/src/github-cli
 		"ghcr.io/devcontainers/features/github-cli": {},
 
-		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+			"ENABLENONROOTDOCKER": "true"
+		}
 	},
-	"runArgs": ["-v", "/var/run/docker.sock:/var/run/docker.sock"],
 	"init": true,
 	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.devcontainer ./.env || true'",
 	"name": "talawa_api",
