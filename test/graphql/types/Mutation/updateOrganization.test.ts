@@ -1,11 +1,13 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createOrganization,
 	Mutation_deleteCurrentUser,
+	Mutation_deleteOrganization,
+	Mutation_deleteUser,
 } from "../documentNodes";
 
 const Mutation_updateOrganization = `
@@ -46,6 +48,19 @@ const authToken = signInResult.data.signIn.authenticationToken;
 assertToBeNonNullish(authToken);
 
 suite("Mutation field updateOrganization", () => {
+	const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+	afterEach(async () => {
+		for (const cleanup of testCleanupFunctions.reverse()) {
+			try {
+				await cleanup();
+			} catch (error) {
+				console.error("Cleanup failed:", error);
+			}
+		}
+		testCleanupFunctions.length = 0;
+	});
+
 	test("should return an error with unauthenticated extensions code when no auth token provided", async () => {
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
 			variables: {
@@ -68,10 +83,19 @@ suite("Mutation field updateOrganization", () => {
 	});
 
 	test("should return an error with unauthorized_action extensions code", async () => {
-		const { authToken: regularAuthToken } = await import(
+		const { authToken: regularAuthToken, userId: regularUserId } = await import(
 			"../createRegularUserUsingAdmin"
 		).then((module) => module.createRegularUserUsingAdmin());
 		assertToBeNonNullish(regularAuthToken);
+		assertToBeNonNullish(regularUserId);
+
+		// Add cleanup for the regular user
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: regularUserId } },
+			});
+		});
 
 		// Create an organization as admin first
 		const createOrgResult = await mercuriusClient.mutate(
@@ -94,6 +118,14 @@ suite("Mutation field updateOrganization", () => {
 		);
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
+
+		// Add cleanup for the organization
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
 
 		// Try to update as regular user
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
@@ -152,6 +184,14 @@ suite("Mutation field updateOrganization", () => {
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
 
+		// Add cleanup for the organization
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
 		// Try to update with deleted user's token
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
 			headers: { authorization: `bearer ${userToken}` },
@@ -195,6 +235,14 @@ suite("Mutation field updateOrganization", () => {
 		);
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
+
+		// Add cleanup for the organization
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
 
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -240,6 +288,14 @@ suite("Mutation field updateOrganization", () => {
 		);
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
+
+		// Add cleanup for the organization
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
 
 		// Update the organization
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
@@ -295,6 +351,14 @@ suite("Mutation field updateOrganization", () => {
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
 
+		// Add cleanup for the organization
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
 		// Update userRegistrationRequired to true
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
@@ -336,6 +400,14 @@ suite("Mutation field updateOrganization", () => {
 		);
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
+
+		// Add cleanup for the organization
+		testCleanupFunctions.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
 
 		// Set to true
 		const setTrueResult = await mercuriusClient.mutate(
