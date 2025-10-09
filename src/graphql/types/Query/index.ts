@@ -11,6 +11,7 @@ import "./event";
 import "./getEventAttendee";
 import "./getEventAttendeesByEventId";
 import "./getEventInvitesByUserId";
+import "./getRecurringEvents";
 import "./fund";
 import "./fundCampaign";
 import "./fundCampaignPledge";

@@ -292,3 +292,55 @@ async function fetchExceptions(
 
 	return createExceptionLookupMap(exceptions);
 }
+
+/**
+ * Retrieves all recurring event instances that belong to a specific base recurring event template.
+ *
+ * @param baseRecurringEventId - The ID of the base recurring event template.
+ * @param drizzleClient - The Drizzle ORM client for database access.
+ * @param logger - The logger for logging debug and error messages.
+ * @returns A promise that resolves to an array of fully resolved recurring event instances.
+ */
+export async function getRecurringEventInstancesByBaseId(
+	baseRecurringEventId: string,
+	drizzleClient: ServiceDependencies["drizzleClient"],
+	logger: ServiceDependencies["logger"],
+): Promise<ResolvedRecurringEventInstance[]> {
+	try {
+		// Step 1: Get all recurring event instances for this base event
+		const instances =
+			await drizzleClient.query.recurringEventInstancesTable.findMany({
+				where: eq(
+					recurringEventInstancesTable.baseRecurringEventId,
+					baseRecurringEventId,
+				),
+				orderBy: asc(recurringEventInstancesTable.actualStartTime),
+			});
+
+		if (instances.length === 0) {
+			return [];
+		}
+
+		// Step 2: Get base templates and exceptions for the found instances
+		const [templatesMap, exceptionsMap] = await Promise.all([
+			fetchBaseTemplates(instances, drizzleClient),
+			fetchExceptions(instances, drizzleClient),
+		]);
+
+		// Step 3: Resolve instances with inheritance + exceptions
+		const resolvedInstances = resolveMultipleInstances(
+			instances,
+			templatesMap,
+			exceptionsMap,
+			logger,
+		);
+
+		return resolvedInstances;
+	} catch (error) {
+		logger.error(
+			`Failed to get recurring event instances for base event ${baseRecurringEventId}:`,
+			error,
+		);
+		throw error;
+	}
+}
