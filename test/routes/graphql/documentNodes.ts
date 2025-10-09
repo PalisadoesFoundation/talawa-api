@@ -771,3 +771,191 @@ export const Mutation_createEventVolunteer = gql(`
     }
   }
 `);
+
+export const Mutation_addEventAttendee = gql(`
+  mutation Mutation_addEventAttendee($data: EventAttendeeInput!) {
+    addEventAttendee(data: $data) {
+      id
+      name
+      emailAddress
+    }
+  }
+`);
+
+export const Mutation_checkIn = gql(`
+  mutation Mutation_checkIn($data: CheckInCheckOutInput!) {
+    checkIn(data: $data) {
+      id
+      time
+      user {
+        id
+        name
+      }
+      event {
+        id
+        title
+      }
+      eventAttendee {
+        id
+        isCheckedIn
+        isCheckedOut
+      }
+    }
+  }
+`);
+
+export const Mutation_checkOut = gql(`
+  mutation Mutation_checkOut($data: CheckInCheckOutInput!) {
+    checkOut(data: $data) {
+      id
+      time
+      createdAt
+      eventAttendee {
+        id
+        isCheckedIn
+        isCheckedOut
+      }
+    }
+  }
+`);
+
+export const Mutation_removeEventAttendee = gql(`
+  mutation Mutation_removeEventAttendee($data: EventAttendeeInput!) {
+    removeEventAttendee(data: $data) {
+      id
+      name
+      emailAddress
+    }
+  }
+`);
+
+export const Mutation_inviteEventAttendee = gql(`
+  mutation Mutation_inviteEventAttendee($data: EventAttendeeInput!) {
+    inviteEventAttendee(data: $data) {
+      id
+      user {
+        id
+        name
+        emailAddress
+      }
+      isInvited
+      isRegistered
+    }
+  }
+`);
+
+export const Mutation_registerEventAttendee = gql(`
+  mutation Mutation_registerEventAttendee($data: EventAttendeeInput!) {
+    registerEventAttendee(data: $data) {
+      id
+      user {
+        id
+        name
+        emailAddress
+      }
+      isInvited
+      isRegistered
+    }
+  }
+`);
+
+export const Mutation_registerForEvent = gql(`
+  mutation Mutation_registerForEvent($id: ID!) {
+    registerForEvent(id: $id) {
+      id
+      user {
+        id
+        name
+        emailAddress
+      }
+      event {
+        id
+        title
+      }
+      isRegistered
+      isInvited
+    }
+  }
+`);
+
+export const Mutation_unregisterForEventByUser = gql(`
+  mutation Mutation_unregisterForEventByUser($id: ID!) {
+    unregisterForEventByUser(id: $id) {
+      id
+      name
+      emailAddress
+    }
+  }
+`);
+
+export const Query_getEventAttendee = gql(`
+  query Query_getEventAttendee($userId: ID!, $eventId: ID, $recurringEventInstanceId: ID) {
+    getEventAttendee(userId: $userId, eventId: $eventId, recurringEventInstanceId: $recurringEventInstanceId) {
+      id
+      user {
+        id
+        name
+        emailAddress
+      }
+      event {
+        id
+        title
+      }
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      checkIn {
+        id
+        time
+      }
+      checkOut {
+        id
+        time
+      }
+      createdAt
+    }
+  }
+`);
+
+export const Query_getEventAttendeesByEventId = gql(`
+  query Query_getEventAttendeesByEventId($eventId: ID, $recurringEventInstanceId: ID) {
+    getEventAttendeesByEventId(eventId: $eventId, recurringEventInstanceId: $recurringEventInstanceId) {
+      id
+      user {
+        id
+        name
+        emailAddress
+      }
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      checkIn {
+        id
+        time
+      }
+      checkOut {
+        id
+        time
+      }
+      createdAt
+    }
+  }
+`);
+
+export const Query_getEventInvitesByUserId = gql(`
+  query Query_getEventInvitesByUserId($userId: ID!) {
+    getEventInvitesByUserId(userId: $userId) {
+      id
+      event {
+        id
+        title
+        startDate
+      }
+      isInvited
+      isRegistered
+      createdAt
+    }
+  }
+`);
