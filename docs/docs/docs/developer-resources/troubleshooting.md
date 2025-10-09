@@ -49,6 +49,14 @@ You can get information on each of the headings by using filters like this:
 1. PORTS: `docker ps --format '{{.Ports}}'`
 1. NAMES: `docker ps --format '{{.Names}}'`
 
+### Checking Running Ports
+
+To quickly check which application ports are running and which are not, you can use the provided port check script:
+
+```bash
+bash scripts/port-check/port.sh
+```
+
 ### Accessing The Container CLI
 
 You can access the CLI of each container using the docker interactive TTY mode flags `-it`.

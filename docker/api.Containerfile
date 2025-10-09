@@ -27,6 +27,19 @@ RUN groupmod -n talawa vscode \
 && chmod u=r--,g=r--,o=--- /etc/sudoers.d/talawa \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/* \
+# Install Docker and Docker Compose plugin for plugin container management
+&& apt-get update \
+&& apt-get install -y ca-certificates curl gnupg \
+&& install -m 0755 -d /etc/apt/keyrings \
+&& curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+&& chmod a+r /etc/apt/keyrings/docker.gpg \
+&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" > /etc/apt/sources.list.d/docker.list \
+&& apt-get update \
+&& apt-get install -y docker.io docker-compose-plugin \
+&& groupadd -g 998 docker || true \
+&& usermod -aG docker talawa \
+&& apt-get clean \
+&& rm -rf /var/lib/apt/lists/* \
 # https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
 && mkdir /commandhistory \
 && touch /commandhistory/.bash_history \

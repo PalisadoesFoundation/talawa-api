@@ -124,13 +124,41 @@ export {
 	venueBookingsTable,
 	venueBookingsTableRelations,
 } from "./tables/venueBookings";
+export {
+	eventVolunteersTable,
+	eventVolunteersTableRelations,
+} from "./tables/eventVolunteers";
+export {
+	eventVolunteerGroupsTable,
+	eventVolunteerGroupsTableRelations,
+} from "./tables/eventVolunteerGroups";
+export {
+	eventVolunteerExceptionsTable,
+	eventVolunteerExceptionsTableRelations,
+} from "./tables/eventVolunteerExceptions";
+export {
+	eventVolunteerMembershipsTable,
+	eventVolunteerMembershipsTableRelations,
+} from "./tables/eventVolunteerMemberships";
+export {
+	eventVolunteerGroupExceptionsTable,
+	eventVolunteerGroupExceptionsTableRelations,
+} from "./tables/eventVolunteerGroupExceptions";
 export { venuesTable, venuesTableRelations } from "./tables/venues";
 export {
-	volunteerGroupAssignmentsTable,
-	volunteerGroupAssignmentsTableRelations,
-} from "./tables/volunteerGroupAssignments";
+	notificationAudienceTable,
+	notificationAudienceTableRelations,
+} from "./tables/NotificationAudience";
 export {
-	volunteerGroupsTable,
-	volunteerGroupsTableRelations,
-} from "./tables/volunteerGroups";
+	notificationLogsTable,
+	notificationLogsTableRelations,
+} from "./tables/NotificationLog";
+export {
+	notificationTemplatesTable,
+	notificationTemplatesTableRelations,
+} from "./tables/NotificationTemplate";
+export {
+	emailNotificationsTable,
+	emailNotificationsTableRelations,
+} from "./tables/EmailNotification";
 export { pluginsTable } from "./tables/plugins";

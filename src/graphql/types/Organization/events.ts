@@ -51,22 +51,33 @@ const transformEventsConnectionArguments = (
 		startDate?: Date;
 		endDate?: Date;
 		includeRecurring?: boolean;
+		upcomingOnly?: boolean;
 	},
 	ctx: z.RefinementCtx,
 ) => {
 	const transformedArg: ParsedDefaultGraphQLConnectionArguments & {
 		dateRange: { start: Date; end: Date };
 		includeRecurring: boolean;
+		upcomingOnly: boolean;
 	} = {
 		cursor: undefined,
 		isInversed: false,
 		limit: 0,
 		dateRange: { start: new Date(), end: new Date() },
 		includeRecurring: true,
+		upcomingOnly: false,
 	};
 
-	const { after, before, first, last, startDate, endDate, includeRecurring } =
-		arg;
+	const {
+		after,
+		before,
+		first,
+		last,
+		startDate,
+		endDate,
+		includeRecurring,
+		upcomingOnly,
+	} = arg;
 
 	// Handle pagination arguments (same logic as defaultGraphQLConnectionArguments)
 	if (first !== undefined) {
@@ -123,17 +134,23 @@ const transformEventsConnectionArguments = (
 		transformedArg.dateRange.start.setHours(0, 0, 0, 0);
 	}
 
-	if (endDate) {
+	if (upcomingOnly) {
+		// When upcomingOnly is true, override endDate to current time
+		// This ensures we only get events that haven't ended yet
+		transformedArg.dateRange.end = new Date();
+		transformedArg.upcomingOnly = true;
+	} else if (endDate) {
 		transformedArg.dateRange.end = endDate;
 	} else {
-		// Default end: 3 months from now at end of day
+		// Default end: 1 months from now at end of day
 		transformedArg.dateRange.end.setMonth(
-			transformedArg.dateRange.end.getMonth() + 3,
+			transformedArg.dateRange.end.getMonth() + 1,
 		);
 		transformedArg.dateRange.end.setHours(23, 59, 59, 999);
 	}
 
 	transformedArg.includeRecurring = includeRecurring ?? true;
+	transformedArg.upcomingOnly = upcomingOnly ?? false;
 
 	return transformedArg;
 };
@@ -147,6 +164,7 @@ const eventsArgumentsSchema = eventsConnectionArgumentsSchema
 		startDate: z.date().optional(),
 		endDate: z.date().optional(),
 		includeRecurring: z.boolean().optional().default(true),
+		upcomingOnly: z.boolean().optional().default(false),
 	})
 	.transform((arg, ctx) => {
 		const transformed = transformEventsConnectionArguments(arg, ctx);
@@ -209,6 +227,11 @@ Organization.implement({
 						description:
 							"Whether to include materialized instances from recurring events (default: true)",
 					}),
+					upcomingOnly: t.arg({
+						type: "Boolean",
+						description:
+							"Filter to only show upcoming events (events that haven't ended yet). When true, overrides endDate to current date.",
+					}),
 				},
 				complexity: (args) => {
 					return {
@@ -244,8 +267,14 @@ Organization.implement({
 					}
 
 					const currentUserId = ctx.currentClient.user.id;
-					const { cursor, isInversed, limit, dateRange, includeRecurring } =
-						parsedArgs;
+					const {
+						cursor,
+						isInversed,
+						limit,
+						dateRange,
+						includeRecurring,
+						upcomingOnly,
+					} = parsedArgs;
 
 					// Check user authentication and organization membership
 					const currentUser =
@@ -293,11 +322,29 @@ Organization.implement({
 					let allEvents: EventWithAttachments[] = [];
 
 					try {
+						// Adjust date range for upcoming events
+						let effectiveStartDate = dateRange.start;
+						let effectiveEndDate = dateRange.end;
+
+						if (upcomingOnly) {
+							// For upcoming events, start from now and extend to future
+							effectiveStartDate = new Date();
+							// Set a reasonable future end date (1 year from now) if not specified
+							if (dateRange.end <= new Date()) {
+								effectiveEndDate = new Date();
+								effectiveEndDate.setFullYear(
+									effectiveEndDate.getFullYear() + 1,
+								);
+							} else {
+								effectiveEndDate = dateRange.end;
+							}
+						}
+
 						allEvents = await getUnifiedEventsInDateRange(
 							{
 								organizationId: parent.id,
-								startDate: dateRange.start,
-								endDate: dateRange.end,
+								startDate: effectiveStartDate,
+								endDate: effectiveEndDate,
 								includeRecurring,
 								limit: limit, // Use full limit including the +1 for pagination detection
 							},

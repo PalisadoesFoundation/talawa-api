@@ -7,3 +7,5 @@ import "./organization";
 import "./updatedAt";
 import "./updater";
 import "./venues";
+import "./volunteerGroups";
+import "./volunteers";
