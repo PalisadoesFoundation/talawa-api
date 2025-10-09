@@ -89,7 +89,7 @@ describe("updatedAtResolver", () => {
 	});
 
 	it("should return updatedAt if user is an organization admin", async () => {
-		const mockUser = { role: "member" };
+		const mockUser = { role: "administrator" };
 		const mockFund = {
 			isTaxDeductible: true,
 			organization: {

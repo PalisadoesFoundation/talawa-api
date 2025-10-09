@@ -1741,7 +1741,7 @@ async function createFundCampaignPledge(
 					},
 					variables: {
 						input: {
-							note: `Fund Campaign Pledge ${faker.string.uuid()}`,
+							note: "Fund Campaign Pledge",
 							campaignId: fundCampaignId,
 							pledgerId: pledgerId,
 							amount: faker.number.int({ min: 1000, max: 10000 }),
@@ -1749,7 +1749,6 @@ async function createFundCampaignPledge(
 					},
 				},
 			);
-
 			if (!createFundCampaignPledgeResult.data?.createFundCampaignPledge?.id) {
 				throw new Error(
 					"Failed to create fund Campaign: Missing fund Campaign Pledge ID",
