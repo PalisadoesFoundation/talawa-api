@@ -1141,14 +1141,6 @@ type HasUserVoted {
   voteType: PostVoteType
 }
 
-input InstallPluginInput {
-  pluginId: String!
-}
-
-enum InviteStatus {
-  accepted
-  declined
-  no_response
 type HasUserVotedComment {
   """Indicates if the user has voted on this comment"""
   hasVoted: Boolean!
@@ -2104,6 +2096,12 @@ type Mutation {
     """Mark an action item as pending for a single instance"""
     input: MutationMarkActionAsPendingForInstanceInput!
   ): ActionItem
+
+  """Marks a chat as read"""
+  markChatAsRead(
+    """The input for marking a chat as read"""
+    input: MutationMarkChatAsReadInput!
+  ): Boolean
   readNotification(input: MutationReadNotificationInput!): ReadNotificationResponse
 
   """Mutation field to reject a membership request by an admin."""
@@ -2939,6 +2937,15 @@ input MutationJoinPublicOrganizationInput {
 input MutationMarkActionAsPendingForInstanceInput {
   actionId: ID!
   eventId: ID!
+}
+
+"""Input for marking messages in a chat as read up to a specific message."""
+input MutationMarkChatAsReadInput {
+  """The ID of the chat to mark messages as read in."""
+  chatId: ID!
+
+  """The ID of the message to mark as read."""
+  messageId: ID!
 }
 
 """Input for marking one or more notifications as read."""
@@ -4266,6 +4273,12 @@ type Query {
     where: EventVolunteerGroupWhereInput!
   ): [EventVolunteerGroup!]
 
+  """Get pledges for the current user in a specific campaign."""
+  getMyPledgesForCampaign(
+    """Global id of the campaign."""
+    campaignId: ID!
+  ): [FundCampaignPledge!]
+
   """Query field to get fund campaign pledges associated with a user."""
   getPledgesByUserId(
     """Input parameters to fetch pledges by userId."""
@@ -4285,12 +4298,6 @@ type Query {
     """Filter criteria for pledges"""
     where: QueryPledgeWhereInput
   ): [FundCampaignPledge!]
-
-
-  """
-  Get pledges for the current user in a specific campaign.
-  """
-  getMyPledgesForCampaign(campaignId: ID!): [FundCampaignPledge!]
 
   """Query field to fetch a single plugin by ID."""
   getPluginById(
