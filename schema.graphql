@@ -402,26 +402,6 @@ type ChatMessagesConnectionEdge {
   node: ChatMessage
 }
 
-type CheckIn {
-  """The event associated with this check-in."""
-  event: Event
-
-  """The event attendee associated with this check-in."""
-  eventAttendee: EventAttendee!
-
-  """Indicates whether feedback has been submitted for this check-in."""
-  feedbackSubmitted: Boolean!
-
-  """Global identifier of the check-in record."""
-  id: ID!
-
-  """Date and time when the check-in occurred."""
-  time: DateTime!
-
-  """The user who checked in."""
-  user: User!
-}
-
 """Input for check-in and check-out operations."""
 input CheckInCheckOutInput {
   """The ID of the standalone event (for standalone events)."""
@@ -436,28 +416,23 @@ input CheckInCheckOutInput {
 
 """Represents the check-in status of a user for an event."""
 type CheckInStatus {
-  """The check-in record if the user has checked in."""
-  checkIn: CheckIn
+  """Date and time when the user checked in."""
+  checkInTime: Date
+
+  """Date and time when the user checked out."""
+  checkOutTime: Date
 
   """Global identifier of the check-in status record."""
   id: ID!
 
+  """Whether the user is currently checked in."""
+  isCheckedIn: Boolean!
+
+  """Whether the user has checked out."""
+  isCheckedOut: Boolean!
+
   """The user associated with this check-in status."""
   user: User!
-}
-
-type CheckOut {
-  """Date time when the check-out record was created."""
-  createdAt: DateTime!
-
-  """The event attendee associated with this check-out."""
-  eventAttendee: EventAttendee!
-
-  """Global identifier of the check-out record."""
-  id: ID!
-
-  """Date and time when the check-out occurred."""
-  time: DateTime!
 }
 
 type Comment {
@@ -810,17 +785,20 @@ type EventAttachment {
 }
 
 type EventAttendee {
-  """The check-in record if the attendee has checked in."""
-  checkIn: CheckIn
+  """Date and time when the attendee checked in to the event."""
+  checkinTime: Date
 
-  """The check-out record if the attendee has checked out."""
-  checkOut: CheckOut
+  """Date and time when the attendee checked out from the event."""
+  checkoutTime: Date
 
   """Date time when the event attendee record was created."""
   createdAt: DateTime!
 
   """The event the attendee is associated with."""
   event: Event
+
+  """Indicates if the attendee has submitted feedback for the event."""
+  feedbackSubmitted: Boolean!
 
   """Global identifier of the event attendee."""
   id: ID!
@@ -1967,10 +1945,10 @@ type Mutation {
   ): CancelMembershipResponse
 
   """Mutation field to check in an attendee to an event."""
-  checkIn(data: CheckInCheckOutInput!): CheckIn
+  checkIn(data: CheckInCheckOutInput!): EventAttendee
 
   """Mutation field to check out an attendee from an event."""
-  checkOut(data: CheckInCheckOutInput!): CheckOut
+  checkOut(data: CheckInCheckOutInput!): EventAttendee
 
   """Mutation to complete an action item for a single instance"""
   completeActionItemForInstance(
