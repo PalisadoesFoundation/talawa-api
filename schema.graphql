@@ -323,8 +323,19 @@ type Chat {
   """Custom information about the chat."""
   description: String
 
+  """
+  ID of the first unread message for the current user in this chat, if any.
+  """
+  firstUnreadMessageId: ID
+
+  """Whether the current user has unread messages in this chat."""
+  hasUnread: Boolean
+
   """Global identifier of the chat."""
   id: ID!
+
+  """Most recent message in this chat."""
+  lastMessage: ChatMessage
 
   """
   GraphQL connection to traverse through the users that are members of the chat.
@@ -342,11 +353,23 @@ type Chat {
   """Organization which the chat belongs to."""
   organization: Organization
 
+  """Number of unread messages for the current user in this chat."""
+  unreadMessagesCount: Int
+
   """Date time at the time the chat was last updated."""
   updatedAt: DateTime
 
   """User who last updated the chat."""
   updater: User
+}
+
+"""A member of a chat with their role."""
+type ChatMember {
+  """The role of the user in the chat."""
+  role: ChatMembershipRole
+
+  """The user who is a member of the chat."""
+  user: User
 }
 
 """"""
@@ -358,7 +381,7 @@ type ChatMembersConnection {
 """"""
 type ChatMembersConnectionEdge {
   cursor: String!
-  node: User
+  node: ChatMember
 }
 
 """Possible variants of the role assigned to a user within a chat."""
@@ -4348,6 +4371,9 @@ type Query {
 
   """Query field to read a tag folder."""
   tagFolder(input: QueryTagFolderInput!): TagFolder
+
+  """Query to get all chats with unread messages for the current user."""
+  unreadChats: [Chat!]
 
   """Query field to read a user."""
   user(input: QueryUserInput!): User
