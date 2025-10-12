@@ -116,23 +116,23 @@ builder.queryField("eventsByIds", (t) =>
 					});
 				}
 
-				ctx.log.debug("Retrieved events by IDs", {
-					requestedIds: eventIds.length,
-					foundEvents: authorizedEvents.length,
-					standaloneEvents: authorizedEvents.filter(
+				ctx.log.debug(`Retrieved events by IDs, {
+					requestedIds: ${eventIds.length},
+					foundEvents: ${authorizedEvents.length},
+					standaloneEvents: ${authorizedEvents.filter(
 						(e) => e.eventType === "standalone",
-					).length,
-					materializedEvents: authorizedEvents.filter(
+					)}.length,
+					materializedEvents: ${authorizedEvents.filter(
 						(e) => e.eventType === "generated",
-					).length,
-				});
+					)}.length,
+				}`);
 
 				return authorizedEvents;
 			} catch (error) {
-				ctx.log.error("Failed to retrieve events by IDs", {
-					eventIds,
-					error,
-				});
+				ctx.log.error(`Failed to retrieve events by IDs, {
+					${eventIds},
+					${error},
+				}`);
 				throw new TalawaGraphQLError({
 					message: "Failed to retrieve events",
 					extensions: {

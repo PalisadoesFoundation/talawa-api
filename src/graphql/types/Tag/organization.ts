@@ -1,7 +1,8 @@
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { Tag } from "./Tag";
+
 Tag.implement({
 	fields: (t) => ({
 		organization: t.field({

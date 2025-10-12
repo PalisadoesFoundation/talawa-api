@@ -5,8 +5,8 @@ import type {
 } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 type ContextType = ExplicitGraphQLContext & ImplicitMercuriusContext;
 
@@ -40,7 +40,7 @@ export const resolveCreatedOrganizations = async (
 			offset: 0,
 		});
 	} catch (error) {
-		ctx.log.error("Error fetching created organizations:", error);
+		ctx.log.error(`Error fetching created organizations: ${error}`);
 		throw new Error("Failed to retrieve organizations created by the user");
 	}
 };

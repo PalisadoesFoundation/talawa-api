@@ -66,8 +66,7 @@ export async function generateInstancesForRecurringEvent(
 
 		if (!baseTemplate || !recurrenceRule) {
 			logger.error(
-				`Base template or recurrence rule not found for ${baseRecurringEventId}`,
-				{ baseTemplate: !!baseTemplate, recurrenceRule: !!recurrenceRule },
+				`Base template or recurrence rule not found for ${baseRecurringEventId} (baseTemplate: ${!!baseTemplate}, recurrenceRule: ${!!recurrenceRule})`,
 			);
 			throw new Error(
 				`Base template or recurrence rule not found: ${baseRecurringEventId}`,
@@ -115,30 +114,13 @@ export async function generateInstancesForRecurringEvent(
 		);
 
 		logger.info(
-			`Generated ${occurrences.length} occurrences for ${baseRecurringEventId}`,
-			{
-				frequency: normalizedRecurrenceRule.frequency,
-				originalCount: preservedOriginalCount,
-				normalizedEndDate:
-					normalizedRecurrenceRule.recurrenceEndDate?.toISOString(),
-				firstOccurrence:
-					occurrences[0]?.originalStartTime.toISOString() ?? null,
-				lastOccurrence:
-					occurrences[
-						occurrences.length - 1
-					]?.originalStartTime.toISOString() ?? null,
-				expectedCount: preservedOriginalCount
-					? `Should create exactly ${preservedOriginalCount} occurrences`
-					: "No count limit",
-				actualCount: `Created ${occurrences.length} occurrences`,
-			},
+			`Generated ${occurrences.length} occurrences for ${baseRecurringEventId} | frequency: ${normalizedRecurrenceRule.frequency}, originalCount: ${preservedOriginalCount}, normalizedEndDate: ${normalizedRecurrenceRule.recurrenceEndDate?.toISOString()}, firstOccurrence: ${occurrences[0]?.originalStartTime.toISOString() ?? "null"}, lastOccurrence: ${occurrences[occurrences.length - 1]?.originalStartTime.toISOString() ?? "null"}, expectedCount: ${preservedOriginalCount ? `Should create exactly ${preservedOriginalCount} occurrences` : "No count limit"}, actualCount: Created ${occurrences.length} occurrences`,
 		);
 
 		// Handle case where originalSeriesId is null
 		if (recurrenceRule.originalSeriesId === null) {
 			logger.error(
-				`Recurrence rule for ${baseRecurringEventId} has null originalSeriesId`,
-				{ recurrenceRuleId: recurrenceRule.id },
+				`Recurrence rule for ${baseRecurringEventId} has null originalSeriesId (recurrenceRuleId: ${recurrenceRule.id})`,
 			);
 			throw new Error(
 				`Recurrence rule for ${baseRecurringEventId} has null originalSeriesId`,
@@ -161,8 +143,7 @@ export async function generateInstancesForRecurringEvent(
 		return newInstancesCount;
 	} catch (error) {
 		logger.error(
-			`Failed to generate instances for ${baseRecurringEventId}:`,
-			error,
+			`Failed to generate instances for ${baseRecurringEventId}: ${error instanceof Error ? error.message : String(error)}`,
 		);
 		throw error;
 	}
@@ -273,9 +254,9 @@ async function createNewGeneratedInstances(
 	return newOccurrences.length;
 }
 
-export {
-	initializeGenerationWindow,
-	cleanupOldGeneratedInstances,
-} from "./windowManager";
-export { calculateInstanceOccurrences } from "./occurrenceCalculator";
 export { resolveInstanceWithInheritance } from "./instanceResolver";
+export { calculateInstanceOccurrences } from "./occurrenceCalculator";
+export {
+	cleanupOldGeneratedInstances,
+	initializeGenerationWindow,
+} from "./windowManager";

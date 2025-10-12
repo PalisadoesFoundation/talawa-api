@@ -17,12 +17,12 @@ import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
 } from "~/src/services/eventGeneration";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	buildRRuleString,
 	validateRecurrenceInput,
 } from "~/src/utilities/recurringEventHelpers";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {
@@ -270,12 +270,12 @@ builder.mutationField("createEvent", (t) =>
 						}
 
 						ctx.log.info(
-							"Created recurring event template and recurrence rule",
+							`Created recurring event template and recurrence rule,
 							{
-								baseEventId: createdEvent.id,
-								recurrenceRuleId: createdRecurrenceRule.id,
-								rruleString: rruleString,
-							},
+								baseEventId: ${createdEvent.id},
+								recurrenceRuleId: ${createdRecurrenceRule.id},
+								rruleString: ${rruleString},
+							}`,
 						);
 
 						// Ensure generation window exists for the organization
@@ -308,11 +308,11 @@ builder.mutationField("createEvent", (t) =>
 						const windowStartDate = new Date(parsedArgs.input.startAt);
 						let windowEndDate: Date;
 
-						ctx.log.debug("FIXED: Window calculation", {
-							eventStartAt: parsedArgs.input.startAt.toISOString(),
-							windowStartDate: windowStartDate.toISOString(),
-							currentTime: new Date().toISOString(),
-						});
+						ctx.log.debug(`FIXED: Window calculation", {
+							eventStartAt: ${parsedArgs.input.startAt.toISOString()},
+							windowStartDate: ${windowStartDate.toISOString()},
+							currentTime: ${new Date().toISOString()},
+						}`);
 
 						if (parsedArgs.input.recurrence.endDate) {
 							// For events with end dates, materialize up to the end date
@@ -355,18 +355,18 @@ builder.mutationField("createEvent", (t) =>
 							ctx.log,
 						);
 
-						ctx.log.info("Materialized initial instances for recurring event", {
-							baseEventId: createdEvent.id,
-							windowStart: windowStartDate.toISOString(),
-							windowEnd: windowEndDate.toISOString(),
-							recurrenceType: parsedArgs.input.recurrence.never
+						ctx.log.info(`Materialized initial instances for recurring event, {
+							baseEventId: ${createdEvent.id},
+							windowStart: ${windowStartDate.toISOString()},
+							windowEnd: ${windowEndDate.toISOString()},
+							recurrenceType: ${parsedArgs.input.recurrence.never}
 								? "never-ending"
-								: parsedArgs.input.recurrence.endDate
+								: ${parsedArgs.input.recurrence.endDate}
 									? "end-date"
 									: "count-based",
-							originalRecurrenceInput: parsedArgs.input.recurrence,
-							createdRecurrenceRuleId: createdRecurrenceRule.id,
-						});
+							originalRecurrenceInput: ${parsedArgs.input.recurrence},
+							createdRecurrenceRuleId: ${createdRecurrenceRule.id},
+						}`);
 					}
 
 					// Handle attachments (same logic for both recurring and standalone events)

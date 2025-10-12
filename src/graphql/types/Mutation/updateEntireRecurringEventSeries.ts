@@ -8,8 +8,8 @@ import {
 	mutationUpdateEntireRecurringEventSeriesInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateEntireRecurringEventSeriesInput";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateEntireRecurringEventSeriesArgumentsSchema = z.object({
 	input: mutationUpdateEntireRecurringEventSeriesInputSchema,
@@ -212,11 +212,11 @@ builder.mutationField("updateEntireRecurringEventSeries", (t) =>
 					},
 				);
 
-				ctx.log.info("Found series templates across splits", {
+				ctx.log.info(`Found series templates across splits", {
 					originalSeriesId,
-					templateCount: allSeriesTemplates.length,
-					templateIds: allSeriesTemplates.map((t) => t.baseRecurringEventId),
-				});
+					templateCount: ${allSeriesTemplates.length},
+					templateIds: ${allSeriesTemplates.map((t) => t.baseRecurringEventId)},
+				`);
 
 				// Prepare update data - only name and description
 				const baseEventUpdateData: Partial<typeof eventsTable.$inferInsert> = {
@@ -239,10 +239,10 @@ builder.mutationField("updateEntireRecurringEventSeries", (t) =>
 						.where(eq(eventsTable.id, template.baseRecurringEventId));
 				}
 
-				ctx.log.info("Updated all base templates in series", {
-					templatesUpdated: allSeriesTemplates.length,
-					updatedFields: Object.keys(baseEventUpdateData),
-				});
+				ctx.log.info(`Updated all base templates in series, {
+					templatesUpdated: ${allSeriesTemplates.length},
+					updatedFields: ${Object.keys(baseEventUpdateData)},
+				}`);
 
 				// Update all instances timestamps across all templates to reflect they've been modified
 				for (const template of allSeriesTemplates) {

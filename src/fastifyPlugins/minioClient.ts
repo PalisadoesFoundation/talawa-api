@@ -68,7 +68,7 @@ export const minioClient = fastifyPlugin(async (fastify) => {
 		useSSL: fastify.envConfig.API_MINIO_USE_SSL,
 	});
 
-	let isBucketExists: boolean | undefined = undefined;
+	let isBucketExists: boolean | undefined;
 
 	try {
 		fastify.log.info("Checking the connection to the minio server.");

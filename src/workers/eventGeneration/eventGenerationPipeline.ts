@@ -52,10 +52,9 @@ export async function runMaterializationWorker(
 	const startTime = Date.now();
 	const deps: WorkerDependencies = { drizzleClient, logger };
 
-	logger.info("Starting materialization worker", {
-		maxConcurrentJobs: config.maxConcurrentJobs,
-		maxOrganizations: config.maxOrganizations,
-	});
+	logger.info(
+		`Starting materialization worker (maxConcurrentJobs=${config.maxConcurrentJobs}, maxOrganizations=${config.maxOrganizations})`,
+	);
 
 	try {
 		// Step 1: Discover work to be done
@@ -87,7 +86,7 @@ export async function runMaterializationWorker(
 		);
 
 		if (!executionResult.success) {
-			logger.error("Batch execution failed", { error: executionResult.error });
+			logger.error(`Batch execution failed: ${executionResult.error}`);
 		}
 
 		// Step 4: Post-processing (optional)
@@ -111,10 +110,10 @@ export async function runMaterializationWorker(
 			processingTimeMs: endTime - startTime,
 		};
 
-		logger.info("Materialization worker completed", result);
+		logger.info(`Materialization worker completed: ${JSON.stringify(result)}`);
 		return result;
 	} catch (error) {
-		logger.error("Materialization worker failed", error);
+		logger.error(`Materialization worker failed: ${error}`);
 		return {
 			organizationsProcessed: 0,
 			instancesCreated: 0,
@@ -185,12 +184,11 @@ export async function runSingleOrganizationWorker(
 		};
 
 		logger.info(
-			`Completed processing for organization ${organizationId}`,
-			result,
+			`Completed processing for organization ${organizationId}: ${JSON.stringify(result)}`,
 		);
 		return result;
 	} catch (error) {
-		logger.error(`Failed to process organization ${organizationId}`, error);
+		logger.error(`Failed to process organization ${organizationId}: ${error}`);
 		return {
 			organizationsProcessed: 0,
 			instancesCreated: 0,

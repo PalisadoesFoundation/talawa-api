@@ -14,13 +14,13 @@ import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
 } from "~/src/services/eventGeneration";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	applyRecurrenceOverrides,
 	buildRRuleString,
 	validateRecurrenceInput,
 } from "~/src/utilities/recurringEventHelpers";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdateThisAndFollowingEventsArgumentsSchema = z.object({
 	input: mutationUpdateThisAndFollowingEventsInputSchema,
@@ -236,11 +236,14 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 						);
 				}
 
-				ctx.log.info("Deleted old instances and their action items", {
-					baseRecurringEventId: existingInstance.baseRecurringEventId,
-					deletedCount: instancesToDelete.length,
-					fromStartTime: existingInstance.actualStartTime.toISOString(),
-				});
+				ctx.log.info(
+					"Deleted old instances and their action items: " +
+						JSON.stringify({
+							baseRecurringEventId: existingInstance.baseRecurringEventId,
+							deletedCount: instancesToDelete.length,
+							fromStartTime: existingInstance.actualStartTime.toISOString(),
+						}),
+				);
 
 				// Then update the recurrence rule to end just before this instance
 				const newEndDate = new Date(
@@ -286,18 +289,21 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 					parsedArgs.input.recurrence,
 				);
 
-				ctx.log.info("Recurrence override applied", {
-					originalRecurrence: {
-						frequency: originalRecurrence.frequency,
-						interval: originalRecurrence.interval,
-						byDay: originalRecurrence.byDay,
-						byMonth: originalRecurrence.byMonth,
-						byMonthDay: originalRecurrence.byMonthDay,
+				ctx.log.info(
+					{
+						originalRecurrence: {
+							frequency: originalRecurrence.frequency,
+							interval: originalRecurrence.interval,
+							byDay: originalRecurrence.byDay,
+							byMonth: originalRecurrence.byMonth,
+							byMonthDay: originalRecurrence.byMonthDay,
+						},
+						inputRecurrence: parsedArgs.input.recurrence,
+						newStartAt: parsedArgs.input.startAt?.toISOString(),
+						resultingRecurrence: recurrenceInput,
 					},
-					inputRecurrence: parsedArgs.input.recurrence,
-					newStartAt: parsedArgs.input.startAt?.toISOString(),
-					resultingRecurrence: recurrenceInput,
-				});
+					"Recurrence override applied",
+				);
 
 				const validationResult = validateRecurrenceInput(
 					recurrenceInput,
@@ -345,11 +351,9 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 					});
 				}
 
-				ctx.log.info("Created new base event", {
-					newEventId: createdEvent.id,
-					newStartTime: newStartTime.toISOString(),
-					newEndTime: newEndTime.toISOString(),
-				});
+				ctx.log.info(
+					`Created new base event: newEventId=${createdEvent.id}, newStartTime=${newStartTime.toISOString()}, newEndTime=${newEndTime.toISOString()}`,
+				);
 
 				// Build RRULE string
 				const rruleString = buildRRuleString(recurrenceInput, newStartTime);
@@ -432,12 +436,15 @@ builder.mutationField("updateThisAndFollowingEvents", (t) =>
 					ctx.log,
 				);
 
-				ctx.log.info("Generated new instances", {
-					newBaseEventId: createdEvent.id,
-					generatedInstancesCount: newInstancesCount,
-					windowStart: windowStartDate.toISOString(),
-					windowEnd: windowEndDate.toISOString(),
-				});
+				ctx.log.info(
+					{
+						newBaseEventId: createdEvent.id,
+						generatedInstancesCount: newInstancesCount,
+						windowStart: windowStartDate.toISOString(),
+						windowEnd: windowEndDate.toISOString(),
+					},
+					"Generated new instances",
+				);
 
 				// Return the first instance (which represents the updated target instance)
 				const firstInstance =

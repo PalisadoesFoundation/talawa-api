@@ -1,8 +1,9 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { FundCampaignPledge } from "./FundCampaignPledge";
+
 FundCampaignPledge.implement({
 	fields: (t) => ({
 		pledger: t.field({

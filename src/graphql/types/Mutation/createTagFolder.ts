@@ -6,9 +6,10 @@ import {
 	mutationCreateTagFolderInputSchema,
 } from "~/src/graphql/inputs/MutationCreateTagFolderInput";
 import { TagFolder } from "~/src/graphql/types/TagFolder/TagFolder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreateTagFolderArgumentsSchema = z.object({
 	input: mutationCreateTagFolderInputSchema,
 });

@@ -40,7 +40,7 @@ vi.mock("~/src/drizzle/client", () => {
 					findFirst: vi.fn(({ where }) => {
 						const orgId =
 							typeof where === "function"
-								? where(null, { eq: (field: string, id: string) => id })
+								? where(null, { eq: (_field: string, id: string) => id })
 								: null;
 
 						return Promise.resolve(mockDb.organizations.get(orgId) || null);
@@ -50,7 +50,7 @@ vi.mock("~/src/drizzle/client", () => {
 					findFirst: vi.fn(({ where }) => {
 						const userId =
 							typeof where === "function"
-								? where(null, { eq: (field: string, id: string) => id })
+								? where(null, { eq: (_field: string, id: string) => id })
 								: null;
 
 						return Promise.resolve(mockDb.users.get(userId) || null);
@@ -115,7 +115,7 @@ vi.mock("~/src/drizzle/client", () => {
 			},
 			transaction: vi.fn(async (callback) => {
 				const tx = {
-					insert: (table: BlockedUser) => ({
+					insert: (_table: BlockedUser) => ({
 						values: (data: BlockedUserData) => {
 							if (data.organizationId && data.userId) {
 								const key = `${data.organizationId}:${data.userId}`;
@@ -128,7 +128,7 @@ vi.mock("~/src/drizzle/client", () => {
 							return Promise.resolve();
 						},
 					}),
-					delete: (table: BlockedUser) => ({
+					delete: (_table: BlockedUser) => ({
 						where: (condition: BlockedUserCondition) => {
 							if (condition.organizationId && condition.userId) {
 								const key = `${condition.organizationId}:${condition.userId}`;
@@ -157,10 +157,11 @@ vi.mock("../createRegularUserUsingAdmin", () => ({
 	}),
 }));
 
+import type { BlockedUser } from "~/src/graphql/types/BlockedUser/BlockedUser";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
-
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_blockUser,
 	Mutation_createOrganization,
@@ -168,9 +169,6 @@ import {
 	Mutation_unblockUser,
 	Query_signIn,
 } from "../documentNodes";
-
-import type { BlockedUser } from "~/src/graphql/types/BlockedUser/BlockedUser";
-import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 
 vi.mock("../documentNodes", async () => {
 	const actual = await vi.importActual("../documentNodes");

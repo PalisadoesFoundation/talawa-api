@@ -14,9 +14,9 @@ import {
 	mutationSignUpInputSchema,
 } from "~/src/graphql/inputs/MutationSignUpInput";
 import { AuthenticationPayload } from "~/src/graphql/types/AuthenticationPayload";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { CurrentClient } from "../../context";
 
 const mutationSignUpArgumentsSchema = z.object({

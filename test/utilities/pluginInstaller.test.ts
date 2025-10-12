@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("yauzl", () => {
 	return {
 		default: {
-			open: vi.fn((path, options, callback) => {
+			open: vi.fn((_path, _options, callback) => {
 				// Simulate immediate success
 				const mockZipFile = {
 					readEntry: vi.fn(),
@@ -18,7 +18,7 @@ vi.mock("yauzl", () => {
 						}
 						return mockZipFile;
 					}),
-					openReadStream: vi.fn((entry, callback) => {
+					openReadStream: vi.fn((_entry, callback) => {
 						const mockStream = {
 							on: vi.fn((event, handler) => {
 								if (event === "data") {
@@ -38,7 +38,7 @@ vi.mock("yauzl", () => {
 				callback(null, mockZipFile);
 			}),
 		},
-		open: vi.fn((path, options, callback) => {
+		open: vi.fn((_path, _options, callback) => {
 			const mockZipFile = {
 				readEntry: vi.fn(),
 				on: vi.fn((event, handler) => {
@@ -50,7 +50,7 @@ vi.mock("yauzl", () => {
 					}
 					return mockZipFile;
 				}),
-				openReadStream: vi.fn((entry, callback) => {
+				openReadStream: vi.fn((_entry, callback) => {
 					const mockStream = {
 						on: vi.fn((event, handler) => {
 							if (event === "data") {
@@ -215,7 +215,7 @@ describe("extractPluginZip", () => {
 
 	it("should skip non-api files during extraction", async () => {
 		const mockYauzl = yauzl as unknown as { open: ReturnType<typeof vi.fn> };
-		mockYauzl.open.mockImplementationOnce((path, options, callback) => {
+		mockYauzl.open.mockImplementationOnce((_path, _options, callback) => {
 			const mockZipFile = {
 				readEntry: vi.fn(),
 				on: vi.fn((event, handler) => {
@@ -684,7 +684,7 @@ describe("installPluginFromZip", () => {
 	it("should handle missing manifest error", async () => {
 		// Mock yauzl to return a structure without apiManifest
 		const mockYauzl = yauzl as unknown as { open: ReturnType<typeof vi.fn> };
-		mockYauzl.open.mockImplementationOnce((path, options, callback) => {
+		mockYauzl.open.mockImplementationOnce((_path, _options, callback) => {
 			const mockZipFile = {
 				readEntry: vi.fn(),
 				on: vi.fn((event, handler) => {
@@ -696,7 +696,7 @@ describe("installPluginFromZip", () => {
 					}
 					return mockZipFile;
 				}),
-				openReadStream: vi.fn((entry, callback) => {
+				openReadStream: vi.fn((_entry, callback) => {
 					const mockStream = {
 						on: vi.fn((event, handler) => {
 							if (event === "data") {

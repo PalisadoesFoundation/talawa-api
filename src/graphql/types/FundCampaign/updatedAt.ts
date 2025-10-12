@@ -1,5 +1,5 @@
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import type { GraphQLContext } from "../../context";
 import {
 	FundCampaign,
@@ -22,7 +22,7 @@ import {
 
 export const updatedAtResolver = async (
 	parent: FundCampaignType,
-	args: Record<string, never>,
+	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {
 	try {
@@ -106,7 +106,7 @@ export const updatedAtResolver = async (
 			throw error;
 		}
 
-		ctx.log.error("Error in updatedAtResolver:", error);
+		ctx.log.error(`Error in updatedAtResolver: ${error}}`);
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unexpected",

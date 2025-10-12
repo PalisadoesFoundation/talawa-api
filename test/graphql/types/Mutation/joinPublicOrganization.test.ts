@@ -91,7 +91,7 @@ interface TestOrganization {
 }
 
 async function createTestOrganization(
-	userRegistrationRequired = false,
+	_userRegistrationRequired = false,
 ): Promise<TestOrganization> {
 	const { cachedAdminToken: adminAuthToken } = await getAdminAuthTokenAndId();
 

@@ -29,7 +29,7 @@ export interface PostProcessingResult {
  */
 export async function executePostProcessing(
 	executionResults: EventGenerationExecutionResult[],
-	metrics: ProcessingMetrics,
+	_metrics: ProcessingMetrics,
 	config: PostProcessingConfig,
 	deps: WorkerDependencies,
 ): Promise<PostProcessingResult> {
@@ -48,7 +48,7 @@ export async function executePostProcessing(
 		}
 	} catch (error) {
 		const errorMessage = `Post-processing failed: ${error}`;
-		logger.error(errorMessage, error);
+		logger.error(errorMessage);
 		result.errors.push(errorMessage);
 	}
 
@@ -74,15 +74,14 @@ async function performCleanupOperations(
 	// 3. Clear temporary data
 	// 4. Log completion status
 
-	logger.info("Cleanup operations completed", {
-		organizationsProcessed: new Set(
-			executionResults.map((r) => r.organizationId),
-		).size,
-		totalInstancesCreated: executionResults.reduce(
+	logger.info(
+		`Cleanup operations completed. Organizations processed: ${
+			new Set(executionResults.map((r) => r.organizationId)).size
+		}, Total instances created: ${executionResults.reduce(
 			(sum, r) => sum + r.instancesCreated,
 			0,
-		),
-	});
+		)}`,
+	);
 }
 
 /**

@@ -4,10 +4,10 @@ import cron from "node-cron";
 import type * as schema from "~/src/drizzle/schema";
 import { cleanupOldInstances } from "./eventCleanupWorker";
 import {
-	type WorkerConfig,
-	type WorkerResult,
 	createDefaultWorkerConfig,
 	runMaterializationWorker,
+	type WorkerConfig,
+	type WorkerResult,
 } from "./eventGeneration/eventGenerationPipeline";
 
 let materializationTask: cron.ScheduledTask | undefined;
@@ -55,16 +55,14 @@ export async function startBackgroundWorkers(
 		cleanupTask.start();
 
 		isRunning = true;
-		logger.info("Background worker service started successfully", {
-			materializationSchedule:
-				process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
-			cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
-		});
+		logger.info(
+			`Background worker service started successfully (materializationSchedule: ${process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *"}, cleanupSchedule: ${process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *"})`,
+		);
 
 		// Run materialization worker once immediately on startup
 		await runMaterializationWorkerSafely(drizzleClient, logger);
 	} catch (error) {
-		logger.error("Failed to start background worker service:", error);
+		logger.error(`Failed to start background worker service: ${error}`);
 		throw error;
 	}
 }
@@ -96,7 +94,7 @@ export async function stopBackgroundWorkers(
 		isRunning = false;
 		logger.info("Background worker service stopped successfully");
 	} catch (error) {
-		logger.error("Error stopping background worker service:", error);
+		logger.error(`Error stopping background worker service, ${error}`);
 		throw error;
 	}
 }
@@ -119,20 +117,16 @@ async function runMaterializationWorkerSafely(
 		);
 
 		const duration = Date.now() - startTime;
-		logger.info("Materialization worker completed successfully", {
-			duration: `${duration}ms`,
-			organizationsProcessed: result.organizationsProcessed,
-			instancesCreated: result.instancesCreated,
-			windowsUpdated: result.windowsUpdated,
-			errorsEncountered: result.errorsEncountered,
-		});
+		logger.info(
+			`Materialization worker completed successfully (duration: ${duration}ms, organizationsProcessed: ${result.organizationsProcessed}, instancesCreated: ${result.instancesCreated}, windowsUpdated: ${result.windowsUpdated}, errorsEncountered: ${result.errorsEncountered})`,
+		);
 	} catch (error) {
 		const duration = Date.now() - startTime;
-		logger.error("Materialization worker failed", {
-			duration: `${duration}ms`,
-			error: error instanceof Error ? error.message : "Unknown error",
-			stack: error instanceof Error ? error.stack : undefined,
-		});
+		logger.error(
+			`Materialization worker failed (duration: ${duration}ms, error: ${
+				error instanceof Error ? error.message : "Unknown error"
+			}, stack: ${error instanceof Error ? error.stack : "N/A"})`,
+		);
 	}
 }
 
@@ -150,19 +144,16 @@ async function runCleanupWorkerSafely(
 		const stats = await cleanupOldInstances(drizzleClient, logger);
 
 		const duration = Date.now() - startTime;
-		logger.info("Cleanup worker completed successfully", {
-			duration: `${duration}ms`,
-			organizationsProcessed: stats.organizationsProcessed,
-			instancesDeleted: stats.instancesDeleted,
-			errorsEncountered: stats.errorsEncountered,
-		});
+		logger.info(
+			`Cleanup worker completed successfully (duration: ${duration}ms, organizationsProcessed: ${stats.organizationsProcessed}, instancesDeleted: ${stats.instancesDeleted}, errorsEncountered: ${stats.errorsEncountered})`,
+		);
 	} catch (error) {
 		const duration = Date.now() - startTime;
-		logger.error("Cleanup worker failed", {
-			duration: `${duration}ms`,
-			error: error instanceof Error ? error.message : "Unknown error",
-			stack: error instanceof Error ? error.stack : undefined,
-		});
+		logger.error(
+			`Cleanup worker failed (duration: ${duration}ms, error: ${
+				error instanceof Error ? error.message : "Unknown error"
+			}, stack: ${error instanceof Error ? error.stack : "N/A"})`,
+		);
 	}
 }
 
@@ -266,5 +257,5 @@ export function updateMaterializationConfig(
 		...materializationConfig,
 		...config,
 	};
-	logger.info("Updated materialization worker configuration", config);
+	logger.info(`Updated materialization worker configuration", ${config}`);
 }

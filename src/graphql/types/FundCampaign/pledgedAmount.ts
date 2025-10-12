@@ -1,8 +1,9 @@
 import { eq, sum } from "drizzle-orm";
 import { fundCampaignPledgesTable } from "~/src/drizzle/tables/fundCampaignPledges";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { FundCampaign } from "./FundCampaign";
+
 FundCampaign.implement({
 	fields: (t) => ({
 		pledgedAmount: t.field({

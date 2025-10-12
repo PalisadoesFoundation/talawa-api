@@ -7,8 +7,8 @@ import {
 	mutationUpdatePostVoteInputSchema,
 } from "~/src/graphql/inputs/MutationUpdatePostVoteInput";
 import { Post } from "~/src/graphql/types/Post/Post";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationUpdatePostVoteArgumentsSchema = z.object({
 	input: mutationUpdatePostVoteInputSchema,
@@ -112,7 +112,7 @@ builder.mutationField("updatePostVote", (t) =>
 				});
 			}
 
-			let voteResult = undefined;
+			let voteResult = null;
 
 			if (existingVote) {
 				//  UPDATE the vote

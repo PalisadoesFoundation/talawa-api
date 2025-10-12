@@ -160,10 +160,10 @@ export async function getUnifiedEventsInDateRange(
 
 		return allEvents;
 	} catch (error) {
-		logger.error("Failed to get unified events", {
-			organizationId,
-			error,
-		});
+		logger.error(`Failed to get unified events, {
+			${organizationId},
+			${error},
+		}`);
 		throw error;
 	}
 }
@@ -244,19 +244,19 @@ export async function getEventsByIds(
 			events.push(...generatedEvents);
 		}
 
-		logger.debug("Retrieved events by IDs", {
-			requestedIds: eventIds.length,
-			foundStandalone: standaloneEvents.length,
-			foundGenerated: events.length - standaloneEvents.length,
-			totalFound: events.length,
-		});
+		logger.debug(`Retrieved events by IDs, {
+			requestedIds: ${eventIds.length},
+			foundStandalone: ${standaloneEvents.length},
+			foundGenerated: ${events.length - standaloneEvents.length},
+			totalFound: ${events.length},
+		}`);
 
 		return events;
 	} catch (error) {
-		logger.error("Failed to get events by IDs", {
-			eventIds,
-			error,
-		});
+		logger.error(`Failed to get events by IDs, {
+			${eventIds},
+			${error},
+		}`);
 		throw error;
 	}
 }

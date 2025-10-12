@@ -24,26 +24,18 @@ export function calculateInstanceOccurrences(
 		config;
 
 	if (!baseEvent.startAt || !baseEvent.endAt) {
-		logger.warn("Base event missing start or end time", {
-			baseEventId: baseEvent.id,
-			startAt: baseEvent.startAt,
-			endAt: baseEvent.endAt,
-		});
+		logger.warn(
+			`Base event missing start or end time (baseEventId: ${baseEvent.id}, startAt: ${baseEvent.startAt}, endAt: ${baseEvent.endAt})`,
+		);
 		return [];
 	}
 
 	const context = buildRecurrenceContext(recurrenceRule, baseEvent, exceptions);
 	const occurrences: CalculatedOccurrence[] = [];
 
-	logger.debug("Starting occurrence calculation", {
-		baseEventStart: baseEvent.startAt.toISOString(),
-		windowStart: windowStart.toISOString(),
-		windowEnd: windowEnd.toISOString(),
-		frequency: recurrenceRule.frequency,
-		interval: recurrenceRule.interval,
-		isNeverEnding: context.isNeverEnding,
-		totalCount: context.totalCount,
-	});
+	logger.debug(
+		`Starting occurrence calculation: baseEventStart=${baseEvent.startAt.toISOString()}, windowStart=${windowStart.toISOString()}, windowEnd=${windowEnd.toISOString()}, frequency=${recurrenceRule.frequency}, interval=${recurrenceRule.interval}, isNeverEnding=${context.isNeverEnding}, totalCount=${context.totalCount}`,
+	);
 
 	let currentDate = new Date(baseEvent.startAt);
 	let iterationCount = 0;
@@ -127,12 +119,9 @@ export function calculateInstanceOccurrences(
 		}
 	}
 
-	logger.debug("Occurrence calculation completed", {
-		iterationCount,
-		occurrencesGenerated: occurrences.length,
-		sequenceNumber: sequenceNumber - 1,
-		totalCount: context.totalCount,
-	});
+	logger.debug(
+		`Occurrence calculation completed: iterationCount=${iterationCount}, occurrencesGenerated=${occurrences.length}, sequenceNumber=${sequenceNumber - 1}, totalCount=${context.totalCount}`,
+	);
 
 	return occurrences;
 }
@@ -291,8 +280,8 @@ export function shouldGenerateInstanceAtDate(
  * @returns `true` if an instance should be generated, otherwise `false`.
  */
 function shouldGenerateForDaily(
-	date: Date,
-	recurrenceRule: typeof recurrenceRulesTable.$inferSelect,
+	_date: Date,
+	_recurrenceRule: typeof recurrenceRulesTable.$inferSelect,
 ): boolean {
 	// For daily events, no additional day filters needed
 	return true;

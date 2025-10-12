@@ -76,8 +76,8 @@ export async function getRecurringEventInstancesInDateRange(
 		return resolvedInstances;
 	} catch (error) {
 		logger.error(
-			`Failed to get recurring event instances for organization ${organizationId}:`,
-			error,
+			`Failed to get recurring event instances for organization ${organizationId}:
+			${error}`,
 		);
 		throw error;
 	}
@@ -132,7 +132,7 @@ export async function getRecurringEventInstancesByIds(
 
 		return resolvedInstances;
 	} catch (error) {
-		logger.error("Failed to get recurring event instances by IDs:", error);
+		logger.error(`Failed to get recurring event instances by IDs:", ${error}`);
 		throw error;
 	}
 }
@@ -190,8 +190,8 @@ export async function getRecurringEventInstanceById(
 		});
 	} catch (error) {
 		logger.error(
-			`Failed to get recurring event instance ${instanceId}:`,
-			error,
+			`Failed to get recurring event instance ${instanceId}:,
+			${error}`,
 		);
 		throw error;
 	}

@@ -51,8 +51,7 @@ export async function cleanupOldInstances(
 			} catch (error) {
 				stats.errorsEncountered++;
 				logger.error(
-					`Failed to cleanup instances for organization ${windowConfig.organizationId}:`,
-					error,
+					`Failed to cleanup instances for organization ${windowConfig.organizationId}: ${error}`,
 				);
 				// Continue processing other organizations
 			}
@@ -60,7 +59,7 @@ export async function cleanupOldInstances(
 
 		return stats;
 	} catch (error) {
-		logger.error("Failed to process instance cleanup:", error);
+		logger.error(`Failed to process instance cleanup: ${error}`);
 		throw error;
 	}
 }

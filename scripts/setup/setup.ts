@@ -66,7 +66,7 @@ export function validateURL(input: string): true | string {
 			return "Please enter a valid URL with http:// or https:// protocol.";
 		}
 		return true;
-	} catch (error) {
+	} catch (_error) {
 		return "Please enter a valid URL.";
 	}
 }
