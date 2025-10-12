@@ -670,7 +670,7 @@ type Event {
   """
   attachments: [EventAttachment!]
 
-  """List of users attending the event."""
+  """List of users who have checked in to the event."""
   attendees: [User!]
 
   """Check-in status for all attendees of the event."""
@@ -4399,7 +4399,7 @@ type Query {
     userId: ID!
   ): EventAttendee
 
-  """Query field to get all event attendees for a specific event."""
+  """Query field to get all event registrants for a specific event."""
   getEventAttendeesByEventId(
     """ID of the standalone event"""
     eventId: ID
@@ -4423,6 +4423,12 @@ type Query {
     where: EventVolunteerGroupWhereInput!
   ): [EventVolunteerGroup!]
 
+  """Get pledges for the current user in a specific campaign."""
+  getMyPledgesForCampaign(
+    """Global id of the campaign."""
+    campaignId: ID!
+  ): [FundCampaignPledge!]
+
   """Query field to get fund campaign pledges associated with a user."""
   getPledgesByUserId(
     """Input parameters to fetch pledges by userId."""
@@ -4443,12 +4449,6 @@ type Query {
     where: QueryPledgeWhereInput
   ): [FundCampaignPledge!]
 
-
-  """
-  Get pledges for the current user in a specific campaign.
-  """
-  getMyPledgesForCampaign(campaignId: ID!): [FundCampaignPledge!]
-
   """Query field to fetch a single plugin by ID."""
   getPluginById(
     """Input parameters to fetch a plugin by ID."""
@@ -4461,6 +4461,14 @@ type Query {
     input: QueryPluginsInput
   ): [Plugin!]
 
+  """
+  Fetches all recurring event instances that belong to a specific base recurring event template.
+  """
+  getRecurringEvents(
+    """The ID of the base recurring event template"""
+    baseRecurringEventId: ID!
+  ): [Event!]
+
   """Query field to get volunteer memberships."""
   getVolunteerMembership(
     """Order criteria for volunteer memberships."""
@@ -4469,6 +4477,18 @@ type Query {
     """Filter criteria for volunteer memberships."""
     where: VolunteerMembershipWhereInput!
   ): [VolunteerMembership!]
+
+  """Query field to check if a user has submitted feedback for an event."""
+  hasSubmittedFeedback(
+    """ID of the standalone event"""
+    eventId: ID
+
+    """ID of the recurring event instance"""
+    recurringEventInstanceId: ID
+
+    """ID of the user"""
+    userId: ID!
+  ): Boolean
 
   """Query field to read a post vote."""
   hasUserVoted(input: QueryHasUserVotedInput!): HasUserVoted
