@@ -6,42 +6,38 @@
  */
 
 export { default as PluginManager } from "./manager";
-
-export type {
-	IPluginManifest,
-	IExtensionPoints,
-	IGraphQLExtension,
-	IDatabaseExtension,
-	IHookExtension,
-	ILoadedPlugin,
-	IExtensionRegistry,
-	IPluginContext,
-	IPluginLifecycle,
-	IPluginError,
-} from "./types";
-
-export {
-	PluginStatus,
-	ExtensionPointType,
-} from "./types";
-
-export {
-	validatePluginManifest,
-	generatePluginId,
-	loadPluginManifest,
-	isValidPluginId,
-	normalizeImportPath,
-	safeRequire,
-	directoryExists,
-	ensureDirectory,
-	sortExtensionPoints,
-	filterActiveExtensions,
-	debounce,
-	deepClone,
-} from "./utils";
-
 // Plugin discovery and registry utilities
 export {
 	createPluginContext,
 	initializePluginSystem,
 } from "./registry";
+export type {
+	IDatabaseExtension,
+	IExtensionPoints,
+	IExtensionRegistry,
+	IGraphQLExtension,
+	IHookExtension,
+	ILoadedPlugin,
+	IPluginContext,
+	IPluginError,
+	IPluginLifecycle,
+	IPluginManifest,
+} from "./types";
+export {
+	ExtensionPointType,
+	PluginStatus,
+} from "./types";
+export {
+	debounce,
+	deepClone,
+	directoryExists,
+	ensureDirectory,
+	filterActiveExtensions,
+	generatePluginId,
+	isValidPluginId,
+	loadPluginManifest,
+	normalizeImportPath,
+	safeRequire,
+	sortExtensionPoints,
+	validatePluginManifest,
+} from "./utils";

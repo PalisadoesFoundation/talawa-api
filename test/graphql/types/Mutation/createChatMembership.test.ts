@@ -1,14 +1,14 @@
 import {
-	type Mock,
 	afterEach,
 	beforeEach,
 	describe,
 	expect,
 	it,
+	type Mock,
 	vi,
 } from "vitest";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { getKeyPathsWithNonUndefinedValues } from "~/src/utilities/getKeyPathsWithNonUndefinedValues";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { ChatMembershipResolver } from "../../../../src/graphql/types/Mutation/createChatMembership";
 
 vi.mock("~/src/utilities/getKeyPathsWithNonUndefinedValues", () => ({

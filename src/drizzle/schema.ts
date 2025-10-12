@@ -6,13 +6,13 @@ export {
 	actionItemCategoriesTableRelations,
 } from "./tables/actionItemCategories";
 export {
-	actionItemsTable,
-	actionItemsTableRelations,
-} from "./tables/actionItems";
-export {
 	actionItemExceptionsTable,
 	actionItemExceptionsTableRelations,
 } from "./tables/actionItemExceptions";
+export {
+	actionItemsTable,
+	actionItemsTableRelations,
+} from "./tables/actionItems";
 export {
 	advertisementAttachmentsTable,
 	advertisementAttachmentsTableRelations,
@@ -22,13 +22,13 @@ export {
 	advertisementsTableRelations,
 } from "./tables/advertisements";
 export {
-	agendaItemsTable,
-	agendaItemsTableRelations,
-} from "./tables/agendaItems";
-export {
 	agendaFoldersTable,
 	agendaFoldersTableRelations,
 } from "./tables/agendaFolders";
+export {
+	agendaItemsTable,
+	agendaItemsTableRelations,
+} from "./tables/agendaItems";
 export {
 	blockedUsersTable,
 	blockedUsersTableRelations,
@@ -42,15 +42,19 @@ export {
 	chatMessagesTableRelations,
 } from "./tables/chatMessages";
 export { chatsTable, chatsTableRelations } from "./tables/chats";
+export { commentsTable, commentsTableRelations } from "./tables/comments";
 export {
 	commentVotesTable,
 	commentVotesTableRelations,
 } from "./tables/commentVotes";
-export { commentsTable, commentsTableRelations } from "./tables/comments";
 export {
 	communitiesTable,
 	communitiesTableRelations,
 } from "./tables/communities";
+export {
+	emailNotificationsTable,
+	emailNotificationsTableRelations,
+} from "./tables/EmailNotification";
 export {
 	eventAttachmentsTable,
 	eventAttachmentsTableRelations,
@@ -60,24 +64,60 @@ export {
 	eventAttendancesTableRelations,
 } from "./tables/eventAttendances";
 export {
-	eventExceptionsTable,
-	eventExceptionsTableRelations,
-} from "./tables/recurringEventExceptions";
+	eventGenerationWindowsTable,
+	eventGenerationWindowsTableRelations,
+} from "./tables/eventGenerationWindows";
 export { eventsTable, eventsTableRelations } from "./tables/events";
 export {
-	membershipRequestsTable,
-	membershipRequestsTableRelations,
-} from "./tables/membershipRequests";
+	eventVolunteerExceptionsTable,
+	eventVolunteerExceptionsTableRelations,
+} from "./tables/eventVolunteerExceptions";
+export {
+	eventVolunteerGroupExceptionsTable,
+	eventVolunteerGroupExceptionsTableRelations,
+} from "./tables/eventVolunteerGroupExceptions";
+export {
+	eventVolunteerGroupsTable,
+	eventVolunteerGroupsTableRelations,
+} from "./tables/eventVolunteerGroups";
+export {
+	eventVolunteerMembershipsTable,
+	eventVolunteerMembershipsTableRelations,
+} from "./tables/eventVolunteerMemberships";
+export {
+	eventVolunteersTable,
+	eventVolunteersTableRelations,
+} from "./tables/eventVolunteers";
 export { familiesTable, familiesTableRelations } from "./tables/families";
 export {
 	familyMembershipsTable,
 	familyMembershipsTableRelations,
 } from "./tables/familyMemberships";
 export {
+	fundCampaignPledgesTable,
+	fundCampaignPledgesTableRelations,
+} from "./tables/fundCampaignPledges";
+export {
 	fundCampaignsTable,
 	fundCampaignsTableRelations,
 } from "./tables/fundCampaigns";
 export { fundsTable, fundsTableRelations } from "./tables/funds";
+export {
+	membershipRequestsTable,
+	membershipRequestsTableRelations,
+} from "./tables/membershipRequests";
+export {
+	notificationAudienceTable,
+	notificationAudienceTableRelations,
+} from "./tables/NotificationAudience";
+export {
+	notificationLogsTable,
+	notificationLogsTableRelations,
+} from "./tables/NotificationLog";
+export {
+	notificationTemplatesTable,
+	notificationTemplatesTableRelations,
+} from "./tables/NotificationTemplate";
 export {
 	organizationMembershipsTable,
 	organizationMembershipsTableRelations,
@@ -86,29 +126,26 @@ export {
 	organizationsTable,
 	organizationsTableRelations,
 } from "./tables/organizations";
-export {
-	fundCampaignPledgesTable,
-	fundCampaignPledgesTableRelations,
-} from "./tables/fundCampaignPledges";
+export { pluginsTable } from "./tables/plugins";
 export {
 	postAttachmentsTable,
 	postAttachmentsTableRelations,
 } from "./tables/postAttachments";
-export { postVotesTable, postVotesTableRelations } from "./tables/postVotes";
 export { postsTable, postsTableRelations } from "./tables/posts";
+export { postVotesTable, postVotesTableRelations } from "./tables/postVotes";
 export {
+	recurrenceFrequencyEnum,
 	recurrenceRulesTable,
 	recurrenceRulesTableRelations,
-	recurrenceFrequencyEnum,
 } from "./tables/recurrenceRules";
+export {
+	eventExceptionsTable,
+	eventExceptionsTableRelations,
+} from "./tables/recurringEventExceptions";
 export {
 	recurringEventInstancesTable,
 	recurringEventInstancesTableRelations,
 } from "./tables/recurringEventInstances";
-export {
-	eventGenerationWindowsTable,
-	eventGenerationWindowsTableRelations,
-} from "./tables/eventGenerationWindows";
 export {
 	tagAssignmentsTable,
 	tagAssignmentsTableRelations,
@@ -124,41 +161,4 @@ export {
 	venueBookingsTable,
 	venueBookingsTableRelations,
 } from "./tables/venueBookings";
-export {
-	eventVolunteersTable,
-	eventVolunteersTableRelations,
-} from "./tables/eventVolunteers";
-export {
-	eventVolunteerGroupsTable,
-	eventVolunteerGroupsTableRelations,
-} from "./tables/eventVolunteerGroups";
-export {
-	eventVolunteerExceptionsTable,
-	eventVolunteerExceptionsTableRelations,
-} from "./tables/eventVolunteerExceptions";
-export {
-	eventVolunteerMembershipsTable,
-	eventVolunteerMembershipsTableRelations,
-} from "./tables/eventVolunteerMemberships";
-export {
-	eventVolunteerGroupExceptionsTable,
-	eventVolunteerGroupExceptionsTableRelations,
-} from "./tables/eventVolunteerGroupExceptions";
 export { venuesTable, venuesTableRelations } from "./tables/venues";
-export {
-	notificationAudienceTable,
-	notificationAudienceTableRelations,
-} from "./tables/NotificationAudience";
-export {
-	notificationLogsTable,
-	notificationLogsTableRelations,
-} from "./tables/NotificationLog";
-export {
-	notificationTemplatesTable,
-	notificationTemplatesTableRelations,
-} from "./tables/NotificationTemplate";
-export {
-	emailNotificationsTable,
-	emailNotificationsTableRelations,
-} from "./tables/EmailNotification";
-export { pluginsTable } from "./tables/plugins";

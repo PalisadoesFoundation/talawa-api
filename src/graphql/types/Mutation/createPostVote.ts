@@ -6,8 +6,9 @@ import {
 	mutationCreatePostVoteInputSchema,
 } from "~/src/graphql/inputs/MutationCreatePostVoteInput";
 import { Post } from "~/src/graphql/types/Post/Post";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreatePostVoteArgumentsSchema = z.object({
 	input: mutationCreatePostVoteInputSchema,
 });

@@ -8,8 +8,8 @@ import {
 	mutationDeleteSingleEventInstanceInputSchema,
 } from "~/src/graphql/inputs/MutationDeleteSingleEventInstanceInput";
 import { Event } from "~/src/graphql/types/Event/Event";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationDeleteSingleEventInstanceArgumentsSchema = z.object({
 	input: mutationDeleteSingleEventInstanceInputSchema,

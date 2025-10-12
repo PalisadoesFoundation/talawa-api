@@ -238,7 +238,7 @@ suite("Chat field createdAt", () => {
 				headers: { authorization: `bearer ${adminAuthToken}` },
 				variables: { input: { id: testChatId } },
 			});
-		} catch (error) {
+		} catch (_error) {
 			// Ignore cleanup errors
 		}
 
@@ -248,7 +248,7 @@ suite("Chat field createdAt", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: userId } },
 				});
-			} catch (error) {
+			} catch (_error) {
 				// Ignore cleanup errors
 			}
 		}
@@ -259,7 +259,7 @@ suite("Chat field createdAt", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch (error) {
+			} catch (_error) {
 				// Ignore cleanup errors
 			}
 		}

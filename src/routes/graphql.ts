@@ -9,8 +9,8 @@ import type {
 	ExplicitGraphQLContext,
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
-import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 import leakyBucket from "../utilities/leakyBucket";
+import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 
 /**
  * Type of the initial context argument provided to the createContext function by the graphql server.
@@ -61,7 +61,7 @@ export const createContext: CreateContext = async (initialContext) => {
 			isAuthenticated: true,
 			user: jwtPayload.user,
 		};
-	} catch (error) {
+	} catch (_error) {
 		currentClient = {
 			isAuthenticated: false,
 		};
@@ -136,13 +136,13 @@ export const graphql = fastifyPlugin(async (fastify) => {
 			// Intervals in milli-seconds to wait before sending the `GQL_CONNECTION_KEEP_ALIVE` message to the client to check if the connection is alive. This helps detect disconnected subscription clients and prevent unnecessary data transfer.
 			keepAlive: 1000 * 30,
 			//  A function which can be used to validate the `connection_init` payload. It should return a truthy value to authorize the connection. If it returns an object the subscription context will be extended with the returned object.
-			onConnect: (data) => {
+			onConnect: (_data) => {
 				return true;
 			},
 			// A function which is called with the subscription context of the connection after the connection gets disconnected.
-			onDisconnect: (ctx) => {},
+			onDisconnect: (_ctx) => {},
 			// This function is used to validate incoming Websocket connections.
-			verifyClient: (info, next) => {
+			verifyClient: (_info, next) => {
 				next(true);
 			},
 		},
@@ -217,7 +217,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 					isAuthenticated: true,
 					user: jwtPayload.user,
 				};
-			} catch (error) {
+			} catch (_error) {
 				currentClient = {
 					isAuthenticated: false,
 				};

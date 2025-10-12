@@ -6,15 +6,12 @@
  *
  */
 
-export * from "./recurringEventInstanceQueries";
-export * from "./standaloneEventQueries";
-export * from "./unifiedEventQueries";
-
 export type { GetRecurringEventInstancesInput } from "./recurringEventInstanceQueries";
-
+export * from "./recurringEventInstanceQueries";
 export type { GetStandaloneEventsInput } from "./standaloneEventQueries";
-
+export * from "./standaloneEventQueries";
 export type {
 	EventWithAttachments,
 	GetUnifiedEventsInput,
 } from "./unifiedEventQueries";
+export * from "./unifiedEventQueries";

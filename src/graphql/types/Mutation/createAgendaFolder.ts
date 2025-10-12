@@ -6,9 +6,10 @@ import {
 	mutationCreateAgendaFolderInputSchema,
 } from "~/src/graphql/inputs/MutationCreateAgendaFolderInput";
 import { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import { isNotNullish } from "~/src/utilities/isNotNullish";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationCreateAgendaFolderArgumentsSchema = z.object({
 	input: mutationCreateAgendaFolderInputSchema,
 });

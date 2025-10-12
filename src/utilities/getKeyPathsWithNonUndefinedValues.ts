@@ -63,12 +63,20 @@ export const getKeyPathsWithNonUndefinedValues = <
 	const keyPathsWithNonUndefinedValues: Paths<T>[] = [];
 
 	for (const keyPath of keyPaths) {
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		const value = keyPath.reduce((accumulator: any, key) => {
-			return accumulator && accumulator[key] !== undefined
-				? accumulator[key]
-				: undefined;
-		}, object);
+		const value = keyPath.reduce((accumulator: unknown, key) => {
+			if (
+				accumulator &&
+				typeof accumulator === "object" &&
+				accumulator !== null &&
+				key in accumulator
+			) {
+				const typedAccumulator = accumulator as Record<PropertyKey, unknown>;
+				return typedAccumulator[key] !== undefined
+					? typedAccumulator[key]
+					: undefined;
+			}
+			return undefined;
+		}, object as unknown);
 
 		if (value !== undefined) {
 			keyPathsWithNonUndefinedValues.push(keyPath);

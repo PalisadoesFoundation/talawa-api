@@ -17,12 +17,12 @@ import {
 	generateInstancesForRecurringEvent,
 	initializeGenerationWindow,
 } from "~/src/services/eventGeneration";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
 	buildRRuleString,
 	validateRecurrenceInput,
 } from "~/src/utilities/recurringEventHelpers";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateEventArgumentsSchema = z.object({
 	input: mutationCreateEventInputSchema.transform(async (arg, ctx) => {

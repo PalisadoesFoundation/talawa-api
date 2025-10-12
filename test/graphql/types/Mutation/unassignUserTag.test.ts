@@ -45,7 +45,7 @@ const drizzleClientMock = {
 				where(
 					{ memberId: "memberId", organizationId: "organizationId" },
 					{
-						and: (...conditions: boolean[]) => true,
+						and: (..._conditions: boolean[]) => true,
 						eq: (field: string, value: string) => {
 							if (field === "memberId") memberId = value;
 							if (field === "organizationId") organizationId = value;
@@ -65,7 +65,7 @@ const drizzleClientMock = {
 				where(
 					{ tagId: "tagId", assigneeId: "assigneeId" },
 					{
-						and: (...conditions: boolean[]) => true,
+						and: (..._conditions: boolean[]) => true,
 						eq: (field: string, value: string) => {
 							if (field === "tagId") tagId = value;
 							if (field === "assigneeId") assigneeId = value;
@@ -80,11 +80,14 @@ const drizzleClientMock = {
 	},
 	transaction: vi.fn().mockImplementation(async (callback) => {
 		const mockTx = {
-			delete: (table: unknown) => ({
+			delete: (_table: unknown) => ({
 				where: ({
 					tagId,
 					assigneeId,
-				}: { tagId: string; assigneeId: string }) => {
+				}: {
+					tagId: string;
+					assigneeId: string;
+				}) => {
 					const key = `${tagId}:${assigneeId}`;
 					mockDb.tagAssignments.delete(key);
 					return Promise.resolve();
@@ -102,7 +105,7 @@ vi.mock("../../../../src/drizzle/client", () => ({
 // Add mock implementation for mercuriusClient
 vi.mock("../client", () => ({
 	mercuriusClient: {
-		query: vi.fn().mockImplementation(async (document, options) => {
+		query: vi.fn().mockImplementation(async (document, _options) => {
 			const opName = document?.definitions?.[0]?.name?.value;
 
 			if (opName === "Query_signIn") {

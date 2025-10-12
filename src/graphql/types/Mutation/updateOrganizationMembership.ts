@@ -7,8 +7,9 @@ import {
 	mutationUpdateOrganizationMembershipInputSchema,
 } from "~/src/graphql/inputs/MutationUpdateOrganizationMembershipInput";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
+
 const mutationUpdateOrganizationMembershipArgumentsSchema = z.object({
 	input: mutationUpdateOrganizationMembershipInputSchema,
 });

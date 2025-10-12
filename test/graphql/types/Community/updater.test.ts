@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { type DeepPartial, createMockUser } from "test/_Mocks_/mockUser";
+import { createMockUser, type DeepPartial } from "test/_Mocks_/mockUser";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Community } from "~/src/graphql/types/Community/Community";
 import { communityUpdater } from "~/src/graphql/types/Community/updater";
