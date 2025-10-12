@@ -74,6 +74,12 @@ interface TestUser {
 	cleanup: () => Promise<void>;
 }
 
+interface GraphQLNotification {
+	id: string | null;
+	isRead: boolean | null;
+	readAt: string | null;
+}
+
 type NotificationItem = {
 	id: string;
 	isRead: boolean;
@@ -171,12 +177,16 @@ async function waitForNotifications(
 
 		const raw = notificationsResult.data?.user?.notifications ?? [];
 
-		const items: NotificationItem[] = raw.flatMap((n) => {
-			const id = n?.id ?? null;
-			const isRead = (n?.isRead ?? null) as boolean | null;
-			const readAt = (n?.readAt ?? null) as string | null;
-			return id && typeof isRead === "boolean" ? [{ id, isRead, readAt }] : [];
-		});
+		const items: NotificationItem[] = raw.flatMap(
+			(n: GraphQLNotification | null | undefined) => {
+				const id = n?.id ?? null;
+				const isRead = n?.isRead ?? null;
+				const readAt = n?.readAt ?? null;
+				return id && typeof isRead === "boolean"
+					? [{ id, isRead, readAt }]
+					: [];
+			},
+		);
 
 		if (items.length >= minCount) return items;
 
@@ -462,7 +472,8 @@ suite("Mutation readNotification", () => {
 				assertToBeNonNullish(updatedNotificationsResult.data);
 				const updatedNotification =
 					updatedNotificationsResult.data.user?.notifications?.find(
-						(n) => n?.id === firstNotification.id,
+						(n: GraphQLNotification | null | undefined) =>
+							n?.id === firstNotification.id,
 					);
 				expect(updatedNotification).toBeDefined();
 				assertToBeNonNullish(updatedNotification);
@@ -558,7 +569,8 @@ suite("Mutation readNotification", () => {
 				for (const notificationId of notificationIds) {
 					const updatedNotification =
 						updatedNotificationsResult.data.user?.notifications?.find(
-							(n) => n?.id === notificationId,
+							(n: GraphQLNotification | null | undefined) =>
+								n?.id === notificationId,
 						);
 					expect(updatedNotification).toBeDefined();
 					assertToBeNonNullish(updatedNotification);
@@ -692,7 +704,8 @@ suite("Mutation readNotification", () => {
 
 				const user2UpdatedNotification =
 					user2UpdatedNotificationsResult.data.user?.notifications?.find(
-						(n) => n?.id === user2NotificationId,
+						(n: GraphQLNotification | null | undefined) =>
+							n?.id === user2NotificationId,
 					);
 				expect(user2UpdatedNotification).toBeDefined();
 				assertToBeNonNullish(user2UpdatedNotification);
@@ -780,7 +793,8 @@ suite("Mutation readNotification", () => {
 
 				const updatedNotification =
 					updatedNotificationsResult.data.user?.notifications?.find(
-						(n) => n?.id === validNotificationId,
+						(n: GraphQLNotification | null | undefined) =>
+							n?.id === validNotificationId,
 					);
 				expect(updatedNotification).toBeDefined();
 				assertToBeNonNullish(updatedNotification);
