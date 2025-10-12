@@ -7,7 +7,7 @@ on:
       - develop
 
 env:
-  CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }
+  CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
   
 jobs:
   test-and-upload-coverage:
@@ -50,3 +50,4 @@ jobs:
           exclude: 'docs/'
           gcov_ignore: 'docs/'
           path: "./coverage/lcov.info"
+
