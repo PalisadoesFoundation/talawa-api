@@ -1,3 +1,6 @@
+/*
+ * Query to get all chats with unread messages for the current user.
+ */
 import { and, eq, exists, gt, sql } from "drizzle-orm";
 import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
 import { chatMessagesTable } from "~/src/drizzle/tables/chatMessages";
