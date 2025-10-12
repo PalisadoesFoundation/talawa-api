@@ -25,7 +25,6 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 		description:
 			"Subscription field to subscribe to the event of creation of a message in a chat.",
 		subscribe: async (_parent, args, ctx) => {
-		
 			const {
 				success,
 				data: parsedArgs,

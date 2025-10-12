@@ -39,7 +39,7 @@ export {
 } from "./tables/chatMemberships";
 export {
 	chatMessageReadReceiptsTable,
-	chatMessageReadReceiptsRelations
+	chatMessageReadReceiptsRelations,
 } from "./tables/chatMessageReadReceipts";
 export {
 	chatMessagesTable,
