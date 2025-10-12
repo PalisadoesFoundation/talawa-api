@@ -1,6 +1,5 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { checkInsTable } from "~/src/drizzle/tables/checkIns";
 import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
@@ -11,7 +10,7 @@ import {
 	CheckInCheckOutInput,
 	checkInCheckOutInputSchema,
 } from "~/src/graphql/inputs/CheckInCheckOutInput";
-import { CheckIn } from "~/src/graphql/types/CheckIn/CheckIn";
+import { EventAttendee } from "~/src/graphql/types/EventAttendee/EventAttendee";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 
@@ -33,7 +32,7 @@ type CheckInArgs = {
  */
 builder.mutationField("checkIn", (t) =>
 	t.field({
-		type: CheckIn,
+		type: EventAttendee,
 		args: {
 			data: t.arg({
 				required: true,
@@ -240,15 +239,19 @@ builder.mutationField("checkIn", (t) =>
 				});
 			}
 
-			// Create check-in record
-			const [createdCheckIn] = await ctx.drizzleClient
-				.insert(checkInsTable)
-				.values({
-					eventAttendeeId: attendee.id,
+			// Update attendee record with check-in time
+			const checkInTime = new Date();
+			const [updatedAttendee] = await ctx.drizzleClient
+				.update(eventAttendeesTable)
+				.set({
+					checkinTime: checkInTime,
+					isCheckedIn: true,
+					updatedAt: new Date(),
 				})
+				.where(eq(eventAttendeesTable.id, attendee.id))
 				.returning();
 
-			if (!createdCheckIn) {
+			if (!updatedAttendee) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",
@@ -256,17 +259,7 @@ builder.mutationField("checkIn", (t) =>
 				});
 			}
 
-			// Update attendee record
-			await ctx.drizzleClient
-				.update(eventAttendeesTable)
-				.set({
-					checkInId: createdCheckIn.id,
-					isCheckedIn: true,
-					updatedAt: new Date(),
-				})
-				.where(eq(eventAttendeesTable.id, attendee.id));
-
-			return createdCheckIn;
+			return updatedAttendee;
 		},
 	}),
 );

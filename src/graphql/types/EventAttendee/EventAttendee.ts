@@ -28,5 +28,21 @@ EventAttendee.implement({
 			description: "Indicates if the attendee has checked out from the event.",
 			nullable: false,
 		}),
+		checkinTime: t.expose("checkinTime", {
+			type: "Date",
+			description: "Date and time when the attendee checked in to the event.",
+			nullable: true,
+		}),
+		checkoutTime: t.expose("checkoutTime", {
+			type: "Date",
+			description:
+				"Date and time when the attendee checked out from the event.",
+			nullable: true,
+		}),
+		feedbackSubmitted: t.exposeBoolean("feedbackSubmitted", {
+			description:
+				"Indicates if the attendee has submitted feedback for the event.",
+			nullable: false,
+		}),
 	}),
 });

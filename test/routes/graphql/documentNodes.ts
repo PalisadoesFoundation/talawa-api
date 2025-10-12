@@ -786,20 +786,15 @@ export const Mutation_checkIn = gql(`
   mutation Mutation_checkIn($data: CheckInCheckOutInput!) {
     checkIn(data: $data) {
       id
-      time
       user {
         id
         name
       }
-      event {
-        id
-        name
-      }
-      eventAttendee {
-        id
-        isCheckedIn
-        isCheckedOut
-      }
+      checkinTime
+      checkoutTime
+      isCheckedIn
+      isCheckedOut
+      feedbackSubmitted
     }
   }
 `);
@@ -808,13 +803,15 @@ export const Mutation_checkOut = gql(`
   mutation Mutation_checkOut($data: CheckInCheckOutInput!) {
     checkOut(data: $data) {
       id
-      time
-      createdAt
-      eventAttendee {
+      user {
         id
-        isCheckedIn
-        isCheckedOut
+        name
       }
+      checkinTime
+      checkoutTime
+      isCheckedIn
+      isCheckedOut
+      feedbackSubmitted
     }
   }
 `);

@@ -52,16 +52,30 @@ export const eventAttendeesTable = pgTable(
 		),
 
 		/**
-		 * Foreign key reference to the check-in record if the attendee has checked in.
+		 * Date and time when the attendee checked in to the event.
 		 * Null if the attendee has not checked in yet.
 		 */
-		checkInId: uuid("check_in_id"),
+		checkinTime: timestamp("checkin_time", {
+			mode: "date",
+			precision: 3,
+			withTimezone: true,
+		}),
 
 		/**
-		 * Foreign key reference to the check-out record if the attendee has checked out.
+		 * Date and time when the attendee checked out from the event.
 		 * Null if the attendee has not checked out yet.
 		 */
-		checkOutId: uuid("check_out_id"),
+		checkoutTime: timestamp("checkout_time", {
+			mode: "date",
+			precision: 3,
+			withTimezone: true,
+		}),
+
+		/**
+		 * Indicates whether feedback has been submitted for this event attendance.
+		 * True when the attendee has provided event feedback.
+		 */
+		feedbackSubmitted: boolean("feedback_submitted").notNull().default(false),
 
 		/**
 		 * Indicates if the attendee is invited to the event.
@@ -129,10 +143,15 @@ export const eventAttendeesTable = pgTable(
 			self.isCheckedOut,
 		),
 
-		// Check-in/out relationship indexes
-		checkInIdIdx: index("event_attendees_check_in_id_idx").on(self.checkInId),
-		checkOutIdIdx: index("event_attendees_check_out_id_idx").on(
-			self.checkOutId,
+		// Check-in/out time indexes
+		checkinTimeIdx: index("event_attendees_checkin_time_idx").on(
+			self.checkinTime,
+		),
+		checkoutTimeIdx: index("event_attendees_checkout_time_idx").on(
+			self.checkoutTime,
+		),
+		feedbackSubmittedIdx: index("event_attendees_feedback_submitted_idx").on(
+			self.feedbackSubmitted,
 		),
 
 		// Composite indexes for common queries
@@ -190,8 +209,9 @@ export const eventAttendeesTableInsertSchema = createInsertSchema(
 		userId: z.string().uuid(),
 		eventId: z.string().uuid().optional(),
 		recurringEventInstanceId: z.string().uuid().optional(),
-		checkInId: z.string().uuid().optional(),
-		checkOutId: z.string().uuid().optional(),
+		checkinTime: z.date().optional(),
+		checkoutTime: z.date().optional(),
+		feedbackSubmitted: z.boolean().optional(),
 		isInvited: z.boolean().optional(),
 		isRegistered: z.boolean().optional(),
 		isCheckedIn: z.boolean().optional(),
@@ -214,8 +234,9 @@ export type CreateEventAttendeeInput = {
  * Type for updating an event attendee record.
  */
 export type UpdateEventAttendeeInput = {
-	checkInId?: string;
-	checkOutId?: string;
+	checkinTime?: Date;
+	checkoutTime?: Date;
+	feedbackSubmitted?: boolean;
 	isInvited?: boolean;
 	isRegistered?: boolean;
 	isCheckedIn?: boolean;

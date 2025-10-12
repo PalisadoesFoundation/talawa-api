@@ -14,8 +14,6 @@ import "./Community/index";
 import "./Event/index";
 import "./EventAttachment/index";
 import "./EventAttendee/index";
-import "./CheckIn/index";
-import "./CheckOut/index";
 import "./CheckInStatus/index";
 import "./EventVolunteer/index";
 import "./EventVolunteerGroup/index";

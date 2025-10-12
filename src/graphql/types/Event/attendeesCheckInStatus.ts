@@ -1,5 +1,4 @@
 import { eq, or } from "drizzle-orm";
-import { checkInsTable } from "~/src/drizzle/tables/checkIns";
 import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { CheckInStatus } from "~/src/graphql/types/CheckInStatus/CheckInStatus";
@@ -34,7 +33,7 @@ export const eventAttendeesCheckInStatusResolver = async (
 				),
 			});
 
-		// Manually fetch users and check-ins for each attendee
+		// Manually fetch users for each attendee
 		const checkInStatusList = await Promise.all(
 			attendees.map(async (attendee) => {
 				// Get the user
@@ -50,18 +49,10 @@ export const eventAttendeesCheckInStatusResolver = async (
 					});
 				}
 
-				// Get the check-in record if it exists
-				let checkIn = null;
-				if (attendee.checkInId) {
-					checkIn = await ctx.drizzleClient.query.checkInsTable.findFirst({
-						where: eq(checkInsTable.id, attendee.checkInId),
-					});
-				}
-
 				return {
 					id: attendee.id,
 					user: user,
-					checkIn: checkIn,
+					attendee: attendee,
 				};
 			}),
 		);

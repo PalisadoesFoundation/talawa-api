@@ -105,7 +105,13 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 					id: "attendee-1",
 					userId: "user-1",
 					eventId: "event-456",
-					checkInId: null, // No check-in
+					checkinTime: null, // No check-in
+					checkoutTime: null,
+					feedbackSubmitted: false,
+					isInvited: true,
+					isRegistered: true,
+					isCheckedIn: false,
+					isCheckedOut: false,
 				},
 			];
 
@@ -132,17 +138,27 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 			expect(result[0]).toEqual({
 				id: "attendee-1",
 				user: mockUser,
-				checkIn: null,
+				attendee: mockAttendees[0],
 			});
 		});
 
 		it("should resolve attendees with check-in records", async () => {
+			const checkinTime = new Date("2024-03-10T10:00:00Z");
 			const mockAttendees = [
 				{
 					id: "attendee-1",
 					userId: "user-1",
 					eventId: "event-456",
-					checkInId: "checkin-1",
+					recurringEventInstanceId: null,
+					checkinTime: checkinTime,
+					checkoutTime: null,
+					feedbackSubmitted: false,
+					isInvited: true,
+					isRegistered: true,
+					isCheckedIn: true,
+					isCheckedOut: false,
+					createdAt: new Date(),
+					updatedAt: new Date(),
 				},
 			];
 
@@ -152,21 +168,11 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 				emailAddress: "jane@example.com",
 			};
 
-			const mockCheckIn = {
-				id: "checkin-1",
-				eventAttendeeId: "attendee-1",
-				time: new Date("2024-03-10T10:00:00Z"),
-				feedbackSubmitted: false,
-			};
-
 			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
 				mockAttendees,
 			);
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				mockUser,
-			);
-			mocks.drizzleClient.query.checkInsTable.findFirst.mockResolvedValue(
-				mockCheckIn,
 			);
 
 			const result = await eventAttendeesCheckInStatusResolver(
@@ -179,29 +185,59 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 			expect(result[0]).toEqual({
 				id: "attendee-1",
 				user: mockUser,
-				checkIn: mockCheckIn,
+				attendee: mockAttendees[0],
 			});
 		});
 
 		it("should resolve multiple attendees with mixed check-in status", async () => {
+			const checkinTime1 = new Date("2024-03-10T10:00:00Z");
+			const checkinTime3 = new Date("2024-03-10T11:00:00Z");
+
 			const mockAttendees = [
 				{
 					id: "attendee-1",
 					userId: "user-1",
 					eventId: "event-456",
-					checkInId: "checkin-1", // Has check-in
+					recurringEventInstanceId: null,
+					checkinTime: checkinTime1, // Has check-in
+					checkoutTime: null,
+					feedbackSubmitted: false,
+					isInvited: true,
+					isRegistered: true,
+					isCheckedIn: true,
+					isCheckedOut: false,
+					createdAt: new Date(),
+					updatedAt: new Date(),
 				},
 				{
 					id: "attendee-2",
 					userId: "user-2",
 					eventId: "event-456",
-					checkInId: null, // No check-in
+					recurringEventInstanceId: null,
+					checkinTime: null, // No check-in
+					checkoutTime: null,
+					feedbackSubmitted: false,
+					isInvited: true,
+					isRegistered: true,
+					isCheckedIn: false,
+					isCheckedOut: false,
+					createdAt: new Date(),
+					updatedAt: null,
 				},
 				{
 					id: "attendee-3",
 					userId: "user-3",
+					eventId: null,
 					recurringEventInstanceId: "event-456", // Recurring instance
-					checkInId: "checkin-3",
+					checkinTime: checkinTime3,
+					checkoutTime: null,
+					feedbackSubmitted: true,
+					isInvited: true,
+					isRegistered: true,
+					isCheckedIn: true,
+					isCheckedOut: false,
+					createdAt: new Date(),
+					updatedAt: new Date(),
 				},
 			];
 
@@ -209,12 +245,6 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 				{ id: "user-1", name: "User 1" },
 				{ id: "user-2", name: "User 2" },
 				{ id: "user-3", name: "User 3" },
-			];
-
-			const mockCheckIns = [
-				{ id: "checkin-1", time: new Date("2024-03-10T10:00:00Z") },
-				undefined, // No check-in for user-2
-				{ id: "checkin-3", time: new Date("2024-03-10T11:00:00Z") },
 			];
 
 			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
@@ -227,11 +257,6 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 				.mockResolvedValueOnce(mockUsers[1])
 				.mockResolvedValueOnce(mockUsers[2]);
 
-			// Mock check-in queries
-			mocks.drizzleClient.query.checkInsTable.findFirst
-				.mockResolvedValueOnce(mockCheckIns[0])
-				.mockResolvedValueOnce(mockCheckIns[2]);
-
 			const result = await eventAttendeesCheckInStatusResolver(
 				mockEvent,
 				{},
@@ -242,17 +267,17 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 			expect(result[0]).toEqual({
 				id: "attendee-1",
 				user: mockUsers[0],
-				checkIn: mockCheckIns[0],
+				attendee: mockAttendees[0],
 			});
 			expect(result[1]).toEqual({
 				id: "attendee-2",
 				user: mockUsers[1],
-				checkIn: null,
+				attendee: mockAttendees[1],
 			});
 			expect(result[2]).toEqual({
 				id: "attendee-3",
 				user: mockUsers[2],
-				checkIn: mockCheckIns[2],
+				attendee: mockAttendees[2],
 			});
 		});
 	});
@@ -264,7 +289,16 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 					id: "attendee-1",
 					userId: "user-1",
 					eventId: "event-456",
-					checkInId: null,
+					recurringEventInstanceId: null,
+					checkinTime: null,
+					checkoutTime: null,
+					feedbackSubmitted: false,
+					isInvited: true,
+					isRegistered: true,
+					isCheckedIn: false,
+					isCheckedOut: false,
+					createdAt: new Date(),
+					updatedAt: null,
 				},
 			];
 
@@ -324,7 +358,16 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 					id: "attendee-1",
 					userId: "user-1",
 					eventId: "event-456",
-					checkInId: null,
+					recurringEventInstanceId: null,
+					checkinTime: null,
+					checkoutTime: null,
+					feedbackSubmitted: false,
+					isInvited: true,
+					isRegistered: true,
+					isCheckedIn: false,
+					isCheckedOut: false,
+					createdAt: new Date(),
+					updatedAt: null,
 				},
 			];
 
@@ -333,43 +376,6 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 			);
 			mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(
 				new Error("User lookup failed"),
-			);
-
-			await expect(
-				eventAttendeesCheckInStatusResolver(mockEvent, {}, ctx),
-			).rejects.toThrow(
-				new TalawaGraphQLError({
-					message: "Internal server error",
-					extensions: { code: "unexpected" },
-				}),
-			);
-
-			expect(ctx.log.error).toHaveBeenCalled();
-		});
-
-		it("should handle check-in lookup failures", async () => {
-			const mockAttendees = [
-				{
-					id: "attendee-1",
-					userId: "user-1",
-					eventId: "event-456",
-					checkInId: "checkin-1",
-				},
-			];
-
-			const mockUser = {
-				id: "user-1",
-				name: "Test User",
-			};
-
-			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
-				mockAttendees,
-			);
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
-				mockUser,
-			);
-			mocks.drizzleClient.query.checkInsTable.findFirst.mockRejectedValue(
-				new Error("Check-in lookup failed"),
 			);
 
 			await expect(
@@ -392,7 +398,16 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 				id: `attendee-${i}`,
 				userId: `user-${i}`,
 				eventId: "event-456",
-				checkInId: i % 3 === 0 ? `checkin-${i}` : null, // Every 3rd person checked in
+				recurringEventInstanceId: null,
+				checkinTime: i % 3 === 0 ? new Date("2024-03-10T10:00:00Z") : null, // Every 3rd person checked in
+				checkoutTime: null,
+				feedbackSubmitted: false,
+				isInvited: true,
+				isRegistered: true,
+				isCheckedIn: i % 3 === 0,
+				isCheckedOut: false,
+				createdAt: new Date(),
+				updatedAt: null,
 			}));
 
 			const mockUsers = largeAttendeeList.map((_, i) => ({
@@ -400,13 +415,6 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 				name: `User ${i}`,
 				emailAddress: `user${i}@example.com`,
 			}));
-
-			const mockCheckIns = largeAttendeeList
-				.filter((_, i) => i % 3 === 0)
-				.map((_, i) => ({
-					id: `checkin-${i * 3}`,
-					time: new Date("2024-03-10T10:00:00Z"),
-				}));
 
 			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
 				largeAttendeeList,
@@ -417,14 +425,6 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(() => {
 				return Promise.resolve(mockUsers[userCallCount++]);
 			});
-
-			// Mock check-in lookups for those who checked in
-			let checkInCallCount = 0;
-			mocks.drizzleClient.query.checkInsTable.findFirst.mockImplementation(
-				() => {
-					return Promise.resolve(mockCheckIns[checkInCallCount++]);
-				},
-			);
 
 			const startTime = Date.now();
 			const result = await eventAttendeesCheckInStatusResolver(
@@ -439,7 +439,7 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 
 			// Verify check-in status distribution
 			const checkedInCount = result.filter(
-				(status) => status.checkIn !== null,
+				(status) => status.attendee.checkinTime !== null,
 			).length;
 			expect(checkedInCount).toBe(17); // Every 3rd attendee (50/3 ≈ 17)
 		});
@@ -450,7 +450,16 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 					id: "attendee-1",
 					userId: "user-1",
 					eventId: "event-456",
-					checkInId: "checkin-1",
+					recurringEventInstanceId: null,
+					checkinTime: new Date("2024-03-10T10:00:00Z"),
+					checkoutTime: null,
+					feedbackSubmitted: false,
+					isInvited: true,
+					isRegistered: true,
+					isCheckedIn: true,
+					isCheckedOut: false,
+					createdAt: new Date(),
+					updatedAt: null,
 				},
 			];
 
@@ -459,19 +468,11 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 				name: "Concurrent Test User",
 			};
 
-			const mockCheckIn = {
-				id: "checkin-1",
-				time: new Date("2024-03-10T10:00:00Z"),
-			};
-
 			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
 				mockAttendees,
 			);
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(
 				mockUser,
-			);
-			mocks.drizzleClient.query.checkInsTable.findFirst.mockResolvedValue(
-				mockCheckIn,
 			);
 
 			// Run concurrent resolver calls
@@ -484,7 +485,9 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 			for (const result of results) {
 				expect(result).toHaveLength(1);
 				expect(result[0]?.user.name).toBe("Concurrent Test User");
-				expect(result[0]?.checkIn?.id).toBe("checkin-1");
+				expect(result[0]?.attendee.checkinTime).toEqual(
+					new Date("2024-03-10T10:00:00Z"),
+				);
 			}
 		});
 	});
@@ -497,7 +500,16 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 					id: "attendee-1",
 					userId: "deleted-user-123",
 					eventId: "event-456",
-					checkInId: null,
+					recurringEventInstanceId: null,
+					checkinTime: null,
+					checkoutTime: null,
+					feedbackSubmitted: false,
+					isInvited: true,
+					isRegistered: true,
+					isCheckedIn: false,
+					isCheckedOut: false,
+					createdAt: new Date(),
+					updatedAt: null,
 				},
 			];
 
@@ -517,9 +529,51 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 
 		it("should maintain data integrity with Promise.all", async () => {
 			const mockAttendees = [
-				{ id: "attendee-1", userId: "user-1", checkInId: "checkin-1" },
-				{ id: "attendee-2", userId: "user-2", checkInId: null },
-				{ id: "attendee-3", userId: "user-3", checkInId: "checkin-3" },
+				{
+					id: "attendee-1",
+					userId: "user-1",
+					eventId: "event-456",
+					recurringEventInstanceId: null,
+					checkinTime: new Date("2024-03-10T10:00:00Z"),
+					checkoutTime: null,
+					feedbackSubmitted: false,
+					isInvited: true,
+					isRegistered: true,
+					isCheckedIn: true,
+					isCheckedOut: false,
+					createdAt: new Date(),
+					updatedAt: null,
+				},
+				{
+					id: "attendee-2",
+					userId: "user-2",
+					eventId: "event-456",
+					recurringEventInstanceId: null,
+					checkinTime: null,
+					checkoutTime: null,
+					feedbackSubmitted: false,
+					isInvited: true,
+					isRegistered: true,
+					isCheckedIn: false,
+					isCheckedOut: false,
+					createdAt: new Date(),
+					updatedAt: null,
+				},
+				{
+					id: "attendee-3",
+					userId: "user-3",
+					eventId: "event-456",
+					recurringEventInstanceId: null,
+					checkinTime: new Date("2024-03-10T11:00:00Z"),
+					checkoutTime: null,
+					feedbackSubmitted: false,
+					isInvited: true,
+					isRegistered: true,
+					isCheckedIn: true,
+					isCheckedOut: false,
+					createdAt: new Date(),
+					updatedAt: null,
+				},
 			];
 
 			// Mock responses in order
@@ -532,10 +586,6 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 				.mockResolvedValueOnce({ id: "user-2", name: "User 2" })
 				.mockResolvedValueOnce({ id: "user-3", name: "User 3" });
 
-			mocks.drizzleClient.query.checkInsTable.findFirst
-				.mockResolvedValueOnce({ id: "checkin-1", time: new Date() })
-				.mockResolvedValueOnce({ id: "checkin-3", time: new Date() });
-
 			const result = await eventAttendeesCheckInStatusResolver(
 				mockEvent,
 				{},
@@ -544,11 +594,15 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 
 			expect(result).toHaveLength(3);
 			expect(result[0]?.user.name).toBe("User 1");
-			expect(result[0]?.checkIn?.id).toBe("checkin-1");
+			expect(result[0]?.attendee.checkinTime).toEqual(
+				new Date("2024-03-10T10:00:00Z"),
+			);
 			expect(result[1]?.user.name).toBe("User 2");
-			expect(result[1]?.checkIn).toBeNull();
+			expect(result[1]?.attendee.checkinTime).toBeNull();
 			expect(result[2]?.user.name).toBe("User 3");
-			expect(result[2]?.checkIn?.id).toBe("checkin-3");
+			expect(result[2]?.attendee.checkinTime).toEqual(
+				new Date("2024-03-10T11:00:00Z"),
+			);
 		});
 	});
 
@@ -559,7 +613,16 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 				id: `attendee-${i}`,
 				userId: `user-${i}`,
 				eventId: "event-456",
-				checkInId: i < 24 ? `checkin-${i}` : null, // 24/30 = 80% checked in
+				recurringEventInstanceId: null,
+				checkinTime: i < 24 ? new Date("2024-03-10T10:00:00Z") : null, // 24/30 = 80% checked in
+				checkoutTime: null,
+				feedbackSubmitted: false,
+				isInvited: true,
+				isRegistered: true,
+				isCheckedIn: i < 24,
+				isCheckedOut: false,
+				createdAt: new Date(),
+				updatedAt: null,
 			}));
 
 			mocks.drizzleClient.query.eventAttendeesTable.findMany.mockResolvedValue(
@@ -575,12 +638,6 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 				}),
 			);
 
-			// Mock check-in responses for first 24 attendees
-			let checkInIndex = 0;
-			mocks.drizzleClient.query.checkInsTable.findFirst.mockImplementation(() =>
-				Promise.resolve({ id: `checkin-${checkInIndex++}`, time: new Date() }),
-			);
-
 			const result = await eventAttendeesCheckInStatusResolver(
 				mockEvent,
 				{},
@@ -590,10 +647,10 @@ describe("Event AttendeesCheckInStatus Resolver Tests", () => {
 			expect(result).toHaveLength(30);
 
 			const checkedInStatuses = result.filter(
-				(status) => status.checkIn !== null,
+				(status) => status.attendee.checkinTime !== null,
 			);
 			const notCheckedInStatuses = result.filter(
-				(status) => status.checkIn === null,
+				(status) => status.attendee.checkinTime === null,
 			);
 
 			expect(checkedInStatuses).toHaveLength(24);

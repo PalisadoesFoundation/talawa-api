@@ -1,5 +1,5 @@
 {
-  "id": "87267cff-7665-4922-b932-4df9ff190007",
+  "id": "92dba428-029e-4fde-a9a6-c765ac6937a1",
   "prevId": "66873229-b42c-4bec-9724-ea23d3fc08c5",
   "version": "7",
   "dialect": "postgresql",
@@ -2057,238 +2057,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.check_ins": {
-      "name": "check_ins",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "event_attendee_id": {
-          "name": "event_attendee_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "time": {
-          "name": "time",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "feedback_submitted": {
-          "name": "feedback_submitted",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "check_ins_event_attendee_id_idx": {
-          "name": "check_ins_event_attendee_id_idx",
-          "columns": [
-            {
-              "expression": "event_attendee_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "check_ins_time_idx": {
-          "name": "check_ins_time_idx",
-          "columns": [
-            {
-              "expression": "time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "check_ins_feedback_submitted_idx": {
-          "name": "check_ins_feedback_submitted_idx",
-          "columns": [
-            {
-              "expression": "feedback_submitted",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "check_ins_created_at_idx": {
-          "name": "check_ins_created_at_idx",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "check_ins_event_attendee_id_event_attendees_id_fk": {
-          "name": "check_ins_event_attendee_id_event_attendees_id_fk",
-          "tableFrom": "check_ins",
-          "tableTo": "event_attendees",
-          "columnsFrom": [
-            "event_attendee_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.check_outs": {
-      "name": "check_outs",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "event_attendee_id": {
-          "name": "event_attendee_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "time": {
-          "name": "time",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "check_outs_event_attendee_id_idx": {
-          "name": "check_outs_event_attendee_id_idx",
-          "columns": [
-            {
-              "expression": "event_attendee_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "check_outs_time_idx": {
-          "name": "check_outs_time_idx",
-          "columns": [
-            {
-              "expression": "time",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "check_outs_created_at_idx": {
-          "name": "check_outs_created_at_idx",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "check_outs_event_attendee_id_event_attendees_id_fk": {
-          "name": "check_outs_event_attendee_id_event_attendees_id_fk",
-          "tableFrom": "check_outs",
-          "tableTo": "event_attendees",
-          "columnsFrom": [
-            "event_attendee_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.comment_votes": {
       "name": "comment_votes",
       "schema": "",
@@ -3032,212 +2800,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.event_attendances": {
-      "name": "event_attendances",
-      "schema": "",
-      "columns": {
-        "attendee_id": {
-          "name": "attendee_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "check_in_at": {
-          "name": "check_in_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "check_out_at": {
-          "name": "check_out_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "creator_id": {
-          "name": "creator_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "event_id": {
-          "name": "event_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp (3) with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updater_id": {
-          "name": "updater_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "event_attendances_attendee_id_index": {
-          "name": "event_attendances_attendee_id_index",
-          "columns": [
-            {
-              "expression": "attendee_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "event_attendances_check_in_at_index": {
-          "name": "event_attendances_check_in_at_index",
-          "columns": [
-            {
-              "expression": "check_in_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "event_attendances_check_out_at_index": {
-          "name": "event_attendances_check_out_at_index",
-          "columns": [
-            {
-              "expression": "check_out_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "event_attendances_created_at_index": {
-          "name": "event_attendances_created_at_index",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "event_attendances_creator_id_index": {
-          "name": "event_attendances_creator_id_index",
-          "columns": [
-            {
-              "expression": "creator_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "event_attendances_event_id_index": {
-          "name": "event_attendances_event_id_index",
-          "columns": [
-            {
-              "expression": "event_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "event_attendances_attendee_id_users_id_fk": {
-          "name": "event_attendances_attendee_id_users_id_fk",
-          "tableFrom": "event_attendances",
-          "tableTo": "users",
-          "columnsFrom": [
-            "attendee_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "event_attendances_creator_id_users_id_fk": {
-          "name": "event_attendances_creator_id_users_id_fk",
-          "tableFrom": "event_attendances",
-          "tableTo": "users",
-          "columnsFrom": [
-            "creator_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        },
-        "event_attendances_event_id_events_id_fk": {
-          "name": "event_attendances_event_id_events_id_fk",
-          "tableFrom": "event_attendances",
-          "tableTo": "events",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "event_attendances_updater_id_users_id_fk": {
-          "name": "event_attendances_updater_id_users_id_fk",
-          "tableFrom": "event_attendances",
-          "tableTo": "users",
-          "columnsFrom": [
-            "updater_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.event_attendees": {
       "name": "event_attendees",
       "schema": "",
@@ -3266,17 +2828,24 @@
           "primaryKey": false,
           "notNull": false
         },
-        "check_in_id": {
-          "name": "check_in_id",
-          "type": "uuid",
+        "checkin_time": {
+          "name": "checkin_time",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
-        "check_out_id": {
-          "name": "check_out_id",
-          "type": "uuid",
+        "checkout_time": {
+          "name": "checkout_time",
+          "type": "timestamp (3) with time zone",
           "primaryKey": false,
           "notNull": false
+        },
+        "feedback_submitted": {
+          "name": "feedback_submitted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "is_invited": {
           "name": "is_invited",
@@ -3426,11 +2995,11 @@
           "method": "btree",
           "with": {}
         },
-        "event_attendees_check_in_id_idx": {
-          "name": "event_attendees_check_in_id_idx",
+        "event_attendees_checkin_time_idx": {
+          "name": "event_attendees_checkin_time_idx",
           "columns": [
             {
-              "expression": "check_in_id",
+              "expression": "checkin_time",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -3441,11 +3010,26 @@
           "method": "btree",
           "with": {}
         },
-        "event_attendees_check_out_id_idx": {
-          "name": "event_attendees_check_out_id_idx",
+        "event_attendees_checkout_time_idx": {
+          "name": "event_attendees_checkout_time_idx",
           "columns": [
             {
-              "expression": "check_out_id",
+              "expression": "checkout_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "event_attendees_feedback_submitted_idx": {
+          "name": "event_attendees_feedback_submitted_idx",
+          "columns": [
+            {
+              "expression": "feedback_submitted",
               "isExpression": false,
               "asc": true,
               "nulls": "last"

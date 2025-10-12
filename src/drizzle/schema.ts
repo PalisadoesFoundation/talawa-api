@@ -59,12 +59,7 @@ export {
 	eventAttendeesTable,
 	eventAttendeesTableRelations,
 } from "./tables/eventAttendees";
-export { checkInsTable, checkInsTableRelations } from "./tables/checkIns";
-export { checkOutsTable, checkOutsTableRelations } from "./tables/checkOuts";
-export {
-	eventAttendancesTable,
-	eventAttendancesTableRelations,
-} from "./tables/eventAttendances";
+
 export {
 	eventExceptionsTable,
 	eventExceptionsTableRelations,

@@ -1,6 +1,5 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { checkOutsTable } from "~/src/drizzle/tables/checkOuts";
 import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
@@ -11,7 +10,7 @@ import {
 	CheckInCheckOutInput,
 	checkInCheckOutInputSchema,
 } from "~/src/graphql/inputs/CheckInCheckOutInput";
-import { CheckOut } from "~/src/graphql/types/CheckOut/CheckOut";
+import { EventAttendee } from "~/src/graphql/types/EventAttendee/EventAttendee";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 
@@ -33,7 +32,7 @@ type CheckOutArgs = {
  */
 builder.mutationField("checkOut", (t) =>
 	t.field({
-		type: CheckOut,
+		type: EventAttendee,
 		args: {
 			data: t.arg({
 				required: true,
@@ -241,15 +240,19 @@ builder.mutationField("checkOut", (t) =>
 				});
 			}
 
-			// Create check-out record
-			const [createdCheckOut] = await ctx.drizzleClient
-				.insert(checkOutsTable)
-				.values({
-					eventAttendeeId: attendee.id,
+			// Update attendee record with check-out time
+			const checkOutTime = new Date();
+			const [updatedAttendee] = await ctx.drizzleClient
+				.update(eventAttendeesTable)
+				.set({
+					checkoutTime: checkOutTime,
+					isCheckedOut: true,
+					updatedAt: new Date(),
 				})
+				.where(eq(eventAttendeesTable.id, attendee.id))
 				.returning();
 
-			if (!createdCheckOut) {
+			if (!updatedAttendee) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",
@@ -257,17 +260,7 @@ builder.mutationField("checkOut", (t) =>
 				});
 			}
 
-			// Update attendee record
-			await ctx.drizzleClient
-				.update(eventAttendeesTable)
-				.set({
-					checkOutId: createdCheckOut.id,
-					isCheckedOut: true,
-					updatedAt: new Date(),
-				})
-				.where(eq(eventAttendeesTable.id, attendee.id));
-
-			return createdCheckOut;
+			return updatedAttendee;
 		},
 	}),
 );

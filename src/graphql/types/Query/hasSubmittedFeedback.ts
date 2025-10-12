@@ -1,6 +1,5 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { checkInsTable } from "~/src/drizzle/tables/checkIns";
 import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
@@ -158,7 +157,7 @@ builder.queryField("hasSubmittedFeedback", (t) =>
 			}
 
 			// Check if user has checked in
-			if (!eventAttendee.checkInId) {
+			if (!eventAttendee.isCheckedIn) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",
@@ -172,20 +171,7 @@ builder.queryField("hasSubmittedFeedback", (t) =>
 				});
 			}
 
-			// Get the check-in record and check feedback status
-			const checkIn = await ctx.drizzleClient.query.checkInsTable.findFirst({
-				where: eq(checkInsTable.id, eventAttendee.checkInId),
-			});
-
-			if (!checkIn) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-				});
-			}
-
-			return checkIn.feedbackSubmitted;
+			return eventAttendee.feedbackSubmitted;
 		},
 		type: "Boolean",
 	}),
