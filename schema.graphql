@@ -3396,6 +3396,9 @@ input MutationUpdateOrganizationInput {
   """Global identifier of the organization."""
   id: ID!
 
+  """Is user registration required for this organization?"""
+  isUserRegistrationRequired: Boolean
+
   """Name of the organization."""
   name: String
 
@@ -3404,9 +3407,6 @@ input MutationUpdateOrganizationInput {
 
   """Name of the state the organization resides in."""
   state: String
-
-  """Is user registration required for this organization?"""
-  userRegistrationRequired: Boolean
 }
 
 """"""

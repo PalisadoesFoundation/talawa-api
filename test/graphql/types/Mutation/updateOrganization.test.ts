@@ -3,30 +3,14 @@ import { afterEach, expect, suite, test } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
+import { createRegularUserUsingAdmin } from "../createRegularUserUsingAdmin";
 import {
 	Mutation_createOrganization,
 	Mutation_deleteCurrentUser,
 	Mutation_deleteOrganization,
 	Mutation_deleteUser,
+	Mutation_updateOrganization,
 } from "../documentNodes";
-
-const Mutation_updateOrganization = `
-	mutation Mutation_updateOrganization($input: MutationUpdateOrganizationInput!) {
-		updateOrganization(input: $input) {
-			id
-			name
-			description
-			addressLine1
-			addressLine2
-			city
-			state
-			postalCode
-			countryCode
-			isUserRegistrationRequired
-			avatarMimeType
-		}
-	}
-`;
 
 const signInResult = await mercuriusClient.query(
 	`query Query_signIn($input: QuerySignInInput!) {
@@ -93,9 +77,8 @@ suite("Mutation field updateOrganization", () => {
 	});
 
 	test("should return an error with unauthorized_action extensions code", async () => {
-		const { authToken: regularAuthToken, userId: regularUserId } = await import(
-			"../createRegularUserUsingAdmin"
-		).then((module) => module.createRegularUserUsingAdmin());
+		const { authToken: regularAuthToken, userId: regularUserId } =
+			await createRegularUserUsingAdmin();
 		assertToBeNonNullish(regularAuthToken);
 		assertToBeNonNullish(regularUserId);
 
@@ -162,9 +145,7 @@ suite("Mutation field updateOrganization", () => {
 	});
 
 	test("should return an error with unauthenticated extensions code", async () => {
-		const { authToken: userToken } = await import(
-			"../createRegularUserUsingAdmin"
-		).then((module) => module.createRegularUserUsingAdmin());
+		const { authToken: userToken } = await createRegularUserUsingAdmin();
 		assertToBeNonNullish(userToken);
 
 		// Delete the user
@@ -338,7 +319,7 @@ suite("Mutation field updateOrganization", () => {
 		);
 	});
 
-	test("should update userRegistrationRequired field", async () => {
+	test("should update isUserRegistrationRequired field", async () => {
 		// Create an organization first
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
@@ -369,13 +350,13 @@ suite("Mutation field updateOrganization", () => {
 			});
 		});
 
-		// Update userRegistrationRequired to true
+		// Update isUserRegistrationRequired to true
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
 				input: {
 					id: orgId,
-					userRegistrationRequired: true,
+					isUserRegistrationRequired: true,
 				},
 			},
 		});
@@ -388,7 +369,7 @@ suite("Mutation field updateOrganization", () => {
 			}),
 		);
 	});
-	test("should toggle userRegistrationRequired from true to false", async () => {
+	test("should toggle isUserRegistrationRequired from true to false", async () => {
 		// Create organization
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
@@ -425,7 +406,7 @@ suite("Mutation field updateOrganization", () => {
 			{
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
-					input: { id: orgId, userRegistrationRequired: true },
+					input: { id: orgId, isUserRegistrationRequired: true },
 				},
 			},
 		);
@@ -440,7 +421,7 @@ suite("Mutation field updateOrganization", () => {
 		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
-				input: { id: orgId, userRegistrationRequired: false },
+				input: { id: orgId, isUserRegistrationRequired: false },
 			},
 		});
 
