@@ -2242,3 +2242,22 @@ export const Query_getEventInvitesByUserId = gql(`
     }
   }
 `);
+
+export const Query_getRecurringEvents = gql(`
+  query Query_getRecurringEvents($baseRecurringEventId: ID!) {
+    getRecurringEvents(baseRecurringEventId: $baseRecurringEventId) {
+      id
+      name
+      description
+      startAt
+      endAt
+      isPublic
+      isRegisterable
+      location
+      isRecurringEventTemplate
+      recurrenceRule {
+        id
+      }
+    }
+  }
+`);
