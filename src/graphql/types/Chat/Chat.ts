@@ -1,6 +1,20 @@
 /* ---------------FUTURE IMPROVEMENTS------------------------
-* use DATALOADER to batch and cache these N+1 queries 
-*/
+ * use DATALOADER to batch and cache these N+1 queries
+ */
+/**
+ * Note: currently the computed unread fields treat a missing membership.lastReadAt
+ * as epoch (new Date(0)), which makes a chat's creator or other authors see their
+ * own newly-created messages as unread until they mark the chat as read.
+ *
+ * Frontend currently mitigates this by calling a mutation after message creation
+ * to mark messages as read for the creating user. In the future this should be
+ * implemented server-side in a more humanized way. Possible approaches:
+ *  - Ignore messages authored by the current user when counting unread messages;
+ *  - Set the creating user's chatMembership.lastReadAt when they create a message.
+ *
+ * Keep behaviour consistent across clients and ensure read-receipt semantics are
+ * preserved when introducing changes.
+ */
 import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
 import { chatMessagesTable } from "~/src/drizzle/tables/chatMessages";
 import type { chatsTable } from "~/src/drizzle/tables/chats";
