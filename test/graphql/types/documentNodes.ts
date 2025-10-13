@@ -881,6 +881,14 @@ export const Mutation_createChatMembership = gql(`
 }
 `);
 
+export const Mutation_deleteChatMembership = gql(`
+  mutation Mutation_deleteChatMembership($input: MutationDeleteChatMembershipInput!) {
+    deleteChatMembership(input: $input) {
+      id
+    }
+  }
+`);
+
 export const Mutation_joinPublicOrganization = gql(`
   mutation Mutation_joinPublicOrganization($input: MutationJoinPublicOrganizationInput!) {
     joinPublicOrganization(input: $input) {
@@ -2054,5 +2062,23 @@ export const Query_getVolunteerMembership = gql(`
       createdAt
       updatedAt
     }
+  }
+`);
+
+export const Query_chat_with_unread = gql(`
+  query Query_chat_with_unread($input: QueryChatInput!) {
+    chat(input: $input) {
+      id
+      unreadMessagesCount
+      hasUnread
+      firstUnreadMessageId
+      lastMessage { id }
+    }
+  }
+`);
+
+export const Mutation_markChatAsRead = gql(`
+  mutation Mutation_markChatAsRead($input: MutationMarkChatAsReadInput!) {
+    markChatAsRead(input: $input)
   }
 `);

@@ -1,3 +1,6 @@
+/* ---------------FUTURE IMPROVEMENTS------------------------
+* use DATALOADER to batch and cache these N+1 queries 
+*/
 import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
 import { chatMessagesTable } from "~/src/drizzle/tables/chatMessages";
 import type { chatsTable } from "~/src/drizzle/tables/chats";
@@ -138,6 +141,11 @@ Chat.implement({
 			nullable: true,
 			type: ChatMessage,
 			resolve: async (parent, _args, ctx) => {
+				if (!ctx.currentClient.isAuthenticated) {
+					throw new TalawaGraphQLError({
+						extensions: { code: "unauthenticated" },
+					});
+				}
 				const last = await ctx.drizzleClient
 					.select()
 					.from(chatMessagesTable)
