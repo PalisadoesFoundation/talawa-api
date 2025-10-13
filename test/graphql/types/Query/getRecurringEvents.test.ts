@@ -412,7 +412,8 @@ suite("Query field getRecurringEvents", () => {
 			);
 
 			if (organizationCreateResult.data?.createOrganization) {
-				const organizationId = organizationCreateResult.data.createOrganization.id;
+				const organizationId =
+					organizationCreateResult.data.createOrganization.id;
 
 				// Create a recurring event as admin
 				const startDate = faker.date.future();
@@ -459,7 +460,7 @@ suite("Query field getRecurringEvents", () => {
 									code: "arguments_associated_resources_not_found",
 								}),
 							}),
-						])
+						]),
 					);
 					return;
 				}
@@ -515,9 +516,13 @@ suite("Query field getRecurringEvents", () => {
 		test("should cover non-recurring event template error path", async () => {
 			// Import necessary tables for direct database operations
 			const { server } = await import("../../../server");
-			const { organizationsTable } = await import("~/src/drizzle/tables/organizations");
+			const { organizationsTable } = await import(
+				"~/src/drizzle/tables/organizations"
+			);
 			const { eventsTable } = await import("~/src/drizzle/tables/events");
-			const { organizationMembershipsTable } = await import("~/src/drizzle/tables/organizationMemberships");
+			const { organizationMembershipsTable } = await import(
+				"~/src/drizzle/tables/organizationMemberships"
+			);
 
 			// Create organization directly in database
 			const [organizationRow] = await server.drizzleClient
@@ -587,9 +592,13 @@ suite("Query field getRecurringEvents", () => {
 
 			// Import necessary tables
 			const { server } = await import("../../../server");
-			const { organizationsTable } = await import("~/src/drizzle/tables/organizations");
+			const { organizationsTable } = await import(
+				"~/src/drizzle/tables/organizations"
+			);
 			const { eventsTable } = await import("~/src/drizzle/tables/events");
-			const { organizationMembershipsTable } = await import("~/src/drizzle/tables/organizationMemberships");
+			const { organizationMembershipsTable } = await import(
+				"~/src/drizzle/tables/organizationMemberships"
+			);
 
 			// Create organization directly in database
 			const [organizationRow] = await server.drizzleClient
@@ -652,9 +661,13 @@ suite("Query field getRecurringEvents", () => {
 		test("should cover successful path with recurring event instances", async () => {
 			// Import necessary tables
 			const { server } = await import("../../../server");
-			const { organizationsTable } = await import("~/src/drizzle/tables/organizations");
+			const { organizationsTable } = await import(
+				"~/src/drizzle/tables/organizations"
+			);
 			const { eventsTable } = await import("~/src/drizzle/tables/events");
-			const { organizationMembershipsTable } = await import("~/src/drizzle/tables/organizationMemberships");
+			const { organizationMembershipsTable } = await import(
+				"~/src/drizzle/tables/organizationMemberships"
+			);
 
 			// Create organization directly in database
 			const [organizationRow] = await server.drizzleClient
