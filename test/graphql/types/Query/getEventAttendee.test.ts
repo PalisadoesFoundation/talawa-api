@@ -323,8 +323,11 @@ suite("Query field getEventAttendee", () => {
 					event: { id: eventId },
 					isCheckedIn: false,
 					isCheckedOut: false,
-					checkIn: null,
-					checkOut: null,
+					checkinTime: null,
+					checkoutTime: null,
+					feedbackSubmitted: false,
+					isInvited: false,
+					isRegistered: true,
 				}),
 			);
 			expect(result.errors).toBeUndefined();
