@@ -2181,17 +2181,14 @@ export const Query_getEventAttendee = gql(`
       isCheckedOut
       createdAt
       updatedAt
+      checkinTime
+      checkoutTime
+      feedbackSubmitted
       user {
         id
       }
       event {
         id
-      }
-      checkIn {
-        time
-      }
-      checkOut {
-        time
       }
     }
   }
@@ -2207,6 +2204,9 @@ export const Query_getEventAttendeesByEventId = gql(`
       isCheckedOut
       createdAt
       updatedAt
+      checkinTime
+      checkoutTime
+      feedbackSubmitted
       user {
         id
         name
@@ -2215,12 +2215,6 @@ export const Query_getEventAttendeesByEventId = gql(`
       event {
         id
         name
-      }
-      checkIn {
-        time
-      }
-      checkOut {
-        time
       }
     }
   }
@@ -2236,17 +2230,14 @@ export const Query_getEventInvitesByUserId = gql(`
       isCheckedOut
       createdAt
       updatedAt
+      checkinTime
+      checkoutTime
+      feedbackSubmitted
       user {
         id
       }
       event {
         id
-      }
-      checkIn {
-        time
-      }
-      checkOut {
-        time
       }
     }
   }

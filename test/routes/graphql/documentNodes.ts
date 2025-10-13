@@ -898,14 +898,9 @@ export const Query_getEventAttendee = gql(`
       isRegistered
       isCheckedIn
       isCheckedOut
-      checkIn {
-        id
-        time
-      }
-      checkOut {
-        id
-        time
-      }
+      checkinTime
+      checkoutTime
+      feedbackSubmitted
       createdAt
     }
   }
@@ -924,14 +919,9 @@ export const Query_getEventAttendeesByEventId = gql(`
       isRegistered
       isCheckedIn
       isCheckedOut
-      checkIn {
-        id
-        time
-      }
-      checkOut {
-        id
-        time
-      }
+      checkinTime
+      checkoutTime
+      feedbackSubmitted
       createdAt
     }
   }
