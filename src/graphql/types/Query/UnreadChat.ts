@@ -24,7 +24,7 @@ builder.queryField("unreadChats", (t) =>
 			const currentUserId = ctx.currentClient.user.id;
 
 			// Return chats where the current user is a member and there exists
-			// at least one non-deleted message with createdAt > lastReadAt
+			// at least one message with createdAt > lastReadAt
 			const unreadChats = await ctx.drizzleClient.query.chatsTable.findMany({
 				where: (fields, operators) =>
 					exists(

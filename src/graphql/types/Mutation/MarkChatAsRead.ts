@@ -73,7 +73,7 @@ builder.mutationField("markChatAsRead", (t) =>
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["input", "organizationId"] }],
+						issues: [{ argumentPath: ["input", "chatId"] }],
 					},
 				});
 			}

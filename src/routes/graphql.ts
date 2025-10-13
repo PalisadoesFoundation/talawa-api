@@ -126,27 +126,12 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		path: "/graphql",
 		schema: initialSchema,
 		subscription: {
-			// This is the gatekeeper. It runs ONLY ONCE when the client connects.
 			onConnect: async (data) => {
-				fastify.log.info(
-					{ onConnectPayload: data.payload },
-					"Subscription connection payload received",
-				);
-
-				// The client sends connectionParams as `payload`
 				const { payload } = data;
-
-				// Check for the authorization token sent by the client
 				if (!payload?.authorization) {
-					fastify.log.warn(
-						"Connection rejected: Missing authorization token in onConnect payload.",
-					);
-					// Returning false will reject the connection
 					return false;
 				}
-
 				try {
-					// Manually verify the JWT from the payload
 					const token = payload.authorization.replace("Bearer ", "");
 					const decoded =
 						await fastify.jwt.verify<ExplicitAuthenticationTokenPayload>(token);
@@ -156,7 +141,6 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						"Subscription connection authorized.",
 					);
 
-					// Return the full context for authenticated subscriptions
 					return {
 						currentClient: {
 							isAuthenticated: true,

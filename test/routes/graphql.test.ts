@@ -54,6 +54,13 @@ describe("GraphQL Routes", () => {
 			log: {
 				info: vi.fn(),
 				error: vi.fn(),
+				warn: () => {},
+				child: vi.fn(),
+				level: "info",
+				fatal: vi.fn(),
+				debug: vi.fn(),
+				trace: vi.fn(),
+				silent: vi.fn(),
 			} as unknown as FastifyInstance["log"],
 			minio: {} as FastifyInstance["minio"],
 		};
@@ -305,7 +312,6 @@ describe("GraphQL Routes", () => {
 					path: "/graphql",
 					schema: expect.any(GraphQLSchema),
 					subscription: expect.objectContaining({
-						context: expect.any(Function),
 						keepAlive: 30000, // 1000 * 30
 						onConnect: expect.any(Function),
 						onDisconnect: expect.any(Function),
@@ -810,7 +816,7 @@ describe("GraphQL Routes", () => {
 			);
 		});
 
-		it("should configure subscription onConnect to return true", async () => {
+		it("should configure subscription onConnect to reject connections without authorization", async () => {
 			const { graphql } = await import("~/src/routes/graphql");
 
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
@@ -821,14 +827,14 @@ describe("GraphQL Routes", () => {
 
 			const subscriptionConfig = mercuriusCall?.[1] as {
 				subscription: {
-					onConnect: (data: unknown) => boolean;
+					onConnect: (data: unknown) => Promise<boolean | object>;
 				};
 			};
-			const result = subscriptionConfig.subscription.onConnect({
-				test: "data",
+			const result = await subscriptionConfig.subscription.onConnect({
+				payload: { test: "data" }, // No authorization
 			});
 
-			expect(result).toBe(true);
+			expect(result).toBe(false);
 		});
 
 		it("should configure subscription onDisconnect as no-op", async () => {

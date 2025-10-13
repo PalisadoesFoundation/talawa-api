@@ -43,8 +43,14 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 				});
 			}
 
-			const currentUserId = ctx.currentClient.user?.id ?? "";
-
+			if (!ctx.currentClient.user?.id) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
+			const currentUserId = ctx.currentClient.user.id;
 			const [currentUser, existingChat] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {

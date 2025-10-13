@@ -44,7 +44,7 @@ const membersRoleWhereInputSchema = z.object({
 const organizationMembersWhereSchema = z
 	.object({
 		role: membersRoleWhereInputSchema.optional(),
-		name_contains: z.string().optional(),
+		name_contains: z.string().max(100).optional(),
 	})
 	.optional();
 
