@@ -144,7 +144,7 @@ suite("Mutation field updateOrganization", () => {
 		);
 	});
 
-	test("should return an error with unauthenticated extensions code", async () => {
+	test("should return an error with unauthenticated extensions code when user is deleted", async () => {
 		const { authToken: userToken } = await createRegularUserUsingAdmin();
 		assertToBeNonNullish(userToken);
 
@@ -431,6 +431,29 @@ suite("Mutation field updateOrganization", () => {
 				id: orgId,
 				isUserRegistrationRequired: false,
 			}),
+		);
+	});
+	test("should return an error when organization does not exist", async () => {
+		const result = await mercuriusClient.mutate(Mutation_updateOrganization, {
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					id: faker.string.uuid(), // non-existent ID
+					name: "Updated Name",
+				},
+			},
+		});
+
+		expect(result.data?.updateOrganization).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: expect.stringMatching(/not_found|invalid_arguments/),
+					}),
+					path: ["updateOrganization"],
+				}),
+			]),
 		);
 	});
 });
