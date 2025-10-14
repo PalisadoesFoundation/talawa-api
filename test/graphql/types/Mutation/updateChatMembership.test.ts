@@ -23,7 +23,9 @@ describe("Mutation: updateChatMembership", () => {
 		for (const fn of cleanupFns.reverse()) {
 			try {
 				await fn();
-			} catch (err) {}
+			} catch (err) {
+				console.warn("cleanup error:", err);
+			}
 		}
 		cleanupFns.length = 0;
 	});
@@ -1054,18 +1056,6 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(targetSignIn.data?.signIn?.authenticationToken);
 		const targetToken = targetSignIn.data.signIn.authenticationToken as string;
-
-		const approverSignInForCreate = await mercuriusClient.query(Query_signIn, {
-			variables: {
-				input: {
-					emailAddress: approver.user?.emailAddress,
-					password: "password123",
-				},
-			},
-		});
-		assertToBeNonNullish(
-			approverSignInForCreate.data?.signIn?.authenticationToken,
-		);
 
 		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
 			headers: { authorization: `bearer ${targetToken}` },

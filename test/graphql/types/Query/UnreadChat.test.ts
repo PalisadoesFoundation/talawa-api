@@ -41,14 +41,17 @@ suite("Query: unreadChats", () => {
 			try {
 				await fn();
 			} catch (err) {
-				// ignore cleanup errors
+				console.warn("cleanup error:", err);
 			}
 		}
 		cleanupFns.length = 0;
 	});
 
 	beforeAll(async () => {
-		if (!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
+		if (
+			!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
+			!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
+		) {
 			throw new Error("admin env not set");
 		}
 	});

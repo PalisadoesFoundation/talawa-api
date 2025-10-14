@@ -1,3 +1,9 @@
+/*
+ * currently every stuffs related to chatMessageCreate subscription are dependable on
+ * this `chats.${parsedArgs.input.id}:chat_messages::create` in future we can have different topics
+ * for different kind of events like update and delete
+ * and we can have a generic subscription with a filter argument to filter out the events based on type
+ */
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 import {
