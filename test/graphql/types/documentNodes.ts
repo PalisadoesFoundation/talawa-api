@@ -2077,6 +2077,15 @@ export const Query_chat_with_unread = gql(`
   }
 `);
 
+export const Query_unreadChats = gql(`
+  query Query_unreadChats {
+    unreadChats {
+      id
+      name
+    }
+  }
+`);
+
 export const Mutation_markChatAsRead = gql(`
   mutation Mutation_markChatAsRead($input: MutationMarkChatAsReadInput!) {
     markChatAsRead(input: $input)
