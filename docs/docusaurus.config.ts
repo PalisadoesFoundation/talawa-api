@@ -44,10 +44,7 @@ const config: Config = {
             "https://github.com/PalisadoesFoundation/talawa-api/tree/develop/docs/docs",
         },
         theme: {
-          customCss: [
-            require.resolve("./src/css/custom.css"),
-            require.resolve("./src/css/index.css"),
-          ],
+          customCss: [],
         },
       },
     ],
