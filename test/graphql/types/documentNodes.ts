@@ -2091,3 +2091,11 @@ export const Mutation_markChatAsRead = gql(`
     markChatAsRead(input: $input)
   }
 `);
+
+export const Mutation_updateChatMembership = gql(`
+  mutation Mutation_updateChatMembership($input: MutationUpdateChatMembershipInput!) {
+    updateChatMembership(input: $input) {
+      id
+    }
+  }
+`);
