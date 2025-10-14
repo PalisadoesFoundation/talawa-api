@@ -184,7 +184,9 @@ describe("deleteChatMessageResolver", () => {
 			deleteChatMessageResolver({}, validArgs, ctx),
 		).rejects.toThrowError(
 			expect.objectContaining({
-				extensions: expect.objectContaining({ code: "unexpected" }),
+				extensions: expect.objectContaining({
+					code: "unauthorized_action_on_arguments_associated_resources",
+				}),
 			}),
 		);
 	});
