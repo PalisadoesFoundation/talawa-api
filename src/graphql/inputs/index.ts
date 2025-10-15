@@ -110,4 +110,5 @@ import "./SubscriptionChatMessageCreateInput";
 import "./QueryHasUserVotedInput";
 import "./QueryNotificationInput";
 import "./MutationReadNotificationinput";
+import "./MutationMarkChatAsReadInput";
 import "./CheckInCheckOutInput";
