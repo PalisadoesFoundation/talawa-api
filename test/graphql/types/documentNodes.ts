@@ -2077,6 +2077,15 @@ export const Query_chat_with_unread = gql(`
   }
 `);
 
+export const Query_chat_with_creator = gql(`
+  query Query_chat_with_creator($input: QueryChatInput!) {
+    chat(input: $input) {
+      id
+      creator { id name }
+    }
+  }
+`);
+
 export const Query_unreadChats = gql(`
   query Query_unreadChats {
     unreadChats {

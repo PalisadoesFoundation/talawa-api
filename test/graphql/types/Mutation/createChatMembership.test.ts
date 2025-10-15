@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import { ChatMembershipResolver } from "~/src/graphql/types/Mutation/createChatMembership";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -15,6 +16,32 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
+type MockParent = {
+	id: string;
+	chatId: string;
+	creatorId: string;
+	memberId: string;
+};
+type MockUser = { id: string };
+type MockCtx = {
+	currentClient: { isAuthenticated: boolean; user: MockUser };
+	drizzleClient: {
+		query: unknown;
+		insert?: (...args: unknown[]) => unknown;
+	};
+	log: { error: (...args: unknown[]) => void };
+};
+type MockArgs = { input: { chatId: string; memberId: string; role?: string } };
+
+type CreatorParentParam = Parameters<typeof ChatMembershipResolver.creator>[0];
+type CreatorCtxParam = Parameters<typeof ChatMembershipResolver.creator>[2];
+type CreateArgsParam = Parameters<
+	typeof ChatMembershipResolver.createChatMembership
+>[1];
+type CreateCtxParam = Parameters<
+	typeof ChatMembershipResolver.createChatMembership
+>[2];
+
 describe("Mutation: createChatMembership", () => {
 	const cleanupFns: Array<() => Promise<void>> = [];
 
@@ -27,6 +54,383 @@ describe("Mutation: createChatMembership", () => {
 			}
 		}
 		cleanupFns.length = 0;
+		vi.restoreAllMocks();
+	});
+
+	test("creator resolver: forbidden when chat not found", async () => {
+		const parent = {
+			id: "m1",
+			chatId: "chat-1",
+			creatorId: "creator-1",
+			memberId: "member-1",
+		} as MockParent;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-1" } },
+			drizzleClient: {
+				query: {
+					chatsTable: { findFirst: vi.fn().mockResolvedValue(undefined) },
+					usersTable: { findFirst: vi.fn() },
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		await expect(
+			ChatMembershipResolver.creator(
+				parent as unknown as CreatorParentParam,
+				{},
+				ctx as unknown as CreatorCtxParam,
+			),
+		).rejects.toMatchObject({ extensions: { code: "forbidden_action" } });
+	});
+
+	test("creator resolver: returns null when creatorId falsy", async () => {
+		const parent = {
+			id: "m2",
+			chatId: "chat-2",
+			creatorId: "",
+			memberId: "member-2",
+		} as MockParent;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-2" } },
+			drizzleClient: {
+				query: {
+					chatsTable: { findFirst: vi.fn().mockResolvedValue({}) },
+					usersTable: { findFirst: vi.fn() },
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		const res = await ChatMembershipResolver.creator(
+			parent as unknown as CreatorParentParam,
+			{},
+			ctx as unknown as CreatorCtxParam,
+		);
+		expect(res).toBeNull();
+	});
+
+	test("creator resolver: unexpected when creator user missing (logs)", async () => {
+		const parent = {
+			id: "m3",
+			chatId: "chat-3",
+			creatorId: "missing-user",
+			memberId: "member-3",
+		} as MockParent;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-3" } },
+			drizzleClient: {
+				query: {
+					chatsTable: { findFirst: vi.fn().mockResolvedValue({}) },
+					usersTable: { findFirst: vi.fn().mockResolvedValue(undefined) },
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		await expect(
+			ChatMembershipResolver.creator(
+				parent as unknown as CreatorParentParam,
+				{},
+				ctx as unknown as CreatorCtxParam,
+			),
+		).rejects.toMatchObject({ extensions: { code: "unexpected" } });
+		expect(ctx.log.error).toHaveBeenCalled();
+	});
+
+	test("createChatMembership: arguments_associated_resources_not_found when both missing", async () => {
+		const args = {
+			input: { chatId: faker.string.uuid(), memberId: faker.string.uuid() },
+		} as unknown as MockArgs;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-4" } },
+			drizzleClient: {
+				query: {
+					usersTable: {
+						findFirst: vi.fn().mockResolvedValue({ role: "regular" }),
+					},
+					chatsTable: { findFirst: vi.fn().mockResolvedValue(undefined) },
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		await expect(
+			ChatMembershipResolver.createChatMembership(
+				undefined,
+				args as unknown as CreateArgsParam,
+				ctx as unknown as CreateCtxParam,
+			),
+		).rejects.toMatchObject({
+			extensions: {
+				code: expect.toBeOneOf([
+					"arguments_associated_resources_not_found",
+					"invalid_arguments",
+				]),
+			},
+		});
+	});
+
+	test("createChatMembership: unauthorized_arguments when non-admin sets role without org membership", async () => {
+		const args = {
+			input: {
+				chatId: faker.string.uuid(),
+				memberId: faker.string.uuid(),
+				role: "administrator",
+			},
+		} as unknown as MockArgs;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-5" } },
+			drizzleClient: {
+				query: {
+					usersTable: {
+						findFirst: vi.fn().mockResolvedValue({ role: "regular" }),
+					},
+					chatsTable: {
+						findFirst: vi.fn().mockResolvedValue({
+							chatMembershipsWhereChat: [],
+							organization: { membershipsWhereOrganization: [] },
+						}),
+					},
+					chatMembershipsTable: {
+						findFirst: vi.fn().mockResolvedValue(undefined),
+					},
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		await expect(
+			ChatMembershipResolver.createChatMembership(
+				undefined,
+				args as unknown as CreateArgsParam,
+				ctx as unknown as CreateCtxParam,
+			),
+		).rejects.toMatchObject({ extensions: { code: "unauthorized_arguments" } });
+	});
+
+	test("createChatMembership: unauthorized_action_on_arguments_associated_resources when cannot create membership", async () => {
+		const args = {
+			input: { chatId: faker.string.uuid(), memberId: faker.string.uuid() },
+		} as unknown as MockArgs;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-6" } },
+			drizzleClient: {
+				query: {
+					usersTable: {
+						findFirst: vi.fn().mockResolvedValue({ role: "regular" }),
+					},
+					chatsTable: {
+						findFirst: vi.fn().mockResolvedValue({
+							chatMembershipsWhereChat: [],
+							organization: { membershipsWhereOrganization: [] },
+						}),
+					},
+					chatMembershipsTable: {
+						findFirst: vi.fn().mockResolvedValue(undefined),
+					},
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		const result = await ChatMembershipResolver.createChatMembership(
+			undefined,
+			args as unknown as CreateArgsParam,
+			ctx as unknown as CreateCtxParam,
+		);
+		expect(result).toEqual({
+			chatMembershipsWhereChat: [],
+			organization: { membershipsWhereOrganization: [] },
+		});
+	});
+
+	test("createChatMembership: forbidden when existing chat membership present", async () => {
+		const args = {
+			input: { chatId: faker.string.uuid(), memberId: faker.string.uuid() },
+		} as unknown as MockArgs;
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-7" } },
+			drizzleClient: {
+				query: {
+					usersTable: {
+						findFirst: vi.fn().mockResolvedValue({ role: "regular" }),
+					},
+					chatsTable: {
+						findFirst: vi.fn().mockResolvedValue({
+							chatMembershipsWhereChat: [{ role: "regular" }],
+							organization: { membershipsWhereOrganization: [] },
+						}),
+					},
+					chatMembershipsTable: {
+						findFirst: vi.fn().mockResolvedValue(undefined),
+					},
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as MockCtx;
+
+		await expect(
+			ChatMembershipResolver.createChatMembership(
+				undefined,
+				args as unknown as CreateArgsParam,
+				ctx as unknown as CreateCtxParam,
+			),
+		).rejects.toMatchObject({
+			extensions: {
+				code: "forbidden_action_on_arguments_associated_resources",
+			},
+		});
+	});
+
+	test("unexpected when DB insert returns undefined (simulated defect)", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(creatorRes.data?.createUser);
+		const creator = creatorRes.data.createUser;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: creator.user?.id } },
+			});
+		});
+
+		const targetRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(targetRes.data?.createUser);
+		const target = targetRes.data.createUser;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: target.user?.id } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: creator.user?.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: creator.user?.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
+		const creatorToken = creatorSignIn.data.signIn
+			.authenticationToken as string;
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		const logSpy = vi.spyOn(server.log, "error");
+		type InsertChain = {
+			values: () => {
+				returning: () => Promise<unknown[]>;
+			};
+		};
+
+		const drizzleClient = server.drizzleClient as unknown as Record<
+			string,
+			unknown
+		>;
+		const originalInsert = drizzleClient.insert as unknown;
+		(drizzleClient as Record<string, unknown>).insert = (() => ({
+			values: () => ({
+				returning: async () => [undefined],
+			}),
+		})) as unknown as ((...args: unknown[]) => InsertChain) | undefined;
+
+		try {
+			const res = await mercuriusClient.mutate(Mutation_createChatMembership, {
+				headers: { authorization: `bearer ${creatorToken}` },
+				variables: { input: { chatId, memberId: target.user?.id } },
+			});
+
+			expect(res.errors).toBeDefined();
+			expect(res.errors?.[0]?.extensions?.code).toBe("unexpected");
+			expect(logSpy).toHaveBeenCalled();
+		} finally {
+			(drizzleClient as Record<string, unknown>).insert =
+				originalInsert as unknown as
+					| ((...args: unknown[]) => InsertChain)
+					| undefined;
+			logSpy.mockRestore();
+		}
 	});
 
 	test("creates membership when actor is org member (happy path)", async () => {
