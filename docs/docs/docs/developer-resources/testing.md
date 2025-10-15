@@ -127,7 +127,7 @@ The function returns an object with two properties:
 
 ### How Contributors Should Use It
 
-Follow these ste
+Follow these steps:
 #### Unit Testing Resolvers (With exposed mocks for verification)
 
 ```ts
