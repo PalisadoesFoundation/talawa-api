@@ -7,3 +7,4 @@ import "./messages";
 import "./organization";
 import "./updatedAt";
 import "./updater";
+import "./ChatMember";

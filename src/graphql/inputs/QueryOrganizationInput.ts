@@ -57,7 +57,10 @@ export const MembersWhereInput = builder
 				description: "Filter members by role",
 				required: false,
 			}),
-			// Add other filter fields here
+			name_contains: t.string({
+				description: "Filter members whose name includes the provided value",
+				required: false,
+			}),
 		}),
 	});
 

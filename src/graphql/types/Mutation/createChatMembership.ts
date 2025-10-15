@@ -541,31 +541,22 @@ builder.mutationField("createChatMembership", (t) =>
 				});
 			}
 
-			// Only admins can set roles other than "regular"
+			// Only org members can set roles other than "regular"
 			if (
 				parsedArgs.input.role !== undefined &&
 				parsedArgs.input.role !== "regular" &&
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator") &&
-				(currentUserChatMembership === undefined ||
-					currentUserChatMembership.role !== "administrator")
+				currentUserOrganizationMembership === undefined
 			) {
-				const unauthorizedArgumentPaths = getKeyPathsWithNonUndefinedValues({
-					keyPaths: [["input", "role"]],
-					object: parsedArgs,
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "role"],
+							},
+						],
+					},
 				});
-
-				if (unauthorizedArgumentPaths.length !== 0) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unauthorized_arguments",
-							issues: unauthorizedArgumentPaths.map((argumentPath) => ({
-								argumentPath,
-							})),
-						},
-					});
-				}
 			}
 
 			const [createdChatMembership] = await ctx.drizzleClient

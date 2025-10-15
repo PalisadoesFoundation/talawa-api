@@ -400,6 +400,18 @@ export const Query_getPledgesByUserId =
   }
 }`);
 
+export const Query_chat_members = gql(`
+query ChatMembers($input: QueryChatInput!, $first: Int, $last: Int, $after: String, $before: String) {
+  chat(input: $input) {
+    id
+    members(first: $first, last: $last, after: $after, before: $before) {
+      edges { cursor node { user { id } role } }
+      pageInfo { hasNextPage endCursor }
+    }
+  }
+}
+`);
+
 export const Mutation_createOrganization =
 	gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
     createOrganization(input: $input) {
@@ -879,6 +891,14 @@ export const Mutation_createChatMembership = gql(`
     }
   }
 }
+`);
+
+export const Mutation_deleteChatMembership = gql(`
+  mutation Mutation_deleteChatMembership($input: MutationDeleteChatMembershipInput!) {
+    deleteChatMembership(input: $input) {
+      id
+    }
+  }
 `);
 
 export const Mutation_joinPublicOrganization = gql(`
@@ -2053,6 +2073,50 @@ export const Query_getVolunteerMembership = gql(`
       }
       createdAt
       updatedAt
+    }
+  }
+`);
+
+export const Query_chat_with_unread = gql(`
+  query Query_chat_with_unread($input: QueryChatInput!) {
+    chat(input: $input) {
+      id
+      unreadMessagesCount
+      hasUnread
+      firstUnreadMessageId
+      lastMessage { id }
+    }
+  }
+`);
+
+export const Query_chat_with_creator = gql(`
+  query Query_chat_with_creator($input: QueryChatInput!) {
+    chat(input: $input) {
+      id
+      creator { id name }
+    }
+  }
+`);
+
+export const Query_unreadChats = gql(`
+  query Query_unreadChats {
+    unreadChats {
+      id
+      name
+    }
+  }
+`);
+
+export const Mutation_markChatAsRead = gql(`
+  mutation Mutation_markChatAsRead($input: MutationMarkChatAsReadInput!) {
+    markChatAsRead(input: $input)
+  }
+`);
+
+export const Mutation_updateChatMembership = gql(`
+  mutation Mutation_updateChatMembership($input: MutationUpdateChatMembershipInput!) {
+    updateChatMembership(input: $input) {
+      id
     }
   }
 `);

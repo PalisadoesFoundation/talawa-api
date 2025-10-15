@@ -1,3 +1,9 @@
+/*
+ * currently every stuffs related to chatMessageCreate subscription are dependable on
+ * this `chats.${parsedArgs.input.id}:chat_messages::create` in future we can have different topics
+ * for different kind of events like update and delete
+ * and we can have a generic subscription with a filter argument to filter out the events based on type
+ */
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -25,14 +31,6 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 		description:
 			"Subscription field to subscribe to the event of creation of a message in a chat.",
 		subscribe: async (_parent, args, ctx) => {
-			if (!ctx.currentClient.isAuthenticated) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
-
 			const {
 				success,
 				data: parsedArgs,
@@ -51,8 +49,14 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 				});
 			}
 
+			if (!ctx.currentClient.user?.id) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
 			const currentUserId = ctx.currentClient.user.id;
-
 			const [currentUser, existingChat] = await Promise.all([
 				ctx.drizzleClient.query.usersTable.findFirst({
 					columns: {
