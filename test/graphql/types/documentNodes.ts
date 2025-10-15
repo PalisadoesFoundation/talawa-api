@@ -400,6 +400,18 @@ export const Query_getPledgesByUserId =
   }
 }`);
 
+export const Query_chat_members = gql(`
+query ChatMembers($input: QueryChatInput!, $first: Int, $last: Int, $after: String, $before: String) {
+  chat(input: $input) {
+    id
+    members(first: $first, last: $last, after: $after, before: $before) {
+      edges { cursor node { user { id } role } }
+      pageInfo { hasNextPage endCursor }
+    }
+  }
+}
+`);
+
 export const Mutation_createOrganization =
 	gql(`mutation Mutation_createOrganization($input: MutationCreateOrganizationInput!) {
     createOrganization(input: $input) {

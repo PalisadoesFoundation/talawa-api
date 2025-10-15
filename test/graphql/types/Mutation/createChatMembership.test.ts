@@ -85,6 +85,39 @@ describe("Mutation: createChatMembership", () => {
 		).rejects.toMatchObject({ extensions: { code: "forbidden_action" } });
 	});
 
+	test("creator returns current user when creatorId equals currentUserId", async () => {
+		const parent = {
+			creatorId: "actor-creator-1",
+		} as unknown as CreatorParentParam;
+
+		const args = {} as unknown as Parameters<
+			typeof ChatMembershipResolver.creator
+		>[1];
+
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: "actor-creator-1" } },
+			drizzleClient: {
+				query: {
+					usersTable: {
+						findFirst: vi
+							.fn()
+							.mockResolvedValue({ id: "actor-creator-1", name: "Creator" }),
+					},
+					chatsTable: {
+						findFirst: vi.fn().mockResolvedValue({
+							id: faker.string.uuid(),
+							organization: { membershipsWhereOrganization: [] },
+						}),
+					},
+				},
+			},
+			log: { error: vi.fn() },
+		} as unknown as CreatorCtxParam;
+
+		const result = await ChatMembershipResolver.creator(parent, args, ctx);
+		expect(result).toEqual({ id: "actor-creator-1", name: "Creator" });
+	});
+
 	test("creator resolver: returns null when creatorId falsy", async () => {
 		const parent = {
 			id: "m2",
