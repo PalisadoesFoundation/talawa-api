@@ -183,7 +183,7 @@ suite("Query: unreadChats", () => {
 		});
 		assertToBeNonNullish(unreadRes.data?.unreadChats);
 		const unreadList = unreadRes.data.unreadChats;
-		expect(unreadList.some((c) => c.id === chatId)).toBe(true);
+		expect(unreadList.some((c: { id: string }) => c.id === chatId)).toBe(true);
 
 		const outsiderSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -202,7 +202,9 @@ suite("Query: unreadChats", () => {
 		});
 		assertToBeNonNullish(outsiderUnread.data?.unreadChats);
 		const outsiderList = outsiderUnread.data.unreadChats;
-		expect(outsiderList.some((c) => c.id === chatId)).toBe(false);
+		expect(outsiderList.some((c: { id: string }) => c.id === chatId)).toBe(
+			false,
+		);
 	});
 
 	test("does not count chats where lastReadAt is newer than messages", async () => {
@@ -312,7 +314,7 @@ suite("Query: unreadChats", () => {
 		});
 		assertToBeNonNullish(res.data?.unreadChats);
 		const afterList = res.data.unreadChats;
-		expect(afterList.some((c) => c.id === chatId)).toBe(false);
+		expect(afterList.some((c: { id: string }) => c.id === chatId)).toBe(false);
 	});
 
 	test("unauthenticated access returns unauthenticated error", async () => {
