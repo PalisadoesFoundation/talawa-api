@@ -60,6 +60,14 @@ export const chatMembershipsTable = pgTable(
 			enum: chatMembershipRoleEnum.options,
 		}).notNull(),
 		/**
+		 * Last time this member marked the chat as read.
+		 */
+		lastReadAt: timestamp("last_read_at", {
+			mode: "date",
+			precision: 3,
+			withTimezone: true,
+		}).$defaultFn(() => sql`${null}`),
+		/**
 		 * Date time at the time the chat membership was last updated.
 		 */
 		updatedAt: timestamp("updated_at", {
@@ -83,6 +91,7 @@ export const chatMembershipsTable = pgTable(
 		index().on(self.creatorId),
 		index().on(self.memberId),
 		index().on(self.role),
+		index().on(self.lastReadAt),
 		primaryKey({
 			columns: [self.chatId, self.memberId],
 		}),

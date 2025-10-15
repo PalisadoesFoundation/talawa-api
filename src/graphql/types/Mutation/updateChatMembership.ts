@@ -201,6 +201,23 @@ builder.mutationField("updateChatMembership", (t) =>
 				});
 			}
 
+			// Only org members can set roles other than "regular"
+			if (
+				parsedArgs.input.role !== "regular" &&
+				currentUserOrganizationMembership === undefined
+			) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "role"],
+							},
+						],
+					},
+				});
+			}
+
 			const [updatedChatMembership] = await ctx.drizzleClient
 				.update(chatMembershipsTable)
 				.set({

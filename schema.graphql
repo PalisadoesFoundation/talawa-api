@@ -323,8 +323,19 @@ type Chat {
   """Custom information about the chat."""
   description: String
 
+  """
+  ID of the first unread message for the current user in this chat, if any.
+  """
+  firstUnreadMessageId: ID
+
+  """Whether the current user has unread messages in this chat."""
+  hasUnread: Boolean
+
   """Global identifier of the chat."""
   id: ID!
+
+  """Most recent message in this chat."""
+  lastMessage: ChatMessage
 
   """
   GraphQL connection to traverse through the users that are members of the chat.
@@ -342,11 +353,23 @@ type Chat {
   """Organization which the chat belongs to."""
   organization: Organization
 
+  """Number of unread messages for the current user in this chat."""
+  unreadMessagesCount: Int
+
   """Date time at the time the chat was last updated."""
   updatedAt: DateTime
 
   """User who last updated the chat."""
   updater: User
+}
+
+"""A member of a chat with their role."""
+type ChatMember {
+  """The role of the user in the chat."""
+  role: ChatMembershipRole
+
+  """The user who is a member of the chat."""
+  user: User
 }
 
 """"""
@@ -358,7 +381,7 @@ type ChatMembersConnection {
 """"""
 type ChatMembersConnectionEdge {
   cursor: String!
-  node: User
+  node: ChatMember
 }
 
 """Possible variants of the role assigned to a user within a chat."""
@@ -1796,6 +1819,9 @@ input MembersRoleWhereInput {
 
 """Filter criteria for organization members"""
 input MembersWhereInput {
+  """Filter members whose name includes the provided value"""
+  name_contains: String
+
   """Filter members by role"""
   role: MembersRoleWhereInput
 }
@@ -2093,6 +2119,12 @@ type Mutation {
     """Mark an action item as pending for a single instance"""
     input: MutationMarkActionAsPendingForInstanceInput!
   ): ActionItem
+
+  """Marks a chat as read"""
+  markChatAsRead(
+    """The input for marking a chat as read"""
+    input: MutationMarkChatAsReadInput!
+  ): Boolean
   readNotification(input: MutationReadNotificationInput!): ReadNotificationResponse
 
   """Mutation field to reject a membership request by an admin."""
@@ -2928,6 +2960,15 @@ input MutationJoinPublicOrganizationInput {
 input MutationMarkActionAsPendingForInstanceInput {
   actionId: ID!
   eventId: ID!
+}
+
+"""Input for marking messages in a chat as read up to a specific message."""
+input MutationMarkChatAsReadInput {
+  """The ID of the chat to mark messages as read in."""
+  chatId: ID!
+
+  """The ID of the message to mark as read."""
+  messageId: ID!
 }
 
 """Input for marking one or more notifications as read."""
@@ -4255,6 +4296,12 @@ type Query {
     where: EventVolunteerGroupWhereInput!
   ): [EventVolunteerGroup!]
 
+  """Get pledges for the current user in a specific campaign."""
+  getMyPledgesForCampaign(
+    """Global id of the campaign."""
+    campaignId: ID!
+  ): [FundCampaignPledge!]
+
   """Query field to get fund campaign pledges associated with a user."""
   getPledgesByUserId(
     """Input parameters to fetch pledges by userId."""
@@ -4274,12 +4321,6 @@ type Query {
     """Filter criteria for pledges"""
     where: QueryPledgeWhereInput
   ): [FundCampaignPledge!]
-
-
-  """
-  Get pledges for the current user in a specific campaign.
-  """
-  getMyPledgesForCampaign(campaignId: ID!): [FundCampaignPledge!]
 
   """Query field to fetch a single plugin by ID."""
   getPluginById(
@@ -4330,6 +4371,9 @@ type Query {
 
   """Query field to read a tag folder."""
   tagFolder(input: QueryTagFolderInput!): TagFolder
+
+  """Query to get all chats with unread messages for the current user."""
+  unreadChats: [Chat!]
 
   """Query field to read a user."""
   user(input: QueryUserInput!): User
