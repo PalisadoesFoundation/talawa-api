@@ -137,6 +137,20 @@ builder.mutationField("updateChatMembership", (t) =>
 				});
 			}
 
+			// Prevent modifying memberships for direct (1:1) chats
+			if (existingChat.type === "direct") {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthorized_action_on_arguments_associated_resources",
+						issues: [
+							{
+								argumentPath: ["input", "chatId"],
+							},
+						],
+					},
+				});
+			}
+
 			if (existingMember === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {

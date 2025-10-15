@@ -11,6 +11,7 @@ export const mutationCreateChatInputSchema = chatsTableInsertSchema
 	})
 	.extend({
 		avatar: z.custom<Promise<FileUpload>>().nullish(),
+		participants: z.array(z.string()).optional(),
 	});
 
 export const MutationCreateChatInput = builder
@@ -23,6 +24,11 @@ export const MutationCreateChatInput = builder
 			avatar: t.field({
 				description: "Avatar of the chat.",
 				type: "Upload",
+			}),
+			participants: t.field({
+				description: "Participant ids for a direct chat (optional).",
+				type: t.listRef("ID", { required: true }),
+				required: false,
 			}),
 			description: t.string({
 				description: "Custom information about the chat.",

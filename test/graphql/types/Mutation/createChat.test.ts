@@ -114,10 +114,8 @@ suite("Mutation field createChat", () => {
 	const createdOrganizationIds: string[] = [];
 
 	beforeAll(async () => {
-		// Get admin token
 		adminAuthToken = await getAdminToken();
 
-		// Get admin user ID
 		const adminSignInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
@@ -129,17 +127,14 @@ suite("Mutation field createChat", () => {
 		assertToBeNonNullish(adminSignInResult.data?.signIn?.user?.id);
 		adminUserId = adminSignInResult.data.signIn.user.id;
 
-		// Create a test user
 		const regularUser = await createTestUser(adminAuthToken, "regular");
 		regularUserId = regularUser.userId;
 		regularUserAuthToken = regularUser.authToken;
 		createdUserIds.push(regularUserId);
 
-		// Create test organization
 		organizationId = await createTestOrganization(adminAuthToken);
 		createdOrganizationIds.push(organizationId);
 
-		// Add admin to organization
 		await createOrganizationMembership(
 			adminAuthToken,
 			adminUserId,
@@ -147,7 +142,6 @@ suite("Mutation field createChat", () => {
 			"administrator",
 		);
 
-		// Add regular user to organization
 		await createOrganizationMembership(
 			adminAuthToken,
 			regularUserId,
@@ -157,16 +151,13 @@ suite("Mutation field createChat", () => {
 	});
 
 	afterAll(async () => {
-		// Cleanup: Delete test data
 		for (const chatId of createdChatIds) {
 			try {
 				await mercuriusClient.mutate(Mutation_deleteChat, {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: chatId } },
 				});
-			} catch (error) {
-				// Ignore cleanup errors
-			}
+			} catch (error) {}
 		}
 
 		for (const userId of createdUserIds) {
@@ -175,9 +166,7 @@ suite("Mutation field createChat", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: userId } },
 				});
-			} catch (error) {
-				// Ignore cleanup errors
-			}
+			} catch (error) {}
 		}
 
 		for (const orgId of createdOrganizationIds) {
@@ -186,9 +175,7 @@ suite("Mutation field createChat", () => {
 					headers: { authorization: `bearer ${adminAuthToken}` },
 					variables: { input: { id: orgId } },
 				});
-			} catch (error) {
-				// Ignore cleanup errors
-			}
+			} catch (error) {}
 		}
 	});
 
@@ -389,5 +376,151 @@ suite("Mutation field createChat", () => {
 		if (result.data?.createChat?.id) {
 			createdChatIds.push(result.data.createChat.id);
 		}
+	});
+
+	test("can create a direct chat by passing participants", async () => {
+		const secondUser = await createTestUser(adminAuthToken, "regular");
+		createdUserIds.push(secondUser.userId);
+
+		await createOrganizationMembership(
+			adminAuthToken,
+			secondUser.userId,
+			organizationId,
+			"regular",
+		);
+
+		const chatName = `Direct Chat ${faker.string.uuid()}`;
+
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${regularUserAuthToken}` },
+			variables: {
+				input: {
+					name: chatName,
+					participants: [regularUserId, secondUser.userId],
+					organizationId: organizationId,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.createChat).not.toBeNull();
+		if (!result.data?.createChat?.id) {
+			throw new Error("expected chat id");
+		}
+
+		createdChatIds.push(result.data.createChat.id);
+
+		// verify in DB that chat is direct and has two regular memberships
+		const chat = await server.drizzleClient.query.chatsTable.findFirst({
+			where: (f, ops) => ops.eq(f.id, result.data.createChat.id),
+		});
+		expect(chat).not.toBeUndefined();
+		expect(chat?.type).toBe("direct");
+
+		const memberships =
+			await server.drizzleClient.query.chatMembershipsTable.findMany({
+				where: (fields, ops) =>
+					ops.eq(fields.chatId, result.data.createChat.id),
+			});
+		expect(memberships.length).toBeGreaterThanOrEqual(2);
+		expect(
+			memberships.filter((m) => m.role === "regular").length,
+		).toBeGreaterThanOrEqual(2);
+	});
+
+	test("invalid when creating a direct chat with the same user twice", async () => {
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${regularUserAuthToken}` },
+			variables: {
+				input: {
+					name: `bad-direct-${faker.string.uuid()}`,
+					participants: [regularUserId, regularUserId],
+					organizationId: organizationId,
+				},
+			},
+		});
+
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	});
+
+	test("creating the same direct chat twice returns the existing chat and does not duplicate memberships", async () => {
+		// create a fresh second user and add to organization
+		const secondUser = await createTestUser(adminAuthToken, "regular");
+		createdUserIds.push(secondUser.userId);
+
+		await createOrganizationMembership(
+			adminAuthToken,
+			secondUser.userId,
+			organizationId,
+			"regular",
+		);
+
+		const input = {
+			name: `Direct Idempotent ${faker.string.uuid()}`,
+			participants: [regularUserId, secondUser.userId],
+			organizationId,
+		};
+
+		const first = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${regularUserAuthToken}` },
+			variables: { input },
+		});
+
+		expect(first.errors).toBeUndefined();
+		expect(first.data?.createChat).not.toBeNull();
+		assertToBeNonNullish(first.data?.createChat?.id);
+		createdChatIds.push(first.data.createChat.id);
+
+		const second = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${regularUserAuthToken}` },
+			variables: { input },
+		});
+
+		expect(second.errors).toBeUndefined();
+		expect(second.data?.createChat).not.toBeNull();
+		assertToBeNonNullish(second.data?.createChat?.id);
+
+		const memberships =
+			await server.drizzleClient.query.chatMembershipsTable.findMany({
+				where: (f, ops) => ops.eq(f.chatId, first.data.createChat.id),
+			});
+		const memberIds = new Set(memberships.map((m) => m.memberId));
+		expect(memberIds.has(regularUserId)).toBe(true);
+		expect(memberIds.has(secondUser.userId)).toBe(true);
+		// ensure no duplicate rows per member
+		for (const id of memberIds) {
+			expect(memberships.filter((m) => m.memberId === id).length).toBe(1);
+		}
+	});
+
+	test("creator is administrator for created group chats", async () => {
+		const chatName = `CreatorAdmin ${faker.string.uuid()}`;
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${regularUserAuthToken}` },
+			variables: {
+				input: {
+					name: chatName,
+					organizationId: organizationId,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.createChat).not.toBeNull();
+		assertToBeNonNullish(result.data?.createChat?.id);
+		createdChatIds.push(result.data.createChat.id);
+
+		const membership =
+			await server.drizzleClient.query.chatMembershipsTable.findFirst({
+				where: (f, ops) =>
+					ops.and(
+						ops.eq(f.chatId, result.data.createChat.id),
+						ops.eq(f.memberId, regularUserId),
+					),
+			});
+
+		expect(membership).not.toBeUndefined();
+		expect(membership?.role).toBe("administrator");
 	});
 });

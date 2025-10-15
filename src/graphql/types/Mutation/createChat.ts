@@ -2,6 +2,7 @@ import type { FileUpload } from "graphql-upload-minimal";
 import { ulid } from "ulidx";
 import { z } from "zod";
 import { imageMimeTypeEnum } from "~/src/drizzle/enums/imageMimeType";
+import { chatMembershipsTable } from "~/src/drizzle/tables/chatMemberships";
 import { chatsTable } from "~/src/drizzle/tables/chats";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -136,7 +137,6 @@ builder.mutationField("createChat", (t) =>
 			const currentUserOrganizationMembership =
 				existingOrganization.membershipsWhereOrganization[0];
 
-			// Allow all users who are members of the organization to create chats
 			if (currentUserOrganizationMembership === undefined) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -158,6 +158,118 @@ builder.mutationField("createChat", (t) =>
 				avatarMimeType = parsedArgs.input.avatar.mimetype;
 			}
 
+			const participants = parsedArgs.input.participants;
+
+			if (Array.isArray(participants) && participants.length === 2) {
+				const [a, b] = participants as [string, string];
+				if (a === b) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "participants"],
+									message:
+										"Cannot create a direct chat with the same user as both participants.",
+								},
+							],
+						},
+					});
+				}
+
+				const [p1, p2] = a < b ? [a, b] : [b, a];
+				const participantsHash = `${p1}:${p2}`;
+
+				return await ctx.drizzleClient.transaction(async (tx) => {
+					// Try inserting chat with direct info. If another concurrent transaction created it,
+					// the unique constraint (we'll add migration) will prevent duplicates and this will return nothing.
+					const [maybeCreated] = await tx
+						.insert(chatsTable)
+						.values({
+							avatarMimeType,
+							avatarName,
+							creatorId: currentUserId,
+							description: parsedArgs.input.description,
+							name: parsedArgs.input.name,
+							organizationId: parsedArgs.input.organizationId,
+							type: "direct",
+							directParticipantsHash: participantsHash,
+						})
+						.returning();
+
+					if (maybeCreated !== undefined) {
+						await tx
+							.insert(chatMembershipsTable)
+							.values([
+								{
+									chatId: maybeCreated.id,
+									memberId: p1,
+									creatorId: currentUserId,
+									role: "regular",
+								},
+								{
+									chatId: maybeCreated.id,
+									memberId: p2,
+									creatorId: currentUserId,
+									role: "regular",
+								},
+							])
+							.onConflictDoNothing();
+
+						if (isNotNullish(parsedArgs.input.avatar)) {
+							await ctx.minio.client.putObject(
+								ctx.minio.bucketName,
+								avatarName,
+								parsedArgs.input.avatar.createReadStream(),
+								undefined,
+								{
+									"content-type": parsedArgs.input.avatar.mimetype,
+								},
+							);
+						}
+
+						return maybeCreated;
+					}
+					const existingChat = await tx.query.chatsTable.findFirst({
+						where: (fields, operators) =>
+							operators.and(
+								operators.eq(
+									fields.organizationId,
+									parsedArgs.input.organizationId,
+								),
+								operators.eq(fields.directParticipantsHash, participantsHash),
+								operators.eq(fields.type, "direct"),
+							),
+					});
+					if (!existingChat) {
+						throw new TalawaGraphQLError({
+							extensions: { code: "unexpected" },
+							message: "Failed to create or find direct chat.",
+						});
+					}
+
+					await tx
+						.insert(chatMembershipsTable)
+						.values([
+							{
+								chatId: existingChat.id,
+								memberId: p1,
+								creatorId: currentUserId,
+								role: "regular",
+							},
+							{
+								chatId: existingChat.id,
+								memberId: p2,
+								creatorId: currentUserId,
+								role: "regular",
+							},
+						])
+						.onConflictDoNothing();
+
+					return existingChat;
+				});
+			}
+
 			return await ctx.drizzleClient.transaction(async (tx) => {
 				const [createdChat] = await tx
 					.insert(chatsTable)
@@ -171,7 +283,6 @@ builder.mutationField("createChat", (t) =>
 					})
 					.returning();
 
-				// Inserted chat not being returned is an external defect unrelated to this code. It is very unlikely for this error to occur.
 				if (createdChat === undefined) {
 					ctx.log.error(
 						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
@@ -194,6 +305,16 @@ builder.mutationField("createChat", (t) =>
 						},
 					);
 				}
+
+				await tx
+					.insert(chatMembershipsTable)
+					.values({
+						chatId: createdChat.id,
+						memberId: currentUserId,
+						creatorId: currentUserId,
+						role: "administrator",
+					})
+					.onConflictDoNothing();
 
 				return createdChat;
 			});

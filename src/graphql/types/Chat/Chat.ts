@@ -43,6 +43,9 @@ Chat.implement({
 		name: t.exposeString("name", {
 			description: "Name of the chat.",
 		}),
+		type: t.exposeString("type", {
+			description: "Type of the chat: 'group' or 'direct'.",
+		}),
 		//this field beneath here contains N+1 Queries so this not used by default .
 		//if someone wants to use it they can explicitly ask for it in the query but this needs to be optimized later .
 		unreadMessagesCount: t.int({

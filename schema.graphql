@@ -353,6 +353,9 @@ type Chat {
   """Organization which the chat belongs to."""
   organization: Organization
 
+  """Type of the chat: 'group' or 'direct'."""
+  type: String
+
   """Number of unread messages for the current user in this chat."""
   unreadMessagesCount: Int
 
@@ -1902,7 +1905,7 @@ type Mutation {
   """Mutation field to create a chat."""
   createChat(input: MutationCreateChatInput!): Chat
 
-  """Mutation field to create a chat membership."""
+  """Add a member to a chat."""
   createChatMembership(input: MutationCreateChatMembershipInput!): Chat
 
   """Mutation field to create a chat message."""
@@ -2410,6 +2413,9 @@ input MutationCreateChatInput {
 
   """Global identifier of the associated organization."""
   organizationId: ID!
+
+  """Participant ids for a direct chat (optional)."""
+  participants: [ID!]
 }
 
 """"""
