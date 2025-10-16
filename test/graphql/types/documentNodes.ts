@@ -422,6 +422,23 @@ export const Mutation_createOrganization =
     }
   }`);
 
+export const Mutation_updateOrganization =
+	gql(`mutation Mutation_updateOrganization($input: MutationUpdateOrganizationInput!) {
+		updateOrganization(input: $input) {
+			id
+			name
+			description
+			addressLine1
+			addressLine2
+			city
+			state
+			postalCode
+			countryCode
+			isUserRegistrationRequired
+			avatarMimeType
+		}
+  }`);
+
 export const Mutation_createFund =
 	gql(`mutation Mutation_createFund($input: MutationCreateFundInput!) {
     createFund(input: $input) {
