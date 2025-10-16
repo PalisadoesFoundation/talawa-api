@@ -32,7 +32,6 @@ import { commentVotesTable } from "./commentVotes";
 import { commentsTable } from "./comments";
 import { communitiesTable } from "./communities";
 import { eventAttachmentsTable } from "./eventAttachments";
-import { eventAttendancesTable } from "./eventAttendances";
 import { eventsTable } from "./events";
 import { familiesTable } from "./families";
 import { familyMembershipsTable } from "./familyMemberships";
@@ -384,24 +383,7 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	eventAttachmentsWhereUpdater: many(eventAttachmentsTable, {
 		relationName: "event_attachments.updater_id:users.id",
 	}),
-	/**
-	 * One to many relationship from `users` table to `event_attendances` table.
-	 */
-	eventAttendancesWhereAttendee: many(eventAttendancesTable, {
-		relationName: "event_attendances.attendee_id:users.id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `event_attendances` table.
-	 */
-	eventAttendancesWhereCreator: many(eventAttendancesTable, {
-		relationName: "event_attendances.creator_id:users.id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `event_attendances` table.
-	 */
-	eventAttendancesWhereUpdater: many(eventAttendancesTable, {
-		relationName: "event_attendances.updater_id:users.id",
-	}),
+
 	/**
 	 * One to many relationship from `users` table to `families` table.
 	 */

@@ -1250,6 +1250,12 @@ export const Query_hasUserVoted = gql(`
   }
 `);
 
+export const Query_hasSubmittedFeedback = gql(`
+  query Query_hasSubmittedFeedback($userId: ID!, $eventId: ID, $recurringEventInstanceId: ID) {
+    hasSubmittedFeedback(userId: $userId, eventId: $eventId, recurringEventInstanceId: $recurringEventInstanceId)
+  }
+`);
+
 export const Query_postWithHasUserVoted = gql(`
   query Query_postWithHasUserVoted($input: QueryPostInput!, $userId: ID!) {
     post(input: $input) {
@@ -2117,6 +2123,205 @@ export const Mutation_updateChatMembership = gql(`
   mutation Mutation_updateChatMembership($input: MutationUpdateChatMembershipInput!) {
     updateChatMembership(input: $input) {
       id
+    }
+  }
+`);
+
+export const Mutation_registerEventAttendee = gql(`
+  mutation Mutation_registerEventAttendee($data: EventAttendeeInput!) {
+    registerEventAttendee(data: $data) {
+      id
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_inviteEventAttendee = gql(`
+  mutation Mutation_inviteEventAttendee($data: EventAttendeeInput!) {
+    inviteEventAttendee(data: $data) {
+      id
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_addEventAttendee = gql(`
+  mutation Mutation_addEventAttendee($data: EventAttendeeInput!) {
+    addEventAttendee(data: $data) {
+      id
+      name
+      emailAddress
+      isEmailAddressVerified
+      role
+      createdAt
+    }
+  }
+`);
+
+export const Mutation_registerForEvent = gql(`
+  mutation Mutation_registerForEvent($id: ID!) {
+    registerForEvent(id: $id) {
+      id
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
+export const Mutation_removeEventAttendee = gql(`
+  mutation Mutation_removeEventAttendee($data: EventAttendeeInput!) {
+    removeEventAttendee(data: $data) {
+      id
+      name
+      emailAddress
+      isEmailAddressVerified
+      role
+      createdAt
+    }
+  }
+`);
+
+export const Mutation_unregisterForEventByUser = gql(`
+  mutation Mutation_unregisterForEventByUser($id: ID!) {
+    unregisterForEventByUser(id: $id)
+  }
+`);
+
+export const Mutation_checkIn = gql(`
+  mutation Mutation_checkIn($data: CheckInCheckOutInput!) {
+    checkIn(data: $data) {
+      id
+      user {
+        id
+        name
+      }
+      checkinTime
+      checkoutTime
+      isCheckedIn
+      isCheckedOut
+      feedbackSubmitted
+    }
+  }
+`);
+
+export const Mutation_checkOut = gql(`
+  mutation Mutation_checkOut($data: CheckInCheckOutInput!) {
+    checkOut(data: $data) {
+      id
+      user {
+        id
+        name
+      }
+      checkinTime
+      checkoutTime
+      isCheckedIn
+      isCheckedOut
+      feedbackSubmitted
+    }
+  }
+`);
+
+export const Query_getEventAttendee = gql(`
+  query Query_getEventAttendee($userId: ID!, $eventId: ID, $recurringEventInstanceId: ID) {
+    getEventAttendee(userId: $userId, eventId: $eventId, recurringEventInstanceId: $recurringEventInstanceId) {
+      id
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      createdAt
+      updatedAt
+      checkinTime
+      checkoutTime
+      feedbackSubmitted
+      user {
+        id
+      }
+      event {
+        id
+      }
+    }
+  }
+`);
+
+export const Query_getEventAttendeesByEventId = gql(`
+  query Query_getEventAttendeesByEventId($eventId: ID, $recurringEventInstanceId: ID) {
+    getEventAttendeesByEventId(eventId: $eventId, recurringEventInstanceId: $recurringEventInstanceId) {
+      id
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      createdAt
+      updatedAt
+      checkinTime
+      checkoutTime
+      feedbackSubmitted
+      user {
+        id
+        name
+        emailAddress
+      }
+      event {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Query_getEventInvitesByUserId = gql(`
+  query Query_getEventInvitesByUserId($userId: ID!) {
+    getEventInvitesByUserId(userId: $userId) {
+      id
+      isInvited
+      isRegistered
+      isCheckedIn
+      isCheckedOut
+      createdAt
+      updatedAt
+      checkinTime
+      checkoutTime
+      feedbackSubmitted
+      user {
+        id
+      }
+      event {
+        id
+      }
+    }
+  }
+`);
+
+export const Query_getRecurringEvents = gql(`
+  query Query_getRecurringEvents($baseRecurringEventId: ID!) {
+    getRecurringEvents(baseRecurringEventId: $baseRecurringEventId) {
+      id
+      name
+      description
+      startAt
+      endAt
+      isPublic
+      isRegisterable
+      location
+      isRecurringEventTemplate
+      recurrenceRule {
+        id
+      }
     }
   }
 `);
