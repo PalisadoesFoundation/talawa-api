@@ -114,7 +114,7 @@ jobs:
       - name: Check type errors
         run: docker container run talawa_api pnpm check_type_errors
 
-  check_docs_code_quality:
+  Check_docs_code_quality:
     name: Check docs code quality
     runs-on: ubuntu-latest
     steps:
@@ -123,11 +123,11 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.2.1
+          version: 10.x
       - name: Setup Node with pnpm cache (docs)
         uses: actions/setup-node@v4
         with:
-          node-version: 23.7.0
+          node-version: 22.x
           cache: pnpm
           cache-dependency-path: |
             docs/pnpm-lock.yaml
@@ -139,7 +139,7 @@ jobs:
         working-directory: ./docs
         run: pnpm check_code_quality
 
-  check_docs_type_errors:
+  Check_docs_type_errors:
     name: check docs type errors
     runs-on: ubuntu-latest
     steps:
@@ -148,11 +148,11 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.2.1
+          version: 10.x
       - name: Setup Node with pnpm cache (docs)
         uses: actions/setup-node@v4
         with:
-          node-version: 23.7.0
+          node-version: 22.x
           cache: pnpm
           cache-dependency-path: |
             docs/pnpm-lock.yaml

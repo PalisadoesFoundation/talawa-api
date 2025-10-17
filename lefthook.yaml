@@ -36,7 +36,7 @@ pre-commit:
       run: |
         set -e
         pnpm -C docs fix_code_quality
-        git add -A docs/
+        git add {staged_files}
 
     10_docs_check_code_quality:
       glob: "docs/**/*.{ts,tsx,js,jsx,json,jsonc}"

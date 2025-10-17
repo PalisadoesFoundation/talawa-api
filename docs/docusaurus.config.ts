@@ -35,7 +35,7 @@ const config: Config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       {
         docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
+          sidebarPath: require.resolve('./sidebars.ts'),
           editUrl: ({ docPath }: { docPath: string }) => {
             return `https://github.com/PalisadoesFoundation/talawa-api/edit/develop/docs/docs/${docPath}`;
           },
@@ -70,19 +70,19 @@ const config: Config = {
         {
           position: 'left',
           label: 'General',
-          to: 'https://docs.talawa.io/docs',
+          href: 'https://docs.talawa.io/docs',
           target: '_self',
         },
         {
           label: 'Mobile Guide',
           position: 'left',
-          to: 'https://docs-mobile.talawa.io/docs',
+          href: 'https://docs-mobile.talawa.io/docs',
           target: '_self',
         },
         {
           label: 'Admin Guide',
           position: 'left',
-          to: 'https://docs-admin.talawa.io/docs',
+          href: 'https://docs-admin.talawa.io/docs',
           target: '_self',
         },
         {
@@ -94,13 +94,13 @@ const config: Config = {
         {
           label: 'Plugin Guide',
           position: 'left',
-          to: 'https://docs-plugin.talawa.io/docs',
+          href: 'https://docs-plugin.talawa.io/docs',
           target: '_self',
         },
         {
           label: 'Demo',
           position: 'left',
-          to: 'https://demo.talawa.io/',
+          href: 'https://demo.talawa.io/',
         },
         {
           to: 'https://github.com/PalisadoesFoundation',
@@ -144,17 +144,17 @@ const config: Config = {
           items: [
             {
               label: ' Twitter',
-              to: 'https://twitter.com/palisadoesorg?lang=en',
+              href: 'https://twitter.com/palisadoesorg?lang=en',
               className: 'footer__icon footer__twitter',
             },
             {
               label: ' Facebook',
-              to: 'https://www.facebook.com/palisadoesproject/',
+              href: 'https://www.facebook.com/palisadoesproject/',
               className: 'footer__icon footer__facebook',
             },
             {
               label: ' Instagram',
-              to: 'https://www.instagram.com/palisadoes/?hl=en',
+              href: 'https://www.instagram.com/palisadoes/?hl=en',
               className: 'footer__icon footer__instagram',
             },
           ],
@@ -164,7 +164,7 @@ const config: Config = {
           items: [
             {
               label: ' GitHub',
-              to: 'https://github.com/PalisadoesFoundation',
+              href: 'https://github.com/PalisadoesFoundation',
               className: 'footer__icon footer__github',
             },
           ],
