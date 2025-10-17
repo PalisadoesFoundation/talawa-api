@@ -9,6 +9,7 @@ import type {
 	ExplicitGraphQLContext,
 } from "~/src/graphql/context";
 import schemaManager from "~/src/graphql/schemaManager";
+import NotificationService from "~/src/services/notification/NotificationService";
 import { TalawaGraphQLError } from "../utilities/TalawaGraphQLError";
 import leakyBucket from "../utilities/leakyBucket";
 
@@ -77,6 +78,8 @@ export const createContext: CreateContext = async (initialContext) => {
 		},
 		log: fastify.log,
 		minio: fastify.minio,
+		// attached a per-request notification service that queues notifications and can flush later
+		notification: new NotificationService(),
 	};
 };
 
@@ -154,6 +157,7 @@ export const graphql = fastifyPlugin(async (fastify) => {
 						},
 						log: fastify.log,
 						minio: fastify.minio,
+						notification: new NotificationService(),
 					};
 				} catch (error) {
 					fastify.log.error(

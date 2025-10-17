@@ -162,7 +162,6 @@ export class NotificationEngine {
 			allUserIds = [...allUserIds, ...userIds];
 		}
 
-		// Remove duplicates
 		const uniqueUserIds = [...new Set(allUserIds)];
 
 		if (uniqueUserIds.length === 0) {
@@ -191,7 +190,7 @@ export class NotificationEngine {
 		const subject = renderedTemplate.title;
 		const htmlBody = renderedTemplate.body;
 
-		// Create email notification records
+		// Creating email notification records
 		const emailNotifications = usersWithEmail.map((user) => ({
 			id: uuidv7(),
 			notificationLogId,
@@ -204,7 +203,7 @@ export class NotificationEngine {
 			maxRetries: 3,
 		}));
 
-		// Insert email notifications
+		// Inserting email notifications
 		await this.ctx.drizzleClient
 			.insert(emailNotificationsTable)
 			.values(emailNotifications);

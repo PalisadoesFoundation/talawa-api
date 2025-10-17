@@ -69,6 +69,13 @@ export function createMockGraphQLContext(
 		...implicitContext,
 	};
 
+	// Provide a minimal notification stub compatible with the real NotificationService
+	(context as GraphQLContext).notification = {
+		flush: async () => {},
+		enqueueEventCreated: () => {},
+		emitEventCreatedImmediate: async () => {},
+	};
+
 	// Return both the context and exposed mocks for easier testing
 	return {
 		context,
