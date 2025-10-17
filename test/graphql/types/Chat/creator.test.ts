@@ -178,6 +178,7 @@ suite("Chat field creator", () => {
 			},
 		});
 		assertToBeNonNullish(tempUser.data?.createUser);
+		assertToBeNonNullish(tempUser.data.createUser.user);
 		const tempAuth = tempUser.data.createUser.authenticationToken;
 		const tempUserId = tempUser.data.createUser.user.id;
 
@@ -250,6 +251,7 @@ suite("Chat field creator", () => {
 			},
 		});
 		assertToBeNonNullish(adminCreator.data?.createUser);
+		assertToBeNonNullish(adminCreator.data.createUser.user);
 		const adminCreatorId = adminCreator.data.createUser.user.id;
 		const adminCreatorAuth = adminCreator.data.createUser.authenticationToken;
 

@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { assertToBeNonNullish } from "test/helpers";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -53,11 +54,17 @@ describe("Chat.members integration tests", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(creatorRes.data?.createUser);
 		const creator = creatorRes.data?.createUser;
+
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user?.id);
+
+		const creatorId = creator.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: creator.user?.id } },
+				variables: { input: { id: creatorId } },
 			});
 		});
 
@@ -73,11 +80,17 @@ describe("Chat.members integration tests", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(memberARes.data?.createUser);
 		const memberA = memberARes.data?.createUser;
+
+		assertToBeNonNullish(memberA.user);
+		assertToBeNonNullish(memberA.user?.id);
+
+		const memberAId = memberA.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: memberA.user?.id } },
+				variables: { input: { id: memberAId } },
 			});
 		});
 
@@ -93,11 +106,17 @@ describe("Chat.members integration tests", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(memberBRes.data?.createUser);
 		const memberB = memberBRes.data?.createUser;
+
+		assertToBeNonNullish(memberB.user);
+		assertToBeNonNullish(memberB.user?.id);
+
+		const memberBId = memberB.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: memberB.user?.id } },
+				variables: { input: { id: memberBId } },
 			});
 		});
 
@@ -107,6 +126,7 @@ describe("Chat.members integration tests", () => {
 				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
 			},
 		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
 		const org = orgRes.data?.createOrganization;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
@@ -119,17 +139,18 @@ describe("Chat.members integration tests", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: creator.user?.id,
+					memberId: creator.user.id,
 					organizationId: org.id,
 					role: "regular",
 				},
 			},
 		});
 
+		assertToBeNonNullish(creator.user?.emailAddress);
 		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: creator.user?.emailAddress,
+					emailAddress: creator.user.emailAddress,
 					password: "password123",
 				},
 			},
@@ -143,6 +164,7 @@ describe("Chat.members integration tests", () => {
 				input: { name: `chat-${faker.string.uuid()}`, organizationId: org.id },
 			},
 		});
+		assertToBeNonNullish(chatRes.data?.createChat);
 		const chat = chatRes.data?.createChat;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteChat, {
@@ -153,7 +175,7 @@ describe("Chat.members integration tests", () => {
 		await mercuriusClient.mutate(Mutation_createChatMembership, {
 			headers: { authorization: `bearer ${creatorToken}` },
 			variables: {
-				input: { chatId: chat.id, memberId: memberA.user?.id, role: "regular" },
+				input: { chatId: chat.id, memberId: memberA.user.id, role: "regular" },
 			},
 		});
 
@@ -162,7 +184,7 @@ describe("Chat.members integration tests", () => {
 		await mercuriusClient.mutate(Mutation_createChatMembership, {
 			headers: { authorization: `bearer ${creatorToken}` },
 			variables: {
-				input: { chatId: chat.id, memberId: memberB.user?.id, role: "regular" },
+				input: { chatId: chat.id, memberId: memberB.user.id, role: "regular" },
 			},
 		});
 
@@ -233,11 +255,17 @@ describe("Chat.members integration tests", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(creatorRes.data?.createUser);
 		const creator = creatorRes.data?.createUser;
+
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user?.id);
+
+		const creatorId = creator.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: creator.user?.id } },
+				variables: { input: { id: creatorId } },
 			});
 		});
 
@@ -247,6 +275,7 @@ describe("Chat.members integration tests", () => {
 				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
 			},
 		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
 		const org = orgRes.data?.createOrganization;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
@@ -259,17 +288,18 @@ describe("Chat.members integration tests", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: creator.user?.id,
+					memberId: creator.user.id,
 					organizationId: org.id,
 					role: "regular",
 				},
 			},
 		});
 
+		assertToBeNonNullish(creator.user?.emailAddress);
 		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: creator.user?.emailAddress,
+					emailAddress: creator.user.emailAddress,
 					password: "password123",
 				},
 			},
@@ -283,6 +313,7 @@ describe("Chat.members integration tests", () => {
 				input: { name: `chat-${faker.string.uuid()}`, organizationId: org.id },
 			},
 		});
+		assertToBeNonNullish(chatRes.data?.createChat);
 		const chat = chatRes.data?.createChat;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteChat, {
@@ -354,11 +385,17 @@ describe("Chat.members additional edge cases", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(creatorRes.data?.createUser);
 		const creator = creatorRes.data?.createUser;
+
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user?.id);
+
+		const creatorId = creator.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: creator.user?.id } },
+				variables: { input: { id: creatorId } },
 			});
 		});
 
@@ -368,6 +405,7 @@ describe("Chat.members additional edge cases", () => {
 				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
 			},
 		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
 		const org = orgRes.data?.createOrganization;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
@@ -380,17 +418,18 @@ describe("Chat.members additional edge cases", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: creator.user?.id,
+					memberId: creator.user.id,
 					organizationId: org.id,
 					role: "regular",
 				},
 			},
 		});
 
+		assertToBeNonNullish(creator.user?.emailAddress);
 		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: creator.user?.emailAddress,
+					emailAddress: creator.user.emailAddress,
 					password: "password123",
 				},
 			},
@@ -404,6 +443,7 @@ describe("Chat.members additional edge cases", () => {
 				input: { name: `chat-${faker.string.uuid()}`, organizationId: org.id },
 			},
 		});
+		assertToBeNonNullish(chatRes.data?.createChat);
 		const chat = chatRes.data?.createChat;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteChat, {
@@ -443,11 +483,17 @@ describe("Chat.members additional edge cases", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(u1Res.data?.createUser);
 		const u1 = u1Res.data?.createUser;
+
+		assertToBeNonNullish(u1.user);
+		assertToBeNonNullish(u1.user?.id);
+
+		const u1Id = u1.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: u1.user?.id } },
+				variables: { input: { id: u1Id } },
 			});
 		});
 
@@ -463,11 +509,17 @@ describe("Chat.members additional edge cases", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(u2Res.data?.createUser);
 		const u2 = u2Res.data?.createUser;
+
+		assertToBeNonNullish(u2.user);
+		assertToBeNonNullish(u2.user?.id);
+
+		const u2Id = u2.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: u2.user?.id } },
+				variables: { input: { id: u2Id } },
 			});
 		});
 
@@ -477,6 +529,7 @@ describe("Chat.members additional edge cases", () => {
 				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
 			},
 		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
 		const org = orgRes.data?.createOrganization;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteOrganization, {
@@ -489,16 +542,17 @@ describe("Chat.members additional edge cases", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: u1.user?.id,
+					memberId: u1.user.id,
 					organizationId: org.id,
 					role: "regular",
 				},
 			},
 		});
 
+		assertToBeNonNullish(u1.user?.emailAddress);
 		const u1SignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
-				input: { emailAddress: u1.user?.emailAddress, password: "password123" },
+				input: { emailAddress: u1.user.emailAddress, password: "password123" },
 			},
 		});
 		const u1Token = u1SignIn.data?.signIn?.authenticationToken as string;
@@ -509,6 +563,7 @@ describe("Chat.members additional edge cases", () => {
 				input: { name: `chat-${faker.string.uuid()}`, organizationId: org.id },
 			},
 		});
+		assertToBeNonNullish(chatRes.data?.createChat);
 		const chat = chatRes.data?.createChat;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteChat, {
@@ -520,7 +575,7 @@ describe("Chat.members additional edge cases", () => {
 		await mercuriusClient.mutate(Mutation_createChatMembership, {
 			headers: { authorization: `bearer ${u1Token}` },
 			variables: {
-				input: { chatId: chat.id, memberId: u2.user?.id, role: "regular" },
+				input: { chatId: chat.id, memberId: u2.user.id, role: "regular" },
 			},
 		});
 

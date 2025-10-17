@@ -32,6 +32,7 @@ RUN groupmod -n talawa vscode \
 && touch /commandhistory/.bash_history \
 && chown -R talawa /commandhistory \
 && echo "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" >> /home/talawa/.bashrc
+
 # Create a global profile script that both login and non-interactive shells load
 RUN echo '#!/bin/sh' > /etc/profile.d/fnm.sh \
     && echo 'export PATH="/home/talawa/.local/share/fnm:$PATH"' >> /etc/profile.d/fnm.sh \

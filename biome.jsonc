@@ -13,10 +13,7 @@
 			"./schema.graphql",
 			"./test/graphql/types/gql.tada.d.ts",
 			"./test/graphql/types/gql.tada-cache.d.ts",
-			"./docs/tsconfig.json",
-			"./docs/docusaurus.config.ts",
-			"./docs/src/**",
-			"./docs/sidebars.ts",
+			"./docs/**",
 			"./sample_data/**"
 		],
 		// https://biomejs.dev/reference/configuration/#filesignoreunknown

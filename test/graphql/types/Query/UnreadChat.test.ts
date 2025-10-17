@@ -84,10 +84,15 @@ suite("Query: unreadChats", () => {
 		});
 		assertToBeNonNullish(memberRes.data?.createUser);
 		const member = memberRes.data.createUser;
+		assertToBeNonNullish(member.user);
+		assertToBeNonNullish(member.user.id);
+		assertToBeNonNullish(member.user.emailAddress);
+		const memberId = member.user.id;
+		const memberEmail = member.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: member.user?.id } },
+				variables: { input: { id: memberId } },
 			});
 		});
 
@@ -105,10 +110,15 @@ suite("Query: unreadChats", () => {
 		});
 		assertToBeNonNullish(outsiderRes.data?.createUser);
 		const outsider = outsiderRes.data.createUser;
+		assertToBeNonNullish(outsider.user);
+		assertToBeNonNullish(outsider.user.id);
+		assertToBeNonNullish(outsider.user.emailAddress);
+		const outsiderId = outsider.user.id;
+		const outsiderEmail = outsider.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: outsider.user?.id } },
+				variables: { input: { id: outsiderId } },
 			});
 		});
 
@@ -131,7 +141,7 @@ suite("Query: unreadChats", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: member.user?.id,
+					memberId: memberId,
 					organizationId: orgId,
 					role: "regular",
 				},
@@ -155,7 +165,7 @@ suite("Query: unreadChats", () => {
 
 		await mercuriusClient.mutate(Mutation_createChatMembership, {
 			headers: { authorization: `bearer ${member.authenticationToken}` },
-			variables: { input: { chatId, memberId: member.user?.id } },
+			variables: { input: { chatId, memberId: memberId } },
 		});
 
 		await mercuriusClient.mutate(Mutation_createChatMessage, {
@@ -170,7 +180,7 @@ suite("Query: unreadChats", () => {
 		const memberSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: member.user?.emailAddress,
+					emailAddress: memberEmail,
 					password: "password123",
 				},
 			},
@@ -188,7 +198,7 @@ suite("Query: unreadChats", () => {
 		const outsiderSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: outsider.user?.emailAddress,
+					emailAddress: outsiderEmail,
 					password: "password123",
 				},
 			},
@@ -233,10 +243,15 @@ suite("Query: unreadChats", () => {
 		});
 		assertToBeNonNullish(userRes.data?.createUser);
 		const user = userRes.data.createUser;
+		assertToBeNonNullish(user.user);
+		assertToBeNonNullish(user.user.id);
+		assertToBeNonNullish(user.user.emailAddress);
+		const userId = user.user.id;
+		const userEmail = user.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: user.user?.id } },
+				variables: { input: { id: userId } },
 			});
 		});
 
@@ -259,7 +274,7 @@ suite("Query: unreadChats", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: user.user?.id,
+					memberId: userId,
 					organizationId: orgId,
 					role: "regular",
 				},
@@ -283,7 +298,7 @@ suite("Query: unreadChats", () => {
 
 		await mercuriusClient.mutate(Mutation_createChatMembership, {
 			headers: { authorization: `bearer ${user.authenticationToken}` },
-			variables: { input: { chatId, memberId: user.user?.id } },
+			variables: { input: { chatId, memberId: userId } },
 		});
 
 		const msgRes = await mercuriusClient.mutate(Mutation_createChatMessage, {
@@ -296,7 +311,7 @@ suite("Query: unreadChats", () => {
 		const signIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: user.user?.emailAddress,
+					emailAddress: userEmail,
 					password: "password123",
 				},
 			},

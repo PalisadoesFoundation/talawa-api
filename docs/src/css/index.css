@@ -142,8 +142,7 @@
 /* Section */
 .Section {
   width: 100%;
-  padding-top: 50px;
-  padding: 0 1.25rem;
+  padding: 50px 1.25rem 0;
   overflow-x: hidden;
   margin-bottom: 5rem;
 }

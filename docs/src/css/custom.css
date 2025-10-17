@@ -34,7 +34,8 @@
   --ifm-toc-link-color: var(--ifm-color-gray-600);
   --ifm-breadcrumb-color-active: var(--primary-neutral-600);
   --ifm-table-stripe-background: #efeff2;
-  --ifm-font-family-base: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
+  --ifm-font-family-base:
+    system-ui, -apple-system, Segoe UI, Roboto, Ubuntu,
     Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, "Segoe UI", Helvetica,
     Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --ifm-font-family-monospace: "IBM Plex Mono", SFMono-Regular, Menlo, Monaco,

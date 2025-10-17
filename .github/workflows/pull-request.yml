@@ -13,7 +13,7 @@ name: Pull request workflow
 on:
   pull_request:
     branches:
-      - "**"
+    - "**"
 env:
   CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
 
@@ -24,417 +24,439 @@ jobs:
     name: Check base branch of the pull request to be develop
     runs-on: ubuntu-latest
     steps:
-      - if: github.event.pull_request.base.ref != 'develop'
-        name: Check base branch
-        run: |
-          echo "Pull requests are only allowed against the 'develop' branch. Please refer to the pull request guidelines."
-          echo "Error: Close this PR and try again."
-          exit 1
+    - if: github.event.pull_request.base.ref != 'develop'
+      name: Check base branch
+      run: |
+        echo "Pull requests are only allowed against the 'develop' branch. Please refer to the pull request guidelines."
+        echo "Error: Close this PR and try again."
+        exit 1
 
   Code-Quality-Checks:
     name: Checking code quality
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
-      - name: Build talawa api non production environment docker image
-        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
-      - name: Check type errors
-        run: docker container run talawa_api pnpm check_code_quality
-      - name: Check if the source and target branches are different
-        if: ${{ github.event.pull_request.base.ref == github.event.pull_request.head.ref }}
-        run: |
-          echo "Source Branch ${{ github.event.pull_request.head.ref }}"
-          echo "Target Branch ${{ github.event.pull_request.base.ref }}"
-          echo "Error: Source and Target Branches are the same. Please ensure they are different."
-          echo "Error: Close this PR and try again."
-          exit 1
+    - name: Checkout this repository
+      uses: actions/checkout@v4.2.2
+    - name: Build talawa api non production environment docker image
+      run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
+    - name: Check type errors
+      run: docker container run talawa_api pnpm check_code_quality
+    - name: Check if the source and target branches are different
+      if: ${{ github.event.pull_request.base.ref == github.event.pull_request.head.ref }}
+      run: |
+        echo "Source Branch ${{ github.event.pull_request.head.ref }}"
+        echo "Target Branch ${{ github.event.pull_request.base.ref }}"
+        echo "Error: Source and Target Branches are the same. Please ensure they are different."
+        echo "Error: Close this PR and try again."
+        exit 1
 
   python_checks:
     name: Run Python Checks
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Get changed files
-        id: changed-files
-        run: |
-          echo "all_changed_files=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')" >> $GITHUB_OUTPUT
+    - name: Get changed files
+      id: changed-files
+      run: |
+        echo "all_changed_files=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | tr '\n' ' ')" >> $GITHUB_OUTPUT
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.9
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.9
 
-      - name: Run Biome Ignore Check
-        run: |
-          python .github/workflows/scripts/biome_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+    - name: Run Biome Ignore Check
+      run: |
+        python .github/workflows/scripts/biome_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
-      - name: Run Code Coverage Disable Check
-        run: |
-          python .github/workflows/scripts/code_coverage_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+    - name: Run Code Coverage Disable Check
+      run: |
+        python .github/workflows/scripts/code_coverage_disable_check.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
-      - name: Run TS Ignore Check
-        run: |
-          python .github/workflows/scripts/detect_ts_ignore.py --files ${{ steps.changed-files.outputs.all_changed_files }}
+    - name: Run TS Ignore Check
+      run: |
+        python .github/workflows/scripts/detect_ts_ignore.py --files ${{ steps.changed-files.outputs.all_changed_files }}
 
   check_gql_tada:
     name: Check gql tada files and configuration
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
-      - name: Build talawa api non production environment docker image
-        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
-      - name: Check gql tada
-        run: docker container run talawa_api pnpm check_gql_tada
+    - name: Checkout this repository
+      uses: actions/checkout@v4.2.2
+    - name: Build talawa api non production environment docker image
+      run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
+    - name: Check gql tada
+      run: docker container run talawa_api pnpm check_gql_tada
 
   check_drizzle_migrations:
     name: Check drizzle migration files
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
-      - name: Build talawa api non production environment docker image
-        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
-      - name: Check drizzle migrations
-        run: docker container run --env-file ./envFiles/.env.ci talawa_api pnpm check_drizzle_migrations
+    - name: Checkout this repository
+      uses: actions/checkout@v4.2.2
+    - name: Build talawa api non production environment docker image
+      run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
+    - name: Check drizzle migrations
+      run: docker container run --env-file ./envFiles/.env.ci talawa_api pnpm check_drizzle_migrations
 
   check_type_errors:
     name: Check type errors
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
-      - name: Build talawa api non production environment docker image
-        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
-      - name: Check type errors
-        run: docker container run talawa_api pnpm check_type_errors
+    - name: Checkout this repository
+      uses: actions/checkout@v4.2.2
+    - name: Build talawa api non production environment docker image
+      run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
+    - name: Check type errors
+      run: docker container run talawa_api pnpm check_type_errors
+
+  check_docs_code_quality:
+    name: Check docs code quality
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout this repository
+      uses: actions/checkout@v4.2.2
+    - name: Build talawa api non production environment docker image
+      run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
+    - name: Check docs code quality
+      run: docker container run talawa_api pnpm check_docs_code_quality
+  
+  check_docs_type_errors:
+    name: check_docs_type_errors
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout this repository
+      uses: actions/checkout@v4.2.2
+    - name: Build talawa api non production environment docker image
+      run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
+    - name: Check docs type errors
+      run: docker container run talawa_api pnpm check_docs_type_errors
 
   Check-Sensitive-Files:
     if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.pull_request.labels.*.name, 'ignore-sensitive-files-pr') }}
     name: Checks if sensitive files have been changed without authorization
-    needs: [Code-Quality-Checks]
+    needs: [ Code-Quality-Checks ]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
-        with:
-          fetch-depth: 0
-      - id: changed_files
-        name: Get changed files
-        run: |
-          SENSITIVE_FILES=(
-            .coderabbit.yaml
-            Caddyfile
-            codegen.ts
-            "Dockerfile*"
-            "docker-compose*"
-            "drizzle_migrations/**"
-            .dockerignore
-            .env.sample
-            .env_test
-            eslint.config.mjs
-            "envFiles/**"
-            .gitignore
-            init-mongo.sh
-            .prettierignore
-            .prettierrc.json
-            .pylintrc
-            ".github/**"
-            biome.jsonc
-            renovate.json
-            requirements.txt
-            schema.graphql
-            CODEOWNERS
-            LICENSE
-            tsconfig.json
-            vitest.config.ts
-            pnpm-lock.yaml
-            package.json
-            package-lock.json
-            .nojekyll
-            docs/docusaurus.config.ts
-            "docs/sidebar*"
-            setup.ts
-            "src/graphql/types/Mutation/**"
-            "src/graphql/types/Query/**"
-            tsconfig.build.json
-            vite.config.mts
-            CNAME
-            CODE_OF_CONDUCT.md
-            CODE_STYLE.md
-            CONTRIBUTING.md
-            DOCUMENTATION.md
-            INSTALLATION.md
-            ISSUE_GUIDELINES.md
-            PR_GUIDELINES.md
-            README.md
-          )
-          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-          DELETED_FILES=$(git diff --name-only --diff-filter=D ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-          SENSITIVE_CHANGED=false
-          ALL_CHANGED_FILES=""
-          for PATTERN in "${SENSITIVE_FILES[@]}"; do
-            for FILE in $CHANGED_FILES $DELETED_FILES; do
-              if [[ "$FILE" == "$PATTERN" || "$FILE" =~ $PATTERN ]]; then
-                ALL_CHANGED_FILES+="$FILE "
-                SENSITIVE_CHANGED=true
-              fi
-            done
+    - name: Checkout this repository
+      uses: actions/checkout@v4.2.2
+      with:
+        fetch-depth: 0
+    - id: changed_files
+      name: Get changed files
+      run: |
+        SENSITIVE_FILES=(
+          .coderabbit.yaml
+          Caddyfile
+          codegen.ts
+          "Dockerfile*"
+          "docker-compose*"
+          "drizzle_migrations/**"
+          .dockerignore
+          .env.sample
+          .env_test
+          eslint.config.mjs
+          "envFiles/**"
+          .gitignore
+          init-mongo.sh
+          .prettierignore
+          .prettierrc.json
+          .pylintrc
+          ".github/**"
+          biome.jsonc
+          renovate.json
+          requirements.txt
+          schema.graphql
+          CODEOWNERS
+          LICENSE
+          tsconfig.json
+          vitest.config.ts
+          pnpm-lock.yaml
+          package.json
+          package-lock.json
+          .nojekyll
+          docs/docusaurus.config.ts
+          "docs/sidebar*"
+          setup.ts
+          "src/graphql/types/Mutation/**"
+          "src/graphql/types/Query/**"
+          tsconfig.build.json
+          vite.config.mts
+          CNAME
+          CODE_OF_CONDUCT.md
+          CODE_STYLE.md
+          CONTRIBUTING.md
+          DOCUMENTATION.md
+          INSTALLATION.md
+          ISSUE_GUIDELINES.md
+          PR_GUIDELINES.md
+          README.md
+        )
+        CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+        DELETED_FILES=$(git diff --name-only --diff-filter=D ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+        SENSITIVE_CHANGED=false
+        ALL_CHANGED_FILES=""
+        for PATTERN in "${SENSITIVE_FILES[@]}"; do
+          for FILE in $CHANGED_FILES $DELETED_FILES; do
+            if [[ "$FILE" == "$PATTERN" || "$FILE" =~ $PATTERN ]]; then
+              ALL_CHANGED_FILES+="$FILE "
+              SENSITIVE_CHANGED=true
+            fi
           done
-          echo "all_changed_files=$ALL_CHANGED_FILES" >> $GITHUB_OUTPUT
-          echo "any_changed=$SENSITIVE_CHANGED" >> $GITHUB_OUTPUT
-          echo "any_deleted=$([ -n "$DELETED_FILES" ] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+        done
+        echo "all_changed_files=$ALL_CHANGED_FILES" >> $GITHUB_OUTPUT
+        echo "any_changed=$SENSITIVE_CHANGED" >> $GITHUB_OUTPUT
+        echo "any_deleted=$([ -n "$DELETED_FILES" ] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
 
-      - env:
-          CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
-        if: steps.changed_files.outputs.any_changed == 'true' || steps.changed_files.outputs.any_deleted == 'true'
-        name: Show changed files
-        run: |
-          echo "Unauthorized changes were made in the following files:"
-          for FILE in ${CHANGED_FILES}; do
-            echo "$FILE"
-          done
-          echo "To override this, apply the 'ignore-sensitive-files-pr' label"
-          exit 1
+    - env:
+        CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
+      if: steps.changed_files.outputs.any_changed == 'true' || steps.changed_files.outputs.any_deleted == 'true'
+      name: Show changed files
+      run: |
+        echo "Unauthorized changes were made in the following files:"
+        for FILE in ${CHANGED_FILES}; do
+          echo "$FILE"
+        done
+        echo "To override this, apply the 'ignore-sensitive-files-pr' label"
+        exit 1
 
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada]
+    needs: [ Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada, check_docs_code_quality, check_docs_type_errors ]
     steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
-      - name: Create .env file for talawa api testing environment
-        run: cp ./envFiles/.env.ci ./.env
-      - name: Build talawa api compose testing environment
-        run: docker compose build
-      - name: Start Postgres service
-        run: docker compose up -d postgres
-      - name: Wait for Postgres to be ready
-        run: |
-          set -euo pipefail
-          echo "Waiting for Postgres (service: postgres)…"
-          timeout=90
-          until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
-            echo "Postgres not ready yet... ($timeout seconds remaining)"
-            sleep 1
-            ((timeout--))
-          done
-          if [ $timeout -eq 0 ]; then
-            echo "Error: Postgres failed to start"
-            docker compose ps
-            docker compose logs postgres
-            docker compose down -v
-            exit 1
-          else
-            echo "Postgres is ready."
-          fi
-      - name: Run tests
-        run: docker compose up --exit-code-from api
-      - name: Copy coverage from container
-        run: |
-          CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
-          docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
+    - name: Checkout this repository
+      uses: actions/checkout@v4.2.2
+    - name: Create .env file for talawa api testing environment
+      run: cp ./envFiles/.env.ci ./.env
+    - name: Build talawa api compose testing environment
+      run: docker compose build
+    - name: Start Postgres service
+      run: docker compose up -d postgres
+    - name: Wait for Postgres to be ready
+      run: |
+        set -euo pipefail
+        echo "Waiting for Postgres (service: postgres)…"
+        timeout=90
+        until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+          echo "Postgres not ready yet... ($timeout seconds remaining)"
+          sleep 1
+          ((timeout--))
+        done
+        if [ $timeout -eq 0 ]; then
+          echo "Error: Postgres failed to start"
+          docker compose ps
+          docker compose logs postgres
+          docker compose down -v
+          exit 1
+        else
+          echo "Postgres is ready."
+        fi
+    - name: Run tests
+      run: docker compose up --exit-code-from api
+    - name: Copy coverage from container
+      run: |
+        CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
+        docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
 
-      #######################################################################
-      # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
-      # section. They are required for accurate calculations
-      #######################################################################
-      - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
-        uses: codecov/codecov-action@v5
-        with:
-          name: "${{env.CODECOV_UNIQUE_NAME}}"
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-          verbose: true
-          exclude: 'docs/'      
+    #######################################################################
+    # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
+    # section. They are required for accurate calculations
+    #######################################################################
+    - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
+      uses: codecov/codecov-action@v5
+      with:
+        name: "${{env.CODECOV_UNIQUE_NAME}}"
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
+        verbose: true
+        exclude: 'docs/'
 
-      - name: Test acceptable level of code coverage
-        uses: VeryGoodOpenSource/very_good_coverage@v3
-        with:
-          path: "./coverage/lcov.info"
-          min_coverage: 68.0
+    - name: Test acceptable level of code coverage
+      uses: VeryGoodOpenSource/very_good_coverage@v3
+      with:
+        path: "./coverage/lcov.info"
+        min_coverage: 68.0
 
   Test-Docusaurus-Deployment:
     name: Test Deployment to https://docs-api.talawa.io
     runs-on: ubuntu-latest
-    needs: [Run-Tests]
+    needs: [ Run-Tests ]
     # Run only if the develop branch and not dependabot
     if: ${{ github.actor != 'dependabot[bot]' && github.event.pull_request.base.ref == 'develop' }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          cache: pnpm
-          cache-dependency-path: |
-            docs/pnpm-lock.yaml
-            docs/package.json
-      # Run Docusaurus in the ./docs directory
-      - name: Install dependencies
-        working-directory: ./docs
-        run: pnpm install --frozen-lockfile
-      - name: Test building the website
-        working-directory: ./docs
-        run: pnpm build
+    - uses: actions/checkout@v4
+    - uses: pnpm/action-setup@v4
+      with:
+        cache: pnpm
+        cache-dependency-path: |
+          docs/pnpm-lock.yaml
+          docs/package.json
+    # Run Docusaurus in the ./docs directory
+    - name: Install dependencies
+      working-directory: ./docs
+      run: pnpm install --frozen-lockfile
+    - name: Test building the website
+      working-directory: ./docs
+      run: pnpm build
 
   Python-Compliance:
     name: Check Python Code Style
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks]
+    needs: [ Code-Quality-Checks ]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
 
-      - name: Cache pip packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
-      - name: Install dependencies
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          python -m pip install --upgrade pip
-          pip install -r .github/workflows/requirements.txt
+    - name: Install dependencies
+      run: |
+        python3 -m venv venv
+        source venv/bin/activate
+        python -m pip install --upgrade pip
+        pip install -r .github/workflows/requirements.txt
 
-      - name: Run Black Formatter Check
-        run: |
-          source venv/bin/activate
-          black --check .
+    - name: Run Black Formatter Check
+      run: |
+        source venv/bin/activate
+        black --check .
 
-      - name: Run Flake8 Linter
-        run: |
-          source venv/bin/activate
-          flake8 --docstring-convention google --ignore E402,E722,E203,F401,W503 .github
+    - name: Run Flake8 Linter
+      run: |
+        source venv/bin/activate
+        flake8 --docstring-convention google --ignore E402,E722,E203,F401,W503 .github
 
-      - name: Run pydocstyle
-        run: |
-          source venv/bin/activate
-          pydocstyle --convention=google --add-ignore=D415,D205 .github
+    - name: Run pydocstyle
+      run: |
+        source venv/bin/activate
+        pydocstyle --convention=google --add-ignore=D415,D205 .github
 
-      - name: Run docstring compliance check
-        run: |
-          source venv/bin/activate
-          python .github/workflows/scripts/check_docstrings.py --directories .github
+    - name: Run docstring compliance check
+      run: |
+        source venv/bin/activate
+        python .github/workflows/scripts/check_docstrings.py --directories .github
 
   Count-Changed-Files:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: Checks if number of files changed is acceptable
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Fetch all history for all branches and tags
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Fetch all history for all branches and tags
 
-      - name: Get changed files
-        id: changed-files
-        run: |
-          # Get the base branch ref
-          BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+    - name: Get changed files
+      id: changed-files
+      run: |
+        # Get the base branch ref
+        BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
 
-          # Count all changed files
-          ALL_CHANGED_FILES_COUNT=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | wc -l | tr -d ' ')
-          echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
+        # Count all changed files
+        ALL_CHANGED_FILES_COUNT=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | wc -l | tr -d ' ')
+        echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
 
-      - name: Echo number of changed files
-        env:
-          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
-        run: |
-          echo "Number of files changed: $CHANGED_FILES_COUNT"
+    - name: Echo number of changed files
+      env:
+        CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
+      run: |
+        echo "Number of files changed: $CHANGED_FILES_COUNT"
 
-      - name: Check if the number of changed files is less than 100
-        if: steps.changed-files.outputs.all_changed_files_count > 100
-        env:
-          CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
-        run: |
-          echo "Error: Too many files (greater than 100) changed in the pull request."
-          echo "Possible issues:"
-          echo "- Contributor may be merging into an incorrect branch."
-          echo "- Source branch may be incorrect please use develop as source branch."
-          exit 1
+    - name: Check if the number of changed files is less than 100
+      if: steps.changed-files.outputs.all_changed_files_count > 100
+      env:
+        CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
+      run: |
+        echo "Error: Too many files (greater than 100) changed in the pull request."
+        echo "Possible issues:"
+        echo "- Contributor may be merging into an incorrect branch."
+        echo "- Source branch may be incorrect please use develop as source branch."
+        exit 1
 
   Check-App-Startup:
     name: Check App Startup and Health
     runs-on: ubuntu-latest
-    needs: [Run-Tests]
+    needs: [ Run-Tests ]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4.2.2
-      - name: Install Devcontainer CLI
-        run: npm install -g @devcontainers/cli
-      - name: Copy devcontainer environment file
-        run: cp envFiles/.env.devcontainer .env
-      - name: Bring up devcontainer
-        run: devcontainer up --workspace-folder .
-      - name: Wait for Postgres in devcontainer
-        run: |
-          set -euo pipefail
-          POSTGRES_USER=postgres
-          echo "Waiting for Postgres service via compose..."
-          timeout=90
-          until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" >/dev/null 2>&1 || [ "$timeout" -le 0 ]; do
-            echo "Postgres not ready ($timeout s left)"
-            sleep 1
-            ((timeout--))
-          done
-          if [ "$timeout" -eq 0 ]; then
-            echo "Error: Postgres failed to start"
-            docker compose ps
-            docker logs postgres
-            exit 1
-          fi
-      - name: Wait for Devcontainer to be ready
-        run: |
-          echo "Waiting for devcontainer services to be ready..."
-          sleep 10
-      - name: Verify Running Containers
-        run: docker ps
-      - name: Install dependencies inside the container
-        run: docker exec talawa-api-1 /bin/bash -c 'pnpm install'
-      - name: Start server and monitor logs
-        run: |
-          docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server' &
-          sleep 10
-      - name: Wait for GraphQL endpoint to become available
-        if: always()
-        run: |
-          echo "Waiting for the GraphQL endpoint to become available..."
-          for i in {1..60}; do
-            # Check if container exists first
-            if ! docker ps | grep -q talawa-api-1; then
-              echo "Container talawa-api-1 not found. Waiting..."
-              sleep 2
-              continue
-            fi
-            docker exec talawa-api-1 which curl >/dev/null 2>&1 || {
-              docker exec talawa-api-1 apt-get update && docker exec talawa-api-1 apt-get install -y curl
-            }
-            RESPONSE=$(docker exec talawa-api-1 curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' 2>/dev/null || echo "Connection failed")
-            if echo "$RESPONSE" | grep -q '__typename'; then
-              echo "GraphQL endpoint is available!"
-              exit 0
-            fi
-            echo "GraphQL endpoint not ready. Retrying in 2 seconds..."
-            sleep 2
-          done
-          echo "GraphQL endpoint did not become available within the expected time."
+    - name: Checkout repository
+      uses: actions/checkout@v4.2.2
+    - name: Install Devcontainer CLI
+      run: npm install -g @devcontainers/cli
+    - name: Copy devcontainer environment file
+      run: cp envFiles/.env.devcontainer .env
+    - name: Bring up devcontainer
+      run: devcontainer up --workspace-folder .
+    - name: Wait for Postgres in devcontainer
+      run: |
+        set -euo pipefail
+        POSTGRES_USER=postgres
+        echo "Waiting for Postgres service via compose..."
+        timeout=90
+        until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" >/dev/null 2>&1 || [ "$timeout" -le 0 ]; do
+          echo "Postgres not ready ($timeout s left)"
+          sleep 1
+          ((timeout--))
+        done
+        if [ "$timeout" -eq 0 ]; then
+          echo "Error: Postgres failed to start"
+          docker compose ps
+          docker logs postgres
           exit 1
-      - name: Cleanup - Free ports by stopping containers
-        if: always()
-        run: docker compose down
+        fi
+    - name: Wait for Devcontainer to be ready
+      run: |
+        echo "Waiting for devcontainer services to be ready..."
+        sleep 10
+    - name: Verify Running Containers
+      run: docker ps
+    - name: Install dependencies inside the container
+      run: docker exec talawa-api-1 /bin/bash -c 'pnpm install'
+    - name: Start server and monitor logs
+      run: |
+        docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server' &
+        sleep 10
+    - name: Wait for GraphQL endpoint to become available
+      if: always()
+      run: |
+        echo "Waiting for the GraphQL endpoint to become available..."
+        for i in {1..60}; do
+          # Check if container exists first
+          if ! docker ps | grep -q talawa-api-1; then
+            echo "Container talawa-api-1 not found. Waiting..."
+            sleep 2
+            continue
+          fi
+          docker exec talawa-api-1 which curl >/dev/null 2>&1 || {
+            docker exec talawa-api-1 apt-get update && docker exec talawa-api-1 apt-get install -y curl
+          }
+          RESPONSE=$(docker exec talawa-api-1 curl -s -X POST http://127.0.0.1:4000/graphql -H "Content-Type: application/json" -d '{"query":"{__typename}"}' 2>/dev/null || echo "Connection failed")
+          if echo "$RESPONSE" | grep -q '__typename'; then
+            echo "GraphQL endpoint is available!"
+            exit 0
+          fi
+          echo "GraphQL endpoint not ready. Retrying in 2 seconds..."
+          sleep 2
+        done
+        echo "GraphQL endpoint did not become available within the expected time."
+        exit 1
+    - name: Cleanup - Free ports by stopping containers
+      if: always()
+      run: docker compose down

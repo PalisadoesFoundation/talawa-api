@@ -56,10 +56,15 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(creatorRes.data?.createUser);
 		const creator = creatorRes.data.createUser;
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user.id);
+		const creatorId = creator.user.id;
+		assertToBeNonNullish(creator.user.emailAddress);
+		const creatorEmail = creator.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: creator.user?.id } },
+				variables: { input: { id: creatorId } },
 			});
 		});
 
@@ -77,10 +82,13 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(actorRes.data?.createUser);
 		const actor = actorRes.data.createUser;
+		assertToBeNonNullish(actor.user);
+		assertToBeNonNullish(actor.user.id);
+		const actorId = actor.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: actor.user?.id } },
+				variables: { input: { id: actorId } },
 			});
 		});
 
@@ -98,10 +106,13 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(targetRes.data?.createUser);
 		const target = targetRes.data.createUser;
+		assertToBeNonNullish(target.user);
+		assertToBeNonNullish(target.user.id);
+		const targetId = target.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: target.user?.id } },
+				variables: { input: { id: targetId } },
 			});
 		});
 
@@ -124,7 +135,7 @@ describe("Mutation: updateChatMembership", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: creator.user?.id,
+					memberId: creatorId,
 					organizationId: orgId,
 					role: "regular",
 				},
@@ -134,7 +145,7 @@ describe("Mutation: updateChatMembership", () => {
 		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: creator.user?.emailAddress,
+					emailAddress: creatorEmail,
 					password: "password123",
 				},
 			},
@@ -163,7 +174,7 @@ describe("Mutation: updateChatMembership", () => {
 			{
 				headers: { authorization: `bearer ${creatorToken}` },
 				variables: {
-					input: { chatId, memberId: target.user?.id, role: "regular" },
+					input: { chatId, memberId: targetId, role: "regular" },
 				},
 			},
 		);
@@ -174,7 +185,7 @@ describe("Mutation: updateChatMembership", () => {
 				where: (fields, operators) =>
 					operators.and(
 						operators.eq(fields.chatId, chatId),
-						operators.eq(fields.memberId, target.user?.id),
+						operators.eq(fields.memberId, targetId),
 					),
 			});
 		if (!createdTargetMembership) {
@@ -186,7 +197,7 @@ describe("Mutation: updateChatMembership", () => {
 			{
 				headers: { authorization: `bearer ${creatorToken}` },
 				variables: {
-					input: { chatId, memberId: actor.user?.id, role: "administrator" },
+					input: { chatId, memberId: actorId, role: "administrator" },
 				},
 			},
 		);
@@ -198,7 +209,7 @@ describe("Mutation: updateChatMembership", () => {
 				where: (fields, operators) =>
 					operators.and(
 						operators.eq(fields.chatId, chatId),
-						operators.eq(fields.memberId, actor.user?.id),
+						operators.eq(fields.memberId, actorId),
 					),
 			});
 		if (!createdActorMembership) {
@@ -210,7 +221,7 @@ describe("Mutation: updateChatMembership", () => {
 		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
-				input: { chatId, memberId: target.user?.id, role: "administrator" },
+				input: { chatId, memberId: targetId, role: "administrator" },
 			},
 		});
 
@@ -253,10 +264,15 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(actorRes.data?.createUser);
 		const actor = actorRes.data.createUser;
+		assertToBeNonNullish(actor.user);
+		assertToBeNonNullish(actor.user.id);
+		const actorId = actor.user.id;
+		assertToBeNonNullish(actor.user.emailAddress);
+		const actorEmail = actor.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: actor.user?.id } },
+				variables: { input: { id: actorId } },
 			});
 		});
 
@@ -274,10 +290,15 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(targetRes.data?.createUser);
 		const target = targetRes.data.createUser;
+		assertToBeNonNullish(target.user);
+		assertToBeNonNullish(target.user.id);
+		const targetId = target.user.id;
+		assertToBeNonNullish(target.user.emailAddress);
+		const targetEmail = target.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: target.user?.id } },
+				variables: { input: { id: targetId } },
 			});
 		});
 
@@ -299,7 +320,7 @@ describe("Mutation: updateChatMembership", () => {
 		const targetSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: target.user?.emailAddress,
+					emailAddress: targetEmail,
 					password: "password123",
 				},
 			},
@@ -311,7 +332,7 @@ describe("Mutation: updateChatMembership", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: target.user?.id,
+					memberId: targetId,
 					organizationId: orgId,
 					role: "regular",
 				},
@@ -337,7 +358,7 @@ describe("Mutation: updateChatMembership", () => {
 			Mutation_createChatMembership,
 			{
 				headers: { authorization: `bearer ${targetToken}` },
-				variables: { input: { chatId, memberId: target.user?.id } },
+				variables: { input: { chatId, memberId: targetId } },
 			},
 		);
 		assertToBeNonNullish(targetMembershipRes.data?.createChatMembership);
@@ -346,7 +367,7 @@ describe("Mutation: updateChatMembership", () => {
 			Mutation_createChatMembership,
 			{
 				headers: { authorization: `bearer ${targetToken}` },
-				variables: { input: { chatId, memberId: actor.user?.id } },
+				variables: { input: { chatId, memberId: actorId } },
 			},
 		);
 		assertToBeNonNullish(actorMembershipRes.data?.createChatMembership);
@@ -354,7 +375,7 @@ describe("Mutation: updateChatMembership", () => {
 		const actorSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: actor.user?.emailAddress,
+					emailAddress: actorEmail,
 					password: "password123",
 				},
 			},
@@ -365,7 +386,7 @@ describe("Mutation: updateChatMembership", () => {
 		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
 			headers: { authorization: `bearer ${actorToken}` },
 			variables: {
-				input: { chatId, memberId: target.user?.id, role: "administrator" },
+				input: { chatId, memberId: targetId, role: "administrator" },
 			},
 		});
 		expect(res.errors).toBeDefined();
@@ -400,10 +421,15 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(creatorRes.data?.createUser);
 		const creator = creatorRes.data.createUser;
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user.id);
+		const creatorId = creator.user.id;
+		assertToBeNonNullish(creator.user.emailAddress);
+		const creatorEmail = creator.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: creator.user?.id } },
+				variables: { input: { id: creatorId } },
 			});
 		});
 
@@ -421,10 +447,15 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(outsiderRes.data?.createUser);
 		const outsider = outsiderRes.data.createUser;
+		assertToBeNonNullish(outsider.user);
+		assertToBeNonNullish(outsider.user.id);
+		const outsiderId = outsider.user.id;
+		assertToBeNonNullish(outsider.user.emailAddress);
+		const outsiderEmail = outsider.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: outsider.user?.id } },
+				variables: { input: { id: outsiderId } },
 			});
 		});
 
@@ -446,7 +477,7 @@ describe("Mutation: updateChatMembership", () => {
 		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: creator.user?.emailAddress,
+					emailAddress: creatorEmail,
 					password: "password123",
 				},
 			},
@@ -459,7 +490,7 @@ describe("Mutation: updateChatMembership", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: creator.user?.id,
+					memberId: creatorId,
 					organizationId: orgId,
 					role: "regular",
 				},
@@ -484,7 +515,7 @@ describe("Mutation: updateChatMembership", () => {
 		const outsiderSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: outsider.user?.emailAddress,
+					emailAddress: outsiderEmail,
 					password: "password123",
 				},
 			},
@@ -496,7 +527,7 @@ describe("Mutation: updateChatMembership", () => {
 		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
 			headers: { authorization: `bearer ${outsiderToken}` },
 			variables: {
-				input: { chatId, memberId: outsider.user?.id, role: "regular" },
+				input: { chatId, memberId: outsiderId, role: "regular" },
 			},
 		});
 		expect(res.errors).toBeDefined();
@@ -591,11 +622,16 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(userRes.data?.createUser);
 		const user = userRes.data.createUser;
+		assertToBeNonNullish(user.user);
+		assertToBeNonNullish(user.user.id);
+		const userId = user.user.id;
+		assertToBeNonNullish(user.user.emailAddress);
+		const userEmail = user.user.emailAddress;
 
 		const signIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: user.user?.emailAddress,
+					emailAddress: userEmail,
 					password: "password123",
 				},
 			},
@@ -606,7 +642,7 @@ describe("Mutation: updateChatMembership", () => {
 		// delete the user record using admin so the authenticated token no longer maps to a DB user
 		await mercuriusClient.mutate(Mutation_deleteUser, {
 			headers: { authorization: `bearer ${adminToken}` },
-			variables: { input: { id: user.user?.id } },
+			variables: { input: { id: userId } },
 		});
 
 		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
@@ -614,7 +650,7 @@ describe("Mutation: updateChatMembership", () => {
 			variables: {
 				input: {
 					chatId: faker.string.uuid(),
-					memberId: user.user?.id,
+					memberId: userId,
 					role: "regular",
 				},
 			},
@@ -650,10 +686,15 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(creatorRes.data?.createUser);
 		const creator = creatorRes.data.createUser;
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user.id);
+		const creatorId = creator.user.id;
+		assertToBeNonNullish(creator.user.emailAddress);
+		const creatorEmail = creator.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: creator.user?.id } },
+				variables: { input: { id: creatorId } },
 			});
 		});
 
@@ -677,7 +718,7 @@ describe("Mutation: updateChatMembership", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: creator.user?.id,
+					memberId: creatorId,
 					organizationId: orgId,
 					role: "regular",
 				},
@@ -687,7 +728,7 @@ describe("Mutation: updateChatMembership", () => {
 		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: creator.user?.emailAddress,
+					emailAddress: creatorEmail,
 					password: "password123",
 				},
 			},
@@ -773,10 +814,13 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(userRes.data?.createUser);
 		const user = userRes.data.createUser;
+		assertToBeNonNullish(user.user);
+		assertToBeNonNullish(user.user.id);
+		const userId = user.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: user.user?.id } },
+				variables: { input: { id: userId } },
 			});
 		});
 
@@ -785,7 +829,7 @@ describe("Mutation: updateChatMembership", () => {
 			variables: {
 				input: {
 					chatId: "00000000-0000-0000-0000-000000000000",
-					memberId: user.user?.id,
+					memberId: userId,
 					role: "regular",
 				},
 			},
@@ -823,10 +867,15 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(creatorRes.data?.createUser);
 		const creator = creatorRes.data.createUser;
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user.id);
+		const creatorId = creator.user.id;
+		assertToBeNonNullish(creator.user.emailAddress);
+		const creatorEmail = creator.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: creator.user?.id } },
+				variables: { input: { id: creatorId } },
 			});
 		});
 
@@ -844,10 +893,15 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(victimRes.data?.createUser);
 		const victim = victimRes.data.createUser;
+		assertToBeNonNullish(victim.user);
+		assertToBeNonNullish(victim.user.id);
+		const victimId = victim.user.id;
+		assertToBeNonNullish(victim.user.emailAddress);
+		const victimEmail = victim.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: victim.user?.id } },
+				variables: { input: { id: victimId } },
 			});
 		});
 
@@ -870,7 +924,7 @@ describe("Mutation: updateChatMembership", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: creator.user?.id,
+					memberId: creatorId,
 					organizationId: orgId,
 					role: "regular",
 				},
@@ -880,7 +934,7 @@ describe("Mutation: updateChatMembership", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: victim.user?.id,
+					memberId: victimId,
 					organizationId: orgId,
 					role: "regular",
 				},
@@ -890,7 +944,7 @@ describe("Mutation: updateChatMembership", () => {
 		const creatorSignInRes = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: creator.user?.emailAddress,
+					emailAddress: creatorEmail,
 					password: "password123",
 				},
 			},
@@ -918,7 +972,7 @@ describe("Mutation: updateChatMembership", () => {
 			Mutation_createChatMembership,
 			{
 				headers: { authorization: `bearer ${creatorToken}` },
-				variables: { input: { chatId, memberId: creator.user?.id } },
+				variables: { input: { chatId, memberId: creatorId } },
 			},
 		);
 		assertToBeNonNullish(creatorMembershipRes.data?.createChatMembership);
@@ -927,7 +981,7 @@ describe("Mutation: updateChatMembership", () => {
 			Mutation_createChatMembership,
 			{
 				headers: { authorization: `bearer ${creatorToken}` },
-				variables: { input: { chatId, memberId: victim.user?.id } },
+				variables: { input: { chatId, memberId: victimId } },
 			},
 		);
 		assertToBeNonNullish(victimMembershipRes.data?.createChatMembership);
@@ -935,7 +989,7 @@ describe("Mutation: updateChatMembership", () => {
 		const victimSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: victim.user?.emailAddress,
+					emailAddress: victimEmail,
 					password: "password123",
 				},
 			},
@@ -946,7 +1000,7 @@ describe("Mutation: updateChatMembership", () => {
 		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
 			headers: { authorization: `bearer ${victimToken}` },
 			variables: {
-				input: { chatId, memberId: creator.user?.id, role: "administrator" },
+				input: { chatId, memberId: creatorId, role: "administrator" },
 			},
 		});
 		expect(res.errors).toBeDefined();
@@ -981,10 +1035,15 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(targetRes.data?.createUser);
 		const target = targetRes.data.createUser;
+		assertToBeNonNullish(target.user);
+		assertToBeNonNullish(target.user.id);
+		const targetId = target.user.id;
+		assertToBeNonNullish(target.user.emailAddress);
+		const targetEmail = target.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: target.user?.id } },
+				variables: { input: { id: targetId } },
 			});
 		});
 
@@ -1002,10 +1061,13 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(approverRes.data?.createUser);
 		const approver = approverRes.data.createUser;
+		assertToBeNonNullish(approver.user);
+		assertToBeNonNullish(approver.user.id);
+		const approverId = approver.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: approver.user?.id } },
+				variables: { input: { id: approverId } },
 			});
 		});
 
@@ -1028,7 +1090,7 @@ describe("Mutation: updateChatMembership", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: target.user?.id,
+					memberId: targetId,
 					organizationId: orgId,
 					role: "administrator",
 				},
@@ -1039,7 +1101,7 @@ describe("Mutation: updateChatMembership", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: approver.user?.id,
+					memberId: approverId,
 					organizationId: orgId,
 					role: "regular",
 				},
@@ -1049,7 +1111,7 @@ describe("Mutation: updateChatMembership", () => {
 		const targetSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: target.user?.emailAddress,
+					emailAddress: targetEmail,
 					password: "password123",
 				},
 			},
@@ -1077,7 +1139,7 @@ describe("Mutation: updateChatMembership", () => {
 			{
 				headers: { authorization: `bearer ${targetToken}` },
 				variables: {
-					input: { chatId, memberId: target.user?.id, role: "administrator" },
+					input: { chatId, memberId: targetId, role: "administrator" },
 				},
 			},
 		);
@@ -1088,7 +1150,7 @@ describe("Mutation: updateChatMembership", () => {
 			{
 				headers: { authorization: `bearer ${targetToken}` },
 				variables: {
-					input: { chatId, memberId: approver.user?.id, role: "regular" },
+					input: { chatId, memberId: approverId, role: "regular" },
 				},
 			},
 		);
@@ -1097,7 +1159,7 @@ describe("Mutation: updateChatMembership", () => {
 		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
 			headers: { authorization: `bearer ${targetToken}` },
 			variables: {
-				input: { chatId, memberId: approver.user?.id, role: "administrator" },
+				input: { chatId, memberId: approverId, role: "administrator" },
 			},
 		});
 		expect(res.errors).toBeUndefined();
@@ -1133,10 +1195,15 @@ describe("Mutation: updateChatMembership", () => {
 		});
 		assertToBeNonNullish(userRes.data?.createUser);
 		const user = userRes.data.createUser;
+		assertToBeNonNullish(user.user);
+		assertToBeNonNullish(user.user.id);
+		const userId = user.user.id;
+		assertToBeNonNullish(user.user.emailAddress);
+		const userEmail = user.user.emailAddress;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: user.user?.id } },
+				variables: { input: { id: userId } },
 			});
 		});
 
@@ -1159,7 +1226,7 @@ describe("Mutation: updateChatMembership", () => {
 			headers: { authorization: `bearer ${adminToken}` },
 			variables: {
 				input: {
-					memberId: user.user?.id,
+					memberId: userId,
 					organizationId: orgId,
 					role: "regular",
 				},
@@ -1169,7 +1236,7 @@ describe("Mutation: updateChatMembership", () => {
 		const signIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
-					emailAddress: user.user?.emailAddress,
+					emailAddress: userEmail,
 					password: "password123",
 				},
 			},
@@ -1195,7 +1262,7 @@ describe("Mutation: updateChatMembership", () => {
 		const memRes = await mercuriusClient.mutate(Mutation_createChatMembership, {
 			headers: { authorization: `bearer ${token}` },
 			variables: {
-				input: { chatId, memberId: user.user?.id, role: "regular" },
+				input: { chatId, memberId: userId, role: "regular" },
 			},
 		});
 		assertToBeNonNullish(memRes.data?.createChatMembership);
@@ -1211,7 +1278,7 @@ describe("Mutation: updateChatMembership", () => {
 			const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
 				headers: { authorization: `bearer ${token}` },
 				variables: {
-					input: { chatId, memberId: user.user?.id, role: "administrator" },
+					input: { chatId, memberId: userId, role: "administrator" },
 				},
 			});
 

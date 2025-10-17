@@ -12,7 +12,10 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "check_code_quality": "biome check --error-on-warnings",
+    "fix_code_quality": "biome check --error-on-warnings --write",
+    "check_type_errors": "tsc --noEmit"
   },
   "dependencies": {
     "@docusaurus/core": "^3.9.1",
@@ -25,6 +28,7 @@
     "react-dom": "^18.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
     "@docusaurus/module-type-aliases": "^3.9.1",
     "@docusaurus/tsconfig": "^3.9.1",
     "@docusaurus/types": "^3.9.1",
