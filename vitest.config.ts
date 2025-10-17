@@ -1,26 +1,43 @@
 import tsconfigPaths from "vite-tsconfig-paths";
-import { defineConfig } from "vitest/config";
+import { defineConfig, configDefaults } from "vitest/config";
 
 export default defineConfig({
-	plugins: [tsconfigPaths()],
-	test: {
-		coverage: {
-			provider: "v8", // or 'istanbul' if you prefer
-			reporter: ["text", "lcov", "html"],
-		},
-		// https://vitest.dev/config/#fileparallelism
-		// fileParallelism: true,
+    plugins: [
+        tsconfigPaths({
+            ignoreConfigErrors: true,
+        }),
+    ],
+    test: {
+        environment: 'node',
+        include: [
+            "src/**/*.test.{ts,tsx,js,jsx}",
+            "src/**/*.spec.{ts,tsx,js,jsx}",
+            "test/**/*.test.{ts,tsx,js,jsx}",
+            "test/**/*.spec.{ts,tsx,js,jsx}",
+        ],
 
-		// https://vitest.dev/config/#globalsetup
-		globalSetup: ["./test/setup.ts"],
+        root: "./",
 
-		// https://vitest.dev/config/#passwithnotests
-		passWithNoTests: true,
 
-		// // https://vitest.dev/config/#teardowntimeout,
-		// teardownTimeout: 10000
+        exclude: [
+            ...configDefaults.exclude,
+            "dist/**",
+            "coverage/**",
+            "docs/**",
+            "**/*.d.ts",
+            "**/index.{js,ts}",
+        ],
 
-		hookTimeout: 30000, // 30 seconds for hooks
-		pool: "threads", // for faster test execution and to avoid postgres max-limit error
-	},
+        hookTimeout: 30000,
+        testTimeout: 60000,
+        passWithNoTests: false,
+        pool: "threads",
+
+        coverage: {
+            provider: "v8",
+            reporter: ["text", "html", "lcov"],
+            exclude: ["node_modules/**", "dist/**", "docs/**", "coverage/**", "**/*.d.ts"],
+        },
+    },
 });
+
