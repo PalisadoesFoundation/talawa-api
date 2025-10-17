@@ -10,7 +10,6 @@ function HeaderHero() {
       <p className="description">
         API Backend for Talawa Admin and Talawa Mobile App
       </p>
-
       <div className="buttons">
         <HomeCallToAction />
       </div>
