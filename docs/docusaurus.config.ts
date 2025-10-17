@@ -124,12 +124,12 @@ const config: Config = {
           items: [
             {
               label: 'Slack',
-              to: 'https://github.com/PalisadoesFoundation',
+              href: 'https://github.com/PalisadoesFoundation',
               className: 'footer__icon footer__slack',
             },
             {
               label: 'News',
-              to: 'https://www.palisadoes.org/news/',
+              href: 'https://www.palisadoes.org/news/',
               className: 'footer__icon footer__news',
             },
             {

@@ -262,8 +262,8 @@ jobs:
         check_type_errors,
         check_drizzle_migrations,
         check_gql_tada,
-        check_docs_code_quality,
-        check_docs_type_errors,
+        Check_docs_code_quality,
+        Check_docs_type_errors,
       ]
     steps:
       - name: Checkout this repository
