@@ -323,8 +323,19 @@ type Chat {
   """Custom information about the chat."""
   description: String
 
+  """
+  ID of the first unread message for the current user in this chat, if any.
+  """
+  firstUnreadMessageId: ID
+
+  """Whether the current user has unread messages in this chat."""
+  hasUnread: Boolean
+
   """Global identifier of the chat."""
   id: ID!
+
+  """Most recent message in this chat."""
+  lastMessage: ChatMessage
 
   """
   GraphQL connection to traverse through the users that are members of the chat.
@@ -342,11 +353,23 @@ type Chat {
   """Organization which the chat belongs to."""
   organization: Organization
 
+  """Number of unread messages for the current user in this chat."""
+  unreadMessagesCount: Int
+
   """Date time at the time the chat was last updated."""
   updatedAt: DateTime
 
   """User who last updated the chat."""
   updater: User
+}
+
+"""A member of a chat with their role."""
+type ChatMember {
+  """The role of the user in the chat."""
+  role: ChatMembershipRole
+
+  """The user who is a member of the chat."""
+  user: User
 }
 
 """"""
@@ -358,7 +381,7 @@ type ChatMembersConnection {
 """"""
 type ChatMembersConnectionEdge {
   cursor: String!
-  node: User
+  node: ChatMember
 }
 
 """Possible variants of the role assigned to a user within a chat."""
@@ -400,6 +423,39 @@ type ChatMessagesConnection {
 type ChatMessagesConnectionEdge {
   cursor: String!
   node: ChatMessage
+}
+
+"""Input for check-in and check-out operations."""
+input CheckInCheckOutInput {
+  """The ID of the standalone event (for standalone events)."""
+  eventId: ID
+
+  """The ID of the recurring event instance (for recurring events)."""
+  recurringEventInstanceId: ID
+
+  """The ID of the user to check in/out."""
+  userId: ID!
+}
+
+"""Represents the check-in status of a user for an event."""
+type CheckInStatus {
+  """Date and time when the user checked in."""
+  checkInTime: Date
+
+  """Date and time when the user checked out."""
+  checkOutTime: Date
+
+  """Global identifier of the check-in status record."""
+  id: ID!
+
+  """Whether the user is currently checked in."""
+  isCheckedIn: Boolean!
+
+  """Whether the user has checked out."""
+  isCheckedOut: Boolean!
+
+  """The user associated with this check-in status."""
+  user: User!
 }
 
 type Comment {
@@ -612,6 +668,12 @@ type Event {
   """
   attachments: [EventAttachment!]
 
+  """List of users who have checked in to the event."""
+  attendees: [User!]
+
+  """Check-in status for all attendees of the event."""
+  attendeesCheckInStatus: [CheckInStatus!]!
+
   """The base event from which this materialized instance was generated."""
   baseEvent: Event
 
@@ -743,6 +805,56 @@ type EventAttachment {
 
   """URL to the attachment."""
   url: String
+}
+
+type EventAttendee {
+  """Date and time when the attendee checked in to the event."""
+  checkinTime: Date
+
+  """Date and time when the attendee checked out from the event."""
+  checkoutTime: Date
+
+  """Date time when the event attendee record was created."""
+  createdAt: DateTime!
+
+  """The event the attendee is associated with."""
+  event: Event
+
+  """Indicates if the attendee has submitted feedback for the event."""
+  feedbackSubmitted: Boolean!
+
+  """Global identifier of the event attendee."""
+  id: ID!
+
+  """Indicates if the attendee has checked in to the event."""
+  isCheckedIn: Boolean!
+
+  """Indicates if the attendee has checked out from the event."""
+  isCheckedOut: Boolean!
+
+  """Indicates if the attendee is invited to the event."""
+  isInvited: Boolean!
+
+  """Indicates if the attendee is registered for the event."""
+  isRegistered: Boolean!
+
+  """Date time when the event attendee record was last updated."""
+  updatedAt: DateTime
+
+  """The user attending the event."""
+  user: User!
+}
+
+"""Input for event attendee operations."""
+input EventAttendeeInput {
+  """The ID of the standalone event (for standalone events)."""
+  eventId: ID
+
+  """The ID of the recurring event instance (for recurring events)."""
+  recurringEventInstanceId: ID
+
+  """The ID of the user."""
+  userId: ID!
 }
 
 """"""
@@ -1796,6 +1908,9 @@ input MembersRoleWhereInput {
 
 """Filter criteria for organization members"""
 input MembersWhereInput {
+  """Filter members whose name includes the provided value"""
+  name_contains: String
+
   """Filter members by role"""
   role: MembersRoleWhereInput
 }
@@ -1840,6 +1955,9 @@ type Mutation {
     input: MutationAcceptMembershipRequestInput!
   ): AcceptMembershipResponse
 
+  """Mutation field to add an event attendee."""
+  addEventAttendee(data: EventAttendeeInput!): User
+
   """Assign a tag to a user within an organization."""
   assignUserTag(assigneeId: ID!, tagId: ID!): Boolean
 
@@ -1851,6 +1969,12 @@ type Mutation {
     """Input to cancel a membership request"""
     input: MutationCancelMembershipRequestInput!
   ): CancelMembershipResponse
+
+  """Mutation field to check in an attendee to an event."""
+  checkIn(data: CheckInCheckOutInput!): EventAttendee
+
+  """Mutation field to check out an attendee from an event."""
+  checkOut(data: CheckInCheckOutInput!): EventAttendee
 
   """Mutation to complete an action item for a single instance"""
   completeActionItemForInstance(
@@ -2079,6 +2203,9 @@ type Mutation {
   deleteVenueBooking(input: MutationDeleteVenueBookingInput!): Venue
   installPlugin(input: InstallPluginInput!): Plugin
 
+  """Mutation field to invite a user to an event."""
+  inviteEventAttendee(data: EventAttendeeInput!): EventAttendee
+
   """Mutation field to join a public organization."""
   joinPublicOrganization(
     """Input to join a public organization"""
@@ -2093,13 +2220,31 @@ type Mutation {
     """Mark an action item as pending for a single instance"""
     input: MutationMarkActionAsPendingForInstanceInput!
   ): ActionItem
+
+  """Marks a chat as read"""
+  markChatAsRead(
+    """The input for marking a chat as read"""
+    input: MutationMarkChatAsReadInput!
+  ): Boolean
   readNotification(input: MutationReadNotificationInput!): ReadNotificationResponse
+
+  """Mutation field to register a user for an event."""
+  registerEventAttendee(data: EventAttendeeInput!): EventAttendee
+
+  """Mutation field to register current user for an event."""
+  registerForEvent(
+    """ID of the event or recurring event instance to register for"""
+    id: ID!
+  ): EventAttendee
 
   """Mutation field to reject a membership request by an admin."""
   rejectMembershipRequest(
     """Input to reject a membership request"""
     input: MutationRejectMembershipRequestInput!
   ): RejectMembershipResponse
+
+  """Mutation field to remove an event attendee."""
+  removeEventAttendee(data: EventAttendeeInput!): User
 
   """Mutation field to send a membership request to an organization."""
   sendMembershipRequest(
@@ -2115,6 +2260,12 @@ type Mutation {
 
   """Mutation field to unblock a user from an organization."""
   unblockUser(organizationId: ID!, userId: ID!): Boolean
+
+  """Mutation field to unregister current user from an event."""
+  unregisterForEventByUser(
+    """ID of the event or recurring event instance to unregister from"""
+    id: ID!
+  ): Boolean
 
   """Mutation to update an action item"""
   updateActionItem(
@@ -2930,6 +3081,15 @@ input MutationMarkActionAsPendingForInstanceInput {
   eventId: ID!
 }
 
+"""Input for marking messages in a chat as read up to a specific message."""
+input MutationMarkChatAsReadInput {
+  """The ID of the chat to mark messages as read in."""
+  chatId: ID!
+
+  """The ID of the message to mark as read."""
+  messageId: ID!
+}
+
 """Input for marking one or more notifications as read."""
 input MutationReadNotificationInput {
   """One or more notification IDs to mark as read."""
@@ -3395,6 +3555,9 @@ input MutationUpdateOrganizationInput {
 
   """Global identifier of the organization."""
   id: ID!
+
+  """Is user registration required for this organization?"""
+  isUserRegistrationRequired: Boolean
 
   """Name of the organization."""
   name: String
@@ -4246,6 +4409,33 @@ type Query {
   """Query field to read a fund campaign pledge."""
   fundCampaignPledge(input: QueryFundCampaignPledgeInput!): FundCampaignPledge
 
+  """Query field to get a specific event attendee record."""
+  getEventAttendee(
+    """ID of the standalone event"""
+    eventId: ID
+
+    """ID of the recurring event instance"""
+    recurringEventInstanceId: ID
+
+    """ID of the user"""
+    userId: ID!
+  ): EventAttendee
+
+  """Query field to get all event registrants for a specific event."""
+  getEventAttendeesByEventId(
+    """ID of the standalone event"""
+    eventId: ID
+
+    """ID of the recurring event instance"""
+    recurringEventInstanceId: ID
+  ): [EventAttendee!]
+
+  """Query field to get all event invitations for a specific user."""
+  getEventInvitesByUserId(
+    """ID of the user"""
+    userId: ID!
+  ): [EventAttendee!]!
+
   """Query field to get event volunteer groups."""
   getEventVolunteerGroups(
     """Order criteria for event volunteer groups."""
@@ -4254,6 +4444,12 @@ type Query {
     """Filter criteria for event volunteer groups."""
     where: EventVolunteerGroupWhereInput!
   ): [EventVolunteerGroup!]
+
+  """Get pledges for the current user in a specific campaign."""
+  getMyPledgesForCampaign(
+    """Global id of the campaign."""
+    campaignId: ID!
+  ): [FundCampaignPledge!]
 
   """Query field to get fund campaign pledges associated with a user."""
   getPledgesByUserId(
@@ -4275,12 +4471,6 @@ type Query {
     where: QueryPledgeWhereInput
   ): [FundCampaignPledge!]
 
-
-  """
-  Get pledges for the current user in a specific campaign.
-  """
-  getMyPledgesForCampaign(campaignId: ID!): [FundCampaignPledge!]
-
   """Query field to fetch a single plugin by ID."""
   getPluginById(
     """Input parameters to fetch a plugin by ID."""
@@ -4293,6 +4483,14 @@ type Query {
     input: QueryPluginsInput
   ): [Plugin!]
 
+  """
+  Fetches all recurring event instances that belong to a specific base recurring event template.
+  """
+  getRecurringEvents(
+    """The ID of the base recurring event template"""
+    baseRecurringEventId: ID!
+  ): [Event!]
+
   """Query field to get volunteer memberships."""
   getVolunteerMembership(
     """Order criteria for volunteer memberships."""
@@ -4301,6 +4499,18 @@ type Query {
     """Filter criteria for volunteer memberships."""
     where: VolunteerMembershipWhereInput!
   ): [VolunteerMembership!]
+
+  """Query field to check if a user has submitted feedback for an event."""
+  hasSubmittedFeedback(
+    """ID of the standalone event"""
+    eventId: ID
+
+    """ID of the recurring event instance"""
+    recurringEventInstanceId: ID
+
+    """ID of the user"""
+    userId: ID!
+  ): Boolean
 
   """Query field to read a post vote."""
   hasUserVoted(input: QueryHasUserVotedInput!): HasUserVoted
@@ -4330,6 +4540,9 @@ type Query {
 
   """Query field to read a tag folder."""
   tagFolder(input: QueryTagFolderInput!): TagFolder
+
+  """Query to get all chats with unread messages for the current user."""
+  unreadChats: [Chat!]
 
   """Query field to read a user."""
   user(input: QueryUserInput!): User
@@ -4820,6 +5033,9 @@ type User {
 
   """Employment status of the user."""
   employmentStatus: UserEmploymentStatus
+
+  """List of events the user has attended or registered for."""
+  eventsAttended: [Event!]
 
   """The phone number to use to communicate with the user at their home."""
   homePhoneNumber: PhoneNumber
