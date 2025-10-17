@@ -31,20 +31,21 @@ pre-commit:
         git add {staged_files}
     8_check_type_errors:
       run: pnpm check_type_errors
-    9_docs_fix_code_quality:
+    9_docs_check_code_quality:
       glob: "docs/**/*.{ts,tsx,js,jsx,json,jsonc}"
       run: |
         set -e
-        pnpm -C docs fix_code_quality
-        git add -A docs/
-
-    10_docs_check_code_quality:
-      glob: "docs/**/*.{ts,tsx,js,jsx,json,jsonc}"
-      run: |
-        set -e
-        pnpm -C docs check_code_quality
-
-    11_docs_check_type_errors:
+        files="{staged_files}"
+        rel=$(printf '%s\n' $files | sed -n 's|^docs/||p' | tr '\n' ' ')
+        if [ -n "$rel" ]; then
+          # Fix only originally staged files (relative to docs)
+          pnpm -C docs fix_code_quality -- $rel
+          # Re-add only those originally staged files
+          git add -- $files
+          # Verify no remaining warnings on those files
+          pnpm -C docs check_code_quality -- $rel
+        fi
+    10_docs_check_type_errors:
       glob: "docs/**/*.{ts,tsx,js,jsx}"
       run: |
         set -e
