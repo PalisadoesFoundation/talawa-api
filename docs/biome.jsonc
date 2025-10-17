@@ -1,5 +1,3 @@
-// Biome configuration for the docs directory (Docusaurus)
-// This configuration follows the main talawa-api biome configuration philosophy
 {
 	"$schema": "../node_modules/@biomejs/biome/configuration_schema.json",
 	"files": {
@@ -45,3 +43,5 @@
 		"useIgnoreFile": true
 	}
 }
+
+//kjnfkbnkdbnfk
