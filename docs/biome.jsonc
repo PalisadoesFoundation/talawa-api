@@ -1,45 +1,45 @@
 {
-	"$schema": "../node_modules/@biomejs/biome/configuration_schema.json",
-	"files": {
-		"ignore": [
-			"./node_modules",
-			"./package.json",
-			"./pnpm-lock.yaml",
-			"./.docusaurus",
-			"./build",
-			"./.cache-loader",
-			"./docs/auto-docs",
-			"./static"
-		],
-		"ignoreUnknown": true
-	},
-	"linter": {
-		"enabled": true,
-		"rules": {
-			"recommended": true,
-			"style": {
-				"useImportType": "off"
-			}
-		}
-	},
-	"organizeImports": {
-		"enabled": true
-	},
-	"formatter": {
-		"enabled": true,
-		"indentStyle": "space",
-		"indentWidth": 2
-	},
-	"javascript": {
-		"formatter": {
-			"quoteStyle": "single",
-			"trailingCommas": "all"
-		}
-	},
-	"vcs": {
-		"clientKind": "git",
-		"defaultBranch": "develop",
-		"enabled": true,
-		"useIgnoreFile": true
-	}
+  "$schema": "../node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "ignore": [
+      "./node_modules",
+      "./package.json",
+      "./pnpm-lock.yaml",
+      "./.docusaurus",
+      "./build",
+      "./.cache-loader",
+      "./docs/auto-docs",
+      "./static"
+    ],
+    "ignoreUnknown": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "style": {
+        "useImportType": "off"
+      }
+    }
+  },
+  "organizeImports": {
+    "enabled": true
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "all"
+    }
+  },
+  "vcs": {
+    "clientKind": "git",
+    "defaultBranch": "develop",
+    "enabled": true,
+    "useIgnoreFile": true
+  }
 }
