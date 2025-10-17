@@ -36,13 +36,14 @@ pre-commit:
       run: |
         set -e
         pnpm -C docs fix_code_quality
-        git add {staged_files}
+        
 
     10_docs_check_code_quality:
       glob: "docs/**/*.{ts,tsx,js,jsx,json,jsonc}"
       run: |
         set -e
         pnpm -C docs check_code_quality
+        git add {staged_files}
 
     11_docs_check_type_errors:
       glob: "docs/**/*.{ts,tsx,js,jsx}"
