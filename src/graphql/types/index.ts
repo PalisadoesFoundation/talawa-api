@@ -13,6 +13,8 @@ import "./Comment/index";
 import "./Community/index";
 import "./Event/index";
 import "./EventAttachment/index";
+import "./EventAttendee/index";
+import "./CheckInStatus/index";
 import "./EventVolunteer/index";
 import "./EventVolunteerGroup/index";
 import "./Fund/index";

@@ -23,3 +23,4 @@ import "./updater";
 import "./workPhoneNumber";
 import "./createdOrganizations";
 import "./membershipRequests";
+import "./eventsAttended";

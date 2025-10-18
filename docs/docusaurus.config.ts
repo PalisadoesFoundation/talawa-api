@@ -27,6 +27,8 @@ const config: Config = {
     locales: ["en"],
   },
 
+  stylesheets: ["https://docs.talawa.io/css/styles-latest.css"],
+
   presets: [
     [
       "classic",
@@ -44,10 +46,7 @@ const config: Config = {
             "https://github.com/PalisadoesFoundation/talawa-api/tree/develop/docs/docs",
         },
         theme: {
-          customCss: [
-            require.resolve("./src/css/custom.css"),
-            require.resolve("./src/css/index.css"),
-          ],
+          customCss: undefined,
         },
       },
     ],
@@ -93,6 +92,12 @@ const config: Config = {
           label: "Plugin Guide",
           position: "left",
           to: "https://docs-plugin.talawa.io/docs",
+          target: "_self",
+        },
+        {
+          label: "Community",
+          position: "left",
+          to: "https://community.talawa.io",
           target: "_self",
         },
         {

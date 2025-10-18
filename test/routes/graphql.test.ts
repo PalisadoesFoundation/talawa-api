@@ -54,6 +54,13 @@ describe("GraphQL Routes", () => {
 			log: {
 				info: vi.fn(),
 				error: vi.fn(),
+				warn: () => {},
+				child: vi.fn(),
+				level: "info",
+				fatal: vi.fn(),
+				debug: vi.fn(),
+				trace: vi.fn(),
+				silent: vi.fn(),
 			} as unknown as FastifyInstance["log"],
 			minio: {} as FastifyInstance["minio"],
 		};
@@ -305,7 +312,6 @@ describe("GraphQL Routes", () => {
 					path: "/graphql",
 					schema: expect.any(GraphQLSchema),
 					subscription: expect.objectContaining({
-						context: expect.any(Function),
 						keepAlive: 30000, // 1000 * 30
 						onConnect: expect.any(Function),
 						onDisconnect: expect.any(Function),
@@ -777,6 +783,9 @@ describe("GraphQL Routes", () => {
 				replaceSchema: ReturnType<typeof vi.fn>;
 				addHook: ReturnType<typeof vi.fn>;
 			};
+			jwt?: {
+				verify: ReturnType<typeof vi.fn>;
+			};
 		};
 
 		beforeEach(() => {
@@ -810,7 +819,7 @@ describe("GraphQL Routes", () => {
 			);
 		});
 
-		it("should configure subscription onConnect to return true", async () => {
+		it("should configure subscription onConnect to reject connections without authorization", async () => {
 			const { graphql } = await import("~/src/routes/graphql");
 
 			await graphql(mockFastifyInstance as unknown as FastifyInstance);
@@ -821,14 +830,89 @@ describe("GraphQL Routes", () => {
 
 			const subscriptionConfig = mercuriusCall?.[1] as {
 				subscription: {
-					onConnect: (data: unknown) => boolean;
+					onConnect: (data: unknown) => Promise<boolean | object>;
 				};
 			};
-			const result = subscriptionConfig.subscription.onConnect({
-				test: "data",
+			const result = await subscriptionConfig.subscription.onConnect({
+				payload: { test: "data" }, // No authorization
 			});
 
-			expect(result).toBe(true);
+			expect(result).toBe(false);
+		});
+
+		it("should authorize subscription connections with valid Bearer token", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			// Prepare a fake token and decoded payload
+			const fakeToken = "signed-jwt-token";
+			const decoded = {
+				user: { id: "user-789" },
+			} as ExplicitAuthenticationTokenPayload;
+
+			// Ensure the buildInitialSchema returns a schema so registration succeeds
+			vi.mocked(schemaManager.buildInitialSchema).mockResolvedValue(
+				new GraphQLSchema({
+					query: new GraphQLObjectType({
+						name: "Query",
+						fields: {
+							hello: { type: GraphQLString, resolve: () => "Hello" },
+						},
+					}),
+				}),
+			);
+
+			// Mock fastify.jwt.verify to return decoded payload when called with token
+			mockFastifyInstance.jwt = { verify: vi.fn().mockResolvedValue(decoded) };
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.subscription,
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: unknown) => Promise<boolean | object>;
+				};
+			};
+
+			const result = await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: `Bearer ${fakeToken}` },
+			});
+
+			expect(result).toEqual(
+				expect.objectContaining({
+					currentClient: { isAuthenticated: true, user: decoded.user },
+				}),
+			);
+		});
+
+		it("should reject subscription connections with invalid Bearer token and log error", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			// Make fastify.jwt.verify throw to simulate invalid token
+			mockFastifyInstance.jwt = {
+				verify: vi.fn().mockRejectedValue(new Error("Invalid token")),
+			};
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const mercuriusCall = mockFastifyInstance.register.mock.calls.find(
+				(call) => call?.[1]?.subscription,
+			);
+
+			const subscriptionConfig = mercuriusCall?.[1] as {
+				subscription: {
+					onConnect: (data: unknown) => Promise<boolean | object>;
+				};
+			};
+
+			const result = await subscriptionConfig.subscription.onConnect({
+				payload: { authorization: "Bearer invalid-token" },
+			});
+
+			expect(result).toBe(false);
+			expect(mockFastifyInstance.log.error).toHaveBeenCalled();
 		});
 
 		it("should configure subscription onDisconnect as no-op", async () => {

@@ -38,6 +38,10 @@ export {
 	chatMembershipsTableRelations,
 } from "./tables/chatMemberships";
 export {
+	chatMessageReadReceiptsTable,
+	chatMessageReadReceiptsRelations,
+} from "./tables/chatMessageReadReceipts";
+export {
 	chatMessagesTable,
 	chatMessagesTableRelations,
 } from "./tables/chatMessages";
@@ -56,9 +60,10 @@ export {
 	eventAttachmentsTableRelations,
 } from "./tables/eventAttachments";
 export {
-	eventAttendancesTable,
-	eventAttendancesTableRelations,
-} from "./tables/eventAttendances";
+	eventAttendeesTable,
+	eventAttendeesTableRelations,
+} from "./tables/eventAttendees";
+
 export {
 	eventExceptionsTable,
 	eventExceptionsTableRelations,

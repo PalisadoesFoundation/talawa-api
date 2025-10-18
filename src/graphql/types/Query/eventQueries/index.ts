@@ -18,3 +18,6 @@ export type {
 	EventWithAttachments,
 	GetUnifiedEventsInput,
 } from "./unifiedEventQueries";
+
+// Export the new function for getting recurring events by base ID
+export { getRecurringEventInstancesByBaseId } from "./recurringEventInstanceQueries";
