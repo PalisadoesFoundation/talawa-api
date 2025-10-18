@@ -28,7 +28,7 @@ pre-commit:
       run: |
         set -e
         pnpm fix_code_quality
-        
+
         pnpm -C docs fix_code_quality
 
         git add -u 
@@ -50,5 +50,5 @@ pre-commit:
     #     pnpm generate:docs
     #     git add ./docs/docs/docs/auto-schema
 
-  piped: false
+  piped: true
 
