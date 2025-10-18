@@ -1,4 +1,5 @@
-import React, { type HTMLAttributeAnchorTarget, type ReactNode } from "react";
+import type { HTMLAttributeAnchorTarget, ReactNode } from "react";
+import React from "react";
 
 interface ActionButtonProps {
 	href: string;

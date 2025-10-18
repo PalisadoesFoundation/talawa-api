@@ -8,6 +8,7 @@ function HomeCallToAction(): JSX.Element {
 				Learn More
 			</ActionButton>
 			<ActionButton
+				ariaLabel="Github {opens in a new tab}"
 				type="secondary"
 				href="https://github.com/PalisadoesFoundation/talawa-api"
 				buttonClassName="custom-button"
