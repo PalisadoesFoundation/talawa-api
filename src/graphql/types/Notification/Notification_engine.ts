@@ -370,4 +370,88 @@ export class NotificationEngine {
 		}
 		return { title, body };
 	}
+
+	/**
+	 * Creates a direct email notification for external recipients (non-users).
+	 * Uses the template system with provided variables for rendering.
+	 *
+	 * @param eventType - Type of event (e.g., "send_event_invite")
+	 * @param variables - Variables to render in the template
+	 * @param receiverMail - Email address of the recipient(s)
+	 * @param channelType - Channel type (defaults to EMAIL)
+	 * @returns The created email notification ID
+	 */
+	async createDirectEmailNotification(
+		eventType: string,
+		variables: NotificationVariables,
+		receiverMail: string | string[],
+		channelType: NotificationChannelType = NotificationChannelType.EMAIL,
+	): Promise<string> {
+		const senderId = this.ctx.currentClient.isAuthenticated
+			? this.ctx.currentClient.user.id
+			: null;
+		const template =
+			await this.ctx.drizzleClient.query.notificationTemplatesTable.findFirst({
+				where: (fields, operators) =>
+					and(
+						operators.eq(fields.eventType, eventType),
+						operators.eq(fields.channelType, channelType),
+					),
+			});
+		if (!template) {
+			throw new Error(
+				`No notification template found for event type "${eventType}" and channel "${channelType}"`,
+			);
+		}
+		const renderedContent = this.renderTemplate(template, variables);
+		const initialStatus =
+			channelType === NotificationChannelType.EMAIL ? "pending" : "delivered";
+
+		const [notificationLog] = await this.ctx.drizzleClient
+			.insert(notificationLogsTable)
+			.values({
+				id: uuidv7(),
+				templateId: template.id,
+				variables: variables as Record<
+					string,
+					string | number | boolean | null | undefined
+				>,
+				renderedContent: renderedContent as { title: string; body: string },
+				sender: senderId,
+				navigation: template.linkedRouteName,
+				eventType: eventType,
+				channel: channelType,
+				status: initialStatus,
+			})
+			.returning();
+
+		if (!notificationLog) {
+			throw new Error("Failed to create notification log for direct email");
+		}
+
+		const emails = Array.isArray(receiverMail) ? receiverMail : [receiverMail];
+
+		const emailNotifications = emails.map((email) => ({
+			id: uuidv7(),
+			notificationLogId: notificationLog.id,
+			userId: null,
+			email: email,
+			subject: renderedContent.title,
+			htmlBody: renderedContent.body,
+			status: "pending" as const,
+			retryCount: 0,
+			maxRetries: 3,
+		}));
+
+		await this.ctx.drizzleClient
+			.insert(emailNotificationsTable)
+			.values(emailNotifications);
+
+		this.ctx.log.info("Direct email notification(s) created", {
+			count: emailNotifications.length,
+			recipientEmails: emails,
+		});
+
+		return notificationLog.id;
+	}
 }

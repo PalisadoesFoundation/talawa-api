@@ -857,6 +857,55 @@ input EventAttendeeInput {
   userId: ID!
 }
 
+"""An invitation to an event sent to an email address."""
+type EventInvitation {
+  """Date and time when the invitation was created."""
+  createdAt: DateTime
+
+  """ID of the associated event (if applicable)."""
+  eventId: String
+
+  """Date and time when the invitation expires."""
+  expiresAt: DateTime
+
+  """Unique identifier of the invitation."""
+  id: ID
+
+  """Unique token used to accept the invitation."""
+  invitationToken: String
+
+  """ID of the user who sent the invitation."""
+  invitedBy: String
+
+  """Email address of the invitee."""
+  inviteeEmail: String
+
+  """Name of the invitee."""
+  inviteeName: String
+
+  """Additional metadata associated with the invitation (JSON string)."""
+  metadata: String
+
+  """ID of the associated recurring event instance (if applicable)."""
+  recurringEventInstanceId: String
+
+  """
+  Date and time when the invitation was responded to (accepted or declined).
+  """
+  respondedAt: DateTime
+
+  """
+  Current status of the invitation (pending, accepted, declined, expired, cancelled).
+  """
+  status: String
+
+  """Date and time when the invitation was last updated."""
+  updatedAt: DateTime
+
+  """ID of the user who was invited (if they are a registered user)."""
+  userId: String
+}
+
 """"""
 type EventVenuesConnection {
   edges: [EventVenuesConnectionEdge]
@@ -2245,6 +2294,9 @@ type Mutation {
 
   """Mutation field to remove an event attendee."""
   removeEventAttendee(data: EventAttendeeInput!): User
+
+  """Send email invitations to one or more addresses for an event."""
+  sendEventInvitations(input: SendEventInvitationsInput!): [EventInvitation!]
 
   """Mutation field to send a membership request to an organization."""
   sendMembershipRequest(
@@ -4819,6 +4871,14 @@ type RejectMembershipResponse {
 
   """Whether the operation was successful"""
   success: Boolean
+}
+
+input SendEventInvitationsInput {
+  emails: [String!]!
+  eventId: ID
+  expiresInDays: Int
+  message: String
+  recurringEventInstanceId: ID
 }
 
 type Subscription {

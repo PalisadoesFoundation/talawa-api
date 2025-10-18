@@ -10,10 +10,26 @@ export type EventCreatedPayload = {
 	creatorName: string;
 };
 
-type QueuedNotification = {
-	type: "event.created";
-	data: EventCreatedPayload;
+export type SendEventInvitePayload = {
+	inviteeEmail: string;
+	inviteeName?: string;
+	eventId?: string;
+	eventName?: string;
+	organizationId: string;
+	inviterId: string;
+	invitationToken: string;
+	invitationUrl: string;
 };
+
+type QueuedNotification =
+	| {
+			type: "event.created";
+			data: EventCreatedPayload;
+	  }
+	| {
+			type: "send_event_invite";
+			data: SendEventInvitePayload;
+	  };
 
 /**
  * Thin per-request notification service. By default it collects notifications in-memory
@@ -26,6 +42,10 @@ export class NotificationService {
 
 	enqueueEventCreated(payload: EventCreatedPayload) {
 		this.queue.push({ type: "event.created", data: payload });
+	}
+
+	enqueueSendEventInvite(payload: SendEventInvitePayload) {
+		this.queue.push({ type: "send_event_invite", data: payload });
 	}
 
 	/**
@@ -41,6 +61,8 @@ export class NotificationService {
 			if (item.type === "event.created") {
 				// delegate to existing event bus which handles in-app/email channels
 				void notificationEventBus.emitEventCreated(item.data, ctx);
+			} else if (item.type === "send_event_invite") {
+				void notificationEventBus.emitSendEventInvite(item.data, ctx);
 			}
 		}
 	}
@@ -54,6 +76,13 @@ export class NotificationService {
 		ctx: GraphQLContext,
 	) {
 		return notificationEventBus.emitEventCreated(payload, ctx);
+	}
+
+	async emitSendEventInviteImmediate(
+		payload: SendEventInvitePayload,
+		ctx: GraphQLContext,
+	) {
+		return notificationEventBus.emitSendEventInvite(payload, ctx);
 	}
 }
 

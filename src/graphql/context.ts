@@ -41,7 +41,10 @@ export type CurrentClient =
 export type ExplicitGraphQLContext = {
 	currentClient: CurrentClient;
 	drizzleClient: FastifyInstance["drizzleClient"];
-	envConfig: Pick<FastifyInstance["envConfig"], "API_BASE_URL">;
+	envConfig: Pick<
+		FastifyInstance["envConfig"],
+		"API_BASE_URL" | "FRONTEND_URL"
+	>;
 	jwt: {
 		sign: (payload: ExplicitAuthenticationTokenPayload) => string;
 	};
@@ -60,6 +63,16 @@ export type ExplicitGraphQLContext = {
 			organizationName: string;
 			startDate: string;
 			creatorName: string;
+		}) => void;
+		enqueueSendEventInvite: (payload: {
+			inviteeEmail: string;
+			inviteeName?: string;
+			eventId?: string;
+			eventName?: string;
+			organizationId: string;
+			inviterId: string;
+			invitationToken: string;
+			invitationUrl: string;
 		}) => void;
 		emitEventCreatedImmediate?: (
 			payload: {
