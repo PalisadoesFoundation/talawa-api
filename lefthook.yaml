@@ -51,4 +51,3 @@ pre-commit:
     #     git add ./docs/docs/docs/auto-schema
 
   piped: true
-
