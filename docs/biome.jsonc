@@ -13,13 +13,13 @@
     ],
     "ignoreUnknown": true
   },
-          "linter": {
+  "linter": {
     "enabled": true,
     "rules": {
-           "recommended": true,
+      "recommended": true,
       "style": {
         "useImportType": "off"
-           }
+      }
     }
   },
   "organizeImports": {
