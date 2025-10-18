@@ -1,21 +1,26 @@
-import clsx from 'clsx';
-import React from 'react';
+import clsx from "clsx";
+import React, { type ElementType, type ReactNode } from "react";
 interface SectionProps {
-  element?: keyof JSX.IntrinsicElements;
-  children: React.ReactNode;
-  className?: string;
-  background?: 'light' | 'dark' | 'tint';
-  role?: string;
+	element?: ElementType;
+	children: ReactNode;
+	className?: string;
+	background?: "light" | "dark" | "tint";
+	role?: string;
 }
 
 function Section({
-  element = 'section',
-  children,
-  className,
-  background = 'light',
+	element = "section",
+	children,
+	className,
+	background = "light",
+	role,
 }: SectionProps) {
-  const El = element;
-  return <El className={clsx('Section', className, background)}>{children}</El>;
+	const El: ElementType = element;
+	return (
+		<El className={clsx("Section", className, background)} role={role}>
+			{children}
+		</El>
+	);
 }
 
 export default Section;

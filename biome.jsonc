@@ -13,8 +13,15 @@
 			"./schema.graphql",
 			"./test/graphql/types/gql.tada.d.ts",
 			"./test/graphql/types/gql.tada-cache.d.ts",
-			"./docs/**",
-			"./sample_data/**"
+			"./sample_data/**",
+			"./docs/node_modules",
+			"./docs/package.json",
+			"./docs/pnpm-lock.yaml",
+			"./docs//.docusaurus",
+			"./docs/build",
+			"./docs/.cache-loader",
+			"./docs/docs/auto-docs",
+			"./docs/static"
 		],
 		// https://biomejs.dev/reference/configuration/#filesignoreunknown
 		"ignoreUnknown": true

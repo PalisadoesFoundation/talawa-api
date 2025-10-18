@@ -32,13 +32,6 @@ pre-commit:
     8_check_type_errors:
       run: pnpm check_type_errors
 
-    9_docs_fix_code_quality:
-      glob: "docs/**/*.{ts,tsx,js,jsx,json,jsonc}"
-      run: |
-        set -e
-        pnpm -C docs fix_code_quality
-        pnpm -C docs fix_code_quality
-
     10_docs_check_type_errors:
       glob: "docs/**/*.{ts,tsx,js,jsx}"
       run: |
