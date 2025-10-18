@@ -17,7 +17,7 @@ services:
       # https://docs.docker.com/reference/compose-file/build/#context
       context: ./
       # https://docs.docker.com/reference/compose-file/build/#dockerfile
-      dockerfile: ./docker/api.Containerfile
+      dockerfile: ${API_DOCKERFILE:-api.Containerfile}
       # https://docs.docker.com/reference/compose-file/build/#target
       target: production
     # https://docs.docker.com/reference/compose-file/services/#depends_on
