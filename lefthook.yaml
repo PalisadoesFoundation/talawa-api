@@ -36,26 +36,25 @@ pre-commit:
       glob: "docs/**/*.{ts,tsx,js,jsx,json,jsonc}"
       run: |
         set -e
-        pnpm -C docs fix_code_quality
-    10_docs_check_code_quality:
-      glob: "docs/**/*.{ts,tsx,js,jsx,json,jsonc}"
-      run: |
-        set -e
         files="{staged_files}"
-        rel=$(printf '%s\n' $files | sed -n 's|^docs/||p' | tr '\n' ' ')
-        if [ -n "$rel" ]; then
-          # Fix only originally staged files (relative to docs)
-          pnpm -C docs fix_code_quality -- $rel
-          # Re-add only those originally staged files
-          git add -- $files
-          # Verify no remaining warnings on those files
-          pnpm -C docs check_code_quality -- $rel
+        # Only consider files under docs/
+        docs_files=$(printf '%s\n' $files | grep '^docs/' || true)
+        # Convert to paths relative to docs/ for pnpm -C docs
+        rel_files=$(printf '%s\n' $docs_files | sed 's|^docs/||')
+        # Keep only files that still exist
+        existing_rel_files=$(printf '%s\n' $rel_files | xargs -I{} sh -c '[ -f "docs/{}" ] && echo {}' || true)
+        if [ -n "$existing_rel_files" ]; then
+          pnpm -C docs fix_code_quality -- $existing_rel_files
+          # Re-add only the originally staged docs files
+          git add -- $docs_files
+          pnpm -C docs check_code_quality -- $existing_rel_files
         fi
+
     10_docs_check_type_errors:
       glob: "docs/**/*.{ts,tsx,js,jsx}"
       run: |
         set -e
-        pnpm -C docs check_type_errors
+          pnpm -C docs check_type_errors 
     # commenting out because postgenerate script is not present in develop branch
     # 11_generate_docs:
     #   run: |
