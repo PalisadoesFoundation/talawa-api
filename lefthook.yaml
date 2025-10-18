@@ -24,17 +24,20 @@ pre-commit:
         git add ./test/graphql/types/gql.tada-cache.d.ts
     6_check_gql_tada:
       run: pnpm check_gql_tada
-
-    7_fix_docs_code_quality:
-      run: |
-        set -e
-        pnpm -C docs fix_code_quality
-        pnpm -C docs check_code_quality
-    8_fix_code_quality:
+    7_fix_code_quality:
       run: |
         set -e
         pnpm fix_code_quality
-        git add {staged_files}
+
+    8_fix_docs_code_quality:
+      run: |
+        set -e
+        pnpm -C docs fix_code_quality
+
+        git add -u
+
+        pnpm -C docs check_code_quality
+
     9_check_type_errors:
       run: pnpm check_type_errors
 
@@ -50,4 +53,4 @@ pre-commit:
     #     pnpm generate:docs
     #     git add ./docs/docs/docs/auto-schema
 
-  piped: true
+  piped: false
