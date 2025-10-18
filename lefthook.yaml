@@ -28,10 +28,7 @@ pre-commit:
       run: |
         set -e
         pnpm fix_code_quality
-
-    8_fix_docs_code_quality:
-      run: |
-        set -e
+        
         pnpm -C docs fix_code_quality
 
         git add -u 
