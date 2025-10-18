@@ -13,6 +13,7 @@
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc",
+    "check_code_quality": "biome check --error-on-warnings",
     "check_type_errors": "tsc --noEmit"
   },
   "dependencies": {
