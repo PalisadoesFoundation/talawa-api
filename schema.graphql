@@ -1,3 +1,8 @@
+input AcceptEventInvitationInput {
+  """Invitation token from the invite link"""
+  invitationToken: String!
+}
+
 type AcceptMembershipResponse {
   """Success or error message"""
   message: String
@@ -1998,6 +2003,11 @@ input MembershipRequestWhereInput {
 }
 
 type Mutation {
+  """
+  Accept an event invitation. Links the current user to the invitation, joins the organization if needed and registers the user as an attendee. This is performed atomically.
+  """
+  acceptEventInvitation(input: AcceptEventInvitationInput!): EventInvitation
+
   """Mutation field to accept a membership request by an admin."""
   acceptMembershipRequest(
     """Input to accept a membership request"""
@@ -2457,6 +2467,11 @@ type Mutation {
 
   """Upload and install a plugin from a zip file"""
   uploadPluginZip(input: UploadPluginZipInput!): Plugin
+
+  """
+  Public preview of an event invitation. Returns masked email and minimal event/org info. Rate-limited.
+  """
+  verifyEventInvitation(input: VerifyEventInvitationInput!): VerifyEventInvitationPreview
 }
 
 input MutationAcceptMembershipRequestInput {
@@ -4815,6 +4830,11 @@ type ReadNotificationResponse {
   success: Boolean!
 }
 
+input RecipientInput {
+  email: String!
+  name: String
+}
+
 """
 Input type for defining recurrence rules for events. Must specify exactly one end condition: endDate, count, or never.
 """
@@ -4874,10 +4894,11 @@ type RejectMembershipResponse {
 }
 
 input SendEventInvitationsInput {
-  emails: [String!]!
+  emails: [String!]
   eventId: ID
   expiresInDays: Int
   message: String
+  recipients: [RecipientInput!]
   recurringEventInstanceId: ID
 }
 
@@ -5281,6 +5302,21 @@ type VenueEventsConnection {
 type VenueEventsConnectionEdge {
   cursor: String!
   node: Event
+}
+
+input VerifyEventInvitationInput {
+  invitationToken: String!
+}
+
+type VerifyEventInvitationPreview {
+  eventId: String
+  expiresAt: String
+  invitationToken: String
+  inviteeEmailMasked: String
+  inviteeName: String
+  organizationId: String
+  recurringEventInstanceId: String
+  status: String
 }
 
 enum VolunteerGroupScope {

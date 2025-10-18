@@ -117,3 +117,5 @@ import "./deleteActionItemCategory";
 import "./ReadNotification";
 import "./MarkChatAsRead";
 import "./sendEventInvitations";
+import "./acceptEventInvitation";
+import "./verifyEventInvitation";

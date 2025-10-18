@@ -113,3 +113,5 @@ import "./MutationReadNotificationinput";
 import "./MutationMarkChatAsReadInput";
 import "./CheckInCheckOutInput";
 import "./MutationSendEventInvitationsInput";
+import "./MutationAcceptEventInvitationInput";
+import "./MutationVerifyEventInvitationInput";

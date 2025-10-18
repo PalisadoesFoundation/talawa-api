@@ -106,7 +106,7 @@
   {
     "name": "Send Event Invite Email",
     "eventType": "send_event_invite",
-    "title": "You're invited to {eventName}",
+    "title": "{inviteeName}, you're invited to {eventName}",
     "body": "<html><body><h2>You're Invited!</h2><p>Hello {inviteeName},</p><p>You have been invited to <strong>{eventName}</strong>.</p><p>Click the button below to accept your invitation:</p><p><a href='{invitationUrl}' style='background:#16a34a;color:#ffffff;padding:12px 24px;border-radius:6px;text-decoration:none;display:inline-block;'>Accept Invitation</a></p><p>Or copy and paste this link into your browser:</p><p style='color:#666;font-size:14px;'>{invitationUrl}</p><p>— Talawa</p></body></html>",
     "channelType": "email",
     "linkedRouteName": "/event/invitation/{invitationToken}"

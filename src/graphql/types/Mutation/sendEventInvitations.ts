@@ -147,17 +147,48 @@ builder.mutationField("sendEventInvitations", (t) =>
 				normalizedRecurringInstanceId,
 			});
 
-			const uniqueEmails = Array.from(
-				new Set(parsedArgs.input.emails.map((e) => e.trim().toLowerCase())),
-			);
+			// Build recipients list: prefer `recipients` (with optional names),
+			// fall back to legacy `emails` array for backwards compatibility.
 			const MAX_EMAILS = 100;
-			if (uniqueEmails.length === 0) {
+			const rawRecipients: Array<{ email: string; name?: string | null }> = [];
+
+			if (
+				Array.isArray(parsedArgs.input.recipients) &&
+				parsedArgs.input.recipients.length > 0
+			) {
+				for (const r of parsedArgs.input.recipients) {
+					rawRecipients.push({
+						email: r.email.trim().toLowerCase(),
+						name: r.name?.trim() ?? null,
+					});
+				}
+			} else if (
+				Array.isArray(parsedArgs.input.emails) &&
+				parsedArgs.input.emails.length > 0
+			) {
+				for (const e of parsedArgs.input.emails) {
+					rawRecipients.push({ email: e.trim().toLowerCase(), name: null });
+				}
+			}
+
+			// Deduplicate by email, preserving first occurrence's name when present
+			const deduped = new Map<
+				string,
+				{ email: string; name?: string | null }
+			>();
+			for (const r of rawRecipients) {
+				if (!deduped.has(r.email)) deduped.set(r.email, r);
+			}
+
+			const recipients = Array.from(deduped.values());
+
+			if (recipients.length === 0) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",
 						issues: [
 							{
-								argumentPath: ["input", "emails"],
+								argumentPath: ["input"],
 								message: "No recipient emails provided",
 							},
 						],
@@ -165,13 +196,13 @@ builder.mutationField("sendEventInvitations", (t) =>
 				});
 			}
 
-			if (uniqueEmails.length > MAX_EMAILS) {
+			if (recipients.length > MAX_EMAILS) {
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "invalid_arguments",
 						issues: [
 							{
-								argumentPath: ["input", "emails"],
+								argumentPath: ["input"],
 								message: `Too many recipient emails; max ${MAX_EMAILS}`,
 							},
 						],
@@ -179,14 +210,15 @@ builder.mutationField("sendEventInvitations", (t) =>
 				});
 			}
 
-			const invitationsToInsert = uniqueEmails.map((email) => {
+			const invitationsToInsert = recipients.map((r) => {
 				const token = crypto.randomBytes(32).toString("hex");
 				return {
 					id: undefined,
 					eventId: normalizedEventId,
 					recurringEventInstanceId: normalizedRecurringInstanceId,
 					invitedBy: currentUserId,
-					inviteeEmail: email,
+					inviteeEmail: r.email,
+					inviteeName: r.name ?? null,
 					invitationToken: token,
 					status: "pending",
 					expiresAt,
@@ -243,4 +275,3 @@ builder.mutationField("sendEventInvitations", (t) =>
 		type: [EventInvitation],
 	}),
 );
-    
