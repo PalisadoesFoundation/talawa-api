@@ -27,9 +27,7 @@ const config: Config = {
     locales: ["en"],
   },
 
-  stylesheets: [
-  'https://docs.talawa.io/css/styles-latest.css',
-  ],
+  stylesheets: ["https://docs.talawa.io/css/styles-latest.css"],
 
   presets: [
     [
@@ -94,6 +92,12 @@ const config: Config = {
           label: "Plugin Guide",
           position: "left",
           to: "https://docs-plugin.talawa.io/docs",
+          target: "_self",
+        },
+        {
+          label: "Community",
+          position: "left",
+          to: "https://community.talawa.io",
           target: "_self",
         },
         {
