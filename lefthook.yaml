@@ -32,23 +32,13 @@ pre-commit:
     8_check_type_errors:
       run: pnpm check_type_errors
 
-    9_docs_fix_code_quality:
-      glob: "docs/**/*.{ts,tsx,js,jsx,json,jsonc}"
-      run: |
-        set -e
-        files="{staged_files}"
-        # Only consider files under docs/
-        docs_files=$(printf '%s\n' $files | grep '^docs/' || true)
-        # Convert to paths relative to docs/ for pnpm -C docs
-        rel_files=$(printf '%s\n' $docs_files | sed 's|^docs/||')
-        # Keep only files that still exist
-        existing_rel_files=$(printf '%s\n' $rel_files | xargs -I{} sh -c '[ -f "docs/{}" ] && echo {}' || true)
-        if [ -n "$existing_rel_files" ]; then
-          pnpm -C docs fix_code_quality -- $existing_rel_files
-          # Re-add only the originally staged docs files
-          git add -- $docs_files
-          pnpm -C docs check_code_quality -- $existing_rel_files
-        fi
+    9_docs_check_code_quality:  
+      glob: "docs/**/*.{ts,tsx,js,jsx,json,jsonc}"  
+      run: |  
+        set -e  
+        pnpm -C docs fix_code_quality  
+        git add {staged_files}  
+        pnpm -C docs check_code_quality  
 
     10_docs_check_type_errors:
       glob: "docs/**/*.{ts,tsx,js,jsx}"
