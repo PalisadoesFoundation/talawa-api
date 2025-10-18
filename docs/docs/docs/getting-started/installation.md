@@ -373,6 +373,26 @@ Use the command `docker compose` command to cleanly shut down the dev container
 docker compose down
 ```
 
+## Rootless Docker
+
+### Limitations:
+
+Since rootless docker is unable to bind to ports > 1024, caddy instead binds to 8080 and 4443 by (default)[envFiles/.env.rootles.devcontainer]
+
+### Setup
+
+To enable rootless docker support for devcontainers
+ensure your devconainer.json has the following dockerComposeFile 
+
+```
+	"dockerComposeFile": [
+		"../compose.yaml",
+		"../docker/compose.testing.yaml",
+		"../docker/compose.rootlessdevcontainer.yaml"
+	],
+```
+
+
 #### Importing Sample Data
 
 Please refer to the section below.
