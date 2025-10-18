@@ -30,11 +30,12 @@ pre-commit:
         pnpm fix_code_quality
 
     8_fix_docs_code_quality:
+      glob: "docs/**/*.{ts,tsx,js,jsx}"
       run: |
         set -e
         pnpm -C docs fix_code_quality
 
-        git add -u
+        git add --{staged_files}
 
         pnpm -C docs check_code_quality
 
@@ -54,3 +55,4 @@ pre-commit:
     #     git add ./docs/docs/docs/auto-schema
 
   piped: false
+
