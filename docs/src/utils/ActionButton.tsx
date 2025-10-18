@@ -19,10 +19,13 @@ function ActionButton({
 	ariaLabel: ariaLabelProp,
 }: ActionButtonProps) {
 	const className = ["ActionButton", type, buttonClassName]
-		.filter(Boolean)
+		.filter((v): v is string => Boolean(v))
 		.join(" ");
 	const resolvedAriaLabel =
-		ariaLabelProp ?? (typeof children === "string" ? children : undefined);
+		ariaLabelProp ??
+		(typeof children === "string" || typeof children === "number"
+			? String(children)
+			: undefined);
 	return (
 		<a
 			className={className}
