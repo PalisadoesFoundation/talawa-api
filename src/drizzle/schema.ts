@@ -167,3 +167,6 @@ export {
 	emailNotificationsTableRelations,
 } from "./tables/EmailNotification";
 export { pluginsTable } from "./tables/plugins";
+export { eventInvitationsTable,
+	eventInvitationsTableRelations,
+} from "./tables/eventInvitations";

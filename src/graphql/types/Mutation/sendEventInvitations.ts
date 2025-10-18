@@ -130,17 +130,69 @@ builder.mutationField("sendEventInvitations", (t) =>
 			const expiresAt = new Date(now);
 			expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
-			const invitationsToInsert = parsedArgs.input.emails.map((email) => {
+			const normalizedEventId =
+				typeof parsedArgs.input.eventId === "string" &&
+				parsedArgs.input.eventId.trim() !== ""
+					? parsedArgs.input.eventId
+					: null;
+			const normalizedRecurringInstanceId =
+				typeof parsedArgs.input.recurringEventInstanceId === "string" &&
+				parsedArgs.input.recurringEventInstanceId.trim() !== ""
+					? parsedArgs.input.recurringEventInstanceId
+					: null;
+
+			ctx.log.info({
+				parsedArgs: parsedArgs.input,
+				normalizedEventId,
+				normalizedRecurringInstanceId,
+			});
+
+			const uniqueEmails = Array.from(
+				new Set(parsedArgs.input.emails.map((e) => e.trim().toLowerCase())),
+			);
+			const MAX_EMAILS = 100;
+			if (uniqueEmails.length === 0) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "emails"],
+								message: "No recipient emails provided",
+							},
+						],
+					},
+				});
+			}
+
+			if (uniqueEmails.length > MAX_EMAILS) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "emails"],
+								message: `Too many recipient emails; max ${MAX_EMAILS}`,
+							},
+						],
+					},
+				});
+			}
+
+			const invitationsToInsert = uniqueEmails.map((email) => {
 				const token = crypto.randomBytes(32).toString("hex");
 				return {
-					eventId: eventId,
-					recurringEventInstanceId: recurringInstanceId,
+					id: undefined,
+					eventId: normalizedEventId,
+					recurringEventInstanceId: normalizedRecurringInstanceId,
 					invitedBy: currentUserId,
 					inviteeEmail: email,
 					invitationToken: token,
 					status: "pending",
 					expiresAt,
-					metadata: { message: parsedArgs.input.message || null },
+					metadata: parsedArgs.input.message
+						? { message: parsedArgs.input.message }
+						: null,
 				};
 			});
 
@@ -191,3 +243,4 @@ builder.mutationField("sendEventInvitations", (t) =>
 		type: [EventInvitation],
 	}),
 );
+    

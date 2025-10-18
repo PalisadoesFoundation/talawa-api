@@ -2,8 +2,8 @@ import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 
 export const sendEventInvitationsInputSchema = z.object({
-	eventId: z.string().uuid().optional(),
-	recurringEventInstanceId: z.string().uuid().optional(),
+	eventId: z.string().uuid().nullable().optional(),
+	recurringEventInstanceId: z.string().uuid().nullable().optional(),
 	emails: z.array(z.string().email()).min(1),
 	message: z.string().optional(),
 	expiresInDays: z.number().int().positive().optional(),
