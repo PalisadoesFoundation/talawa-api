@@ -26,11 +26,10 @@ pre-commit:
       run: pnpm check_gql_tada
 
     7_fix_docs_code_quality:
-      glob: "docs/**/*.{ts,tsx,js,jsx,json,jsonc}"
       run: |
         set -e
         pnpm -C docs fix_code_quality
-        git add {staged_files}
+        pnpm -C docs check_code_quality
     8_fix_code_quality:
       run: |
         set -e
