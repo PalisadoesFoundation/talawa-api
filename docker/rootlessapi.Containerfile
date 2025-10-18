@@ -41,11 +41,25 @@ RUN echo '#!/bin/sh' > /etc/profile.d/fnm.sh \
 ENV BASH_ENV=/etc/profile.d/fnm.sh
 # Also, have the talawa login shell source it explicitly by appending to its .bashrc
 RUN echo "source /etc/profile.d/fnm.sh" >> /home/talawa/.bashrc
+
+## mkdir otherwise fails due to permission issues, since the talawa user doesn't have root permisions, and directory would be owned by root
+RUN mkdir -p /home/talawa/api/coverage \
+    && chown -R talawa:talawa /home/talawa
+
 USER talawa
 # Installs fnm.
-RUN curl -fsSL --proto '=https' --tlsv1.2 https://fnm.vercel.app/install | bash -s -- --skip-shell 
-ENV PATH=/home/talawa/.local/share/fnm:${PATH}
-WORKDIR /home/talawa/api
+#RUN curl -fsSL --proto '=https' --tlsv1.2 https://fnm.vercel.app/install | bash -s -- --skip-shell 
+#ENV PATH=/home/talawa/.local/share/fnm:${PATH}
+#WORKDIR /home/talawa/api
+# Installs pnpm
+# without fnm install 23, fnm use 23 and corepack enable, pnpm is unavaiable in the enviroment
+RUN curl -fsSL --proto '=https' --tlsv1.2 https://fnm.vercel.app/install | bash -s -- --skip-shell \
+    && export PATH=/home/talawa/.local/share/fnm:$PATH \
+    && fnm install 23 \
+    && fnm use 23 \
+    && corepack enable
+
+
   
 FROM node:23.7.0-bookworm-slim AS base
 # Used to configure the group id for the group assigned to the non-root "talawa" user within the image.
@@ -65,6 +79,7 @@ USER talawa
 WORKDIR /home/talawa/api
 
 FROM base AS non_production
+RUN mkdir -p /home/talawa/api/coverage && chown -R talawa:talawa /home/talawa/api
 COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml
 RUN pnpm fetch --frozen-lockfile
 COPY --chown=talawa:talawa ./ ./
