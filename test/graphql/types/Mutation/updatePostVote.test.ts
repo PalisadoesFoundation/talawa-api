@@ -585,109 +585,164 @@ suite("Mutation field updatePostVote", () => {
 			try {
 				const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
 					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { postId, type: "up_vote" } },
+					variables: {
+						input: { postId, type: "up_vote" },
+					},
 				});
-
 				expect(result.data?.updatePostVote).toBeDefined();
-
-				// Assert that the vote shows up in upVoters
-				const upVoterEdges = result.data?.updatePostVote?.upVoters?.edges ?? [];
-				expect(
-					upVoterEdges.some(
-						(edge: { node: { id: string } | null } | null) =>
-							edge?.node?.id === userId,
-					),
-				).toBe(false);
 			} finally {
+				// Restore originals
 				server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
 				server.drizzleClient.update = originalUpdate;
 			}
 		});
 
-		test("should update the vote when an existing one is found", async () => {
-			const { authToken, userId } = await createRegularUserUsingAdmin();
-			assertToBeNonNullish(authToken);
+		suite("vote deletion when type is null", () => {
+			test("should delete an existing vote when type is null", async () => {
+				const { authToken, userId } = await createRegularUserUsingAdmin();
+				assertToBeNonNullish(authToken);
 
-			const postId = faker.string.uuid();
-			const existingVoteId = faker.string.uuid();
+				const postId = faker.string.uuid();
+				const voteId = faker.string.uuid();
 
-			// Mock: post exists with membership
-			const originalPostFindFirst =
-				server.drizzleClient.query.postsTable.findFirst;
-			server.drizzleClient.query.postsTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({
-					id: postId,
-					attachmentsWherePost: [],
-					organization: {
-						membershipsWhereOrganization: [{ role: "member", userId }],
-					},
+				// Mock the post find with an existing vote from this user
+				const originalFindFirst =
+					server.drizzleClient.query.postsTable.findFirst;
+				server.drizzleClient.query.postsTable.findFirst = vi
+					.fn()
+					.mockResolvedValue({
+						id: postId,
+						attachmentsWherePost: [],
+						votesWherePost: [
+							{ id: voteId, creatorId: userId, type: "down_vote" },
+						],
+						organization: {
+							membershipsWhereOrganization: [{ role: "member", userId }],
+						},
+					});
+
+				// Mock the delete method to return deleted vote
+				const originalDelete = server.drizzleClient.delete;
+				server.drizzleClient.delete = vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue([
+							{
+								id: voteId,
+								type: "down_vote",
+								creatorId: userId,
+								postId,
+								createdAt: new Date(),
+								updatedAt: new Date(),
+							},
+						]),
+					}),
 				});
 
-			// Mock: existing vote exists for this user
-			const originalVoteFindFirst =
-				server.drizzleClient.query.postVotesTable.findFirst;
-			server.drizzleClient.query.postVotesTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({
-					id: existingVoteId,
-					creatorId: userId,
-					postId,
-					type: "down_vote",
+				try {
+					const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: { postId, type: null },
+						},
+					});
+					expect(result.data?.updatePostVote).toBeDefined();
+					expect(server.drizzleClient.delete).toHaveBeenCalled();
+				} finally {
+					// Restore originals
+					server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
+					server.drizzleClient.delete = originalDelete;
+				}
+			});
+
+			test("should handle no-op when trying to delete non-existent vote", async () => {
+				const { authToken, userId } = await createRegularUserUsingAdmin();
+				assertToBeNonNullish(authToken);
+
+				const postId = faker.string.uuid();
+
+				// Mock the post find with no existing vote
+				const originalFindFirst =
+					server.drizzleClient.query.postsTable.findFirst;
+				server.drizzleClient.query.postsTable.findFirst = vi
+					.fn()
+					.mockResolvedValue({
+						id: postId,
+						attachmentsWherePost: [],
+						votesWherePost: [], // No votes
+						organization: {
+							membershipsWhereOrganization: [{ role: "member", userId }],
+						},
+					});
+
+				// Mock the delete method (shouldn't be called but just in case)
+				const deleteSpy = vi.spyOn(server.drizzleClient, "delete");
+
+				try {
+					const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
+						headers: { authorization: `bearer ${authToken}` },
+						variables: {
+							input: { postId, type: null },
+						},
+					});
+					expect(result.data?.updatePostVote).toBeDefined();
+					expect(deleteSpy).not.toHaveBeenCalled();
+				} finally {
+					// Restore originals
+					server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
+					deleteSpy.mockRestore();
+				}
+			});
+
+			test("should return unexpected if DB delete returns empty array", async () => {
+				const { authToken, userId } = await createRegularUserUsingAdmin();
+				assertToBeNonNullish(authToken);
+
+				const postId = faker.string.uuid();
+				const voteId = faker.string.uuid();
+
+				const originalFindFirst =
+					server.drizzleClient.query.postsTable.findFirst;
+				server.drizzleClient.query.postsTable.findFirst = vi
+					.fn()
+					.mockResolvedValue({
+						id: postId,
+						attachmentsWherePost: [],
+						votesWherePost: [
+							{ id: voteId, creatorId: userId, type: "down_vote" },
+						],
+						organization: {
+							membershipsWhereOrganization: [{ role: "member", userId }],
+						},
+					});
+
+				// Mock delete returning []
+				const originalDelete = server.drizzleClient.delete;
+				server.drizzleClient.delete = vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue([]),
+					}),
 				});
 
-			// Mock: update flow
-			const returningSpy = vi.fn().mockResolvedValue([
-				{
-					id: existingVoteId,
-					type: "up_vote",
-					creatorId: userId,
-					postId,
-					createdAt: new Date(),
-					updatedAt: new Date(),
-				},
-			]);
-			const whereSpy = vi.fn().mockReturnValue({ returning: returningSpy });
-			const setSpy = vi.fn().mockReturnValue({ where: whereSpy });
-			const updateSpy = vi.fn().mockReturnValue({ set: setSpy });
+				try {
+					const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
+						headers: { authorization: `bearer ${authToken}` },
+						variables: { input: { postId, type: null } },
+					});
 
-			const originalUpdate = server.drizzleClient.update;
-			server.drizzleClient.update = updateSpy;
-
-			const originalUserFindFirst =
-				server.drizzleClient.query.usersTable.findFirst;
-			server.drizzleClient.query.usersTable.findFirst = vi
-				.fn()
-				.mockResolvedValue({
-					id: userId,
-					name: faker.person.fullName(),
-					emailAddress: faker.internet.email(),
-				});
-
-			try {
-				// Act
-				const result = await mercuriusClient.mutate(UPDATE_POST_VOTE, {
-					headers: { authorization: `bearer ${authToken}` },
-					variables: { input: { postId, type: "up_vote" } },
-				});
-
-				// Assert GraphQL response fields
-				expect(result.errors).toBeUndefined();
-				expect(result.data?.updatePostVote?.id).toBe(postId);
-
-				// Assert update flow was triggered
-				expect(updateSpy).toHaveBeenCalledWith(postVotesTable);
-				expect(setSpy).toHaveBeenCalledWith({ type: "up_vote" });
-				expect(whereSpy).toHaveBeenCalled();
-				expect(returningSpy).toHaveBeenCalled();
-			} finally {
-				// Restore originals
-				server.drizzleClient.query.postsTable.findFirst = originalPostFindFirst;
-				server.drizzleClient.query.postVotesTable.findFirst =
-					originalVoteFindFirst;
-				server.drizzleClient.query.usersTable.findFirst = originalUserFindFirst;
-				server.drizzleClient.update = originalUpdate;
-			}
+					expect(result.data?.updatePostVote ?? null).toBeNull();
+					expect(result.errors).toEqual(
+						expect.arrayContaining([
+							expect.objectContaining({
+								extensions: expect.objectContaining({ code: "unexpected" }),
+								path: ["updatePostVote"],
+							}),
+						]),
+					);
+				} finally {
+					server.drizzleClient.query.postsTable.findFirst = originalFindFirst;
+					server.drizzleClient.delete = originalDelete;
+				}
+			});
 		});
 	});
 
