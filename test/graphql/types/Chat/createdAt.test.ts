@@ -454,7 +454,8 @@ suite("Chat field createdAt", () => {
 
 		// ASSERT: We must get an "unauthenticated" error, as defined in the source code
 		expect(result.data?.chat).toBeNull();
-		expect(result.errors?.[0].extensions?.code).toBe("unauthenticated");
+		expect(result.errors).toBeDefined();
+		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 	});
 
 	test("returns valid ISO 8601 timestamp for createdAt field", async () => {
