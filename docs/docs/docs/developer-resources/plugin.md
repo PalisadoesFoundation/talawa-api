@@ -1,3 +1,10 @@
+---
+id: plugin
+title: Plugin
+slug: /developer-resources/plugin
+sidebar_position: 6
+---
+
 # Talawa API Plugin System Architecture
 
 ## Overview
