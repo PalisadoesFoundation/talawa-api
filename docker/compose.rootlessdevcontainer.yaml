@@ -50,9 +50,9 @@ services:
     # https://docs.docker.com/reference/compose-file/services/#volumes
     volumes:
       - consistency: cached
-        source: api_app_data
+        source: ./
         target: /home/talawa/api
-        type: volume
+        type: bind
       # Mount Docker socket for plugin container management
       - source: $XDG_RUNTIME_DIR/docker.sock
         target: /run/user/${API_UID}/docker.sock
