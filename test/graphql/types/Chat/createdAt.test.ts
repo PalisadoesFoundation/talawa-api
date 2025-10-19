@@ -1,6 +1,5 @@
 import { faker } from "@faker-js/faker";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
-import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -19,26 +18,20 @@ import {
 /**
  * COVERAGE NOTE:
  *
- * This test file achieves 80% coverage for src/graphql/types/Chat/createdAt.ts
+ * This test file covers 80% of src/graphql/types/Chat/createdAt.ts.
+ * The remaining 20% (lines 12–17, 30–35) handle auth and user checks
+ * that can’t be triggered in integration tests, since
+ * src/graphql/types/Query/chat.ts already validates them first.
  *
- * The remaining 20% (lines 12-17, 30-35) consists of authentication and user existence
- * checks that are UNREACHABLE in integration tests because the parent resolver
- * (src/graphql/types/Query/chat.ts) already validates these conditions before
- * the createdAt field resolver executes.
+ * Query/chat.ts (lines 27–123) checks:
+ * - Auth (27–31)
+ * - User existence (54–62, 87–92)
+ * - Chat existence (96–106)
+ * - Org member/admin status (108–123)
  *
- * Specifically, Query/chat.ts lines 27-89 check:
- * - User authentication (lines 27-31)
- * - User exists in database (lines 54-62, 87-92)
- * - Chat exists (lines 96-106)
- * - User is org member or admin (lines 108-123)
- *
- * These defensive checks in createdAt.ts serve as safeguards against future code
- * changes and are considered best practice defensive programming. They can only be
- * tested via unit tests with mocked contexts, which would not reflect real-world
- * API behavior.
- *
- * Therefore, 80% coverage via integration tests is the maximum achievable and
- * represents complete coverage of all reachable code paths.
+ * The extra checks in createdAt.ts are defensive safeguards, only testable
+ * via mocked unit tests—not real API runs. Thus, 80% is the max reachable
+ * coverage through integration tests.
  */
 
 // Custom GraphQL query for testing createdAt field access
@@ -299,18 +292,17 @@ suite("Chat field createdAt", () => {
 			},
 		});
 
+		// START: CORRECTED ASSERTIONS
+		// This error comes from the parent 'chat' resolver.
 		expect(result.data?.chat).toBeNull();
-		expect(result.errors).toEqual(
-			expect.arrayContaining<TalawaGraphQLFormattedError>([
-				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions: expect.objectContaining({
-						code: "unauthenticated",
-					}),
-					message: expect.any(String),
-					path: ["chat"], // Error is at chat level, not createdAt level
-				}),
-			]),
-		);
+		expect(result.errors).toBeDefined();
+		expect(result.errors).toHaveLength(1);
+		
+		// Safe access to first error
+		const firstError = result.errors?.[0];
+		expect(firstError?.extensions?.code).toBe("unauthenticated");
+		expect(firstError?.path).toEqual(["chat"]);
+		// END: CORRECTED ASSERTIONS
 	});
 
 	test('results in a graphql error with "unauthorized_action" extensions code when user is not a chat member and not an administrator', async () => {
@@ -325,18 +317,18 @@ suite("Chat field createdAt", () => {
 			},
 		});
 
-		expect(result.data?.chat?.createdAt).toBeNull();
-		expect(result.errors).toEqual(
-			expect.arrayContaining<TalawaGraphQLFormattedError>([
-				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions: expect.objectContaining({
-						code: "unauthorized_action",
-					}),
-					message: expect.any(String),
-					path: ["chat", "createdAt"],
-				}),
-			]),
-		);
+		// START: CORRECTED ASSERTIONS
+		// The chat object IS returned, but the 'createdAt' field is null.
+		expect(result.data?.chat).not.toBeNull(); // The chat itself is visible
+		expect(result.data?.chat?.createdAt).toBeNull(); // But this field is not
+		expect(result.errors).toBeDefined();
+		expect(result.errors).toHaveLength(1);
+		
+		// Safe access to first error
+		const firstError = result.errors?.[0];
+		expect(firstError?.extensions?.code).toBe("unauthorized_action");
+		expect(firstError?.path).toEqual(["chat", "createdAt"]);
+		// END: CORRECTED ASSERTIONS
 	});
 
 	test("allows chat member to access createdAt field", async () => {
@@ -452,10 +444,17 @@ suite("Chat field createdAt", () => {
 			},
 		});
 
-		// ASSERT: We must get an "unauthenticated" error, as defined in the source code
+		// START: CORRECTED ASSERTIONS
+		// This error also comes from the parent 'chat' resolver.
 		expect(result.data?.chat).toBeNull();
 		expect(result.errors).toBeDefined();
-		expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+		expect(result.errors).toHaveLength(1);
+		
+		// Safe access to first error
+		const firstError = result.errors?.[0];
+		expect(firstError?.extensions?.code).toBe("unauthenticated");
+		expect(firstError?.path).toEqual(["chat"]);
+		// END: CORRECTED ASSERTIONS
 	});
 
 	test("returns valid ISO 8601 timestamp for createdAt field", async () => {
@@ -474,7 +473,7 @@ suite("Chat field createdAt", () => {
 		expect(result.data?.chat?.createdAt).toBeDefined();
 
 		// Verify it's a valid ISO 8601 timestamp
-		const createdAt = new Date(result.data?.chat?.createdAt);
+		const createdAt = new Date(result.data?.chat?.createdAt as string);
 		expect(createdAt).toBeInstanceOf(Date);
 		expect(createdAt.getTime()).not.toBeNaN();
 
