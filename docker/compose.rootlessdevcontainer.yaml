@@ -190,7 +190,6 @@ services:
         target: /data
         type: volume
 volumes:
-  api_app_data:
   api_bash_history:
   api_node_modules:
   api_pnpm_store:
