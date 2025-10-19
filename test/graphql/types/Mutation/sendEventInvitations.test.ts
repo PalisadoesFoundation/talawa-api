@@ -1,0 +1,671 @@
+import { faker } from "@faker-js/faker";
+import { afterEach, beforeAll, expect, suite, test } from "vitest";
+import type {
+	TalawaGraphQLFormattedError,
+	UnauthenticatedExtensions,
+} from "~/src/utilities/TalawaGraphQLError";
+import { assertToBeNonNullish } from "../../../helpers";
+import { server } from "../../../server";
+import { mercuriusClient } from "../client";
+import {
+	Mutation_createEvent,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Mutation_createUser,
+	Mutation_sendEventInvitations,
+	Query_signIn,
+} from "../documentNodes";
+
+// Admin auth (fetched once per suite)
+let adminToken: string | null = null;
+let adminUserId: string | null = null;
+
+async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
+	if (adminToken && adminUserId)
+		return { token: adminToken, userId: adminUserId };
+	if (
+		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
+		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
+	) {
+		throw new Error("Admin credentials missing in env config");
+	}
+	const res = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+	if (
+		res.errors ||
+		!res.data?.signIn?.authenticationToken ||
+		!res.data?.signIn?.user?.id
+	) {
+		throw new Error(
+			`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
+		);
+	}
+	adminToken = res.data.signIn.authenticationToken;
+	adminUserId = res.data.signIn.user.id;
+	assertToBeNonNullish(adminToken);
+	assertToBeNonNullish(adminUserId);
+	return { token: adminToken, userId: adminUserId };
+}
+
+// Helper Types
+interface TestOrganization {
+	orgId: string;
+	cleanup: () => Promise<void>;
+}
+
+interface TestEvent {
+	eventId: string;
+	cleanup: () => Promise<void>;
+}
+
+interface TestUser {
+	userId: string;
+	authToken: string;
+	cleanup: () => Promise<void>;
+}
+
+async function createTestOrganization(): Promise<TestOrganization> {
+	// Add delay to prevent rate limiting
+	await new Promise((resolve) => setTimeout(resolve, 300));
+
+	const { token } = await ensureAdminAuth();
+	const res = await mercuriusClient.mutate(Mutation_createOrganization, {
+		headers: { authorization: `bearer ${token}` },
+		variables: {
+			input: { name: `Org ${faker.string.uuid()}`, countryCode: "us" },
+		},
+	});
+	if (!res.data?.createOrganization?.id)
+		throw new Error(res.errors?.[0]?.message || "org create failed");
+	const orgId = res.data.createOrganization.id;
+	return {
+		orgId,
+		cleanup: async () => {
+			try {
+				// Cleanup organization (cascade deletes related records)
+				// Note: You may need to add a deleteOrganization mutation if not already present
+			} catch (error) {
+				// Silently ignore cleanup errors
+			}
+		},
+	};
+}
+
+async function createTestUser(): Promise<TestUser> {
+	// Add delay to prevent rate limiting
+	await new Promise((resolve) => setTimeout(resolve, 400));
+
+	const { token: adminToken } = await ensureAdminAuth();
+	const res = await mercuriusClient.mutate(Mutation_createUser, {
+		headers: { authorization: `bearer ${adminToken}` },
+		variables: {
+			input: {
+				emailAddress: `email${faker.string.ulid()}@email.com`,
+				isEmailAddressVerified: false,
+				name: "Test User",
+				password: "password123",
+				role: "regular",
+			},
+		},
+	});
+	if (
+		!res.data?.createUser?.authenticationToken ||
+		!res.data?.createUser?.user?.id
+	)
+		throw new Error(res.errors?.[0]?.message || "user create failed");
+
+	return {
+		userId: res.data.createUser.user.id,
+		authToken: res.data.createUser.authenticationToken,
+		cleanup: async () => {
+			try {
+				// Cleanup user if needed
+			} catch (error) {
+				// Silently ignore cleanup errors
+			}
+		},
+	};
+}
+
+async function createTestEvent(organizationId: string): Promise<TestEvent> {
+	// Add delay to prevent rate limiting
+	await new Promise((resolve) => setTimeout(resolve, 500));
+
+	const { token: adminAuthToken, userId: adminId } = await ensureAdminAuth();
+	const startAt = new Date();
+	startAt.setHours(startAt.getHours() + 1);
+	const endAt = new Date(startAt);
+	endAt.setHours(endAt.getHours() + 2);
+
+	// Make sure admin is a member of the organization first
+	await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+		headers: { authorization: `bearer ${adminAuthToken}` },
+		variables: {
+			input: {
+				memberId: adminId,
+				organizationId: organizationId,
+				role: "administrator",
+			},
+		},
+	});
+
+	await new Promise((resolve) => setTimeout(resolve, 300));
+
+	const res = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${adminAuthToken}` },
+		variables: {
+			input: {
+				organizationId,
+				name: `Test Event ${faker.lorem.words(3)}`,
+				description: `Test event description ${faker.lorem.paragraph()}`,
+				startAt: startAt.toISOString(),
+				endAt: endAt.toISOString(),
+				isPublic: true,
+				isRegisterable: true,
+			},
+		},
+	});
+	if (!res.data?.createEvent?.id)
+		throw new Error(res.errors?.[0]?.message || "event create failed");
+	return {
+		eventId: res.data.createEvent.id,
+		cleanup: async () => {
+			/* Events get cleaned up when organization is deleted */
+		},
+	};
+}
+
+beforeAll(async () => {
+	// Add initial delay for rate limiting protection
+	await new Promise((resolve) => setTimeout(resolve, 600));
+	await ensureAdminAuth();
+});
+
+suite("Mutation sendEventInvitations - Integration Tests", () => {
+	const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+	afterEach(async () => {
+		// Enhanced cleanup with proper order and delays
+		const cleanupFunctionsToRun = [...testCleanupFunctions];
+		testCleanupFunctions.length = 0;
+
+		// Run cleanup functions in reverse order (LIFO - last created, first deleted)
+		for (const cleanup of cleanupFunctionsToRun.reverse()) {
+			try {
+				await cleanup();
+			} catch (error) {
+				// Silently ignore cleanup errors
+			}
+		}
+
+		// Extra delay after all cleanup to prevent affecting next test
+		await new Promise((resolve) => setTimeout(resolve, 500));
+	});
+
+	test("Integration: Unauthenticated user cannot send event invitations", async () => {
+		// Add delay at start of first test
+		await new Promise((resolve) => setTimeout(resolve, 400));
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				variables: {
+					input: {
+						eventId: faker.string.uuid(),
+						recipients: [{ email: "test@example.com", name: "Test User" }],
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeDefined();
+		expect(sendEventInvitationsResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining<UnauthenticatedExtensions>({
+						code: "unauthenticated",
+					}),
+					message: expect.any(String),
+					path: ["sendEventInvitations"],
+				}),
+			]),
+		);
+	});
+
+	test("Integration: Admin successfully sends event invitations to single recipient", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 600));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const recipientEmail = `recipient${faker.string.ulid()}@example.com`;
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						recipients: [{ email: recipientEmail, name: "John Doe" }],
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeUndefined();
+		expect(sendEventInvitationsResult.data).toBeDefined();
+		assertToBeNonNullish(sendEventInvitationsResult.data);
+		assertToBeNonNullish(sendEventInvitationsResult.data.sendEventInvitations);
+
+		const invitations = sendEventInvitationsResult.data.sendEventInvitations;
+		expect(Array.isArray(invitations)).toBe(true);
+		expect(invitations).toHaveLength(1);
+
+		const invitation = invitations[0];
+		expect(invitation.id).toBeDefined();
+		expect(invitation.inviteeEmail).toBe(recipientEmail);
+		expect(invitation.inviteeName).toBe("John Doe");
+		expect(invitation.invitationToken).toBeDefined();
+		expect(invitation.status).toBe("pending");
+		expect(invitation.expiresAt).toBeDefined();
+	});
+
+	test("Integration: Admin successfully sends event invitations to multiple recipients", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 700));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const recipients = [
+			{ email: `user1${faker.string.ulid()}@example.com`, name: "User One" },
+			{ email: `user2${faker.string.ulid()}@example.com`, name: "User Two" },
+			{ email: `user3${faker.string.ulid()}@example.com`, name: "User Three" },
+		];
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						recipients,
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeUndefined();
+		expect(sendEventInvitationsResult.data).toBeDefined();
+		assertToBeNonNullish(sendEventInvitationsResult.data);
+		assertToBeNonNullish(sendEventInvitationsResult.data.sendEventInvitations);
+
+		const invitations = sendEventInvitationsResult.data.sendEventInvitations;
+		expect(invitations).toHaveLength(3);
+
+		// Verify each invitation
+		for (let i = 0; i < invitations.length; i++) {
+			expect(invitations[i].inviteeEmail).toBe(recipients[i].email);
+			expect(invitations[i].inviteeName).toBe(recipients[i].name);
+			expect(invitations[i].status).toBe("pending");
+			expect(invitations[i].invitationToken).toBeDefined();
+		}
+	});
+
+	test("Integration: Invitations with custom message and expiration", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 800));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const customMessage = "Please join our important community event!";
+		const expiresInDays = 14;
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						recipients: [
+							{
+								email: `recipient${faker.string.ulid()}@example.com`,
+								name: "Test Recipient",
+							},
+						],
+						message: customMessage,
+						expiresInDays,
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeUndefined();
+		expect(sendEventInvitationsResult.data).toBeDefined();
+		assertToBeNonNullish(sendEventInvitationsResult.data);
+		assertToBeNonNullish(sendEventInvitationsResult.data.sendEventInvitations);
+
+		const invitations = sendEventInvitationsResult.data.sendEventInvitations;
+		expect(invitations).toHaveLength(1);
+
+		const invitation = invitations[0];
+		expect(invitation.expiresAt).toBeDefined();
+
+		// Verify expiration is approximately 14 days from now
+		const expiresDate = new Date(invitation.expiresAt);
+		const now = new Date();
+		const daysDifference = Math.floor(
+			(expiresDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+		);
+		expect(daysDifference).toBeGreaterThanOrEqual(13);
+		expect(daysDifference).toBeLessThanOrEqual(14);
+	});
+
+	test("Integration: Non-admin user cannot send event invitations", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 900));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		const testUser = await createTestUser();
+		testCleanupFunctions.push(testUser.cleanup);
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						recipients: [{ email: "test@example.com", name: "Test" }],
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeDefined();
+		expect(sendEventInvitationsResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "unauthorized_action",
+					}),
+					message: expect.any(String),
+					path: ["sendEventInvitations"],
+				}),
+			]),
+		);
+	});
+
+	test("Integration: Validation error when no recipients provided", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						recipients: [],
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeDefined();
+		expect(sendEventInvitationsResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+					}),
+					message: expect.any(String),
+					path: ["sendEventInvitations"],
+				}),
+			]),
+		);
+	});
+
+	test("Integration: Validation error when event ID is invalid", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1100));
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						eventId: faker.string.uuid(),
+						recipients: [{ email: "test@example.com", name: "Test" }],
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeDefined();
+		expect(sendEventInvitationsResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+					}),
+					message: expect.any(String),
+					path: ["sendEventInvitations"],
+				}),
+			]),
+		);
+	});
+
+	test("Integration: Duplicate emails are deduplicated in recipients list", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1200));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const duplicateEmail = `duplicate${faker.string.ulid()}@example.com`;
+		const recipients = [
+			{ email: duplicateEmail, name: "User One" },
+			{ email: duplicateEmail, name: "User Two" }, // Duplicate email
+			{ email: `unique${faker.string.ulid()}@example.com`, name: "User Three" },
+		];
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						recipients,
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeUndefined();
+		expect(sendEventInvitationsResult.data).toBeDefined();
+		assertToBeNonNullish(sendEventInvitationsResult.data);
+
+		const invitations = sendEventInvitationsResult.data.sendEventInvitations;
+		// Should be 2 invitations, not 3 (duplicate deduplicated)
+		expect(invitations).toHaveLength(2);
+	});
+
+	test("Integration: Email addresses are normalized (case-insensitive)", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1300));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const baseEmail = `test${faker.string.ulid()}@example.com`;
+		const recipients = [
+			{ email: baseEmail.toUpperCase(), name: "User One" },
+			{ email: baseEmail.toLowerCase(), name: "User Two" }, // Same email, different case
+		];
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						recipients,
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeUndefined();
+		assertToBeNonNullish(sendEventInvitationsResult.data);
+
+		const invitations = sendEventInvitationsResult.data.sendEventInvitations;
+		// Should be 1 invitation (case-insensitive deduplication)
+		expect(invitations).toHaveLength(1);
+		expect(invitations[0].inviteeEmail).toBe(baseEmail.toLowerCase());
+	});
+
+	test("Integration: Organization admin can send invitations", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1400));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const testUser = await createTestUser();
+		testCleanupFunctions.push(testUser.cleanup);
+
+		const { token: adminAuth, userId: adminId } = await ensureAdminAuth();
+
+		// Add testUser as organization admin
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					memberId: testUser.userId,
+					organizationId: organization.orgId,
+					role: "administrator",
+				},
+			},
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 300));
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		// Org admin should be able to send invitations
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						recipients: [
+							{
+								email: `orgadmin${faker.string.ulid()}@example.com`,
+								name: "Test",
+							},
+						],
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeUndefined();
+		expect(sendEventInvitationsResult.data).toBeDefined();
+		assertToBeNonNullish(sendEventInvitationsResult.data);
+		assertToBeNonNullish(sendEventInvitationsResult.data.sendEventInvitations);
+
+		const invitations = sendEventInvitationsResult.data.sendEventInvitations;
+		expect(invitations).toHaveLength(1);
+	});
+
+	test("Integration: Each invitation has unique token", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1500));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const recipients = [
+			{ email: `user1${faker.string.ulid()}@example.com`, name: "User 1" },
+			{ email: `user2${faker.string.ulid()}@example.com`, name: "User 2" },
+			{ email: `user3${faker.string.ulid()}@example.com`, name: "User 3" },
+		];
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						recipients,
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeUndefined();
+		assertToBeNonNullish(sendEventInvitationsResult.data);
+
+		const invitations = sendEventInvitationsResult.data.sendEventInvitations;
+		expect(invitations).toHaveLength(3);
+
+		const tokens = invitations.map((inv) => inv.invitationToken);
+		const uniqueTokens = new Set(tokens);
+		// All tokens should be unique
+		expect(uniqueTokens.size).toBe(3);
+	});
+});

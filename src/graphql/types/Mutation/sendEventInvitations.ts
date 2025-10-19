@@ -147,8 +147,6 @@ builder.mutationField("sendEventInvitations", (t) =>
 				normalizedRecurringInstanceId,
 			});
 
-			// Build recipients list: prefer `recipients` (with optional names),
-			// fall back to legacy `emails` array for backwards compatibility.
 			const MAX_EMAILS = 100;
 			const rawRecipients: Array<{ email: string; name?: string | null }> = [];
 
@@ -171,7 +169,6 @@ builder.mutationField("sendEventInvitations", (t) =>
 				}
 			}
 
-			// Deduplicate by email, preserving first occurrence's name when present
 			const deduped = new Map<
 				string,
 				{ email: string; name?: string | null }

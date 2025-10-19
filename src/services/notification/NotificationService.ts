@@ -55,11 +55,9 @@ export class NotificationService {
 	async flush(ctx: GraphQLContext): Promise<void> {
 		if (this.queue.length === 0) return;
 
-		// Drain the queue and delegate to the existing event bus methods.
 		const items = this.queue.splice(0, this.queue.length);
 		for (const item of items) {
 			if (item.type === "event.created") {
-				// delegate to existing event bus which handles in-app/email channels
 				void notificationEventBus.emitEventCreated(item.data, ctx);
 			} else if (item.type === "send_event_invite") {
 				void notificationEventBus.emitSendEventInvite(item.data, ctx);

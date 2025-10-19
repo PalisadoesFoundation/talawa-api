@@ -565,6 +565,19 @@ export const Mutation_createEvent =
     }
 }`);
 
+export const Mutation_sendEventInvitations =
+	gql(`mutation Mutation_sendEventInvitations($input: SendEventInvitationsInput!) {
+    sendEventInvitations(input: $input) {
+        id
+        inviteeEmail
+        inviteeName
+        invitationToken
+        status
+        expiresAt
+        createdAt
+    }
+}`);
+
 export const Query_tag = gql(`
     query tag($input:QueryTagInput!) {
   tag(input: $input) {
