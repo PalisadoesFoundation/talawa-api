@@ -2,11 +2,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
-	plugins: [
-		tsconfigPaths({
-			ignoreConfigErrors: true,
-		}),
-	],
+	plugins: [tsconfigPaths()],
 	test: {
 		environment: "node",
 		include: [
@@ -22,13 +18,11 @@ export default defineConfig({
 			"coverage/**",
 			"docs/**",
 			"**/*.d.ts",
-			"**/index.{js,ts}",
 		],
 
 		hookTimeout: 30000,
 		testTimeout: 60000,
 		passWithNoTests: false,
-		pool: "threads",
 
 		coverage: {
 			provider: "v8",
