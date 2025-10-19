@@ -297,7 +297,7 @@ suite("Chat field createdAt", () => {
 		expect(result.data?.chat).toBeNull();
 		expect(result.errors).toBeDefined();
 		expect(result.errors).toHaveLength(1);
-		
+
 		// Safe access to first error
 		const firstError = result.errors?.[0];
 		expect(firstError?.extensions?.code).toBe("unauthenticated");
@@ -323,7 +323,7 @@ suite("Chat field createdAt", () => {
 		expect(result.data?.chat?.createdAt).toBeNull(); // But this field is not
 		expect(result.errors).toBeDefined();
 		expect(result.errors).toHaveLength(1);
-		
+
 		// Safe access to first error
 		const firstError = result.errors?.[0];
 		expect(firstError?.extensions?.code).toBe("unauthorized_action");
@@ -449,7 +449,7 @@ suite("Chat field createdAt", () => {
 		expect(result.data?.chat).toBeNull();
 		expect(result.errors).toBeDefined();
 		expect(result.errors).toHaveLength(1);
-		
+
 		// Safe access to first error
 		const firstError = result.errors?.[0];
 		expect(firstError?.extensions?.code).toBe("unauthenticated");
