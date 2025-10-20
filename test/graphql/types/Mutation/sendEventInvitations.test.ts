@@ -743,7 +743,8 @@ suite("Mutation sendEventInvitations - Integration Tests", () => {
 						issues: [
 							{
 								argumentPath: ["input"],
-								message: "Either eventId or recurringEventInstanceId must be provided",
+								message:
+									"Either eventId or recurringEventInstanceId must be provided",
 							},
 						],
 					}),
@@ -903,24 +904,28 @@ suite("Mutation sendEventInvitations - Integration Tests", () => {
 
 		// Create a system administrator user
 		const { token: adminAuth } = await ensureAdminAuth();
-		const systemAdminResult = await mercuriusClient.mutate(Mutation_createUser, {
-			headers: { authorization: `bearer ${adminAuth}` },
-			variables: {
-				input: {
-					emailAddress: `sysadmin${faker.string.ulid()}@example.com`,
-					isEmailAddressVerified: true,
-					name: "System Admin",
-					password: "password123",
-					role: "administrator",
+		const systemAdminResult = await mercuriusClient.mutate(
+			Mutation_createUser,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						emailAddress: `sysadmin${faker.string.ulid()}@example.com`,
+						isEmailAddressVerified: true,
+						name: "System Admin",
+						password: "password123",
+						role: "administrator",
+					},
 				},
 			},
-		});
+		);
 
 		if (!systemAdminResult.data?.createUser?.authenticationToken) {
 			throw new Error("Failed to create system admin user");
 		}
 
-		const systemAdminToken = systemAdminResult.data.createUser.authenticationToken;
+		const systemAdminToken =
+			systemAdminResult.data.createUser.authenticationToken;
 
 		const sendEventInvitationsResult = await mercuriusClient.mutate(
 			Mutation_sendEventInvitations,

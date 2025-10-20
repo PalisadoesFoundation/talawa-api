@@ -1,8 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { afterEach, beforeAll, expect, it, suite, test } from "vitest";
-import type {
-	TalawaGraphQLFormattedError,
-} from "~/src/utilities/TalawaGraphQLError";
+import { eventInvitationsTable } from "~/src/drizzle/tables/eventInvitations";
+import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -10,10 +9,9 @@ import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
-	Query_signIn,
 	Mutation_verifyEventInvitation,
+	Query_signIn,
 } from "../documentNodes";
-import { eventInvitationsTable } from "~/src/drizzle/tables/eventInvitations";
 
 let adminToken: string | null = null;
 let adminUserId: string | null = null;
@@ -124,8 +122,7 @@ async function createTestEvent(organizationId: string): Promise<TestEvent> {
 		throw new Error(res.errors?.[0]?.message || "event create failed");
 	return {
 		eventId: res.data.createEvent.id,
-		cleanup: async () => {
-		},
+		cleanup: async () => {},
 	};
 }
 
@@ -155,13 +152,16 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 	test("Integration: Unauthenticated user cannot verify event invitation", async () => {
 		await new Promise((resolve) => setTimeout(resolve, 400));
 
-		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
-			variables: {
-				input: {
-					invitationToken: "valid-token-but-unauthenticated",
+		const verifyResult = await mercuriusClient.mutate(
+			Mutation_verifyEventInvitation,
+			{
+				variables: {
+					input: {
+						invitationToken: "valid-token-but-unauthenticated",
+					},
 				},
 			},
-		});
+		);
 
 		expect(verifyResult.errors).toBeDefined();
 		expect(verifyResult.errors).toEqual(
@@ -204,14 +204,17 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
-			headers: { authorization: `bearer ${adminAuth}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const verifyResult = await mercuriusClient.mutate(
+			Mutation_verifyEventInvitation,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(verifyResult.errors).toBeUndefined();
 		expect(verifyResult.data).toBeDefined();
@@ -221,7 +224,9 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 		const invitation = verifyResult.data.verifyEventInvitation;
 		expect(invitation.invitationToken).toBe(testToken);
 		// The email masking shows first and last character: t***t@example.com
-		expect(invitation.inviteeEmailMasked).toMatch(/^t\*\*\*[a-zA-Z0-9]@example\.com$/);
+		expect(invitation.inviteeEmailMasked).toMatch(
+			/^t\*\*\*[a-zA-Z0-9]@example\.com$/,
+		);
 		expect(invitation.inviteeName).toBe(testInviteeName);
 		expect(invitation.status).toBe("pending");
 		expect(invitation.expiresAt).toBeDefined();
@@ -235,14 +240,17 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 
 		const { token: adminAuth } = await ensureAdminAuth();
 
-		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
-			headers: { authorization: `bearer ${adminAuth}` },
-			variables: {
-				input: {
-					invitationToken: "invalid-token-that-does-not-exist",
+		const verifyResult = await mercuriusClient.mutate(
+			Mutation_verifyEventInvitation,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						invitationToken: "invalid-token-that-does-not-exist",
+					},
 				},
 			},
-		});
+		);
 
 		expect(verifyResult.errors).toBeDefined();
 		expect(verifyResult.errors).toEqual(
@@ -284,14 +292,17 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
-			headers: { authorization: `bearer ${adminAuth}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const verifyResult = await mercuriusClient.mutate(
+			Mutation_verifyEventInvitation,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(verifyResult.errors).toBeUndefined();
 		expect(verifyResult.data).toBeDefined();
@@ -337,14 +348,17 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 				metadata: null,
 			});
 
-			const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
-				headers: { authorization: `bearer ${adminAuth}` },
-				variables: {
-					input: {
-						invitationToken: testToken,
+			const verifyResult = await mercuriusClient.mutate(
+				Mutation_verifyEventInvitation,
+				{
+					headers: { authorization: `bearer ${adminAuth}` },
+					variables: {
+						input: {
+							invitationToken: testToken,
+						},
 					},
 				},
-			});
+			);
 
 			expect(verifyResult.errors).toBeUndefined();
 			expect(verifyResult.data?.verifyEventInvitation?.inviteeEmailMasked).toBe(
@@ -379,14 +393,17 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
-			headers: { authorization: `bearer ${adminAuth}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const verifyResult = await mercuriusClient.mutate(
+			Mutation_verifyEventInvitation,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(verifyResult.errors).toBeUndefined();
 		expect(verifyResult.data).toBeDefined();
@@ -443,7 +460,9 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 		});
 
 		if (!res.data?.createEvent?.id)
-			throw new Error(res.errors?.[0]?.message || "recurring event create failed");
+			throw new Error(
+				res.errors?.[0]?.message || "recurring event create failed",
+			);
 
 		const recurringEventId = res.data.createEvent.id;
 
@@ -462,14 +481,17 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
-			headers: { authorization: `bearer ${adminAuth}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const verifyResult = await mercuriusClient.mutate(
+			Mutation_verifyEventInvitation,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(verifyResult.errors).toBeUndefined();
 		expect(verifyResult.data).toBeDefined();
@@ -487,14 +509,17 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 
 		const { token: adminAuth } = await ensureAdminAuth();
 
-		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
-			headers: { authorization: `bearer ${adminAuth}` },
-			variables: {
-				input: {
-					invitationToken: "",
+		const verifyResult = await mercuriusClient.mutate(
+			Mutation_verifyEventInvitation,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						invitationToken: "",
+					},
 				},
 			},
-		});
+		);
 
 		expect(verifyResult.errors).toBeDefined();
 		expect(verifyResult.errors).toEqual(
@@ -536,14 +561,17 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
-			headers: { authorization: `bearer ${adminAuth}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const verifyResult = await mercuriusClient.mutate(
+			Mutation_verifyEventInvitation,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(verifyResult.errors).toBeUndefined();
 		expect(verifyResult.data).toBeDefined();
@@ -579,14 +607,17 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
-			headers: { authorization: `bearer ${adminAuth}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const verifyResult = await mercuriusClient.mutate(
+			Mutation_verifyEventInvitation,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(verifyResult.errors).toBeUndefined();
 		expect(verifyResult.data).toBeDefined();
@@ -602,18 +633,23 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 
 		const { token: adminAuth } = await ensureAdminAuth();
 
-		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
-			headers: { authorization: `bearer ${adminAuth}` },
-			variables: {
-				input: {
-					invitationToken: 12345 as unknown as string,
+		const verifyResult = await mercuriusClient.mutate(
+			Mutation_verifyEventInvitation,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						invitationToken: 12345 as unknown as string,
+					},
 				},
 			},
-		});
+		);
 
 		expect(verifyResult.errors).toBeDefined();
 		// GraphQL validation occurs before our resolver, so we expect a GraphQL validation error
-		expect(verifyResult.errors?.[0]?.message).toContain("String cannot represent a non string value");
+		expect(verifyResult.errors?.[0]?.message).toContain(
+			"String cannot represent a non string value",
+		);
 	});
 
 	it("Integration: Non-existent invitation token throws not found error", async () => {
@@ -621,14 +657,17 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 
 		const { token: adminAuth } = await ensureAdminAuth();
 
-		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
-			headers: { authorization: `bearer ${adminAuth}` },
-			variables: {
-				input: {
-					invitationToken: "non-existent-token-12345",
+		const verifyResult = await mercuriusClient.mutate(
+			Mutation_verifyEventInvitation,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						invitationToken: "non-existent-token-12345",
+					},
 				},
 			},
-		});
+		);
 
 		expect(verifyResult.errors).toBeDefined();
 		expect(verifyResult.errors).toEqual(

@@ -1,5 +1,9 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import { afterEach, beforeAll, expect, it, suite, test } from "vitest";
+import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
+import { eventInvitationsTable } from "~/src/drizzle/tables/eventInvitations";
+import { usersTable } from "~/src/drizzle/tables/users";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -9,17 +13,13 @@ import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
+	Mutation_acceptEventInvitation,
 	Mutation_createEvent,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Query_signIn,
-	Mutation_acceptEventInvitation,
 } from "../documentNodes";
-import { eventInvitationsTable } from "~/src/drizzle/tables/eventInvitations";
-import { eventAttendeesTable } from "~/src/drizzle/tables/eventAttendees";
-import { usersTable } from "~/src/drizzle/tables/users";
-import { eq } from "drizzle-orm";
 
 let adminToken: string | null = null;
 let adminUserId: string | null = null;
@@ -175,8 +175,7 @@ async function createTestEvent(organizationId: string): Promise<TestEvent> {
 		throw new Error(res.errors?.[0]?.message || "event create failed");
 	return {
 		eventId: res.data.createEvent.id,
-		cleanup: async () => {
-		},
+		cleanup: async () => {},
 	};
 }
 
@@ -206,13 +205,16 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 	test("Integration: Unauthenticated user cannot accept event invitation", async () => {
 		await new Promise((resolve) => setTimeout(resolve, 400));
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			variables: {
-				input: {
-					invitationToken: "valid-token-but-unauthenticated",
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				variables: {
+					input: {
+						invitationToken: "valid-token-but-unauthenticated",
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeDefined();
 		expect(acceptResult.errors).toEqual(
@@ -258,14 +260,17 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeUndefined();
 		expect(acceptResult.data).toBeDefined();
@@ -282,24 +287,26 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 		expect(invitation.eventId).toBe(event.eventId);
 
 		// Verify organization membership was created
-		const membership = await server.drizzleClient.query.organizationMembershipsTable.findFirst({
-			where: (orgMembership, { and, eq }) => 
-				and(
-					eq(orgMembership.memberId, testUser.userId),
-					eq(orgMembership.organizationId, organization.orgId)
-				),
-		});
+		const membership =
+			await server.drizzleClient.query.organizationMembershipsTable.findFirst({
+				where: (orgMembership, { and, eq }) =>
+					and(
+						eq(orgMembership.memberId, testUser.userId),
+						eq(orgMembership.organizationId, organization.orgId),
+					),
+			});
 		expect(membership).toBeDefined();
 		expect(membership?.role).toBe("regular");
 
 		// Verify event attendee was created
-		const attendee = await server.drizzleClient.query.eventAttendeesTable.findFirst({
-			where: (attendee, { and, eq }) => 
-				and(
-					eq(attendee.userId, testUser.userId),
-					eq(attendee.eventId, event.eventId)
-				),
-		});
+		const attendee =
+			await server.drizzleClient.query.eventAttendeesTable.findFirst({
+				where: (attendee, { and, eq }) =>
+					and(
+						eq(attendee.userId, testUser.userId),
+						eq(attendee.eventId, event.eventId),
+					),
+			});
 		expect(attendee).toBeDefined();
 		expect(attendee?.isInvited).toBe(true);
 		expect(attendee?.isRegistered).toBe(true);
@@ -311,14 +318,17 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 		const testUser = await createTestUser();
 		testCleanupFunctions.push(testUser.cleanup);
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: "invalid-token-that-does-not-exist",
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: "invalid-token-that-does-not-exist",
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeDefined();
 		expect(acceptResult.errors).toEqual(
@@ -364,14 +374,17 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 		const differentUser = await createTestUser();
 		testCleanupFunctions.push(differentUser.cleanup);
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${differentUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${differentUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeDefined();
 		expect(acceptResult.errors).toEqual(
@@ -416,14 +429,17 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeDefined();
 		expect(acceptResult.errors).toEqual(
@@ -474,14 +490,17 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeDefined();
 		expect(acceptResult.errors).toEqual(
@@ -544,36 +563,41 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeUndefined();
 		expect(acceptResult.data?.acceptEventInvitation?.status).toBe("accepted");
 
 		// Verify user is still member of organization
-		const membership = await server.drizzleClient.query.organizationMembershipsTable.findFirst({
-			where: (orgMembership, { and, eq }) => 
-				and(
-					eq(orgMembership.memberId, testUser.userId),
-					eq(orgMembership.organizationId, organization.orgId)
-				),
-		});
+		const membership =
+			await server.drizzleClient.query.organizationMembershipsTable.findFirst({
+				where: (orgMembership, { and, eq }) =>
+					and(
+						eq(orgMembership.memberId, testUser.userId),
+						eq(orgMembership.organizationId, organization.orgId),
+					),
+			});
 		expect(membership).toBeDefined();
 
 		// Verify event attendee was created
-		const attendee = await server.drizzleClient.query.eventAttendeesTable.findFirst({
-			where: (attendee, { and, eq }) => 
-				and(
-					eq(attendee.userId, testUser.userId),
-					eq(attendee.eventId, event.eventId)
-				),
-		});
+		const attendee =
+			await server.drizzleClient.query.eventAttendeesTable.findFirst({
+				where: (attendee, { and, eq }) =>
+					and(
+						eq(attendee.userId, testUser.userId),
+						eq(attendee.eventId, event.eventId),
+					),
+			});
 		expect(attendee).toBeDefined();
 		expect(attendee?.isInvited).toBe(true);
 		expect(attendee?.isRegistered).toBe(true);
@@ -617,26 +641,30 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeUndefined();
 		expect(acceptResult.data?.acceptEventInvitation?.status).toBe("accepted");
 
 		// Verify existing attendee record was updated
-		const attendee = await server.drizzleClient.query.eventAttendeesTable.findFirst({
-			where: (attendee, { and, eq }) => 
-				and(
-					eq(attendee.userId, testUser.userId),
-					eq(attendee.eventId, event.eventId)
-				),
-		});
+		const attendee =
+			await server.drizzleClient.query.eventAttendeesTable.findFirst({
+				where: (attendee, { and, eq }) =>
+					and(
+						eq(attendee.userId, testUser.userId),
+						eq(attendee.eventId, event.eventId),
+					),
+			});
 		expect(attendee).toBeDefined();
 		expect(attendee?.isInvited).toBe(true);
 		expect(attendee?.isRegistered).toBe(true);
@@ -648,14 +676,17 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 		const testUser = await createTestUser();
 		testCleanupFunctions.push(testUser.cleanup);
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: "",
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: "",
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeDefined();
 		expect(acceptResult.errors).toEqual(
@@ -700,14 +731,17 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeUndefined();
 		expect(acceptResult.data?.acceptEventInvitation?.status).toBe("accepted");
@@ -742,16 +776,21 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		await server.drizzleClient.delete(usersTable).where(eq(usersTable.id, testUser.userId));
+		await server.drizzleClient
+			.delete(usersTable)
+			.where(eq(usersTable.id, testUser.userId));
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeDefined();
 		expect(acceptResult.errors).toEqual(
@@ -784,7 +823,7 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 
 		const testToken = `test-token-${faker.string.uuid()}`;
 
-			await server.drizzleClient.insert(eventInvitationsTable).values({
+		await server.drizzleClient.insert(eventInvitationsTable).values({
 			id: faker.string.uuid(),
 			eventId: event.eventId,
 			recurringEventInstanceId: null,
@@ -797,14 +836,17 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeUndefined();
 		expect(acceptResult.data?.acceptEventInvitation?.status).toBe("accepted");
@@ -814,23 +856,25 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 		expect(invitation.eventId).toBe(event.eventId);
 		expect(invitation.recurringEventInstanceId).toBeNull();
 
-		const membership = await server.drizzleClient.query.organizationMembershipsTable.findFirst({
-			where: (orgMembership, { and, eq }) => 
-				and(
-					eq(orgMembership.memberId, testUser.userId),
-					eq(orgMembership.organizationId, organization.orgId)
-				),
-		});
+		const membership =
+			await server.drizzleClient.query.organizationMembershipsTable.findFirst({
+				where: (orgMembership, { and, eq }) =>
+					and(
+						eq(orgMembership.memberId, testUser.userId),
+						eq(orgMembership.organizationId, organization.orgId),
+					),
+			});
 		expect(membership).toBeDefined();
 		expect(membership?.role).toBe("regular");
 
-		const attendee = await server.drizzleClient.query.eventAttendeesTable.findFirst({
-			where: (attendee, { and, eq }) => 
-				and(
-					eq(attendee.userId, testUser.userId),
-					eq(attendee.eventId, event.eventId)
-				),
-		});
+		const attendee =
+			await server.drizzleClient.query.eventAttendeesTable.findFirst({
+				where: (attendee, { and, eq }) =>
+					and(
+						eq(attendee.userId, testUser.userId),
+						eq(attendee.eventId, event.eventId),
+					),
+			});
 		expect(attendee).toBeDefined();
 		expect(attendee?.isInvited).toBe(true);
 		expect(attendee?.isRegistered).toBe(true);
@@ -858,14 +902,17 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeUndefined();
 		expect(acceptResult.data?.acceptEventInvitation?.status).toBe("accepted");
@@ -875,14 +922,15 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 		expect(invitation.eventId).toBeNull();
 		expect(invitation.recurringEventInstanceId).toBeNull();
 
-		const attendee = await server.drizzleClient.query.eventAttendeesTable.findFirst({
-			where: (attendee, { and, eq, isNull }) => 
-				and(
-					eq(attendee.userId, testUser.userId),
-					isNull(attendee.eventId),
-					isNull(attendee.recurringEventInstanceId)
-				),
-		});
+		const attendee =
+			await server.drizzleClient.query.eventAttendeesTable.findFirst({
+				where: (attendee, { and, eq, isNull }) =>
+					and(
+						eq(attendee.userId, testUser.userId),
+						isNull(attendee.eventId),
+						isNull(attendee.recurringEventInstanceId),
+					),
+			});
 		expect(attendee).toBeDefined();
 		expect(attendee?.isInvited).toBe(true);
 		expect(attendee?.isRegistered).toBe(true);
@@ -925,25 +973,29 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeUndefined();
 		expect(acceptResult.data?.acceptEventInvitation?.status).toBe("accepted");
 
-		const attendee = await server.drizzleClient.query.eventAttendeesTable.findFirst({
-			where: (attendee, { and, eq }) => 
-				and(
-					eq(attendee.userId, testUser.userId),
-					eq(attendee.eventId, event.eventId)
-				),
-		});
+		const attendee =
+			await server.drizzleClient.query.eventAttendeesTable.findFirst({
+				where: (attendee, { and, eq }) =>
+					and(
+						eq(attendee.userId, testUser.userId),
+						eq(attendee.eventId, event.eventId),
+					),
+			});
 		expect(attendee).toBeDefined();
 		expect(attendee?.isInvited).toBe(true);
 		expect(attendee?.isRegistered).toBe(true);
@@ -978,26 +1030,30 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 			metadata: null,
 		});
 
-		const acceptResult = await mercuriusClient.mutate(Mutation_acceptEventInvitation, {
-			headers: { authorization: `bearer ${testUser.authToken}` },
-			variables: {
-				input: {
-					invitationToken: testToken,
+		const acceptResult = await mercuriusClient.mutate(
+			Mutation_acceptEventInvitation,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						invitationToken: testToken,
+					},
 				},
 			},
-		});
+		);
 
 		expect(acceptResult.errors).toBeUndefined();
 		expect(acceptResult.data?.acceptEventInvitation?.status).toBe("accepted");
 
-		const attendee = await server.drizzleClient.query.eventAttendeesTable.findFirst({
-			where: (attendee, { and, eq, isNull }) => 
-				and(
-					eq(attendee.userId, testUser.userId),
-					isNull(attendee.eventId),
-					isNull(attendee.recurringEventInstanceId)
-				),
-		});
+		const attendee =
+			await server.drizzleClient.query.eventAttendeesTable.findFirst({
+				where: (attendee, { and, eq, isNull }) =>
+					and(
+						eq(attendee.userId, testUser.userId),
+						isNull(attendee.eventId),
+						isNull(attendee.recurringEventInstanceId),
+					),
+			});
 		expect(attendee).toBeDefined();
 		expect(attendee?.isInvited).toBe(true);
 		expect(attendee?.isRegistered).toBe(true);
