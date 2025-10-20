@@ -112,6 +112,9 @@ describe("GraphQL Routes", () => {
 				},
 				log: mockFastify.log,
 				minio: mockFastify.minio,
+				notification: expect.objectContaining({
+					queue: [],
+				}),
 			});
 
 			expect(mockRequest.jwtVerify).toHaveBeenCalled();
@@ -140,6 +143,9 @@ describe("GraphQL Routes", () => {
 				},
 				log: mockFastify.log,
 				minio: mockFastify.minio,
+				notification: expect.objectContaining({
+					queue: [],
+				}),
 			});
 
 			expect(mockRequest.jwtVerify).toHaveBeenCalled();
