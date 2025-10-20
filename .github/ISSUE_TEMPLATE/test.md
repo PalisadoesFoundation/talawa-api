@@ -18,6 +18,3 @@ The goal of this issue is to improve the code coverage for the file: `Example: s
 - All sections of the file are covered by tests.
 - Code coverage for the file reaches 100%.
 - PR created with necessary updates, passing all checks and reviews.
-**Potential internship candidates**
-Please read this if you are planning to apply for a Palisadoes Foundation internship 
-- https://github.com/PalisadoesFoundation/talawa/issues/359
