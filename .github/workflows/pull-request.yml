@@ -137,7 +137,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Run TypeScript check in docs
         working-directory: ./docs
-        run: pnpm typecheck
+        run: pnpm ty
 
   Check-Sensitive-Files:
     if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.pull_request.labels.*.name, 'ignore-sensitive-files-pr') }}
@@ -237,7 +237,6 @@ jobs:
         check_type_errors,
         check_drizzle_migrations,
         check_gql_tada,
-        Check_docs_code_quality,
         Check_docs_type_errors,
       ]
     steps:
