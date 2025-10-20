@@ -99,7 +99,7 @@ async function createTestOrganization(adminAuthToken: string): Promise<string> {
 	const orgResult = await mercuriusClient.mutate(Mutation_createOrganization, {
 		headers: { authorization: `bearer ${adminAuthToken}` },
 		variables: {
-			input: { name: `Test Org ${faker.string.uuid()}`, countryCode: "us" },
+			input: { name: `Test Org ${faker.string.uuid()}`, countryCode: "US" },
 		},
 	});
 	assertToBeNonNullish(orgResult.data?.createOrganization);
