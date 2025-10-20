@@ -190,7 +190,7 @@ async function cleanupTestData(
 	chatIds: string[],
 ) {
 	const headers = { authorization: `bearer ${adminAuthToken}` };
-	const del = (ids: string[], mutation: TadaDocumentNode, label: string) =>
+	const del = (ids: string[], mutation: TadaDocumentNode) =>
 		Promise.all(
 			ids.map((id) =>
 				mercuriusClient
@@ -201,9 +201,9 @@ async function cleanupTestData(
 			),
 		);
 	// Stage by FK dependency to reduce transient errors
-	await del(chatIds, Mutation_deleteChat, "deleteChat");
-	await del(userIds, Mutation_deleteUser, "deleteUser");
-	await del(organizationIds, Mutation_deleteOrganization, "deleteOrganization");
+	await del(chatIds, Mutation_deleteChat);
+	await del(userIds, Mutation_deleteUser);
+	await del(organizationIds, Mutation_deleteOrganization);
 }
 
 // Test Suite
@@ -308,7 +308,6 @@ suite("Chat field createdAt", () => {
 		createdChatIds.push(creatorChatId);
 
 		// Explicitly add the creator as a member to ensure membership
-		assertToBeNonNullish(regularUser1UserId);
 		await addUserToChat(adminAuthToken, creatorChatId, regularUser1UserId);
 
 		const result = await mercuriusClient.query(Query_chat_with_createdAt, {
