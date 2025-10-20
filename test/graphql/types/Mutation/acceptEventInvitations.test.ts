@@ -784,11 +784,10 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 
 		const testToken = `test-token-${faker.string.uuid()}`;
 
-		// Create invitation with eventId but null recurringEventInstanceId (covers lines 133-140)
-		await server.drizzleClient.insert(eventInvitationsTable).values({
+			await server.drizzleClient.insert(eventInvitationsTable).values({
 			id: faker.string.uuid(),
 			eventId: event.eventId,
-			recurringEventInstanceId: null, // Explicitly null
+			recurringEventInstanceId: null,
 			invitedBy: adminId,
 			inviteeEmail: testEmail,
 			inviteeName: "Test User",
@@ -815,7 +814,6 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 		expect(invitation.eventId).toBe(event.eventId);
 		expect(invitation.recurringEventInstanceId).toBeNull();
 
-		// Verify organization membership was created
 		const membership = await server.drizzleClient.query.organizationMembershipsTable.findFirst({
 			where: (orgMembership, { and, eq }) => 
 				and(
@@ -826,7 +824,6 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 		expect(membership).toBeDefined();
 		expect(membership?.role).toBe("regular");
 
-		// Verify event attendee was created for the event
 		const attendee = await server.drizzleClient.query.eventAttendeesTable.findFirst({
 			where: (attendee, { and, eq }) => 
 				and(
@@ -850,7 +847,6 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 
 		const testToken = `test-token-${faker.string.uuid()}`;
 
-		// Create invitation without eventId or recurringEventInstanceId
 		await server.drizzleClient.insert(eventInvitationsTable).values({
 			id: faker.string.uuid(),
 			invitedBy: adminId,
@@ -879,7 +875,6 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 		expect(invitation.eventId).toBeNull();
 		expect(invitation.recurringEventInstanceId).toBeNull();
 
-		// Verify generic event attendee was created (no specific event)
 		const attendee = await server.drizzleClient.query.eventAttendeesTable.findFirst({
 			where: (attendee, { and, eq, isNull }) => 
 				and(
@@ -942,7 +937,6 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 		expect(acceptResult.errors).toBeUndefined();
 		expect(acceptResult.data?.acceptEventInvitation?.status).toBe("accepted");
 
-		// Verify existing event attendee record was updated (covers the else block for event attendees)
 		const attendee = await server.drizzleClient.query.eventAttendeesTable.findFirst({
 			where: (attendee, { and, eq }) => 
 				and(
@@ -964,7 +958,6 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 		const testUser = await createTestUser(testEmail);
 		testCleanupFunctions.push(testUser.cleanup);
 
-		// Add user as existing generic attendee (but not invited)
 		await server.drizzleClient.insert(eventAttendeesTable).values({
 			id: faker.string.uuid(),
 			userId: testUser.userId,
@@ -997,7 +990,6 @@ suite("Mutation acceptEventInvitation - Integration Tests", () => {
 		expect(acceptResult.errors).toBeUndefined();
 		expect(acceptResult.data?.acceptEventInvitation?.status).toBe("accepted");
 
-		// Verify existing generic attendee record was updated
 		const attendee = await server.drizzleClient.query.eventAttendeesTable.findFirst({
 			where: (attendee, { and, eq, isNull }) => 
 				and(

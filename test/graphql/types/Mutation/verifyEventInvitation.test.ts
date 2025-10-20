@@ -553,4 +553,95 @@ suite("Mutation verifyEventInvitation - Integration Tests", () => {
 		const invitation = verifyResult.data.verifyEventInvitation;
 		expect(invitation.organizationId).toBe(organization.orgId);
 	});
+
+	it("Integration: Invalid email in invitation triggers maskEmail error handling", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1400));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		const { token: adminAuth, userId: adminId } = await ensureAdminAuth();
+
+		const testToken = `test-token-invalid-email-${faker.string.uuid()}`;
+
+		await server.drizzleClient.insert(eventInvitationsTable).values({
+			id: faker.string.uuid(),
+			eventId: event.eventId,
+			invitedBy: adminId,
+			inviteeEmail: "invalid-email-without-at-symbol",
+			inviteeName: "Test User",
+			invitationToken: testToken,
+			status: "pending",
+			expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+			metadata: null,
+		});
+
+		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					invitationToken: testToken,
+				},
+			},
+		});
+
+		expect(verifyResult.errors).toBeUndefined();
+		expect(verifyResult.data).toBeDefined();
+		assertToBeNonNullish(verifyResult.data);
+		assertToBeNonNullish(verifyResult.data.verifyEventInvitation);
+
+		const invitation = verifyResult.data.verifyEventInvitation;
+		expect(invitation.inviteeEmailMasked).toBe("****@***");
+	});
+
+	it("Integration: Malformed input arguments throw validation error", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1500));
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					invitationToken: 12345 as unknown as string,
+				},
+			},
+		});
+
+		expect(verifyResult.errors).toBeDefined();
+		// GraphQL validation occurs before our resolver, so we expect a GraphQL validation error
+		expect(verifyResult.errors?.[0]?.message).toContain("String cannot represent a non string value");
+	});
+
+	it("Integration: Non-existent invitation token throws not found error", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1600));
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const verifyResult = await mercuriusClient.mutate(Mutation_verifyEventInvitation, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					invitationToken: "non-existent-token-12345",
+				},
+			},
+		});
+
+		expect(verifyResult.errors).toBeDefined();
+		expect(verifyResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: [{ argumentPath: ["input", "invitationToken"] }],
+					}),
+					message: expect.any(String),
+					path: ["verifyEventInvitation"],
+				}),
+			]),
+		);
+	});
 });

@@ -669,4 +669,283 @@ suite("Mutation sendEventInvitations - Integration Tests", () => {
 		const uniqueTokens = new Set(tokens);
 		expect(uniqueTokens.size).toBe(3);
 	});
+
+	it("Integration: Admin sends invitations using emails array", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1600));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const emails = [
+			`email1${faker.string.ulid()}@example.com`,
+			`email2${faker.string.ulid()}@example.com`,
+		];
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						emails,
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeUndefined();
+		expect(sendEventInvitationsResult.data).toBeDefined();
+		assertToBeNonNullish(sendEventInvitationsResult.data);
+		assertToBeNonNullish(sendEventInvitationsResult.data.sendEventInvitations);
+
+		const invitations = sendEventInvitationsResult.data.sendEventInvitations;
+		expect(invitations).toHaveLength(2);
+
+		for (let i = 0; i < invitations.length; i++) {
+			const inv = invitations[i];
+			assertToBeNonNullish(inv);
+			expect(inv.inviteeEmail).toBe(emails[i]?.toLowerCase());
+			expect(inv.inviteeName).toBeNull();
+			expect(inv.status).toBe("pending");
+			expect(inv.invitationToken).toBeDefined();
+		}
+	});
+
+	it("Integration: Error when neither eventId nor recurringEventInstanceId provided", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1700));
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						recipients: [{ email: "test@example.com", name: "Test" }],
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeDefined();
+		expect(sendEventInvitationsResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input"],
+								message: "Either eventId or recurringEventInstanceId must be provided",
+							},
+						],
+					}),
+					message: expect.any(String),
+					path: ["sendEventInvitations"],
+				}),
+			]),
+		);
+	});
+
+	it("Integration: Error when recurring event instance ID is invalid", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1800));
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						recurringEventInstanceId: faker.string.uuid(),
+						recipients: [{ email: "test@example.com", name: "Test" }],
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeDefined();
+		expect(sendEventInvitationsResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "arguments_associated_resources_not_found",
+						issues: [{ argumentPath: ["input", "recurringEventInstanceId"] }],
+					}),
+					message: expect.any(String),
+					path: ["sendEventInvitations"],
+				}),
+			]),
+		);
+	});
+
+	it("Integration: Error when too many recipient emails provided", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 1900));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		// Create 101 recipients to exceed the MAX_EMAILS limit of 100
+		const recipients = Array.from({ length: 101 }, (_, i) => ({
+			email: `user${i}${faker.string.ulid()}@example.com`,
+			name: `User ${i}`,
+		}));
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${adminAuth}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						recipients,
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeDefined();
+		expect(sendEventInvitationsResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input"],
+								message: "Too many recipient emails; max 100",
+							},
+						],
+					}),
+					message: expect.any(String),
+					path: ["sendEventInvitations"],
+				}),
+			]),
+		);
+	});
+
+	it("Integration: Regular user with organization admin role can send invitations", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 2000));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const testUser = await createTestUser();
+		testCleanupFunctions.push(testUser.cleanup);
+
+		const { token: adminAuth } = await ensureAdminAuth();
+
+		// Make the test user an organization admin
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					memberId: testUser.userId,
+					organizationId: organization.orgId,
+					role: "administrator",
+				},
+			},
+		});
+
+		await new Promise((resolve) => setTimeout(resolve, 300));
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${testUser.authToken}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						recipients: [
+							{
+								email: `orgadmin${faker.string.ulid()}@example.com`,
+								name: "Test",
+							},
+						],
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeUndefined();
+		expect(sendEventInvitationsResult.data).toBeDefined();
+		assertToBeNonNullish(sendEventInvitationsResult.data);
+		assertToBeNonNullish(sendEventInvitationsResult.data.sendEventInvitations);
+
+		const invitations = sendEventInvitationsResult.data.sendEventInvitations;
+		expect(invitations).toHaveLength(1);
+	});
+
+	it("Integration: System administrator can send invitations without organization membership", async () => {
+		await new Promise((resolve) => setTimeout(resolve, 2100));
+
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const event = await createTestEvent(organization.orgId);
+		testCleanupFunctions.push(event.cleanup);
+
+		// Create a system administrator user
+		const { token: adminAuth } = await ensureAdminAuth();
+		const systemAdminResult = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminAuth}` },
+			variables: {
+				input: {
+					emailAddress: `sysadmin${faker.string.ulid()}@example.com`,
+					isEmailAddressVerified: true,
+					name: "System Admin",
+					password: "password123",
+					role: "administrator",
+				},
+			},
+		});
+
+		if (!systemAdminResult.data?.createUser?.authenticationToken) {
+			throw new Error("Failed to create system admin user");
+		}
+
+		const systemAdminToken = systemAdminResult.data.createUser.authenticationToken;
+
+		const sendEventInvitationsResult = await mercuriusClient.mutate(
+			Mutation_sendEventInvitations,
+			{
+				headers: { authorization: `bearer ${systemAdminToken}` },
+				variables: {
+					input: {
+						eventId: event.eventId,
+						recipients: [
+							{
+								email: `sysadmin${faker.string.ulid()}@example.com`,
+								name: "System Admin Test",
+							},
+						],
+					},
+				},
+			},
+		);
+
+		expect(sendEventInvitationsResult.errors).toBeUndefined();
+		expect(sendEventInvitationsResult.data).toBeDefined();
+		assertToBeNonNullish(sendEventInvitationsResult.data);
+		assertToBeNonNullish(sendEventInvitationsResult.data.sendEventInvitations);
+
+		const invitations = sendEventInvitationsResult.data.sendEventInvitations;
+		expect(invitations).toHaveLength(1);
+	});
 });
