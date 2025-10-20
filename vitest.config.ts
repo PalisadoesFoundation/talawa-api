@@ -1,27 +1,39 @@
 import tsconfigPaths from "vite-tsconfig-paths";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
 	plugins: [tsconfigPaths()],
 	test: {
+		environment: "node",
+		include: [
+			"src/**/*.test.{ts,tsx,js,jsx}",
+			"src/**/*.spec.{ts,tsx,js,jsx}",
+			"test/**/*.test.{ts,tsx,js,jsx}",
+			"test/**/*.spec.{ts,tsx,js,jsx}",
+		],
+
+		exclude: [
+			...configDefaults.exclude,
+			"dist/**",
+			"coverage/**",
+			"docs/**",
+			"**/*.d.ts",
+		],
+
+		hookTimeout: 30000,
+		testTimeout: 60000,
+		passWithNoTests: false,
+
 		coverage: {
-			provider: "v8", // or 'istanbul' if you prefer
-			reporter: ["text", "lcov", "html"],
+			provider: "v8",
+			reporter: ["text", "html", "lcov"],
+			exclude: [
+				"node_modules/**",
+				"dist/**",
+				"docs/**",
+				"coverage/**",
+				"**/*.d.ts",
+			],
 		},
-		// https://vitest.dev/config/#fileparallelism
-		// fileParallelism: true,
-
-		// https://vitest.dev/config/#globalsetup
-		globalSetup: ["./test/setup.ts"],
-
-		// https://vitest.dev/config/#passwithnotests
-		passWithNoTests: true,
-
-		// // https://vitest.dev/config/#teardowntimeout,
-		// teardownTimeout: 10000
-
-		hookTimeout: 30000, // 30 seconds for hooks
-		testTimeout: 60000, // 60 seconds per test
-		pool: "threads", // for faster test execution and to avoid postgres max-limit error
 	},
 });
