@@ -141,12 +141,6 @@ builder.mutationField("sendEventInvitations", (t) =>
 					? parsedArgs.input.recurringEventInstanceId
 					: null;
 
-			ctx.log.info({
-				parsedArgs: parsedArgs.input,
-				normalizedEventId,
-				normalizedRecurringInstanceId,
-			});
-
 			const MAX_EMAILS = 100;
 			const rawRecipients: Array<{ email: string; name?: string | null }> = [];
 

@@ -1455,6 +1455,41 @@ export const Mutation_deleteEntireRecurringEventSeries = gql(`
   }
 `);
 
+export const Mutation_verifyEventInvitation = gql(`
+  mutation Mutation_verifyEventInvitation($input: VerifyEventInvitationInput!) {
+    verifyEventInvitation(input: $input) {
+      invitationToken
+      inviteeEmailMasked
+      inviteeName
+      status
+      expiresAt
+      eventId
+      recurringEventInstanceId
+      organizationId
+    }
+  }
+`);
+
+export const Mutation_acceptEventInvitation = gql(`
+  mutation Mutation_acceptEventInvitation($input: AcceptEventInvitationInput!) {
+    acceptEventInvitation(input: $input) {
+      id
+      eventId
+      recurringEventInstanceId
+      invitedBy
+      userId
+      inviteeEmail
+      inviteeName
+      invitationToken
+      status
+      expiresAt
+      respondedAt
+      createdAt
+      updatedAt
+    }
+  }
+`);
+
 export const Mutation_readNotification = gql(`
   mutation Mutation_readNotification($input: MutationReadNotificationInput!) {
     readNotification(input: $input) {
