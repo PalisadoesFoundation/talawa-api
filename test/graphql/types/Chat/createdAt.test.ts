@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import type { TadaDocumentNode } from "gql.tada";
 import { afterEach, beforeEach, expect, suite, test } from "vitest";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -189,7 +190,7 @@ async function cleanupTestData(
 	chatIds: string[],
 ) {
 	const headers = { authorization: `bearer ${adminAuthToken}` };
-	const del = (ids: string[], mutation: any, label: string) =>
+	const del = (ids: string[], mutation: TadaDocumentNode, label: string) =>
 		Promise.all(
 			ids.map((id) =>
 				mercuriusClient
@@ -305,11 +306,11 @@ suite("Chat field createdAt", () => {
 			organizationId,
 		);
 		createdChatIds.push(creatorChatId);
-		
+
 		// Explicitly add the creator as a member to ensure membership
 		assertToBeNonNullish(regularUser1UserId);
 		await addUserToChat(adminAuthToken, creatorChatId, regularUser1UserId);
-		
+
 		const result = await mercuriusClient.query(Query_chat_with_createdAt, {
 			headers: { authorization: `bearer ${regularUser1AuthToken}` },
 			variables: { input: { id: creatorChatId } },
@@ -350,11 +351,11 @@ suite("Chat field createdAt", () => {
 		expect(result.data?.chat?.createdAt).toBeDefined();
 
 		const createdAtString = result.data?.chat?.createdAt as string;
-		
+
 		// Assert strict ISO 8601 UTC format (YYYY-MM-DDTHH:MM:SS.mmmZ)
 		const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 		expect(createdAtString).toMatch(iso8601Regex);
-		
+
 		// Ensure the string is the canonical ISO serialization
 		const createdAt = new Date(createdAtString);
 		expect(createdAt).toBeInstanceOf(Date);
