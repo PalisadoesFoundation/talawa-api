@@ -27,23 +27,23 @@ pre-commit:
     7_fix_code_quality:
       run: |
         set -e
-        pnpm fix_code_quality
+        pnpm format:fix
         
-        pnpm -C docs fix_code_quality
+        pnpm -C docs format:fix
         
         git add {staged_files}
         git add docs/
         
-        pnpm -C docs check_code_quality
+        pnpm -C docs format:check
 
     9_check_type_errors:
-      run: pnpm check_type_errors
+      run: pnpm typecheck
 
     10_docs_check_type_errors:
       glob: "docs/**/*.{ts,tsx,js,jsx}"
       run: |
         set -e
-          pnpm -C docs check_type_errors
+          pnpm -C docs typecheck
     # commenting out because postgenerate script is not present in develop branch
     # 11_generate_docs:
     #   run: |
