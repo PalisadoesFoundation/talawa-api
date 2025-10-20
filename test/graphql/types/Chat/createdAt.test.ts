@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { afterEach, beforeEach, expect, suite, test } from "vitest";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -35,7 +35,6 @@ interface User {
 
 interface SetupEnv {
 	adminAuthToken: string;
-	adminUserId: string;
 	organizationId: string;
 	testChatId: string;
 	users: [User, User];
@@ -177,7 +176,6 @@ async function setupTestEnvironment(): Promise<SetupEnv> {
 
 	return {
 		adminAuthToken,
-		adminUserId,
 		organizationId,
 		testChatId,
 		users: [user1, user2],
@@ -190,44 +188,28 @@ async function cleanupTestData(
 	organizationIds: string[],
 	chatIds: string[],
 ) {
-	await Promise.all([
-		...chatIds.map((id) =>
-			mercuriusClient
-				.mutate(Mutation_deleteChat, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: { input: { id } },
-				})
-				.catch((err: unknown) => {
-					console.debug("Cleanup error(deleteChat):", err);
-				}),
-		),
-		...userIds.map((id) =>
-			mercuriusClient
-				.mutate(Mutation_deleteUser, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: { input: { id } },
-				})
-				.catch((err: unknown) => {
-					console.debug("Cleanup error(deleteUser):", err);
-				}),
-		),
-		...organizationIds.map((id) =>
-			mercuriusClient
-				.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `bearer ${adminAuthToken}` },
-					variables: { input: { id } },
-				})
-				.catch((err: unknown) => {
-					console.debug("Cleanup error(deleteOrganization):", err);
-				}),
-		),
-	]);
+	const headers = { authorization: `bearer ${adminAuthToken}` };
+	const del = (ids: string[], mutation: any, label: string) =>
+		Promise.all(
+			ids.map((id) =>
+				mercuriusClient
+					.mutate(mutation, { headers, variables: { input: { id } } })
+					.catch(() => {
+						// Silently ignore cleanup errors
+					}),
+			),
+		);
+	// Stage by FK dependency to reduce transient errors
+	await del(chatIds, Mutation_deleteChat, "deleteChat");
+	await del(userIds, Mutation_deleteUser, "deleteUser");
+	await del(organizationIds, Mutation_deleteOrganization, "deleteOrganization");
 }
 
 // Test Suite
 suite("Chat field createdAt", () => {
 	let adminAuthToken: string;
 	let regularUser1AuthToken: string;
+	let regularUser1UserId: string;
 	let regularUser2AuthToken: string;
 	let organizationId: string;
 	let testChatId: string;
@@ -236,13 +218,14 @@ suite("Chat field createdAt", () => {
 	const createdOrganizationIds: string[] = [];
 	const createdChatIds: string[] = [];
 
-	beforeAll(async () => {
+	beforeEach(async () => {
 		const setup = await setupTestEnvironment();
 		adminAuthToken = setup.adminAuthToken;
 		organizationId = setup.organizationId;
 		testChatId = setup.testChatId;
 
 		regularUser1AuthToken = setup.users[0].authToken;
+		regularUser1UserId = setup.users[0].userId;
 		regularUser2AuthToken = setup.users[1].authToken;
 
 		createdUserIds.push(setup.users[0].userId, setup.users[1].userId);
@@ -250,13 +233,17 @@ suite("Chat field createdAt", () => {
 		createdChatIds.push(testChatId);
 	});
 
-	afterAll(async () => {
+	afterEach(async () => {
 		await cleanupTestData(
 			adminAuthToken,
 			createdUserIds,
 			createdOrganizationIds,
 			createdChatIds,
 		);
+		// Reset arrays for next test
+		createdUserIds.length = 0;
+		createdOrganizationIds.length = 0;
+		createdChatIds.length = 0;
 	});
 
 	test("unauthenticated client → graphql unauthenticated error", async () => {
@@ -281,6 +268,7 @@ suite("Chat field createdAt", () => {
 			variables: { input: { id: testChatId } },
 		});
 		expect(result.data?.chat).not.toBeNull();
+		expect(result.data?.chat?.id).toBe(testChatId);
 		expect(result.data?.chat?.createdAt).toBeNull();
 		expect(result.errors).toEqual(
 			expect.arrayContaining<Partial<TalawaGraphQLFormattedError>>([
@@ -317,6 +305,11 @@ suite("Chat field createdAt", () => {
 			organizationId,
 		);
 		createdChatIds.push(creatorChatId);
+		
+		// Explicitly add the creator as a member to ensure membership
+		assertToBeNonNullish(regularUser1UserId);
+		await addUserToChat(adminAuthToken, creatorChatId, regularUser1UserId);
+		
 		const result = await mercuriusClient.query(Query_chat_with_createdAt, {
 			headers: { authorization: `bearer ${regularUser1AuthToken}` },
 			variables: { input: { id: creatorChatId } },
@@ -356,9 +349,17 @@ suite("Chat field createdAt", () => {
 		expect(result.errors ?? []).toHaveLength(0);
 		expect(result.data?.chat?.createdAt).toBeDefined();
 
-		const createdAt = new Date(result.data?.chat?.createdAt as string);
+		const createdAtString = result.data?.chat?.createdAt as string;
+		
+		// Assert strict ISO 8601 UTC format (YYYY-MM-DDTHH:MM:SS.mmmZ)
+		const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+		expect(createdAtString).toMatch(iso8601Regex);
+		
+		// Ensure the string is the canonical ISO serialization
+		const createdAt = new Date(createdAtString);
 		expect(createdAt).toBeInstanceOf(Date);
 		expect(createdAt.getTime()).not.toBeNaN();
+		expect(createdAt.toISOString()).toBe(createdAtString);
 		expect(createdAt.getTime()).toBeLessThanOrEqual(Date.now());
 	});
 });
