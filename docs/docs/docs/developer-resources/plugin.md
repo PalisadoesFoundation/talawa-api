@@ -1,11 +1,9 @@
 ---
 id: plugin
-title: Plugin
+title: Plugin System
 slug: /developer-resources/plugin
 sidebar_position: 6
 ---
-
-# Talawa API Plugin System Architecture
 
 ## Overview
 
@@ -29,25 +27,25 @@ The Talawa API Plugin System is a robust, event-driven plugin architecture desig
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                  Plugin Manager (Core)                       │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│  │  Lifecycle   │  │  Extensions  │  │   Registry       │  │
-│  │  Manager     │  │  Loader      │  │   Manager        │  │
-│  └──────────────┘  └──────────────┘  └──────────────────┘  │
+│                  Plugin Manager (Core)                      │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
+│  │  Lifecycle   │  │  Extensions  │  │   Registry       │   │
+│  │  Manager     │  │  Loader      │  │   Manager        │   │
+│  └──────────────┘  └──────────────┘  └──────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
                             │
-        ┌───────────────────┼───────────────────┐
-        │                   │                   │
-┌───────▼────────┐  ┌──────▼──────┐  ┌────────▼─────────┐
-│   Extension    │  │  Database   │  │   Event System   │
-│   Registry     │  │  Operations │  │   (EventEmitter) │
-├────────────────┤  ├─────────────┤  ├──────────────────┤
-│ • GraphQL      │  │ • Plugin DB │  │ • Lifecycle      │
-│   (Pothos)     │  │ • Tables    │  │   Events         │
-│ • Database     │  │ • Enums     │  │ • Hook Events    │
-│ • Hooks        │  │ • Relations │  │ • Custom Events  │
-│ • Webhooks     │  │             │  │                  │
-└────────────────┘  └─────────────┘  └──────────────────┘
+        ┌───────────────────┼──────────────────┐
+        │                   │                  │
+┌───────▼────────┐   ┌──────▼──────┐  ┌────────▼─────────┐
+│   Extension    │   │  Database   │  │   Event System   │
+│   Registry     │   │  Operations │  │   (EventEmitter) │
+├────────────────┤   ├─────────────┤  ├──────────────────┤
+│ • GraphQL      │   │ • Plugin DB │  │ • Lifecycle      │
+│   (Pothos)     │   │ • Tables    │  │   Events         │
+│ • Database     │   │ • Enums     │  │ • Hook Events    │
+│ • Hooks        │   │ • Relations │  │ • Custom Events  │
+│ • Webhooks     │   │             │  │                  │
+└────────────────┘   └─────────────┘  └──────────────────┘
 ```
 
 ---
@@ -354,7 +352,7 @@ export async function handleWebhook(request, reply) {
 
 ## Manager Directory
 
-### 6. `manager/core.ts` - Core Plugin Manager
+### 1. `manager/core.ts` - Core Plugin Manager
 
 **Purpose**: Main orchestrator for the entire plugin system. Extends EventEmitter for event-driven architecture.
 
@@ -456,7 +454,7 @@ pluginManager.on('plugin:error', (pluginId, error) => {});
 
 ---
 
-### 7. `manager/lifecycle.ts` - Lifecycle Manager
+### 2. `manager/lifecycle.ts` - Lifecycle Manager
 
 **Purpose**: Handles isolated plugin lifecycle processes with clear separation of concerns.
 
@@ -568,7 +566,7 @@ Automatically manages Docker containers based on manifest:
 
 ---
 
-### 8. `manager/extensions.ts` - Extension Loader
+### 3. `manager/extensions.ts` - Extension Loader
 
 **Purpose**: Loads and registers GraphQL, Database, Hook, and Webhook extensions from plugins.
 
@@ -703,7 +701,7 @@ export async function handleCallback(request, reply) {
 
 ---
 
-### 9. `manager/registry.ts` - Registry Manager
+### 4. `manager/registry.ts` - Registry Manager
 
 **Purpose**: Handles database operations for plugin state management.
 
@@ -755,7 +753,7 @@ await registry.updatePluginInDatabase('my-plugin', {
 
 ---
 
-### 10. `manager/index.ts` - Manager Exports
+### 5. `manager/index.ts` - Manager Exports
 
 **Purpose**: Central export point for all manager components.
 
