@@ -1,10 +1,4 @@
-import type { SQL } from "drizzle-orm";
-import type { PgColumn } from "drizzle-orm/pg-core";
 import type { GraphQLContext } from "~/src/graphql/context";
-import type {
-	organizationMembershipsTable,
-	usersTable,
-} from "~/src/drizzle/schema";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import {
@@ -41,16 +35,11 @@ export const createdAtResolver = async (
 				columns: {
 					role: true,
 				},
-				where: (
-					fields: typeof organizationMembershipsTable.$inferSelect,
-					operators: { eq: (column: PgColumn, value: unknown) => SQL },
-				) => operators.eq(fields.organizationId, parent.organizationId),
+				where: (fields, operators) =>
+					operators.eq(fields.organizationId, parent.organizationId),
 			},
 		},
-		where: (
-			fields: typeof usersTable.$inferSelect,
-			operators: { eq: (column: PgColumn, value: unknown) => SQL },
-		) => operators.eq(fields.id, currentUserId),
+		where: (fields, operators) => operators.eq(fields.id, currentUserId),
 	});
 
 	if (currentUser === undefined) {
@@ -79,8 +68,7 @@ export const createdAtResolver = async (
 };
 
 Advertisement.implement({
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	fields: (t: any) => ({
+	fields: (t) => ({
 		createdAt: t.field({
 			description: "Date time at the time the advertisement was created.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
