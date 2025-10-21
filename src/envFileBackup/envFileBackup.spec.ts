@@ -42,7 +42,7 @@ describe("envFileBackup utility", () => {
             path.join(mockCwd, ".env"),
             path.join(mockCwd, ".backup", `.env.${mockEpochSec}`)
         );
-        expect(console.log).toHaveBeenCalledWith(
+        expect(console.info).toHaveBeenCalledWith(
             expect.stringContaining(`.env.${mockEpochSec}`)
         );
     });
@@ -83,7 +83,7 @@ describe("envFileBackup utility", () => {
         await envFileBackup();
 
         expect(copyFile).not.toHaveBeenCalled();
-        expect(console.log).toHaveBeenCalledWith(
+        expect(console.warn).toHaveBeenCalledWith(
             expect.stringContaining("No .env file found")
         );
     });
@@ -94,7 +94,7 @@ describe("envFileBackup utility", () => {
         vi.spyOn(Date, "now").mockReturnValue(1234567890000);
 
         await expect(envFileBackup()).rejects.toThrow(
-            "Failed to backup .env file: Permission denied"
+            "Failed to create .env backup: Disk full"
         );
     });
 
