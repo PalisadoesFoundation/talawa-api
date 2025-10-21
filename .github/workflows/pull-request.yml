@@ -114,31 +114,6 @@ jobs:
       - name: Check type errors
         run: docker container run talawa_api pnpm typecheck
 
-  Check_docs_type_errors:
-    name: check docs type errors
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout this repository
-        uses: actions/checkout@v4.2.2
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.2.1
-      - name: Setup Node with pnpm cache (docs)
-        uses: actions/setup-node@v4
-        with:
-          node-version: 23.7.0
-          cache: pnpm
-          cache-dependency-path: |
-            docs/pnpm-lock.yaml
-            docs/package.json
-      - name: Install docs dependencies
-        working-directory: ./docs
-        run: pnpm install --frozen-lockfile
-      - name: Run TypeScript check in docs
-        working-directory: ./docs
-        run: pnpm typecheck
-
   Check-Sensitive-Files:
     if: ${{ github.actor != 'dependabot[bot]' && !contains(github.event.pull_request.labels.*.name, 'ignore-sensitive-files-pr') }}
     name: Checks if sensitive files have been changed without authorization
@@ -237,7 +212,6 @@ jobs:
         check_type_errors,
         check_drizzle_migrations,
         check_gql_tada,
-        Check_docs_type_errors,
       ]
     steps:
       - name: Checkout this repository

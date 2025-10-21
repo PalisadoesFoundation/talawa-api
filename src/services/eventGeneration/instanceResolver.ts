@@ -168,11 +168,14 @@ export function resolveMultipleInstances(
 
 		// Debug logging for exceptions
 		if (exception) {
-			logger.debug(`Found exception for instance ${instance.id}`, {
-				instanceId: instance.id,
-				exceptionId: exception.id,
-				exceptionData: exception.exceptionData,
-			});
+			logger.debug(
+				{
+					instanceId: instance.id,
+					exceptionId: exception.id,
+					exceptionData: exception.exceptionData,
+				},
+				`Found exception for instance ${instance.id}`,
+			);
 		}
 
 		const resolved = resolveInstanceWithInheritance({

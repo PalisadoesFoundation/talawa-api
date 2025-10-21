@@ -40,7 +40,7 @@ export const resolveCreatedOrganizations = async (
 			offset: 0,
 		});
 	} catch (error) {
-		ctx.log.error("Error fetching created organizations:", error);
+		ctx.log.error(error, ": Error fetching created organizations");
 		throw new Error("Failed to retrieve organizations created by the user");
 	}
 };

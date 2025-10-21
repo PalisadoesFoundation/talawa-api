@@ -34,20 +34,20 @@ export async function initializeGenerationWindow(
 		}
 
 		logger.info(
-			`Generation window initialized for organization ${input.organizationId}`,
 			{
 				hotWindowMonthsAhead: insertedConfig.hotWindowMonthsAhead,
 				historyRetentionMonths: insertedConfig.historyRetentionMonths,
 				currentWindowEndDate: insertedConfig.currentWindowEndDate.toISOString(),
 				retentionStartDate: insertedConfig.retentionStartDate.toISOString(),
 			},
+			`Generation window initialized for organization ${input.organizationId}`,
 		);
 
 		return insertedConfig;
 	} catch (error) {
 		logger.error(
-			`Failed to initialize Generation window for organization ${input.organizationId}:`,
 			error,
+			`Failed to initialize Generation window for organization ${input.organizationId}:`,
 		);
 		throw error;
 	}
@@ -129,18 +129,18 @@ export async function extendGenerationWindow(
 			.where(eq(eventGenerationWindowsTable.organizationId, organizationId));
 
 		logger.info(
-			`Extended Generation window for organization ${organizationId} by ${additionalMonths} months`,
 			{
 				previousEndDate: windowConfig.currentWindowEndDate.toISOString(),
 				newEndDate: newEndDate.toISOString(),
 			},
+			`Extended Generation window for organization ${organizationId} by ${additionalMonths} months`,
 		);
 
 		return newEndDate;
 	} catch (error) {
 		logger.error(
-			`Failed to extend Generation window for organization ${organizationId}:`,
 			error,
+			`Failed to extend Generation window for organization ${organizationId}:`,
 		);
 		throw error;
 	}
@@ -188,18 +188,18 @@ export async function cleanupOldGeneratedInstances(
 		const deletedCount = result.rowCount || 0;
 
 		logger.info(
-			`Cleaned up ${deletedCount} old Generated instances for organization ${organizationId}`,
 			{
 				retentionStartDate: windowConfig.retentionStartDate.toISOString(),
 				deletedCount,
 			},
+			`Cleaned up ${deletedCount} old Generated instances for organization ${organizationId}`,
 		);
 
 		return deletedCount;
 	} catch (error) {
 		logger.error(
-			`Failed to cleanup old Generated instances for organization ${organizationId}:`,
 			error,
+			`Failed to cleanup old Generated instances for organization ${organizationId}:`,
 		);
 		throw error;
 	}

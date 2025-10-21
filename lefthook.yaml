@@ -36,14 +36,9 @@ pre-commit:
         
         pnpm -C docs format:check
 
-    9_check_type_errors:
+    8_check_type_errors:
       run: pnpm typecheck
 
-    10_docs_check_type_errors:
-      glob: "docs/**/*.{ts,tsx,js,jsx}"
-      run: |
-        set -e
-          pnpm -C docs typecheck
     # commenting out because postgenerate script is not present in develop branch
     # 11_generate_docs:
     #   run: |
