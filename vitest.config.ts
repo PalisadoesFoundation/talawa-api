@@ -41,7 +41,7 @@ export default defineConfig({
 		// https://vitest.dev/config/#passwithnotests
 		passWithNoTests: true,
 
-		// // https://vitest.dev/config/#teardowntimeout
+		// https://vitest.dev/config/#teardowntimeout
 		// teardownTimeout: 10000
 
 		hookTimeout: 30000, // 30 seconds for hooks
