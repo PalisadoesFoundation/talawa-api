@@ -26,11 +26,11 @@ export const createdAtResolver = async (
 	}
 
 	if (!ctx.currentClient.user?.id) {
-    throw new TalawaGraphQLError({
-      extensions: { code: "unauthenticated" },
-    });
-    }
-    const currentUserId = ctx.currentClient.user.id;
+		throw new TalawaGraphQLError({
+			extensions: { code: "unauthenticated" },
+		});
+	}
+	const currentUserId = ctx.currentClient.user.id;
 
 	const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
 		columns: {

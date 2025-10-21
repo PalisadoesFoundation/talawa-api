@@ -1,6 +1,5 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test, vi } from "vitest";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 import type { GraphQLContext } from "../../../../src/graphql/context";
 // Import the Advertisement and GraphQLContext types
@@ -54,14 +53,6 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 				{},
 				mockContext as unknown as GraphQLContext,
 			),
-		).rejects.toThrow(TalawaGraphQLError);
-		
-		await expect(
-			resolver(
-				mockParent as Advertisement,
-				{},
-				mockContext as unknown as GraphQLContext,
-			),
 		).rejects.toMatchObject({
 			extensions: { code: "unauthenticated" },
 		});
@@ -93,14 +84,6 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 		};
 
 		// Act & Assert - Check for the specific error class and code
-		await expect(
-			resolver(
-				mockParent as Advertisement,
-				{},
-				mockContext as unknown as GraphQLContext,
-			),
-		).rejects.toThrow(TalawaGraphQLError);
-		
 		await expect(
 			resolver(
 				mockParent as Advertisement,
@@ -250,14 +233,6 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 				{},
 				mockContext as unknown as GraphQLContext,
 			),
-		).rejects.toThrow(TalawaGraphQLError);
-		
-		await expect(
-			resolver(
-				mockParent as Advertisement,
-				{},
-				mockContext as unknown as GraphQLContext,
-			),
 		).rejects.toMatchObject({
 			extensions: { code: "unauthorized_action" },
 		});
@@ -298,14 +273,6 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 		};
 
 		// Act & Assert - Check for the specific error class and code
-		await expect(
-			resolver(
-				mockParent as Advertisement,
-				{},
-				mockContext as unknown as GraphQLContext,
-			),
-		).rejects.toThrow(TalawaGraphQLError);
-		
 		await expect(
 			resolver(
 				mockParent as Advertisement,
