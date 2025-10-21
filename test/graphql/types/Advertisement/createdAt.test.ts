@@ -40,8 +40,7 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 
 		const mockContext: MockContext = {
 			currentClient: {
-				isAuthenticated: false, // Ensure user ID might also be missing
-				// user: undefined // Explicitly undefined or just missing
+				isAuthenticated: false,
 			},
 			drizzleClient: {
 				query: {},

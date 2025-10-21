@@ -48,11 +48,12 @@ export const createdAtResolver = async (
 	const currentUserOrganizationMembership =
 		currentUser.organizationMembershipsWhereMember[0];
 
-	if (
-		currentUser.role !== "administrator" &&
-		(currentUserOrganizationMembership === undefined ||
-			currentUserOrganizationMembership.role !== "administrator")
-	) {
+	const isSystemAdmin = currentUser.role === "administrator";
+	const isOrgAdmin =
+		currentUserOrganizationMembership !== undefined &&
+		currentUserOrganizationMembership.role === "administrator";
+
+	if (!isSystemAdmin && !isOrgAdmin) {
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unauthorized_action",
