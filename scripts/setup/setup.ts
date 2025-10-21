@@ -625,6 +625,7 @@ export async function setup(): Promise<SetupAnswers> {
 
 	answers = await setCI(answers);
 	initializeEnvFile(answers);
+	await envFileBackup();
 
 	const useDefaultMinio = await promptConfirm(
 		"useDefaultMinio",
@@ -679,7 +680,6 @@ export async function setup(): Promise<SetupAnswers> {
 
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");
-	await envFileBackup();
 	if (fs.existsSync(".env.backup")) {
 		fs.unlinkSync(".env.backup");
 	}
