@@ -14,6 +14,8 @@ on:
   pull_request:
     branches:
       - "**"
+env:
+  CODECOV_UNIQUE_NAME: CODECOV_UNIQUE_NAME-${{ github.run_id }}-${{ github.run_number }}
 
 jobs:
   check_base_branch:
@@ -45,7 +47,7 @@ jobs:
           echo "Source Branch ${{ github.event.pull_request.head.ref }}"
           echo "Target Branch ${{ github.event.pull_request.base.ref }}"
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
-          echo "Error: Close this PR and try again."          
+          echo "Error: Close this PR and try again."
           exit 1
 
   python_checks:
@@ -172,18 +174,42 @@ jobs:
             PR_GUIDELINES.md
             README.md
           )
-          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
-          DELETED_FILES=$(git diff --name-only --diff-filter=D ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+          
+          if [ -n "${{ github.event.pull_request.base.sha }}" ] && [ -n "${{ github.event.pull_request.head.sha }}" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE_SHA=$(git merge-base origin/${{ github.event.pull_request.base.ref }} HEAD)
+            HEAD_SHA="HEAD"
+          fi
+          
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT "$BASE_SHA" "$HEAD_SHA" 2>/dev/null || git diff --name-only --diff-filter=ACMRT)
+          DELETED_FILES=$(git diff --name-only --diff-filter=D "$BASE_SHA" "$HEAD_SHA" 2>/dev/null || git diff --name-only --diff-filter=D)
+          
           SENSITIVE_CHANGED=false
           ALL_CHANGED_FILES=""
-          for PATTERN in "${SENSITIVE_FILES[@]}"; do
-            for FILE in $CHANGED_FILES $DELETED_FILES; do
-              if [[ "$FILE" == "$PATTERN" || "$FILE" =~ $PATTERN ]]; then
-                ALL_CHANGED_FILES+="$FILE "
-                SENSITIVE_CHANGED=true
+          
+          for FILE in $CHANGED_FILES $DELETED_FILES; do
+            for PATTERN in "${SENSITIVE_FILES[@]}"; do
+              PATTERN_CLEAN="${PATTERN//\"/}"
+              if [[ "$PATTERN_CLEAN" == *"*"* ]]; then
+                PATTERN_GLOB="${PATTERN_CLEAN//\*\*/.*}"
+                PATTERN_GLOB="${PATTERN_GLOB//\*/[^/]*}"
+                if [[ "$FILE" =~ ^${PATTERN_GLOB}$ ]]; then
+                  ALL_CHANGED_FILES+="$FILE "
+                  SENSITIVE_CHANGED=true
+                  break
+                fi
+              else
+                if [[ "$FILE" == "$PATTERN_CLEAN" ]]; then
+                  ALL_CHANGED_FILES+="$FILE "
+                  SENSITIVE_CHANGED=true
+                  break
+                fi
               fi
             done
           done
+          
           echo "all_changed_files=$ALL_CHANGED_FILES" >> $GITHUB_OUTPUT
           echo "any_changed=$SENSITIVE_CHANGED" >> $GITHUB_OUTPUT
           echo "any_deleted=$([ -n "$DELETED_FILES" ] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
@@ -193,26 +219,17 @@ jobs:
         if: steps.changed_files.outputs.any_changed == 'true' || steps.changed_files.outputs.any_deleted == 'true'
         name: Show changed files
         run: |
-          echo "Unauthorized changes were made in the following files:"
+          echo "::error::Unauthorized changes were made in the following sensitive files:"
           for FILE in ${CHANGED_FILES}; do
             echo "$FILE"
           done
-          echo "To override this, apply the 'ignore-sensitive-files-pr' label"
+          echo "::notice::To override this, apply the 'ignore-sensitive-files-pr' label to your PR."
           exit 1
 
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
-    needs:
-      [
-        Code-Quality-Checks,
-        python_checks,
-        check_type_errors,
-        check_drizzle_migrations,
-        check_gql_tada,
-      ]
-    env:
-      CODECOV_UNIQUE_NAME: ${{github.workflow}}-${{github.ref_name}}
+    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada]
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
@@ -220,25 +237,52 @@ jobs:
         run: cp ./envFiles/.env.ci ./.env
       - name: Build talawa api compose testing environment
         run: docker compose build
+      - name: Start Postgres service
+        run: docker compose up -d postgres
+      - name: Wait for Postgres to be ready
+        run: |
+          set -euo pipefail
+          echo "Waiting for Postgres (service: postgres)…"
+          timeout=90
+          until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U postgres >/dev/null 2>&1 || [ $timeout -eq 0 ]; do
+            echo "Postgres not ready yet... ($timeout seconds remaining)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ $timeout -eq 0 ]; then
+            echo "Error: Postgres failed to start"
+            docker compose ps
+            docker compose logs postgres
+            docker compose down -v
+            exit 1
+          else
+            echo "Postgres is ready."
+          fi
       - name: Run tests
         run: docker compose up --exit-code-from api
       - name: Copy coverage from container
         run: |
           CONTAINER_ID=$(docker ps -aq --filter "ancestor=talawa-api")
           docker cp $CONTAINER_ID:/home/talawa/api/coverage ./coverage
+
+      #######################################################################
+      # DO NOT DELETE ANY references to env.CODECOV_UNIQUE_NAME in this
+      # section. They are required for accurate calculations
+      #######################################################################
       - name: Present and upload coverage to Codecov as ${{env.CODECOV_UNIQUE_NAME}}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          verbose: true
+          name: "${{env.CODECOV_UNIQUE_NAME}}"
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
-          name: "${{env.CODECOV_UNIQUE_NAME}}"
+          verbose: true
+          exclude: 'docs/'      
 
       - name: Test acceptable level of code coverage
-        uses: VeryGoodOpenSource/very_good_coverage@v2
+        uses: VeryGoodOpenSource/very_good_coverage@v3
         with:
           path: "./coverage/lcov.info"
-          min_coverage: 57.0
+          min_coverage: 68.0
 
   Test-Docusaurus-Deployment:
     name: Test Deployment to https://docs-api.talawa.io
@@ -333,14 +377,14 @@ jobs:
           echo "all_changed_files_count=$ALL_CHANGED_FILES_COUNT" >> $GITHUB_OUTPUT
 
       - name: Echo number of changed files
-        env: 
+        env:
           CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
         run: |
           echo "Number of files changed: $CHANGED_FILES_COUNT"
 
       - name: Check if the number of changed files is less than 100
         if: steps.changed-files.outputs.all_changed_files_count > 100
-        env: 
+        env:
           CHANGED_FILES_COUNT: ${{ steps.changed-files.outputs.all_changed_files_count }}
         run: |
           echo "Error: Too many files (greater than 100) changed in the pull request."
@@ -362,6 +406,23 @@ jobs:
         run: cp envFiles/.env.devcontainer .env
       - name: Bring up devcontainer
         run: devcontainer up --workspace-folder .
+      - name: Wait for Postgres in devcontainer
+        run: |
+          set -euo pipefail
+          POSTGRES_USER=postgres
+          echo "Waiting for Postgres service via compose..."
+          timeout=90
+          until docker compose exec -T postgres pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" >/dev/null 2>&1 || [ "$timeout" -le 0 ]; do
+            echo "Postgres not ready ($timeout s left)"
+            sleep 1
+            ((timeout--))
+          done
+          if [ "$timeout" -eq 0 ]; then
+            echo "Error: Postgres failed to start"
+            docker compose ps
+            docker logs postgres
+            exit 1
+          fi
       - name: Wait for Devcontainer to be ready
         run: |
           echo "Waiting for devcontainer services to be ready..."
