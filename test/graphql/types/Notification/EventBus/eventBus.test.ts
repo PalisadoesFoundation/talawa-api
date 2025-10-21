@@ -734,11 +734,14 @@ describe("NotificationEventBus", () => {
 			await bus.emitSendEventInvite(data, mockCtx);
 			await waitForSetImmediate();
 
-			expect(infoSpy).toHaveBeenCalledWith("Send event invite notification created", {
-				inviteeEmail: "invitee@example.com",
-				inviterId: "user-789",
-				eventId: "event-123",
-			});
+			expect(infoSpy).toHaveBeenCalledWith(
+				"Send event invite notification created",
+				{
+					inviteeEmail: "invitee@example.com",
+					inviterId: "user-789",
+					eventId: "event-123",
+				},
+			);
 		});
 
 		it("should log success message with missing eventId", async () => {
@@ -755,11 +758,14 @@ describe("NotificationEventBus", () => {
 			await bus.emitSendEventInvite(data, mockCtx);
 			await waitForSetImmediate();
 
-			expect(infoSpy).toHaveBeenCalledWith("Send event invite notification created", {
-				inviteeEmail: "invitee@example.com",
-				inviterId: "user-789",
-				eventId: undefined,
-			});
+			expect(infoSpy).toHaveBeenCalledWith(
+				"Send event invite notification created",
+				{
+					inviteeEmail: "invitee@example.com",
+					inviterId: "user-789",
+					eventId: undefined,
+				},
+			);
 		});
 
 		it("should log error when email notification creation fails", async () => {

@@ -1075,7 +1075,7 @@ describe("NotificationEngine (unit tests)", () => {
 			});
 
 			const { ctx } = createMockContext({ template });
-			
+
 			const mockInsert = vi.fn().mockImplementation((table: unknown) => {
 				if (table === notificationLogsTable) {
 					return {
@@ -1090,7 +1090,7 @@ describe("NotificationEngine (unit tests)", () => {
 					}),
 				};
 			});
-			
+
 			ctx.drizzleClient.insert = mockInsert;
 
 			const engine = new NotificationEngine(ctx);
