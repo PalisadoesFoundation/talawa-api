@@ -388,7 +388,7 @@ ensure your devconainer.json has the following dockerComposeFile
 	"dockerComposeFile": [
 		"../compose.yaml",
 		"../docker/compose.testing.yaml",
-		"../docker/compose.rootlessdevcontainer.yaml"
+		"../docker/compose.rootless.devcontainer.yaml"
 	],
 ```
 
