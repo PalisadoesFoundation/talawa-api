@@ -382,7 +382,7 @@ Since rootless docker is unable to bind to ports > 1024, caddy instead binds to 
 ### Setup
 
 To enable rootless docker support for devcontainers
-ensure your devconainer.json has the following dockerComposeFile 
+ensure your .devcontainer/devcontainer.json has the following "dockerComposeFile" key
 
 ```
 	"dockerComposeFile": [
