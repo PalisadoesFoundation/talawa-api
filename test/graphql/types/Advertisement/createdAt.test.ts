@@ -47,7 +47,7 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 			},
 		};
 
-		// Act & Assert - Check for the specific error message
+		// Act & Assert - Check for the specific error class and code
 		await expect(
 			resolver(
 				mockParent as Advertisement,
@@ -92,7 +92,7 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 			},
 		};
 
-		// Act & Assert - Check for the specific error message
+		// Act & Assert - Check for the specific error class and code
 		await expect(
 			resolver(
 				mockParent as Advertisement,
@@ -159,9 +159,10 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 	test("returns createdAt when user is organization administrator", async () => {
 		// Arrange
 		const mockCreatedAt = new Date("2025-01-15T12:30:00.000Z");
+		const orgId = faker.string.uuid();
 		const mockParent: MockParent = {
 			id: faker.string.uuid(),
-			organizationId: faker.string.uuid(),
+			organizationId: orgId,
 			createdAt: mockCreatedAt,
 		};
 
@@ -170,7 +171,7 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 			organizationMembershipsWhereMember: [
 				{
 					role: "administrator", // But they are admin in this specific org
-					organizationId: mockParent.organizationId,
+					organizationId: orgId,
 				},
 			],
 		});
@@ -202,6 +203,15 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 		expect(result).toBe(mockCreatedAt);
 		expect(result).toBeInstanceOf(Date);
 		expect(mockFindFirst).toHaveBeenCalledOnce();
+		expect(mockFindFirst).toHaveBeenCalledWith(
+			expect.objectContaining({
+				with: expect.objectContaining({
+					organizationMembershipsWhereMember: expect.objectContaining({
+						where: expect.any(Function),
+					}),
+				}),
+			}),
+		);
 	});
 
 	test("throws unauthorized_action when user is not organization member", async () => {
@@ -233,7 +243,7 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 			},
 		};
 
-		// Act & Assert - Check for the specific error message
+		// Act & Assert - Check for the specific error class and code
 		await expect(
 			resolver(
 				mockParent as Advertisement,
@@ -287,7 +297,7 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 			},
 		};
 
-		// Act & Assert - Check for the specific error message
+		// Act & Assert - Check for the specific error class and code
 		await expect(
 			resolver(
 				mockParent as Advertisement,
