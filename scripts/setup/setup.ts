@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
-import path from "node:path";
 import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
