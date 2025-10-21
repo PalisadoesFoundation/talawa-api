@@ -4,6 +4,7 @@ import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { updateEnvVariable } from "./updateEnvVariable";
+import { envFileBackup } from "~/src/envFileBackup/envFileBackup";
 
 interface SetupAnswers {
 	[key: string]: string;
@@ -599,6 +600,8 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 }
 
 export async function setup(): Promise<SetupAnswers> {
+	console.log("\n🚀 Starting setup...\n");
+	await envFileBackup();
 	let answers: SetupAnswers = {};
 	if (checkEnvFile()) {
 		const envReconfigure = await promptConfirm(
