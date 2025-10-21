@@ -158,6 +158,39 @@ async function addUserToChat(
 	return result.data.createChatMembership.id;
 }
 
+/**
+ * Ensures a user is a member of a chat, handling the case where they may already be a member.
+ * If the user is already a member, this is a no-op (returns undefined).
+ * Otherwise, creates the membership and returns the membership ID.
+ */
+async function ensureUserIsChatMember(
+	adminAuthToken: string,
+	chatId: string,
+	memberId: string,
+): Promise<string | undefined> {
+	const result = await mercuriusClient.mutate(Mutation_createChatMembership, {
+		headers: { authorization: `bearer ${adminAuthToken}` },
+		variables: { input: { chatId, memberId } },
+	});
+
+	// Check if the error is "already a member"
+	const alreadyMemberError = result.errors?.find(
+		(err) =>
+			err.extensions?.code ===
+			"forbidden_action_on_arguments_associated_resources",
+	);
+
+	if (alreadyMemberError) {
+		// User is already a member, treat as success
+		return undefined;
+	}
+
+	// If there are other errors, fail the test
+	expect(result.errors ?? []).toHaveLength(0);
+	assertToBeNonNullish(result.data?.createChatMembership);
+	return result.data.createChatMembership.id;
+}
+
 // Setup / Teardown
 async function setupTestEnvironment(): Promise<SetupEnv> {
 	const { authToken: adminAuthToken, userId: adminUserId } =
@@ -203,8 +236,12 @@ async function cleanupTestData(
 			ids.map((id) =>
 				mercuriusClient
 					.mutate(mutation, { headers, variables: { input: { id } } })
-					.catch(() => {
-						// Silently ignore cleanup errors
+					.catch((err: unknown) => {
+						if (process.env.VITEST_DEBUG) {
+							// Log only when debugging to avoid noisy CI output
+							// eslint-disable-next-line no-console
+							console.debug("Cleanup error:", err);
+						}
 					}),
 			),
 		);
@@ -317,8 +354,12 @@ suite("Chat field createdAt", () => {
 		);
 		createdChatIds.push(creatorChatId);
 
-		// Explicitly add the creator as a member to ensure membership
-		await addUserToChat(adminAuthToken, creatorChatId, regularUser1UserId);
+		// Ensure the creator is a member (no-op if already added automatically)
+		await ensureUserIsChatMember(
+			adminAuthToken,
+			creatorChatId,
+			regularUser1UserId,
+		);
 
 		const result = await mercuriusClient.query(Query_chat_with_createdAt, {
 			headers: { authorization: `bearer ${regularUser1AuthToken}` },
