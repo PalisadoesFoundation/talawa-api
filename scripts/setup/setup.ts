@@ -684,15 +684,5 @@ export async function setup(): Promise<SetupAnswers> {
 	if (fs.existsSync(".env.backup")) {
 		fs.unlinkSync(".env.backup");
 	}
-	// Clean up timestamped backup after successful setup
-	const backupDir = path.join(process.cwd(), ".backup");
-	if (fs.existsSync(backupDir)) {
-		const files = fs.readdirSync(backupDir);
-		for (const file of files) {
-			if (file.startsWith(".env.")) {
-				fs.unlinkSync(path.join(backupDir, file));
-			}
-		}
-	}
 	return answers;
 }
