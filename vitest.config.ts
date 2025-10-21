@@ -4,33 +4,31 @@ import { configDefaults, defineConfig } from "vitest/config";
 export default defineConfig({
 	plugins: [tsconfigPaths()],
 	test: {
-		environment: "node",
-		include: [
-			"src/**/*.test.{ts,tsx,js,jsx}",
-			"src/**/*.spec.{ts,tsx,js,jsx}",
-			"test/**/*.test.{ts,tsx,js,jsx}",
-			"test/**/*.spec.{ts,tsx,js,jsx}",
-		],
-		exclude: [
-			...configDefaults.exclude,
-			"dist/**",
-			"coverage/**",
-			"docs/**",
-			"**/*.d.ts",
-		],
-		hookTimeout: 30000,
-		testTimeout: 60000,
-		passWithNoTests: false,
 		coverage: {
-			provider: "v8",
-			reporter: ["text", "html", "lcov"],
+			provider: "v8", // or 'istanbul' if you prefer
+			reporter: ["text", "lcov", "html"],
 			exclude: [
 				...(configDefaults.coverage?.exclude ?? []),
-				"dist/**",
-				"coverage/**",
-				"docs/**",
-				"**/*.d.ts",
+				"data/**",
+				"docker/**",
+				"drizzle_migrations/**",
+				"envFiles/**",
+				"scripts/**",
 			],
 		},
+		// https://vitest.dev/config/#fileparallelism
+		// fileParallelism: true,
+
+		// https://vitest.dev/config/#globalsetup
+		globalSetup: ["./test/setup.ts"],
+
+		// https://vitest.dev/config/#passwithnotests
+		passWithNoTests: true,
+
+		// // https://vitest.dev/config/#teardowntimeout
+		// teardownTimeout: 10000
+
+		hookTimeout: 30000, // 30 seconds for hooks
+		pool: "threads", // for faster test execution and to avoid postgres max-limit error
 	},
 });
