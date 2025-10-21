@@ -1,10 +1,11 @@
 import crypto from "node:crypto";
+import path from "node:path";
 import fs from "node:fs";
 import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
-import { updateEnvVariable } from "./updateEnvVariable";
 import { envFileBackup } from "~/src/envFileBackup/envFileBackup";
+import { updateEnvVariable } from "./updateEnvVariable";
 
 interface SetupAnswers {
 	[key: string]: string;
@@ -600,8 +601,6 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 }
 
 export async function setup(): Promise<SetupAnswers> {
-	console.log("\n🚀 Starting setup...\n");
-	await envFileBackup();
 	let answers: SetupAnswers = {};
 	if (checkEnvFile()) {
 		const envReconfigure = await promptConfirm(
@@ -681,8 +680,19 @@ export async function setup(): Promise<SetupAnswers> {
 
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");
+	await envFileBackup(); 
 	if (fs.existsSync(".env.backup")) {
 		fs.unlinkSync(".env.backup");
 	}
+	// Clean up timestamped backup after successful setup  
+	const backupDir = path.join(process.cwd(), ".backup");  
+	if (fs.existsSync(backupDir)) {  
+		const files = fs.readdirSync(backupDir);  
+		for (const file of files) {  
+			if (file.startsWith(".env.")) {  
+				fs.unlinkSync(path.join(backupDir, file));  
+			}  
+		}  
+	}  
 	return answers;
 }

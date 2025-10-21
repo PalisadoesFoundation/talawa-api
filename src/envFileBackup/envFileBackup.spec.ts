@@ -1,7 +1,7 @@
-import path from "node:path";
 import { access, copyFile, mkdir } from "node:fs/promises";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import path from "node:path";
 import inquirer from "inquirer";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { envFileBackup } from "./envFileBackup";
 
 vi.mock("fs/promises");
