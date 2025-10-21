@@ -54,11 +54,17 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 				{},
 				mockContext as unknown as GraphQLContext,
 			),
-		).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthenticated" },
-			}),
-		);
+		).rejects.toThrow(TalawaGraphQLError);
+		
+		await expect(
+			resolver(
+				mockParent as Advertisement,
+				{},
+				mockContext as unknown as GraphQLContext,
+			),
+		).rejects.toMatchObject({
+			extensions: { code: "unauthenticated" },
+		});
 	});
 
 	test("throws unauthenticated error when user does not exist in database", async () => {
@@ -93,11 +99,17 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 				{},
 				mockContext as unknown as GraphQLContext,
 			),
-		).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthenticated" },
-			}),
-		);
+		).rejects.toThrow(TalawaGraphQLError);
+		
+		await expect(
+			resolver(
+				mockParent as Advertisement,
+				{},
+				mockContext as unknown as GraphQLContext,
+			),
+		).rejects.toMatchObject({
+			extensions: { code: "unauthenticated" },
+		});
 		expect(mockFindFirst).toHaveBeenCalledOnce();
 	});
 
@@ -158,6 +170,7 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 			organizationMembershipsWhereMember: [
 				{
 					role: "administrator", // But they are admin in this specific org
+					organizationId: mockParent.organizationId,
 				},
 			],
 		});
@@ -227,11 +240,17 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 				{},
 				mockContext as unknown as GraphQLContext,
 			),
-		).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthorized_action" },
-			}),
-		);
+		).rejects.toThrow(TalawaGraphQLError);
+		
+		await expect(
+			resolver(
+				mockParent as Advertisement,
+				{},
+				mockContext as unknown as GraphQLContext,
+			),
+		).rejects.toMatchObject({
+			extensions: { code: "unauthorized_action" },
+		});
 		expect(mockFindFirst).toHaveBeenCalledOnce();
 	});
 
@@ -275,11 +294,17 @@ suite("Advertisement field createdAt - Unit Tests", () => {
 				{},
 				mockContext as unknown as GraphQLContext,
 			),
-		).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: { code: "unauthorized_action" },
-			}),
-		);
+		).rejects.toThrow(TalawaGraphQLError);
+		
+		await expect(
+			resolver(
+				mockParent as Advertisement,
+				{},
+				mockContext as unknown as GraphQLContext,
+			),
+		).rejects.toMatchObject({
+			extensions: { code: "unauthorized_action" },
+		});
 		expect(mockFindFirst).toHaveBeenCalledOnce();
 	});
 
