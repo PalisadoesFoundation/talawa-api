@@ -1,6 +1,5 @@
-console.log("executedd");
-import path from "path";
-import { mkdir, copyFile, access } from "fs/promises";
+import path from "node:path";
+import { access, copyFile, mkdir } from "node:fs/promises";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import inquirer from "inquirer";
 import { envFileBackup } from "./envFileBackup";
