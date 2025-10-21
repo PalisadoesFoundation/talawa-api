@@ -2,7 +2,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
-	plugins: [tsconfigPaths({ skip: ["dist", "coverage", "docs"] })],
+	plugins: [tsconfigPaths()], // Remove the skip parameter
 	test: {
 		environment: "node",
 		include: [
@@ -17,6 +17,7 @@ export default defineConfig({
 			"coverage/**",
 			"docs/**",
 			"**/*.d.ts",
+			"**/node_modules/**",
 		],
 		hookTimeout: 30000,
 		testTimeout: 60000,
@@ -30,6 +31,7 @@ export default defineConfig({
 				"coverage/**",
 				"docs/**",
 				"**/*.d.ts",
+				"**/node_modules/**",
 			],
 		},
 	},
