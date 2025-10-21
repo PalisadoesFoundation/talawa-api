@@ -20,12 +20,14 @@ import {
 /**
  * COVERAGE NOTE:
  *
- * This test file covers 80% of src/graphql/types/Chat/createdAt.ts.
- * The remaining 20% handles auth and user checks unreachable in integration tests,
- * since src/graphql/types/Query/chat.ts already validates them.
+ * This test file achieves high coverage of src/graphql/types/Chat/createdAt.ts.
+ * Integration tests cover the main execution paths.
  *
- * The extra checks in createdAt.ts are defensive safeguards, only testable via
- * mocked unit tests. Therefore, 80% represents full reachable coverage.
+ * The defensive auth guards (lines checking ctx.currentClient.isAuthenticated
+ * and user existence) are unreachable in normal integration test flow since
+ * src/graphql/types/Query/chat.ts validates them first. These represent
+ * defense-in-depth programming and would only execute in edge cases like
+ * direct resolver invocation or if the parent resolver is bypassed.
  */
 
 // Types
@@ -64,6 +66,7 @@ async function getAdminCreds(): Promise<AdminCreds> {
 			},
 		},
 	});
+	expect(result.errors ?? []).toHaveLength(0);
 	const authToken = result.data?.signIn?.authenticationToken;
 	const userId = result.data?.signIn?.user?.id;
 	assertToBeNonNullish(authToken);
@@ -88,6 +91,7 @@ async function createTestUser(
 			},
 		},
 	});
+	expect(userResult.errors ?? []).toHaveLength(0);
 	assertToBeNonNullish(userResult.data?.createUser);
 	return {
 		userId: userResult.data.createUser.user?.id as string,
@@ -99,9 +103,10 @@ async function createTestOrganization(adminAuthToken: string): Promise<string> {
 	const orgResult = await mercuriusClient.mutate(Mutation_createOrganization, {
 		headers: { authorization: `bearer ${adminAuthToken}` },
 		variables: {
-			input: { name: `Test Org ${faker.string.uuid()}`, countryCode: "US" },
+			input: { name: `Test Org ${faker.string.uuid()}`, countryCode: "us" },
 		},
 	});
+	expect(orgResult.errors ?? []).toHaveLength(0);
 	assertToBeNonNullish(orgResult.data?.createOrganization);
 	return orgResult.data.createOrganization.id;
 }
@@ -119,6 +124,7 @@ async function createOrganizationMembership(
 			variables: { input: { memberId, organizationId, role } },
 		},
 	);
+	expect(result.errors ?? []).toHaveLength(0);
 	assertToBeNonNullish(result.data?.createOrganizationMembership);
 	return result.data.createOrganizationMembership.id;
 }
@@ -133,6 +139,7 @@ async function createTestChat(
 			input: { name: `Test Chat ${faker.string.uuid()}`, organizationId },
 		},
 	});
+	expect(chatResult.errors ?? []).toHaveLength(0);
 	assertToBeNonNullish(chatResult.data?.createChat);
 	return chatResult.data.createChat.id;
 }
@@ -146,6 +153,7 @@ async function addUserToChat(
 		headers: { authorization: `bearer ${adminAuthToken}` },
 		variables: { input: { chatId, memberId } },
 	});
+	expect(result.errors ?? []).toHaveLength(0);
 	assertToBeNonNullish(result.data?.createChatMembership);
 	return result.data.createChatMembership.id;
 }
@@ -288,6 +296,7 @@ suite("Chat field createdAt", () => {
 			variables: { input: { id: testChatId } },
 		});
 		expect(result.errors ?? []).toHaveLength(0);
+		expect(result.data?.chat?.id).toBe(testChatId);
 		expect(result.data?.chat?.createdAt).toBeDefined();
 	});
 
@@ -297,6 +306,7 @@ suite("Chat field createdAt", () => {
 			variables: { input: { id: testChatId } },
 		});
 		expect(result.errors ?? []).toHaveLength(0);
+		expect(result.data?.chat?.id).toBe(testChatId);
 		expect(result.data?.chat?.createdAt).toBeDefined();
 	});
 
