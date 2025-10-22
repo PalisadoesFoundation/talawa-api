@@ -4,9 +4,9 @@
 
 # Function: resolveUpdatedAt()
 
-> **resolveUpdatedAt**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
+> **resolveUpdatedAt**(`parent`, `_args`, `ctx`): `Promise`\<`null` \| `Date`\>
 
-Defined in: src/graphql/types/Chat/updatedAt.ts:12
+Defined in: [src/graphql/types/Chat/updatedAt.ts:8](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/types/Chat/updatedAt.ts#L8)
 
 ## Parameters
 
@@ -14,11 +14,11 @@ Defined in: src/graphql/types/Chat/updatedAt.ts:12
 
 #### avatarMimeType
 
-`"image/avif"` \| `"image/jpeg"` \| `"image/png"` \| `"image/webp"`
+`null` \| `"image/avif"` \| `"image/jpeg"` \| `"image/png"` \| `"image/webp"`
 
 #### avatarName
 
-`string`
+`null` \| `string`
 
 #### createdAt
 
@@ -26,11 +26,11 @@ Defined in: src/graphql/types/Chat/updatedAt.ts:12
 
 #### creatorId
 
-`string`
+`null` \| `string`
 
 #### description
 
-`string`
+`null` \| `string`
 
 #### id
 
@@ -46,11 +46,11 @@ Defined in: src/graphql/types/Chat/updatedAt.ts:12
 
 #### updatedAt
 
-`Date`
+`null` \| `Date`
 
 #### updaterId
 
-`string`
+`null` \| `string`
 
 ### \_args
 
@@ -62,4 +62,4 @@ Defined in: src/graphql/types/Chat/updatedAt.ts:12
 
 ## Returns
 
-`Promise`\<`Date`\>
+`Promise`\<`null` \| `Date`\>

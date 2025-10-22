@@ -1,0 +1,9 @@
+[Admin Docs](/)
+
+***
+
+# Variable: eventExceptionsTableRelations
+
+> `const` **eventExceptionsTableRelations**: `Relations`\<`"event_exceptions"`, \{ `creator`: `One`\<`"users"`, `true`\>; `organization`: `One`\<`"organizations"`, `true`\>; `recurringEventInstance`: `One`\<`"recurring_event_instances"`, `true`\>; `updater`: `One`\<`"users"`, `false`\>; \}\>
+
+Defined in: [src/drizzle/tables/recurringEventExceptions.ts:109](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/drizzle/tables/recurringEventExceptions.ts#L109)

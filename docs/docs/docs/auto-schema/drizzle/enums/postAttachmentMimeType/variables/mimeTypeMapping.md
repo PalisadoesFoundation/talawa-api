@@ -6,9 +6,9 @@
 
 > `const` **mimeTypeMapping**: `object`
 
-Defined in: src/drizzle/enums/postAttachmentMimeType.ts:3
+Defined in: [src/drizzle/enums/postAttachmentMimeType.ts:3](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/drizzle/enums/postAttachmentMimeType.ts#L3)
 
-## Type declaration
+## Type Declaration
 
 ### IMAGE\_AVIF
 

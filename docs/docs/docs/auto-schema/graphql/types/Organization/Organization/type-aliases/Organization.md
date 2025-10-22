@@ -4,6 +4,6 @@
 
 # Type Alias: Organization
 
-> **Organization**: *typeof* `organizationsTable.$inferSelect`
+> **Organization** = *typeof* `organizationsTable.$inferSelect`
 
-Defined in: src/graphql/types/Organization/Organization.ts:5
+Defined in: [src/graphql/types/Organization/Organization.ts:5](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/types/Organization/Organization.ts#L5)

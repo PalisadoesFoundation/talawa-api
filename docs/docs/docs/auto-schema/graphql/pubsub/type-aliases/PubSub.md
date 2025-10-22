@@ -4,21 +4,27 @@
 
 # Type Alias: PubSub
 
-> **PubSub**: `object`
+> **PubSub** = `object`
 
-Defined in: src/graphql/pubsub.ts:8
+Defined in: [src/graphql/pubsub.ts:8](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/pubsub.ts#L8)
 
 Type of the publish and subscribe module used for publishing and subscribing to talawa events.
 
-## Type declaration
+## Methods
 
 ### publish()
+
+> **publish**\<`TKey`\>(`event`, `callback?`): `void`
+
+Defined in: [src/graphql/pubsub.ts:12](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/pubsub.ts#L12)
 
 This method is used to publish an event.
 
 #### Type Parameters
 
-• **TKey** *extends* `` `chats.${string}:chat_messages::create` ``
+##### TKey
+
+`TKey` *extends* `` `chats.${string}:chat_messages::create` ``
 
 #### Parameters
 
@@ -40,13 +46,21 @@ This method is used to publish an event.
 
 `void`
 
+***
+
 ### subscribe()
+
+> **subscribe**\<`TKey`\>(`topics`): `Promise`\<`Readable` & `AsyncIterableIterator`\<[`PubSubPublishArgsByKey`](PubSubPublishArgsByKey.md)\[`TKey`\], `any`, `any`\>\>
+
+Defined in: [src/graphql/pubsub.ts:22](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/pubsub.ts#L22)
 
 This method is used to subscribe to events.
 
 #### Type Parameters
 
-• **TKey** *extends* `` `chats.${string}:chat_messages::create` ``
+##### TKey
+
+`TKey` *extends* `` `chats.${string}:chat_messages::create` ``
 
 #### Parameters
 

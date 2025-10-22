@@ -4,9 +4,9 @@
 
 # Function: eventUpdatedAtResolver()
 
-> **eventUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
+> **eventUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`null` \| `Date`\>
 
-Defined in: src/graphql/types/Event/updatedAt.ts:7
+Defined in: [src/graphql/types/Event/updatedAt.ts:7](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/types/Event/updatedAt.ts#L7)
 
 ## Parameters
 
@@ -24,4 +24,4 @@ Defined in: src/graphql/types/Event/updatedAt.ts:7
 
 ## Returns
 
-`Promise`\<`Date`\>
+`Promise`\<`null` \| `Date`\>

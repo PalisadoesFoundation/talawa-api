@@ -4,24 +4,38 @@
 
 # Type Alias: BlockedUser
 
-> **BlockedUser**: `object`
+> **BlockedUser** = `object`
 
-Defined in: src/graphql/types/BlockedUser/BlockedUser.ts:5
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:5](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/types/BlockedUser/BlockedUser.ts#L5)
 
-## Type declaration
+## Properties
 
 ### createdAt
 
 > **createdAt**: `Date`
 
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:9](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/types/BlockedUser/BlockedUser.ts#L9)
+
+***
+
 ### id
 
 > **id**: `string`
+
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:6](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/types/BlockedUser/BlockedUser.ts#L6)
+
+***
 
 ### organization
 
 > **organization**: [`Organization`](../../../Organization/Organization/type-aliases/Organization.md)
 
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:7](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/types/BlockedUser/BlockedUser.ts#L7)
+
+***
+
 ### user
 
 > **user**: [`User`](../../../User/User/type-aliases/User.md)
+
+Defined in: [src/graphql/types/BlockedUser/BlockedUser.ts:8](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/types/BlockedUser/BlockedUser.ts#L8)

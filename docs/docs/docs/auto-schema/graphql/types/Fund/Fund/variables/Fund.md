@@ -4,6 +4,6 @@
 
 # Variable: Fund
 
-> **Fund**: `ImplementableObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `createdAt`: `Date`; `creatorId`: `string`; `id`: `string`; `isTaxDeductible`: `boolean`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `Date`; `updaterId`: `string`; \}, \{ `createdAt`: `Date`; `creatorId`: `string`; `id`: `string`; `isTaxDeductible`: `boolean`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `Date`; `updaterId`: `string`; \}\>
+> **Fund**: `ImplementableObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `createdAt`: `Date`; `creatorId`: `null` \| `string`; `id`: `string`; `isTaxDeductible`: `boolean`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; \}, \{ `createdAt`: `Date`; `creatorId`: `null` \| `string`; `id`: `string`; `isTaxDeductible`: `boolean`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; \}\>
 
-Defined in: src/graphql/types/Fund/Fund.ts:4
+Defined in: [src/graphql/types/Fund/Fund.ts:4](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/types/Fund/Fund.ts#L4)

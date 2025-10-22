@@ -1,0 +1,17 @@
+[Admin Docs](/)
+
+***
+
+# Function: createDefaultPostProcessingConfig()
+
+> **createDefaultPostProcessingConfig**(): [`PostProcessingConfig`](../interfaces/PostProcessingConfig.md)
+
+Defined in: [src/workers/eventGeneration/postProcessor.ts:93](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/workers/eventGeneration/postProcessor.ts#L93)
+
+Creates a default configuration object for post-processing operations.
+
+## Returns
+
+[`PostProcessingConfig`](../interfaces/PostProcessingConfig.md)
+
+A default post-processing configuration.

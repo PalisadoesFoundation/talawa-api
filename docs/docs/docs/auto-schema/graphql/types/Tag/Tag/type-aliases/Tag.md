@@ -4,6 +4,6 @@
 
 # Type Alias: Tag
 
-> **Tag**: *typeof* `tagsTable.$inferSelect`
+> **Tag** = *typeof* `tagsTable.$inferSelect`
 
-Defined in: src/graphql/types/Tag/Tag.ts:4
+Defined in: [src/graphql/types/Tag/Tag.ts:4](https://github.com/Sourya07/talawa-api/blob/aac5f782223414da32542752c1be099f0b872196/src/graphql/types/Tag/Tag.ts#L4)

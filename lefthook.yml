@@ -1,0 +1,22 @@
+pre-commit:
+  parallel: true
+  commands:
+    generate_graphql_sdl_file:
+      run: pnpm run generate:docs
+      stage_fixed: true
+      skip:
+        - merge
+        - rebase
+
+    check_gql_tada:
+      run: pnpm run check_gql_tada
+      glob: "src/**/*.ts"
+
+    fix_code_quality:
+      run: pnpm run fix_code_quality
+      glob: "src/**/*.ts"
+      stage_fixed: true
+
+    check_type_errors:
+      run: pnpm run check_type_errors
+      glob: "src/**/*.ts"
