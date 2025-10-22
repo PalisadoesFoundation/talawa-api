@@ -406,8 +406,8 @@ suite("Chat field createdAt", () => {
 
 		const createdAtString = result.data?.chat?.createdAt as string;
 
-		// Assert ISO‑8601 UTC; allow optional fractional seconds (1–3 digits)
-		const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
+		// Assert canonical ISO‑8601 UTC with millisecond precision to match toISOString()
+		const iso8601Regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 		expect(createdAtString).toMatch(iso8601Regex);
 
 		// Ensure the string is the canonical ISO serialization
