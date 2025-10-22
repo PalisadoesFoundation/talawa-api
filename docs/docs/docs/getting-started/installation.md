@@ -159,7 +159,7 @@ cp ./envFiles/.env.production ./.env
 
 You will need to add a JWT secret to the `.env` file
 
-1.  Open your web browser and go to [https://jwtsecret.com/generate](https://jwtsecret.com/generate).
+1.  Open your web browser and go to [https://jwtsecrets.com](https://jwtsecrets.com).
 2.  Select `64` from the slider.
 3.  Click the **Generate** button.
 
