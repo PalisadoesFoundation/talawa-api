@@ -8,9 +8,9 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 //mock current user details
 type MockUser = {
 	id: string;
-	role: string;
+	role: "member" | "administrator";
 	organizationMembershipsWhereMember: Array<{
-		role: string;
+		role: "member" | "administrator";
 		organizationId: string;
 	}>;
 };
@@ -153,7 +153,7 @@ describe("Tag Creator Resolver -Test ", () => {
 			mockTag.creatorId = null;
 			const mockUserData: MockUser = {
 				id: "user-123",
-				role: "administartor",
+				role: "administrator",
 				organizationMembershipsWhereMember: [
 					{ role: "administrator", organizationId: mockTag.organizationId },
 				],
