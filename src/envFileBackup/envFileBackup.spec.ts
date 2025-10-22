@@ -7,7 +7,7 @@ import { envFileBackup } from "./envFileBackup";
 vi.mock("fs/promises");
 vi.mock("inquirer");
 
-describe("envFileBackup utility", () => {
+describe("envFileBackup", () => {
 	const mockCwd = "/test/path";
 	const originalCwd = process.cwd;
 
@@ -23,7 +23,7 @@ describe("envFileBackup utility", () => {
 		vi.restoreAllMocks();
 	});
 
-	it("creates a timestamped backup when user agrees", async () => {
+	it("should create backup when user confirms", async () => {
 		vi.mocked(inquirer.prompt).mockResolvedValueOnce({ shouldBackup: true });
 		vi.mocked(mkdir).mockResolvedValue(undefined);
 		vi.mocked(access).mockResolvedValue(undefined);
@@ -47,7 +47,7 @@ describe("envFileBackup utility", () => {
 		);
 	});
 
-	it("does not create a backup when user declines", async () => {
+	it("should not create backup when user declines", async () => {
 		vi.mocked(inquirer.prompt).mockResolvedValueOnce({ shouldBackup: false });
 
 		await envFileBackup();
@@ -56,7 +56,7 @@ describe("envFileBackup utility", () => {
 		expect(copyFile).not.toHaveBeenCalled();
 	});
 
-	it("ensures .backup directory is created before backing up", async () => {
+	it("should ensure .backup directory exists when backing up", async () => {
 		vi.mocked(inquirer.prompt).mockResolvedValueOnce({ shouldBackup: true });
 		vi.mocked(mkdir).mockResolvedValue(undefined);
 		vi.mocked(access).mockResolvedValue(undefined);
@@ -72,7 +72,7 @@ describe("envFileBackup utility", () => {
 		});
 	});
 
-	it("handles missing .env file without throwing", async () => {
+	it("should handle missing .env file gracefully'", async () => {
 		vi.mocked(inquirer.prompt).mockResolvedValueOnce({ shouldBackup: true });
 		vi.mocked(mkdir).mockResolvedValue(undefined);
 		const enoentError = Object.assign(new Error("File not found"), {
@@ -88,17 +88,17 @@ describe("envFileBackup utility", () => {
 		);
 	});
 
-	it("throws descriptive error if creating .backup directory fails", async () => {
+	it("should throw error when directory creation fails", async () => {
 		vi.mocked(inquirer.prompt).mockResolvedValueOnce({ shouldBackup: true });
 		vi.mocked(mkdir).mockRejectedValue(new Error("Permission denied"));
 		vi.spyOn(Date, "now").mockReturnValue(1234567890000);
 
 		await expect(envFileBackup()).rejects.toThrow(
-			"Failed to create .env backup: Disk full",
+			"Failed to create .env backup: Permission denied",
 		);
 	});
 
-	it("throws descriptive error if copying .env into backup fails", async () => {
+	it("should throw error when file copy fails", async () => {
 		vi.mocked(inquirer.prompt).mockResolvedValueOnce({ shouldBackup: true });
 		vi.mocked(mkdir).mockResolvedValue(undefined);
 		vi.mocked(access).mockResolvedValue(undefined);
@@ -110,7 +110,7 @@ describe("envFileBackup utility", () => {
 		);
 	});
 
-	it("uses seconds-since-epoch timestamp in the backup filename", async () => {
+	it("should use correct epoch timestamp format", async () => {
 		vi.mocked(inquirer.prompt).mockResolvedValueOnce({ shouldBackup: true });
 		vi.mocked(mkdir).mockResolvedValue(undefined);
 		vi.mocked(access).mockResolvedValue(undefined);

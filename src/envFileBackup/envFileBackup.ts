@@ -4,48 +4,48 @@ import path from "node:path";
 import inquirer from "inquirer";
 
 export const envFileBackup = async (): Promise<void> => {
+	const { shouldBackup } = await inquirer.prompt([
+		{
+			type: "confirm",
+			name: "shouldBackup",
+			message:
+				"Would you like to back up the current .env file before setup modifies it?",
+			default: true,
+		},
+	]);
+
+	if (!shouldBackup) return;
+
+	const cwd = process.cwd();
+	const backupDir = path.join(cwd, ".backup");
+	const envPath = path.join(cwd, ".env");
+
+	// Step 1: Create .backup directory
 	try {
-		const { shouldBackup } = await inquirer.prompt([
-			{
-				type: "confirm",
-				name: "shouldBackup",
-				message:
-					"Would you like to back up the current .env file before setup modifies it?",
-				default: true,
-			},
-		]);
-
-		if (shouldBackup) {
-			// .backup directory
-			const backupDir = path.join(process.cwd(), ".backup");
-			await mkdir(backupDir, { recursive: true });
-			console.info(`Backup directory ensured at: ${backupDir}`);
-
-			// epoch timestamp
-			const epochTimestamp = Math.floor(Date.now() / 1000);
-			const backupFileName = `.env.${epochTimestamp}`;
-			const backupFilePath = path.join(backupDir, backupFileName);
-
-			// .env to backup location
-			const envPath = path.join(process.cwd(), ".env");
-			try {
-				await access(envPath, constants.F_OK);
-				await copyFile(envPath, backupFilePath);
-				console.info(`Backup created: ${backupFileName}`);
-				console.info(`Backup location: ${backupFilePath}`);
-			} catch (error) {
-				const err = error as NodeJS.ErrnoException;
-				if (err.code === "ENOENT") {
-					console.warn("No .env file found; skipping backup.");
-				} else {
-					throw error;
-				}
-			}
-		}
+		await mkdir(backupDir, { recursive: true });
+		console.info(`Backup directory ensured at: ${backupDir}`);
 	} catch (error) {
-		console.error("An error occurred while backing up the .env file:", error);
 		throw new Error(
 			`Failed to create .env backup: ${(error as Error).message}`,
 		);
+	}
+
+	// Step 2: Check and copy .env file
+	try {
+		await access(envPath, constants.F_OK);
+		const epochTimestamp = Math.floor(Date.now() / 1000);
+		const backupFileName = `.env.${epochTimestamp}`;
+		const backupFilePath = path.join(backupDir, backupFileName);
+
+		await copyFile(envPath, backupFilePath);
+		console.info(`Backup created: ${backupFileName}`);
+		console.info(`Backup location: ${backupFilePath}`);
+	} catch (error) {
+		const err = error as NodeJS.ErrnoException;
+		if (err.code === "ENOENT") {
+			console.warn("No .env file found; skipping backup.");
+			return;
+		}
+		throw new Error(`Failed to backup .env file: ${err.message}`);
 	}
 };
