@@ -38,5 +38,18 @@
 		"noImplicitAny": true,
 		"strictNullChecks": true
 	},
-	"exclude": ["docs/.docusaurus", "docs/build", "node_modules"]
+	"exclude": [
+		"docs/.docusaurus",
+		"docs/build",
+		"node_modules",
+		"node_modules",
+		"docs/src/vite-env.d.ts",
+		"docs/**/*.spec.ts",
+		"docs/**/*.test.ts",
+		"docs/**/*.spec.tsx",
+		"docs/**/*.test.tsx",
+		"docs/**/__tests__/**",
+		"docs/**/__mocks__/**",
+		"docs/**/README.md"
+	]
 }
