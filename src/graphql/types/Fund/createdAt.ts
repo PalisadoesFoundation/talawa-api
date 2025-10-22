@@ -1,10 +1,9 @@
+import type { GraphQLContext } from "~/src/graphql/context";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import type { GraphQLContext } from "../../context";
-import { Fund } from "./Fund";
-import type { Fund as FundType } from "./Fund";
+import { Fund, type Fund as FundType } from "./Fund";
 
-export const FundCreatedAtResolver = async (
+export const fundCreatedAtResolver = async (
 	parent: FundType,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
@@ -60,19 +59,13 @@ export const FundCreatedAtResolver = async (
 	return parent.createdAt;
 };
 
-// Export a function to register the field (called at module load and can be called in tests for coverage)
-export const registerFundCreatedAtField = () => {
-	Fund.implement({
-		fields: (t) => ({
-			createdAt: t.field({
-				description: "Date time at the time the fund was created.",
-				complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
-				resolve: FundCreatedAtResolver,
-				type: "DateTime",
-			}),
+Fund.implement({
+	fields: (t) => ({
+		createdAt: t.field({
+			description: "Date time at the time the fund was created.",
+			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,
+			resolve: fundCreatedAtResolver,
+			type: "DateTime",
 		}),
-	});
-};
-
-// Register the field when the module loads
-registerFundCreatedAtField();
+	}),
+});

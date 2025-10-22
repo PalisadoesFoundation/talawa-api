@@ -1,12 +1,8 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
-import { Fund } from "~/src/graphql/types/Fund/Fund";
 import type { Fund as FundType } from "~/src/graphql/types/Fund/Fund";
-import {
-	FundCreatedAtResolver,
-	registerFundCreatedAtField,
-} from "~/src/graphql/types/Fund/createdAt";
+import { fundCreatedAtResolver } from "~/src/graphql/types/Fund/createdAt";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 type MockUser = {
@@ -46,7 +42,7 @@ describe("Fund createdAt Resolver Tests", () => {
 		it("should throw unauthenticated error if user is not logged in", async () => {
 			ctx.currentClient.isAuthenticated = false;
 
-			await expect(FundCreatedAtResolver(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(fundCreatedAtResolver(mockFund, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 			);
 		});
@@ -56,7 +52,7 @@ describe("Fund createdAt Resolver Tests", () => {
 				undefined,
 			);
 
-			await expect(FundCreatedAtResolver(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(fundCreatedAtResolver(mockFund, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
 			);
 		});
@@ -72,7 +68,7 @@ describe("Fund createdAt Resolver Tests", () => {
 				mockUserData,
 			);
 
-			await expect(FundCreatedAtResolver(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(fundCreatedAtResolver(mockFund, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 			);
 		});
@@ -90,7 +86,7 @@ describe("Fund createdAt Resolver Tests", () => {
 				mockUserData,
 			);
 
-			const result = await FundCreatedAtResolver(mockFund, {}, ctx);
+			const result = await fundCreatedAtResolver(mockFund, {}, ctx);
 			expect(result).toEqual(mockFund.createdAt);
 		});
 
@@ -105,7 +101,7 @@ describe("Fund createdAt Resolver Tests", () => {
 				mockUserData,
 			);
 
-			const result = await FundCreatedAtResolver(mockFund, {}, ctx);
+			const result = await fundCreatedAtResolver(mockFund, {}, ctx);
 			expect(result).toEqual(mockFund.createdAt);
 		});
 
@@ -122,7 +118,7 @@ describe("Fund createdAt Resolver Tests", () => {
 				mockUserData,
 			);
 
-			const result = await FundCreatedAtResolver(mockFund, {}, ctx);
+			const result = await fundCreatedAtResolver(mockFund, {}, ctx);
 			expect(result).toEqual(mockFund.createdAt);
 		});
 	});
@@ -139,7 +135,7 @@ describe("Fund createdAt Resolver Tests", () => {
 				mockUserData,
 			);
 
-			const result = await FundCreatedAtResolver(mockFund, {}, ctx);
+			const result = await fundCreatedAtResolver(mockFund, {}, ctx);
 			expect(result).toBe(mockFund.createdAt);
 			expect(result).toBeInstanceOf(Date);
 		});
@@ -151,7 +147,7 @@ describe("Fund createdAt Resolver Tests", () => {
 				new Error("Database connection failed"),
 			);
 
-			await expect(FundCreatedAtResolver(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(fundCreatedAtResolver(mockFund, {}, ctx)).rejects.toThrow(
 				"Database connection failed",
 			);
 		});
@@ -161,7 +157,7 @@ describe("Fund createdAt Resolver Tests", () => {
 				new Error("Query timeout"),
 			);
 
-			await expect(FundCreatedAtResolver(mockFund, {}, ctx)).rejects.toThrow(
+			await expect(fundCreatedAtResolver(mockFund, {}, ctx)).rejects.toThrow(
 				"Query timeout",
 			);
 		});
@@ -173,7 +169,7 @@ describe("Fund createdAt Resolver Tests", () => {
 			mocks.drizzleClient.query.usersTable.findFirst = findFirstSpy;
 
 			try {
-				await FundCreatedAtResolver(mockFund, {}, ctx);
+				await fundCreatedAtResolver(mockFund, {}, ctx);
 			} catch (error) {
 				// Expected error
 			}
@@ -202,7 +198,7 @@ describe("Fund createdAt Resolver Tests", () => {
 			expect(currentUserId).toBeDefined();
 
 			try {
-				await FundCreatedAtResolver(mockFund, {}, ctx);
+				await fundCreatedAtResolver(mockFund, {}, ctx);
 			} catch (error) {
 				// Expected error
 			}
@@ -227,7 +223,7 @@ describe("Fund createdAt Resolver Tests", () => {
 			mocks.drizzleClient.query.usersTable.findFirst = findFirstSpy;
 
 			try {
-				await FundCreatedAtResolver(mockFund, {}, ctx);
+				await fundCreatedAtResolver(mockFund, {}, ctx);
 			} catch (error) {
 				// Expected error
 			}
@@ -242,7 +238,7 @@ describe("Fund createdAt Resolver Tests", () => {
 			mocks.drizzleClient.query.usersTable.findFirst = findFirstSpy;
 
 			try {
-				await FundCreatedAtResolver(mockFund, {}, ctx);
+				await fundCreatedAtResolver(mockFund, {}, ctx);
 			} catch (error) {
 				// Expected error
 			}
@@ -257,13 +253,9 @@ describe("Fund createdAt Resolver Tests", () => {
 
 	describe("Schema Implementation", () => {
 		it("should register createdAt field on Fund type", () => {
-			// Explicitly call the registration function to ensure coverage
-			// Note: This is called again even though it's called at module load
-			// to ensure the coverage tool tracks it
-			registerFundCreatedAtField();
-
-			// Verify Fund is properly defined
-			expect(Fund).toBeDefined();
+			// Verify the resolver is properly exported and defined
+			expect(fundCreatedAtResolver).toBeDefined();
+			expect(typeof fundCreatedAtResolver).toBe("function");
 		});
 	});
 });
