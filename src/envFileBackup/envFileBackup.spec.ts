@@ -72,7 +72,7 @@ describe("envFileBackup", () => {
 		});
 	});
 
-	it("should handle missing .env file gracefully'", async () => {
+	it("should handle missing .env file gracefully", async () => {
 		vi.mocked(inquirer.prompt).mockResolvedValueOnce({ shouldBackup: true });
 		vi.mocked(mkdir).mockResolvedValue(undefined);
 		const enoentError = Object.assign(new Error("File not found"), {

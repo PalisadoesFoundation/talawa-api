@@ -23,7 +23,7 @@ export const envFileBackup = async (): Promise<void> => {
 	// Step 1: Create .backup directory
 	try {
 		await mkdir(backupDir, { recursive: true });
-		console.info(`Backup directory ensured at: ${backupDir}`);
+		console.log(`Backup directory ensured at: ${backupDir}`);
 	} catch (error) {
 		throw new Error(
 			`Failed to create .env backup: ${(error as Error).message}`,
@@ -38,8 +38,8 @@ export const envFileBackup = async (): Promise<void> => {
 		const backupFilePath = path.join(backupDir, backupFileName);
 
 		await copyFile(envPath, backupFilePath);
-		console.info(`Backup created: ${backupFileName}`);
-		console.info(`Backup location: ${backupFilePath}`);
+		console.log(`Backup created: ${backupFileName}`);
+		console.log(`Backup location: ${backupFilePath}`);
 	} catch (error) {
 		const err = error as NodeJS.ErrnoException;
 		if (err.code === "ENOENT") {
