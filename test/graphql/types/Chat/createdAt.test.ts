@@ -93,6 +93,8 @@ async function createTestUser(
 	});
 	expect(userResult.errors ?? []).toHaveLength(0);
 	assertToBeNonNullish(userResult.data?.createUser);
+	assertToBeNonNullish(userResult.data?.createUser?.user?.id);
+	assertToBeNonNullish(userResult.data?.createUser?.authenticationToken);
 	return {
 		userId: userResult.data.createUser.user?.id as string,
 		authToken: userResult.data.createUser.authenticationToken as string,
@@ -141,6 +143,7 @@ async function createTestChat(
 	});
 	expect(chatResult.errors ?? []).toHaveLength(0);
 	assertToBeNonNullish(chatResult.data?.createChat);
+	assertToBeNonNullish(chatResult.data?.createChat?.id);
 	return chatResult.data.createChat.id;
 }
 
@@ -372,10 +375,11 @@ suite("Chat field createdAt", () => {
 
 	test("deleted user token → unauthenticated error", async () => {
 		const tempUser = await createTestUser(adminAuthToken);
-		await mercuriusClient.mutate(Mutation_deleteUser, {
+		const del = await mercuriusClient.mutate(Mutation_deleteUser, {
 			headers: { authorization: `bearer ${adminAuthToken}` },
 			variables: { input: { id: tempUser.userId } },
 		});
+		expect(del.errors ?? []).toHaveLength(0);
 		const result = await mercuriusClient.query(Query_chat_with_createdAt, {
 			headers: { authorization: `bearer ${tempUser.authToken}` },
 			variables: { input: { id: testChatId } },
