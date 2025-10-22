@@ -114,7 +114,7 @@ suite("Query: unreadChats", () => {
 		assertToBeNonNullish(outsider.user);
 		assertToBeNonNullish(outsider.user.id);
 		assertToBeNonNullish(outsider.user.emailAddress);
-		assertToBeNonNullish(member.authenticationToken);
+		assertToBeNonNullish(outsider.authenticationToken);
 		const outsiderId = outsider.user.id;
 		const outsiderEmail = outsider.user.emailAddress;
 		cleanupFns.push(async () => {
