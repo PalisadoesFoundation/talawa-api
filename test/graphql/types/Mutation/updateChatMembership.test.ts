@@ -1,335 +1,37 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
-import type {
-	TalawaGraphQLFormattedError,
-	UnauthenticatedExtensions,
-} from "~/src/utilities/TalawaGraphQLError";
+import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createChat,
-	Mutation_createChatMessage,
+	Mutation_createChatMembership,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
+	Mutation_deleteChat,
+	Mutation_deleteOrganization,
 	Mutation_deleteUser,
-	Mutation_updateChatMessage,
+	Mutation_updateChatMembership,
 	Query_signIn,
 } from "../documentNodes";
 
-suite("Mutation field updateChatMessage", () => {
-	suite(
-		`results in a graphql error with \"unauthenticated\" extensions code in the \"errors\" field and \"null\" as the value of \"data.updateChatMessage\" field if`,
-		() => {
-			test("client triggering the graphql operation is not authenticated.", async () => {
-				const updateChatMessageResult = await mercuriusClient.mutate(
-					Mutation_updateChatMessage,
-					{
-						variables: {
-							input: {
-								id: faker.string.uuid(),
-								body: "Updated message",
-							},
-						},
-					},
-				);
+describe("Mutation: updateChatMembership", () => {
+	const cleanupFns: Array<() => Promise<void>> = [];
 
-				expect(updateChatMessageResult.data.updateChatMessage).toEqual(null);
-				expect(updateChatMessageResult.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<UnauthenticatedExtensions>({
-								code: "unauthenticated",
-							}),
-							message: expect.any(String),
-							path: ["updateChatMessage"],
-						}),
-					]),
-				);
-			});
+	afterEach(async () => {
+		for (const fn of cleanupFns.reverse()) {
+			try {
+				await fn();
+			} catch (err) {
+				console.warn("cleanup error:", err);
+			}
+		}
+		cleanupFns.length = 0;
+	});
 
-			test("client triggering the GraphQL operation has no existing user associated to their authentication context.", async () => {
-				// Sign in as Administrator
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
-
-				// Create a new user
-				const createUserResult = await mercuriusClient.mutate(
-					Mutation_createUser,
-					{
-						headers: {
-							authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-						},
-						variables: {
-							input: {
-								emailAddress: `emailAddress${faker.string.ulid()}@email.com`,
-								isEmailAddressVerified: false,
-								name: "Test User",
-								password: "TestPassword123",
-								role: "regular",
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					createUserResult.data.createUser?.authenticationToken,
-				);
-				assertToBeNonNullish(createUserResult.data.createUser.user?.id);
-
-				const userToken = createUserResult.data.createUser.authenticationToken;
-				const userId = createUserResult.data.createUser.user.id;
-
-				// Delete the user
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: {
-						authorization: `bearer ${administratorUserSignInResult.data.signIn.authenticationToken}`,
-					},
-					variables: {
-						input: { id: userId },
-					},
-				});
-
-				// Try performing an action with the deleted user's token
-				const updateChatMessageResult = await mercuriusClient.mutate(
-					Mutation_updateChatMessage,
-					{
-						headers: {
-							authorization: `bearer ${userToken}`,
-						},
-						variables: {
-							input: {
-								id: faker.string.uuid(),
-								body: "Updated Message",
-							},
-						},
-					},
-				);
-
-				// Expect an authentication error because the user is deleted
-				expect(updateChatMessageResult.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "unauthenticated",
-							}),
-							message: expect.any(String),
-							path: ["updateChatMessage"],
-						}),
-					]),
-				);
-			});
-		},
-	);
-
-	suite(
-		`returns an error with "unauthorized_action_on_arguments_associated_resources" 
-      if the user is not part of the chat`,
-		() => {
-			test("returns an authorization error if user has a non-admin org membership but is not in the chat", async () => {
-				// Sign in as Administrator
-				const administratorUserSignInResult = await mercuriusClient.query(
-					Query_signIn,
-					{
-						variables: {
-							input: {
-								emailAddress:
-									server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-								password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.authenticationToken,
-				);
-
-				const adminToken =
-					administratorUserSignInResult.data.signIn.authenticationToken;
-
-				assertToBeNonNullish(
-					administratorUserSignInResult.data.signIn?.user?.id,
-				);
-
-				const adminUserId = administratorUserSignInResult.data.signIn.user.id;
-
-				// Create a non-admin user
-				const createUserResult = await mercuriusClient.mutate(
-					Mutation_createUser,
-					{
-						headers: {
-							authorization: `bearer ${adminToken}`,
-						},
-						variables: {
-							input: {
-								emailAddress: `email${faker.string.ulid()}@test.com`,
-								isEmailAddressVerified: true,
-								name: "Regular User",
-								password: "TestPassword123",
-								role: "regular",
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					createUserResult.data.createUser?.authenticationToken,
-				);
-				assertToBeNonNullish(createUserResult.data.createUser.user?.id);
-
-				const regularUserToken =
-					createUserResult.data.createUser.authenticationToken;
-				const regularUserId = createUserResult.data.createUser.user.id;
-
-				const organizationResult = await mercuriusClient.mutate(
-					Mutation_createOrganization,
-					{
-						headers: { authorization: `bearer ${adminToken}` },
-						variables: {
-							input: {
-								name: `Test Org ${faker.string.uuid()}`,
-								addressLine1: "123 Main St",
-								city: "New York",
-								countryCode: "us",
-								description: "Test Description",
-							},
-						},
-					},
-				);
-
-				const organizationId = organizationResult.data?.createOrganization?.id;
-				assertToBeNonNullish(organizationId);
-
-				// Add admin user to the organization
-				const createAdminMembershipResult = await mercuriusClient.mutate(
-					Mutation_createOrganizationMembership,
-					{
-						headers: {
-							authorization: `bearer ${adminToken}`,
-						},
-						variables: {
-							input: {
-								organizationId,
-								memberId: adminUserId,
-								role: "administrator",
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					createAdminMembershipResult.data?.createOrganizationMembership?.id,
-				);
-
-				const createOrganizationResult = await mercuriusClient.mutate(
-					Mutation_createOrganizationMembership,
-					{
-						headers: {
-							authorization: `bearer ${adminToken}`,
-						},
-						variables: {
-							input: {
-								organizationId, // Reuse the same ID
-								memberId: regularUserId,
-								role: "regular", // Non-admin role
-							},
-						},
-					},
-				);
-
-				assertToBeNonNullish(
-					createOrganizationResult.data?.createOrganizationMembership?.id,
-				);
-
-				// Create a chat in the same organization
-				const createChatResult = await mercuriusClient.mutate(
-					Mutation_createChat,
-					{
-						headers: {
-							authorization: `bearer ${adminToken}`,
-						},
-						variables: {
-							input: {
-								name: `Test Chat ${faker.string.uuid()}`,
-								description: "Test chat description",
-								organizationId, // Ensure this matches
-							},
-						},
-					},
-				);
-
-				const chatId = createChatResult.data?.createChat?.id;
-				assertToBeNonNullish(chatId);
-
-				// Create a chat message as the administrator
-				const createMessageResult = await mercuriusClient.mutate(
-					Mutation_createChatMessage,
-					{
-						headers: {
-							authorization: `bearer ${adminToken}`,
-						},
-						variables: {
-							input: {
-								chatId,
-								body: "Original Message",
-							},
-						},
-					},
-				);
-
-				const messageId = createMessageResult.data?.createChatMessage?.id;
-				assertToBeNonNullish(messageId);
-
-				// Attempt to update the message as the regular user (who is in the org but NOT in the chat)
-				const updateChatMessageResult = await mercuriusClient.mutate(
-					Mutation_updateChatMessage,
-					{
-						headers: {
-							authorization: `bearer ${regularUserToken}`,
-						},
-						variables: {
-							input: {
-								id: messageId,
-								body: "Unauthorized Update",
-							},
-						},
-					},
-				);
-
-				// Expect an authorization error due to missing chat membership
-				expect(updateChatMessageResult.errors).toEqual(
-					expect.arrayContaining([
-						expect.objectContaining({
-							extensions: expect.objectContaining({
-								code: "unauthorized_action_on_arguments_associated_resources",
-							}),
-							message:
-								"You are not authorized to perform this action on the resources associated to the provided arguments.",
-						}),
-					]),
-				);
-			});
-		},
-	);
-
-	test(`returns "arguments_associated_resources_not_found" error when trying to update a non-existing message`, async () => {
-		const userSignInResult = await mercuriusClient.query(Query_signIn, {
+	test("chat-local admin (not org member) cannot set non-regular role (role argument issue)", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
 					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
@@ -337,43 +39,367 @@ suite("Mutation field updateChatMessage", () => {
 				},
 			},
 		});
-		const userToken = userSignInResult.data?.signIn?.authenticationToken;
-		if (!userToken) throw new Error("User authentication failed");
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
 
-		const updateChatMessageResult = await mercuriusClient.mutate(
-			Mutation_updateChatMessage,
+		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(creatorRes.data?.createUser);
+		const creator = creatorRes.data?.createUser;
+		assertToBeNonNullish(creator);
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user.id);
+		const creatorId = creator.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: creatorId } },
+			});
+		});
+
+		const actorRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(actorRes.data?.createUser);
+		const actor = actorRes.data.createUser;
+		assertToBeNonNullish(actor);
+		assertToBeNonNullish(actor.user);
+		assertToBeNonNullish(actor.user.id);
+		const actorId = actor.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: actorId } },
+			});
+		});
+
+		const targetRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(targetRes.data?.createUser);
+		const target = targetRes.data.createUser;
+		assertToBeNonNullish(target);
+		assertToBeNonNullish(target.user);
+		assertToBeNonNullish(target.user.id);
+		const targetId = target.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: targetId } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: creator.user?.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user.emailAddress);
+		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: creator.user?.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
+		const creatorToken = creatorSignIn.data.signIn
+			.authenticationToken as string;
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		const targetMembershipRes = await mercuriusClient.mutate(
+			Mutation_createChatMembership,
 			{
-				headers: { authorization: `bearer ${userToken}` },
+				headers: { authorization: `bearer ${creatorToken}` },
 				variables: {
-					input: {
-						id: faker.string.uuid(), // Random non-existing ID
-						body: "Updated message",
-					},
+					input: { chatId, memberId: target.user?.id, role: "regular" },
 				},
 			},
 		);
+		assertToBeNonNullish(targetMembershipRes.data?.createChatMembership);
 
-		expect(updateChatMessageResult.data.updateChatMessage).toBeNull();
-		expect(updateChatMessageResult.errors).toEqual(
-			expect.arrayContaining<TalawaGraphQLFormattedError>([
-				expect.objectContaining<TalawaGraphQLFormattedError>({
-					message: expect.any(String), // Ensure message exists
-					extensions: expect.objectContaining({
-						code: "arguments_associated_resources_not_found",
-						issues: expect.arrayContaining([
-							expect.objectContaining({
-								argumentPath: ["input", "id"],
-							}),
-						]),
-					}),
-					path: ["updateChatMessage"],
-				}),
-			]),
+		const createdTargetMembership =
+			await server.drizzleClient.query.chatMembershipsTable.findFirst({
+				where: (fields, operators) =>
+					operators.and(
+						operators.eq(fields.chatId, chatId),
+						operators.eq(fields.memberId, targetId),
+					),
+			});
+		if (!createdTargetMembership) {
+			throw new Error("expected created target membership to exist in DB");
+		}
+
+		const actorMembershipRes = await mercuriusClient.mutate(
+			Mutation_createChatMembership,
+			{
+				headers: { authorization: `bearer ${creatorToken}` },
+				variables: {
+					input: { chatId, memberId: actor.user?.id, role: "administrator" },
+				},
+			},
+		);
+		assertToBeNonNullish(actorMembershipRes.data?.createChatMembership);
+
+		// double-check actor membership exists in DB as well
+		const createdActorMembership =
+			await server.drizzleClient.query.chatMembershipsTable.findFirst({
+				where: (fields, operators) =>
+					operators.and(
+						operators.eq(fields.chatId, chatId),
+						operators.eq(fields.memberId, actorId),
+					),
+			});
+		if (!createdActorMembership) {
+			throw new Error("expected created actor membership to exist in DB");
+		}
+
+		// Use system administrator token to attempt the role change; admin is not added to the org so
+		// the resolver will reach the role-specific unauthorized branch that flags the role argument.
+		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { chatId, memberId: target.user?.id, role: "administrator" },
+			},
+		});
+
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe(
+			"unauthorized_action_on_arguments_associated_resources",
+		);
+		const issues = res.errors?.[0]?.extensions?.issues;
+		expect(Array.isArray(issues)).toBe(true);
+		type IssueShape = { argumentPath?: unknown[] };
+		const issuePaths: Array<unknown> = Array.isArray(issues)
+			? (issues as IssueShape[]).map((issue) => issue.argumentPath)
+			: [];
+		expect(issuePaths).toContainEqual(["input", "role"]);
+	});
+
+	test("cannot set non-regular role when actor is not org member", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const actorRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(actorRes.data?.createUser);
+		const actor = actorRes.data.createUser;
+		assertToBeNonNullish(actor.user);
+		assertToBeNonNullish(actor.user.id);
+		const actorId = actor.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: actorId } },
+			});
+		});
+
+		const targetRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(targetRes.data?.createUser);
+		const target = targetRes.data.createUser;
+		assertToBeNonNullish(target.user);
+		assertToBeNonNullish(target.user.id);
+		const targetId = target.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: targetId } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		assertToBeNonNullish(target.user);
+		assertToBeNonNullish(target.user.emailAddress);
+		const targetSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: target.user?.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(targetSignIn.data?.signIn?.authenticationToken);
+		const targetToken = targetSignIn.data.signIn.authenticationToken as string;
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: target.user?.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${targetToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		const targetMembershipRes = await mercuriusClient.mutate(
+			Mutation_createChatMembership,
+			{
+				headers: { authorization: `bearer ${targetToken}` },
+				variables: { input: { chatId, memberId: target.user?.id } },
+			},
+		);
+		assertToBeNonNullish(targetMembershipRes.data?.createChatMembership);
+
+		const actorMembershipRes = await mercuriusClient.mutate(
+			Mutation_createChatMembership,
+			{
+				headers: { authorization: `bearer ${targetToken}` },
+				variables: { input: { chatId, memberId: actor.user?.id } },
+			},
+		);
+		assertToBeNonNullish(actorMembershipRes.data?.createChatMembership);
+
+		assertToBeNonNullish(actor.user);
+		assertToBeNonNullish(actor.user.emailAddress);
+		const actorSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: actor.user?.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(actorSignIn.data?.signIn?.authenticationToken);
+		const actorToken = actorSignIn.data.signIn.authenticationToken as string;
+
+		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
+			headers: { authorization: `bearer ${actorToken}` },
+			variables: {
+				input: { chatId, memberId: target.user?.id, role: "administrator" },
+			},
+		});
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe(
+			"unauthorized_action_on_arguments_associated_resources",
 		);
 	});
 
-	test(`returns an "invalid_arguments" error when the message body is empty`, async () => {
-		const userSignInResult = await mercuriusClient.query(Query_signIn, {
+	test("returns arguments_associated_resources_not_found when member not in chat", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
 					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
@@ -381,40 +407,138 @@ suite("Mutation field updateChatMessage", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
 
-		const userToken = userSignInResult.data?.signIn?.authenticationToken;
-		if (!userToken) throw new Error("User authentication failed");
-
-		const updateChatMessageResult = await mercuriusClient.mutate(
-			Mutation_updateChatMessage,
-			{
-				headers: { authorization: `bearer ${userToken}` },
-				variables: {
-					input: {
-						id: faker.string.uuid(),
-						body: "", // Empty message body
-					},
+		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
 				},
 			},
-		);
+		});
+		assertToBeNonNullish(creatorRes.data?.createUser);
+		const creator = creatorRes.data.createUser;
+		assertToBeNonNullish(creator.user);
+		const creatorId = creator.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: creatorId } },
+			});
+		});
 
-		expect(updateChatMessageResult.data.updateChatMessage).toBeNull();
-		expect(updateChatMessageResult.errors).toEqual(
-			expect.arrayContaining<TalawaGraphQLFormattedError>([
-				expect.objectContaining<TalawaGraphQLFormattedError>({
-					extensions: expect.objectContaining({
-						code: "invalid_arguments",
-					}),
-					message: expect.any(String),
-					path: ["updateChatMessage"],
-				}),
-			]),
+		const outsiderRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(outsiderRes.data?.createUser);
+		const outsider = outsiderRes.data.createUser;
+		assertToBeNonNullish(outsider.user);
+		const outsiderId = outsider.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: outsiderId } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user.emailAddress);
+		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: creator.user?.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
+		const creatorToken = creatorSignIn.data.signIn
+			.authenticationToken as string;
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: creator.user?.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		assertToBeNonNullish(outsider.user);
+		assertToBeNonNullish(outsider.user.emailAddress);
+		const outsiderSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: outsider.user?.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(outsiderSignIn.data?.signIn?.authenticationToken);
+		const outsiderToken = outsiderSignIn.data.signIn
+			.authenticationToken as string;
+
+		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
+			headers: { authorization: `bearer ${outsiderToken}` },
+			variables: {
+				input: { chatId, memberId: outsider.user?.id, role: "regular" },
+			},
+		});
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe(
+			"arguments_associated_resources_not_found",
 		);
 	});
 
-	test(`returns an "unexpected" error if updatedMessage is undefined (unexpected case)`, async () => {
-		// Sign in as an administrator
-		const userSignInResult = await mercuriusClient.query(Query_signIn, {
+	test("invalid arguments: malformed UUID yields invalid_arguments", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
 					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
@@ -422,251 +546,740 @@ suite("Mutation field updateChatMessage", () => {
 				},
 			},
 		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
 
-		const userData = userSignInResult.data?.signIn;
-		assertToBeNonNullish(userData?.authenticationToken);
-		assertToBeNonNullish(userData?.user?.id);
-
-		const userToken = userData.authenticationToken;
-		const userId = userData.user.id;
-
-		// Create an organization
-		const organizationResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: { authorization: `bearer ${userToken}` },
-				variables: {
-					input: {
-						name: `Test Org ${faker.string.uuid()}`,
-						addressLine1: "123 Main St",
-						city: "New York",
-						countryCode: "us",
-						description: "Test Description",
-					},
+		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					chatId: "not-a-uuid",
+					memberId: "also-not-a-uuid",
+					role: "regular",
 				},
 			},
-		);
+		});
 
-		const organizationId = organizationResult.data?.createOrganization?.id;
-		assertToBeNonNullish(organizationId);
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
+	});
 
-		// Add user to the organization
-		const orgMembershipResult = await mercuriusClient.mutate(
-			Mutation_createOrganizationMembership,
-			{
-				headers: { authorization: `bearer ${userToken}` },
-				variables: {
-					input: {
-						organizationId,
-						memberId: userId,
-						role: "administrator",
-					},
+	test("arguments_associated_resources_not_found when both chat and member missing", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
 				},
 			},
-		);
-		assertToBeNonNullish(
-			orgMembershipResult.data?.createOrganizationMembership?.id,
-		);
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
 
-		// Create a chat
-		const createChatResult = await mercuriusClient.mutate(Mutation_createChat, {
+		const randomChatId = faker.string.uuid();
+		const randomMemberId = faker.string.uuid();
+
+		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					chatId: randomChatId,
+					memberId: randomMemberId,
+					role: "regular",
+				},
+			},
+		});
+
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe(
+			"arguments_associated_resources_not_found",
+		);
+	});
+
+	test("unauthenticated when authenticated user record was deleted", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		// create a user and sign in as them
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(userRes.data?.createUser);
+		const user = userRes.data.createUser;
+
+		assertToBeNonNullish(user.user);
+		assertToBeNonNullish(user.user.emailAddress);
+		const signIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: user.user?.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(signIn.data?.signIn?.authenticationToken);
+		const userToken = signIn.data.signIn.authenticationToken as string;
+
+		// delete the user record using admin so the authenticated token no longer maps to a DB user
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { id: user.user?.id } },
+		});
+
+		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
 			headers: { authorization: `bearer ${userToken}` },
 			variables: {
 				input: {
-					name: faker.string.uuid(),
-					description: "Test chat description",
-					organizationId,
+					chatId: faker.string.uuid(),
+					memberId: user.user?.id,
+					role: "regular",
 				},
 			},
 		});
-		const chatId = createChatResult.data?.createChat?.id;
-		assertToBeNonNullish(chatId);
 
-		// Create a chat message
-		const createMessageResult = await mercuriusClient.mutate(
-			Mutation_createChatMessage,
-			{
-				headers: { authorization: `bearer ${userToken}` },
-				variables: { input: { chatId, body: "Test Message" } },
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+	});
+
+	test("arguments_associated_resources_not_found when member user record missing but chat exists", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
 			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(creatorRes.data?.createUser);
+		const creator = creatorRes.data.createUser;
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user.id);
+		const creatorId = creator.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: creatorId } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		// make creator a member of org so they can create a chat
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: creator.user?.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user.emailAddress);
+		const creatorSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: creator.user?.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(creatorSignIn.data?.signIn?.authenticationToken);
+		const creatorToken = creatorSignIn.data.signIn
+			.authenticationToken as string;
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		// pick a memberId that does not exist
+		const missingMemberId = faker.string.uuid();
+
+		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { chatId, memberId: missingMemberId, role: "regular" },
+			},
+		});
+
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe(
+			"arguments_associated_resources_not_found",
 		);
-		const messageId = createMessageResult.data?.createChatMessage?.id;
-		assertToBeNonNullish(messageId);
+	});
 
-		// Mock the database update operation to simulate returning undefined
-		// Save the original update method
-		const originalUpdate = server.drizzleClient.update;
-
-		// Mock the update method to return an empty array when returning() is called
-		server.drizzleClient.update = vi.fn().mockImplementation(() => {
-			return {
-				set: () => ({
-					where: () => ({
-						returning: () => Promise.resolve([]), // Empty array causes updatedChatMessage to be undefined
-					}),
-				}),
-			};
-		});
-
-		try {
-			// Attempt to update the message which will trigger the mock
-			const updateChatMessageResult = await mercuriusClient.mutate(
-				Mutation_updateChatMessage,
-				{
-					headers: { authorization: `bearer ${userToken}` },
-					variables: {
-						input: {
-							id: messageId,
-							body: "Updated Message Content",
-						},
-					},
-				},
-			);
-
-			// Ensure `errors` exists before checking its length
-			expect(updateChatMessageResult.errors).toBeDefined();
-
-			// If `errors` is defined, ensure it contains at least one error
-			if (updateChatMessageResult.errors) {
-				expect(updateChatMessageResult.errors.length).toBeGreaterThan(0);
-				expect(updateChatMessageResult.errors[0]?.extensions?.code).toBe(
-					"unexpected",
-				);
-			} else {
-				throw new Error("Expected an error response but received none.");
-			}
-		} finally {
-			// Restore the original update method
-			server.drizzleClient.update = originalUpdate;
+	beforeAll(async () => {
+		if (!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS) {
+			throw new Error("admin env not set");
 		}
 	});
 
-	test("ensures message content with updatedChatMessage returned , updated correctly", async () => {
-		try {
-			// Sign in as an administrator
-			const userSignInResult = await mercuriusClient.query(Query_signIn, {
+	test("unauthenticated requests are denied", async () => {
+		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
+			variables: {
+				input: {
+					chatId: "not-a-uuid",
+					memberId: "not-a-uuid",
+					role: "regular",
+				},
+			},
+		});
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe("unauthenticated");
+	});
+
+	test("arguments associated resources not found when chat/member missing", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(userRes.data?.createUser);
+		const user = userRes.data.createUser;
+		assertToBeNonNullish(user.user);
+		const userId = user.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: userId } },
+			});
+		});
+
+		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					chatId: "00000000-0000-0000-0000-000000000000",
+					memberId: user.user?.id,
+					role: "regular",
+				},
+			},
+		});
+
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe(
+			"arguments_associated_resources_not_found",
+		);
+	});
+
+	test("unauthorized when non-admin non-owner tries to update role", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const creatorRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(creatorRes.data?.createUser);
+		const creator = creatorRes.data.createUser;
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user.id);
+		const creatorId = creator.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: creatorId } },
+			});
+		});
+
+		const victimRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(victimRes.data?.createUser);
+		const victim = victimRes.data.createUser;
+		assertToBeNonNullish(victim.user);
+		assertToBeNonNullish(victim.user.id);
+		const victimId = victim.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: victimId } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: creator.user?.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: victim.user?.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(creator.user);
+		assertToBeNonNullish(creator.user.emailAddress);
+		const creatorSignInRes = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: creator.user?.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(creatorSignInRes.data?.signIn?.authenticationToken);
+		const creatorToken = creatorSignInRes.data.signIn
+			.authenticationToken as string;
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${creatorToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		const creatorMembershipRes = await mercuriusClient.mutate(
+			Mutation_createChatMembership,
+			{
+				headers: { authorization: `bearer ${creatorToken}` },
+				variables: { input: { chatId, memberId: creator.user?.id } },
+			},
+		);
+		assertToBeNonNullish(creatorMembershipRes.data?.createChatMembership);
+
+		const victimMembershipRes = await mercuriusClient.mutate(
+			Mutation_createChatMembership,
+			{
+				headers: { authorization: `bearer ${creatorToken}` },
+				variables: { input: { chatId, memberId: victim.user?.id } },
+			},
+		);
+		assertToBeNonNullish(victimMembershipRes.data?.createChatMembership);
+
+		assertToBeNonNullish(victim.user);
+		assertToBeNonNullish(victim.user.emailAddress);
+		const victimSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: victim.user?.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(victimSignIn.data?.signIn?.authenticationToken);
+		const victimToken = victimSignIn.data.signIn.authenticationToken as string;
+
+		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
+			headers: { authorization: `bearer ${victimToken}` },
+			variables: {
+				input: { chatId, memberId: creator.user?.id, role: "administrator" },
+			},
+		});
+		expect(res.errors).toBeDefined();
+		expect(res.errors?.[0]?.extensions?.code).toBe(
+			"unauthorized_action_on_arguments_associated_resources",
+		);
+	});
+
+	test("administrator can update another member's role", async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		const targetRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(targetRes.data?.createUser);
+		const target = targetRes.data.createUser;
+		assertToBeNonNullish(target.user);
+		const targetId = target.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: targetId } },
+			});
+		});
+
+		const approverRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(approverRes.data?.createUser);
+		const approver = approverRes.data.createUser;
+		assertToBeNonNullish(approver.user);
+		const approverId = approver.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: approverId } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: target.user?.id,
+					organizationId: orgId,
+					role: "administrator",
+				},
+			},
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: approver.user?.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(target.user);
+		assertToBeNonNullish(target.user.emailAddress);
+		const targetSignIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: target.user?.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(targetSignIn.data?.signIn?.authenticationToken);
+		const targetToken = targetSignIn.data.signIn.authenticationToken as string;
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${targetToken}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		const targetMembershipRes = await mercuriusClient.mutate(
+			Mutation_createChatMembership,
+			{
+				headers: { authorization: `bearer ${targetToken}` },
 				variables: {
-					input: {
-						emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-						password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
-					},
+					input: { chatId, memberId: target.user?.id, role: "administrator" },
+				},
+			},
+		);
+		assertToBeNonNullish(targetMembershipRes.data?.createChatMembership);
+
+		const approverMembershipRes = await mercuriusClient.mutate(
+			Mutation_createChatMembership,
+			{
+				headers: { authorization: `bearer ${targetToken}` },
+				variables: {
+					input: { chatId, memberId: approver.user?.id, role: "regular" },
+				},
+			},
+		);
+		assertToBeNonNullish(approverMembershipRes.data?.createChatMembership);
+
+		const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
+			headers: { authorization: `bearer ${targetToken}` },
+			variables: {
+				input: { chatId, memberId: approver.user?.id, role: "administrator" },
+			},
+		});
+		expect(res.errors).toBeUndefined();
+		const updated = res.data?.updateChatMembership;
+		assertToBeNonNullish(updated);
+		expect(updated.id).toBeDefined();
+	});
+
+	test('returns "unexpected" when update returns no rows', async () => {
+		const admin = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+					password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+				},
+			},
+		});
+		assertToBeNonNullish(admin.data?.signIn?.authenticationToken);
+		const adminToken = admin.data.signIn.authenticationToken as string;
+
+		// create user and org and chat + memberships so update would normally succeed
+		const userRes = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@test.com`,
+					name: faker.person.fullName(),
+					password: "password123",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(userRes.data?.createUser);
+		const user = userRes.data.createUser;
+		assertToBeNonNullish(user.user);
+		const userId = user.user.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: userId } },
+			});
+		});
+
+		const orgRes = await mercuriusClient.mutate(Mutation_createOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: { name: `org-${faker.string.uuid()}`, countryCode: "us" },
+			},
+		});
+		assertToBeNonNullish(orgRes.data?.createOrganization);
+		const orgId = orgRes.data.createOrganization.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: orgId } },
+			});
+		});
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					memberId: user.user?.id,
+					organizationId: orgId,
+					role: "regular",
+				},
+			},
+		});
+
+		assertToBeNonNullish(user.user);
+		assertToBeNonNullish(user.user.emailAddress);
+		const signIn = await mercuriusClient.query(Query_signIn, {
+			variables: {
+				input: {
+					emailAddress: user.user?.emailAddress,
+					password: "password123",
+				},
+			},
+		});
+		assertToBeNonNullish(signIn.data?.signIn?.authenticationToken);
+		const token = signIn.data.signIn.authenticationToken as string;
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: { name: `chat-${faker.string.uuid()}`, organizationId: orgId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const chatId = chatRes.data.createChat.id;
+		cleanupFns.push(async () => {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminToken}` },
+				variables: { input: { id: chatId } },
+			});
+		});
+
+		const memRes = await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${token}` },
+			variables: {
+				input: { chatId, memberId: user.user?.id, role: "regular" },
+			},
+		});
+		assertToBeNonNullish(memRes.data?.createChatMembership);
+
+		const originalUpdate = server.drizzleClient.update;
+		server.drizzleClient.update = vi.fn().mockImplementation(() => ({
+			set: () => ({
+				where: () => ({ returning: () => Promise.resolve([]) }),
+			}),
+		}));
+
+		try {
+			const res = await mercuriusClient.mutate(Mutation_updateChatMembership, {
+				headers: { authorization: `bearer ${token}` },
+				variables: {
+					input: { chatId, memberId: user.user?.id, role: "administrator" },
 				},
 			});
 
-			const userData = userSignInResult.data?.signIn;
-			if (!userData || !userData.authenticationToken || !userData.user?.id) {
-				throw new Error("User authentication failed");
-			}
-
-			const userToken = userData.authenticationToken;
-			const userId = userData.user.id;
-
-			// Create an organization
-			const organizationResult = await mercuriusClient.mutate(
-				Mutation_createOrganization,
-				{
-					headers: { authorization: `bearer ${userToken}` },
-					variables: {
-						input: {
-							name: `Test Org ${faker.string.uuid()}`,
-							addressLine1: "123 Main St",
-							city: "New York",
-							countryCode: "us",
-							description: "Test Description",
-						},
-					},
-				},
-			);
-
-			const organizationId = organizationResult.data?.createOrganization?.id;
-			assertToBeNonNullish(organizationId);
-
-			// Add user to the organization
-			const orgMembershipResult = await mercuriusClient.mutate(
-				Mutation_createOrganizationMembership,
-				{
-					headers: { authorization: `bearer ${userToken}` },
-					variables: {
-						input: {
-							organizationId,
-							memberId: userId,
-							role: "administrator",
-						},
-					},
-				},
-			);
-
-			assertToBeNonNullish(
-				orgMembershipResult.data?.createOrganizationMembership?.id,
-			);
-
-			// Create a chat (Required to get a valid `chatId`)
-			const createChatResult = await mercuriusClient.mutate(
-				Mutation_createChat,
-				{
-					headers: { authorization: `bearer ${userToken}` },
-					variables: {
-						input: {
-							name: faker.string.uuid(),
-							description: "Test chat description",
-							organizationId,
-						},
-					},
-				},
-			);
-
-			const chatId = createChatResult.data?.createChat?.id;
-			assertToBeNonNullish(chatId);
-
-			// Create a chat message
-			const createChatMessageResult = await mercuriusClient.mutate(
-				Mutation_createChatMessage,
-				{
-					headers: { authorization: `bearer ${userToken}` },
-					variables: {
-						input: {
-							chatId,
-							body: "Original Message",
-						},
-					},
-				},
-			);
-
-			const chatMessage = createChatMessageResult.data?.createChatMessage;
-			assertToBeNonNullish(chatMessage);
-
-			const chatMessageId = chatMessage.id;
-
-			// Update the chat message
-			const updateChatMessageResult = await mercuriusClient.mutate(
-				Mutation_updateChatMessage,
-				{
-					headers: { authorization: `bearer ${userToken}` },
-					variables: {
-						input: {
-							id: chatMessageId,
-							body: "Updated Message",
-						},
-					},
-				},
-			);
-
-			const updatedMessage = updateChatMessageResult.data?.updateChatMessage;
-			assertToBeNonNullish(updatedMessage);
-
-			expect(updatedMessage).toMatchObject({
-				id: chatMessageId,
-				body: "Updated Message",
-			});
-
-			// Ensures `updatedAt` is updated correctly
-			const updatedAt = updatedMessage.updatedAt;
-			assertToBeNonNullish(updatedAt);
-
-			expect(new Date(updatedAt).getTime());
-		} catch (error) {
-			console.error("Test failed:", error);
-			throw error;
+			expect(res.errors).toBeDefined();
+			expect(res.errors?.[0]?.extensions?.code).toBe("unexpected");
+		} finally {
+			server.drizzleClient.update = originalUpdate;
 		}
 	});
 });

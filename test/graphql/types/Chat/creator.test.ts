@@ -153,7 +153,7 @@ describe("Tag Creator Resolver -Test ", () => {
 			mockTag.creatorId = null;
 			const mockUserData: MockUser = {
 				id: "user-123",
-				role: "administartor",
+				role: "administrator",
 				organizationMembershipsWhereMember: [
 					{ role: "administrator", organizationId: mockTag.organizationId },
 				],

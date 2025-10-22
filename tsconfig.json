@@ -42,7 +42,7 @@
 		"docs/.docusaurus",
 		"docs/build",
 		"node_modules",
-		"node_modules",
+		"docs/node_modules",
 		"docs/src/vite-env.d.ts",
 		"docs/**/*.spec.ts",
 		"docs/**/*.test.ts",
