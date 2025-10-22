@@ -110,7 +110,9 @@ async function createTestOrganization(adminAuthToken: string): Promise<string> {
 	});
 	expect(orgResult.errors ?? []).toHaveLength(0);
 	assertToBeNonNullish(orgResult.data?.createOrganization);
+	assertToBeNonNullish(orgResult.data?.createOrganization?.id);
 	return orgResult.data.createOrganization.id;
+
 }
 
 async function createOrganizationMembership(
@@ -128,6 +130,7 @@ async function createOrganizationMembership(
 	);
 	expect(result.errors ?? []).toHaveLength(0);
 	assertToBeNonNullish(result.data?.createOrganizationMembership);
+	assertToBeNonNullish(result.data?.createOrganizationMembership?.id);
 	return result.data.createOrganizationMembership.id;
 }
 
@@ -158,6 +161,7 @@ async function addUserToChat(
 	});
 	expect(result.errors ?? []).toHaveLength(0);
 	assertToBeNonNullish(result.data?.createChatMembership);
+	assertToBeNonNullish(result.data?.createChatMembership?.id);
 	return result.data.createChatMembership.id;
 }
 
