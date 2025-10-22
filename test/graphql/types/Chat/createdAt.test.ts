@@ -112,7 +112,6 @@ async function createTestOrganization(adminAuthToken: string): Promise<string> {
 	assertToBeNonNullish(orgResult.data?.createOrganization);
 	assertToBeNonNullish(orgResult.data?.createOrganization?.id);
 	return orgResult.data.createOrganization.id;
-
 }
 
 async function createOrganizationMembership(
