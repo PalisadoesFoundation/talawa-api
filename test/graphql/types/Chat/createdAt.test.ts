@@ -373,7 +373,7 @@ suite("Chat field createdAt", () => {
 						id: regularUser1Id,
 						role: "regular",
 						emailAddress: "test@test.com",
-						name: "Test User"
+						name: "Test User",
 					};
 				}
 
@@ -382,7 +382,9 @@ suite("Chat field createdAt", () => {
 				}
 
 				// Fail fast if implementation changes and adds more calls
-				throw new Error(`Unexpected call #${callCount} to findFirst in this test`);
+				throw new Error(
+					`Unexpected call #${callCount} to findFirst in this test`,
+				);
 			});
 
 		try {
