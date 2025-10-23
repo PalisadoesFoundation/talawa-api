@@ -147,6 +147,7 @@ jobs:
         if: steps.check-labels.outputs.skip != 'true'
         id: changed-unauth-files
         run: |
+          set -e
 
           # Skip if not in PR context
           if [ -z "${{ github.event.pull_request.base.sha }}" ]; then
@@ -156,7 +157,16 @@ jobs:
 
           # Determine base and head commits for comparison
           HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
-          BASE_SHA=$(git merge-base "${{ github.event.pull_request.base.sha }}" "$HEAD_SHA")
+          BASE_SHA=$(git merge-base "${{ github.event.pull_request.base.sha }}" "$HEAD_SHA" 2>&1) || {
+            echo "::error::Failed to find merge base between ${{ github.event.pull_request.base.sha }} and $HEAD_SHA" >&2
+            exit 1
+          }
+
+          # Verify BASE_SHA is not empty
+          if [ -z "$BASE_SHA" ]; then
+            echo "::error::BASE_SHA is empty after git merge-base command" >&2
+            exit 1
+          fi
 
           # Define sensitive files patterns as a bash array
           SENSITIVE_PATTERNS=(
@@ -216,8 +226,12 @@ jobs:
             fi
           done
 
-          # Trim and format output
-          CHANGED_UNAUTH_FILES=$(echo "$CHANGED_UNAUTH_FILES" | xargs)
+          # Deduplicate and format output
+          # Convert to newline-separated, deduplicate, then rejoin as space-separated
+          if [ ! -z "$CHANGED_UNAUTH_FILES" ]; then
+            CHANGED_UNAUTH_FILES=$(echo "$CHANGED_UNAUTH_FILES" | tr ' ' '\n' | sort -u | tr '\n' ' ' | xargs)
+          fi
+          
           echo "all_changed_files=$CHANGED_UNAUTH_FILES" >> $GITHUB_OUTPUT
 
           # Check if any unauthorized files changed
