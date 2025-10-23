@@ -44,6 +44,8 @@ RUN echo "source /etc/profile.d/fnm.sh" >> /home/talawa/.bashrc
 USER talawa
 # Installs fnm.
 RUN curl -fsSL --proto '=https' --tlsv1.2 https://fnm.vercel.app/install | bash -s -- --skip-shell 
+
+# This install spesific node version and activates it
 ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 RUN fnm install 23.7.0
 RUN fnm use 23.7.0
