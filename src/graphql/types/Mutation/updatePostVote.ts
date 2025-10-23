@@ -24,7 +24,8 @@ builder.mutationField("updatePostVote", (t) =>
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-		description: "Mutation field to create or update a post vote.",
+		description:
+			"Mutation field to create, update, or delete a post vote. If type is null, the vote will be deleted.",
 		resolve: async (_parent, args, ctx) => {
 			if (!ctx.currentClient.isAuthenticated) {
 				throw new TalawaGraphQLError({
@@ -114,8 +115,29 @@ builder.mutationField("updatePostVote", (t) =>
 
 			let voteResult = undefined;
 
-			if (existingVote) {
-				//  UPDATE the vote
+			if (parsedArgs.input.type === null) {
+				// DELETE the vote if type is null
+				if (existingVote) {
+					[voteResult] = await ctx.drizzleClient
+						.delete(postVotesTable)
+						.where(
+							and(
+								eq(postVotesTable.creatorId, currentUserId),
+								eq(postVotesTable.postId, parsedArgs.input.postId),
+							),
+						)
+						.returning();
+				} else {
+					// If no vote exists and trying to delete, treat as successful no-op
+					voteResult = {
+						id: "",
+						creatorId: currentUserId,
+						postId: parsedArgs.input.postId,
+						type: null,
+					};
+				}
+			} else if (existingVote) {
+				// UPDATE the vote if type is not null
 				[voteResult] = await ctx.drizzleClient
 					.update(postVotesTable)
 					.set({ type: parsedArgs.input.type })
@@ -127,7 +149,7 @@ builder.mutationField("updatePostVote", (t) =>
 					)
 					.returning();
 			} else {
-				// CREATE new vote
+				// CREATE new vote if type is not null
 				[voteResult] = await ctx.drizzleClient
 					.insert(postVotesTable)
 					.values({

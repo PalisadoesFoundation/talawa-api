@@ -4,10 +4,14 @@ import { builder } from "~/src/graphql/builder";
 import { CommentVoteType } from "~/src/graphql/enums/CommentVoteType";
 
 export const mutationUpdateCommentVoteInputSchema =
-	commentVotesTableInsertSchema.pick({
-		commentId: true,
-		type: true,
-	});
+	commentVotesTableInsertSchema
+		.pick({
+			commentId: true,
+			type: true,
+		})
+		.extend({
+			type: commentVotesTableInsertSchema.shape.type.nullable(),
+		});
 
 export const MutationUpdateCommentVoteInput = builder
 	.inputRef<z.infer<typeof mutationUpdateCommentVoteInputSchema>>(
@@ -21,8 +25,7 @@ export const MutationUpdateCommentVoteInput = builder
 				required: true,
 			}),
 			type: t.field({
-				description: "Type of the vote.",
-				required: true,
+				description: "Type of the vote. If null, the vote will be deleted.",
 				type: CommentVoteType,
 			}),
 		}),
