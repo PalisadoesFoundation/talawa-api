@@ -5,6 +5,7 @@ networks:
 services:
   api:
     env_file: .env
+    command: bash -c "pnpm run start_development_server"
     # https://docs.docker.com/reference/compose-file/build/
     build:
       args:
