@@ -430,4 +430,4 @@ suite("Chat field createdAt", () => {
 			]),
 		);
 	});
-})
+});
