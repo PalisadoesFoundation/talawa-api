@@ -394,4 +394,64 @@ suite("Chat field createdAt", () => {
 		// Verify it's from the past (created before now)
 		expect(createdAt.getTime()).toBeLessThanOrEqual(Date.now());
 	});
+
+	test("allows chat creator (non-admin) to access createdAt field", async () => {
+		// Create a new user who will be the creator
+		const creator = await createTestUser(adminAuthToken, "regular");
+
+		// Create a new chat and add creator as a member so they can access createdAt via membership
+		const newChatId = await createTestChat(adminAuthToken, organizationId);
+
+		await mercuriusClient.mutate(Mutation_createChatMembership, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: { input: { chatId: newChatId, memberId: creator.userId } },
+		});
+
+		const result = await mercuriusClient.query(Query_chat_with_createdAt, {
+			headers: {
+				authorization: `bearer ${creator.authToken}`,
+			},
+			variables: {
+				input: {
+					id: newChatId,
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.chat).not.toBeNull();
+		expect(result.data?.chat?.id).toBe(newChatId);
+		expect(result.data?.chat?.createdAt).toBeDefined();
+		expect(typeof result.data?.chat?.createdAt).toBe("string");
+	});
+
+	test("results in unauthenticated when current user record is missing", async () => {
+		// Create a user and then delete their record to simulate missing currentUser
+		const tempUser = await createTestUser(adminAuthToken, "regular");
+
+		// Delete the user record directly via admin mutation
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: { input: { id: tempUser.userId } },
+		});
+
+		// Attempt to query createdAt with the deleted user's token
+		const result = await mercuriusClient.query(Query_chat_with_createdAt, {
+			headers: { authorization: `bearer ${tempUser.authToken}` },
+			variables: { input: { id: testChatId } },
+		});
+
+		expect(result.data?.chat?.createdAt).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "unauthenticated",
+					}),
+					message: expect.any(String),
+					path: ["chat"],
+				}),
+			]),
+		);
+	});
 });
