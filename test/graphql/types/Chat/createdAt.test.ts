@@ -362,7 +362,6 @@ suite("Chat field createdAt", () => {
 		const usersTable = server.drizzleClient.query.usersTable as unknown as {
 			findFirst: (params?: unknown) => Promise<{ role?: string } | undefined>;
 		};
-		const originalFindFirst = usersTable.findFirst;
 		let callCount = 0;
 		const spy = vi
 			.spyOn(usersTable, "findFirst")
@@ -370,10 +369,20 @@ suite("Chat field createdAt", () => {
 				callCount++;
 				if (callCount === 1) {
 					// Return a minimal user object with role so Query.chat proceeds
-					return { role: "regular" };
+					return {
+						id: regularUser1Id,
+						role: "regular",
+						emailAddress: "test@test.com",
+						name: "Test User"
+					};
 				}
-				// For subsequent calls (the createdAt resolver), simulate user not found
-				return undefined;
+
+				if (callCount === 2) {
+					return undefined;
+				}
+
+				// Fail fast if implementation changes and adds more calls
+				throw new Error(`Unexpected call #${callCount} to findFirst in this test`);
 			});
 
 		try {
@@ -401,7 +410,6 @@ suite("Chat field createdAt", () => {
 		} finally {
 			// Restore original implementation
 			spy.mockRestore();
-			usersTable.findFirst = originalFindFirst;
 		}
 	});
 
