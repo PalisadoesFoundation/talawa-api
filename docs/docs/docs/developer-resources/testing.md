@@ -2,7 +2,7 @@
 id: testing
 title: Testing & Validation
 slug: /developer-resources/testing
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 This section covers important tests to validate the operation of the API.
@@ -127,7 +127,7 @@ The function returns an object with two properties:
 
 ### How Contributors Should Use It
 
-Follow these ste
+Follow these steps:
 #### Unit Testing Resolvers (With exposed mocks for verification)
 
 ```ts

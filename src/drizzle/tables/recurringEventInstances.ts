@@ -12,7 +12,6 @@ import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { z } from "zod";
 import { eventAttachmentsTable } from "./eventAttachments";
-import { eventAttendancesTable } from "./eventAttendances";
 import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
 import { recurrenceRulesTable } from "./recurrenceRules";
@@ -253,15 +252,6 @@ export const recurringEventInstancesTableRelations = relations(
 			references: [organizationsTable.id],
 			relationName:
 				"recurring_event_instances.organization_id:organizations.id",
-		}),
-
-		/**
-		 * One to many relationship to event attendances.
-		 * Attendances are linked to recurring event instances, not templates.
-		 */
-		attendancesForRecurringEventInstance: many(eventAttendancesTable, {
-			relationName:
-				"event_attendances.recurring_event_instance_id:recurring_event_instances.id",
 		}),
 
 		/**
