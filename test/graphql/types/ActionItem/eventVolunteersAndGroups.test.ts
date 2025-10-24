@@ -4,7 +4,7 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
 	resolveVolunteer,
 	resolveVolunteerGroup,
-} from "../../../../src/graphql/types/ActionItem/volunteers";
+} from "../../../../src/graphql/types/ActionItem/eventVolunteersAndGroups";
 
 interface TestFields {
 	id: string;
