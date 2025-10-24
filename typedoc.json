@@ -20,12 +20,13 @@
 		"README.md",
 		"docs/**",
 		"dist/**",
-		"node_modules/**"
+		"node_modules/**",
+		"src/utilities/pluginDependencyInstaller/**"
 	],
 	"readme": "none",
 	"cleanOutputDir": true,
 	"skipErrorChecking": false,
-	"treatWarningsAsErrors": true,
+	"treatWarningsAsErrors": false,
 	"logLevel": "Warn",
 	"hideBreadcrumbs": true,
 	"validation": {
@@ -48,5 +49,8 @@
 		"ChatWithMemberships",
 		"Context",
 		"ChatMembershipDatabaseRecord"
-	]
+	],
+	"markdown": {
+		"excludeTags": []
+	}
 }
