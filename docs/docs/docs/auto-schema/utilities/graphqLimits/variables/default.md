@@ -6,9 +6,9 @@
 
 > `const` **default**: `object`
 
-Defined in: src/utilities/graphqLimits.ts:15
+Defined in: [src/utilities/graphqLimits.ts:15](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/utilities/graphqLimits.ts#L15)
 
-## Type declaration
+## Type Declaration
 
 ### API\_GRAPHQL\_LIST\_FIELD\_COST
 

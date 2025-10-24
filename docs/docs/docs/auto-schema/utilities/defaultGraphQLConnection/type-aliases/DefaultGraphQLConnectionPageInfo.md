@@ -4,26 +4,40 @@
 
 # Type Alias: DefaultGraphQLConnectionPageInfo
 
-> **DefaultGraphQLConnectionPageInfo**: `object`
+> **DefaultGraphQLConnectionPageInfo** = `object`
 
-Defined in: src/utilities/defaultGraphQLConnection.ts:197
+Defined in: [src/utilities/defaultGraphQLConnection.ts:197](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/utilities/defaultGraphQLConnection.ts#L197)
 
 This is typescript type of a base graphql connection page info object. This connection page info object can be extended to create a custom connnection page info object as long as the new connection object adheres to the default type of this base connection object.
 
-## Type declaration
+## Properties
 
 ### endCursor
 
 > **endCursor**: `string` \| `null`
 
+Defined in: [src/utilities/defaultGraphQLConnection.ts:198](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/utilities/defaultGraphQLConnection.ts#L198)
+
+***
+
 ### hasNextPage
 
 > **hasNextPage**: `boolean`
+
+Defined in: [src/utilities/defaultGraphQLConnection.ts:199](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/utilities/defaultGraphQLConnection.ts#L199)
+
+***
 
 ### hasPreviousPage
 
 > **hasPreviousPage**: `boolean`
 
+Defined in: [src/utilities/defaultGraphQLConnection.ts:200](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/utilities/defaultGraphQLConnection.ts#L200)
+
+***
+
 ### startCursor
 
 > **startCursor**: `string` \| `null`
+
+Defined in: [src/utilities/defaultGraphQLConnection.ts:201](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/utilities/defaultGraphQLConnection.ts#L201)

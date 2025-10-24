@@ -4,6 +4,6 @@
 
 # Variable: mutationDeleteChatInputSchema
 
-> `const` **mutationDeleteChatInputSchema**: `ZodObject`\<\{ `id`: `any`; \}, `"strip"`, `ZodTypeAny`, \{ `[key: string]`: `any`;  `id`: `unknown`; \}, \{ `[key: string]`: `any`;  `id`: `unknown`; \}\>
+> `const` **mutationDeleteChatInputSchema**: `ZodObject`\<\{ `id`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `id`: `string`; \}, \{ `id`: `string`; \}\>
 
-Defined in: src/graphql/inputs/MutationDeleteChatInput.ts:5
+Defined in: [src/graphql/inputs/MutationDeleteChatInput.ts:5](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/inputs/MutationDeleteChatInput.ts#L5)

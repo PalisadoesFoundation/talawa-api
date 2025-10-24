@@ -1,0 +1,19 @@
+[Admin Docs](/)
+
+***
+
+# Variable: plugins()
+
+> `const` **plugins**: (`fastify`) => `Promise`\<`void`\>
+
+Defined in: [src/fastifyPlugins/index.ts:9](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/fastifyPlugins/index.ts#L9)
+
+## Parameters
+
+### fastify
+
+`FastifyInstance`\<`RawServerDefault`, `IncomingMessage`, `ServerResponse`\<`IncomingMessage`\>, `FastifyBaseLogger`, `FastifyTypeProviderDefault`\>
+
+## Returns
+
+`Promise`\<`void`\>

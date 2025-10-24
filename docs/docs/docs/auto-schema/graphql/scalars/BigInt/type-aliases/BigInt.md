@@ -4,18 +4,24 @@
 
 # Type Alias: \_BigInt
 
-> **\_BigInt**: `object`
+> **\_BigInt** = `object`
 
-Defined in: src/graphql/scalars/BigInt.ts:12
+Defined in: [src/graphql/scalars/BigInt.ts:12](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/scalars/BigInt.ts#L12)
 
 `BigInt` scalar type for pothos schema.
 
-## Type declaration
+## Properties
 
 ### Input
 
 > **Input**: `bigint`
 
+Defined in: [src/graphql/scalars/BigInt.ts:13](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/scalars/BigInt.ts#L13)
+
+***
+
 ### Output
 
 > **Output**: `bigint`
+
+Defined in: [src/graphql/scalars/BigInt.ts:14](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/scalars/BigInt.ts#L14)

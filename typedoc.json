@@ -2,7 +2,7 @@
 	"out": "docs/docs/docs/auto-schema",
 	"plugin": ["typedoc-plugin-markdown"],
 	"theme": "markdown",
-	"tsconfig": "tsconfig.docs.json",
+	"tsconfig": "typedoc.tsconfig.json",
 	"excludePrivate": true,
 	"excludeProtected": true,
 	"excludeExternals": true,
@@ -17,11 +17,36 @@
 		"**/__tests__/**",
 		"**/__mocks__/**",
 		"**/README.md",
-		"README.md"
+		"README.md",
+		"docs/**",
+		"dist/**",
+		"node_modules/**"
 	],
 	"readme": "none",
 	"cleanOutputDir": true,
-	"skipErrorChecking": true,
+	"skipErrorChecking": false,
+	"treatWarningsAsErrors": true,
 	"logLevel": "Warn",
-	"hideBreadcrumbs": true
+	"hideBreadcrumbs": true,
+	"validation": {
+		"notExported": false,
+		"invalidLink": false,
+		"rewrittenLink": false,
+		"notDocumented": false
+	},
+	"intentionallyNotExported": [
+		"ChatMemberType",
+		"Paths",
+		"DrizzleClientInterface",
+		"EventVolunteersArgs",
+		"OrganizationsArgs",
+		"CreatedOrganizationsArgs",
+		"ContextType",
+		"HasRole",
+		"IPluginManager",
+		"InitialContext",
+		"ChatWithMemberships",
+		"Context",
+		"ChatMembershipDatabaseRecord"
+	]
 }

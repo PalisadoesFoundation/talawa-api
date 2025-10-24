@@ -6,4 +6,4 @@
 
 > `const` **organizationMembershipsTableRelations**: `Relations`\<`"organization_memberships"`, \{ `creator`: `One`\<`"users"`, `false`\>; `member`: `One`\<`"users"`, `true`\>; `organization`: `One`\<`"organizations"`, `true`\>; `updater`: `One`\<`"users"`, `false`\>; \}\>
 
-Defined in: src/drizzle/tables/organizationMemberships.ts:92
+Defined in: [src/drizzle/tables/organizationMemberships.ts:92](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/drizzle/tables/organizationMemberships.ts#L92)

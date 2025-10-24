@@ -4,9 +4,9 @@
 
 # Type Alias: PubSubPublishArgsByKey
 
-> **PubSubPublishArgsByKey**: `object`
+> **PubSubPublishArgsByKey** = `object`
 
-Defined in: src/graphql/pubsub.ts:32
+Defined in: [src/graphql/pubsub.ts:32](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/pubsub.ts#L32)
 
 Map of talawa events where the keys represent identifiers of the events and the values represent the corresponding payloads of the events. More information at this link: [https://the-guild.dev/graphql/yoga-server/docs/features/subscriptions#topics](https://the-guild.dev/graphql/yoga-server/docs/features/subscriptions#topics)
 

@@ -4,11 +4,11 @@
 
 # Type Alias: Post
 
-> **Post**: *typeof* `postsTable.$inferSelect` & `object`
+> **Post** = *typeof* `postsTable.$inferSelect` & `object`
 
-Defined in: src/graphql/types/Post/Post.ts:8
+Defined in: [src/graphql/types/Post/Post.ts:8](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/types/Post/Post.ts#L8)
 
-## Type declaration
+## Type Declaration
 
 ### attachments
 

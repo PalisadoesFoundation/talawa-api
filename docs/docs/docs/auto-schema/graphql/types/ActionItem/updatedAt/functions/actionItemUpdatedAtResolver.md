@@ -6,67 +6,13 @@
 
 > **actionItemUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date`\>
 
-Defined in: src/graphql/types/ActionItem/updatedAt.ts:5
+Defined in: [src/graphql/types/ActionItem/updatedAt.ts:5](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/types/ActionItem/updatedAt.ts#L5)
 
 ## Parameters
 
 ### parent
 
-#### assignedAt
-
-`Date`
-
-#### assigneeId
-
-`string`
-
-#### categoryId
-
-`string`
-
-#### completionAt
-
-`Date`
-
-#### createdAt
-
-`Date`
-
-#### creatorId
-
-`string`
-
-#### eventId
-
-`string`
-
-#### id
-
-`string`
-
-#### isCompleted
-
-`boolean`
-
-#### organizationId
-
-`string`
-
-#### postCompletionNotes
-
-`string`
-
-#### preCompletionNotes
-
-`string`
-
-#### updatedAt
-
-`Date`
-
-#### updaterId
-
-`string`
+[`ActionItem`](../../ActionItem/type-aliases/ActionItem.md)
 
 ### \_args
 

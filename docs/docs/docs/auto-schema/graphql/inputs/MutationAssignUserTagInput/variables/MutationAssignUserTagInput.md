@@ -1,0 +1,9 @@
+[Admin Docs](/)
+
+***
+
+# Variable: MutationAssignUserTagInput
+
+> `const` **MutationAssignUserTagInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `assigneeId`: `string`; `tagId`: `string`; \}\>
+
+Defined in: [src/graphql/inputs/MutationAssignUserTagInput.ts:17](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/inputs/MutationAssignUserTagInput.ts#L17)

@@ -6,4 +6,4 @@
 
 > `const` **rejectMembershipRequestInputSchema**: `ZodObject`\<\{ `membershipRequestId`: `ZodString`; \}, `"strip"`, `ZodTypeAny`, \{ `membershipRequestId`: `string`; \}, \{ `membershipRequestId`: `string`; \}\>
 
-Defined in: src/graphql/inputs/MutationRejectMembershipRequestInput.ts:4
+Defined in: [src/graphql/inputs/MutationRejectMembershipRequestInput.ts:4](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/inputs/MutationRejectMembershipRequestInput.ts#L4)
