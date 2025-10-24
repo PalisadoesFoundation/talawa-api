@@ -59,7 +59,6 @@ ENV PNPM_STORE_PATH=/home/talawa/api/.pnpm-store
 RUN pnpm fetch --frozen-lockfile
 COPY --chown=talawa:talawa ./ ./
 RUN pnpm install --frozen-lockfile
-WORKDIR /home/talawa/api
   
 FROM node:23.7.0-bookworm-slim AS base
 # Used to configure the group id for the group assigned to the non-root "talawa" user within the image.
