@@ -3,31 +3,32 @@ import { builder } from "~/src/graphql/builder";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import {
-	QueryActionItemsByVolunteerInput,
-	queryActionItemsByVolunteerInputSchema,
+	QueryActionItemsByVolunteerGroupInput,
+	queryActionItemsByVolunteerGroupInputSchema,
 } from "../../inputs/QueryActionItemInput";
 
-const queryActionItemsByVolunteerArgumentsSchema = z.object({
-	input: queryActionItemsByVolunteerInputSchema,
+const queryActionItemsByVolunteerGroupArgumentsSchema = z.object({
+	input: queryActionItemsByVolunteerGroupInputSchema,
 });
 
 /**
- * GraphQL Query: Fetches all ActionItems assigned to a specific volunteer.
+ * GraphQL Query: Fetches all ActionItems assigned to a specific volunteer group.
  * Optionally filters by organization.
  */
-export const actionItemsByVolunteer = builder.queryField(
-	"actionItemsByVolunteer",
+export const actionItemsByVolunteerGroup = builder.queryField(
+	"actionItemsByVolunteerGroup",
 	(t) =>
 		t.field({
 			args: {
 				input: t.arg({
-					description: "Input parameters to fetch action items by volunteerId.",
+					description:
+						"Input parameters to fetch action items by volunteerGroupId.",
 					required: true,
-					type: QueryActionItemsByVolunteerInput,
+					type: QueryActionItemsByVolunteerGroupInput,
 				}),
 			},
 			description:
-				"Query field to fetch all action items assigned to a specific volunteer.",
+				"Query field to fetch all action items assigned to a specific volunteer group.",
 			resolve: async (_parent, args, ctx) => {
 				// Check if the user is authenticated
 				if (!ctx.currentClient.isAuthenticated) {
@@ -43,7 +44,7 @@ export const actionItemsByVolunteer = builder.queryField(
 					data: parsedArgs,
 					error,
 					success,
-				} = queryActionItemsByVolunteerArgumentsSchema.safeParse(args);
+				} = queryActionItemsByVolunteerGroupArgumentsSchema.safeParse(args);
 
 				if (!success) {
 					throw new TalawaGraphQLError({
@@ -75,41 +76,40 @@ export const actionItemsByVolunteer = builder.queryField(
 					});
 				}
 
-				// Check if the volunteerId exists (target volunteer we're getting items for)
-				const targetVolunteer =
-					await ctx.drizzleClient.query.eventVolunteersTable.findFirst({
+				// Check if the volunteerGroupId exists (target group we're getting items for)
+				const targetVolunteerGroup =
+					await ctx.drizzleClient.query.eventVolunteerGroupsTable.findFirst({
 						columns: {
 							id: true,
-							userId: true,
+							leaderId: true,
 						},
 						where: (fields, operators) => {
-							// Fix: Use non-nullable string comparison
 							return operators.eq(
 								fields.id,
-								parsedArgs.input.volunteerId as string,
+								parsedArgs.input.volunteerGroupId as string,
 							);
 						},
 					});
 
-				if (targetVolunteer === undefined) {
+				if (targetVolunteerGroup === undefined) {
 					throw new TalawaGraphQLError({
-						message: "The specified volunteer does not exist.",
+						message: "The specified volunteer group does not exist.",
 						extensions: {
 							code: "arguments_associated_resources_not_found",
-							issues: [{ argumentPath: ["input", "volunteerId"] }],
+							issues: [{ argumentPath: ["input", "volunteerGroupId"] }],
 						},
 					});
 				}
 
-				// Authorization check - only the volunteer's user or an administrator can query their action items
+				// Authorization check - only the group leader or an administrator can query group action items
 				if (
-					currentUserId !== targetVolunteer.userId &&
+					currentUserId !== targetVolunteerGroup.leaderId &&
 					currentUser.role !== "administrator"
 				) {
 					throw new TalawaGraphQLError({
 						extensions: {
 							code: "unauthorized_action_on_arguments_associated_resources",
-							issues: [{ argumentPath: ["input", "volunteerId"] }],
+							issues: [{ argumentPath: ["input", "volunteerGroupId"] }],
 						},
 					});
 				}
@@ -120,8 +120,8 @@ export const actionItemsByVolunteer = builder.queryField(
 						where: (fields, operators) => {
 							const conditions = [
 								operators.eq(
-									fields.volunteerId,
-									parsedArgs.input.volunteerId as string,
+									fields.volunteerGroupId,
+									parsedArgs.input.volunteerGroupId as string,
 								),
 							];
 							if (parsedArgs.input.organizationId) {
