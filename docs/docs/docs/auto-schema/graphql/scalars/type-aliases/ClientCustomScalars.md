@@ -6,7 +6,7 @@
 
 > **ClientCustomScalars** = `object`
 
-Defined in: [src/graphql/scalars/index.ts:30](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/scalars/index.ts#L30)
+Defined in: [src/graphql/scalars/index.ts:30](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/scalars/index.ts#L30)
 
 Map of custom scalar types used in talawa api used to annotate the type of those scalars to the clients consuming talawa api for type-safe usage of those scalars in the graphql operations.
 
@@ -16,7 +16,7 @@ Map of custom scalar types used in talawa api used to annotate the type of those
 
 > **BigInt**: `string`
 
-Defined in: [src/graphql/scalars/index.ts:31](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/scalars/index.ts#L31)
+Defined in: [src/graphql/scalars/index.ts:31](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/scalars/index.ts#L31)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/graphql/scalars/index.ts:31](https://github.com/Sourya07/talawa
 
 > **Date**: `string`
 
-Defined in: [src/graphql/scalars/index.ts:32](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/scalars/index.ts#L32)
+Defined in: [src/graphql/scalars/index.ts:32](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/scalars/index.ts#L32)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/graphql/scalars/index.ts:32](https://github.com/Sourya07/talawa
 
 > **DateTime**: `string`
 
-Defined in: [src/graphql/scalars/index.ts:33](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/scalars/index.ts#L33)
+Defined in: [src/graphql/scalars/index.ts:33](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/scalars/index.ts#L33)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/graphql/scalars/index.ts:33](https://github.com/Sourya07/talawa
 
 > **EmailAddress**: `string`
 
-Defined in: [src/graphql/scalars/index.ts:35](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/scalars/index.ts#L35)
+Defined in: [src/graphql/scalars/index.ts:35](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/scalars/index.ts#L35)
 
 ***
 
@@ -48,4 +48,4 @@ Defined in: [src/graphql/scalars/index.ts:35](https://github.com/Sourya07/talawa
 
 > **PhoneNumber**: `string`
 
-Defined in: [src/graphql/scalars/index.ts:34](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/scalars/index.ts#L34)
+Defined in: [src/graphql/scalars/index.ts:34](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/scalars/index.ts#L34)

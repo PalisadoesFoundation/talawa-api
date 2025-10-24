@@ -4,7 +4,7 @@
 
 # Class: EmailService
 
-Defined in: [src/services/ses/EmailService.ts:34](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/ses/EmailService.ts#L34)
+Defined in: [src/services/ses/EmailService.ts:34](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/ses/EmailService.ts#L34)
 
 Simple email service using AWS SES
 
@@ -14,7 +14,7 @@ Simple email service using AWS SES
 
 > **new EmailService**(`config`): `EmailService`
 
-Defined in: [src/services/ses/EmailService.ts:41](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/ses/EmailService.ts#L41)
+Defined in: [src/services/ses/EmailService.ts:41](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/ses/EmailService.ts#L41)
 
 #### Parameters
 
@@ -32,7 +32,7 @@ Defined in: [src/services/ses/EmailService.ts:41](https://github.com/Sourya07/ta
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../interfaces/EmailResult.md)[]\>
 
-Defined in: [src/services/ses/EmailService.ts:107](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/ses/EmailService.ts#L107)
+Defined in: [src/services/ses/EmailService.ts:107](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/ses/EmailService.ts#L107)
 
 Send multiple emails
 
@@ -52,7 +52,7 @@ Send multiple emails
 
 > **sendEmail**(`job`): `Promise`\<[`EmailResult`](../interfaces/EmailResult.md)\>
 
-Defined in: [src/services/ses/EmailService.ts:74](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/ses/EmailService.ts#L74)
+Defined in: [src/services/ses/EmailService.ts:74](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/ses/EmailService.ts#L74)
 
 Send a single email using AWS SES
 

@@ -6,7 +6,7 @@
 
 > **validateRecurrenceRule**(`recurrenceRule`): `boolean`
 
-Defined in: [src/services/eventGeneration/occurrenceCalculator.ts:489](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/occurrenceCalculator.ts#L489)
+Defined in: [src/services/eventGeneration/occurrenceCalculator.ts:489](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/occurrenceCalculator.ts#L489)
 
 Validates the configuration of a recurrence rule to ensure it has a valid frequency
 and a positive interval.

@@ -6,7 +6,7 @@
 
 > **VolunteerMembershipVolunteerResolver**(`parent`, `_args`, `ctx`): `Promise`\<\{ `createdAt`: `Date`; `creatorId`: `null` \| `string`; `eventId`: `string`; `hasAccepted`: `boolean`; `hoursVolunteered`: `string`; `id`: `string`; `isPublic`: `boolean`; `isTemplate`: `boolean`; `recurringEventInstanceId`: `null` \| `string`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; `userId`: `string`; \}\>
 
-Defined in: [src/graphql/types/EventVolunteerMembership/volunteer.ts:10](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/types/EventVolunteerMembership/volunteer.ts#L10)
+Defined in: [src/graphql/types/EventVolunteerMembership/volunteer.ts:10](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/types/EventVolunteerMembership/volunteer.ts#L10)
 
 ## Parameters
 

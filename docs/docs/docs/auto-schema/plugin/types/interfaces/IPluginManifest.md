@@ -4,7 +4,7 @@
 
 # Interface: IPluginManifest
 
-Defined in: [src/plugin/types.ts:6](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L6)
+Defined in: [src/plugin/types.ts:6](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L6)
 
 Centralized type definitions for the Talawa API plugin system
 
@@ -14,7 +14,7 @@ Centralized type definitions for the Talawa API plugin system
 
 > **author**: `string`
 
-Defined in: [src/plugin/types.ts:11](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L11)
+Defined in: [src/plugin/types.ts:11](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L11)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/plugin/types.ts:11](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **dependencies**: `Record`\<`string`, `string`\>
 
-Defined in: [src/plugin/types.ts:18](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L18)
+Defined in: [src/plugin/types.ts:18](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L18)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/plugin/types.ts:18](https://github.com/Sourya07/talawa-api/blob
 
 > **description**: `string`
 
-Defined in: [src/plugin/types.ts:10](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L10)
+Defined in: [src/plugin/types.ts:10](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L10)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [src/plugin/types.ts:10](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **docker**: `object`
 
-Defined in: [src/plugin/types.ts:19](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L19)
+Defined in: [src/plugin/types.ts:19](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L19)
 
 #### buildOnInstall?
 
@@ -78,7 +78,7 @@ Defined in: [src/plugin/types.ts:19](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **extensionPoints**: [`IExtensionPoints`](IExtensionPoints.md)
 
-Defined in: [src/plugin/types.ts:13](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L13)
+Defined in: [src/plugin/types.ts:13](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L13)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [src/plugin/types.ts:13](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **homepage**: `string`
 
-Defined in: [src/plugin/types.ts:15](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L15)
+Defined in: [src/plugin/types.ts:15](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L15)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [src/plugin/types.ts:15](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **icon**: `string`
 
-Defined in: [src/plugin/types.ts:14](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L14)
+Defined in: [src/plugin/types.ts:14](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L14)
 
 ***
 
@@ -102,7 +102,7 @@ Defined in: [src/plugin/types.ts:14](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **license**: `string`
 
-Defined in: [src/plugin/types.ts:16](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L16)
+Defined in: [src/plugin/types.ts:16](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L16)
 
 ***
 
@@ -110,7 +110,7 @@ Defined in: [src/plugin/types.ts:16](https://github.com/Sourya07/talawa-api/blob
 
 > **main**: `string`
 
-Defined in: [src/plugin/types.ts:12](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L12)
+Defined in: [src/plugin/types.ts:12](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L12)
 
 ***
 
@@ -118,7 +118,7 @@ Defined in: [src/plugin/types.ts:12](https://github.com/Sourya07/talawa-api/blob
 
 > **name**: `string`
 
-Defined in: [src/plugin/types.ts:7](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L7)
+Defined in: [src/plugin/types.ts:7](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L7)
 
 ***
 
@@ -126,7 +126,7 @@ Defined in: [src/plugin/types.ts:7](https://github.com/Sourya07/talawa-api/blob/
 
 > **pluginId**: `string`
 
-Defined in: [src/plugin/types.ts:8](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L8)
+Defined in: [src/plugin/types.ts:8](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L8)
 
 ***
 
@@ -134,7 +134,7 @@ Defined in: [src/plugin/types.ts:8](https://github.com/Sourya07/talawa-api/blob/
 
 > `optional` **tags**: `string`[]
 
-Defined in: [src/plugin/types.ts:17](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L17)
+Defined in: [src/plugin/types.ts:17](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L17)
 
 ***
 
@@ -142,4 +142,4 @@ Defined in: [src/plugin/types.ts:17](https://github.com/Sourya07/talawa-api/blob
 
 > **version**: `string`
 
-Defined in: [src/plugin/types.ts:9](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L9)
+Defined in: [src/plugin/types.ts:9](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L9)

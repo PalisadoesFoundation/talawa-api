@@ -4,7 +4,7 @@
 
 # Class: NotificationEngine
 
-Defined in: [src/graphql/types/Notification/Notification\_engine.ts:45](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/types/Notification/Notification_engine.ts#L45)
+Defined in: [src/graphql/types/Notification/Notification\_engine.ts:45](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/types/Notification/Notification_engine.ts#L45)
 
 NotificationEngine class for managing notifications across the application
 
@@ -14,7 +14,7 @@ NotificationEngine class for managing notifications across the application
 
 > **new NotificationEngine**(`ctx`): `NotificationEngine`
 
-Defined in: [src/graphql/types/Notification/Notification\_engine.ts:53](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/types/Notification/Notification_engine.ts#L53)
+Defined in: [src/graphql/types/Notification/Notification\_engine.ts:53](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/types/Notification/Notification_engine.ts#L53)
 
 Creates a new instance of NotificationEngine
 
@@ -36,7 +36,7 @@ GraphQL context containing database connections and user info
 
 > **createNotification**(`eventType`, `variables`, `audience`, `channelType`): `Promise`\<`string`\>
 
-Defined in: [src/graphql/types/Notification/Notification\_engine.ts:66](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/graphql/types/Notification/Notification_engine.ts#L66)
+Defined in: [src/graphql/types/Notification/Notification\_engine.ts:66](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/types/Notification/Notification_engine.ts#L66)
 
 Creates a notification using a template and sends it to specified audience
 

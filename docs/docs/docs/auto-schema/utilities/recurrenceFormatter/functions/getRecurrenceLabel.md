@@ -6,7 +6,7 @@
 
 > **getRecurrenceLabel**(`rule`): `string`
 
-Defined in: [src/utilities/recurrenceFormatter.ts:221](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/utilities/recurrenceFormatter.ts#L221)
+Defined in: [src/utilities/recurrenceFormatter.ts:221](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/utilities/recurrenceFormatter.ts#L221)
 
 Gets a short recurrence label suitable for UI buttons or compact displays.
 

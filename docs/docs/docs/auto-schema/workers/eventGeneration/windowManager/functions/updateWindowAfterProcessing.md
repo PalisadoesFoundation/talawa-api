@@ -6,7 +6,7 @@
 
 > **updateWindowAfterProcessing**(`windowId`, `processingResult`, `deps`): `Promise`\<`void`\>
 
-Defined in: [src/workers/eventGeneration/windowManager.ts:90](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/workers/eventGeneration/windowManager.ts#L90)
+Defined in: [src/workers/eventGeneration/windowManager.ts:90](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/workers/eventGeneration/windowManager.ts#L90)
 
 Updates the materialization window after successful processing.
 

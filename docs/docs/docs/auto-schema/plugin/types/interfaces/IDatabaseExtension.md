@@ -4,7 +4,7 @@
 
 # Interface: IDatabaseExtension
 
-Defined in: [src/plugin/types.ts:48](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L48)
+Defined in: [src/plugin/types.ts:48](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L48)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:48](https://github.com/Sourya07/talawa-api/blob
 
 > **file**: `string`
 
-Defined in: [src/plugin/types.ts:51](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L51)
+Defined in: [src/plugin/types.ts:51](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L51)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:51](https://github.com/Sourya07/talawa-api/blob
 
 > **name**: `string`
 
-Defined in: [src/plugin/types.ts:50](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L50)
+Defined in: [src/plugin/types.ts:50](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L50)
 
 ***
 
@@ -28,4 +28,4 @@ Defined in: [src/plugin/types.ts:50](https://github.com/Sourya07/talawa-api/blob
 
 > **type**: `"enum"` \| `"table"` \| `"relation"`
 
-Defined in: [src/plugin/types.ts:49](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L49)
+Defined in: [src/plugin/types.ts:49](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L49)

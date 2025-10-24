@@ -4,7 +4,7 @@
 
 # Class: PluginRegistry
 
-Defined in: [src/plugin/manager/registry.ts:13](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/manager/registry.ts#L13)
+Defined in: [src/plugin/manager/registry.ts:13](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/manager/registry.ts#L13)
 
 ## Constructors
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/manager/registry.ts:13](https://github.com/Sourya07/tala
 
 > **new PluginRegistry**(`pluginContext`): `PluginRegistry`
 
-Defined in: [src/plugin/manager/registry.ts:14](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/manager/registry.ts#L14)
+Defined in: [src/plugin/manager/registry.ts:14](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/manager/registry.ts#L14)
 
 #### Parameters
 
@@ -30,7 +30,7 @@ Defined in: [src/plugin/manager/registry.ts:14](https://github.com/Sourya07/tala
 
 > **getPluginFromDatabase**(`pluginId`): `Promise`\<`null` \| \{ `backup`: `boolean`; `createdAt`: `Date`; `id`: `string`; `isActivated`: `boolean`; `isInstalled`: `boolean`; `pluginId`: `string`; `updatedAt`: `null` \| `Date`; \}\>
 
-Defined in: [src/plugin/manager/registry.ts:19](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/manager/registry.ts#L19)
+Defined in: [src/plugin/manager/registry.ts:19](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/manager/registry.ts#L19)
 
 Get plugin from database
 
@@ -50,7 +50,7 @@ Get plugin from database
 
 > **updatePluginInDatabase**(`pluginId`, `updates`): `Promise`\<`void`\>
 
-Defined in: [src/plugin/manager/registry.ts:40](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/manager/registry.ts#L40)
+Defined in: [src/plugin/manager/registry.ts:40](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/manager/registry.ts#L40)
 
 Update plugin in database
 

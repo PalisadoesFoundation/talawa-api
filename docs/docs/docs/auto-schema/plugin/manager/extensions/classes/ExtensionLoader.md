@@ -4,7 +4,7 @@
 
 # Class: ExtensionLoader
 
-Defined in: [src/plugin/manager/extensions.ts:21](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/manager/extensions.ts#L21)
+Defined in: [src/plugin/manager/extensions.ts:21](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/manager/extensions.ts#L21)
 
 ## Constructors
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/manager/extensions.ts:21](https://github.com/Sourya07/ta
 
 > **new ExtensionLoader**(`pluginsDirectory`, `loadedPlugins`, `extensionRegistry`): `ExtensionLoader`
 
-Defined in: [src/plugin/manager/extensions.ts:22](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/manager/extensions.ts#L22)
+Defined in: [src/plugin/manager/extensions.ts:22](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/manager/extensions.ts#L22)
 
 #### Parameters
 
@@ -38,7 +38,7 @@ Defined in: [src/plugin/manager/extensions.ts:22](https://github.com/Sourya07/ta
 
 > **loadExtensionPoints**(`pluginId`, `manifest`, `pluginModule`): `Promise`\<`void`\>
 
-Defined in: [src/plugin/manager/extensions.ts:31](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/manager/extensions.ts#L31)
+Defined in: [src/plugin/manager/extensions.ts:31](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/manager/extensions.ts#L31)
 
 Load extension points for a plugin
 

@@ -4,7 +4,7 @@
 
 # Interface: CalculatedOccurrence
 
-Defined in: [src/services/eventGeneration/types.ts:44](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/types.ts#L44)
+Defined in: [src/services/eventGeneration/types.ts:44](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/types.ts#L44)
 
 Result of occurrence calculation
 
@@ -14,7 +14,7 @@ Result of occurrence calculation
 
 > **actualEndTime**: `Date`
 
-Defined in: [src/services/eventGeneration/types.ts:47](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/types.ts#L47)
+Defined in: [src/services/eventGeneration/types.ts:47](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/types.ts#L47)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/eventGeneration/types.ts:47](https://github.com/Sourya
 
 > **actualStartTime**: `Date`
 
-Defined in: [src/services/eventGeneration/types.ts:46](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/types.ts#L46)
+Defined in: [src/services/eventGeneration/types.ts:46](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/types.ts#L46)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/services/eventGeneration/types.ts:46](https://github.com/Sourya
 
 > **isCancelled**: `boolean`
 
-Defined in: [src/services/eventGeneration/types.ts:48](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/types.ts#L48)
+Defined in: [src/services/eventGeneration/types.ts:48](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/types.ts#L48)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [src/services/eventGeneration/types.ts:48](https://github.com/Sourya
 
 > **originalStartTime**: `Date`
 
-Defined in: [src/services/eventGeneration/types.ts:45](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/types.ts#L45)
+Defined in: [src/services/eventGeneration/types.ts:45](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/types.ts#L45)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [src/services/eventGeneration/types.ts:45](https://github.com/Sourya
 
 > **sequenceNumber**: `number`
 
-Defined in: [src/services/eventGeneration/types.ts:49](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/types.ts#L49)
+Defined in: [src/services/eventGeneration/types.ts:49](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/types.ts#L49)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [src/services/eventGeneration/types.ts:49](https://github.com/Sourya
 
 > **totalCount**: `null` \| `number`
 
-Defined in: [src/services/eventGeneration/types.ts:50](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/types.ts#L50)
+Defined in: [src/services/eventGeneration/types.ts:50](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/types.ts#L50)

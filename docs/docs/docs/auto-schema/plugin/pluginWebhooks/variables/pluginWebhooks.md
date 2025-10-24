@@ -6,7 +6,7 @@
 
 > `const` **pluginWebhooks**: (`fastify`) => `Promise`\<`void`\>
 
-Defined in: [src/plugin/pluginWebhooks.ts:15](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/pluginWebhooks.ts#L15)
+Defined in: [src/plugin/pluginWebhooks.ts:15](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/pluginWebhooks.ts#L15)
 
 Dynamic plugin webhook routes
 Handles webhooks from any plugin dynamically

@@ -4,7 +4,7 @@
 
 # Interface: GenerateInstancesInput
 
-Defined in: [src/services/eventGeneration/types.ts:23](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/types.ts#L23)
+Defined in: [src/services/eventGeneration/types.ts:23](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/types.ts#L23)
 
 Input for generating instances for a recurring event
 
@@ -14,7 +14,7 @@ Input for generating instances for a recurring event
 
 > **baseRecurringEventId**: `string`
 
-Defined in: [src/services/eventGeneration/types.ts:24](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/types.ts#L24)
+Defined in: [src/services/eventGeneration/types.ts:24](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/types.ts#L24)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/eventGeneration/types.ts:24](https://github.com/Sourya
 
 > **organizationId**: `string`
 
-Defined in: [src/services/eventGeneration/types.ts:27](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/types.ts#L27)
+Defined in: [src/services/eventGeneration/types.ts:27](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/types.ts#L27)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/services/eventGeneration/types.ts:27](https://github.com/Sourya
 
 > **windowEndDate**: `Date`
 
-Defined in: [src/services/eventGeneration/types.ts:26](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/types.ts#L26)
+Defined in: [src/services/eventGeneration/types.ts:26](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/types.ts#L26)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [src/services/eventGeneration/types.ts:26](https://github.com/Sourya
 
 > **windowStartDate**: `Date`
 
-Defined in: [src/services/eventGeneration/types.ts:25](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/services/eventGeneration/types.ts#L25)
+Defined in: [src/services/eventGeneration/types.ts:25](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/types.ts#L25)

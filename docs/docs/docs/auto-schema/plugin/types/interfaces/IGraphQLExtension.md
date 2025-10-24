@@ -4,7 +4,7 @@
 
 # Interface: IGraphQLExtension
 
-Defined in: [src/plugin/types.ts:39](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L39)
+Defined in: [src/plugin/types.ts:39](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L39)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:39](https://github.com/Sourya07/talawa-api/blob
 
 > **builderDefinition**: `string`
 
-Defined in: [src/plugin/types.ts:45](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L45)
+Defined in: [src/plugin/types.ts:45](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L45)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:45](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **description**: `string`
 
-Defined in: [src/plugin/types.ts:43](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L43)
+Defined in: [src/plugin/types.ts:43](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L43)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/plugin/types.ts:43](https://github.com/Sourya07/talawa-api/blob
 
 > **file**: `string`
 
-Defined in: [src/plugin/types.ts:42](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L42)
+Defined in: [src/plugin/types.ts:42](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L42)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [src/plugin/types.ts:42](https://github.com/Sourya07/talawa-api/blob
 
 > **name**: `string`
 
-Defined in: [src/plugin/types.ts:41](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L41)
+Defined in: [src/plugin/types.ts:41](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L41)
 
 ***
 
@@ -44,4 +44,4 @@ Defined in: [src/plugin/types.ts:41](https://github.com/Sourya07/talawa-api/blob
 
 > **type**: `"query"` \| `"mutation"` \| `"subscription"`
 
-Defined in: [src/plugin/types.ts:40](https://github.com/Sourya07/talawa-api/blob/2dc82649c98e5346c00cdf926fe1d0bc13ec1544/src/plugin/types.ts#L40)
+Defined in: [src/plugin/types.ts:40](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L40)
