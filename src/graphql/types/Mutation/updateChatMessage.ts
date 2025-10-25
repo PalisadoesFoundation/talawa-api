@@ -158,7 +158,7 @@ export async function updateChatMessageResolver(
 
 	ctx.pubsub.publish({
 		payload: updatedChatMessage,
-		topic: `chats.${updatedChatMessage.chatId}:chat_messages::create`,
+		topic: `chats.${updatedChatMessage.chatId}:chat_messages::update`,
 	});
 
 	return updatedChatMessage;

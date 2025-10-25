@@ -153,7 +153,7 @@ export async function deleteChatMessageResolver(
 
 	ctx.pubsub.publish({
 		payload: deletedChatMessage,
-		topic: `chats.${deletedChatMessage.chatId}:chat_messages::create`,
+		topic: `chats.${deletedChatMessage.chatId}:chat_messages::delete`,
 	});
 
 	return deletedChatMessage;
