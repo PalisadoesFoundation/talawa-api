@@ -6,4 +6,4 @@
 
 > `const` **OrganizationMembershipObject**: `ImplementableObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../../scalars/type-aliases/CustomScalars.md); \}\>, [`OrganizationMembershipType`](../type-aliases/OrganizationMembershipType.md), [`OrganizationMembershipType`](../type-aliases/OrganizationMembershipType.md)\>
 
-Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:10](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/graphql/types/Organization/OrganizationMembership.ts#L10)
+Defined in: [src/graphql/types/Organization/OrganizationMembership.ts:10](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/types/Organization/OrganizationMembership.ts#L10)

@@ -4,7 +4,7 @@
 
 # Interface: DependencyInstallationResult
 
-Defined in: [src/utilities/pluginDependencyInstaller.ts:15](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/utilities/pluginDependencyInstaller.ts#L15)
+Defined in: [src/utilities/pluginDependencyInstaller.ts:15](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/utilities/pluginDependencyInstaller.ts#L15)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/utilities/pluginDependencyInstaller.ts:15](https://github.com/S
 
 > `optional` **error**: `string`
 
-Defined in: [src/utilities/pluginDependencyInstaller.ts:17](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/utilities/pluginDependencyInstaller.ts#L17)
+Defined in: [src/utilities/pluginDependencyInstaller.ts:17](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/utilities/pluginDependencyInstaller.ts#L17)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/utilities/pluginDependencyInstaller.ts:17](https://github.com/S
 
 > `optional` **output**: `string`
 
-Defined in: [src/utilities/pluginDependencyInstaller.ts:18](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/utilities/pluginDependencyInstaller.ts#L18)
+Defined in: [src/utilities/pluginDependencyInstaller.ts:18](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/utilities/pluginDependencyInstaller.ts#L18)
 
 ***
 
@@ -28,4 +28,4 @@ Defined in: [src/utilities/pluginDependencyInstaller.ts:18](https://github.com/S
 
 > **success**: `boolean`
 
-Defined in: [src/utilities/pluginDependencyInstaller.ts:16](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/utilities/pluginDependencyInstaller.ts#L16)
+Defined in: [src/utilities/pluginDependencyInstaller.ts:16](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/utilities/pluginDependencyInstaller.ts#L16)

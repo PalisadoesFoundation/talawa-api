@@ -4,7 +4,7 @@
 
 # Class: EmailQueueProcessor
 
-Defined in: [src/services/ses/EmailQueueProcessor.ts:11](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/services/ses/EmailQueueProcessor.ts#L11)
+Defined in: [src/services/ses/EmailQueueProcessor.ts:11](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/ses/EmailQueueProcessor.ts#L11)
 
 Simple email queue processor that processes pending emails
 
@@ -14,7 +14,7 @@ Simple email queue processor that processes pending emails
 
 > **new EmailQueueProcessor**(`emailService`, `ctx`): `EmailQueueProcessor`
 
-Defined in: [src/services/ses/EmailQueueProcessor.ts:17](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/services/ses/EmailQueueProcessor.ts#L17)
+Defined in: [src/services/ses/EmailQueueProcessor.ts:17](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/ses/EmailQueueProcessor.ts#L17)
 
 #### Parameters
 
@@ -36,7 +36,7 @@ Defined in: [src/services/ses/EmailQueueProcessor.ts:17](https://github.com/Sour
 
 > **processPendingEmails**(): `Promise`\<`void`\>
 
-Defined in: [src/services/ses/EmailQueueProcessor.ts:28](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/services/ses/EmailQueueProcessor.ts#L28)
+Defined in: [src/services/ses/EmailQueueProcessor.ts:28](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/ses/EmailQueueProcessor.ts#L28)
 
 Process pending emails from the queue
 
@@ -50,7 +50,7 @@ Process pending emails from the queue
 
 > **startBackgroundProcessing**(`intervalMs`): `void`
 
-Defined in: [src/services/ses/EmailQueueProcessor.ts:125](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/services/ses/EmailQueueProcessor.ts#L125)
+Defined in: [src/services/ses/EmailQueueProcessor.ts:125](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/ses/EmailQueueProcessor.ts#L125)
 
 Start background processor - simple setInterval approach
 
@@ -70,7 +70,7 @@ Start background processor - simple setInterval approach
 
 > **stopBackgroundProcessing**(): `void`
 
-Defined in: [src/services/ses/EmailQueueProcessor.ts:137](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/services/ses/EmailQueueProcessor.ts#L137)
+Defined in: [src/services/ses/EmailQueueProcessor.ts:137](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/ses/EmailQueueProcessor.ts#L137)
 
 #### Returns
 
