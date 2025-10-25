@@ -159,8 +159,23 @@ builder.mutationField("createChat", (t) =>
 			}
 
 			const participants = parsedArgs.input.participants;
+			const chatType = parsedArgs.input.type;
 
-			if (Array.isArray(participants) && participants.length === 2) {
+			// Validate chat type and participants
+			if (chatType === "direct") {
+				if (!Array.isArray(participants) || participants.length !== 2) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "invalid_arguments",
+							issues: [
+								{
+									argumentPath: ["input", "participants"],
+									message: "Direct chats must have exactly 2 participants.",
+								},
+							],
+						},
+					});
+				}
 				const [a, b] = participants as [string, string];
 				if (a === b) {
 					throw new TalawaGraphQLError({
@@ -181,8 +196,6 @@ builder.mutationField("createChat", (t) =>
 				const participantsHash = `${p1}:${p2}`;
 
 				return await ctx.drizzleClient.transaction(async (tx) => {
-					// Try inserting chat with direct info. If another concurrent transaction created it,
-					// the unique constraint (we'll add migration) will prevent duplicates and this will return nothing.
 					const [maybeCreated] = await tx
 						.insert(chatsTable)
 						.values({
@@ -192,7 +205,7 @@ builder.mutationField("createChat", (t) =>
 							description: parsedArgs.input.description,
 							name: parsedArgs.input.name,
 							organizationId: parsedArgs.input.organizationId,
-							type: "direct",
+							type: chatType,
 							directParticipantsHash: participantsHash,
 						})
 						.returning();
@@ -270,53 +283,79 @@ builder.mutationField("createChat", (t) =>
 				});
 			}
 
-			return await ctx.drizzleClient.transaction(async (tx) => {
-				const [createdChat] = await tx
-					.insert(chatsTable)
-					.values({
-						avatarMimeType,
-						avatarName,
-						creatorId: currentUserId,
-						description: parsedArgs.input.description,
-						name: parsedArgs.input.name,
-						organizationId: parsedArgs.input.organizationId,
-					})
-					.returning();
+			if (chatType === "group") {
+				return await ctx.drizzleClient.transaction(async (tx) => {
+					const [createdChat] = await tx
+						.insert(chatsTable)
+						.values({
+							avatarMimeType,
+							avatarName,
+							creatorId: currentUserId,
+							description: parsedArgs.input.description,
+							name: parsedArgs.input.name,
+							organizationId: parsedArgs.input.organizationId,
+							type: "group",
+						})
+						.returning();
 
-				if (createdChat === undefined) {
-					ctx.log.error(
-						"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
-					);
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "unexpected",
-						},
-					});
-				}
+					if (createdChat === undefined) {
+						ctx.log.error(
+							"Postgres insert operation unexpectedly returned an empty array instead of throwing an error.",
+						);
+						throw new TalawaGraphQLError({
+							extensions: {
+								code: "unexpected",
+							},
+						});
+					}
 
-				if (isNotNullish(parsedArgs.input.avatar)) {
-					await ctx.minio.client.putObject(
-						ctx.minio.bucketName,
-						avatarName,
-						parsedArgs.input.avatar.createReadStream(),
-						undefined,
+					if (isNotNullish(parsedArgs.input.avatar)) {
+						await ctx.minio.client.putObject(
+							ctx.minio.bucketName,
+							avatarName,
+							parsedArgs.input.avatar.createReadStream(),
+							undefined,
+							{
+								"content-type": parsedArgs.input.avatar.mimetype,
+							},
+						);
+					}
+					await tx
+						.insert(chatMembershipsTable)
+						.values({
+							chatId: createdChat.id,
+							memberId: currentUserId,
+							creatorId: currentUserId,
+							role: "administrator",
+						})
+						.onConflictDoNothing();
+					if (Array.isArray(participants) && participants.length > 0) {
+						await tx
+							.insert(chatMembershipsTable)
+							.values(
+								participants.map((participantId) => ({
+									chatId: createdChat.id,
+									memberId: participantId,
+									creatorId: currentUserId,
+									role: "regular" as const,
+								}))
+							)
+							.onConflictDoNothing();
+					}
+
+					return createdChat;
+				});
+			}
+			throw new TalawaGraphQLError({
+				extensions: {
+					code: "invalid_arguments",
+					issues: [
 						{
-							"content-type": parsedArgs.input.avatar.mimetype,
+							argumentPath: ["input", "type"],
+							message: "Invalid chat type. Must be 'direct' or 'group'.",
 						},
-					);
-				}
-
-				await tx
-					.insert(chatMembershipsTable)
-					.values({
-						chatId: createdChat.id,
-						memberId: currentUserId,
-						creatorId: currentUserId,
-						role: "administrator",
-					})
-					.onConflictDoNothing();
-
-				return createdChat;
+					],
+				},
 			});
 		},
 		type: Chat,

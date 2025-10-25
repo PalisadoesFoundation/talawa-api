@@ -15,7 +15,6 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-// Helper function to get admin auth token
 async function getAdminToken() {
 	const signInResult = await mercuriusClient.query(Query_signIn, {
 		variables: {
@@ -185,6 +184,7 @@ suite("Mutation field createChat", () => {
 				input: {
 					name: "Test Chat",
 					organizationId: organizationId,
+					type: "group",
 				},
 			},
 		});
@@ -212,6 +212,7 @@ suite("Mutation field createChat", () => {
 				input: {
 					name: "Test Chat",
 					organizationId: "invalid-uuid",
+					type: "group",
 				},
 			},
 		});
@@ -245,6 +246,7 @@ suite("Mutation field createChat", () => {
 				input: {
 					name: "Test Chat",
 					organizationId: faker.string.uuid(),
+					type: "group",
 				},
 			},
 		});
@@ -281,6 +283,7 @@ suite("Mutation field createChat", () => {
 				input: {
 					name: "Test Chat",
 					organizationId: organizationId,
+					type: "group",
 				},
 			},
 		});
@@ -315,6 +318,7 @@ suite("Mutation field createChat", () => {
 					name: chatName,
 					description: "Test chat created by admin",
 					organizationId: organizationId,
+					type: "group",
 				},
 			},
 		});
@@ -340,6 +344,7 @@ suite("Mutation field createChat", () => {
 					name: chatName,
 					description: "Test chat created by regular member",
 					organizationId: organizationId,
+					type: "group",
 				},
 			},
 		});
@@ -364,6 +369,7 @@ suite("Mutation field createChat", () => {
 				input: {
 					name: chatName,
 					organizationId: organizationId,
+					type: "group",
 				},
 			},
 		});
@@ -398,6 +404,7 @@ suite("Mutation field createChat", () => {
 					name: chatName,
 					participants: [regularUserId, secondUser.userId],
 					organizationId: organizationId,
+					type: "direct",
 				},
 			},
 		});
@@ -436,6 +443,7 @@ suite("Mutation field createChat", () => {
 					name: `bad-direct-${faker.string.uuid()}`,
 					participants: [regularUserId, regularUserId],
 					organizationId: organizationId,
+					type: "direct",
 				},
 			},
 		});
@@ -460,6 +468,7 @@ suite("Mutation field createChat", () => {
 			name: `Direct Idempotent ${faker.string.uuid()}`,
 			participants: [regularUserId, secondUser.userId],
 			organizationId,
+			type: "direct" as const,
 		};
 
 		const first = await mercuriusClient.mutate(Mutation_createChat, {
@@ -502,6 +511,7 @@ suite("Mutation field createChat", () => {
 				input: {
 					name: chatName,
 					organizationId: organizationId,
+					type: "group",
 				},
 			},
 		});
@@ -523,4 +533,164 @@ suite("Mutation field createChat", () => {
 		expect(membership).not.toBeUndefined();
 		expect(membership?.role).toBe("administrator");
 	});
+
+	test("direct chat requires exactly 2 participants", async () => {
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${regularUserAuthToken}` },
+			variables: {
+				input: {
+					name: `Invalid Direct Chat ${faker.string.uuid()}`,
+					participants: [regularUserId], // Only 1 participant
+					organizationId: organizationId,
+					type: "direct",
+				},
+			},
+		});
+
+		expect(result.data?.createChat).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "participants"],
+								message: "Direct chats must have exactly 2 participants.",
+							},
+						],
+					}),
+					message: expect.any(String),
+					path: ["createChat"],
+				}),
+			]),
+		);
+	});
+
+	test("direct chat with 3 participants should fail", async () => {
+		const thirdUser = await createTestUser(adminAuthToken, "regular");
+		createdUserIds.push(thirdUser.userId);
+
+		await createOrganizationMembership(
+			adminAuthToken,
+			thirdUser.userId,
+			organizationId,
+			"regular",
+		);
+
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `bearer ${regularUserAuthToken}` },
+			variables: {
+				input: {
+					name: `Invalid Direct Chat ${faker.string.uuid()}`,
+					participants: [regularUserId, thirdUser.userId, thirdUser.userId], // 3 participants
+					organizationId: organizationId,
+					type: "direct",
+				},
+			},
+		});
+
+		expect(result.data?.createChat).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: [
+							{
+								argumentPath: ["input", "participants"],
+								message: "Direct chats must have exactly 2 participants.",
+							},
+						],
+					}),
+					message: expect.any(String),
+					path: ["createChat"],
+				}),
+			]),
+		);
+	});
+
+	test("group chat can be created without participants", async () => {
+		const chatName = `Group Chat No Participants ${faker.string.uuid()}`;
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: {
+				authorization: `bearer ${regularUserAuthToken}`,
+			},
+			variables: {
+				input: {
+					name: chatName,
+					organizationId: organizationId,
+					type: "group",
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.createChat).not.toBeNull();
+		expect(result.data?.createChat?.name).toBe(chatName);
+		expect(result.data?.createChat?.id).toBeDefined();
+
+		if (result.data?.createChat?.id) {
+			createdChatIds.push(result.data.createChat.id);
+		}
+	});
+
+	test("group chat can be created with participants", async () => {
+		const thirdUser = await createTestUser(adminAuthToken, "regular");
+		createdUserIds.push(thirdUser.userId);
+
+		await createOrganizationMembership(
+			adminAuthToken,
+			thirdUser.userId,
+			organizationId,
+			"regular",
+		);
+
+		const chatName = `Group Chat With Participants ${faker.string.uuid()}`;
+		const result = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: {
+				authorization: `bearer ${regularUserAuthToken}`,
+			},
+			variables: {
+				input: {
+					name: chatName,
+					organizationId: organizationId,
+					type: "group",
+					participants: [thirdUser.userId],
+				},
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.createChat).not.toBeNull();
+		expect(result.data?.createChat?.name).toBe(chatName);
+		expect(result.data?.createChat?.id).toBeDefined();
+
+		if (result.data?.createChat?.id) {
+			createdChatIds.push(result.data.createChat.id);
+
+			// Verify that both creator and participant are members
+			const memberships =
+				await server.drizzleClient.query.chatMembershipsTable.findMany({
+					where: (fields, ops) =>
+						ops.eq(fields.chatId, result.data.createChat.id),
+				});
+
+			const memberIds = memberships.map((m) => m.memberId);
+			expect(memberIds).toContain(regularUserId);
+			expect(memberIds).toContain(thirdUser.userId);
+
+			// Verify creator is admin and participant is regular
+			const creatorMembership = memberships.find(
+				(m) => m.memberId === regularUserId,
+			);
+			const participantMembership = memberships.find(
+				(m) => m.memberId === thirdUser.userId,
+			);
+
+			expect(creatorMembership?.role).toBe("administrator");
+			expect(participantMembership?.role).toBe("regular");
+		}
+	});
+
 });
