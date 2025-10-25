@@ -9,6 +9,8 @@ import {
 } from "drizzle-orm/pg-core";
 import { actionItemCategoriesTable } from "./actionItemCategories";
 import { actionItemsTable } from "./actionItems";
+import { eventVolunteerGroupsTable } from "./eventVolunteerGroups";
+import { eventVolunteersTable } from "./eventVolunteers";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
 import { usersTable } from "./users";
 
@@ -26,6 +28,20 @@ export const actionItemExceptionsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
+		volunteerId: uuid("volunteer_id").references(
+			() => eventVolunteersTable.id,
+			{
+				onDelete: "set null",
+				onUpdate: "cascade",
+			},
+		),
+		volunteerGroupId: uuid("volunteer_group_id").references(
+			() => eventVolunteerGroupsTable.id,
+			{
+				onDelete: "set null",
+				onUpdate: "cascade",
+			},
+		),
 		categoryId: uuid("category_id").references(
 			() => actionItemCategoriesTable.id,
 			{
@@ -66,6 +82,14 @@ export const actionItemExceptionsTableRelations = relations(
 		assignee: one(usersTable, {
 			fields: [actionItemExceptionsTable.assigneeId],
 			references: [usersTable.id],
+		}),
+		volunteer: one(eventVolunteersTable, {
+			fields: [actionItemExceptionsTable.volunteerId],
+			references: [eventVolunteersTable.id],
+		}),
+		volunteerGroup: one(eventVolunteerGroupsTable, {
+			fields: [actionItemExceptionsTable.volunteerGroupId],
+			references: [eventVolunteerGroupsTable.id],
 		}),
 		category: one(actionItemCategoriesTable, {
 			fields: [actionItemExceptionsTable.categoryId],

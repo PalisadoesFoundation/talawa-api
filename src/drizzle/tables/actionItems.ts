@@ -10,6 +10,8 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { actionItemCategoriesTable } from "./actionItemCategories";
+import { eventVolunteerGroupsTable } from "./eventVolunteerGroups";
+import { eventVolunteersTable } from "./eventVolunteers";
 import { eventsTable } from "./events";
 import { organizationsTable } from "./organizations";
 import { recurringEventInstancesTable } from "./recurringEventInstances";
@@ -23,10 +25,20 @@ export const actionItemsTable = pgTable(
 			precision: 3,
 			withTimezone: true,
 		}).notNull(),
-		assigneeId: uuid("actor_id").references(() => usersTable.id, {
-			onDelete: "set null",
-			onUpdate: "cascade",
-		}),
+		volunteerId: uuid("volunteer_id").references(
+			() => eventVolunteersTable.id,
+			{
+				onDelete: "set null",
+				onUpdate: "cascade",
+			},
+		),
+		volunteerGroupId: uuid("volunteer_group_id").references(
+			() => eventVolunteerGroupsTable.id,
+			{
+				onDelete: "set null",
+				onUpdate: "cascade",
+			},
+		),
 		categoryId: uuid("category_id").references(
 			() => actionItemCategoriesTable.id,
 			{
@@ -86,7 +98,8 @@ export const actionItemsTable = pgTable(
 	},
 	(self) => [
 		index().on(self.assignedAt),
-		index().on(self.assigneeId),
+		index().on(self.volunteerId),
+		index().on(self.volunteerGroupId),
 		index().on(self.categoryId),
 		index().on(self.completionAt),
 		index().on(self.createdAt),
@@ -98,10 +111,15 @@ export const actionItemsTable = pgTable(
 export const actionItemsTableRelations = relations(
 	actionItemsTable,
 	({ one }) => ({
-		assignee: one(usersTable, {
-			fields: [actionItemsTable.assigneeId],
-			references: [usersTable.id],
-			relationName: "actionitems.assignee_id:users.id",
+		volunteer: one(eventVolunteersTable, {
+			fields: [actionItemsTable.volunteerId],
+			references: [eventVolunteersTable.id],
+			relationName: "actionitems.volunteer_id:event_volunteers.id",
+		}),
+		volunteerGroup: one(eventVolunteerGroupsTable, {
+			fields: [actionItemsTable.volunteerGroupId],
+			references: [eventVolunteerGroupsTable.id],
+			relationName: "actionitems.volunteer_group_id:event_volunteer_groups.id",
 		}),
 		category: one(actionItemCategoriesTable, {
 			fields: [actionItemsTable.categoryId],

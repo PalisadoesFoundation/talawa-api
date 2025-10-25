@@ -5,12 +5,56 @@ import { server } from "../../../server";
 import { mercuriusClient } from "../client";
 import {
 	Mutation_createActionItemCategory,
+	Mutation_createEvent,
+	Mutation_createEventVolunteer,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_deleteActionItemCategory,
 	Query_signIn,
 } from "../documentNodes";
+
+// Helper function to create event and volunteer
+async function createEventAndVolunteer(
+	organizationId: string,
+	userId: string,
+	adminToken: string,
+): Promise<string> {
+	// Create an event
+	const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${adminToken}` },
+		variables: {
+			input: {
+				name: "Test Event",
+				description: "Test event for action items",
+				organizationId: organizationId,
+				startAt: new Date().toISOString(),
+				endAt: new Date(Date.now() + 3600000).toISOString(),
+				isPublic: true,
+				isRegisterable: true,
+				location: "Test Location",
+			},
+		},
+	});
+	assertToBeNonNullish(eventResult.data?.createEvent?.id);
+	const eventId = eventResult.data.createEvent.id;
+
+	// Create a volunteer for the event
+	const volunteerResult = await mercuriusClient.mutate(
+		Mutation_createEventVolunteer,
+		{
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: {
+				input: {
+					eventId: eventId,
+					userId: userId,
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(volunteerResult.data?.createEventVolunteer?.id);
+	return volunteerResult.data.createEventVolunteer.id;
+}
 
 suite("Mutation field deleteActionItemCategory", () => {
 	test('results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.deleteActionItemCategory" field if the client triggering the graphql operation is not authenticated.', async () => {
@@ -125,6 +169,13 @@ suite("Mutation field deleteActionItemCategory", () => {
 		assertToBeNonNullish(catRes.data.createActionItemCategory?.id);
 		const categoryId = catRes.data.createActionItemCategory.id;
 
+		// Create event and volunteer
+		const volunteerId = await createEventAndVolunteer(
+			orgId,
+			adminId,
+			adminToken,
+		);
+
 		// ActionItem (using a safe minimal mutation)
 		const createActionItemResult = await mercuriusClient.mutate(
 			/* GraphQL */ `
@@ -140,7 +191,7 @@ suite("Mutation field deleteActionItemCategory", () => {
 					input: {
 						categoryId,
 						organizationId: orgId,
-						assigneeId: adminId,
+						volunteerId: volunteerId,
 					},
 				},
 			},

@@ -9,6 +9,8 @@ import { mercuriusClient } from "../../types/client";
 import {
 	Mutation_createActionItem,
 	Mutation_createActionItemCategory,
+	Mutation_createEvent,
+	Mutation_createEventVolunteer,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Query_actionItems,
@@ -84,19 +86,60 @@ async function createCategory(organizationId: string) {
 	return createCategoryResult.data.createActionItemCategory;
 }
 
+async function createEventAndVolunteer(organizationId: string) {
+	// Create an event
+	const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				organizationId,
+				name: "Test Event",
+				description: "Test event for action items",
+				startAt: new Date().toISOString(),
+				endAt: new Date(Date.now() + 3600000).toISOString(),
+				location: "Test Location",
+			},
+		},
+	});
+	assertToBeNonNullish(eventResult.data?.createEvent);
+	const eventId = eventResult.data.createEvent.id;
+
+	// Create a volunteer
+	const volunteerResult = await mercuriusClient.mutate(
+		Mutation_createEventVolunteer,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					eventId,
+					userId: adminUser.id,
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(volunteerResult.data?.createEventVolunteer);
+	return {
+		eventId,
+		volunteerId: volunteerResult.data.createEventVolunteer.id,
+	};
+}
+
 suite("ActionItemCategory.actionItems", () => {
 	test("should return action items for a category", async () => {
 		const organization = await createOrg();
 		const category = await createCategory(organization.id);
 		assertToBeNonNullish(category.id);
 
+		// Create event and volunteer first
+		const { volunteerId } = await createEventAndVolunteer(organization.id);
+
 		await mercuriusClient.mutate(Mutation_createActionItem, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
 				input: {
 					categoryId: category.id,
-					assigneeId: adminUser.id,
 					organizationId: organization.id,
+					volunteerId: volunteerId,
 					assignedAt: new Date().toISOString(),
 				},
 			},
@@ -112,7 +155,6 @@ suite("ActionItemCategory.actionItems", () => {
 		assertToBeNonNullish(result.data?.actionItemCategory);
 		expect(result.data.actionItemCategory.actionItems).toHaveLength(1);
 	});
-
 	test("should return empty array when no action items exist", async () => {
 		const organization = await createOrg();
 		const category = await createCategory(organization.id);

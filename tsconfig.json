@@ -39,6 +39,7 @@
 		"strictNullChecks": true
 	},
 	"exclude": [
+		"docs/*",
 		"docs/.docusaurus",
 		"docs/build",
 		"node_modules",

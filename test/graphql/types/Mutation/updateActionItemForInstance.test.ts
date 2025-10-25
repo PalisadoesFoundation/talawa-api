@@ -7,6 +7,7 @@ import {
 	Mutation_createActionItem,
 	Mutation_createActionItemCategory,
 	Mutation_createEvent,
+	Mutation_createEventVolunteer,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
@@ -80,18 +81,53 @@ async function createActionItemCategory(
 	return categoryId;
 }
 
-// Helper to create an action item
+// Helper to create an action item with volunteer
 async function createActionItem(
 	organizationId: string,
 	categoryId: string,
-	assigneeId: string,
+	userId: string,
 ): Promise<string> {
+	// Create an event first
+	const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				name: "Test Event",
+				description: "Test event for action items",
+				organizationId: organizationId,
+				startAt: new Date().toISOString(),
+				endAt: new Date(Date.now() + 3600000).toISOString(),
+				isPublic: true,
+				isRegisterable: true,
+				location: "Test Location",
+			},
+		},
+	});
+	assertToBeNonNullish(eventResult.data?.createEvent?.id);
+	const eventId = eventResult.data.createEvent.id;
+
+	// Create a volunteer for the event
+	const volunteerResult = await mercuriusClient.mutate(
+		Mutation_createEventVolunteer,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					eventId: eventId,
+					userId: userId,
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(volunteerResult.data?.createEventVolunteer?.id);
+	const volunteerId = volunteerResult.data.createEventVolunteer.id;
+
 	const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 		headers: { authorization: `bearer ${authToken}` },
 		variables: {
 			input: {
 				categoryId: categoryId,
-				assigneeId: assigneeId,
+				volunteerId: volunteerId,
 				organizationId: organizationId,
 				assignedAt: "2025-04-01T00:00:00Z",
 			},
@@ -276,6 +312,22 @@ suite("Mutation field updateActionItemForInstance", () => {
 				throw new Error("Failed to get instance ID from generated instances");
 			}
 
+			// Create a volunteer for the event
+			const volunteerResult = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							eventId: eventId,
+							userId: userId,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(volunteerResult.data?.createEventVolunteer?.id);
+			const volunteerId = volunteerResult.data.createEventVolunteer.id;
+
 			// Create action item
 			const actionItemResult = await mercuriusClient.mutate(
 				Mutation_createActionItem,
@@ -284,7 +336,7 @@ suite("Mutation field updateActionItemForInstance", () => {
 					variables: {
 						input: {
 							categoryId: categoryId,
-							assigneeId: userId,
+							volunteerId: volunteerId,
 							organizationId: orgId,
 							recurringEventInstanceId: instanceId,
 							assignedAt: "2025-04-01T00:00:00Z",
@@ -375,6 +427,22 @@ suite("Mutation field updateActionItemForInstance", () => {
 				throw new Error("Failed to get instance ID from generated instances");
 			}
 
+			// Create a volunteer for the event
+			const volunteerResult2 = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							eventId: eventId,
+							userId: userId,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(volunteerResult2.data?.createEventVolunteer?.id);
+			const volunteerId2 = volunteerResult2.data.createEventVolunteer.id;
+
 			const actionItemResult = await mercuriusClient.mutate(
 				Mutation_createActionItem,
 				{
@@ -382,7 +450,7 @@ suite("Mutation field updateActionItemForInstance", () => {
 					variables: {
 						input: {
 							categoryId: categoryId,
-							assigneeId: userId,
+							volunteerId: volunteerId2,
 							organizationId: orgId,
 							recurringEventInstanceId: instanceId, // Use instance ID instead of template ID
 							assignedAt: "2025-04-01T00:00:00Z",
@@ -402,6 +470,121 @@ suite("Mutation field updateActionItemForInstance", () => {
 							actionId: actionId,
 							eventId: instanceId, // Use instance ID instead of template ID
 							preCompletionNotes: "Updated pre-completion notes",
+							assignedAt: "2025-04-02T00:00:00Z",
+						},
+					},
+				},
+			);
+
+			expect(result.errors).toBeUndefined();
+			expect(result.data?.updateActionItemForInstance).toEqual(
+				expect.objectContaining({
+					id: expect.any(String),
+				}),
+			);
+		});
+
+		test("should update action item for instance with volunteer assignment", async () => {
+			const orgId = await createOrganizationAndGetId();
+			const userId = adminUser.id;
+
+			// Create organization membership for admin user
+			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						organizationId: orgId,
+						memberId: userId,
+						role: "administrator",
+					},
+				},
+			});
+
+			const categoryId = await createActionItemCategory(orgId);
+
+			// Create a recurring event to get real instances
+			const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+				headers: { authorization: `bearer ${authToken}` },
+				variables: {
+					input: {
+						name: "Test Recurring Event",
+						description: "Test event description",
+						organizationId: orgId,
+						startAt: "2025-04-01T10:00:00Z",
+						endAt: "2025-04-01T12:00:00Z",
+						isPublic: true,
+						isRegisterable: true,
+						location: "Test Location",
+						recurrence: {
+							frequency: "DAILY",
+							interval: 1,
+							endDate: "2025-04-05T00:00:00Z",
+						},
+					},
+				},
+			});
+			const eventId = eventResult.data?.createEvent?.id;
+			assertToBeNonNullish(eventId);
+
+			// Get a real instance ID from the recurring event
+			const instances =
+				await server.drizzleClient.query.recurringEventInstancesTable.findMany({
+					where: (fields, { eq }) => eq(fields.baseRecurringEventId, eventId),
+				});
+			if (instances.length === 0) {
+				throw new Error("No instances generated for recurring event");
+			}
+			const instanceId = instances[0]?.id;
+			if (!instanceId) {
+				throw new Error("Failed to get instance ID from generated instances");
+			}
+
+			// Create a volunteer for the event
+			const volunteerResult3 = await mercuriusClient.mutate(
+				Mutation_createEventVolunteer,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							eventId: eventId,
+							userId: userId,
+						},
+					},
+				},
+			);
+			assertToBeNonNullish(volunteerResult3.data?.createEventVolunteer?.id);
+			const volunteerId3 = volunteerResult3.data.createEventVolunteer.id;
+
+			// Create action item
+			const actionItemResult = await mercuriusClient.mutate(
+				Mutation_createActionItem,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							categoryId: categoryId,
+							volunteerId: volunteerId3,
+							organizationId: orgId,
+							recurringEventInstanceId: instanceId,
+							assignedAt: "2025-04-01T00:00:00Z",
+						},
+					},
+				},
+			);
+			const actionId = actionItemResult.data?.createActionItem?.id;
+			assertToBeNonNullish(actionId);
+
+			// Test updating with volunteer assignment
+			const result = await mercuriusClient.mutate(
+				UPDATE_ACTION_FOR_INSTANCE_MUTATION,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							actionId: actionId,
+							eventId: instanceId,
+							volunteerId: volunteerId3,
+							preCompletionNotes: "Updated with volunteer assignment",
 							assignedAt: "2025-04-02T00:00:00Z",
 						},
 					},
