@@ -7,16 +7,26 @@ import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 const mutationCreateActionItemArgumentsSchema = z.object({
-	input: z.object({
-		categoryId: z.string().uuid(),
-		assigneeId: z.string().uuid(),
-		preCompletionNotes: z.string().optional(),
-		eventId: z.string().uuid().optional(),
-		recurringEventInstanceId: z.string().uuid().optional(),
-		organizationId: z.string().uuid(),
-		assignedAt: z.string().optional(),
-		isTemplate: z.boolean().optional(),
-	}),
+	input: z
+		.object({
+			categoryId: z.string().uuid(),
+			volunteerId: z.string().uuid().optional(),
+			volunteerGroupId: z.string().uuid().optional(),
+			preCompletionNotes: z.string().optional(),
+			eventId: z.string().uuid().optional(),
+			recurringEventInstanceId: z.string().uuid().optional(),
+			organizationId: z.string().uuid(),
+			assignedAt: z.string().optional(),
+			isTemplate: z.boolean().optional(),
+		})
+		.refine(
+			(data) =>
+				data.volunteerId !== undefined || data.volunteerGroupId !== undefined,
+			{
+				message: "Either volunteerId or volunteerGroupId must be provided",
+				path: ["volunteerId", "volunteerGroupId"],
+			},
+		),
 });
 
 builder.mutationField("createActionItem", (t) =>
@@ -28,7 +38,8 @@ builder.mutationField("createActionItem", (t) =>
 				type: builder.inputType("CreateActionItemInput", {
 					fields: (t) => ({
 						categoryId: t.field({ type: "ID", required: true }),
-						assigneeId: t.field({ type: "ID", required: true }),
+						volunteerId: t.field({ type: "ID" }),
+						volunteerGroupId: t.field({ type: "ID" }),
 						preCompletionNotes: t.field({ type: "String" }),
 						eventId: t.field({ type: "ID" }),
 						recurringEventInstanceId: t.field({ type: "ID" }),
@@ -109,20 +120,44 @@ builder.mutationField("createActionItem", (t) =>
 				});
 			}
 
-			const existingAssignee =
-				await ctx.drizzleClient.query.usersTable.findFirst({
-					columns: { id: true },
-					where: (fields, operators) =>
-						operators.eq(fields.id, parsedArgs.input.assigneeId),
-				});
+			// Validate volunteer or volunteer group exists
+			if (parsedArgs.input.volunteerId) {
+				const existingVolunteer =
+					await ctx.drizzleClient.query.eventVolunteersTable.findFirst({
+						columns: { id: true },
+						where: (fields, operators) =>
+							operators.eq(fields.id, parsedArgs.input.volunteerId as string),
+					});
 
-			if (!existingAssignee) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "arguments_associated_resources_not_found",
-						issues: [{ argumentPath: ["input", "assigneeId"] }],
-					},
-				});
+				if (!existingVolunteer) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [{ argumentPath: ["input", "volunteerId"] }],
+						},
+					});
+				}
+			}
+
+			if (parsedArgs.input.volunteerGroupId) {
+				const existingVolunteerGroup =
+					await ctx.drizzleClient.query.eventVolunteerGroupsTable.findFirst({
+						columns: { id: true },
+						where: (fields, operators) =>
+							operators.eq(
+								fields.id,
+								parsedArgs.input.volunteerGroupId as string,
+							),
+					});
+
+				if (!existingVolunteerGroup) {
+					throw new TalawaGraphQLError({
+						extensions: {
+							code: "arguments_associated_resources_not_found",
+							issues: [{ argumentPath: ["input", "volunteerGroupId"] }],
+						},
+					});
+				}
 			}
 
 			if (userMembership.role !== "administrator") {
@@ -146,7 +181,8 @@ builder.mutationField("createActionItem", (t) =>
 					id: uuidv7(),
 					creatorId: currentUserId,
 					categoryId: parsedArgs.input.categoryId,
-					assigneeId: parsedArgs.input.assigneeId,
+					volunteerId: parsedArgs.input.volunteerId ?? null,
+					volunteerGroupId: parsedArgs.input.volunteerGroupId ?? null,
 					assignedAt: parsedArgs.input.assignedAt
 						? new Date(parsedArgs.input.assignedAt)
 						: new Date(),
