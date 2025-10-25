@@ -353,12 +353,9 @@ type Chat {
   """Organization which the chat belongs to."""
   organization: Organization
 
-<<<<<<< HEAD
   """Type of the chat: 'group' or 'direct'."""
   type: String
 
-=======
->>>>>>> upstream/develop
   """Number of unread messages for the current user in this chat."""
   unreadMessagesCount: Int
 
