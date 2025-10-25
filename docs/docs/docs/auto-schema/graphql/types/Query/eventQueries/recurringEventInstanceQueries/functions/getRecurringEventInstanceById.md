@@ -6,7 +6,7 @@
 
 > **getRecurringEventInstanceById**(`instanceId`, `organizationId`, `drizzleClient`, `logger`): `Promise`\<`null` \| [`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)\>
 
-Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:149](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L149)
+Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:149](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L149)
 
 Retrieves a single resolved recurring event instance by its ID and organization ID.
 
@@ -26,7 +26,7 @@ The ID of the organization to which the instance belongs.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
+`NodePgDatabase`\<``drizzle/schema``\>
 
 The Drizzle ORM client for database access.
 

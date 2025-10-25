@@ -6,7 +6,7 @@
 
 > **getRecurringEventInstancesInDateRange**(`input`, `drizzleClient`, `logger`): `Promise`\<[`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:38](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L38)
+Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:38](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L38)
 
 Retrieves recurring event event instances for a given organization within a specified date range.
 This function resolves each instance by combining data from the base event template
@@ -22,7 +22,7 @@ The input object containing organizationId, date range, and optional filters.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
+`NodePgDatabase`\<``drizzle/schema``\>
 
 The Drizzle ORM client for database access.
 

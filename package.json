@@ -92,7 +92,7 @@
     "drop_drizzle_migrations": "drizzle-kit drop",
     "enable_git_hooks": "lefthook install",
     "format:fix": "biome check --error-on-warnings --write",
-    "postgenerate-docs": "find docs/docs/docs/auto-schema -name 'README.md' -delete",
+    "postgenerate-docs": "find docs/docs/docs/auto-schema -name 'README.md' -delete && node fix-drizzle-links.js",
     "generate:docs": "typedoc && pnpm run postgenerate-docs && node fix-readme-links.js",
     "generate_drizzle_migrations": "drizzle-kit generate",
     "generate_graphql_sdl_file": "tsx ./scripts/generateGraphQLSDLFile.ts",

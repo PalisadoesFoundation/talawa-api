@@ -6,7 +6,7 @@
 
 > **CheckInStatus** = `object`
 
-Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:7](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/CheckInStatus/CheckInStatus.ts#L7)
+Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:7](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/graphql/types/CheckInStatus/CheckInStatus.ts#L7)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:7](https://github.
 
 > **attendee**: *typeof* `eventAttendeesTable.$inferSelect`
 
-Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:10](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/CheckInStatus/CheckInStatus.ts#L10)
+Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:10](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/graphql/types/CheckInStatus/CheckInStatus.ts#L10)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:10](https://github
 
 > **id**: `string`
 
-Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:8](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/CheckInStatus/CheckInStatus.ts#L8)
+Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:8](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/graphql/types/CheckInStatus/CheckInStatus.ts#L8)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:8](https://github.
 
 > **user**: *typeof* `usersTable.$inferSelect`
 
-Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:9](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/CheckInStatus/CheckInStatus.ts#L9)
+Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:9](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/graphql/types/CheckInStatus/CheckInStatus.ts#L9)

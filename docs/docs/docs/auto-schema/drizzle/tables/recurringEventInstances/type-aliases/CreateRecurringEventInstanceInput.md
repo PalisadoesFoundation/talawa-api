@@ -6,7 +6,7 @@
 
 > **CreateRecurringEventInstanceInput** = `object`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:339](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/drizzle/tables/recurringEventInstances.ts#L339)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:339](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/drizzle/tables/recurringEventInstances.ts#L339)
 
 Input type for creating new recurring event instances.
 
@@ -16,7 +16,7 @@ Input type for creating new recurring event instances.
 
 > **actualEndTime**: `Date`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:345](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/drizzle/tables/recurringEventInstances.ts#L345)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:345](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/drizzle/tables/recurringEventInstances.ts#L345)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:345](https://github.c
 
 > **actualStartTime**: `Date`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:344](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/drizzle/tables/recurringEventInstances.ts#L344)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:344](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/drizzle/tables/recurringEventInstances.ts#L344)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:344](https://github.c
 
 > **baseRecurringEventId**: `string`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:340](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/drizzle/tables/recurringEventInstances.ts#L340)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:340](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/drizzle/tables/recurringEventInstances.ts#L340)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:340](https://github.c
 
 > `optional` **isCancelled**: `boolean`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:347](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/drizzle/tables/recurringEventInstances.ts#L347)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:347](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/drizzle/tables/recurringEventInstances.ts#L347)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:347](https://github.c
 
 > **organizationId**: `string`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:346](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/drizzle/tables/recurringEventInstances.ts#L346)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:346](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/drizzle/tables/recurringEventInstances.ts#L346)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:346](https://github.c
 
 > **originalInstanceStartTime**: `Date`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:343](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/drizzle/tables/recurringEventInstances.ts#L343)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:343](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/drizzle/tables/recurringEventInstances.ts#L343)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:343](https://github.c
 
 > **originalSeriesId**: `string`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:342](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/drizzle/tables/recurringEventInstances.ts#L342)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:342](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/drizzle/tables/recurringEventInstances.ts#L342)
 
 ***
 
@@ -72,7 +72,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:342](https://github.c
 
 > **recurrenceRuleId**: `string`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:341](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/drizzle/tables/recurringEventInstances.ts#L341)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:341](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/drizzle/tables/recurringEventInstances.ts#L341)
 
 ***
 
@@ -80,7 +80,7 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:341](https://github.c
 
 > **sequenceNumber**: `number`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:348](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/drizzle/tables/recurringEventInstances.ts#L348)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:348](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/drizzle/tables/recurringEventInstances.ts#L348)
 
 ***
 
@@ -88,4 +88,4 @@ Defined in: [src/drizzle/tables/recurringEventInstances.ts:348](https://github.c
 
 > `optional` **totalCount**: `number` \| `null`
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:349](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/drizzle/tables/recurringEventInstances.ts#L349)
+Defined in: [src/drizzle/tables/recurringEventInstances.ts:349](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/drizzle/tables/recurringEventInstances.ts#L349)

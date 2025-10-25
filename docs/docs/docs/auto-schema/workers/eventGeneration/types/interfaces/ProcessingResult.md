@@ -4,7 +4,7 @@
 
 # Interface: ProcessingResult\<T\>
 
-Defined in: [src/workers/eventGeneration/types.ts:37](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/workers/eventGeneration/types.ts#L37)
+Defined in: [src/workers/eventGeneration/types.ts:37](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/workers/eventGeneration/types.ts#L37)
 
 ## Type Parameters
 
@@ -18,7 +18,7 @@ Defined in: [src/workers/eventGeneration/types.ts:37](https://github.com/Sourya0
 
 > **data**: `null` \| `T`
 
-Defined in: [src/workers/eventGeneration/types.ts:39](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/workers/eventGeneration/types.ts#L39)
+Defined in: [src/workers/eventGeneration/types.ts:39](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/workers/eventGeneration/types.ts#L39)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [src/workers/eventGeneration/types.ts:39](https://github.com/Sourya0
 
 > `optional` **error**: `string`
 
-Defined in: [src/workers/eventGeneration/types.ts:40](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/workers/eventGeneration/types.ts#L40)
+Defined in: [src/workers/eventGeneration/types.ts:40](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/workers/eventGeneration/types.ts#L40)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [src/workers/eventGeneration/types.ts:40](https://github.com/Sourya0
 
 > **metrics**: [`ProcessingMetrics`](ProcessingMetrics.md)
 
-Defined in: [src/workers/eventGeneration/types.ts:41](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/workers/eventGeneration/types.ts#L41)
+Defined in: [src/workers/eventGeneration/types.ts:41](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/workers/eventGeneration/types.ts#L41)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [src/workers/eventGeneration/types.ts:41](https://github.com/Sourya0
 
 > **resourceUsage**: [`ResourceUsage`](ResourceUsage.md)
 
-Defined in: [src/workers/eventGeneration/types.ts:42](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/workers/eventGeneration/types.ts#L42)
+Defined in: [src/workers/eventGeneration/types.ts:42](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/workers/eventGeneration/types.ts#L42)
 
 ***
 
@@ -50,4 +50,4 @@ Defined in: [src/workers/eventGeneration/types.ts:42](https://github.com/Sourya0
 
 > **success**: `boolean`
 
-Defined in: [src/workers/eventGeneration/types.ts:38](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/workers/eventGeneration/types.ts#L38)
+Defined in: [src/workers/eventGeneration/types.ts:38](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/workers/eventGeneration/types.ts#L38)

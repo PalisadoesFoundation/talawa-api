@@ -6,7 +6,7 @@
 
 > **getEventsByIds**(`eventIds`, `drizzleClient`, `logger`): `Promise`\<[`EventWithAttachments`](../type-aliases/EventWithAttachments.md)[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:182](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L182)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:182](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L182)
 
 Retrieves events by their specific IDs, supporting both standalone events and
 generated instances in a single, unified query. This function is used by the
@@ -22,7 +22,7 @@ An array of event IDs to retrieve.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
+`NodePgDatabase`\<``drizzle/schema``\>
 
 The Drizzle ORM client for database access.
 

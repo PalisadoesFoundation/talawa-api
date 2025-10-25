@@ -6,4 +6,4 @@
 
 > `const` **emailService**: [`EmailService`](../../EmailService/classes/EmailService.md)
 
-Defined in: [src/services/ses/emailServiceInstance.ts:7](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/services/ses/emailServiceInstance.ts#L7)
+Defined in: [src/services/ses/emailServiceInstance.ts:7](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/services/ses/emailServiceInstance.ts#L7)

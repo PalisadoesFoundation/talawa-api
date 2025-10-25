@@ -6,7 +6,7 @@
 
 > **getRecurringEventInstancesByBaseId**(`baseRecurringEventId`, `drizzleClient`, `logger`): `Promise`\<[`ResolvedRecurringEventInstance`](../../../../../../drizzle/tables/recurringEventInstances/type-aliases/ResolvedRecurringEventInstance.md)[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:304](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L304)
+Defined in: [src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts:304](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries.ts#L304)
 
 Retrieves all recurring event instances that belong to a specific base recurring event template.
 
@@ -20,7 +20,7 @@ The ID of the base recurring event template.
 
 ### drizzleClient
 
-`NodePgDatabase`\<[`drizzle/schema`](../../../../../../drizzle/schema/README.md)\>
+`NodePgDatabase`\<``drizzle/schema``\>
 
 The Drizzle ORM client for database access.
 

@@ -4,7 +4,7 @@
 
 # Interface: IExtensionRegistry
 
-Defined in: [src/plugin/types.ts:92](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L92)
+Defined in: [src/plugin/types.ts:92](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/plugin/types.ts#L92)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:92](https://github.com/Sourya07/talawa-api/blob
 
 > **database**: `object`
 
-Defined in: [src/plugin/types.ts:97](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L97)
+Defined in: [src/plugin/types.ts:97](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/plugin/types.ts#L97)
 
 #### enums
 
@@ -32,7 +32,7 @@ Defined in: [src/plugin/types.ts:97](https://github.com/Sourya07/talawa-api/blob
 
 > **graphql**: `object`
 
-Defined in: [src/plugin/types.ts:93](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L93)
+Defined in: [src/plugin/types.ts:93](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/plugin/types.ts#L93)
 
 #### builderExtensions
 
@@ -44,7 +44,7 @@ Defined in: [src/plugin/types.ts:93](https://github.com/Sourya07/talawa-api/blob
 
 > **hooks**: `object`
 
-Defined in: [src/plugin/types.ts:102](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L102)
+Defined in: [src/plugin/types.ts:102](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/plugin/types.ts#L102)
 
 #### post
 
@@ -60,7 +60,7 @@ Defined in: [src/plugin/types.ts:102](https://github.com/Sourya07/talawa-api/blo
 
 > **webhooks**: `object`
 
-Defined in: [src/plugin/types.ts:106](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L106)
+Defined in: [src/plugin/types.ts:106](https://github.com/Sourya07/talawa-api/blob/583d62db9438de398bb9012a4a2617e2cb268b08/src/plugin/types.ts#L106)
 
 #### handlers
 
