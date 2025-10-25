@@ -4,7 +4,7 @@
 
 # Interface: ILogger
 
-Defined in: [src/plugin/types.ts:129](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L129)
+Defined in: [src/plugin/types.ts:129](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L129)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:129](https://github.com/Sourya07/talawa-api/blo
 
 > `optional` **debug**: (`message`, ...`args`) => `void`
 
-Defined in: [src/plugin/types.ts:133](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L133)
+Defined in: [src/plugin/types.ts:133](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L133)
 
 #### Parameters
 
@@ -34,7 +34,7 @@ Defined in: [src/plugin/types.ts:133](https://github.com/Sourya07/talawa-api/blo
 
 > `optional` **error**: (`message`, ...`args`) => `void`
 
-Defined in: [src/plugin/types.ts:131](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L131)
+Defined in: [src/plugin/types.ts:131](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L131)
 
 #### Parameters
 
@@ -56,7 +56,7 @@ Defined in: [src/plugin/types.ts:131](https://github.com/Sourya07/talawa-api/blo
 
 > `optional` **info**: (`message`, ...`args`) => `void`
 
-Defined in: [src/plugin/types.ts:130](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L130)
+Defined in: [src/plugin/types.ts:130](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L130)
 
 #### Parameters
 
@@ -78,7 +78,7 @@ Defined in: [src/plugin/types.ts:130](https://github.com/Sourya07/talawa-api/blo
 
 > `optional` **warn**: (`message`, ...`args`) => `void`
 
-Defined in: [src/plugin/types.ts:132](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L132)
+Defined in: [src/plugin/types.ts:132](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L132)
 
 #### Parameters
 

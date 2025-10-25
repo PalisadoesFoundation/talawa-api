@@ -6,4 +6,4 @@
 
 > **CheckInStatus**: `ImplementableObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../../scalars/type-aliases/CustomScalars.md); \}\>, [`CheckInStatus`](../type-aliases/CheckInStatus.md), [`CheckInStatus`](../type-aliases/CheckInStatus.md)\>
 
-Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:7](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/CheckInStatus/CheckInStatus.ts#L7)
+Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:7](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/CheckInStatus/CheckInStatus.ts#L7)

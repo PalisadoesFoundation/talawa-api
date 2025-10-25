@@ -6,7 +6,7 @@
 
 > **calculateInstanceOccurrences**(`config`, `logger`): [`CalculatedOccurrence`](../../types/interfaces/CalculatedOccurrence.md)[]
 
-Defined in: [src/services/eventGeneration/occurrenceCalculator.ts:19](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/services/eventGeneration/occurrenceCalculator.ts#L19)
+Defined in: [src/services/eventGeneration/occurrenceCalculator.ts:19](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/services/eventGeneration/occurrenceCalculator.ts#L19)
 
 Calculates the occurrence times for a recurring event based on its recurrence rule,
 handling exceptions and various frequencies (daily, weekly, monthly, yearly).

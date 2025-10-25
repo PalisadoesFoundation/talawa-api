@@ -6,7 +6,7 @@
 
 > **createDefaultJobDiscoveryConfig**(): [`JobDiscoveryConfig`](../interfaces/JobDiscoveryConfig.md)
 
-Defined in: [src/workers/eventGeneration/jobDiscovery.ts:350](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/jobDiscovery.ts#L350)
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:350](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/workers/eventGeneration/jobDiscovery.ts#L350)
 
 Creates a default configuration object for the job discovery process.
 

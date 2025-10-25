@@ -4,7 +4,7 @@
 
 # Interface: PluginInstallationOptions
 
-Defined in: [src/utilities/pluginInstaller.ts:23](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/pluginInstaller.ts#L23)
+Defined in: [src/utilities/pluginInstaller.ts:23](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/utilities/pluginInstaller.ts#L23)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/utilities/pluginInstaller.ts:23](https://github.com/Sourya07/ta
 
 > `optional` **activate**: `boolean`
 
-Defined in: [src/utilities/pluginInstaller.ts:26](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/pluginInstaller.ts#L26)
+Defined in: [src/utilities/pluginInstaller.ts:26](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/utilities/pluginInstaller.ts#L26)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/utilities/pluginInstaller.ts:26](https://github.com/Sourya07/ta
 
 > **drizzleClient**: `DrizzleClientInterface`
 
-Defined in: [src/utilities/pluginInstaller.ts:25](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/pluginInstaller.ts#L25)
+Defined in: [src/utilities/pluginInstaller.ts:25](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/utilities/pluginInstaller.ts#L25)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/utilities/pluginInstaller.ts:25](https://github.com/Sourya07/ta
 
 > **userId**: `string`
 
-Defined in: [src/utilities/pluginInstaller.ts:27](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/pluginInstaller.ts#L27)
+Defined in: [src/utilities/pluginInstaller.ts:27](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/utilities/pluginInstaller.ts#L27)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/utilities/pluginInstaller.ts:27](https://github.com/Sourya07/ta
 
 > **zipFile**: `FileUpload`
 
-Defined in: [src/utilities/pluginInstaller.ts:24](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/pluginInstaller.ts#L24)
+Defined in: [src/utilities/pluginInstaller.ts:24](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/utilities/pluginInstaller.ts#L24)

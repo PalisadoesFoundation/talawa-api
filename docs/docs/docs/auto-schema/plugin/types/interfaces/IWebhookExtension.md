@@ -4,7 +4,7 @@
 
 # Interface: IWebhookExtension
 
-Defined in: [src/plugin/types.ts:61](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L61)
+Defined in: [src/plugin/types.ts:61](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L61)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:61](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **description**: `string`
 
-Defined in: [src/plugin/types.ts:65](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L65)
+Defined in: [src/plugin/types.ts:65](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L65)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:65](https://github.com/Sourya07/talawa-api/blob
 
 > **handler**: `string`
 
-Defined in: [src/plugin/types.ts:63](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L63)
+Defined in: [src/plugin/types.ts:63](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L63)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/plugin/types.ts:63](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **method**: `"DELETE"` \| `"GET"` \| `"PATCH"` \| `"POST"` \| `"PUT"`
 
-Defined in: [src/plugin/types.ts:64](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L64)
+Defined in: [src/plugin/types.ts:64](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L64)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/plugin/types.ts:64](https://github.com/Sourya07/talawa-api/blob
 
 > **path**: `string`
 
-Defined in: [src/plugin/types.ts:62](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L62)
+Defined in: [src/plugin/types.ts:62](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/plugin/types.ts#L62)

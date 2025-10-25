@@ -4,7 +4,7 @@
 
 # Interface: GetStandaloneEventsInput
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:9](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L9)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:9](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L9)
 
 Defines the input parameters for querying standalone events.
 
@@ -14,7 +14,7 @@ Defines the input parameters for querying standalone events.
 
 > **endDate**: `Date`
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:12](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L12)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:12](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L12)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:12](
 
 > `optional` **eventIds**: `string`[]
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:16](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L16)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:16](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L16)
 
 An optional array of event IDs to filter by.
 
@@ -32,7 +32,7 @@ An optional array of event IDs to filter by.
 
 > `optional` **limit**: `number`
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:20](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L20)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:20](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L20)
 
 An optional limit on the number of events to return.
 
@@ -42,7 +42,7 @@ An optional limit on the number of events to return.
 
 > **organizationId**: `string`
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:10](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L10)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:10](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L10)
 
 ***
 
@@ -50,4 +50,4 @@ Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:10](
 
 > **startDate**: `Date`
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:11](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L11)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:11](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L11)

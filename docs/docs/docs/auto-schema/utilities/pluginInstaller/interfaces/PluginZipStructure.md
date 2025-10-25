@@ -4,7 +4,7 @@
 
 # Interface: PluginZipStructure
 
-Defined in: [src/utilities/pluginInstaller.ts:30](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/pluginInstaller.ts#L30)
+Defined in: [src/utilities/pluginInstaller.ts:30](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/utilities/pluginInstaller.ts#L30)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/utilities/pluginInstaller.ts:30](https://github.com/Sourya07/ta
 
 > `optional` **apiManifest**: [`IPluginManifest`](../../../plugin/types/interfaces/IPluginManifest.md)
 
-Defined in: [src/utilities/pluginInstaller.ts:32](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/pluginInstaller.ts#L32)
+Defined in: [src/utilities/pluginInstaller.ts:32](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/utilities/pluginInstaller.ts#L32)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/utilities/pluginInstaller.ts:32](https://github.com/Sourya07/ta
 
 > **hasApiFolder**: `boolean`
 
-Defined in: [src/utilities/pluginInstaller.ts:31](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/pluginInstaller.ts#L31)
+Defined in: [src/utilities/pluginInstaller.ts:31](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/utilities/pluginInstaller.ts#L31)
 
 ***
 
@@ -28,4 +28,4 @@ Defined in: [src/utilities/pluginInstaller.ts:31](https://github.com/Sourya07/ta
 
 > `optional` **pluginId**: `string`
 
-Defined in: [src/utilities/pluginInstaller.ts:33](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/pluginInstaller.ts#L33)
+Defined in: [src/utilities/pluginInstaller.ts:33](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/utilities/pluginInstaller.ts#L33)

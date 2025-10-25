@@ -4,7 +4,7 @@
 
 # Interface: ResourceUsage
 
-Defined in: [src/workers/eventGeneration/types.ts:23](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L23)
+Defined in: [src/workers/eventGeneration/types.ts:23](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/workers/eventGeneration/types.ts#L23)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/workers/eventGeneration/types.ts:23](https://github.com/Sourya0
 
 > **cpuUsagePercent**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:25](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L25)
+Defined in: [src/workers/eventGeneration/types.ts:25](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/workers/eventGeneration/types.ts#L25)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/workers/eventGeneration/types.ts:25](https://github.com/Sourya0
 
 > **databaseConnections**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:26](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L26)
+Defined in: [src/workers/eventGeneration/types.ts:26](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/workers/eventGeneration/types.ts#L26)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/workers/eventGeneration/types.ts:26](https://github.com/Sourya0
 
 > **memoryUsageMB**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:24](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L24)
+Defined in: [src/workers/eventGeneration/types.ts:24](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/workers/eventGeneration/types.ts#L24)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/workers/eventGeneration/types.ts:24](https://github.com/Sourya0
 
 > **processingThroughput**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:27](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L27)
+Defined in: [src/workers/eventGeneration/types.ts:27](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/workers/eventGeneration/types.ts#L27)

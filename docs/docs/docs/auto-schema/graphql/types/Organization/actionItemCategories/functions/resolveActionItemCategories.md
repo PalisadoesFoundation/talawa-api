@@ -6,7 +6,7 @@
 
 > **resolveActionItemCategories**(`parent`, `args`, `ctx`): `Promise`\<[`DefaultGraphQLConnection`](../../../../../utilities/defaultGraphQLConnection/type-aliases/DefaultGraphQLConnection.md)\<\{ `createdAt`: `Date`; `creatorId`: `null` \| `string`; `description`: `null` \| `string`; `id`: `string`; `isDisabled`: `boolean`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; \}\>\>
 
-Defined in: [src/graphql/types/Organization/actionItemCategories.ts:56](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Organization/actionItemCategories.ts#L56)
+Defined in: [src/graphql/types/Organization/actionItemCategories.ts:56](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/Organization/actionItemCategories.ts#L56)
 
 ## Parameters
 

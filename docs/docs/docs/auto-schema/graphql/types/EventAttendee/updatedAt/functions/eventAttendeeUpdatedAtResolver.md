@@ -6,7 +6,7 @@
 
 > **eventAttendeeUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`null` \| `Date`\>
 
-Defined in: [src/graphql/types/EventAttendee/updatedAt.ts:9](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/EventAttendee/updatedAt.ts#L9)
+Defined in: [src/graphql/types/EventAttendee/updatedAt.ts:9](https://github.com/Sourya07/talawa-api/blob/4e4298c85a0d2c28affa824f2aab7ec32b5f3ac5/src/graphql/types/EventAttendee/updatedAt.ts#L9)
 
 ## Parameters
 
