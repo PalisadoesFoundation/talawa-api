@@ -179,8 +179,6 @@ suite("Chat field creator", () => {
 		});
 		assertToBeNonNullish(tempUser.data?.createUser);
 		const tempAuth = tempUser.data.createUser.authenticationToken;
-		assertToBeNonNullish(tempAuth);
-		assertToBeNonNullish(tempUser.data?.createUser.user);
 		const tempUserId = tempUser.data.createUser.user.id;
 
 		await mercuriusClient.mutate(Mutation_deleteUser, {
@@ -252,7 +250,6 @@ suite("Chat field creator", () => {
 			},
 		});
 		assertToBeNonNullish(adminCreator.data?.createUser);
-		assertToBeNonNullish(adminCreator.data?.createUser.user);
 		const adminCreatorId = adminCreator.data.createUser.user.id;
 		const adminCreatorAuth = adminCreator.data.createUser.authenticationToken;
 

@@ -85,13 +85,10 @@ suite("Chat computed fields", () => {
 		});
 		assertToBeNonNullish(aliceRes.data?.createUser);
 		const alice = aliceRes.data.createUser;
-		assertToBeNonNullish(alice.user);
-		assertToBeNonNullish(alice.user.id);
-		const aliceId = alice.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: aliceId } },
+				variables: { input: { id: alice.user?.id } },
 			});
 		});
 
@@ -109,13 +106,10 @@ suite("Chat computed fields", () => {
 		});
 		assertToBeNonNullish(bobRes.data?.createUser);
 		const bob = bobRes.data.createUser;
-		assertToBeNonNullish(bob.user);
-		assertToBeNonNullish(bob.user.id);
-		const bobId = bob.user.id;
 		cleanupFns.push(async () => {
 			await mercuriusClient.mutate(Mutation_deleteUser, {
 				headers: { authorization: `bearer ${adminToken}` },
-				variables: { input: { id: bobId } },
+				variables: { input: { id: bob.user?.id } },
 			});
 		});
 
@@ -263,13 +257,10 @@ suite("Chat computed fields", () => {
 			});
 			assertToBeNonNullish(memberRes.data?.createUser);
 			const member = memberRes.data.createUser;
-			assertToBeNonNullish(member.user);
-			assertToBeNonNullish(member.user.id);
-			const memberId = member.user.id;
 			cleanupFns.push(async () => {
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: { authorization: `bearer ${adminToken}` },
-					variables: { input: { id: memberId } },
+					variables: { input: { id: member.user?.id } },
 				});
 			});
 
@@ -287,8 +278,6 @@ suite("Chat computed fields", () => {
 			});
 			assertToBeNonNullish(outsiderRes.data?.createUser);
 			const outsider = outsiderRes.data.createUser;
-			assertToBeNonNullish(outsider.user);
-			assertToBeNonNullish(outsider.user.emailAddress);
 			const outsiderSignIn = await mercuriusClient.query(Query_signIn, {
 				variables: {
 					input: {
@@ -298,15 +287,12 @@ suite("Chat computed fields", () => {
 				},
 			});
 			assertToBeNonNullish(outsiderSignIn.data?.signIn?.authenticationToken);
-			assertToBeNonNullish(outsider.user);
-			assertToBeNonNullish(outsider.user.id);
-			const outsiderId = outsider.user.id;
 			const outsiderToken = outsiderSignIn.data.signIn
 				.authenticationToken as string;
 			cleanupFns.push(async () => {
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: { authorization: `bearer ${adminToken}` },
-					variables: { input: { id: outsiderId } },
+					variables: { input: { id: outsider.user?.id } },
 				});
 			});
 
@@ -381,13 +367,10 @@ suite("Chat computed fields", () => {
 			});
 			assertToBeNonNullish(userRes.data?.createUser);
 			const user = userRes.data.createUser;
-			assertToBeNonNullish(user.user);
-			assertToBeNonNullish(user.user.id);
-			const userId = user.user.id;
 			cleanupFns.push(async () => {
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: { authorization: `bearer ${adminToken}` },
-					variables: { input: { id: userId } },
+					variables: { input: { id: user.user?.id } },
 				});
 			});
 
@@ -457,13 +440,10 @@ suite("Chat computed fields", () => {
 			});
 			assertToBeNonNullish(userRes.data?.createUser);
 			const user = userRes.data.createUser;
-			assertToBeNonNullish(user.user);
-			assertToBeNonNullish(user.user.id);
-			const userId = user.user.id;
 			cleanupFns.push(async () => {
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: { authorization: `bearer ${adminToken}` },
-					variables: { input: { id: userId } },
+					variables: { input: { id: user.user?.id } },
 				});
 			});
 

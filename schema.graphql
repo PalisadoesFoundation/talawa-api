@@ -353,6 +353,9 @@ type Chat {
   """Organization which the chat belongs to."""
   organization: Organization
 
+  """Type of the chat: 'group' or 'direct'."""
+  type: String
+
   """Number of unread messages for the current user in this chat."""
   unreadMessagesCount: Int
 
@@ -423,6 +426,12 @@ type ChatMessagesConnection {
 type ChatMessagesConnectionEdge {
   cursor: String!
   node: ChatMessage
+}
+
+"""Possible variants of the type of a chat."""
+enum ChatType {
+  direct
+  group
 }
 
 """Input for check-in and check-out operations."""
@@ -2000,7 +2009,7 @@ type Mutation {
   """Mutation field to create a chat."""
   createChat(input: MutationCreateChatInput!): Chat
 
-  """Mutation field to create a chat membership."""
+  """Add a member to a chat."""
   createChatMembership(input: MutationCreateChatMembershipInput!): Chat
 
   """Mutation field to create a chat message."""
@@ -2529,6 +2538,14 @@ input MutationCreateChatInput {
 
   """Global identifier of the associated organization."""
   organizationId: ID!
+
+  """
+  Participant ids for a direct chat (required for direct chats, optional for group chats).
+  """
+  participants: [ID!]
+
+  """Type of the chat (direct or group)."""
+  type: ChatType!
 }
 
 """"""
@@ -4826,12 +4843,34 @@ type Subscription {
   Subscription field to subscribe to the event of creation of a message in a chat.
   """
   chatMessageCreate(input: SubscriptionChatMessageCreateInput!): ChatMessage
+
+  """
+  Subscription field to subscribe to the event of deletion of a message in a chat.
+  """
+  chatMessageDelete(input: SubscriptionChatMessageDeleteInput!): ChatMessage
+
+  """
+  Subscription field to subscribe to the event of updating of a message in a chat.
+  """
+  chatMessageUpdate(input: SubscriptionChatMessageUpdateInput!): ChatMessage
 }
 
 """"""
 input SubscriptionChatMessageCreateInput {
   """Global identifier of the chat."""
   id: String!
+}
+
+"""Input for subscribing to chat message delete events."""
+input SubscriptionChatMessageDeleteInput {
+  """Global identifier of the chat to subscribe to."""
+  id: ID!
+}
+
+"""Input for subscribing to chat message update events."""
+input SubscriptionChatMessageUpdateInput {
+  """Global identifier of the chat to subscribe to."""
+  id: ID!
 }
 
 type Tag {

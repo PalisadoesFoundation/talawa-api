@@ -1,35 +1,35 @@
 import { z } from "zod";
 import { builder } from "~/src/graphql/builder";
 import {
-	SubscriptionChatMessageCreateInput,
-	subscriptionChatMessageCreateInputSchema,
-} from "~/src/graphql/inputs/SubscriptionChatMessageCreateInput";
+	SubscriptionChatMessageDeleteInput,
+	subscriptionChatMessageDeleteInputSchema,
+} from "~/src/graphql/inputs/SubscriptionChatMessageDeleteInput";
 import { ChatMessage } from "~/src/graphql/types/ChatMessage/ChatMessage";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 
-const subscriptionChatMessageCreateArgumentsSchema = z.object({
-	input: subscriptionChatMessageCreateInputSchema,
+const subscriptionChatMessageDeleteArgumentsSchema = z.object({
+	input: subscriptionChatMessageDeleteInputSchema,
 });
 
-builder.subscriptionField("chatMessageCreate", (t) =>
+builder.subscriptionField("chatMessageDelete", (t) =>
 	t.field({
 		args: {
 			input: t.arg({
 				description: "",
 				required: true,
-				type: SubscriptionChatMessageCreateInput,
+				type: SubscriptionChatMessageDeleteInput,
 			}),
 		},
 		complexity: envConfig.API_GRAPHQL_SUBSCRIPTION_BASE_COST,
 		description:
-			"Subscription field to subscribe to the event of creation of a message in a chat.",
+			"Subscription field to subscribe to the event of deletion of a message in a chat.",
 		subscribe: async (_parent, args, ctx) => {
 			const {
 				success,
 				data: parsedArgs,
 				error,
-			} = subscriptionChatMessageCreateArgumentsSchema.safeParse(args);
+			} = subscriptionChatMessageDeleteArgumentsSchema.safeParse(args);
 
 			if (!success) {
 				throw new TalawaGraphQLError({
@@ -133,7 +133,7 @@ builder.subscriptionField("chatMessageCreate", (t) =>
 			}
 
 			return await ctx.pubsub.subscribe(
-				`chats.${parsedArgs.input.id}:chat_messages::create`,
+				`chats.${parsedArgs.input.id}:chat_messages::delete`,
 			);
 		},
 		resolve: (parent) => parent,

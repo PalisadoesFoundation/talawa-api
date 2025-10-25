@@ -15,6 +15,18 @@ export const chatsTable = pgTable(
 	"chats",
 	{
 		/**
+		 * Type of the chat: 'group' or 'direct'.
+		 */
+		type: text("type").notNull().default("group"),
+		/**
+		 * Canonicalized participants hash for direct chats (e.g. "smallerId:largerId").
+		 * Used to ensure a single direct chat exists for a pair of users.
+		 */
+		directParticipantsHash: text("direct_participants_hash").$defaultFn(
+			() => sql`${null}`,
+		),
+
+		/**
 		 * Mime type of the avatar of the chat.
 		 */
 		avatarMimeType: text("avatar_mime_type", {

@@ -1,6 +1,7 @@
 import "./AdvertisementType";
 import "./AgendaItemType";
 import "./ChatMembershipRole";
+import "./ChatType";
 import "./CommentVoteType";
 import "./RecurrenceFrequency";
 import "./Iso3166Alpha2CountryCode";
