@@ -587,7 +587,11 @@ suite("Query field actionItemsByVolunteerGroup", () => {
 			expect(result.data?.actionItemsByVolunteerGroup).toHaveLength(1);
 			expect(
 				result.data?.actionItemsByVolunteerGroup?.some(
-					(item) => item?.id === actionItem2Id,
+					(
+						item: NonNullable<
+							typeof result.data.actionItemsByVolunteerGroup
+						>[number],
+					) => item?.id === actionItem2Id,
 				),
 			).toBe(false);
 		});
