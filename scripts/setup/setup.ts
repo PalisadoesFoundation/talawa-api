@@ -3,6 +3,7 @@ import fs from "node:fs";
 import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
+import { envFileBackup } from "~/src/envFileBackup/envFileBackup";
 import { updateEnvVariable } from "./updateEnvVariable";
 
 interface SetupAnswers {
@@ -622,6 +623,7 @@ export async function setup(): Promise<SetupAnswers> {
 		process.exit(1);
 	});
 
+	await envFileBackup();
 	answers = await setCI(answers);
 	initializeEnvFile(answers);
 

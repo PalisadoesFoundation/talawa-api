@@ -5,6 +5,10 @@ import { setup } from "scripts/setup/setup";
 import * as SetupModule from "scripts/setup/setup";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("../../../src/envFileBackup/envFileBackup", () => ({
+	envFileBackup: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("inquirer");
 describe("Setup", () => {
 	const originalEnv = { ...process.env };
