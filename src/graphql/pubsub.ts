@@ -31,4 +31,6 @@ type PrimaryKey = string;
  */
 export type PubSubPublishArgsByKey = {
 	[key: `chats.${PrimaryKey}:chat_messages::create`]: ChatMessage;
+	[key: `chats.${PrimaryKey}:chat_messages::update`]: ChatMessage;
+	[key: `chats.${PrimaryKey}:chat_messages::delete`]: ChatMessage;
 };
