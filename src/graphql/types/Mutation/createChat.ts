@@ -338,7 +338,7 @@ builder.mutationField("createChat", (t) =>
 									memberId: participantId,
 									creatorId: currentUserId,
 									role: "regular" as const,
-								}))
+								})),
 							)
 							.onConflictDoNothing();
 					}

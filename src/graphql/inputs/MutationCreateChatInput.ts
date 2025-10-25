@@ -28,7 +28,8 @@ export const MutationCreateChatInput = builder
 				type: "Upload",
 			}),
 			participants: t.field({
-				description: "Participant ids for a direct chat (required for direct chats, optional for group chats).",
+				description:
+					"Participant ids for a direct chat (required for direct chats, optional for group chats).",
 				type: t.listRef("ID", { required: true }),
 				required: false,
 			}),

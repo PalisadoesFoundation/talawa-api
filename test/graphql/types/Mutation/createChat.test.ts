@@ -692,5 +692,4 @@ suite("Mutation field createChat", () => {
 			expect(participantMembership?.role).toBe("regular");
 		}
 	});
-
 });
