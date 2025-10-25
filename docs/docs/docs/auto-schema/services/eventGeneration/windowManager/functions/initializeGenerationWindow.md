@@ -6,7 +6,7 @@
 
 > **initializeGenerationWindow**(`input`, `drizzleClient`, `logger`): `Promise`\<\{ `configurationNotes`: `null` \| `string`; `createdAt`: `Date`; `createdById`: `string`; `currentWindowEndDate`: `Date`; `historyRetentionMonths`: `number`; `hotWindowMonthsAhead`: `number`; `id`: `string`; `isEnabled`: `boolean`; `lastProcessedAt`: `Date`; `lastProcessedInstanceCount`: `number`; `lastUpdatedById`: `null` \| `string`; `maxInstancesPerRun`: `number`; `organizationId`: `string`; `processingPriority`: `number`; `retentionStartDate`: `Date`; `updatedAt`: `null` \| `Date`; \}\>
 
-Defined in: [src/services/eventGeneration/windowManager.ts:16](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/eventGeneration/windowManager.ts#L16)
+Defined in: [src/services/eventGeneration/windowManager.ts:16](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/services/eventGeneration/windowManager.ts#L16)
 
 Initializes the Generation window for a given organization, setting up the time frame
 for which event instances will be generated and retained.

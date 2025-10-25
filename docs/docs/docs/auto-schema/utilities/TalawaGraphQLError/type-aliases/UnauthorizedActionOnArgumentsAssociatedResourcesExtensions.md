@@ -6,7 +6,7 @@
 
 > **UnauthorizedActionOnArgumentsAssociatedResourcesExtensions** = `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:158](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/utilities/TalawaGraphQLError.ts#L158)
+Defined in: [src/utilities/TalawaGraphQLError.ts:158](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/TalawaGraphQLError.ts#L158)
 
 When the client is not authorized to perform an action on a resource associated to an argument.
 
@@ -31,7 +31,7 @@ throw new TalawaGraphQLError({
 
 > **code**: `"unauthorized_action_on_arguments_associated_resources"`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:162](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/utilities/TalawaGraphQLError.ts#L162)
+Defined in: [src/utilities/TalawaGraphQLError.ts:162](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/TalawaGraphQLError.ts#L162)
 
 ***
 
@@ -39,7 +39,7 @@ Defined in: [src/utilities/TalawaGraphQLError.ts:162](https://github.com/Sourya0
 
 > **issues**: `object`[]
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:159](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/utilities/TalawaGraphQLError.ts#L159)
+Defined in: [src/utilities/TalawaGraphQLError.ts:159](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/TalawaGraphQLError.ts#L159)
 
 #### argumentPath
 

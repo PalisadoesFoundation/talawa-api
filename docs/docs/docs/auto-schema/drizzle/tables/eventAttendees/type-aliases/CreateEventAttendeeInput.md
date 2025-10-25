@@ -6,7 +6,7 @@
 
 > **CreateEventAttendeeInput** = `object`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:225](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/drizzle/tables/eventAttendees.ts#L225)
+Defined in: [src/drizzle/tables/eventAttendees.ts:225](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/drizzle/tables/eventAttendees.ts#L225)
 
 Type for creating a new event attendee record.
 
@@ -16,7 +16,7 @@ Type for creating a new event attendee record.
 
 > `optional` **eventId**: `string`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:227](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/drizzle/tables/eventAttendees.ts#L227)
+Defined in: [src/drizzle/tables/eventAttendees.ts:227](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/drizzle/tables/eventAttendees.ts#L227)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:227](https://github.com/Sourya
 
 > `optional` **isInvited**: `boolean`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:229](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/drizzle/tables/eventAttendees.ts#L229)
+Defined in: [src/drizzle/tables/eventAttendees.ts:229](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/drizzle/tables/eventAttendees.ts#L229)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:229](https://github.com/Sourya
 
 > `optional` **isRegistered**: `boolean`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:230](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/drizzle/tables/eventAttendees.ts#L230)
+Defined in: [src/drizzle/tables/eventAttendees.ts:230](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/drizzle/tables/eventAttendees.ts#L230)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:230](https://github.com/Sourya
 
 > `optional` **recurringEventInstanceId**: `string`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:228](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/drizzle/tables/eventAttendees.ts#L228)
+Defined in: [src/drizzle/tables/eventAttendees.ts:228](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/drizzle/tables/eventAttendees.ts#L228)
 
 ***
 
@@ -48,4 +48,4 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:228](https://github.com/Sourya
 
 > **userId**: `string`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:226](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/drizzle/tables/eventAttendees.ts#L226)
+Defined in: [src/drizzle/tables/eventAttendees.ts:226](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/drizzle/tables/eventAttendees.ts#L226)

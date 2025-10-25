@@ -4,7 +4,7 @@
 
 # Interface: RecurrenceContext
 
-Defined in: [src/services/eventGeneration/types.ts:84](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/eventGeneration/types.ts#L84)
+Defined in: [src/services/eventGeneration/types.ts:84](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/services/eventGeneration/types.ts#L84)
 
 Recurrence calculation context
 
@@ -14,7 +14,7 @@ Recurrence calculation context
 
 > **eventDuration**: `number`
 
-Defined in: [src/services/eventGeneration/types.ts:85](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/eventGeneration/types.ts#L85)
+Defined in: [src/services/eventGeneration/types.ts:85](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/services/eventGeneration/types.ts#L85)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/eventGeneration/types.ts:85](https://github.com/Sourya
 
 > **exceptionsByTime**: `Map`\<`string`, \{ `createdAt`: `Date`; `creatorId`: `string`; `exceptionData`: `unknown`; `id`: `string`; `organizationId`: `string`; `recurringEventInstanceId`: `string`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; \}\>
 
-Defined in: [src/services/eventGeneration/types.ts:89](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/eventGeneration/types.ts#L89)
+Defined in: [src/services/eventGeneration/types.ts:89](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/services/eventGeneration/types.ts#L89)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/services/eventGeneration/types.ts:89](https://github.com/Sourya
 
 > **isNeverEnding**: `boolean`
 
-Defined in: [src/services/eventGeneration/types.ts:88](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/eventGeneration/types.ts#L88)
+Defined in: [src/services/eventGeneration/types.ts:88](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/services/eventGeneration/types.ts#L88)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [src/services/eventGeneration/types.ts:88](https://github.com/Sourya
 
 > **maxIterations**: `number`
 
-Defined in: [src/services/eventGeneration/types.ts:90](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/eventGeneration/types.ts#L90)
+Defined in: [src/services/eventGeneration/types.ts:90](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/services/eventGeneration/types.ts#L90)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [src/services/eventGeneration/types.ts:90](https://github.com/Sourya
 
 > **shouldCalculateTotalCount**: `boolean`
 
-Defined in: [src/services/eventGeneration/types.ts:87](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/eventGeneration/types.ts#L87)
+Defined in: [src/services/eventGeneration/types.ts:87](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/services/eventGeneration/types.ts#L87)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [src/services/eventGeneration/types.ts:87](https://github.com/Sourya
 
 > **totalCount**: `null` \| `number`
 
-Defined in: [src/services/eventGeneration/types.ts:86](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/eventGeneration/types.ts#L86)
+Defined in: [src/services/eventGeneration/types.ts:86](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/services/eventGeneration/types.ts#L86)

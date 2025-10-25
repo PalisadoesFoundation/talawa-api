@@ -6,7 +6,7 @@
 
 > **createTemplateLookupMap**(`templates`): `Map`\<`string`, \{ `allDay`: `boolean`; `createdAt`: `Date`; `creatorId`: `null` \| `string`; `description`: `null` \| `string`; `endAt`: `Date`; `id`: `string`; `isPublic`: `boolean`; `isRecurringEventTemplate`: `boolean`; `isRegisterable`: `boolean`; `location`: `null` \| `string`; `name`: `string`; `organizationId`: `string`; `startAt`: `Date`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; \}\>
 
-Defined in: [src/services/eventGeneration/instanceResolver.ts:237](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/eventGeneration/instanceResolver.ts#L237)
+Defined in: [src/services/eventGeneration/instanceResolver.ts:237](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/services/eventGeneration/instanceResolver.ts#L237)
 
 Creates a lookup map for event templates to enable efficient batch processing.
 The map is keyed by the event template ID.

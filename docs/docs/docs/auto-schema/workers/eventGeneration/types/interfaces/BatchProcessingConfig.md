@@ -4,7 +4,7 @@
 
 # Interface: BatchProcessingConfig
 
-Defined in: [src/workers/eventGeneration/types.ts:30](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/types.ts#L30)
+Defined in: [src/workers/eventGeneration/types.ts:30](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L30)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/workers/eventGeneration/types.ts:30](https://github.com/Sourya0
 
 > **batchSize**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:31](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/types.ts#L31)
+Defined in: [src/workers/eventGeneration/types.ts:31](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L31)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/workers/eventGeneration/types.ts:31](https://github.com/Sourya0
 
 > **maxConcurrentBatches**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:32](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/types.ts#L32)
+Defined in: [src/workers/eventGeneration/types.ts:32](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L32)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/workers/eventGeneration/types.ts:32](https://github.com/Sourya0
 
 > **retryAttempts**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:34](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/types.ts#L34)
+Defined in: [src/workers/eventGeneration/types.ts:34](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L34)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/workers/eventGeneration/types.ts:34](https://github.com/Sourya0
 
 > **timeoutMs**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:33](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/types.ts#L33)
+Defined in: [src/workers/eventGeneration/types.ts:33](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L33)

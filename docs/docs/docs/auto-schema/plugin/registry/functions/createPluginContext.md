@@ -6,7 +6,7 @@
 
 > **createPluginContext**(`dependencies`): [`IPluginContext`](../../types/interfaces/IPluginContext.md)
 
-Defined in: [src/plugin/registry.ts:17](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/registry.ts#L17)
+Defined in: [src/plugin/registry.ts:17](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/registry.ts#L17)
 
 Creates a plugin context object with all necessary dependencies
 

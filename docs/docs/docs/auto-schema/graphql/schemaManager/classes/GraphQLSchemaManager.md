@@ -4,7 +4,7 @@
 
 # Class: GraphQLSchemaManager
 
-Defined in: [src/graphql/schemaManager.ts:15](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/schemaManager.ts#L15)
+Defined in: [src/graphql/schemaManager.ts:15](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/schemaManager.ts#L15)
 
 ## Constructors
 
@@ -22,7 +22,7 @@ Defined in: [src/graphql/schemaManager.ts:15](https://github.com/Sourya07/talawa
 
 > **buildInitialSchema**(): `Promise`\<`GraphQLSchema`\>
 
-Defined in: [src/graphql/schemaManager.ts:41](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/schemaManager.ts#L41)
+Defined in: [src/graphql/schemaManager.ts:41](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/schemaManager.ts#L41)
 
 Build the initial schema
 
@@ -36,7 +36,7 @@ Build the initial schema
 
 > **getCurrentSchema**(): `null` \| `GraphQLSchema`
 
-Defined in: [src/graphql/schemaManager.ts:255](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/schemaManager.ts#L255)
+Defined in: [src/graphql/schemaManager.ts:255](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/schemaManager.ts#L255)
 
 Get the current schema
 
@@ -50,7 +50,7 @@ Get the current schema
 
 > **onSchemaUpdate**(`callback`): `void`
 
-Defined in: [src/graphql/schemaManager.ts:226](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/schemaManager.ts#L226)
+Defined in: [src/graphql/schemaManager.ts:226](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/schemaManager.ts#L226)
 
 Register a callback to be notified when the schema is updated
 
@@ -70,7 +70,7 @@ Register a callback to be notified when the schema is updated
 
 > **rebuildSchema**(): `Promise`\<`GraphQLSchema`\>
 
-Defined in: [src/graphql/schemaManager.ts:61](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/schemaManager.ts#L61)
+Defined in: [src/graphql/schemaManager.ts:61](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/schemaManager.ts#L61)
 
 Dynamically rebuild the GraphQL schema
 
@@ -84,7 +84,7 @@ Dynamically rebuild the GraphQL schema
 
 > **removeSchemaUpdateCallback**(`callback`): `void`
 
-Defined in: [src/graphql/schemaManager.ts:233](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/schemaManager.ts#L233)
+Defined in: [src/graphql/schemaManager.ts:233](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/schemaManager.ts#L233)
 
 Remove a schema update callback
 

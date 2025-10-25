@@ -6,7 +6,7 @@
 
 > **getProcessingStatistics**(`deps`): `Promise`\<\{ `averageInstancesPerRun`: `number`; `enabledOrganizations`: `number`; `lastProcessingRun`: `null` \| `Date`; `organizationsNeedingProcessing`: `number`; `totalOrganizations`: `number`; \}\>
 
-Defined in: [src/workers/eventGeneration/windowManager.ts:274](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/windowManager.ts#L274)
+Defined in: [src/workers/eventGeneration/windowManager.ts:274](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/windowManager.ts#L274)
 
 Gets processing statistics for all organizations
 

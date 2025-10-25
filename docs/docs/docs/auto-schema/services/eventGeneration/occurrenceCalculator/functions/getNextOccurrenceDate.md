@@ -6,7 +6,7 @@
 
 > **getNextOccurrenceDate**(`currentDate`, `recurrenceRule`): `Date`
 
-Defined in: [src/services/eventGeneration/occurrenceCalculator.ts:404](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/services/eventGeneration/occurrenceCalculator.ts#L404)
+Defined in: [src/services/eventGeneration/occurrenceCalculator.ts:404](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/services/eventGeneration/occurrenceCalculator.ts#L404)
 
 Calculates the next potential occurrence date based on the event's frequency and interval.
 This function correctly handles advancing the date for all supported frequency types.

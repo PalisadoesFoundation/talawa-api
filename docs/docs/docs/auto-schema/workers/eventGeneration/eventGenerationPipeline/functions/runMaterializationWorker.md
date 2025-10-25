@@ -6,7 +6,7 @@
 
 > **runMaterializationWorker**(`config`, `drizzleClient`, `logger`): `Promise`\<[`WorkerResult`](../interfaces/WorkerResult.md)\>
 
-Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:47](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/eventGenerationPipeline.ts#L47)
+Defined in: [src/workers/eventGeneration/eventGenerationPipeline.ts:47](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/eventGenerationPipeline.ts#L47)
 
 The main function for the materialization worker, orchestrating the entire pipeline
 from job discovery to execution and post-processing.

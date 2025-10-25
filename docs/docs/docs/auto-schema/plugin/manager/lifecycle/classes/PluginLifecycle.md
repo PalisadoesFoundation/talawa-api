@@ -4,7 +4,7 @@
 
 # Class: PluginLifecycle
 
-Defined in: [src/plugin/manager/lifecycle.ts:35](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/manager/lifecycle.ts#L35)
+Defined in: [src/plugin/manager/lifecycle.ts:35](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/manager/lifecycle.ts#L35)
 
 ## Constructors
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/manager/lifecycle.ts:35](https://github.com/Sourya07/tal
 
 > **new PluginLifecycle**(`pluginContext`, `loadedPlugins`, `extensionRegistry`): `PluginLifecycle`
 
-Defined in: [src/plugin/manager/lifecycle.ts:36](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/manager/lifecycle.ts#L36)
+Defined in: [src/plugin/manager/lifecycle.ts:36](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/manager/lifecycle.ts#L36)
 
 #### Parameters
 
@@ -38,7 +38,7 @@ Defined in: [src/plugin/manager/lifecycle.ts:36](https://github.com/Sourya07/tal
 
 > **activatePlugin**(`pluginId`, `pluginManager`): `Promise`\<`boolean`\>
 
-Defined in: [src/plugin/manager/lifecycle.ts:121](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/manager/lifecycle.ts#L121)
+Defined in: [src/plugin/manager/lifecycle.ts:121](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/manager/lifecycle.ts#L121)
 
 Activate a plugin - trigger schema rebuild
 
@@ -62,7 +62,7 @@ Activate a plugin - trigger schema rebuild
 
 > **deactivatePlugin**(`pluginId`, `pluginManager`, `dropTables`): `Promise`\<`boolean`\>
 
-Defined in: [src/plugin/manager/lifecycle.ts:176](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/manager/lifecycle.ts#L176)
+Defined in: [src/plugin/manager/lifecycle.ts:176](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/manager/lifecycle.ts#L176)
 
 Deactivate a plugin - trigger schema rebuild
 
@@ -90,7 +90,7 @@ Deactivate a plugin - trigger schema rebuild
 
 > **getPluginModule**(`pluginId`): `Promise`\<`null` \| [`IPluginLifecycle`](../../../types/interfaces/IPluginLifecycle.md)\>
 
-Defined in: [src/plugin/manager/lifecycle.ts:360](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/manager/lifecycle.ts#L360)
+Defined in: [src/plugin/manager/lifecycle.ts:360](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/manager/lifecycle.ts#L360)
 
 Get plugin module for lifecycle hooks
 
@@ -110,7 +110,7 @@ Get plugin module for lifecycle hooks
 
 > **installPlugin**(`pluginId`, `pluginManager`): `Promise`\<`boolean`\>
 
-Defined in: [src/plugin/manager/lifecycle.ts:45](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/manager/lifecycle.ts#L45)
+Defined in: [src/plugin/manager/lifecycle.ts:45](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/manager/lifecycle.ts#L45)
 
 Install a plugin - install dependencies and create plugin-defined databases
 
@@ -134,7 +134,7 @@ Install a plugin - install dependencies and create plugin-defined databases
 
 > **removeFromExtensionRegistry**(`pluginId`): `void`
 
-Defined in: [src/plugin/manager/lifecycle.ts:380](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/manager/lifecycle.ts#L380)
+Defined in: [src/plugin/manager/lifecycle.ts:380](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/manager/lifecycle.ts#L380)
 
 Remove plugin from extension registry
 
@@ -154,7 +154,7 @@ Remove plugin from extension registry
 
 > **uninstallPlugin**(`pluginId`, `pluginManager`): `Promise`\<`boolean`\>
 
-Defined in: [src/plugin/manager/lifecycle.ts:82](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/manager/lifecycle.ts#L82)
+Defined in: [src/plugin/manager/lifecycle.ts:82](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/manager/lifecycle.ts#L82)
 
 Uninstall a plugin - remove tables and cleanup
 
@@ -178,7 +178,7 @@ Uninstall a plugin - remove tables and cleanup
 
 > **unloadPlugin**(`pluginId`, `pluginManager`): `Promise`\<`boolean`\>
 
-Defined in: [src/plugin/manager/lifecycle.ts:506](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/manager/lifecycle.ts#L506)
+Defined in: [src/plugin/manager/lifecycle.ts:506](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/manager/lifecycle.ts#L506)
 
 Unload a plugin - remove from memory without database changes
 

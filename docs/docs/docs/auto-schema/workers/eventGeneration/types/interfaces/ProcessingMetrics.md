@@ -4,7 +4,7 @@
 
 # Interface: ProcessingMetrics
 
-Defined in: [src/workers/eventGeneration/types.ts:14](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/types.ts#L14)
+Defined in: [src/workers/eventGeneration/types.ts:14](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L14)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/workers/eventGeneration/types.ts:14](https://github.com/Sourya0
 
 > **endTime**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:16](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/types.ts#L16)
+Defined in: [src/workers/eventGeneration/types.ts:16](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L16)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/workers/eventGeneration/types.ts:16](https://github.com/Sourya0
 
 > **errorsEncountered**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:20](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/types.ts#L20)
+Defined in: [src/workers/eventGeneration/types.ts:20](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L20)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/workers/eventGeneration/types.ts:20](https://github.com/Sourya0
 
 > **eventsProcessed**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:18](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/types.ts#L18)
+Defined in: [src/workers/eventGeneration/types.ts:18](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L18)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [src/workers/eventGeneration/types.ts:18](https://github.com/Sourya0
 
 > **instancesCreated**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:17](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/types.ts#L17)
+Defined in: [src/workers/eventGeneration/types.ts:17](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L17)
 
 ***
 
@@ -44,7 +44,7 @@ Defined in: [src/workers/eventGeneration/types.ts:17](https://github.com/Sourya0
 
 > **organizationsProcessed**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:19](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/types.ts#L19)
+Defined in: [src/workers/eventGeneration/types.ts:19](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L19)
 
 ***
 
@@ -52,4 +52,4 @@ Defined in: [src/workers/eventGeneration/types.ts:19](https://github.com/Sourya0
 
 > **startTime**: `number`
 
-Defined in: [src/workers/eventGeneration/types.ts:15](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/types.ts#L15)
+Defined in: [src/workers/eventGeneration/types.ts:15](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/types.ts#L15)

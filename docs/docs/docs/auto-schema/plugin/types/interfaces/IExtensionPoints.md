@@ -4,7 +4,7 @@
 
 # Interface: IExtensionPoints
 
-Defined in: [src/plugin/types.ts:32](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/types.ts#L32)
+Defined in: [src/plugin/types.ts:32](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L32)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:32](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **database**: [`IDatabaseExtension`](IDatabaseExtension.md)[]
 
-Defined in: [src/plugin/types.ts:34](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/types.ts#L34)
+Defined in: [src/plugin/types.ts:34](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L34)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:34](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **graphql**: [`IGraphQLExtension`](IGraphQLExtension.md)[]
 
-Defined in: [src/plugin/types.ts:33](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/types.ts#L33)
+Defined in: [src/plugin/types.ts:33](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L33)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/plugin/types.ts:33](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **hooks**: [`IHookExtension`](IHookExtension.md)[]
 
-Defined in: [src/plugin/types.ts:35](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/types.ts#L35)
+Defined in: [src/plugin/types.ts:35](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L35)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/plugin/types.ts:35](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **webhooks**: [`IWebhookExtension`](IWebhookExtension.md)[]
 
-Defined in: [src/plugin/types.ts:36](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/types.ts#L36)
+Defined in: [src/plugin/types.ts:36](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L36)

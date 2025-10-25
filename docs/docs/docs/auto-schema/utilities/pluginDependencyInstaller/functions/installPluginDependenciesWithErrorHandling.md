@@ -6,7 +6,7 @@
 
 > **installPluginDependenciesWithErrorHandling**(`pluginId`, `logger?`): `Promise`\<`void`\>
 
-Defined in: [src/utilities/pluginDependencyInstaller.ts:100](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/utilities/pluginDependencyInstaller.ts#L100)
+Defined in: [src/utilities/pluginDependencyInstaller.ts:100](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/pluginDependencyInstaller.ts#L100)
 
 Install dependencies for a plugin with error handling that throws TalawaGraphQLError
 

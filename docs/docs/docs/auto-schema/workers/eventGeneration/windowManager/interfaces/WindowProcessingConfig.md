@@ -4,7 +4,7 @@
 
 # Interface: WindowProcessingConfig
 
-Defined in: [src/workers/eventGeneration/windowManager.ts:20](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/windowManager.ts#L20)
+Defined in: [src/workers/eventGeneration/windowManager.ts:20](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/windowManager.ts#L20)
 
 Configuration for window processing
 
@@ -14,7 +14,7 @@ Configuration for window processing
 
 > **maxOrganizationsPerRun**: `number`
 
-Defined in: [src/workers/eventGeneration/windowManager.ts:21](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/windowManager.ts#L21)
+Defined in: [src/workers/eventGeneration/windowManager.ts:21](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/windowManager.ts#L21)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/workers/eventGeneration/windowManager.ts:21](https://github.com
 
 > **priorityThresholdWeeks**: `number`
 
-Defined in: [src/workers/eventGeneration/windowManager.ts:23](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/windowManager.ts#L23)
+Defined in: [src/workers/eventGeneration/windowManager.ts:23](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/windowManager.ts#L23)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [src/workers/eventGeneration/windowManager.ts:23](https://github.com
 
 > **processingTimeoutHours**: `number`
 
-Defined in: [src/workers/eventGeneration/windowManager.ts:22](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/workers/eventGeneration/windowManager.ts#L22)
+Defined in: [src/workers/eventGeneration/windowManager.ts:22](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/workers/eventGeneration/windowManager.ts#L22)

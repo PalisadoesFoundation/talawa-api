@@ -4,7 +4,7 @@
 
 # Interface: IHookExtension
 
-Defined in: [src/plugin/types.ts:54](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/types.ts#L54)
+Defined in: [src/plugin/types.ts:54](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L54)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:54](https://github.com/Sourya07/talawa-api/blob
 
 > **event**: `string`
 
-Defined in: [src/plugin/types.ts:56](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/types.ts#L56)
+Defined in: [src/plugin/types.ts:56](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L56)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:56](https://github.com/Sourya07/talawa-api/blob
 
 > `optional` **file**: `string`
 
-Defined in: [src/plugin/types.ts:58](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/types.ts#L58)
+Defined in: [src/plugin/types.ts:58](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L58)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/plugin/types.ts:58](https://github.com/Sourya07/talawa-api/blob
 
 > **handler**: `string`
 
-Defined in: [src/plugin/types.ts:57](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/types.ts#L57)
+Defined in: [src/plugin/types.ts:57](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L57)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/plugin/types.ts:57](https://github.com/Sourya07/talawa-api/blob
 
 > **type**: `"post"` \| `"pre"`
 
-Defined in: [src/plugin/types.ts:55](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/types.ts#L55)
+Defined in: [src/plugin/types.ts:55](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/types.ts#L55)

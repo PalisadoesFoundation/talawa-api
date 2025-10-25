@@ -4,7 +4,7 @@
 
 # Interface: GetUnifiedEventsInput
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:34](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L34)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:34](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L34)
 
 Defines the input parameters for querying a unified list of events,
 including both standalone and recurring instances.
@@ -15,7 +15,7 @@ including both standalone and recurring instances.
 
 > **endDate**: `Date`
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:37](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L37)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:37](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L37)
 
 ***
 
@@ -23,7 +23,7 @@ Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:37](htt
 
 > `optional` **includeRecurring**: `boolean`
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:38](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L38)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:38](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L38)
 
 ***
 
@@ -31,7 +31,7 @@ Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:38](htt
 
 > `optional` **limit**: `number`
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:39](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L39)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:39](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L39)
 
 ***
 
@@ -39,7 +39,7 @@ Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:39](htt
 
 > **organizationId**: `string`
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:35](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L35)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:35](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L35)
 
 ***
 
@@ -47,4 +47,4 @@ Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:35](htt
 
 > **startDate**: `Date`
 
-Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:36](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L36)
+Defined in: [src/graphql/types/Query/eventQueries/unifiedEventQueries.ts:36](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/graphql/types/Query/eventQueries/unifiedEventQueries.ts#L36)

@@ -6,7 +6,7 @@
 
 > **isCountBasedEvent**(`rule`): `boolean`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:284](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/utilities/recurringEventHelpers.ts#L284)
+Defined in: [src/utilities/recurringEventHelpers.ts:284](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/utilities/recurringEventHelpers.ts#L284)
 
 Determines if a recurrence rule is count-based.
 A count-based event is defined by a `count` of occurrences and does not have an `endDate`.

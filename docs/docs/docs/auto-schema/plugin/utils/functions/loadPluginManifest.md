@@ -6,7 +6,7 @@
 
 > **loadPluginManifest**(`pluginPath`): `Promise`\<[`IPluginManifest`](../../types/interfaces/IPluginManifest.md)\>
 
-Defined in: [src/plugin/utils.ts:67](https://github.com/Sourya07/talawa-api/blob/61a1911602b2f0aac7635e08ae2918f4f768e8ff/src/plugin/utils.ts#L67)
+Defined in: [src/plugin/utils.ts:67](https://github.com/Sourya07/talawa-api/blob/ead7a48e0174153214ee7311f8b242ee1c1a12ca/src/plugin/utils.ts#L67)
 
 Loads a plugin manifest from a file
 
