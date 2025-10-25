@@ -6,7 +6,7 @@
 
 > **ArgumentsAssociatedResourcesNotFoundExtensions** = `object`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:32](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/utilities/TalawaGraphQLError.ts#L32)
+Defined in: [src/utilities/TalawaGraphQLError.ts:32](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/utilities/TalawaGraphQLError.ts#L32)
 
 When resources associated to the provided graphql arguments cannot be not found.
 
@@ -37,7 +37,7 @@ throw new TalawaGraphQLError({
 
 > **code**: `"arguments_associated_resources_not_found"`
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:33](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/utilities/TalawaGraphQLError.ts#L33)
+Defined in: [src/utilities/TalawaGraphQLError.ts:33](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/utilities/TalawaGraphQLError.ts#L33)
 
 ***
 
@@ -45,7 +45,7 @@ Defined in: [src/utilities/TalawaGraphQLError.ts:33](https://github.com/Sourya07
 
 > **issues**: `object`[]
 
-Defined in: [src/utilities/TalawaGraphQLError.ts:34](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/utilities/TalawaGraphQLError.ts#L34)
+Defined in: [src/utilities/TalawaGraphQLError.ts:34](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/utilities/TalawaGraphQLError.ts#L34)
 
 #### argumentPath
 

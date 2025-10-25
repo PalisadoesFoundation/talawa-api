@@ -4,7 +4,7 @@
 
 # Interface: JobDiscoveryConfig
 
-Defined in: [src/workers/eventGeneration/jobDiscovery.ts:15](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/workers/eventGeneration/jobDiscovery.ts#L15)
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:15](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/workers/eventGeneration/jobDiscovery.ts#L15)
 
 Configuration for the job discovery process, defining limits and thresholds.
 
@@ -14,7 +14,7 @@ Configuration for the job discovery process, defining limits and thresholds.
 
 > **lookAheadMonths**: `number`
 
-Defined in: [src/workers/eventGeneration/jobDiscovery.ts:17](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/workers/eventGeneration/jobDiscovery.ts#L17)
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:17](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/workers/eventGeneration/jobDiscovery.ts#L17)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/workers/eventGeneration/jobDiscovery.ts:17](https://github.com/
 
 > **maxOrganizations**: `number`
 
-Defined in: [src/workers/eventGeneration/jobDiscovery.ts:16](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/workers/eventGeneration/jobDiscovery.ts#L16)
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:16](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/workers/eventGeneration/jobDiscovery.ts#L16)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [src/workers/eventGeneration/jobDiscovery.ts:16](https://github.com/
 
 > **priorityThreshold**: `number`
 
-Defined in: [src/workers/eventGeneration/jobDiscovery.ts:18](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/workers/eventGeneration/jobDiscovery.ts#L18)
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:18](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/workers/eventGeneration/jobDiscovery.ts#L18)

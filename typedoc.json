@@ -21,7 +21,8 @@
 		"docs/**",
 		"dist/**",
 		"node_modules/**",
-		"src/utilities/pluginDependencyInstaller/**"
+		"src/utilities/pluginDependencyInstaller/**",
+		"src/graphql/types/Plugin/inputs/**"
 	],
 	"readme": "none",
 	"cleanOutputDir": true,

@@ -6,7 +6,7 @@
 
 > **\_EmailAddress** = `object`
 
-Defined in: [src/graphql/scalars/EmailAddress.ts:21](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/scalars/EmailAddress.ts#L21)
+Defined in: [src/graphql/scalars/EmailAddress.ts:21](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/graphql/scalars/EmailAddress.ts#L21)
 
 `EmailAddress` scalar type for pothos schema.
 The underscore prefix indicates this is an internal type definition.
@@ -24,7 +24,7 @@ Invalid: user@, user@.com, @example.com
 
 > **Input**: `string`
 
-Defined in: [src/graphql/scalars/EmailAddress.ts:22](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/scalars/EmailAddress.ts#L22)
+Defined in: [src/graphql/scalars/EmailAddress.ts:22](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/graphql/scalars/EmailAddress.ts#L22)
 
 ***
 
@@ -32,4 +32,4 @@ Defined in: [src/graphql/scalars/EmailAddress.ts:22](https://github.com/Sourya07
 
 > **Output**: `string`
 
-Defined in: [src/graphql/scalars/EmailAddress.ts:23](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/scalars/EmailAddress.ts#L23)
+Defined in: [src/graphql/scalars/EmailAddress.ts:23](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/graphql/scalars/EmailAddress.ts#L23)

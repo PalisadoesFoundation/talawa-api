@@ -4,7 +4,7 @@
 
 # Interface: EmailConfig
 
-Defined in: [src/services/ses/EmailService.ts:4](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/ses/EmailService.ts#L4)
+Defined in: [src/services/ses/EmailService.ts:4](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/services/ses/EmailService.ts#L4)
 
 Email configuration interface
 
@@ -14,7 +14,7 @@ Email configuration interface
 
 > **fromEmail**: `string`
 
-Defined in: [src/services/ses/EmailService.ts:6](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/ses/EmailService.ts#L6)
+Defined in: [src/services/ses/EmailService.ts:6](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/services/ses/EmailService.ts#L6)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/ses/EmailService.ts:6](https://github.com/Sourya07/tal
 
 > `optional` **fromName**: `string`
 
-Defined in: [src/services/ses/EmailService.ts:7](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/ses/EmailService.ts#L7)
+Defined in: [src/services/ses/EmailService.ts:7](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/services/ses/EmailService.ts#L7)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [src/services/ses/EmailService.ts:7](https://github.com/Sourya07/tal
 
 > **region**: `string`
 
-Defined in: [src/services/ses/EmailService.ts:5](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/ses/EmailService.ts#L5)
+Defined in: [src/services/ses/EmailService.ts:5](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/services/ses/EmailService.ts#L5)

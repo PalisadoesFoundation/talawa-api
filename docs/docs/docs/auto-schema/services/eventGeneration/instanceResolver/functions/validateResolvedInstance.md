@@ -6,7 +6,7 @@
 
 > **validateResolvedInstance**(`resolvedInstance`, `logger`): `boolean`
 
-Defined in: [src/services/eventGeneration/instanceResolver.ts:257](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/services/eventGeneration/instanceResolver.ts#L257)
+Defined in: [src/services/eventGeneration/instanceResolver.ts:257](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/services/eventGeneration/instanceResolver.ts#L257)
 
 Validates that a resolved generated instance contains all required fields.
 This function helps ensure data integrity before the instance is used elsewhere.

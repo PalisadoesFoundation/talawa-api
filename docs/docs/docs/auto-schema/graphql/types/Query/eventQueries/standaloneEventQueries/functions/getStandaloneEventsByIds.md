@@ -6,7 +6,7 @@
 
 > **getStandaloneEventsByIds**(`eventIds`, `drizzleClient`, `logger`): `Promise`\<`object` & `object`[]\>
 
-Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:120](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L120)
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:120](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L120)
 
 Retrieves standalone events by a list of specific IDs.
 This function is designed for the `eventsByIds` query, ensuring that only standalone events

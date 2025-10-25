@@ -6,7 +6,7 @@
 
 > **UpdateEventAttendeeInput** = `object`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:236](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/drizzle/tables/eventAttendees.ts#L236)
+Defined in: [src/drizzle/tables/eventAttendees.ts:236](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/drizzle/tables/eventAttendees.ts#L236)
 
 Type for updating an event attendee record.
 
@@ -16,7 +16,7 @@ Type for updating an event attendee record.
 
 > `optional` **checkinTime**: `Date`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:237](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/drizzle/tables/eventAttendees.ts#L237)
+Defined in: [src/drizzle/tables/eventAttendees.ts:237](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/drizzle/tables/eventAttendees.ts#L237)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:237](https://github.com/Sourya
 
 > `optional` **checkoutTime**: `Date`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:238](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/drizzle/tables/eventAttendees.ts#L238)
+Defined in: [src/drizzle/tables/eventAttendees.ts:238](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/drizzle/tables/eventAttendees.ts#L238)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:238](https://github.com/Sourya
 
 > `optional` **feedbackSubmitted**: `boolean`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:239](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/drizzle/tables/eventAttendees.ts#L239)
+Defined in: [src/drizzle/tables/eventAttendees.ts:239](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/drizzle/tables/eventAttendees.ts#L239)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:239](https://github.com/Sourya
 
 > `optional` **isCheckedIn**: `boolean`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:242](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/drizzle/tables/eventAttendees.ts#L242)
+Defined in: [src/drizzle/tables/eventAttendees.ts:242](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/drizzle/tables/eventAttendees.ts#L242)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:242](https://github.com/Sourya
 
 > `optional` **isCheckedOut**: `boolean`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:243](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/drizzle/tables/eventAttendees.ts#L243)
+Defined in: [src/drizzle/tables/eventAttendees.ts:243](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/drizzle/tables/eventAttendees.ts#L243)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:243](https://github.com/Sourya
 
 > `optional` **isInvited**: `boolean`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:240](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/drizzle/tables/eventAttendees.ts#L240)
+Defined in: [src/drizzle/tables/eventAttendees.ts:240](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/drizzle/tables/eventAttendees.ts#L240)
 
 ***
 
@@ -64,4 +64,4 @@ Defined in: [src/drizzle/tables/eventAttendees.ts:240](https://github.com/Sourya
 
 > `optional` **isRegistered**: `boolean`
 
-Defined in: [src/drizzle/tables/eventAttendees.ts:241](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/drizzle/tables/eventAttendees.ts#L241)
+Defined in: [src/drizzle/tables/eventAttendees.ts:241](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/drizzle/tables/eventAttendees.ts#L241)

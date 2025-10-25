@@ -4,7 +4,7 @@
 
 # Enumeration: PluginStatus
 
-Defined in: [src/plugin/types.ts:115](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L115)
+Defined in: [src/plugin/types.ts:115](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/plugin/types.ts#L115)
 
 ## Enumeration Members
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:115](https://github.com/Sourya07/talawa-api/blo
 
 > **ACTIVE**: `"active"`
 
-Defined in: [src/plugin/types.ts:116](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L116)
+Defined in: [src/plugin/types.ts:116](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/plugin/types.ts#L116)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:116](https://github.com/Sourya07/talawa-api/blo
 
 > **ERROR**: `"error"`
 
-Defined in: [src/plugin/types.ts:118](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L118)
+Defined in: [src/plugin/types.ts:118](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/plugin/types.ts#L118)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/plugin/types.ts:118](https://github.com/Sourya07/talawa-api/blo
 
 > **INACTIVE**: `"inactive"`
 
-Defined in: [src/plugin/types.ts:117](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L117)
+Defined in: [src/plugin/types.ts:117](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/plugin/types.ts#L117)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/plugin/types.ts:117](https://github.com/Sourya07/talawa-api/blo
 
 > **LOADING**: `"loading"`
 
-Defined in: [src/plugin/types.ts:119](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L119)
+Defined in: [src/plugin/types.ts:119](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/plugin/types.ts#L119)

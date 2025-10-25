@@ -6,7 +6,7 @@
 
 > **calculateCompletionDateFromCount**(`startDate`, `count`, `frequency`, `interval`): `Date`
 
-Defined in: [src/utilities/recurringEventHelpers.ts:172](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/utilities/recurringEventHelpers.ts#L172)
+Defined in: [src/utilities/recurringEventHelpers.ts:172](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/utilities/recurringEventHelpers.ts#L172)
 
 Calculates the completion date of a recurrence that is defined by a `count`.
 This function is used internally by `normalizeRecurrenceRule` to convert a count-based

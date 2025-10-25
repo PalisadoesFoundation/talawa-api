@@ -4,7 +4,7 @@
 
 # Interface: IPluginError
 
-Defined in: [src/plugin/types.ts:155](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L155)
+Defined in: [src/plugin/types.ts:155](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/plugin/types.ts#L155)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: [src/plugin/types.ts:155](https://github.com/Sourya07/talawa-api/blo
 
 > **error**: `Error`
 
-Defined in: [src/plugin/types.ts:157](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L157)
+Defined in: [src/plugin/types.ts:157](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/plugin/types.ts#L157)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: [src/plugin/types.ts:157](https://github.com/Sourya07/talawa-api/blo
 
 > **phase**: `"load"` \| `"activate"` \| `"deactivate"` \| `"unload"` \| `"install"` \| `"uninstall"`
 
-Defined in: [src/plugin/types.ts:158](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L158)
+Defined in: [src/plugin/types.ts:158](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/plugin/types.ts#L158)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [src/plugin/types.ts:158](https://github.com/Sourya07/talawa-api/blo
 
 > **pluginId**: `string`
 
-Defined in: [src/plugin/types.ts:156](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L156)
+Defined in: [src/plugin/types.ts:156](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/plugin/types.ts#L156)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [src/plugin/types.ts:156](https://github.com/Sourya07/talawa-api/blo
 
 > **timestamp**: `Date`
 
-Defined in: [src/plugin/types.ts:165](https://github.com/Sourya07/talawa-api/blob/3df16fa5fb47e8947dc575f048aef648ae9ebcf8/src/plugin/types.ts#L165)
+Defined in: [src/plugin/types.ts:165](https://github.com/Sourya07/talawa-api/blob/cfbd515d04ffba748b09232a33807f1845dd1878/src/plugin/types.ts#L165)
