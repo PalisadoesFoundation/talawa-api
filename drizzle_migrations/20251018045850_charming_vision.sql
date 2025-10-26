@@ -1,1 +1,0 @@
-ALTER TABLE "email_notifications" ALTER COLUMN "user_id" DROP NOT NULL;
