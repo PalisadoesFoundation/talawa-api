@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { beforeAll, expect, suite, test, vi } from "vitest";
+import { afterEach, beforeAll, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -10,6 +10,7 @@ import {
 } from "../documentNodes";
 
 let authToken: string;
+
 // Sign in once before tests
 beforeAll(async () => {
 	const signInResult = await mercuriusClient.query(Query_signIn, {
@@ -24,6 +25,10 @@ beforeAll(async () => {
 	assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
 	authToken = signInResult.data.signIn.authenticationToken;
 	assertToBeNonNullish(authToken);
+});
+
+afterEach(() => {
+	vi.restoreAllMocks();
 });
 
 const OrganizationPostsCountQuery = `
@@ -231,7 +236,7 @@ suite("Organization postsCount Field", () => {
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
 
-		const originalFindFirst = vi
+		const findFirstSpy = vi
 			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
 			.mockResolvedValueOnce(undefined);
 
@@ -251,7 +256,7 @@ suite("Organization postsCount Field", () => {
 				]),
 			);
 		} finally {
-			originalFindFirst.mockRestore();
+			findFirstSpy.mockRestore();
 		}
 	});
 
