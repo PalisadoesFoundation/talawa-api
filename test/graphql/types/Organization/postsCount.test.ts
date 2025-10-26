@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test, vi } from "vitest";
+import { beforeAll, expect, suite, test, vi } from "vitest";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
@@ -9,18 +9,22 @@ import {
 	Query_signIn,
 } from "../documentNodes";
 
-// Sign in as system administrator to perform setup actions
-const signInResult = await mercuriusClient.query(Query_signIn, {
-	variables: {
-		input: {
-			emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
-			password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+let authToken: string;
+// Sign in once before tests
+beforeAll(async () => {
+	const signInResult = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
 		},
-	},
+	});
+	assertToBeNonNullish(signInResult.data?.signIn);
+	assertToBeNonNullish(signInResult.data.signIn.authenticationToken);
+	authToken = signInResult.data.signIn.authenticationToken;
+	assertToBeNonNullish(authToken);
 });
-assertToBeNonNullish(signInResult.data?.signIn);
-const authToken = signInResult.data.signIn.authenticationToken;
-assertToBeNonNullish(authToken);
 
 const OrganizationPostsCountQuery = `
   query OrgPostsCount($input: QueryOrganizationInput!) {
@@ -36,7 +40,7 @@ suite("Organization postsCount Field", () => {
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
 					input: {
 						name: `PostsCount Test Org ${faker.string.uuid()}`,
@@ -75,7 +79,7 @@ suite("Organization postsCount Field", () => {
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
 					input: {
 						name: `No Posts Org ${faker.string.uuid()}`,
@@ -94,7 +98,7 @@ suite("Organization postsCount Field", () => {
 		assertToBeNonNullish(orgId);
 
 		const result = await mercuriusClient.query(OrganizationPostsCountQuery, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: orgId } },
 		});
 
@@ -106,7 +110,7 @@ suite("Organization postsCount Field", () => {
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
 					input: {
 						name: `Posts Org ${faker.string.uuid()}`,
@@ -129,7 +133,7 @@ suite("Organization postsCount Field", () => {
 			const createPostResult = await mercuriusClient.mutate(
 				Mutation_createPost,
 				{
-					headers: { authorization: `bearer ${authToken}` },
+					headers: { authorization: `Bearer ${authToken}` },
 					variables: {
 						input: {
 							caption,
@@ -151,7 +155,7 @@ suite("Organization postsCount Field", () => {
 		}
 
 		const result = await mercuriusClient.query(OrganizationPostsCountQuery, {
-			headers: { authorization: `bearer ${authToken}` },
+			headers: { authorization: `Bearer ${authToken}` },
 			variables: { input: { id: orgId } },
 		});
 
@@ -164,7 +168,7 @@ suite("Organization postsCount Field", () => {
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
 					input: {
 						name: `Unauthorized Posts Org ${faker.string.uuid()}`,
@@ -189,7 +193,7 @@ suite("Organization postsCount Field", () => {
 		assertToBeNonNullish(regularAuthToken);
 
 		const result = await mercuriusClient.query(OrganizationPostsCountQuery, {
-			headers: { authorization: `bearer ${regularAuthToken}` },
+			headers: { authorization: `Bearer ${regularAuthToken}` },
 			variables: { input: { id: orgId } },
 		});
 
@@ -208,7 +212,7 @@ suite("Organization postsCount Field", () => {
 		const createOrgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `Bearer ${authToken}` },
 				variables: {
 					input: {
 						name: `Missing User Org ${faker.string.uuid()}`,
@@ -227,14 +231,13 @@ suite("Organization postsCount Field", () => {
 		const orgId = createOrgResult.data?.createOrganization?.id;
 		assertToBeNonNullish(orgId);
 
-		const originalFindFirst = server.drizzleClient.query.usersTable.findFirst;
-		server.drizzleClient.query.usersTable.findFirst = vi
-			.fn()
+		const originalFindFirst = vi
+			.spyOn(server.drizzleClient.query.usersTable, "findFirst")
 			.mockResolvedValueOnce(undefined);
 
 		try {
 			const result = await mercuriusClient.query(OrganizationPostsCountQuery, {
-				headers: { authorization: `bearer ${authToken}` },
+				headers: { authorization: `Bearer ${authToken}` },
 				variables: { input: { id: orgId } },
 			});
 
@@ -248,49 +251,55 @@ suite("Organization postsCount Field", () => {
 				]),
 			);
 		} finally {
-			server.drizzleClient.query.usersTable.findFirst = originalFindFirst;
+			originalFindFirst.mockRestore();
 		}
 	});
 
-	test("returns 0 when posts select returns an empty array (postsCount undefined branch)", async () => {
-		const createOrgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: { authorization: `bearer ${authToken}` },
-				variables: {
-					input: {
-						name: `Empty Select Org ${faker.string.uuid()}`,
-						description: "Org to test postsCount undefined",
-						countryCode: "us",
-						state: "CA",
-						city: "San Francisco",
-						postalCode: "94101",
-						addressLine1: "100 Test St",
-						addressLine2: "Suite 1",
+	test.sequential(
+		"returns 0 when posts select returns an empty array (postsCount undefined branch)",
+		async () => {
+			const createOrgResult = await mercuriusClient.mutate(
+				Mutation_createOrganization,
+				{
+					headers: { authorization: `Bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Empty Select Org ${faker.string.uuid()}`,
+							description: "Org to test postsCount undefined",
+							countryCode: "us",
+							state: "CA",
+							city: "San Francisco",
+							postalCode: "94101",
+							addressLine1: "100 Test St",
+							addressLine2: "Suite 1",
+						},
 					},
 				},
-			},
-		);
+			);
 
-		const orgId = createOrgResult.data?.createOrganization?.id;
-		assertToBeNonNullish(orgId);
+			const orgId = createOrgResult.data?.createOrganization?.id;
+			assertToBeNonNullish(orgId);
 
-		const originalSelect = server.drizzleClient.select;
-		// mock the select chain to return an empty array so postsCount === undefined
-		server.drizzleClient.select = vi.fn().mockReturnValue({
-			from: () => ({ where: async () => [] }),
-		});
+			const originalSelect = server.drizzleClient.select;
+			// Assign a minimal mock implementation that matches the runtime shape used by the resolver.
+			server.drizzleClient.select = ((): unknown => ({
+				from: () => ({ where: async () => [] }),
+			})) as unknown as typeof originalSelect;
 
-		try {
-			const result = await mercuriusClient.query(OrganizationPostsCountQuery, {
-				headers: { authorization: `bearer ${authToken}` },
-				variables: { input: { id: orgId } },
-			});
+			try {
+				const result = await mercuriusClient.query(
+					OrganizationPostsCountQuery,
+					{
+						headers: { authorization: `Bearer ${authToken}` },
+						variables: { input: { id: orgId } },
+					},
+				);
 
-			expect(result.errors).toBeUndefined();
-			expect(result.data?.organization?.postsCount).toBe(0);
-		} finally {
-			server.drizzleClient.select = originalSelect;
-		}
-	});
+				expect(result.errors).toBeUndefined();
+				expect(result.data?.organization?.postsCount).toBe(0);
+			} finally {
+				server.drizzleClient.select = originalSelect;
+			}
+		},
+	);
 });
