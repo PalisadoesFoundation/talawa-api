@@ -10,6 +10,7 @@ import {
 	Mutation_createActionItem,
 	Mutation_createActionItemCategory,
 	Mutation_createEvent,
+	Mutation_createEventVolunteer,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Query_eventActionItems,
@@ -24,7 +25,8 @@ type ActionItemWithException = {
 	isCompleted: boolean;
 	postCompletionNotes: string | null;
 	preCompletionNotes: string | null;
-	assigneeId: string | null;
+	volunteerId: string | null;
+	volunteerGroupId: string | null;
 	categoryId: string | null;
 	assignedAt: Date;
 	createdAt: Date;
@@ -121,11 +123,29 @@ async function createEvent(organizationId: string) {
 	return createEventResult.data.createEvent;
 }
 
+async function createVolunteer(eventId: string, userId: string) {
+	const createVolunteerResult = await mercuriusClient.mutate(
+		Mutation_createEventVolunteer,
+		{
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: {
+				input: {
+					eventId,
+					userId,
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(createVolunteerResult.data?.createEventVolunteer);
+	return createVolunteerResult.data.createEventVolunteer;
+}
+
 suite("Event.actionItems", () => {
 	test("should return paginated action items for an event", async () => {
 		const organization = await createOrg();
 		const category = await createCategory(organization.id);
 		const event = await createEvent(organization.id);
+		const volunteer = await createVolunteer(event.id, adminUser.id);
 
 		for (let i = 0; i < 5; i++) {
 			await mercuriusClient.mutate(Mutation_createActionItem, {
@@ -133,7 +153,7 @@ suite("Event.actionItems", () => {
 				variables: {
 					input: {
 						categoryId: category.id as string,
-						assigneeId: adminUser.id,
+						volunteerId: volunteer.id,
 						organizationId: organization.id,
 						eventId: event.id,
 						assignedAt: new Date().toISOString(),
@@ -649,7 +669,8 @@ suite("Event.actionItems", () => {
 				isCompleted: false,
 				postCompletionNotes: null,
 				preCompletionNotes: null,
-				assigneeId: "user-456",
+				volunteerId: "volunteer-456",
+				volunteerGroupId: null,
 				categoryId: "category-1",
 				assignedAt: new Date(),
 				createdAt: new Date(),
@@ -665,7 +686,8 @@ suite("Event.actionItems", () => {
 				isCompleted: false,
 				postCompletionNotes: null,
 				preCompletionNotes: null,
-				assigneeId: "user-456",
+				volunteerId: "volunteer-456",
+				volunteerGroupId: null,
 				categoryId: "category-1",
 				assignedAt: new Date(),
 				createdAt: new Date(),
@@ -688,7 +710,8 @@ suite("Event.actionItems", () => {
 				completed: null,
 				postCompletionNotes: null,
 				preCompletionNotes: null,
-				assigneeId: null,
+				volunteerId: null,
+				volunteerGroupId: null,
 				categoryId: null,
 				assignedAt: null,
 			},
@@ -700,7 +723,8 @@ suite("Event.actionItems", () => {
 				completed: true,
 				postCompletionNotes: "Updated notes",
 				preCompletionNotes: "Pre notes",
-				assigneeId: "user-789",
+				volunteerId: "user-789",
+				volunteerGroupId: null,
 				categoryId: "category-2",
 				assignedAt: new Date(),
 			},
@@ -721,7 +745,7 @@ suite("Event.actionItems", () => {
 		expect(returnedActionItem.isCompleted).toBe(true);
 		expect(returnedActionItem.postCompletionNotes).toBe("Updated notes");
 		expect(returnedActionItem.preCompletionNotes).toBe("Pre notes");
-		expect(returnedActionItem.assigneeId).toBe("user-789");
+		expect(returnedActionItem.volunteerId).toBe("user-789");
 		expect(returnedActionItem.categoryId).toBe("category-2");
 		expect(returnedActionItem.isInstanceException).toBe(true);
 	});
@@ -764,7 +788,8 @@ suite("Event.actionItems", () => {
 				isCompleted: false,
 				postCompletionNotes: "Original notes",
 				preCompletionNotes: "Original pre notes",
-				assigneeId: "user-456",
+				volunteerId: "user-456",
+				volunteerGroupId: null,
 				categoryId: "category-1",
 				assignedAt: new Date(),
 				createdAt: new Date(),
@@ -780,7 +805,8 @@ suite("Event.actionItems", () => {
 				isCompleted: false,
 				postCompletionNotes: null,
 				preCompletionNotes: null,
-				assigneeId: "user-456",
+				volunteerId: "user-456",
+				volunteerGroupId: null,
 				categoryId: "category-1",
 				assignedAt: new Date(),
 				createdAt: new Date(),
@@ -803,7 +829,8 @@ suite("Event.actionItems", () => {
 				completed: true,
 				postCompletionNotes: "Exception notes",
 				preCompletionNotes: null,
-				assigneeId: "user-999",
+				volunteerId: "user-999",
+				volunteerGroupId: null,
 				categoryId: null,
 				assignedAt: new Date(Date.now() + 1000),
 			},
@@ -834,7 +861,7 @@ suite("Event.actionItems", () => {
 		expect(action1Node.isCompleted).toBe(true);
 		expect(action1Node.postCompletionNotes).toBe("Exception notes");
 		expect(action1Node.preCompletionNotes).toBe("Original pre notes");
-		expect(action1Node.assigneeId).toBe("user-999");
+		expect(action1Node.volunteerId).toBe("user-999");
 		expect(action1Node.categoryId).toBe("category-1");
 		expect(action1Node.isInstanceException).toBe(true);
 
@@ -842,7 +869,7 @@ suite("Event.actionItems", () => {
 		expect(action2Node.isCompleted).toBe(false);
 		expect(action2Node.postCompletionNotes).toBe(null);
 		expect(action2Node.preCompletionNotes).toBe(null);
-		expect(action2Node.assigneeId).toBe("user-456");
+		expect(action2Node.volunteerId).toBe("user-456");
 		expect(action2Node.categoryId).toBe("category-1");
 		expect(action2Node.isInstanceException).toBe(false);
 	});

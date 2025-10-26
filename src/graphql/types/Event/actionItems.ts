@@ -181,8 +181,11 @@ export const resolveActionItemsPaginated = async (
 				actionItem.preCompletionNotes =
 					exception.preCompletionNotes ?? actionItem.preCompletionNotes;
 				// Override with instance-specific values if they exist
-				if (exception.assigneeId !== null) {
-					actionItem.assigneeId = exception.assigneeId;
+				if (exception.volunteerId !== null) {
+					actionItem.volunteerId = exception.volunteerId;
+				}
+				if (exception.volunteerGroupId !== null) {
+					actionItem.volunteerGroupId = exception.volunteerGroupId;
 				}
 				if (exception.categoryId !== null) {
 					actionItem.categoryId = exception.categoryId;

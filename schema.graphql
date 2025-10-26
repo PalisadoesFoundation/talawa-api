@@ -15,9 +15,6 @@ type ActionItem {
   """Timestamp when the action item was assigned."""
   assignedAt: DateTime
 
-  """The user assigned to this action item."""
-  assignee: User
-
   """The category this action item belongs to."""
   category: ActionItemCategory
 
@@ -63,6 +60,12 @@ type ActionItem {
 
   """User who last updated the action item."""
   updater: User
+
+  """The volunteer assigned to this action item."""
+  volunteer: EventVolunteer
+
+  """The volunteer group assigned to this action item."""
+  volunteerGroup: EventVolunteerGroup
 }
 
 type ActionItemCategory {
@@ -593,13 +596,14 @@ type Community {
 
 input CreateActionItemInput {
   assignedAt: String
-  assigneeId: ID!
   categoryId: ID!
   eventId: ID
   isTemplate: Boolean
   organizationId: ID!
   preCompletionNotes: String
   recurringEventInstanceId: ID
+  volunteerGroupId: ID
+  volunteerId: ID
 }
 
 input CreatePluginInput {
@@ -3268,16 +3272,14 @@ input MutationUpdateActionItemCategoryInput {
 input MutationUpdateActionItemForInstanceInput {
   actionId: ID!
   assignedAt: String
-  assigneeId: ID
   categoryId: ID
   eventId: ID!
   preCompletionNotes: String
+  volunteerGroupId: ID
+  volunteerId: ID
 }
 
 input MutationUpdateActionItemInput {
-  """Identifier for the assignee of the action item."""
-  assigneeId: ID
-
   """Category identifier for the action item."""
   categoryId: ID
 
@@ -3292,6 +3294,12 @@ input MutationUpdateActionItemInput {
 
   """Pre completion notes for the action item."""
   preCompletionNotes: String
+
+  """Identifier for the volunteer group assigned to the action item."""
+  volunteerGroupId: ID
+
+  """Identifier for the volunteer assigned to the action item."""
+  volunteerId: ID
 }
 
 """"""
@@ -4412,10 +4420,20 @@ type Query {
     input: QueryActionItemsByOrganizationInput!
   ): [ActionItem!]
 
-  """Query field to fetch all action items assigned to a specific user."""
-  actionItemsByUser(
-    """Input parameters to fetch action items by userId."""
-    input: QueryActionItemsByUserInput!
+  """
+  Query field to fetch all action items assigned to a specific volunteer.
+  """
+  actionItemsByVolunteer(
+    """Input parameters to fetch action items by volunteerId."""
+    input: QueryActionItemsByVolunteerInput!
+  ): [ActionItem!]
+
+  """
+  Query field to fetch all action items assigned to a specific volunteer group.
+  """
+  actionItemsByVolunteerGroup(
+    """Input parameters to fetch action items by volunteerGroupId."""
+    input: QueryActionItemsByVolunteerGroupInput!
   ): [ActionItem!]
 
   """Query field to read an advertisement."""
@@ -4638,13 +4656,22 @@ input QueryActionItemsByOrganizationInput {
   organizationId: String!
 }
 
-"""Input schema for querying ActionItems assigned to a user."""
-input QueryActionItemsByUserInput {
+"""Input schema for querying ActionItems assigned to a volunteer group."""
+input QueryActionItemsByVolunteerGroupInput {
   """Optional ID of organization to filter action items by."""
   organizationId: String
 
-  """ID of the user to fetch assigned action items for."""
-  userId: String!
+  """ID of the volunteer group to fetch assigned action items for."""
+  volunteerGroupId: String!
+}
+
+"""Input schema for querying ActionItems assigned to a volunteer."""
+input QueryActionItemsByVolunteerInput {
+  """Optional ID of organization to filter action items by."""
+  organizationId: String
+
+  """ID of the volunteer to fetch assigned action items for."""
+  volunteerId: String!
 }
 
 """"""
