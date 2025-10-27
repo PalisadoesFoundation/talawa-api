@@ -113,6 +113,23 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check type errors
         run: docker container run talawa_api pnpm typecheck
+    
+  Check_unused_exports_files:
+    name: Check for unused exports and files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2     
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23.7.0'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Install dependencies
+        run: pnpm install            
+      - name: Run Knip
+        run: npx knip --include files,exports
 
   Check-Sensitive-Files:
     if: ${{ github.actor != 'dependabot[bot]' }}
@@ -199,6 +216,7 @@ jobs:
             'package.json$'
             'package-lock.json$'
             '.nojekyll$'
+            'knip.json$'
             'docs/docusaurus.config.ts$'
             '^docs/sidebar.*'
             'setup.ts$'
@@ -259,7 +277,7 @@ jobs:
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada]
+    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada, Check_unused_exports_files]
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
