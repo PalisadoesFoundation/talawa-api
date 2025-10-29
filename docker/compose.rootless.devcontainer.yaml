@@ -57,7 +57,7 @@ services:
         type: bind
       # Mount Docker socket for plugin container management
       - source: $XDG_RUNTIME_DIR/docker.sock
-        target: /run/user/${API_UID}/docker.sock
+        target: /var/run/docker.sock
         type: bind
         # https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
       - source: api_bash_history
