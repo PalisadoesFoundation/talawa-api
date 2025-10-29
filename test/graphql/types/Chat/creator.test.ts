@@ -1,8 +1,10 @@
 import { faker } from "@faker-js/faker";
+import { eq } from "drizzle-orm";
 import type { GraphQLObjectType } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
 import { afterAll, beforeAll, expect, suite, test } from "vitest";
-import schemaManager from "~/src/graphql/schemaManager";
+import { chatsTable } from "~/src/drizzle/schema";
+import { schemaManager } from "~/src/graphql/schemaManager";
 import type {
 	TalawaGraphQLErrorExtensions,
 	TalawaGraphQLFormattedError,
@@ -264,9 +266,10 @@ suite("Chat field creator", () => {
 		const chatId = await createTestChat(adminAuthToken, organizationId);
 
 		// Directly set creator_id to null using a raw SQL execute to emulate the DB onDelete behavior
-		await server.drizzleClient.execute(
-			`update chats set creator_id = null where id = '${chatId}'`,
-		);
+		await server.drizzleClient
+			.update(chatsTable)
+			.set({ creatorId: null })
+			.where(eq(chatsTable.id, chatId));
 
 		const res = await mercuriusClient.query(Query_chat_with_creator, {
 			headers: { authorization: `Bearer ${adminAuthToken}` },
