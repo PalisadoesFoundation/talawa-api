@@ -82,6 +82,7 @@ async function createTestChat(adminAuthToken: string, organizationId: string) {
 }
 
 suite("Chat field creator", () => {
+	let chatCreatorField: ReturnType<GraphQLObjectType["getFields"]>["creator"];
 	let adminAuthToken: string;
 	let adminUserId: string;
 	let regularUserId: string;
@@ -118,6 +119,15 @@ suite("Chat field creator", () => {
 		);
 
 		testChatId = await createTestChat(adminAuthToken, organizationId);
+	});
+
+	// Build the GraphQL schema once and capture the Chat.creator field for direct resolver tests
+	beforeAll(async () => {
+		const schema = await schemaManager.buildInitialSchema();
+		const chatType = schema.getType("Chat") as GraphQLObjectType;
+		const fields = chatType.getFields();
+		if (!fields.creator) throw new Error("Chat.creator field not found");
+		chatCreatorField = fields.creator;
 	});
 
 	afterAll(async () => {
@@ -286,7 +296,7 @@ suite("Chat field creator", () => {
 		});
 	});
 
-	test("deleted creator leads to unexpected error (business logic corruption)", async () => {
+	test("deleted creator yields null or unexpected error (depends on FK behavior)", async () => {
 		const adminCreator = await mercuriusClient.mutate(Mutation_createUser, {
 			headers: { authorization: `Bearer ${adminAuthToken}` },
 			variables: {
@@ -358,13 +368,8 @@ suite("Chat field creator", () => {
 	});
 
 	test("creator resolver unauthenticated when invoked directly", async () => {
-		const schema = await schemaManager.buildInitialSchema();
-
-		const chatType = schema.getType("Chat") as GraphQLObjectType;
-
-		const fields = chatType.getFields();
-		if (!fields.creator) throw new Error("Chat.creator field not found");
-		const creatorField = fields.creator;
+		if (!chatCreatorField) throw new Error("Chat.creator field not found");
+		const creatorField = chatCreatorField;
 
 		const parent = {
 			id: testChatId,
@@ -394,11 +399,8 @@ suite("Chat field creator", () => {
 	});
 
 	test("creator resolver currentUser undefined when invoked directly", async () => {
-		const schema = await schemaManager.buildInitialSchema();
-
-		const fields = (schema.getType("Chat") as GraphQLObjectType).getFields();
-		if (!fields.creator) throw new Error("Chat.creator field not found");
-		const creatorField = fields.creator;
+		if (!chatCreatorField) throw new Error("Chat.creator field not found");
+		const creatorField = chatCreatorField;
 
 		const parent = {
 			id: testChatId,
@@ -451,10 +453,8 @@ suite("Chat field creator", () => {
 		assertToBeNonNullish(temp.data?.createUser.user);
 		const tempUserId = temp.data.createUser.user.id;
 
-		const schema = await schemaManager.buildInitialSchema();
-		const fields = (schema.getType("Chat") as GraphQLObjectType).getFields();
-		if (!fields.creator) throw new Error("Chat.creator field not found");
-		const creatorField = fields.creator;
+		if (!chatCreatorField) throw new Error("Chat.creator field not found");
+		const creatorField = chatCreatorField;
 
 		const parent = {
 			id: testChatId,
@@ -490,10 +490,8 @@ suite("Chat field creator", () => {
 	});
 
 	test("creator resolver existingUser undefined when invoked directly", async () => {
-		const schema = await schemaManager.buildInitialSchema();
-		const fields = (schema.getType("Chat") as GraphQLObjectType).getFields();
-		if (!fields.creator) throw new Error("Chat.creator field not found");
-		const creatorField = fields.creator;
+		if (!chatCreatorField) throw new Error("Chat.creator field not found");
+		const creatorField = chatCreatorField;
 
 		const parent = {
 			id: testChatId,
