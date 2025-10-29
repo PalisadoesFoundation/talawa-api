@@ -127,7 +127,8 @@ suite("Chat field creator", () => {
 		const chatType = schema.getType("Chat") as GraphQLObjectType;
 		const fields = chatType.getFields();
 		if (!fields.creator) throw new Error("Chat.creator field not found");
-		if (!fields.creator.resolve) throw new Error("Chat.creator resolver not found");
+		if (!fields.creator.resolve)
+			throw new Error("Chat.creator resolver not found");
 		chatCreatorField = fields.creator;
 
 		afterAll(async () => {
@@ -136,28 +137,28 @@ suite("Chat field creator", () => {
 					headers: { authorization: `Bearer ${adminAuthToken}` },
 					variables: { input: { id: testChatId } },
 				});
-			} catch (e) { }
+			} catch (e) {}
 
 			try {
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: { authorization: `Bearer ${adminAuthToken}` },
 					variables: { input: { id: regularUserId } },
 				});
-			} catch (e) { }
+			} catch (e) {}
 
 			try {
 				await mercuriusClient.mutate(Mutation_deleteUser, {
 					headers: { authorization: `Bearer ${adminAuthToken}` },
 					variables: { input: { id: outsiderUserId } },
 				});
-			} catch (e) { }
+			} catch (e) {}
 
 			try {
 				await mercuriusClient.mutate(Mutation_deleteOrganization, {
 					headers: { authorization: `Bearer ${adminAuthToken}` },
 					variables: { input: { id: organizationId } },
 				});
-			} catch (e) { }
+			} catch (e) {}
 		});
 
 		test("unauthenticated caller results in unauthenticated error for creator field", async () => {
@@ -348,9 +349,11 @@ suite("Chat field creator", () => {
 				expect(res.errors).toEqual(
 					expect.arrayContaining<TalawaGraphQLFormattedError>([
 						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<TalawaGraphQLErrorExtensions>({
-								code: "unexpected",
-							}),
+							extensions: expect.objectContaining<TalawaGraphQLErrorExtensions>(
+								{
+									code: "unexpected",
+								},
+							),
 							path: ["chat", "creator"],
 							message: expect.any(String),
 						}),
@@ -387,10 +390,15 @@ suite("Chat field creator", () => {
 			};
 
 			await expect(async () =>
-				creatorField.resolve!(parent, {}, ctx, undefined as unknown as GraphQLResolveInfo),
+				creatorField.resolve?.(
+					parent,
+					{},
+					ctx,
+					undefined as unknown as GraphQLResolveInfo,
+				),
 			).rejects.toMatchObject({
 				extensions: expect.objectContaining({ code: "unauthenticated" }),
-			})
+			});
 		});
 
 		test("creator resolver currentUser undefined when invoked directly", async () => {
@@ -516,4 +524,4 @@ suite("Chat field creator", () => {
 			});
 		});
 	});
-})
+});
