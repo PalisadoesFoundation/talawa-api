@@ -13,6 +13,7 @@ services:
         - API_DEBUGGER_PORT=${API_DEBUGGER_PORT:?error}
       # https://docs.docker.com/reference/compose-file/build/#target
       target: devcontainer
+      dockerfile: ./docker/rootless.api.Containerfile
     depends_on:
       minio:
         condition: service_healthy
