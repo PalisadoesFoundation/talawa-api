@@ -114,6 +114,37 @@ jobs:
       - name: Check type errors
         run: docker container run talawa_api pnpm typecheck
 
+  check_docs_up_to_date:
+    name: Check if documentation is up-to-date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repository
+        uses: actions/checkout@v4.2.2
+      - name: Build talawa api non production environment docker image
+        run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
+      - name: Generate documentation
+        run: docker container run talawa_api pnpm run generate:docs
+      - name: Copy generated docs from container
+        run: |
+          CONTAINER_ID=$(docker create talawa_api)
+          docker cp $CONTAINER_ID:/home/talawa/api/docs/docs/docs/auto-schema ./docs/docs/docs/auto-schema-generated || true
+          docker rm $CONTAINER_ID
+      - name: Check for documentation differences
+        run: |
+          if [ -d "./docs/docs/docs/auto-schema-generated" ]; then
+            if ! diff -r docs/docs/docs/auto-schema docs/docs/docs/auto-schema-generated > /dev/null 2>&1; then
+              echo "ERROR: Documentation is out of date!"
+              echo ""
+              echo "Please run 'pnpm run generate:docs' locally and commit the changes."
+              echo ""
+              exit 1
+            else
+              echo "Documentation is up-to-date!"
+            fi
+          else
+            echo "Warning: Could not verify documentation"
+          fi
+
   Check-Sensitive-Files:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: Checks if sensitive files have been changed without authorization
@@ -134,7 +165,9 @@ jobs:
             exit 0
           fi
 
+
           LABELS="$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels --jq '.[].name' | tr '\n' ' ')"
+
 
           if echo "$LABELS" | grep -qw "ignore-sensitive-files-pr"; then
             echo "::notice::Skipping sensitive files check due to 'ignore-sensitive-files-pr' label."
@@ -149,11 +182,13 @@ jobs:
         run: |
           set -e
 
+
           # Skip if not in PR context
           if [ -z "${{ github.event.pull_request.base.sha }}" ]; then
             echo "any_changed=false" >> $GITHUB_OUTPUT
             exit 0
           fi
+
 
           # Determine base and head commits for comparison
           HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
@@ -162,11 +197,13 @@ jobs:
             exit 1
           }
 
+
           # Verify BASE_SHA is not empty
           if [ -z "$BASE_SHA" ]; then
             echo "::error::BASE_SHA is empty after git merge-base command" >&2
             exit 1
           fi
+
 
           # Define sensitive files patterns as a bash array
           SENSITIVE_PATTERNS=(
@@ -217,6 +254,7 @@ jobs:
             'README.md$'
           )
 
+
           # Check for changes in sensitive files
           CHANGED_UNAUTH_FILES=""
           for pattern in "${SENSITIVE_PATTERNS[@]}"; do
@@ -226,13 +264,15 @@ jobs:
             fi
           done
 
+
           # Deduplicate and format output
           # Convert to newline-separated, deduplicate, then rejoin as space-separated
           if [ ! -z "$CHANGED_UNAUTH_FILES" ]; then
             CHANGED_UNAUTH_FILES=$(echo "$CHANGED_UNAUTH_FILES" | tr ' ' '\n' | sort -u | tr '\n' ' ' | xargs)
           fi
-          
+
           echo "all_changed_files=$CHANGED_UNAUTH_FILES" >> $GITHUB_OUTPUT
+
 
           # Check if any unauthorized files changed
           if [ ! -z "$CHANGED_UNAUTH_FILES" ]; then
@@ -259,7 +299,15 @@ jobs:
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada]
+    needs:
+      [
+        Code-Quality-Checks,
+        python_checks,
+        check_type_errors,
+        check_drizzle_migrations,
+        check_gql_tada,
+        check_docs_up_to_date,
+      ]
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
@@ -306,7 +354,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
           verbose: true
-          exclude: 'docs/'      
+          exclude: "docs/"
 
       - name: Test acceptable level of code coverage
         uses: VeryGoodOpenSource/very_good_coverage@v3
@@ -394,13 +442,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch all history for all branches and tags
+          fetch-depth: 0 # Fetch all history for all branches and tags
 
       - name: Get changed files
         id: changed-files
         run: |
           # Get the base branch ref
           BASE_SHA=$(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})
+
 
           # Count all changed files
           ALL_CHANGED_FILES_COUNT=$(git diff --name-only --diff-filter=ACMRT $BASE_SHA ${{ github.event.pull_request.head.sha }} | wc -l | tr -d ' ')
