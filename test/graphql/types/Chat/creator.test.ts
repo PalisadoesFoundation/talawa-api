@@ -82,7 +82,6 @@ async function createTestChat(adminAuthToken: string, organizationId: string) {
 }
 
 suite("Chat field creator", () => {
-	let chatCreatorField: ReturnType<GraphQLObjectType["getFields"]>["creator"];
 	let adminAuthToken: string;
 	let adminUserId: string;
 	let regularUserId: string;
@@ -121,407 +120,406 @@ suite("Chat field creator", () => {
 		testChatId = await createTestChat(adminAuthToken, organizationId);
 	});
 
-	// Build the GraphQL schema once and capture the Chat.creator field for direct resolver tests
-	beforeAll(async () => {
+	afterAll(async () => {
+		try {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `Bearer ${adminAuthToken}` },
+				variables: { input: { id: testChatId } },
+			});
+		} catch (e) {}
+
+		try {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `Bearer ${adminAuthToken}` },
+				variables: { input: { id: regularUserId } },
+			});
+		} catch (e) {}
+
+		try {
+			await mercuriusClient.mutate(Mutation_deleteUser, {
+				headers: { authorization: `Bearer ${adminAuthToken}` },
+				variables: { input: { id: outsiderUserId } },
+			});
+		} catch (e) {}
+
+		try {
+			await mercuriusClient.mutate(Mutation_deleteOrganization, {
+				headers: { authorization: `Bearer ${adminAuthToken}` },
+				variables: { input: { id: organizationId } },
+			});
+		} catch (e) {}
+	});
+
+	test("unauthenticated caller results in unauthenticated error for creator field", async () => {
+		const res = await mercuriusClient.query(Query_chat_with_creator, {
+			variables: { input: { id: testChatId } },
+		});
+
+		expect(res.data.chat).toBeNull();
+		expect(res.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining<UnauthenticatedExtensions>({
+						code: "unauthenticated",
+					}),
+					path: ["chat"],
+					message: expect.any(String),
+				}),
+			]),
+		);
+	});
+
+	test("orphaned token results in unauthenticated error for creator field", async () => {
+		const tempUser = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `Bearer ${adminAuthToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@example.com`,
+					name: "t",
+					password: "p",
+					role: "regular",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(tempUser.data?.createUser);
+		const tempAuth = tempUser.data.createUser.authenticationToken;
+		assertToBeNonNullish(tempAuth);
+		assertToBeNonNullish(tempUser.data?.createUser.user);
+		const tempUserId = tempUser.data.createUser.user.id;
+
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `Bearer ${adminAuthToken}` },
+			variables: { input: { id: tempUserId } },
+		});
+
+		const res = await mercuriusClient.query(Query_chat_with_creator, {
+			headers: { authorization: `Bearer ${tempAuth}` },
+			variables: { input: { id: testChatId } },
+		});
+
+		expect(res.data.chat).toBeNull();
+		expect(res.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining<UnauthenticatedExtensions>({
+						code: "unauthenticated",
+					}),
+					path: ["chat"],
+					message: expect.any(String),
+				}),
+			]),
+		);
+	});
+
+	test("outsider (not org member) receives unauthorized_action for creator field", async () => {
+		const res = await mercuriusClient.query(Query_chat_with_creator, {
+			headers: { authorization: `Bearer ${outsiderUserAuthToken}` },
+			variables: { input: { id: testChatId } },
+		});
+
+		expect(res.data.chat).toBeNull();
+		expect(res.errors).toBeDefined();
+		const maybeExt = res.errors?.[0] as unknown;
+		let code: string | undefined = undefined;
+		if (maybeExt && typeof maybeExt === "object") {
+			const obj = maybeExt as Record<string, unknown>;
+			const ext = obj.extensions as Record<string, unknown> | undefined;
+			if (ext && typeof ext.code === "string") code = ext.code;
+		}
+		expect([
+			"unauthorized_action",
+			"unauthorized_action_on_arguments_associated_resources",
+		]).toContain(code);
+	});
+
+	test("creator equals current user when querying as creator", async () => {
+		const res = await mercuriusClient.query(Query_chat_with_creator, {
+			headers: { authorization: `Bearer ${adminAuthToken}` },
+			variables: { input: { id: testChatId } },
+		});
+
+		expect(res.errors).toBeUndefined();
+		expect(res.data.chat?.creator?.id).toEqual(adminUserId);
+	});
+
+	test("org member (not creator) receives the creator user object", async () => {
+		// Create organization membership for the outsider user as a regular member so they can query the chat
+		await createOrganizationMembership(
+			adminAuthToken,
+			outsiderUserId,
+			organizationId,
+			"regular",
+		);
+
+		const memberRes = await mercuriusClient.query(Query_chat_with_creator, {
+			headers: { authorization: `Bearer ${outsiderUserAuthToken}` },
+			variables: { input: { id: testChatId } },
+		});
+
+		expect(memberRes.errors).toBeUndefined();
+		expect(memberRes.data.chat?.creator?.id).toEqual(adminUserId);
+	});
+
+	test("null creator id resolves to null for authorized caller", async () => {
+		// Create a fresh chat so we can mutate its creator_id without affecting other tests
+		const chatId = await createTestChat(adminAuthToken, organizationId);
+
+		// Directly set creator_id to null using a raw SQL execute to emulate the DB onDelete behavior
+		await server.drizzleClient
+			.update(chatsTable)
+			.set({ creatorId: null })
+			.where(eq(chatsTable.id, chatId));
+
+		const res = await mercuriusClient.query(Query_chat_with_creator, {
+			headers: { authorization: `Bearer ${adminAuthToken}` },
+			variables: { input: { id: chatId } },
+		});
+
+		expect(res.errors).toBeUndefined();
+		expect(res.data.chat?.creator).toBeNull();
+
+		// clean up
+		await mercuriusClient.mutate(Mutation_deleteChat, {
+			headers: { authorization: `Bearer ${adminAuthToken}` },
+			variables: { input: { id: chatId } },
+		});
+	});
+
+	test("deleted creator leads to unexpected error (business logic corruption)", async () => {
+		const adminCreator = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `Bearer ${adminAuthToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@example.com`,
+					name: "c",
+					password: "p",
+					role: "administrator",
+					isEmailAddressVerified: false,
+				},
+			},
+		});
+		assertToBeNonNullish(adminCreator.data?.createUser);
+		assertToBeNonNullish(adminCreator.data?.createUser.user);
+		const adminCreatorId = adminCreator.data.createUser.user.id;
+		const adminCreatorAuth = adminCreator.data.createUser.authenticationToken;
+
+		await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
+			headers: { authorization: `Bearer ${adminAuthToken}` },
+			variables: {
+				input: {
+					memberId: adminCreatorId,
+					organizationId,
+					role: "administrator",
+				},
+			},
+		});
+
+		const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
+			headers: { authorization: `Bearer ${adminCreatorAuth}` },
+			variables: {
+				input: { name: `OrphanChat ${faker.string.uuid()}`, organizationId },
+			},
+		});
+		assertToBeNonNullish(chatRes.data?.createChat);
+		const orphanChatId = chatRes.data.createChat.id;
+
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `Bearer ${adminAuthToken}` },
+			variables: { input: { id: adminCreatorId } },
+		});
+
+		const res = await mercuriusClient.query(Query_chat_with_creator, {
+			headers: { authorization: `Bearer ${adminAuthToken}` },
+			variables: { input: { id: orphanChatId } },
+		});
+
+		if (res.errors && res.errors.length > 0) {
+			expect(res.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining<TalawaGraphQLErrorExtensions>({
+							code: "unexpected",
+						}),
+						path: ["chat", "creator"],
+						message: expect.any(String),
+					}),
+				]),
+			);
+		} else {
+			expect(res.data.chat).toBeDefined();
+			expect(res.data.chat?.creator).toBeNull();
+		}
+
+		await mercuriusClient.mutate(Mutation_deleteChat, {
+			headers: { authorization: `Bearer ${adminAuthToken}` },
+			variables: { input: { id: orphanChatId } },
+		});
+	});
+
+	test("creator resolver unauthenticated when invoked directly", async () => {
 		const schema = await schemaManager.buildInitialSchema();
+
 		const chatType = schema.getType("Chat") as GraphQLObjectType;
+
 		const fields = chatType.getFields();
 		if (!fields.creator) throw new Error("Chat.creator field not found");
-		if (!fields.creator.resolve)
-			throw new Error("Chat.creator resolver not found");
-		chatCreatorField = fields.creator;
+		const creatorField = fields.creator;
 
-		afterAll(async () => {
-			try {
-				await mercuriusClient.mutate(Mutation_deleteChat, {
-					headers: { authorization: `Bearer ${adminAuthToken}` },
-					variables: { input: { id: testChatId } },
-				});
-			} catch (e) {}
+		const parent = {
+			id: testChatId,
+			organizationId,
+			creatorId: adminUserId,
+		};
 
-			try {
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: { authorization: `Bearer ${adminAuthToken}` },
-					variables: { input: { id: regularUserId } },
-				});
-			} catch (e) {}
+		const ctx = {
+			currentClient: { isAuthenticated: false },
+			drizzleClient: server.drizzleClient,
+			log: server.log,
+			envConfig: server.envConfig,
+			jwt: server.jwt,
+			minio: server.minio,
+		};
 
-			try {
-				await mercuriusClient.mutate(Mutation_deleteUser, {
-					headers: { authorization: `Bearer ${adminAuthToken}` },
-					variables: { input: { id: outsiderUserId } },
-				});
-			} catch (e) {}
-
-			try {
-				await mercuriusClient.mutate(Mutation_deleteOrganization, {
-					headers: { authorization: `Bearer ${adminAuthToken}` },
-					variables: { input: { id: organizationId } },
-				});
-			} catch (e) {}
+		await expect(async () =>
+			creatorField.resolve?.(
+				parent,
+				{},
+				ctx,
+				undefined as unknown as GraphQLResolveInfo,
+			),
+		).rejects.toMatchObject({
+			extensions: expect.objectContaining({ code: "unauthenticated" }),
 		});
+	});
 
-		test("unauthenticated caller results in unauthenticated error for creator field", async () => {
-			const res = await mercuriusClient.query(Query_chat_with_creator, {
-				variables: { input: { id: testChatId } },
-			});
+	test("creator resolver currentUser undefined when invoked directly", async () => {
+		const schema = await schemaManager.buildInitialSchema();
 
-			expect(res.data.chat).toBeNull();
-			expect(res.errors).toEqual(
-				expect.arrayContaining<TalawaGraphQLFormattedError>([
-					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions: expect.objectContaining<UnauthenticatedExtensions>({
-							code: "unauthenticated",
-						}),
-						path: ["chat"],
-						message: expect.any(String),
-					}),
-				]),
-			);
+		const fields = (schema.getType("Chat") as GraphQLObjectType).getFields();
+		if (!fields.creator) throw new Error("Chat.creator field not found");
+		const creatorField = fields.creator;
+
+		const parent = {
+			id: testChatId,
+			organizationId,
+			creatorId: adminUserId,
+		};
+
+		// Use a token payload user id that doesn't exist in the DB to emulate an orphaned
+		// authenticated token for the caller. This will make the resolver query the DB
+		// for the current user and receive `undefined`, triggering the branch.
+		const ctx = {
+			currentClient: {
+				isAuthenticated: true,
+				user: { id: faker.string.uuid() },
+			},
+			drizzleClient: server.drizzleClient,
+			log: server.log,
+			envConfig: server.envConfig,
+			jwt: server.jwt,
+			minio: server.minio,
+		};
+
+		await expect(async () =>
+			creatorField.resolve?.(
+				parent,
+				{},
+				ctx,
+				undefined as unknown as GraphQLResolveInfo,
+			),
+		).rejects.toMatchObject({
+			extensions: expect.objectContaining({ code: "unauthenticated" }),
 		});
+	});
 
-		test("orphaned token results in unauthenticated error for creator field", async () => {
-			const tempUser = await mercuriusClient.mutate(Mutation_createUser, {
-				headers: { authorization: `Bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						emailAddress: `${faker.string.uuid()}@example.com`,
-						name: "t",
-						password: "p",
-						role: "regular",
-						isEmailAddressVerified: false,
-					},
+	test("creator resolver unauthorized_action when caller is non-admin non-member", async () => {
+		// create a fresh regular user who is NOT a member of the chat's organization
+		const temp = await mercuriusClient.mutate(Mutation_createUser, {
+			headers: { authorization: `Bearer ${adminAuthToken}` },
+			variables: {
+				input: {
+					emailAddress: `${faker.string.uuid()}@example.com`,
+					name: "nm",
+					password: "p",
+					role: "regular",
+					isEmailAddressVerified: false,
 				},
-			});
-			assertToBeNonNullish(tempUser.data?.createUser);
-			const tempAuth = tempUser.data.createUser.authenticationToken;
-			assertToBeNonNullish(tempAuth);
-			assertToBeNonNullish(tempUser.data?.createUser.user);
-			const tempUserId = tempUser.data.createUser.user.id;
+			},
+		});
+		assertToBeNonNullish(temp.data?.createUser);
+		assertToBeNonNullish(temp.data?.createUser.user);
+		const tempUserId = temp.data.createUser.user.id;
 
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `Bearer ${adminAuthToken}` },
-				variables: { input: { id: tempUserId } },
-			});
+		const schema = await schemaManager.buildInitialSchema();
+		const fields = (schema.getType("Chat") as GraphQLObjectType).getFields();
+		if (!fields.creator) throw new Error("Chat.creator field not found");
+		const creatorField = fields.creator;
 
-			const res = await mercuriusClient.query(Query_chat_with_creator, {
-				headers: { authorization: `Bearer ${tempAuth}` },
-				variables: { input: { id: testChatId } },
-			});
+		const parent = {
+			id: testChatId,
+			organizationId,
+			creatorId: adminUserId,
+		};
 
-			expect(res.data.chat).toBeNull();
-			expect(res.errors).toEqual(
-				expect.arrayContaining<TalawaGraphQLFormattedError>([
-					expect.objectContaining<TalawaGraphQLFormattedError>({
-						extensions: expect.objectContaining<UnauthenticatedExtensions>({
-							code: "unauthenticated",
-						}),
-						path: ["chat"],
-						message: expect.any(String),
-					}),
-				]),
-			);
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: tempUserId } },
+			drizzleClient: server.drizzleClient,
+			log: server.log,
+			envConfig: server.envConfig,
+			jwt: server.jwt,
+			minio: server.minio,
+		};
+
+		await expect(async () =>
+			creatorField.resolve?.(
+				parent,
+				{},
+				ctx,
+				undefined as unknown as GraphQLResolveInfo,
+			),
+		).rejects.toMatchObject({
+			extensions: expect.objectContaining({ code: "unauthorized_action" }),
 		});
 
-		test("outsider (not org member) receives unauthorized_action for creator field", async () => {
-			const res = await mercuriusClient.query(Query_chat_with_creator, {
-				headers: { authorization: `Bearer ${outsiderUserAuthToken}` },
-				variables: { input: { id: testChatId } },
-			});
-
-			expect(res.data.chat).toBeNull();
-			expect(res.errors).toBeDefined();
-			const maybeExt = res.errors?.[0] as unknown;
-			let code: string | undefined = undefined;
-			if (maybeExt && typeof maybeExt === "object") {
-				const obj = maybeExt as Record<string, unknown>;
-				const ext = obj.extensions as Record<string, unknown> | undefined;
-				if (ext && typeof ext.code === "string") code = ext.code;
-			}
-			expect([
-				"unauthorized_action",
-				"unauthorized_action_on_arguments_associated_resources",
-			]).toContain(code);
+		// cleanup
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `Bearer ${adminAuthToken}` },
+			variables: { input: { id: tempUserId } },
 		});
+	});
 
-		test("creator equals current user when querying as creator", async () => {
-			const res = await mercuriusClient.query(Query_chat_with_creator, {
-				headers: { authorization: `Bearer ${adminAuthToken}` },
-				variables: { input: { id: testChatId } },
-			});
+	test("creator resolver existingUser undefined when invoked directly", async () => {
+		const schema = await schemaManager.buildInitialSchema();
+		const fields = (schema.getType("Chat") as GraphQLObjectType).getFields();
+		if (!fields.creator) throw new Error("Chat.creator field not found");
+		const creatorField = fields.creator;
 
-			expect(res.errors).toBeUndefined();
-			expect(res.data.chat?.creator?.id).toEqual(adminUserId);
-		});
+		const parent = {
+			id: testChatId,
+			organizationId,
+			// use a random UUID that does not exist in the DB to force the findFirst
+			creatorId: faker.string.uuid(),
+		};
 
-		test("org member (not creator) receives the creator user object", async () => {
-			// Create organization membership for the outsider user as a regular member so they can query the chat
-			await createOrganizationMembership(
-				adminAuthToken,
-				outsiderUserId,
-				organizationId,
-				"regular",
-			);
+		const ctx = {
+			currentClient: { isAuthenticated: true, user: { id: adminUserId } },
+			drizzleClient: server.drizzleClient,
+			log: server.log,
+			envConfig: server.envConfig,
+			jwt: server.jwt,
+			minio: server.minio,
+		};
 
-			const memberRes = await mercuriusClient.query(Query_chat_with_creator, {
-				headers: { authorization: `Bearer ${outsiderUserAuthToken}` },
-				variables: { input: { id: testChatId } },
-			});
-
-			expect(memberRes.errors).toBeUndefined();
-			expect(memberRes.data.chat?.creator?.id).toEqual(adminUserId);
-		});
-
-		test("null creator id resolves to null for authorized caller", async () => {
-			// Create a fresh chat so we can mutate its creator_id without affecting other tests
-			const chatId = await createTestChat(adminAuthToken, organizationId);
-
-			// Directly set creator_id to null using a raw SQL execute to emulate the DB onDelete behavior
-			await server.drizzleClient
-				.update(chatsTable)
-				.set({ creatorId: null })
-				.where(eq(chatsTable.id, chatId));
-
-			const res = await mercuriusClient.query(Query_chat_with_creator, {
-				headers: { authorization: `Bearer ${adminAuthToken}` },
-				variables: { input: { id: chatId } },
-			});
-
-			expect(res.errors).toBeUndefined();
-			expect(res.data.chat?.creator).toBeNull();
-
-			// clean up
-			await mercuriusClient.mutate(Mutation_deleteChat, {
-				headers: { authorization: `Bearer ${adminAuthToken}` },
-				variables: { input: { id: chatId } },
-			});
-		});
-
-		test("deleted creator yields null or unexpected error (depends on FK behavior)", async () => {
-			const adminCreator = await mercuriusClient.mutate(Mutation_createUser, {
-				headers: { authorization: `Bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						emailAddress: `${faker.string.uuid()}@example.com`,
-						name: "c",
-						password: "p",
-						role: "administrator",
-						isEmailAddressVerified: false,
-					},
-				},
-			});
-			assertToBeNonNullish(adminCreator.data?.createUser);
-			assertToBeNonNullish(adminCreator.data?.createUser.user);
-			const adminCreatorId = adminCreator.data.createUser.user.id;
-			const adminCreatorAuth = adminCreator.data.createUser.authenticationToken;
-
-			await mercuriusClient.mutate(Mutation_createOrganizationMembership, {
-				headers: { authorization: `Bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						memberId: adminCreatorId,
-						organizationId,
-						role: "administrator",
-					},
-				},
-			});
-
-			const chatRes = await mercuriusClient.mutate(Mutation_createChat, {
-				headers: { authorization: `Bearer ${adminCreatorAuth}` },
-				variables: {
-					input: { name: `OrphanChat ${faker.string.uuid()}`, organizationId },
-				},
-			});
-			assertToBeNonNullish(chatRes.data?.createChat);
-			const orphanChatId = chatRes.data.createChat.id;
-
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `Bearer ${adminAuthToken}` },
-				variables: { input: { id: adminCreatorId } },
-			});
-
-			const res = await mercuriusClient.query(Query_chat_with_creator, {
-				headers: { authorization: `Bearer ${adminAuthToken}` },
-				variables: { input: { id: orphanChatId } },
-			});
-
-			if (res.errors && res.errors.length > 0) {
-				expect(res.errors).toEqual(
-					expect.arrayContaining<TalawaGraphQLFormattedError>([
-						expect.objectContaining<TalawaGraphQLFormattedError>({
-							extensions: expect.objectContaining<TalawaGraphQLErrorExtensions>(
-								{
-									code: "unexpected",
-								},
-							),
-							path: ["chat", "creator"],
-							message: expect.any(String),
-						}),
-					]),
-				);
-			} else {
-				expect(res.data.chat).toBeDefined();
-				expect(res.data.chat?.creator).toBeNull();
-			}
-
-			await mercuriusClient.mutate(Mutation_deleteChat, {
-				headers: { authorization: `Bearer ${adminAuthToken}` },
-				variables: { input: { id: orphanChatId } },
-			});
-		});
-
-		test("creator resolver unauthenticated when invoked directly", async () => {
-			if (!chatCreatorField) throw new Error("Chat.creator field not found");
-			const creatorField = chatCreatorField;
-
-			const parent = {
-				id: testChatId,
-				organizationId,
-				creatorId: adminUserId,
-			};
-
-			const ctx = {
-				currentClient: { isAuthenticated: false },
-				drizzleClient: server.drizzleClient,
-				log: server.log,
-				envConfig: server.envConfig,
-				jwt: server.jwt,
-				minio: server.minio,
-			};
-
-			await expect(async () =>
-				creatorField.resolve?.(
-					parent,
-					{},
-					ctx,
-					undefined as unknown as GraphQLResolveInfo,
-				),
-			).rejects.toMatchObject({
-				extensions: expect.objectContaining({ code: "unauthenticated" }),
-			});
-		});
-
-		test("creator resolver currentUser undefined when invoked directly", async () => {
-			if (!chatCreatorField) throw new Error("Chat.creator field not found");
-			const creatorField = chatCreatorField;
-
-			const parent = {
-				id: testChatId,
-				organizationId,
-				creatorId: adminUserId,
-			};
-
-			// Use a token payload user id that doesn't exist in the DB to emulate an orphaned
-			// authenticated token for the caller. This will make the resolver query the DB
-			// for the current user and receive `undefined`, triggering the branch.
-			const ctx = {
-				currentClient: {
-					isAuthenticated: true,
-					user: { id: faker.string.uuid() },
-				},
-				drizzleClient: server.drizzleClient,
-				log: server.log,
-				envConfig: server.envConfig,
-				jwt: server.jwt,
-				minio: server.minio,
-			};
-
-			await expect(async () =>
-				creatorField.resolve?.(
-					parent,
-					{},
-					ctx,
-					undefined as unknown as GraphQLResolveInfo,
-				),
-			).rejects.toMatchObject({
-				extensions: expect.objectContaining({ code: "unauthenticated" }),
-			});
-		});
-
-		test("creator resolver unauthorized_action when caller is non-admin non-member", async () => {
-			// create a fresh regular user who is NOT a member of the chat's organization
-			const temp = await mercuriusClient.mutate(Mutation_createUser, {
-				headers: { authorization: `Bearer ${adminAuthToken}` },
-				variables: {
-					input: {
-						emailAddress: `${faker.string.uuid()}@example.com`,
-						name: "nm",
-						password: "p",
-						role: "regular",
-						isEmailAddressVerified: false,
-					},
-				},
-			});
-			assertToBeNonNullish(temp.data?.createUser);
-			assertToBeNonNullish(temp.data?.createUser.user);
-			const tempUserId = temp.data.createUser.user.id;
-
-			if (!chatCreatorField) throw new Error("Chat.creator field not found");
-			const creatorField = chatCreatorField;
-
-			const parent = {
-				id: testChatId,
-				organizationId,
-				creatorId: adminUserId,
-			};
-
-			const ctx = {
-				currentClient: { isAuthenticated: true, user: { id: tempUserId } },
-				drizzleClient: server.drizzleClient,
-				log: server.log,
-				envConfig: server.envConfig,
-				jwt: server.jwt,
-				minio: server.minio,
-			};
-
-			await expect(async () =>
-				creatorField.resolve?.(
-					parent,
-					{},
-					ctx,
-					undefined as unknown as GraphQLResolveInfo,
-				),
-			).rejects.toMatchObject({
-				extensions: expect.objectContaining({ code: "unauthorized_action" }),
-			});
-
-			// cleanup
-			await mercuriusClient.mutate(Mutation_deleteUser, {
-				headers: { authorization: `Bearer ${adminAuthToken}` },
-				variables: { input: { id: tempUserId } },
-			});
-		});
-
-		test("creator resolver existingUser undefined when invoked directly", async () => {
-			if (!chatCreatorField) throw new Error("Chat.creator field not found");
-			const creatorField = chatCreatorField;
-
-			const parent = {
-				id: testChatId,
-				organizationId,
-				// use a random UUID that does not exist in the DB to force the findFirst
-				creatorId: faker.string.uuid(),
-			};
-
-			const ctx = {
-				currentClient: { isAuthenticated: true, user: { id: adminUserId } },
-				drizzleClient: server.drizzleClient,
-				log: server.log,
-				envConfig: server.envConfig,
-				jwt: server.jwt,
-				minio: server.minio,
-			};
-
-			await expect(async () =>
-				creatorField.resolve?.(
-					parent,
-					{},
-					ctx,
-					undefined as unknown as GraphQLResolveInfo,
-				),
-			).rejects.toMatchObject({
-				extensions: expect.objectContaining({ code: "unexpected" }),
-			});
+		await expect(async () =>
+			creatorField.resolve?.(
+				parent,
+				{},
+				ctx,
+				undefined as unknown as GraphQLResolveInfo,
+			),
+		).rejects.toMatchObject({
+			extensions: expect.objectContaining({ code: "unexpected" }),
 		});
 	});
 });
