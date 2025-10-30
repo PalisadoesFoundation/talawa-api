@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { afterAll, beforeAll, expect, suite, test } from "vitest";
+import { afterAll, beforeAll, expect, suite, test, vi } from "vitest";
 import type { TalawaGraphQLFormattedError } from "~/src/utilities/TalawaGraphQLError";
 import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
@@ -265,6 +265,36 @@ suite("Chat field createdAt", () => {
 		}
 	});
 
+	test("creator user (non-admin) can access createdAt when they are the chat creator (covers creatorId === currentUserId branch)", async () => {
+		// Create a chat where regularUser2 will be the creator
+		const creatorChatId = await createTestChat(
+			regularUser2AuthToken,
+			organizationId,
+		);
+
+		// Query as the creator (regularUser2)
+		const result = await mercuriusClient.query(Query_chat_with_createdAt, {
+			headers: { authorization: `bearer ${regularUser2AuthToken}` },
+			variables: { input: { id: creatorChatId } },
+		});
+
+		expect(result.errors).toBeUndefined();
+		expect(result.data?.chat).not.toBeNull();
+		expect(result.data?.chat?.id).toBe(creatorChatId);
+		expect(result.data?.chat?.createdAt).toBeDefined();
+		expect(typeof result.data?.chat?.createdAt).toBe("string");
+
+		// Cleanup created chat using admin
+		try {
+			await mercuriusClient.mutate(Mutation_deleteChat, {
+				headers: { authorization: `bearer ${adminAuthToken}` },
+				variables: { input: { id: creatorChatId } },
+			});
+		} catch (error) {
+			// ignore cleanup errors
+		}
+	});
+
 	test('results in a graphql error with "unauthenticated" extensions code when client is not authenticated', async () => {
 		const result = await mercuriusClient.query(Query_chat_with_createdAt, {
 			variables: {
@@ -285,6 +315,152 @@ suite("Chat field createdAt", () => {
 					path: ["chat"], // Error is at chat level, not createdAt level
 				}),
 			]),
+		);
+	});
+
+	test('results in a graphql error with "unauthenticated" extensions code when authentication token belongs to a non-existent user', async () => {
+		// Create a transient user and delete them to simulate a valid token with no associated user
+		const transient = await createTestUser(adminAuthToken, "regular");
+		// delete the user using admin credentials
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `bearer ${adminAuthToken}` },
+			variables: { input: { id: transient.userId } },
+		});
+
+		// Now use the previously issued token for the deleted user
+		const result = await mercuriusClient.query(Query_chat_with_createdAt, {
+			headers: {
+				authorization: `bearer ${transient.authToken}`,
+			},
+			variables: {
+				input: {
+					id: testChatId,
+				},
+			},
+		});
+
+		// The unauthenticated error is thrown at the `chat` query level
+		// (the Query.chat resolver validates the current user exists),
+		// so graphql returns `data.chat === null` and the error path is ["chat"].
+		expect(result.data?.chat).toBeNull();
+		expect(result.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "unauthenticated",
+					}),
+					message: expect.any(String),
+					path: ["chat"],
+				}),
+			]),
+		);
+	});
+
+	test("createdAt throws unauthenticated when currentUser lookup inside the field resolver returns undefined (even if root query allowed)", async () => {
+		// Spy on usersTable.findFirst so the first invocation (from Query.chat) returns a valid user
+		// and the second invocation (from Chat.createdAt resolver) returns undefined.
+		const usersTable = server.drizzleClient.query.usersTable as unknown as {
+			findFirst: (params?: unknown) => Promise<{ role?: string } | undefined>;
+		};
+		let callCount = 0;
+		const spy = vi
+			.spyOn(usersTable, "findFirst")
+			.mockImplementation(async (args: unknown) => {
+				callCount++;
+				if (callCount === 1) {
+					// Return a minimal user object with role so Query.chat proceeds
+					return {
+						id: regularUser1Id,
+						role: "regular",
+						emailAddress: "test@test.com",
+						name: "Test User",
+					};
+				}
+
+				if (callCount === 2) {
+					return undefined;
+				}
+
+				// Fail fast if implementation changes and adds more calls
+				throw new Error(
+					`Unexpected call #${callCount} to findFirst in this test`,
+				);
+			});
+
+		try {
+			const result = await mercuriusClient.query(Query_chat_with_createdAt, {
+				headers: {
+					authorization: `bearer ${regularUser1AuthToken}`,
+				},
+				variables: {
+					input: {
+						id: testChatId,
+					},
+				},
+			});
+
+			expect(result.data?.chat?.createdAt).toBeNull();
+			expect(result.errors).toEqual(
+				expect.arrayContaining<TalawaGraphQLFormattedError>([
+					expect.objectContaining<TalawaGraphQLFormattedError>({
+						extensions: expect.objectContaining({ code: "unauthenticated" }),
+						message: expect.any(String),
+						path: ["chat", "createdAt"],
+					}),
+				]),
+			);
+		} finally {
+			// Restore original implementation
+			spy.mockRestore();
+		}
+	});
+
+	test("directly invokes Chat.createdAt resolver with unauthenticated context to cover first unauthenticated branch", async () => {
+		// Access the built GraphQL schema from the test server and call the field resolver directly.
+		const graphqlInstance = (
+			server as unknown as {
+				graphql?: { schema?: import("graphql").GraphQLSchema };
+			}
+		).graphql;
+		expect(graphqlInstance).toBeDefined();
+		const schema = graphqlInstance?.schema;
+		expect(schema).toBeDefined();
+
+		const chatType = schema?.getType("Chat");
+		expect(chatType).toBeDefined();
+
+		const fields = (
+			chatType as import("graphql").GraphQLObjectType
+		).getFields();
+		expect(fields.createdAt).toBeDefined();
+
+		const resolver = fields.createdAt?.resolve as (
+			parent: unknown,
+			args: unknown,
+			ctx: unknown,
+			info: unknown,
+		) => Promise<unknown>;
+
+		// Create a parent Chat object and a context where the client is unauthenticated
+		const parent = {
+			id: testChatId,
+			createdAt: new Date().toISOString(),
+			creatorId: adminUserId,
+		};
+
+		const ctx = {
+			currentClient: { isAuthenticated: false },
+			drizzleClient: server.drizzleClient,
+			envConfig: server.envConfig,
+			jwt: server.jwt,
+			log: server.log,
+			minio: server.minio,
+		};
+
+		await expect(resolver(parent, {}, ctx, {})).rejects.toEqual(
+			expect.objectContaining({
+				extensions: expect.objectContaining({ code: "unauthenticated" }),
+			} as unknown),
 		);
 	});
 

@@ -1,5 +1,5 @@
 import fastifyPlugin from "fastify-plugin";
-// import backgroundWorkers from "./backgroundWorkers";
+import backgroundWorkers from "./backgroundWorkers";
 import drizzleClient from "./drizzleClient";
 import emailQueue from "./emailQueue";
 import minioClient from "./minioClient";
@@ -27,7 +27,7 @@ export const plugins = fastifyPlugin(async (fastify) => {
 		fastify.log.info("emailQueue disabled (API_ENABLE_EMAIL_QUEUE!=true)");
 	}
 	// Register background workers after drizzle client is available
-	// await fastify.register(backgroundWorkers);
+	await fastify.register(backgroundWorkers);
 });
 
 export default plugins;

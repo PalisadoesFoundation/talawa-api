@@ -25,7 +25,7 @@ This command is used to create a production build of the talawa api codebase by 
 
 - More information can be found at [this](https://swc.rs/docs/usage/cli) link.
 
-## pnpm check_code_quality
+## pnpm format:check
 
 This command is used to check the linting and formatting issues in the codebase.
 
@@ -37,7 +37,7 @@ This command is used to check for inconsistencies and collisions in the sql migr
 
 - More information can be found at [this](https://orm.drizzle.team/docs/kit-overview) link.
 
-## pnpm check_type_errors
+## pnpm typecheck
 
 This command is used to check the type errors in the codebase using typescript compiler.
 
@@ -61,7 +61,7 @@ This command is used to enable the git hooks that automate some repetitive workf
 
 More information can be found [this](https://evilmartians.github.io/lefthook/usage/commands.html?highlight=lefthook%20install#lefthook-install) link.
 
-## pnpm fix_code_quality
+## pnpm format:fix
 
 This command is used to fix as many linting and formatting issues in the codebase as possible for being auto-fixed. Output of this command resulting in a failure means that there are some issues that need to be fixed manually.
 

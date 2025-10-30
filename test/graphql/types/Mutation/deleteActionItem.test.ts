@@ -7,6 +7,8 @@ import {
 	DELETE_ACTION_ITEM_MUTATION,
 	Mutation_createActionItem,
 	Mutation_createActionItemCategory,
+	Mutation_createEvent,
+	Mutation_createEventVolunteer,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
@@ -80,6 +82,46 @@ async function createActionItemCategory(
 	return categoryId;
 }
 
+// Helper to create an event and volunteer
+async function createEventAndVolunteer(organizationId: string, userId: string) {
+	// Create an event
+	const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				organizationId,
+				name: "Test Event",
+				description: "Test event for action items",
+				startAt: new Date().toISOString(),
+				endAt: new Date(Date.now() + 3600000).toISOString(),
+				location: "Test Location",
+			},
+		},
+	});
+	assertToBeNonNullish(eventResult.data?.createEvent);
+	const eventId = eventResult.data.createEvent.id;
+
+	// Create a volunteer
+	const volunteerResult = await mercuriusClient.mutate(
+		Mutation_createEventVolunteer,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					eventId,
+					userId,
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(volunteerResult.data?.createEventVolunteer);
+	assertToBeNonNullish(volunteerResult.data.createEventVolunteer.id);
+	return {
+		eventId,
+		volunteerId: volunteerResult.data.createEventVolunteer.id,
+	};
+}
+
 suite("Mutation field deleteActionItem", () => {
 	test("should delete an action item for a specific instance", async () => {
 		const orgId = await createOrganizationAndGetId();
@@ -98,8 +140,13 @@ suite("Mutation field deleteActionItem", () => {
 		});
 		assertToBeNonNullish(createUserResult.data?.createUser);
 		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const assigneeId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(assigneeId);
+		const assigneeUserId = createUserResult.data.createUser.user.id;
+		assertToBeNonNullish(assigneeUserId);
+
+		const { volunteerId } = await createEventAndVolunteer(
+			orgId,
+			assigneeUserId,
+		);
 
 		const createActionItemResult = await mercuriusClient.mutate(
 			Mutation_createActionItem,
@@ -108,7 +155,7 @@ suite("Mutation field deleteActionItem", () => {
 				variables: {
 					input: {
 						categoryId: categoryId,
-						assigneeId: assigneeId,
+						volunteerId: volunteerId,
 						organizationId: orgId,
 						assignedAt: "2025-04-01T00:00:00Z",
 					},
@@ -274,8 +321,13 @@ suite("Mutation field deleteActionItem", () => {
 		});
 		assertToBeNonNullish(createUserResult.data?.createUser);
 		assertToBeNonNullish(createUserResult.data.createUser.user);
-		const assigneeId = createUserResult.data.createUser.user.id;
-		assertToBeNonNullish(assigneeId);
+		const assigneeUserId = createUserResult.data.createUser.user.id;
+		assertToBeNonNullish(assigneeUserId);
+
+		const { volunteerId } = await createEventAndVolunteer(
+			orgId,
+			assigneeUserId,
+		);
 
 		const createActionItemResult = await mercuriusClient.mutate(
 			Mutation_createActionItem,
@@ -284,7 +336,7 @@ suite("Mutation field deleteActionItem", () => {
 				variables: {
 					input: {
 						categoryId: categoryId,
-						assigneeId: assigneeId,
+						volunteerId: volunteerId,
 						organizationId: orgId,
 						assignedAt: "2025-04-01T00:00:00Z",
 					},

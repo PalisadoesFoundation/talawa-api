@@ -942,9 +942,17 @@ export const Mutation_createActionItem = gql(`
         id
         name
       }
-      assignee {
+      volunteer {
+        id
+        hasAccepted
+        isPublic
+        hoursVolunteered
+      }
+      volunteerGroup {
         id
         name
+        description
+        volunteersRequired
       }
       organization {
         id
@@ -1010,7 +1018,14 @@ export const UPDATE_ACTION_ITEM_MUTATION = `#graphql
         id
         name
       }
-      assignee {
+      volunteer {
+        id
+        user {
+          id
+          name
+        }
+      }
+      volunteerGroup {
         id
         name
       }
@@ -1065,7 +1080,10 @@ export const DELETE_ACTION_ITEM_MUTATION = gql(`
       category {
         id
       }
-      assignee {
+      volunteer {
+        id
+      }
+      volunteerGroup {
         id
       }
       creator {
@@ -1182,7 +1200,14 @@ export const Query_actionItemsByOrganization = gql(`
         id
         name
       }
-      assignee {
+      volunteer {
+        id
+        user {
+          id
+          name
+        }
+      }
+      volunteerGroup {
         id
         name
       }
@@ -1644,9 +1669,9 @@ export const Query_organizationActionItemCategories = gql(`
     }
 `);
 
-export const Query_actionItemsByUser = gql(`
-  query ActionItemsByUser($input: QueryActionItemsByUserInput!) {
-    actionItemsByUser(input: $input) {
+export const Query_actionItemsByVolunteer = gql(`
+  query ActionItemsByVolunteer($input: QueryActionItemsByVolunteerInput!) {
+    actionItemsByVolunteer(input: $input) {
       id
       preCompletionNotes
       isCompleted
@@ -1657,9 +1682,51 @@ export const Query_actionItemsByUser = gql(`
         id
         name
       }
-      assignee {
+      volunteer {
+        id
+        hasAccepted
+        isPublic
+        hoursVolunteered
+      }
+      creator {
         id
         name
+      }
+      organization {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      createdAt
+    }
+  }
+`);
+
+export const Query_actionItemsByVolunteerGroup = gql(`
+  query ActionItemsByVolunteerGroup($input: QueryActionItemsByVolunteerGroupInput!) {
+    actionItemsByVolunteerGroup(input: $input) {
+      id
+      preCompletionNotes
+      isCompleted
+      assignedAt
+      completionAt
+      postCompletionNotes
+      category {
+        id
+        name
+      }
+      volunteerGroup {
+        id
+        name
+        description
+        volunteersRequired
       }
       creator {
         id

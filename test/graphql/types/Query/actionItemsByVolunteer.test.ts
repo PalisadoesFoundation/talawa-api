@@ -9,11 +9,13 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createActionItem,
 	Mutation_createActionItemCategory,
+	Mutation_createEvent,
+	Mutation_createEventVolunteer,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_deleteUser,
-	Query_actionItemsByUser,
+	Query_actionItemsByVolunteer,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -117,11 +119,14 @@ beforeAll(async () => {
 	globalAuth = await globalSignInAndGetToken();
 });
 
-suite("Query: actionItemsByUser", () => {
+suite("Query: actionItemsByVolunteer", () => {
 	let regularUser: { authToken: string; userId: string };
 	let organizationId: string;
 	let nonMemberUser: { authToken: string; userId: string };
 	let categoryId: string;
+	let eventId: string;
+	let regularUserVolunteerId: string;
+	let nonMemberUserVolunteerId: string;
 
 	beforeEach(async () => {
 		regularUser = await createUserAndGetToken();
@@ -130,18 +135,69 @@ suite("Query: actionItemsByUser", () => {
 		await addMembership(organizationId, regularUser.userId, "regular");
 		await addMembership(organizationId, globalAuth.userId, "administrator");
 		categoryId = await createActionItemCategory(organizationId);
+
+		// Create an event
+		const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				input: {
+					organizationId,
+					name: "Test Event",
+					description: "Test event for action items",
+					startAt: new Date().toISOString(),
+					endAt: new Date(Date.now() + 3600000).toISOString(),
+					location: "Test Location",
+				},
+			},
+		});
+		assertToBeNonNullish(eventResult.data?.createEvent);
+		eventId = eventResult.data.createEvent.id;
+
+		// Create volunteers
+		const regularVolunteerResult = await mercuriusClient.mutate(
+			Mutation_createEventVolunteer,
+			{
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						eventId,
+						userId: regularUser.userId,
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(regularVolunteerResult.data?.createEventVolunteer);
+		assertToBeNonNullish(regularVolunteerResult.data.createEventVolunteer.id);
+		regularUserVolunteerId =
+			regularVolunteerResult.data.createEventVolunteer.id;
+		const nonMemberVolunteerResult = await mercuriusClient.mutate(
+			Mutation_createEventVolunteer,
+			{
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						eventId,
+						userId: nonMemberUser.userId,
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(nonMemberVolunteerResult.data?.createEventVolunteer);
+		assertToBeNonNullish(nonMemberVolunteerResult.data.createEventVolunteer.id);
+		nonMemberUserVolunteerId =
+			nonMemberVolunteerResult.data.createEventVolunteer.id;
 	});
 
 	test("should return an unauthenticated error if not signed in", async () => {
-		const result = await mercuriusClient.query(Query_actionItemsByUser, {
+		const result = await mercuriusClient.query(Query_actionItemsByVolunteer, {
 			variables: {
 				input: {
-					userId: regularUser.userId,
+					volunteerId: regularUserVolunteerId,
 				},
 			},
 		});
 
-		expect(result.data?.actionItemsByUser).toBeNull();
+		expect(result.data?.actionItemsByVolunteer).toBeNull();
 		expect(result.errors).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
@@ -154,17 +210,16 @@ suite("Query: actionItemsByUser", () => {
 	test(
 		"should return an empty array if no action items exist for the user",
 		async () => {
-			const result = await mercuriusClient.query(Query_actionItemsByUser, {
+			const result = await mercuriusClient.query(Query_actionItemsByVolunteer, {
 				headers: { authorization: `bearer ${regularUser.authToken}` },
 				variables: {
 					input: {
-						userId: regularUser.userId,
+						volunteerId: regularUserVolunteerId,
 					},
 				},
 			});
-
 			expect(result.errors).toBeUndefined();
-			expect(result.data?.actionItemsByUser).toEqual([]);
+			expect(result.data?.actionItemsByVolunteer).toEqual([]);
 		},
 		SUITE_TIMEOUT,
 	);
@@ -175,7 +230,7 @@ suite("Query: actionItemsByUser", () => {
 			variables: {
 				input: {
 					organizationId,
-					assigneeId: regularUser.userId,
+					volunteerId: regularUserVolunteerId,
 					categoryId,
 				},
 			},
@@ -185,38 +240,38 @@ suite("Query: actionItemsByUser", () => {
 			variables: {
 				input: {
 					organizationId,
-					assigneeId: regularUser.userId,
+					volunteerId: regularUserVolunteerId,
 					categoryId,
 				},
 			},
 		});
 
-		const result = await mercuriusClient.query(Query_actionItemsByUser, {
+		const result = await mercuriusClient.query(Query_actionItemsByVolunteer, {
 			headers: { authorization: `bearer ${regularUser.authToken}` },
 			variables: {
 				input: {
-					userId: regularUser.userId,
+					volunteerId: regularUserVolunteerId,
 				},
 			},
 		});
 
-		expect(result.data?.actionItemsByUser).toBeInstanceOf(Array);
-		expect(result.data?.actionItemsByUser?.length).toBe(2);
+		expect(result.data?.actionItemsByVolunteer).toBeInstanceOf(Array);
+		expect(result.data?.actionItemsByVolunteer?.length).toBe(2);
 	});
 
 	test(
 		"should throw unauthorized error if regular user tries to view another user's action items",
 		async () => {
-			const result = await mercuriusClient.query(Query_actionItemsByUser, {
+			const result = await mercuriusClient.query(Query_actionItemsByVolunteer, {
 				headers: { authorization: `bearer ${regularUser.authToken}` },
 				variables: {
 					input: {
-						userId: nonMemberUser.userId,
+						volunteerId: nonMemberUserVolunteerId,
 					},
 				},
 			});
 
-			expect(result.data?.actionItemsByUser).toBeNull();
+			expect(result.data?.actionItemsByVolunteer).toBeNull();
 			expect(result.errors).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
@@ -231,16 +286,15 @@ suite("Query: actionItemsByUser", () => {
 	);
 
 	test("should throw invalid_arguments error when input validation fails", async () => {
-		const result = await mercuriusClient.query(Query_actionItemsByUser, {
+		const result = await mercuriusClient.query(Query_actionItemsByVolunteer, {
 			headers: { authorization: `bearer ${regularUser.authToken}` },
 			variables: {
 				input: {
-					userId: "invalid-uuid", // Invalid UUID format
+					volunteerId: "invalid-uuid", // Invalid UUID format
 				},
 			},
 		});
-
-		expect(result.data?.actionItemsByUser).toBeNull();
+		expect(result.data?.actionItemsByVolunteer).toBeNull();
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.[0]?.extensions?.code).toBe("invalid_arguments");
 		expect(result.errors?.[0]?.extensions?.issues).toEqual(
@@ -285,18 +339,17 @@ suite("Query: actionItemsByUser", () => {
 		});
 
 		// Try to use the authentication token of the deleted user
-		const result = await mercuriusClient.query(Query_actionItemsByUser, {
+		const result = await mercuriusClient.query(Query_actionItemsByVolunteer, {
 			headers: {
 				authorization: `bearer ${createUserResult.data.createUser.authenticationToken}`,
 			},
 			variables: {
 				input: {
-					userId: regularUser.userId,
+					volunteerId: regularUserVolunteerId,
 				},
 			},
 		});
-
-		expect(result.data?.actionItemsByUser).toEqual(null);
+		expect(result.data?.actionItemsByVolunteer).toEqual(null);
 		expect(result.errors).toEqual(
 			expect.arrayContaining<TalawaGraphQLFormattedError>([
 				expect.objectContaining<TalawaGraphQLFormattedError>({
@@ -304,23 +357,22 @@ suite("Query: actionItemsByUser", () => {
 						code: "unauthenticated",
 					}),
 					message: expect.any(String),
-					path: ["actionItemsByUser"],
+					path: ["actionItemsByVolunteer"],
 				}),
 			]),
 		);
 	});
 
-	test("should throw arguments_associated_resources_not_found error when target user does not exist", async () => {
-		const result = await mercuriusClient.query(Query_actionItemsByUser, {
+	test("should throw arguments_associated_resources_not_found error when target volunteer does not exist", async () => {
+		const result = await mercuriusClient.query(Query_actionItemsByVolunteer, {
 			headers: { authorization: `bearer ${regularUser.authToken}` },
 			variables: {
 				input: {
-					userId: "550e8400-e29b-41d4-a716-446655440000", // Valid UUID but non-existent user
+					volunteerId: "550e8400-e29b-41d4-a716-446655440000", // Valid UUID but non-existent volunteer
 				},
 			},
 		});
-
-		expect(result.data?.actionItemsByUser).toBeNull();
+		expect(result.data?.actionItemsByVolunteer).toBeNull();
 		expect(result.errors).toBeDefined();
 		expect(result.errors?.[0]?.extensions?.code).toBe(
 			"arguments_associated_resources_not_found",
@@ -328,12 +380,12 @@ suite("Query: actionItemsByUser", () => {
 		expect(result.errors?.[0]?.extensions?.issues).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					argumentPath: ["input", "userId"],
+					argumentPath: ["input", "volunteerId"],
 				}),
 			]),
 		);
 		expect(result.errors?.[0]?.message).toBe(
-			"The specified user does not exist.",
+			"The specified volunteer does not exist.",
 		);
 	});
 
@@ -342,60 +394,98 @@ suite("Query: actionItemsByUser", () => {
 		const otherOrgId = await createOrganizationAndGetId(globalAuth.authToken);
 		await addMembership(otherOrgId, regularUser.userId, "regular");
 		await addMembership(otherOrgId, globalAuth.userId, "administrator");
-		const otherCategoryId = await createActionItemCategory(otherOrgId);
+
+		// Create an event in the other organization (not needed for this test but keeping structure)
+		const otherEventResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						organizationId: otherOrgId,
+						name: "Other Test Event",
+						description: "Test event for action items in other org",
+						startAt: new Date().toISOString(),
+						endAt: new Date(Date.now() + 3600000).toISOString(),
+						location: "Other Test Location",
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(otherEventResult.data?.createEvent);
+		const otherEventId = otherEventResult.data.createEvent.id;
+
+		// Create volunteer in other organization for the same user (not used in this test)
+		const otherVolunteerResult = await mercuriusClient.mutate(
+			Mutation_createEventVolunteer,
+			{
+				headers: { authorization: `bearer ${globalAuth.authToken}` },
+				variables: {
+					input: {
+						eventId: otherEventId,
+						userId: regularUser.userId, // Same user as regularUserVolunteerId is for
+					},
+				},
+			},
+		);
+		assertToBeNonNullish(otherVolunteerResult.data?.createEventVolunteer);
 
 		// Create action items in both organizations
+		// First action item in the first organization
 		await mercuriusClient.mutate(Mutation_createActionItem, {
 			headers: { authorization: `bearer ${globalAuth.authToken}` },
 			variables: {
 				input: {
 					organizationId,
-					assigneeId: regularUser.userId,
+					volunteerId: regularUserVolunteerId,
 					categoryId,
 				},
 			},
 		});
 
+		// Second action item in the first organization (same volunteer)
 		await mercuriusClient.mutate(Mutation_createActionItem, {
 			headers: { authorization: `bearer ${globalAuth.authToken}` },
 			variables: {
 				input: {
-					organizationId: otherOrgId,
-					assigneeId: regularUser.userId,
-					categoryId: otherCategoryId,
+					organizationId,
+					volunteerId: regularUserVolunteerId,
+					categoryId,
 				},
 			},
 		});
 
-		// Query without organization filter - should return all items
-		const resultAll = await mercuriusClient.query(Query_actionItemsByUser, {
-			headers: { authorization: `bearer ${regularUser.authToken}` },
-			variables: {
-				input: {
-					userId: regularUser.userId,
-				},
-			},
-		});
-
-		expect(resultAll.data?.actionItemsByUser).toHaveLength(2);
-
-		// Query with organization filter - should return only items from that organization
-		const resultFiltered = await mercuriusClient.query(
-			Query_actionItemsByUser,
+		// Query without organization filter - should return all items for this volunteer
+		const resultAll = await mercuriusClient.query(
+			Query_actionItemsByVolunteer,
 			{
 				headers: { authorization: `bearer ${regularUser.authToken}` },
 				variables: {
 					input: {
-						userId: regularUser.userId,
-						organizationId,
+						volunteerId: regularUserVolunteerId,
 					},
 				},
 			},
 		);
 
-		expect(resultFiltered.data?.actionItemsByUser).toHaveLength(1);
-		expect(resultFiltered.data?.actionItemsByUser?.[0]?.organization?.id).toBe(
-			organizationId,
+		expect(resultAll.data?.actionItemsByVolunteer).toHaveLength(2);
+
+		// Query with organization filter - should return items from that organization for this volunteer
+		const resultFiltered = await mercuriusClient.query(
+			Query_actionItemsByVolunteer,
+			{
+				headers: { authorization: `bearer ${regularUser.authToken}` },
+				variables: {
+					input: {
+						volunteerId: regularUserVolunteerId,
+						organizationId,
+					},
+				},
+			},
 		);
+		expect(resultFiltered.data?.actionItemsByVolunteer).toHaveLength(2);
+		expect(
+			resultFiltered.data?.actionItemsByVolunteer?.[0]?.organization?.id,
+		).toBe(organizationId);
 	});
 });
