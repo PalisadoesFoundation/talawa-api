@@ -50,10 +50,11 @@ ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 RUN fnm install 23.7.0
 RUN fnm use 23.7.0
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml
+# SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 WORKDIR /home/talawa/api
+# COPY --chown=talawa:talawa ./package.json ./package.json
+COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml
 RUN pnpm config set store-dir /home/talawa/api/.pnpm-store
 ENV PNPM_STORE_PATH=/home/talawa/api/.pnpm-store
 RUN pnpm fetch --frozen-lockfile
