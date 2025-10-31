@@ -623,7 +623,6 @@ export async function setup(): Promise<SetupAnswers> {
 		process.exit(1);
 	});
 
-	await envFileBackup();
 	answers = await setCI(answers);
 	initializeEnvFile(answers);
 
@@ -683,5 +682,6 @@ export async function setup(): Promise<SetupAnswers> {
 	if (fs.existsSync(".env.backup")) {
 		fs.unlinkSync(".env.backup");
 	}
+	await envFileBackup();
 	return answers;
 }

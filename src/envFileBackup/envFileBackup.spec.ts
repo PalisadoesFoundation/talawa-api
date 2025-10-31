@@ -3,9 +3,14 @@ import path from "node:path";
 import inquirer from "inquirer";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { envFileBackup } from "./envFileBackup";
-
-vi.mock("fs/promises");
-vi.mock("inquirer");
+vi.mock("node:fs/promises", () => ({
+  access: vi.fn(),
+  copyFile: vi.fn(),
+  mkdir: vi.fn(),
+}));
+vi.mock("inquirer", () => ({
+  default: { prompt: vi.fn() },
+}));
 
 describe("envFileBackup", () => {
 	const mockCwd = "/test/path";
@@ -14,7 +19,7 @@ describe("envFileBackup", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		process.cwd = vi.fn(() => mockCwd);
-		vi.spyOn(console, "info").mockImplementation(() => {});
+		vi.spyOn(console, "log").mockImplementation(() => {});
 		vi.spyOn(console, "warn").mockImplementation(() => {});
 	});
 
@@ -42,7 +47,7 @@ describe("envFileBackup", () => {
 			path.join(mockCwd, ".env"),
 			path.join(mockCwd, ".backup", `.env.${mockEpochSec}`),
 		);
-		expect(console.info).toHaveBeenCalledWith(
+		expect(console.log).toHaveBeenCalledWith(
 			expect.stringContaining(`.env.${mockEpochSec}`),
 		);
 	});
