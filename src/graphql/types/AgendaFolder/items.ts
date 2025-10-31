@@ -39,13 +39,12 @@ const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 		};
 	});
 
-const cursorSchema = agendaItemsTableInsertSchema
-	.pick({
-		name: true,
-	})
-	.extend({
-		id: agendaItemsTableInsertSchema.shape.id.unwrap(),
-	});
+import { z as zod } from "zod";
+const cursorSchema = zod.object({
+	// Accept opaque string identifiers as cursors; don't enforce UUID here because cursors are client-opaque
+	id: zod.string().min(1),
+	name: agendaItemsTableInsertSchema.shape.name,
+});
 
 AgendaFolder.implement({
 	fields: (t) => ({
