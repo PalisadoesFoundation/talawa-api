@@ -8,8 +8,7 @@ export const envFileBackup = async (): Promise<void> => {
 		{
 			type: "confirm",
 			name: "shouldBackup",
-			message:
-				"Would you like to back up the current .env file?",
+			message: "Would you like to back up the current .env file?",
 			default: true,
 		},
 	]);

@@ -4,12 +4,12 @@ import inquirer from "inquirer";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { envFileBackup } from "./envFileBackup";
 vi.mock("node:fs/promises", () => ({
-  access: vi.fn(),
-  copyFile: vi.fn(),
-  mkdir: vi.fn(),
+	access: vi.fn(),
+	copyFile: vi.fn(),
+	mkdir: vi.fn(),
 }));
 vi.mock("inquirer", () => ({
-  default: { prompt: vi.fn() },
+	default: { prompt: vi.fn() },
 }));
 
 describe("envFileBackup", () => {
