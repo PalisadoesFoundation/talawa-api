@@ -1,4 +1,5 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
+import { z as zod } from "zod";
 import type { z } from "zod";
 import {
 	agendaItemsTable,
@@ -39,7 +40,6 @@ const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 		};
 	});
 
-import { z as zod } from "zod";
 const cursorSchema = zod.object({
 	// Accept opaque string identifiers as cursors; don't enforce UUID here because cursors are client-opaque
 	id: zod.string().min(1),
@@ -66,11 +66,13 @@ AgendaFolder.implement({
 					} = itemsArgumentsSchema.safeParse(args);
 
 					if (!success) {
-						// For this resolver, return a generic invalid_arguments error without granular issues
-						// to match the expected GraphQL error shape in tests.
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "invalid_arguments",
+								issues: error.issues.map((issue) => ({
+									argumentPath: issue.path,
+									message: issue.message,
+								})),
 							},
 						});
 					}
@@ -147,11 +149,10 @@ AgendaFolder.implement({
 						});
 
 					if (cursor !== undefined && agendaItems.length === 0) {
-						// If a cursor is provided but no rows are found, return the generic
-						// arguments_associated_resources_not_found error without issues.
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "arguments_associated_resources_not_found",
+								issues: [],
 							},
 						});
 					}
