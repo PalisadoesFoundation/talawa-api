@@ -44,7 +44,7 @@
     "@biomejs/biome": "^1.9.4",
     "@faker-js/faker": "^9.4.0",
     "@swc/cli": "0.6.0",
-    "@swc/core": "^1.13.5",
+    "@swc/core": "^1.14.0",
     "@types/node": "^22.13.17",
     "@types/node-cron": "^3.0.11",
     "@types/yauzl": "^2.10.3",
