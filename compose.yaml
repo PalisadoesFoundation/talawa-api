@@ -103,8 +103,6 @@ services:
     # https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#handling-kernel-signals
     init: true
     # https://docs.docker.com/reference/compose-file/services/#networks
-    ports:
-    - "4000:4000"
     networks:
       - api
       - minio
