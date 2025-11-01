@@ -61,8 +61,16 @@ describe("AgendaFolder.items connection resolver", () => {
 	describe("argument validation", () => {
 		it("throws invalid_arguments when neither first nor last is provided", async () => {
 			await expect(itemsResolver(agendaFolder, {}, ctx, info)).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "invalid_arguments", issues: [] },
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["first"],
+								message: expect.stringContaining("first"),
+							}),
+						]),
+					}),
 				}),
 			);
 		});
@@ -71,8 +79,16 @@ describe("AgendaFolder.items connection resolver", () => {
 			await expect(
 				itemsResolver(agendaFolder, { first: 2, last: 2 }, ctx, info),
 			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "invalid_arguments", issues: [] },
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["last"],
+								message: expect.stringContaining("last"),
+							}),
+						]),
+					}),
 				}),
 			);
 		});
@@ -86,8 +102,16 @@ describe("AgendaFolder.items connection resolver", () => {
 					info,
 				),
 			).rejects.toThrow(
-				new TalawaGraphQLError({
-					extensions: { code: "invalid_arguments", issues: [] },
+				expect.objectContaining({
+					extensions: expect.objectContaining({
+						code: "invalid_arguments",
+						issues: expect.arrayContaining([
+							expect.objectContaining({
+								argumentPath: ["after"],
+								message: expect.stringContaining("cursor"),
+							}),
+						]),
+					}),
 				}),
 			);
 		});
