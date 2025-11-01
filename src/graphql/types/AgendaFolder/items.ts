@@ -5,11 +5,8 @@ import type { InferSelectModel } from "drizzle-orm";
 import type { z } from "zod";
 
 import {
-
-	agendaItemsTable,
-
-	agendaItemsTableInsertSchema,
-
+  agendaItemsTable,
+  agendaItemsTableInsertSchema,
 } from "~/src/drizzle/tables/agendaItems";
 
 import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
@@ -17,15 +14,10 @@ import { AgendaItem } from "~/src/graphql/types/AgendaItem/AgendaItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 import {
-
-	type DefaultGraphQLConnection,
-
-	defaultGraphQLConnectionArgumentsSchema,
-
-	transformDefaultGraphQLConnectionArguments,
-
-	transformToDefaultGraphQLConnection,
-
+  type DefaultGraphQLConnection,
+  defaultGraphQLConnectionArgumentsSchema,
+  transformDefaultGraphQLConnectionArguments,
+  transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 
 import envConfig from "~/src/utilities/graphqLimits";
@@ -54,37 +46,31 @@ import { AgendaFolder } from "./AgendaFolder";
 
 const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 
-	.transform(transformDefaultGraphQLConnectionArguments)
+  .transform(transformDefaultGraphQLConnectionArguments)
 
-	.transform((arg: ParsedDefaultGraphQLConnectionArguments, ctx: z.RefinementCtx) => {
+  .transform(
+    (arg: ParsedDefaultGraphQLConnectionArguments, ctx: z.RefinementCtx) => {
+      const cursor = decodeCursorOrAddIssue(arg.cursor, ctx, arg.isInversed);
 
-		const cursor = decodeCursorOrAddIssue(arg.cursor, ctx, arg.isInversed);
+      return {
+        cursor,
 
-		return {
+        isInversed: arg.isInversed,
 
-			cursor,
-
-			isInversed: arg.isInversed,
-
-			limit: arg.limit,
-
-		};
-
-	});
+        limit: arg.limit,
+      };
+    }
+  );
 
 const cursorSchema = agendaItemsTableInsertSchema
 
-	.pick({
+  .pick({
+    name: true,
+  })
 
-		name: true,
-
-	})
-
-	.extend({
-
-		id: agendaItemsTableInsertSchema.shape.id.unwrap(),
-
-	});
+  .extend({
+    id: agendaItemsTableInsertSchema.shape.id.unwrap(),
+  });
 
 /**
 
@@ -121,16 +107,15 @@ const cursorSchema = agendaItemsTableInsertSchema
 */
 
 export const resolveItems = async (
+  parent: { id: string },
 
-	parent: { id: string },
+  args: z.input<typeof defaultGraphQLConnectionArgumentsSchema>,
 
-	args: z.input<typeof defaultGraphQLConnectionArgumentsSchema>,
-
-	ctx: GraphQLContext,
-
-): Promise<DefaultGraphQLConnection<InferSelectModel<typeof agendaItemsTable>>> => {
-
-	/**
+  ctx: GraphQLContext
+): Promise<
+  DefaultGraphQLConnection<InferSelectModel<typeof agendaItemsTable>>
+> => {
+  /**
 	
 	* Stable ordering:
 	
@@ -140,228 +125,160 @@ export const resolveItems = async (
 	
 	*/
 
-	const {
+  const {
+    data: parsedArgs,
 
-		data: parsedArgs,
+    error,
 
-		error,
+    success,
+  } = itemsArgumentsSchema.safeParse(args);
 
-		success,
+  if (!success) {
+    throw new TalawaGraphQLError({
+      extensions: {
+        code: "invalid_arguments",
 
-	} = itemsArgumentsSchema.safeParse(args);
+        issues: error.issues.map((issue: z.ZodIssue) => ({
+          argumentPath: issue.path,
 
-	if (!success) {
+          message: issue.message,
+        })),
+      },
+    });
+  }
 
-		throw new TalawaGraphQLError({
+  const { cursor, isInversed, limit } = parsedArgs;
 
-			extensions: {
+  const orderBy = isInversed
+    ? [desc(agendaItemsTable.name), desc(agendaItemsTable.id)]
+    : [asc(agendaItemsTable.name), asc(agendaItemsTable.id)];
 
-				code: "invalid_arguments",
+  let where: SQL | undefined;
 
-				issues: error.issues.map((issue: z.ZodIssue) => ({
+  if (isInversed) {
+    if (cursor !== undefined) {
+      where = and(
+        exists(
+          ctx.drizzleClient
 
-					argumentPath: issue.path,
+            .select()
 
-					message: issue.message,
+            .from(agendaItemsTable)
 
-				})),
+            .where(
+              and(
+                eq(agendaItemsTable.folderId, parent.id),
 
-			},
+                eq(agendaItemsTable.id, cursor.id),
 
-		});
+                eq(agendaItemsTable.name, cursor.name)
+              )
+            )
+        ),
 
-	}
+        eq(agendaItemsTable.folderId, parent.id),
 
-	const { cursor, isInversed, limit } = parsedArgs;
+        or(
+          and(
+            eq(agendaItemsTable.name, cursor.name),
 
-	const orderBy = isInversed
+            lt(agendaItemsTable.id, cursor.id)
+          ),
 
-		? [desc(agendaItemsTable.name), desc(agendaItemsTable.id)]
+          lt(agendaItemsTable.name, cursor.name)
+        )
+      );
+    } else {
+      where = eq(agendaItemsTable.folderId, parent.id);
+    }
+  } else {
+    if (cursor !== undefined) {
+      where = and(
+        exists(
+          ctx.drizzleClient
 
-		: [asc(agendaItemsTable.name), asc(agendaItemsTable.id)];
+            .select()
 
-	let where: SQL | undefined;
+            .from(agendaItemsTable)
 
-	if (isInversed) {
+            .where(
+              and(
+                eq(agendaItemsTable.folderId, parent.id),
 
-		if (cursor !== undefined) {
+                eq(agendaItemsTable.id, cursor.id),
 
-			where = and(
+                eq(agendaItemsTable.name, cursor.name)
+              )
+            )
+        ),
 
-				exists(
+        eq(agendaItemsTable.folderId, parent.id),
 
-					ctx.drizzleClient
+        or(
+          and(
+            eq(agendaItemsTable.name, cursor.name),
 
-						.select()
+            gt(agendaItemsTable.id, cursor.id)
+          ),
 
-						.from(agendaItemsTable)
+          gt(agendaItemsTable.name, cursor.name)
+        )
+      );
+    } else {
+      where = eq(agendaItemsTable.folderId, parent.id);
+    }
+  }
 
-						.where(
+  const agendaItems = await ctx.drizzleClient.query.agendaItemsTable.findMany({
+    limit,
 
-							and(
+    orderBy,
 
-								eq(agendaItemsTable.folderId, parent.id),
+    where,
+  });
 
-								eq(agendaItemsTable.id, cursor.id),
+  // NOTE: For consistency with other connection resolvers in the codebase (e.g., childFolders),
 
-								eq(agendaItemsTable.name, cursor.name),
+  // we surface an error when a cursor is provided but no rows are found. This typically signals
 
-							),
+  // either an invalid/non-existent cursor target or a mismatch with the current parent context.
 
-						),
+  // If we ever choose to distinguish between "cursor not found" and "no items after/before cursor",
 
-				),
+  // we should align that change across all connection resolvers.
 
-				eq(agendaItemsTable.folderId, parent.id),
+  if (cursor !== undefined && agendaItems.length === 0) {
+    throw new TalawaGraphQLError({
+      extensions: {
+        code: "arguments_associated_resources_not_found",
 
-				or(
+        issues: [
+          {
+            argumentPath: [isInversed ? "before" : "after"],
+          },
+        ],
+      },
+    });
+  }
 
-					and(
+  type AgendaItemRow = InferSelectModel<typeof agendaItemsTable>;
 
-						eq(agendaItemsTable.name, cursor.name),
+  return transformToDefaultGraphQLConnection<AgendaItemRow, AgendaItemRow>({
+    createCursor: (agendaItem: AgendaItemRow) =>
+      Buffer.from(
+        JSON.stringify({
+          id: agendaItem.id,
 
-						lt(agendaItemsTable.id, cursor.id),
+          name: agendaItem.name,
+        })
+      ).toString("base64url"),
 
-					),
+    createNode: (agendaItem: AgendaItemRow) => agendaItem,
 
-					lt(agendaItemsTable.name, cursor.name),
+    parsedArgs,
 
-				),
-
-			);
-
-		} else {
-
-			where = eq(agendaItemsTable.folderId, parent.id);
-
-		}
-
-	} else {
-
-		if (cursor !== undefined) {
-
-			where = and(
-
-				exists(
-
-					ctx.drizzleClient
-
-						.select()
-
-						.from(agendaItemsTable)
-
-						.where(
-
-							and(
-
-								eq(agendaItemsTable.folderId, parent.id),
-
-								eq(agendaItemsTable.id, cursor.id),
-
-								eq(agendaItemsTable.name, cursor.name),
-
-							),
-
-						),
-
-				),
-
-				eq(agendaItemsTable.folderId, parent.id),
-
-				or(
-
-					and(
-
-						eq(agendaItemsTable.name, cursor.name),
-
-						gt(agendaItemsTable.id, cursor.id),
-
-					),
-
-					gt(agendaItemsTable.name, cursor.name),
-
-				),
-
-			);
-
-		} else {
-
-			where = eq(agendaItemsTable.folderId, parent.id);
-
-		}
-
-	}
-
-	const agendaItems = await ctx.drizzleClient.query.agendaItemsTable.findMany({
-
-		limit,
-
-		orderBy,
-
-		where,
-
-	});
-
-	// NOTE: For consistency with other connection resolvers in the codebase (e.g., childFolders),
-
-	// we surface an error when a cursor is provided but no rows are found. This typically signals
-
-	// either an invalid/non-existent cursor target or a mismatch with the current parent context.
-
-	// If we ever choose to distinguish between "cursor not found" and "no items after/before cursor",
-
-	// we should align that change across all connection resolvers.
-
-	if (cursor !== undefined && agendaItems.length === 0) {
-
-		throw new TalawaGraphQLError({
-
-			extensions: {
-
-				code: "arguments_associated_resources_not_found",
-
-				issues: [
-
-					{
-
-						argumentPath: [isInversed ? "before" : "after"],
-
-					},
-
-				],
-
-			},
-
-		});
-
-	}
-
-	type AgendaItemRow = InferSelectModel<typeof agendaItemsTable>;
-
-	return transformToDefaultGraphQLConnection<AgendaItemRow, AgendaItemRow>({
-
-		createCursor: (agendaItem: AgendaItemRow) =>
-
-			Buffer.from(
-
-				JSON.stringify({
-
-					id: agendaItem.id,
-
-					name: agendaItem.name,
-
-				}),
-
-			).toString("base64url"),
-
-		createNode: (agendaItem: AgendaItemRow) => agendaItem,
-
-		parsedArgs,
-
-		rawNodes: agendaItems,
-
-	});
-
+    rawNodes: agendaItems,
+  });
 };
 
 /**
@@ -377,113 +294,78 @@ export const resolveItems = async (
 */
 
 function decodeCursorOrAddIssue(
+  encoded: string | undefined,
 
-	encoded: string | undefined,
+  ctx: z.RefinementCtx,
 
-	ctx: z.RefinementCtx,
-
-	isInversed: boolean,
-
+  isInversed: boolean
 ): z.infer<typeof cursorSchema> | undefined {
+  if (encoded === undefined) return undefined;
 
-	if (encoded === undefined) return undefined;
+  try {
+    const decoded = JSON.parse(
+      Buffer.from(encoded, "base64url").toString("utf-8")
+    );
 
-	try {
+    return cursorSchema.parse(decoded);
+  } catch {
+    ctx.addIssue({
+      code: "custom",
 
-		const decoded = JSON.parse(
+      message: "Not a valid cursor.",
 
-			Buffer.from(encoded, "base64url").toString("utf-8"),
+      path: [isInversed ? "before" : "after"],
+    });
 
-		);
-
-		return cursorSchema.parse(decoded);
-
-	} catch {
-
-		ctx.addIssue({
-
-			code: "custom",
-
-			message: "Not a valid cursor.",
-
-			path: [isInversed ? "before" : "after"],
-
-		});
-
-		return undefined;
-
-	}
-
+    return undefined;
+  }
 }
 
 AgendaFolder.implement({
+  fields: (t) => ({
+    items: t.connection(
+      {
+        description:
+          "GraphQL connection to traverse through the agenda items contained within the agenda folder.",
 
-	fields: (t: any) => ({
+        complexity: (
+          args: z.input<typeof defaultGraphQLConnectionArgumentsSchema>
+        ) => {
+          return {
+            field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 
-		items: t.connection(
+            multiplier: args.first || args.last || 1,
+          };
+        },
 
-			{
+        resolve: resolveItems,
 
-				description:
+        type: AgendaItem,
+      },
 
-					"GraphQL connection to traverse through the agenda items contained within the agenda folder.",
+      {
+        edgesField: {
+          complexity: {
+            field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 
-				complexity: (args: any) => {
+            multiplier: 1,
+          },
+        },
 
-					return {
+        description: "",
+      },
 
-						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+      {
+        nodeField: {
+          complexity: {
+            field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
 
-						multiplier: args.first || args.last || 1,
+            multiplier: 1,
+          },
+        },
 
-					};
-
-				},
-
-				resolve: resolveItems,
-
-				type: AgendaItem,
-
-			},
-
-			{
-
-				edgesField: {
-
-					complexity: {
-
-						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-
-						multiplier: 1,
-
-					},
-
-				},
-
-				description: "",
-
-			},
-
-			{
-
-				nodeField: {
-
-					complexity: {
-
-						field: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
-
-						multiplier: 1,
-
-					},
-
-				},
-
-				description: "",
-
-			},
-
-		),
-
-	}),
-
+        description: "",
+      }
+    ),
+  }),
 });
