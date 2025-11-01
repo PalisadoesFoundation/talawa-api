@@ -92,3 +92,4 @@ import "./QueryUserInput";
 import "./QueryVenueInput";
 import "./SubscriptionChatMessageCreateInput";
 import "./QueryHasUserVotedInput";
+export * from "./OrganizationOrderByInput";
