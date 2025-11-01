@@ -844,3 +844,7 @@ yarn.lock
 # Plugin related
 /src/plugin/available/*
 !/src/plugin/available/readme.md
+
+
+
+docker-compose.cloudbeaver.yaml
