@@ -1,9 +1,12 @@
 import type { InferSelectModel } from "drizzle-orm";
-import { and, ilike, sql } from "drizzle-orm";
-import type { organizationsTable } from "~/src/drizzle/schema";
+import { and,asc, desc,ilike, sql } from "drizzle-orm";
+// import type { organizationsTable } from "~/src/drizzle/schema";
+import  { organizationsTable } from "~/src/drizzle/schema"; // importing the actual table instance
 import { builder } from "~/src/graphql/builder";
 import type { GraphQLContext } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
+import { OrganizationOrderByInput } from "~/src/graphql/inputs/OrganizationOrderByInput"; // ← ADD THIS LINE
+
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 
@@ -15,8 +18,33 @@ interface OrganizationsArgs {
 	filter?: string | null;
 	limit?: number | null;
 	offset?: number | null;
+	orderBy?: string | null; // ← ADDing THIS LINE
+
 }
 
+/**
+ * Helper function to convert orderBy string to Drizzle order clause
+ */
+const getOrderByClause = (orderBy: string | null | undefined) => {
+	if (!orderBy) return desc(organizationsTable.createdAt); // Default: newest first
+
+	switch (orderBy) {
+		case 'createdAt_ASC':
+			return asc(organizationsTable.createdAt);
+		case 'createdAt_DESC':
+			return desc(organizationsTable.createdAt);
+		case 'name_ASC':
+			return asc(organizationsTable.name);
+		case 'name_DESC':
+			return desc(organizationsTable.name);
+		case 'updatedAt_ASC':
+			return asc(organizationsTable.updatedAt);
+		case 'updatedAt_DESC':
+			return desc(organizationsTable.updatedAt);
+		default:
+			return desc(organizationsTable.createdAt);
+	}
+};
 /**
  * Resolver to fetch organizations with optional filtering.
  */
@@ -25,7 +53,8 @@ export const resolveOrganizations = async (
 	args: OrganizationsArgs,
 	ctx: GraphQLContext,
 ): Promise<OrganizationType[]> => {
-	const { filter, limit, offset } = args; // No default values to allow fetching all records
+	const { filter, limit, offset, orderBy } = args;  // No default values to allow fetching all records
+const orderClause = getOrderByClause(orderBy);  
 	const currentUserId = ctx.currentClient?.user?.id;
 
 	try {
@@ -53,6 +82,7 @@ export const resolveOrganizations = async (
 						filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
 					limit: limit ?? undefined, // Fetch all if limit is not provided
 					offset: offset ?? undefined, // No offset if not provided
+					orderBy: orderClause, //for organization data ordering
 				});
 			}
 
@@ -83,6 +113,8 @@ export const resolveOrganizations = async (
 						),
 					limit: limit ?? undefined, // Fetch all if limit is not provided
 					offset: offset ?? undefined, // No offset if not provided
+			    	orderBy: orderClause, //for organization data ordering
+
 				});
 			}
 
@@ -92,6 +124,8 @@ export const resolveOrganizations = async (
 					filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
 				limit: limit ?? undefined, // Fetch all if limit is not provided
 				offset: offset ?? undefined, // No offset if not provided
+				orderBy: orderClause, //for organization data ordering
+
 			});
 		}
 		// Case 4: Unauthenticated user for registration, return all organizations
@@ -100,6 +134,8 @@ export const resolveOrganizations = async (
 				filter ? ilike(fields.name, `%${filter}%`) : sql`TRUE`,
 			limit: limit ?? undefined, // Fetch all if limit is not provided
 			offset: offset ?? undefined, // No offset if not provided
+			orderBy: orderClause, //for organization data ordering
+
 		});
 	} catch (error) {
 		ctx.log.error("Error in organizations query:", error);
@@ -115,6 +151,11 @@ builder.queryField("organizations", (t) =>
 			filter: t.arg.string({ required: false }),
 			limit: t.arg.int({ required: false }),
 			offset: t.arg.int({ required: false }),
+			orderBy: t.arg({                           
+			type: OrganizationOrderByInput,          
+			required: false,                         
+			description: "Sort organizations by field and direction (default: createdAt_DESC)",
+			}),       
 		},
 		complexity: envConfig.API_GRAPHQL_NON_PAGINATED_LIST_FIELD_COST,
 		resolve: resolveOrganizations,
