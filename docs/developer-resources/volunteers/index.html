@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-docs/developer-resources/volunteers" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">Event Volunteers and Volunteer Groups | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://docs-api.talawa.io/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://docs-api.talawa.io/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/developer-resources/volunteers"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Event Volunteers and Volunteer Groups | Talawa API Documentation"><meta data-rh="true" name="description" content="This guide explains how individual volunteers, volunteer groups, and memberships work for events in Talawa, including recurring series behavior."><meta data-rh="true" property="og:description" content="This guide explains how individual volunteers, volunteer groups, and memberships work for events in Talawa, including recurring series behavior."><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/developer-resources/volunteers"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/developer-resources/volunteers" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/developer-resources/volunteers" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Event Volunteers and Volunteer Groups","item":"https://docs-api.talawa.io/docs/developer-resources/volunteers"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.a008b5a9.css">
+<script src="/assets/js/runtime~main.7b7f54d0.js" defer="defer"></script>
+<script src="/assets/js/main.e0525c14.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||"light"),document.documentElement.setAttribute("data-theme-choice",t||"light")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_Vr6R" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a href="https://docs.talawa.io/" target="_self" rel="noopener noreferrer" class="navbar__brand"><div class="navbar__logo"><img src="/img/logos/logo.png" alt="My Site Logo" class="themedComponent_W1hv themedComponent--light_VcjY"><img src="/img/logos/logo.png" alt="My Site Logo" class="themedComponent_W1hv themedComponent--dark_wsix"></div><b class="navbar__title text--truncate">Talawa</b></a><a href="https://docs.talawa.io/docs" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">General</a><a href="https://docs-mobile.talawa.io/docs" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Mobile Guide</a><a href="https://docs-admin.talawa.io/docs" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Admin Guide</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/docs">API Guide</a><a href="https://docs-plugin.talawa.io/docs" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Plugin Guide</a><a href="https://community.talawa.io" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Community</a><a href="https://demo.talawa.io/" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">Demo</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/PalisadoesFoundation" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link header-github-link" aria-label="GitHub repository"></a><a href="https://www.youtube.com/@PalisadoesOrganization" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link header-youtube-link" aria-label="Palisadoes Youtube channel"></a><div class="toggle_JEho colorModeToggle__p9S"><button class="clean-btn toggleButton_QJRr toggleButtonDisabled_NVBK" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_vALO lightToggleIcon_xCuH"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_vALO darkToggleIcon_tDb_"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_vALO systemToggleIcon_NSe_"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_pzfk"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_rUDs"><div class="docsWrapper_E4OU"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_r5vl" type="button"></button><div class="docRoot_BKpa"><aside class="theme-doc-sidebar-container docSidebarContainer_UjP4"><div class="sidebarViewport_p6sO"><div class="sidebar_l6dw"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_Cvb8"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/"><span title="Introduction" class="linkLabel_rElb">Introduction</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/docs/installation"><span title="Getting Started" class="categoryLinkLabel_E_RK">Getting Started</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/installation"><span title="Installation" class="linkLabel_rElb">Installation</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/installation/environment-variables"><span title="Environment Variables" class="linkLabel_rElb">Environment Variables</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/webserver"><span title="Webserver Setup" class="linkLabel_rElb">Webserver Setup</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/docs/developer-resources/introduction"><span title="Developer Resources" class="categoryLinkLabel_E_RK">Developer Resources</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/introduction"><span title="Introduction" class="linkLabel_rElb">Introduction</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/pnpm-scripts"><span title="PNPM Scripts" class="linkLabel_rElb">PNPM Scripts</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/operation"><span title="Operation" class="linkLabel_rElb">Operation</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/graphql-filtering"><span title="GraphQL Filtering &amp; Pagination" class="linkLabel_rElb">GraphQL Filtering &amp; Pagination</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/rate-limiting"><span title="Rate Limiting" class="linkLabel_rElb">Rate Limiting</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/plugin"><span title="Plugin System" class="linkLabel_rElb">Plugin System</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/testing"><span title="Testing &amp; Validation" class="linkLabel_rElb">Testing &amp; Validation</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/events"><span title="Events" class="linkLabel_rElb">Events</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/action-items"><span title="Event Action Items" class="linkLabel_rElb">Event Action Items</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/docs/developer-resources/volunteers"><span title="Event Volunteers and Volunteer Groups" class="linkLabel_rElb">Event Volunteers and Volunteer Groups</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/troubleshooting"><span title="Troubleshooting" class="linkLabel_rElb">Troubleshooting</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/docs/auto-docs/createServer/functions/createServer"><span title="Code Documentation" class="categoryLinkLabel_E_RK">Code Documentation</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/docs/docs/auto-schema/createServer/functions/createServer"><span title="Schema" class="categoryLinkLabel_E_RK">Schema</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_c3Ic"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_ynsf"><div class="docItemContainer_QVh_"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_sK2n" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_DkXf"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Developer Resources</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Event Volunteers and Volunteer Groups</span></li></ul></nav><div class="tocCollapsible_pDLc theme-doc-toc-mobile tocMobile_A6Fd"><button type="button" class="clean-btn tocCollapsibleButton_ItB6">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Event Volunteers and Volunteer Groups</h1></header>
+<p>This guide explains how individual volunteers, volunteer groups, and memberships work for events in Talawa, including recurring series behavior.</p>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="overview">Overview<a href="#overview" class="hash-link" aria-label="Direct link to Overview" title="Direct link to Overview" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="key-concepts">Key Concepts<a href="#key-concepts" class="hash-link" aria-label="Direct link to Key Concepts" title="Direct link to Key Concepts" translate="no">​</a></h3>
+<ul>
+<li class="">Two attachment scopes for recurring events:<!-- -->
+<ul>
+<li class=""><strong>Entire series (template)</strong>: volunteer/group applies to every instance unless explicitly excluded for specific dates.</li>
+<li class=""><strong>This instance only</strong>: volunteer/group exists only for one occurrence.</li>
+</ul>
+</li>
+<li class="">Per-instance removal uses &quot;exceptions&quot; rows rather than deleting the series record.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="data-model">Data Model<a href="#data-model" class="hash-link" aria-label="Direct link to Data Model" title="Direct link to Data Model" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="tables-overview">Tables Overview<a href="#tables-overview" class="hash-link" aria-label="Direct link to Tables Overview" title="Direct link to Tables Overview" translate="no">​</a></h3>
+<p>Tables in talawa-api (Drizzle ORM):</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="event-volunteers-table">Event Volunteers Table<a href="#event-volunteers-table" class="hash-link" aria-label="Direct link to Event Volunteers Table" title="Direct link to Event Volunteers Table" translate="no">​</a></h4>
+<ul>
+<li class=""><strong><code>event_volunteers</code></strong>
+<ul>
+<li class="">One row per user volunteering for an event context.</li>
+<li class="">Template volunteer (series-wide): <code>eventId</code> = base template event id, <code>isTemplate = true</code>, <code>recurringEventInstanceId = null</code>.</li>
+<li class="">Instance-only volunteer: <code>eventId</code> = base template event id, <code>isTemplate = false</code>, <code>recurringEventInstanceId = instance id</code>.</li>
+<li class="">Other fields: <code>hasAccepted</code>, <code>isPublic</code>, <code>hoursVolunteered</code>, <code>creatorId</code>, <code>updaterId</code>.</li>
+<li class="">Unique(userId, eventId, recurringEventInstanceId) prevents duplicates across series vs one instance.</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="event-volunteer-groups-table">Event Volunteer Groups Table<a href="#event-volunteer-groups-table" class="hash-link" aria-label="Direct link to Event Volunteer Groups Table" title="Direct link to Event Volunteer Groups Table" translate="no">​</a></h4>
+<ul>
+<li class=""><strong><code>event_volunteer_groups</code></strong>
+<ul>
+<li class="">Volunteer group definition for an event context.</li>
+<li class="">Template group (series-wide): <code>eventId</code> = base template event id, <code>isTemplate = true</code>, <code>recurringEventInstanceId = null</code>.</li>
+<li class="">Instance-only group: <code>eventId</code> = base template event id, <code>isTemplate = false</code>, <code>recurringEventInstanceId = instance id</code>.</li>
+<li class="">Other fields: <code>leaderId</code>, <code>name</code>, <code>description</code>, <code>volunteersRequired</code>, <code>creatorId</code>, <code>updaterId</code>.</li>
+<li class="">Unique(eventId, name, recurringEventInstanceId) prevents name collisions per instance.</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="event-volunteer-memberships-table">Event Volunteer Memberships Table<a href="#event-volunteer-memberships-table" class="hash-link" aria-label="Direct link to Event Volunteer Memberships Table" title="Direct link to Event Volunteer Memberships Table" translate="no">​</a></h4>
+<ul>
+<li class=""><strong><code>event_volunteer_memberships</code></strong>
+<ul>
+<li class="">Connects an EventVolunteer to an optional EventVolunteerGroup for an event.</li>
+<li class="">Fields: <code>volunteerId</code>, <code>groupId</code> (nullable for individual volunteers), <code>eventId</code>, <code>status</code> (invited/requested/accepted/rejected), audit fields.</li>
+<li class="">Unique(volunteerId, groupId, eventId).</li>
+<li class="">Note: in create requests, <code>eventId</code> is stored as provided (instance or template) to support admin requests UI; the volunteer row itself is linked to the base event id.</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="exceptions-tables">Exceptions Tables<a href="#exceptions-tables" class="hash-link" aria-label="Direct link to Exceptions Tables" title="Direct link to Exceptions Tables" translate="no">​</a></h4>
+<ul>
+<li class=""><strong>event_volunteer_exceptions</strong>: unique(volunteerId, recurringEventInstanceId). Marks a template volunteer as &quot;excluded&quot; on a specific instance.</li>
+<li class=""><strong>event_volunteer_group_exceptions</strong>: unique(volunteerGroupId, recurringEventInstanceId). Marks a template group as &quot;excluded&quot; on a specific instance.</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="recurring-event-instances-table">Recurring Event Instances Table<a href="#recurring-event-instances-table" class="hash-link" aria-label="Direct link to Recurring Event Instances Table" title="Direct link to Recurring Event Instances Table" translate="no">​</a></h4>
+<ul>
+<li class=""><strong><code>recurring_event_instances</code></strong>
+<ul>
+<li class="">Materialized occurrences for recurring events; anchor for instance-only volunteers/groups and per-instance exceptions.</li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="concepts">Concepts<a href="#concepts" class="hash-link" aria-label="Direct link to Concepts" title="Direct link to Concepts" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="core-concepts">Core Concepts<a href="#core-concepts" class="hash-link" aria-label="Direct link to Core Concepts" title="Direct link to Core Concepts" translate="no">​</a></h3>
+<ul>
+<li class=""><strong>Event Volunteer</strong>: a user attached to an event series or a single occurrence.</li>
+<li class=""><strong>Volunteer Group</strong>: a named group with a leader, optionally with a target number of volunteers required.</li>
+<li class=""><strong>Volunteer Membership</strong>: the relationship (with status) between a volunteer and a group and/or event; supports invitations and requests.</li>
+<li class=""><strong>Template (series-wide)</strong>: applies automatically to every past/present/future instance unless excluded by an exception for a specific date.</li>
+<li class=""><strong>Instance-only</strong>: exists only for a single occurrence.</li>
+<li class=""><strong>Exception</strong>: per-instance exclusion record that hides a template volunteer/group from one occurrence.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="data-access">Data Access<a href="#data-access" class="hash-link" aria-label="Direct link to Data Access" title="Direct link to Data Access" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="instance-resolution">Instance Resolution<a href="#instance-resolution" class="hash-link" aria-label="Direct link to Instance Resolution" title="Direct link to Instance Resolution" translate="no">​</a></h3>
+<ul>
+<li class="">Determine baseEventId = instance.baseRecurringEventId (for recurring) or event.id (for standalone).</li>
+<li class=""><strong>Volunteers for a recurring instance</strong>:<!-- -->
+<ul>
+<li class="">Query <code>event_volunteers</code> where <code>eventId = baseEventId</code> (template volunteers) OR <code>recurringEventInstanceId = instance.id</code> (instance-only volunteers).</li>
+<li class="">Query <code>event_volunteer_exceptions</code> where <code>recurringEventInstanceId = instance.id</code> and exclude those volunteer IDs from the template set.</li>
+</ul>
+</li>
+<li class=""><strong>Volunteer groups for a recurring instance</strong>:<!-- -->
+<ul>
+<li class="">Query <code>event_volunteer_groups</code> where <code>eventId = baseEventId</code> (template groups) OR <code>recurringEventInstanceId = instance.id</code> (instance-only groups).</li>
+<li class="">Query <code>event_volunteer_group_exceptions</code> where <code>recurringEventInstanceId = instance.id</code> and exclude those group IDs from the template set.</li>
+</ul>
+</li>
+<li class="">For standalone events, simply query by <code>eventId = event.id</code> and ignore exceptions/instances.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="operations">Operations<a href="#operations" class="hash-link" aria-label="Direct link to Operations" title="Direct link to Operations" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="creating-and-updating">Creating and Updating<a href="#creating-and-updating" class="hash-link" aria-label="Direct link to Creating and Updating" title="Direct link to Creating and Updating" translate="no">​</a></h3>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="volunteers">Volunteers<a href="#volunteers" class="hash-link" aria-label="Direct link to Volunteers" title="Direct link to Volunteers" translate="no">​</a></h4>
+<ul>
+<li class=""><strong>Create</strong>
+<ul>
+<li class=""><code>createEventVolunteer</code> supports a <code>scope</code>:<!-- -->
+<ul>
+<li class="">ENTIRE_SERIES → create or reuse a template volunteer (<code>isTemplate=true</code>, <code>recurringEventInstanceId=null</code>), converts/removes prior instance-only duplicates for the same user/event.</li>
+<li class="">THIS_INSTANCE_ONLY → create an instance-only volunteer for <code>recurringEventInstanceId</code>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class=""><strong>Update</strong>
+<ul>
+<li class=""><code>updateEventVolunteer</code> updates fields such as <code>hasAccepted</code>, <code>isPublic</code> for the specific volunteer row (template or instance-only).</li>
+</ul>
+</li>
+<li class=""><strong>Delete</strong>
+<ul>
+<li class="">Entire row: <code>deleteEventVolunteer</code> removes the volunteer and cascades memberships.</li>
+<li class="">For one instance of a template volunteer: <code>deleteEventVolunteerForInstance</code> upserts an exception row to exclude only that date; the template volunteer remains for all other dates.</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="volunteer-groups">Volunteer Groups<a href="#volunteer-groups" class="hash-link" aria-label="Direct link to Volunteer Groups" title="Direct link to Volunteer Groups" translate="no">​</a></h4>
+<ul>
+<li class=""><strong>Create</strong>
+<ul>
+<li class=""><code>createEventVolunteerGroup</code> supports a <code>scope</code>:<!-- -->
+<ul>
+<li class="">ENTIRE_SERIES → create or reuse a template group (<code>isTemplate=true</code>), converts/removes prior instance-only duplicates with same name.</li>
+<li class="">THIS_INSTANCE_ONLY → create an instance-only group for <code>recurringEventInstanceId</code>.</li>
+</ul>
+</li>
+<li class="">Optional <code>volunteerUserIds</code> allows inviting/creating volunteers and adding memberships to the new group, matching old API behavior.</li>
+</ul>
+</li>
+<li class=""><strong>Update</strong>
+<ul>
+<li class=""><code>updateEventVolunteerGroup</code> updates name/description/volunteersRequired; checks for name conflicts within the same event context.</li>
+</ul>
+</li>
+<li class=""><strong>Delete</strong>
+<ul>
+<li class="">Entire row: <code>deleteEventVolunteerGroup</code> removes the group and cascades its memberships.</li>
+<li class="">For one instance of a template group: <code>deleteEventVolunteerGroupForInstance</code> upserts an exception row to exclude only that date; the template group remains for other dates.</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="volunteer-memberships">Volunteer Memberships<a href="#volunteer-memberships" class="hash-link" aria-label="Direct link to Volunteer Memberships" title="Direct link to Volunteer Memberships" translate="no">​</a></h4>
+<ul>
+<li class=""><strong>Create</strong>
+<ul>
+<li class=""><code>createVolunteerMembership</code> creates a membership with <code>status</code> (invited/requested/accepted/rejected).</li>
+<li class="">If no <code>EventVolunteer</code> exists yet for the user + base event, it creates one (template vs instance-only determined by <code>scope</code> and <code>recurringEventInstanceId</code>).</li>
+<li class="">Stores <code>eventId</code> as provided (instance or template) to support admin review screens.</li>
+</ul>
+</li>
+<li class=""><strong>Update</strong>
+<ul>
+<li class=""><code>updateVolunteerMembership</code> updates the <code>status</code>. If accepted, the linked <code>EventVolunteer.hasAccepted</code> is synced appropriately.</li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="code-references">Code References<a href="#code-references" class="hash-link" aria-label="Direct link to Code References" title="Direct link to Code References" translate="no">​</a></h2>
+<ul>
+<li class="">
+<p><strong>Tables</strong></p>
+<ul>
+<li class="">eventVolunteers: <code>src/drizzle/tables/eventVolunteers.ts</code></li>
+<li class="">eventVolunteerGroups: <code>src/drizzle/tables/eventVolunteerGroups.ts</code></li>
+<li class="">eventVolunteerMemberships: <code>src/drizzle/tables/eventVolunteerMemberships.ts</code></li>
+<li class="">eventVolunteerExceptions: <code>src/drizzle/tables/eventVolunteerExceptions.ts</code></li>
+<li class="">eventVolunteerGroupExceptions: <code>src/drizzle/tables/eventVolunteerGroupExceptions.ts</code></li>
+<li class="">recurringEventInstances: <code>src/drizzle/tables/recurringEventInstances.ts</code></li>
+</ul>
+</li>
+<li class="">
+<p><strong>Resolvers (read path)</strong></p>
+<ul>
+<li class="">Event.volunteers: <code>src/graphql/types/Event/volunteers.ts</code></li>
+<li class="">Event.volunteerGroups: <code>src/graphql/types/Event/volunteerGroups.ts</code></li>
+</ul>
+</li>
+<li class="">
+<p><strong>Mutations (volunteers)</strong></p>
+<ul>
+<li class="">createEventVolunteer: <code>src/graphql/types/Mutation/createEventVolunteer.ts</code></li>
+<li class="">updateEventVolunteer: <code>src/graphql/types/Mutation/updateEventVolunteer.ts</code></li>
+<li class="">deleteEventVolunteer: <code>src/graphql/types/Mutation/deleteEventVolunteer.ts</code></li>
+<li class="">deleteEventVolunteerForInstance: <code>src/graphql/types/Mutation/deleteEventVolunteerForInstance.ts</code></li>
+</ul>
+</li>
+<li class="">
+<p><strong>Mutations (volunteer groups)</strong></p>
+<ul>
+<li class="">createEventVolunteerGroup: <code>src/graphql/types/Mutation/createEventVolunteerGroup.ts</code></li>
+<li class="">updateEventVolunteerGroup: <code>src/graphql/types/Mutation/updateEventVolunteerGroup.ts</code></li>
+<li class="">deleteEventVolunteerGroup: <code>src/graphql/types/Mutation/deleteEventVolunteerGroup.ts</code></li>
+<li class="">deleteEventVolunteerGroupForInstance: <code>src/graphql/types/Mutation/deleteEventVolunteerGroupForInstance.ts</code></li>
+</ul>
+</li>
+<li class="">
+<p><strong>Mutations (memberships)</strong></p>
+<ul>
+<li class="">createVolunteerMembership: <code>src/graphql/types/Mutation/createVolunteerMembership.ts</code></li>
+<li class="">updateVolunteerMembership: <code>src/graphql/types/Mutation/updateVolunteerMembership.ts</code></li>
+</ul>
+</li>
+</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_F0Ct"><a href="https://github.com/PalisadoesFoundation/talawa-api/edit/develop/docs/docs/docs/developer-resources/volunteers.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Y8Mk" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_xtqt"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/docs/developer-resources/action-items"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Event Action Items</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/docs/developer-resources/troubleshooting"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Troubleshooting</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_xSpt thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#overview" class="table-of-contents__link toc-highlight">Overview</a><ul><li><a href="#key-concepts" class="table-of-contents__link toc-highlight">Key Concepts</a></li></ul></li><li><a href="#data-model" class="table-of-contents__link toc-highlight">Data Model</a><ul><li><a href="#tables-overview" class="table-of-contents__link toc-highlight">Tables Overview</a></li></ul></li><li><a href="#concepts" class="table-of-contents__link toc-highlight">Concepts</a><ul><li><a href="#core-concepts" class="table-of-contents__link toc-highlight">Core Concepts</a></li></ul></li><li><a href="#data-access" class="table-of-contents__link toc-highlight">Data Access</a><ul><li><a href="#instance-resolution" class="table-of-contents__link toc-highlight">Instance Resolution</a></li></ul></li><li><a href="#operations" class="table-of-contents__link toc-highlight">Operations</a><ul><li><a href="#creating-and-updating" class="table-of-contents__link toc-highlight">Creating and Updating</a></li></ul></li><li><a href="#code-references" class="table-of-contents__link toc-highlight">Code References</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/PalisadoesFoundation" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__slack">Slack</a></li><li class="footer__item"><a href="https://www.palisadoes.org/news/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__news">News</a></li><li class="footer__item"><a href="https://www.palisadoes.org/contact/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__contact">Contact Us</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Social Media</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://twitter.com/palisadoesorg?lang=en" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__twitter"> Twitter</a></li><li class="footer__item"><a href="https://www.facebook.com/palisadoesproject/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__facebook"> Facebook</a></li><li class="footer__item"><a href="https://www.instagram.com/palisadoes/?hl=en" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__instagram"> Instagram</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Development</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/PalisadoesFoundation" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__github"> GitHub</a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 The Palisadoes Foundation, LLC. Built with Docusaurus.</div></div></div></footer></div>
+</body>
+</html>
