@@ -14,6 +14,8 @@ type Collection =
 	| "comment_votes"
 	| "action_categories"
 	| "events"
+	| "event_volunteers"
+	| "event_volunteer_memberships"
 	| "action_items"
 	| "notification_templates";
 
@@ -30,6 +32,8 @@ export async function main(): Promise<void> {
 		"comment_votes",
 		"action_categories",
 		"events",
+		"event_volunteers",
+		"event_volunteer_memberships",
 		"action_items",
 		"notification_templates",
 	];
