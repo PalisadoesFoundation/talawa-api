@@ -44,6 +44,27 @@ export const membershipRequestCountResolver = async (
 			},
 		});
 	}
+	// Verify user is a member of the organization
+	if (currentUser.organizationMembershipsWhereMember.length === 0) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthorized_action",
+			},
+		});
+	}
+
+	// Verify user is an admin (membership requests are sensitive data)
+	const membership = currentUser.organizationMembershipsWhereMember[0];
+	if (
+		membership?.role !== "administrator" &&
+		currentUser.role !== "administrator"
+	) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthorized_action",
+			},
+		});
+	}
 	const result = await ctx.drizzleClient
 		.select({
 			total: count(),
@@ -55,7 +76,7 @@ export const membershipRequestCountResolver = async (
 	return result;
 };
 
-// Extends Organization with membersCount and adminsCount
+// Extends Organization with membershipRequestsCount
 Organization.implement({
 	fields: (t) => ({
 		membershipRequestsCount: t.int({

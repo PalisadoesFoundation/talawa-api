@@ -44,6 +44,15 @@ export const venuesCountResolver = async (
 			},
 		});
 	}
+
+	// Verify user is a member of the organization
+	if (currentUser.organizationMembershipsWhereMember.length === 0) {
+		throw new TalawaGraphQLError({
+			extensions: {
+				code: "unauthorized_action",
+			},
+		});
+	}
 	const result = await ctx.drizzleClient
 		.select({
 			total: count(),
@@ -55,7 +64,7 @@ export const venuesCountResolver = async (
 	return result;
 };
 
-// Extends Organization with membersCount and adminsCount
+// Extends Organization with venuesCount
 Organization.implement({
 	fields: (t) => ({
 		venuesCount: t.int({

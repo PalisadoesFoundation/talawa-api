@@ -26,71 +26,103 @@ const mockParent = {
 };
 
 describe("Organization blockedUsersCountResolver", () => {
-	describe("blockedUsersCountResolver", () => {
-		it("should throw unauthenticated error when client is not authenticated", async () => {
-			const { context: mockContext } = createMockGraphQLContext();
-			mockContext.currentClient.isAuthenticated = false;
+	it("should throw unauthenticated error when client is not authenticated", async () => {
+		const { context: mockContext } = createMockGraphQLContext();
+		mockContext.currentClient.isAuthenticated = false;
 
-			await expect(
-				blockedUsersCountResolver(mockParent, {}, mockContext),
-			).rejects.toThrowError(TalawaGraphQLError);
-
-			await expect(
-				blockedUsersCountResolver(mockParent, {}, mockContext),
-			).rejects.toMatchObject({
-				extensions: { code: "unauthenticated" },
-			});
+		await expect(
+			blockedUsersCountResolver(mockParent, {}, mockContext),
+		).rejects.toMatchObject({
+			extensions: { code: "unauthenticated" },
 		});
+	});
 
-		it("should throw unauthenticated error if current user is not found", async () => {
-			const { context: mockContext, mocks } = createMockGraphQLContext(
-				true,
-				"user-123",
-			);
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				undefined,
-			);
+	it("should throw unauthenticated error if current user is not found", async () => {
+		const { context: mockContext, mocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			undefined,
+		);
 
-			await expect(
-				blockedUsersCountResolver(mockParent, {}, mockContext),
-			).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
-			);
+		await expect(
+			blockedUsersCountResolver(mockParent, {}, mockContext),
+		).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
+		);
+	});
+
+	it("should return blocked users count for authenticated client", async () => {
+		const mockUserData = {
+			id: "user-123",
+			role: "administrator",
+			organizationMembershipsWhereMember: [{ role: "administrator" }],
+		};
+		const { context: mockContext, mocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUserData,
+		);
+
+		const mockQuery = Promise.resolve([{ total: 3 }]);
+		const whereMock = vi.fn().mockReturnValue(mockQuery);
+		const fromMock = vi.fn().mockReturnValue({ where: whereMock });
+		mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+
+		const result = await blockedUsersCountResolver(mockParent, {}, mockContext);
+
+		expect(result).toBe(3);
+		expect(mockContext.drizzleClient.select).toHaveBeenCalledWith({
+			total: count(),
 		});
+		expect(fromMock).toHaveBeenCalledWith(blockedUsersTable);
+		expect(whereMock).toHaveBeenCalledWith(
+			eq(blockedUsersTable.organizationId, "org123"),
+		);
+	});
 
-		it("should return blocked users count for authenticated client", async () => {
-			const mockUserData = {
-				id: "user-123",
-				role: "member",
-				organizationMembershipsWhereMember: [],
-			};
-			const { context: mockContext, mocks } = createMockGraphQLContext(
-				true,
-				"user-123",
-			);
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockUserData,
-			);
+	it("should throw unauthorized error when user is not a member", async () => {
+		const mockUserData = {
+			id: "user-123",
+			role: "administrator",
+			organizationMembershipsWhereMember: [],
+		};
+		const { context: mockContext, mocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUserData,
+		);
 
-			const mockQuery = Promise.resolve([{ total: 3 }]);
-			const whereMock = vi.fn().mockReturnValue(mockQuery);
-			const fromMock = vi.fn().mockReturnValue({ where: whereMock });
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+		await expect(
+			blockedUsersCountResolver(mockParent, {}, mockContext),
+		).rejects.toThrowError(
+			expect.objectContaining({ extensions: { code: "unauthorized_action" } }),
+		);
+	});
 
-			const result = await blockedUsersCountResolver(
-				mockParent,
-				{},
-				mockContext,
-			);
+	it("should throw unauthorized error when user is not a admin", async () => {
+		const mockUserData = {
+			id: "user-123",
+			role: "member",
+			organizationMembershipsWhereMember: [{ role: "member" }],
+		};
+		const { context: mockContext, mocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUserData,
+		);
 
-			expect(result).toBe(3);
-			expect(mockContext.drizzleClient.select).toHaveBeenCalledWith({
-				total: count(),
-			});
-			expect(fromMock).toHaveBeenCalledWith(blockedUsersTable);
-			expect(whereMock).toHaveBeenCalledWith(
-				eq(blockedUsersTable.organizationId, "org123"),
-			);
-		});
+		await expect(
+			blockedUsersCountResolver(mockParent, {}, mockContext),
+		).rejects.toThrowError(
+			expect.objectContaining({ extensions: { code: "unauthorized_action" } }),
+		);
 	});
 });

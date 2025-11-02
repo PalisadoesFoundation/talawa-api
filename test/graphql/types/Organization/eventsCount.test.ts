@@ -26,66 +26,84 @@ const mockParent = {
 };
 
 describe("Organization eventsCountResolver", () => {
-	describe("eventsCountResolver", () => {
-		it("should throw unauthenticated error when client is not authenticated", async () => {
-			const { context: mockContext } = createMockGraphQLContext();
-			mockContext.currentClient.isAuthenticated = false;
+	it("should throw unauthenticated error when client is not authenticated", async () => {
+		const { context: mockContext } = createMockGraphQLContext();
+		mockContext.currentClient.isAuthenticated = false;
 
-			await expect(
-				eventsCountResolver(mockParent, {}, mockContext),
-			).rejects.toThrowError(TalawaGraphQLError);
+		await expect(
+			eventsCountResolver(mockParent, {}, mockContext),
+		).rejects.toThrowError(TalawaGraphQLError);
 
-			await expect(
-				eventsCountResolver(mockParent, {}, mockContext),
-			).rejects.toMatchObject({
-				extensions: { code: "unauthenticated" },
-			});
+		await expect(
+			eventsCountResolver(mockParent, {}, mockContext),
+		).rejects.toMatchObject({
+			extensions: { code: "unauthenticated" },
 		});
+	});
 
-		it("should throw unauthenticated error if current user is not found", async () => {
-			const { context: mockContext, mocks } = createMockGraphQLContext(
-				true,
-				"user-123",
-			);
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				undefined,
-			);
+	it("should throw unauthenticated error if current user is not found", async () => {
+		const { context: mockContext, mocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			undefined,
+		);
 
-			await expect(
-				eventsCountResolver(mockParent, {}, mockContext),
-			).rejects.toThrow(
-				new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
-			);
+		await expect(
+			eventsCountResolver(mockParent, {}, mockContext),
+		).rejects.toThrow(
+			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
+		);
+	});
+
+	it("should return events count for authenticated client", async () => {
+		const mockUserData = {
+			id: "user-123",
+			role: "administrator",
+			organizationMembershipsWhereMember: [{ role: "administrator" }],
+		};
+		const { context: mockContext, mocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUserData,
+		);
+		const mockQuery = Promise.resolve([{ total: 12 }]);
+		const whereMock = vi.fn().mockReturnValue(mockQuery);
+		const fromMock = vi.fn().mockReturnValue({ where: whereMock });
+		mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+
+		const result = await eventsCountResolver(mockParent, {}, mockContext);
+
+		expect(result).toBe(12);
+		expect(mockContext.drizzleClient.select).toHaveBeenCalledWith({
+			total: count(),
 		});
+		expect(fromMock).toHaveBeenCalledWith(eventsTable);
+		expect(whereMock).toHaveBeenCalledWith(
+			eq(eventsTable.organizationId, "org123"),
+		);
+	});
+	it("should throw unauthorized error when user is not a member", async () => {
+		const mockUserData = {
+			id: "user-123",
+			role: "member",
+			organizationMembershipsWhereMember: [],
+		};
+		const { context: mockContext, mocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUserData,
+		);
 
-		it("should return events count for authenticated client", async () => {
-			const mockUserData = {
-				id: "user-123",
-				role: "member",
-				organizationMembershipsWhereMember: [],
-			};
-			const { context: mockContext, mocks } = createMockGraphQLContext(
-				true,
-				"user-123",
-			);
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-				mockUserData,
-			);
-			const mockQuery = Promise.resolve([{ total: 12 }]);
-			const whereMock = vi.fn().mockReturnValue(mockQuery);
-			const fromMock = vi.fn().mockReturnValue({ where: whereMock });
-			mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
-
-			const result = await eventsCountResolver(mockParent, {}, mockContext);
-
-			expect(result).toBe(12);
-			expect(mockContext.drizzleClient.select).toHaveBeenCalledWith({
-				total: count(),
-			});
-			expect(fromMock).toHaveBeenCalledWith(eventsTable);
-			expect(whereMock).toHaveBeenCalledWith(
-				eq(eventsTable.organizationId, "org123"),
-			);
-		});
+		await expect(
+			eventsCountResolver(mockParent, {}, mockContext),
+		).rejects.toThrowError(
+			expect.objectContaining({ extensions: { code: "unauthorized_action" } }),
+		);
 	});
 });
