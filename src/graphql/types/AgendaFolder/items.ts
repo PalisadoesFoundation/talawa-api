@@ -1,5 +1,4 @@
 import { type SQL, and, asc, desc, eq, exists, gt, lt, or } from "drizzle-orm";
-import { z as zod } from "zod";
 import type { z } from "zod";
 import {
 	agendaItemsTable,
@@ -14,7 +13,7 @@ import {
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
 import { AgendaFolder } from "./AgendaFolder";
-const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
+export const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
 		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;
@@ -40,11 +39,13 @@ const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 		};
 	});
 
-const cursorSchema = zod.object({
-	// Accept opaque string identifiers as cursors; don't enforce UUID here because cursors are client-opaque
-	id: zod.string().min(1),
-	name: agendaItemsTableInsertSchema.shape.name,
-});
+const cursorSchema = agendaItemsTableInsertSchema
+	.pick({
+		name: true,
+	})
+	.extend({
+		id: agendaItemsTableInsertSchema.shape.id.unwrap(),
+	});
 
 AgendaFolder.implement({
 	fields: (t) => ({
@@ -152,7 +153,11 @@ AgendaFolder.implement({
 						throw new TalawaGraphQLError({
 							extensions: {
 								code: "arguments_associated_resources_not_found",
-								issues: [],
+								issues: [
+									{
+										argumentPath: [isInversed ? "before" : "after"],
+									},
+								],
 							},
 						});
 					}
