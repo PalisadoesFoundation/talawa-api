@@ -5101,6 +5101,9 @@ type User {
   """
   organizationsWhereMember(after: String, before: String, filter: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
 
+   """IDs of organizations where the user currently has pending membership requests."""
+  orgIdWhereMembershipRequested: [ID]!
+
   """Postal code of the user."""
   postalCode: String
 
@@ -5115,6 +5118,7 @@ type User {
 
   """User who last updated the user."""
   updater: User
+  
 
   """
   The phone number to use to communicate with the user while they're at work.
