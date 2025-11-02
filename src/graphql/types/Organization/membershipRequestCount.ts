@@ -44,21 +44,14 @@ export const membershipRequestCountResolver = async (
 			},
 		});
 	}
-	// Verify user is a member of the organization
-	if (currentUser.organizationMembershipsWhereMember.length === 0) {
-		throw new TalawaGraphQLError({
-			extensions: {
-				code: "unauthorized_action",
-			},
-		});
-	}
+	const currentUserOrganizationMembership =
+		currentUser.organizationMembershipsWhereMember[0];
 
-	// Verify user is an admin (membership requests are sensitive data)
-	const isOrganizationAdmin =
-		currentUser.organizationMembershipsWhereMember.some(
-			(membership) => membership.role === "administrator",
-		);
-	if (!isOrganizationAdmin && currentUser.role !== "administrator") {
+	if (
+		currentUser.role !== "administrator" &&
+		(currentUserOrganizationMembership === undefined ||
+			currentUserOrganizationMembership.role !== "administrator")
+	) {
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unauthorized_action",

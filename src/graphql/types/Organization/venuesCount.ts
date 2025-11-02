@@ -45,14 +45,21 @@ export const venuesCountResolver = async (
 		});
 	}
 
-	// Verify user is a member of the organization
-	if (currentUser.organizationMembershipsWhereMember.length === 0) {
+	const currentUserOrganizationMembership =
+		currentUser.organizationMembershipsWhereMember[0];
+
+	if (
+		currentUser.role !== "administrator" &&
+		(currentUserOrganizationMembership === undefined ||
+			currentUserOrganizationMembership.role !== "administrator")
+	) {
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unauthorized_action",
 			},
 		});
 	}
+
 	const result = await ctx.drizzleClient
 		.select({
 			total: count(),

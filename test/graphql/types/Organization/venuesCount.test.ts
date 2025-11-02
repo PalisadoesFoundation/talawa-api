@@ -3,7 +3,6 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { describe, expect, it, vi } from "vitest";
 import { venuesTable } from "~/src/drizzle/schema";
 import { venuesCountResolver } from "~/src/graphql/types/Organization/venuesCount";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Parent organization mock
 const mockParent = {
@@ -48,16 +47,16 @@ describe("Organization venuesCountResolver", () => {
 
 		await expect(
 			venuesCountResolver(mockParent, {}, mockContext),
-		).rejects.toThrow(
-			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
-		);
+		).rejects.toMatchObject({
+			extensions: { code: "unauthenticated" },
+		});
 	});
 
 	it("should return venues count for authenticated client", async () => {
 		const mockUserData = {
 			id: "user-123",
-			role: "member",
-			organizationMembershipsWhereMember: [{ role: "MEMBER" }],
+			role: "administrator",
+			organizationMembershipsWhereMember: [{ role: "administrator" }],
 		};
 		const { context: mockContext, mocks } = createMockGraphQLContext(
 			true,
@@ -146,19 +145,18 @@ describe("Organization venuesCountResolver", () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 			mockUserData,
 		);
-
 		await expect(
 			venuesCountResolver(mockParent, {}, mockContext),
-		).rejects.toThrow(
-			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
-		);
+		).rejects.toMatchObject({
+			extensions: { code: "unauthorized_action" },
+		});
 	});
 
 	it("should return 0 when no venues are found for the organization", async () => {
 		const mockUserData = {
 			id: "user-123",
-			role: "member",
-			organizationMembershipsWhereMember: [{ role: "MEMBER" }],
+			role: "administrator",
+			organizationMembershipsWhereMember: [{ role: "administrator" }],
 		};
 		const { context: mockContext, mocks } = createMockGraphQLContext(
 			true,

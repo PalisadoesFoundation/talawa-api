@@ -3,7 +3,6 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { describe, expect, it, vi } from "vitest";
 import { membershipRequestsTable } from "~/src/drizzle/tables/membershipRequests";
 import { membershipRequestCountResolver } from "~/src/graphql/types/Organization/membershipRequestCount";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Parent organization mock
 const mockParent = {
@@ -45,12 +44,11 @@ describe("Organization membershipRequestCountResolver", () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 			undefined,
 		);
-
 		await expect(
 			membershipRequestCountResolver(mockParent, {}, mockContext),
-		).rejects.toThrow(
-			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
-		);
+		).rejects.toMatchObject({
+			extensions: { code: "unauthenticated" },
+		});
 	});
 
 	it("should return membership request count for authenticated client", async () => {
@@ -138,26 +136,6 @@ describe("Organization membershipRequestCountResolver", () => {
 
 		expect(result).toBe(3);
 	});
-	it("should throw unauthorized error when user is not a member of the organization", async () => {
-		const mockUserData = {
-			id: "user-123",
-			role: "administrator",
-			organizationMembershipsWhereMember: [], // Not a member
-		};
-		const { context: mockContext, mocks } = createMockGraphQLContext(
-			true,
-			"user-123",
-		);
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-			mockUserData,
-		);
-
-		await expect(
-			membershipRequestCountResolver(mockParent, {}, mockContext),
-		).rejects.toThrow(
-			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
-		);
-	});
 	it("should throw unauthorized error when user is not admin of the organization", async () => {
 		const mockUserData = {
 			id: "user-123",
@@ -171,12 +149,11 @@ describe("Organization membershipRequestCountResolver", () => {
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 			mockUserData,
 		);
-
 		await expect(
 			membershipRequestCountResolver(mockParent, {}, mockContext),
-		).rejects.toThrow(
-			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
-		);
+		).rejects.toMatchObject({
+			extensions: { code: "unauthorized_action" },
+		});
 	});
 
 	it("should return 0 when no membership requests are found for the organization", async () => {

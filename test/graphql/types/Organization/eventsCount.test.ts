@@ -3,7 +3,6 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { describe, expect, it, vi } from "vitest";
 import { eventsTable } from "~/src/drizzle/schema";
 import { eventsCountResolver } from "~/src/graphql/types/Organization/eventsCount";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Parent organization mock
 const mockParent = {
@@ -48,9 +47,9 @@ describe("Organization eventsCountResolver", () => {
 
 		await expect(
 			eventsCountResolver(mockParent, {}, mockContext),
-		).rejects.toThrow(
-			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
-		);
+		).rejects.toMatchObject({
+			extensions: { code: "unauthenticated" },
+		});
 	});
 
 	it("should return events count for authenticated client", async () => {

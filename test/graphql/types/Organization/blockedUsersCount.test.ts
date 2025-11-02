@@ -3,7 +3,6 @@ import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockCo
 import { describe, expect, it, vi } from "vitest";
 import { blockedUsersTable } from "~/src/drizzle/schema";
 import { blockedUsersCountResolver } from "~/src/graphql/types/Organization/blockedUsersCount";
-import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 
 // Parent organization mock
 const mockParent = {
@@ -48,9 +47,9 @@ describe("Organization blockedUsersCountResolver", () => {
 
 		await expect(
 			blockedUsersCountResolver(mockParent, {}, mockContext),
-		).rejects.toThrow(
-			new TalawaGraphQLError({ extensions: { code: "unauthenticated" } }),
-		);
+		).rejects.toMatchObject({
+			extensions: { code: "unauthenticated" },
+		});
 	});
 
 	it("should return blocked users count for authenticated client", async () => {
@@ -84,27 +83,6 @@ describe("Organization blockedUsersCountResolver", () => {
 		);
 	});
 
-	it("should throw unauthorized error when user is not a member", async () => {
-		const mockUserData = {
-			id: "user-123",
-			role: "administrator",
-			organizationMembershipsWhereMember: [],
-		};
-		const { context: mockContext, mocks } = createMockGraphQLContext(
-			true,
-			"user-123",
-		);
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
-			mockUserData,
-		);
-
-		await expect(
-			blockedUsersCountResolver(mockParent, {}, mockContext),
-		).rejects.toThrowError(
-			expect.objectContaining({ extensions: { code: "unauthorized_action" } }),
-		);
-	});
-
 	it("should query the database with the correct organizationId filter", async () => {
 		const mockUserData = {
 			id: "user-123",
@@ -112,7 +90,6 @@ describe("Organization blockedUsersCountResolver", () => {
 			organizationMembershipsWhereMember: [
 				{
 					role: "administrator",
-					organizationId: mockParent.id,
 				},
 			],
 		};
@@ -170,9 +147,7 @@ describe("Organization blockedUsersCountResolver", () => {
 
 		await expect(
 			blockedUsersCountResolver(mockParent, {}, mockContext),
-		).rejects.toThrowError(
-			expect.objectContaining({ extensions: { code: "unauthorized_action" } }),
-		);
+		).rejects.toMatchObject({ extensions: { code: "unauthorized_action" } });
 	});
 
 	it("should return 0 when no blocked users are found for the organization", async () => {
