@@ -11,6 +11,7 @@ import {
 	Mutation_createAgendaItem,
 	Mutation_createEvent,
 	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
 	Mutation_deleteAgendaItem,
 	Mutation_deleteOrganization,
 	Mutation_deleteStandaloneEvent,
@@ -82,7 +83,7 @@ async function createOrgEventFolder(authToken: string, adminUserId: string) {
 	// Create organization membership for admin as administrator
 	// Reuse existing test helper pattern
 	const membership = await mercuriusClient.mutate(
-		(await import("../documentNodes")).Mutation_createOrganizationMembership,
+		Mutation_createOrganizationMembership,
 		{
 			headers: { authorization: `bearer ${authToken}` },
 			variables: {
