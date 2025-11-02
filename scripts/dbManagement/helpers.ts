@@ -545,6 +545,56 @@ export async function insertCollections(
 					break;
 				}
 
+				case "event_volunteers": {
+					const eventVolunteers = JSON.parse(fileContent).map(
+						(volunteer: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...volunteer,
+							createdAt: parseDate(volunteer.createdAt),
+							updatedAt: parseDate(volunteer.updatedAt),
+						}),
+					) as (typeof schema.eventVolunteersTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.eventVolunteersTable,
+						eventVolunteers,
+						schema.eventVolunteersTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Event Volunteers table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
+				case "event_volunteer_memberships": {
+					const eventVolunteerMemberships = JSON.parse(fileContent).map(
+						(membership: {
+							createdAt: string | number | Date;
+							updatedAt: string | number | Date;
+						}) => ({
+							...membership,
+							createdAt: parseDate(membership.createdAt),
+							updatedAt: parseDate(membership.updatedAt),
+						}),
+					) as (typeof schema.eventVolunteerMembershipsTable.$inferInsert)[];
+
+					await checkAndInsertData(
+						schema.eventVolunteerMembershipsTable,
+						eventVolunteerMemberships,
+						schema.eventVolunteerMembershipsTable.id,
+						1000,
+					);
+
+					console.log(
+						"\x1b[35mAdded: Event Volunteer Memberships table data (skipping duplicates)\x1b[0m",
+					);
+					break;
+				}
+
 				case "action_categories": {
 					const actionCategories = JSON.parse(fileContent).map(
 						(category: {
@@ -709,6 +759,11 @@ export async function checkDataSize(stage: string): Promise<boolean> {
 			{ name: "comment_votes", table: schema.commentVotesTable },
 			{ name: "action_items", table: schema.actionItemsTable },
 			{ name: "events", table: schema.eventsTable },
+			{ name: "event_volunteers", table: schema.eventVolunteersTable },
+			{
+				name: "event_volunteer_memberships",
+				table: schema.eventVolunteerMembershipsTable,
+			},
 			{
 				name: "actionitem_categories",
 				table: schema.actionItemCategoriesTable,
