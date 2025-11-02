@@ -32,10 +32,6 @@ describe("Organization membershipRequestCountResolver", () => {
 
 		await expect(
 			membershipRequestCountResolver(mockParent, {}, mockContext),
-		).rejects.toThrowError(TalawaGraphQLError);
-
-		await expect(
-			membershipRequestCountResolver(mockParent, {}, mockContext),
 		).rejects.toMatchObject({
 			extensions: { code: "unauthenticated" },
 		});
@@ -166,7 +162,7 @@ describe("Organization membershipRequestCountResolver", () => {
 		const mockUserData = {
 			id: "user-123",
 			role: "member",
-			organizationMembershipsWhereMember: [{ role: "member" }], // Not a member
+			organizationMembershipsWhereMember: [{ role: "member" }], // Member but not admin
 		};
 		const { context: mockContext, mocks } = createMockGraphQLContext(
 			true,

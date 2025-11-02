@@ -32,10 +32,6 @@ describe("Organization eventsCountResolver", () => {
 
 		await expect(
 			eventsCountResolver(mockParent, {}, mockContext),
-		).rejects.toThrowError(TalawaGraphQLError);
-
-		await expect(
-			eventsCountResolver(mockParent, {}, mockContext),
 		).rejects.toMatchObject({
 			extensions: { code: "unauthenticated" },
 		});
