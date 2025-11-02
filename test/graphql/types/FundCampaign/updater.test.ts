@@ -50,11 +50,6 @@ describe("FundCampaign Resolver - updater field", () => {
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
 				undefined,
 			);
-			mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValueOnce({
-				organization: {
-					membershipsWhereOrganization: [{ role: "administrator" }],
-				},
-			});
 
 			await expect(resolveUpdater(mockFundCampaign, {}, ctx)).rejects.toThrow(
 				expect.objectContaining({
