@@ -3344,7 +3344,7 @@ input MutationUpdateCommentVoteInput {
   commentId: ID!
 
   """Type of the vote."""
-  type: CommentVoteType!
+  type: CommentVoteType
 }
 
 """"""
@@ -3610,7 +3610,7 @@ input MutationUpdatePostVoteInput {
   postId: ID!
 
   """Type of the vote."""
-  type: PostVoteType!
+  type: PostVoteType
 }
 
 """Input for updating a single instance of a recurring event."""
