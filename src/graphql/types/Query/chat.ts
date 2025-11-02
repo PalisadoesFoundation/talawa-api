@@ -7,6 +7,7 @@ import {
 import { Chat } from "~/src/graphql/types/Chat/Chat";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
+
 const queryChatArgumentsSchema = z.object({
 	input: queryChatInputSchema,
 });
@@ -123,5 +124,54 @@ builder.queryField("chat", (t) =>
 			return existingChat;
 		},
 		type: Chat,
+	}),
+);
+
+builder.queryField("chatsByUser", (t) =>
+	t.field({
+		complexity: envConfig.API_GRAPHQL_OBJECT_FIELD_COST,
+		description:
+			"Query field to read all chats the current user is a member of.",
+		resolve: async (_parent, args, ctx) => {
+			if (!ctx.currentClient.isAuthenticated) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
+
+			const currentUserId = ctx.currentClient.user.id;
+
+			// Check if the current user exists in the database
+			const currentUser = await ctx.drizzleClient.query.usersTable.findFirst({
+				columns: {
+					id: true,
+				},
+				where: (fields, operators) => operators.eq(fields.id, currentUserId),
+			});
+
+			if (currentUser === undefined) {
+				throw new TalawaGraphQLError({
+					extensions: {
+						code: "unauthenticated",
+					},
+				});
+			}
+
+			// Get all chats where the current user is a member using the chatMemberships relation
+			const userChats =
+				await ctx.drizzleClient.query.chatMembershipsTable.findMany({
+					where: (fields, operators) =>
+						operators.eq(fields.memberId, currentUserId),
+					with: {
+						chat: true,
+					},
+				});
+
+			// Extract the chat objects from the membership records
+			return userChats.map((membership) => membership.chat);
+		},
+		type: [Chat],
 	}),
 );

@@ -52,6 +52,11 @@ export {
 	eventAttendancesTable,
 	eventAttendancesTableRelations,
 } from "./tables/eventAttendances";
+export {
+	eventExceptionsTable,
+	eventExceptionsTableRelations,
+	exceptionTypeEnum,
+} from "./tables/recurringEventExceptions";
 export { eventsTable, eventsTableRelations } from "./tables/events";
 export {
 	membershipRequestsTable,
@@ -86,6 +91,19 @@ export {
 export { postVotesTable, postVotesTableRelations } from "./tables/postVotes";
 export { postsTable, postsTableRelations } from "./tables/posts";
 export {
+	recurrenceRulesTable,
+	recurrenceRulesTableRelations,
+	recurrenceFrequencyEnum,
+} from "./tables/recurrenceRules";
+export {
+	recurringEventInstancesTable,
+	recurringEventInstancesTableRelations,
+} from "./tables/recurringEventInstances";
+export {
+	eventGenerationWindowsTable,
+	eventGenerationWindowsTableRelations,
+} from "./tables/eventGenerationWindows";
+export {
 	tagAssignmentsTable,
 	tagAssignmentsTableRelations,
 } from "./tables/tagAssignments";
@@ -109,3 +127,4 @@ export {
 	volunteerGroupsTable,
 	volunteerGroupsTableRelations,
 } from "./tables/volunteerGroups";
+export { pluginsTable } from "./tables/plugins";

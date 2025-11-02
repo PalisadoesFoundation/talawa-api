@@ -1,6 +1,6 @@
 {
 	"extends": ["config:base"],
-	"baseBranches": ["develop"],
+	"baseBranches": ["disable"],
 	"schedule": ["every weekend"],
 	"packageRules": [
 		{

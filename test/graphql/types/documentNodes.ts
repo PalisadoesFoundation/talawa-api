@@ -533,13 +533,6 @@ export const Mutation_createEvent =
     }
 }`);
 
-export const Mutation_deleteEvent =
-	gql(`mutation Mutation_deleteEvent($input: MutationDeleteEventInput!) {
-    deleteEvent(input: $input) {
-        id
-    }
-}`);
-
 export const Mutation_updateEvent =
 	gql(`mutation Mutation_updateEvent($input: MutationUpdateEventInput!) {
     updateEvent(input: $input) {
@@ -774,6 +767,18 @@ export const Mutation_unblockUser =
     unblockUser(organizationId: $organizationId, userId: $userId)
 }`);
 
+export const Mutation_assignUserTag = gql(`
+      mutation AssignUserTag($assigneeId: ID!, $tagId: ID!) {
+        assignUserTag(assigneeId: $assigneeId, tagId: $tagId)
+      }
+`);
+
+export const Mutation_unassignUserTag = gql(`
+      mutation UnassignUserTag($assigneeId: ID!, $tagId: ID!) {
+        unassignUserTag(assigneeId: $assigneeId, tagId: $tagId)
+      }
+`);
+
 export const Mutation_updatePost = gql(`
   mutation Mutation_updatePost($input: MutationUpdatePostInput!) {
     updatePost(input: $input) {
@@ -884,18 +889,55 @@ export const Mutation_createActionItem = gql(`
   mutation CreateActionItem($input: CreateActionItemInput!) {
     createActionItem(input: $input) {
       id
-      categoryId
-      assigneeId
       assignedAt
       completionAt
       preCompletionNotes
       postCompletionNotes
       isCompleted
-      eventId
-      organizationId
-      creatorId
-      updaterId
-      updatedAt
+      category {
+        id
+        name
+      }
+      assignee {
+        id
+        name
+      }
+      organization {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Mutation_createActionItemCategory = gql(`
+  mutation Mutation_createActionItemCategory($input: MutationCreateActionItemCategoryInput!) {
+    createActionItemCategory(input: $input) {
+      id
+      name
+      description
+      isDisabled
+      createdAt
+      organization {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
     }
   }
 `);
@@ -910,16 +952,55 @@ export const POSTGRES_EVENTS_BY_ORGANIZATION_ID = gql(`
   }
 `);
 
-export const UPDATE_ACTION_ITEM_MUTATION = gql(`
+export const UPDATE_ACTION_ITEM_MUTATION = `#graphql
   mutation UpdateActionItem($input: MutationUpdateActionItemInput!) {
     updateActionItem(input: $input) {
       id
       isCompleted
-      postCompletionNotes
+      assignedAt
+      completionAt
       preCompletionNotes
-      categoryId
-      assigneeId
-      updaterId
+      postCompletionNotes
+      createdAt
+      category {
+        id
+        name
+      }
+      assignee {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      organization {
+        id
+        name
+      }
+    }
+  }
+`;
+
+export const Mutation_updateActionItemCategory = gql(`
+  mutation UpdateActionItemCategory(
+    $input: MutationUpdateActionItemCategoryInput!
+  ) {
+    updateActionItemCategory(input: $input) {
+      id
+      name
+      description
+      isDisabled
+      createdAt
+      updatedAt
+      organization {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
     }
   }
 `);
@@ -929,27 +1010,68 @@ export const DELETE_ACTION_ITEM_MUTATION = gql(`
     deleteActionItem(input: $input) {
       id
       isCompleted
-      categoryId
-      assigneeId
-      organizationId
-      createdAt
-      updatedAt
-      postCompletionNotes
+      assignedAt
+      completionAt
       preCompletionNotes
+      postCompletionNotes
+      createdAt
+      organization {
+        id
+      }
+      category {
+        id
+      }
+      assignee {
+        id
+      }
+      creator {
+        id
+      }
+      event {
+        id
+      }
     }
   }
   `);
+
+export const Mutation_deleteActionItemCategory = gql(`
+  mutation DeleteActionItemCategory(
+    $input: MutationDeleteActionItemCategoryInput!
+  ) {
+    deleteActionItemCategory(input: $input) {
+      id
+      name
+      description
+      isDisabled
+      createdAt
+      organization {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+    }
+  }
+`);
 
 export const ACTION_ITEM_CATEGORY = gql(`
   query FetchActionCategoriesByOrganization($input: QueryActionCategoriesByOrganizationInput!) {
     actionCategoriesByOrganization(input: $input) {
       id
       name
-      organizationId
-      creatorId
       isDisabled
       createdAt
       updatedAt
+      organization {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
     }
   }
 `);
@@ -1003,25 +1125,63 @@ export const Query_eventsByOrganizationId = gql(`
   }
 `);
 
-export const Query_actionItemsByOrganization = `
-query ActionItemsByOrganization($input: QueryActionItemsByOrganizationInput!) {
-  actionItemsByOrganization(input: $input) {
-    id
-    preCompletionNotes
-    isCompleted
-    assignedAt
-    completionAt
-    categoryId
-    assigneeId
-    creatorId
-    organizationId
-    updaterId
-    updatedAt
-    eventId
-    postCompletionNotes
+export const Query_actionItemsByOrganization = gql(`
+  query ActionItemsByOrganization($input: QueryActionItemsByOrganizationInput!) {
+    actionItemsByOrganization(input: $input) {
+      id
+      preCompletionNotes
+      isCompleted
+      assignedAt
+      completionAt
+      postCompletionNotes
+      category {
+        id
+        name
+      }
+      assignee {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      organization {
+        id
+        name
+      }
+      event {
+        id
+        name
+      }
+      updater {
+        id
+        name
+      }
+      createdAt
+    }
   }
-}
-`;
+`);
+
+export const Query_actionItemCategory = gql(`
+  query ActionItemCategory($input: QueryActionItemCategoryInput!) {
+    actionItemCategory(input: $input) {
+      id
+      name
+      description
+      isDisabled
+      createdAt
+      organization {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+    }
+  }
+`);
 
 export const Mutation_sendMembershipRequest = gql(`
   mutation Mutation_sendMembershipRequest($input: MutationSendMembershipRequestInput!) {
@@ -1070,3 +1230,205 @@ export const Mutation_createPostVote = gql(`
       caption
     }
   }`);
+
+export const Mutation_createEventVolunteerGroup = gql(`
+  mutation Mutation_createEventVolunteerGroup($input: MutationCreateEventVolunteerGroupInput!){
+    createEventVolunteerGroup(input: $input) {
+      id
+      name
+    }
+  }`);
+
+export const Mutation_updateEventVolunteerGroup = gql(`
+    mutation Mutation_updateEventVolunteerGroup($input: MutationUpdateEventVolunteerGroupInput!){
+      updateEventVolunteerGroup(input: $input) {
+        id
+        name
+        maxVolunteerCount
+      }
+    }`);
+
+export const Mutation_deleteEventVolunteerGroup = gql(`
+  mutation Mutation_deleteEventVolunteerGroup($input: MutationDeleteEventVolunteerGroupInput!){
+    deleteEventVolunteerGroup(input: $input) {
+      id
+      name
+      maxVolunteerCount
+    }
+  }`);
+
+export const Query_getEventVolunteerGroups = gql(`
+  query Query_getEventVolunteerGroups($input: QueryEventVolunteerGroupsInput!){
+    getEventVolunteerGroups(input: $input) {
+      id
+      name
+    }
+  }`);
+
+export const Mutation_createEventVolunteerGroupAssignments = gql(`
+  mutation Mutation_createEventVolunteerGroupAssignments($input: MutationCreateVolunteerGroupAssignmentsInput!){
+    createEventVolunteerGroupAssignments(input: $input) {
+      assignee {id}
+      group {id}
+      inviteStatus
+    }
+  }`);
+
+export const Mutation_updateEventVolunteerGroupAssignments = gql(`
+  mutation Mutation_updateEventVolunteerGroupAssignments($input: MutationUpdateVolunteerGroupAssignmentsInput!){
+    updateEventVolunteerGroupAssignments(input: $input) {
+      assignee {id}
+      group {id}
+      inviteStatus
+    }
+  }`);
+
+export const Query_getEventVolunteerGroupAssignments = gql(`
+  query Query_getEventVolunteerGroupAssignments($input: QueryVolunteerGroupAssignmentsInput!){
+    getEventVolunteerGroupAssignments(input: $input) {
+      assignee {id}
+      group {id}
+      inviteStatus
+    }
+  }`);
+
+export const Query_chat = gql(`
+  query Query_chat($input: QueryChatInput!) {
+    chat(input: $input) {
+      id
+      name
+      description
+      avatarMimeType
+      avatarURL
+      organization {
+        id
+        countryCode
+      }
+    }
+  }
+`);
+
+export const Query_chatsByUser = gql(`
+  query Query_chatsByUser {
+    chatsByUser {
+      id
+      name
+      description
+      avatarMimeType
+      avatarURL
+      organization {
+        id
+        countryCode
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteChat = gql(`
+  mutation Mutation_deleteChat($input: MutationDeleteChatInput!) {
+    deleteChat(input: $input) {
+      id
+      name
+    }
+  }
+`);
+
+export const Mutation_deleteStandaloneEvent = gql(`
+  mutation Mutation_deleteStandaloneEvent($input: MutationDeleteStandaloneEventInput!) {
+    deleteStandaloneEvent(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+      allDay
+      location
+      isPublic
+      isRegisterable
+      isRecurringEventTemplate
+      organization {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteSingleEventInstance = gql(`
+  mutation Mutation_deleteSingleEventInstance($input: MutationDeleteSingleEventInstanceInput!) {
+    deleteSingleEventInstance(input: $input) {
+      id
+      name
+      description
+      location
+      allDay
+      isPublic
+      isRegisterable
+      startAt
+      endAt
+      hasExceptions
+      sequenceNumber
+      totalCount
+      organization {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteThisAndFollowingEvents = gql(`
+  mutation Mutation_deleteThisAndFollowingEvents($input: MutationDeleteThisAndFollowingEventsInput!) {
+    deleteThisAndFollowingEvents(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+      hasExceptions
+      sequenceNumber
+      totalCount
+      organization {
+        id
+        name
+      }
+    }
+  }
+`);
+
+export const Mutation_deleteEntireRecurringEventSeries = gql(`
+  mutation Mutation_deleteEntireRecurringEventSeries($input: MutationDeleteEntireRecurringEventSeriesInput!) {
+    deleteEntireRecurringEventSeries(input: $input) {
+      id
+      name
+      description
+      startAt
+      endAt
+      allDay
+      location
+      isPublic
+      isRegisterable
+      isRecurringEventTemplate
+      organization {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      attachments {
+        mimeType
+        url
+      }
+    }
+  }
+`);

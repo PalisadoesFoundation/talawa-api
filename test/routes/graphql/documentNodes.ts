@@ -466,13 +466,6 @@ export const Mutation_createEvent =
     }
 }`);
 
-export const Mutation_deleteEvent =
-	gql(`mutation Mutation_deleteEvent($input: MutationDeleteEventInput!) {
-    deleteEvent(input: $input) {
-        id
-    }
-}`);
-
 export const Mutation_updateEvent =
 	gql(`mutation Mutation_updateEvent($input: MutationUpdateEventInput!) {
     updateEvent(input: $input) {
@@ -677,6 +670,18 @@ export const Mutation_blockUser =
 	gql(`mutation Mutation_blockUser($organizationId: ID!, $userId: ID!) {
     blockUser(organizationId: $organizationId, userId: $userId)
 }`);
+
+export const Mutation_assignUserTag = gql(`
+  mutation AssignUserTag($assigneeId: ID!, $tagId: ID!) {
+    assignUserTag(assigneeId: $assigneeId, tagId: $tagId)
+  }
+`);
+
+export const Mutation_unassignUserTag = gql(`
+  mutation UnassignUserTag($assigneeId: ID!, $tagId: ID!) {
+    unassignUserTag(assigneeId: $assigneeId, tagId: $tagId)
+  }
+`);
 
 export const Mutation_unblockUser =
 	gql(`mutation Mutation_unblockUser($organizationId: ID!, $userId: ID!) {

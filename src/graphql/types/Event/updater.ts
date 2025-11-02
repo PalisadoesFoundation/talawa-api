@@ -1,5 +1,4 @@
 import { eq } from "drizzle-orm";
-import type { eventsTable } from "~/src/drizzle/tables/events";
 import { organizationMembershipsTable } from "~/src/drizzle/tables/organizationMemberships";
 import { usersTable } from "~/src/drizzle/tables/users";
 import { User } from "~/src/graphql/types/User/User";
@@ -7,10 +6,10 @@ import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
 import { Event } from "./Event";
-type EventsTable = typeof eventsTable.$inferSelect;
+import type { Event as EventType } from "./Event";
 
 export const resolveEventUpdater = async (
-	parent: EventsTable,
+	parent: EventType,
 	_args: Record<string, never>,
 	ctx: GraphQLContext,
 ) => {

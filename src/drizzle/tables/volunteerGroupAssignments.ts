@@ -7,6 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { volunteerGroupAssignmentInviteStatusEnum } from "~/src/drizzle/enums/volunteerGroupAssignmentInviteStatus";
 import { usersTable } from "./users";
 import { volunteerGroupsTable } from "./volunteerGroups";
@@ -95,4 +96,8 @@ export const volunteerGroupAssignmentsTableRelations = relations(
 			relationName: "users.id:volunteer_group_assignments.updater_id",
 		}),
 	}),
+);
+
+export const volunteerGroupAssignmentsTableInsertSchema = createInsertSchema(
+	volunteerGroupAssignmentsTable,
 );

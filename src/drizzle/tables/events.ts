@@ -1,11 +1,20 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+	boolean,
+	index,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import { z } from "zod";
 import { agendaFoldersTable } from "./agendaFolders";
 import { eventAttachmentsTable } from "./eventAttachments";
 import { eventAttendancesTable } from "./eventAttendances";
 import { organizationsTable } from "./organizations";
+import { eventExceptionsTable } from "./recurringEventExceptions";
 import { usersTable } from "./users";
 import { venueBookingsTable } from "./venueBookings";
 
@@ -70,6 +79,22 @@ export const eventsTable = pgTable(
 			withTimezone: true,
 		}).notNull(),
 		/**
+		 * Indicates if the event spans the entire day.
+		 */
+		allDay: boolean("all_day").notNull().default(false),
+		/**
+		 * Indicates if the event is publicly visible.
+		 */
+		isPublic: boolean("is_public").notNull().default(false),
+		/**
+		 * Indicates if users can register for this event.
+		 */
+		isRegisterable: boolean("is_registerable").notNull().default(false),
+		/**
+		 * Physical or virtual location of the event.
+		 */
+		location: text("location"),
+		/**
 		 * Date time at the time the event was last updated.
 		 */
 		updatedAt: timestamp("updated_at", {
@@ -86,15 +111,37 @@ export const eventsTable = pgTable(
 			onDelete: "set null",
 			onUpdate: "cascade",
 		}),
+
+		// RECURRING EVENT FIELDS
+		/**
+		 * Indicates if this event is a recurring template (base event).
+		 * Template events store the default properties that all instances inherit.
+		 */
+		isRecurringEventTemplate: boolean("is_recurring_template")
+			.notNull()
+			.default(false),
 	},
-	(self) => [
-		index().on(self.createdAt),
-		index().on(self.creatorId),
-		index().on(self.endAt),
-		index().on(self.name),
-		index().on(self.organizationId),
-		index().on(self.startAt),
-	],
+	(self) => ({
+		// Existing indexes with better naming
+		createdAtIdx: index("events_created_at_idx").on(self.createdAt),
+		creatorIdIdx: index("events_creator_id_idx").on(self.creatorId),
+		endAtIdx: index("events_end_at_idx").on(self.endAt),
+		nameIdx: index("events_name_idx").on(self.name),
+		organizationIdIdx: index("events_organization_id_idx").on(
+			self.organizationId,
+		),
+		startAtIdx: index("events_start_at_idx").on(self.startAt),
+		allDayIdx: index("events_all_day_idx").on(self.allDay),
+		isPublicIdx: index("events_is_public_idx").on(self.isPublic),
+		isRegisterableIdx: index("events_is_registerable_idx").on(
+			self.isRegisterable,
+		),
+
+		// New recurring event indexes
+		isRecurringEventTemplateIdx: index("events_is_recurring_template_idx").on(
+			self.isRecurringEventTemplate,
+		),
+	}),
 );
 
 export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
@@ -146,9 +193,30 @@ export const eventsTableRelations = relations(eventsTable, ({ many, one }) => ({
 	venueBookingsWhereEvent: many(venueBookingsTable, {
 		relationName: "events.id:venue_bookings.event_id",
 	}),
+
+	// EVENT EXCEPTION RELATIONSHIPS
+	/**
+	 * One to many relationship from events table to event_exceptions table (as instance).
+	 */
+	exceptionsWhereEventInstance: many(eventExceptionsTable, {
+		relationName: "event_exceptions.event_instance_id:events.id",
+	}),
+
+	/**
+	 * One to many relationship from events table to event_exceptions table (as template).
+	 */
+	exceptionsWhereRecurringEvent: many(eventExceptionsTable, {
+		relationName: "event_exceptions.recurring_event_id:events.id",
+	}),
 }));
 
 export const eventsTableInsertSchema = createInsertSchema(eventsTable, {
 	description: (schema) => schema.min(1).max(2048).optional(),
 	name: (schema) => schema.min(1).max(256),
+	allDay: (schema) => schema.optional(),
+	isPublic: (schema) => schema.optional(),
+	isRegisterable: (schema) => schema.optional(),
+	location: (schema) => schema.min(1).max(1024).optional(),
+	// Recurring event fields validation
+	isRecurringEventTemplate: z.boolean().optional(),
 });
