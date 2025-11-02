@@ -55,11 +55,11 @@ export const blockedUsersCountResolver = async (
 	}
 
 	// Verify user is an admin (blocked users data is sensitive)
-	const membership = currentUser.organizationMembershipsWhereMember[0];
-	if (
-		membership?.role !== "administrator" &&
-		currentUser.role !== "administrator"
-	) {
+	const isOrganizationAdmin =
+		currentUser.organizationMembershipsWhereMember.some(
+			(membership) => membership.role === "administrator",
+		);
+	if (!isOrganizationAdmin && currentUser.role !== "administrator") {
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unauthorized_action",

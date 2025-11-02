@@ -54,11 +54,11 @@ export const membershipRequestCountResolver = async (
 	}
 
 	// Verify user is an admin (membership requests are sensitive data)
-	const membership = currentUser.organizationMembershipsWhereMember[0];
-	if (
-		membership?.role !== "administrator" &&
-		currentUser.role !== "administrator"
-	) {
+	const isOrganizationAdmin =
+		currentUser.organizationMembershipsWhereMember.some(
+			(membership) => membership.role === "administrator",
+		);
+	if (!isOrganizationAdmin && currentUser.role !== "administrator") {
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unauthorized_action",

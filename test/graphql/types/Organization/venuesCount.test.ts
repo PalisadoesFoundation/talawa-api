@@ -84,6 +84,55 @@ describe("Organization venuesCountResolver", () => {
 		);
 	});
 
+	it("should query the database with the correct organizationId filter", async () => {
+		const mockUserData = {
+			id: "user-123",
+			role: "member",
+			organizationMembershipsWhereMember: [
+				{
+					role: "administrator",
+					organizationId: mockParent.id,
+				},
+			],
+		};
+		const { context: mockContext, mocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+
+		(
+			mocks.drizzleClient.query.usersTable.findFirst as ReturnType<typeof vi.fn>
+		).mockImplementation(({ with: withClause }) => {
+			expect(withClause).toBeDefined();
+
+			const mockFields = {
+				organizationId: "550e8400-e29b-41d4-a716-446655440000",
+			};
+			const mockOperators = { eq: vi.fn((a, b) => ({ [a]: b })) };
+
+			const innerWhereResult =
+				withClause.organizationMembershipsWhereMember.where(
+					mockFields,
+					mockOperators,
+				);
+			expect(innerWhereResult).toEqual(
+				expect.objectContaining({
+					[mockFields.organizationId]: mockParent.id, // Ensure organizationId filter is applied
+				}),
+			);
+			return Promise.resolve(mockUserData);
+		});
+
+		const mockQuery = Promise.resolve([{ total: 5 }]);
+		const whereMock = vi.fn().mockReturnValue(mockQuery);
+		const fromMock = vi.fn().mockReturnValue({ where: whereMock });
+		mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+
+		const result = await venuesCountResolver(mockParent, {}, mockContext);
+
+		expect(result).toBe(5);
+	});
+
 	it("should throw unauthorized error when user is not a member of the organization", async () => {
 		const mockUserData = {
 			id: "user-123",
