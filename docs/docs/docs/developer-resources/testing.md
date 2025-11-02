@@ -7,7 +7,15 @@ sidebar_position: 7
 
 This section covers important tests to validate the operation of the API.
 
-## The `tests/` Directory
+## Introduction
+
+It is important to test our code. If you are a contributor, please follow the guidance on this page.
+
+### Developers Using Microsoft Windows
+
+All our workflows use Linux based commands, therefore if you are a developer who codes in Microsoft Windows then we strongly suggest that you use the Windows Subsystem for Linux (WSL) as your command line interface (CLI).
+
+### The `tests/` Directory
 
 The `tests/` directory contains the code for performing api tests against Talawa API. The tests in this directory and its various subdirectories must follow the practices of black box testing and most of them should be written to be able to run concurrently.
 
