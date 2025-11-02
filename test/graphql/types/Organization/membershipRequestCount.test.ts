@@ -182,4 +182,38 @@ describe("Organization membershipRequestCountResolver", () => {
 			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 		);
 	});
+
+	it("should return 0 when no membership requests are found for the organization", async () => {
+		const mockUserData = {
+			id: "user-123",
+			role: "administrator",
+			organizationMembershipsWhereMember: [{ role: "administrator" }],
+		};
+		const { context: mockContext, mocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUserData,
+		);
+
+		// Mock empty result array to test the fallback to 0
+		const mockQuery = Promise.resolve([]);
+		const whereMock = vi.fn().mockReturnValue(mockQuery);
+		const fromMock = vi.fn().mockReturnValue({ where: whereMock });
+		mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+
+		const result = await membershipRequestCountResolver(
+			mockParent,
+			{},
+			mockContext,
+		);
+
+		expect(result).toBe(0);
+		expect(mockContext.drizzleClient.select).toHaveBeenCalled();
+		expect(fromMock).toHaveBeenCalledWith(membershipRequestsTable);
+		expect(whereMock).toHaveBeenCalledWith(
+			eq(membershipRequestsTable.organizationId, "org123"),
+		);
+	});
 });

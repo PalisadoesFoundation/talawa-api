@@ -153,4 +153,36 @@ describe("Organization venuesCountResolver", () => {
 			new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
 		);
 	});
+
+	it("should return 0 when no venues are found for the organization", async () => {
+		const mockUserData = {
+			id: "user-123",
+			role: "member",
+			organizationMembershipsWhereMember: [{ role: "MEMBER" }],
+		};
+		const { context: mockContext, mocks } = createMockGraphQLContext(
+			true,
+			"user-123",
+		);
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce(
+			mockUserData,
+		);
+
+		// Mock empty result array to test the fallback to 0
+		const mockQuery = Promise.resolve([]);
+		const whereMock = vi.fn().mockReturnValue(mockQuery);
+		const fromMock = vi.fn().mockReturnValue({ where: whereMock });
+		mocks.drizzleClient.select.mockReturnValue({ from: fromMock });
+
+		const result = await venuesCountResolver(mockParent, {}, mockContext);
+
+		expect(result).toBe(0);
+		expect(mockContext.drizzleClient.select).toHaveBeenCalledWith({
+			total: count(),
+		});
+		expect(fromMock).toHaveBeenCalledWith(venuesTable);
+		expect(whereMock).toHaveBeenCalledWith(
+			eq(venuesTable.organizationId, "org123"),
+		);
+	});
 });
