@@ -170,20 +170,20 @@ async function cleanup(
 				headers: { authorization: `bearer ${authToken}` },
 				variables: { input: { id } },
 			});
-		} catch {}
+		} catch { }
 	}
 	try {
 		await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: { input: { id: eventId } },
 		});
-	} catch {}
+	} catch { }
 	try {
 		await mercuriusClient.mutate(Mutation_deleteOrganization, {
 			headers: { authorization: `bearer ${authToken}` },
 			variables: { input: { id: orgId } },
 		});
-	} catch {}
+	} catch { }
 }
 
 function encodeCursor(obj: { id: string; name: string }) {
@@ -338,7 +338,7 @@ describe("AgendaFolder.items connection", () => {
 			if (dispose) {
 				try {
 					await dispose();
-				} catch {}
+				} catch { }
 			}
 		}
 	});
@@ -363,9 +363,9 @@ describe("AgendaFolder.items connection", () => {
 		expect(result.errors?.[0]?.path).toEqual(["agendaFolder", "items"]);
 		const extAfter = result.errors?.[0]?.extensions as
 			| {
-					code?: unknown;
-					issues?: Array<{ argumentPath?: unknown; message?: unknown }>;
-			  }
+				code?: unknown;
+				issues?: Array<{ argumentPath?: unknown; message?: unknown }>;
+			}
 			| undefined;
 		expect(extAfter?.code).toBe("invalid_arguments");
 		expect(extAfter?.issues ?? []).toEqual(
@@ -394,9 +394,9 @@ describe("AgendaFolder.items connection", () => {
 		expect(result.errors?.[0]?.path).toEqual(["agendaFolder", "items"]);
 		const extBefore = result.errors?.[0]?.extensions as
 			| {
-					code?: unknown;
-					issues?: Array<{ argumentPath?: unknown; message?: unknown }>;
-			  }
+				code?: unknown;
+				issues?: Array<{ argumentPath?: unknown; message?: unknown }>;
+			}
 			| undefined;
 		expect(extBefore?.code).toBe("invalid_arguments");
 		expect(extBefore?.issues ?? []).toEqual(
@@ -426,9 +426,9 @@ describe("AgendaFolder.items connection", () => {
 		expect(result.errors?.[0]?.path).toEqual(["agendaFolder", "items"]);
 		const extMissing = result.errors?.[0]?.extensions as
 			| {
-					code?: unknown;
-					issues?: Array<{ argumentPath?: unknown; message?: unknown }>;
-			  }
+				code?: unknown;
+				issues?: Array<{ argumentPath?: unknown; message?: unknown }>;
+			}
 			| undefined;
 		expect(extMissing?.code).toBe("arguments_associated_resources_not_found");
 		expect(extMissing?.issues ?? []).toEqual(
@@ -486,6 +486,8 @@ describe("AgendaFolder.items connection", () => {
 
 		const endCursor1 = items1.pageInfo.endCursor;
 		assertToBeNonNullish(endCursor1);
+		expect(items1.pageInfo.hasNextPage).toBe(true);
+		expect(items1.pageInfo.hasPreviousPage).toBe(false);
 
 		const page2 = await mercuriusClient.query(Query_agendaFolder_items, {
 			headers: { authorization: `bearer ${authToken}` },
