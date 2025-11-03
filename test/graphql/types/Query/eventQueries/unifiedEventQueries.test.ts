@@ -610,11 +610,11 @@ describe("getUnifiedEventsInDateRange", () => {
 			).rejects.toThrow("Recurring query failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to get unified events",
 				expect.objectContaining({
 					organizationId: "org-1",
 					error,
 				}),
+				"Failed to get unified events",
 			);
 		});
 
@@ -641,10 +641,10 @@ describe("getUnifiedEventsInDateRange", () => {
 			).rejects.toThrow("Invalid date access");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to get unified events",
 				expect.objectContaining({
 					organizationId: "org-1",
 				}),
+				"Failed to get unified events",
 			);
 		});
 
@@ -1075,11 +1075,11 @@ describe("getEventsByIds", () => {
 			).rejects.toThrow("Standalone query failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to get events by IDs",
 				expect.objectContaining({
 					eventIds,
 					error,
 				}),
+				"Failed to get events by IDs",
 			);
 		});
 
@@ -1094,11 +1094,11 @@ describe("getEventsByIds", () => {
 			).rejects.toThrow("Recurring query failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to get events by IDs",
 				expect.objectContaining({
 					eventIds,
 					error,
 				}),
+				"Failed to get events by IDs",
 			);
 		});
 

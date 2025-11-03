@@ -109,8 +109,8 @@ describe("executionEngine", () => {
 				processingThroughput: 0,
 			});
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Generation execution failed for org1",
 				error,
+				"Generation execution failed for org1",
 			);
 		});
 

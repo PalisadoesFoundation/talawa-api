@@ -146,8 +146,8 @@ suite("windowManager", () => {
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Failed to initialize Generation window for organization ${mockOrganizationId}:`,
 				dbError,
+				`Failed to initialize Generation window for organization ${mockOrganizationId}:`,
 			);
 		});
 	});
@@ -243,8 +243,8 @@ suite("windowManager", () => {
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Failed to extend Generation window for organization ${mockOrganizationId}:`,
 				dbError,
+				`Failed to extend Generation window for organization ${mockOrganizationId}:`,
 			);
 		});
 	});
@@ -368,8 +368,8 @@ suite("windowManager", () => {
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Failed to cleanup old Generated instances for organization ${mockOrganizationId}:`,
 				dbError,
+				`Failed to cleanup old Generated instances for organization ${mockOrganizationId}:`,
 			);
 		});
 	});

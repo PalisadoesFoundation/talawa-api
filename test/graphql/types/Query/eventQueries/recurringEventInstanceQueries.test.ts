@@ -303,8 +303,8 @@ describe("getRecurringEventInstancesInDateRange", () => {
 		).rejects.toThrow("Database query failed");
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
-			"Failed to get recurring event instances for organization org-1:",
 			error,
+			"Failed to get recurring event instances for organization org-1:",
 		);
 	});
 
@@ -457,8 +457,8 @@ describe("getRecurringEventInstanceById", () => {
 		).rejects.toThrow("Base template not found: base-event-1");
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
-			"Failed to get recurring event instance instance-1:",
 			expect.any(Error),
+			"Failed to get recurring event instance instance-1:",
 		);
 	});
 
@@ -511,8 +511,8 @@ describe("getRecurringEventInstanceById", () => {
 		).rejects.toThrow("Instance query failed");
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
-			"Failed to get recurring event instance instance-1:",
 			instanceError,
+			"Failed to get recurring event instance instance-1:",
 		);
 
 		// Base template query failure
@@ -741,8 +741,8 @@ describe("getRecurringEventInstancesByIds", () => {
 		).rejects.toThrow("Database connection failed");
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
-			"Failed to get recurring event instances by IDs:",
 			error,
+			"Failed to get recurring event instances by IDs:",
 		);
 
 		// Test template/exception errors

@@ -312,8 +312,8 @@ describe("jobDiscovery", () => {
 
 			expect(result).toHaveLength(0);
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to discover workload for organization org1",
 				expect.any(Error),
+				"Failed to discover workload for organization org1",
 			);
 		});
 

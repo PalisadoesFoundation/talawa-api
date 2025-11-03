@@ -283,9 +283,12 @@ describe("materializationPipeline", () => {
 				errorsEncountered: 1,
 				processingTimeMs: expect.any(Number),
 			});
-			expect(mockLogger.error).toHaveBeenCalledWith("Batch execution failed", {
-				error: "Execution failed",
-			});
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				{
+					error: "Execution failed",
+				},
+				"Batch execution failed",
+			);
 		});
 
 		it("should skip post-processing when disabled", async () => {
@@ -398,8 +401,8 @@ describe("materializationPipeline", () => {
 				processingTimeMs: expect.any(Number),
 			});
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Materialization worker failed",
 				error,
+				"Materialization worker failed",
 			);
 		});
 	});
@@ -570,8 +573,8 @@ describe("materializationPipeline", () => {
 				processingTimeMs: expect.any(Number),
 			});
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to process organization org1",
 				error,
+				"Failed to process organization org1",
 			);
 		});
 	});

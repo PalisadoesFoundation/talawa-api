@@ -259,8 +259,8 @@ describe("postProcessor", () => {
 				windowsUpdated: 0,
 			});
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Post-processing failed: Error: Cleanup failed",
 				expect.any(Error),
+				"Post-processing failed: Error: Cleanup failed",
 			);
 		});
 

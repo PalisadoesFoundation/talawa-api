@@ -170,8 +170,8 @@ suite("eventMaterialization", () => {
 			);
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Base template or recurrence rule not found for ${input.baseRecurringEventId}`,
 				{ baseTemplate: false, recurrenceRule: true },
+				`Base template or recurrence rule not found for ${input.baseRecurringEventId}`,
 			);
 		});
 
@@ -210,8 +210,8 @@ suite("eventMaterialization", () => {
 			);
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Base template or recurrence rule not found for ${input.baseRecurringEventId}`,
 				{ baseTemplate: true, recurrenceRule: false },
+				`Base template or recurrence rule not found for ${input.baseRecurringEventId}`,
 			);
 		});
 
@@ -354,8 +354,8 @@ suite("eventMaterialization", () => {
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Failed to generate instances for ${input.baseRecurringEventId}:`,
 				dbError,
+				`Failed to generate instances for ${input.baseRecurringEventId}:`,
 			);
 		});
 	});
