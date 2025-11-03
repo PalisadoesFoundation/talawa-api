@@ -592,11 +592,11 @@ describe("getUnifiedEventsInDateRange", () => {
 			).rejects.toThrow("Standalone query failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to get unified events",
 				expect.objectContaining({
 					organizationId: "org-1",
 					error,
 				}),
+				"Failed to get unified events",
 			);
 		});
 
