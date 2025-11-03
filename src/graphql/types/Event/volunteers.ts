@@ -10,8 +10,8 @@ import { EventVolunteersOrderByInput } from "~/src/graphql/inputs/EventVolunteer
 import { EventVolunteer } from "~/src/graphql/types/EventVolunteer/EventVolunteer";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { Event } from "./Event";
 import type { Event as EventType } from "./Event";
+import { Event } from "./Event";
 
 type EventVolunteersArgs = {
 	where?: {

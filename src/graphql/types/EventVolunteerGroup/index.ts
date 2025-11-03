@@ -1,9 +1,9 @@
-import "./EventVolunteerGroup";
-import "./event";
-import "./leader";
-import "./creator";
-import "./volunteers";
 import "./createdAt";
+import "./creator";
+import "./event";
+import "./EventVolunteerGroup";
+import "./leader";
+import "./recurringEventInstance";
 import "./updatedAt";
 import "./updater";
-import "./recurringEventInstance";
+import "./volunteers";

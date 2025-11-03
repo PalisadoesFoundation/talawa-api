@@ -352,25 +352,31 @@ Organization.implement({
 							ctx.log,
 						);
 
-						ctx.log.debug("Retrieved unified events for organization", {
-							organizationId: parent.id,
-							totalEvents: allEvents.length,
-							standaloneEvents: allEvents.filter(
-								(e) => e.eventType === "standalone",
-							).length,
-							materializedEvents: allEvents.filter(
-								(e) => e.eventType === "generated",
-							).length,
-							dateRange: {
-								start: dateRange.start.toISOString(),
-								end: dateRange.end.toISOString(),
+						ctx.log.debug(
+							{
+								organizationId: parent.id,
+								totalEvents: allEvents.length,
+								standaloneEvents: allEvents.filter(
+									(e) => e.eventType === "standalone",
+								).length,
+								materializedEvents: allEvents.filter(
+									(e) => e.eventType === "generated",
+								).length,
+								dateRange: {
+									start: dateRange.start.toISOString(),
+									end: dateRange.end.toISOString(),
+								},
 							},
-						});
+							"Retrieved unified events for organization",
+						);
 					} catch (unifiedQueryError) {
-						ctx.log.error("Failed to retrieve unified events", {
-							organizationId: parent.id,
-							error: unifiedQueryError,
-						});
+						ctx.log.error(
+							{
+								organizationId: parent.id,
+								error: unifiedQueryError,
+							},
+							"Failed to retrieve unified events",
+						);
 						throw new TalawaGraphQLError({
 							message: "Failed to retrieve events",
 							extensions: {

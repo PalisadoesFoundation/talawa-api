@@ -4,8 +4,8 @@ import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-import { VolunteerMembership } from "./EventVolunteerMembership";
 import type { VolunteerMembership as VolunteerMembershipType } from "./EventVolunteerMembership";
+import { VolunteerMembership } from "./EventVolunteerMembership";
 
 export const VolunteerMembershipCreatedByResolver = async (
 	parent: VolunteerMembershipType,

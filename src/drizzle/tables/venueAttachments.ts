@@ -1,6 +1,5 @@
 import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { venueAttachmentMimeTypeEnum } from "~/src/drizzle/enums/venueAttachmentMimeType";
 import { usersTable } from "./users";
 import { venuesTable } from "./venues";
@@ -100,11 +99,4 @@ export const venueAttachmentsTableRelations = relations(
 			relationName: "venue_attachments.venue_id:venues.id",
 		}),
 	}),
-);
-
-export const venueAttachmentsTableInsertSchema = createInsertSchema(
-	venueAttachmentsTable,
-	{
-		name: (schema) => schema.min(1),
-	},
 );

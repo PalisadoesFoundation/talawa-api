@@ -14,8 +14,8 @@ import {
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
-import { Organization } from "./Organization";
 import type { Organization as OrganizationType } from "./Organization";
+import { Organization } from "./Organization";
 
 const actionItemCategoriesArgumentsSchema =
 	defaultGraphQLConnectionArgumentsSchema

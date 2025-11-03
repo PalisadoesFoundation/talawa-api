@@ -1,6 +1,5 @@
 import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { postAttachmentMimeTypeEnum } from "~/src/drizzle/enums/postAttachmentMimeType";
 import { postsTable } from "./posts";
@@ -118,11 +117,4 @@ export const postAttachmentsTableRelations = relations(
 			relationName: "post_attachments.updater_id:users.id",
 		}),
 	}),
-);
-
-export const postAttachmentsTableInsertSchema = createInsertSchema(
-	postAttachmentsTable,
-	{
-		name: (schema) => schema.min(1),
-	},
 );

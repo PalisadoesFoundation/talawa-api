@@ -4,8 +4,8 @@ import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-import { EventVolunteer } from "./EventVolunteer";
 import type { EventVolunteer as EventVolunteerType } from "./EventVolunteer";
+import { EventVolunteer } from "./EventVolunteer";
 
 export const EventVolunteerUserResolver = async (
 	parent: EventVolunteerType,

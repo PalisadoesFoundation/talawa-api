@@ -7,17 +7,13 @@
  */
 
 export * from "./recurringEventInstanceQueries";
-export * from "./standaloneEventQueries";
-export * from "./unifiedEventQueries";
-
+// Export the new function for getting recurring events by base ID
+export { getRecurringEventInstancesByBaseId } from "./recurringEventInstanceQueries";
 export type { GetRecurringEventInstancesInput } from "./recurringEventInstanceQueries";
-
+export * from "./standaloneEventQueries";
 export type { GetStandaloneEventsInput } from "./standaloneEventQueries";
-
+export * from "./unifiedEventQueries";
 export type {
 	EventWithAttachments,
 	GetUnifiedEventsInput,
 } from "./unifiedEventQueries";
-
-// Export the new function for getting recurring events by base ID
-export { getRecurringEventInstancesByBaseId } from "./recurringEventInstanceQueries";

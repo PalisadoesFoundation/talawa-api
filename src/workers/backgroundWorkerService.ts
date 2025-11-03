@@ -13,7 +13,7 @@ import {
 let materializationTask: cron.ScheduledTask | undefined;
 let cleanupTask: cron.ScheduledTask | undefined;
 let isRunning = false;
-let materializationConfig: WorkerConfig = createDefaultWorkerConfig();
+const materializationConfig: WorkerConfig = createDefaultWorkerConfig();
 
 /**
  * Initializes and starts all background workers, scheduling them to run at their configured intervals.
@@ -55,16 +55,19 @@ export async function startBackgroundWorkers(
 		cleanupTask.start();
 
 		isRunning = true;
-		logger.info("Background worker service started successfully", {
-			materializationSchedule:
-				process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
-			cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
-		});
+		logger.info(
+			{
+				materializationSchedule:
+					process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
+				cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+			},
+			"Background worker service started successfully",
+		);
 
 		// Run materialization worker once immediately on startup
 		await runMaterializationWorkerSafely(drizzleClient, logger);
 	} catch (error) {
-		logger.error("Failed to start background worker service:", error);
+		logger.error(error, "Failed to start background worker service:");
 		throw error;
 	}
 }
@@ -96,7 +99,7 @@ export async function stopBackgroundWorkers(
 		isRunning = false;
 		logger.info("Background worker service stopped successfully");
 	} catch (error) {
-		logger.error("Error stopping background worker service:", error);
+		logger.error(error, "Error stopping background worker service:");
 		throw error;
 	}
 }
@@ -119,20 +122,26 @@ async function runMaterializationWorkerSafely(
 		);
 
 		const duration = Date.now() - startTime;
-		logger.info("Materialization worker completed successfully", {
-			duration: `${duration}ms`,
-			organizationsProcessed: result.organizationsProcessed,
-			instancesCreated: result.instancesCreated,
-			windowsUpdated: result.windowsUpdated,
-			errorsEncountered: result.errorsEncountered,
-		});
+		logger.info(
+			{
+				duration: `${duration}ms`,
+				organizationsProcessed: result.organizationsProcessed,
+				instancesCreated: result.instancesCreated,
+				windowsUpdated: result.windowsUpdated,
+				errorsEncountered: result.errorsEncountered,
+			},
+			"Materialization worker completed successfully",
+		);
 	} catch (error) {
 		const duration = Date.now() - startTime;
-		logger.error("Materialization worker failed", {
-			duration: `${duration}ms`,
-			error: error instanceof Error ? error.message : "Unknown error",
-			stack: error instanceof Error ? error.stack : undefined,
-		});
+		logger.error(
+			{
+				duration: `${duration}ms`,
+				error: error instanceof Error ? error.message : "Unknown error",
+				stack: error instanceof Error ? error.stack : undefined,
+			},
+			"Materialization worker failed",
+		);
 	}
 }
 
@@ -150,121 +159,24 @@ async function runCleanupWorkerSafely(
 		const stats = await cleanupOldInstances(drizzleClient, logger);
 
 		const duration = Date.now() - startTime;
-		logger.info("Cleanup worker completed successfully", {
-			duration: `${duration}ms`,
-			organizationsProcessed: stats.organizationsProcessed,
-			instancesDeleted: stats.instancesDeleted,
-			errorsEncountered: stats.errorsEncountered,
-		});
+		logger.info(
+			{
+				duration: `${duration}ms`,
+				organizationsProcessed: stats.organizationsProcessed,
+				instancesDeleted: stats.instancesDeleted,
+				errorsEncountered: stats.errorsEncountered,
+			},
+			"Cleanup worker completed successfully",
+		);
 	} catch (error) {
 		const duration = Date.now() - startTime;
-		logger.error("Cleanup worker failed", {
-			duration: `${duration}ms`,
-			error: error instanceof Error ? error.message : "Unknown error",
-			stack: error instanceof Error ? error.stack : undefined,
-		});
-	}
-}
-
-/**
- * Manually triggers a run of the materialization worker, useful for testing or administrative purposes.
- */
-export async function triggerMaterializationWorker(
-	drizzleClient: NodePgDatabase<typeof schema>,
-	logger: FastifyBaseLogger,
-): Promise<void> {
-	if (!isRunning) {
-		throw new Error("Background worker service is not running");
-	}
-
-	logger.info("Manually triggering materialization worker");
-	await runMaterializationWorkerSafely(drizzleClient, logger);
-}
-
-/**
- * Manually triggers a run of the cleanup worker, useful for testing or administrative purposes.
- */
-export async function triggerCleanupWorker(
-	drizzleClient: NodePgDatabase<typeof schema>,
-	logger: FastifyBaseLogger,
-): Promise<void> {
-	if (!isRunning) {
-		throw new Error("Background worker service is not running");
-	}
-
-	logger.info("Manually triggering cleanup worker");
-	await runCleanupWorkerSafely(drizzleClient, logger);
-}
-
-/**
- * Retrieves the current status of the background worker service, including scheduling information.
- *
- * @returns An object containing the current status of the service.
- */
-export function getBackgroundWorkerStatus(): {
-	isRunning: boolean;
-	materializationSchedule: string;
-	cleanupSchedule: string;
-	nextMaterializationRun?: Date;
-	nextCleanupRun?: Date;
-} {
-	return {
-		isRunning,
-		materializationSchedule:
-			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
-		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
-	};
-}
-
-/**
- * Performs a health check of the background worker service, suitable for use by monitoring systems.
- *
- * @returns A promise that resolves to an object indicating the health status and any relevant details.
- */
-export async function healthCheck(): Promise<{
-	status: "healthy" | "unhealthy";
-	details: Record<string, unknown>;
-}> {
-	try {
-		const status = getBackgroundWorkerStatus();
-
-		if (!status.isRunning) {
-			return {
-				status: "unhealthy",
-				details: {
-					reason: "Background workers not running",
-					...status,
-				},
-			};
-		}
-
-		return {
-			status: "healthy",
-			details: status,
-		};
-	} catch (error) {
-		return {
-			status: "unhealthy",
-			details: {
-				reason: "Health check failed",
+		logger.error(
+			{
+				duration: `${duration}ms`,
 				error: error instanceof Error ? error.message : "Unknown error",
+				stack: error instanceof Error ? error.stack : undefined,
 			},
-		};
+			"Cleanup worker failed",
+		);
 	}
-}
-
-/**
- * Updates the configuration for the materialization worker at runtime.
- *
- * @param config - A partial configuration object with the new settings to apply.
- */
-export function updateMaterializationConfig(
-	config: Partial<WorkerConfig>,
-	logger: FastifyBaseLogger,
-): void {
-	materializationConfig = {
-		...materializationConfig,
-		...config,
-	};
-	logger.info("Updated materialization worker configuration", config);
 }

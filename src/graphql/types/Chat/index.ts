@@ -1,5 +1,6 @@
-import "./Chat";
 import "./avatarURL";
+import "./Chat";
+import "./ChatMember";
 import "./createdAt";
 import "./creator";
 import "./members";
@@ -7,4 +8,3 @@ import "./messages";
 import "./organization";
 import "./updatedAt";
 import "./updater";
-import "./ChatMember";

@@ -1,0 +1,10 @@
+{
+	"$schema": "https://unpkg.com/knip@5/schema.json",
+	"ignoreIssues": {
+		"src/graphql/**/*.ts": ["exports"],
+		"src/services/**/*.ts": ["exports"]
+	},
+	"project": ["src/**/*.ts"],
+	"ignoreDependencies": [],
+	"ignoreExportsUsedInFile": true
+}

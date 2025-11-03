@@ -1,9 +1,9 @@
 import "./BigInt";
 import "./Date";
 import "./DateTime";
+import "./EmailAddress";
 import "./PhoneNumber";
 import "./Upload";
-import "./EmailAddress";
 
 import type { _BigInt } from "./BigInt";
 import type { _Date } from "./Date";

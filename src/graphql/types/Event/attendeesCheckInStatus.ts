@@ -5,8 +5,8 @@ import { CheckInStatus } from "~/src/graphql/types/CheckInStatus/CheckInStatus";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-import { Event } from "./Event";
 import type { Event as EventType } from "./Event";
+import { Event } from "./Event";
 
 export const eventAttendeesCheckInStatusResolver = async (
 	parent: EventType,

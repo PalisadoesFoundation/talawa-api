@@ -15,8 +15,8 @@ import {
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
-import { Event } from "./Event";
 import type { Event as EventType } from "./Event";
+import { Event } from "./Event";
 
 const actionItemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)

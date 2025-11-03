@@ -1,6 +1,5 @@
 import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { eventAttachmentMimeTypeEnum } from "~/src/drizzle/enums/eventAttachmentMimeType";
 import { eventsTable } from "./events";
 import { usersTable } from "./users";
@@ -100,11 +99,4 @@ export const eventAttachmentsTableRelations = relations(
 			relationName: "event_attachments.updater_id:users.id",
 		}),
 	}),
-);
-
-export const eventAttachmentsTableInsertSchema = createInsertSchema(
-	eventAttachmentsTable,
-	{
-		name: (schema) => schema.min(1),
-	},
 );

@@ -40,7 +40,7 @@ export class NotificationEventBus extends EventEmitter {
 
 				ctx.log.info(`Notification sent for post ${data.postId}`);
 			} catch (error) {
-				ctx.log.error("Failed to send post notification:", error);
+				ctx.log.error({ error }, "Failed to send post notification:");
 			}
 		});
 	}
@@ -75,8 +75,8 @@ export class NotificationEventBus extends EventEmitter {
 				);
 			} catch (error) {
 				ctx.log.error(
-					"Failed to send membership acceptance notification:",
 					error,
+					"Failed to send membership acceptance notification:",
 				);
 			}
 		});
@@ -118,7 +118,7 @@ export class NotificationEventBus extends EventEmitter {
 					`Event creation notification sent for event ${data.eventId}`,
 				);
 			} catch (error) {
-				ctx.log.error("Failed to send event creation notification:", error);
+				ctx.log.error(error, "Failed to send event creation notification:");
 			}
 		});
 	}
@@ -174,7 +174,7 @@ export class NotificationEventBus extends EventEmitter {
 					`Join request notifications (in-app + email) sent for user ${data.userId} to organization ${data.organizationId}`,
 				);
 			} catch (error) {
-				ctx.log.error("Failed to send join request notification:", error);
+				ctx.log.error(error, "Failed to send join request notification:");
 			}
 		});
 	}
@@ -211,7 +211,7 @@ export class NotificationEventBus extends EventEmitter {
 					`New member notification sent for user ${data.userId} joining organization ${data.organizationId}`,
 				);
 			} catch (error) {
-				ctx.log.error("Failed to send new member notification:", error);
+				ctx.log.error(error, "Failed to send new member notification:");
 			}
 		});
 	}
@@ -248,7 +248,7 @@ export class NotificationEventBus extends EventEmitter {
 					`User blocked notification sent to user ${data.userId} from organization ${data.organizationId}`,
 				);
 			} catch (error) {
-				ctx.log.error("Failed to send user blocked notification:", error);
+				ctx.log.error(error, "Failed to send user blocked notification:");
 			}
 		});
 	}
@@ -286,8 +286,8 @@ export class NotificationEventBus extends EventEmitter {
 				);
 			} catch (error) {
 				ctx.log.error(
-					"Failed to send membership request rejection notification:",
 					error,
+					"Failed to send membership request rejection notification:",
 				);
 			}
 		});
@@ -327,7 +327,7 @@ export class NotificationEventBus extends EventEmitter {
 					`Fund creation notification sent for fund ${data.fundId} in organization ${data.organizationId}`,
 				);
 			} catch (error) {
-				ctx.log.error("Failed to send fund creation notification:", error);
+				ctx.log.error(error, "Failed to send fund creation notification:");
 			}
 		});
 	}
@@ -373,8 +373,8 @@ export class NotificationEventBus extends EventEmitter {
 				);
 			} catch (error) {
 				ctx.log.error(
-					"Failed to send fund campaign creation notification:",
 					error,
+					"Failed to send fund campaign creation notification:",
 				);
 			}
 		});
@@ -419,8 +419,8 @@ export class NotificationEventBus extends EventEmitter {
 				);
 			} catch (error) {
 				ctx.log.error(
-					"Failed to send fund campaign pledge notification:",
 					error,
+					"Failed to send fund campaign pledge notification:",
 				);
 			}
 		});

@@ -52,6 +52,7 @@
     "drizzle-kit": "^0.31.4",
     "drizzle-seed": "^0.3.1",
     "gql.tada": "^1.8.12",
+    "knip": "^5.67.0",
     "lefthook": "^1.13.6",
     "mercurius-integration-testing": "^9.0.1",
     "pino-pretty": "^13.0.0",
@@ -75,7 +76,7 @@
   "license": "GNU General Public License v3.0",
   "main": "./dist/index.js",
   "name": "talawa-api",
-  "packageManager": "pnpm@10.2.1",
+  "packageManager": "pnpm@10.20.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/PalisadoesFoundation/talawa-api"

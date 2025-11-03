@@ -1,10 +1,10 @@
-import "./Event";
-import "./agendaFolders";
 import "./actionItems";
+import "./agendaFolders";
 import "./attendees";
 import "./attendeesCheckInStatus";
 import "./createdAt";
 import "./creator";
+import "./Event";
 import "./organization";
 import "./updatedAt";
 import "./updater";

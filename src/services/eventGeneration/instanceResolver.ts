@@ -1,7 +1,9 @@
 import type { eventsTable } from "~/src/drizzle/tables/events";
 import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
-import type { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
-import type { ResolvedRecurringEventInstance } from "~/src/drizzle/tables/recurringEventInstances";
+import type {
+	ResolvedRecurringEventInstance,
+	recurringEventInstancesTable,
+} from "~/src/drizzle/tables/recurringEventInstances";
 import type { ResolveInstanceInput, ServiceDependencies } from "./types";
 
 /**
@@ -168,11 +170,14 @@ export function resolveMultipleInstances(
 
 		// Debug logging for exceptions
 		if (exception) {
-			logger.debug(`Found exception for instance ${instance.id}`, {
-				instanceId: instance.id,
-				exceptionId: exception.id,
-				exceptionData: exception.exceptionData,
-			});
+			logger.debug(
+				{
+					instanceId: instance.id,
+					exceptionId: exception.id,
+					exceptionData: exception.exceptionData,
+				},
+				`Found exception for instance ${instance.id}`,
+			);
 		}
 
 		const resolved = resolveInstanceWithInheritance({

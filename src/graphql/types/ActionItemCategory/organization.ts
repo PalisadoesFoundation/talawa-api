@@ -2,8 +2,8 @@ import type { GraphQLContext } from "~/src/graphql/context";
 import { Organization } from "~/src/graphql/types/Organization/Organization";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import { ActionItemCategory } from "./ActionItemCategory";
 import type { ActionItemCategory as ActionItemCategoryType } from "./ActionItemCategory";
+import { ActionItemCategory } from "./ActionItemCategory";
 
 // Export the resolver function so it can be tested
 export const resolveOrganization = async (

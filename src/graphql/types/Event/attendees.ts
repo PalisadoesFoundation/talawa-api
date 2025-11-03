@@ -4,8 +4,8 @@ import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-import { Event } from "./Event";
 import type { Event as EventType } from "./Event";
+import { Event } from "./Event";
 
 export const eventAttendeesResolver = async (
 	parent: EventType,

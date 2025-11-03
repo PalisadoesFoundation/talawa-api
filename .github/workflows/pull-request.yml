@@ -114,6 +114,30 @@ jobs:
       - name: Check type errors
         run: docker container run talawa_api pnpm typecheck
 
+  Check_unused_exports:
+    name: Check for unused exports
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2     
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23.7.0'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Install dependencies
+        run: pnpm install            
+      - name: Run Knip
+        run: pnpm knip --include exports
+        env:
+          API_POSTGRES_DATABASE: dummy_db
+          API_POSTGRES_PASSWORD: dummy_password
+          API_POSTGRES_HOST: localhost
+          API_POSTGRES_PORT: '5432'
+          API_POSTGRES_USER: dummy_user
+          API_POSTGRES_SSL_MODE: 'false'    
+
   Check-Sensitive-Files:
     if: ${{ github.actor != 'dependabot[bot]' }}
     name: Checks if sensitive files have been changed without authorization
@@ -199,6 +223,7 @@ jobs:
             'package.json$'
             'package-lock.json$'
             '.nojekyll$'
+            'knip.json$'
             'docs/docusaurus.config.ts$'
             '^docs/sidebar.*'
             'setup.ts$'
@@ -259,7 +284,7 @@ jobs:
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada]
+    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada, Check_unused_exports]
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
