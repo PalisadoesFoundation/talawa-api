@@ -277,4 +277,117 @@ describe("FundCampaign Resolver - Updater Field", () => {
 			mockFundCampaign.fundId,
 		);
 	});
+
+	it("should query usersTable with currentUserId", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user123",
+			role: "administrator",
+		});
+		mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValue({
+			isTaxDeductible: false,
+			organization: {
+				countryCode: "US",
+				membershipsWhereOrganization: [{ role: "administrator" }],
+			},
+		});
+
+		await updaterResolver(
+			{ ...mockFundCampaign, updaterId: null },
+			{},
+			ctx as GraphQLContext,
+		);
+
+		// Verify that usersTable.findFirst was called
+		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
+
+		// Get the where function that was passed
+		const callArgs = mocks.drizzleClient.query.usersTable.findFirst.mock
+			.calls[0] as unknown as [
+			{
+				where: (
+					fields: Record<string, unknown>,
+					operators: Record<string, (...args: unknown[]) => unknown>,
+				) => unknown;
+			},
+		];
+		expect(callArgs).toBeDefined();
+		expect(callArgs[0]).toBeDefined();
+		const whereFunction = callArgs[0].where;
+
+		// Create mock fields and operators to test the where function
+		const mockFields: Record<string, unknown> = { id: "mockField" };
+		const mockOperators: Record<string, (...args: unknown[]) => unknown> = {
+			eq: vi.fn((field: unknown, value: unknown) => ({ field, value })),
+		};
+
+		// Call the where function to see what it does
+		whereFunction(mockFields, mockOperators);
+
+		// Verify it was called with currentUserId (which is "123" from createMockGraphQLContext)
+		expect(mockOperators.eq).toHaveBeenCalledWith("mockField", "123");
+	});
+
+	it("should query membershipsWhereOrganization with currentUserId as memberId", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user123",
+			role: "administrator",
+		});
+		mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValue({
+			isTaxDeductible: false,
+			organization: {
+				countryCode: "US",
+				membershipsWhereOrganization: [{ role: "administrator" }],
+			},
+		});
+
+		await updaterResolver(
+			{ ...mockFundCampaign, updaterId: null },
+			{},
+			ctx as GraphQLContext,
+		);
+
+		// Verify that fundsTable.findFirst was called with the correct structure
+		expect(mocks.drizzleClient.query.fundsTable.findFirst).toHaveBeenCalled();
+
+		// Get the call arguments
+		const callArgs = mocks.drizzleClient.query.fundsTable.findFirst.mock
+			.calls[0] as unknown as [
+			{
+				with: {
+					organization: {
+						with: {
+							membershipsWhereOrganization: {
+								where: (
+									fields: Record<string, unknown>,
+									operators: Record<string, (...args: unknown[]) => unknown>,
+								) => unknown;
+							};
+						};
+					};
+				};
+			},
+		];
+		expect(callArgs).toBeDefined();
+		expect(callArgs[0]).toBeDefined();
+		expect(callArgs[0].with).toBeDefined();
+		expect(callArgs[0].with.organization).toBeDefined();
+		expect(callArgs[0].with.organization.with).toBeDefined();
+		expect(
+			callArgs[0].with.organization.with.membershipsWhereOrganization,
+		).toBeDefined();
+		const whereFunction =
+			callArgs[0].with.organization.with.membershipsWhereOrganization.where;
+
+		// Create mock fields and operators to test the where function
+		const mockFields: Record<string, unknown> = { memberId: "mockField" };
+		const mockOperators: Record<string, (...args: unknown[]) => unknown> = {
+			eq: vi.fn((field: unknown, value: unknown) => ({ field, value })),
+		};
+
+		// Call the where function to see what it does
+		whereFunction(mockFields, mockOperators);
+
+		// Verify it was called with currentUserId (which is "123" from createMockGraphQLContext)
+		expect(mockOperators.eq).toHaveBeenCalledWith("mockField", "123");
+	});
 });
