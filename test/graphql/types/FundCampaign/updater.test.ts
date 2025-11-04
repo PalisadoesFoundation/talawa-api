@@ -36,7 +36,13 @@ describe("FundCampaign Resolver - Updater Field", () => {
 
 		await expect(
 			updaterResolver(mockFundCampaign, {}, ctx as GraphQLContext),
-		).rejects.toThrow(TalawaGraphQLError);
+		).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: {
+					code: "unauthenticated",
+				},
+			}),
+		);
 	});
 
 	it("should throw unauthenticated error when user is undefined", async () => {
@@ -44,7 +50,13 @@ describe("FundCampaign Resolver - Updater Field", () => {
 
 		await expect(
 			updaterResolver(mockFundCampaign, {}, ctx as GraphQLContext),
-		).rejects.toThrow(TalawaGraphQLError);
+		).rejects.toThrow(
+			new TalawaGraphQLError({
+				extensions: {
+					code: "unauthenticated",
+				},
+			}),
+		);
 	});
 
 	it("should throw unauthorized_action when user has no organization memberships", async () => {
