@@ -255,10 +255,39 @@ describe("FundCampaign Resolver - Updater Field", () => {
 			ctx as GraphQLContext,
 		);
 
-		expect(mocks.drizzleClient.query.fundsTable.findFirst).toHaveBeenCalledWith(
-			expect.objectContaining({
-				where: expect.any(Function),
-			}),
+		// Verify that fundsTable.findFirst was called
+		expect(mocks.drizzleClient.query.fundsTable.findFirst).toHaveBeenCalled();
+
+		// Get the where function that was passed
+		const callArgs = mocks.drizzleClient.query.fundsTable.findFirst.mock
+			.calls[0] as unknown as [
+			{
+				where: (
+					fields: Record<string, unknown>,
+					operators: Record<string, (...args: unknown[]) => unknown>,
+				) => unknown;
+			},
+		];
+		expect(callArgs).toBeDefined();
+		expect(callArgs[0]).toBeDefined();
+		const whereFunction = callArgs[0].where;
+
+		// Create mock fields and operators to test the where function
+		const mockFields: Record<string, unknown> = { id: "mockField" };
+		const mockOperators: Record<string, (...args: unknown[]) => unknown> = {
+			eq: vi.fn((field: unknown, value: unknown) => ({ field, value })),
+		};
+
+		// Call the where function to see what it does
+		whereFunction(mockFields, mockOperators);
+
+		// Verify it was called with currentUserId (which is "123" from createMockGraphQLContext)
+		expect(mockOperators.eq).toHaveBeenCalledWith("mockField", "123");
+
+		// Verify it was NOT called with parent.fundId or any other value
+		expect(mockOperators.eq).not.toHaveBeenCalledWith(
+			"mockField",
+			mockFundCampaign.fundId,
 		);
 	});
 });
