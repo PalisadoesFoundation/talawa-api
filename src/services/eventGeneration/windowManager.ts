@@ -133,7 +133,7 @@ export async function extendGenerationWindow(
 				previousEndDate: windowConfig.currentWindowEndDate.toISOString(),
 				newEndDate: newEndDate.toISOString(),
 			},
-			"Extended Generation window for organization ${organizationId} by ${additionalMonths} months",
+			`Extended Generation window for organization ${organizationId} by ${additionalMonths} months`,
 		);
 
 		return newEndDate;
@@ -192,13 +192,13 @@ export async function cleanupOldGeneratedInstances(
 				retentionStartDate: windowConfig.retentionStartDate.toISOString(),
 				deletedCount,
 			},
-			"Cleaned up ${deletedCount} old Generated instances for organization ${organizationId}",
+			`Cleaned up ${deletedCount} old Generated instances for organization ${organizationId}`,
 		);
 
 		return deletedCount;
 	} catch (error) {
 		logger.error(
-			{ error },
+			error,
 			`Failed to cleanup old Generated instances for organization ${organizationId}:`,
 		);
 		throw error;

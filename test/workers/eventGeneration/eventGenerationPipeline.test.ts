@@ -164,18 +164,18 @@ describe("materializationPipeline", () => {
 				processingTimeMs: expect.any(Number),
 			});
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Starting materialization worker",
 				{
 					maxConcurrentJobs: 5,
 					maxOrganizations: 10,
 				},
+				"Starting materialization worker run",
 			);
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				"Created 1 materialization jobs from 1 workloads",
 			);
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Materialization worker completed",
 				expect.any(Object),
+				"Materialization worker completed",
 			);
 		});
 
@@ -401,7 +401,7 @@ describe("materializationPipeline", () => {
 				processingTimeMs: expect.any(Number),
 			});
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				error,
+				{ error },
 				"Materialization worker failed",
 			);
 		});
@@ -503,8 +503,14 @@ describe("materializationPipeline", () => {
 				"Processing specific organization: org1",
 			);
 			expect(mockLogger.info).toHaveBeenCalledWith(
+				{
+					errorsEncountered: expect.any(Number),
+					instancesCreated: expect.any(Number),
+					organizationsProcessed: expect.any(Number),
+					processingTimeMs: expect.any(Number),
+					windowsUpdated: expect.any(Number),
+				},
 				"Completed processing for organization org1",
-				expect.any(Object),
 			);
 		});
 

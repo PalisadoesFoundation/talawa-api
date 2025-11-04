@@ -79,11 +79,11 @@ describe("postProcessor", () => {
 				windowsUpdated: 0,
 			});
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Cleanup operations completed",
 				{
 					organizationsProcessed: 2,
 					totalInstancesCreated: 8,
 				},
+				"Cleanup operations completed",
 			);
 		});
 
@@ -154,11 +154,11 @@ describe("postProcessor", () => {
 				windowsUpdated: 0,
 			});
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Cleanup operations completed",
 				{
 					organizationsProcessed: 0,
 					totalInstancesCreated: 0,
 				},
+				"Cleanup operations completed",
 			);
 		});
 
@@ -210,11 +210,11 @@ describe("postProcessor", () => {
 				windowsUpdated: 0,
 			});
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Cleanup operations completed",
 				{
 					organizationsProcessed: 2, // Unique organizations
 					totalInstancesCreated: 10,
 				},
+				"Cleanup operations completed",
 			);
 		});
 
@@ -305,8 +305,8 @@ describe("postProcessor", () => {
 				windowsUpdated: 0,
 			});
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Post-processing failed: Cleanup failed with string",
 				"Cleanup failed with string",
+				"Post-processing failed: Cleanup failed with string",
 			);
 		});
 
@@ -358,11 +358,11 @@ describe("postProcessor", () => {
 				windowsUpdated: 0,
 			});
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Cleanup operations completed",
 				{
 					organizationsProcessed: 1, // Only one unique organization
 					totalInstancesCreated: 10,
 				},
+				"Cleanup operations completed",
 			);
 		});
 	});

@@ -40,7 +40,7 @@ export class NotificationEventBus extends EventEmitter {
 
 				ctx.log.info(`Notification sent for post ${data.postId}`);
 			} catch (error) {
-				ctx.log.error({ error }, "Failed to send post notification:");
+				ctx.log.error(error, "Failed to send post notification:");
 			}
 		});
 	}

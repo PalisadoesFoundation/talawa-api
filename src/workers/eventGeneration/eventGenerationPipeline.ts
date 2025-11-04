@@ -189,11 +189,11 @@ export async function runSingleOrganizationWorker(
 
 		logger.info(
 			result,
-			"Completed processing for organization ${organizationId}",
+			`Completed processing for organization ${organizationId}`,
 		);
 		return result;
 	} catch (error) {
-		logger.error({ error }, `Failed to process organization ${organizationId}`);
+		logger.error(error, `Failed to process organization ${organizationId}`);
 		return {
 			organizationsProcessed: 0,
 			instancesCreated: 0,

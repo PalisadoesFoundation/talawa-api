@@ -1055,12 +1055,15 @@ describe("getEventsByIds", () => {
 
 			await getEventsByIds(eventIds, mockDrizzleClient, mockLogger);
 
-			expect(mockLogger.debug).toHaveBeenCalledWith("Retrieved events by IDs", {
-				requestedIds: 2,
-				foundStandalone: 1,
-				foundGenerated: 1,
-				totalFound: 2,
-			});
+			expect(mockLogger.debug).toHaveBeenCalledWith(
+				{
+					requestedIds: 2,
+					foundStandalone: 1,
+					foundGenerated: 1,
+					totalFound: 2,
+				},
+				"Retrieved events by IDs",
+			);
 		});
 	});
 
@@ -1131,12 +1134,15 @@ describe("getEventsByIds", () => {
 			);
 
 			expect(result).toHaveLength(0);
-			expect(mockLogger.debug).toHaveBeenCalledWith("Retrieved events by IDs", {
-				requestedIds: 2,
-				foundStandalone: 0,
-				foundGenerated: 0,
-				totalFound: 0,
-			});
+			expect(mockLogger.debug).toHaveBeenCalledWith(
+				{
+					requestedIds: 2,
+					foundStandalone: 0,
+					foundGenerated: 0,
+					totalFound: 0,
+				},
+				"Retrieved events by IDs",
+			);
 		});
 
 		it("should handle null/undefined properties in resolved instances", async () => {

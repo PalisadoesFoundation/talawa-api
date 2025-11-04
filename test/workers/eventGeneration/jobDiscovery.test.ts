@@ -229,11 +229,11 @@ describe("jobDiscovery", () => {
 				estimatedDurationMs: expect.any(Number),
 			});
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Discovered 1 EventGeneration workloads",
 				{
 					totalEvents: 2,
 					highPriorityWorkloads: expect.any(Number),
 				},
+				"Discovered 1 EventGeneration workloads",
 			);
 		});
 

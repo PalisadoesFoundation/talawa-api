@@ -324,11 +324,11 @@ suite("eventMaterialization", () => {
 			);
 
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				expect.stringContaining("Generated"),
 				expect.objectContaining({
 					frequency: "WEEKLY",
 					originalCount: 4,
 				}),
+				expect.stringContaining("Generated"),
 			);
 		});
 
