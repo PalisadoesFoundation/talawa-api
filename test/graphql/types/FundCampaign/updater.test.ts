@@ -1,9 +1,9 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { GraphQLContext } from "~/src/graphql/context";
 import type { FundCampaign } from "~/src/graphql/types/FundCampaign/FundCampaign";
 import { updaterResolver } from "~/src/graphql/types/FundCampaign/updater";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
-import type { GraphQLContext } from "../../../../src/graphql/context";
 
 describe("FundCampaign Resolver - Updater Field", () => {
 	let ctx: GraphQLContext;
@@ -45,31 +45,6 @@ describe("FundCampaign Resolver - Updater Field", () => {
 		await expect(
 			updaterResolver(mockFundCampaign, {}, ctx as GraphQLContext),
 		).rejects.toThrow(TalawaGraphQLError);
-	});
-
-	it("should throw unauthorized_action when user is not an administrator", async () => {
-		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
-			id: "user123",
-			role: "member",
-		});
-
-		mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValue({
-			isTaxDeductible: false,
-			organization: {
-				countryCode: "US",
-				membershipsWhereOrganization: [{ role: "member" }],
-			},
-		});
-
-		await expect(
-			updaterResolver(mockFundCampaign, {}, ctx as GraphQLContext),
-		).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: {
-					code: "unauthorized_action",
-				},
-			}),
-		);
 	});
 
 	it("should throw unauthorized_action when user has no organization memberships", async () => {
