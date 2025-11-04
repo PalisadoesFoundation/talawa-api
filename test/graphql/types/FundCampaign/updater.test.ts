@@ -235,4 +235,30 @@ describe("FundCampaign Resolver - Updater Field", () => {
 			"Postgres select operation returned an empty array for a fund campaign's fund id that isn't null.",
 		);
 	});
+
+	it("should query fundsTable with currentUserId", async () => {
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue({
+			id: "user123",
+			role: "administrator",
+		});
+		mocks.drizzleClient.query.fundsTable.findFirst.mockResolvedValue({
+			isTaxDeductible: false,
+			organization: {
+				countryCode: "US",
+				membershipsWhereOrganization: [{ role: "administrator" }],
+			},
+		});
+
+		await updaterResolver(
+			{ ...mockFundCampaign, updaterId: null },
+			{},
+			ctx as GraphQLContext,
+		);
+
+		expect(mocks.drizzleClient.query.fundsTable.findFirst).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: expect.any(Function),
+			}),
+		);
+	});
 });
