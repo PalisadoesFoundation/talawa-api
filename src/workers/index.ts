@@ -7,45 +7,51 @@
  * - Functional worker modules: Direct access to functional components
  */
 
-export {
-	cleanupOldGeneratedInstances,
-	extendGenerationWindow,
-	getCleanupStats,
-	initializeGenerationWindow,
-	validateWindowConfig,
-} from "../services/eventGeneration/windowManager";
 export * from "./backgroundWorkerService";
 export * from "./eventCleanupWorker";
+
 // Functional worker API - imported directly from modules
 export {
-	createDefaultWorkerConfig,
 	runMaterializationWorker,
 	runSingleOrganizationWorker,
+	createDefaultWorkerConfig,
 	type WorkerConfig,
 	type WorkerResult,
 } from "./eventGeneration/eventGenerationPipeline";
+
 export {
-	executeBatchEventGeneration,
 	executeEventGeneration,
-	type EventGenerationExecutionResult,
+	executeBatchEventGeneration,
 	type EventGenerationJob,
+	type EventGenerationExecutionResult,
 } from "./eventGeneration/executionEngine";
+
 export {
-	createDefaultJobDiscoveryConfig,
-	createEventGenerationJobs,
 	discoverEventGenerationWorkloads,
+	createEventGenerationJobs,
+	createDefaultJobDiscoveryConfig,
 	type DiscoveredWorkload,
 	type JobDiscoveryConfig,
 } from "./eventGeneration/jobDiscovery";
+
 export {
-	createDefaultPostProcessingConfig,
+	initializeGenerationWindow,
+	extendGenerationWindow,
+	cleanupOldGeneratedInstances,
+	getCleanupStats,
+	validateWindowConfig,
+} from "../services/eventGeneration/windowManager";
+
+export {
 	executePostProcessing,
+	createDefaultPostProcessingConfig,
 	type PostProcessingConfig,
 	type PostProcessingResult,
 } from "./eventGeneration/postProcessor";
+
 export type {
-	ProcessingMetrics,
-	ProcessingResult,
-	ResourceUsage,
 	WorkerDependencies,
+	ProcessingMetrics,
+	ResourceUsage,
+	ProcessingResult,
 } from "./eventGeneration/types";

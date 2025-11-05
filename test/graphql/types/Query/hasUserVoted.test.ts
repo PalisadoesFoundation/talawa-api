@@ -493,7 +493,7 @@ const createTestPost = async (creatorId: string) => {
 	const [organizationRow] = await server.drizzleClient
 		.insert(organizationsTable)
 		.values({
-			name: `${faker.company.name()} ${Date.now()}`,
+			name: `${faker.company.name()} ${faker.string.uuid()}`,
 			countryCode: "us",
 			userRegistrationRequired: false,
 		})

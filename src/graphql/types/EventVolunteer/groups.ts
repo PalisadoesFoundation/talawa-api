@@ -5,8 +5,8 @@ import { EventVolunteerGroup } from "~/src/graphql/types/EventVolunteerGroup/Eve
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-import type { EventVolunteer as EventVolunteerType } from "./EventVolunteer";
 import { EventVolunteer } from "./EventVolunteer";
+import type { EventVolunteer as EventVolunteerType } from "./EventVolunteer";
 
 export const EventVolunteerGroupsResolver = async (
 	parent: EventVolunteerType,

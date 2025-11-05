@@ -4,8 +4,8 @@ import type { GraphQLContext } from "~/src/graphql/context";
 import { ActionItem } from "~/src/graphql/types/ActionItem/ActionItem";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import type { ActionItemCategory as ActionItemCategoryType } from "./ActionItemCategory";
 import { ActionItemCategory } from "./ActionItemCategory";
+import type { ActionItemCategory as ActionItemCategoryType } from "./ActionItemCategory";
 
 // Export the resolver function so it can be tested
 export const resolveActionItems = async (

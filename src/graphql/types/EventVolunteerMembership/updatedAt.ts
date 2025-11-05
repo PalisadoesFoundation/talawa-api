@@ -1,8 +1,8 @@
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
 import type { GraphQLContext } from "../../context";
-import type { VolunteerMembership as VolunteerMembershipType } from "./EventVolunteerMembership";
 import { VolunteerMembership } from "./EventVolunteerMembership";
+import type { VolunteerMembership as VolunteerMembershipType } from "./EventVolunteerMembership";
 
 export const VolunteerMembershipUpdatedAtResolver = async (
 	parent: VolunteerMembershipType,

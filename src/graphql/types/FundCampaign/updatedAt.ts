@@ -106,7 +106,7 @@ export const updatedAtResolver = async (
 			throw error;
 		}
 
-		ctx.log.error({ err: error }, "Error in updatedAtResolver:");
+		ctx.log.error({ error }, "Error in updatedAtResolver:");
 		throw new TalawaGraphQLError({
 			extensions: {
 				code: "unexpected",

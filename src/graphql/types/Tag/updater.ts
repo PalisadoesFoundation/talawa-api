@@ -2,8 +2,8 @@ import type { GraphQLContext } from "~/src/graphql/context";
 import { User } from "~/src/graphql/types/User/User";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import type { Tag as TagType } from "./Tag";
 import { Tag } from "./Tag";
+import type { Tag as TagType } from "./Tag";
 export const resolveUpdater = async (
 	parent: TagType,
 	_args: Record<string, never>,

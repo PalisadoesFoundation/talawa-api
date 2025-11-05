@@ -1,8 +1,8 @@
-import "./createdAt";
-import "./createdBy";
-import "./event";
 import "./EventVolunteerMembership";
-import "./group";
-import "./updatedAt";
-import "./updatedBy";
 import "./volunteer";
+import "./event";
+import "./group";
+import "./createdBy";
+import "./updatedBy";
+import "./createdAt";
+import "./updatedAt";

@@ -1,5 +1,5 @@
-import type { InferSelectModel } from "drizzle-orm";
 import { inArray } from "drizzle-orm";
+import type { InferSelectModel } from "drizzle-orm";
 import { z } from "zod";
 import type { usersTable } from "~/src/drizzle/schema";
 import { builder } from "~/src/graphql/builder";

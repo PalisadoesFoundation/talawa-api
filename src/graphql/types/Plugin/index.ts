@@ -1,2 +1,2 @@
-import "./inputs";
 import "./Plugin";
+import "./inputs";

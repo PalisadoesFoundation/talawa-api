@@ -1,8 +1,8 @@
 import type { GraphQLContext } from "~/src/graphql/context";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import envConfig from "~/src/utilities/graphqLimits";
-import type { ActionItemCategory as ActionItemCategoryType } from "./ActionItemCategory";
 import { ActionItemCategory } from "./ActionItemCategory";
+import type { ActionItemCategory as ActionItemCategoryType } from "./ActionItemCategory";
 
 export const resolveCreatedAt = async (
 	parent: ActionItemCategoryType,
