@@ -5031,6 +5031,9 @@ type UploadUrlResponse {
 }
 
 type User {
+  """GraphQL connection to retrieve blocked users of the all organizations."""
+  OrgsWhereUserIsBlocked(after: String, before: String, first: Int, last: Int): UserOrgsWhereUserIsBlockedConnection
+
   """Address line 1 of the user's address."""
   addressLine1: String
 
@@ -5190,6 +5193,16 @@ type UserOrganizationsWhereMemberConnection {
 
 """"""
 type UserOrganizationsWhereMemberConnectionEdge {
+  cursor: String!
+  node: Organization
+}
+
+type UserOrgsWhereUserIsBlockedConnection {
+  edges: [UserOrgsWhereUserIsBlockedConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type UserOrgsWhereUserIsBlockedConnectionEdge {
   cursor: String!
   node: Organization
 }
