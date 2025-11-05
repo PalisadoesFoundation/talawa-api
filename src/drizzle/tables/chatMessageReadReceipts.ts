@@ -6,6 +6,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { chatMessagesTable } from "./chatMessages";
 import { usersTable } from "./users";
 
@@ -65,4 +66,8 @@ export const chatMessageReadReceiptsRelations = relations(
 			relationName: "chat_message_read_receipts.reader_id:users.id",
 		}),
 	}),
+);
+
+export const chatMessageReadReceiptsInsertSchema = createInsertSchema(
+	chatMessageReadReceiptsTable,
 );

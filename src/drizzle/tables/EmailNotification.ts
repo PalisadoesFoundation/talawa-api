@@ -7,6 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { notificationLogsTable } from "./NotificationLog";
 import { usersTable } from "./users";
@@ -159,4 +160,16 @@ export const emailNotificationsTableRelations = relations(
 			relationName: "email_notifications.user_id:users.id",
 		}),
 	}),
+);
+
+export const emailNotificationsTableInsertSchema = createInsertSchema(
+	emailNotificationsTable,
+	{
+		email: (schema) => schema.email().min(1).max(256),
+		subject: (schema) => schema.min(1).max(512),
+		htmlBody: (schema) => schema.min(1),
+		status: (schema) => schema.optional(),
+		retryCount: (schema) => schema.optional(),
+		maxRetries: (schema) => schema.optional(),
+	},
 );

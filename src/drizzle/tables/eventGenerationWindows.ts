@@ -8,7 +8,9 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
+import { z } from "zod";
 import { organizationsTable } from "./organizations";
 import { usersTable } from "./users";
 
@@ -224,6 +226,24 @@ export const eventGenerationWindowsTableRelations = relations(
 			relationName: "event_generation_windows.last_updated_by_id:users.id",
 		}),
 	}),
+);
+
+export const eventGenerationWindowsTableInsertSchema = createInsertSchema(
+	eventGenerationWindowsTable,
+	{
+		organizationId: z.string().uuid(),
+		hotWindowMonthsAhead: z.number().min(1).max(60), // 1 month to 5 years
+		historyRetentionMonths: z.number().min(0).max(60),
+		currentWindowEndDate: z.date(),
+		retentionStartDate: z.date(),
+		lastProcessedInstanceCount: z.number().min(0),
+		isEnabled: z.boolean().optional(),
+		processingPriority: z.number().min(1).max(10),
+		maxInstancesPerRun: z.number().min(10).max(10000),
+		configurationNotes: z.string().max(1024).optional(),
+		createdById: z.string().uuid(),
+		lastUpdatedById: z.string().uuid().optional(),
+	},
 );
 
 /**

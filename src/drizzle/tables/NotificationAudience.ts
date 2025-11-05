@@ -7,6 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { notificationLogsTable } from "./NotificationLog";
 import { usersTable } from "./users";
 
@@ -93,4 +94,11 @@ export const notificationAudienceTableRelations = relations(
 			relationName: "notification_audience.user_id:users.id",
 		}),
 	}),
+);
+
+export const notificationAudienceTableInsertSchema = createInsertSchema(
+	notificationAudienceTable,
+	{
+		isRead: (schema) => schema.optional(),
+	},
 );

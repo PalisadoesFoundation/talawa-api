@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { advertisementAttachmentMimeTypeEnum } from "~/src/drizzle/enums/advertisementAttachmentMimeType";
 import { advertisementsTable } from "./advertisements";
 import { usersTable } from "./users";
@@ -100,4 +101,11 @@ export const advertisementAttachmentsTableRelations = relations(
 			relationName: "advertisement_attachments.updater_id:users.id",
 		}),
 	}),
+);
+
+export const advertisementAttachmentsTableInsertSchema = createInsertSchema(
+	advertisementAttachmentsTable,
+	{
+		name: (schema) => schema.min(1),
+	},
 );

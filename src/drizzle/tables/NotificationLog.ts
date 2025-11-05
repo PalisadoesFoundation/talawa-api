@@ -7,6 +7,7 @@ import {
 	timestamp,
 	uuid,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 import { uuidv7 } from "uuidv7";
 import { notificationAudienceTable } from "./NotificationAudience";
 import { notificationTemplatesTable } from "./NotificationTemplate";
@@ -119,4 +120,14 @@ export const notificationLogsTableRelations = relations(
 				"notification_audience.notification_id:notification_logs.id",
 		}),
 	}),
+);
+
+export const notificationLogsTableInsertSchema = createInsertSchema(
+	notificationLogsTable,
+	{
+		eventType: (schema) => schema.min(1).max(64),
+		channel: (schema) => schema.min(1).max(32),
+		status: (schema) => schema.min(1).max(32),
+		navigation: (schema) => schema.min(1).max(256).optional(),
+	},
 );
