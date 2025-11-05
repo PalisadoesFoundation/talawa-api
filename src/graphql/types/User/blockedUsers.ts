@@ -55,6 +55,12 @@ User.implement({
 					});
 				}
 
+				if (ctx.currentClient.user.id !== parent.id) {
+					throw new TalawaGraphQLError({
+						extensions: { code: "forbidden_action" },
+					});
+				}
+
 				const {
 					data: parsedArgs,
 					error,
