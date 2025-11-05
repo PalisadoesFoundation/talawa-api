@@ -47,7 +47,7 @@ User.implement({
 	fields: (t) => ({
 		OrgsWhereUserIsBlocked: t.connection({
 			description:
-				"GraphQL connection to retrieve blocked users of the all organizations.",
+				"GraphQL connection to retrieve organizations where the user is blocked.",
 			resolve: async (parent, args, ctx) => {
 				if (!ctx.currentClient.isAuthenticated) {
 					throw new TalawaGraphQLError({
@@ -118,15 +118,6 @@ User.implement({
 						},
 						where,
 					});
-
-				if (cursor !== undefined && blockedUsers.length === 0) {
-					throw new TalawaGraphQLError({
-						extensions: {
-							code: "arguments_associated_resources_not_found",
-							issues: [{ argumentPath: [isInversed ? "before" : "after"] }],
-						},
-					});
-				}
 
 				return transformToDefaultGraphQLConnection({
 					createCursor: (blockedUser) =>
