@@ -67,7 +67,7 @@ export async function startBackgroundWorkers(
 		// Run materialization worker once immediately on startup
 		await runMaterializationWorkerSafely(drizzleClient, logger);
 	} catch (error) {
-		logger.error(error, "Failed to start background worker service:");
+		logger.error(error, "Failed to start background worker service");
 		throw error;
 	}
 }
@@ -107,7 +107,7 @@ export async function stopBackgroundWorkers(
 /**
  * Executes the materialization worker with robust error handling to prevent crashes.
  */
-async function runMaterializationWorkerSafely(
+export async function runMaterializationWorkerSafely(
 	drizzleClient: NodePgDatabase<typeof schema>,
 	logger: FastifyBaseLogger,
 ): Promise<void> {
@@ -148,7 +148,7 @@ async function runMaterializationWorkerSafely(
 /**
  * Executes the cleanup worker with robust error handling to ensure stability.
  */
-async function runCleanupWorkerSafely(
+export async function runCleanupWorkerSafely(
 	drizzleClient: NodePgDatabase<typeof schema>,
 	logger: FastifyBaseLogger,
 ): Promise<void> {
