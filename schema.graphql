@@ -5116,6 +5116,11 @@ type User {
    """IDs of organizations where the user currently has pending membership requests."""
   orgIdWhereMembershipRequested: [ID]!
 
+  """
+  GraphQL connection to retrieve organizations where the user is blocked.
+  """
+  orgsWhereUserIsBlocked(after: String, before: String, first: Int, last: Int): UserOrgsWhereUserIsBlockedConnection
+
   """Postal code of the user."""
   postalCode: String
 
@@ -5190,6 +5195,16 @@ type UserOrganizationsWhereMemberConnection {
 
 """"""
 type UserOrganizationsWhereMemberConnectionEdge {
+  cursor: String!
+  node: Organization
+}
+
+type UserOrgsWhereUserIsBlockedConnection {
+  edges: [UserOrgsWhereUserIsBlockedConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type UserOrgsWhereUserIsBlockedConnectionEdge {
   cursor: String!
   node: Organization
 }
