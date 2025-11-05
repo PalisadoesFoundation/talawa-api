@@ -81,8 +81,14 @@ User.implement({
 				const { cursor, isInversed, limit } = parsedArgs;
 
 				const orderBy = isInversed
-					? [asc(blockedUsersTable.createdAt), asc(blockedUsersTable.organizationId)]
-					: [desc(blockedUsersTable.createdAt), desc(blockedUsersTable.organizationId)];
+					? [
+							asc(blockedUsersTable.createdAt),
+							asc(blockedUsersTable.organizationId),
+						]
+					: [
+							desc(blockedUsersTable.createdAt),
+							desc(blockedUsersTable.organizationId),
+						];
 
 				let where: SQL | undefined;
 
