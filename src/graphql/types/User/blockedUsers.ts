@@ -99,8 +99,8 @@ User.implement({
 							and(
 								eq(blockedUsersTable.createdAt, new Date(cursor.createdAt)),
 								isInversed
-									? gt(blockedUsersTable.userId, cursor.organizationId)
-									: lt(blockedUsersTable.userId, cursor.organizationId),
+									? gt(blockedUsersTable.organizationId, cursor.organizationId)
+									: lt(blockedUsersTable.organizationId, cursor.organizationId),
 							),
 							isInversed
 								? gt(blockedUsersTable.createdAt, new Date(cursor.createdAt))
@@ -116,7 +116,6 @@ User.implement({
 						columns: {
 							createdAt: true,
 							organizationId: true,
-							userId: true,
 						},
 						limit,
 						orderBy,
