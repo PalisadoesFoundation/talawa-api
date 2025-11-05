@@ -40,12 +40,12 @@ const cursorSchema = z.object({
 	createdAt: z.string().refine((val) => !Number.isNaN(Date.parse(val)), {
 		message: "Invalid date format for createdAt",
 	}),
-	userId: z.string().uuid(),
+	organizationId: z.string().uuid(),
 });
 
 User.implement({
 	fields: (t) => ({
-		OrgsWhereUserIsBlocked: t.connection({
+		orgsWhereUserIsBlocked: t.connection({
 			description:
 				"GraphQL connection to retrieve organizations where the user is blocked.",
 			resolve: async (parent, args, ctx) => {
@@ -81,8 +81,8 @@ User.implement({
 				const { cursor, isInversed, limit } = parsedArgs;
 
 				const orderBy = isInversed
-					? [asc(blockedUsersTable.createdAt), asc(blockedUsersTable.userId)]
-					: [desc(blockedUsersTable.createdAt), desc(blockedUsersTable.userId)];
+					? [asc(blockedUsersTable.createdAt), asc(blockedUsersTable.organizationId)]
+					: [desc(blockedUsersTable.createdAt), desc(blockedUsersTable.organizationId)];
 
 				let where: SQL | undefined;
 
@@ -93,8 +93,8 @@ User.implement({
 							and(
 								eq(blockedUsersTable.createdAt, new Date(cursor.createdAt)),
 								isInversed
-									? gt(blockedUsersTable.userId, cursor.userId)
-									: lt(blockedUsersTable.userId, cursor.userId),
+									? gt(blockedUsersTable.userId, cursor.organizationId)
+									: lt(blockedUsersTable.userId, cursor.organizationId),
 							),
 							isInversed
 								? gt(blockedUsersTable.createdAt, new Date(cursor.createdAt))
@@ -109,6 +109,7 @@ User.implement({
 					await ctx.drizzleClient.query.blockedUsersTable.findMany({
 						columns: {
 							createdAt: true,
+							organizationId: true,
 							userId: true,
 						},
 						limit,
@@ -124,7 +125,7 @@ User.implement({
 						Buffer.from(
 							JSON.stringify({
 								createdAt: blockedUser.createdAt.toISOString(),
-								userId: blockedUser.userId,
+								organizationId: blockedUser.organizationId,
 							}),
 						).toString("base64url"),
 					createNode: (blockedUser) => blockedUser.organization,

@@ -5031,11 +5031,6 @@ type UploadUrlResponse {
 }
 
 type User {
-  """
-  GraphQL connection to retrieve organizations where the user is blocked.
-  """
-  OrgsWhereUserIsBlocked(after: String, before: String, first: Int, last: Int): UserOrgsWhereUserIsBlockedConnection
-
   """Address line 1 of the user's address."""
   addressLine1: String
 
@@ -5120,6 +5115,11 @@ type User {
 
    """IDs of organizations where the user currently has pending membership requests."""
   orgIdWhereMembershipRequested: [ID]!
+
+  """
+  GraphQL connection to retrieve organizations where the user is blocked.
+  """
+  orgsWhereUserIsBlocked(after: String, before: String, first: Int, last: Int): UserOrgsWhereUserIsBlockedConnection
 
   """Postal code of the user."""
   postalCode: String
