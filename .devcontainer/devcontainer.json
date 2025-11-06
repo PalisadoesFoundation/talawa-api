@@ -50,7 +50,7 @@
 	"dockerComposeFile": [
 		"../compose.yaml",
 		"../docker/compose.testing.yaml",
-		"../docker/compose.devcontainer.yaml"
+		"../docker/compose.rootless.devcontainer.yaml"
 	],
 	"features": {
 		// https://github.com/devcontainers/features/tree/main/src/common-utils

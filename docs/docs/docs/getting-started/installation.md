@@ -258,13 +258,25 @@ You must have basic competence and experience in the following technologies to b
 1. Unix based operating systems like linux based distributions, macOS or windows subsystem for linux.
 2. Git
 3. Github
-4. Docker
+4. Docker [rootless mode](https://docs.docker.com/engine/security/rootless/)
 5. Docker compose
 6. Visual studio code with devcontainers
 7. Typescript
 8. Node.js
 
 It is very important that you go through [this](https://code.visualstudio.com/docs/devcontainers/containers) official documentation for working with devcontainers in visual studio code.
+
+## Rootless Docker
+
+### Limitations:
+
+Since rootless docker is unable to bind to ports > 1024, caddy instead binds to 8080 and 8443 by (default)[envFiles/.env.rootles.devcontainer]
+
+### Warnings:
+
+* Ensure that `systemctl staus docker` is inactive
+* Ensure that `systemctl --user status docker` is active
+* To start docker in rootless mode run `systemctl --user start docker`
 
 ### Setup: Instructional Video
 
@@ -292,7 +304,7 @@ These steps are specific to Linux. You will need to modify them accordingly for 
 1. Create the `.env` file by copying the template from the `envFiles/` directory.
    1. **DO NOT EDIT EITHER FILE!**
       ```bash
-      cp envFiles/.env.devcontainer .env
+      cp envFiles/.env.rootless.devcontainer .env
       ```
 1. Install Node.js
    1. Linux
@@ -371,25 +383,6 @@ Use the command `docker compose` command to cleanly shut down the dev container
 
 ```
 docker compose down
-```
-
-## Rootless Docker
-
-### Limitations:
-
-Since rootless docker is unable to bind to ports > 1024, caddy instead binds to 8080 and 8443 by (default)[envFiles/.env.rootles.devcontainer]
-
-### Setup
-
-To enable rootless docker support for devcontainers
-ensure your .devcontainer/devcontainer.json has the following "dockerComposeFile" key
-
-```
-	"dockerComposeFile": [
-		"../compose.yaml",
-		"../docker/compose.testing.yaml",
-		"../docker/compose.rootless.devcontainer.yaml"
-	],
 ```
 
 
