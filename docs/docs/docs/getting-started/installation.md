@@ -270,7 +270,7 @@ It is very important that you go through [this](https://code.visualstudio.com/do
 
 ### Limitations:
 
-Since rootless docker is unable to bind to ports > 1024, caddy instead binds to 8080 and 8443 by (default)[envFiles/.env.rootles.devcontainer]
+Since rootless docker is unable to bind to ports > 1024, caddy instead binds to 8080 and 8443 by [default](envFiles/.env.rootles.devcontainer)
 
 ### Warnings:
 
@@ -357,17 +357,26 @@ All done!
 
 After a successful installation, use these commands to start the dev container.
 
+Check if the container is running `docker ps`
+If the container is already running:
 1. To run in attached Mode
-
    ```
    docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
    ```
-
 2. To run in detached Mode
-
    ```
    docker exec talawa-api-1 /bin/bash -c 'nohup pnpm run start_development_server > /dev/null 2>&1 &'
    ```
+If the container is not running:
+
+1. To run in attached Mode
+    ```
+    docker compose --project-name talawa -f compose.yaml -f docker/compose.testing.yaml -f docker/compose.rootless.devcontainer.yaml up --build
+    ```
+2. To run in detached Mode
+    ```
+    docker compose --project-name talawa -f compose.yaml -f docker/compose.testing.yaml -f docker/compose.rootless.devcontainer.yaml up --build -d
+    ```
 
 #### CLI Shutdown (Development)
 
