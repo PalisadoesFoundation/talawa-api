@@ -158,7 +158,7 @@ describe("resolveOrgsWhereUserIsBlocked", () => {
 
 		expect(callArgs.where).toBeDefined();
 		expect(callArgs.where?.toString().trim()).toBe(
-			expectedWhere!.toString().trim(),
+			expectedWhere?.toString().trim(),
 		);
 		expect(callArgs.orderBy).toEqual(expectedOrderBy);
 		expect(result).toBeDefined();
@@ -199,7 +199,7 @@ describe("resolveOrgsWhereUserIsBlocked", () => {
 
 		expect(callArgs.where).toBeDefined();
 		expect(callArgs.where?.toString().trim()).toBe(
-			expectedWhere!.toString().trim(),
+			expectedWhere?.toString().trim(),
 		);
 		expect(callArgs.orderBy).toEqual(expectedOrderBy);
 		expect(result).toBeDefined();
