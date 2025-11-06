@@ -272,11 +272,14 @@ It is very important that you go through [this](https://code.visualstudio.com/do
 
 Since rootless docker is unable to bind to ports > 1024, caddy instead binds to 8080 and 8443 by [default](envFiles/.env.rootles.devcontainer)
 
-### Warnings:
+### Important:
 
 * Ensure that `systemctl staus docker` is inactive
 * Ensure that `systemctl --user status docker` is active
 * To start docker in rootless mode run `systemctl --user start docker`
+
+### Running the docker daemon as root
+This is not recommended for security reasons. Altough it is still possbile by utilizing "devcontainer" files instead of the "rootless.devcontainer", substitute where applicable
 
 ### Setup: Instructional Video
 
