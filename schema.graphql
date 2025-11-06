@@ -3411,7 +3411,7 @@ input MutationUpdateCommentVoteInput {
   commentId: ID!
 
   """Type of the vote."""
-  type: CommentVoteType!
+  type: CommentVoteType
 }
 
 """"""
@@ -3677,7 +3677,7 @@ input MutationUpdatePostVoteInput {
   postId: ID!
 
   """Type of the vote."""
-  type: PostVoteType!
+  type: PostVoteType
 }
 
 """Input for updating a single instance of a recurring event."""
@@ -3929,6 +3929,9 @@ type Organization {
   """GraphQL connection to retrieve blocked users of the organization."""
   blockedUsers(after: String, before: String, first: Int, last: Int): OrganizationBlockedUsersConnection
 
+  """Total number of blocked users in the organization."""
+  blockedUsersCount: Int
+
   """
   GraphQL connection to traverse through the chats belonging to the organization.
   """
@@ -3975,6 +3978,9 @@ type Organization {
     upcomingOnly: Boolean
   ): OrganizationEventsConnection
 
+  """Total number of events in the organization."""
+  eventsCount: Int
+
   """
   GraphQL connection to traverse through the funds belonging to the organization.
   """
@@ -4018,6 +4024,9 @@ type Organization {
     """Filter criteria for membership requests"""
     where: MembershipRequestWhereInput
   ): [MembershipRequest!]
+
+  """Total number of membership requests in the organization."""
+  membershipRequestsCount: Int
 
   """Name of the organization."""
   name: String
@@ -4064,6 +4073,9 @@ type Organization {
   GraphQL connection to traverse through the venues belonging to the organization.
   """
   venues(after: String, before: String, first: Int, last: Int): OrganizationVenuesConnection
+
+  """Total number of venues in the organization."""
+  venuesCount: Int
 }
 
 """"""
@@ -5182,6 +5194,9 @@ type User {
   """
   organizationsWhereMember(after: String, before: String, filter: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
 
+   """IDs of organizations where the user currently has pending membership requests."""
+  orgIdWhereMembershipRequested: [ID]!
+
   """Postal code of the user."""
   postalCode: String
 
@@ -5196,6 +5211,7 @@ type User {
 
   """User who last updated the user."""
   updater: User
+  
 
   """
   The phone number to use to communicate with the user while they're at work.
