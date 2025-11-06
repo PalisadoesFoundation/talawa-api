@@ -325,14 +325,6 @@ These steps are specific to Linux. You will need to modify them accordingly for 
    ```
    pnpm install -g @devcontainers/cli
    ```
-1. You will now need to make your user a part of the `docker` operating system group or else you will get `permission denied` messages when starting docker later. `$USER` is a universal representation of your username. You don't need to change this in the command below.
-   ```
-   sudo usermod -a -G docker $USER
-   ```
-1. You will only become a part of the `docker` group on your next login. You don't have to logout, just start another session on the CLI using the `su` command.
-   ```
-   sudo su $USER -
-   ```
 1. Build the docker devcontainer
 
    ```
