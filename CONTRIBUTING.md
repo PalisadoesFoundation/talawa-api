@@ -13,6 +13,7 @@ If you are new to contributing to open source, please read the Open Source Guide
   - [Code of Conduct](#code-of-conduct)
   - [Videos](#videos)
   - [Ways to Contribute](#ways-to-contribute)
+    - [Who Can Contribute](#who-can-contribute)
     - [Our Development Process](#our-development-process)
       - [Issues](#issues)
       - [Pull Requests](#pull-requests)
@@ -62,6 +63,25 @@ If you are ready to start contributing code right away, get ready!
 3. Create an issue based on a bug you have found or a feature you would like to add. We value meaningful sugestions and will prioritize them.
 
 Welcome aboard!
+
+### Who Can Contribute
+
+Unfortunately, because of recent abuse, we will only be assigning issues to persons who have:
+
+1. At least a year of GitHub history
+1. Consistent code updates throughout their GitHub life, especially the most recent 12 months.
+
+This is a new policy triggered by newly created accounts that: 
+
+1. Use automation to blindly submit and update pull requests.
+1. SPAM our volunteers to be assigned issues to the exclusion of others.
+1. Frequently abandon issues after being assigned.
+1. Frequently close pull requests with ratios of merged to closed PRs approaching 10:1
+1. Repeatedly ignore PR requested changes from reviewers
+1. Resolve Code Rabbit suggestions without implementing them.
+1. Use AI to generate generic plans of action without an in-depth knowledge of the code base. This is not helpful for us.
+
+As expected, we need contributors who are interested in coding with a proven track record. This is an unfortunate development but the recent abuse of the system has given us no choice.
 
 ### Our Development Process
 
