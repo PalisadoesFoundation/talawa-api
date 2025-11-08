@@ -13,6 +13,7 @@ If you are new to contributing to open source, please read the Open Source Guide
   - [Code of Conduct](#code-of-conduct)
   - [Videos](#videos)
   - [Ways to Contribute](#ways-to-contribute)
+    - [Who Can Contribute](#who-can-contribute)
     - [Our Development Process](#our-development-process)
       - [Issues](#issues)
       - [Pull Requests](#pull-requests)
@@ -63,6 +64,25 @@ If you are ready to start contributing code right away, get ready!
 
 Welcome aboard!
 
+### Who Can Contribute
+
+Unfortunately, because of recent abuse, we will only be assigning issues to persons who have:
+
+1. At least a year of GitHub history
+1. Consistent code updates throughout their GitHub life, especially the most recent 12 months.
+
+This is a new policy triggered by newly created accounts that:
+
+1. Use automation to blindly submit and update pull requests.
+1. SPAM our volunteers to be assigned issues to the exclusion of others.
+1. Frequently abandon issues after being assigned.
+1. Frequently close pull requests with ratios of merged to closed PRs approaching 10:1
+1. Repeatedly ignore PR requested changes from reviewers
+1. Resolve Code Rabbit suggestions without implementing them.
+1. Use AI to generate generic plans of action without an in-depth knowledge of the code base. This is not helpful for us.
+
+As expected, we need contributors who are interested in coding with a proven track record. This is an unfortunate development but the recent abuse of the system has given us no choice.
+
 ### Our Development Process
 
 We utilize GitHub issues and pull requests to keep track of issues and contributions from the community.
@@ -109,6 +129,7 @@ The process of proposing a change to Talawa API can be summarized as:
       1. We need to get to 100% test coverage for the app. We periodically increase the desired test coverage for our pull requests to meet this goal.
       2. Pull requests that don't meet the minimum test coverage levels will not be accepted. This may mean that you will have to create tests for code you did not write. You can decide which part of the code base needs additional tests if this happens to you.
    2. **_Testing_:**
+
       1. Test using these commands inside vscode terminal which opened using devcontainer (All tests):
          ```
          pnpm run run_tests
@@ -119,14 +140,16 @@ The process of proposing a change to Talawa API can be summarized as:
          pnpm run run_tests <path of test file>
          ```
       3. Here are some useful testing resources:
+
          1. Documentation:
+
             1. [Tesing & Validation](docs/docs/docs/developer-resources/testing.md)
-    
+
          2. Videos:
             1. [Introduction To Testing In JavaScript With Jest](https://www.youtube.com/watch?v=FgnxcUQ5vho)
             2. [Jest Crash Course](https://www.youtube.com/watch?v=7r4xVDI2vho)
             3. [Testing NodeJS applications with JEST](https://www.youtube.com/watch?v=8gHEv5iNRKk)
-2. **_Test Code Coverage_:**
+1. **_Test Code Coverage_:**
    1. _General Information_
       1. The current code coverage of the repo is: [![codecov](https://codecov.io/gh/PalisadoesFoundation/talawa-api/branch/develop/graph/badge.svg?token=CECBQTAOKM)](https://codecov.io/gh/PalisadoesFoundation/talawa-api)
       2. You can determine the percentage test coverage of your code by running these two commands in sequence:
@@ -145,12 +168,12 @@ The process of proposing a change to Talawa API can be summarized as:
          3. Remember to add the `Repository Upload Token` for your forked repo. This can be found under `Settings` of your `codecov.io` account.
          4. Use the value of this token to create a secret named CODE_COV for your forked repo.
          5. You will see your code coverage reports with every push to your repo after following these steps
-3. After making changes you can add them to git locally using `git add <file_name>`(to add changes only in a particular file) or `git add .` (to add all changes).
-4. After adding the changes you need to commit them using `git commit -m '<commit message>'`(look at the commit guidelines below for commit messages).
-5. Once you have successfully commited your changes, you need to push the changes to the forked repo on github using: `git push origin <branch_name>`.(Here branch name must be name of the branch you want to push the changes to.)
-6. Now create a pull request to the Talawa repository from your forked repo. Open an issue regarding the same and link your PR to it.
-7. Ensure the test suite passes, either locally or on CI once a PR has been created.
-8. Review and address comments on your pull request if requested.
+1. After making changes you can add them to git locally using `git add <file_name>`(to add changes only in a particular file) or `git add .` (to add all changes).
+1. After adding the changes you need to commit them using `git commit -m '<commit message>'`(look at the commit guidelines below for commit messages).
+1. Once you have successfully commited your changes, you need to push the changes to the forked repo on github using: `git push origin <branch_name>`.(Here branch name must be name of the branch you want to push the changes to.)
+1. Now create a pull request to the Talawa repository from your forked repo. Open an issue regarding the same and link your PR to it.
+1. Ensure the test suite passes, either locally or on CI once a PR has been created.
+1. Review and address comments on your pull request if requested.
 
 ## Upgrading Code
 
@@ -218,7 +241,6 @@ To check for type errors use this command:-
 
 We use `Biome` to enforce strict code formatting conventions in the talawa-api project. `Biome` is a fast, modern tool that handles both linting and formatting, ensuring consistent code style across the codebase.
 
-
 To check if your code adheres to the formatting rules, run the following command:-
 
         pnpm run format:check
@@ -227,11 +249,7 @@ To automatically fix formatting issues where possible, use:-
 
         pnpm run format:fix
 
-
-
-
 <br/>
-
 
 ### Generating Table of Contents
 
@@ -279,7 +297,6 @@ If you don't want this hook to run, you can manually opt out of this using the `
 
 <br/>
 
-
 ### GraphQL Markdown
 
 We use the [GraphQL Markdown](https://github.com/exogen/graphql-markdown) project to generate the documentation to describe the schema. To generate the same manually, you first need to start the development server locally with `npm run dev`, and then run the script `npm run generate:graphql-markdown`.
@@ -291,7 +308,7 @@ While we use a GitHub workflow to update ths schema documentation every time a P
 ### Running Queries with talawa-api
 
 - Talawa API currently implement `GraphiQL Playground` as mediator interface to run and test queries directly from the api. [Learn more](https://www.gatsbyjs.com/docs/how-to/querying-data/running-queries-with-graphiql/)
-- In development,  Server enables GraphiQL Playground on the same URL as the GraphQL server itself (e.g. http://127.0.0.1:4000/graphiql) and automatically serves the GUI to web browsers. When NODE_ENV is set to production, GraphiQL Playground (as well as introspection) is disabled as a production best-practice.
+- In development, Server enables GraphiQL Playground on the same URL as the GraphQL server itself (e.g. http://127.0.0.1:4000/graphiql) and automatically serves the GUI to web browsers. When NODE_ENV is set to production, GraphiQL Playground (as well as introspection) is disabled as a production best-practice.
   ![image](https://www.gatsbyjs.com/static/671dc01c2c7854ffd03871cefb44f298/5df5d/graphiql-overview.png)
 
 ## Internships
