@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { eq } from "drizzle-orm";
-import { afterEach, expect, suite, test } from "vitest";
+import { afterEach, expect, suite, test, vi } from "vitest";
 import {
 	organizationMembershipsTable,
 	organizationsTable,
@@ -566,5 +566,62 @@ suite("Mutation joinPublicOrganization", () => {
 			expect(membership).toBeDefined();
 			expect(membership?.role).toEqual("regular");
 		});
+	});
+});
+
+suite("Business Logic", () => {
+	const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+	afterEach(async () => {
+		for (const cleanup of testCleanupFunctions.reverse()) {
+			try {
+				await cleanup();
+			} catch (error) {
+				console.error("Cleanup failed:", error);
+			}
+		}
+		// Reset the cleanup functions array
+		testCleanupFunctions.length = 0;
+	});
+	test("Returns an 'unexpected' error when the database insert returns no data", async () => {
+		// Create a regular user
+		const regularUser = await createRegularUserUsingAdmin();
+		// Get the user's auth token
+		const { authToken } = regularUser;
+
+		// Create an organization
+		const organization = await createTestOrganization();
+		testCleanupFunctions.push(organization.cleanup);
+
+		const transactionSpy = vi
+			.spyOn(server.drizzleClient, "transaction")
+			.mockResolvedValue([]);
+
+		const joinPublicOrganizationResult = await mercuriusClient.mutate(
+			Mutation_joinPublicOrganization,
+			{
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						organizationId: organization.orgId,
+					},
+				},
+			},
+		);
+		expect(joinPublicOrganizationResult.errors).toBeDefined();
+		expect(joinPublicOrganizationResult.errors).toEqual(
+			expect.arrayContaining<TalawaGraphQLFormattedError>([
+				expect.objectContaining<TalawaGraphQLFormattedError>({
+					extensions: expect.objectContaining({
+						code: "unexpected", // Changed to single quotes
+					}),
+					message: expect.any(String),
+				}),
+			]),
+		);
+
+		transactionSpy.mockRestore();
 	});
 });
