@@ -170,7 +170,10 @@ builder.mutationField("createPost", (t) =>
 					attachments: (typeof postAttachmentsTable.$inferSelect)[];
 				};
 
-				if (parsedArgs.input.attachments !== undefined) {
+				if (
+					parsedArgs.input.attachments !== undefined &&
+					parsedArgs.input.attachments.length > 0
+				) {
 					const attachments = parsedArgs.input.attachments;
 
 					const createdPostAttachments = await tx
