@@ -2722,7 +2722,7 @@ input MutationCreateOrganizationMembershipInput {
 """Input for creating a new post"""
 input MutationCreatePostInput {
   """Metadata for files already uploaded via presigned URL"""
-  attachments: [FileMetadataInput!]!
+  attachments: [FileMetadataInput!]
 
   """Caption about the post."""
   caption: String!
