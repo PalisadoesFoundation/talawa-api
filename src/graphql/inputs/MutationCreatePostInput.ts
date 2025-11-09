@@ -52,7 +52,7 @@ export const mutationCreatePostInputSchema = postsTableInsertSchema
 		organizationId: true,
 	})
 	.extend({
-		attachments: z.array(fileMetadataSchema).max(20).optional(),
+		attachments: z.array(fileMetadataSchema).max(20).nullish(),
 		isPinned: z.boolean().optional(),
 	});
 

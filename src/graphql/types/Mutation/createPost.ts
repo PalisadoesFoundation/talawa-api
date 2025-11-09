@@ -171,7 +171,7 @@ builder.mutationField("createPost", (t) =>
 				};
 
 				if (
-					parsedArgs.input.attachments !== undefined &&
+					parsedArgs.input.attachments != null &&
 					parsedArgs.input.attachments.length > 0
 				) {
 					const attachments = parsedArgs.input.attachments;
