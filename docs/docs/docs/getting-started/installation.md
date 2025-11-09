@@ -267,14 +267,12 @@ You must have basic competence and experience in the following technologies to b
 It is very important that you go through [this](https://code.visualstudio.com/docs/devcontainers/containers) official documentation for working with devcontainers in visual studio code.
 
 ## Rootless Docker
-
 ### Limitations:
 
 Since rootless docker is unable to bind to ports > 1024, caddy instead binds to 8080 and 8443 by [default](envFiles/.env.rootles.devcontainer)
 
 ### Important:
-
-* Ensure that `systemctl staus docker` is inactive
+* Ensure that `systemctl status docker` is inactive
 * Ensure that `systemctl --user status docker` is active
 * To start docker in rootless mode run `systemctl --user start docker`
 
