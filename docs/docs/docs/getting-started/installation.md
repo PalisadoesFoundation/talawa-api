@@ -267,11 +267,17 @@ You must have basic competence and experience in the following technologies to b
 It is very important that you go through [this](https://code.visualstudio.com/docs/devcontainers/containers) official documentation for working with devcontainers in visual studio code.
 
 ## Rootless Docker
+
+Docker by default is installed with a daemon which runs with root. This is not ideal, since any containers which is started by this daemon is also root. This does not follow the [princible of least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege). Instead it is recommended to use [Rootless Docker](https://docs.docker.com/engine/security/rootless/) instead runs as the current user and reduces the attack vector.
+
+
 ### Limitations:
 
 Since rootless docker is unable to bind to ports > 1024, caddy instead binds to 8080 and 8443 by [default](envFiles/.env.rootles.devcontainer)
 
 ### Important:
+* DO NOT RUN AS ROOT. Ensure that your user is a non-root user, run `id` this should return a pid which is >= 1000, if your user is in the docker group, remove it.
+* Unless specified any commands in this document is to be run without sudo as a non-root user
 * Ensure that `systemctl status docker` is inactive
 * Ensure that `systemctl --user status docker` is active
 * To start docker in rootless mode run `systemctl --user start docker`
