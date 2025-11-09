@@ -599,7 +599,7 @@ suite("Mutation joinPublicOrganization", () => {
 				expect.arrayContaining<TalawaGraphQLFormattedError>([
 					expect.objectContaining<TalawaGraphQLFormattedError>({
 						extensions: expect.objectContaining({
-							code: "unexpected", // Changed to single quotes
+							code: "unexpected",
 						}),
 						message: expect.any(String),
 					}),
