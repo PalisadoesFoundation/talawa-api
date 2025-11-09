@@ -273,7 +273,7 @@ Docker by default is installed with a daemon which runs with root. This is not i
 
 ### Limitations:
 
-Since rootless docker is unable to bind to ports > 1024, caddy instead binds to 8080 and 8443 by [default](envFiles/.env.rootles.devcontainer)
+Since rootless docker is unable to bind to ports > 1024, caddy instead binds to 8080 and 8443 by [default](../../../../envFiles/.env.rootles.devcontainer)
 
 ### Important:
 * DO NOT RUN AS ROOT. Ensure that your user is a non-root user, run `id` this should return a pid which is >= 1000, if your user is in the docker group, remove it.
