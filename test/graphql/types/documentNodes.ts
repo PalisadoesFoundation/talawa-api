@@ -243,6 +243,57 @@ export const Query_user = gql(`query Query_user($input: QueryUserInput!) {
     }
 }`);
 
+export const Query_allUsers = gql(`
+  query Query_allUsers(
+    $first: Int,
+    $after: String,
+    $last: Int,
+    $before: String,
+    $where: QueryAllUsersWhereInput
+  ) {
+    allUsers(
+      first: $first,
+      after: $after,
+      last: $last,
+      before: $before,
+      where: $where
+    ) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      edges {
+        cursor
+        node {
+          id
+          name
+          emailAddress
+          role
+          createdAt
+          isEmailAddressVerified
+          addressLine1
+          addressLine2
+          birthDate
+          city
+          countryCode
+          description
+          educationGrade
+          employmentStatus
+          homePhoneNumber
+          maritalStatus
+          mobilePhoneNumber
+          natalSex
+          postalCode
+          state
+          workPhoneNumber
+        }
+      }
+    }
+  }
+`);
+
 export const Query_user_creator =
 	gql(`query Query_user_creator($input: QueryUserInput!) {
     user(input: $input) {
@@ -550,6 +601,41 @@ export const Query_organizations = gql(`
       city
       state
       countryCode
+		}
+	}
+`);
+
+export const Query_blockedUsers = gql(`
+	query BlockedUsers(
+		$organizationId: String!
+		$first: Int
+		$after: String
+		$last: Int
+		$before: String
+	) {
+		organization(input:{id: $organizationId}) {
+			id
+			blockedUsers(
+				first: $first
+				after: $after
+				last: $last
+				before: $before
+			) {
+				edges {
+					cursor
+					node {
+						id
+						name
+						role
+					}
+				}
+				pageInfo {
+					hasNextPage
+					hasPreviousPage
+					startCursor
+					endCursor
+				}
+			}
 		}
 	}
 `);
@@ -907,6 +993,53 @@ export const Mutation_createActionItemCategory = gql(`
     }
   }
 `);
+
+export const POSTGRES_EVENTS_BY_ORGANIZATION_ID = gql(`
+  query EventsByOrganizationId($input: EventsByOrganizationIdInput!) {
+    eventsByOrganizationId(input: $input) {
+      id
+      name
+      description
+    }
+  }
+`);
+
+export const UPDATE_ACTION_ITEM_MUTATION = `#graphql
+  mutation UpdateActionItem($input: MutationUpdateActionItemInput!) {
+    updateActionItem(input: $input) {
+      id
+      isCompleted
+      assignedAt
+      completionAt
+      preCompletionNotes
+      postCompletionNotes
+      createdAt
+      category {
+        id
+        name
+      }
+      volunteer {
+        id
+        user {
+          id
+          name
+        }
+      }
+      volunteerGroup {
+        id
+        name
+      }
+      creator {
+        id
+        name
+      }
+      organization {
+        id
+        name
+      }
+    }
+  }
+`;
 
 export const Mutation_updateActionItemCategory = gql(`
   mutation UpdateActionItemCategory(
@@ -1624,6 +1757,15 @@ export const COMPLETE_ACTION_FOR_INSTANCE_MUTATION = gql(`
   }
 `);
 
+export const MARK_ACTION_ITEM_AS_PENDING_MUTATION = gql(`
+  mutation markActionItemAsPending($input: MarkActionItemAsPendingInput!) {
+    markActionItemAsPending(input: $input) {
+      id
+      isCompleted
+    }
+  }
+`);
+
 export const MARK_ACTION_AS_PENDING_FOR_INSTANCE_MUTATION = gql(`
   mutation markActionItemAsPendingForInstance($input: MutationMarkActionAsPendingForInstanceInput!) {
     markActionItemAsPendingForInstance(input: $input) {
@@ -1680,6 +1822,22 @@ export const Mutation_deleteCommentVote = gql(`
 		deleteCommentVote(input: $input) {
 			id
 			body
+			creator {
+				id
+			}
+		}
+	}
+`);
+
+export const Query_comment = gql(`
+	query Query_comment($input: QueryCommentInput!) {
+		comment(input: $input) {
+			id
+			body
+			createdAt
+			post {
+				id
+			}
 			creator {
 				id
 			}

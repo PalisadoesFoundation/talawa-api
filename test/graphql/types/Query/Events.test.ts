@@ -1,7 +1,14 @@
 import { faker } from "@faker-js/faker";
 import { expect, suite, test } from "vitest";
+import { assertToBeNonNullish } from "../../../helpers";
 import { server } from "../../../server";
 import { mercuriusClient } from "../client";
+import {
+	Mutation_createEvent,
+	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
+	Query_getRecurringEvents,
+} from "../documentNodes";
 
 import { Query_eventsByIds, Query_signIn } from "../documentNodes";
 
@@ -174,7 +181,7 @@ suite("Query eventsByIds", () => {
 	});
 
 	// 4. SUCCESS
-	test("returns events for valid user & existing event IDs", async () => {
+	test("returns both standalone and generated events as ADMIN", async () => {
 		// sign in as admin
 		const adminSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -185,47 +192,124 @@ suite("Query eventsByIds", () => {
 			},
 		});
 
-		if (!adminSignIn.data?.signIn) {
-			console.error("No admin user found or invalid admin credentials.");
-			return;
-		}
-
+		assertToBeNonNullish(adminSignIn.data?.signIn);
+		const adminUserId = adminSignIn.data.signIn.user.id;
 		const adminToken = adminSignIn.data.signIn.authenticationToken;
+
+		console.log(
+			"DEBUG: Admin Token:",
+			adminToken ? "Token received" : "Token is NULL or UNDEFINED",
+		);
+
 		mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
 
-		// Suppose these events are guaranteed to exist in your DB
-		const existingEventIds = ["EXISTING-EVENT-ID-1", "EXISTING-EVENT-ID-2"];
+		// create an organization
+		const orgResult = await mercuriusClient.mutate(
+			Mutation_createOrganization,
+			{
+				variables: { input: { name: faker.company.name() } },
+			},
+		);
 
-		const result = await mercuriusClient.query(Query_eventsByIds, {
+		assertToBeNonNullish(orgResult.data?.createOrganization);
+		const organizationId = orgResult.data.createOrganization.id;
+
+		const inputObject = {
+			organizationId: organizationId,
+			memberId: adminUserId,
+			role: "administrator",
+		};
+
+		const membershipResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: {
+					authorization: `bearer ${adminToken}`,
+				},
+				variables: {
+					input: inputObject,
+				},
+			},
+		);
+
+		assertToBeNonNullish(membershipResult.data?.createOrganizationMembership);
+
+		// create a standalone event
+		const standaloneResult = await mercuriusClient.mutate(
+			Mutation_createEvent,
+			{
+				variables: {
+					input: {
+						name: "My Standalone Event",
+						organizationId: organizationId,
+						startAt: faker.date.soon({ days: 1 }).toISOString(),
+						endAt: faker.date.soon({ days: 2 }).toISOString(),
+					},
+				},
+			},
+		);
+
+		assertToBeNonNullish(standaloneResult.data?.createEvent);
+		const standaloneEventId = standaloneResult.data.createEvent.id;
+
+		// create a recurring event
+		const recurringResult = await mercuriusClient.mutate(Mutation_createEvent, {
 			variables: {
-				input: { ids: existingEventIds },
+				input: {
+					name: "My Weekly Event",
+					organizationId: organizationId,
+					startAt: faker.date.soon({ days: 3 }).toISOString(),
+					endAt: faker.date.soon({ days: 4 }).toISOString(),
+					recurrence: { frequency: "WEEKLY", interval: 1, count: 3 },
+				},
 			},
 		});
 
-		// If your server returns an error, it might be that those events truly don't exist.
-		// handle that scenario with an 'if (result.errors) ...'
-		if (result.errors) {
-			console.log("Server returned errors:", result.errors);
-		} else {
-			// expect no errors if the events truly exist
-			expect(result.errors).toBeUndefined();
+		assertToBeNonNullish(recurringResult.data?.createEvent);
+		const baseRecurringEventId = recurringResult.data.createEvent.id;
 
-			const events = result.data?.eventsByIds ?? [];
-			expect(Array.isArray(events)).toBe(true);
-			expect(events.length).toBeGreaterThanOrEqual(1);
+		const instancesResult = await mercuriusClient.query(
+			Query_getRecurringEvents,
+			{
+				variables: {
+					baseRecurringEventId: baseRecurringEventId,
+				},
+			},
+		);
 
-			// If you truly seeded 2 events, do: expect(events.length).toBe(2);
-			if (events.length > 0) {
-				// partial shape check
-				expect(events[0]).toMatchObject({
-					id: expect.any(String),
-					name: expect.any(String),
-					description: expect.any(String),
-					startAt: expect.any(String),
-					endAt: expect.any(String),
-				});
-			}
+		const generatedInstances = instancesResult.data?.getRecurringEvents;
+		assertToBeNonNullish(generatedInstances); // <-- This could also fail
+		if (generatedInstances.length === 0) {
+			throw new Error("No generated event instances found.");
 		}
+
+		const generatedEventId = generatedInstances[0].id;
+
+		assertToBeNonNullish(generatedEventId);
+
+		const result = await mercuriusClient.query(Query_eventsByIds, {
+			variables: {
+				input: { ids: [standaloneEventId, generatedEventId] },
+			},
+		});
+
+		expect(result.errors).toBeUndefined();
+		const events = result.data?.eventsByIds;
+		assertToBeNonNullish(events);
+
+		expect(events).toHaveLength(2);
+
+		type FoundEvent = {
+			id: string;
+		};
+		const typedEvents = events as FoundEvent[];
+
+		expect(typedEvents).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ id: standaloneEventId }),
+				expect.objectContaining({ id: generatedEventId }),
+			]),
+		);
 
 		mercuriusClient.setHeaders({});
 	});

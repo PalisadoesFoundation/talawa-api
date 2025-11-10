@@ -11,8 +11,6 @@ import {
 	stopBackgroundWorkers,
 } from "~/src/workers/backgroundWorkerService";
 
-// --- Mocks ---
-
 vi.mock("node-cron", () => {
 	let callCount = 0;
 
@@ -26,7 +24,6 @@ vi.mock("node-cron", () => {
 			callCount++;
 
 			const start = vi.fn(() => {
-				// Only auto-run the *first* scheduled task (materialization worker)
 				if (thisCall === 0 && typeof funcOrString === "function") {
 					funcOrString("manual");
 				}
@@ -80,7 +77,6 @@ describe("backgroundServiceWorker", () => {
 		mockDrizzleClient = {} as unknown as NodePgDatabase<typeof schema>;
 	});
 
-	// ---- runMaterializationWorkerSafely ----
 	describe("runMaterializationWorkerSafely", () => {
 		it("logs successful materialization run", async () => {
 			const { runMaterializationWorker } = await import(
@@ -135,7 +131,6 @@ describe("backgroundServiceWorker", () => {
 		});
 	});
 
-	// ---- runCleanupWorkerSafely ----
 	describe("runCleanupWorkerSafely", () => {
 		it("logs successful cleanup run", async () => {
 			const { cleanupOldInstances } = await import(
@@ -187,7 +182,6 @@ describe("backgroundServiceWorker", () => {
 		});
 	});
 
-	// ---- startBackgroundWorkers / stopBackgroundWorkers ----
 	describe("startBackgroundWorkers / stopBackgroundWorkers", () => {
 		it("starts and stops workers", async () => {
 			const { runMaterializationWorker } = await import(
