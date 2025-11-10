@@ -24,6 +24,7 @@ describe("Setup", () => {
 			{ useDefaultCaddy: "true" },
 			{ useDefaultApi: "true" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ backupOldEnv: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -83,6 +84,7 @@ describe("Setup", () => {
 			{ useDefaultCaddy: "true" },
 			{ useDefaultApi: "true" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ backupOldEnv: false }, // Response for backupOldEnvFile
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -181,7 +183,7 @@ describe("Setup", () => {
 			{ useDefaultCaddy: "true" },
 			{ useDefaultApi: "true" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
-			{ backupOldEnv: false }, // Response for backupOldEnvFile
+			{ backupOldEnv: false }, // Mock response for backupOldEnvFile prompt
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
@@ -189,12 +191,26 @@ describe("Setup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		const backupOldEnvFileSpy = vi.spyOn(SetupModule, "backupOldEnvFile");
+		// Mock fs.existsSync to simulate .env.backup exists
+		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const unlinkSyncSpy = vi
+			.spyOn(fs, "unlinkSync")
+			.mockImplementation(() => {});
 
 		await setup();
 
-		expect(backupOldEnvFileSpy).toHaveBeenCalledTimes(1);
+		// Verify that the backup prompt was called (8th prompt call)
+		expect(promptMock).toHaveBeenCalledTimes(8);
+		expect(promptMock).toHaveBeenNthCalledWith(8, [
+			{
+				type: "confirm",
+				name: "backupOldEnv",
+				message: "Would you like to backup the old .env file? (Y)/N",
+				default: true,
+			},
+		]);
 
-		backupOldEnvFileSpy.mockRestore();
+		existsSyncSpy.mockRestore();
+		unlinkSyncSpy.mockRestore();
 	});
 });
