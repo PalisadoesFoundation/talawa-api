@@ -23,6 +23,7 @@ import {
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
+import { QueryAllUsersWhereInput } from "../../inputs/QueryAllUsersWhereInput";
 // Define the where schema for user filtering
 const userWhereSchema = z
 	.object({
@@ -84,11 +85,7 @@ builder.queryField("allUsers", (t) =>
 			type: User,
 			args: {
 				where: t.arg({
-					type: builder.inputType("QueryAllUsersWhereInput", {
-						fields: (t) => ({
-							name: t.string({ required: false }),
-						}),
-					}),
+					type: QueryAllUsersWhereInput,
 					required: false,
 				}),
 			},
