@@ -34,6 +34,9 @@ const blockedUsersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 				);
 			}
 		} catch (error) {
+			if (!(error instanceof Error)) {
+				throw error;
+			}
 			ctx.addIssue({
 				code: "custom",
 				message: "Not a valid cursor.",
@@ -175,12 +178,12 @@ User.implement({
 			},
 			{
 				edgesField: {
-					description: "",
+					description: "Edge containing an organization and cursor.",
 				},
 			},
 			{
 				nodeField: {
-					description: "",
+					description: "Organization where the user is blocked.",
 				},
 			},
 		),
