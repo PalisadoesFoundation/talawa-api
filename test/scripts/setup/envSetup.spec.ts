@@ -61,6 +61,8 @@ describe("initializeEnvFile", () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({ CI: "false" });
 		const answers = await setCI({});
 		vi.spyOn(fs, "readFileSync").mockReturnValue("KEY1=VAL1\nKEY2=VAL2");
+		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
 		initializeEnvFile(answers);
 
@@ -73,6 +75,7 @@ describe("initializeEnvFile", () => {
 		);
 		vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
 		vi.spyOn(fs, "readFileSync").mockReturnValue(mockEnvContent);
+		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
 
 		initializeEnvFile({});
 
@@ -112,6 +115,8 @@ describe("initializeEnvFile", () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({ CI: "true" });
 		const answers = await setCI({});
 		vi.spyOn(fs, "readFileSync").mockReturnValue("FOO=bar");
+		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
 		initializeEnvFile(answers);
 
