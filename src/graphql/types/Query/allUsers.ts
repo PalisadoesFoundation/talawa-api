@@ -23,17 +23,14 @@ import {
 	transformToDefaultGraphQLConnection,
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
-import { QueryAllUsersWhereInput } from "../../inputs/QueryAllUsersWhereInput";
-// Define the where schema for user filtering
-const userWhereSchema = z
-	.object({
-		name: z.string().min(1).optional(),
-	})
-	.optional();
+import {
+	QueryAllUsersWhereInput,
+	queryAllUsersWhereInputSchema,
+} from "../../inputs/QueryAllUsersWhereInput";
 
 // Create a connection arguments schema with the where clause
 const allUsersArgumentsSchema = createGraphQLConnectionWithWhereSchema(
-	userWhereSchema,
+	queryAllUsersWhereInputSchema.optional(),
 ).transform((arg, ctx) => {
 	// First transform using the connection with where transformer
 	const transformedArg = transformGraphQLConnectionArgumentsWithWhere(

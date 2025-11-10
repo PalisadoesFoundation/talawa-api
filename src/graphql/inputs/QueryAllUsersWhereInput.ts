@@ -3,7 +3,7 @@ import { builder } from "~/src/graphql/builder";
 
 // Zod schema
 export const queryAllUsersWhereInputSchema = z.object({
-	name: z.string().optional(),
+	name: z.string().min(1).optional(),
 });
 
 // GraphQL input type
