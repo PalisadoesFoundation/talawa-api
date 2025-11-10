@@ -44,14 +44,7 @@ const blockedUsersArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 			});
 		}
 		return {
-			cursor: cursorObj
-				? Buffer.from(
-						JSON.stringify({
-							createdAt: cursorObj.createdAt,
-							organizationId: cursorObj.organizationId,
-						}),
-					).toString("base64url")
-				: undefined,
+			cursorData: cursorObj,
 			isInversed: arg.isInversed,
 			limit: arg.limit,
 		};
@@ -105,7 +98,7 @@ export const resolveOrgsWhereUserIsBlocked = async (
 		});
 	}
 
-	const { cursor, isInversed, limit } = parsedArgs;
+	const { cursorData, isInversed, limit } = parsedArgs;
 
 	const orderBy = isInversed
 		? [asc(blockedUsersTable.createdAt), asc(blockedUsersTable.organizationId)]
@@ -116,10 +109,7 @@ export const resolveOrgsWhereUserIsBlocked = async (
 
 	let where: SQL | undefined;
 
-	if (cursor !== undefined) {
-		const cursorData = JSON.parse(
-			Buffer.from(cursor, "base64url").toString("utf-8"),
-		);
+	if (cursorData !== undefined) {
 		where = and(
 			eq(blockedUsersTable.userId, parent.id),
 			or(
