@@ -24,4 +24,4 @@ import "./workPhoneNumber";
 import "./createdOrganizations";
 import "./membershipRequests";
 import "./eventsAttended";
-import "./orgsWhereUsersBlocked";
+import "./orgsWhereUserIsBlocked";
