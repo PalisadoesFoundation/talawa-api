@@ -171,4 +171,30 @@ describe("Setup", () => {
 		copyFileSpy.mockRestore();
 		existsSyncSpy.mockRestore();
 	});
+
+	it("should call backupOldEnvFile at the end of setup", async () => {
+		const mockResponses = [
+			{ envReconfigure: true },
+			{ CI: "true" },
+			{ useDefaultMinio: "true" },
+			{ useDefaultPostgres: "true" },
+			{ useDefaultCaddy: "true" },
+			{ useDefaultApi: "true" },
+			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ backupOldEnv: false }, // Response for backupOldEnvFile
+		];
+
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		for (const response of mockResponses) {
+			promptMock.mockResolvedValueOnce(response);
+		}
+
+		const backupOldEnvFileSpy = vi.spyOn(SetupModule, "backupOldEnvFile");
+
+		await setup();
+
+		expect(backupOldEnvFileSpy).toHaveBeenCalledTimes(1);
+
+		backupOldEnvFileSpy.mockRestore();
+	});
 });

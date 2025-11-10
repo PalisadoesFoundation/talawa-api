@@ -78,7 +78,7 @@ describe("initializeEnvFile", () => {
 
 		expect(fs.copyFileSync).toHaveBeenCalledWith(envFileName, backupEnvFile);
 		expect(console.log).toHaveBeenCalledWith(
-			`✅ Backup created at ${backupEnvFile}`,
+			`Backup created at ${backupEnvFile}`,
 		);
 	});
 
@@ -103,7 +103,7 @@ describe("initializeEnvFile", () => {
 		);
 
 		expect(console.error).toHaveBeenCalledWith(
-			`❌ Error: Failed to load environment file '${devEnvFile}'.`,
+			`Error: Failed to load environment file '${devEnvFile}'.`,
 		);
 		expect(console.error).toHaveBeenCalledWith("File read error");
 	});

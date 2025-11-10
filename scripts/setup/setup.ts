@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
+import path from "node:path";
 import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
@@ -598,6 +599,52 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 	return answers;
 }
 
+/**
+ * Prompts the user to backup the old .env file and saves it to .backup/ directory
+ * with UTC epoch timestamp in filename
+ */
+export async function backupOldEnvFile(): Promise<void> {
+	if (!fs.existsSync(".env.backup")) {
+		// No temporary backup exists, nothing to save
+		return;
+	}
+
+	try {
+		const shouldBackup = await promptConfirm(
+			"backupOldEnv",
+			"Would you like to backup the old .env file? (Y)/N",
+			true,
+		);
+
+		if (shouldBackup) {
+			// Create .backup directory if it doesn't exist
+			const backupDir = ".backup";
+			if (!fs.existsSync(backupDir)) {
+				fs.mkdirSync(backupDir, { recursive: true });
+			}
+
+			// Get UTC epoch timestamp in seconds
+			const epochTimestamp = Math.floor(Date.now() / 1000);
+			const backupFileName = path.join(backupDir, `.env.${epochTimestamp}`);
+
+			// Copy the temporary backup to the permanent backup location
+			fs.copyFileSync(".env.backup", backupFileName);
+
+			console.log(`Old .env file backed up as: ${backupFileName}`);
+		}
+
+		// Clean up temporary backup file
+		fs.unlinkSync(".env.backup");
+	} catch (error) {
+		console.error("Error during backup process:", error);
+		// Clean up temporary backup file even on error
+		if (fs.existsSync(".env.backup")) {
+			fs.unlinkSync(".env.backup");
+		}
+		throw error;
+	}
+}
+
 export async function setup(): Promise<SetupAnswers> {
 	let answers: SetupAnswers = {};
 	if (checkEnvFile()) {
@@ -678,8 +725,9 @@ export async function setup(): Promise<SetupAnswers> {
 
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");
-	if (fs.existsSync(".env.backup")) {
-		fs.unlinkSync(".env.backup");
-	}
+
+	// Prompt to backup old .env file
+	await backupOldEnvFile();
+
 	return answers;
 }
