@@ -49,9 +49,9 @@ describe("initializeEnvFile", () => {
 	beforeEach(() => {
 		vi.resetAllMocks();
 
-		vi.spyOn(console, "log").mockImplementation(() => {});
-		vi.spyOn(console, "warn").mockImplementation(() => {});
-		vi.spyOn(console, "error").mockImplementation(() => {});
+		vi.spyOn(console, "log").mockImplementation(() => { });
+		vi.spyOn(console, "warn").mockImplementation(() => { });
+		vi.spyOn(console, "error").mockImplementation(() => { });
 	});
 
 	afterEach(() => {
@@ -71,14 +71,14 @@ describe("initializeEnvFile", () => {
 		vi.spyOn(fs, "existsSync").mockImplementation(
 			(path) => path === envFileName || path === devEnvFile,
 		);
-		vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
+		vi.spyOn(fs, "copyFileSync").mockImplementation(() => { });
 		vi.spyOn(fs, "readFileSync").mockReturnValue(mockEnvContent);
 
 		initializeEnvFile({});
 
 		expect(fs.copyFileSync).toHaveBeenCalledWith(envFileName, backupEnvFile);
 		expect(console.log).toHaveBeenCalledWith(
-			`Backup created at ${backupEnvFile}`,
+			`✅ Backup created at ${backupEnvFile}`,
 		);
 	});
 
@@ -103,7 +103,7 @@ describe("initializeEnvFile", () => {
 		);
 
 		expect(console.error).toHaveBeenCalledWith(
-			`Error: Failed to load environment file '${devEnvFile}'.`,
+			`❌ Error: Failed to load environment file '${devEnvFile}'.`,
 		);
 		expect(console.error).toHaveBeenCalledWith("File read error");
 	});
@@ -121,7 +121,7 @@ describe("initializeEnvFile", () => {
 	it("should log error and exit with code 1 if inquirer fails", async () => {
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => {});
+			.mockImplementation(() => { });
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
 			throw new Error("process.exit called");
 		});
