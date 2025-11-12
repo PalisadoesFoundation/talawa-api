@@ -57,13 +57,13 @@ describe("Setup -> minioSetup", () => {
 			{ useDefaultCaddy: "true" },
 			{ useDefaultApi: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ backupOldEnv: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
 		for (const response of mockResponses) {
 			promptMock.mockResolvedValueOnce(response);
 		}
-
 		await setup();
 		dotenv.config({ path: ".env" });
 

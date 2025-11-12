@@ -60,10 +60,10 @@ describe("Setup -> apiSetup", () => {
 			{ API_POSTGRES_TEST_HOST: "mocked-test-host" },
 			{ API_POSTGRES_USER: "mocked-user" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ backupOldEnv: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
-
 		for (const response of mockResponses) {
 			promptMock.mockResolvedValueOnce(response);
 		}

@@ -54,13 +54,13 @@ describe("Setup -> postgresSetup", () => {
 			{ useDefaultCaddy: "true" },
 			{ useDefaultApi: "true" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@postgres.com" },
+			{ backupOldEnv: false },
 		];
 
 		const promptMock = vi.spyOn(inquirer, "prompt");
 		for (const resp of mockResponses) {
 			promptMock.mockResolvedValueOnce(resp);
 		}
-
 		await setup();
 		dotenv.config({ path: ".env" });
 
