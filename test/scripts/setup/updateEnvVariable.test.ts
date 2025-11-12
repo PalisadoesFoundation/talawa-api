@@ -5,12 +5,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("fs");
 
 describe("updateEnvVariable", () => {
-	const envFileName = ".env";
+	// In test mode, updateEnvVariable uses .env_test
+	const envFileName = ".env_test";
 	const backupFile = `${envFileName}.backup`;
 
 	beforeEach(() => {
 		vi.resetAllMocks();
-		vi.spyOn(fs, "existsSync").mockReturnValue(true); // Assume `.env` exists
+		vi.spyOn(fs, "existsSync").mockReturnValue(true); // Assume `.env_test` exists
 	});
 
 	it("should update an existing variable in .env", () => {
@@ -41,7 +42,13 @@ describe("updateEnvVariable", () => {
 		expect(process.env.NEW_VAR).toBe("new_value");
 	});
 
-	it("should create a backup before updating .env", () => {
+	it("should create a backup before updating .env if backup doesn't exist", () => {
+		// Mock existsSync to return true for .env_test, false for .env_test.backup
+		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
+			if (path === envFileName) return true;
+			if (path === backupFile) return false;
+			return false;
+		});
 		const copySpy = vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
 		vi.spyOn(fs, "readFileSync").mockReturnValue("EXISTING_VAR=old_value");
 
@@ -50,8 +57,35 @@ describe("updateEnvVariable", () => {
 		expect(copySpy).toHaveBeenCalledWith(envFileName, backupFile);
 	});
 
-	it("should restore from backup if an error occurs", () => {
+	it("should NOT create a backup if one already exists", () => {
+		// Mock existsSync to return true for both .env_test and .env_test.backup
+		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
+			if (path === envFileName) return true;
+			if (path === backupFile) return true;
+			return false;
+		});
 		const copySpy = vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
+		vi.spyOn(fs, "readFileSync").mockReturnValue("EXISTING_VAR=old_value");
+
+		updateEnvVariable({ EXISTING_VAR: "new_value" });
+
+		// Should NOT create a backup because one already exists
+		expect(copySpy).not.toHaveBeenCalled();
+	});
+
+	it("should restore from backup if an error occurs", () => {
+		// Mock existsSync to return true for .env_test, false for backup initially,
+		// then true for backup during restore
+		let backupExists = false;
+		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
+			if (path === envFileName) return true;
+			if (path === backupFile) return backupExists;
+			return false;
+		});
+		const copySpy = vi.spyOn(fs, "copyFileSync").mockImplementation(() => {
+			// After first copy (creating backup), backup exists
+			if (!backupExists) backupExists = true;
+		});
 		vi.spyOn(fs, "readFileSync").mockReturnValue("EXISTING_VAR=old_value");
 		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {
 			throw new Error("Write failed");
@@ -61,6 +95,7 @@ describe("updateEnvVariable", () => {
 			"Write failed",
 		);
 
+		// Should restore from backup on error
 		expect(copySpy).toHaveBeenCalledWith(backupFile, envFileName);
 	});
 
