@@ -129,6 +129,26 @@ describe("backgroundServiceWorker", () => {
 				"Materialization worker failed",
 			);
 		});
+
+		it("logs failure when a non-Error is thrown", async () => {
+			const { runMaterializationWorker } = await import(
+				"~/src/workers/eventGeneration/eventGenerationPipeline"
+			);
+
+			const errorString = "Materialization failure as string";
+			vi.mocked(runMaterializationWorker).mockRejectedValue(errorString);
+
+			await runMaterializationWorkerSafely(mockDrizzleClient, mockLogger);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					error: "Unknown error",
+					stack: undefined,
+				}),
+				"Materialization worker failed",
+			);
+		});
 	});
 
 	describe("runCleanupWorkerSafely", () => {
@@ -176,6 +196,26 @@ describe("backgroundServiceWorker", () => {
 					duration: expect.stringMatching(/^\d+ms$/),
 					error: "Cleanup failure",
 					stack: expect.any(String),
+				}),
+				"Cleanup worker failed",
+			);
+		});
+
+		it("logs cleanup failure when a non-Error is thrown", async () => {
+			const { cleanupOldInstances } = await import(
+				"~/src/workers/eventCleanupWorker"
+			);
+
+			const errorString = "Cleanup failure as string";
+			vi.mocked(cleanupOldInstances).mockRejectedValue(errorString);
+
+			await runCleanupWorkerSafely(mockDrizzleClient, mockLogger);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					duration: expect.stringMatching(/^\d+ms$/),
+					error: "Unknown error",
+					stack: undefined,
 				}),
 				"Cleanup worker failed",
 			);
@@ -309,6 +349,37 @@ describe("backgroundServiceWorker", () => {
 			);
 			stopMock.mockImplementation(() => {});
 			await stopBackgroundWorkers(mockLogger);
+		});
+
+		it("logs and re-throws error if startup fails", async () => {
+			const cron = await import("node-cron");
+			const startupError = new Error("Cron start failed");
+
+			const failingTask: Partial<ScheduledTask> = {
+				start: vi.fn().mockImplementation(() => {
+					throw startupError;
+				}),
+				stop: vi.fn(),
+			};
+
+			const normalTask: Partial<ScheduledTask> = {
+				start: vi.fn(),
+				stop: vi.fn(),
+			};
+
+			// Apply the mocks
+			vi.mocked(cron.default.schedule)
+				.mockImplementationOnce(() => failingTask as ScheduledTask)
+				.mockImplementationOnce(() => normalTask as ScheduledTask);
+
+			await expect(
+				startBackgroundWorkers(mockDrizzleClient, mockLogger),
+			).rejects.toThrow("Cron start failed");
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				startupError,
+				"Failed to start background worker service",
+			);
 		});
 	});
 });

@@ -431,6 +431,44 @@ describe("GraphQL Routes", () => {
 				"❌ Failed to Update GraphQL Schema",
 			);
 		});
+
+		it("should log fields for schema with mutations/subscriptions but no query", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const newSchema = new GraphQLSchema({
+				// No query type
+				mutation: new GraphQLObjectType({
+					name: "Mutation",
+					fields: {
+						doThing: { type: GraphQLString },
+					},
+				}),
+				subscription: new GraphQLObjectType({
+					name: "Subscription",
+					fields: {
+						onThing: { type: GraphQLString },
+					},
+				}),
+			});
+
+			// Trigger the schema update
+			expect(mockFastifyInstance.schemaUpdateCallback).toBeDefined();
+			mockFastifyInstance.schemaUpdateCallback?.(newSchema);
+
+			// Assert that the logger was called with the correct field names
+			expect(mockFastifyInstance.log.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					newSchemaFields: {
+						queries: [],
+						mutations: ["doThing"],
+						subscriptions: ["onThing"],
+					},
+				}),
+				"✅ GraphQL Schema Updated Successfully",
+			);
+		});
 	});
 
 	describe("preExecution Hook", () => {

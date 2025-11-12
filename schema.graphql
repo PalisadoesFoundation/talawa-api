@@ -5106,7 +5106,7 @@ type User {
   ): [Notification!]
 
   """The organization ID where the user requested membership."""
-  orgIdWhereMembershipRequested: [String!]
+  orgIdWhereMembershipRequested: [String!]!
 
   """
   GraphQL connection to traverse through the organizations the user is a member of.

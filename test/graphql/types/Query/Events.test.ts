@@ -181,7 +181,7 @@ suite("Query eventsByIds", () => {
 	});
 
 	// 4. SUCCESS
-	test("returns both standalone and generated events as ADMIN", async () => {
+	test("returns both standalone and generated events as Admin", async () => {
 		// sign in as admin
 		const adminSignIn = await mercuriusClient.query(Query_signIn, {
 			variables: {
@@ -193,13 +193,9 @@ suite("Query eventsByIds", () => {
 		});
 
 		assertToBeNonNullish(adminSignIn.data?.signIn);
+
 		const adminUserId = adminSignIn.data.signIn.user.id;
 		const adminToken = adminSignIn.data.signIn.authenticationToken;
-
-		console.log(
-			"DEBUG: Admin Token:",
-			adminToken ? "Token received" : "Token is NULL or UNDEFINED",
-		);
 
 		mercuriusClient.setHeaders({ authorization: `Bearer ${adminToken}` });
 
@@ -212,6 +208,7 @@ suite("Query eventsByIds", () => {
 		);
 
 		assertToBeNonNullish(orgResult.data?.createOrganization);
+
 		const organizationId = orgResult.data.createOrganization.id;
 
 		const inputObject = {
@@ -235,6 +232,11 @@ suite("Query eventsByIds", () => {
 		assertToBeNonNullish(membershipResult.data?.createOrganizationMembership);
 
 		// create a standalone event
+		const standaloneStartDate = faker.date.soon({ days: 1 });
+		const standaloneEndDate = new Date(
+			standaloneStartDate.getTime() + 2 * 60 * 60 * 1000,
+		);
+
 		const standaloneResult = await mercuriusClient.mutate(
 			Mutation_createEvent,
 			{
@@ -242,8 +244,8 @@ suite("Query eventsByIds", () => {
 					input: {
 						name: "My Standalone Event",
 						organizationId: organizationId,
-						startAt: faker.date.soon({ days: 1 }).toISOString(),
-						endAt: faker.date.soon({ days: 2 }).toISOString(),
+						startAt: standaloneStartDate.toISOString(),
+						endAt: standaloneEndDate.toISOString(),
 					},
 				},
 			},
@@ -253,19 +255,25 @@ suite("Query eventsByIds", () => {
 		const standaloneEventId = standaloneResult.data.createEvent.id;
 
 		// create a recurring event
+		const recurringStartDate = faker.date.soon({ days: 3 });
+		const recurringEndDate = new Date(
+			recurringStartDate.getTime() + 2 * 60 * 60 * 1000,
+		);
+
 		const recurringResult = await mercuriusClient.mutate(Mutation_createEvent, {
 			variables: {
 				input: {
 					name: "My Weekly Event",
 					organizationId: organizationId,
-					startAt: faker.date.soon({ days: 3 }).toISOString(),
-					endAt: faker.date.soon({ days: 4 }).toISOString(),
+					startAt: recurringStartDate.toISOString(),
+					endAt: recurringEndDate.toISOString(),
 					recurrence: { frequency: "WEEKLY", interval: 1, count: 3 },
 				},
 			},
 		});
 
 		assertToBeNonNullish(recurringResult.data?.createEvent);
+
 		const baseRecurringEventId = recurringResult.data.createEvent.id;
 
 		const instancesResult = await mercuriusClient.query(
@@ -278,13 +286,13 @@ suite("Query eventsByIds", () => {
 		);
 
 		const generatedInstances = instancesResult.data?.getRecurringEvents;
-		assertToBeNonNullish(generatedInstances); // <-- This could also fail
+		assertToBeNonNullish(generatedInstances);
+
 		if (generatedInstances.length === 0) {
 			throw new Error("No generated event instances found.");
 		}
 
 		const generatedEventId = generatedInstances[0].id;
-
 		assertToBeNonNullish(generatedEventId);
 
 		const result = await mercuriusClient.query(Query_eventsByIds, {
@@ -294,6 +302,7 @@ suite("Query eventsByIds", () => {
 		});
 
 		expect(result.errors).toBeUndefined();
+
 		const events = result.data?.eventsByIds;
 		assertToBeNonNullish(events);
 
