@@ -244,4 +244,53 @@ describe("resolveOrgsWhereUserIsBlocked", () => {
 
 		expect(mockFindMany).not.toHaveBeenCalled();
 	});
+
+	test("throws unauthenticated error when currentUser lookup returns undefined", async () => {
+	// Simulate authenticated session but user not found in DB
+	mockFindFirst.mockResolvedValueOnce(undefined);
+	
+	await expect(
+		resolveOrgsWhereUserIsBlocked(
+			mockUserParent,
+			noCursorArgs,
+			baseMockCtx,
+		),
+	).rejects.toThrow(TalawaGraphQLError);
+	
+	expect(mockFindMany).not.toHaveBeenCalled();
+});
+
+	test("allows administrator to access another user's blocked organizations", async () => {
+		// Administrator accessing another user's data
+		mockFindFirst.mockResolvedValueOnce({
+			id: "adminUser123",
+			role: "administrator",
+		});
+		
+		const anotherUserParent = {
+			id: "differentUser",
+			role: "member",
+		} as unknown as User;
+		
+		const adminCtx = {
+			...baseMockCtx,
+			currentClient: {
+				isAuthenticated: true,
+				user: { id: "adminUser123", role: "administrator" },
+			},
+		} as ExplicitGraphQLContext & ImplicitMercuriusContext;
+		
+		const result = await resolveOrgsWhereUserIsBlocked(
+			anotherUserParent,
+			noCursorArgs,
+			adminCtx,
+		);
+		
+		expect(result).toBeDefined();
+		expect(mockFindMany).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: eq(blockedUsersTable.userId, anotherUserParent.id),
+			}),
+		);
+	});
 });
