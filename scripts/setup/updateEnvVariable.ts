@@ -11,7 +11,9 @@ export function updateEnvVariable(config: {
 	const envFileName = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
 
 	const backupFile = `${envFileName}.backup`;
-	if (fs.existsSync(envFileName)) {
+	// Only create backup if it doesn't already exist
+	// (setup() may have already created it with the original .env content)
+	if (fs.existsSync(envFileName) && !fs.existsSync(backupFile)) {
 		fs.copyFileSync(envFileName, backupFile);
 	}
 

@@ -213,4 +213,65 @@ describe("Setup", () => {
 		existsSyncSpy.mockRestore();
 		unlinkSyncSpy.mockRestore();
 	});
+
+	it("should create .env.backup before overwriting .env file", async () => {
+		const mockResponses = [
+			{ envReconfigure: true },
+			{ CI: "false" },
+			{ useDefaultMinio: "true" },
+			{ useDefaultCloudbeaver: "true" },
+			{ useDefaultPostgres: "true" },
+			{ useDefaultCaddy: "true" },
+			{ useDefaultApi: "true" },
+			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
+			{ backupOldEnv: false },
+		];
+
+		const promptMock = vi.spyOn(inquirer, "prompt");
+		for (const response of mockResponses) {
+			promptMock.mockResolvedValueOnce(response);
+		}
+
+		// Track the order of operations
+		const operationOrder: string[] = [];
+
+		// Mock fs operations to track order
+		const copyFileSyncSpy = vi
+			.spyOn(fs, "copyFileSync")
+			.mockImplementation((src, dest) => {
+				if (dest === ".env.backup") {
+					operationOrder.push("backup_created");
+				}
+			});
+
+		const writeFileSyncSpy = vi
+			.spyOn(fs, "writeFileSync")
+			.mockImplementation((file) => {
+				if (file === ".env") {
+					operationOrder.push("env_overwritten");
+				}
+			});
+
+		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const readFileSyncSpy = vi
+			.spyOn(fs, "readFileSync")
+			.mockReturnValue("KEY1=VAL1");
+		const unlinkSyncSpy = vi
+			.spyOn(fs, "unlinkSync")
+			.mockImplementation(() => {});
+
+		await setup();
+
+		// Verify backup was created BEFORE .env was overwritten
+		expect(operationOrder.indexOf("backup_created")).toBeLessThan(
+			operationOrder.indexOf("env_overwritten"),
+		);
+		expect(operationOrder[0]).toBe("backup_created");
+
+		copyFileSyncSpy.mockRestore();
+		writeFileSyncSpy.mockRestore();
+		existsSyncSpy.mockRestore();
+		readFileSyncSpy.mockRestore();
+		unlinkSyncSpy.mockRestore();
+	});
 });
