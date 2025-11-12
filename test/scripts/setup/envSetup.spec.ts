@@ -47,9 +47,9 @@ describe("initializeEnvFile", () => {
 	beforeEach(() => {
 		vi.resetAllMocks();
 
-		vi.spyOn(console, "log").mockImplementation(() => { });
-		vi.spyOn(console, "warn").mockImplementation(() => { });
-		vi.spyOn(console, "error").mockImplementation(() => { });
+		vi.spyOn(console, "log").mockImplementation(() => {});
+		vi.spyOn(console, "warn").mockImplementation(() => {});
+		vi.spyOn(console, "error").mockImplementation(() => {});
 	});
 
 	afterEach(() => {
@@ -59,7 +59,7 @@ describe("initializeEnvFile", () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({ CI: "false" });
 		const answers = await setCI({});
 		vi.spyOn(fs, "readFileSync").mockReturnValue("KEY1=VAL1\nKEY2=VAL2");
-		vi.spyOn(fs, "writeFileSync").mockImplementation(() => { });
+		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
 		vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
 		initializeEnvFile(answers);
@@ -97,7 +97,7 @@ describe("initializeEnvFile", () => {
 		vi.spyOn(inquirer, "prompt").mockResolvedValue({ CI: "true" });
 		const answers = await setCI({});
 		vi.spyOn(fs, "readFileSync").mockReturnValue("FOO=bar");
-		vi.spyOn(fs, "writeFileSync").mockImplementation(() => { });
+		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
 		vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
 		initializeEnvFile(answers);
@@ -108,7 +108,7 @@ describe("initializeEnvFile", () => {
 	it("should log error and exit with code 1 if inquirer fails", async () => {
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => { });
+			.mockImplementation(() => {});
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
 			throw new Error("process.exit called");
 		});

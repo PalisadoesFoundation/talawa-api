@@ -15,7 +15,7 @@ describe("updateEnvVariable", () => {
 
 	it("should update an existing variable in .env", () => {
 		vi.spyOn(fs, "readFileSync").mockReturnValue("EXISTING_VAR=old_value");
-		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => { });
+		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
 
 		updateEnvVariable({ EXISTING_VAR: "new_value" });
 
@@ -29,7 +29,7 @@ describe("updateEnvVariable", () => {
 
 	it("should add a new variable if it does not exist", () => {
 		vi.spyOn(fs, "readFileSync").mockReturnValue("EXISTING_VAR=old_value");
-		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => { });
+		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
 
 		updateEnvVariable({ NEW_VAR: "new_value" });
 
@@ -42,7 +42,7 @@ describe("updateEnvVariable", () => {
 	});
 
 	it("should create a backup before updating .env", () => {
-		const copySpy = vi.spyOn(fs, "copyFileSync").mockImplementation(() => { });
+		const copySpy = vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
 		vi.spyOn(fs, "readFileSync").mockReturnValue("EXISTING_VAR=old_value");
 
 		updateEnvVariable({ EXISTING_VAR: "new_value" });
@@ -51,7 +51,7 @@ describe("updateEnvVariable", () => {
 	});
 
 	it("should restore from backup if an error occurs", () => {
-		const copySpy = vi.spyOn(fs, "copyFileSync").mockImplementation(() => { });
+		const copySpy = vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
 		vi.spyOn(fs, "readFileSync").mockReturnValue("EXISTING_VAR=old_value");
 		vi.spyOn(fs, "writeFileSync").mockImplementation(() => {
 			throw new Error("Write failed");
@@ -66,7 +66,7 @@ describe("updateEnvVariable", () => {
 
 	it("should create .env if it does not exist", () => {
 		vi.spyOn(fs, "existsSync").mockReturnValue(false);
-		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => { });
+		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
 
 		updateEnvVariable({ NEW_VAR: "new_value" });
 
@@ -93,7 +93,7 @@ FEATURE_X=enabled
 FEATURE_Y=disabled`;
 
 		vi.spyOn(fs, "readFileSync").mockReturnValue(existingEnvContent);
-		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => { });
+		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
 
 		// Only update DB_PORT
 		updateEnvVariable({ DB_PORT: "3306" });
@@ -132,7 +132,7 @@ VAR2=value2
 VAR3=value3`;
 
 		vi.spyOn(fs, "readFileSync").mockReturnValue(existingEnvContent);
-		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => { });
+		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
 
 		updateEnvVariable({ VAR2: "updated_value" });
 
@@ -159,7 +159,7 @@ KEY_D=valueD
 KEY_E=valueE`;
 
 		vi.spyOn(fs, "readFileSync").mockReturnValue(existingEnvContent);
-		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => { });
+		const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
 
 		// Update only KEY_B and KEY_D
 		updateEnvVariable({ KEY_B: "newB", KEY_D: "newD" });
