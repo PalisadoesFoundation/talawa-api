@@ -141,11 +141,6 @@ export function checkEnvFile(): boolean {
 }
 
 export function initializeEnvFile(answers: SetupAnswers): void {
-	if (fs.existsSync(envFileName)) {
-		fs.copyFileSync(envFileName, `${envFileName}.backup`);
-		console.log(`✅ Backup created at ${envFileName}.backup`);
-	}
-
 	const envFileToUse =
 		answers.CI === "true" ? "envFiles/.env.ci" : "envFiles/.env.devcontainer";
 
@@ -660,7 +655,11 @@ export async function setup(): Promise<SetupAnswers> {
 
 	dotenv.config({ path: envFileName });
 
-	process.on("SIGINT", () => {
+	// Create backup of existing .env file before any modifications
+	if (fs.existsSync(envFileName)) {
+		fs.copyFileSync(envFileName, `${envFileName}.backup`);
+		console.log(`✅ Backup created at ${envFileName}.backup`);
+	}	process.on("SIGINT", () => {
 		console.log("\nProcess interrupted! Undoing changes...");
 		answers = {};
 		if (fs.existsSync(".env.backup")) {
