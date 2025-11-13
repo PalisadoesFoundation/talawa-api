@@ -18,6 +18,8 @@ describe("Setup", () => {
 		// Set required environment variables that are validated during setup
 		process.env.POSTGRES_PASSWORD = "password";
 		process.env.MINIO_ROOT_PASSWORD = "password";
+		// Ensure the test controls the CI prompt (CI may already be set in GH Actions)
+		process.env.CI = undefined;
 
 		const mockResponses = [
 			{ envReconfigure: true },
@@ -38,6 +40,9 @@ describe("Setup", () => {
 
 		// Mock file system operations
 		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const writeFileSyncSpy = vi
+			.spyOn(fs, "writeFileSync")
+			.mockImplementation(() => {});
 		const unlinkSyncSpy = vi
 			.spyOn(fs, "unlinkSync")
 			.mockImplementation(() => {});
@@ -84,6 +89,7 @@ describe("Setup", () => {
 			expect(process.env[key]).toBe(value);
 		}
 
+		writeFileSyncSpy.mockRestore();
 		unlinkSyncSpy.mockRestore();
 		existsSyncSpy.mockRestore();
 	});
@@ -92,6 +98,8 @@ describe("Setup", () => {
 		// Set required environment variables that are validated during setup
 		process.env.POSTGRES_PASSWORD = "password";
 		process.env.MINIO_ROOT_PASSWORD = "password";
+		// Ensure the test controls the CI prompt regardless of runner environment
+		process.env.CI = undefined;
 
 		const mockResponses = [
 			{ envReconfigure: true },
@@ -111,6 +119,9 @@ describe("Setup", () => {
 
 		// Mock file system operations
 		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const writeFileSyncSpy = vi
+			.spyOn(fs, "writeFileSync")
+			.mockImplementation(() => {});
 		const unlinkSyncSpy = vi
 			.spyOn(fs, "unlinkSync")
 			.mockImplementation(() => {});
@@ -156,6 +167,7 @@ describe("Setup", () => {
 			expect(process.env[key]).toBe(value);
 		}
 
+		writeFileSyncSpy.mockRestore();
 		unlinkSyncSpy.mockRestore();
 		existsSyncSpy.mockRestore();
 	});
