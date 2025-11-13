@@ -1,7 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
-import { updateEnvVariable } from "scripts/setup/updateEnvVariable";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Set ENV_FILE before importing the module to ensure it uses .env_test
+process.env.ENV_FILE = ".env_test";
+
+import { updateEnvVariable } from "scripts/setup/updateEnvVariable";
 
 vi.mock("fs");
 

@@ -3,7 +3,11 @@ import fs from "node:fs";
 import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
+import { envFilePath, getEnvFileName } from "./envConfig";
 import { updateEnvVariable } from "./updateEnvVariable";
+
+// Re-export for backward compatibility
+export { envFilePath, getEnvFileName };
 
 interface SetupAnswers {
 	[key: string]: string;
@@ -43,8 +47,6 @@ async function promptConfirm(
 	]);
 	return result;
 }
-
-const envFileName = ".env";
 
 export function generateJwtSecret(): string {
 	try {
@@ -129,17 +131,32 @@ export function validateCloudBeaverURL(input: string): true | string {
 
 function handlePromptError(err: unknown): never {
 	console.error(err);
-	if (fs.existsSync(".env.backup")) {
-		fs.copyFileSync(".env.backup", ".env");
+
+	// Use the configured getEnvFileName for backup restore.
+	const envFileName = getEnvFileName();
+	const backupName = `${envFileName}.backup`;
+	if (fs.existsSync(backupName)) {
+		try {
+			fs.copyFileSync(backupName, envFileName);
+		} catch (copyErr) {
+			console.error("Failed to restore backup:", copyErr);
+		}
 	}
+
+	// In test mode, throw so tests can assert the error rather than exiting the process.
+	if (process.env.NODE_ENV === "test") {
+		throw err instanceof Error ? err : new Error(String(err));
+	}
+
 	process.exit(1);
 }
 
 export function checkEnvFile(): boolean {
-	return fs.existsSync(envFileName);
+	return fs.existsSync(getEnvFileName());
 }
 
 export function backupEnvFile(): string {
+	const envFileName = getEnvFileName();
 	const backupDir = ".backup";
 	const epochTimestamp = Math.floor(Date.now() / 1000);
 	const backupFilename = `.env.${epochTimestamp}`;
@@ -161,6 +178,7 @@ export function backupEnvFile(): string {
 }
 
 export function initializeEnvFile(answers: SetupAnswers): void {
+	const envFileName = getEnvFileName();
 	if (fs.existsSync(envFileName)) {
 		fs.copyFileSync(envFileName, `${envFileName}.backup`);
 		console.log(`✅ Backup created at ${envFileName}.backup`);
@@ -652,13 +670,15 @@ export async function setup(): Promise<SetupAnswers> {
 		}
 	}
 
+	const envFileName = getEnvFileName();
 	dotenv.config({ path: envFileName });
 
 	process.on("SIGINT", () => {
 		console.log("\nProcess interrupted! Undoing changes...");
 		answers = {};
-		if (fs.existsSync(".env.backup")) {
-			fs.copyFileSync(".env.backup", ".env");
+		const backupName = `${envFileName}.backup`;
+		if (fs.existsSync(backupName)) {
+			fs.copyFileSync(backupName, envFileName);
 		}
 		process.exit(1);
 	});
@@ -725,8 +745,8 @@ export async function setup(): Promise<SetupAnswers> {
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");
 
-	if (fs.existsSync(".env.backup")) {
-		fs.unlinkSync(".env.backup");
+	if (fs.existsSync(`${envFileName}.backup`)) {
+		fs.unlinkSync(`${envFileName}.backup`);
 	}
 
 	return answers;

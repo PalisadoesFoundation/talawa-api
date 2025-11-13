@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { getEnvFileName } from "./envConfig";
 
 /**
  * Updates environment variables in the .env or .env_test file and synchronizes them with `process.env`.
@@ -9,7 +10,8 @@ import path from "node:path";
 export function updateEnvVariable(config: {
 	[key: string]: string | number;
 }): void {
-	const envFileName = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
+	// Use the exported getEnvFileName from envConfig.ts, which respects process.env.ENV_FILE
+	const envFileName = getEnvFileName();
 
 	// Resolve to absolute paths to avoid surprises in CI or tests that change CWD
 	const envFilePath = path.resolve(process.cwd(), envFileName);
