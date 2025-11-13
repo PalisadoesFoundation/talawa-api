@@ -33,9 +33,14 @@ export function updateEnvVariable(config: {
 			if (fs.existsSync(envFilePath)) {
 				existingContent = fs.readFileSync(envFilePath, "utf8");
 			}
-		} catch (readErr: any) {
+		} catch (readErr: unknown) {
 			// Treat missing file as empty. Re-throw other read errors.
-			if (readErr && readErr.code && readErr.code !== "ENOENT") {
+			if (
+				readErr &&
+				typeof readErr === "object" &&
+				"code" in readErr &&
+				readErr.code !== "ENOENT"
+			) {
 				throw readErr;
 			}
 			existingContent = "";
@@ -45,19 +50,27 @@ export function updateEnvVariable(config: {
 
 		for (const key in config) {
 			const value = config[key];
-			const regex = new RegExp(`^${key.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}=.*`, "gm");
+			const regex = new RegExp(
+				`^${key.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}=.*`,
+				"gm",
+			);
 
 			if (regex.test(updatedContent)) {
 				updatedContent = updatedContent.replace(regex, `${key}=${value}`);
 			} else {
-				updatedContent = updatedContent ? `${updatedContent}\n${key}=${value}` : `${key}=${value}`;
+				updatedContent = updatedContent
+					? `${updatedContent}\n${key}=${value}`
+					: `${key}=${value}`;
 			}
 
 			process.env[key] = String(value);
 		}
 
 		// Ensure write creates file regardless of previous state
-		fs.writeFileSync(envFilePath, updatedContent, { encoding: "utf8", flag: "w" });
+		fs.writeFileSync(envFilePath, updatedContent, {
+			encoding: "utf8",
+			flag: "w",
+		});
 	} catch (error) {
 		// Attempt to restore backup if present
 		try {
