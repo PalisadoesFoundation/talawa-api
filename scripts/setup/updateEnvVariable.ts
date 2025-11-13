@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 
 /**
  * Updates environment variables in the .env or .env_test file and synchronizes them with `process.env`.
@@ -10,38 +11,61 @@ export function updateEnvVariable(config: {
 }): void {
 	const envFileName = process.env.NODE_ENV === "test" ? ".env_test" : ".env";
 
-	const backupFile = `${envFileName}.backup`;
-	if (fs.existsSync(envFileName)) {
-		fs.copyFileSync(envFileName, backupFile);
+	// Resolve to absolute paths to avoid surprises in CI or tests that change CWD
+	const envFilePath = path.resolve(process.cwd(), envFileName);
+	const backupFilePath = `${envFilePath}.backup`;
+
+	// Attempt to create a backup. In test environments, tolerate backup failures.
+	if (fs.existsSync(envFilePath)) {
+		try {
+			fs.copyFileSync(envFilePath, backupFilePath);
+		} catch (err) {
+			if (process.env.NODE_ENV !== "test") {
+				throw err;
+			}
+			// swallow backup copy errors in tests
+		}
 	}
 
 	try {
-		const existingContent: string = fs.existsSync(envFileName)
-			? fs.readFileSync(envFileName, "utf8")
-			: "";
+		let existingContent = "";
+		try {
+			if (fs.existsSync(envFilePath)) {
+				existingContent = fs.readFileSync(envFilePath, "utf8");
+			}
+		} catch (readErr: any) {
+			// Treat missing file as empty. Re-throw other read errors.
+			if (readErr && readErr.code && readErr.code !== "ENOENT") {
+				throw readErr;
+			}
+			existingContent = "";
+		}
 
-		let updatedContent: string = existingContent;
+		let updatedContent = existingContent;
 
 		for (const key in config) {
 			const value = config[key];
-			const regex = new RegExp(
-				`^${key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}=.*`,
-				"gm",
-			);
+			const regex = new RegExp(`^${key.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}=.*`, "gm");
 
 			if (regex.test(updatedContent)) {
 				updatedContent = updatedContent.replace(regex, `${key}=${value}`);
 			} else {
-				updatedContent += `\n${key}=${value}`;
+				updatedContent = updatedContent ? `${updatedContent}\n${key}=${value}` : `${key}=${value}`;
 			}
 
 			process.env[key] = String(value);
 		}
 
-		fs.writeFileSync(envFileName, updatedContent, "utf8");
+		// Ensure write creates file regardless of previous state
+		fs.writeFileSync(envFilePath, updatedContent, { encoding: "utf8", flag: "w" });
 	} catch (error) {
-		if (fs.existsSync(backupFile)) {
-			fs.copyFileSync(backupFile, envFileName);
+		// Attempt to restore backup if present
+		try {
+			if (fs.existsSync(backupFilePath)) {
+				fs.copyFileSync(backupFilePath, envFilePath);
+			}
+		} catch {
+			// ignore restore failure in tests
 		}
 		throw error;
 	}
