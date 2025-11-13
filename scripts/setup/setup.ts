@@ -143,11 +143,6 @@ function handlePromptError(err: unknown): never {
 		}
 	}
 
-	// In test mode, throw so tests can assert the error rather than exiting the process.
-	if (process.env.NODE_ENV === "test") {
-		throw err instanceof Error ? err : new Error(String(err));
-	}
-
 	process.exit(1);
 }
 

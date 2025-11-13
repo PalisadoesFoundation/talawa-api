@@ -42,6 +42,7 @@ describe("Setup -> postgresSetup", () => {
 	it("should prompt extended Postgres fields when user chooses custom Postgres (CI=false)", async () => {
 		const mockResponses = [
 			{ envReconfigure: "true" },
+			{ backupEnv: false },
 			{ CI: "false" },
 			{ useDefaultMinio: "true" },
 			{ useDefaultCloudbeaver: "true" },

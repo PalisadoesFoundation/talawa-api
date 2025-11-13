@@ -22,6 +22,7 @@ describe("Setup -> cloudbeaverSetup", () => {
 	it("should prompt the user for CloudBeaver configuration and update process.env", async () => {
 		const mockResponses = [
 			{ envReconfigure: true },
+			{ backupEnv: false },
 			{ CI: "false" },
 			{ useDefaultMinio: true },
 			{ useDefaultCloudbeaver: false },

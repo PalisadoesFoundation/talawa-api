@@ -43,6 +43,7 @@ describe("Setup -> minioSetup", () => {
 	it("should prompt extended Minio config fields when CI=false", async () => {
 		const mockResponses = [
 			{ envReconfigure: true },
+			{ backupEnv: false },
 			{ CI: "false" },
 			{ useDefaultMinio: false },
 			{ MINIO_BROWSER: "on" },

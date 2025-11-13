@@ -31,7 +31,7 @@ describe("Setup -> apiSetup", () => {
 		process.env.MINIO_ROOT_PASSWORD = "password";
 		process.env.POSTGRES_PASSWORD = "password";
 		const mockResponses = [
-			...(isEnvConfigured ? [{ envReconfigure: true }] : []),
+			...(isEnvConfigured ? [{ envReconfigure: true }, { backupEnv: false }] : []),
 			{ CI: "true" },
 			{ useDefaultMinio: true },
 			{ useDefaultPostgres: true },
@@ -277,7 +277,7 @@ describe("generateJwtSecret", () => {
 			});
 		const consoleErrorSpy = vi
 			.spyOn(console, "error")
-			.mockImplementation(() => {});
+			.mockImplementation(() => { });
 
 		expect(() => generateJwtSecret()).toThrow("Failed to generate JWT secret");
 		expect(consoleErrorSpy).toHaveBeenCalledWith(
