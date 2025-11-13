@@ -75,7 +75,7 @@ export const resolveOrgsWhereUserIsBlocked = async (
 		});
 	}
 
-	if (currentUser.role !== "administrator" && parent.id !== currentUserId) {
+	if (currentUser.role !== "administrator") {
 		throw new TalawaGraphQLError({
 			extensions: { code: "unauthorized_action" },
 		});
