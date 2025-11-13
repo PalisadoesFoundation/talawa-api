@@ -4,7 +4,7 @@ import { User } from "./User";
 User.implement({
 	fields: (t) => ({
 		orgIdWhereMembershipRequested: t.field({
-			type: ["ID"],
+			type: ["String"],
 			nullable: false,
 			description: "The organization ID where the user requested membership.",
 			complexity: envConfig.API_GRAPHQL_SCALAR_RESOLVER_FIELD_COST,

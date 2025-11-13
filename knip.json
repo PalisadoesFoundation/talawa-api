@@ -2,8 +2,9 @@
 	"$schema": "https://unpkg.com/knip@5/schema.json",
 	"ignoreIssues": {
 		"src/graphql/**/*.ts": ["exports"],
-		"src/services/ses/*.ts": ["exports"],
-		"src/drizzle/tables/**": ["exports"]
+		"src/services/ses/**/*.ts": ["exports"],
+		"src/drizzle/tables/**": ["exports"],
+		"src/workers/backgroundWorkerService.ts": ["exports"]
 	},
 	"project": ["src/**/*.ts"],
 	"ignoreDependencies": [],

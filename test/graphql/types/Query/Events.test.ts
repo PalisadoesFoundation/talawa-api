@@ -220,9 +220,6 @@ suite("Query eventsByIds", () => {
 		const membershipResult = await mercuriusClient.mutate(
 			Mutation_createOrganizationMembership,
 			{
-				headers: {
-					authorization: `bearer ${adminToken}`,
-				},
 				variables: {
 					input: inputObject,
 				},
@@ -308,18 +305,10 @@ suite("Query eventsByIds", () => {
 
 		expect(events).toHaveLength(2);
 
-		type FoundEvent = {
-			id: string;
-		};
-		const typedEvents = events as FoundEvent[];
-
-		expect(typedEvents).toEqual(
-			expect.arrayContaining([
-				expect.objectContaining({ id: standaloneEventId }),
-				expect.objectContaining({ id: generatedEventId }),
-			]),
+		const eventIds = events.map((e: { id: string }) => e.id);
+		expect(eventIds).toEqual(
+			expect.arrayContaining([standaloneEventId, generatedEventId]),
 		);
-
 		mercuriusClient.setHeaders({});
 	});
 });

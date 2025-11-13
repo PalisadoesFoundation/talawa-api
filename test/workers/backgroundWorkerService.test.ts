@@ -246,6 +246,19 @@ describe("backgroundServiceWorker", () => {
 			});
 
 			await startBackgroundWorkers(mockDrizzleClient, mockLogger);
+			const cron = await import("node-cron");
+			expect(vi.mocked(cron.default.schedule)).toHaveBeenNthCalledWith(
+				1,
+				expect.any(String),
+				expect.any(Function),
+				expect.objectContaining({ scheduled: false, timezone: "UTC" }),
+			);
+			expect(vi.mocked(cron.default.schedule)).toHaveBeenNthCalledWith(
+				2,
+				expect.any(String),
+				expect.any(Function),
+				expect.objectContaining({ scheduled: false, timezone: "UTC" }),
+			);
 
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				expect.objectContaining({

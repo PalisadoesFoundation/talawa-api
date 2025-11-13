@@ -13,7 +13,7 @@ import {
 let materializationTask: cron.ScheduledTask | undefined;
 let cleanupTask: cron.ScheduledTask | undefined;
 let isRunning = false;
-const materializationConfig: WorkerConfig = createDefaultWorkerConfig();
+let materializationConfig: WorkerConfig = createDefaultWorkerConfig();
 
 /**
  * Initializes and starts all background workers, scheduling them to run at their configured intervals.
@@ -179,4 +179,107 @@ export async function runCleanupWorkerSafely(
 			"Cleanup worker failed",
 		);
 	}
+}
+
+/**
+ * Manually triggers a run of the materialization worker, useful for testing or administrative purposes.
+ */
+export async function triggerMaterializationWorker(
+	drizzleClient: NodePgDatabase<typeof schema>,
+	logger: FastifyBaseLogger,
+): Promise<void> {
+	if (!isRunning) {
+		throw new Error("Background worker service is not running");
+	}
+
+	logger.info("Manually triggering materialization worker");
+	await runMaterializationWorkerSafely(drizzleClient, logger);
+}
+
+/**
+ * Manually triggers a run of the cleanup worker, useful for testing or administrative purposes.
+ */
+export async function triggerCleanupWorker(
+	drizzleClient: NodePgDatabase<typeof schema>,
+	logger: FastifyBaseLogger,
+): Promise<void> {
+	if (!isRunning) {
+		throw new Error("Background worker service is not running");
+	}
+
+	logger.info("Manually triggering cleanup worker");
+	await runCleanupWorkerSafely(drizzleClient, logger);
+}
+
+/**
+ * Retrieves the current status of the background worker service, including scheduling information.
+ *
+ * @returns An object containing the current status of the service.
+ */
+export function getBackgroundWorkerStatus(): {
+	isRunning: boolean;
+	materializationSchedule: string;
+	cleanupSchedule: string;
+	nextMaterializationRun?: Date;
+	nextCleanupRun?: Date;
+} {
+	return {
+		isRunning,
+		materializationSchedule:
+			process.env.EVENT_GENERATION_CRON_SCHEDULE || "0 * * * *",
+		cleanupSchedule: process.env.CLEANUP_CRON_SCHEDULE || "0 2 * * *",
+	};
+}
+
+/**
+ * Performs a health check of the background worker service, suitable for use by monitoring systems.
+ *
+ * @returns A promise that resolves to an object indicating the health status and any relevant details.
+ */
+export async function healthCheck(): Promise<{
+	status: "healthy" | "unhealthy";
+	details: Record<string, unknown>;
+}> {
+	try {
+		const status = getBackgroundWorkerStatus();
+
+		if (!status.isRunning) {
+			return {
+				status: "unhealthy",
+				details: {
+					reason: "Background workers not running",
+					...status,
+				},
+			};
+		}
+
+		return {
+			status: "healthy",
+			details: status,
+		};
+	} catch (error) {
+		return {
+			status: "unhealthy",
+			details: {
+				reason: "Health check failed",
+				error: error instanceof Error ? error.message : "Unknown error",
+			},
+		};
+	}
+}
+
+/**
+ * Updates the configuration for the materialization worker at runtime.
+ *
+ * @param config - A partial configuration object with the new settings to apply.
+ */
+export function updateMaterializationConfig(
+	config: Partial<WorkerConfig>,
+	logger: FastifyBaseLogger,
+): void {
+	materializationConfig = {
+		...materializationConfig,
+		...config,
+	};
+	logger.info(config, "Updated materialization worker configuration");
 }
