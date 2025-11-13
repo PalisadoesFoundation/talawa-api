@@ -15,6 +15,10 @@ describe("Setup", () => {
 	});
 
 	it("should set up environment variables with default configuration when CI=false", async () => {
+		// Set required environment variables that are validated during setup
+		process.env.POSTGRES_PASSWORD = "password";
+		process.env.MINIO_ROOT_PASSWORD = "password";
+
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ backupEnv: false },
@@ -31,6 +35,10 @@ describe("Setup", () => {
 		for (const response of mockResponses) {
 			promptMock.mockResolvedValueOnce(response);
 		}
+
+		// Mock file system operations
+		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const unlinkSyncSpy = vi.spyOn(fs, "unlinkSync").mockImplementation(() => { });
 
 		await setup();
 
@@ -73,9 +81,16 @@ describe("Setup", () => {
 		for (const [key, value] of Object.entries(expectedEnv)) {
 			expect(process.env[key]).toBe(value);
 		}
+
+		unlinkSyncSpy.mockRestore();
+		existsSyncSpy.mockRestore();
 	});
 
 	it("should correctly set up environment variables when CI=true (skips CloudBeaver)", async () => {
+		// Set required environment variables that are validated during setup
+		process.env.POSTGRES_PASSWORD = "password";
+		process.env.MINIO_ROOT_PASSWORD = "password";
+
 		const mockResponses = [
 			{ envReconfigure: true },
 			{ backupEnv: false },
@@ -91,6 +106,10 @@ describe("Setup", () => {
 		for (const response of mockResponses) {
 			promptMock.mockResolvedValueOnce(response);
 		}
+
+		// Mock file system operations
+		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const unlinkSyncSpy = vi.spyOn(fs, "unlinkSync").mockImplementation(() => { });
 
 		await setup();
 
@@ -132,6 +151,9 @@ describe("Setup", () => {
 		for (const [key, value] of Object.entries(expectedEnv)) {
 			expect(process.env[key]).toBe(value);
 		}
+
+		unlinkSyncSpy.mockRestore();
+		existsSyncSpy.mockRestore();
 	});
 	it("should restore .env from backup and exit when envReconfigure is false", async () => {
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
@@ -149,10 +171,10 @@ describe("Setup", () => {
 	});
 
 	it("should restore .env on SIGINT (Ctrl+C) and exit with code 1", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
 		const copyFileSpy = vi
 			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => {});
+			.mockImplementation(() => { });
 		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
