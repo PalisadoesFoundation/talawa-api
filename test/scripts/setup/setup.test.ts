@@ -149,10 +149,10 @@ describe("Setup", () => {
 	});
 
 	it("should restore .env on SIGINT (Ctrl+C) and exit with code 1", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 		const copyFileSpy = vi
 			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => { });
+			.mockImplementation(() => {});
 		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {

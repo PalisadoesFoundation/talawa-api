@@ -139,6 +139,27 @@ export function checkEnvFile(): boolean {
 	return fs.existsSync(envFileName);
 }
 
+export function backupEnvFile(): string {
+	const backupDir = ".backup";
+	const epochTimestamp = Math.floor(Date.now() / 1000);
+	const backupFilename = `.env.${epochTimestamp}`;
+	const backupPath = `${backupDir}/${backupFilename}`;
+
+	// Create backup directory if it doesn't exist
+	if (!fs.existsSync(backupDir)) {
+		fs.mkdirSync(backupDir, { recursive: true });
+	}
+
+	// Copy .env file to backup directory
+	if (fs.existsSync(envFileName)) {
+		fs.copyFileSync(envFileName, backupPath);
+	} else {
+		throw new Error(".env file does not exist, cannot create backup");
+	}
+
+	return backupPath;
+}
+
 export function initializeEnvFile(answers: SetupAnswers): void {
 	if (fs.existsSync(envFileName)) {
 		fs.copyFileSync(envFileName, `${envFileName}.backup`);
@@ -600,7 +621,9 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 
 export async function setup(): Promise<SetupAnswers> {
 	let answers: SetupAnswers = {};
-	if (checkEnvFile()) {
+	const hadExistingEnvFile = checkEnvFile();
+
+	if (hadExistingEnvFile) {
 		const envReconfigure = await promptConfirm(
 			"envReconfigure",
 			"Env file found. Re-configure? (Y)/N",
@@ -608,6 +631,24 @@ export async function setup(): Promise<SetupAnswers> {
 		);
 		if (!envReconfigure) {
 			process.exit(0);
+		}
+
+		// Prompt to backup the old .env file before reconfiguring
+		const shouldBackup = await promptConfirm(
+			"backupEnv",
+			"Would you like to backup the old version of the .env file? (Y)/N",
+			true,
+		);
+
+		if (shouldBackup) {
+			try {
+				const backupFilename = backupEnvFile();
+				console.log(`✅ Backup saved as: ${backupFilename}`);
+			} catch (error) {
+				console.error(
+					`❌ Error creating backup: ${error instanceof Error ? error.message : error}`,
+				);
+			}
 		}
 	}
 
@@ -623,7 +664,12 @@ export async function setup(): Promise<SetupAnswers> {
 	});
 
 	answers = await setCI(answers);
-	initializeEnvFile(answers);
+
+	// Only initialize .env file if it doesn't exist (new setup)
+	// If it exists, we already have the user's configuration
+	if (!fs.existsSync(envFileName)) {
+		initializeEnvFile(answers);
+	}
 
 	const useDefaultMinio = await promptConfirm(
 		"useDefaultMinio",
@@ -678,8 +724,10 @@ export async function setup(): Promise<SetupAnswers> {
 
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");
+
 	if (fs.existsSync(".env.backup")) {
 		fs.unlinkSync(".env.backup");
 	}
+
 	return answers;
 }
