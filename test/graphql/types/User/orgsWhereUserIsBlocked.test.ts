@@ -58,7 +58,7 @@ const baseMockCtx = {
 
 const mockUserParent: User = {
 	id: "user123",
-	role: "member",
+	role: "administrator",
 } as unknown as User;
 
 describe("resolveOrgsWhereUserIsBlocked", () => {
@@ -73,7 +73,7 @@ describe("resolveOrgsWhereUserIsBlocked", () => {
 		]);
 		mockFindFirst.mockResolvedValue({
 			id: "user123",
-			role: "member",
+			role: "administrator",
 		});
 	});
 
