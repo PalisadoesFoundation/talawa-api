@@ -17,6 +17,7 @@ describe("Setup", () => {
 	it("should set up environment variables with default configuration when CI=false", async () => {
 		const mockResponses = [
 			{ envReconfigure: true },
+			{ backupEnv: false },
 			{ CI: "false" },
 			{ useDefaultMinio: "true" },
 			{ useDefaultCloudbeaver: "true" },
@@ -39,7 +40,7 @@ describe("Setup", () => {
 			API_PORT: "4000",
 			API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
 			API_JWT_EXPIRES_IN: "2592000000",
-			API_LOG_LEVEL: "info",
+			API_LOG_LEVEL: "debug",
 			API_MINIO_ACCESS_KEY: "talawa",
 			API_MINIO_END_POINT: "minio",
 			API_MINIO_PORT: "9000",
@@ -77,6 +78,7 @@ describe("Setup", () => {
 	it("should correctly set up environment variables when CI=true (skips CloudBeaver)", async () => {
 		const mockResponses = [
 			{ envReconfigure: true },
+			{ backupEnv: false },
 			{ CI: "true" },
 			{ useDefaultMinio: "true" },
 			{ useDefaultPostgres: "true" },
@@ -97,10 +99,10 @@ describe("Setup", () => {
 			API_HOST: "0.0.0.0",
 			API_PORT: "4000",
 			API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
-			API_IS_GRAPHIQL: "false",
-			API_IS_PINO_PRETTY: "false",
+			API_IS_GRAPHIQL: "true",
+			API_IS_PINO_PRETTY: "true",
 			API_JWT_EXPIRES_IN: "2592000000",
-			API_LOG_LEVEL: "info",
+			API_LOG_LEVEL: "debug",
 			API_MINIO_ACCESS_KEY: "talawa",
 			API_MINIO_END_POINT: "minio",
 			API_MINIO_PORT: "9000",
@@ -147,10 +149,10 @@ describe("Setup", () => {
 	});
 
 	it("should restore .env on SIGINT (Ctrl+C) and exit with code 1", async () => {
-		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => { });
 		const copyFileSpy = vi
 			.spyOn(fs, "copyFileSync")
-			.mockImplementation(() => {});
+			.mockImplementation(() => { });
 		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
