@@ -64,7 +64,6 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.4.1
           run_install: false
 
       - name: Set up Node.js
@@ -94,7 +93,7 @@ jobs:
           else
             echo "Documentation is up to date."
           fi
-          
+
   python_checks:
     name: Run Python Checks
     runs-on: ubuntu-latest
