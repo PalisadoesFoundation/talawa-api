@@ -79,13 +79,13 @@ jobs:
         run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Run documentation generation
-        run: pnpm run generate-docs
+        run: pnpm run generate:docs
 
       - name: Check for uncommitted doc changes
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             echo "::error::Documentation files are outdated or missing."
-            echo "Please run 'pnpm run generate-docs' locally and commit the updated files."
+            echo "Please run 'pnpm run generate:docs' locally and commit the updated files."
             echo ""
             echo "Changed files:"
             git status --porcelain
