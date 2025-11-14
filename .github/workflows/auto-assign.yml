@@ -60,11 +60,16 @@ jobs:
             // Default assignment limit is 2 if not configured
             const maxAssignments = parseInt(process.env.MAX_OPEN_ASSIGNMENTS || '2');
 
-            // New contributors get only 1 assignment
+            // New contributors cannot auto assign
             let userMaxAssignments = maxAssignments;
             if (association === 'FIRST_TIME_CONTRIBUTOR' || association === 'FIRST_TIMER') {
-              userMaxAssignments = 1; 
-              console.log(`User ${user} is a first-time contributor, limiting to 1 assignment`);
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                body: `❌ @${user} First time contributors cannot use auto assignment.`,
+              });
+              return;
             }            
 
             // Ignore bots only
@@ -89,7 +94,6 @@ jobs:
                 issue_number: issueNumber,
                 body: `❌ @${user} This workflow only supports self-assignment. Use \`/assign\` without specifying a username.`,
               });
-              return;
             }            
 
             if (isUnassign) {
