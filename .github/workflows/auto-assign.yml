@@ -61,7 +61,6 @@ jobs:
             const maxAssignments = parseInt(process.env.MAX_OPEN_ASSIGNMENTS || '2');
 
             // New contributors cannot auto assign
-            let userMaxAssignments = maxAssignments;
             if (association === 'FIRST_TIME_CONTRIBUTOR' || association === 'FIRST_TIMER') {
               await github.rest.issues.createComment({
                 owner,
@@ -166,7 +165,7 @@ jobs:
               for (const r of activeRepos) {
                 
                 // Exit early once limit is detected                
-                if (totalAssigned >= userMaxAssignments) break;  
+                if (totalAssigned >= maxAssignments) break;  
 
                 try {
                   const assignedIssues = await github.paginate(
@@ -231,7 +230,7 @@ jobs:
             //    if over limit (but this creates noise in notifications).
             //
             // Current implementation: Option 1 (accept transient violations for simplicity).
-            if (totalAssigned >= userMaxAssignments) {
+            if (totalAssigned >= maxAssignments) {
               const message = `⚠️ @${user} already has ${totalAssigned} open assignments across the org. Please finish or unassign before taking new ones.`;
               await github.rest.issues.createComment({
                 owner,
@@ -249,7 +248,7 @@ jobs:
               for (const r of activeRepos) {
 
                 // Exit early once limit is detected                
-                if (totalAssigned >= userMaxAssignments) break;  
+                if (totalAssigned >= maxAssignments) break;  
 
                 try {
                   const assignedIssues = await github.paginate(
@@ -269,7 +268,7 @@ jobs:
                 }                
               }
               
-              if (reCheckCount >= userMaxAssignments) {
+              if (reCheckCount >= maxAssignments) {
                 const message = `⚠️ @${user}, another issue was assigned to you while processing this request. You now have ${reCheckCount} open assignments. Please finish or unassign before taking new ones.`;
                 await github.rest.issues.createComment({
                   owner,
