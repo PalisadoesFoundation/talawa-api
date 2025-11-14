@@ -4,6 +4,9 @@ on:
   issue_comment:
     types: [created]
 
+env:
+  MAX_OPEN_ASSIGNMENTS: 2
+
 jobs:
   handle-comment:
     runs-on: ubuntu-latest
@@ -15,10 +18,13 @@ jobs:
       - name: Handle /assign or /unassign
         uses: actions/github-script@v7
         with:
+          # ORG_ACCESS_TOKEN must have the following scopes:
+          # - repo (or public_repo if using public repos only)
+          # - org:read (to enumerate organization repos)
           github-token: ${{ secrets.ORG_ACCESS_TOKEN }}
           script: |
             const comment = context.payload.comment;
-            const body = comment.body.trim();
+            const body = (comment.body || "").trim();
             const user = comment.user.login;
             const association = context.payload.comment.author_association;
             const issue = context.payload.issue || context.payload.pull_request;
@@ -97,7 +103,9 @@ jobs:
                 per_page: 100,
               });
 
-              for (const r of repos) {
+              // Filter out archived repositories
+              const activeRepos = repos.filter(r => !r.archived);
+              for (const r of activeRepos) {
                 const assignedIssues = await github.paginate(
                   github.rest.issues.listForRepo,
                   {
@@ -151,7 +159,7 @@ jobs:
             //    if over limit (but this creates noise in notifications).
             //
             // Current implementation: Option 1 (accept transient violations for simplicity).
-            if (totalAssigned >= 2) {
+            if (totalAssigned >= parseInt(process.env.MAX_OPEN_ASSIGNMENTS || '2')) {
               const message = `⚠️ @${user} already has ${totalAssigned} open assignments across the org. Please finish or unassign before taking new ones.`;
               await github.rest.issues.createComment({
                 owner,
