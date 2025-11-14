@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Type Alias: Tag
 
-> **Tag**: *typeof* `tagsTable.$inferSelect`
+> **Tag** = *typeof* `tagsTable.$inferSelect`
 
-Defined in: [src/graphql/types/Tag/Tag.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/types/Tag/Tag.ts#L4)
+Defined in: [src/graphql/types/Tag/Tag.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Tag/Tag.ts#L4)

@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: MutationCreateEventInput
 
-> `const` **MutationCreateEventInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `attachments`: `Promise`\<`FileUpload`\>[]; `endAt`: `any`; `name`: `any`; `organizationId`: `any`; `startAt`: `any`; \}\>
+> `const` **MutationCreateEventInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `allDay?`: `null` \| `NonNullable`\<`undefined` \| `boolean`\>; `attachments?`: `null` \| `Promise`\<`FileUpload`\>[]; `description?`: `null` \| `string`; `endAt`: `Date`; `isPublic?`: `null` \| `NonNullable`\<`undefined` \| `boolean`\>; `isRegisterable?`: `null` \| `NonNullable`\<`undefined` \| `boolean`\>; `location?`: `null` \| `string`; `name`: `string`; `organizationId`: `string`; `recurrence?`: `null` \| \{ `byDay?`: `null` \| `string`[]; `byMonth?`: `null` \| `number`[]; `byMonthDay?`: `null` \| `number`[]; `count?`: `null` \| `number`; `endDate?`: `null` \| `Date`; `frequency`: `NonNullable`\<`"DAILY"` \| `"WEEKLY"` \| `"MONTHLY"` \| `"YEARLY"`\>; `interval?`: `null` \| `number`; `never?`: `null` \| `NonNullable`\<`undefined` \| `boolean`\>; \}; `startAt`: `Date`; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateEventInput.ts:32](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/MutationCreateEventInput.ts#L32)
+Defined in: [src/graphql/inputs/MutationCreateEventInput.ts:38](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationCreateEventInput.ts#L38)

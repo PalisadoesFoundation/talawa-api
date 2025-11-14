@@ -1,0 +1,9 @@
+[API Docs](/)
+
+***
+
+# Variable: MutationUpdateActionItemInputSchema
+
+> `const` **MutationUpdateActionItemInputSchema**: `ZodObject`\<`extendShape`\<`Pick`\<\{ `assignedAt`: `ZodDate`; `categoryId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `completionAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `createdAt`: `ZodOptional`\<`ZodDate`\>; `creatorId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `eventId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `id`: `ZodOptional`\<`ZodString`\>; `isCompleted`: `ZodBoolean`; `isTemplate`: `ZodOptional`\<`ZodNullable`\<`ZodBoolean`\>\>; `organizationId`: `ZodString`; `postCompletionNotes`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `preCompletionNotes`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `recurringEventInstanceId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `updatedAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `updaterId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `volunteerGroupId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `volunteerId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; \}, `"volunteerId"` \| `"volunteerGroupId"` \| `"categoryId"` \| `"isCompleted"` \| `"postCompletionNotes"` \| `"preCompletionNotes"`\>, \{ `id`: `ZodString`; \}\>, `"strip"`, `ZodTypeAny`, \{ `categoryId?`: `null` \| `string`; `id`: `string`; `isCompleted`: `boolean`; `postCompletionNotes?`: `null` \| `string`; `preCompletionNotes?`: `null` \| `string`; `volunteerGroupId?`: `null` \| `string`; `volunteerId?`: `null` \| `string`; \}, \{ `categoryId?`: `null` \| `string`; `id`: `string`; `isCompleted`: `boolean`; `postCompletionNotes?`: `null` \| `string`; `preCompletionNotes?`: `null` \| `string`; `volunteerGroupId?`: `null` \| `string`; `volunteerId?`: `null` \| `string`; \}\>
+
+Defined in: [src/graphql/inputs/MutationUpdateActionItemInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationUpdateActionItemInput.ts#L5)

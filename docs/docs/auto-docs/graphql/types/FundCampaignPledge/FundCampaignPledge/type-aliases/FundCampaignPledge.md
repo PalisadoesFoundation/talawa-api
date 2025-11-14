@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Type Alias: FundCampaignPledge
 
-> **FundCampaignPledge**: *typeof* `fundCampaignPledgesTable.$inferSelect`
+> **FundCampaignPledge** = *typeof* `fundCampaignPledgesTable.$inferSelect`
 
-Defined in: [src/graphql/types/FundCampaignPledge/FundCampaignPledge.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/types/FundCampaignPledge/FundCampaignPledge.ts#L4)
+Defined in: [src/graphql/types/FundCampaignPledge/FundCampaignPledge.ts:4](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/FundCampaignPledge/FundCampaignPledge.ts#L4)
