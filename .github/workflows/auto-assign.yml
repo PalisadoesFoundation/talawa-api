@@ -23,6 +23,12 @@ jobs:
           # - org:read (to enumerate organization repos)
           github-token: ${{ secrets.ORG_ACCESS_TOKEN }}
           script: |
+            // Check if we have the required token
+            if (!process.env.GITHUB_TOKEN || process.env.GITHUB_TOKEN === process.env.SECRETS_GITHUB_TOKEN) {
+              core.setFailed('ORG_ACCESS_TOKEN secret is required but not configured');
+              return;
+            }
+
             const comment = context.payload.comment;
             const body = (comment.body || "").trim();
             const user = comment.user.login;
@@ -87,8 +93,9 @@ jobs:
             }
 
             // For /assign
-            if (issue.assignees.length > 0) {
-              console.log("Already assigned, skipping.");
+            const currentAssignees = issue.assignees.map(a => a.login);
+            if (currentAssignees.includes(user)) {
+              console.log(`${user} is already assigned, skipping.`);
               return;
             }
 
@@ -106,18 +113,28 @@ jobs:
               // Filter out archived repositories
               const activeRepos = repos.filter(r => !r.archived);
               for (const r of activeRepos) {
-                const assignedIssues = await github.paginate(
-                  github.rest.issues.listForRepo,
-                  {
-                    owner,
-                    repo: r.name,
-                    state: "open",
-                    assignee: user,
-                    per_page: 100,
-                  }
-                );
-                totalAssigned += assignedIssues.length;
+                try {
+                  const assignedIssues = await github.paginate(
+                    github.rest.issues.listForRepo,
+                    {
+                      owner,
+                      repo: r.name,
+                      state: "open",
+                      assignee: user,
+                      per_page: 100,
+                    }
+                  );
+                  totalAssigned += assignedIssues.length;
+                } catch (repoError) {
+                  console.warn(`Skipping ${r.name}: ${repoError.message}`);
+                  // Continue with other repos
+                }
               }
+
+              // With many repos in the org, we could hit GitHub API rate limits.
+              const rateLimit = await github.rest.rateLimit.get();
+              console.log(`Remaining rate limit: ${rateLimit.data.rate.remaining}`);
+
             } catch (error) {
               console.error("Error fetching org-wide assignments:", error);
               
@@ -169,6 +186,39 @@ jobs:
               });
               console.log("Limit reached, skipping assignment");
               return;
+            }
+
+            // Re-verify the count immediately before assignment
+            try {
+              let reCheckCount = 0;
+              for (const r of activeRepos) {
+                const assignedIssues = await github.paginate(
+                  github.rest.issues.listForRepo,
+                  {
+                    owner,
+                    repo: r.name,
+                    state: "open",
+                    assignee: user,
+                    per_page: 100,
+                  }
+                );
+                reCheckCount += assignedIssues.length;
+              }
+              
+              if (reCheckCount >= parseInt(process.env.MAX_OPEN_ASSIGNMENTS || '2')) {
+                const message = `⚠️ @${user}, another issue was assigned to you while processing this request. You now have ${reCheckCount} open assignments. Please finish or unassign before taking new ones.`;
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: issueNumber,
+                  body: message,
+                });
+                console.log("Limit reached after re-check, aborting assignment");
+                return;
+              }
+            } catch (error) {
+              console.error("Error during assignment re-check:", error);
+              // Continue with assignment since we already passed the first check
             }
 
             try {
