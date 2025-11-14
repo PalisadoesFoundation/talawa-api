@@ -52,7 +52,7 @@ export const mutationCreatePostInputSchema = postsTableInsertSchema
 		organizationId: true,
 	})
 	.extend({
-		attachments: z.array(fileMetadataSchema).min(1).max(20).optional(),
+		attachments: z.array(fileMetadataSchema).max(20).optional(),
 		isPinned: z.boolean().optional(),
 	});
 
@@ -64,7 +64,7 @@ export const MutationCreatePostInput = builder.inputType(
 			attachments: t.field({
 				description: "Metadata for files already uploaded via presigned URL",
 				type: [FileMetadataInput],
-				required: true,
+				required: false,
 			}),
 			caption: t.string({
 				description: "Caption about the post.",
