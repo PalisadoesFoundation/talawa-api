@@ -139,24 +139,27 @@ describe("Organization Members Resolver Tests", () => {
 
 			// Capture query args to assert correct filtering
 			let capturedQueryArgs: unknown;
-			const originalMock = mocks.drizzleClient.query.organizationMembershipsTable.findMany;
-			mocks.drizzleClient.query.organizationMembershipsTable.findMany = vi.fn().mockImplementation((args?: Record<string, unknown>) => {
-				capturedQueryArgs = args;
-				// Return mock data that would match the organization
-				return Promise.resolve([
-					{
-						createdAt: new Date("2024-01-01"),
-						memberId: "member-1",
-						organizationId: mockOrganization.id,
-						role: "member",
-						member: {
-							id: "member-1",
-							name: "Test Member",
-							email: "test@example.com",
+			const originalMock =
+				mocks.drizzleClient.query.organizationMembershipsTable.findMany;
+			mocks.drizzleClient.query.organizationMembershipsTable.findMany = vi
+				.fn()
+				.mockImplementation((args?: Record<string, unknown>) => {
+					capturedQueryArgs = args;
+					// Return mock data that would match the organization
+					return Promise.resolve([
+						{
+							createdAt: new Date("2024-01-01"),
+							memberId: "member-1",
+							organizationId: mockOrganization.id,
+							role: "member",
+							member: {
+								id: "member-1",
+								name: "Test Member",
+								email: "test@example.com",
+							},
 						},
-					},
-				]);
-			});
+					]);
+				});
 
 			const result = await membersResolver(
 				mockOrganization,
@@ -171,14 +174,17 @@ describe("Organization Members Resolver Tests", () => {
 			const queryArgs = capturedQueryArgs as { where?: SQL };
 			expect(queryArgs.where).toBeDefined();
 			expect(queryArgs.where).toBeTruthy();
-			expect(mocks.drizzleClient.query.organizationMembershipsTable.findMany).toHaveBeenCalledWith(
+			expect(
+				mocks.drizzleClient.query.organizationMembershipsTable.findMany,
+			).toHaveBeenCalledWith(
 				expect.objectContaining({
 					where: expect.anything(),
-				})
+				}),
 			);
 
 			// Restore original mock
-			mocks.drizzleClient.query.organizationMembershipsTable.findMany = originalMock;
+			mocks.drizzleClient.query.organizationMembershipsTable.findMany =
+				originalMock;
 		});
 
 		it("should allow organization member access", async () => {
@@ -195,24 +201,27 @@ describe("Organization Members Resolver Tests", () => {
 
 			// Capture query args to assert correct filtering
 			let capturedQueryArgs: unknown;
-			const originalMock = mocks.drizzleClient.query.organizationMembershipsTable.findMany;
-			mocks.drizzleClient.query.organizationMembershipsTable.findMany = vi.fn().mockImplementation((args?: Record<string, unknown>) => {
-				capturedQueryArgs = args;
-				// Return mock data that would match the organization
-				return Promise.resolve([
-					{
-						createdAt: new Date("2024-01-01"),
-						memberId: "member-1",
-						organizationId: mockOrganization.id,
-						role: "member",
-						member: {
-							id: "member-1",
-							name: "Test Member",
-							email: "test@example.com",
+			const originalMock =
+				mocks.drizzleClient.query.organizationMembershipsTable.findMany;
+			mocks.drizzleClient.query.organizationMembershipsTable.findMany = vi
+				.fn()
+				.mockImplementation((args?: Record<string, unknown>) => {
+					capturedQueryArgs = args;
+					// Return mock data that would match the organization
+					return Promise.resolve([
+						{
+							createdAt: new Date("2024-01-01"),
+							memberId: "member-1",
+							organizationId: mockOrganization.id,
+							role: "member",
+							member: {
+								id: "member-1",
+								name: "Test Member",
+								email: "test@example.com",
+							},
 						},
-					},
-				]);
-			});
+					]);
+				});
 
 			const result = await membersResolver(
 				mockOrganization,
@@ -227,14 +236,17 @@ describe("Organization Members Resolver Tests", () => {
 			const queryArgs = capturedQueryArgs as { where?: SQL };
 			expect(queryArgs.where).toBeDefined();
 			expect(queryArgs.where).toBeTruthy();
-			expect(mocks.drizzleClient.query.organizationMembershipsTable.findMany).toHaveBeenCalledWith(
+			expect(
+				mocks.drizzleClient.query.organizationMembershipsTable.findMany,
+			).toHaveBeenCalledWith(
 				expect.objectContaining({
 					where: expect.anything(),
-				})
+				}),
 			);
 
 			// Restore original mock
-			mocks.drizzleClient.query.organizationMembershipsTable.findMany = originalMock;
+			mocks.drizzleClient.query.organizationMembershipsTable.findMany =
+				originalMock;
 		});
 	});
 
@@ -305,7 +317,7 @@ describe("Organization Members Resolver Tests", () => {
 
 			// Track whether the name filtering subquery was invoked
 			let wasNameFilterApplied = false;
-			
+
 			// Mock the drizzle client select/from/where chain for the name subquery
 			const originalSelect = mocks.drizzleClient.select;
 			mocks.drizzleClient.select = vi.fn().mockImplementation(() => ({
@@ -314,7 +326,7 @@ describe("Organization Members Resolver Tests", () => {
 						// If this chain is called, it means the trimmed string was non-empty
 						// and the name filter was applied
 						wasNameFilterApplied = true;
-						
+
 						// Return empty array to simulate subquery result
 						return [];
 					}),
@@ -323,11 +335,14 @@ describe("Organization Members Resolver Tests", () => {
 
 			// Capture main query args and return mock data
 			let capturedQueryArgs: unknown;
-			const originalMock = mocks.drizzleClient.query.organizationMembershipsTable.findMany;
-			mocks.drizzleClient.query.organizationMembershipsTable.findMany = vi.fn().mockImplementation((args?: Record<string, unknown>) => {
-				capturedQueryArgs = args;
-				return Promise.resolve(mockMembers);
-			});
+			const originalMock =
+				mocks.drizzleClient.query.organizationMembershipsTable.findMany;
+			mocks.drizzleClient.query.organizationMembershipsTable.findMany = vi
+				.fn()
+				.mockImplementation((args?: Record<string, unknown>) => {
+					capturedQueryArgs = args;
+					return Promise.resolve(mockMembers);
+				});
 
 			// Test with whitespace-padded input: "  John  " should be trimmed to "John"
 			const result = (await membersResolver(
@@ -352,7 +367,8 @@ describe("Organization Members Resolver Tests", () => {
 			expect(memberNames).toContain("John Doe");
 
 			// Restore original mocks
-			mocks.drizzleClient.query.organizationMembershipsTable.findMany = originalMock;
+			mocks.drizzleClient.query.organizationMembershipsTable.findMany =
+				originalMock;
 			mocks.drizzleClient.select = originalSelect;
 		});
 
@@ -383,7 +399,7 @@ describe("Organization Members Resolver Tests", () => {
 
 			// Track whether the name filtering subquery was invoked
 			let wasNameFilterApplied = false;
-			
+
 			// Mock the drizzle client select/from/where chain for the name subquery
 			const originalSelect = mocks.drizzleClient.select;
 			mocks.drizzleClient.select = vi.fn().mockImplementation(() => ({
@@ -574,17 +590,28 @@ describe("Organization Members Resolver Tests", () => {
 	});
 
 	describe("Complexity Calculation", () => {
-		let membersComplexityFunction: (args: Record<string, unknown>) => { field: number; multiplier: number };
+		let membersComplexityFunction: (args: Record<string, unknown>) => {
+			field: number;
+			multiplier: number;
+		};
 
 		beforeAll(() => {
 			const organizationType = schema.getType(
 				"Organization",
 			) as GraphQLObjectType;
 			const membersField = organizationType.getFields().members;
-			if (!membersField || !membersField.extensions || !membersField.extensions.complexity) {
-				throw new Error("Complexity function not found on Organization.members field");
+			if (
+				!membersField ||
+				!membersField.extensions ||
+				!membersField.extensions.complexity
+			) {
+				throw new Error(
+					"Complexity function not found on Organization.members field",
+				);
 			}
-			membersComplexityFunction = membersField.extensions.complexity as (args: Record<string, unknown>) => { field: number; multiplier: number };
+			membersComplexityFunction = membersField.extensions.complexity as (
+				args: Record<string, unknown>,
+			) => { field: number; multiplier: number };
 		});
 
 		beforeEach(() => {
@@ -675,11 +702,12 @@ describe("Organization Members Resolver Tests", () => {
 			expect(graphQLError.extensions.code).toBe("invalid_arguments");
 			expect(graphQLError.extensions.issues).toBeDefined();
 			expect(Array.isArray(graphQLError.extensions.issues)).toBe(true);
-			const issues = graphQLError.extensions.issues as Array<{ argumentPath?: string[] }>;
-			expect(issues.some(
-				(issue) => 
-					issue.argumentPath?.includes("after")
-			)).toBe(true);
+			const issues = graphQLError.extensions.issues as Array<{
+				argumentPath?: string[];
+			}>;
+			expect(
+				issues.some((issue) => issue.argumentPath?.includes("after")),
+			).toBe(true);
 		});
 
 		it("should throw invalid_arguments for invalid JSON in cursor", async () => {
@@ -702,11 +730,12 @@ describe("Organization Members Resolver Tests", () => {
 			expect(graphQLError.extensions.code).toBe("invalid_arguments");
 			expect(graphQLError.extensions.issues).toBeDefined();
 			expect(Array.isArray(graphQLError.extensions.issues)).toBe(true);
-			const issues = graphQLError.extensions.issues as Array<{ argumentPath?: string[] }>;
-			expect(issues.some(
-				(issue) => 
-					issue.argumentPath?.includes("after")
-			)).toBe(true);
+			const issues = graphQLError.extensions.issues as Array<{
+				argumentPath?: string[];
+			}>;
+			expect(
+				issues.some((issue) => issue.argumentPath?.includes("after")),
+			).toBe(true);
 		});
 
 		it("should throw invalid_arguments for cursor with invalid schema", async () => {
@@ -735,11 +764,12 @@ describe("Organization Members Resolver Tests", () => {
 			expect(graphQLError.extensions.code).toBe("invalid_arguments");
 			expect(graphQLError.extensions.issues).toBeDefined();
 			expect(Array.isArray(graphQLError.extensions.issues)).toBe(true);
-			const issues = graphQLError.extensions.issues as Array<{ argumentPath?: string[] }>;
-			expect(issues.some(
-				(issue) => 
-					issue.argumentPath?.includes("after")
-			)).toBe(true);
+			const issues = graphQLError.extensions.issues as Array<{
+				argumentPath?: string[];
+			}>;
+			expect(
+				issues.some((issue) => issue.argumentPath?.includes("after")),
+			).toBe(true);
 		});
 
 		it("should throw arguments_associated_resources_not_found when cursor points to non-existent member", async () => {
@@ -770,14 +800,17 @@ describe("Organization Members Resolver Tests", () => {
 
 			expect(thrownError).toBeInstanceOf(TalawaGraphQLError);
 			const graphQLError = thrownError as TalawaGraphQLError;
-			expect(graphQLError.extensions.code).toBe("arguments_associated_resources_not_found");
+			expect(graphQLError.extensions.code).toBe(
+				"arguments_associated_resources_not_found",
+			);
 			expect(graphQLError.extensions.issues).toBeDefined();
 			expect(Array.isArray(graphQLError.extensions.issues)).toBe(true);
-			const issues = graphQLError.extensions.issues as Array<{ argumentPath?: string[] }>;
-			expect(issues.some(
-				(issue) => 
-					issue.argumentPath?.includes("after")
-			)).toBe(true);
+			const issues = graphQLError.extensions.issues as Array<{
+				argumentPath?: string[];
+			}>;
+			expect(
+				issues.some((issue) => issue.argumentPath?.includes("after")),
+			).toBe(true);
 		});
 
 		it("should handle valid cursor with before (backward pagination)", async () => {
@@ -807,14 +840,17 @@ describe("Organization Members Resolver Tests", () => {
 
 			expect(thrownError).toBeInstanceOf(TalawaGraphQLError);
 			const graphQLError = thrownError as TalawaGraphQLError;
-			expect(graphQLError.extensions.code).toBe("arguments_associated_resources_not_found");
+			expect(graphQLError.extensions.code).toBe(
+				"arguments_associated_resources_not_found",
+			);
 			expect(graphQLError.extensions.issues).toBeDefined();
 			expect(Array.isArray(graphQLError.extensions.issues)).toBe(true);
-			const issues = graphQLError.extensions.issues as Array<{ argumentPath?: string[] }>;
-			expect(issues.some(
-				(issue) => 
-					issue.argumentPath?.includes("before")
-			)).toBe(true);
+			const issues = graphQLError.extensions.issues as Array<{
+				argumentPath?: string[];
+			}>;
+			expect(
+				issues.some((issue) => issue.argumentPath?.includes("before")),
+			).toBe(true);
 		});
 	});
 
