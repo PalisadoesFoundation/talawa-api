@@ -4,6 +4,8 @@ networks:
 # https://docs.docker.com/reference/compose-file/services
 services:
   api:
+    env_file: .env
+    command: bash -c "pnpm run start_development_server"
     # https://docs.docker.com/reference/compose-file/build/
     build:
       args:
@@ -11,7 +13,7 @@ services:
         - API_DEBUGGER_PORT=${API_DEBUGGER_PORT:?error}
       # https://docs.docker.com/reference/compose-file/build/#target
       target: devcontainer
-      dockerfile: ./docker/api.Containerfile
+      dockerfile: ./docker/rootless.api.Containerfile
     depends_on:
       minio:
         condition: service_healthy
@@ -54,7 +56,7 @@ services:
         target: /home/talawa/api
         type: bind
       # Mount Docker socket for plugin container management
-      - source: /var/run/docker.sock
+      - source: $XDG_RUNTIME_DIR/docker.sock
         target: /var/run/docker.sock
         type: bind
         # https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
