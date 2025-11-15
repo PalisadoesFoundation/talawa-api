@@ -368,9 +368,8 @@ jobs:
           echo "- Contributor may be merging into an incorrect branch."
           echo "- Source branch may be incorrect please use develop as source branch."
           exit 1
-
   Check-App-Startup:
-    name: Check App Startup and Health
+    name: Check App Startup and Health for the legact devcontainer with root
     runs-on: ubuntu-latest
     needs: [Run-Tests]
     steps:
@@ -380,6 +379,8 @@ jobs:
         run: npm install -g @devcontainers/cli
       - name: Copy devcontainer environment file
         run: cp envFiles/.env.devcontainer .env
+      - name: Use the devcontainer config with root
+        run: mv .devcontainer/devcontainer.json.old .devcontainer/devcontainer.json
       - name: Bring up devcontainer
         run: devcontainer up --workspace-folder .
       - name: Wait for Postgres in devcontainer
@@ -439,7 +440,7 @@ jobs:
         if: always()
         run: docker compose down
   Check-Rootless-App-Startup:
-    name: Check App Startup and Health with rootless docker
+    name: Check App Startup and Health
     runs-on: ubuntu-latest
     needs: [Run-Tests]
     steps:
@@ -507,3 +508,4 @@ jobs:
       - name: Cleanup - Free ports by stopping containers
         if: always()
         run: docker compose down
+
