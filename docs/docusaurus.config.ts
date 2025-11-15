@@ -43,6 +43,7 @@ const config: Config = {
           editUrl: ({ docPath }: { docPath: string }) => {
             return `https://github.com/PalisadoesFoundation/talawa-api/edit/develop/docs/docs/${docPath}`;
           },
+          exclude : ["**/auto-docs/graphql/types/Plugin/inputs/variables/queryPluginInputSchema.md"],
         },
         blog: {
           showReadingTime: true,
