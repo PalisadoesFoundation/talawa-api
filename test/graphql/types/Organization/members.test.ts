@@ -1,3 +1,4 @@
+import type { SQL } from "drizzle-orm";
 import type {
 	GraphQLFieldResolver,
 	GraphQLObjectType,
@@ -138,9 +139,23 @@ describe("Organization Members Resolver Tests", () => {
 
 			// Capture query args to assert correct filtering
 			let capturedQueryArgs: unknown;
+			const originalMock = mocks.drizzleClient.query.organizationMembershipsTable.findMany;
 			mocks.drizzleClient.query.organizationMembershipsTable.findMany = vi.fn().mockImplementation((args?: Record<string, unknown>) => {
 				capturedQueryArgs = args;
-				return Promise.resolve([]);
+				// Return mock data that would match the organization
+				return Promise.resolve([
+					{
+						createdAt: new Date("2024-01-01"),
+						memberId: "member-1",
+						organizationId: mockOrganization.id,
+						role: "member",
+						member: {
+							id: "member-1",
+							name: "Test Member",
+							email: "test@example.com",
+						},
+					},
+				]);
 			});
 
 			const result = await membersResolver(
@@ -153,14 +168,17 @@ describe("Organization Members Resolver Tests", () => {
 			expect(result).toBeDefined();
 			// Assert that the query includes organizationId filter
 			expect(capturedQueryArgs).toBeDefined();
-			const queryArgs = capturedQueryArgs as { where?: unknown };
+			const queryArgs = capturedQueryArgs as { where?: SQL };
 			expect(queryArgs.where).toBeDefined();
-			expect(queryArgs.where).toBeDefined();
+			expect(queryArgs.where).toBeTruthy();
+			expect(mocks.drizzleClient.query.organizationMembershipsTable.findMany).toHaveBeenCalledWith(
+				expect.objectContaining({
+					where: expect.anything(),
+				})
+			);
 
 			// Restore original mock
-			mocks.drizzleClient.query.organizationMembershipsTable.findMany.mockResolvedValue(
-				[],
-			);
+			mocks.drizzleClient.query.organizationMembershipsTable.findMany = originalMock;
 		});
 
 		it("should allow organization member access", async () => {
@@ -177,9 +195,23 @@ describe("Organization Members Resolver Tests", () => {
 
 			// Capture query args to assert correct filtering
 			let capturedQueryArgs: unknown;
+			const originalMock = mocks.drizzleClient.query.organizationMembershipsTable.findMany;
 			mocks.drizzleClient.query.organizationMembershipsTable.findMany = vi.fn().mockImplementation((args?: Record<string, unknown>) => {
 				capturedQueryArgs = args;
-				return Promise.resolve([]);
+				// Return mock data that would match the organization
+				return Promise.resolve([
+					{
+						createdAt: new Date("2024-01-01"),
+						memberId: "member-1",
+						organizationId: mockOrganization.id,
+						role: "member",
+						member: {
+							id: "member-1",
+							name: "Test Member",
+							email: "test@example.com",
+						},
+					},
+				]);
 			});
 
 			const result = await membersResolver(
@@ -192,14 +224,17 @@ describe("Organization Members Resolver Tests", () => {
 			expect(result).toBeDefined();
 			// Assert that the query includes organizationId filter
 			expect(capturedQueryArgs).toBeDefined();
-			const queryArgs = capturedQueryArgs as { where?: unknown };
+			const queryArgs = capturedQueryArgs as { where?: SQL };
 			expect(queryArgs.where).toBeDefined();
-			expect(queryArgs.where).toBeDefined();
+			expect(queryArgs.where).toBeTruthy();
+			expect(mocks.drizzleClient.query.organizationMembershipsTable.findMany).toHaveBeenCalledWith(
+				expect.objectContaining({
+					where: expect.anything(),
+				})
+			);
 
 			// Restore original mock
-			mocks.drizzleClient.query.organizationMembershipsTable.findMany.mockResolvedValue(
-				[],
-			);
+			mocks.drizzleClient.query.organizationMembershipsTable.findMany = originalMock;
 		});
 	});
 
@@ -254,7 +289,7 @@ describe("Organization Members Resolver Tests", () => {
 		});
 
 		it("should trim whitespace from name_contains and return matching members", async () => {
-			// Mock returns only members matching "John" (after trimming "  John  ")
+			// Test that "  John  " gets trimmed to "John" and the name filter is applied
 			const mockMembers = [
 				{
 					createdAt: new Date("2024-01-01"),
@@ -268,13 +303,33 @@ describe("Organization Members Resolver Tests", () => {
 				},
 			];
 
-			// Capture query args to verify name trimming
+			// Track whether the name filtering subquery was invoked
+			let wasNameFilterApplied = false;
+			
+			// Mock the drizzle client select/from/where chain for the name subquery
+			const originalSelect = mocks.drizzleClient.select;
+			mocks.drizzleClient.select = vi.fn().mockImplementation(() => ({
+				from: vi.fn().mockImplementation(() => ({
+					where: vi.fn().mockImplementation(() => {
+						// If this chain is called, it means the trimmed string was non-empty
+						// and the name filter was applied
+						wasNameFilterApplied = true;
+						
+						// Return empty array to simulate subquery result
+						return [];
+					}),
+				})),
+			}));
+
+			// Capture main query args and return mock data
 			let capturedQueryArgs: unknown;
+			const originalMock = mocks.drizzleClient.query.organizationMembershipsTable.findMany;
 			mocks.drizzleClient.query.organizationMembershipsTable.findMany = vi.fn().mockImplementation((args?: Record<string, unknown>) => {
 				capturedQueryArgs = args;
 				return Promise.resolve(mockMembers);
 			});
 
+			// Test with whitespace-padded input: "  John  " should be trimmed to "John"
 			const result = (await membersResolver(
 				mockOrganization,
 				{ first: 10, where: { name_contains: "  John  " } },
@@ -284,22 +339,25 @@ describe("Organization Members Resolver Tests", () => {
 
 			expect(result).toBeDefined();
 			expect(result.edges).toBeDefined();
-			expect(result.edges.length).toBe(1);
 
-			// Assert that the query was called and the name was trimmed
+			// Assert that the main query was called
 			expect(capturedQueryArgs).toBeDefined();
-			const queryArgs = capturedQueryArgs as { where?: unknown };
+			const queryArgs = capturedQueryArgs as { where?: SQL };
 			expect(queryArgs.where).toBeDefined();
-			expect(queryArgs.where).toBeDefined();
+			expect(wasNameFilterApplied).toBe(true);
+			expect(mocks.drizzleClient.select).toHaveBeenCalled();
 
-			// Verify that the trimmed name filter was applied in the result
+			// Verify that the result contains the expected member
 			const memberNames = result.edges.map((edge) => edge.node.name);
 			expect(memberNames).toContain("John Doe");
-			// Verify Jane Smith is not in the results (would have been filtered by DB)
-			expect(memberNames).not.toContain("Jane Smith");
+
+			// Restore original mocks
+			mocks.drizzleClient.query.organizationMembershipsTable.findMany = originalMock;
+			mocks.drizzleClient.select = originalSelect;
 		});
 
 		it("should return all members when name_contains is only whitespace", async () => {
+			// Test that "   " (only whitespace) gets trimmed to empty string and NO name filter is applied
 			const mockMembers = [
 				{
 					createdAt: new Date("2024-01-01"),
@@ -323,10 +381,27 @@ describe("Organization Members Resolver Tests", () => {
 				},
 			];
 
+			// Track whether the name filtering subquery was invoked
+			let wasNameFilterApplied = false;
+			
+			// Mock the drizzle client select/from/where chain for the name subquery
+			const originalSelect = mocks.drizzleClient.select;
+			mocks.drizzleClient.select = vi.fn().mockImplementation(() => ({
+				from: vi.fn().mockImplementation(() => ({
+					where: vi.fn().mockImplementation(() => {
+						// If this chain is called, it means the trimmed string was non-empty
+						wasNameFilterApplied = true;
+						return [];
+					}),
+				})),
+			}));
+
+			// Use mockResolvedValue for the main query since we expect no name filtering
 			mocks.drizzleClient.query.organizationMembershipsTable.findMany.mockResolvedValue(
 				mockMembers,
 			);
 
+			// Test with only whitespace: "   " should be trimmed to "" (empty) and no name filter applied
 			const result = (await membersResolver(
 				mockOrganization,
 				{ first: 10, where: { name_contains: "   " } },
@@ -337,6 +412,11 @@ describe("Organization Members Resolver Tests", () => {
 			expect(result).toBeDefined();
 			expect(result.edges).toBeDefined();
 			expect(result.edges.length).toBe(2);
+
+			expect(wasNameFilterApplied).toBe(false);
+
+			// Restore original mock
+			mocks.drizzleClient.select = originalSelect;
 		});
 
 		it("should filter members by name when name_contains is provided", async () => {
