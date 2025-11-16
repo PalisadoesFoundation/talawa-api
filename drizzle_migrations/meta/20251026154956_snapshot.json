@@ -1,6 +1,6 @@
 {
-  "id": "5b08f7be-abc6-4ccf-9ee8-e7808de3c288",
-  "prevId": "6160abe1-274b-40b3-a012-6839bc61a5a3",
+  "id": "7a3dbe37-ff0f-4b0d-a569-69b2c63f7e7b",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -208,6 +208,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "volunteer_id": {
+          "name": "volunteer_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "volunteer_group_id": {
+          "name": "volunteer_group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "category_id": {
           "name": "category_id",
           "type": "uuid",
@@ -302,6 +314,32 @@
           "onDelete": "set null",
           "onUpdate": "cascade"
         },
+        "actionitem_exceptions_volunteer_id_event_volunteers_id_fk": {
+          "name": "actionitem_exceptions_volunteer_id_event_volunteers_id_fk",
+          "tableFrom": "actionitem_exceptions",
+          "tableTo": "event_volunteers",
+          "columnsFrom": [
+            "volunteer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "actionitem_exceptions_volunteer_group_id_event_volunteer_groups_id_fk": {
+          "name": "actionitem_exceptions_volunteer_group_id_event_volunteer_groups_id_fk",
+          "tableFrom": "actionitem_exceptions",
+          "tableTo": "event_volunteer_groups",
+          "columnsFrom": [
+            "volunteer_group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
         "actionitem_exceptions_category_id_actionitem_categories_id_fk": {
           "name": "actionitem_exceptions_category_id_actionitem_categories_id_fk",
           "tableFrom": "actionitem_exceptions",
@@ -341,8 +379,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "actor_id": {
-          "name": "actor_id",
+        "volunteer_id": {
+          "name": "volunteer_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "volunteer_group_id": {
+          "name": "volunteer_group_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": false
@@ -450,11 +494,26 @@
           "method": "btree",
           "with": {}
         },
-        "actionitems_actor_id_index": {
-          "name": "actionitems_actor_id_index",
+        "actionitems_volunteer_id_index": {
+          "name": "actionitems_volunteer_id_index",
           "columns": [
             {
-              "expression": "actor_id",
+              "expression": "volunteer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "actionitems_volunteer_group_id_index": {
+          "name": "actionitems_volunteer_group_id_index",
+          "columns": [
+            {
+              "expression": "volunteer_group_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -542,12 +601,25 @@
         }
       },
       "foreignKeys": {
-        "actionitems_actor_id_users_id_fk": {
-          "name": "actionitems_actor_id_users_id_fk",
+        "actionitems_volunteer_id_event_volunteers_id_fk": {
+          "name": "actionitems_volunteer_id_event_volunteers_id_fk",
           "tableFrom": "actionitems",
-          "tableTo": "users",
+          "tableTo": "event_volunteers",
           "columnsFrom": [
-            "actor_id"
+            "volunteer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        },
+        "actionitems_volunteer_group_id_event_volunteer_groups_id_fk": {
+          "name": "actionitems_volunteer_group_id_event_volunteer_groups_id_fk",
+          "tableFrom": "actionitems",
+          "tableTo": "event_volunteer_groups",
+          "columnsFrom": [
+            "volunteer_group_id"
           ],
           "columnsTo": [
             "id"
@@ -2578,7 +2650,7 @@
           "name": "user_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "email": {
           "name": "email",
@@ -3654,6 +3726,234 @@
           "tableTo": "users",
           "columnsFrom": [
             "last_updated_by_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.event_invitations": {
+      "name": "event_invitations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recurring_event_instance_id": {
+          "name": "recurring_event_instance_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invited_by": {
+          "name": "invited_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invitee_email": {
+          "name": "invitee_email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invitee_name": {
+          "name": "invitee_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invitation_token": {
+          "name": "invitation_token",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "responded_at": {
+          "name": "responded_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "event_invitations_event_id_idx": {
+          "name": "event_invitations_event_id_idx",
+          "columns": [
+            {
+              "expression": "event_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "event_invitations_email_idx": {
+          "name": "event_invitations_email_idx",
+          "columns": [
+            {
+              "expression": "invitee_email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "event_invitations_token_idx": {
+          "name": "event_invitations_token_idx",
+          "columns": [
+            {
+              "expression": "invitation_token",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "event_invitations_status_idx": {
+          "name": "event_invitations_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "event_invitations_created_at_idx": {
+          "name": "event_invitations_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "event_invitations_event_id_events_id_fk": {
+          "name": "event_invitations_event_id_events_id_fk",
+          "tableFrom": "event_invitations",
+          "tableTo": "events",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "event_invitations_recurring_event_instance_id_recurring_event_instances_id_fk": {
+          "name": "event_invitations_recurring_event_instance_id_recurring_event_instances_id_fk",
+          "tableFrom": "event_invitations",
+          "tableTo": "recurring_event_instances",
+          "columnsFrom": [
+            "recurring_event_instance_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "event_invitations_invited_by_users_id_fk": {
+          "name": "event_invitations_invited_by_users_id_fk",
+          "tableFrom": "event_invitations",
+          "tableTo": "users",
+          "columnsFrom": [
+            "invited_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "event_invitations_user_id_users_id_fk": {
+          "name": "event_invitations_user_id_users_id_fk",
+          "tableFrom": "event_invitations",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
           ],
           "columnsTo": [
             "id"
