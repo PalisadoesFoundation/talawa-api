@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: MutationUpdateAgendaFolderInput
 
-> `const` **MutationUpdateAgendaFolderInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, `any`\>
+> `const` **MutationUpdateAgendaFolderInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `id`: `string`; `name?`: `null` \| `string`; `parentFolderId?`: `null` \| `string`; \}\>
 
-Defined in: [src/graphql/inputs/MutationUpdateAgendaFolderInput.ts:22](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/MutationUpdateAgendaFolderInput.ts#L22)
+Defined in: [src/graphql/inputs/MutationUpdateAgendaFolderInput.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationUpdateAgendaFolderInput.ts#L22)

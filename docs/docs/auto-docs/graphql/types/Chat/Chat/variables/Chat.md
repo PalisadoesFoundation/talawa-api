@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: Chat
 
-> **Chat**: `ImplementableObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `avatarMimeType`: `"image/avif"` \| `"image/jpeg"` \| `"image/png"` \| `"image/webp"`; `avatarName`: `string`; `createdAt`: `Date`; `creatorId`: `string`; `description`: `string`; `id`: `string`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `Date`; `updaterId`: `string`; \}, \{ `avatarMimeType`: `"image/avif"` \| `"image/jpeg"` \| `"image/png"` \| `"image/webp"`; `avatarName`: `string`; `createdAt`: `Date`; `creatorId`: `string`; `description`: `string`; `id`: `string`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `Date`; `updaterId`: `string`; \}\>
+> **Chat**: `ImplementableObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `avatarMimeType`: `null` \| `"image/avif"` \| `"image/jpeg"` \| `"image/png"` \| `"image/webp"`; `avatarName`: `null` \| `string`; `createdAt`: `Date`; `creatorId`: `null` \| `string`; `description`: `null` \| `string`; `id`: `string`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; \}, \{ `avatarMimeType`: `null` \| `"image/avif"` \| `"image/jpeg"` \| `"image/png"` \| `"image/webp"`; `avatarName`: `null` \| `string`; `createdAt`: `Date`; `creatorId`: `null` \| `string`; `description`: `null` \| `string`; `id`: `string`; `name`: `string`; `organizationId`: `string`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; \}\>
 
-Defined in: [src/graphql/types/Chat/Chat.ts:4](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/types/Chat/Chat.ts#L4)
+Defined in: [src/graphql/types/Chat/Chat.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Chat/Chat.ts#L25)

@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: mutationUpdateFundCampaignPledgeInputSchema
 
-> `const` **mutationUpdateFundCampaignPledgeInputSchema**: `ZodEffects`\<`ZodObject`\<`extendShape`\<`Pick`\<\{ `amount`: `ZodTypeAny`; `campaignId`: `ZodTypeAny`; `pledgerId`: `ZodTypeAny`; \}, `"amount"` \| `"campaignId"` \| `"pledgerId"`\>, \{ `amount`: `ZodOptional`\<`ZodTypeAny`\>; `id`: `any`; \}\>, `"strip"`, \{ `[key: string]`: `any`;  `amount`: `unknown`; `campaignId`: `unknown`; `id`: `unknown`; `pledgerId`: `unknown`; \}, \{ `[key: string]`: `any`;  `amount`: `unknown`; `campaignId`: `unknown`; `id`: `unknown`; `pledgerId`: `unknown`; \}\>, \{ `[key: string]`: `any`;  `amount`: `unknown`; `campaignId`: `unknown`; `id`: `unknown`; `pledgerId`: `unknown`; \}, \{ `[key: string]`: `any`;  `amount`: `unknown`; `campaignId`: `unknown`; `id`: `unknown`; `pledgerId`: `unknown`; \}\>
+> `const` **mutationUpdateFundCampaignPledgeInputSchema**: `ZodEffects`\<`ZodObject`\<`extendShape`\<`Pick`\<\{ `amount`: `ZodNumber`; `campaignId`: `ZodString`; `createdAt`: `ZodOptional`\<`ZodDate`\>; `creatorId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `id`: `ZodOptional`\<`ZodString`\>; `note`: `ZodNullable`\<`ZodOptional`\<`ZodString`\>\>; `pledgerId`: `ZodString`; `updatedAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `updaterId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; \}, `"note"`\>, \{ `amount`: `ZodOptional`\<`ZodNumber`\>; `id`: `ZodString`; \}\>, `"strip"`, `ZodTypeAny`, \{ `amount?`: `number`; `id`: `string`; `note?`: `null` \| `string`; \}, \{ `amount?`: `number`; `id`: `string`; `note?`: `null` \| `string`; \}\>, \{ `amount?`: `number`; `id`: `string`; `note?`: `null` \| `string`; \}, \{ `amount?`: `number`; `id`: `string`; `note?`: `null` \| `string`; \}\>
 
-Defined in: [src/graphql/inputs/MutationUpdateFundCampaignPledgeInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/MutationUpdateFundCampaignPledgeInput.ts#L5)
+Defined in: [src/graphql/inputs/MutationUpdateFundCampaignPledgeInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationUpdateFundCampaignPledgeInput.ts#L5)

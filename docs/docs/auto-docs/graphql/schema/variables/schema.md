@@ -1,4 +1,4 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
@@ -6,6 +6,7 @@
 
 > `const` **schema**: `GraphQLSchema`
 
-Defined in: [src/graphql/schema.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/schema.ts#L12)
+Defined in: [src/graphql/schema.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/schema.ts#L16)
 
 This is the executable graphql schema.
+The schema manager handles dynamic plugin integration.
