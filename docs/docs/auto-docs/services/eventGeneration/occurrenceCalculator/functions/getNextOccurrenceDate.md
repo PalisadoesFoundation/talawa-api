@@ -6,7 +6,7 @@
 
 > **getNextOccurrenceDate**(`currentDate`, `recurrenceRule`): `Date`
 
-Defined in: [src/services/eventGeneration/occurrenceCalculator.ts:404](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/occurrenceCalculator.ts#L404)
+Defined in: [src/services/eventGeneration/occurrenceCalculator.ts:413](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/occurrenceCalculator.ts#L413)
 
 Calculates the next potential occurrence date based on the event's frequency and interval.
 This function correctly handles advancing the date for all supported frequency types.
@@ -29,19 +29,19 @@ The recurrence rule for the event.
 
 #### byDay
 
-`null` \| `string`[]
+`string`[] \| `null`
 
 #### byMonth
 
-`null` \| `number`[]
+`number`[] \| `null`
 
 #### byMonthDay
 
-`null` \| `number`[]
+`number`[] \| `null`
 
 #### count
 
-`null` \| `number`
+`number` \| `null`
 
 #### createdAt
 
@@ -73,11 +73,11 @@ The recurrence rule for the event.
 
 #### originalSeriesId
 
-`null` \| `string`
+`string` \| `null`
 
 #### recurrenceEndDate
 
-`null` \| `Date`
+`Date` \| `null`
 
 #### recurrenceRuleString
 
@@ -89,11 +89,11 @@ The recurrence rule for the event.
 
 #### updatedAt
 
-`null` \| `Date`
+`Date` \| `null`
 
 #### updaterId
 
-`null` \| `string`
+`string` \| `null`
 
 ## Returns
 

@@ -221,7 +221,7 @@ Get all loaded plugins
 
 ### getPlugin()
 
-> **getPlugin**(`pluginId`): `undefined` \| [`ILoadedPlugin`](../types/interfaces/ILoadedPlugin.md)
+> **getPlugin**(`pluginId`): [`ILoadedPlugin`](../types/interfaces/ILoadedPlugin.md) \| `undefined`
 
 Defined in: [src/plugin/manager/core.ts:413](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/core.ts#L413)
 
@@ -235,7 +235,7 @@ Get a specific plugin
 
 #### Returns
 
-`undefined` \| [`ILoadedPlugin`](../types/interfaces/ILoadedPlugin.md)
+[`ILoadedPlugin`](../types/interfaces/ILoadedPlugin.md) \| `undefined`
 
 ***
 

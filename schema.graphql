@@ -641,13 +641,6 @@ input DeletePluginInput {
   id: String!
 }
 
-"""Possible statuses for a membership request."""
-enum DrizzleMembershipRequestStatus {
-  approved
-  pending
-  rejected
-}
-
 """
 A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
 """
@@ -5113,7 +5106,7 @@ type User {
   ): [Notification!]
 
   """The organization ID where the user requested membership."""
-  orgIdWhereMembershipRequested: [String!]
+  orgIdWhereMembershipRequested: [String!]!
 
   """
   GraphQL connection to traverse through the organizations the user is a member of.

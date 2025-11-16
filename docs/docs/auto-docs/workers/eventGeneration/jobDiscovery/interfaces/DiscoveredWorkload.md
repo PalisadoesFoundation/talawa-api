@@ -69,19 +69,19 @@ Defined in: [src/workers/eventGeneration/jobDiscovery.ts:28](https://github.com/
 
 ##### recurrenceRule.byDay
 
-> **byDay**: `null` \| `string`[]
+> **byDay**: `string`[] \| `null`
 
 ##### recurrenceRule.byMonth
 
-> **byMonth**: `null` \| `number`[]
+> **byMonth**: `number`[] \| `null`
 
 ##### recurrenceRule.byMonthDay
 
-> **byMonthDay**: `null` \| `number`[]
+> **byMonthDay**: `number`[] \| `null`
 
 ##### recurrenceRule.count
 
-> **count**: `null` \| `number`
+> **count**: `number` \| `null`
 
 ##### recurrenceRule.createdAt
 
@@ -113,11 +113,11 @@ Defined in: [src/workers/eventGeneration/jobDiscovery.ts:28](https://github.com/
 
 ##### recurrenceRule.originalSeriesId
 
-> **originalSeriesId**: `null` \| `string`
+> **originalSeriesId**: `string` \| `null`
 
 ##### recurrenceRule.recurrenceEndDate
 
-> **recurrenceEndDate**: `null` \| `Date`
+> **recurrenceEndDate**: `Date` \| `null`
 
 ##### recurrenceRule.recurrenceRuleString
 
@@ -129,11 +129,11 @@ Defined in: [src/workers/eventGeneration/jobDiscovery.ts:28](https://github.com/
 
 ##### recurrenceRule.updatedAt
 
-> **updatedAt**: `null` \| `Date`
+> **updatedAt**: `Date` \| `null`
 
 ##### recurrenceRule.updaterId
 
-> **updaterId**: `null` \| `string`
+> **updaterId**: `string` \| `null`
 
 #### ruleId
 
@@ -149,7 +149,7 @@ Defined in: [src/workers/eventGeneration/jobDiscovery.ts:27](https://github.com/
 
 #### configurationNotes
 
-> **configurationNotes**: `null` \| `string`
+> **configurationNotes**: `string` \| `null`
 
 #### createdAt
 
@@ -189,7 +189,7 @@ Defined in: [src/workers/eventGeneration/jobDiscovery.ts:27](https://github.com/
 
 #### lastUpdatedById
 
-> **lastUpdatedById**: `null` \| `string`
+> **lastUpdatedById**: `string` \| `null`
 
 #### maxInstancesPerRun
 
@@ -209,4 +209,4 @@ Defined in: [src/workers/eventGeneration/jobDiscovery.ts:27](https://github.com/
 
 #### updatedAt
 
-> **updatedAt**: `null` \| `Date`
+> **updatedAt**: `Date` \| `null`

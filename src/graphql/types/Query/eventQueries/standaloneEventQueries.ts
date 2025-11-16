@@ -86,22 +86,28 @@ export async function getStandaloneEventsInDateRange(
 			}),
 		);
 
-		logger.debug("Retrieved standalone events", {
-			organizationId,
-			count: eventsWithAttachments.length,
-			dateRange: {
-				start: startDate.toISOString(),
-				end: endDate.toISOString(),
+		logger.debug(
+			{
+				organizationId,
+				count: eventsWithAttachments.length,
+				dateRange: {
+					start: startDate.toISOString(),
+					end: endDate.toISOString(),
+				},
+				eventIdsFilter: eventIds?.length || 0,
 			},
-			eventIdsFilter: eventIds?.length || 0,
-		});
+			"Retrieved standalone events",
+		);
 
 		return eventsWithAttachments;
 	} catch (error) {
-		logger.error("Failed to retrieve standalone events", {
-			organizationId,
-			error,
-		});
+		logger.error(
+			{
+				organizationId,
+				error,
+			},
+			"Failed to retrieve standalone events",
+		);
 		throw error;
 	}
 }
@@ -147,17 +153,23 @@ export async function getStandaloneEventsByIds(
 			}),
 		);
 
-		logger.debug("Retrieved standalone events by IDs", {
-			requestedIds: eventIds.length,
-			foundEvents: eventsWithAttachments.length,
-		});
+		logger.debug(
+			{
+				requestedIds: eventIds.length,
+				foundEvents: eventsWithAttachments.length,
+			},
+			"Retrieved standalone events by IDs",
+		);
 
 		return eventsWithAttachments;
 	} catch (error) {
-		logger.error("Failed to retrieve standalone events by IDs", {
-			eventIds,
-			error,
-		});
+		logger.error(
+			{
+				eventIds,
+				error,
+			},
+			"Failed to retrieve standalone events by IDs",
+		);
 		throw error;
 	}
 }
