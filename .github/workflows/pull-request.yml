@@ -369,7 +369,7 @@ jobs:
           echo "- Source branch may be incorrect please use develop as source branch."
           exit 1
   Check-App-Startup:
-    name: Check App Startup and Health for the legact devcontainer with root
+    name: Check App Startup and Health for the legacy devcontainer with root
     runs-on: ubuntu-latest
     needs: [Run-Tests]
     steps:
