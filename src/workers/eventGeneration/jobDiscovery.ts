@@ -85,8 +85,8 @@ export async function discoverEventGenerationWorkloads(
 			});
 		} catch (error) {
 			logger.error(
-				`Failed to discover workload for organization ${windowConfig.organizationId}`,
 				error,
+				`Failed to discover workload for organization ${windowConfig.organizationId}`,
 			);
 		}
 	}
@@ -94,13 +94,16 @@ export async function discoverEventGenerationWorkloads(
 	// Sort by priority (highest first)
 	workloads.sort((a, b) => b.priority - a.priority);
 
-	logger.info(`Discovered ${workloads.length} EventGeneration workloads`, {
-		totalEvents: workloads.reduce(
-			(sum, w) => sum + w.recurringEvents.length,
-			0,
-		),
-		highPriorityWorkloads: workloads.filter((w) => w.priority > 7).length,
-	});
+	logger.info(
+		{
+			totalEvents: workloads.reduce(
+				(sum, w) => sum + w.recurringEvents.length,
+				0,
+			),
+			highPriorityWorkloads: workloads.filter((w) => w.priority > 7).length,
+		},
+		`Discovered ${workloads.length} EventGeneration workloads`,
+	);
 
 	return workloads;
 }

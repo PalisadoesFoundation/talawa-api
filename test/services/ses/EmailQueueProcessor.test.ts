@@ -171,8 +171,8 @@ describe("EmailQueueProcessor", () => {
 		await processor.processPendingEmails();
 
 		expect(logSpy).toHaveBeenCalledWith(
-			"Error processing email queue:",
 			expect.any(Error),
+			"Error processing email queue:",
 		);
 	});
 

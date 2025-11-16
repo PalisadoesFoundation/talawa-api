@@ -170,8 +170,8 @@ suite("eventMaterialization", () => {
 			);
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Base template or recurrence rule not found for ${input.baseRecurringEventId}`,
 				{ baseTemplate: false, recurrenceRule: true },
+				`Base template or recurrence rule not found for ${input.baseRecurringEventId}`,
 			);
 		});
 
@@ -210,8 +210,8 @@ suite("eventMaterialization", () => {
 			);
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Base template or recurrence rule not found for ${input.baseRecurringEventId}`,
 				{ baseTemplate: true, recurrenceRule: false },
+				`Base template or recurrence rule not found for ${input.baseRecurringEventId}`,
 			);
 		});
 
@@ -324,11 +324,11 @@ suite("eventMaterialization", () => {
 			);
 
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				expect.stringContaining("Generated"),
 				expect.objectContaining({
 					frequency: "WEEKLY",
 					originalCount: 4,
 				}),
+				expect.stringContaining("Generated"),
 			);
 		});
 
@@ -354,8 +354,68 @@ suite("eventMaterialization", () => {
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Failed to generate instances for ${input.baseRecurringEventId}:`,
 				dbError,
+				`Failed to generate instances for ${input.baseRecurringEventId}:`,
+			);
+		});
+
+		test("throws error if recurrence rule has null originalSeriesId", async () => {
+			const input: GenerateInstancesInput = {
+				baseRecurringEventId: faker.string.uuid(),
+				windowStartDate: new Date("2025-01-01"),
+				windowEndDate: new Date("2025-12-31"),
+				organizationId: faker.string.uuid(),
+			};
+
+			const mockBaseTemplate = {
+				id: input.baseRecurringEventId,
+				name: "Test Event",
+				startAt: new Date("2025-01-01T10:00:00Z"),
+				endAt: new Date("2025-01-01T11:00:00Z"),
+				isRecurringEventTemplate: true,
+				organizationId: input.organizationId,
+				creatorId: faker.string.uuid(),
+				isPublic: true,
+				isRegisterable: true,
+				allDay: false,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
+			const mockRecurrenceRule = {
+				id: faker.string.uuid(),
+				originalSeriesId: null,
+				baseRecurringEventId: input.baseRecurringEventId,
+				frequency: "WEEKLY",
+				interval: 1,
+				count: 10,
+				recurrenceEndDate: null,
+				recurrenceStartDate: new Date("2025-01-01T10:00:00Z"),
+				byDay: ["MO"],
+				byMonth: null,
+				byMonthDay: null,
+			};
+
+			(mockDrizzleClient.query.eventsTable.findFirst as Mock).mockResolvedValue(
+				mockBaseTemplate,
+			);
+			(
+				mockDrizzleClient.query.recurrenceRulesTable.findFirst as Mock
+			).mockResolvedValue(mockRecurrenceRule);
+
+			await expect(
+				generateInstancesForRecurringEvent(
+					input,
+					mockDrizzleClient,
+					mockLogger,
+				),
+			).rejects.toThrow(
+				`Recurrence rule for ${input.baseRecurringEventId} has null originalSeriesId`,
+			);
+
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				{ recurrenceRuleId: mockRecurrenceRule.id },
+				`Recurrence rule for ${input.baseRecurringEventId} has null originalSeriesId`,
 			);
 		});
 	});

@@ -15,6 +15,7 @@ import {
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Query_event,
+	Query_getRecurringEvents,
 	Query_signIn,
 } from "../documentNodes";
 
@@ -606,6 +607,71 @@ suite("Query field event", () => {
 			const durationInDays =
 				(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
 			expect(durationInDays).toBeGreaterThan(1);
+		});
+
+		test("creates a never-ending recurring event and materializes instances (recurrence.never)", async () => {
+			const { authToken, userId } = await getAdminTokenAndUserId();
+
+			const organization = await createTestOrganization(authToken, userId);
+			assertToBeNonNullish(organization);
+			const organizationId = organization.id;
+
+			const startAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+			const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+
+			// Create never-ending recurring event
+			const createEventResult = await mercuriusClient.mutate(
+				Mutation_createEvent,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: {
+						input: {
+							name: `Never Recurring ${faker.string.uuid()}`,
+							organizationId,
+							startAt,
+							endAt,
+							recurrence: {
+								frequency: "WEEKLY",
+								never: true,
+							},
+						},
+					},
+				},
+			);
+
+			if (createEventResult.errors && createEventResult.errors.length > 0) {
+				throw new Error(
+					`createEvent GraphQL errors: ${JSON.stringify(createEventResult.errors, null, 2)}`,
+				);
+			}
+			if (!createEventResult.data || !createEventResult.data.createEvent) {
+				throw new Error(
+					`createEvent returned no data. full response: ${JSON.stringify(createEventResult, null, 2)}`,
+				);
+			}
+
+			const baseRecurringEventId = createEventResult.data.createEvent.id;
+			assertToBeNonNullish(baseRecurringEventId);
+
+			const instancesResult = await mercuriusClient.query(
+				Query_getRecurringEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { baseRecurringEventId },
+				},
+			);
+
+			if (instancesResult.errors && instancesResult.errors.length > 0) {
+				throw new Error(
+					`getRecurringEvents GraphQL errors: ${JSON.stringify(instancesResult.errors, null, 2)}`,
+				);
+			}
+
+			const generatedInstances = instancesResult.data?.getRecurringEvents;
+
+			assertToBeNonNullish(generatedInstances);
+			expect(Array.isArray(generatedInstances)).toBe(true);
+			expect(generatedInstances.length).toBeGreaterThan(0);
 		});
 	});
 });

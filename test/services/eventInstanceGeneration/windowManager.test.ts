@@ -99,11 +99,11 @@ suite("windowManager", () => {
 				}),
 			);
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				`Generation window initialized for organization ${mockOrganizationId}`,
 				expect.objectContaining({
 					hotWindowMonthsAhead: 12,
 					historyRetentionMonths: 3,
 				}),
+				`Generation window initialized for organization ${mockOrganizationId}`,
 			);
 		});
 
@@ -131,6 +131,7 @@ suite("windowManager", () => {
 		});
 
 		test("handles database errors gracefully", async () => {
+			(mockDrizzleClient.insert as Mock).mockReset();
 			const input: CreateGenerationWindowInput = {
 				organizationId: mockOrganizationId,
 				createdById: mockUserId,
@@ -146,8 +147,8 @@ suite("windowManager", () => {
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
+				{ error: dbError },
 				`Failed to initialize Generation window for organization ${mockOrganizationId}:`,
-				dbError,
 			);
 		});
 	});
@@ -197,12 +198,12 @@ suite("windowManager", () => {
 					mockExistingConfig.hotWindowMonthsAhead + additionalMonths,
 			});
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				`Extended Generation window for organization ${mockOrganizationId} by ${additionalMonths} months`,
-				expect.objectContaining({
+				{
 					previousEndDate:
 						mockExistingConfig.currentWindowEndDate.toISOString(),
 					newEndDate: expectedNewEndDate.toISOString(),
-				}),
+				},
+				`Extended Generation window for organization ${mockOrganizationId} by ${additionalMonths} months`,
 			);
 		});
 
@@ -243,8 +244,10 @@ suite("windowManager", () => {
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
+				expect.objectContaining({
+					error: expect.any(Error),
+				}),
 				`Failed to extend Generation window for organization ${mockOrganizationId}:`,
-				dbError,
 			);
 		});
 	});
@@ -294,11 +297,11 @@ suite("windowManager", () => {
 				),
 			);
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				`Cleaned up ${25} old Generated instances for organization ${mockOrganizationId}`,
-				expect.objectContaining({
+				{
 					retentionStartDate: mockWindowConfig.retentionStartDate.toISOString(),
 					deletedCount: 25,
-				}),
+				},
+				`Cleaned up ${25} old Generated instances for organization ${mockOrganizationId}`,
 			);
 		});
 
@@ -368,8 +371,8 @@ suite("windowManager", () => {
 			).rejects.toThrow("Database connection failed");
 
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				`Failed to cleanup old Generated instances for organization ${mockOrganizationId}:`,
 				dbError,
+				`Failed to cleanup old Generated instances for organization ${mockOrganizationId}:`,
 			);
 		});
 	});

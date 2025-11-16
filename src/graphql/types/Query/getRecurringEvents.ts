@@ -144,17 +144,23 @@ builder.queryField("getRecurringEvents", (t) =>
 					attachments: [], // Recurring event instances don't have direct attachments
 				}));
 
-				ctx.log.debug("Retrieved recurring events by base ID", {
-					baseRecurringEventId,
-					instanceCount: eventsWithAttachments.length,
-				});
+				ctx.log.debug(
+					{
+						baseRecurringEventId,
+						instanceCount: eventsWithAttachments.length,
+					},
+					"Retrieved recurring events by base ID",
+				);
 
 				return eventsWithAttachments;
 			} catch (error) {
-				ctx.log.error("Failed to retrieve recurring events", {
-					baseRecurringEventId,
-					error,
-				});
+				ctx.log.error(
+					{
+						baseRecurringEventId,
+						error,
+					},
+					"Failed to retrieve recurring events",
+				);
 
 				// If it's already a TalawaGraphQLError, re-throw it
 				if (error instanceof TalawaGraphQLError) {

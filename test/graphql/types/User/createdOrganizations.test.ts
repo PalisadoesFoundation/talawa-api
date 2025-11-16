@@ -109,8 +109,8 @@ describe("resolveCreatedOrganizations", () => {
 		).rejects.toThrow("Failed to retrieve organizations created by the user");
 
 		expect(baseMockCtx.log.error).toHaveBeenCalledWith(
-			"Error fetching created organizations:",
 			errorMsg,
+			"Error fetching created organizations:",
 		);
 	});
 

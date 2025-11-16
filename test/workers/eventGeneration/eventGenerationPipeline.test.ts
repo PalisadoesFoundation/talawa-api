@@ -164,18 +164,18 @@ describe("materializationPipeline", () => {
 				processingTimeMs: expect.any(Number),
 			});
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Starting materialization worker",
 				{
 					maxConcurrentJobs: 5,
 					maxOrganizations: 10,
 				},
+				"Starting materialization worker run",
 			);
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				"Created 1 materialization jobs from 1 workloads",
 			);
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Materialization worker completed",
 				expect.any(Object),
+				"Materialization worker completed",
 			);
 		});
 
@@ -283,9 +283,12 @@ describe("materializationPipeline", () => {
 				errorsEncountered: 1,
 				processingTimeMs: expect.any(Number),
 			});
-			expect(mockLogger.error).toHaveBeenCalledWith("Batch execution failed", {
-				error: "Execution failed",
-			});
+			expect(mockLogger.error).toHaveBeenCalledWith(
+				{
+					error: "Execution failed",
+				},
+				"Batch execution failed",
+			);
 		});
 
 		it("should skip post-processing when disabled", async () => {
@@ -398,8 +401,8 @@ describe("materializationPipeline", () => {
 				processingTimeMs: expect.any(Number),
 			});
 			expect(mockLogger.error).toHaveBeenCalledWith(
+				{ error },
 				"Materialization worker failed",
-				error,
 			);
 		});
 	});
@@ -500,8 +503,14 @@ describe("materializationPipeline", () => {
 				"Processing specific organization: org1",
 			);
 			expect(mockLogger.info).toHaveBeenCalledWith(
+				{
+					errorsEncountered: expect.any(Number),
+					instancesCreated: expect.any(Number),
+					organizationsProcessed: expect.any(Number),
+					processingTimeMs: expect.any(Number),
+					windowsUpdated: expect.any(Number),
+				},
 				"Completed processing for organization org1",
-				expect.any(Object),
 			);
 		});
 
@@ -570,8 +579,8 @@ describe("materializationPipeline", () => {
 				processingTimeMs: expect.any(Number),
 			});
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to process organization org1",
 				error,
+				"Failed to process organization org1",
 			);
 		});
 	});

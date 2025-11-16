@@ -229,11 +229,11 @@ describe("jobDiscovery", () => {
 				estimatedDurationMs: expect.any(Number),
 			});
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Discovered 1 EventGeneration workloads",
 				{
 					totalEvents: 2,
 					highPriorityWorkloads: expect.any(Number),
 				},
+				"Discovered 1 EventGeneration workloads",
 			);
 		});
 
@@ -312,8 +312,8 @@ describe("jobDiscovery", () => {
 
 			expect(result).toHaveLength(0);
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to discover workload for organization org1",
 				expect.any(Error),
+				"Failed to discover workload for organization org1",
 			);
 		});
 

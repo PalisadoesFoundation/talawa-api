@@ -172,8 +172,8 @@ describe("eventCleanupWorker", () => {
 				errorsEncountered: 1,
 			});
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to cleanup instances for organization org2:",
 				expect.any(Error),
+				"Failed to cleanup instances for organization org2:",
 			);
 		});
 
@@ -204,8 +204,8 @@ describe("eventCleanupWorker", () => {
 				cleanupOldInstances(mockDrizzleClient, mockLogger),
 			).rejects.toThrow("Database connection failed");
 			expect(mockLogger.error).toHaveBeenCalledWith(
-				"Failed to process instance cleanup:",
 				error,
+				"Failed to process instance cleanup:",
 			);
 		});
 	});

@@ -52,6 +52,7 @@
     "drizzle-kit": "^0.31.4",
     "drizzle-seed": "^0.3.1",
     "gql.tada": "^1.8.12",
+    "knip": "^5.67.0",
     "lefthook": "^1.13.6",
     "mercurius-integration-testing": "^9.0.1",
     "pino-pretty": "^13.0.0",

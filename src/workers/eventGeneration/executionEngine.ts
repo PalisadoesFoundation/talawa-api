@@ -84,8 +84,8 @@ export async function executeEventGeneration(
 	} catch (error) {
 		const endTime = Date.now();
 		logger.error(
-			`Generation execution failed for ${job.organizationId}`,
 			error,
+			`Generation execution failed for ${job.organizationId}`,
 		);
 
 		return {

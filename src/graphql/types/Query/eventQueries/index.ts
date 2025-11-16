@@ -10,8 +10,6 @@ export * from "./recurringEventInstanceQueries";
 export * from "./standaloneEventQueries";
 export * from "./unifiedEventQueries";
 
-export type { GetRecurringEventInstancesInput } from "./recurringEventInstanceQueries";
-
 export type { GetStandaloneEventsInput } from "./standaloneEventQueries";
 
 export type {

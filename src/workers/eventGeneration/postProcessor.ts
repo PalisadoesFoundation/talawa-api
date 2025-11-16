@@ -48,7 +48,7 @@ export async function executePostProcessing(
 		}
 	} catch (error) {
 		const errorMessage = `Post-processing failed: ${error}`;
-		logger.error(errorMessage, error);
+		logger.error(error, errorMessage);
 		result.errors.push(errorMessage);
 	}
 
@@ -74,15 +74,18 @@ async function performCleanupOperations(
 	// 3. Clear temporary data
 	// 4. Log completion status
 
-	logger.info("Cleanup operations completed", {
-		organizationsProcessed: new Set(
-			executionResults.map((r) => r.organizationId),
-		).size,
-		totalInstancesCreated: executionResults.reduce(
-			(sum, r) => sum + r.instancesCreated,
-			0,
-		),
-	});
+	logger.info(
+		{
+			organizationsProcessed: new Set(
+				executionResults.map((r) => r.organizationId),
+			).size,
+			totalInstancesCreated: executionResults.reduce(
+				(sum, r) => sum + r.instancesCreated,
+				0,
+			),
+		},
+		"Cleanup operations completed",
+	);
 }
 
 /**

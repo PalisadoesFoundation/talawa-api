@@ -182,30 +182,36 @@ export const graphql = fastifyPlugin(async (fastify) => {
 		try {
 			// Replace the schema in the Mercurius instance
 			fastify.graphql.replaceSchema(newSchema);
-			fastify.log.info("✅ GraphQL Schema Updated Successfully", {
-				timestamp: new Date().toISOString(),
-				newSchemaFields: {
-					queries: Object.keys(newSchema.getQueryType()?.getFields() || {}),
-					mutations: Object.keys(
-						newSchema.getMutationType()?.getFields() || {},
-					),
-					subscriptions: Object.keys(
-						newSchema.getSubscriptionType()?.getFields() || {},
-					),
+			fastify.log.info(
+				{
+					timestamp: new Date().toISOString(),
+					newSchemaFields: {
+						queries: Object.keys(newSchema.getQueryType()?.getFields() || {}),
+						mutations: Object.keys(
+							newSchema.getMutationType()?.getFields() || {},
+						),
+						subscriptions: Object.keys(
+							newSchema.getSubscriptionType()?.getFields() || {},
+						),
+					},
 				},
-			});
+				"✅ GraphQL Schema Updated Successfully",
+			);
 		} catch (error) {
-			fastify.log.error("❌ Failed to Update GraphQL Schema", {
-				error:
-					error instanceof Error
-						? {
-								message: error.message,
-								stack: error.stack,
-								name: error.name,
-							}
-						: String(error),
-				timestamp: new Date().toISOString(),
-			});
+			fastify.log.error(
+				{
+					error:
+						error instanceof Error
+							? {
+									message: error.message,
+									stack: error.stack,
+									name: error.name,
+								}
+							: String(error),
+					timestamp: new Date().toISOString(),
+				},
+				"❌ Failed to Update GraphQL Schema",
+			);
 		}
 	});
 	fastify.graphql.addHook(
