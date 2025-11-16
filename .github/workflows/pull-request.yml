@@ -171,7 +171,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
       - name: Install dependencies
-        run: pnpm install            
+        run: pnpm install --frozen-lockfile 
       - name: Run Knip
         run: pnpm knip --include exports
         # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing

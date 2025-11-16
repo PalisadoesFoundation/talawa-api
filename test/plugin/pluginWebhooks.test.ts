@@ -224,7 +224,7 @@ describe("Plugin Webhooks", () => {
 
 			expect(mockFastify.log.error).toHaveBeenCalledWith(
 				webhookError,
-				"Plugin webhook error:",
+				"Plugin webhook error",
 			);
 			expect(mockReply.status).toHaveBeenCalledWith(500);
 			expect(mockReply.send).toHaveBeenCalledWith({
@@ -245,7 +245,7 @@ describe("Plugin Webhooks", () => {
 
 			expect(mockFastify.log.error).toHaveBeenCalledWith(
 				nonErrorException,
-				"Plugin webhook error:",
+				"Plugin webhook error",
 			);
 			expect(mockReply.status).toHaveBeenCalledWith(500);
 			expect(mockReply.send).toHaveBeenCalledWith({
@@ -458,7 +458,7 @@ describe("Plugin Webhooks", () => {
 
 			expect(mockFastify.log.error).toHaveBeenCalledWith(
 				webhookError,
-				"Plugin webhook error:",
+				"Plugin webhook error",
 			);
 			expect(mockReply.status).toHaveBeenCalledWith(500);
 			expect(mockReply.send).toHaveBeenCalledWith({
@@ -671,7 +671,7 @@ describe("Plugin Webhooks", () => {
 
 			expect(mockFastify.log.error).toHaveBeenCalledWith(
 				registryError,
-				"Plugin webhook error:",
+				"Plugin webhook error",
 			);
 			expect(mockReply.status).toHaveBeenCalledWith(500);
 			expect(mockReply.send).toHaveBeenCalledWith({

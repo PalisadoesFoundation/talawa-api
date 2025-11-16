@@ -362,7 +362,7 @@ describe("getRecurringEventInstancesInDateRange", () => {
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
 			error,
-			`Failed to get recurring event instances for organization ${baseInput.organizationId}:`,
+			`Failed to get recurring event instances for organization ${baseInput.organizationId}`,
 		);
 	});
 });
@@ -461,7 +461,7 @@ describe("getRecurringEventInstanceById", () => {
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
 			expect.any(Error),
-			"Failed to get recurring event instance instance-1:",
+			"Failed to get recurring event instance instance-1",
 		);
 	});
 
@@ -584,7 +584,7 @@ describe("getRecurringEventInstanceById", () => {
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
 			error,
-			"Failed to get recurring event instance instance-1:",
+			"Failed to get recurring event instance instance-1",
 		);
 	});
 });
@@ -760,7 +760,7 @@ describe("getRecurringEventInstancesByIds", () => {
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
 			error,
-			"Failed to get recurring event instances by IDs:",
+			"Failed to get recurring event instances by IDs",
 		);
 
 		// Test template/exception errors
@@ -815,7 +815,7 @@ describe("getRecurringEventInstancesByIds", () => {
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
 			error,
-			"Failed to get recurring event instances by IDs:",
+			"Failed to get recurring event instances by IDs",
 		);
 	});
 });
@@ -903,7 +903,7 @@ describe("getRecurringEventInstancesByBaseId", () => {
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
 			error,
-			`Failed to get recurring event instances for base event ${baseEventId}:`,
+			`Failed to get recurring event instances for base event ${baseEventId}`,
 		);
 	});
 });

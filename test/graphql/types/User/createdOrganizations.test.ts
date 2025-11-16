@@ -110,7 +110,7 @@ describe("resolveCreatedOrganizations", () => {
 
 		expect(baseMockCtx.log.error).toHaveBeenCalledWith(
 			errorMsg,
-			"Error fetching created organizations:",
+			"Error fetching created organizations",
 		);
 	});
 
