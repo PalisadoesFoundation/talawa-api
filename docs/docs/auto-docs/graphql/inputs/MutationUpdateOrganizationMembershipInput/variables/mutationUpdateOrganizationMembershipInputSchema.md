@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: mutationUpdateOrganizationMembershipInputSchema
 
-> `const` **mutationUpdateOrganizationMembershipInputSchema**: `ZodEffects`\<`ZodObject`\<`extendShape`\<`Pick`\<\{\}, `never`\>, \{ `role`: `any`; \}\>, `"strip"`, \{ `[key: string]`: `any`;  `role`: `unknown`; \}, \{ `[key: string]`: `any`;  `role`: `unknown`; \}\>, \{ `[key: string]`: `any`;  `role`: `unknown`; \}, \{ `[key: string]`: `any`;  `role`: `unknown`; \}\>
+> `const` **mutationUpdateOrganizationMembershipInputSchema**: `ZodEffects`\<`ZodObject`\<`extendShape`\<`Pick`\<\{ `createdAt`: `ZodOptional`\<`ZodDate`\>; `creatorId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `memberId`: `ZodString`; `organizationId`: `ZodString`; `role`: `ZodEnum`\<\[`"administrator"`, `"regular"`\]\>; `updatedAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; `updaterId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; \}, `"organizationId"` \| `"memberId"`\>, \{ `role`: `ZodOptional`\<`ZodEnum`\<\[`"administrator"`, `"regular"`\]\>\>; \}\>, `"strip"`, `ZodTypeAny`, \{ `memberId`: `string`; `organizationId`: `string`; `role?`: `"administrator"` \| `"regular"`; \}, \{ `memberId`: `string`; `organizationId`: `string`; `role?`: `"administrator"` \| `"regular"`; \}\>, \{ `memberId`: `string`; `organizationId`: `string`; `role?`: `"administrator"` \| `"regular"`; \}, \{ `memberId`: `string`; `organizationId`: `string`; `role?`: `"administrator"` \| `"regular"`; \}\>
 
-Defined in: [src/graphql/inputs/MutationUpdateOrganizationMembershipInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/MutationUpdateOrganizationMembershipInput.ts#L6)
+Defined in: [src/graphql/inputs/MutationUpdateOrganizationMembershipInput.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationUpdateOrganizationMembershipInput.ts#L6)

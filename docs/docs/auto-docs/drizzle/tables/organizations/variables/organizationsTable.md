@@ -1,11 +1,11 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: organizationsTable
 
-> `const` **organizationsTable**: `PgTableWithColumns`\<\{\}\>
+> `const` **organizationsTable**: `PgTableWithColumns`\<\{ \}\>
 
-Defined in: [src/drizzle/tables/organizations.ts:24](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/drizzle/tables/organizations.ts#L24)
+Defined in: [src/drizzle/tables/organizations.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/organizations.ts#L31)
 
 Drizzle orm postgres table definition for organizations.

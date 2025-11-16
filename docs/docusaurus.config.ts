@@ -17,8 +17,12 @@ const config: Config = {
   projectName: "talawa-api", // repo name
 
   onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "warn",
-
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn', // Or 'throw', 'ignore'
+    },
+  },
+  
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
@@ -39,6 +43,7 @@ const config: Config = {
           editUrl: ({ docPath }: { docPath: string }) => {
             return `https://github.com/PalisadoesFoundation/talawa-api/edit/develop/docs/docs/${docPath}`;
           },
+          exclude : ["**/auto-docs/graphql/types/Plugin/inputs/variables/queryPluginInputSchema.md"],
         },
         blog: {
           showReadingTime: true,
@@ -175,6 +180,11 @@ const config: Config = {
       ],
       copyright: `Copyright © ${new Date().getFullYear()} The Palisadoes Foundation, LLC. Built with Docusaurus.`,
     },
+    colorMode: {
+      defaultMode: "light",
+      disableSwitch: false,
+      respectPrefersColorScheme: true,
+    },         
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,

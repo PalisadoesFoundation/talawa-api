@@ -47,7 +47,7 @@ FundCampaign.implement({
 							},
 						},
 						where: (fields, operators) =>
-							operators.eq(fields.id, currentUserId),
+							operators.eq(fields.id, parent.fundId),
 					}),
 				]);
 
