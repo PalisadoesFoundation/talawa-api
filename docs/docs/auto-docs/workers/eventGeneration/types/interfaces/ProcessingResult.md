@@ -16,7 +16,7 @@ Defined in: [src/workers/eventGeneration/types.ts:37](https://github.com/Palisad
 
 ### data
 
-> **data**: `null` \| `T`
+> **data**: `T` \| `null`
 
 Defined in: [src/workers/eventGeneration/types.ts:39](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L39)
 

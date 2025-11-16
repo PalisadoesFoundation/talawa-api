@@ -20,7 +20,7 @@ Defined in: [src/services/eventGeneration/types.ts:85](https://github.com/Palisa
 
 ### exceptionsByTime
 
-> **exceptionsByTime**: `Map`\<`string`, \{ `createdAt`: `Date`; `creatorId`: `string`; `exceptionData`: `unknown`; `id`: `string`; `organizationId`: `string`; `recurringEventInstanceId`: `string`; `updatedAt`: `null` \| `Date`; `updaterId`: `null` \| `string`; \}\>
+> **exceptionsByTime**: `Map`\<`string`, \{ `createdAt`: `Date`; `creatorId`: `string`; `exceptionData`: `unknown`; `id`: `string`; `organizationId`: `string`; `recurringEventInstanceId`: `string`; `updatedAt`: `Date` \| `null`; `updaterId`: `string` \| `null`; \}\>
 
 Defined in: [src/services/eventGeneration/types.ts:89](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L89)
 
@@ -52,6 +52,6 @@ Defined in: [src/services/eventGeneration/types.ts:87](https://github.com/Palisa
 
 ### totalCount
 
-> **totalCount**: `null` \| `number`
+> **totalCount**: `number` \| `null`
 
 Defined in: [src/services/eventGeneration/types.ts:86](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L86)

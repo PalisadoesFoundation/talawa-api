@@ -4,7 +4,7 @@
 
 # Function: eventUpdatedAtResolver()
 
-> **eventUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`null` \| `Date`\>
+> **eventUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date` \| `null`\>
 
 Defined in: [src/graphql/types/Event/updatedAt.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Event/updatedAt.ts#L7)
 
@@ -24,4 +24,4 @@ Defined in: [src/graphql/types/Event/updatedAt.ts:7](https://github.com/Palisado
 
 ## Returns
 
-`Promise`\<`null` \| `Date`\>
+`Promise`\<`Date` \| `null`\>
