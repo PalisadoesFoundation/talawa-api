@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">validateRecurrenceRule | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://docs-api.talawa.io/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://docs-api.talawa.io/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/auto-docs/utilities/recurringEventHelpers/functions/validateRecurrenceRule"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="validateRecurrenceRule | Talawa API Documentation"><meta data-rh="true" name="description" content="API Docs"><meta data-rh="true" property="og:description" content="API Docs"><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/auto-docs/utilities/recurringEventHelpers/functions/validateRecurrenceRule"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/utilities/recurringEventHelpers/functions/validateRecurrenceRule" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/auto-docs/utilities/recurringEventHelpers/functions/validateRecurrenceRule" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"validateRecurrenceRule","item":"https://docs-api.talawa.io/docs/auto-docs/utilities/recurringEventHelpers/functions/validateRecurrenceRule"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.a008b5a9.css">
-<script src="/assets/js/runtime~main.13e53937.js" defer="defer"></script>
-<script src="/assets/js/main.da891560.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.22cab5b6.js" defer="defer"></script>
+<script src="/assets/js/main.a15dc0a4.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <svg style="display: none;"><defs>
@@ -28,13 +28,13 @@ after the start date.</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="baserecurringeventid">baseRecurringEventId<a href="#baserecurringeventid" class="hash-link" aria-label="Direct link to baseRecurringEventId" title="Direct link to baseRecurringEventId" translate="no">​</a></h4>
 <p><code>string</code></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="byday">byDay<a href="#byday" class="hash-link" aria-label="Direct link to byDay" title="Direct link to byDay" translate="no">​</a></h4>
-<p><code>null</code> | <code>string</code>[]</p>
+<p><code>string</code>[] | <code>null</code></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="bymonth">byMonth<a href="#bymonth" class="hash-link" aria-label="Direct link to byMonth" title="Direct link to byMonth" translate="no">​</a></h4>
-<p><code>null</code> | <code>number</code>[]</p>
+<p><code>number</code>[] | <code>null</code></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="bymonthday">byMonthDay<a href="#bymonthday" class="hash-link" aria-label="Direct link to byMonthDay" title="Direct link to byMonthDay" translate="no">​</a></h4>
-<p><code>null</code> | <code>number</code>[]</p>
+<p><code>number</code>[] | <code>null</code></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="count">count<a href="#count" class="hash-link" aria-label="Direct link to count" title="Direct link to count" translate="no">​</a></h4>
-<p><code>null</code> | <code>number</code></p>
+<p><code>number</code> | <code>null</code></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="createdat">createdAt<a href="#createdat" class="hash-link" aria-label="Direct link to createdAt" title="Direct link to createdAt" translate="no">​</a></h4>
 <p><code>Date</code></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="creatorid">creatorId<a href="#creatorid" class="hash-link" aria-label="Direct link to creatorId" title="Direct link to creatorId" translate="no">​</a></h4>
@@ -50,17 +50,17 @@ after the start date.</p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="organizationid">organizationId<a href="#organizationid" class="hash-link" aria-label="Direct link to organizationId" title="Direct link to organizationId" translate="no">​</a></h4>
 <p><code>string</code></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="originalseriesid">originalSeriesId<a href="#originalseriesid" class="hash-link" aria-label="Direct link to originalSeriesId" title="Direct link to originalSeriesId" translate="no">​</a></h4>
-<p><code>null</code> | <code>string</code></p>
+<p><code>string</code> | <code>null</code></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="recurrenceenddate">recurrenceEndDate<a href="#recurrenceenddate" class="hash-link" aria-label="Direct link to recurrenceEndDate" title="Direct link to recurrenceEndDate" translate="no">​</a></h4>
-<p><code>null</code> | <code>Date</code></p>
+<p><code>Date</code> | <code>null</code></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="recurrencerulestring">recurrenceRuleString<a href="#recurrencerulestring" class="hash-link" aria-label="Direct link to recurrenceRuleString" title="Direct link to recurrenceRuleString" translate="no">​</a></h4>
 <p><code>string</code></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="recurrencestartdate">recurrenceStartDate<a href="#recurrencestartdate" class="hash-link" aria-label="Direct link to recurrenceStartDate" title="Direct link to recurrenceStartDate" translate="no">​</a></h4>
 <p><code>Date</code></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="updatedat">updatedAt<a href="#updatedat" class="hash-link" aria-label="Direct link to updatedAt" title="Direct link to updatedAt" translate="no">​</a></h4>
-<p><code>null</code> | <code>Date</code></p>
+<p><code>Date</code> | <code>null</code></p>
 <h4 class="anchor anchorTargetStickyNavbar_vRzG" id="updaterid">updaterId<a href="#updaterid" class="hash-link" aria-label="Direct link to updaterId" title="Direct link to updaterId" translate="no">​</a></h4>
-<p><code>null</code> | <code>string</code></p>
+<p><code>string</code> | <code>null</code></p>
 <h2 class="anchor anchorTargetStickyNavbar_vRzG" id="returns">Returns<a href="#returns" class="hash-link" aria-label="Direct link to Returns" title="Direct link to Returns" translate="no">​</a></h2>
 <p><code>object</code></p>
 <p>An object with a boolean <code>isValid</code> and an array of error strings.</p>
