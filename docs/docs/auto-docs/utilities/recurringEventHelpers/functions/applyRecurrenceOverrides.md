@@ -21,7 +21,7 @@ This function implements the following rules:
 
 The new start time for the event (if provided)
 
-`Date` | `undefined`
+`undefined` | `Date`
 
 ### originalRecurrence
 

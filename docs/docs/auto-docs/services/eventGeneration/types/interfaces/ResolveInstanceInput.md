@@ -26,11 +26,11 @@ Defined in: [src/services/eventGeneration/types.ts:58](https://github.com/Palisa
 
 #### creatorId
 
-> **creatorId**: `string` \| `null`
+> **creatorId**: `null` \| `string`
 
 #### description
 
-> **description**: `string` \| `null`
+> **description**: `null` \| `string`
 
 #### endAt
 
@@ -54,7 +54,7 @@ Defined in: [src/services/eventGeneration/types.ts:58](https://github.com/Palisa
 
 #### location
 
-> **location**: `string` \| `null`
+> **location**: `null` \| `string`
 
 #### name
 
@@ -70,11 +70,11 @@ Defined in: [src/services/eventGeneration/types.ts:58](https://github.com/Palisa
 
 #### updatedAt
 
-> **updatedAt**: `Date` \| `null`
+> **updatedAt**: `null` \| `Date`
 
 #### updaterId
 
-> **updaterId**: `string` \| `null`
+> **updaterId**: `null` \| `string`
 
 ***
 
@@ -110,11 +110,11 @@ Defined in: [src/services/eventGeneration/types.ts:59](https://github.com/Palisa
 
 #### updatedAt
 
-> **updatedAt**: `Date` \| `null`
+> **updatedAt**: `null` \| `Date`
 
 #### updaterId
 
-> **updaterId**: `string` \| `null`
+> **updaterId**: `null` \| `string`
 
 ***
 
@@ -150,7 +150,7 @@ Defined in: [src/services/eventGeneration/types.ts:57](https://github.com/Palisa
 
 #### lastUpdatedAt
 
-> **lastUpdatedAt**: `Date` \| `null`
+> **lastUpdatedAt**: `null` \| `Date`
 
 #### organizationId
 
@@ -174,7 +174,7 @@ Defined in: [src/services/eventGeneration/types.ts:57](https://github.com/Palisa
 
 #### totalCount
 
-> **totalCount**: `number` \| `null`
+> **totalCount**: `null` \| `number`
 
 #### version
 

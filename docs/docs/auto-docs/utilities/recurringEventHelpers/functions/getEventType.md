@@ -24,19 +24,19 @@ The recurrence rule to classify.
 
 #### byDay
 
-`string`[] \| `null`
+`null` \| `string`[]
 
 #### byMonth
 
-`number`[] \| `null`
+`null` \| `number`[]
 
 #### byMonthDay
 
-`number`[] \| `null`
+`null` \| `number`[]
 
 #### count
 
-`number` \| `null`
+`null` \| `number`
 
 #### createdAt
 
@@ -68,11 +68,11 @@ The recurrence rule to classify.
 
 #### originalSeriesId
 
-`string` \| `null`
+`null` \| `string`
 
 #### recurrenceEndDate
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### recurrenceRuleString
 
@@ -84,11 +84,11 @@ The recurrence rule to classify.
 
 #### updatedAt
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### updaterId
 
-`string` \| `null`
+`null` \| `string`
 
 ## Returns
 

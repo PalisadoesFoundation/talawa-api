@@ -4,7 +4,7 @@
 
 # Function: updatedAtResolver()
 
-> **updatedAtResolver**(`parent`, `args`, `ctx`): `Promise`\<`Date` \| `null`\>
+> **updatedAtResolver**(`parent`, `args`, `ctx`): `Promise`\<`null` \| `Date`\>
 
 Defined in: [src/graphql/types/FundCampaign/updatedAt.ts:23](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/FundCampaign/updatedAt.ts#L23)
 
@@ -24,7 +24,7 @@ The parent FundCampaign object containing the updatedAt field
 
 #### creatorId
 
-`string` \| `null`
+`null` \| `string`
 
 #### currencyCode
 
@@ -56,11 +56,11 @@ The parent FundCampaign object containing the updatedAt field
 
 #### updatedAt
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### updaterId
 
-`string` \| `null`
+`null` \| `string`
 
 ### args
 
@@ -76,7 +76,7 @@ GraphQL context containing authentication and database clients
 
 ## Returns
 
-`Promise`\<`Date` \| `null`\>
+`Promise`\<`null` \| `Date`\>
 
 The timestamp when the fund campaign was last updated
 

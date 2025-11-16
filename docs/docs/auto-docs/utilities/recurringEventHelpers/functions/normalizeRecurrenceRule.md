@@ -25,19 +25,19 @@ The recurrence rule from the database.
 
 #### byDay
 
-`string`[] \| `null`
+`null` \| `string`[]
 
 #### byMonth
 
-`number`[] \| `null`
+`null` \| `number`[]
 
 #### byMonthDay
 
-`number`[] \| `null`
+`null` \| `number`[]
 
 #### count
 
-`number` \| `null`
+`null` \| `number`
 
 #### createdAt
 
@@ -69,11 +69,11 @@ The recurrence rule from the database.
 
 #### originalSeriesId
 
-`string` \| `null`
+`null` \| `string`
 
 #### recurrenceEndDate
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### recurrenceRuleString
 
@@ -85,11 +85,11 @@ The recurrence rule from the database.
 
 #### updatedAt
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### updaterId
 
-`string` \| `null`
+`null` \| `string`
 
 ## Returns
 
@@ -103,19 +103,19 @@ A normalized recurrence rule, where `count` has been converted to `recurrenceEnd
 
 ### byDay
 
-> **byDay**: `string`[] \| `null`
+> **byDay**: `null` \| `string`[]
 
 ### byMonth
 
-> **byMonth**: `number`[] \| `null`
+> **byMonth**: `null` \| `number`[]
 
 ### byMonthDay
 
-> **byMonthDay**: `number`[] \| `null`
+> **byMonthDay**: `null` \| `number`[]
 
 ### count
 
-> **count**: `number` \| `null`
+> **count**: `null` \| `number`
 
 ### createdAt
 
@@ -147,11 +147,11 @@ A normalized recurrence rule, where `count` has been converted to `recurrenceEnd
 
 ### originalSeriesId
 
-> **originalSeriesId**: `string` \| `null`
+> **originalSeriesId**: `null` \| `string`
 
 ### recurrenceEndDate
 
-> **recurrenceEndDate**: `Date` \| `null`
+> **recurrenceEndDate**: `null` \| `Date`
 
 ### recurrenceRuleString
 
@@ -163,8 +163,8 @@ A normalized recurrence rule, where `count` has been converted to `recurrenceEnd
 
 ### updatedAt
 
-> **updatedAt**: `Date` \| `null`
+> **updatedAt**: `null` \| `Date`
 
 ### updaterId
 
-> **updaterId**: `string` \| `null`
+> **updaterId**: `null` \| `string`

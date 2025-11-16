@@ -10,4 +10,4 @@ Interface for notification variables
 
 ## Indexable
 
-\[`key`: `string`\]: `string` \| `number` \| `boolean` \| `null` \| `undefined`
+\[`key`: `string`\]: `undefined` \| `null` \| `string` \| `number` \| `boolean`

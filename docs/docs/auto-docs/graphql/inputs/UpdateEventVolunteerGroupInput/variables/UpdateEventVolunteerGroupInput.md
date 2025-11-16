@@ -4,7 +4,7 @@
 
 # Variable: UpdateEventVolunteerGroupInput
 
-> `const` **UpdateEventVolunteerGroupInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `description?`: `string` \| `null`; `eventId`: `string`; `name?`: `string` \| `null`; `volunteersRequired?`: `number` \| `null`; \}\>
+> `const` **UpdateEventVolunteerGroupInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `description?`: `null` \| `string`; `eventId`: `string`; `name?`: `null` \| `string`; `volunteersRequired?`: `null` \| `number`; \}\>
 
 Defined in: [src/graphql/inputs/UpdateEventVolunteerGroupInput.ts:19](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/UpdateEventVolunteerGroupInput.ts#L19)
 
