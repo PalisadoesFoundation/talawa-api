@@ -446,10 +446,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.2.2
+
+      - name: Copy devcontainer environment file
+        run: cp envFiles/.env.rootless.devcontainer ./.env
       - name: Install Devcontainer CLI
         run: npm install -g @devcontainers/cli
-      - name: Copy devcontainer environment file
-        run: cp envFiles/.env.rootless.devcontainer .env
       - name: Bring up devcontainer
         run: devcontainer up --workspace-folder .
       - name: Wait for Postgres in devcontainer
