@@ -2,7 +2,7 @@
 id: volunteers
 title: Event Volunteers and Volunteer Groups
 slug: /developer-resources/volunteers
-sidebar_position: 10
+sidebar_position: 30
 ---
 
 # Event Volunteers and Volunteer Groups

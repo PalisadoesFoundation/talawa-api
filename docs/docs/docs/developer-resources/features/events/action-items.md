@@ -2,7 +2,7 @@
 id: action-items
 title: Event Action Items
 slug: /developer-resources/action-items
-sidebar_position: 9
+sidebar_position: 20
 ---
 
 
