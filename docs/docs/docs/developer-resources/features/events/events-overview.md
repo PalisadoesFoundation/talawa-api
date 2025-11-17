@@ -1,17 +1,13 @@
 ---
-id: events
-title: Events
-slug: /developer-resources/events
-sidebar_position: 8
+id: events-overview
+title: Events Overview
+slug: /developer-resources/events-overview
+sidebar_position: 10
 ---
-
-# Events
 
 This guide explains how events work in Talawa, including standalone events and recurring event series.
 
 ## Overview
-
-### Events in Talawa: How they work
 
 - There are two kinds of events:
   - **Standalone events**: single occurrence stored directly in `events`.

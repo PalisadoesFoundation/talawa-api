@@ -2,7 +2,7 @@
 id: troubleshooting
 title: Troubleshooting
 slug: /developer-resources/troubleshooting
-sidebar_position: 100
+sidebar_position: 1000
 ---
 
 ## Introduction

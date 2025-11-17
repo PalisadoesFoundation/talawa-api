@@ -455,4 +455,4 @@ Below is a table of user login credentials for the sample data.
 
 ## Testing and Validation
 
-Please refer to the [Testing and Validation Page](../developer-resources/testing.md) for more details
+Please refer to the [Testing and Validation Page](../developer-resources/testing/testing-validation.md) for more details.
