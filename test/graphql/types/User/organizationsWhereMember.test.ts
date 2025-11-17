@@ -100,7 +100,7 @@ describe("resolveOrganizationsWhereMember", () => {
 		await expect(
 			resolveOrganizationsWhereMember(
 				mockUserParent,
-				{ filter: 123 as unknown as string }, // ❌ no 'first' anymore
+				{ filter: 123 as unknown as string }, // Invalid filter type to trigger Zod validation failure
 				baseMockCtx,
 			),
 		).rejects.toThrow(TalawaGraphQLError);
