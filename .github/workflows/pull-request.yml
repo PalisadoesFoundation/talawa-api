@@ -172,8 +172,10 @@ jobs:
         uses: pnpm/action-setup@v4
       - name: Install dependencies
         run: pnpm install --frozen-lockfile 
-      - name: Run Knip
-        run: pnpm knip --include exports
+      - name: Run Knip for files and exports
+        run: pnpm knip --include files,exports
+      - name: Run Knip for dependencies
+        run: pnpm knip --config knip.deps.json --include dependencies
         # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing
         env:
           API_POSTGRES_DATABASE: dummy_db

@@ -6,7 +6,13 @@
 		"src/drizzle/tables/**": ["exports"],
 		"src/workers/backgroundWorkerService.ts": ["exports"]
 	},
-	"project": ["src/**/*.ts"],
+	"ignore": [
+		"src/plugins/**",
+		"src/graphql/types/**/*.ts",
+		"src/graphql/inputs/**/*.ts",
+		"src/graphql/schemaImportWorker.ts"
+	],
+	"project": ["src/**/*.ts", "scripts/**/*.ts"],
 	"ignoreDependencies": [],
 	"ignoreExportsUsedInFile": true
 }
