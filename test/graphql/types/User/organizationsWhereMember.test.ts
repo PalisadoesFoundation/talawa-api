@@ -18,7 +18,6 @@ const globalArgs = {
 	isInversed: false,
 	limit: 10,
 	filter: "some filter string",
-	first: 10,
 };
 
 const mockWhere = vi.fn();
@@ -62,7 +61,7 @@ const mockDrizzleClient = {
 	select: mockSelect,
 };
 
-// ✅ **Mock Context**
+// Mock Context
 const baseMockCtx = {
 	currentClient: {
 		isAuthenticated: true,
@@ -97,7 +96,17 @@ describe("resolveOrganizationsWhereMember", () => {
 		).rejects.toThrow(TalawaGraphQLError);
 	});
 
-	test("throws an unauthorized error if a non-administrator queries another user's organizations", async () => {
+	test("throws invalid_arguments error when zod parsing fails", async () => {
+		await expect(
+			resolveOrganizationsWhereMember(
+				mockUserParent,
+				{ filter: 123 as unknown as string }, // ❌ no 'first' anymore
+				baseMockCtx,
+			),
+		).rejects.toThrow(TalawaGraphQLError);
+	});
+
+	test("throws unauthorized error when non-admin accesses another user", async () => {
 		mockDrizzleClient.query.usersTable.findFirst.mockResolvedValue({
 			id: "user123",
 			role: "member",
