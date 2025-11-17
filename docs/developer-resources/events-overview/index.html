@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-docs/developer-resources/features/events/events-overview" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">Events Overview | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://docs-api.talawa.io/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://docs-api.talawa.io/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/developer-resources/events-overview"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Events Overview | Talawa API Documentation"><meta data-rh="true" name="description" content="This guide explains how events work in Talawa, including standalone events and recurring event series."><meta data-rh="true" property="og:description" content="This guide explains how events work in Talawa, including standalone events and recurring event series."><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/developer-resources/events-overview"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/developer-resources/events-overview" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/developer-resources/events-overview" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Events Overview","item":"https://docs-api.talawa.io/docs/developer-resources/events-overview"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.a008b5a9.css">
+<script src="/assets/js/runtime~main.648f6c06.js" defer="defer"></script>
+<script src="/assets/js/main.17d8a90b.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_Vr6R" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a href="https://docs.talawa.io/" target="_self" rel="noopener noreferrer" class="navbar__brand"><div class="navbar__logo"><img src="/img/logos/logo.png" alt="My Site Logo" class="themedComponent_W1hv themedComponent--light_VcjY"><img src="/img/logos/logo.png" alt="My Site Logo" class="themedComponent_W1hv themedComponent--dark_wsix"></div><b class="navbar__title text--truncate">Talawa</b></a><a href="https://docs.talawa.io/docs" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">General</a><a href="https://docs-mobile.talawa.io/docs" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Mobile Guide</a><a href="https://docs-admin.talawa.io/docs" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Admin Guide</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/docs">API Guide</a><a href="https://docs-plugin.talawa.io/docs" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Plugin Guide</a><a href="https://community.talawa.io" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Community</a><a href="https://demo.talawa.io/" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">Demo</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/PalisadoesFoundation" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link header-github-link" aria-label="GitHub repository"></a><a href="https://www.youtube.com/@PalisadoesOrganization" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link header-youtube-link" aria-label="Palisadoes Youtube channel"></a><div class="toggle_JEho colorModeToggle__p9S"><button class="clean-btn toggleButton_QJRr toggleButtonDisabled_NVBK" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_vALO lightToggleIcon_xCuH"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_vALO darkToggleIcon_tDb_"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_vALO systemToggleIcon_NSe_"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_pzfk"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_rUDs"><div class="docsWrapper_E4OU"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_r5vl" type="button"></button><div class="docRoot_BKpa"><aside class="theme-doc-sidebar-container docSidebarContainer_UjP4"><div class="sidebarViewport_p6sO"><div class="sidebar_l6dw"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_Cvb8"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/"><span title="Introduction" class="linkLabel_rElb">Introduction</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="true" href="/docs/installation"><span title="Getting Started" class="categoryLinkLabel_E_RK">Getting Started</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/installation"><span title="Installation" class="linkLabel_rElb">Installation</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/installation/environment-variables"><span title="Environment Variables" class="linkLabel_rElb">Environment Variables</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/webserver"><span title="Webserver Setup" class="linkLabel_rElb">Webserver Setup</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/docs/developer-resources/introduction"><span title="Developer Resources" class="categoryLinkLabel_E_RK">Developer Resources</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/docs/developer-resources/introduction"><span title="Getting Started" class="categoryLinkLabel_E_RK">Getting Started</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/docs/developer-resources/graphql-filtering"><span title="Best Practices" class="categoryLinkLabel_E_RK">Best Practices</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" tabindex="0" href="/docs/developer-resources/plugin"><span title="Features" class="categoryLinkLabel_E_RK">Features</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/plugin"><span title="Plugin System" class="linkLabel_rElb">Plugin System</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" tabindex="0" href="/docs/developer-resources/events-overview"><span title="events" class="categoryLinkLabel_E_RK">events</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-4 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/docs/developer-resources/events-overview"><span title="Events Overview" class="linkLabel_rElb">Events Overview</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-4 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/action-items"><span title="Event Action Items" class="linkLabel_rElb">Event Action Items</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-4 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/developer-resources/volunteers"><span title="Event Volunteers and Volunteer Groups" class="linkLabel_rElb">Event Volunteers and Volunteer Groups</span></a></li></ul></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" tabindex="0" href="/docs/developer-resources/testing-validation"><span title="Testing" class="categoryLinkLabel_E_RK">Testing</span></a></div></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/docs/auto-docs/config/emailConfig/variables/emailConfig"><span title="Code Documentation" class="categoryLinkLabel_E_RK">Code Documentation</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/docs/auto-schema/"><span title="Schema" class="categoryLinkLabel_E_RK">Schema</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_c3Ic"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_ynsf"><div class="docItemContainer_QVh_"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_sK2n" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_DkXf"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Developer Resources</span></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Features</span></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">events</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Events Overview</span></li></ul></nav><div class="tocCollapsible_pDLc theme-doc-toc-mobile tocMobile_A6Fd"><button type="button" class="clean-btn tocCollapsibleButton_ItB6">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Events Overview</h1></header><p>This guide explains how events work in Talawa, including standalone events and recurring event series.</p>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="overview">Overview<a href="#overview" class="hash-link" aria-label="Direct link to Overview" title="Direct link to Overview" translate="no">​</a></h2>
+<ul>
+<li class="">There are two kinds of events:<!-- -->
+<ul>
+<li class=""><strong>Standalone events</strong>: single occurrence stored directly in <code>events</code>.</li>
+<li class=""><strong>Recurring events</strong>: defined by a template in <code>events</code> + a recurrence rule in <code>recurrence_rules</code>, with materialized child instances in <code>recurring_event_instances</code>.</li>
+</ul>
+</li>
+<li class="">Users never edit the template rows directly. They work with instances or with high-level actions (entire series, this and following, this instance only).</li>
+<li class="">A background worker pre-creates instances within a 12‑month &quot;hot window&quot; and keeps cleaning old ones. Cron runs hourly (generation) and daily (cleanup).</li>
+<li class="">Updates support three scopes: this instance only, entire series (name/description), and this and following (split the series).</li>
+<li class="">Deletes support three scopes: this instance only, this and following, and entire series.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="data-model">Data Model<a href="#data-model" class="hash-link" aria-label="Direct link to Data Model" title="Direct link to Data Model" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="tables-overview">Tables Overview<a href="#tables-overview" class="hash-link" aria-label="Direct link to Tables Overview" title="Direct link to Tables Overview" translate="no">​</a></h3>
+<p>Tables in talawa-api (Drizzle ORM):</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="events-table">Events Table<a href="#events-table" class="hash-link" aria-label="Direct link to Events Table" title="Direct link to Events Table" translate="no">​</a></h4>
+<ul>
+<li class=""><strong><code>events</code></strong>
+<ul>
+<li class="">Stores both standalone events and recurring templates.</li>
+<li class=""><code>is_recurring_template</code> (aka <code>isRecurringEventTemplate</code>) tells if a row is a recurring template.</li>
+<li class="">Standalone events: <code>is_recurring_template = false</code> and their own <code>start_at</code>/<code>end_at</code> are final.</li>
+<li class="">Recurring templates: <code>is_recurring_template = true</code> and act as the parent/defaults for instances.</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="recurrence-rules-table">Recurrence Rules Table<a href="#recurrence-rules-table" class="hash-link" aria-label="Direct link to Recurrence Rules Table" title="Direct link to Recurrence Rules Table" translate="no">​</a></h4>
+<ul>
+<li class=""><strong><code>recurrence_rules</code></strong>
+<ul>
+<li class="">One per recurring template.</li>
+<li class="">Holds the RRULE-like data (<code>frequency</code>, <code>interval</code>, <code>byDay</code>, <code>byMonth</code>, <code>byMonthDay</code>, <code>recurrenceStartDate</code>, optional <code>recurrenceEndDate</code> or <code>count</code>).</li>
+<li class=""><code>base_recurring_event_id</code> links back to the template in <code>events</code>.</li>
+<li class=""><code>original_series_id</code> ties together all splits of the same logical series across time.</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="recurring-event-instances-table">Recurring Event Instances Table<a href="#recurring-event-instances-table" class="hash-link" aria-label="Direct link to Recurring Event Instances Table" title="Direct link to Recurring Event Instances Table" translate="no">​</a></h4>
+<ul>
+<li class=""><strong><code>recurring_event_instances</code></strong>
+<ul>
+<li class="">Materialized occurrences for recurring series inside the hot window.</li>
+<li class="">Key fields:<!-- -->
+<ul>
+<li class=""><code>base_recurring_event_id</code> → template</li>
+<li class=""><code>recurrence_rule_id</code> → source rule</li>
+<li class=""><code>original_series_id</code> → logical series identity across splits</li>
+<li class=""><code>original_instance_start_time</code> → when the RRULE said it should start</li>
+<li class=""><code>actual_start_time</code>/<code>actual_end_time</code> → after applying exceptions and duration</li>
+<li class=""><code>sequence_number</code>, <code>total_count</code> (if finite), <code>is_cancelled</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="event-exceptions-table">Event Exceptions Table<a href="#event-exceptions-table" class="hash-link" aria-label="Direct link to Event Exceptions Table" title="Direct link to Event Exceptions Table" translate="no">​</a></h4>
+<ul>
+<li class=""><strong><code>event_exceptions</code></strong>
+<ul>
+<li class="">Stores per-instance overrides when a user edits a single occurrence (e.g., rename just one date, shift time, etc.).</li>
+<li class="">Exception JSON holds only the fields that differ from the template.</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="event-generation-windows-table">Event Generation Windows Table<a href="#event-generation-windows-table" class="hash-link" aria-label="Direct link to Event Generation Windows Table" title="Direct link to Event Generation Windows Table" translate="no">​</a></h4>
+<ul>
+<li class=""><strong><code>event_generation_windows</code></strong>
+<ul>
+<li class="">Per-organization config for the hot window and retention:<!-- -->
+<ul>
+<li class=""><code>hot_window_months_ahead</code> default 12 (1 year forward)</li>
+<li class=""><code>history_retention_months</code> default 3 (cleanup window)</li>
+<li class="">Tracks window boundaries and processing metadata.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="event-types">Event Types<a href="#event-types" class="hash-link" aria-label="Direct link to Event Types" title="Direct link to Event Types" translate="no">​</a></h3>
+<ul>
+<li class="">
+<p><strong>Standalone event</strong></p>
+<ul>
+<li class="">Single row in <code>events</code>, shown directly in calendars and lists.</li>
+<li class="">Users edit/delete the event itself.</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Recurring template (parent)</strong></p>
+<ul>
+<li class="">Row in <code>events</code> with <code>is_recurring_template = true</code>.</li>
+<li class="">Paired with a <code>recurrence_rules</code> row.</li>
+<li class="">Not directly shown or edited by users as an event occurrence.</li>
+</ul>
+</li>
+<li class="">
+<p><strong>Recurring instance (child)</strong></p>
+<ul>
+<li class="">Row in <code>recurring_event_instances</code> created by the background worker.</li>
+<li class="">Inherits default fields (name, description, location, visibility, registerable, etc.) from the template.</li>
+<li class="">May have a matching <code>event_exceptions</code> row to override specific fields for that one occurrence.</li>
+<li class="">What users usually see and interact with on the calendar.</li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="background-processing">Background Processing<a href="#background-processing" class="hash-link" aria-label="Direct link to Background Processing" title="Direct link to Background Processing" translate="no"> ​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="instance-creation">Instance Creation<a href="#instance-creation" class="hash-link" aria-label="Direct link to Instance Creation" title="Direct link to Instance Creation" translate="no">​</a></h3>
+<p>Talawa pre-creates occurrences for recurring events in a forward window to make queries fast and simple.</p>
+<ul>
+<li class=""><strong>Window</strong>: The default hot window is 12 months ahead; retention keeps ~3 months of history. Config lives in <code>event_generation_windows</code>.</li>
+<li class=""><strong>Cron</strong>: A background worker runs on a schedule (node-cron). Defaults:<!-- -->
+<ul>
+<li class="">Generation: hourly (<code>EVENT_GENERATION_CRON_SCHEDULE</code>, default <code>0 * * * *</code>).</li>
+<li class="">Cleanup: daily at 02:00 UTC (<code>CLEANUP_CRON_SCHEDULE</code>, default <code>0 2 * * *</code>).</li>
+</ul>
+</li>
+<li class=""><strong>Pipeline (high level)</strong>:<!-- -->
+<ol>
+<li class="">Discover work: find orgs whose window needs extension and their recurring templates.</li>
+<li class="">Normalize recurrence rules (convert COUNT to a derived end date for consistent window math).</li>
+<li class="">Calculate all occurrences between window start and window end.</li>
+<li class="">Insert only missing instances (dedupe by <code>original_instance_start_time</code>).</li>
+<li class="">Update housekeeping (window end, last processed counts, etc.).</li>
+</ol>
+</li>
+<li class=""><strong>Key behavior</strong>:<!-- -->
+<ul>
+<li class="">If a rule is never-ending (no end date and no count), we only generate up to window end.</li>
+<li class="">If a rule has COUNT, the engine estimates/derives completion and stops accordingly.</li>
+<li class="">Instances store both the original schedule and the final start/end — so exceptions and re-calculations remain consistent.</li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="operations">Operations<a href="#operations" class="hash-link" aria-label="Direct link to Operations" title="Direct link to Operations" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="updating-recurring-series">Updating Recurring Series<a href="#updating-recurring-series" class="hash-link" aria-label="Direct link to Updating Recurring Series" title="Direct link to Updating Recurring Series" translate="no">​</a></h3>
+<p>Three user-facing options map to distinct backend behaviors.</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="update-this-event-only">Update This Event Only<a href="#update-this-event-only" class="hash-link" aria-label="Direct link to Update This Event Only" title="Direct link to Update This Event Only" translate="no">​</a></h4>
+<ul>
+<li class="">Mutation: <code>updateSingleRecurringEventInstance</code></li>
+<li class="">What happens:<!-- -->
+<ul>
+<li class="">We write an <code>event_exceptions</code> row for that instance with only changed fields (e.g., <code>name</code>, <code>description</code>, <code>location</code>, <code>allDay</code>, <code>isPublic</code>, <code>isRegisterable</code>, <code>startAt</code>, <code>endAt</code>).</li>
+<li class="">If times are changed, we also update <code>actual_start_time</code>/<code>actual_end_time</code> on the instance.</li>
+<li class="">Other instances are unaffected.</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="update-entire-series">Update Entire Series<a href="#update-entire-series" class="hash-link" aria-label="Direct link to Update Entire Series" title="Direct link to Update Entire Series" translate="no">​</a></h4>
+<ul>
+<li class="">Mutation: <code>updateEntireRecurringEventSeries</code></li>
+<li class="">What happens:<!-- -->
+<ul>
+<li class="">We resolve the logical series via <code>original_series_id</code> which is template.</li>
+<li class="">We update only safe, series-wide fields on all base templates across the whole logical series (even if the series was split earlier):<!-- -->
+<ul>
+<li class="">Supported: <code>name</code>, <code>description</code></li>
+<li class="">Not changed here: timing/recurrence/location/visibility/registration flags</li>
+</ul>
+</li>
+<li class="">We bump <code>last_updated_at</code> on instances so caches and clients know something changed.</li>
+<li class="">Because instances inherit name/description, the change is reflected everywhere (past/present/future), unless an instance has its own exception for those fields.</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="update-this-and-following">Update This and Following<a href="#update-this-and-following" class="hash-link" aria-label="Direct link to Update This and Following" title="Direct link to Update This and Following" translate="no">​</a></h4>
+<ul>
+<li class="">Mutation: <code>updateThisAndFollowingEvents</code></li>
+<li class="">What happens:<!-- -->
+<ul>
+<li class="">We &quot;cut&quot; the current template&#x27;s recurrence by setting its <code>recurrence_end_date</code> to just before the targeted instance.</li>
+<li class="">We delete materialized instances from this point forward for the current template.</li>
+<li class="">We create a brand-new template event, apply provided changes (name, desc, location, timing, flags), and create a new <code>recurrence_rules</code> row for it.</li>
+<li class="">We set the new rule&#x27;s <code>original_series_id</code> (used as the logical series identifier going forward).</li>
+<li class="">The background worker immediately generates future instances for the new template within the hot window.</li>
+<li class="">Net effect in the UI: everything before the split stays as-is under the old template; the targeted instance becomes the first occurrence of a new series with your updates; everything after follows the new pattern.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Notes on <code>original_series_id</code></strong></p>
+<ul>
+<li class="">This field links templates and instances that belong to the same logical series across splits.</li>
+<li class="">Actions like &quot;update entire series&quot; and &quot;delete this and following&quot; consult <code>original_series_id</code> to operate across all templates created from earlier splits.</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="deleting-recurring-events">Deleting Recurring Events<a href="#deleting-recurring-events" class="hash-link" aria-label="Direct link to Deleting Recurring Events" title="Direct link to Deleting Recurring Events" translate="no">​</a></h3>
+<p>Three user-facing options:</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="delete-this-event-only">Delete This Event Only<a href="#delete-this-event-only" class="hash-link" aria-label="Direct link to Delete This Event Only" title="Direct link to Delete This Event Only" translate="no">​</a></h4>
+<ul>
+<li class="">Mutation: <code>deleteSingleEventInstance</code></li>
+<li class="">What happens:<!-- -->
+<ul>
+<li class="">We delete action items linked to this instance.</li>
+<li class="">We set <code>is_cancelled = true</code> on the instance (kept for history/reporting), and update <code>last_updated_at</code>.</li>
+<li class="">Other instances/series are unaffected.</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="delete-this-and-following">Delete This and Following<a href="#delete-this-and-following" class="hash-link" aria-label="Direct link to Delete This and Following" title="Direct link to Delete This and Following" translate="no">​</a></h4>
+<ul>
+<li class="">Mutation: <code>deleteThisAndFollowingEvents</code></li>
+<li class="">What happens:<!-- -->
+<ul>
+<li class="">We set the current rule&#x27;s <code>recurrence_end_date</code> to just before this occurrence (effectively trimming the series).</li>
+<li class="">We find all instances with the same <code>original_series_id</code> whose <code>actual_start_time &gt;=</code> this instance and delete them.</li>
+<li class="">We also delete their exceptions and action items.</li>
+<li class="">Past instances remain.</li>
+</ul>
+</li>
+</ul>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="delete-entire-series">Delete Entire Series<a href="#delete-entire-series" class="hash-link" aria-label="Direct link to Delete Entire Series" title="Direct link to Delete Entire Series" translate="no">​</a></h4>
+<ul>
+<li class="">Mutation: <code>deleteEntireRecurringEventSeries</code></li>
+<li class="">Input is the template (base event) ID.</li>
+<li class="">What happens:<!-- -->
+<ul>
+<li class="">Using the template&#x27;s rule, we get its <code>original_series_id</code>.</li>
+<li class="">We delete, in order: action items (for all templates and instances), instance exceptions, all instances in the series, all recurrence rules in the series, and finally all template rows in <code>events</code> that belong to this logical series.</li>
+<li class="">Attachments for the requested template are cleaned up from storage.</li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="data-access">Data Access<a href="#data-access" class="hash-link" aria-label="Direct link to Data Access" title="Direct link to Data Access" translate="no">​</a></h2>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="reading-and-merging">Reading and Merging<a href="#reading-and-merging" class="hash-link" aria-label="Direct link to Reading and Merging" title="Direct link to Reading and Merging" translate="no">​</a></h3>
+<ul>
+<li class="">The GraphQL <code>Event</code> type represents both standalone events and recurring instances with a unified shape.</li>
+<li class="">For recurring instances, &quot;resolved&quot; fields come from: template defaults + per-instance exceptions + instance timing.</li>
+<li class="">Useful instance metadata:<!-- -->
+<ul>
+<li class=""><code>sequenceNumber</code> (e.g., &quot;5 of 12&quot;), <code>totalCount</code> when finite.</li>
+<li class=""><code>hasExceptions</code> and <code>appliedExceptionData</code> flags to indicate customizations.</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="scheduling-and-cleanup">Scheduling and Cleanup<a href="#scheduling-and-cleanup" class="hash-link" aria-label="Direct link to Scheduling and Cleanup" title="Direct link to Scheduling and Cleanup" translate="no">​</a></h3>
+<ul>
+<li class="">Generation cron (hourly by default) grows the forward window and materializes missing instances.</li>
+<li class="">Cleanup cron (daily by default) removes old instances beyond <code>history_retention_months</code> for each org and advances <code>retention_start_date</code>.</li>
+<li class="">Defaults live in <code>event_generation_windows</code> and can be tuned per organization.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="edge-cases">Edge Cases<a href="#edge-cases" class="hash-link" aria-label="Direct link to Edge Cases" title="Direct link to Edge Cases" translate="no">​</a></h2>
+<ul>
+<li class="">Never-ending series: only materialized up to the current hot window; cron extends as time moves on.</li>
+<li class="">Count-based rules: internally normalized to derive an end date for consistent generation; the original count semantics are preserved when calculating occurrences.</li>
+<li class="">Instance de-duplication: before inserting, generation checks for existing <code>original_instance_start_time</code> within the window to avoid duplicates.</li>
+</ul>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="code-references">Code References<a href="#code-references" class="hash-link" aria-label="Direct link to Code References" title="Direct link to Code References" translate="no">​</a></h2>
+<ul>
+<li class="">Tables: <code>src/drizzle/tables/events.ts</code>, <code>recurrenceRules.ts</code>, <code>recurringEventInstances.ts</code>, <code>recurringEventExceptions.ts</code>, <code>eventGenerationWindows.ts</code></li>
+<li class="">Generation service: <code>src/services/eventGeneration/*</code></li>
+<li class="">Background workers and cron: <code>src/workers/backgroundWorkerService.ts</code>, <code>src/workers/eventGeneration/*</code>, <code>src/workers/eventCleanupWorker.ts</code></li>
+<li class="">GraphQL mutations: <code>src/graphql/types/Mutation/*RecurringEvent*</code> and related inputs.</li>
+</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_F0Ct"><a href="https://github.com/PalisadoesFoundation/talawa-api/edit/develop/docs/docs/docs/developer-resources/features/events/events-overview.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Y8Mk" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_xtqt"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/docs/developer-resources/plugin"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Plugin System</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/docs/developer-resources/action-items"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Event Action Items</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_xSpt thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#overview" class="table-of-contents__link toc-highlight">Overview</a></li><li><a href="#data-model" class="table-of-contents__link toc-highlight">Data Model</a><ul><li><a href="#tables-overview" class="table-of-contents__link toc-highlight">Tables Overview</a></li><li><a href="#event-types" class="table-of-contents__link toc-highlight">Event Types</a></li></ul></li><li><a href="#background-processing" class="table-of-contents__link toc-highlight">Background Processing</a><ul><li><a href="#instance-creation" class="table-of-contents__link toc-highlight">Instance Creation</a></li></ul></li><li><a href="#operations" class="table-of-contents__link toc-highlight">Operations</a><ul><li><a href="#updating-recurring-series" class="table-of-contents__link toc-highlight">Updating Recurring Series</a></li><li><a href="#deleting-recurring-events" class="table-of-contents__link toc-highlight">Deleting Recurring Events</a></li></ul></li><li><a href="#data-access" class="table-of-contents__link toc-highlight">Data Access</a><ul><li><a href="#reading-and-merging" class="table-of-contents__link toc-highlight">Reading and Merging</a></li><li><a href="#scheduling-and-cleanup" class="table-of-contents__link toc-highlight">Scheduling and Cleanup</a></li></ul></li><li><a href="#edge-cases" class="table-of-contents__link toc-highlight">Edge Cases</a></li><li><a href="#code-references" class="table-of-contents__link toc-highlight">Code References</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/PalisadoesFoundation" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__slack">Slack</a></li><li class="footer__item"><a href="https://www.palisadoes.org/news/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__news">News</a></li><li class="footer__item"><a href="https://www.palisadoes.org/contact/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__contact">Contact Us</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Social Media</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://twitter.com/palisadoesorg?lang=en" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__twitter"> Twitter</a></li><li class="footer__item"><a href="https://www.facebook.com/palisadoesproject/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__facebook"> Facebook</a></li><li class="footer__item"><a href="https://www.instagram.com/palisadoes/?hl=en" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__instagram"> Instagram</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Development</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/PalisadoesFoundation" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__github"> GitHub</a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 The Palisadoes Foundation, LLC. Built with Docusaurus.</div></div></div></footer></div>
+</body>
+</html>
