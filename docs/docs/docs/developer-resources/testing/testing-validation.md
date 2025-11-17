@@ -1,8 +1,8 @@
 ---
-id: testing
+id: testing-validation
 title: Testing & Validation
-slug: /developer-resources/testing
-sidebar_position: 7
+slug: /developer-resources/testing-validation
+sidebar_position: 70
 ---
 
 This section covers important tests to validate the operation of the API.

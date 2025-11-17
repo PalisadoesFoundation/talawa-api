@@ -2,7 +2,7 @@
 id: introduction
 title: Introduction
 slug: /developer-resources/introduction
-sidebar_position: 1
+sidebar_position: 10
 ---
 
 Welcome to the Talawa-API developer resources.
