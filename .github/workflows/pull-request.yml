@@ -158,8 +158,8 @@ jobs:
       - name: Check type errors
         run: docker container run talawa_api pnpm typecheck
 
-  Check_unused_exports:
-    name: Check for unused exports
+  Check_unused_code:
+    name: Check for unused files, exports and dependencies
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -174,6 +174,14 @@ jobs:
         run: pnpm install --frozen-lockfile 
       - name: Run Knip for files and exports
         run: pnpm knip --include files,exports
+        # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing
+        env:
+          API_POSTGRES_DATABASE: dummy_db
+          API_POSTGRES_PASSWORD: dummy_password
+          API_POSTGRES_HOST: localhost
+          API_POSTGRES_PORT: '5432'
+          API_POSTGRES_USER: dummy_user
+          API_POSTGRES_SSL_MODE: 'false' 
       - name: Run Knip for dependencies
         run: pnpm knip --config knip.deps.json --include dependencies
         # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing
@@ -183,7 +191,7 @@ jobs:
           API_POSTGRES_HOST: localhost
           API_POSTGRES_PORT: '5432'
           API_POSTGRES_USER: dummy_user
-          API_POSTGRES_SSL_MODE: 'false'    
+          API_POSTGRES_SSL_MODE: 'false' 
 
   Check-Sensitive-Files:
     if: ${{ github.actor != 'dependabot[bot]' }}
