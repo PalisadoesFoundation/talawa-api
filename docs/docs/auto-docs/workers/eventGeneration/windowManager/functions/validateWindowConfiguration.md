@@ -6,7 +6,7 @@
 
 > **validateWindowConfiguration**(`windowConfig`): `object`
 
-Defined in: [src/workers/eventGeneration/windowManager.ts:241](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/windowManager.ts#L241)
+Defined in: [src/workers/eventGeneration/windowManager.ts:247](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/windowManager.ts#L247)
 
 Validates window configuration for processing
 
@@ -16,7 +16,7 @@ Validates window configuration for processing
 
 #### configurationNotes
 
-`null` \| `string`
+`string` \| `null`
 
 #### createdAt
 
@@ -56,7 +56,7 @@ Validates window configuration for processing
 
 #### lastUpdatedById
 
-`null` \| `string`
+`string` \| `null`
 
 #### maxInstancesPerRun
 
@@ -76,7 +76,7 @@ Validates window configuration for processing
 
 #### updatedAt
 
-`null` \| `Date`
+`Date` \| `null`
 
 ## Returns
 

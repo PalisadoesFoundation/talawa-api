@@ -58,11 +58,14 @@ export async function getOrganizationsNeedingMaterialization(
 		processingTimeoutDate.getHours() - processingTimeoutHours,
 	);
 
-	logger.debug("Getting organizations needing materialization", {
-		oneMonthFromNow: oneMonthFromNow.toISOString(),
-		processingTimeoutDate: processingTimeoutDate.toISOString(),
-		maxOrganizations: maxOrganizationsPerRun,
-	});
+	logger.debug(
+		{
+			oneMonthFromNow: oneMonthFromNow.toISOString(),
+			processingTimeoutDate: processingTimeoutDate.toISOString(),
+			maxOrganizations: maxOrganizationsPerRun,
+		},
+		"Getting organizations needing materialization",
+	);
 
 	const organizations =
 		await drizzleClient.query.eventGenerationWindowsTable.findMany({
@@ -123,14 +126,17 @@ export async function updateWindowAfterProcessing(
 		})
 		.where(eq(eventGenerationWindowsTable.id, windowId));
 
-	logger.info("Updated materialization window", {
-		windowId,
-		organizationId: processingResult.organizationId,
-		newWindowEndDate: newWindowEndDate.toISOString(),
-		instancesCreated: processingResult.instancesCreated,
-		eventsProcessed: processingResult.eventsProcessed,
-		processingTime: processingResult.processingTime,
-	});
+	logger.info(
+		{
+			windowId,
+			organizationId: processingResult.organizationId,
+			newWindowEndDate: newWindowEndDate.toISOString(),
+			instancesCreated: processingResult.instancesCreated,
+			eventsProcessed: processingResult.eventsProcessed,
+			processingTime: processingResult.processingTime,
+		},
+		"Updated materialization window",
+	);
 }
 
 /**

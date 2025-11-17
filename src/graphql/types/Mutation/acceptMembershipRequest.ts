@@ -207,7 +207,7 @@ builder.mutationField("acceptMembershipRequest", (t) =>
 						"Membership request accepted successfully. User added to organization.",
 				};
 			} catch (error) {
-				ctx.log.error("Error accepting membership request:", error);
+				ctx.log.error(error, "Error accepting membership request:");
 				throw new TalawaGraphQLError({
 					extensions: {
 						code: "unexpected",

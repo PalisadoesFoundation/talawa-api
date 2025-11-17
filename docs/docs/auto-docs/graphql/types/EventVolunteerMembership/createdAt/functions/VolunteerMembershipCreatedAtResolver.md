@@ -18,7 +18,7 @@ Defined in: [src/graphql/types/EventVolunteerMembership/createdAt.ts:7](https://
 
 #### createdBy
 
-`null` \| `string`
+`string` \| `null`
 
 #### eventId
 
@@ -26,7 +26,7 @@ Defined in: [src/graphql/types/EventVolunteerMembership/createdAt.ts:7](https://
 
 #### groupId
 
-`null` \| `string`
+`string` \| `null`
 
 #### id
 
@@ -38,11 +38,11 @@ Defined in: [src/graphql/types/EventVolunteerMembership/createdAt.ts:7](https://
 
 #### updatedAt
 
-`null` \| `Date`
+`Date` \| `null`
 
 #### updatedBy
 
-`null` \| `string`
+`string` \| `null`
 
 #### volunteerId
 

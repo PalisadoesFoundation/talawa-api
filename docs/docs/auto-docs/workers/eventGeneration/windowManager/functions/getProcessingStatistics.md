@@ -4,9 +4,9 @@
 
 # Function: getProcessingStatistics()
 
-> **getProcessingStatistics**(`deps`): `Promise`\<\{ `averageInstancesPerRun`: `number`; `enabledOrganizations`: `number`; `lastProcessingRun`: `null` \| `Date`; `organizationsNeedingProcessing`: `number`; `totalOrganizations`: `number`; \}\>
+> **getProcessingStatistics**(`deps`): `Promise`\<\{ `averageInstancesPerRun`: `number`; `enabledOrganizations`: `number`; `lastProcessingRun`: `Date` \| `null`; `organizationsNeedingProcessing`: `number`; `totalOrganizations`: `number`; \}\>
 
-Defined in: [src/workers/eventGeneration/windowManager.ts:274](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/windowManager.ts#L274)
+Defined in: [src/workers/eventGeneration/windowManager.ts:280](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/windowManager.ts#L280)
 
 Gets processing statistics for all organizations
 
@@ -18,4 +18,4 @@ Gets processing statistics for all organizations
 
 ## Returns
 
-`Promise`\<\{ `averageInstancesPerRun`: `number`; `enabledOrganizations`: `number`; `lastProcessingRun`: `null` \| `Date`; `organizationsNeedingProcessing`: `number`; `totalOrganizations`: `number`; \}\>
+`Promise`\<\{ `averageInstancesPerRun`: `number`; `enabledOrganizations`: `number`; `lastProcessingRun`: `Date` \| `null`; `organizationsNeedingProcessing`: `number`; `totalOrganizations`: `number`; \}\>

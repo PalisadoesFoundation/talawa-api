@@ -102,7 +102,7 @@ export const resolveOrganizations = async (
 			offset: offset ?? undefined, // No offset if not provided
 		});
 	} catch (error) {
-		ctx.log.error("Error in organizations query:", error);
+		ctx.log.error(error, "Error in organizations query");
 		throw new Error("An error occurred while fetching organizations.");
 	}
 };

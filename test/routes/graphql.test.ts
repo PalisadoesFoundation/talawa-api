@@ -30,6 +30,8 @@ import { complexityFromQuery } from "@pothos/plugin-complexity";
 import schemaManager from "~/src/graphql/schemaManager";
 import leakyBucket from "~/src/utilities/leakyBucket";
 
+const iso8601 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
+
 describe("GraphQL Routes", () => {
 	let mockFastify: Partial<FastifyInstance>;
 	let mockRequest: Partial<FastifyRequest>;
@@ -345,15 +347,15 @@ describe("GraphQL Routes", () => {
 				newSchema,
 			);
 			expect(mockFastifyInstance.log.info).toHaveBeenCalledWith(
-				"✅ GraphQL Schema Updated Successfully",
 				expect.objectContaining({
-					timestamp: expect.any(String),
+					timestamp: expect.stringMatching(iso8601),
 					newSchemaFields: expect.objectContaining({
 						queries: expect.any(Array),
 						mutations: expect.any(Array),
 						subscriptions: expect.any(Array),
 					}),
 				}),
+				"✅ GraphQL Schema Updated Successfully",
 			);
 		});
 
@@ -384,7 +386,6 @@ describe("GraphQL Routes", () => {
 			mockFastifyInstance.schemaUpdateCallback?.(newSchema);
 
 			expect(mockFastifyInstance.log.error).toHaveBeenCalledWith(
-				"❌ Failed to Update GraphQL Schema",
 				expect.objectContaining({
 					error: {
 						message: testError.message,
@@ -393,6 +394,7 @@ describe("GraphQL Routes", () => {
 					},
 					timestamp: expect.any(String),
 				}),
+				"❌ Failed to Update GraphQL Schema",
 			);
 		});
 
@@ -422,11 +424,49 @@ describe("GraphQL Routes", () => {
 			mockFastifyInstance.schemaUpdateCallback?.(newSchema);
 
 			expect(mockFastifyInstance.log.error).toHaveBeenCalledWith(
-				"❌ Failed to Update GraphQL Schema",
 				expect.objectContaining({
 					error: "String error",
 					timestamp: expect.any(String),
 				}),
+				"❌ Failed to Update GraphQL Schema",
+			);
+		});
+
+		it("should log fields for schema with mutations/subscriptions but no query", async () => {
+			const { graphql } = await import("~/src/routes/graphql");
+
+			await graphql(mockFastifyInstance as unknown as FastifyInstance);
+
+			const newSchema = new GraphQLSchema({
+				// No query type
+				mutation: new GraphQLObjectType({
+					name: "Mutation",
+					fields: {
+						doThing: { type: GraphQLString },
+					},
+				}),
+				subscription: new GraphQLObjectType({
+					name: "Subscription",
+					fields: {
+						onThing: { type: GraphQLString },
+					},
+				}),
+			});
+
+			// Trigger the schema update
+			expect(mockFastifyInstance.schemaUpdateCallback).toBeDefined();
+			mockFastifyInstance.schemaUpdateCallback?.(newSchema);
+
+			// Assert that the logger was called with the correct field names
+			expect(mockFastifyInstance.log.info).toHaveBeenCalledWith(
+				expect.objectContaining({
+					newSchemaFields: {
+						queries: [],
+						mutations: ["doThing"],
+						subscriptions: ["onThing"],
+					},
+				}),
+				"✅ GraphQL Schema Updated Successfully",
 			);
 		});
 	});

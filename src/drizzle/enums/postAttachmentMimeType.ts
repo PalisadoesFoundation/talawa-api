@@ -17,5 +17,3 @@ export const postAttachmentMimeTypeEnum = z.enum([
 	"video/mp4",
 	"video/webm",
 ]);
-
-export const graphqlMimeTypeEnum = Object.keys(mimeTypeMapping);

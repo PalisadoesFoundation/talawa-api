@@ -6,6 +6,7 @@ import type { recurringEventInstancesTable } from "~/src/drizzle/tables/recurrin
 import {
 	type GetRecurringEventInstancesInput,
 	getRecurringEventInstanceById,
+	getRecurringEventInstancesByBaseId,
 	getRecurringEventInstancesByIds,
 	getRecurringEventInstancesInDateRange,
 } from "~/src/graphql/types/Query/eventQueries/recurringEventInstanceQueries";
@@ -287,25 +288,6 @@ describe("getRecurringEventInstancesInDateRange", () => {
 		expect(result).toHaveLength(2);
 		expect(result[0]?.id).toBe("instance-1");
 		expect(result[1]?.id).toBe("instance-2");
-
-		// Test error handling in same test
-		const error = new Error("Database query failed");
-		vi.mocked(
-			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
-		).mockRejectedValue(error);
-
-		await expect(
-			getRecurringEventInstancesInDateRange(
-				baseInput,
-				mockDrizzleClient,
-				mockLogger,
-			),
-		).rejects.toThrow("Database query failed");
-
-		expect(mockLogger.error).toHaveBeenCalledWith(
-			"Failed to get recurring event instances for organization org-1:",
-			error,
-		);
 	});
 
 	it("should handle different error sources and preserve error details", async () => {
@@ -361,6 +343,27 @@ describe("getRecurringEventInstancesInDateRange", () => {
 				mockLogger,
 			),
 		).rejects.toThrow("Resolution failed");
+	});
+
+	it("should log and re-throw an error on main query failure", async () => {
+		const error = new Error("Main fetch failed");
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockRejectedValue(error);
+
+		await expect(
+			getRecurringEventInstancesInDateRange(
+				baseInput,
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toThrow("Main fetch failed");
+
+		expect(mockLogger.error).toHaveBeenCalledWith(
+			error,
+			`Failed to get recurring event instances for organization ${baseInput.organizationId}`,
+		);
 	});
 });
 
@@ -457,8 +460,8 @@ describe("getRecurringEventInstanceById", () => {
 		).rejects.toThrow("Base template not found: base-event-1");
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
-			"Failed to get recurring event instance instance-1:",
 			expect.any(Error),
+			"Failed to get recurring event instance instance-1",
 		);
 	});
 
@@ -494,31 +497,11 @@ describe("getRecurringEventInstanceById", () => {
 		expect(result?.hasExceptions).toBe(false);
 	});
 
-	it("should handle various error scenarios with proper logging", async () => {
-		// Instance query failure
-		const instanceError = new Error("Instance query failed");
-		vi.mocked(
-			mockDrizzleClient.query.recurringEventInstancesTable.findFirst,
-		).mockRejectedValue(instanceError);
-
-		await expect(
-			getRecurringEventInstanceById(
-				"instance-1",
-				"org-1",
-				mockDrizzleClient,
-				mockLogger,
-			),
-		).rejects.toThrow("Instance query failed");
-
-		expect(mockLogger.error).toHaveBeenCalledWith(
-			"Failed to get recurring event instance instance-1:",
-			instanceError,
-		);
-
-		// Base template query failure
+	it("should throw error when base template not found", async () => {
 		vi.mocked(
 			mockDrizzleClient.query.recurringEventInstancesTable.findFirst,
 		).mockResolvedValue(mockRawInstance);
+
 		const templateError = new Error("Base template query failed");
 		vi.mocked(mockDrizzleClient.query.eventsTable.findFirst).mockRejectedValue(
 			templateError,
@@ -532,11 +515,16 @@ describe("getRecurringEventInstanceById", () => {
 				mockLogger,
 			),
 		).rejects.toThrow("Base template query failed");
+	});
 
-		// Exception query failure
+	it("should throw error when exception query fails", async () => {
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findFirst,
+		).mockResolvedValue(mockRawInstance);
 		vi.mocked(mockDrizzleClient.query.eventsTable.findFirst).mockResolvedValue(
 			mockBaseTemplate,
 		);
+
 		const exceptionError = new Error("Exception query failed");
 		vi.mocked(
 			mockDrizzleClient.query.eventExceptionsTable.findFirst,
@@ -550,11 +538,19 @@ describe("getRecurringEventInstanceById", () => {
 				mockLogger,
 			),
 		).rejects.toThrow("Exception query failed");
+	});
 
-		// Resolution failure
+	it("should throw error when resolution fails", async () => {
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findFirst,
+		).mockResolvedValue(mockRawInstance);
+		vi.mocked(mockDrizzleClient.query.eventsTable.findFirst).mockResolvedValue(
+			mockBaseTemplate,
+		);
 		vi.mocked(
 			mockDrizzleClient.query.eventExceptionsTable.findFirst,
 		).mockResolvedValue(mockException);
+
 		const resolutionError = new Error("Resolution failed");
 		mockResolveInstanceWithInheritance.mockImplementation(() => {
 			throw resolutionError;
@@ -568,6 +564,28 @@ describe("getRecurringEventInstanceById", () => {
 				mockLogger,
 			),
 		).rejects.toThrow("Resolution failed");
+	});
+
+	it("should log and re-throw an error on main query failure", async () => {
+		const error = new Error("Instance query failed");
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findFirst,
+		).mockRejectedValue(error);
+
+		await expect(
+			getRecurringEventInstanceById(
+				"instance-1",
+				"org-1",
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toThrow("Instance query failed");
+
+		expect(mockLogger.error).toHaveBeenCalledWith(
+			error,
+			"Failed to get recurring event instance instance-1",
+		);
 	});
 });
 
@@ -741,8 +759,8 @@ describe("getRecurringEventInstancesByIds", () => {
 		).rejects.toThrow("Database connection failed");
 
 		expect(mockLogger.error).toHaveBeenCalledWith(
-			"Failed to get recurring event instances by IDs:",
 			error,
+			"Failed to get recurring event instances by IDs",
 		);
 
 		// Test template/exception errors
@@ -778,5 +796,114 @@ describe("getRecurringEventInstancesByIds", () => {
 				mockLogger,
 			),
 		).rejects.toThrow("Resolution failed");
+	});
+
+	it("should log and re-throw an error on main query failure", async () => {
+		const error = new Error("DB query failed");
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockRejectedValue(error);
+
+		await expect(
+			getRecurringEventInstancesByIds(
+				["instance-1"],
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toThrow("DB query failed");
+
+		expect(mockLogger.error).toHaveBeenCalledWith(
+			error,
+			"Failed to get recurring event instances by IDs",
+		);
+	});
+});
+
+describe("getRecurringEventInstancesByBaseId", () => {
+	let mockDrizzleClient: ServiceDependencies["drizzleClient"];
+	let mockLogger: ServiceDependencies["logger"];
+	const baseEventId = "base-event-1";
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockDrizzleClient = setupMockDrizzleClient();
+		mockLogger = setupMockLogger();
+
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockResolvedValue([mockRawInstance]);
+		vi.mocked(mockDrizzleClient.query.eventsTable.findMany).mockResolvedValue([
+			mockBaseTemplate,
+		]);
+		vi.mocked(
+			mockDrizzleClient.query.eventExceptionsTable.findMany,
+		).mockResolvedValue([mockException]);
+		mockResolveMultipleInstances.mockReturnValue([mockResolvedInstance]);
+	});
+
+	it("should fetch and resolve instances for a base event ID", async () => {
+		const result = await getRecurringEventInstancesByBaseId(
+			baseEventId,
+			mockDrizzleClient,
+			mockLogger,
+		);
+
+		expect(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).toHaveBeenCalledWith({
+			where: expect.any(Object),
+			orderBy: expect.any(Object),
+		});
+
+		// Check that templates and exceptions were fetched
+		expect(mockDrizzleClient.query.eventsTable.findMany).toHaveBeenCalled();
+		expect(
+			mockDrizzleClient.query.eventExceptionsTable.findMany,
+		).toHaveBeenCalled();
+
+		// Check that instances were resolved
+		expect(mockResolveMultipleInstances).toHaveBeenCalledWith(
+			[mockRawInstance],
+			expect.any(Map),
+			expect.any(Map),
+			mockLogger,
+		);
+		expect(result).toEqual([mockResolvedInstance]);
+	});
+
+	it("should return an empty array if no instances are found", async () => {
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockResolvedValue([]);
+
+		const result = await getRecurringEventInstancesByBaseId(
+			baseEventId,
+			mockDrizzleClient,
+			mockLogger,
+		);
+
+		expect(result).toEqual([]);
+		expect(mockResolveMultipleInstances).not.toHaveBeenCalled();
+	});
+
+	it("should log and re-throw an error on database failure", async () => {
+		const error = new Error("DB query failed for base ID");
+		vi.mocked(
+			mockDrizzleClient.query.recurringEventInstancesTable.findMany,
+		).mockRejectedValue(error);
+
+		await expect(
+			getRecurringEventInstancesByBaseId(
+				baseEventId,
+				mockDrizzleClient,
+				mockLogger,
+			),
+		).rejects.toThrow("DB query failed for base ID");
+
+		expect(mockLogger.error).toHaveBeenCalledWith(
+			error,
+			`Failed to get recurring event instances for base event ${baseEventId}`,
+		);
 	});
 });
