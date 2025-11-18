@@ -5113,6 +5113,11 @@ type User {
   """
   organizationsWhereMember(after: String, before: String, filter: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
 
+  """
+  GraphQL connection to retrieve organizations where the user is blocked.
+  """
+  orgsWhereUserIsBlocked(after: String, before: String, first: Int, last: Int): UserOrgsWhereUserIsBlockedConnection
+
   """Postal code of the user."""
   postalCode: String
 
@@ -5187,6 +5192,19 @@ type UserOrganizationsWhereMemberConnection {
 """"""
 type UserOrganizationsWhereMemberConnectionEdge {
   cursor: String!
+  node: Organization
+}
+
+type UserOrgsWhereUserIsBlockedConnection {
+  """Edge containing an organization and cursor."""
+  edges: [UserOrgsWhereUserIsBlockedConnectionEdge]
+  pageInfo: PageInfo!
+}
+
+type UserOrgsWhereUserIsBlockedConnectionEdge {
+  cursor: String!
+
+  """Organization where the user is blocked."""
   node: Organization
 }
 
