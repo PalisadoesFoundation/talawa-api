@@ -2,7 +2,7 @@
 id: operation
 title: Operation
 slug: /developer-resources/operation
-sidebar_position: 3
+sidebar_position: 30
 ---
 
 This section covers how Talawa API operates

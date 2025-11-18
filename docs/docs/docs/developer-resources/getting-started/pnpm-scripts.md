@@ -2,7 +2,7 @@
 id: pnpm-scripts
 title: PNPM Scripts
 slug: /developer-resources/pnpm-scripts
-sidebar_position: 2
+sidebar_position: 20
 ---
 
 The scripts listed below are used with pnpm for many different workflows of talawa api.
