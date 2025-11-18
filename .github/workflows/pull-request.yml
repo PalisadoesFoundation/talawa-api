@@ -383,7 +383,7 @@ jobs:
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada, Check-AutoDocs, Check_unused_exports, Generate-Schema-Docs]
+    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada, Check-AutoDocs, Check_unused_code, Generate-Schema-Docs]
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
