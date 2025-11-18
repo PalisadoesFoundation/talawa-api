@@ -105,3 +105,4 @@ describe("Fund Resolver - createdAt Field", () => {
     expect(result).toEqual(mockFund.createdAt);
   });
 });
+
