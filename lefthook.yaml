@@ -17,13 +17,13 @@ pre-commit:
         set -e
         pnpm generate_graphql_sdl_file
         git add ./schema.graphql
-    # 5_generate_gql_tada_files:
-    #   run: |
-    #     set -e
-    #     pnpm generate_gql_tada
-    #     git add ./test/graphql/types/gql.tada-cache.d.ts
-    # 6_check_gql_tada:
-    #   run: pnpm check_gql_tada
+    5_generate_gql_tada_files:
+      run: |
+        set -e
+        pnpm generate_gql_tada
+        git add ./test/graphql/types/gql.tada-cache.d.ts
+    6_check_gql_tada:
+      run: pnpm check_gql_tada
     7_fix_code_quality:
       run: |
         set -e
