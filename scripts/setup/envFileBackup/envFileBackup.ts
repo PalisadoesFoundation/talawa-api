@@ -1,6 +1,6 @@
-import { constants } from "fs";
-import path from "path";
-import { access, copyFile, mkdir } from "fs/promises";
+import { constants } from "node:fs";
+import { access, copyFile, mkdir } from "node:fs/promises";
+import path from "node:path";
 
 export const backupEnvFile = async (shouldBackup: boolean): Promise<void> => {
 	try {
