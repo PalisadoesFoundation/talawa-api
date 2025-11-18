@@ -179,6 +179,10 @@ jobs:
           node-version: '24.x'
           cache: 'pnpm'
 
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
       - name: Install Docs dependencies
         working-directory: ./docs
         run: pnpm install --frozen-lockfile --prefer-offline
