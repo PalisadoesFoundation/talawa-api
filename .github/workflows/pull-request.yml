@@ -178,10 +178,6 @@ jobs:
         with:
           node-version: '24.x'
           cache: 'pnpm'
-
-      - name: Install API dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
-
       - name: Install Docs dependencies
         working-directory: ./docs
         run: pnpm install --frozen-lockfile --prefer-offline
