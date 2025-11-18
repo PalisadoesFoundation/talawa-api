@@ -1,0 +1,110 @@
+---
+id: get-pledges-by-user-id
+title: getPledgesByUserId
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+Query field to get fund campaign pledges associated with a user.
+
+```graphql
+getPledgesByUserId(
+  input: QueryFundCampaignPledgesByUserInput!
+  limit: Int
+  offset: Int
+  orderBy: QueryPledgeOrderByInput
+  where: QueryPledgeWhereInput
+): [FundCampaignPledge!]
+```
+
+### Arguments
+
+#### [<code style={{ fontWeight: 'normal' }}>getPledgesByUserId.<b>input</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>QueryFundCampaignPledgesByUserInput!</b></code>](/auto-schema/types/inputs/query-fund-campaign-pledges-by-user-input.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="input"/>
+
+Input parameters to fetch pledges by userId.
+
+#### [<code style={{ fontWeight: 'normal' }}>getPledgesByUserId.<b>limit</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Maximum number of results to return.
+
+#### [<code style={{ fontWeight: 'normal' }}>getPledgesByUserId.<b>offset</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Number of results to skip.
+
+#### [<code style={{ fontWeight: 'normal' }}>getPledgesByUserId.<b>orderBy</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>QueryPledgeOrderByInput</b></code>](/auto-schema/types/enums/query-pledge-order-by-input.mdx) <Badge class="badge badge--secondary " text="enum"/>
+
+Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'
+
+#### [<code style={{ fontWeight: 'normal' }}>getPledgesByUserId.<b>where</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>QueryPledgeWhereInput</b></code>](/auto-schema/types/inputs/query-pledge-where-input.mdx) <Badge class="badge badge--secondary " text="input"/>
+
+Filter criteria for pledges
+
+### Type
+
+#### [<code style={{ fontWeight: 'normal' }}><b>FundCampaignPledge</b></code>](/auto-schema/types/objects/fund-campaign-pledge.mdx) <Badge class="badge badge--secondary " text="object"/>

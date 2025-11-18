@@ -1,0 +1,95 @@
+---
+id: get-volunteer-membership
+title: getVolunteerMembership
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+Query field to get volunteer memberships.
+
+```graphql
+getVolunteerMembership(
+  orderBy: VolunteerMembershipOrderByInput
+  where: VolunteerMembershipWhereInput!
+): [VolunteerMembership!]
+```
+
+### Arguments
+
+#### [<code style={{ fontWeight: 'normal' }}>getVolunteerMembership.<b>orderBy</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>VolunteerMembershipOrderByInput</b></code>](/auto-schema/types/enums/volunteer-membership-order-by-input.mdx) <Badge class="badge badge--secondary " text="enum"/>
+
+Order criteria for volunteer memberships.
+
+#### [<code style={{ fontWeight: 'normal' }}>getVolunteerMembership.<b>where</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>VolunteerMembershipWhereInput!</b></code>](/auto-schema/types/inputs/volunteer-membership-where-input.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="input"/>
+
+Filter criteria for volunteer memberships.
+
+### Type
+
+#### [<code style={{ fontWeight: 'normal' }}><b>VolunteerMembership</b></code>](/auto-schema/types/objects/volunteer-membership.mdx) <Badge class="badge badge--secondary " text="object"/>
