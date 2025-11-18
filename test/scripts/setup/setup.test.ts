@@ -7,7 +7,7 @@ import * as SetupModule from "scripts/setup/setup";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
-vi.mock("scripts/setup/backupEnvFile/backupEnvFile");
+vi.mock("scripts/setup/envFileBackup/envFileBackup");
 describe("Setup", () => {
 	const originalEnv = { ...process.env };
 
