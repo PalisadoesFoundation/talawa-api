@@ -186,23 +186,6 @@ jobs:
       - name: Generate GraphQL Schema Markdown
         working-directory: ./docs
         run: pnpm docusaurus graphql-to-doc
-
-      - name: Show generated docs diff (quick)
-        shell: bash
-        run: |
-          echo "=== Changed files (porcelain) ==="
-          git status --porcelain
-          echo
-          echo "=== List of changed files under docs/docs/auto-schema ==="
-          git --no-pager diff --name-only -- docs/docs/auto-schema || true
-          echo
-          echo "=== Unified diff (first 500 lines) ==="
-          git --no-pager diff -- docs/docs/auto-schema | sed -n '1,500p' || true
-          echo
-          echo "=== Diffstat (summary) ==="
-          git --no-pager diff --stat -- docs/docs/auto-schema || true
-
-
       - name: Check for uncommitted schema changes
         run: |
           if [ -n "$(git status --porcelain)" ]; then
