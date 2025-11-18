@@ -29,19 +29,19 @@ The recurrence rule for the event.
 
 #### byDay
 
-`string`[] \| `null`
+`null` \| `string`[]
 
 #### byMonth
 
-`number`[] \| `null`
+`null` \| `number`[]
 
 #### byMonthDay
 
-`number`[] \| `null`
+`null` \| `number`[]
 
 #### count
 
-`number` \| `null`
+`null` \| `number`
 
 #### createdAt
 
@@ -73,11 +73,11 @@ The recurrence rule for the event.
 
 #### originalSeriesId
 
-`string` \| `null`
+`null` \| `string`
 
 #### recurrenceEndDate
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### recurrenceRuleString
 
@@ -89,11 +89,11 @@ The recurrence rule for the event.
 
 #### updatedAt
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### updaterId
 
-`string` \| `null`
+`null` \| `string`
 
 ## Returns
 

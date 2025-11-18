@@ -18,11 +18,11 @@ Defined in: [src/graphql/types/ActionItemCategory/updatedAt.ts:7](https://github
 
 #### creatorId
 
-`string` \| `null`
+`null` \| `string`
 
 #### description
 
-`string` \| `null`
+`null` \| `string`
 
 #### id
 
@@ -42,11 +42,11 @@ Defined in: [src/graphql/types/ActionItemCategory/updatedAt.ts:7](https://github
 
 #### updatedAt
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### updaterId
 
-`string` \| `null`
+`null` \| `string`
 
 ### \_args
 

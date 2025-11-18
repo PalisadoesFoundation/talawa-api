@@ -20,7 +20,7 @@ This function is used to check nullish state of a value passed to it. Nullish me
 
 ### value
 
-`T0` | `null` | `undefined`
+`undefined` | `null` | `T0`
 
 ## Returns
 

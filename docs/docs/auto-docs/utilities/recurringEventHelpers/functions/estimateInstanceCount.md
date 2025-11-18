@@ -25,19 +25,19 @@ The recurrence rule to estimate.
 
 #### byDay
 
-`string`[] \| `null`
+`null` \| `string`[]
 
 #### byMonth
 
-`number`[] \| `null`
+`null` \| `number`[]
 
 #### byMonthDay
 
-`number`[] \| `null`
+`null` \| `number`[]
 
 #### count
 
-`number` \| `null`
+`null` \| `number`
 
 #### createdAt
 
@@ -69,11 +69,11 @@ The recurrence rule to estimate.
 
 #### originalSeriesId
 
-`string` \| `null`
+`null` \| `string`
 
 #### recurrenceEndDate
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### recurrenceRuleString
 
@@ -85,11 +85,11 @@ The recurrence rule to estimate.
 
 #### updatedAt
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### updaterId
 
-`string` \| `null`
+`null` \| `string`
 
 ### estimationWindowMonths
 

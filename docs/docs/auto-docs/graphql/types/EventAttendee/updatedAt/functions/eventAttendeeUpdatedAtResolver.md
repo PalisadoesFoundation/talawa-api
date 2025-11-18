@@ -4,7 +4,7 @@
 
 # Function: eventAttendeeUpdatedAtResolver()
 
-> **eventAttendeeUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date` \| `null`\>
+> **eventAttendeeUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`null` \| `Date`\>
 
 Defined in: [src/graphql/types/EventAttendee/updatedAt.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventAttendee/updatedAt.ts#L9)
 
@@ -14,11 +14,11 @@ Defined in: [src/graphql/types/EventAttendee/updatedAt.ts:9](https://github.com/
 
 #### checkinTime
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### checkoutTime
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### createdAt
 
@@ -26,7 +26,7 @@ Defined in: [src/graphql/types/EventAttendee/updatedAt.ts:9](https://github.com/
 
 #### eventId
 
-`string` \| `null`
+`null` \| `string`
 
 #### feedbackSubmitted
 
@@ -54,11 +54,11 @@ Defined in: [src/graphql/types/EventAttendee/updatedAt.ts:9](https://github.com/
 
 #### recurringEventInstanceId
 
-`string` \| `null`
+`null` \| `string`
 
 #### updatedAt
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### userId
 
@@ -74,4 +74,4 @@ Defined in: [src/graphql/types/EventAttendee/updatedAt.ts:9](https://github.com/
 
 ## Returns
 
-`Promise`\<`Date` \| `null`\>
+`Promise`\<`null` \| `Date`\>

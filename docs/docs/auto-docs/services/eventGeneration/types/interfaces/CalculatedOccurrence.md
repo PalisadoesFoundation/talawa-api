@@ -52,6 +52,6 @@ Defined in: [src/services/eventGeneration/types.ts:49](https://github.com/Palisa
 
 ### totalCount
 
-> **totalCount**: `number` \| `null`
+> **totalCount**: `null` \| `number`
 
 Defined in: [src/services/eventGeneration/types.ts:50](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L50)

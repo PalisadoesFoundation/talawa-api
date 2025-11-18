@@ -4,7 +4,7 @@
 
 # Function: resolveVolunteerGroup()
 
-> **resolveVolunteerGroup**(`parent`, `_args`, `ctx`): `Promise`\<[`EventVolunteerGroup`](../../../EventVolunteerGroup/EventVolunteerGroup/type-aliases/EventVolunteerGroup.md) \| `null`\>
+> **resolveVolunteerGroup**(`parent`, `_args`, `ctx`): `Promise`\<`null` \| [`EventVolunteerGroup`](../../../EventVolunteerGroup/EventVolunteerGroup/type-aliases/EventVolunteerGroup.md)\>
 
 Defined in: [src/graphql/types/ActionItem/eventVolunteersAndGroups.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/ActionItem/eventVolunteersAndGroups.ts#L46)
 
@@ -14,7 +14,7 @@ Defined in: [src/graphql/types/ActionItem/eventVolunteersAndGroups.ts:46](https:
 
 #### volunteerGroupId
 
-`string` \| `null`
+`null` \| `string`
 
 ### \_args
 
@@ -26,4 +26,4 @@ Defined in: [src/graphql/types/ActionItem/eventVolunteersAndGroups.ts:46](https:
 
 ## Returns
 
-`Promise`\<[`EventVolunteerGroup`](../../../EventVolunteerGroup/EventVolunteerGroup/type-aliases/EventVolunteerGroup.md) \| `null`\>
+`Promise`\<`null` \| [`EventVolunteerGroup`](../../../EventVolunteerGroup/EventVolunteerGroup/type-aliases/EventVolunteerGroup.md)\>

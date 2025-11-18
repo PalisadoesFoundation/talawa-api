@@ -4,7 +4,7 @@
 
 # Function: VolunteerMembershipUpdatedAtResolver()
 
-> **VolunteerMembershipUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`Date` \| `null`\>
+> **VolunteerMembershipUpdatedAtResolver**(`parent`, `_args`, `ctx`): `Promise`\<`null` \| `Date`\>
 
 Defined in: [src/graphql/types/EventVolunteerMembership/updatedAt.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/EventVolunteerMembership/updatedAt.ts#L7)
 
@@ -18,7 +18,7 @@ Defined in: [src/graphql/types/EventVolunteerMembership/updatedAt.ts:7](https://
 
 #### createdBy
 
-`string` \| `null`
+`null` \| `string`
 
 #### eventId
 
@@ -26,7 +26,7 @@ Defined in: [src/graphql/types/EventVolunteerMembership/updatedAt.ts:7](https://
 
 #### groupId
 
-`string` \| `null`
+`null` \| `string`
 
 #### id
 
@@ -38,11 +38,11 @@ Defined in: [src/graphql/types/EventVolunteerMembership/updatedAt.ts:7](https://
 
 #### updatedAt
 
-`Date` \| `null`
+`null` \| `Date`
 
 #### updatedBy
 
-`string` \| `null`
+`null` \| `string`
 
 #### volunteerId
 
@@ -58,4 +58,4 @@ Defined in: [src/graphql/types/EventVolunteerMembership/updatedAt.ts:7](https://
 
 ## Returns
 
-`Promise`\<`Date` \| `null`\>
+`Promise`\<`null` \| `Date`\>

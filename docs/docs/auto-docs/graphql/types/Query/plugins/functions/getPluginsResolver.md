@@ -20,7 +20,7 @@ Resolver for getPlugins
 
 #### input?
 
-\{ `isActivated?`: `boolean` \| `null`; `isInstalled?`: `boolean` \| `null`; `pluginId?`: `string` \| `null`; \} \| `null`
+`null` \| \{ `isActivated?`: `null` \| `boolean`; `isInstalled?`: `null` \| `boolean`; `pluginId?`: `null` \| `string`; \}
 
 ### ctx
 
