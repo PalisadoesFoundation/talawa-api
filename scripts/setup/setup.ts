@@ -3,8 +3,8 @@ import fs from "node:fs";
 import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
-import { updateEnvVariable } from "./updateEnvVariable";
 import { backupEnvFile } from "./envFileBackup/envFileBackup";
+import { updateEnvVariable } from "./updateEnvVariable";
 
 interface SetupAnswers {
 	[key: string]: string;

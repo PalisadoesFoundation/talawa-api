@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { backupEnvFile } from "scripts/setup/envFileBackup/envFileBackup";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mkdirMock = vi.fn();
 const copyFileMock = vi.fn();

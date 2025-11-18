@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
+import { backupEnvFile } from "scripts/setup/envFileBackup/envFileBackup";
 import { setup } from "scripts/setup/setup";
 import * as SetupModule from "scripts/setup/setup";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { backupEnvFile } from "scripts/setup/envFileBackup/envFileBackup";
 
 vi.mock("inquirer");
 vi.mock("scripts/setup/backupEnvFile/backupEnvFile");
