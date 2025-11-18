@@ -2,7 +2,7 @@
 id: pagination
 title: GraphQL Filtering & Pagination
 slug: /developer-resources/graphql-filtering
-sidebar_position: 4
+sidebar_position: 40
 ---
 
 ## Pagination using graphQL connections
