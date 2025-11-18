@@ -4,6 +4,7 @@ import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { updateEnvVariable } from "./updateEnvVariable";
+import { backupEnvFile } from "./envFileBackup/envFileBackup";
 
 interface SetupAnswers {
 	[key: string]: string;
@@ -140,11 +141,6 @@ export function checkEnvFile(): boolean {
 }
 
 export function initializeEnvFile(answers: SetupAnswers): void {
-	if (fs.existsSync(envFileName)) {
-		fs.copyFileSync(envFileName, `${envFileName}.backup`);
-		console.log(`✅ Backup created at ${envFileName}.backup`);
-	}
-
 	const envFileToUse =
 		answers.CI === "true" ? "envFiles/.env.ci" : "envFiles/.env.devcontainer";
 
@@ -621,6 +617,16 @@ export async function setup(): Promise<SetupAnswers> {
 		}
 		process.exit(1);
 	});
+
+	// Prompt user to optionally backup env file
+	if (checkEnvFile()) {
+		const shouldBackup = await promptConfirm(
+			"shouldBackup",
+			"Would you like to back up the current .env file before setup modifies it?",
+			true,
+		);
+		await backupEnvFile(shouldBackup);
+	}
 
 	answers = await setCI(answers);
 	initializeEnvFile(answers);

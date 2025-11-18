@@ -4,8 +4,10 @@ import inquirer from "inquirer";
 import { setup } from "scripts/setup/setup";
 import * as SetupModule from "scripts/setup/setup";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { backupEnvFile } from "scripts/setup/envFileBackup/envFileBackup";
 
 vi.mock("inquirer");
+vi.mock("scripts/setup/backupEnvFile/backupEnvFile");
 describe("Setup", () => {
 	const originalEnv = { ...process.env };
 
@@ -170,5 +172,86 @@ describe("Setup", () => {
 		processExitSpy.mockRestore();
 		copyFileSpy.mockRestore();
 		existsSyncSpy.mockRestore();
+	});
+
+	describe("backup functionality", () => {
+		it("should not prompt for backup if .env file does not exist", async () => {
+			const checkEnvFileSpy = vi
+				.spyOn(SetupModule, "checkEnvFile")
+				.mockReturnValue(false);
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ CI: "false" });
+			promptMock.mockResolvedValueOnce({ useDefaultMinio: "true" });
+			promptMock.mockResolvedValueOnce({ useDefaultCloudbeaver: "true" });
+			promptMock.mockResolvedValueOnce({ useDefaultPostgres: "true" });
+			promptMock.mockResolvedValueOnce({ useDefaultCaddy: "true" });
+			promptMock.mockResolvedValueOnce({ useDefaultApi: "true" });
+			promptMock.mockResolvedValueOnce({
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			});
+
+			await setup();
+
+			expect(checkEnvFileSpy).toHaveBeenCalled();
+			expect(promptMock).not.toHaveBeenCalledWith(
+				expect.objectContaining({ name: "shouldBackup" }),
+			);
+			expect(backupEnvFile).not.toHaveBeenCalled();
+		});
+
+		it("should call backupEnvFile with true when user confirms backup", async () => {
+			const checkEnvFileSpy = vi
+				.spyOn(SetupModule, "checkEnvFile")
+				.mockReturnValue(true);
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ envReconfigure: true });
+			promptMock.mockResolvedValueOnce({ shouldBackup: true });
+			promptMock.mockResolvedValueOnce({ CI: "false" });
+			promptMock.mockResolvedValueOnce({ useDefaultMinio: "true" });
+			promptMock.mockResolvedValueOnce({ useDefaultCloudbeaver: "true" });
+			promptMock.mockResolvedValueOnce({ useDefaultPostgres: "true" });
+			promptMock.mockResolvedValueOnce({ useDefaultCaddy: "true" });
+			promptMock.mockResolvedValueOnce({ useDefaultApi: "true" });
+			promptMock.mockResolvedValueOnce({
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			});
+
+			await setup();
+
+			expect(checkEnvFileSpy).toHaveBeenCalled();
+			expect(promptMock).toHaveBeenCalledWith(
+				expect.objectContaining({ name: "shouldBackup" }),
+			);
+			expect(backupEnvFile).toHaveBeenCalledWith(true);
+		});
+
+		it("should call backupEnvFile with false when user denies backup", async () => {
+			const checkEnvFileSpy = vi
+				.spyOn(SetupModule, "checkEnvFile")
+				.mockReturnValue(true);
+			const promptMock = vi.spyOn(inquirer, "prompt");
+
+			promptMock.mockResolvedValueOnce({ envReconfigure: true });
+			promptMock.mockResolvedValueOnce({ shouldBackup: false });
+			promptMock.mockResolvedValueOnce({ CI: "false" });
+			promptMock.mockResolvedValueOnce({ useDefaultMinio: "true" });
+			promptMock.mockResolvedValueOnce({ useDefaultCloudbeaver: "true" });
+			promptMock.mockResolvedValueOnce({ useDefaultPostgres: "true" });
+			promptMock.mockResolvedValueOnce({ useDefaultCaddy: "true" });
+			promptMock.mockResolvedValueOnce({ useDefaultApi: "true" });
+			promptMock.mockResolvedValueOnce({
+				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
+			});
+
+			await setup();
+
+			expect(checkEnvFileSpy).toHaveBeenCalled();
+			expect(promptMock).toHaveBeenCalledWith(
+				expect.objectContaining({ name: "shouldBackup" }),
+			);
+			expect(backupEnvFile).toHaveBeenCalledWith(false);
+		});
 	});
 });

@@ -1,0 +1,78 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { backupEnvFile } from "scripts/setup/envFileBackup/envFileBackup";
+
+const mkdirMock = vi.fn();
+const copyFileMock = vi.fn();
+const accessMock = vi.fn();
+
+vi.mock("fs/promises", () => ({
+	mkdir: mkdirMock,
+	copyFile: copyFileMock,
+	access: accessMock,
+}));
+
+describe("backupEnvFile", () => {
+	const originalCwd = process.cwd;
+	const cwdMock = vi.fn();
+
+	beforeEach(() => {
+		vi.resetAllMocks();
+
+		mkdirMock.mockResolvedValue(undefined);
+		copyFileMock.mockResolvedValue(undefined);
+		accessMock.mockResolvedValue(undefined);
+
+		cwdMock.mockReturnValue("/tmp/project");
+		process.cwd = cwdMock as () => string;
+		vi.spyOn(console, "log").mockImplementation(() => {});
+		vi.spyOn(console, "error").mockImplementation(() => {});
+		vi.spyOn(Date, "now").mockReturnValue(1_731_959_200_000);
+	});
+
+	afterEach(() => {
+		process.cwd = originalCwd;
+		vi.restoreAllMocks();
+	});
+
+	it("should skip backup when shouldBackup is false", async () => {
+		await backupEnvFile(false);
+
+		expect(mkdirMock).not.toHaveBeenCalled();
+		expect(accessMock).not.toHaveBeenCalled();
+		expect(copyFileMock).not.toHaveBeenCalled();
+	});
+
+	it("should create timestamped backup when env file exists", async () => {
+		await backupEnvFile(true);
+
+		const backupDir = "/tmp/project/.backup";
+		const backupFile = `${backupDir}/.env.1731959200`;
+		const envPath = "/tmp/project/.env";
+
+		expect(mkdirMock).toHaveBeenCalledWith(backupDir, { recursive: true });
+		expect(accessMock).toHaveBeenCalledWith(envPath, expect.anything());
+		expect(copyFileMock).toHaveBeenCalledWith(envPath, backupFile);
+	});
+
+	it("should log message when .env file is missing", async () => {
+		const envMissingError = Object.assign(new Error("missing"), {
+			code: "ENOENT",
+		});
+		accessMock.mockRejectedValueOnce(envMissingError);
+		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+		await backupEnvFile(true);
+
+		expect(logSpy).toHaveBeenCalledWith("\n  No .env file found to backup.");
+		expect(copyFileMock).not.toHaveBeenCalled();
+	});
+
+	it("should throw error when backup fails unexpectedly", async () => {
+		const unexpectedError = new Error("disk failure");
+		copyFileMock.mockRejectedValueOnce(unexpectedError);
+
+		await expect(backupEnvFile(true)).rejects.toThrow(
+			"Failed to backup .env file: disk failure",
+		);
+	});
+});
