@@ -197,7 +197,6 @@ jobs:
           git --no-pager diff --name-only -- docs/docs/auto-schema || true
           echo
           echo "=== Unified diff (first 500 lines) ==="
-          # show a truncated unified diff so log doesn't explode — increase lines if needed
           git --no-pager diff -- docs/docs/auto-schema | sed -n '1,500p' || true
           echo
           echo "=== Diffstat (summary) ==="
