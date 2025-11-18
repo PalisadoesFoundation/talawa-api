@@ -49,6 +49,50 @@ jobs:
           echo "Error: Source and Target Branches are the same. Please ensure they are different."
           echo "Error: Close this PR and try again."
           exit 1
+    
+  Check-AutoDocs:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Generate and Validate Documentation
+    runs-on: ubuntu-latest
+    needs: [Code-Quality-Checks]
+    steps:
+      - name: Checkout the Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'pnpm'
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
+      - name: Install Dependencies (frozen)
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Run documentation generation
+        run: pnpm run generate:docs
+
+      - name: Check for uncommitted doc changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Documentation files are outdated or missing."
+            echo "Please run 'pnpm run generate:docs' locally and commit the updated files."
+            echo ""
+            echo "Changed files:"
+            git status --porcelain
+            exit 1
+          else
+            echo "Documentation is up to date."
+          fi
 
   python_checks:
     name: Run Python Checks
@@ -113,6 +157,31 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check type errors
         run: docker container run talawa_api pnpm typecheck
+
+  Check_unused_exports:
+    name: Check for unused exports
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2     
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile 
+      - name: Run Knip
+        run: pnpm knip --include exports
+        # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing
+        env:
+          API_POSTGRES_DATABASE: dummy_db
+          API_POSTGRES_PASSWORD: dummy_password
+          API_POSTGRES_HOST: localhost
+          API_POSTGRES_PORT: '5432'
+          API_POSTGRES_USER: dummy_user
+          API_POSTGRES_SSL_MODE: 'false'    
 
   Check-Sensitive-Files:
     if: ${{ github.actor != 'dependabot[bot]' }}
@@ -199,6 +268,7 @@ jobs:
             'package.json$'
             'package-lock.json$'
             '.nojekyll$'
+            'knip.json$'
             'docs/docusaurus.config.ts$'
             '^docs/sidebar.*'
             'setup.ts$'
@@ -259,7 +329,7 @@ jobs:
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada]
+    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada, Check-AutoDocs, Check_unused_exports]
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2

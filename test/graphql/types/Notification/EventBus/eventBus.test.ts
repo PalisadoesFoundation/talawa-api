@@ -128,8 +128,8 @@ describe("NotificationEventBus", () => {
 			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
-				"Failed to send post notification:",
 				error,
+				"Failed to send post notification:",
 			);
 		});
 	});
@@ -177,8 +177,8 @@ describe("NotificationEventBus", () => {
 			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
-				"Failed to send membership acceptance notification:",
 				error,
+				"Failed to send membership acceptance notification:",
 			);
 		});
 	});
@@ -473,12 +473,12 @@ describe("NotificationEventBus", () => {
 
 			expect(errorSpy).toHaveBeenCalledTimes(2);
 			expect(errorSpy).toHaveBeenCalledWith(
-				"Failed to send post notification:",
 				error,
+				"Failed to send post notification:",
 			);
 			expect(errorSpy).toHaveBeenCalledWith(
-				"Failed to send membership acceptance notification:",
 				error,
+				"Failed to send membership acceptance notification:",
 			);
 		});
 	});
@@ -500,8 +500,8 @@ describe("NotificationEventBus", () => {
 			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
-				"Failed to send fund creation notification:",
 				error,
+				"Failed to send fund creation notification:",
 			);
 		});
 	});
@@ -526,8 +526,8 @@ describe("NotificationEventBus", () => {
 			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
-				"Failed to send fund campaign creation notification:",
 				error,
+				"Failed to send fund campaign creation notification:",
 			);
 		});
 	});
@@ -551,8 +551,8 @@ describe("NotificationEventBus", () => {
 			await waitForSetImmediate();
 
 			expect(errorSpy).toHaveBeenCalledWith(
-				"Failed to send fund campaign pledge notification:",
 				error,
+				"Failed to send fund campaign pledge notification:",
 			);
 		});
 	});
@@ -842,20 +842,20 @@ describe("NotificationEventBus", () => {
 
 			// All should log errors appropriately
 			expect(errorSpy).toHaveBeenCalledWith(
+				commonError,
 				"Failed to send event creation notification:",
-				commonError,
 			);
 			expect(errorSpy).toHaveBeenCalledWith(
+				commonError,
 				"Failed to send join request notification:",
-				commonError,
 			);
 			expect(errorSpy).toHaveBeenCalledWith(
+				commonError,
 				"Failed to send new member notification:",
-				commonError,
 			);
 			expect(errorSpy).toHaveBeenCalledWith(
-				"Failed to send user blocked notification:",
 				commonError,
+				"Failed to send user blocked notification:",
 			);
 		});
 

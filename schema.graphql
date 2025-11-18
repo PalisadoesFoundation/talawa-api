@@ -646,13 +646,6 @@ input DeletePluginInput {
   id: String!
 }
 
-"""Possible statuses for a membership request."""
-enum DrizzleMembershipRequestStatus {
-  approved
-  pending
-  rejected
-}
-
 """
 A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
 """
@@ -2369,7 +2362,9 @@ type Mutation {
   """Mutation field to update a comment."""
   updateComment(input: MutationUpdateCommentInput!): Comment
 
-  """Mutation field to update a comment vote."""
+  """
+  Mutation field to create, update, or delete a comment vote. If type is null, the vote will be deleted.
+  """
   updateCommentVote(input: MutationUpdateCommentVoteInput!): Comment
 
   """Mutation field to update the community."""
@@ -2423,7 +2418,9 @@ type Mutation {
   """Mutation field to update a post."""
   updatePost(input: MutationUpdatePostInput!): Post
 
-  """Mutation field to create or update a post vote."""
+  """
+  Mutation field to create, update, or delete a post vote. If type is null, the vote will be deleted.
+  """
   updatePostVote(input: MutationUpdatePostVoteInput!): Post
 
   """
@@ -2789,7 +2786,7 @@ input MutationCreateOrganizationMembershipInput {
 """Input for creating a new post"""
 input MutationCreatePostInput {
   """Metadata for files already uploaded via presigned URL"""
-  attachments: [FileMetadataInput!]!
+  attachments: [FileMetadataInput!]
 
   """Caption about the post."""
   caption: String!
@@ -3410,7 +3407,7 @@ input MutationUpdateCommentVoteInput {
   """Global identifier of the comment that is voted."""
   commentId: ID!
 
-  """Type of the vote."""
+  """Type of the vote. If null, the vote will be deleted."""
   type: CommentVoteType
 }
 
@@ -3671,12 +3668,12 @@ input MutationUpdatePostInput {
   isPinned: Boolean
 }
 
-""""""
+"""Input for updating or removing a vote on a post."""
 input MutationUpdatePostVoteInput {
   """Global identifier of the voted post."""
   postId: ID!
 
-  """Type of the vote."""
+  """Type of the vote. If null, the vote will be deleted."""
   type: PostVoteType
 }
 
@@ -5189,13 +5186,13 @@ type User {
     input: QueryNotificationInput
   ): [Notification!]
 
+  """The organization ID where the user requested membership."""
+  orgIdWhereMembershipRequested: [String!]!
+
   """
   GraphQL connection to traverse through the organizations the user is a member of.
   """
   organizationsWhereMember(after: String, before: String, filter: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
-
-   """IDs of organizations where the user currently has pending membership requests."""
-  orgIdWhereMembershipRequested: [ID]!
 
   """Postal code of the user."""
   postalCode: String
@@ -5211,7 +5208,6 @@ type User {
 
   """User who last updated the user."""
   updater: User
-  
 
   """
   The phone number to use to communicate with the user while they're at work.

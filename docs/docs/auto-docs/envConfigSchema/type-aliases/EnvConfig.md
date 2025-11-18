@@ -1,11 +1,11 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Type Alias: EnvConfig
 
-> **EnvConfig**: `Static`\<*typeof* [`envConfigSchema`](../variables/envConfigSchema.md)\>
+> **EnvConfig** = `Static`\<*typeof* [`envConfigSchema`](../variables/envConfigSchema.md)\>
 
-Defined in: [src/envConfigSchema.ts:237](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/envConfigSchema.ts#L237)
+Defined in: [src/envConfigSchema.ts:326](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/envConfigSchema.ts#L326)
 
 Type of the object containing parsed configuration environment variables.

@@ -89,7 +89,7 @@ export class EmailQueueProcessor {
 				`Processed ${results.length} emails, ${results.filter((r) => r.success).length} successful`,
 			);
 		} catch (error) {
-			this.ctx.log.error("Error processing email queue:", error);
+			this.ctx.log.error(error, "Error processing email queue:");
 		} finally {
 			this.isProcessing = false;
 		}

@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: MutationUpdateCommentVoteInput
 
-> `const` **MutationUpdateCommentVoteInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{\}\>
+> `const` **MutationUpdateCommentVoteInput**: `InputObjectRef`\<`ExtendDefaultTypes`\<\{ `Context`: [`GraphQLContext`](../../../context/type-aliases/GraphQLContext.md); `Scalars`: [`CustomScalars`](../../../scalars/type-aliases/CustomScalars.md); \}\>, \{ `commentId`: `string`; `type?`: `NonNullable`\<`"down_vote"` \| `"up_vote"` \| `null`\> \| `null`; \}\>
 
-Defined in: [src/graphql/inputs/MutationUpdateCommentVoteInput.ts:12](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/MutationUpdateCommentVoteInput.ts#L12)
+Defined in: [src/graphql/inputs/MutationUpdateCommentVoteInput.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationUpdateCommentVoteInput.ts#L16)

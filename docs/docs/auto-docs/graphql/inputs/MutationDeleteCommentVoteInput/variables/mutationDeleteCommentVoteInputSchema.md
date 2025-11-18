@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: mutationDeleteCommentVoteInputSchema
 
-> `const` **mutationDeleteCommentVoteInputSchema**: `ZodObject`\<`extendShape`\<`Pick`\<\{\}, `never`\>, \{ `creatorId`: `any`; \}\>, `"strip"`, \{ `[key: string]`: `any`;  `creatorId`: `unknown`; \}, \{ `[key: string]`: `any`;  `creatorId`: `unknown`; \}\>
+> `const` **mutationDeleteCommentVoteInputSchema**: `ZodObject`\<`Pick`\<\{ `commentId`: `ZodString`; `createdAt`: `ZodOptional`\<`ZodDate`\>; `creatorId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `id`: `ZodOptional`\<`ZodString`\>; `type`: `ZodEnum`\<\[`"down_vote"`, `"up_vote"`\]\>; `updatedAt`: `ZodOptional`\<`ZodNullable`\<`ZodDate`\>\>; \}, `"commentId"`\> & `object`, `"strip"`, `ZodTypeAny`, \{ `commentId`: `string`; `creatorId`: `string`; \}, \{ `commentId`: `string`; `creatorId`: `string`; \}\>
 
-Defined in: [src/graphql/inputs/MutationDeleteCommentVoteInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/MutationDeleteCommentVoteInput.ts#L5)
+Defined in: [src/graphql/inputs/MutationDeleteCommentVoteInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationDeleteCommentVoteInput.ts#L5)
