@@ -4,7 +4,7 @@
 
 # Function: getPluginManagerInstance()
 
-> **getPluginManagerInstance**(): `null` \| [`PluginManager`](../../classes/PluginManager.md)
+> **getPluginManagerInstance**(): [`PluginManager`](../../classes/PluginManager.md) \| `null`
 
 Defined in: [src/plugin/registry.ts:66](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/registry.ts#L66)
 
@@ -13,4 +13,4 @@ This is the main function used throughout the codebase
 
 ## Returns
 
-`null` \| [`PluginManager`](../../classes/PluginManager.md)
+[`PluginManager`](../../classes/PluginManager.md) \| `null`

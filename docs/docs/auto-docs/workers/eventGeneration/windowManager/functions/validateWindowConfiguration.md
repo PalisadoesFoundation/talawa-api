@@ -16,7 +16,7 @@ Validates window configuration for processing
 
 #### configurationNotes
 
-`null` \| `string`
+`string` \| `null`
 
 #### createdAt
 
@@ -56,7 +56,7 @@ Validates window configuration for processing
 
 #### lastUpdatedById
 
-`null` \| `string`
+`string` \| `null`
 
 #### maxInstancesPerRun
 
@@ -76,7 +76,7 @@ Validates window configuration for processing
 
 #### updatedAt
 
-`null` \| `Date`
+`Date` \| `null`
 
 ## Returns
 
