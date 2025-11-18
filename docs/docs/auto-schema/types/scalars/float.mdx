@@ -3,56 +3,80 @@ id: float
 title: Float
 ---
 
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
 
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
 
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
 
-export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+import { useState } from "react";
 
-export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
-
-export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
-
-import { useState } from 'react';
-
-export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
   const [open, setOpen] = useState(startOpen);
   return (
-    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
       <summary
         onClick={(e) => {
           e.preventDefault();
           setOpen((open) => !open);
         }}
-        style={{ listStyle:'none' }}
+        style={{ listStyle: "none" }}
       >
-      {open ? dataOpen : dataClose}
+        {open ? dataOpen : dataClose}
       </summary>
       {open && children}
     </details>
   );
 };
 
-
-
-
-
-
-
-
-The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE&#x005F;floating&#x005F;point).
-
+The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).
 
 ```graphql
 scalar Float
 ```
 
-
-
-
-
-
-
-
 ### Member Of
 
-[`EventVolunteer`](/auto-schema/types/objects/event-volunteer.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/>
+[`EventVolunteer`](/auto-schema/types/objects/event-volunteer.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

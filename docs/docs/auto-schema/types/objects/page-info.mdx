@@ -3,44 +3,75 @@ id: page-info
 title: PageInfo
 ---
 
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
 
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
 
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
 
-export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+import { useState } from "react";
 
-export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
-
-export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
-
-import { useState } from 'react';
-
-export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
   const [open, setOpen] = useState(startOpen);
   return (
-    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
       <summary
         onClick={(e) => {
           e.preventDefault();
           setOpen((open) => !open);
         }}
-        style={{ listStyle:'none' }}
+        style={{ listStyle: "none" }}
       >
-      {open ? dataOpen : dataClose}
+        {open ? dataOpen : dataClose}
       </summary>
       {open && children}
     </details>
   );
 };
 
-
-
-
-
-
-
-
 No description
-
 
 ```graphql
 type PageInfo {
@@ -51,31 +82,16 @@ type PageInfo {
 }
 ```
 
-
-
-
 ### Fields
 
-#### [<code style={{ fontWeight: 'normal' }}>PageInfo.<b>endCursor</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+#### [<code style={{ fontWeight: 'normal' }}>PageInfo.<b>endCursor</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+#### [<code style={{ fontWeight: 'normal' }}>PageInfo.<b>hasNextPage</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
+#### [<code style={{ fontWeight: 'normal' }}>PageInfo.<b>hasPreviousPage</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>PageInfo.<b>hasNextPage</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
-
-
-
-#### [<code style={{ fontWeight: 'normal' }}>PageInfo.<b>hasPreviousPage</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
-
-
-
-#### [<code style={{ fontWeight: 'normal' }}>PageInfo.<b>startCursor</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
-
-
-
-
-
-
+#### [<code style={{ fontWeight: 'normal' }}>PageInfo.<b>startCursor</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
 ### Member Of
 
-[`AgendaFolderChildFoldersConnection`](/auto-schema/types/objects/agenda-folder-child-folders-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`AgendaFolderItemsConnection`](/auto-schema/types/objects/agenda-folder-items-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`ChatMembersConnection`](/auto-schema/types/objects/chat-members-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`ChatMessagesConnection`](/auto-schema/types/objects/chat-messages-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`CommentDownVotersConnection`](/auto-schema/types/objects/comment-down-voters-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`CommentUpVotersConnection`](/auto-schema/types/objects/comment-up-voters-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventActionItemsConnection`](/auto-schema/types/objects/event-action-items-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventAgendaFoldersConnection`](/auto-schema/types/objects/event-agenda-folders-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventVenuesConnection`](/auto-schema/types/objects/event-venues-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`FundCampaignPledgesConnection`](/auto-schema/types/objects/fund-campaign-pledges-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`FundCampaignsConnection`](/auto-schema/types/objects/fund-campaigns-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationActionItemCategoriesConnection`](/auto-schema/types/objects/organization-action-item-categories-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationAdvertisementsConnection`](/auto-schema/types/objects/organization-advertisements-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationBlockedUsersConnection`](/auto-schema/types/objects/organization-blocked-users-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationChatsConnection`](/auto-schema/types/objects/organization-chats-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationEventsConnection`](/auto-schema/types/objects/organization-events-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationFundsConnection`](/auto-schema/types/objects/organization-funds-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationMembersConnection`](/auto-schema/types/objects/organization-members-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationPinnedPostsConnection`](/auto-schema/types/objects/organization-pinned-posts-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationPostsConnection`](/auto-schema/types/objects/organization-posts-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationTagFoldersConnection`](/auto-schema/types/objects/organization-tag-folders-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationTagsConnection`](/auto-schema/types/objects/organization-tags-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationVenuesConnection`](/auto-schema/types/objects/organization-venues-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`PostCommentsConnection`](/auto-schema/types/objects/post-comments-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`PostDownVotersConnection`](/auto-schema/types/objects/post-down-voters-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`PostUpVotersConnection`](/auto-schema/types/objects/post-up-voters-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`QueryAllUsersConnection`](/auto-schema/types/objects/query-all-users-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagAssigneesConnection`](/auto-schema/types/objects/tag-assignees-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagFolderChildFoldersConnection`](/auto-schema/types/objects/tag-folder-child-folders-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagFolderTagsConnection`](/auto-schema/types/objects/tag-folder-tags-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`UserOrganizationsWhereMemberConnection`](/auto-schema/types/objects/user-organizations-where-member-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`VenueEventsConnection`](/auto-schema/types/objects/venue-events-connection.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/>
+[`AgendaFolderChildFoldersConnection`](/auto-schema/types/objects/agenda-folder-child-folders-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`AgendaFolderItemsConnection`](/auto-schema/types/objects/agenda-folder-items-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`ChatMembersConnection`](/auto-schema/types/objects/chat-members-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`ChatMessagesConnection`](/auto-schema/types/objects/chat-messages-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`CommentDownVotersConnection`](/auto-schema/types/objects/comment-down-voters-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`CommentUpVotersConnection`](/auto-schema/types/objects/comment-up-voters-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventActionItemsConnection`](/auto-schema/types/objects/event-action-items-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventAgendaFoldersConnection`](/auto-schema/types/objects/event-agenda-folders-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventVenuesConnection`](/auto-schema/types/objects/event-venues-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`FundCampaignPledgesConnection`](/auto-schema/types/objects/fund-campaign-pledges-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`FundCampaignsConnection`](/auto-schema/types/objects/fund-campaigns-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationActionItemCategoriesConnection`](/auto-schema/types/objects/organization-action-item-categories-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationAdvertisementsConnection`](/auto-schema/types/objects/organization-advertisements-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationBlockedUsersConnection`](/auto-schema/types/objects/organization-blocked-users-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationChatsConnection`](/auto-schema/types/objects/organization-chats-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationEventsConnection`](/auto-schema/types/objects/organization-events-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationFundsConnection`](/auto-schema/types/objects/organization-funds-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationMembersConnection`](/auto-schema/types/objects/organization-members-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationPinnedPostsConnection`](/auto-schema/types/objects/organization-pinned-posts-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationPostsConnection`](/auto-schema/types/objects/organization-posts-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationTagFoldersConnection`](/auto-schema/types/objects/organization-tag-folders-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationTagsConnection`](/auto-schema/types/objects/organization-tags-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationVenuesConnection`](/auto-schema/types/objects/organization-venues-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`PostCommentsConnection`](/auto-schema/types/objects/post-comments-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`PostDownVotersConnection`](/auto-schema/types/objects/post-down-voters-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`PostUpVotersConnection`](/auto-schema/types/objects/post-up-voters-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`QueryAllUsersConnection`](/auto-schema/types/objects/query-all-users-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagAssigneesConnection`](/auto-schema/types/objects/tag-assignees-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagFolderChildFoldersConnection`](/auto-schema/types/objects/tag-folder-child-folders-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagFolderTagsConnection`](/auto-schema/types/objects/tag-folder-tags-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`UserOrganizationsWhereMemberConnection`](/auto-schema/types/objects/user-organizations-where-member-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`VenueEventsConnection`](/auto-schema/types/objects/venue-events-connection.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

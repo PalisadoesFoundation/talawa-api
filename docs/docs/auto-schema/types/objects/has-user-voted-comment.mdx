@@ -3,44 +3,75 @@ id: has-user-voted-comment
 title: HasUserVotedComment
 ---
 
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
 
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
 
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
 
-export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+import { useState } from "react";
 
-export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
-
-export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
-
-import { useState } from 'react';
-
-export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
   const [open, setOpen] = useState(startOpen);
   return (
-    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
       <summary
         onClick={(e) => {
           e.preventDefault();
           setOpen((open) => !open);
         }}
-        style={{ listStyle:'none' }}
+        style={{ listStyle: "none" }}
       >
-      {open ? dataOpen : dataClose}
+        {open ? dataOpen : dataClose}
       </summary>
       {open && children}
     </details>
   );
 };
 
-
-
-
-
-
-
-
 No description
-
 
 ```graphql
 type HasUserVotedComment {
@@ -49,23 +80,16 @@ type HasUserVotedComment {
 }
 ```
 
-
-
-
 ### Fields
 
-#### [<code style={{ fontWeight: 'normal' }}>HasUserVotedComment.<b>hasVoted</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+#### [<code style={{ fontWeight: 'normal' }}>HasUserVotedComment.<b>hasVoted</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
 Indicates if the user has voted on this comment
 
+#### [<code style={{ fontWeight: 'normal' }}>HasUserVotedComment.<b>voteType</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>CommentVoteType</b></code>](/auto-schema/types/enums/comment-vote-type.mdx) <Badge class="badge badge--secondary " text="enum"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>HasUserVotedComment.<b>voteType</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>CommentVoteType</b></code>](/auto-schema/types/enums/comment-vote-type.mdx) <Badge class="badge badge--secondary " text="enum"/> 
 Type of the comment vote, null if no vote exists
-
-
-
-
-
 
 ### Member Of
 
-[`Comment`](/auto-schema/types/objects/comment.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/>
+[`Comment`](/auto-schema/types/objects/comment.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

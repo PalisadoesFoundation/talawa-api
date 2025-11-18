@@ -3,44 +3,75 @@ id: tag-folder
 title: TagFolder
 ---
 
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
 
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
 
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
 
-export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+import { useState } from "react";
 
-export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
-
-export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
-
-import { useState } from 'react';
-
-export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
   const [open, setOpen] = useState(startOpen);
   return (
-    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
       <summary
         onClick={(e) => {
           e.preventDefault();
           setOpen((open) => !open);
         }}
-        style={{ listStyle:'none' }}
+        style={{ listStyle: "none" }}
       >
-      {open ? dataOpen : dataClose}
+        {open ? dataOpen : dataClose}
       </summary>
       {open && children}
     </details>
   );
 };
 
-
-
-
-
-
-
-
 No description
-
 
 ```graphql
 type TagFolder {
@@ -67,87 +98,68 @@ type TagFolder {
 }
 ```
 
-
-
-
 ### Fields
 
-#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>childFolders</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>TagFolderChildFoldersConnection</b></code>](/auto-schema/types/objects/tag-folder-child-folders-connection.mdx) <Badge class="badge badge--secondary " text="object"/> 
+#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>childFolders</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>TagFolderChildFoldersConnection</b></code>](/auto-schema/types/objects/tag-folder-child-folders-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
 GraphQL connection to traverse through the tag folders contained within the tag folder.
-##### [<code style={{ fontWeight: 'normal' }}>TagFolder.childFolders.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 
+##### [<code style={{ fontWeight: 'normal' }}>TagFolder.childFolders.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+##### [<code style={{ fontWeight: 'normal' }}>TagFolder.childFolders.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-##### [<code style={{ fontWeight: 'normal' }}>TagFolder.childFolders.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+##### [<code style={{ fontWeight: 'normal' }}>TagFolder.childFolders.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+##### [<code style={{ fontWeight: 'normal' }}>TagFolder.childFolders.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-##### [<code style={{ fontWeight: 'normal' }}>TagFolder.childFolders.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
-
-
-
-##### [<code style={{ fontWeight: 'normal' }}>TagFolder.childFolders.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
-
-
-
-#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 Date time at the time the tag folder was created.
 
+#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>creator</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>creator</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/> 
 User who created the tag folder.
 
+#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
 Global identifier of the tag folder.
 
+#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 Name of the tag folder.
 
+#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>organization</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Organization</b></code>](/auto-schema/types/objects/organization.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>organization</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Organization</b></code>](/auto-schema/types/objects/organization.mdx) <Badge class="badge badge--secondary " text="object"/> 
 Organization which the tag folder belongs to.
 
+#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>parentFolder</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>TagFolder</b></code>](/auto-schema/types/objects/tag-folder.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>parentFolder</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>TagFolder</b></code>](/auto-schema/types/objects/tag-folder.mdx) <Badge class="badge badge--secondary " text="object"/> 
 Tag folder the tag folder is contained within.
 
+#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>tags</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>TagFolderTagsConnection</b></code>](/auto-schema/types/objects/tag-folder-tags-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>tags</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>TagFolderTagsConnection</b></code>](/auto-schema/types/objects/tag-folder-tags-connection.mdx) <Badge class="badge badge--secondary " text="object"/> 
 GraphQL connection to traverse through the tags contained within the tag folder.
-##### [<code style={{ fontWeight: 'normal' }}>TagFolder.tags.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 
+##### [<code style={{ fontWeight: 'normal' }}>TagFolder.tags.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+##### [<code style={{ fontWeight: 'normal' }}>TagFolder.tags.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-##### [<code style={{ fontWeight: 'normal' }}>TagFolder.tags.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+##### [<code style={{ fontWeight: 'normal' }}>TagFolder.tags.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+##### [<code style={{ fontWeight: 'normal' }}>TagFolder.tags.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-##### [<code style={{ fontWeight: 'normal' }}>TagFolder.tags.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
-
-
-
-##### [<code style={{ fontWeight: 'normal' }}>TagFolder.tags.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
-
-
-
-#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 Date time at the time the tag folder was last updated.
 
+#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>TagFolder.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/> 
 User who last updated the tag folder.
-
-
-
-
-
 
 ### Returned By
 
-[`createTagFolder`](/auto-schema/operations/mutations/create-tag-folder.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteTagFolder`](/auto-schema/operations/mutations/delete-tag-folder.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`tagFolder`](/auto-schema/operations/queries/tag-folder.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`updateTagFolder`](/auto-schema/operations/mutations/update-tag-folder.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+[`createTagFolder`](/auto-schema/operations/mutations/create-tag-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteTagFolder`](/auto-schema/operations/mutations/delete-tag-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`tagFolder`](/auto-schema/operations/queries/tag-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`updateTagFolder`](/auto-schema/operations/mutations/update-tag-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
 
 ### Member Of
 
-[`OrganizationTagFoldersConnectionEdge`](/auto-schema/types/objects/organization-tag-folders-connection-edge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Tag`](/auto-schema/types/objects/tag.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagFolder`](/auto-schema/types/objects/tag-folder.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagFolderChildFoldersConnectionEdge`](/auto-schema/types/objects/tag-folder-child-folders-connection-edge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/>
+[`OrganizationTagFoldersConnectionEdge`](/auto-schema/types/objects/organization-tag-folders-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Tag`](/auto-schema/types/objects/tag.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagFolder`](/auto-schema/types/objects/tag-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagFolderChildFoldersConnectionEdge`](/auto-schema/types/objects/tag-folder-child-folders-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

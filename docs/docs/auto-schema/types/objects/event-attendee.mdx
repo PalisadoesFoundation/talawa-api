@@ -3,44 +3,75 @@ id: event-attendee
 title: EventAttendee
 ---
 
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
 
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
 
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
 
-export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+import { useState } from "react";
 
-export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
-
-export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
-
-import { useState } from 'react';
-
-export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
   const [open, setOpen] = useState(startOpen);
   return (
-    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
       <summary
         onClick={(e) => {
           e.preventDefault();
           setOpen((open) => !open);
         }}
-        style={{ listStyle:'none' }}
+        style={{ listStyle: "none" }}
       >
-      {open ? dataOpen : dataClose}
+        {open ? dataOpen : dataClose}
       </summary>
       {open && children}
     </details>
   );
 };
 
-
-
-
-
-
-
-
 No description
-
 
 ```graphql
 type EventAttendee {
@@ -59,63 +90,56 @@ type EventAttendee {
 }
 ```
 
-
-
-
 ### Fields
 
-#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>checkinTime</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Date</b></code>](/auto-schema/types/scalars/date.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>checkinTime</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Date</b></code>](/auto-schema/types/scalars/date.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
 Date and time when the attendee checked in to the event.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>checkoutTime</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Date</b></code>](/auto-schema/types/scalars/date.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>checkoutTime</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Date</b></code>](/auto-schema/types/scalars/date.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 Date and time when the attendee checked out from the event.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime!</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime!</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
 Date time when the event attendee record was created.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>event</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Event</b></code>](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>event</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Event</b></code>](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary " text="object"/> 
 The event the attendee is associated with.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>feedbackSubmitted</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>feedbackSubmitted</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
 Indicates if the attendee has submitted feedback for the event.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
 Global identifier of the event attendee.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>isCheckedIn</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>isCheckedIn</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
 Indicates if the attendee has checked in to the event.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>isCheckedOut</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>isCheckedOut</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
 Indicates if the attendee has checked out from the event.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>isInvited</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>isInvited</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
 Indicates if the attendee is invited to the event.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>isRegistered</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>isRegistered</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
 Indicates if the attendee is registered for the event.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 Date time when the event attendee record was last updated.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>user</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User!</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="object"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventAttendee.<b>user</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User!</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="object"/> 
 The user attending the event.
-
-
-
-
-
 
 ### Returned By
 
-[`checkIn`](/auto-schema/operations/mutations/check-in.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`checkOut`](/auto-schema/operations/mutations/check-out.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`getEventAttendee`](/auto-schema/operations/queries/get-event-attendee.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`getEventAttendeesByEventId`](/auto-schema/operations/queries/get-event-attendees-by-event-id.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`getEventInvitesByUserId`](/auto-schema/operations/queries/get-event-invites-by-user-id.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`inviteEventAttendee`](/auto-schema/operations/mutations/invite-event-attendee.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`registerEventAttendee`](/auto-schema/operations/mutations/register-event-attendee.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`registerForEvent`](/auto-schema/operations/mutations/register-for-event.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+[`checkIn`](/auto-schema/operations/mutations/check-in.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`checkOut`](/auto-schema/operations/mutations/check-out.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`getEventAttendee`](/auto-schema/operations/queries/get-event-attendee.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`getEventAttendeesByEventId`](/auto-schema/operations/queries/get-event-attendees-by-event-id.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`getEventInvitesByUserId`](/auto-schema/operations/queries/get-event-invites-by-user-id.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`inviteEventAttendee`](/auto-schema/operations/mutations/invite-event-attendee.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`registerEventAttendee`](/auto-schema/operations/mutations/register-event-attendee.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`registerForEvent`](/auto-schema/operations/mutations/register-for-event.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>

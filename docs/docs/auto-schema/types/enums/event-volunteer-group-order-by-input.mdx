@@ -3,44 +3,75 @@ id: event-volunteer-group-order-by-input
 title: EventVolunteerGroupOrderByInput
 ---
 
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
 
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
 
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
 
-export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+import { useState } from "react";
 
-export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
-
-export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
-
-import { useState } from 'react';
-
-export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
   const [open, setOpen] = useState(startOpen);
   return (
-    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
       <summary
         onClick={(e) => {
           e.preventDefault();
           setOpen((open) => !open);
         }}
-        style={{ listStyle:'none' }}
+        style={{ listStyle: "none" }}
       >
-      {open ? dataOpen : dataClose}
+        {open ? dataOpen : dataClose}
       </summary>
       {open && children}
     </details>
   );
 };
 
-
-
-
-
-
-
-
 Enum for ordering event volunteer groups.
-
 
 ```graphql
 enum EventVolunteerGroupOrderByInput {
@@ -51,31 +82,24 @@ enum EventVolunteerGroupOrderByInput {
 }
 ```
 
-
-
-
 ### Values
 
-#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupOrderByInput.<b>assignments&#x005F;ASC</b></code>](#)  
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupOrderByInput.<b>assignments_ASC</b></code>](#)
+
 Order by number of assignments in ascending order.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupOrderByInput.<b>assignments_DESC</b></code>](#)
 
-#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupOrderByInput.<b>assignments&#x005F;DESC</b></code>](#)  
 Order by number of assignments in descending order.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupOrderByInput.<b>volunteers_ASC</b></code>](#)
 
-#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupOrderByInput.<b>volunteers&#x005F;ASC</b></code>](#)  
 Order by number of volunteers in ascending order.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupOrderByInput.<b>volunteers_DESC</b></code>](#)
 
-#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupOrderByInput.<b>volunteers&#x005F;DESC</b></code>](#)  
 Order by number of volunteers in descending order.
-
-
-
-
-
 
 ### Member Of
 
-[`getEventVolunteerGroups`](/auto-schema/operations/queries/get-event-volunteer-groups.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/>
+[`getEventVolunteerGroups`](/auto-schema/operations/queries/get-event-volunteer-groups.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/>

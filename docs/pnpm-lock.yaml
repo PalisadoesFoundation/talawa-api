@@ -23,6 +23,9 @@ importers:
       docusaurus:
         specifier: ^1.14.7
         version: 1.14.7(typescript@5.7.3)(webpack@5.101.3)
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
       prism-react-renderer:
         specifier: ^2.3.0
         version: 2.4.1(react@18.3.1)
@@ -40,10 +43,10 @@ importers:
         specifier: ^3.9.2
         version: 3.9.2(acorn@8.15.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@graphql-markdown/docusaurus':
-        specifier: 1.30.3
-        version: 1.30.3(@docusaurus/logger@3.9.2)(@types/node@24.3.0)(acorn@8.15.0)(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
+        specifier: ^1.30.3
+        version: 1.30.3(@docusaurus/logger@3.9.2)(@types/node@24.3.0)(acorn@8.15.0)(graphql@16.12.0)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)
       '@graphql-tools/graphql-file-loader':
-        specifier: 8.1.6
+        specifier: ^8.1.6
         version: 8.1.6(graphql@16.12.0)
       '@types/react':
         specifier: 18.2.48
@@ -6210,6 +6213,11 @@ packages:
     resolution: {integrity: sha512-ravE6m9Atw9Z/jjttRUZ+clIXogdghyZAuWJ3qEzjT+jI/dL1ifAqhZeC5VHzQp1MSt1+jxKkFNemj/iO7tVUA==}
     engines: {node: '>=4'}
 
+  prettier@3.6.2:
+    resolution: {integrity: sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==}
+    engines: {node: '>=14'}
+    hasBin: true
+
   pretty-bytes@5.6.0:
     resolution: {integrity: sha512-FFw039TmrBqFK8ma/7OL3sDz/VytdtJr044/QUJtH0wK9lb9jLq9tJyIxUwtQJHwar2BqtiA4iCWSwo9JLkzFg==}
     engines: {node: '>=6'}
@@ -9782,11 +9790,11 @@ snapshots:
 
   '@graphql-hive/signal@1.0.0': {}
 
-  '@graphql-markdown/cli@0.4.3(@types/node@24.3.0)(graphql@16.12.0)(typescript@5.7.3)':
+  '@graphql-markdown/cli@0.4.3(@types/node@24.3.0)(graphql@16.12.0)(prettier@3.6.2)(typescript@5.7.3)':
     dependencies:
-      '@graphql-markdown/core': 1.16.3(@graphql-markdown/printer-legacy@1.12.3(graphql@16.12.0))(graphql-config@5.1.5(@types/node@24.3.0)(graphql@16.12.0)(typescript@5.7.3))(graphql@16.12.0)
+      '@graphql-markdown/core': 1.16.3(@graphql-markdown/printer-legacy@1.12.3(graphql@16.12.0)(prettier@3.6.2))(graphql-config@5.1.5(@types/node@24.3.0)(graphql@16.12.0)(typescript@5.7.3))(graphql@16.12.0)(prettier@3.6.2)
       '@graphql-markdown/logger': 1.0.5
-      '@graphql-markdown/printer-legacy': 1.12.3(graphql@16.12.0)
+      '@graphql-markdown/printer-legacy': 1.12.3(graphql@16.12.0)(prettier@3.6.2)
       commander: 5.1.0
       graphql-config: 5.1.5(@types/node@24.3.0)(graphql@16.12.0)(typescript@5.7.3)
     transitivePeerDependencies:
@@ -9804,26 +9812,26 @@ snapshots:
       - uWebSockets.js
       - utf-8-validate
 
-  '@graphql-markdown/core@1.16.3(@graphql-markdown/printer-legacy@1.12.3(graphql@16.12.0))(graphql-config@5.1.5(@types/node@24.3.0)(graphql@16.12.0)(typescript@5.7.3))(graphql@16.12.0)':
+  '@graphql-markdown/core@1.16.3(@graphql-markdown/printer-legacy@1.12.3(graphql@16.12.0)(prettier@3.6.2))(graphql-config@5.1.5(@types/node@24.3.0)(graphql@16.12.0)(typescript@5.7.3))(graphql@16.12.0)(prettier@3.6.2)':
     dependencies:
       '@fastify/deepmerge': 3.1.0
-      '@graphql-markdown/graphql': 1.1.9(graphql@16.12.0)
+      '@graphql-markdown/graphql': 1.1.9(graphql@16.12.0)(prettier@3.6.2)
       '@graphql-markdown/logger': 1.0.5
-      '@graphql-markdown/utils': 1.9.0
+      '@graphql-markdown/utils': 1.9.0(prettier@3.6.2)
     optionalDependencies:
-      '@graphql-markdown/printer-legacy': 1.12.3(graphql@16.12.0)
+      '@graphql-markdown/printer-legacy': 1.12.3(graphql@16.12.0)(prettier@3.6.2)
       graphql-config: 5.1.5(@types/node@24.3.0)(graphql@16.12.0)(typescript@5.7.3)
     transitivePeerDependencies:
       - graphql
       - prettier
 
-  '@graphql-markdown/docusaurus@1.30.3(@docusaurus/logger@3.9.2)(@types/node@24.3.0)(acorn@8.15.0)(graphql@16.12.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)':
+  '@graphql-markdown/docusaurus@1.30.3(@docusaurus/logger@3.9.2)(@types/node@24.3.0)(acorn@8.15.0)(graphql@16.12.0)(prettier@3.6.2)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.3)':
     dependencies:
       '@docusaurus/logger': 3.9.2
       '@docusaurus/utils': 3.9.2(acorn@8.15.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@graphql-markdown/cli': 0.4.3(@types/node@24.3.0)(graphql@16.12.0)(typescript@5.7.3)
+      '@graphql-markdown/cli': 0.4.3(@types/node@24.3.0)(graphql@16.12.0)(prettier@3.6.2)(typescript@5.7.3)
       '@graphql-markdown/logger': 1.0.5
-      '@graphql-markdown/utils': 1.9.0
+      '@graphql-markdown/utils': 1.9.0(prettier@3.6.2)
     transitivePeerDependencies:
       - '@fastify/websocket'
       - '@graphql-markdown/diff'
@@ -9846,9 +9854,9 @@ snapshots:
       - utf-8-validate
       - webpack-cli
 
-  '@graphql-markdown/graphql@1.1.9(graphql@16.12.0)':
+  '@graphql-markdown/graphql@1.1.9(graphql@16.12.0)(prettier@3.6.2)':
     dependencies:
-      '@graphql-markdown/utils': 1.9.0
+      '@graphql-markdown/utils': 1.9.0(prettier@3.6.2)
       '@graphql-tools/load': 8.1.6(graphql@16.12.0)
       graphql: 16.12.0
     transitivePeerDependencies:
@@ -9856,15 +9864,17 @@ snapshots:
 
   '@graphql-markdown/logger@1.0.5': {}
 
-  '@graphql-markdown/printer-legacy@1.12.3(graphql@16.12.0)':
+  '@graphql-markdown/printer-legacy@1.12.3(graphql@16.12.0)(prettier@3.6.2)':
     dependencies:
-      '@graphql-markdown/graphql': 1.1.9(graphql@16.12.0)
-      '@graphql-markdown/utils': 1.9.0
+      '@graphql-markdown/graphql': 1.1.9(graphql@16.12.0)(prettier@3.6.2)
+      '@graphql-markdown/utils': 1.9.0(prettier@3.6.2)
     transitivePeerDependencies:
       - graphql
       - prettier
 
-  '@graphql-markdown/utils@1.9.0': {}
+  '@graphql-markdown/utils@1.9.0(prettier@3.6.2)':
+    optionalDependencies:
+      prettier: 3.6.2
 
   '@graphql-tools/batch-execute@9.0.19(graphql@16.12.0)':
     dependencies:
@@ -15873,6 +15883,8 @@ snapshots:
   prepend-http@1.0.4: {}
 
   prepend-http@2.0.0: {}
+
+  prettier@3.6.2: {}
 
   pretty-bytes@5.6.0: {}
 

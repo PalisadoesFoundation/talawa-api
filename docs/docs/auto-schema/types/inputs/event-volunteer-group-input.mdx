@@ -3,44 +3,75 @@ id: event-volunteer-group-input
 title: EventVolunteerGroupInput
 ---
 
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
 
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
 
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
 
-export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+import { useState } from "react";
 
-export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
-
-export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
-
-import { useState } from 'react';
-
-export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
   const [open, setOpen] = useState(startOpen);
   return (
-    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
       <summary
         onClick={(e) => {
           e.preventDefault();
           setOpen((open) => !open);
         }}
-        style={{ listStyle:'none' }}
+        style={{ listStyle: "none" }}
       >
-      {open ? dataOpen : dataClose}
+        {open ? dataOpen : dataClose}
       </summary>
       {open && children}
     </details>
   );
 };
 
-
-
-
-
-
-
-
 Input for creating an event volunteer group.
-
 
 ```graphql
 input EventVolunteerGroupInput {
@@ -55,47 +86,40 @@ input EventVolunteerGroupInput {
 }
 ```
 
-
-
-
 ### Fields
 
-#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
 The description of the volunteer group.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>eventId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>eventId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
 The ID of the event this group is for.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>leaderId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>leaderId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
 The ID of the user who will lead this group.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
 The name of the volunteer group.
 
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>recurringEventInstanceId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>recurringEventInstanceId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
-ID of specific recurring event instance (for 'THIS&#x005F;INSTANCE&#x005F;ONLY' scope).
+ID of specific recurring event instance (for 'THIS_INSTANCE_ONLY' scope).
 
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>scope</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>VolunteerGroupScope</b></code>](/auto-schema/types/enums/volunteer-group-scope.mdx) <Badge class="badge badge--secondary " text="enum"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>scope</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>VolunteerGroupScope</b></code>](/auto-schema/types/enums/volunteer-group-scope.mdx) <Badge class="badge badge--secondary " text="enum"/> 
-Whether this volunteer group applies to 'ENTIRE&#x005F;SERIES' (template) or 'THIS&#x005F;INSTANCE&#x005F;ONLY'
+Whether this volunteer group applies to 'ENTIRE_SERIES' (template) or 'THIS_INSTANCE_ONLY'
 
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>volunteerUserIds</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[ID!]</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>volunteerUserIds</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[ID!]</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="scalar"/> 
 List of user IDs to invite to this group (for batch invitation).
 
+#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>volunteersRequired</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>EventVolunteerGroupInput.<b>volunteersRequired</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 The number of volunteers required for this group.
-
-
-
-
-
 
 ### Member Of
 
-[`createEventVolunteerGroup`](/auto-schema/operations/mutations/create-event-volunteer-group.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+[`createEventVolunteerGroup`](/auto-schema/operations/mutations/create-event-volunteer-group.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>

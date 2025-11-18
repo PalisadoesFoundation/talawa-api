@@ -3,56 +3,80 @@ id: upload
 title: Upload
 ---
 
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
 
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
 
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
 
-export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+import { useState } from "react";
 
-export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
-
-export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
-
-import { useState } from 'react';
-
-export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
   const [open, setOpen] = useState(startOpen);
   return (
-    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
       <summary
         onClick={(e) => {
           e.preventDefault();
           setOpen((open) => !open);
         }}
-        style={{ listStyle:'none' }}
+        style={{ listStyle: "none" }}
       >
-      {open ? dataOpen : dataClose}
+        {open ? dataOpen : dataClose}
       </summary>
       {open && children}
     </details>
   );
 };
 
-
-
-
-
-
-
-
 The `Upload` scalar type represents a file upload.
-
 
 ```graphql
 scalar Upload
 ```
 
-
-
-
-
-
-
-
 ### Member Of
 
-[`MutationCreateAdvertisementInput`](/auto-schema/types/inputs/mutation-create-advertisement-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateChatInput`](/auto-schema/types/inputs/mutation-create-chat-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateEventInput`](/auto-schema/types/inputs/mutation-create-event-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateOrganizationInput`](/auto-schema/types/inputs/mutation-create-organization-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateUserInput`](/auto-schema/types/inputs/mutation-create-user-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateVenueInput`](/auto-schema/types/inputs/mutation-create-venue-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateChatInput`](/auto-schema/types/inputs/mutation-update-chat-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateCommunityInput`](/auto-schema/types/inputs/mutation-update-community-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateCurrentUserInput`](/auto-schema/types/inputs/mutation-update-current-user-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateOrganizationInput`](/auto-schema/types/inputs/mutation-update-organization-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateUserInput`](/auto-schema/types/inputs/mutation-update-user-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateVenueInput`](/auto-schema/types/inputs/mutation-update-venue-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`UploadPluginZipInput`](/auto-schema/types/inputs/upload-plugin-zip-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/>
+[`MutationCreateAdvertisementInput`](/auto-schema/types/inputs/mutation-create-advertisement-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateChatInput`](/auto-schema/types/inputs/mutation-create-chat-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateEventInput`](/auto-schema/types/inputs/mutation-create-event-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateOrganizationInput`](/auto-schema/types/inputs/mutation-create-organization-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateUserInput`](/auto-schema/types/inputs/mutation-create-user-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateVenueInput`](/auto-schema/types/inputs/mutation-create-venue-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateChatInput`](/auto-schema/types/inputs/mutation-update-chat-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateCommunityInput`](/auto-schema/types/inputs/mutation-update-community-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateCurrentUserInput`](/auto-schema/types/inputs/mutation-update-current-user-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateOrganizationInput`](/auto-schema/types/inputs/mutation-update-organization-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateUserInput`](/auto-schema/types/inputs/mutation-update-user-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateVenueInput`](/auto-schema/types/inputs/mutation-update-venue-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`UploadPluginZipInput`](/auto-schema/types/inputs/upload-plugin-zip-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/>

@@ -33,7 +33,8 @@ const config: Config = {
       loaders: {
         GraphQLFileLoader: "@graphql-tools/graphql-file-loader",
       },
-      homepage: false
+      homepage: false,
+      pretty : true,
     },
   ],
 ],

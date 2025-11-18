@@ -3,44 +3,75 @@ id: chat
 title: Chat
 ---
 
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
 
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
 
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
 
-export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+import { useState } from "react";
 
-export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
-
-export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
-
-import { useState } from 'react';
-
-export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
   const [open, setOpen] = useState(startOpen);
   return (
-    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
       <summary
         onClick={(e) => {
           e.preventDefault();
           setOpen((open) => !open);
         }}
-        style={{ listStyle:'none' }}
+        style={{ listStyle: "none" }}
       >
-      {open ? dataOpen : dataClose}
+        {open ? dataOpen : dataClose}
       </summary>
       {open && children}
     </details>
   );
 };
 
-
-
-
-
-
-
-
 No description
-
 
 ```graphql
 type Chat {
@@ -73,111 +104,92 @@ type Chat {
 }
 ```
 
-
-
-
 ### Fields
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>avatarMimeType</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>avatarMimeType</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
 Mime type of the avatar of the chat.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>avatarURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>avatarURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 URL to the avatar of the chat.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 Date time at the time the chat was first created.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>creator</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>creator</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/> 
 User who created the chat.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 Custom information about the chat.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>firstUnreadMessageId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>firstUnreadMessageId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 ID of the first unread message for the current user in this chat, if any.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>hasUnread</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>hasUnread</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 Whether the current user has unread messages in this chat.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
 Global identifier of the chat.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>lastMessage</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ChatMessage</b></code>](/auto-schema/types/objects/chat-message.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>lastMessage</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ChatMessage</b></code>](/auto-schema/types/objects/chat-message.mdx) <Badge class="badge badge--secondary " text="object"/> 
 Most recent message in this chat.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>members</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ChatMembersConnection</b></code>](/auto-schema/types/objects/chat-members-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>members</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ChatMembersConnection</b></code>](/auto-schema/types/objects/chat-members-connection.mdx) <Badge class="badge badge--secondary " text="object"/> 
 GraphQL connection to traverse through the users that are members of the chat.
-##### [<code style={{ fontWeight: 'normal' }}>Chat.members.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 
+##### [<code style={{ fontWeight: 'normal' }}>Chat.members.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+##### [<code style={{ fontWeight: 'normal' }}>Chat.members.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-##### [<code style={{ fontWeight: 'normal' }}>Chat.members.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+##### [<code style={{ fontWeight: 'normal' }}>Chat.members.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+##### [<code style={{ fontWeight: 'normal' }}>Chat.members.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>messages</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ChatMessagesConnection</b></code>](/auto-schema/types/objects/chat-messages-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-##### [<code style={{ fontWeight: 'normal' }}>Chat.members.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
-
-
-
-##### [<code style={{ fontWeight: 'normal' }}>Chat.members.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
-
-
-
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>messages</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ChatMessagesConnection</b></code>](/auto-schema/types/objects/chat-messages-connection.mdx) <Badge class="badge badge--secondary " text="object"/> 
 GraphQL connection to traverse through the messages created within the chat.
-##### [<code style={{ fontWeight: 'normal' }}>Chat.messages.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 
+##### [<code style={{ fontWeight: 'normal' }}>Chat.messages.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+##### [<code style={{ fontWeight: 'normal' }}>Chat.messages.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-##### [<code style={{ fontWeight: 'normal' }}>Chat.messages.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+##### [<code style={{ fontWeight: 'normal' }}>Chat.messages.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+##### [<code style={{ fontWeight: 'normal' }}>Chat.messages.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-##### [<code style={{ fontWeight: 'normal' }}>Chat.messages.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
-
-
-
-##### [<code style={{ fontWeight: 'normal' }}>Chat.messages.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
-
-
-
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 Name of the chat.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>organization</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Organization</b></code>](/auto-schema/types/objects/organization.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>organization</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Organization</b></code>](/auto-schema/types/objects/organization.mdx) <Badge class="badge badge--secondary " text="object"/> 
 Organization which the chat belongs to.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>unreadMessagesCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>unreadMessagesCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 Number of unread messages for the current user in this chat.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
 Date time at the time the chat was last updated.
 
+#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
 
-#### [<code style={{ fontWeight: 'normal' }}>Chat.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/> 
 User who last updated the chat.
-
-
-
-
-
 
 ### Returned By
 
-[`chat`](/auto-schema/operations/queries/chat.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`chatsByUser`](/auto-schema/operations/queries/chats-by-user.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`createChat`](/auto-schema/operations/mutations/create-chat.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`createChatMembership`](/auto-schema/operations/mutations/create-chat-membership.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteChat`](/auto-schema/operations/mutations/delete-chat.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteChatMembership`](/auto-schema/operations/mutations/delete-chat-membership.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`unreadChats`](/auto-schema/operations/queries/unread-chats.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`updateChat`](/auto-schema/operations/mutations/update-chat.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateChatMembership`](/auto-schema/operations/mutations/update-chat-membership.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+[`chat`](/auto-schema/operations/queries/chat.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`chatsByUser`](/auto-schema/operations/queries/chats-by-user.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`createChat`](/auto-schema/operations/mutations/create-chat.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`createChatMembership`](/auto-schema/operations/mutations/create-chat-membership.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteChat`](/auto-schema/operations/mutations/delete-chat.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteChatMembership`](/auto-schema/operations/mutations/delete-chat-membership.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`unreadChats`](/auto-schema/operations/queries/unread-chats.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`updateChat`](/auto-schema/operations/mutations/update-chat.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateChatMembership`](/auto-schema/operations/mutations/update-chat-membership.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
 
 ### Member Of
 
-[`ChatMessage`](/auto-schema/types/objects/chat-message.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationChatsConnectionEdge`](/auto-schema/types/objects/organization-chats-connection-edge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/>
+[`ChatMessage`](/auto-schema/types/objects/chat-message.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationChatsConnectionEdge`](/auto-schema/types/objects/organization-chats-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>
