@@ -5113,9 +5113,6 @@ type User {
   """
   organizationsWhereMember(after: String, before: String, filter: String, first: Int, last: Int): UserOrganizationsWhereMemberConnection
 
-   """IDs of organizations where the user currently has pending membership requests."""
-    orgIdWhereMembershipRequested: [ID]!
-
   """
   GraphQL connection to retrieve organizations where the user is blocked.
   """
@@ -5199,12 +5196,15 @@ type UserOrganizationsWhereMemberConnectionEdge {
 }
 
 type UserOrgsWhereUserIsBlockedConnection {
+  """Edge containing an organization and cursor."""
   edges: [UserOrgsWhereUserIsBlockedConnectionEdge]
   pageInfo: PageInfo!
 }
 
 type UserOrgsWhereUserIsBlockedConnectionEdge {
   cursor: String!
+
+  """Organization where the user is blocked."""
   node: Organization
 }
 
