@@ -27,6 +27,8 @@
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.9.2",
     "@docusaurus/types": "^3.9.2",
+    "@graphql-markdown/docusaurus": "^1.30.3",
+    "@graphql-tools/graphql-file-loader": "^8.1.6",
     "@types/react": "18.2.48",
     "typescript": "~5.7.3"
   },
