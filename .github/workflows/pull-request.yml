@@ -178,9 +178,10 @@ jobs:
         with:
           node-version: '24.x'
           cache: 'pnpm'
+
       - name: Install Docs dependencies
         working-directory: ./docs
-        run: pnpm install --frozen-lockfile --prefer-offline
+        run: pnpm install --frozen-lockfile
 
       - name: Generate GraphQL Schema Markdown
         working-directory: ./docs
