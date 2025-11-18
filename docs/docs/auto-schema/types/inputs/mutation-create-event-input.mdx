@@ -1,0 +1,116 @@
+---
+id: mutation-create-event-input
+title: MutationCreateEventInput
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+
+
+
+```graphql
+input MutationCreateEventInput {
+  allDay: Boolean
+  attachments: [Upload!]
+  description: String
+  endAt: DateTime!
+  isPublic: Boolean
+  isRegisterable: Boolean
+  location: String
+  name: String!
+  organizationId: ID!
+  recurrence: RecurrenceInput
+  startAt: DateTime!
+}
+```
+
+
+
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>allDay</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Indicates if the event spans the entire day
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[Upload!]</b></code>](/auto-schema/types/scalars/upload.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="scalar"/> 
+Attachments of the event.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Custom information about the event.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>endAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime!</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+Date time at the time the event ends at.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>isPublic</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Indicates if the event is publicly visible
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>isRegisterable</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Indicates if users can register for this event
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>location</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Physical or virtual location of the event
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+Name of the event.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>organizationId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+Global identifier of the associated organization.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>recurrence</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>RecurrenceInput</b></code>](/auto-schema/types/inputs/recurrence-input.mdx) <Badge class="badge badge--secondary " text="input"/> 
+Recurrence pattern for the event. If provided, creates a recurring event.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateEventInput.<b>startAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime!</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+Date time at the time the event starts at.
+
+
+
+
+
+
+### Member Of
+
+[`createEvent`](/auto-schema/operations/mutations/create-event.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/>

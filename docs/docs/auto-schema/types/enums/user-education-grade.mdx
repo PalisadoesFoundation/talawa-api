@@ -1,0 +1,141 @@
+---
+id: user-education-grade
+title: UserEducationGrade
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+Possible variants of the education grade(if applicable) of a user.
+
+
+```graphql
+enum UserEducationGrade {
+  grade_1
+  grade_2
+  grade_3
+  grade_4
+  grade_5
+  grade_6
+  grade_7
+  grade_8
+  grade_9
+  grade_10
+  grade_11
+  grade_12
+  graduate
+  kg
+  no_grade
+  pre_kg
+}
+```
+
+
+
+
+### Values
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>grade&#x005F;1</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>grade&#x005F;2</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>grade&#x005F;3</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>grade&#x005F;4</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>grade&#x005F;5</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>grade&#x005F;6</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>grade&#x005F;7</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>grade&#x005F;8</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>grade&#x005F;9</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>grade&#x005F;10</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>grade&#x005F;11</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>grade&#x005F;12</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>graduate</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>kg</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>no&#x005F;grade</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>UserEducationGrade.<b>pre&#x005F;kg</b></code>](#)  
+
+
+
+
+
+
+
+### Member Of
+
+[`MutationCreateUserInput`](/auto-schema/types/inputs/mutation-create-user-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationSignUpInput`](/auto-schema/types/inputs/mutation-sign-up-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateCurrentUserInput`](/auto-schema/types/inputs/mutation-update-current-user-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateUserInput`](/auto-schema/types/inputs/mutation-update-user-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`User`](/auto-schema/types/objects/user.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/>

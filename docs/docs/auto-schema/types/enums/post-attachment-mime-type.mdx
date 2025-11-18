@@ -1,0 +1,91 @@
+---
+id: post-attachment-mime-type
+title: PostAttachmentMimeType
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+MIME types supported for post attachments
+
+
+```graphql
+enum PostAttachmentMimeType {
+  IMAGE_AVIF
+  IMAGE_JPEG
+  IMAGE_PNG
+  IMAGE_WEBP
+  VIDEO_MP4
+  VIDEO_WEBM
+}
+```
+
+
+
+
+### Values
+
+#### [<code style={{ fontWeight: 'normal' }}>PostAttachmentMimeType.<b>IMAGE&#x005F;AVIF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>PostAttachmentMimeType.<b>IMAGE&#x005F;JPEG</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>PostAttachmentMimeType.<b>IMAGE&#x005F;PNG</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>PostAttachmentMimeType.<b>IMAGE&#x005F;WEBP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>PostAttachmentMimeType.<b>VIDEO&#x005F;MP4</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>PostAttachmentMimeType.<b>VIDEO&#x005F;WEBM</b></code>](#)  
+
+
+
+
+
+
+
+### Member Of
+
+[`FileMetadataInput`](/auto-schema/types/inputs/file-metadata-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/>

@@ -1,0 +1,976 @@
+---
+id: iso-639-set-1-language-code
+title: Iso639Set1LanguageCode
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+Possible variants of the two-letter language code defined in ISO 639-1, part of the ISO 639 standard published by the International Organization for Standardization (ISO), to represent natural languages.
+
+
+```graphql
+enum Iso639Set1LanguageCode {
+  aa
+  ab
+  ae
+  af
+  ak
+  am
+  an
+  ar
+  as
+  av
+  ay
+  az
+  ba
+  be
+  bg
+  bi
+  bm
+  bn
+  bo
+  br
+  bs
+  ca
+  ce
+  ch
+  co
+  cr
+  cs
+  cu
+  cv
+  cy
+  da
+  de
+  dv
+  dz
+  ee
+  el
+  en
+  eo
+  es
+  et
+  eu
+  fa
+  ff
+  fi
+  fj
+  fo
+  fr
+  fy
+  ga
+  gd
+  gl
+  gn
+  gu
+  gv
+  ha
+  he
+  hi
+  ho
+  hr
+  ht
+  hu
+  hy
+  hz
+  ia
+  id
+  ie
+  ig
+  ii
+  ik
+  io
+  is
+  it
+  iu
+  ja
+  jv
+  ka
+  kg
+  ki
+  kj
+  kk
+  kl
+  km
+  kn
+  ko
+  kr
+  ks
+  ku
+  kv
+  kw
+  ky
+  la
+  lb
+  lg
+  li
+  ln
+  lo
+  lt
+  lu
+  lv
+  mg
+  mh
+  mi
+  mk
+  ml
+  mn
+  mr
+  ms
+  mt
+  my
+  na
+  nb
+  nd
+  ne
+  ng
+  nl
+  nn
+  no
+  nr
+  nv
+  ny
+  oc
+  oj
+  om
+  or
+  os
+  pa
+  pi
+  pl
+  ps
+  pt
+  qu
+  rm
+  rn
+  ro
+  ru
+  rw
+  sa
+  sc
+  sd
+  se
+  sg
+  si
+  sk
+  sl
+  sm
+  sn
+  so
+  sq
+  sr
+  ss
+  st
+  su
+  sv
+  sw
+  ta
+  te
+  tg
+  th
+  ti
+  tk
+  tl
+  tn
+  to
+  tr
+  ts
+  tt
+  tw
+  ty
+  ug
+  uk
+  ur
+  uz
+  ve
+  vi
+  vo
+  wa
+  wo
+  xh
+  yi
+  yo
+  za
+  zh
+  zu
+}
+```
+
+
+
+
+### Values
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>aa</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ab</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ae</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>af</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ak</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>am</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>an</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ar</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>as</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>av</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ay</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>az</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ba</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>be</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>bg</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>bi</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>bm</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>bn</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>bo</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>br</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>bs</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ca</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ce</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ch</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>co</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>cr</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>cs</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>cu</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>cv</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>cy</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>da</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>de</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>dv</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>dz</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ee</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>el</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>en</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>eo</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>es</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>et</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>eu</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>fa</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ff</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>fi</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>fj</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>fo</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>fr</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>fy</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ga</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>gd</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>gl</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>gn</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>gu</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>gv</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ha</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>he</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>hi</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ho</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>hr</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ht</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>hu</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>hy</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>hz</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ia</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>id</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ie</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ig</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ii</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ik</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>io</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>is</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>it</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>iu</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ja</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>jv</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ka</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>kg</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ki</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>kj</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>kk</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>kl</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>km</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>kn</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ko</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>kr</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ks</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ku</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>kv</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>kw</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ky</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>la</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>lb</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>lg</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>li</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ln</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>lo</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>lt</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>lu</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>lv</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>mg</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>mh</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>mi</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>mk</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ml</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>mn</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>mr</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ms</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>mt</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>my</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>na</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>nb</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>nd</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ne</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ng</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>nl</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>nn</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>no</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>nr</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>nv</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ny</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>oc</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>oj</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>om</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>or</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>os</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>pa</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>pi</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>pl</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ps</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>pt</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>qu</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>rm</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>rn</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ro</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ru</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>rw</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>sa</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>sc</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>sd</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>se</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>sg</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>si</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>sk</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>sl</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>sm</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>sn</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>so</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>sq</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>sr</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ss</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>st</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>su</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>sv</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>sw</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ta</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>te</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>tg</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>th</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ti</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>tk</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>tl</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>tn</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>to</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>tr</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ts</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>tt</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>tw</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ty</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ug</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>uk</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ur</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>uz</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>ve</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>vi</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>vo</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>wa</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>wo</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>xh</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>yi</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>yo</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>za</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>zh</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso639Set1LanguageCode.<b>zu</b></code>](#)  
+
+
+
+
+
+
+
+### Member Of
+
+[`MutationCreateUserInput`](/auto-schema/types/inputs/mutation-create-user-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationSignUpInput`](/auto-schema/types/inputs/mutation-sign-up-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateCurrentUserInput`](/auto-schema/types/inputs/mutation-update-current-user-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateUserInput`](/auto-schema/types/inputs/mutation-update-user-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`User`](/auto-schema/types/objects/user.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/>

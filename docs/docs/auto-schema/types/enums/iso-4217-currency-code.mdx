@@ -1,0 +1,951 @@
+---
+id: iso-4217-currency-code
+title: Iso4217CurrencyCode
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+Possible variants of the currency code defined in ISO 4217 standard published by the International Organization for Standardization (ISO) which defines alpha codes and numeric codes for the representation of currencies and provides information about the relationships between individual currencies and their minor units.
+
+
+```graphql
+enum Iso4217CurrencyCode {
+  AED
+  AFN
+  ALL
+  AMD
+  ANG
+  AOA
+  ARS
+  AUD
+  AWG
+  AZN
+  BAM
+  BBD
+  BDT
+  BGN
+  BHD
+  BIF
+  BMD
+  BND
+  BOB
+  BOV
+  BRL
+  BSD
+  BTN
+  BWP
+  BYN
+  BZD
+  CAD
+  CDF
+  CHE
+  CHF
+  CHW
+  CLF
+  CLP
+  CNY
+  COP
+  COU
+  CRC
+  CUP
+  CVE
+  CZK
+  DJF
+  DKK
+  DOP
+  DZD
+  EGP
+  ERN
+  ETB
+  EUR
+  FJD
+  FKP
+  GBP
+  GEL
+  GHS
+  GIP
+  GMD
+  GNF
+  GTQ
+  GYD
+  HKD
+  HNL
+  HTG
+  HUF
+  IDR
+  ILS
+  INR
+  IQD
+  IRR
+  ISK
+  JMD
+  JOD
+  JPY
+  KES
+  KGS
+  KHR
+  KMF
+  KPW
+  KRW
+  KWD
+  KYD
+  KZT
+  LAK
+  LBP
+  LKR
+  LRD
+  LSL
+  LYD
+  MAD
+  MDL
+  MGA
+  MKD
+  MMK
+  MNT
+  MOP
+  MRU
+  MUR
+  MVR
+  MWK
+  MXN
+  MXV
+  MYR
+  MZN
+  NAD
+  NGN
+  NIO
+  NOK
+  NPR
+  NZD
+  OMR
+  PAB
+  PEN
+  PGK
+  PHP
+  PKR
+  PLN
+  PYG
+  QAR
+  RON
+  RSD
+  RUB
+  RWF
+  SAR
+  SBD
+  SCR
+  SDG
+  SEK
+  SGD
+  SHP
+  SLE
+  SOS
+  SRD
+  SSP
+  STN
+  SVC
+  SYP
+  SZL
+  THB
+  TJS
+  TMT
+  TND
+  TOP
+  TRY
+  TTD
+  TWD
+  TZS
+  UAH
+  UGX
+  USD
+  USN
+  UYI
+  UYU
+  UYW
+  UZS
+  VED
+  VES
+  VND
+  VUV
+  WST
+  XAF
+  XAG
+  XAU
+  XBA
+  XBB
+  XBC
+  XBD
+  XCD
+  XDR
+  XOF
+  XPD
+  XPF
+  XPT
+  XSU
+  XTS
+  XUA
+  XXX
+  YER
+  ZAR
+  ZMW
+  ZWG
+}
+```
+
+
+
+
+### Values
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>AED</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>AFN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>ALL</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>AMD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>ANG</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>AOA</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>ARS</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>AUD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>AWG</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>AZN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BAM</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BBD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BDT</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BGN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BHD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BIF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BMD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BND</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BOB</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BOV</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BRL</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BSD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BTN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BWP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BYN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>BZD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>CAD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>CDF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>CHE</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>CHF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>CHW</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>CLF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>CLP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>CNY</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>COP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>COU</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>CRC</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>CUP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>CVE</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>CZK</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>DJF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>DKK</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>DOP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>DZD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>EGP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>ERN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>ETB</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>EUR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>FJD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>FKP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>GBP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>GEL</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>GHS</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>GIP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>GMD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>GNF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>GTQ</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>GYD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>HKD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>HNL</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>HTG</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>HUF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>IDR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>ILS</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>INR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>IQD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>IRR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>ISK</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>JMD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>JOD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>JPY</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>KES</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>KGS</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>KHR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>KMF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>KPW</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>KRW</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>KWD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>KYD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>KZT</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>LAK</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>LBP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>LKR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>LRD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>LSL</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>LYD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MAD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MDL</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MGA</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MKD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MMK</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MNT</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MOP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MRU</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MUR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MVR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MWK</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MXN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MXV</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MYR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>MZN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>NAD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>NGN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>NIO</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>NOK</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>NPR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>NZD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>OMR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>PAB</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>PEN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>PGK</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>PHP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>PKR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>PLN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>PYG</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>QAR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>RON</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>RSD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>RUB</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>RWF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SAR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SBD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SCR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SDG</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SEK</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SGD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SHP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SLE</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SOS</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SRD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SSP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>STN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SVC</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SYP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>SZL</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>THB</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>TJS</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>TMT</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>TND</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>TOP</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>TRY</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>TTD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>TWD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>TZS</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>UAH</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>UGX</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>USD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>USN</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>UYI</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>UYU</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>UYW</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>UZS</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>VED</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>VES</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>VND</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>VUV</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>WST</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XAF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XAG</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XAU</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XBA</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XBB</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XBC</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XBD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XCD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XDR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XOF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XPD</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XPF</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XPT</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XSU</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XTS</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XUA</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>XXX</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>YER</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>ZAR</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>ZMW</b></code>](#)  
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso4217CurrencyCode.<b>ZWG</b></code>](#)  
+
+
+
+
+
+
+
+### Member Of
+
+[`FundCampaign`](/auto-schema/types/objects/fund-campaign.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`MutationCreateFundCampaignInput`](/auto-schema/types/inputs/mutation-create-fund-campaign-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/>

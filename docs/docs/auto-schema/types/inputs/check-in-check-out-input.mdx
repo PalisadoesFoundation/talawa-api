@@ -1,0 +1,76 @@
+---
+id: check-in-check-out-input
+title: CheckInCheckOutInput
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+Input for check-in and check-out operations.
+
+
+```graphql
+input CheckInCheckOutInput {
+  eventId: ID
+  recurringEventInstanceId: ID
+  userId: ID!
+}
+```
+
+
+
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>CheckInCheckOutInput.<b>eventId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+The ID of the standalone event (for standalone events).
+
+
+#### [<code style={{ fontWeight: 'normal' }}>CheckInCheckOutInput.<b>recurringEventInstanceId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+The ID of the recurring event instance (for recurring events).
+
+
+#### [<code style={{ fontWeight: 'normal' }}>CheckInCheckOutInput.<b>userId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+The ID of the user to check in/out.
+
+
+
+
+
+
+### Member Of
+
+[`checkIn`](/auto-schema/operations/mutations/check-in.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`checkOut`](/auto-schema/operations/mutations/check-out.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/>

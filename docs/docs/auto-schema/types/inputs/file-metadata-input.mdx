@@ -1,0 +1,81 @@
+---
+id: file-metadata-input
+title: FileMetadataInput
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+Metadata for files uploaded via presigned URL
+
+
+```graphql
+input FileMetadataInput {
+  fileHash: String!
+  mimetype: PostAttachmentMimeType!
+  name: String!
+  objectName: String!
+}
+```
+
+
+
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>FileMetadataInput.<b>fileHash</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+Hash of the file for deduplication
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FileMetadataInput.<b>mimetype</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>PostAttachmentMimeType!</b></code>](/auto-schema/types/enums/post-attachment-mime-type.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="enum"/> 
+MIME type of the file
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FileMetadataInput.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+Name of the file
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FileMetadataInput.<b>objectName</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+Object name used in storage
+
+
+
+
+
+
+### Member Of
+
+[`MutationCreatePostInput`](/auto-schema/types/inputs/mutation-create-post-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdatePostInput`](/auto-schema/types/inputs/mutation-update-post-input.mdx)  <Badge class="badge badge--secondary badge--relation" text="input"/>

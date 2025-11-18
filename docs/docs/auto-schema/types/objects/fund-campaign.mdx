@@ -1,0 +1,149 @@
+---
+id: fund-campaign
+title: FundCampaign
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+No description
+
+
+```graphql
+type FundCampaign {
+  createdAt: DateTime
+  creator: User
+  currencyCode: Iso4217CurrencyCode
+  endAt: DateTime
+  fund: Fund
+  goalAmount: Int
+  id: ID!
+  name: String
+  pledgedAmount: BigInt
+  pledges(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): FundCampaignPledgesConnection
+  startAt: DateTime
+  updatedAt: DateTime
+  updater: User
+}
+```
+
+
+
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Date time at the time the fund campaign was created.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>creator</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/> 
+User who created the fund campaign.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>currencyCode</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Iso4217CurrencyCode</b></code>](/auto-schema/types/enums/iso-4217-currency-code.mdx) <Badge class="badge badge--secondary " text="enum"/> 
+Currency code of the fund campaign.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>endAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Date time at the time the fund campaign ends at.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>fund</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Fund</b></code>](/auto-schema/types/objects/fund.mdx) <Badge class="badge badge--secondary " text="object"/> 
+Fund which the fund campaign belongs to.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>goalAmount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Minimum amount of money that is set as the goal for the fund campaign.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+Global identifier of the fund campaign.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Name of the fund campaign.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>pledgedAmount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>BigInt</b></code>](/auto-schema/types/scalars/big-int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Total amount of money pledged under the fund campaign.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>pledges</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>FundCampaignPledgesConnection</b></code>](/auto-schema/types/objects/fund-campaign-pledges-connection.mdx) <Badge class="badge badge--secondary " text="object"/> 
+GraphQL connection to traverse through the pledges made under the fund campaign.
+##### [<code style={{ fontWeight: 'normal' }}>FundCampaign.pledges.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+
+
+
+##### [<code style={{ fontWeight: 'normal' }}>FundCampaign.pledges.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+
+
+
+##### [<code style={{ fontWeight: 'normal' }}>FundCampaign.pledges.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+
+
+
+##### [<code style={{ fontWeight: 'normal' }}>FundCampaign.pledges.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>startAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Date time at the time the fund campaign starts at.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Date time at the time the fund campaign was last updated.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>FundCampaign.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/> 
+User who last updated the fund campaign.
+
+
+
+
+
+
+### Returned By
+
+[`createFundCampaign`](/auto-schema/operations/mutations/create-fund-campaign.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteFundCampaign`](/auto-schema/operations/mutations/delete-fund-campaign.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`fundCampaign`](/auto-schema/operations/queries/fund-campaign.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`updateFundCampaign`](/auto-schema/operations/mutations/update-fund-campaign.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+
+### Member Of
+
+[`FundCampaignPledge`](/auto-schema/types/objects/fund-campaign-pledge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`FundCampaignsConnectionEdge`](/auto-schema/types/objects/fund-campaigns-connection-edge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/>

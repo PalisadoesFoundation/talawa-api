@@ -1,0 +1,257 @@
+---
+id: user
+title: User
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+No description
+
+
+```graphql
+type User {
+  addressLine1: String
+  addressLine2: String
+  avatarMimeType: String
+  avatarURL: String
+  birthDate: Date
+  city: String
+  countryCode: Iso3166Alpha2CountryCode
+  createdAt: DateTime
+  createdOrganizations(
+    filter: String
+  ): [Organization!]
+  creator: User
+  description: String
+  educationGrade: UserEducationGrade
+  emailAddress: EmailAddress
+  employmentStatus: UserEmploymentStatus
+  eventsAttended: [Event!]
+  homePhoneNumber: PhoneNumber
+  id: ID!
+  isEmailAddressVerified: Boolean
+  maritalStatus: UserMaritalStatus
+  mobilePhoneNumber: PhoneNumber
+  name: String
+  natalSex: UserNatalSex
+  naturalLanguageCode: Iso639Set1LanguageCode
+  notifications(
+    input: QueryNotificationInput
+  ): [Notification!]
+  orgIdWhereMembershipRequested: [String!]!
+  organizationsWhereMember(
+    after: String
+    before: String
+    filter: String
+    first: Int
+    last: Int
+  ): UserOrganizationsWhereMemberConnection
+  postalCode: String
+  role: UserRole
+  state: String
+  updatedAt: DateTime
+  updater: User
+  workPhoneNumber: PhoneNumber
+}
+```
+
+
+
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>addressLine1</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Address line 1 of the user's address.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>addressLine2</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Address line 2 of the user's address.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>avatarMimeType</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Mime type of the avatar of the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>avatarURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+URL to the avatar of the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>birthDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Date</b></code>](/auto-schema/types/scalars/date.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Date of birth of the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>city</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Name of the city where the user resides in.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>countryCode</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Iso3166Alpha2CountryCode</b></code>](/auto-schema/types/enums/iso-3166-alpha-2-country-code.mdx) <Badge class="badge badge--secondary " text="enum"/> 
+Country code of the country the user is a citizen of.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Date time at the time the user was created.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>createdOrganizations</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[Organization!]</b></code>](/auto-schema/types/objects/organization.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/> 
+Organizations created by the user
+##### [<code style={{ fontWeight: 'normal' }}>User.createdOrganizations.<b>filter</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>creator</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/> 
+User who created the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Custom information about the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>educationGrade</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>UserEducationGrade</b></code>](/auto-schema/types/enums/user-education-grade.mdx) <Badge class="badge badge--secondary " text="enum"/> 
+Primary education grade of the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>emailAddress</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>EmailAddress</b></code>](/auto-schema/types/scalars/email-address.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Email address of the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>employmentStatus</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>UserEmploymentStatus</b></code>](/auto-schema/types/enums/user-employment-status.mdx) <Badge class="badge badge--secondary " text="enum"/> 
+Employment status of the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>eventsAttended</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[Event!]</b></code>](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/> 
+List of events the user has attended or registered for.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>homePhoneNumber</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>PhoneNumber</b></code>](/auto-schema/types/scalars/phone-number.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+The phone number to use to communicate with the user at their home.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+Global identifier of the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>isEmailAddressVerified</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Boolean to tell whether the user has verified their email address.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>maritalStatus</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>UserMaritalStatus</b></code>](/auto-schema/types/enums/user-marital-status.mdx) <Badge class="badge badge--secondary " text="enum"/> 
+Marital status of the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>mobilePhoneNumber</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>PhoneNumber</b></code>](/auto-schema/types/scalars/phone-number.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+The phone number to use to communicate with the user on their mobile phone.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Name of the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>natalSex</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>UserNatalSex</b></code>](/auto-schema/types/enums/user-natal-sex.mdx) <Badge class="badge badge--secondary " text="enum"/> 
+The sex assigned to the user at their birth.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>naturalLanguageCode</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Iso639Set1LanguageCode</b></code>](/auto-schema/types/enums/iso-639-set-1-language-code.mdx) <Badge class="badge badge--secondary " text="enum"/> 
+Language code of the user's preferred natural language.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>notifications</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[Notification!]</b></code>](/auto-schema/types/objects/notification.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/> 
+Notifications for this user
+##### [<code style={{ fontWeight: 'normal' }}>User.notifications.<b>input</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>QueryNotificationInput</b></code>](/auto-schema/types/inputs/query-notification-input.mdx) <Badge class="badge badge--secondary " text="input"/> 
+Input for querying notifications
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>orgIdWhereMembershipRequested</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[String!]!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+The organization ID where the user requested membership.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>organizationsWhereMember</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>UserOrganizationsWhereMemberConnection</b></code>](/auto-schema/types/objects/user-organizations-where-member-connection.mdx) <Badge class="badge badge--secondary " text="object"/> 
+GraphQL connection to traverse through the organizations the user is a member of.
+##### [<code style={{ fontWeight: 'normal' }}>User.organizationsWhereMember.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+
+
+
+##### [<code style={{ fontWeight: 'normal' }}>User.organizationsWhereMember.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+
+
+
+##### [<code style={{ fontWeight: 'normal' }}>User.organizationsWhereMember.<b>filter</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+
+
+
+##### [<code style={{ fontWeight: 'normal' }}>User.organizationsWhereMember.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+
+
+
+##### [<code style={{ fontWeight: 'normal' }}>User.organizationsWhereMember.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>postalCode</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Postal code of the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>role</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>UserRole</b></code>](/auto-schema/types/enums/user-role.mdx) <Badge class="badge badge--secondary " text="enum"/> 
+Role assigned to the user in the application.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>state</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Name of the state the user resides in.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Date time at the time the user was last updated.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/> 
+User who last updated the user.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>User.<b>workPhoneNumber</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>PhoneNumber</b></code>](/auto-schema/types/scalars/phone-number.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+The phone number to use to communicate with the user while they're at work.
+
+
+
+
+
+
+### Returned By
+
+[`addEventAttendee`](/auto-schema/operations/mutations/add-event-attendee.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`currentUser`](/auto-schema/operations/queries/current-user.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`deleteCurrentUser`](/auto-schema/operations/mutations/delete-current-user.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteUser`](/auto-schema/operations/mutations/delete-user.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`removeEventAttendee`](/auto-schema/operations/mutations/remove-event-attendee.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateCurrentUser`](/auto-schema/operations/mutations/update-current-user.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateUser`](/auto-schema/operations/mutations/update-user.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`user`](/auto-schema/operations/queries/user.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`usersByIds`](/auto-schema/operations/queries/users-by-ids.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`usersByOrganizationId`](/auto-schema/operations/queries/users-by-organization-id.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/>
+
+### Member Of
+
+[`ActionItem`](/auto-schema/types/objects/action-item.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`ActionItemCategory`](/auto-schema/types/objects/action-item-category.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Advertisement`](/auto-schema/types/objects/advertisement.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`AgendaFolder`](/auto-schema/types/objects/agenda-folder.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`AgendaItem`](/auto-schema/types/objects/agenda-item.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`AuthenticationPayload`](/auto-schema/types/objects/authentication-payload.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`BlockedUser`](/auto-schema/types/objects/blocked-user.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Chat`](/auto-schema/types/objects/chat.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`ChatMember`](/auto-schema/types/objects/chat-member.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`ChatMessage`](/auto-schema/types/objects/chat-message.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`CheckInStatus`](/auto-schema/types/objects/check-in-status.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Comment`](/auto-schema/types/objects/comment.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`CommentDownVotersConnectionEdge`](/auto-schema/types/objects/comment-down-voters-connection-edge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`CommentUpVotersConnectionEdge`](/auto-schema/types/objects/comment-up-voters-connection-edge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Community`](/auto-schema/types/objects/community.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Event`](/auto-schema/types/objects/event.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventAttendee`](/auto-schema/types/objects/event-attendee.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventVolunteer`](/auto-schema/types/objects/event-volunteer.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventVolunteerGroup`](/auto-schema/types/objects/event-volunteer-group.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Fund`](/auto-schema/types/objects/fund.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`FundCampaign`](/auto-schema/types/objects/fund-campaign.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`FundCampaignPledge`](/auto-schema/types/objects/fund-campaign-pledge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`MembershipRequest`](/auto-schema/types/objects/membership-request.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Organization`](/auto-schema/types/objects/organization.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationBlockedUsersConnectionEdge`](/auto-schema/types/objects/organization-blocked-users-connection-edge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationMembersConnectionEdge`](/auto-schema/types/objects/organization-members-connection-edge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Post`](/auto-schema/types/objects/post.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`PostDownVotersConnectionEdge`](/auto-schema/types/objects/post-down-voters-connection-edge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`PostUpVotersConnectionEdge`](/auto-schema/types/objects/post-up-voters-connection-edge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`QueryAllUsersConnectionEdge`](/auto-schema/types/objects/query-all-users-connection-edge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Tag`](/auto-schema/types/objects/tag.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagAssigneesConnectionEdge`](/auto-schema/types/objects/tag-assignees-connection-edge.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagFolder`](/auto-schema/types/objects/tag-folder.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`User`](/auto-schema/types/objects/user.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Venue`](/auto-schema/types/objects/venue.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`VolunteerMembership`](/auto-schema/types/objects/volunteer-membership.mdx)  <Badge class="badge badge--secondary badge--relation" text="object"/>

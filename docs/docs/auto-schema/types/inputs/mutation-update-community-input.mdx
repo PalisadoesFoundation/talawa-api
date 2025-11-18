@@ -1,0 +1,121 @@
+---
+id: mutation-update-community-input
+title: MutationUpdateCommunityInput
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+
+
+
+```graphql
+input MutationUpdateCommunityInput {
+  facebookURL: String
+  githubURL: String
+  inactivityTimeoutDuration: Int
+  instagramURL: String
+  linkedinURL: String
+  logo: Upload
+  name: String
+  redditURL: String
+  slackURL: String
+  websiteURL: String
+  xURL: String
+  youtubeURL: String
+}
+```
+
+
+
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateCommunityInput.<b>facebookURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+URL to the facebook account of the community.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateCommunityInput.<b>githubURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+URL to the gitGub account of the community.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateCommunityInput.<b>inactivityTimeoutDuration</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Duration in seconds it should take for inactive clients to get timed out of their authenticated session within client-side talawa applications.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateCommunityInput.<b>instagramURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+URL to the instagram account of the community.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateCommunityInput.<b>linkedinURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+URL to the linkedin account of the community.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateCommunityInput.<b>logo</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Upload</b></code>](/auto-schema/types/scalars/upload.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Mime type of the logo of the community.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateCommunityInput.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Name of the community.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateCommunityInput.<b>redditURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+URL to the reddit account of the community.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateCommunityInput.<b>slackURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+URL to the slack account of the community.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateCommunityInput.<b>websiteURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+URL to the website of the community.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateCommunityInput.<b>xURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+URL to the x account of the community.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationUpdateCommunityInput.<b>youtubeURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+URL to the youtube account of the community.
+
+
+
+
+
+
+### Member Of
+
+[`updateCommunity`](/auto-schema/operations/mutations/update-community.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/>

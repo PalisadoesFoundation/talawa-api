@@ -1,0 +1,111 @@
+---
+id: mutation-create-organization-input
+title: MutationCreateOrganizationInput
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+
+
+
+```graphql
+input MutationCreateOrganizationInput {
+  addressLine1: String
+  addressLine2: String
+  avatar: Upload
+  city: String
+  countryCode: Iso3166Alpha2CountryCode
+  description: String
+  isUserRegistrationRequired: Boolean
+  name: String!
+  postalCode: String
+  state: String
+}
+```
+
+
+
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateOrganizationInput.<b>addressLine1</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Address line 1 of the organization's address.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateOrganizationInput.<b>addressLine2</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Address line 2 of the organization's address.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateOrganizationInput.<b>avatar</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Upload</b></code>](/auto-schema/types/scalars/upload.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Avatar of the organization.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateOrganizationInput.<b>city</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Name of the city where the organization resides in.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateOrganizationInput.<b>countryCode</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Iso3166Alpha2CountryCode</b></code>](/auto-schema/types/enums/iso-3166-alpha-2-country-code.mdx) <Badge class="badge badge--secondary " text="enum"/> 
+Country code of the country the organization is a citizen of.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateOrganizationInput.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Custom information about the organization.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateOrganizationInput.<b>isUserRegistrationRequired</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Flag to indicate if user registration is required to access the organization.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateOrganizationInput.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String!</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/> 
+Name of the organization.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateOrganizationInput.<b>postalCode</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Postal code of the organization.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>MutationCreateOrganizationInput.<b>state</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Name of the state the organization resides in.
+
+
+
+
+
+
+### Member Of
+
+[`createOrganization`](/auto-schema/operations/mutations/create-organization.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/>

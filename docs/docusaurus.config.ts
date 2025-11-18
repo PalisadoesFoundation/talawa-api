@@ -23,6 +23,21 @@ const config: Config = {
     },
   },
   
+  plugins: [
+  [
+    "@graphql-markdown/docusaurus",
+    {
+      schema: "../schema.graphql",        
+      rootPath: "docs",     
+      baseURL: "auto-schema",
+      loaders: {
+        GraphQLFileLoader: "@graphql-tools/graphql-file-loader",
+      },
+      markdown: true,
+      mdx: false,
+    },
+  ],
+],
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".

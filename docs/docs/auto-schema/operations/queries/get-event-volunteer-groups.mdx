@@ -1,0 +1,67 @@
+---
+id: get-event-volunteer-groups
+title: getEventVolunteerGroups
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+Query field to get event volunteer groups.
+
+
+```graphql
+getEventVolunteerGroups(
+  orderBy: EventVolunteerGroupOrderByInput
+  where: EventVolunteerGroupWhereInput!
+): [EventVolunteerGroup!]
+```
+
+
+
+
+### Arguments
+
+#### [<code style={{ fontWeight: 'normal' }}>getEventVolunteerGroups.<b>orderBy</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>EventVolunteerGroupOrderByInput</b></code>](/auto-schema/types/enums/event-volunteer-group-order-by-input.mdx) <Badge class="badge badge--secondary " text="enum"/> 
+Order criteria for event volunteer groups.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>getEventVolunteerGroups.<b>where</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>EventVolunteerGroupWhereInput!</b></code>](/auto-schema/types/inputs/event-volunteer-group-where-input.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="input"/> 
+Filter criteria for event volunteer groups.
+
+
+### Type
+
+#### [<code style={{ fontWeight: 'normal' }}><b>EventVolunteerGroup</b></code>](/auto-schema/types/objects/event-volunteer-group.mdx) <Badge class="badge badge--secondary " text="object"/>

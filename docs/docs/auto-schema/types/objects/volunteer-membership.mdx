@@ -1,0 +1,106 @@
+---
+id: volunteer-membership
+title: VolunteerMembership
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+No description
+
+
+```graphql
+type VolunteerMembership {
+  createdAt: DateTime
+  createdBy: User
+  event: Event
+  group: EventVolunteerGroup
+  id: ID
+  status: String
+  updatedAt: DateTime
+  updatedBy: User
+  volunteer: EventVolunteer
+}
+```
+
+
+
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>VolunteerMembership.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Date time at the time the volunteer membership was created.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>VolunteerMembership.<b>createdBy</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/> 
+The user who created this membership.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>VolunteerMembership.<b>event</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Event</b></code>](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary " text="object"/> 
+The event associated with this membership.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>VolunteerMembership.<b>group</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>EventVolunteerGroup</b></code>](/auto-schema/types/objects/event-volunteer-group.mdx) <Badge class="badge badge--secondary " text="object"/> 
+The volunteer group associated with this membership (null for individual volunteers).
+
+
+#### [<code style={{ fontWeight: 'normal' }}>VolunteerMembership.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Primary unique identifier of the volunteer membership.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>VolunteerMembership.<b>status</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Status of the volunteer membership (invited, requested, accepted, rejected).
+
+
+#### [<code style={{ fontWeight: 'normal' }}>VolunteerMembership.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Date time at the time the volunteer membership was last updated.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>VolunteerMembership.<b>updatedBy</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/> 
+The user who last updated this membership.
+
+
+#### [<code style={{ fontWeight: 'normal' }}>VolunteerMembership.<b>volunteer</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>EventVolunteer</b></code>](/auto-schema/types/objects/event-volunteer.mdx) <Badge class="badge badge--secondary " text="object"/> 
+The event volunteer associated with this membership.
+
+
+
+
+
+
+### Returned By
+
+[`createVolunteerMembership`](/auto-schema/operations/mutations/create-volunteer-membership.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`getVolunteerMembership`](/auto-schema/operations/queries/get-volunteer-membership.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`updateVolunteerMembership`](/auto-schema/operations/mutations/update-volunteer-membership.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/>

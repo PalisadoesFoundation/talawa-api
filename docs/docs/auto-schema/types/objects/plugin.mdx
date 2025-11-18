@@ -1,0 +1,96 @@
+---
+id: plugin
+title: Plugin
+---
+
+
+
+
+export const Bullet = () => <><span style={{ fontWeight: 'normal', fontSize: '.5em', color: 'var(--ifm-color-secondary-darkest)' }}>&nbsp;●&nbsp;</span></>
+
+export const SpecifiedBy = (props) => <>Specification<a className="link" style={{ fontSize:'1.5em', paddingLeft:'4px' }} target="_blank" href={props.url} title={'Specified by ' + props.url}>⎘</a></>
+
+export const Badge = (props) => <><span className={props.class}>{props.text}</span></>
+
+import { useState } from 'react';
+
+export const Details = ({ dataOpen, dataClose, children, startOpen = false }) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details {...(open ? { open: true } : {})} className="details" style={{ border:'none', boxShadow:'none', background:'var(--ifm-background-color)' }}>
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle:'none' }}
+      >
+      {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+
+
+
+
+
+
+
+Represents a plugin in the system with its installation and activation status
+
+
+```graphql
+type Plugin {
+  backup: Boolean
+  createdAt: DateTime
+  id: ID
+  isActivated: Boolean
+  isInstalled: Boolean
+  pluginId: String
+  updatedAt: DateTime
+}
+```
+
+
+
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>Plugin.<b>backup</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Whether the plugin has an existing backup
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Plugin.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Timestamp when the plugin record was created
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Plugin.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Unique identifier for the plugin record
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Plugin.<b>isActivated</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Whether the plugin is currently activated
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Plugin.<b>isInstalled</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Whether the plugin is installed in the system
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Plugin.<b>pluginId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+The unique identifier/name of the plugin
+
+
+#### [<code style={{ fontWeight: 'normal' }}>Plugin.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/> 
+Timestamp when the plugin record was last updated
+
+
+
+
+
+
+### Returned By
+
+[`createPlugin`](/auto-schema/operations/mutations/create-plugin.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deletePlugin`](/auto-schema/operations/mutations/delete-plugin.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`getPluginById`](/auto-schema/operations/queries/get-plugin-by-id.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`getPlugins`](/auto-schema/operations/queries/get-plugins.mdx)  <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`installPlugin`](/auto-schema/operations/mutations/install-plugin.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updatePlugin`](/auto-schema/operations/mutations/update-plugin.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`uploadPluginZip`](/auto-schema/operations/mutations/upload-plugin-zip.mdx)  <Badge class="badge badge--secondary badge--relation" text="mutation"/>
