@@ -1,7 +1,7 @@
 import fs, { constants } from "node:fs";
 import path from "node:path";
 
-export const backupEnvFile = (shouldBackup: boolean): void => {
+export const envFileBackup = async (shouldBackup: boolean): Promise<void> => {
 	try {
 		if (!shouldBackup) return;
 
@@ -9,17 +9,17 @@ export const backupEnvFile = (shouldBackup: boolean): void => {
 		const envPath = path.join(cwd, ".env");
 
 		try {
-			fs.accessSync(envPath, constants.F_OK);
+			await fs.promises.access(envPath, constants.F_OK);
 
 			const archiveDir = path.join(cwd, ".backup");
-			fs.mkdirSync(archiveDir, { recursive: true });
+			await fs.promises.mkdir(archiveDir, { recursive: true });
 
 			const epochTimestamp = Math.floor(Date.now() / 1000);
 			const timestampedFile = path.join(archiveDir, `.env.${epochTimestamp}`);
-			fs.copyFileSync(envPath, timestampedFile);
+			await fs.promises.copyFile(envPath, timestampedFile);
 
 			const backupFilePath = path.join(cwd, ".env.backup");
-			fs.copyFileSync(envPath, backupFilePath);
+			await fs.promises.copyFile(envPath, backupFilePath);
 
 			console.log(`\n Backup created at ${backupFilePath}`);
 			console.log(`   Archive: ${timestampedFile}`);
@@ -36,4 +36,4 @@ export const backupEnvFile = (shouldBackup: boolean): void => {
 		throw new Error(`Failed to backup .env file: ${(error as Error).message}`);
 	}
 };
-export default backupEnvFile;
+export default envFileBackup;

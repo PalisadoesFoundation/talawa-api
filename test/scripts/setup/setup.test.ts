@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
-import { backupEnvFile } from "scripts/setup/envFileBackup/envFileBackup";
+import { envFileBackup } from "scripts/setup/envFileBackup/envFileBackup";
 import { setup } from "scripts/setup/setup";
 import * as SetupModule from "scripts/setup/setup";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -19,12 +19,13 @@ describe("Setup", () => {
 	it("should set up environment variables with default configuration when CI=false", async () => {
 		const mockResponses = [
 			{ envReconfigure: true },
+			{ shouldBackup: true },
 			{ CI: "false" },
-			{ useDefaultMinio: "true" },
-			{ useDefaultCloudbeaver: "true" },
-			{ useDefaultPostgres: "true" },
-			{ useDefaultCaddy: "true" },
-			{ useDefaultApi: "true" },
+			{ useDefaultMinio: true },
+			{ useDefaultCloudbeaver: true },
+			{ useDefaultPostgres: true },
+			{ useDefaultCaddy: true },
+			{ useDefaultApi: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 
@@ -72,6 +73,11 @@ describe("Setup", () => {
 		dotenv.config({ path: ".env" });
 
 		for (const [key, value] of Object.entries(expectedEnv)) {
+			if (process.env[key] !== value) {
+				console.log(
+					`Mismatch for ${key}: expected ${value}, got ${process.env[key]}`,
+				);
+			}
 			expect(process.env[key]).toBe(value);
 		}
 	});
@@ -79,11 +85,12 @@ describe("Setup", () => {
 	it("should correctly set up environment variables when CI=true (skips CloudBeaver)", async () => {
 		const mockResponses = [
 			{ envReconfigure: true },
+			{ shouldBackup: true },
 			{ CI: "true" },
-			{ useDefaultMinio: "true" },
-			{ useDefaultPostgres: "true" },
-			{ useDefaultCaddy: "true" },
-			{ useDefaultApi: "true" },
+			{ useDefaultMinio: true },
+			{ useDefaultPostgres: true },
+			{ useDefaultCaddy: true },
+			{ useDefaultApi: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 
@@ -153,7 +160,19 @@ describe("Setup", () => {
 		const copyFileSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => {});
-		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const existsSyncSpy = vi
+			.spyOn(fs, "existsSync")
+			.mockImplementation((path) => {
+				if (path === ".backup") return true;
+				return false;
+			});
+		const readdirSyncSpy = vi
+			.spyOn(fs, "readdirSync")
+			.mockImplementation((() => [
+				".env.1000",
+				".env.2000",
+				"other.file",
+			]) as unknown as typeof fs.readdirSync);
 
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
 			throw new Error("process.exit called");
@@ -162,9 +181,15 @@ describe("Setup", () => {
 		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
 			"process.exit called",
 		);
-		expect(copyFileSpy).toHaveBeenCalledWith(".env.backup", ".env");
 		expect(consoleLogSpy).toHaveBeenCalledWith(
 			"\nProcess interrupted! Undoing changes...",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			expect.stringContaining("Restoring from latest backup"),
+		);
+		expect(copyFileSpy).toHaveBeenCalledWith(
+			expect.stringContaining(".env.2000"),
+			".env",
 		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
@@ -172,13 +197,17 @@ describe("Setup", () => {
 		processExitSpy.mockRestore();
 		copyFileSpy.mockRestore();
 		existsSyncSpy.mockRestore();
+		readdirSyncSpy.mockRestore();
 	});
 
 	describe("backup functionality", () => {
 		it("should not prompt for backup if .env file does not exist", async () => {
-			const checkEnvFileSpy = vi
-				.spyOn(SetupModule, "checkEnvFile")
-				.mockReturnValue(false);
+			const existsSyncSpy = vi
+				.spyOn(fs, "existsSync")
+				.mockImplementation((path) => {
+					if (path === ".env" || path === ".env.backup") return false;
+					return true;
+				});
 			const promptMock = vi.spyOn(inquirer, "prompt");
 
 			promptMock.mockResolvedValueOnce({ CI: "false" });
@@ -193,17 +222,19 @@ describe("Setup", () => {
 
 			await setup();
 
-			expect(checkEnvFileSpy).toHaveBeenCalled();
-			expect(promptMock).not.toHaveBeenCalledWith(
+			expect(existsSyncSpy).toHaveBeenCalled();
+			expect(promptMock).not.toHaveBeenCalledWith([
 				expect.objectContaining({ name: "shouldBackup" }),
-			);
-			expect(backupEnvFile).not.toHaveBeenCalled();
+			]);
+			expect(envFileBackup).not.toHaveBeenCalled();
+			existsSyncSpy.mockRestore();
 		});
 
-		it("should call backupEnvFile with true when user confirms backup", async () => {
-			const checkEnvFileSpy = vi
-				.spyOn(SetupModule, "checkEnvFile")
-				.mockReturnValue(true);
+		it("should call envFileBackup with true when user confirms backup", async () => {
+			const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+			const unlinkSyncSpy = vi
+				.spyOn(fs, "unlinkSync")
+				.mockImplementation(() => {});
 			const promptMock = vi.spyOn(inquirer, "prompt");
 
 			promptMock.mockResolvedValueOnce({ envReconfigure: true });
@@ -220,17 +251,20 @@ describe("Setup", () => {
 
 			await setup();
 
-			expect(checkEnvFileSpy).toHaveBeenCalled();
-			expect(promptMock).toHaveBeenCalledWith(
+			expect(existsSyncSpy).toHaveBeenCalled();
+			expect(promptMock).toHaveBeenCalledWith([
 				expect.objectContaining({ name: "shouldBackup" }),
-			);
-			expect(backupEnvFile).toHaveBeenCalledWith(true);
+			]);
+			expect(envFileBackup).toHaveBeenCalledWith(true);
+			existsSyncSpy.mockRestore();
+			unlinkSyncSpy.mockRestore();
 		});
 
-		it("should call backupEnvFile with false when user denies backup", async () => {
-			const checkEnvFileSpy = vi
-				.spyOn(SetupModule, "checkEnvFile")
-				.mockReturnValue(true);
+		it("should call envFileBackup with false when user denies backup", async () => {
+			const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+			const unlinkSyncSpy = vi
+				.spyOn(fs, "unlinkSync")
+				.mockImplementation(() => {});
 			const promptMock = vi.spyOn(inquirer, "prompt");
 
 			promptMock.mockResolvedValueOnce({ envReconfigure: true });
@@ -247,11 +281,13 @@ describe("Setup", () => {
 
 			await setup();
 
-			expect(checkEnvFileSpy).toHaveBeenCalled();
-			expect(promptMock).toHaveBeenCalledWith(
+			expect(existsSyncSpy).toHaveBeenCalled();
+			expect(promptMock).toHaveBeenCalledWith([
 				expect.objectContaining({ name: "shouldBackup" }),
-			);
-			expect(backupEnvFile).toHaveBeenCalledWith(false);
+			]);
+			expect(envFileBackup).toHaveBeenCalledWith(false);
+			existsSyncSpy.mockRestore();
+			unlinkSyncSpy.mockRestore();
 		});
 	});
 });

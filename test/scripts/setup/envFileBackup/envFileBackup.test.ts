@@ -1,17 +1,38 @@
-import { backupEnvFile } from "scripts/setup/envFileBackup/envFileBackup";
+import { envFileBackup } from "scripts/setup/envFileBackup/envFileBackup";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const mkdirMock = vi.fn();
-const copyFileMock = vi.fn();
-const accessMock = vi.fn();
+const { mkdirMock, copyFileMock, accessMock } = vi.hoisted(() => {
+	return {
+		mkdirMock: vi.fn(),
+		copyFileMock: vi.fn(),
+		accessMock: vi.fn(),
+	};
+});
 
-vi.mock("fs/promises", () => ({
-	mkdir: mkdirMock,
-	copyFile: copyFileMock,
-	access: accessMock,
-}));
+vi.mock("node:fs", async () => {
+	const actual = await vi.importActual<typeof import("node:fs")>("node:fs");
+	return {
+		...actual,
+		default: {
+			...actual,
+			promises: {
+				mkdir: mkdirMock,
+				copyFile: copyFileMock,
+				access: accessMock,
+			},
+		},
+		promises: {
+			mkdir: mkdirMock,
+			copyFile: copyFileMock,
+			access: accessMock,
+		},
+		constants: {
+			F_OK: 0,
+		},
+	};
+});
 
-describe("backupEnvFile", () => {
+describe("envFileBackup", () => {
 	const originalCwd = process.cwd;
 	const cwdMock = vi.fn();
 
@@ -35,7 +56,7 @@ describe("backupEnvFile", () => {
 	});
 
 	it("should skip backup when shouldBackup is false", async () => {
-		await backupEnvFile(false);
+		await envFileBackup(false);
 
 		expect(mkdirMock).not.toHaveBeenCalled();
 		expect(accessMock).not.toHaveBeenCalled();
@@ -43,7 +64,7 @@ describe("backupEnvFile", () => {
 	});
 
 	it("should create timestamped backup when env file exists", async () => {
-		await backupEnvFile(true);
+		await envFileBackup(true);
 
 		const backupDir = "/tmp/project/.backup";
 		const backupFile = `${backupDir}/.env.1731959200`;
@@ -61,7 +82,7 @@ describe("backupEnvFile", () => {
 		accessMock.mockRejectedValueOnce(envMissingError);
 		const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
-		await backupEnvFile(true);
+		await envFileBackup(true);
 
 		expect(logSpy).toHaveBeenCalledWith("\n  No .env file found to backup.");
 		expect(copyFileMock).not.toHaveBeenCalled();
@@ -71,7 +92,7 @@ describe("backupEnvFile", () => {
 		const unexpectedError = new Error("disk failure");
 		copyFileMock.mockRejectedValueOnce(unexpectedError);
 
-		await expect(backupEnvFile(true)).rejects.toThrow(
+		await expect(envFileBackup(true)).rejects.toThrow(
 			"Failed to backup .env file: disk failure",
 		);
 	});

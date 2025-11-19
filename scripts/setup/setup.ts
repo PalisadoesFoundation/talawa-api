@@ -1,9 +1,10 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
+import path from "node:path";
 import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
-import { backupEnvFile } from "./envFileBackup/envFileBackup";
+import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { updateEnvVariable } from "./updateEnvVariable";
 
 interface SetupAnswers {
@@ -128,11 +129,50 @@ export function validateCloudBeaverURL(input: string): true | string {
 	}
 }
 
+function restoreLatestBackup(): void {
+	const backupDir = ".backup";
+	const envPrefix = ".env.";
+
+	if (fs.existsSync(backupDir)) {
+		try {
+			const files = fs.readdirSync(backupDir);
+			const backupFiles = files.filter((file) => file.startsWith(envPrefix));
+
+			if (backupFiles.length > 0) {
+				const sortedBackups = backupFiles
+					.map((fileName) => {
+						const epochStr = fileName.substring(envPrefix.length);
+						return {
+							name: fileName,
+							epoch: Number.parseInt(epochStr, 10),
+						};
+					})
+					.filter((file) => !Number.isNaN(file.epoch))
+					.sort((a, b) => b.epoch - a.epoch);
+
+				const latestBackup = sortedBackups[0];
+
+				if (latestBackup) {
+					const backupPath = path.join(backupDir, latestBackup.name);
+					console.log(`Restoring from latest backup: ${backupPath}`);
+					fs.copyFileSync(backupPath, ".env");
+				} else {
+					console.warn("No valid backup files found");
+				}
+			} else {
+				console.warn("No backup files found");
+			}
+		} catch (readError) {
+			console.error("Error reading backup directory:", readError);
+		}
+	} else {
+		console.warn("Backup directory does not exist");
+	}
+}
+
 function handlePromptError(err: unknown): never {
 	console.error(err);
-	if (fs.existsSync(".env.backup")) {
-		fs.copyFileSync(".env.backup", ".env");
-	}
+	restoreLatestBackup();
 	process.exit(1);
 }
 
@@ -612,9 +652,7 @@ export async function setup(): Promise<SetupAnswers> {
 	process.on("SIGINT", () => {
 		console.log("\nProcess interrupted! Undoing changes...");
 		answers = {};
-		if (fs.existsSync(".env.backup")) {
-			fs.copyFileSync(".env.backup", ".env");
-		}
+		restoreLatestBackup();
 		process.exit(1);
 	});
 
@@ -625,7 +663,7 @@ export async function setup(): Promise<SetupAnswers> {
 			"Would you like to back up the current .env file before setup modifies it?",
 			true,
 		);
-		await backupEnvFile(shouldBackup);
+		await envFileBackup(shouldBackup);
 	}
 
 	answers = await setCI(answers);
