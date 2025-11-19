@@ -1,4 +1,3 @@
-import { sql } from "drizzle-orm";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import type {
 	ExplicitGraphQLContext,
@@ -22,6 +21,7 @@ const globalArgs = {
 };
 
 const mockWhere = vi.fn();
+
 const mockFrom = vi.fn().mockImplementation(() => ({
 	innerJoin: vi.fn().mockReturnValue({
 		where: mockWhere,
@@ -62,7 +62,6 @@ const mockDrizzleClient = {
 	select: mockSelect,
 };
 
-// ✅ **Mock Context**
 const baseMockCtx = {
 	currentClient: {
 		isAuthenticated: true,
@@ -156,6 +155,11 @@ describe("resolveOrganizationsWhereMember", () => {
 		);
 
 		expect(mockWhere).toHaveBeenCalled();
+
+		const whereCondition = mockWhere.mock.calls[0]?.[0];
+		const serialized = JSON.stringify(whereCondition);
+
+		expect(serialized).toContain("Filtered Org");
 	});
 
 	test("where clause returns sql`TRUE` when filter is not provided", async () => {
@@ -172,10 +176,9 @@ describe("resolveOrganizationsWhereMember", () => {
 		expect(mockWhere).toHaveBeenCalled();
 
 		const whereCondition = mockWhere.mock.calls[0]?.[0];
+		const serialized = JSON.stringify(whereCondition);
 
-		expect(whereCondition.toString().trim()).toEqual(
-			sql`TRUE`.toString().trim(),
-		);
+		expect(serialized).toContain("TRUE");
 	});
 
 	test("applies cursor-based pagination correctly", async () => {
@@ -201,5 +204,11 @@ describe("resolveOrganizationsWhereMember", () => {
 		);
 
 		expect(mockWhere).toHaveBeenCalled();
+
+		const whereCondition = mockWhere.mock.calls[0]?.[0];
+		const serialized = JSON.stringify(whereCondition);
+
+		expect(serialized).toContain("2024-01-01T12:00:00Z");
+		expect(serialized).toContain("org1");
 	});
 });
