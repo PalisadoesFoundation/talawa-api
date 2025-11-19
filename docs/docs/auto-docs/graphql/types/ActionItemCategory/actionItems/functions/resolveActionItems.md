@@ -6,7 +6,7 @@
 
 > **resolveActionItems**(`parent`, `_args`, `ctx`): `Promise`\<`object`[]\>
 
-Defined in: [src/graphql/types/ActionItemCategory/actionItems.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/ActionItemCategory/actionItems.ts#L11)
+Defined in: src/graphql/types/ActionItemCategory/actionItems.ts:11
 
 ## Parameters
 

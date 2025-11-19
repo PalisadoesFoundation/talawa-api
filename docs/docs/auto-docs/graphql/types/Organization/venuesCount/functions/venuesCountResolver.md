@@ -6,7 +6,7 @@
 
 > **venuesCountResolver**(`parent`, `_args`, `ctx`): `Promise`\<`number`\>
 
-Defined in: [src/graphql/types/Organization/venuesCount.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Organization/venuesCount.ts#L10)
+Defined in: src/graphql/types/Organization/venuesCount.ts:10
 
 ## Parameters
 

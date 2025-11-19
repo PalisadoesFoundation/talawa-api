@@ -6,7 +6,7 @@
 
 > **MembershipRequestType** = `object`
 
-Defined in: [src/graphql/types/Organization/MembershipRequestObject.ts:6](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Organization/MembershipRequestObject.ts#L6)
+Defined in: src/graphql/types/Organization/MembershipRequestObject.ts:6
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [src/graphql/types/Organization/MembershipRequestObject.ts:6](https:
 
 > **createdAt**: `Date`
 
-Defined in: [src/graphql/types/Organization/MembershipRequestObject.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Organization/MembershipRequestObject.ts#L20)
+Defined in: src/graphql/types/Organization/MembershipRequestObject.ts:20
 
 Timestamp when the membership request was created
 
@@ -24,7 +24,7 @@ Timestamp when the membership request was created
 
 > **membershipRequestId**: `string`
 
-Defined in: [src/graphql/types/Organization/MembershipRequestObject.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Organization/MembershipRequestObject.ts#L8)
+Defined in: src/graphql/types/Organization/MembershipRequestObject.ts:8
 
 Unique identifier for the membership request
 
@@ -34,7 +34,7 @@ Unique identifier for the membership request
 
 > **organizationId**: `string`
 
-Defined in: [src/graphql/types/Organization/MembershipRequestObject.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Organization/MembershipRequestObject.ts#L14)
+Defined in: src/graphql/types/Organization/MembershipRequestObject.ts:14
 
 ID of the organization the user is requesting to join
 
@@ -44,7 +44,7 @@ ID of the organization the user is requesting to join
 
 > **status**: *typeof* [`MembershipRequestStatusValues`](../../../../../drizzle/enums/membershipRequestStatus/variables/MembershipRequestStatusValues.md)\[`number`\]
 
-Defined in: [src/graphql/types/Organization/MembershipRequestObject.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Organization/MembershipRequestObject.ts#L17)
+Defined in: src/graphql/types/Organization/MembershipRequestObject.ts:17
 
 Status of the membership request (e.g., pending, approved, rejected)
 
@@ -54,6 +54,6 @@ Status of the membership request (e.g., pending, approved, rejected)
 
 > **userId**: `string`
 
-Defined in: [src/graphql/types/Organization/MembershipRequestObject.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Organization/MembershipRequestObject.ts#L11)
+Defined in: src/graphql/types/Organization/MembershipRequestObject.ts:11
 
 ID of the user who requested membership

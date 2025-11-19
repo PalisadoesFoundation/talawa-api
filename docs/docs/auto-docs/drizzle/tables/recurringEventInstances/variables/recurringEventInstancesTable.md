@@ -6,7 +6,7 @@
 
 > `const` **recurringEventInstancesTable**: `PgTableWithColumns`\<\{ \}\>
 
-Defined in: [src/drizzle/tables/recurringEventInstances.ts:33](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/recurringEventInstances.ts#L33)
+Defined in: src/drizzle/tables/recurringEventInstances.ts:33
 
 Drizzle ORM postgres table definition for recurring event event instances.
 

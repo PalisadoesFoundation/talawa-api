@@ -4,7 +4,7 @@
 
 # Interface: EmailJob
 
-Defined in: [src/services/ses/EmailService.ts:13](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L13)
+Defined in: src/services/ses/EmailService.ts:13
 
 Email job interface
 
@@ -14,7 +14,7 @@ Email job interface
 
 > **email**: `string`
 
-Defined in: [src/services/ses/EmailService.ts:15](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L15)
+Defined in: src/services/ses/EmailService.ts:15
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [src/services/ses/EmailService.ts:15](https://github.com/PalisadoesF
 
 > **htmlBody**: `string`
 
-Defined in: [src/services/ses/EmailService.ts:17](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L17)
+Defined in: src/services/ses/EmailService.ts:17
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [src/services/ses/EmailService.ts:17](https://github.com/PalisadoesF
 
 > **id**: `string`
 
-Defined in: [src/services/ses/EmailService.ts:14](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L14)
+Defined in: src/services/ses/EmailService.ts:14
 
 ***
 
@@ -38,12 +38,12 @@ Defined in: [src/services/ses/EmailService.ts:14](https://github.com/PalisadoesF
 
 > **subject**: `string`
 
-Defined in: [src/services/ses/EmailService.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L16)
+Defined in: src/services/ses/EmailService.ts:16
 
 ***
 
 ### userId
 
-> **userId**: `string`
+> **userId**: `string` \| `null`
 
-Defined in: [src/services/ses/EmailService.ts:18](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L18)
+Defined in: src/services/ses/EmailService.ts:18
