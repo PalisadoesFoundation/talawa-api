@@ -40,4 +40,11 @@ pre-commit:
         pnpm generate:docs
         git add ./docs/docs/auto-docs/
 
+    12_api_schema_docs:
+      run: |
+        set -e
+        cd docs
+        pnpm docusaurus graphql-to-doc
+        git add docs/auto-schema
+
   piped: true

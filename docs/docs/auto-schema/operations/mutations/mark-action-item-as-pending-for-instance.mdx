@@ -1,0 +1,90 @@
+---
+id: mark-action-item-as-pending-for-instance
+title: markActionItemAsPendingForInstance
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+Mutation to mark an action item as pending for a single instance
+
+```graphql
+markActionItemAsPendingForInstance(
+  input: MutationMarkActionAsPendingForInstanceInput!
+): ActionItem
+```
+
+### Arguments
+
+#### [<code style={{ fontWeight: 'normal' }}>markActionItemAsPendingForInstance.<b>input</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>MutationMarkActionAsPendingForInstanceInput!</b></code>](/auto-schema/types/inputs/mutation-mark-action-as-pending-for-instance-input.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="input"/>
+
+Mark an action item as pending for a single instance
+
+### Type
+
+#### [<code style={{ fontWeight: 'normal' }}><b>ActionItem</b></code>](/auto-schema/types/objects/action-item.mdx) <Badge class="badge badge--secondary " text="object"/>

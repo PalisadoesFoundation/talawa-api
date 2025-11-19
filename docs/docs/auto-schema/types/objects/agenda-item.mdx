@@ -1,0 +1,144 @@
+---
+id: agenda-item
+title: AgendaItem
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+No description
+
+```graphql
+type AgendaItem {
+  createdAt: DateTime
+  creator: User
+  description: String
+  duration: String
+  event: AgendaFolder
+  id: ID!
+  key: String
+  name: String
+  type: AgendaItemType
+  updatedAt: DateTime
+  updater: User
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date time at the time the agenda item was last created.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>creator</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+User who created the agenda item.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Custom information about the agenda item.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>duration</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Duration of the agenda item.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>event</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>AgendaFolder</b></code>](/auto-schema/types/objects/agenda-folder.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+Agenda folder within which the agenda item in contained.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+Global identifier of the agenda item.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>key</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Key of the agenda item if it's of a "song" type. More information at [this](<https://en.wikipedia.org/wiki/Key_(music)>) link.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Name of the agenda item.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>type</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>AgendaItemType</b></code>](/auto-schema/types/enums/agenda-item-type.mdx) <Badge class="badge badge--secondary " text="enum"/>
+
+Type of the agenda item.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date time at the time the agenda item was last updated.
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItem.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+User who last updated the agenda item.
+
+### Returned By
+
+[`agendaItem`](/auto-schema/operations/queries/agenda-item.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`createAgendaItem`](/auto-schema/operations/mutations/create-agenda-item.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteAgendaItem`](/auto-schema/operations/mutations/delete-agenda-item.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateAgendaItem`](/auto-schema/operations/mutations/update-agenda-item.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+
+### Member Of
+
+[`AgendaFolderItemsConnectionEdge`](/auto-schema/types/objects/agenda-folder-items-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

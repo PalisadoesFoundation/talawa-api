@@ -1,0 +1,289 @@
+---
+id: event
+title: Event
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+No description
+
+```graphql
+type Event {
+  actionItems(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): EventActionItemsConnection
+  agendaFolders(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): EventAgendaFoldersConnection
+  allDay: Boolean
+  attachments: [EventAttachment!]
+  attendees: [User!]
+  attendeesCheckInStatus: [CheckInStatus!]!
+  baseEvent: Event
+  createdAt: DateTime
+  creator: User
+  description: String
+  endAt: DateTime
+  hasExceptions: Boolean
+  id: ID!
+  isPublic: Boolean
+  isRecurringEventTemplate: Boolean
+  isRegisterable: Boolean
+  location: String
+  name: String
+  organization: Organization
+  progressLabel: String
+  recurrenceDescription: String
+  recurrenceRule: RecurrenceRule
+  sequenceNumber: Int
+  startAt: DateTime!
+  totalCount: Int
+  updatedAt: DateTime
+  updater: User
+  venues(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): EventVenuesConnection
+  volunteerGroups: [EventVolunteerGroup!]
+  volunteers(
+    orderBy: EventVolunteersOrderByInput
+    where: EventVolunteerWhereInput
+  ): [EventVolunteer!]
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>actionItems</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>EventActionItemsConnection</b></code>](/auto-schema/types/objects/event-action-items-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the action items associated with this event.
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.actionItems.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.actionItems.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.actionItems.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.actionItems.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>agendaFolders</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>EventAgendaFoldersConnection</b></code>](/auto-schema/types/objects/event-agenda-folders-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the agenda folders that contain agenda items constituting a part of the agenda for the event.
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.agendaFolders.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.agendaFolders.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.agendaFolders.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.agendaFolders.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>allDay</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+A boolean flag indicating if the event lasts for the entire day.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>attachments</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[EventAttachment!]</b></code>](/auto-schema/types/objects/event-attachment.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
+
+A list of attachments associated with the event, such as images or documents.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>attendees</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[User!]</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
+
+List of users who have checked in to the event.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>attendeesCheckInStatus</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[CheckInStatus!]!</b></code>](/auto-schema/types/objects/check-in-status.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="object"/>
+
+Check-in status for all attendees of the event.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>baseEvent</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Event</b></code>](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+The base event from which this materialized instance was generated.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date time at the time the event was created.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>creator</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+User who created the event.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+A detailed description of the event, providing custom information and context.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>endAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+The date and time when the event is scheduled to end. For materialized instances, this reflects the actual end time if modified.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>hasExceptions</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+A boolean flag indicating if this materialized instance has any exceptions applied to it.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+The unique global identifier for the event. For recurring instances, this ID refers to the specific materialized instance.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>isPublic</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+A boolean flag indicating if the event is visible to the public.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>isRecurringEventTemplate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+A boolean flag indicating if this event serves as a template for a recurring series.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>isRegisterable</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+A boolean flag indicating if users can register for this event.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>location</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+The physical or virtual location where the event will take place.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+The name or title of the event.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>organization</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Organization</b></code>](/auto-schema/types/objects/organization.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+Organization the event belongs to.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>progressLabel</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+A human-readable label indicating the progress of this instance in the series, such as '5 of 12' or 'Episode #7'.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>recurrenceDescription</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+A human-readable description of the recurrence pattern, such as 'Daily', 'Weekly on Monday', 'Monthly on the 15th', etc. Available for recurring event templates and instances.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>recurrenceRule</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>RecurrenceRule</b></code>](/auto-schema/types/objects/recurrence-rule.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+The recurrence rule object for recurring events.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>sequenceNumber</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+The sequence number of this instance within its recurring series (e.g., 1, 2, 3, ...).
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>startAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime!</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+The date and time when the event is scheduled to start. For materialized instances, this reflects the actual start time if modified.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>totalCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+The total number of instances in the complete recurring series. This will be null for infinite series.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date time at the time the event was last updated.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+User who last updated the event.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>venues</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>EventVenuesConnection</b></code>](/auto-schema/types/objects/event-venues-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the venues that are booked for the event.
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.venues.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.venues.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.venues.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.venues.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>volunteerGroups</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[EventVolunteerGroup!]</b></code>](/auto-schema/types/objects/event-volunteer-group.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
+
+List of volunteer groups associated with this event.
+
+#### [<code style={{ fontWeight: 'normal' }}>Event.<b>volunteers</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[EventVolunteer!]</b></code>](/auto-schema/types/objects/event-volunteer.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
+
+List of all volunteers associated with this event.
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.volunteers.<b>orderBy</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>EventVolunteersOrderByInput</b></code>](/auto-schema/types/enums/event-volunteers-order-by-input.mdx) <Badge class="badge badge--secondary " text="enum"/>
+
+Order criteria for event volunteers.
+
+##### [<code style={{ fontWeight: 'normal' }}>Event.volunteers.<b>where</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>EventVolunteerWhereInput</b></code>](/auto-schema/types/inputs/event-volunteer-where-input.mdx) <Badge class="badge badge--secondary " text="input"/>
+
+Filter criteria for event volunteers.
+
+### Returned By
+
+[`createEvent`](/auto-schema/operations/mutations/create-event.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteEntireRecurringEventSeries`](/auto-schema/operations/mutations/delete-entire-recurring-event-series.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteSingleEventInstance`](/auto-schema/operations/mutations/delete-single-event-instance.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteStandaloneEvent`](/auto-schema/operations/mutations/delete-standalone-event.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteThisAndFollowingEvents`](/auto-schema/operations/mutations/delete-this-and-following-events.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`event`](/auto-schema/operations/queries/event.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`eventsByIds`](/auto-schema/operations/queries/events-by-ids.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`eventsByOrganizationId`](/auto-schema/operations/queries/events-by-organization-id.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`getRecurringEvents`](/auto-schema/operations/queries/get-recurring-events.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`updateEntireRecurringEventSeries`](/auto-schema/operations/mutations/update-entire-recurring-event-series.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateSingleRecurringEventInstance`](/auto-schema/operations/mutations/update-single-recurring-event-instance.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateStandaloneEvent`](/auto-schema/operations/mutations/update-standalone-event.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateThisAndFollowingEvents`](/auto-schema/operations/mutations/update-this-and-following-events.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+
+### Member Of
+
+[`ActionItem`](/auto-schema/types/objects/action-item.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`AgendaFolder`](/auto-schema/types/objects/agenda-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Event`](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventAttendee`](/auto-schema/types/objects/event-attendee.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventVolunteer`](/auto-schema/types/objects/event-volunteer.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventVolunteerGroup`](/auto-schema/types/objects/event-volunteer-group.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`OrganizationEventsConnectionEdge`](/auto-schema/types/objects/organization-events-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`User`](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`VenueEventsConnectionEdge`](/auto-schema/types/objects/venue-events-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`VolunteerMembership`](/auto-schema/types/objects/volunteer-membership.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

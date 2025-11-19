@@ -1,0 +1,97 @@
+---
+id: agenda-item-type
+title: AgendaItemType
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+Possible variants of the type of an agenda item.
+
+```graphql
+enum AgendaItemType {
+  general
+  note
+  scripture
+  song
+}
+```
+
+### Values
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItemType.<b>general</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItemType.<b>note</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItemType.<b>scripture</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>AgendaItemType.<b>song</b></code>](#)
+
+### Member Of
+
+[`AgendaItem`](/auto-schema/types/objects/agenda-item.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`MutationCreateAgendaItemInput`](/auto-schema/types/inputs/mutation-create-agenda-item-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/>
