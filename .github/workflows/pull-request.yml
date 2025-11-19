@@ -157,9 +157,53 @@ jobs:
         run: docker buildx build --file ./docker/api.Containerfile --tag talawa_api --target non_production ./
       - name: Check type errors
         run: docker container run talawa_api pnpm typecheck
+  Generate-Schema-Docs:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    name: Generate GraphQL Schema Documentation
+    runs-on: ubuntu-latest
+    needs: [Code-Quality-Checks]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  Check_unused_exports:
-    name: Check for unused exports
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: 'pnpm'
+
+
+      - name: Prepare dependency store
+        run: pnpm fetch
+
+      - name: Install Docs dependencies
+        working-directory: ./docs
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Generate GraphQL Schema Markdown
+        working-directory: ./docs
+        run: pnpm docusaurus graphql-to-doc
+      - name: Check for uncommitted schema changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Schema files are outdated or missing."
+            echo "Please run 'pnpm docusaurus graphql-to-doc' inside '/docs' locally and commit the updated files."
+            echo ""
+            echo "Changed files:"
+            git status --porcelain
+            exit 1
+          else
+            echo "Schema is up to date."
+          fi
+  Check_unused_code:
+    name: Check for unused files, exports and dependencies
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -172,8 +216,8 @@ jobs:
         uses: pnpm/action-setup@v4
       - name: Install dependencies
         run: pnpm install --frozen-lockfile 
-      - name: Run Knip
-        run: pnpm knip --include exports
+      - name: Run Knip for files and exports
+        run: pnpm knip --include files,exports
         # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing
         env:
           API_POSTGRES_DATABASE: dummy_db
@@ -181,7 +225,17 @@ jobs:
           API_POSTGRES_HOST: localhost
           API_POSTGRES_PORT: '5432'
           API_POSTGRES_USER: dummy_user
-          API_POSTGRES_SSL_MODE: 'false'    
+          API_POSTGRES_SSL_MODE: 'false' 
+      - name: Run Knip for dependencies
+        run: pnpm knip --config knip.deps.json --include dependencies
+        # Dummy environment variables required for Knip to load drizzle.config.ts during file parsing
+        env:
+          API_POSTGRES_DATABASE: dummy_db
+          API_POSTGRES_PASSWORD: dummy_password
+          API_POSTGRES_HOST: localhost
+          API_POSTGRES_PORT: '5432'
+          API_POSTGRES_USER: dummy_user
+          API_POSTGRES_SSL_MODE: 'false' 
 
   Check-Sensitive-Files:
     if: ${{ github.actor != 'dependabot[bot]' }}
@@ -329,7 +383,7 @@ jobs:
   Run-Tests:
     name: Run tests for talawa api
     runs-on: ubuntu-latest
-    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada, Check-AutoDocs, Check_unused_exports]
+    needs: [Code-Quality-Checks, python_checks, check_type_errors, check_drizzle_migrations, check_gql_tada, Check-AutoDocs, Check_unused_code, Generate-Schema-Docs]
     steps:
       - name: Checkout this repository
         uses: actions/checkout@v4.2.2
