@@ -25,6 +25,26 @@ RUN groupmod -n talawa vscode \
 && echo talawa ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/talawa \
 # Sets read, no write and no execute permissions for the user and the group on `/etc/sudoers.d/talawa` file and no read, no write and no execute permissions for the other.  
 && chmod u=r--,g=r--,o=--- /etc/sudoers.d/talawa \
+
+## install docker packages manually since devcontainer docker outside of docker is not reliable in this context
+&& apt update \
+    && apt install -y ca-certificates curl \
+    && install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
+    && chmod a+r /etc/apt/keyrings/docker.asc \
+&& tee /etc/apt/sources.list.d/docker.sources > /dev/null <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/debian
+Suites: $(. /etc/os-release && echo "$VERSION_CODENAME")
+Components: stable
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+RUN apt update \
+    && apt install -y docker-ce-cli \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+
+&& apt update \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/* \
 # https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
@@ -41,6 +61,12 @@ RUN echo '#!/bin/sh' > /etc/profile.d/fnm.sh \
 ENV BASH_ENV=/etc/profile.d/fnm.sh
 # Also, have the talawa login shell source it explicitly by appending to its .bashrc
 RUN echo "source /etc/profile.d/fnm.sh" >> /home/talawa/.bashrc
+
+
+# Copy entrypoint script
+COPY --chown=talawa:talawa docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 USER talawa
 # Installs fnm.
 RUN curl -fsSL --proto '=https' --tlsv1.2 https://fnm.vercel.app/install | bash -s -- --skip-shell 
@@ -50,7 +76,10 @@ ENV PATH=/home/talawa/.local/share/fnm:${PATH}
 RUN fnm install 23.7.0
 RUN fnm use 23.7.0
 
+
 WORKDIR /home/talawa/api
+
+
 COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml
 RUN pnpm config set store-dir /home/talawa/api/.pnpm-store
 ENV PNPM_STORE_PATH=/home/talawa/api/.pnpm-store
@@ -74,6 +103,10 @@ RUN userdel -r node \
 && corepack enable
 USER talawa
 WORKDIR /home/talawa/api
+
+# Entrypoint here to adjust docker.sock permissions
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["bash", "-c", "pnpm run start_development_server"]
 
 FROM base AS non_production
 COPY --chown=talawa:talawa ./pnpm-lock.yaml ./pnpm-lock.yaml

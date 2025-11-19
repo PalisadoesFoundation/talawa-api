@@ -66,14 +66,10 @@
 		// https://github.com/devcontainers/features/tree/main/src/github-cli
 		"ghcr.io/devcontainers/features/github-cli": {},
 
-		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
-			"ENABLENONROOTDOCKER": "true"
-		}
 	},
 	"init": true,
 	"initializeCommand": "/bin/sh -c '[ ! -f .env ] && cp ./envFiles/.env.rootless.devcontainer ./.env || true'",
 	"name": "talawa_api",
-	"overrideCommand": true,
 	"remoteUser": "talawa",
 	"service": "api",
 	"shutdownAction": "stopCompose",

@@ -5,7 +5,7 @@ networks:
 services:
   api:
     env_file: .env
-    command: bash -c "pnpm run start_development_server"
+    command: /usr/local/bin/entrypoint.sh bash -c "pnpm run start_development_server"
     # https://docs.docker.com/reference/compose-file/build/
     build:
       args:
@@ -48,7 +48,7 @@ services:
         target: ${API_DEBUGGER_PORT}
     # https://docs.docker.com/reference/compose-file/services/#restart
     restart: unless-stopped
-    user: talawa
+    user: 1002:1000 
     # https://docs.docker.com/reference/compose-file/services/#volumes
     volumes:
       - consistency: cached
@@ -59,6 +59,7 @@ services:
       - source: $XDG_RUNTIME_DIR/docker.sock
         target: /var/run/docker.sock
         type: bind
+
         # https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
       - source: api_bash_history
         target: /commandhistory
