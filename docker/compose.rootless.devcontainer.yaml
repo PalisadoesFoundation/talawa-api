@@ -48,7 +48,6 @@ services:
         target: ${API_DEBUGGER_PORT}
     # https://docs.docker.com/reference/compose-file/services/#restart
     restart: unless-stopped
-    user: 1002:1000 
     # https://docs.docker.com/reference/compose-file/services/#volumes
     volumes:
       - consistency: cached
