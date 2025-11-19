@@ -624,12 +624,40 @@ export async function setup(): Promise<SetupAnswers> {
 
 	// Prompt user to optionally backup env file
 	if (checkEnvFile()) {
-		const shouldBackup = await promptConfirm(
-			"shouldBackup",
-			"Would you like to back up the current .env file before setup modifies it?",
-			true,
-		);
-		await envFileBackup(shouldBackup);
+		const isInteractive =
+			process.env.CI !== "true" && process.stdin && process.stdin.isTTY;
+		let shouldBackup = true;
+
+		if (isInteractive) {
+			try {
+				shouldBackup = await promptConfirm(
+					"shouldBackup",
+					"Would you like to back up the current .env file before setup modifies it?",
+					true,
+				);
+			} catch (err) {
+				if (
+					process.env.NODE_ENV === "production" ||
+					process.env.CI === "true"
+				) {
+					console.error("Prompt failed (fatal):", err);
+					process.exit(1);
+				}
+				throw err;
+			}
+		} else {
+			shouldBackup = true;
+		}
+
+		try {
+			await envFileBackup(shouldBackup);
+		} catch (err) {
+			if (process.env.NODE_ENV === "production" || process.env.CI === "true") {
+				console.error("envFileBackup failed (fatal):", err);
+				process.exit(1);
+			}
+			throw err;
+		}
 	}
 
 	answers = await setCI(answers);
