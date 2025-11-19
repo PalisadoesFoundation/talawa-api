@@ -205,7 +205,7 @@ describe("Setup", () => {
 			const existsSyncSpy = vi
 				.spyOn(fs, "existsSync")
 				.mockImplementation((path) => {
-					if (path === ".env" || path === ".env.backup") return false;
+					if (path === ".env") return false;
 					return true;
 				});
 			const promptMock = vi.spyOn(inquirer, "prompt");
@@ -257,7 +257,6 @@ describe("Setup", () => {
 			]);
 			expect(envFileBackup).toHaveBeenCalledWith(true);
 			existsSyncSpy.mockRestore();
-			unlinkSyncSpy.mockRestore();
 		});
 
 		it("should call envFileBackup with false when user denies backup", async () => {
@@ -287,7 +286,8 @@ describe("Setup", () => {
 			]);
 			expect(envFileBackup).toHaveBeenCalledWith(false);
 			existsSyncSpy.mockRestore();
-			unlinkSyncSpy.mockRestore();
+			expect(envFileBackup).toHaveBeenCalledWith(false);
+			existsSyncSpy.mockRestore();
 		});
 	});
 });

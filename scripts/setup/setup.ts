@@ -722,8 +722,5 @@ export async function setup(): Promise<SetupAnswers> {
 
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");
-	if (fs.existsSync(".env.backup")) {
-		fs.unlinkSync(".env.backup");
-	}
 	return answers;
 }

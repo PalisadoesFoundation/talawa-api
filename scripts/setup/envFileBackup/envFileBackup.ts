@@ -18,11 +18,7 @@ export const envFileBackup = async (shouldBackup: boolean): Promise<void> => {
 			const timestampedFile = path.join(archiveDir, `.env.${epochTimestamp}`);
 			await fs.promises.copyFile(envPath, timestampedFile);
 
-			const backupFilePath = path.join(cwd, ".env.backup");
-			await fs.promises.copyFile(envPath, backupFilePath);
-
-			console.log(`\n Backup created at ${backupFilePath}`);
-			console.log(`   Archive: ${timestampedFile}`);
+			console.log(`\n Backup created at ${timestampedFile}`);
 		} catch (err) {
 			const e = err as NodeJS.ErrnoException;
 			if (e.code === "ENOENT") {
