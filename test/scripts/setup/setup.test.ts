@@ -232,9 +232,6 @@ describe("Setup", () => {
 
 		it("should call envFileBackup with true when user confirms backup", async () => {
 			const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
-			const unlinkSyncSpy = vi
-				.spyOn(fs, "unlinkSync")
-				.mockImplementation(() => {});
 			const promptMock = vi.spyOn(inquirer, "prompt");
 
 			promptMock.mockResolvedValueOnce({ envReconfigure: true });
@@ -261,9 +258,6 @@ describe("Setup", () => {
 
 		it("should call envFileBackup with false when user denies backup", async () => {
 			const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
-			const unlinkSyncSpy = vi
-				.spyOn(fs, "unlinkSync")
-				.mockImplementation(() => {});
 			const promptMock = vi.spyOn(inquirer, "prompt");
 
 			promptMock.mockResolvedValueOnce({ envReconfigure: true });
