@@ -1,13 +1,11 @@
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
-import { envFileBackup } from "scripts/setup/envFileBackup/envFileBackup";
 import { setup } from "scripts/setup/setup";
 import * as SetupModule from "scripts/setup/setup";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
-vi.mock("scripts/setup/envFileBackup/envFileBackup");
 describe("Setup", () => {
 	const originalEnv = { ...process.env };
 
@@ -19,13 +17,12 @@ describe("Setup", () => {
 	it("should set up environment variables with default configuration when CI=false", async () => {
 		const mockResponses = [
 			{ envReconfigure: true },
-			{ shouldBackup: true },
 			{ CI: "false" },
-			{ useDefaultMinio: true },
-			{ useDefaultCloudbeaver: true },
-			{ useDefaultPostgres: true },
-			{ useDefaultCaddy: true },
-			{ useDefaultApi: true },
+			{ useDefaultMinio: "true" },
+			{ useDefaultCloudbeaver: "true" },
+			{ useDefaultPostgres: "true" },
+			{ useDefaultCaddy: "true" },
+			{ useDefaultApi: "true" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 
@@ -42,7 +39,7 @@ describe("Setup", () => {
 			API_PORT: "4000",
 			API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
 			API_JWT_EXPIRES_IN: "2592000000",
-			API_LOG_LEVEL: "debug",
+			API_LOG_LEVEL: "info",
 			API_MINIO_ACCESS_KEY: "talawa",
 			API_MINIO_END_POINT: "minio",
 			API_MINIO_PORT: "9000",
@@ -68,18 +65,11 @@ describe("Setup", () => {
 			CADDY_TALAWA_API_EMAIL: "talawa@email.com",
 			CADDY_TALAWA_API_HOST: "api",
 			CADDY_TALAWA_API_PORT: "4000",
-			API_IS_GRAPHIQL: "true",
-			API_IS_PINO_PRETTY: "true",
 		};
 
 		dotenv.config({ path: ".env" });
 
 		for (const [key, value] of Object.entries(expectedEnv)) {
-			if (process.env[key] !== value) {
-				console.log(
-					`Mismatch for ${key}: expected ${value}, got ${process.env[key]}`,
-				);
-			}
 			expect(process.env[key]).toBe(value);
 		}
 	});
@@ -87,12 +77,11 @@ describe("Setup", () => {
 	it("should correctly set up environment variables when CI=true (skips CloudBeaver)", async () => {
 		const mockResponses = [
 			{ envReconfigure: true },
-			{ shouldBackup: true },
 			{ CI: "true" },
-			{ useDefaultMinio: true },
-			{ useDefaultPostgres: true },
-			{ useDefaultCaddy: true },
-			{ useDefaultApi: true },
+			{ useDefaultMinio: "true" },
+			{ useDefaultPostgres: "true" },
+			{ useDefaultCaddy: "true" },
+			{ useDefaultApi: "true" },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
 
@@ -108,7 +97,10 @@ describe("Setup", () => {
 			API_HOST: "0.0.0.0",
 			API_PORT: "4000",
 			API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
+			API_IS_GRAPHIQL: "false",
+			API_IS_PINO_PRETTY: "false",
 			API_JWT_EXPIRES_IN: "2592000000",
+			API_LOG_LEVEL: "info",
 			API_MINIO_ACCESS_KEY: "talawa",
 			API_MINIO_END_POINT: "minio",
 			API_MINIO_PORT: "9000",
@@ -136,11 +128,6 @@ describe("Setup", () => {
 		};
 
 		for (const [key, value] of Object.entries(expectedEnv)) {
-			if (process.env[key] !== value) {
-				console.log(
-					`Mismatch for ${key}: expected ${value}, got ${process.env[key]}`,
-				);
-			}
 			expect(process.env[key]).toBe(value);
 		}
 	});
@@ -164,19 +151,7 @@ describe("Setup", () => {
 		const copyFileSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => {});
-		const existsSyncSpy = vi
-			.spyOn(fs, "existsSync")
-			.mockImplementation((path) => {
-				if (path === ".backup") return true;
-				return false;
-			});
-		const readdirSyncSpy = vi
-			.spyOn(fs, "readdirSync")
-			.mockImplementation((() => [
-				".env.1000",
-				".env.2000",
-				"other.file",
-			]) as unknown as typeof fs.readdirSync);
+		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
 
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
 			throw new Error("process.exit called");
@@ -185,16 +160,9 @@ describe("Setup", () => {
 		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
 			"process.exit called",
 		);
+		expect(copyFileSpy).toHaveBeenCalledWith(".env.backup", ".env");
 		expect(consoleLogSpy).toHaveBeenCalledWith(
 			"\nProcess interrupted! Undoing changes...",
-		);
-		expect(copyFileSpy).toHaveBeenCalledWith(".backup/.env.2000", ".env");
-		expect(consoleLogSpy).toHaveBeenCalledWith(
-			expect.stringContaining("Restoring from latest backup"),
-		);
-		expect(copyFileSpy).toHaveBeenCalledWith(
-			expect.stringContaining(".env.2000"),
-			".env",
 		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
@@ -202,102 +170,5 @@ describe("Setup", () => {
 		processExitSpy.mockRestore();
 		copyFileSpy.mockRestore();
 		existsSyncSpy.mockRestore();
-		readdirSyncSpy.mockRestore();
-	});
-
-	describe("backup functionality", () => {
-		it("should not prompt for backup if .env file does not exist", async () => {
-			const existsSyncSpy = vi
-				.spyOn(fs, "existsSync")
-				.mockImplementation((path) => {
-					if (path === ".env") return false;
-					if (path === ".env.backup") return false;
-					return true;
-				});
-			const unlinkSyncSpy = vi
-				.spyOn(fs, "unlinkSync")
-				.mockImplementation(() => {});
-			const promptMock = vi.spyOn(inquirer, "prompt");
-
-			promptMock.mockResolvedValueOnce({ CI: "false" });
-			promptMock.mockResolvedValueOnce({ useDefaultMinio: "true" });
-			promptMock.mockResolvedValueOnce({ useDefaultCloudbeaver: "true" });
-			promptMock.mockResolvedValueOnce({ useDefaultPostgres: "true" });
-			promptMock.mockResolvedValueOnce({ useDefaultCaddy: "true" });
-			promptMock.mockResolvedValueOnce({ useDefaultApi: "true" });
-			promptMock.mockResolvedValueOnce({
-				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
-			});
-
-			await setup();
-
-			expect(existsSyncSpy).toHaveBeenCalled();
-			expect(promptMock).not.toHaveBeenCalledWith([
-				expect.objectContaining({ name: "shouldBackup" }),
-			]);
-			expect(envFileBackup).not.toHaveBeenCalled();
-			existsSyncSpy.mockRestore();
-			unlinkSyncSpy.mockRestore();
-		});
-
-		it("should call envFileBackup with true when user confirms backup", async () => {
-			const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
-			const unlinkSyncSpy = vi
-				.spyOn(fs, "unlinkSync")
-				.mockImplementation(() => {});
-			const promptMock = vi.spyOn(inquirer, "prompt");
-
-			promptMock.mockResolvedValueOnce({ envReconfigure: true });
-			promptMock.mockResolvedValueOnce({ shouldBackup: true });
-			promptMock.mockResolvedValueOnce({ CI: "false" });
-			promptMock.mockResolvedValueOnce({ useDefaultMinio: "true" });
-			promptMock.mockResolvedValueOnce({ useDefaultCloudbeaver: "true" });
-			promptMock.mockResolvedValueOnce({ useDefaultPostgres: "true" });
-			promptMock.mockResolvedValueOnce({ useDefaultCaddy: "true" });
-			promptMock.mockResolvedValueOnce({ useDefaultApi: "true" });
-			promptMock.mockResolvedValueOnce({
-				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
-			});
-
-			await setup();
-
-			expect(existsSyncSpy).toHaveBeenCalled();
-			expect(promptMock).toHaveBeenCalledWith([
-				expect.objectContaining({ name: "shouldBackup" }),
-			]);
-			expect(envFileBackup).toHaveBeenCalledWith(true);
-			existsSyncSpy.mockRestore();
-			unlinkSyncSpy.mockRestore();
-		});
-
-		it("should call envFileBackup with false when user denies backup", async () => {
-			const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
-			const unlinkSyncSpy = vi
-				.spyOn(fs, "unlinkSync")
-				.mockImplementation(() => {});
-			const promptMock = vi.spyOn(inquirer, "prompt");
-
-			promptMock.mockResolvedValueOnce({ envReconfigure: true });
-			promptMock.mockResolvedValueOnce({ shouldBackup: false });
-			promptMock.mockResolvedValueOnce({ CI: "false" });
-			promptMock.mockResolvedValueOnce({ useDefaultMinio: "true" });
-			promptMock.mockResolvedValueOnce({ useDefaultCloudbeaver: "true" });
-			promptMock.mockResolvedValueOnce({ useDefaultPostgres: "true" });
-			promptMock.mockResolvedValueOnce({ useDefaultCaddy: "true" });
-			promptMock.mockResolvedValueOnce({ useDefaultApi: "true" });
-			promptMock.mockResolvedValueOnce({
-				API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com",
-			});
-
-			await setup();
-
-			expect(existsSyncSpy).toHaveBeenCalled();
-			expect(promptMock).toHaveBeenCalledWith([
-				expect.objectContaining({ name: "shouldBackup" }),
-			]);
-			expect(envFileBackup).toHaveBeenCalledWith(false);
-			existsSyncSpy.mockRestore();
-			unlinkSyncSpy.mockRestore();
-		});
 	});
 });
