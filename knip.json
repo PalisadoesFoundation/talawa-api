@@ -1,0 +1,18 @@
+{
+	"$schema": "https://unpkg.com/knip@5/schema.json",
+	"ignoreIssues": {
+		"src/graphql/**/*.ts": ["exports"],
+		"src/services/ses/**/*.ts": ["exports"],
+		"src/drizzle/tables/**": ["exports"],
+		"src/workers/backgroundWorkerService.ts": ["exports"]
+	},
+	"ignore": [
+		"src/plugins/**",
+		"src/graphql/types/**/*.ts",
+		"src/graphql/inputs/**/*.ts",
+		"src/graphql/schemaImportWorker.ts"
+	],
+	"project": ["src/**/*.ts", "scripts/**/*.ts"],
+	"ignoreDependencies": [],
+	"ignoreExportsUsedInFile": true
+}

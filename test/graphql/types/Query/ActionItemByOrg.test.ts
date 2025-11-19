@@ -5,6 +5,8 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createActionItem,
 	Mutation_createActionItemCategory,
+	Mutation_createEvent,
+	Mutation_createEventVolunteer,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
@@ -107,6 +109,44 @@ async function createActionItemCategory(
 	return categoryId;
 }
 
+async function createEventAndVolunteer(organizationId: string) {
+	// Create an event
+	const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${globalAuth.authToken}` },
+		variables: {
+			input: {
+				organizationId,
+				name: "Test Event",
+				description: "Test event for action items",
+				startAt: new Date().toISOString(),
+				endAt: new Date(Date.now() + 3600000).toISOString(),
+				location: "Test Location",
+			},
+		},
+	});
+	assertToBeNonNullish(eventResult.data?.createEvent);
+	const eventId = eventResult.data.createEvent.id;
+
+	// Create a volunteer
+	const volunteerResult = await mercuriusClient.mutate(
+		Mutation_createEventVolunteer,
+		{
+			headers: { authorization: `bearer ${globalAuth.authToken}` },
+			variables: {
+				input: {
+					eventId,
+					userId: globalAuth.userId,
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(volunteerResult.data?.createEventVolunteer);
+	return {
+		eventId,
+		volunteerId: volunteerResult.data.createEventVolunteer.id,
+	};
+}
+
 beforeAll(async () => {
 	globalAuth = await globalSignInAndGetToken();
 });
@@ -116,6 +156,7 @@ suite("Query: actionItemsByOrganization", () => {
 	let organizationId: string;
 	let nonMemberUser: { authToken: string; userId: string };
 	let categoryId: string;
+	let volunteerId: string;
 
 	beforeEach(async () => {
 		regularUser = await createUserAndGetToken();
@@ -124,6 +165,12 @@ suite("Query: actionItemsByOrganization", () => {
 		await addMembership(organizationId, regularUser.userId, "regular");
 		await addMembership(organizationId, globalAuth.userId, "administrator");
 		categoryId = await createActionItemCategory(organizationId);
+
+		// Create event and volunteer for action items
+		const { volunteerId: createdVolunteerId } =
+			await createEventAndVolunteer(organizationId);
+		assertToBeNonNullish(createdVolunteerId);
+		volunteerId = createdVolunteerId;
 	});
 
 	test("should return an unauthenticated error if not signed in", async () => {
@@ -171,8 +218,8 @@ suite("Query: actionItemsByOrganization", () => {
 			variables: {
 				input: {
 					organizationId,
-					assigneeId: regularUser.userId,
 					categoryId,
+					volunteerId,
 				},
 			},
 		});
@@ -181,8 +228,8 @@ suite("Query: actionItemsByOrganization", () => {
 			variables: {
 				input: {
 					organizationId,
-					assigneeId: globalAuth.userId,
 					categoryId,
+					volunteerId,
 				},
 			},
 		});

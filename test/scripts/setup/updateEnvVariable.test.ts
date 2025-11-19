@@ -61,7 +61,7 @@ describe("updateEnvVariable", () => {
 			"Write failed",
 		);
 
-		expect(copySpy).toHaveBeenCalledWith(backupFile, envFileName);
+		expect(copySpy).toHaveBeenCalledWith(envFileName, backupFile);
 	});
 
 	it("should create .env if it does not exist", () => {

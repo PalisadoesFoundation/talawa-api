@@ -66,8 +66,8 @@ export async function generateInstancesForRecurringEvent(
 
 		if (!baseTemplate || !recurrenceRule) {
 			logger.error(
-				`Base template or recurrence rule not found for ${baseRecurringEventId}`,
 				{ baseTemplate: !!baseTemplate, recurrenceRule: !!recurrenceRule },
+				`Base template or recurrence rule not found for ${baseRecurringEventId}`,
 			);
 			throw new Error(
 				`Base template or recurrence rule not found: ${baseRecurringEventId}`,
@@ -115,7 +115,6 @@ export async function generateInstancesForRecurringEvent(
 		);
 
 		logger.info(
-			`Generated ${occurrences.length} occurrences for ${baseRecurringEventId}`,
 			{
 				frequency: normalizedRecurrenceRule.frequency,
 				originalCount: preservedOriginalCount,
@@ -132,13 +131,14 @@ export async function generateInstancesForRecurringEvent(
 					: "No count limit",
 				actualCount: `Created ${occurrences.length} occurrences`,
 			},
+			`Generated ${occurrences.length} occurrences for ${baseRecurringEventId}`,
 		);
 
 		// Handle case where originalSeriesId is null
 		if (recurrenceRule.originalSeriesId === null) {
 			logger.error(
-				`Recurrence rule for ${baseRecurringEventId} has null originalSeriesId`,
 				{ recurrenceRuleId: recurrenceRule.id },
+				`Recurrence rule for ${baseRecurringEventId} has null originalSeriesId`,
 			);
 			throw new Error(
 				`Recurrence rule for ${baseRecurringEventId} has null originalSeriesId`,
@@ -161,8 +161,8 @@ export async function generateInstancesForRecurringEvent(
 		return newInstancesCount;
 	} catch (error) {
 		logger.error(
-			`Failed to generate instances for ${baseRecurringEventId}:`,
 			error,
+			`Failed to generate instances for ${baseRecurringEventId}:`,
 		);
 		throw error;
 	}
@@ -273,9 +273,9 @@ async function createNewGeneratedInstances(
 	return newOccurrences.length;
 }
 
-export {
-	initializeGenerationWindow,
-	cleanupOldGeneratedInstances,
-} from "./windowManager";
-export { calculateInstanceOccurrences } from "./occurrenceCalculator";
 export { resolveInstanceWithInheritance } from "./instanceResolver";
+export { calculateInstanceOccurrences } from "./occurrenceCalculator";
+export {
+	cleanupOldGeneratedInstances,
+	initializeGenerationWindow,
+} from "./windowManager";

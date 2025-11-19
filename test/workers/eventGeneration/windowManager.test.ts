@@ -162,12 +162,12 @@ describe("windowManager", () => {
 
 			expect(result).toEqual(mockOrganizations);
 			expect(mockLogger.debug).toHaveBeenCalledWith(
-				"Getting organizations needing materialization",
 				{
 					oneMonthFromNow: expect.any(String),
 					processingTimeoutDate: expect.any(String),
 					maxOrganizations: 10,
 				},
+				"Getting organizations needing materialization",
 			);
 			expect(mockLogger.info).toHaveBeenCalledWith(
 				"Found 2 organizations needing materialization processing",
@@ -221,7 +221,6 @@ describe("windowManager", () => {
 
 			expect(mockDrizzleClient.update).toHaveBeenCalled();
 			expect(mockLogger.info).toHaveBeenCalledWith(
-				"Updated materialization window",
 				{
 					windowId: "window1",
 					organizationId: "org1",
@@ -230,6 +229,7 @@ describe("windowManager", () => {
 					eventsProcessed: 3,
 					processingTime: 2000,
 				},
+				"Updated materialization window",
 			);
 		});
 

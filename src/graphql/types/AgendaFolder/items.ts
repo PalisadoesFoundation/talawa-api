@@ -13,7 +13,7 @@ import {
 } from "~/src/utilities/defaultGraphQLConnection";
 import envConfig from "~/src/utilities/graphqLimits";
 import { AgendaFolder } from "./AgendaFolder";
-const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
+export const itemsArgumentsSchema = defaultGraphQLConnectionArgumentsSchema
 	.transform(transformDefaultGraphQLConnectionArguments)
 	.transform((arg, ctx) => {
 		let cursor: z.infer<typeof cursorSchema> | undefined = undefined;

@@ -1,0 +1,832 @@
+---
+id: iso-3166-alpha-2-country-code
+title: Iso3166Alpha2CountryCode
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+Possible variants of the two-letter country code defined in ISO 3166-1, part of the ISO 3166 standard published by the International Organization for Standardization (ISO), to represent countries, dependent territories, and special areas of geographical interest.
+
+```graphql
+enum Iso3166Alpha2CountryCode {
+  ad
+  ae
+  af
+  ag
+  ai
+  al
+  am
+  ao
+  aq
+  ar
+  as
+  at
+  au
+  aw
+  ax
+  az
+  ba
+  bb
+  bd
+  be
+  bf
+  bg
+  bh
+  bi
+  bj
+  bl
+  bm
+  bn
+  bo
+  bq
+  br
+  bs
+  bt
+  bv
+  bw
+  by
+  bz
+  ca
+  cc
+  cd
+  cf
+  cg
+  ch
+  ci
+  ck
+  cl
+  cm
+  cn
+  co
+  cr
+  cu
+  cv
+  cw
+  cx
+  cy
+  cz
+  de
+  dj
+  dk
+  dm
+  do
+  dz
+  ec
+  ee
+  eg
+  eh
+  er
+  es
+  et
+  fi
+  fj
+  fk
+  fm
+  fo
+  fr
+  ga
+  gb
+  gd
+  ge
+  gf
+  gg
+  gh
+  gi
+  gl
+  gm
+  gn
+  gp
+  gq
+  gr
+  gs
+  gt
+  gu
+  gw
+  gy
+  hk
+  hm
+  hn
+  hr
+  ht
+  hu
+  id
+  ie
+  il
+  im
+  in
+  io
+  iq
+  ir
+  is
+  it
+  je
+  jm
+  jo
+  jp
+  ke
+  kg
+  kh
+  ki
+  km
+  kn
+  kp
+  kr
+  kw
+  ky
+  kz
+  la
+  lb
+  lc
+  li
+  lk
+  lr
+  ls
+  lt
+  lu
+  lv
+  ly
+  ma
+  mc
+  md
+  me
+  mf
+  mg
+  mh
+  mk
+  ml
+  mm
+  mn
+  mo
+  mp
+  mq
+  mr
+  ms
+  mt
+  mu
+  mv
+  mw
+  mx
+  my
+  mz
+  na
+  nc
+  ne
+  nf
+  ng
+  ni
+  nl
+  no
+  np
+  nr
+  nu
+  nz
+  om
+  pa
+  pe
+  pf
+  pg
+  ph
+  pk
+  pl
+  pm
+  pn
+  pr
+  ps
+  pt
+  pw
+  py
+  qa
+  re
+  ro
+  rs
+  ru
+  rw
+  sa
+  sb
+  sc
+  sd
+  se
+  sg
+  sh
+  si
+  sj
+  sk
+  sl
+  sm
+  sn
+  so
+  sr
+  ss
+  st
+  sv
+  sx
+  sy
+  sz
+  tc
+  td
+  tf
+  tg
+  th
+  tj
+  tk
+  tl
+  tm
+  tn
+  to
+  tr
+  tt
+  tv
+  tw
+  tz
+  ua
+  ug
+  um
+  us
+  uy
+  uz
+  va
+  vc
+  ve
+  vg
+  vi
+  vn
+  vu
+  wf
+  ws
+  ye
+  yt
+  za
+  zm
+  zw
+}
+```
+
+### Values
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ad</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ae</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>af</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ag</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ai</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>al</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>am</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ao</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>aq</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ar</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>as</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>at</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>au</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>aw</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ax</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>az</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ba</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bb</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bd</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>be</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bf</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bg</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bh</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bi</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bj</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bl</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bm</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bn</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bo</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bq</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>br</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bs</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bt</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bv</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bw</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>by</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>bz</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ca</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cc</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cd</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cf</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cg</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ch</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ci</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ck</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cl</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cm</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cn</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>co</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cr</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cu</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cv</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cw</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cx</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cy</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>cz</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>de</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>dj</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>dk</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>dm</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>do</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>dz</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ec</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ee</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>eg</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>eh</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>er</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>es</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>et</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>fi</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>fj</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>fk</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>fm</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>fo</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>fr</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ga</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gb</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gd</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ge</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gf</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gg</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gh</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gi</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gl</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gm</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gn</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gp</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gq</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gr</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gs</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gt</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gu</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gw</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>gy</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>hk</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>hm</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>hn</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>hr</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ht</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>hu</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>id</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ie</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>il</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>im</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>in</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>io</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>iq</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ir</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>is</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>it</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>je</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>jm</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>jo</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>jp</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ke</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>kg</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>kh</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ki</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>km</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>kn</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>kp</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>kr</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>kw</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ky</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>kz</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>la</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>lb</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>lc</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>li</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>lk</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>lr</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ls</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>lt</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>lu</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>lv</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ly</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ma</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mc</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>md</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>me</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mf</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mg</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mh</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mk</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ml</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mm</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mn</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mo</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mp</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mq</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mr</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ms</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mt</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mu</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mv</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mw</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mx</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>my</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>mz</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>na</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>nc</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ne</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>nf</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ng</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ni</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>nl</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>no</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>np</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>nr</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>nu</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>nz</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>om</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>pa</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>pe</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>pf</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>pg</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ph</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>pk</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>pl</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>pm</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>pn</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>pr</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ps</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>pt</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>pw</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>py</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>qa</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>re</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ro</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>rs</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ru</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>rw</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sa</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sb</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sc</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sd</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>se</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sg</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sh</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>si</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sj</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sk</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sl</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sm</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sn</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>so</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sr</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ss</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>st</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sv</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sx</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sy</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>sz</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tc</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>td</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tf</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tg</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>th</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tj</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tk</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tl</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tm</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tn</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>to</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tr</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tt</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tv</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tw</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>tz</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ua</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ug</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>um</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>us</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>uy</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>uz</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>va</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>vc</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ve</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>vg</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>vi</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>vn</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>vu</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>wf</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ws</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>ye</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>yt</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>za</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>zm</b></code>](#)
+
+#### [<code style={{ fontWeight: 'normal' }}>Iso3166Alpha2CountryCode.<b>zw</b></code>](#)
+
+### Member Of
+
+[`MutationCreateOrganizationInput`](/auto-schema/types/inputs/mutation-create-organization-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationCreateUserInput`](/auto-schema/types/inputs/mutation-create-user-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationSignUpInput`](/auto-schema/types/inputs/mutation-sign-up-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateCurrentUserInput`](/auto-schema/types/inputs/mutation-update-current-user-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateOrganizationInput`](/auto-schema/types/inputs/mutation-update-organization-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateUserInput`](/auto-schema/types/inputs/mutation-update-user-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`Organization`](/auto-schema/types/objects/organization.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`User`](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

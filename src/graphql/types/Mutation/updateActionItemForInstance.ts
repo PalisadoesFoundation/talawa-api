@@ -10,7 +10,8 @@ const MutationUpdateActionItemForInstanceInput = builder.inputType(
 		fields: (t) => ({
 			actionId: t.id({ required: true }),
 			eventId: t.id({ required: true }),
-			assigneeId: t.id({ required: false }),
+			volunteerId: t.id({ required: false }),
+			volunteerGroupId: t.id({ required: false }),
 			categoryId: t.id({ required: false }),
 			assignedAt: t.string({ required: false }),
 			preCompletionNotes: t.string({ required: false }),
@@ -22,7 +23,8 @@ const mutationUpdateActionItemForInstanceArgumentsSchema = z.object({
 	input: z.object({
 		actionId: z.string().uuid(),
 		eventId: z.string().uuid(),
-		assigneeId: z.string().uuid().optional(),
+		volunteerId: z.string().uuid().optional(),
+		volunteerGroupId: z.string().uuid().optional(),
 		categoryId: z.string().uuid().optional(),
 		assignedAt: z.string().optional(),
 		preCompletionNotes: z.string().optional(),
@@ -69,7 +71,8 @@ builder.mutationField("updateActionItemForInstance", (t) =>
 			const {
 				actionId,
 				eventId,
-				assigneeId,
+				volunteerId,
+				volunteerGroupId,
 				categoryId,
 				assignedAt,
 				preCompletionNotes,
@@ -115,14 +118,16 @@ builder.mutationField("updateActionItemForInstance", (t) =>
 			interface UpdateValues {
 				actionId: string;
 				eventId: string;
-				assigneeId?: string;
+				volunteerId?: string;
+				volunteerGroupId?: string;
 				categoryId?: string;
 				assignedAt?: Date;
 				preCompletionNotes?: string;
 			}
 
 			interface SetValues {
-				assigneeId?: string;
+				volunteerId?: string;
+				volunteerGroupId?: string;
 				categoryId?: string;
 				assignedAt?: Date;
 				preCompletionNotes?: string;
@@ -134,7 +139,9 @@ builder.mutationField("updateActionItemForInstance", (t) =>
 			};
 
 			// Only include fields that are provided
-			if (assigneeId !== undefined) updateValues.assigneeId = assigneeId;
+			if (volunteerId !== undefined) updateValues.volunteerId = volunteerId;
+			if (volunteerGroupId !== undefined)
+				updateValues.volunteerGroupId = volunteerGroupId;
 			if (categoryId !== undefined) updateValues.categoryId = categoryId;
 			if (assignedAt !== undefined)
 				updateValues.assignedAt = new Date(assignedAt);
@@ -142,7 +149,9 @@ builder.mutationField("updateActionItemForInstance", (t) =>
 				updateValues.preCompletionNotes = preCompletionNotes;
 
 			const setValues: SetValues = {};
-			if (assigneeId !== undefined) setValues.assigneeId = assigneeId;
+			if (volunteerId !== undefined) setValues.volunteerId = volunteerId;
+			if (volunteerGroupId !== undefined)
+				setValues.volunteerGroupId = volunteerGroupId;
 			if (categoryId !== undefined) setValues.categoryId = categoryId;
 			if (assignedAt !== undefined) setValues.assignedAt = new Date(assignedAt);
 			if (preCompletionNotes !== undefined)

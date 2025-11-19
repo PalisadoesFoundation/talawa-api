@@ -1,0 +1,105 @@
+---
+id: update-event-volunteer-group-input
+title: UpdateEventVolunteerGroupInput
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+Input for updating an event volunteer group.
+
+```graphql
+input UpdateEventVolunteerGroupInput {
+  description: String
+  eventId: ID!
+  name: String
+  volunteersRequired: Int
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>UpdateEventVolunteerGroupInput.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+The updated description of the volunteer group.
+
+#### [<code style={{ fontWeight: 'normal' }}>UpdateEventVolunteerGroupInput.<b>eventId</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+The ID of the event (required for validation).
+
+#### [<code style={{ fontWeight: 'normal' }}>UpdateEventVolunteerGroupInput.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+The updated name of the volunteer group.
+
+#### [<code style={{ fontWeight: 'normal' }}>UpdateEventVolunteerGroupInput.<b>volunteersRequired</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+The updated number of volunteers required for this group.
+
+### Member Of
+
+[`updateEventVolunteerGroup`](/auto-schema/operations/mutations/update-event-volunteer-group.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>

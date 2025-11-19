@@ -1,4 +1,4 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
@@ -6,17 +6,23 @@
 
 > **transformToDefaultGraphQLConnection**\<`RawNode`, `Node`, `Cursor`\>(`__namedParameters`): [`DefaultGraphQLConnection`](../type-aliases/DefaultGraphQLConnection.md)\<`Node`\>
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:183](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/utilities/defaultGraphQLConnection.ts#L183)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:246](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/defaultGraphQLConnection.ts#L246)
 
 This function is used to transform an array of objects to a standard graphql connection object.
 
 ## Type Parameters
 
-• **RawNode**
+### RawNode
 
-• **Node** = `RawNode`
+`RawNode`
 
-• **Cursor** = `string`
+### Node
+
+`Node` = `RawNode`
+
+### Cursor
+
+`Cursor` = `string`
 
 ## Parameters
 

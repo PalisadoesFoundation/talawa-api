@@ -6,6 +6,8 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createActionItem,
 	Mutation_createActionItemCategory,
+	Mutation_createEvent,
+	Mutation_createEventVolunteer,
 	Mutation_createOrganization,
 	Mutation_createOrganizationMembership,
 	Mutation_createUser,
@@ -78,6 +80,46 @@ async function createActionItemCategory(
 	return categoryId;
 }
 
+// Helper to create an event and volunteer
+async function createEventAndVolunteer(organizationId: string, userId: string) {
+	// Create an event
+	const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
+		headers: { authorization: `bearer ${authToken}` },
+		variables: {
+			input: {
+				organizationId,
+				name: "Test Event",
+				description: "Test event for action items",
+				startAt: new Date().toISOString(),
+				endAt: new Date(Date.now() + 3600000).toISOString(),
+				location: "Test Location",
+			},
+		},
+	});
+	assertToBeNonNullish(eventResult.data?.createEvent);
+	const eventId = eventResult.data.createEvent.id;
+
+	// Create a volunteer
+	const volunteerResult = await mercuriusClient.mutate(
+		Mutation_createEventVolunteer,
+		{
+			headers: { authorization: `bearer ${authToken}` },
+			variables: {
+				input: {
+					eventId,
+					userId,
+				},
+			},
+		},
+	);
+	assertToBeNonNullish(volunteerResult.data?.createEventVolunteer);
+	assertToBeNonNullish(volunteerResult.data.createEventVolunteer.id);
+	return {
+		eventId,
+		volunteerId: volunteerResult.data.createEventVolunteer.id,
+	};
+}
+
 suite("Mutation field createActionItem", () => {
 	// 1. Unauthenticated: user not logged in.
 	suite("when the client is not authenticated", () => {
@@ -86,7 +128,7 @@ suite("Mutation field createActionItem", () => {
 				variables: {
 					input: {
 						categoryId: faker.string.uuid(),
-						assigneeId: faker.string.uuid(),
+						volunteerId: faker.string.uuid(),
 						organizationId: faker.string.uuid(),
 						assignedAt: "2025-04-01T00:00:00Z",
 					},
@@ -111,7 +153,7 @@ suite("Mutation field createActionItem", () => {
 				variables: {
 					input: {
 						categoryId: faker.string.uuid(),
-						assigneeId: faker.string.uuid(),
+						volunteerId: faker.string.uuid(),
 						organizationId: faker.string.uuid(), // non-existent organization
 						assignedAt: "2025-04-01T00:00:00Z",
 					},
@@ -139,7 +181,7 @@ suite("Mutation field createActionItem", () => {
 				variables: {
 					input: {
 						categoryId: faker.string.uuid(),
-						assigneeId: faker.string.uuid(),
+						volunteerId: faker.string.uuid(),
 						organizationId: orgId,
 						assignedAt: "2025-04-01T00:00:00Z",
 					},
@@ -177,7 +219,7 @@ suite("Mutation field createActionItem", () => {
 				variables: {
 					input: {
 						categoryId: faker.string.uuid(), // non-existent category
-						assigneeId: faker.string.uuid(), // dummy value
+						volunteerId: faker.string.uuid(), // dummy value
 						organizationId: orgId,
 						assignedAt: "2025-04-01T00:00:00Z",
 					},
@@ -207,7 +249,7 @@ suite("Mutation field createActionItem", () => {
 				variables: {
 					input: {
 						categoryId: categoryId,
-						assigneeId: faker.string.uuid(), // non-existent assignee
+						volunteerId: faker.string.uuid(), // non-existent volunteer
 						organizationId: orgId,
 						assignedAt: "2025-04-01T00:00:00Z",
 					},
@@ -267,13 +309,17 @@ suite("Mutation field createActionItem", () => {
 				});
 
 				const categoryId = await createActionItemCategory(orgId);
+				const { volunteerId } = await createEventAndVolunteer(
+					orgId,
+					nonAdminUserId,
+				);
 
 				const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 					headers: { authorization: `bearer ${nonAdminToken}` },
 					variables: {
 						input: {
 							categoryId: categoryId,
-							assigneeId: nonAdminUserId,
+							volunteerId: volunteerId,
 							organizationId: orgId,
 							assignedAt: "2025-04-01T00:00:00Z",
 						},
@@ -314,17 +360,21 @@ suite("Mutation field createActionItem", () => {
 			);
 			assertToBeNonNullish(createUserResult.data?.createUser);
 			assertToBeNonNullish(createUserResult.data.createUser.user);
-			const assigneeId = createUserResult.data.createUser.user.id;
-			assertToBeNonNullish(assigneeId);
+			const assigneeUserId = createUserResult.data.createUser.user.id;
+			assertToBeNonNullish(assigneeUserId);
 
 			const categoryId = await createActionItemCategory(orgId);
+			const { volunteerId } = await createEventAndVolunteer(
+				orgId,
+				assigneeUserId,
+			);
 
 			const result = await mercuriusClient.mutate(Mutation_createActionItem, {
 				headers: { authorization: `bearer ${authToken}` },
 				variables: {
 					input: {
 						categoryId: categoryId,
-						assigneeId: assigneeId,
+						volunteerId: volunteerId,
 						organizationId: orgId,
 						assignedAt: "2025-04-01T00:00:00Z",
 					},

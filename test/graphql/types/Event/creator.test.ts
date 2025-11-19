@@ -96,7 +96,7 @@ describe("Event Creator Resolver -Test ", () => {
 		mockEvent.creatorId = null;
 		const mockUserData: MockUser = {
 			id: "user-123",
-			role: "administartor",
+			role: "administrator",
 			organizationMembershipsWhereMember: [
 				{ role: "administrator", organizationId: mockEvent.organizationId },
 			],
