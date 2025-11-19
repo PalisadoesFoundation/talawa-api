@@ -27,7 +27,7 @@ describe("Setup -> minioSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		const answers = await minioSetup({});
+		const answers = await minioSetup({ CI: "true" });
 
 		const expectedEnv = {
 			MINIO_BROWSER: "off",
@@ -41,8 +41,15 @@ describe("Setup -> minioSetup", () => {
 	});
 
 	it("should prompt extended Minio config fields when CI=false", async () => {
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		vi.spyOn(fs, "readFileSync").mockReturnValue("");
+		vi.spyOn(fs, "writeFileSync").mockImplementation(() => undefined);
+		vi.spyOn(fs, "copyFileSync").mockImplementation(() => undefined);
+		vi.spyOn(fs, "unlinkSync").mockImplementation(() => undefined);
+
 		const mockResponses = [
 			{ envReconfigure: true },
+			{ shouldBackup: false },
 			{ CI: "false" },
 			{ useDefaultMinio: false },
 			{ MINIO_BROWSER: "on" },
@@ -54,7 +61,7 @@ describe("Setup -> minioSetup", () => {
 			{ MINIO_ROOT_USER: "mocked-user" },
 			{ useDefaultCloudbeaver: true },
 			{ useDefaultPostgres: true },
-			{ useDefaultCaddy: "true" },
+			{ useDefaultCaddy: true },
 			{ useDefaultApi: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@email.com" },
 		];
@@ -118,6 +125,11 @@ describe("Setup -> minioSetup", () => {
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
 		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const fsReaddirSyncSpy = vi
+			.spyOn(fs, "readdirSync")
+			.mockReturnValue([".env.1234567890"] as unknown as ReturnType<
+				typeof fs.readdirSync
+			>);
 		const fsCopyFileSyncSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => undefined);
@@ -126,12 +138,20 @@ describe("Setup -> minioSetup", () => {
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
 
 		const consoleErrorSpy = vi.spyOn(console, "error");
+		const consoleLogSpy = vi.spyOn(console, "log");
 
-		await minioSetup({});
+		await minioSetup({ CI: "true" });
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".env.backup", ".env");
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".backup");
+		expect(fsReaddirSyncSpy).toHaveBeenCalledWith(".backup");
+		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
+			".backup/.env.1234567890",
+			".env",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"Restoring from latest backup: .backup/.env.1234567890",
+		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();

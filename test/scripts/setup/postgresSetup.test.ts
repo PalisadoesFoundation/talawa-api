@@ -26,7 +26,7 @@ describe("Setup -> postgresSetup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
-		const answers = await postgresSetup({});
+		const answers = await postgresSetup({ CI: "true" });
 
 		const expectedEnv = {
 			POSTGRES_DB: "mocked-db",
@@ -40,19 +40,26 @@ describe("Setup -> postgresSetup", () => {
 	});
 
 	it("should prompt extended Postgres fields when user chooses custom Postgres (CI=false)", async () => {
+		vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		vi.spyOn(fs, "readFileSync").mockReturnValue("");
+		vi.spyOn(fs, "writeFileSync").mockImplementation(() => undefined);
+		vi.spyOn(fs, "copyFileSync").mockImplementation(() => undefined);
+		vi.spyOn(fs, "unlinkSync").mockImplementation(() => undefined);
+
 		const mockResponses = [
-			{ envReconfigure: "true" },
+			{ envReconfigure: true },
+			{ shouldBackup: false },
 			{ CI: "false" },
-			{ useDefaultMinio: "true" },
-			{ useDefaultCloudbeaver: "true" },
+			{ useDefaultMinio: true },
+			{ useDefaultCloudbeaver: true },
 			{ useDefaultPostgres: false },
 			{ POSTGRES_DB: "customDatabase" },
 			{ POSTGRES_MAPPED_HOST_IP: "1.2.3.4" },
 			{ POSTGRES_MAPPED_PORT: "5433" },
 			{ POSTGRES_PASSWORD: "myPassword" },
 			{ POSTGRES_USER: "myUser" },
-			{ useDefaultCaddy: "true" },
-			{ useDefaultApi: "true" },
+			{ useDefaultCaddy: true },
+			{ useDefaultApi: true },
 			{ API_ADMINISTRATOR_USER_EMAIL_ADDRESS: "test@postgres.com" },
 		];
 
@@ -81,6 +88,11 @@ describe("Setup -> postgresSetup", () => {
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
 		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const fsReaddirSyncSpy = vi
+			.spyOn(fs, "readdirSync")
+			.mockReturnValue([".env.1234567890"] as unknown as ReturnType<
+				typeof fs.readdirSync
+			>);
 		const fsCopyFileSyncSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => undefined);
@@ -89,12 +101,20 @@ describe("Setup -> postgresSetup", () => {
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
 
 		const consoleErrorSpy = vi.spyOn(console, "error");
+		const consoleLogSpy = vi.spyOn(console, "log");
 
-		await postgresSetup({});
+		await postgresSetup({ CI: "true" });
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".env.backup", ".env");
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".backup");
+		expect(fsReaddirSyncSpy).toHaveBeenCalledWith(".backup");
+		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
+			".backup/.env.1234567890",
+			".env",
+		);
+		expect(consoleLogSpy).toHaveBeenCalledWith(
+			"Restoring from latest backup: .backup/.env.1234567890",
+		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();

@@ -181,6 +181,10 @@ export function checkEnvFile(): boolean {
 }
 
 export function initializeEnvFile(answers: SetupAnswers): void {
+	if (fs.existsSync(envFileName)) {
+		fs.copyFileSync(envFileName, `${envFileName}.backup`);
+		console.log(`✅ Backup created at ${envFileName}.backup`);
+	}
 	const envFileToUse =
 		answers.CI === "true" ? "envFiles/.env.ci" : "envFiles/.env.devcontainer";
 
@@ -722,5 +726,8 @@ export async function setup(): Promise<SetupAnswers> {
 
 	updateEnvVariable(answers);
 	console.log("Configuration complete.");
+	if (fs.existsSync(".env.backup")) {
+		fs.unlinkSync(".env.backup");
+	}
 	return answers;
 }
