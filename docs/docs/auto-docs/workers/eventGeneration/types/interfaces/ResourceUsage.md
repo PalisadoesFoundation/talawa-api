@@ -4,7 +4,7 @@
 
 # Interface: ResourceUsage
 
-Defined in: src/workers/eventGeneration/types.ts:23
+Defined in: [src/workers/eventGeneration/types.ts:23](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L23)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/workers/eventGeneration/types.ts:23
 
 > **cpuUsagePercent**: `number`
 
-Defined in: src/workers/eventGeneration/types.ts:25
+Defined in: [src/workers/eventGeneration/types.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L25)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/workers/eventGeneration/types.ts:25
 
 > **databaseConnections**: `number`
 
-Defined in: src/workers/eventGeneration/types.ts:26
+Defined in: [src/workers/eventGeneration/types.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L26)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: src/workers/eventGeneration/types.ts:26
 
 > **memoryUsageMB**: `number`
 
-Defined in: src/workers/eventGeneration/types.ts:24
+Defined in: [src/workers/eventGeneration/types.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L24)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: src/workers/eventGeneration/types.ts:24
 
 > **processingThroughput**: `number`
 
-Defined in: src/workers/eventGeneration/types.ts:27
+Defined in: [src/workers/eventGeneration/types.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/types.ts#L27)

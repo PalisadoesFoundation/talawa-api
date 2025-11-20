@@ -4,7 +4,7 @@
 
 # Interface: GetStandaloneEventsInput
 
-Defined in: src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:9
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L9)
 
 ## Description
 
@@ -16,7 +16,7 @@ Defines the input parameters for querying standalone events.
 
 > **endDate**: `Date`
 
-Defined in: src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:12
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:12](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L12)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:12
 
 > `optional` **eventIds**: `string`[]
 
-Defined in: src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:16
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:16](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L16)
 
 #### Description
 
@@ -36,7 +36,7 @@ An optional array of event IDs to filter by.
 
 > `optional` **limit**: `number`
 
-Defined in: src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:20
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:20](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L20)
 
 #### Description
 
@@ -48,7 +48,7 @@ An optional limit on the number of events to return.
 
 > **organizationId**: `string`
 
-Defined in: src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:10
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L10)
 
 ***
 
@@ -56,4 +56,4 @@ Defined in: src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:10
 
 > **startDate**: `Date`
 
-Defined in: src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:11
+Defined in: [src/graphql/types/Query/eventQueries/standaloneEventQueries.ts:11](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/Query/eventQueries/standaloneEventQueries.ts#L11)

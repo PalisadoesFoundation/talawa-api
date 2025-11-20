@@ -4,7 +4,7 @@
 
 # Interface: CalculatedOccurrence
 
-Defined in: src/services/eventGeneration/types.ts:44
+Defined in: [src/services/eventGeneration/types.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L44)
 
 Result of occurrence calculation
 
@@ -14,7 +14,7 @@ Result of occurrence calculation
 
 > **actualEndTime**: `Date`
 
-Defined in: src/services/eventGeneration/types.ts:47
+Defined in: [src/services/eventGeneration/types.ts:47](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L47)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: src/services/eventGeneration/types.ts:47
 
 > **actualStartTime**: `Date`
 
-Defined in: src/services/eventGeneration/types.ts:46
+Defined in: [src/services/eventGeneration/types.ts:46](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L46)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: src/services/eventGeneration/types.ts:46
 
 > **isCancelled**: `boolean`
 
-Defined in: src/services/eventGeneration/types.ts:48
+Defined in: [src/services/eventGeneration/types.ts:48](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L48)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: src/services/eventGeneration/types.ts:48
 
 > **originalStartTime**: `Date`
 
-Defined in: src/services/eventGeneration/types.ts:45
+Defined in: [src/services/eventGeneration/types.ts:45](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L45)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: src/services/eventGeneration/types.ts:45
 
 > **sequenceNumber**: `number`
 
-Defined in: src/services/eventGeneration/types.ts:49
+Defined in: [src/services/eventGeneration/types.ts:49](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L49)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: src/services/eventGeneration/types.ts:49
 
 > **totalCount**: `number` \| `null`
 
-Defined in: src/services/eventGeneration/types.ts:50
+Defined in: [src/services/eventGeneration/types.ts:50](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/eventGeneration/types.ts#L50)

@@ -6,7 +6,7 @@
 
 > **CreateEventInvitationInput** = `object`
 
-Defined in: src/drizzle/tables/eventInvitations.ts:151
+Defined in: [src/drizzle/tables/eventInvitations.ts:151](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L151)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: src/drizzle/tables/eventInvitations.ts:151
 
 > `optional` **eventId**: `string`
 
-Defined in: src/drizzle/tables/eventInvitations.ts:152
+Defined in: [src/drizzle/tables/eventInvitations.ts:152](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L152)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: src/drizzle/tables/eventInvitations.ts:152
 
 > **expiresAt**: `Date`
 
-Defined in: src/drizzle/tables/eventInvitations.ts:157
+Defined in: [src/drizzle/tables/eventInvitations.ts:157](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L157)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: src/drizzle/tables/eventInvitations.ts:157
 
 > **invitedBy**: `string`
 
-Defined in: src/drizzle/tables/eventInvitations.ts:154
+Defined in: [src/drizzle/tables/eventInvitations.ts:154](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L154)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: src/drizzle/tables/eventInvitations.ts:154
 
 > **inviteeEmail**: `string`
 
-Defined in: src/drizzle/tables/eventInvitations.ts:155
+Defined in: [src/drizzle/tables/eventInvitations.ts:155](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L155)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: src/drizzle/tables/eventInvitations.ts:155
 
 > `optional` **inviteeName**: `string`
 
-Defined in: src/drizzle/tables/eventInvitations.ts:156
+Defined in: [src/drizzle/tables/eventInvitations.ts:156](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L156)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: src/drizzle/tables/eventInvitations.ts:156
 
 > `optional` **metadata**: `unknown`
 
-Defined in: src/drizzle/tables/eventInvitations.ts:158
+Defined in: [src/drizzle/tables/eventInvitations.ts:158](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L158)
 
 ***
 
@@ -62,4 +62,4 @@ Defined in: src/drizzle/tables/eventInvitations.ts:158
 
 > `optional` **recurringEventInstanceId**: `string`
 
-Defined in: src/drizzle/tables/eventInvitations.ts:153
+Defined in: [src/drizzle/tables/eventInvitations.ts:153](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/drizzle/tables/eventInvitations.ts#L153)

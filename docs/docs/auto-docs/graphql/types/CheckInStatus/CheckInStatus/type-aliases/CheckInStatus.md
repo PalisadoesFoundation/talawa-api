@@ -6,7 +6,7 @@
 
 > **CheckInStatus** = `object`
 
-Defined in: src/graphql/types/CheckInStatus/CheckInStatus.ts:7
+Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:7](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/CheckInStatus/CheckInStatus.ts#L7)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: src/graphql/types/CheckInStatus/CheckInStatus.ts:7
 
 > **attendee**: *typeof* `eventAttendeesTable.$inferSelect`
 
-Defined in: src/graphql/types/CheckInStatus/CheckInStatus.ts:10
+Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:10](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/CheckInStatus/CheckInStatus.ts#L10)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: src/graphql/types/CheckInStatus/CheckInStatus.ts:10
 
 > **id**: `string`
 
-Defined in: src/graphql/types/CheckInStatus/CheckInStatus.ts:8
+Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:8](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/CheckInStatus/CheckInStatus.ts#L8)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: src/graphql/types/CheckInStatus/CheckInStatus.ts:8
 
 > **user**: *typeof* `usersTable.$inferSelect`
 
-Defined in: src/graphql/types/CheckInStatus/CheckInStatus.ts:9
+Defined in: [src/graphql/types/CheckInStatus/CheckInStatus.ts:9](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/types/CheckInStatus/CheckInStatus.ts#L9)

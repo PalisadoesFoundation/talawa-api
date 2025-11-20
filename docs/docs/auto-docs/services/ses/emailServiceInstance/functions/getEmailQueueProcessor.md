@@ -6,7 +6,7 @@
 
 > **getEmailQueueProcessor**(): [`EmailQueueProcessor`](../../EmailQueueProcessor/classes/EmailQueueProcessor.md) \| `null`
 
-Defined in: src/services/ses/emailServiceInstance.ts:42
+Defined in: [src/services/ses/emailServiceInstance.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/emailServiceInstance.ts#L42)
 
 Get email queue processor instance
 

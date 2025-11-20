@@ -4,7 +4,7 @@
 
 # Interface: EmailResult
 
-Defined in: src/services/ses/EmailService.ts:24
+Defined in: [src/services/ses/EmailService.ts:24](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L24)
 
 Email result interface
 
@@ -14,7 +14,7 @@ Email result interface
 
 > `optional` **error**: `string`
 
-Defined in: src/services/ses/EmailService.ts:28
+Defined in: [src/services/ses/EmailService.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L28)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: src/services/ses/EmailService.ts:28
 
 > **id**: `string`
 
-Defined in: src/services/ses/EmailService.ts:25
+Defined in: [src/services/ses/EmailService.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L25)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: src/services/ses/EmailService.ts:25
 
 > `optional` **messageId**: `string`
 
-Defined in: src/services/ses/EmailService.ts:27
+Defined in: [src/services/ses/EmailService.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L27)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: src/services/ses/EmailService.ts:27
 
 > **success**: `boolean`
 
-Defined in: src/services/ses/EmailService.ts:26
+Defined in: [src/services/ses/EmailService.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L26)

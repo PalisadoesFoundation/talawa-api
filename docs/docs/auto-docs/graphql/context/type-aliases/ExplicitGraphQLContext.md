@@ -6,7 +6,7 @@
 
 > **ExplicitGraphQLContext** = `object`
 
-Defined in: src/graphql/context.ts:41
+Defined in: [src/graphql/context.ts:41](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L41)
 
 Type of the transport protocol agnostic explicit context object that is merged with the implcit mercurius context object and passed to the graphql resolvers each time they resolve a graphql operation at runtime.
 
@@ -16,7 +16,7 @@ Type of the transport protocol agnostic explicit context object that is merged w
 
 > **currentClient**: [`CurrentClient`](CurrentClient.md)
 
-Defined in: src/graphql/context.ts:42
+Defined in: [src/graphql/context.ts:42](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L42)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: src/graphql/context.ts:42
 
 > **drizzleClient**: `FastifyInstance`\[`"drizzleClient"`\]
 
-Defined in: src/graphql/context.ts:43
+Defined in: [src/graphql/context.ts:43](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L43)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: src/graphql/context.ts:43
 
 > **envConfig**: `Pick`\<`FastifyInstance`\[`"envConfig"`\], `"API_BASE_URL"` \| `"FRONTEND_URL"`\>
 
-Defined in: src/graphql/context.ts:44
+Defined in: [src/graphql/context.ts:44](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L44)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: src/graphql/context.ts:44
 
 > **jwt**: `object`
 
-Defined in: src/graphql/context.ts:48
+Defined in: [src/graphql/context.ts:48](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L48)
 
 #### sign()
 
@@ -62,7 +62,7 @@ Defined in: src/graphql/context.ts:48
 
 > **log**: `FastifyInstance`\[`"log"`\]
 
-Defined in: src/graphql/context.ts:51
+Defined in: [src/graphql/context.ts:51](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L51)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: src/graphql/context.ts:51
 
 > **minio**: `FastifyInstance`\[`"minio"`\]
 
-Defined in: src/graphql/context.ts:52
+Defined in: [src/graphql/context.ts:52](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L52)
 
 ***
 
@@ -78,7 +78,7 @@ Defined in: src/graphql/context.ts:52
 
 > `optional` **notification**: `object`
 
-Defined in: src/graphql/context.ts:57
+Defined in: [src/graphql/context.ts:57](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/context.ts#L57)
 
 Per-request notification helper. Implementations may enqueue notifications
 for delivery and support flush() to perform delivery after transaction commit.

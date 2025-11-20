@@ -4,7 +4,7 @@
 
 # Interface: IWebhookExtension
 
-Defined in: src/plugin/types.ts:61
+Defined in: [src/plugin/types.ts:61](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L61)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/plugin/types.ts:61
 
 > `optional` **description**: `string`
 
-Defined in: src/plugin/types.ts:65
+Defined in: [src/plugin/types.ts:65](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L65)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/plugin/types.ts:65
 
 > **handler**: `string`
 
-Defined in: src/plugin/types.ts:63
+Defined in: [src/plugin/types.ts:63](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L63)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: src/plugin/types.ts:63
 
 > `optional` **method**: `"DELETE"` \| `"GET"` \| `"PATCH"` \| `"POST"` \| `"PUT"`
 
-Defined in: src/plugin/types.ts:64
+Defined in: [src/plugin/types.ts:64](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L64)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: src/plugin/types.ts:64
 
 > **path**: `string`
 
-Defined in: src/plugin/types.ts:62
+Defined in: [src/plugin/types.ts:62](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L62)

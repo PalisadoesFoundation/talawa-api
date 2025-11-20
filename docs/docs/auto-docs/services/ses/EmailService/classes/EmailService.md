@@ -4,7 +4,7 @@
 
 # Class: EmailService
 
-Defined in: src/services/ses/EmailService.ts:34
+Defined in: [src/services/ses/EmailService.ts:34](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L34)
 
 Simple email service using AWS SES
 
@@ -14,7 +14,7 @@ Simple email service using AWS SES
 
 > **new EmailService**(`config`): `EmailService`
 
-Defined in: src/services/ses/EmailService.ts:41
+Defined in: [src/services/ses/EmailService.ts:41](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L41)
 
 #### Parameters
 
@@ -32,7 +32,7 @@ Defined in: src/services/ses/EmailService.ts:41
 
 > **sendBulkEmails**(`jobs`): `Promise`\<[`EmailResult`](../interfaces/EmailResult.md)[]\>
 
-Defined in: src/services/ses/EmailService.ts:107
+Defined in: [src/services/ses/EmailService.ts:107](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L107)
 
 Send multiple emails
 
@@ -52,7 +52,7 @@ Send multiple emails
 
 > **sendEmail**(`job`): `Promise`\<[`EmailResult`](../interfaces/EmailResult.md)\>
 
-Defined in: src/services/ses/EmailService.ts:74
+Defined in: [src/services/ses/EmailService.ts:74](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/services/ses/EmailService.ts#L74)
 
 Send a single email using AWS SES
 

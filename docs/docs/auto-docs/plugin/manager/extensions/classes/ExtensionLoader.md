@@ -4,7 +4,7 @@
 
 # Class: ExtensionLoader
 
-Defined in: src/plugin/manager/extensions.ts:21
+Defined in: [src/plugin/manager/extensions.ts:21](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/extensions.ts#L21)
 
 ## Constructors
 
@@ -12,7 +12,7 @@ Defined in: src/plugin/manager/extensions.ts:21
 
 > **new ExtensionLoader**(`pluginsDirectory`, `loadedPlugins`, `extensionRegistry`): `ExtensionLoader`
 
-Defined in: src/plugin/manager/extensions.ts:22
+Defined in: [src/plugin/manager/extensions.ts:22](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/extensions.ts#L22)
 
 #### Parameters
 
@@ -38,7 +38,7 @@ Defined in: src/plugin/manager/extensions.ts:22
 
 > **loadExtensionPoints**(`pluginId`, `manifest`, `pluginModule`): `Promise`\<`void`\>
 
-Defined in: src/plugin/manager/extensions.ts:31
+Defined in: [src/plugin/manager/extensions.ts:31](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/manager/extensions.ts#L31)
 
 Load extension points for a plugin
 

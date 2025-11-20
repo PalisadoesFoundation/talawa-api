@@ -4,7 +4,7 @@
 
 # Interface: DiscoveredWorkload
 
-Defined in: src/workers/eventGeneration/jobDiscovery.ts:25
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:25](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L25)
 
 ## Description
 
@@ -17,7 +17,7 @@ recurring events that require EventGeneration.
 
 > **estimatedDurationMs**: `number`
 
-Defined in: src/workers/eventGeneration/jobDiscovery.ts:37
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:37](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L37)
 
 ***
 
@@ -25,7 +25,7 @@ Defined in: src/workers/eventGeneration/jobDiscovery.ts:37
 
 > **organizationId**: `string`
 
-Defined in: src/workers/eventGeneration/jobDiscovery.ts:26
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:26](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L26)
 
 ***
 
@@ -33,7 +33,7 @@ Defined in: src/workers/eventGeneration/jobDiscovery.ts:26
 
 > **priority**: `number`
 
-Defined in: src/workers/eventGeneration/jobDiscovery.ts:36
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:36](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L36)
 
 ***
 
@@ -41,7 +41,7 @@ Defined in: src/workers/eventGeneration/jobDiscovery.ts:36
 
 > **recurringEvents**: `object`[]
 
-Defined in: src/workers/eventGeneration/jobDiscovery.ts:28
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:28](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L28)
 
 #### estimatedInstances
 
@@ -145,7 +145,7 @@ Defined in: src/workers/eventGeneration/jobDiscovery.ts:28
 
 > **windowConfig**: `object`
 
-Defined in: src/workers/eventGeneration/jobDiscovery.ts:27
+Defined in: [src/workers/eventGeneration/jobDiscovery.ts:27](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/workers/eventGeneration/jobDiscovery.ts#L27)
 
 #### configurationNotes
 

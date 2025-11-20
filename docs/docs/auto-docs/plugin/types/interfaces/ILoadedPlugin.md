@@ -4,7 +4,7 @@
 
 # Interface: ILoadedPlugin
 
-Defined in: src/plugin/types.ts:69
+Defined in: [src/plugin/types.ts:69](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L69)
 
 ## Properties
 
@@ -12,7 +12,7 @@ Defined in: src/plugin/types.ts:69
 
 > **databaseTables**: `Record`\<`string`, `Record`\<`string`, `unknown`\>\>
 
-Defined in: src/plugin/types.ts:73
+Defined in: [src/plugin/types.ts:73](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L73)
 
 ***
 
@@ -20,7 +20,7 @@ Defined in: src/plugin/types.ts:73
 
 > `optional` **errorMessage**: `string`
 
-Defined in: src/plugin/types.ts:80
+Defined in: [src/plugin/types.ts:80](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L80)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: src/plugin/types.ts:80
 
 > **graphqlResolvers**: `Record`\<`string`, `unknown`\>
 
-Defined in: src/plugin/types.ts:72
+Defined in: [src/plugin/types.ts:72](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L72)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: src/plugin/types.ts:72
 
 > **hooks**: `Record`\<`string`, (...`args`) => `unknown`\>
 
-Defined in: src/plugin/types.ts:74
+Defined in: [src/plugin/types.ts:74](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L74)
 
 ***
 
@@ -44,7 +44,7 @@ Defined in: src/plugin/types.ts:74
 
 > **id**: `string`
 
-Defined in: src/plugin/types.ts:70
+Defined in: [src/plugin/types.ts:70](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L70)
 
 ***
 
@@ -52,7 +52,7 @@ Defined in: src/plugin/types.ts:70
 
 > **manifest**: [`IPluginManifest`](IPluginManifest.md)
 
-Defined in: src/plugin/types.ts:71
+Defined in: [src/plugin/types.ts:71](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L71)
 
 ***
 
@@ -60,7 +60,7 @@ Defined in: src/plugin/types.ts:71
 
 > **status**: [`PluginStatus`](../enumerations/PluginStatus.md)
 
-Defined in: src/plugin/types.ts:79
+Defined in: [src/plugin/types.ts:79](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L79)
 
 ***
 
@@ -68,4 +68,4 @@ Defined in: src/plugin/types.ts:79
 
 > **webhooks**: `Record`\<`string`, (`request`, `reply`) => `Promise`\<`unknown`\>\>
 
-Defined in: src/plugin/types.ts:75
+Defined in: [src/plugin/types.ts:75](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/plugin/types.ts#L75)
