@@ -114,6 +114,9 @@ importers:
       '@biomejs/biome':
         specifier: ^1.9.4
         version: 1.9.4
+      '@docusaurus/tsconfig':
+        specifier: ^3.9.2
+        version: 3.9.2
       '@faker-js/faker':
         specifier: ^9.4.0
         version: 9.9.0
@@ -394,6 +397,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@docusaurus/tsconfig@3.9.2':
+    resolution: {integrity: sha512-j6/Fp4Rlpxsc632cnRnl5HpOWeb6ZKssDj6/XzzAzVGXXfm9Eptx3rxCC+fDzySn9fHTS+CWJjPineCR1bB5WQ==}
   '@borewit/text-codec@0.1.1':
     resolution: {integrity: sha512-5L/uBxmjaCIX5h8Z+uu+kA9BQLkc/Wl06UGR5ajNRxu+/XjonB5i8JpgFMrPj3LXTCPA0pv8yxUvbUi+QthGGA==}
 
@@ -4233,6 +4238,7 @@ snapshots:
   '@biomejs/cli-win32-x64@1.9.4':
     optional: true
 
+  '@docusaurus/tsconfig@3.9.2': {}
   '@borewit/text-codec@0.1.1': {}
 
   '@drizzle-team/brocli@0.10.2': {}

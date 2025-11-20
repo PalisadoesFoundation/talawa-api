@@ -258,13 +258,33 @@ You must have basic competence and experience in the following technologies to b
 1. Unix based operating systems like linux based distributions, macOS or windows subsystem for linux.
 2. Git
 3. Github
-4. Docker
+4. Docker [rootless mode](https://docs.docker.com/engine/security/rootless/)
 5. Docker compose
 6. Visual studio code with devcontainers
 7. Typescript
 8. Node.js
 
 It is very important that you go through [this](https://code.visualstudio.com/docs/devcontainers/containers) official documentation for working with devcontainers in visual studio code.
+
+## Rootless Docker
+
+Docker by default is installed with a daemon which runs with root. This is not ideal, since any containers which is started by this daemon is also root. This does not follow the [princible of least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege). Instead it is recommended to use [Rootless Docker](https://docs.docker.com/engine/security/rootless/) instead runs as the current user and reduces the attack vector.
+
+
+### Limitations:
+
+Since rootless docker is unable to bind to ports > 1024, caddy instead binds to 8080 and 8443 as defined in envFiles/.env.rootles.devcontainer by default
+
+
+### Important:
+* DO NOT RUN AS ROOT. Ensure that your user is a non-root user, run `id` this should return a pid which is >= 1000, if your user is in the docker group, remove it.
+* Unless specified any commands in this document is to be run without sudo as a non-root user
+* Ensure that `systemctl status docker` is inactive
+* Ensure that `systemctl --user status docker` is active
+* To start docker in rootless mode run `systemctl --user start docker`
+
+### Running the docker daemon as root
+This is not recommended for security reasons. Altough it is still possbile by utilizing "devcontainer" files instead of the "rootless.devcontainer", substitute where applicable
 
 ### Setup: Instructional Video
 
@@ -292,7 +312,7 @@ These steps are specific to Linux. You will need to modify them accordingly for 
 1. Create the `.env` file by copying the template from the `envFiles/` directory.
    1. **DO NOT EDIT EITHER FILE!**
       ```bash
-      cp envFiles/.env.devcontainer .env
+      cp envFiles/.env.rootless.devcontainer .env
       ```
 1. Install Node.js
    1. Linux
@@ -312,14 +332,6 @@ These steps are specific to Linux. You will need to modify them accordingly for 
 1. Install the `devcontainers/cli` package
    ```
    pnpm install -g @devcontainers/cli
-   ```
-1. You will now need to make your user a part of the `docker` operating system group or else you will get `permission denied` messages when starting docker later. `$USER` is a universal representation of your username. You don't need to change this in the command below.
-   ```
-   sudo usermod -a -G docker $USER
-   ```
-1. You will only become a part of the `docker` group on your next login. You don't have to logout, just start another session on the CLI using the `su` command.
-   ```
-   sudo su $USER -
    ```
 1. Build the docker devcontainer
 
@@ -353,17 +365,26 @@ All done!
 
 After a successful installation, use these commands to start the dev container.
 
+Check if the container is running `docker ps`
+If the container is already running:
 1. To run in attached Mode
-
    ```
    docker exec talawa-api-1 /bin/bash -c 'pnpm run start_development_server'
    ```
-
 2. To run in detached Mode
-
    ```
    docker exec talawa-api-1 /bin/bash -c 'nohup pnpm run start_development_server > /dev/null 2>&1 &'
    ```
+If the container is not running:
+
+1. To run in attached Mode
+    ```
+    docker compose --project-name talawa -f compose.yaml -f docker/compose.testing.yaml -f docker/compose.rootless.devcontainer.yaml up --build
+    ```
+2. To run in detached Mode
+    ```
+    docker compose --project-name talawa -f compose.yaml -f docker/compose.testing.yaml -f docker/compose.rootless.devcontainer.yaml up --build -d
+    ```
 
 #### CLI Shutdown (Development)
 
@@ -372,6 +393,7 @@ Use the command `docker compose` command to cleanly shut down the dev container
 ```
 docker compose down
 ```
+
 
 #### Importing Sample Data
 
