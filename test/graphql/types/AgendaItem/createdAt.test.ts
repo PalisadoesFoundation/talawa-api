@@ -60,7 +60,6 @@ async function createOrgEventFolderAndAgendaItem(
 ): Promise<{
 	orgId: string;
 	eventId: string;
-	folderId: string;
 	agendaItemId: string;
 }> {
 	const orgResult = await mercuriusClient.mutate(Mutation_createOrganization, {
@@ -151,7 +150,7 @@ async function createOrgEventFolderAndAgendaItem(
 
 	const agendaItemId = agendaItemResult.data.createAgendaItem.id as string;
 
-	return { orgId, eventId, folderId, agendaItemId };
+	return { orgId, eventId, agendaItemId };
 }
 
 async function cleanup(
