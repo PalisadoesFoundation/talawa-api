@@ -583,7 +583,7 @@ describe("AgendaItem.createdAt resolver - Unit branch coverage", () => {
 		expect(result).toEqual(mockParent.createdAt);
 	});
 
-	it("should verify security where clause filters by currentUserId", async () => {
+	it("should verify both top-level and nested where clauses", async () => {
 		const { context, mocks } = createMockGraphQLContext(true, "user-123");
 		const resolver = createResolver();
 
@@ -592,12 +592,40 @@ describe("AgendaItem.createdAt resolver - Unit branch coverage", () => {
 			role: "member",
 		} as never);
 
-		// Mock the agendaFoldersTable.findFirst to verify the where clause
+		// Mock the agendaFoldersTable.findFirst to verify both where clauses
 		(
 			mocks.drizzleClient.query.agendaFoldersTable.findFirst as ReturnType<
 				typeof vi.fn
 			>
-		).mockImplementation(({ with: withClause }) => {
+		).mockImplementation(({ where: topLevelWhere, with: withClause }) => {
+			// Verify top-level where clause (correctness-critical)
+			expect(topLevelWhere).toBeDefined();
+
+			// Create mock fields and operators to test the top-level where clause
+			const mockTopLevelFields = {
+				id: "test-folder-id-field",
+			};
+			const mockTopLevelOperators = {
+				eq: vi.fn((field, value) => ({ field, value })),
+			};
+
+			// Call the top-level where clause function
+			const topLevelWhereResult = topLevelWhere(
+				mockTopLevelFields,
+				mockTopLevelOperators,
+			);
+
+			// Verify that the top-level where clause is filtering by parent.folderId
+			expect(mockTopLevelOperators.eq).toHaveBeenCalledWith(
+				mockTopLevelFields.id,
+				mockParent.folderId,
+			);
+			expect(topLevelWhereResult).toEqual({
+				field: "test-folder-id-field",
+				value: mockParent.folderId,
+			});
+
+			// Verify nested where clause (security-critical)
 			expect(withClause).toBeDefined();
 			expect(withClause.event).toBeDefined();
 			expect(withClause.event.with).toBeDefined();
@@ -607,27 +635,27 @@ describe("AgendaItem.createdAt resolver - Unit branch coverage", () => {
 				withClause.event.with.organization.with.membershipsWhereOrganization,
 			).toBeDefined();
 
-			// Create mock fields and operators to test the where clause
-			const mockFields = {
+			// Create mock fields and operators to test the nested where clause
+			const mockNestedFields = {
 				memberId: "test-member-field",
 			};
-			const mockOperators = {
+			const mockNestedOperators = {
 				eq: vi.fn((field, value) => ({ field, value })),
 			};
 
-			// Call the where clause function
-			const whereResult =
+			// Call the nested where clause function
+			const nestedWhereResult =
 				withClause.event.with.organization.with.membershipsWhereOrganization.where(
-					mockFields,
-					mockOperators,
+					mockNestedFields,
+					mockNestedOperators,
 				);
 
-			// Verify that the where clause is filtering by the current user ID
-			expect(mockOperators.eq).toHaveBeenCalledWith(
-				mockFields.memberId,
+			// Verify that the nested where clause is filtering by the current user ID
+			expect(mockNestedOperators.eq).toHaveBeenCalledWith(
+				mockNestedFields.memberId,
 				"user-123",
 			);
-			expect(whereResult).toEqual({
+			expect(nestedWhereResult).toEqual({
 				field: "test-member-field",
 				value: "user-123",
 			});
