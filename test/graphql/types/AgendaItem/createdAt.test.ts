@@ -162,8 +162,6 @@ async function cleanup(
 	}: {
 		orgId: string;
 		eventId: string;
-		folderId?: string;
-		agendaItemId?: string;
 	},
 ) {
 	try {
@@ -188,7 +186,7 @@ describe("AgendaItem.createdAt resolver - Integration", () => {
 	// by calling the createdAt field resolver without authentication
 	it("should return unauthenticated error when client is not authenticated", async () => {
 		const adminAuth = await getAdminAuth();
-		const { orgId, eventId, folderId, agendaItemId } =
+		const { orgId, eventId, agendaItemId } =
 			await createOrgEventFolderAndAgendaItem(
 				adminAuth.token,
 				adminAuth.userId,
@@ -209,15 +207,13 @@ describe("AgendaItem.createdAt resolver - Integration", () => {
 			await cleanup(adminAuth.token, {
 				orgId,
 				eventId,
-				folderId,
-				agendaItemId,
 			});
 		}
 	});
 
 	it("should return createdAt when user is authenticated as administrator", async () => {
 		const adminAuth = await getAdminAuth();
-		const { orgId, eventId, folderId, agendaItemId } =
+		const { orgId, eventId, agendaItemId } =
 			await createOrgEventFolderAndAgendaItem(
 				adminAuth.token,
 				adminAuth.userId,
@@ -238,8 +234,6 @@ describe("AgendaItem.createdAt resolver - Integration", () => {
 			await cleanup(adminAuth.token, {
 				orgId,
 				eventId,
-				folderId,
-				agendaItemId,
 			});
 		}
 	});
@@ -248,7 +242,7 @@ describe("AgendaItem.createdAt resolver - Integration", () => {
 	// Tests the case where a regular user (not admin) tries to access createdAt
 	it("should return unauthorized_action error when non-admin user tries to access createdAt", async () => {
 		const adminAuth = await getAdminAuth();
-		const { orgId, eventId, folderId, agendaItemId } =
+		const { orgId, eventId, agendaItemId } =
 			await createOrgEventFolderAndAgendaItem(
 				adminAuth.token,
 				adminAuth.userId,
@@ -319,8 +313,6 @@ describe("AgendaItem.createdAt resolver - Integration", () => {
 			await cleanup(adminAuth.token, {
 				orgId,
 				eventId,
-				folderId,
-				agendaItemId,
 			});
 		}
 	});
@@ -585,6 +577,69 @@ describe("AgendaItem.createdAt resolver - Unit branch coverage", () => {
 				},
 			} as never,
 		);
+
+		const result = await resolver(mockParent, {}, context);
+
+		expect(result).toEqual(mockParent.createdAt);
+	});
+
+	it("should verify security where clause filters by currentUserId", async () => {
+		const { context, mocks } = createMockGraphQLContext(true, "user-123");
+		const resolver = createResolver();
+
+		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
+			id: "user-123",
+			role: "member",
+		} as never);
+
+		// Mock the agendaFoldersTable.findFirst to verify the where clause
+		(
+			mocks.drizzleClient.query.agendaFoldersTable.findFirst as ReturnType<
+				typeof vi.fn
+			>
+		).mockImplementation(({ with: withClause }) => {
+			expect(withClause).toBeDefined();
+			expect(withClause.event).toBeDefined();
+			expect(withClause.event.with).toBeDefined();
+			expect(withClause.event.with.organization).toBeDefined();
+			expect(withClause.event.with.organization.with).toBeDefined();
+			expect(
+				withClause.event.with.organization.with.membershipsWhereOrganization,
+			).toBeDefined();
+
+			// Create mock fields and operators to test the where clause
+			const mockFields = {
+				memberId: "test-member-field",
+			};
+			const mockOperators = {
+				eq: vi.fn((field, value) => ({ field, value })),
+			};
+
+			// Call the where clause function
+			const whereResult =
+				withClause.event.with.organization.with.membershipsWhereOrganization.where(
+					mockFields,
+					mockOperators,
+				);
+
+			// Verify that the where clause is filtering by the current user ID
+			expect(mockOperators.eq).toHaveBeenCalledWith(
+				mockFields.memberId,
+				"user-123",
+			);
+			expect(whereResult).toEqual({
+				field: "test-member-field",
+				value: "user-123",
+			});
+
+			return Promise.resolve({
+				event: {
+					organization: {
+						membershipsWhereOrganization: [{ role: "administrator" }],
+					},
+				},
+			});
+		});
 
 		const result = await resolver(mockParent, {}, context);
 
