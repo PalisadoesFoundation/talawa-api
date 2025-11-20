@@ -238,7 +238,7 @@ describe("AgendaItem.createdAt resolver - Integration", () => {
 	});
 
 	// This test covers the authorization check block in the actual source file
-	// Tests the case where a regular user (not admin) tries to access createdAt
+	// Tests the case where a regular user (not admin) user tries to access createdAt
 	it("should return unauthorized_action error when non-admin user tries to access createdAt", async () => {
 		const adminAuth = await getAdminAuth();
 		const { orgId, eventId, agendaItemId } =
