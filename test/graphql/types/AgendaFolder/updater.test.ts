@@ -16,7 +16,7 @@ import {
 	Mutation_createOrganizationMembership,
 	Mutation_deleteOrganization,
 	Mutation_deleteStandaloneEvent,
-	Mutation_updateAgendaFolder,
+	Mutation_deleteUser,
 	Query_signIn,
 } from "../documentNodes";
 import type { introspection } from "../gql.tada";
@@ -25,6 +25,21 @@ const gql = initGraphQLTada<{
 	introspection: introspection;
 	scalars: ClientCustomScalars;
 }>();
+
+// mutation to update an agenda folder
+const Mutation_updateAgendaFolder = gql(`
+  mutation Mutation_updateAgendaFolder($input: MutationUpdateAgendaFolderInput!) {
+    updateAgendaFolder(input: $input) {
+      id
+      name
+      updater {
+        id
+        name
+        role
+      }
+    }
+  }
+`);
 
 // GraphQL query to test AgendaFolder.updater field
 const Query_agendaFolder_updater = gql(`
@@ -59,7 +74,11 @@ async function getAdminAuth(): Promise<AdminAuth> {
 	};
 }
 
-async function createRegularUser(): Promise<{ token: string; userId: string }> {
+async function createRegularUser(): Promise<{
+	token: string;
+	userId: string;
+	tempOrgId: string;
+}> {
 	const emailAddress = `test-${faker.string.uuid()}@example.com`;
 	const password = faker.internet.password();
 
@@ -107,7 +126,26 @@ async function createRegularUser(): Promise<{ token: string; userId: string }> {
 	return {
 		token: registerResult.data.signUp.authenticationToken,
 		userId: registerResult.data.signUp.user.id,
+		tempOrgId,
 	};
+}
+
+async function cleanupRegularUser(
+	adminToken: string,
+	{ userId, tempOrgId }: { userId: string; tempOrgId: string },
+) {
+	try {
+		await mercuriusClient.mutate(Mutation_deleteUser, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { id: userId } },
+		});
+	} catch {}
+	try {
+		await mercuriusClient.mutate(Mutation_deleteOrganization, {
+			headers: { authorization: `bearer ${adminToken}` },
+			variables: { input: { id: tempOrgId } },
+		});
+	} catch {}
 }
 
 async function createOrgEventFolder(
@@ -246,9 +284,12 @@ describe("AgendaFolder.updater resolver - Integration tests", () => {
 				);
 			} finally {
 				await cleanup(adminAuth.token, { orgId, eventId, folderId });
+				await cleanupRegularUser(adminAuth.token, {
+					userId: regularUser.userId,
+					tempOrgId: regularUser.tempOrgId,
+				});
 			}
 		});
-
 		it("should return updater when user is a super administrator", async () => {
 			const adminAuth = await getAdminAuth();
 			const { orgId, eventId, folderId } = await createOrgEventFolder(
@@ -318,9 +359,12 @@ describe("AgendaFolder.updater resolver - Integration tests", () => {
 				expect(result.data?.agendaFolder?.updater).toBeNull();
 			} finally {
 				await cleanup(adminAuth.token, { orgId, eventId, folderId });
+				await cleanupRegularUser(adminAuth.token, {
+					userId: regularUser.userId,
+					tempOrgId: regularUser.tempOrgId,
+				});
 			}
 		});
-
 		it("should return different user as updater when folder was updated by another user", async () => {
 			// Create two users - admin (creator) and regular user (updater)
 			const adminAuth = await getAdminAuth();
@@ -381,6 +425,10 @@ describe("AgendaFolder.updater resolver - Integration tests", () => {
 				expect(result.data?.agendaFolder?.updater?.name).toBe("Regular User");
 			} finally {
 				await cleanup(adminAuth.token, { orgId, eventId, folderId });
+				await cleanupRegularUser(adminAuth.token, {
+					userId: regularUser.userId,
+					tempOrgId: regularUser.tempOrgId,
+				});
 			}
 		});
 	});

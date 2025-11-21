@@ -713,20 +713,6 @@ export const Mutation_updateAgendaItem = gql(`
   }
 `);
 
-export const Mutation_updateAgendaFolder = gql(`
-  mutation Mutation_updateAgendaFolder($input: MutationUpdateAgendaFolderInput!) {
-    updateAgendaFolder(input: $input) {
-      id
-      name
-      updater {
-        id
-        name
-        role
-      }
-    }
-  }
-`);
-
 export const Mutation_deleteAgendaItem = gql(`
   mutation Mutation_deleteAgendaItem($input: MutationDeleteAgendaItemInput!) {
     deleteAgendaItem(input: $input) {
