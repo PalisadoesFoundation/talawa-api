@@ -3,7 +3,7 @@ import { initGraphQLTada } from "gql.tada";
 import { describe, expect, it, vi } from "vitest";
 import type { ClientCustomScalars } from "~/src/graphql/scalars/index";
 import type { AgendaFolder } from "~/src/graphql/types/AgendaFolder/AgendaFolder";
-import "~/src/graphql/types/AgendaFolder/updater";
+import { resolveUpdater } from "~/src/graphql/types/AgendaFolder/updater";
 import { TalawaGraphQLError } from "~/src/utilities/TalawaGraphQLError";
 import { createMockGraphQLContext } from "../../../_Mocks_/mockContextCreator/mockContextCreator";
 import { assertToBeNonNullish } from "../../../helpers";
@@ -215,7 +215,7 @@ async function createOrgEventFolder(
 
 async function cleanup(
 	authToken: string,
-	{ orgId, eventId }: { orgId: string; eventId: string; folderId?: string },
+	{ orgId, eventId }: { orgId: string; eventId: string },
 ) {
 	try {
 		await mercuriusClient.mutate(Mutation_deleteStandaloneEvent, {
@@ -253,7 +253,7 @@ describe("AgendaFolder.updater resolver - Integration tests", () => {
 				expect(result.errors).toBeDefined();
 				expect(result.errors?.[0]?.extensions?.code).toBe("unauthenticated");
 			} finally {
-				await cleanup(adminAuth.token, { orgId, eventId, folderId });
+				await cleanup(adminAuth.token, { orgId, eventId });
 			}
 		});
 
@@ -283,7 +283,7 @@ describe("AgendaFolder.updater resolver - Integration tests", () => {
 					"unauthorized_action_on_arguments_associated_resources",
 				);
 			} finally {
-				await cleanup(adminAuth.token, { orgId, eventId, folderId });
+				await cleanup(adminAuth.token, { orgId, eventId });
 				await cleanupRegularUser(adminAuth.token, {
 					userId: regularUser.userId,
 					tempOrgId: regularUser.tempOrgId,
@@ -314,7 +314,7 @@ describe("AgendaFolder.updater resolver - Integration tests", () => {
 				// The updater should be null for newly created folders (updaterId is not set on creation)
 				expect(result.data?.agendaFolder?.updater).toBeNull();
 			} finally {
-				await cleanup(adminAuth.token, { orgId, eventId, folderId });
+				await cleanup(adminAuth.token, { orgId, eventId });
 			}
 		});
 
@@ -358,7 +358,7 @@ describe("AgendaFolder.updater resolver - Integration tests", () => {
 				// The updater should be null for newly created folders (updaterId is not set on creation)
 				expect(result.data?.agendaFolder?.updater).toBeNull();
 			} finally {
-				await cleanup(adminAuth.token, { orgId, eventId, folderId });
+				await cleanup(adminAuth.token, { orgId, eventId });
 				await cleanupRegularUser(adminAuth.token, {
 					userId: regularUser.userId,
 					tempOrgId: regularUser.tempOrgId,
@@ -424,7 +424,7 @@ describe("AgendaFolder.updater resolver - Integration tests", () => {
 				expect(result.data?.agendaFolder?.updater?.id).toBe(regularUser.userId);
 				expect(result.data?.agendaFolder?.updater?.name).toBe("Regular User");
 			} finally {
-				await cleanup(adminAuth.token, { orgId, eventId, folderId });
+				await cleanup(adminAuth.token, { orgId, eventId });
 				await cleanupRegularUser(adminAuth.token, {
 					userId: regularUser.userId,
 					tempOrgId: regularUser.tempOrgId,
@@ -448,123 +448,10 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 		isAgendaItemFolder: true,
 	};
 
-	// Helper to create the resolver function that matches the actual implementation
-	const createResolver = () => {
-		return async (
-			parent: AgendaFolder,
-			_args: unknown,
-			ctx: ReturnType<typeof createMockGraphQLContext>["context"],
-		) => {
-			if (!ctx.currentClient.isAuthenticated) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
-
-			const currentUserId = ctx.currentClient.user.id;
-
-			const [currentUser, existingEvent] = await Promise.all([
-				ctx.drizzleClient.query.usersTable.findFirst({
-					where: (fields, operators) => operators.eq(fields.id, currentUserId),
-				}),
-				ctx.drizzleClient.query.eventsTable.findFirst({
-					columns: {
-						startAt: true,
-					},
-					where: (fields, operators) => operators.eq(fields.id, parent.eventId),
-					with: {
-						organization: {
-							columns: {
-								countryCode: true,
-							},
-							with: {
-								membershipsWhereOrganization: {
-									columns: {
-										role: true,
-									},
-									where: (fields, operators) =>
-										operators.eq(fields.memberId, currentUserId),
-								},
-							},
-						},
-					},
-				}),
-			]);
-
-			if (currentUser === undefined) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthenticated",
-					},
-				});
-			}
-
-			// Event id existing but the associated event not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
-			if (existingEvent === undefined) {
-				ctx.log.error(
-					"Postgres select operation returned an empty array for an agenda folder's event id that isn't null.",
-				);
-
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-				});
-			}
-
-			const currentUserOrganizationMembership =
-				existingEvent.organization.membershipsWhereOrganization?.[0];
-
-			if (
-				currentUser.role !== "administrator" &&
-				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
-			) {
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unauthorized_action",
-					},
-				});
-			}
-
-			if (parent.updaterId === null) {
-				return null;
-			}
-
-			if (parent.updaterId === currentUserId) {
-				return currentUser;
-			}
-
-			const updaterId = parent.updaterId;
-
-			const existingUser = await ctx.drizzleClient.query.usersTable.findFirst({
-				where: (fields, operators) => operators.eq(fields.id, updaterId),
-			});
-
-			// Updater id existing but the associated user not existing is a business logic error and probably means that the corresponding data in the database is in a corrupted state. It must be investigated and fixed as soon as possible to prevent additional data corruption.
-			if (existingUser === undefined) {
-				ctx.log.error(
-					"Postgres select operation returned an empty array for an agenda folder's updater id that isn't null.",
-				);
-
-				throw new TalawaGraphQLError({
-					extensions: {
-						code: "unexpected",
-					},
-				});
-			}
-
-			return existingUser;
-		};
-	};
-
 	it("should throw unauthenticated error when client is not authenticated", async () => {
 		const { context: mockContext } = createMockGraphQLContext(false);
-		const resolver = createResolver();
 
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdater(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unauthenticated",
@@ -594,9 +481,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			},
 		} as never);
 
-		const resolver = createResolver();
-
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdater(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unauthenticated",
@@ -631,9 +516,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			error: mockLogError,
 		};
 
-		const resolver = createResolver();
-
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdater(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unexpected",
@@ -668,9 +551,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			},
 		} as never);
 
-		const resolver = createResolver();
-
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdater(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unauthorized_action",
@@ -705,9 +586,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			},
 		} as never);
 
-		const resolver = createResolver();
-
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdater(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unauthorized_action",
@@ -716,31 +595,29 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 		);
 	});
 
-	it("should throw unauthorized_action error when organization membership is undefined", async () => {
+	it("should throw unauthorized_action error when user is not a member of the organization", async () => {
 		const { context: mockContext, mocks } = createMockGraphQLContext(
 			true,
 			"user-123",
 		);
 
-		// Mock regular user found
+		// Mock regular user found (not a global admin)
 		mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValueOnce({
 			id: "user-123",
 			role: "member",
 		} as never);
 
-		// Mock event found with undefined memberships
+		// Mock event found with empty memberships array (user is not a member)
 		mocks.drizzleClient.query.eventsTable.findFirst.mockResolvedValueOnce({
 			id: "event-123",
 			startAt: new Date("2024-01-15T10:00:00.000Z"),
 			organization: {
 				countryCode: "US",
-				membershipsWhereOrganization: undefined,
+				membershipsWhereOrganization: [], // Empty array = user is not a member
 			},
 		} as never);
 
-		const resolver = createResolver();
-
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdater(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unauthorized_action",
@@ -776,8 +653,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			},
 		} as never);
 
-		const resolver = createResolver();
-		const result = await resolver(parentWithNullUpdater, {}, mockContext);
+		const result = await resolveUpdater(parentWithNullUpdater, {}, mockContext);
 
 		expect(result).toBeNull();
 		expect(
@@ -817,8 +693,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			},
 		} as never);
 
-		const resolver = createResolver();
-		const result = await resolver(
+		const result = await resolveUpdater(
 			parentWithCurrentUserAsUpdater,
 			{},
 			mockContext,
@@ -863,8 +738,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			},
 		} as never);
 
-		const resolver = createResolver();
-		const result = await resolver(mockParent, {}, mockContext);
+		const result = await resolveUpdater(mockParent, {}, mockContext);
 
 		expect(result).toEqual(updaterUser);
 		expect(
@@ -905,9 +779,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			error: mockLogError,
 		};
 
-		const resolver = createResolver();
-
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdater(mockParent, {}, mockContext)).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
 					code: "unexpected",
@@ -955,8 +827,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			},
 		} as never);
 
-		const resolver = createResolver();
-		const result = await resolver(mockParent, {}, mockContext);
+		const result = await resolveUpdater(mockParent, {}, mockContext);
 
 		expect(result).toEqual(updaterUser);
 	});
@@ -991,8 +862,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			},
 		} as never);
 
-		const resolver = createResolver();
-		const result = await resolver(mockParent, {}, mockContext);
+		const result = await resolveUpdater(mockParent, {}, mockContext);
 
 		expect(result).toEqual(updaterUser);
 	});
@@ -1006,9 +876,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 		const dbError = new Error("Database connection failed");
 		mocks.drizzleClient.query.usersTable.findFirst.mockRejectedValue(dbError);
 
-		const resolver = createResolver();
-
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdater(mockParent, {}, mockContext)).rejects.toThrow(
 			dbError,
 		);
 	});
@@ -1030,9 +898,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			eventError,
 		);
 
-		const resolver = createResolver();
-
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
+		await expect(resolveUpdater(mockParent, {}, mockContext)).rejects.toThrow(
 			eventError,
 		);
 	});
@@ -1073,10 +939,8 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			error: mockLogError,
 		};
 
-		const resolver = createResolver();
-
 		await expect(
-			resolver(parentWithEmptyStringUpdater, {}, mockContext),
+			resolveUpdater(parentWithEmptyStringUpdater, {}, mockContext),
 		).rejects.toThrow(
 			new TalawaGraphQLError({
 				extensions: {
@@ -1119,8 +983,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			updaterId: "user-123",
 		};
 
-		const resolver = createResolver();
-		await resolver(parentWithCurrentUserAsUpdater, {}, mockContext);
+		await resolveUpdater(parentWithCurrentUserAsUpdater, {}, mockContext);
 
 		// Verify that both queries were made in parallel
 		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalledWith(
@@ -1189,8 +1052,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			error: mockLogError,
 		};
 
-		const resolver = createResolver();
-		await resolver(mockParent, {}, mockContext);
+		await resolveUpdater(mockParent, {}, mockContext);
 
 		expect(mockLogError).not.toHaveBeenCalled();
 	});
@@ -1228,8 +1090,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			},
 		} as never);
 
-		const resolver = createResolver();
-		const result = await resolver(mockParent, {}, mockContext);
+		const result = await resolveUpdater(mockParent, {}, mockContext);
 
 		expect(result).toEqual(updaterUser);
 		expect(result).toHaveProperty("id", "user-456");
@@ -1271,8 +1132,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			},
 		} as never);
 
-		const resolver = createResolver();
-		const result = await resolver(mockParent, {}, mockContext);
+		const result = await resolveUpdater(mockParent, {}, mockContext);
 
 		expect(result).toEqual(complexUpdaterUser);
 		expect(result).toHaveProperty("customField", "custom value");
@@ -1309,8 +1169,7 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 			updaterId: "user-123",
 		};
 
-		const resolver = createResolver();
-		const result = await resolver(
+		const result = await resolveUpdater(
 			parentWithCurrentUserAsUpdater,
 			{},
 			mockContext,
