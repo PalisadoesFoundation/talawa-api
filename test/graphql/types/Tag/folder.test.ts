@@ -34,6 +34,21 @@ describe("Tag.folder resolver - unit tests", () => {
 			createdAt: new Date("2024-02-07T10:30:00.000Z"),
 			updatedAt: new Date("2024-02-07T12:00:00.000Z"),
 		};
+
+		
+        mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+            (async ({ with: withClause }: any) => {
+               if (withClause?.organizationMembershipsWhereMember?.where) {
+                   const whereCallback = withClause.organizationMembershipsWhereMember.where;
+                   const mockFields = { organizationId: "test-org-id" }; 
+                   const mockOperators = { eq: (a: any, b: any) => a === b };
+                   const result = whereCallback(mockFields, mockOperators);
+                   expect(result).toBe(mockFields.organizationId === mockTag.organizationId);
+			   }
+            return undefined;
+            }) as any,
+		);
+
 	});
 
 	describe("Authentication & Authorization", () => {
@@ -93,8 +108,15 @@ describe("Tag.folder resolver - unit tests", () => {
 			};
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.tagFoldersTable.findFirst.mockResolvedValue({  
+		       id: mockTag.folderId as string,  
+		       name: "Test Folder",  
+	        }); 
 
 			await expect(resolveFolder(mockTag, {}, ctx)).resolves.toBeDefined();
+			const result = await resolveFolder(mockTag, {}, ctx);
+			expect(result).toBeDefined(); 
+			expect(result?.id).toBe(mockTag.folderId); 
 		});
 
 		it("allows organization administrator access via membership", async () => {
@@ -107,8 +129,15 @@ describe("Tag.folder resolver - unit tests", () => {
 			};
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.tagFoldersTable.findFirst.mockResolvedValue({  
+                id: mockTag.folderId as string,  
+                name: "Test Folder",  
+            });
 
 			await expect(resolveFolder(mockTag, {}, ctx)).resolves.toBeDefined();
+			const result = await resolveFolder(mockTag, {}, ctx);  
+            expect(result).toBeDefined();  
+            expect(result?.id).toBe(mockTag.folderId);
 		});
 	});
 
