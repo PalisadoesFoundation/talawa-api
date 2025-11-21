@@ -564,13 +564,11 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 		const { context: mockContext } = createMockGraphQLContext(false);
 		const resolver = createResolver();
 
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: {
-					code: "unauthenticated",
-				},
-			}),
-		);
+		await expect(resolver(mockParent, {}, mockContext)).rejects.toMatchObject({
+			extensions: {
+				code: "unauthenticated",
+			},
+		});
 	});
 
 	it("should throw unauthenticated error when current user is not found in database", async () => {
@@ -596,13 +594,11 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 
 		const resolver = createResolver();
 
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: {
-					code: "unauthenticated",
-				},
-			}),
-		);
+		await expect(resolver(mockParent, {}, mockContext)).rejects.toMatchObject({
+			extensions: {
+				code: "unauthenticated",
+			},
+		});
 
 		expect(mocks.drizzleClient.query.usersTable.findFirst).toHaveBeenCalled();
 	});
@@ -633,13 +629,11 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 
 		const resolver = createResolver();
 
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: {
-					code: "unexpected",
-				},
-			}),
-		);
+		await expect(resolver(mockParent, {}, mockContext)).rejects.toMatchObject({
+			extensions: {
+				code: "unexpected",
+			},
+		});
 
 		expect(mockLogError).toHaveBeenCalledWith(
 			"Postgres select operation returned an empty array for an agenda folder's event id that isn't null.",
@@ -670,13 +664,11 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 
 		const resolver = createResolver();
 
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: {
-					code: "unauthorized_action",
-				},
-			}),
-		);
+		await expect(resolver(mockParent, {}, mockContext)).rejects.toMatchObject({
+			extensions: {
+				code: "unauthorized_action",
+			},
+		});
 	});
 
 	it("should throw unauthorized_action error when user has membership but is not organization admin", async () => {
@@ -707,13 +699,11 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 
 		const resolver = createResolver();
 
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: {
-					code: "unauthorized_action",
-				},
-			}),
-		);
+		await expect(resolver(mockParent, {}, mockContext)).rejects.toMatchObject({
+			extensions: {
+				code: "unauthorized_action",
+			},
+		});
 	});
 
 	it("should throw unauthorized_action error when organization membership is undefined", async () => {
@@ -740,13 +730,11 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 
 		const resolver = createResolver();
 
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: {
-					code: "unauthorized_action",
-				},
-			}),
-		);
+		await expect(resolver(mockParent, {}, mockContext)).rejects.toMatchObject({
+			extensions: {
+				code: "unauthorized_action",
+			},
+		});
 	});
 
 	it("should return null when updaterId is null", async () => {
@@ -907,13 +895,11 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 
 		const resolver = createResolver();
 
-		await expect(resolver(mockParent, {}, mockContext)).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: {
-					code: "unexpected",
-				},
-			}),
-		);
+		await expect(resolver(mockParent, {}, mockContext)).rejects.toMatchObject({
+			extensions: {
+				code: "unexpected",
+			},
+		});
 
 		expect(mockLogError).toHaveBeenCalledWith(
 			"Postgres select operation returned an empty array for an agenda folder's updater id that isn't null.",
@@ -1077,13 +1063,11 @@ describe("AgendaFolder.updater resolver - Unit tests for branch coverage", () =>
 
 		await expect(
 			resolver(parentWithEmptyStringUpdater, {}, mockContext),
-		).rejects.toThrow(
-			new TalawaGraphQLError({
-				extensions: {
-					code: "unexpected",
-				},
-			}),
-		);
+		).rejects.toMatchObject({
+			extensions: {
+				code: "unexpected",
+			},
+		});
 
 		expect(mockLogError).toHaveBeenCalledWith(
 			"Postgres select operation returned an empty array for an agenda folder's updater id that isn't null.",
