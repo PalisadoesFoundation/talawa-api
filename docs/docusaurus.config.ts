@@ -69,7 +69,7 @@ const config: Config = {
             "https://github.com/PalisadoesFoundation/talawa-api/tree/develop/docs/docs",
         },
         theme: {
-          // the custom css file is default css provided by docusaurus
+          // custom css file with project-specific styling
           customCss: require.resolve("./src/css/custom.css"),
         },
       },
