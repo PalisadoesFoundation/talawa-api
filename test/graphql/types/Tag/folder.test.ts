@@ -1,5 +1,5 @@
 import { createMockGraphQLContext } from "test/_Mocks_/mockContextCreator/mockContextCreator";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi, } from "vitest";
 import type { GraphQLContext } from "~/src/graphql/context";
 import type { Tag as TagType } from "~/src/graphql/types/Tag/Tag";
 import { resolveFolder } from "~/src/graphql/types/Tag/folder";
@@ -13,6 +13,29 @@ type MockUser = {
 		organizationId: string;
 	}>;
 };
+
+const mockTag = {
+  id: "64f1a2b3c9e8d7f6a5b4c3d2",
+  name: "General",
+  description: "General purpose tag",
+  organizationId: "64f1a2b3c9e8d7f6a5b4c3d1",
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+};
+
+function createMockFindFirstWithValidation(returnValue: any, validateWhere = true) {
+	return async ({ with: withClause }: any) => {
+		if (validateWhere && withClause?.organizationMembershipsWhereMember?.where) {
+			const whereCallback = withClause.organizationMembershipsWhereMember.where;
+			const mockFields = { organizationId: mockTag.organizationId };
+			const eqSpy = vi.fn((a: any, b: any) => a === b);
+			const mockOperators = { eq: eqSpy };
+			whereCallback(mockFields, mockOperators);
+			expect(eqSpy).toHaveBeenCalledWith(mockFields.organizationId, mockTag.organizationId);
+		}
+		return returnValue;
+	};
+}
 
 describe("Tag.folder resolver - unit tests", () => {
 	let ctx: GraphQLContext;
@@ -35,19 +58,6 @@ describe("Tag.folder resolver - unit tests", () => {
 			updatedAt: new Date("2024-02-07T12:00:00.000Z"),
 		};
 
-		
-        mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-            (async ({ with: withClause }: any) => {
-               if (withClause?.organizationMembershipsWhereMember?.where) {
-                   const whereCallback = withClause.organizationMembershipsWhereMember.where;
-                   const mockFields = { organizationId: "test-org-id" }; 
-                   const mockOperators = { eq: (a: any, b: any) => a === b };
-                   const result = whereCallback(mockFields, mockOperators);
-                   expect(result).toBe(mockFields.organizationId === mockTag.organizationId);
-			   }
-            return undefined;
-            }) as any,
-		);
 
 	});
 
@@ -77,7 +87,9 @@ describe("Tag.folder resolver - unit tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+				createMockFindFirstWithValidation(mockUserData) as any
+			);
 
 			await expect(resolveFolder(mockTag, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
@@ -93,7 +105,9 @@ describe("Tag.folder resolver - unit tests", () => {
 				],
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+				createMockFindFirstWithValidation(mockUserData) as any
+			);
 
 			await expect(resolveFolder(mockTag, {}, ctx)).rejects.toThrow(
 				new TalawaGraphQLError({ extensions: { code: "unauthorized_action" } }),
@@ -107,13 +121,14 @@ describe("Tag.folder resolver - unit tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+				createMockFindFirstWithValidation(mockUserData) as any
+			);
 			mocks.drizzleClient.query.tagFoldersTable.findFirst.mockResolvedValue({  
 		       id: mockTag.folderId as string,  
 		       name: "Test Folder",  
 	        }); 
 
-			await expect(resolveFolder(mockTag, {}, ctx)).resolves.toBeDefined();
 			const result = await resolveFolder(mockTag, {}, ctx);
 			expect(result).toBeDefined(); 
 			expect(result?.id).toBe(mockTag.folderId); 
@@ -128,7 +143,9 @@ describe("Tag.folder resolver - unit tests", () => {
 				],
 			};
 
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+				createMockFindFirstWithValidation(mockUserData) as any
+			);
 			mocks.drizzleClient.query.tagFoldersTable.findFirst.mockResolvedValue({  
                 id: mockTag.folderId as string,  
                 name: "Test Folder",  
@@ -148,7 +165,9 @@ describe("Tag.folder resolver - unit tests", () => {
 				role: "administrator",
 				organizationMembershipsWhereMember: [],
 			};
-			mocks.drizzleClient.query.usersTable.findFirst.mockResolvedValue(mockUserData);
+			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
+				createMockFindFirstWithValidation(mockUserData) as any
+			);
 
 			const parentWithNullFolder: TagType = { ...mockTag, folderId: null };
 
