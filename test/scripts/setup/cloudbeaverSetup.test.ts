@@ -1,3 +1,7 @@
+import { type MockInstance, afterEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("inquirer");
+
 import fs from "node:fs";
 import inquirer from "inquirer";
 import {
@@ -7,9 +11,6 @@ import {
 	validateCloudBeaverPassword,
 	validateCloudBeaverURL,
 } from "scripts/setup/setup";
-import { type MockInstance, afterEach, describe, expect, it, vi } from "vitest";
-
-vi.mock("inquirer");
 
 describe("Setup -> cloudbeaverSetup", () => {
 	const originalEnv = { ...process.env };

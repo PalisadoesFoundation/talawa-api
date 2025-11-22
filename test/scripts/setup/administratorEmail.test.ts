@@ -1,7 +1,3 @@
-import fs from "node:fs";
-import inquirer from "inquirer";
-import { administratorEmail, validateEmail } from "scripts/setup/setup";
-import * as SetupModule from "scripts/setup/setup";
 import {
 	type MockInstance,
 	afterEach,
@@ -13,6 +9,11 @@ import {
 } from "vitest";
 
 vi.mock("inquirer");
+
+import fs from "node:fs";
+import inquirer from "inquirer";
+import { administratorEmail, validateEmail } from "scripts/setup/setup";
+import * as SetupModule from "scripts/setup/setup";
 
 describe("Setup -> askForAdministratorEmail", () => {
 	const originalEmail = process.env.API_ADMINISTRATOR_USER_EMAIL_ADDRESS;

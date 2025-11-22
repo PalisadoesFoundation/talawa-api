@@ -1,10 +1,10 @@
+vi.mock("inquirer");
+
 import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { postgresSetup, setup } from "scripts/setup/setup";
 import { type MockInstance, afterEach, describe, expect, it, vi } from "vitest";
-
-vi.mock("inquirer");
 
 describe("Setup -> postgresSetup", () => {
 	const originalEnv = { ...process.env };

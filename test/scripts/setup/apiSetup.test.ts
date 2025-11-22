@@ -1,3 +1,5 @@
+vi.mock("inquirer");
+
 import crypto from "node:crypto";
 import fs from "node:fs";
 import dotenv from "dotenv";
@@ -19,8 +21,6 @@ import {
 	it,
 	vi,
 } from "vitest";
-
-vi.mock("inquirer");
 
 describe("Setup -> apiSetup", () => {
 	const originalEnv = { ...process.env };
