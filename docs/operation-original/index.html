@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-docs/getting-started/operation-original" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.9.2">
+<title data-rh="true">Operation | Talawa API Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://docs-api.talawa.io/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://docs-api.talawa.io/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://docs-api.talawa.io/docs/operation-original"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Operation | Talawa API Documentation"><meta data-rh="true" name="description" content="This document provides instructions on how to set up and start a running instance of talawa-api on your local system. The instructions are written to be followed in sequence so make sure to go through each of them step by step without skipping any sections."><meta data-rh="true" property="og:description" content="This document provides instructions on how to set up and start a running instance of talawa-api on your local system. The instructions are written to be followed in sequence so make sure to go through each of them step by step without skipping any sections."><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://docs-api.talawa.io/docs/operation-original"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/operation-original" hreflang="en"><link data-rh="true" rel="alternate" href="https://docs-api.talawa.io/docs/operation-original" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Operation","item":"https://docs-api.talawa.io/docs/operation-original"}]}</script><link rel="stylesheet" href="https://docs.talawa.io/css/styles-latest.css"><link rel="stylesheet" href="/assets/css/styles.55cbf704.css">
+<script src="/assets/js/runtime~main.1cb957a8.js" defer="defer"></script>
+<script src="/assets/js/main.6a1158bf.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<svg style="display: none;"><defs>
+<symbol id="theme-svg-external-link" viewBox="0 0 24 24"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></symbol>
+</defs></svg>
+<script>!function(){var t=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();document.documentElement.setAttribute("data-theme",t||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")),document.documentElement.setAttribute("data-theme-choice",t||"system")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_Vr6R" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="theme-layout-navbar navbar navbar--fixed-top"><div class="navbar__inner"><div class="theme-layout-navbar-left navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a href="https://docs.talawa.io/" target="_self" rel="noopener noreferrer" class="navbar__brand"><div class="navbar__logo"><img src="/img/logos/logo.png" alt="My Site Logo" class="themedComponent_W1hv themedComponent--light_VcjY"><img src="/img/logos/logo.png" alt="My Site Logo" class="themedComponent_W1hv themedComponent--dark_wsix"></div><b class="navbar__title text--truncate">Talawa</b></a><a href="https://docs.talawa.io/docs" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">General</a><a href="https://docs-mobile.talawa.io/docs" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Mobile Guide</a><a href="https://docs-admin.talawa.io/docs" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Admin Guide</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/docs">API Guide</a><a href="https://docs-plugin.talawa.io/docs" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Plugin Guide</a><a href="https://community.talawa.io" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Community</a><a href="https://demo.talawa.io/" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">Demo</a></div><div class="theme-layout-navbar-right navbar__items navbar__items--right"><a href="https://github.com/PalisadoesFoundation" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link header-github-link" aria-label="GitHub repository"></a><a href="https://www.youtube.com/@PalisadoesOrganization" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link header-youtube-link" aria-label="Palisadoes Youtube channel"></a><div class="toggle_JEho colorModeToggle__p9S"><button class="clean-btn toggleButton_QJRr toggleButtonDisabled_NVBK" type="button" disabled="" title="system mode" aria-label="Switch between dark and light mode (currently system mode)"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_vALO lightToggleIcon_xCuH"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_vALO darkToggleIcon_tDb_"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" class="toggleIcon_vALO systemToggleIcon_NSe_"><path fill="currentColor" d="m12 21c4.971 0 9-4.029 9-9s-4.029-9-9-9-9 4.029-9 9 4.029 9 9 9zm4.95-13.95c1.313 1.313 2.05 3.093 2.05 4.95s-0.738 3.637-2.05 4.95c-1.313 1.313-3.093 2.05-4.95 2.05v-14c1.857 0 3.637 0.737 4.95 2.05z"></path></svg></button></div><div class="navbarSearchContainer_pzfk"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="theme-layout-main main-wrapper mainWrapper_rUDs"><div class="docsWrapper_E4OU"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_r5vl" type="button"></button><div class="docRoot_BKpa"><aside class="theme-doc-sidebar-container docSidebarContainer_UjP4"><div class="sidebarViewport_p6sO"><div class="sidebar_l6dw"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_Cvb8"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/docs/"><span title="Introduction" class="linkLabel_rElb">Introduction</span></a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/docs/installation"><span title="Getting Started" class="categoryLinkLabel_E_RK">Getting Started</span></a></div><ul class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/installation"><span title="Installation" class="linkLabel_rElb">Installation</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/configuration"><span title="Configuration" class="linkLabel_rElb">Configuration</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/installation/environment-variables"><span title="Configuration Variables" class="linkLabel_rElb">Configuration Variables</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/docs/operation-original"><span title="Operation" class="linkLabel_rElb">Operation</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/operation"><span title="Operation" class="linkLabel_rElb">Operation</span></a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/docs/webserver"><span title="Webserver Setup" class="linkLabel_rElb">Webserver Setup</span></a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/docs/developer-resources/introduction"><span title="Developer Resources" class="categoryLinkLabel_E_RK">Developer Resources</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/docs/auto-docs/config/emailConfig/variables/emailConfig"><span title="Code Documentation" class="categoryLinkLabel_E_RK">Code Documentation</span></a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="categoryLink_vbLC menu__link menu__link--sublist menu__link--sublist-caret" role="button" aria-expanded="false" href="/docs/auto-schema/operations/directives/include"><span title="Schema" class="categoryLinkLabel_E_RK">Schema</span></a></div></li></ul></nav></div></div></aside><main class="docMainContainer_c3Ic"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_ynsf"><div class="docItemContainer_QVh_"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_sK2n" aria-label="Breadcrumbs"><ul class="breadcrumbs"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_DkXf"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Getting Started</span></li><li class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link">Operation</span></li></ul></nav><div class="tocCollapsible_pDLc theme-doc-toc-mobile tocMobile_A6Fd"><button type="button" class="clean-btn tocCollapsibleButton_ItB6">On this page</button></div><div class="theme-doc-markdown markdown"><header><h1>Operation</h1></header><p>This document provides instructions on how to set up and start a running instance of talawa-api on your local system. The instructions are written to be followed in sequence so make sure to go through each of them step by step without skipping any sections.</p>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="the-env-configuration-file">The .env Configuration File<a href="#the-env-configuration-file" class="hash-link" aria-label="Direct link to The .env Configuration File" title="Direct link to The .env Configuration File" translate="no">​</a></h2>
+<p>You will need to configure the API to work correctly.</p>
+<ol>
+<li class="">The configuration file is called <code>.env</code> and must be placed in the root directory of the code.</li>
+<li class="">This table defines some the parameters required for smooth operation<!-- -->
+<ol>
+<li class="">Steps explaining the usage of the <code>.env</code> file will be found in subsequent sections</li>
+</ol>
+</li>
+</ol>
+<ul>
+<li class=""><strong>NOTE:</strong> Visit our <a class="" href="/docs/installation/environment-variables">Environment Variables Page</a> for a comprehensive list of possibilities.</li>
+</ul>
+<table><thead><tr><th><strong>Variable</strong></th><th><strong>Use Case</strong></th></tr></thead><tbody><tr><td><code>API_ADMINISTRATOR_USER_EMAIL_ADDRESS</code></td><td>Email address of the administrator user.</td></tr><tr><td><code>API_ADMINISTRATOR_USER_NAME</code></td><td>Username of the administrator user, used for admin login and identification.</td></tr><tr><td><code>API_ADMINISTRATOR_USER_PASSWORD</code></td><td>Password for the administrator user, used for admin login security.</td></tr><tr><td><code>API_BASE_URL</code></td><td>Base URL for the API, used for constructing API endpoints and routing requests.</td></tr><tr><td><code>API_COMMUNITY_FACEBOOK_URL</code></td><td>URL to the community&#x27;s Facebook page, used for linking and integrating social media presence.</td></tr><tr><td><code>API_COMMUNITY_GITHUB_URL</code></td><td>URL to the community&#x27;s GitHub repository, used for linking and integrating code repository.</td></tr><tr><td><code>API_COMMUNITY_INSTAGRAM_URL</code></td><td>URL to the community&#x27;s Instagram page, used for linking and integrating social media presence.</td></tr><tr><td><code>API_COMMUNITY_LINKEDIN_URL</code></td><td>URL to the community&#x27;s LinkedIn page, used for linking and integrating social media presence.</td></tr><tr><td><code>API_COMMUNITY_NAME</code></td><td>Name of the community, used for branding and identification within the application.</td></tr><tr><td><code>API_COMMUNITY_REDDIT_URL</code></td><td>URL to the community&#x27;s Reddit page, used for linking and integrating social media presence.</td></tr><tr><td><code>API_COMMUNITY_SLACK_URL</code></td><td>URL to the community&#x27;s Slack workspace, used for linking and integrating communication channels.</td></tr><tr><td><code>API_COMMUNITY_WEBSITE_URL</code></td><td>URL to the community&#x27;s website, used for linking and integrating online presence.</td></tr><tr><td><code>API_COMMUNITY_X_URL</code></td><td>URL to the community&#x27;s X (formerly Twitter) page, used for linking and integrating social media presence.</td></tr><tr><td><code>API_COMMUNITY_YOUTUBE_URL</code></td><td>URL to the community&#x27;s YouTube channel, used for linking and integrating video content.</td></tr><tr><td><code>API_JWT_SECRET</code></td><td>Secret key for JWT(JSON Web Token) generation and validation, used for securing API authentication and authorization.</td></tr><tr><td><code>API_MINIO_SECRET_KEY</code></td><td>Secret key for MinIO, used for securing access to MinIO object storage. <strong>NOTE:</strong> Must match <code>MINIO_ROOT_PASSWORD</code></td></tr><tr><td><code>API_POSTGRES_PASSWORD</code></td><td>Password for the PostgreSQL database, used for database authentication and security. <strong>NOTE:</strong> Must match <code>POSTGRES_PASSWORD</code></td></tr><tr><td><code>CADDY_TALAWA_API_DOMAIN_NAME</code></td><td>Domain name for the Talawa API, used for configuring and routing API traffic.</td></tr><tr><td><code>CADDY_TALAWA_API_EMAIL</code></td><td>Email address for the Talawa API, used for SSL certificate registration and notifications.</td></tr><tr><td><code>MINIO_ROOT_PASSWORD</code></td><td>Root password for MinIO, used for securing administrative access to MinIO object storage.</td></tr><tr><td><code>POSTGRES_PASSWORD</code></td><td>Password for the PostgreSQL database (Docker Compose), used for database authentication and security.</td></tr></tbody></table>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="running-the-setup-script">Running the Setup Script<a href="#running-the-setup-script" class="hash-link" aria-label="Direct link to Running the Setup Script" title="Direct link to Running the Setup Script" translate="no">​</a></h2>
+<p>To configure the .env file, run one of the following commands in your project’s root directory:</p>
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">npm run setup</span><br></span></code></pre></div></div>
+<p>or</p>
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">pnpm tsx setup.ts</span><br></span></code></pre></div></div>
+<p>The script will ask whether you&#x27;re in CI mode (CI=true) or non-CI (CI=false) mode. Choose:</p>
+<ol>
+<li class="">
+<p>CI=false for local/development environments:</p>
+<ul>
+<li class="">Uses configuration from <code>.env.devcontainer</code></li>
+<li class="">Includes complete interactive setup with all configuration options</li>
+<li class="">Sets up CloudBeaver for database management</li>
+<li class="">Configures all Minio and PostgreSQL extended options</li>
+<li class="">Best for developers working on the application locally</li>
+</ul>
+</li>
+<li class="">
+<p>CI=true for testing or continuous integration pipelines:</p>
+<ul>
+<li class="">Uses configuration from <code>.env.ci</code></li>
+<li class="">Streamlined setup with minimal configuration</li>
+<li class="">Excludes CloudBeaver-related settings</li>
+<li class="">Contains only essential database and storage options</li>
+<li class="">Best for automated testing environments or CI/CD pipelines</li>
+</ul>
+</li>
+<li class="">
+<p>It will also ask whether you want to use recommended defaults. Answer &quot;yes&quot; to quickly accept safe defaults or &quot;no&quot; to provide custom inputs. Once the prompts finish, your .env file will be generated or updated.</p>
+</li>
+</ol>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="prerequisities">Prerequisities<a href="#prerequisities" class="hash-link" aria-label="Direct link to Prerequisities" title="Direct link to Prerequisities" translate="no">​</a></h2>
+<p>You must follow these steps before continuing.</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="install-docker">Install Docker<a href="#install-docker" class="hash-link" aria-label="Direct link to Install Docker" title="Direct link to Install Docker" translate="no">​</a></h4>
+<p>Docker is used to build, deploy, and manage applications within isolated, lightweight containers, effectively packaging an application with all its dependencies so it can run consistently across different environments, allowing for faster development, testing, and deployment of software.</p>
+<p>We use Docker to simplify installation. Follow these steps to install Docker on your system</p>
+<ol>
+<li class=""><a href="https://www.docker.com/products/docker-desktop" target="_blank" rel="noopener noreferrer" class="">Docker Desktop for Windows/Mac</a></li>
+<li class=""><a href="https://docs.docker.com/engine/install/" target="_blank" rel="noopener noreferrer" class="">Docker Engine for Linux</a></li>
+</ol>
+<p>After docker is installed, you&#x27;ll need to verify its operation</p>
+<ol>
+<li class="">Open a terminal window.</li>
+<li class="">Run the following commands to check if the required software is installed:<!-- -->
+<ul>
+<li class=""><code>docker --version</code></li>
+<li class=""><code>docker-compose --version</code></li>
+</ul>
+</li>
+<li class="">Check if docker is running:<!-- -->
+<ul>
+<li class=""><code>docker info</code></li>
+</ul>
+</li>
+</ol>
+<p><em>(Note: Restart the docker if you are getting this error <code>Cannot connect to the Docker daemon </code>)</em></p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="download-the-talawa-api-code">Download the <code>talawa-api</code> Code<a href="#download-the-talawa-api-code" class="hash-link" aria-label="Direct link to download-the-talawa-api-code" title="Direct link to download-the-talawa-api-code" translate="no">​</a></h4>
+<ol>
+<li class="">On your computer, navigate to the folder where you want to set up the repository.</li>
+<li class="">Open a command prompt (<code>cmd</code> for Windows) or terminal (<code>terminal</code> for Linux or MacOS) session in this folder.<!-- -->
+<ul>
+<li class="">You can usually do this by right-clicking in the folder and selecting the appropriate option for your OS.</li>
+</ul>
+</li>
+<li class="">Clone the repository to your local computer:<!-- -->
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">git clone https://github.com/PalisadoesFoundation/talawa-api.git</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">cd talawa-api</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">git checkout develop</span><br></span></code></pre></div></div>
+</li>
+</ol>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="production-environment-setup">Production Environment Setup<a href="#production-environment-setup" class="hash-link" aria-label="Direct link to Production Environment Setup" title="Direct link to Production Environment Setup" translate="no">​</a></h2>
+<p>This section outlines how to setup Talawa-API for use by organizations.</p>
+<p>If you are a developer, please go to the <code>Development Environment Setup</code> section</p>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="prerequisites">Prerequisites<a href="#prerequisites" class="hash-link" aria-label="Direct link to Prerequisites" title="Direct link to Prerequisites" translate="no">​</a></h3>
+<p>You must have basic competence and experience in the following technologies to be able to set up the production environment of talawa api:</p>
+<ol>
+<li class="">Git</li>
+<li class="">Github</li>
+<li class="">Docker</li>
+<li class="">Docker compose</li>
+</ol>
+<p>Please make sure that you have insalled the required software before starting the production environment setup.</p>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="setup---instructional-video">Setup - Instructional Video<a href="#setup---instructional-video" class="hash-link" aria-label="Direct link to Setup - Instructional Video" title="Direct link to Setup - Instructional Video" translate="no">​</a></h3>
+<p>We provide a mostly automated way of setting up the production environment for the Talawa API using Git, Docker, and Docker-compose. Follow the instructions below and refer to the provided instructional video for a visual guide.</p>
+<p>Click on the image below to play the video.</p>
+<p><a href="https://www.youtube.com/watch?v=10Zi2srGPHM" target="_blank" rel="noopener noreferrer" class=""><img decoding="async" loading="lazy" src="https://img.youtube.com/vi/10Zi2srGPHM/0.jpg" alt="Talawa API Environment Setup - Production" class="img_O1Ey"></a></p>
+<p><strong>Note: The video contains some inaccuracies.</strong></p>
+<ol>
+<li class="">Please ensure you clone from the correct repository <a href="https://github.com/PalisadoesFoundation/talawa-api" target="_blank" rel="noopener noreferrer" class="">Talawa API Repository</a></li>
+<li class="">The correct branch to checkout is <code>develop</code></li>
+<li class="">All the field for .env files are not shown in the video. Refer <a href="##step-4-configuring-environment-variables" class="">Step 4: Configuring Environment Variables</a></li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="setup---all-steps">Setup - All Steps<a href="#setup---all-steps" class="hash-link" aria-label="Direct link to Setup - All Steps" title="Direct link to Setup - All Steps" translate="no">​</a></h3>
+<p>Follow these steps to have the best experience</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="configure-the-env-file">Configure the <code>.env</code> File<a href="#configure-the-env-file" class="hash-link" aria-label="Direct link to configure-the-env-file" title="Direct link to configure-the-env-file" translate="no">​</a></h4>
+<p>You&#x27;ll need to create a <code>.env</code> file in the repository&#x27;s root directory.</p>
+<p>Copy the content of <code>./envFiles/.env.production</code> to the <code>.env</code> file.</p>
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">cp ./envFiles/.env.production ./.env</span><br></span></code></pre></div></div>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="add-a-jwt-secret-to-env">Add a JWT Secret to .env<a href="#add-a-jwt-secret-to-env" class="hash-link" aria-label="Direct link to Add a JWT Secret to .env" title="Direct link to Add a JWT Secret to .env" translate="no">​</a></h5>
+<p>You will need to add a JWT secret to the <code>.env</code> file</p>
+<ol>
+<li class="">Open your web browser and go to <a href="https://jwtsecrets.com" target="_blank" rel="noopener noreferrer" class="">https://jwtsecrets.com</a>.</li>
+<li class="">Select <code>64</code> from the slider.</li>
+<li class="">Click the <strong>Generate</strong> button.</li>
+</ol>
+<p>Your new 64-character JWT secret will be displayed on the screen.</p>
+<ol>
+<li class="">Copy this secret</li>
+<li class="">Add it to the <code>API_JWT_SECRET</code> value in the <code>.env</code> file.</li>
+</ol>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="update-the-api_administrator_user-credentials">Update the API_ADMINISTRATOR_USER Credentials<a href="#update-the-api_administrator_user-credentials" class="hash-link" aria-label="Direct link to Update the API_ADMINISTRATOR_USER Credentials" title="Direct link to Update the API_ADMINISTRATOR_USER Credentials" translate="no">​</a></h5>
+<p>You will need to update the <code>.env</code> file with the following information.</p>
+<ol>
+<li class=""><code>API_ADMINISTRATOR_USER_NAME</code> is the name of the primary administrator person.</li>
+<li class=""><code>API_ADMINISTRATOR_USER_EMAIL_ADDRESS</code> is the email address of the primary administrator. This will be required for logins.</li>
+<li class=""><code>API_ADMINISTRATOR_USER_PASSWORD</code> is plain text and is used for logins.</li>
+</ol>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="update-the-minio-credentials">Update the MINIO Credentials<a href="#update-the-minio-credentials" class="hash-link" aria-label="Direct link to Update the MINIO Credentials" title="Direct link to Update the MINIO Credentials" translate="no">​</a></h5>
+<p>You will need to update the <code>.env</code> file with the following information.</p>
+<ol>
+<li class=""><code>MINIO_ROOT_PASSWORD</code> is a plain text password of your choosing.</li>
+<li class=""><code>API_MINIO_SECRET_KEY</code> - <strong>NOTE:</strong> must match <code>MINIO_ROOT_PASSWORD</code>.</li>
+</ol>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="update-the-postgresql-credentials">Update the PostgreSQL Credentials<a href="#update-the-postgresql-credentials" class="hash-link" aria-label="Direct link to Update the PostgreSQL Credentials" title="Direct link to Update the PostgreSQL Credentials" translate="no">​</a></h5>
+<p>You will need to update the <code>.env</code> file with the following information. The passwords are in plain text and must match.</p>
+<ol>
+<li class=""><code>API_POSTGRES_PASSWORD</code> - <strong>NOTE:</strong> Must match <code>POSTGRES_PASSWORD</code></li>
+<li class=""><code>POSTGRES_PASSWORD</code></li>
+</ol>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="update-the-api_base_url-value">Update the API_BASE_URL Value<a href="#update-the-api_base_url-value" class="hash-link" aria-label="Direct link to Update the API_BASE_URL Value" title="Direct link to Update the API_BASE_URL Value" translate="no">​</a></h5>
+<p>You will need to update the <code>.env</code> file with the following information. This value uses the expected defaults.</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">http://127.0.0.1:4000</span><br></span></code></pre></div></div>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="update-the-caddy-configuration">Update the CADDY Configuration<a href="#update-the-caddy-configuration" class="hash-link" aria-label="Direct link to Update the CADDY Configuration" title="Direct link to Update the CADDY Configuration" translate="no">​</a></h5>
+<p>You will need to update the <code>.env</code> file with the following information. This value uses the expected defaults.</p>
+<ol>
+<li class=""><code>CADDY_TALAWA_API_DOMAIN_NAME</code> can be set to <code>localhost</code></li>
+<li class=""><code>CADDY_TALAWA_API_EMAIL</code> can be set to a suitable email address</li>
+</ol>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="update-the-social-media-urls">Update the Social Media URLs<a href="#update-the-social-media-urls" class="hash-link" aria-label="Direct link to Update the Social Media URLs" title="Direct link to Update the Social Media URLs" translate="no">​</a></h5>
+<p>You will need to update the <code>.env</code> file with the following information.</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">API_COMMUNITY_FACEBOOK_URL</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">API_COMMUNITY_GITHUB_URL</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">API_COMMUNITY_INSTAGRAM_URL</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">API_COMMUNITY_LINKEDIN_URL</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">API_COMMUNITY_REDDIT_URL</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">API_COMMUNITY_SLACK_URL</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">API_COMMUNITY_WEBSITE_URL</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">API_COMMUNITY_X_URL</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">API_COMMUNITY_YOUTUBE_URL</span><br></span></code></pre></div></div>
+<h5 class="anchor anchorTargetStickyNavbar_vRzG" id="update-the-name-of-the-parent-organization--community">Update the Name of the Parent Organization / Community<a href="#update-the-name-of-the-parent-organization--community" class="hash-link" aria-label="Direct link to Update the Name of the Parent Organization / Community" title="Direct link to Update the Name of the Parent Organization / Community" translate="no">​</a></h5>
+<p>You will need to update the <code>.env</code> file with the following information.</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">API_COMMUNITY_NAME</span><br></span></code></pre></div></div>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="start-the-app">Start the App<a href="#start-the-app" class="hash-link" aria-label="Direct link to Start the App" title="Direct link to Start the App" translate="no">​</a></h4>
+<ol>
+<li class="">Start the server by running the following command:<!-- -->
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">docker compose up</span><br></span></code></pre></div></div>
+</li>
+<li class="">To stop the Docker Server, use this command:<!-- -->
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">docker compose down</span><br></span></code></pre></div></div>
+</li>
+</ol>
+<p>Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker!</p>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="development-environment-setup">Development Environment Setup<a href="#development-environment-setup" class="hash-link" aria-label="Direct link to Development Environment Setup" title="Direct link to Development Environment Setup" translate="no">​</a></h2>
+<p>This section outlines how to setup Talawa-API for use by developers wanting to contribute code to the project.</p>
+<p>If you want to install it for your organization, then please go to the <code>Production Environment Setup</code> section</p>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="our-recommendations">Our Recommendations<a href="#our-recommendations" class="hash-link" aria-label="Direct link to Our Recommendations" title="Direct link to Our Recommendations" translate="no">​</a></h3>
+<p>Linux based distributions are simply the best platform for a very vast majority of use cases related to software development. As such we recommend using popular linux based distributions like fedora, arch, ubuntu, linux mint, debian etc., for having a better experience during software development.</p>
+<p>We make heavy use of Docker containers in our workflows. Since containers are a Linux-based technology, on non-Linux platforms they require Linux emulation through virtual machines, which can impact performance. So, you should be aware that there are performance penalties and certain limitations with running containers on platforms like macOS and windows.</p>
+<p>Though, many of these penalties and limitations don&#x27;t apply to windows subsystem for linux. So, if you plan on using windows, at the very least make use of windows subsystem for linux.</p>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="prerequisites-1">Prerequisites<a href="#prerequisites-1" class="hash-link" aria-label="Direct link to Prerequisites" title="Direct link to Prerequisites" translate="no">​</a></h3>
+<p>You must have basic competence and experience in the following technologies to be able to set up and work within the development environment of talawa api:</p>
+<ol>
+<li class="">Unix based operating systems like linux based distributions, macOS or windows subsystem for linux.</li>
+<li class="">Git</li>
+<li class="">Github</li>
+<li class="">Docker</li>
+<li class="">Docker compose</li>
+<li class="">Visual studio code with devcontainers</li>
+<li class="">Typescript</li>
+<li class="">Node.js</li>
+</ol>
+<p>It is very important that you go through <a href="https://code.visualstudio.com/docs/devcontainers/containers" target="_blank" rel="noopener noreferrer" class="">this</a> official documentation for working with devcontainers in visual studio code.</p>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="setup-instructional-video">Setup: Instructional Video<a href="#setup-instructional-video" class="hash-link" aria-label="Direct link to Setup: Instructional Video" title="Direct link to Setup: Instructional Video" translate="no">​</a></h3>
+<p>We provide a mostly automated way of setting up the development environment for the Talawa API using Git, Docker, and Visual Studio Code. Follow the instructions below and refer to the provided instructional video for a visual guide.</p>
+<p>Click on the image below to play the video.</p>
+<p><a href="https://www.youtube.com/watch?v=jz7koJIXqtk" target="_blank" rel="noopener noreferrer" class=""><img decoding="async" loading="lazy" src="https://img.youtube.com/vi/jz7koJIXqtk/0.jpg" alt="Talawa API Environment Setup - Development" class="img_O1Ey"></a></p>
+<p><strong>Note: The video contains some inaccuracies.</strong></p>
+<ol>
+<li class="">Please ensure you clone from the correct repository <a href="https://github.com/PalisadoesFoundation/talawa-api" target="_blank" rel="noopener noreferrer" class="">Talawa API Repository</a></li>
+<li class="">The correct branch to checkout is <code>develop</code></li>
+<li class=""><code>postgres-test</code> is the name of the test database in the docker-compose file.</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="setup-using-the-cli">Setup: Using the CLI<a href="#setup-using-the-cli" class="hash-link" aria-label="Direct link to Setup: Using the CLI" title="Direct link to Setup: Using the CLI" translate="no">​</a></h3>
+<p>These steps are specific to Linux. You will need to modify them accordingly for other operating systems</p>
+<ol>
+<li class="">
+<p>Install <code>docker</code> and ensure that the daemon is running.</p>
+</li>
+<li class="">
+<p>This process does not require the installation of PostgresSQL. If you have installed postgres on your system, make sure that it is not running.</p>
+</li>
+<li class="">
+<p>Windows Only</p>
+<ol>
+<li class="">Make sure you clone the <code>talawa-api</code> repository to a <code>WSL</code> subdirectory.</li>
+<li class="">Run all the following commands from the repository root in that subdirectory.</li>
+</ol>
+</li>
+<li class="">
+<p>Create the <code>.env</code> file by copying the template from the <code>envFiles/</code> directory.</p>
+<ol>
+<li class=""><strong>DO NOT EDIT EITHER FILE!</strong>
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">cp envFiles/.env.devcontainer .env</span><br></span></code></pre></div></div>
+</li>
+</ol>
+</li>
+<li class="">
+<p>Install Node.js</p>
+<ol>
+<li class="">Linux<!-- -->
+<ol>
+<li class="">Install <code>node</code> from the <a href="https://github.com/nodesource/distributions" target="_blank" rel="noopener noreferrer" class="">Node Source website</a></li>
+</ol>
+</li>
+<li class="">Windows / Mac / Linux<!-- -->
+<ol>
+<li class="">Install <code>node</code> from the <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer" class="">Node website</a></li>
+</ol>
+</li>
+</ol>
+</li>
+<li class="">
+<p>Install <code>pnpm</code> from the <a href="https://pnpm.io/installation" target="_blank" rel="noopener noreferrer" class="">pnpm website</a></p>
+</li>
+<li class="">
+<p>Linux / MacOS Only</p>
+<ol>
+<li class="">Enable <code>pnpm</code> for your current terminal session.<!-- -->
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">source ~/.bashrc</span><br></span></code></pre></div></div>
+</li>
+</ol>
+</li>
+<li class="">
+<p>Install the <code>pnpm</code> packages</p>
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">pnpm install</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p>Install the <code>devcontainers/cli</code> package</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">pnpm install -g @devcontainers/cli</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p>You will now need to make your user a part of the <code>docker</code> operating system group or else you will get <code>permission denied</code> messages when starting docker later. <code>$USER</code> is a universal representation of your username. You don&#x27;t need to change this in the command below.</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">sudo usermod -a -G docker $USER</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p>You will only become a part of the <code>docker</code> group on your next login. You don&#x27;t have to logout, just start another session on the CLI using the <code>su</code> command.</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">sudo su $USER -</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p>Build the docker devcontainer</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">devcontainer build --workspace-folder .</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p>When the build is complete, the last line of the output should be:</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">{&quot;outcome&quot;:&quot;success&quot;,&quot;imageName&quot;:&quot;talawa-api&quot;}</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p>Start the docker devcontainer</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">devcontainer up --workspace-folder .</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p>When the container installation is complete, the last lines of output should look like this:</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">...</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">{&quot;outcome&quot;:&quot;success&quot;,   &quot;containerId&quot;:&quot;81306766f2aeeb851c8ebb844702d39ad2adc09419508b736ef2ee5a03eb8e34&quot;,   &quot;composeProjectName&quot;:&quot;talawa&quot;,&quot;remoteUser&quot;:&quot;talawa&quot;,&quot;remoteWorkspaceFolder&quot;:&quot;/home/talawa/api&quot;}</span><br></span></code></pre></div></div>
+</li>
+</ol>
+<p>All done!</p>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="cli-startup-development">CLI Startup (Development)<a href="#cli-startup-development" class="hash-link" aria-label="Direct link to CLI Startup (Development)" title="Direct link to CLI Startup (Development)" translate="no">​</a></h4>
+<p>After a successful installation, use these commands to start the dev container.</p>
+<ol>
+<li class="">
+<p>To run in attached Mode</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">docker exec talawa-api-1 /bin/bash -c &#x27;pnpm run start_development_server&#x27;</span><br></span></code></pre></div></div>
+</li>
+<li class="">
+<p>To run in detached Mode</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">docker exec talawa-api-1 /bin/bash -c &#x27;nohup pnpm run start_development_server &gt; /dev/null 2&gt;&amp;1 &amp;&#x27;</span><br></span></code></pre></div></div>
+</li>
+</ol>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="cli-shutdown-development">CLI Shutdown (Development)<a href="#cli-shutdown-development" class="hash-link" aria-label="Direct link to CLI Shutdown (Development)" title="Direct link to CLI Shutdown (Development)" translate="no">​</a></h4>
+<p>Use the command <code>docker compose</code> command to cleanly shut down the dev container</p>
+<div class="language-text codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-text codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">docker compose down</span><br></span></code></pre></div></div>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="importing-sample-data">Importing Sample Data<a href="#importing-sample-data" class="hash-link" aria-label="Direct link to Importing Sample Data" title="Direct link to Importing Sample Data" translate="no">​</a></h4>
+<p>Please refer to the section below.</p>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="setup-using-the-vscode-ide">Setup: Using the VScode IDE<a href="#setup-using-the-vscode-ide" class="hash-link" aria-label="Direct link to Setup: Using the VScode IDE" title="Direct link to Setup: Using the VScode IDE" translate="no">​</a></h3>
+<p>You can setup the app using the VScode IDE. Here are the steps to follow:</p>
+<ol>
+<li class="">Open cloned talawa-api project in Visual Studio Code.</li>
+<li class="">Install the <code>devcontainer</code> extension in VScode.</li>
+<li class="">You should see a notification that a <code>devcontainer</code> configuration file is available. Click on the notification and select <code>Reopen in Container</code>.<!-- -->
+<ul>
+<li class="">If you don&#x27;t see the notification, you can open the command palette by pressing <code>Ctrl+Shift+P</code> and search for <code>Reopen in Container</code>.</li>
+<li class="">Make sure you have downloaded <code>devcontainer</code> extension of vs code.</li>
+</ul>
+</li>
+<li class="">This will open a new Visual Studio Code window with the project running inside a Docker container. This will take a few minutes to complete.</li>
+<li class="">Wait till the process is complete and you see ports being forwarded in the terminal.</li>
+<li class="">You can check logs by clicking <code>Connecting to Dev Container (show log)</code>;</li>
+<li class="">Create a new terminal in Visual Studio Code by pressing <code>Ctrl+Shift+` </code>.</li>
+<li class="">Run the <code>pwd</code> command to confirm you are in the <code>/home/talawa/api</code> directory.</li>
+<li class="">Run the following command to check if the project has required dependencies installed correctly:<!-- -->
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">   node -v</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">   pnpm -v</span><br></span></code></pre></div></div>
+<!-- -->Congratulations! 🎉 Your Talawa API is now successfully set up and running using Docker and Vs code!</li>
+</ol>
+<h4 class="anchor anchorTargetStickyNavbar_vRzG" id="development-mode-operation">Development Mode Operation<a href="#development-mode-operation" class="hash-link" aria-label="Direct link to Development Mode Operation" title="Direct link to Development Mode Operation" translate="no">​</a></h4>
+<p>You can run the app after closing the terminal or restating the vscode using these commands:</p>
+<ul>
+<li class="">for normal mode</li>
+</ul>
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">    pnpm run start_development_server</span><br></span></code></pre></div></div>
+<ul>
+<li class="">for debugging mode</li>
+</ul>
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain">    pnpm run start_development_server_with_debugger</span><br></span></code></pre></div></div>
+<p><strong>Note:</strong> These commands will start the server in development mode.</p>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="sample-data">Sample Data<a href="#sample-data" class="hash-link" aria-label="Direct link to Sample Data" title="Direct link to Sample Data" translate="no">​</a></h2>
+<p>We have created sample data to make it easier for end users to get an understanding of the application.</p>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="importing-sample-data-1">Importing Sample Data<a href="#importing-sample-data-1" class="hash-link" aria-label="Direct link to Importing Sample Data" title="Direct link to Importing Sample Data" translate="no">​</a></h3>
+<p>This applies to users running Talawa API in dev containers.</p>
+<ol>
+<li class="">Once the server is running, open a new terminal session.</li>
+<li class="">Run the following command to import sample data into the database:<!-- -->
+<div class="language-bash codeBlockContainer_f_eT theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_FfVB"><pre tabindex="0" class="prism-code language-bash codeBlock_mODg thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_GP3H"><span class="token-line" style="color:#393A34"><span class="token plain"> docker exec talawa-api-1 /bin/bash -c &#x27;pnpm run add:sample_data &amp;&amp; exit&#x27;</span><br></span></code></pre></div></div>
+<!-- -->Refer to the next section for login information.</li>
+</ol>
+<h3 class="anchor anchorTargetStickyNavbar_vRzG" id="sample-data-users">Sample Data Users<a href="#sample-data-users" class="hash-link" aria-label="Direct link to Sample Data Users" title="Direct link to Sample Data Users" translate="no">​</a></h3>
+<p>Below is a table of user login credentials for the sample data.</p>
+<table><thead><tr><th><strong>Name</strong></th><th><strong>Email Address</strong></th><th><strong>Password</strong></th><th><strong>Role</strong></th></tr></thead><tbody><tr><td>Wilt Shepherd</td><td><a href="mailto:testsuperadmin@example.com" target="_blank" rel="noopener noreferrer" class="">testsuperadmin@example.com</a></td><td>Pass@123</td><td>administrator</td></tr><tr><td>Vyvyan Kerry</td><td><a href="mailto:testadmin1@example.com" target="_blank" rel="noopener noreferrer" class="">testadmin1@example.com</a></td><td>Pass@123</td><td>administrator</td></tr><tr><td>Loyd Solomon</td><td><a href="mailto:testadmin2@example.com" target="_blank" rel="noopener noreferrer" class="">testadmin2@example.com</a></td><td>Pass@123</td><td>administrator</td></tr><tr><td>Darcy Wilf</td><td><a href="mailto:testadmin3@example.com" target="_blank" rel="noopener noreferrer" class="">testadmin3@example.com</a></td><td>Pass@123</td><td>administrator</td></tr><tr><td>Harve Lance</td><td><a href="mailto:testuser1@example.com" target="_blank" rel="noopener noreferrer" class="">testuser1@example.com</a></td><td>Pass@123</td><td>regular</td></tr><tr><td>Praise Norris</td><td><a href="mailto:testuser2@example.com" target="_blank" rel="noopener noreferrer" class="">testuser2@example.com</a></td><td>Pass@123</td><td>regular</td></tr><tr><td>Scott Tony</td><td><a href="mailto:testuser3@example.com" target="_blank" rel="noopener noreferrer" class="">testuser3@example.com</a></td><td>Pass@123</td><td>regular</td></tr><tr><td>Teresa Bradley</td><td><a href="mailto:testuser4@example.com" target="_blank" rel="noopener noreferrer" class="">testuser4@example.com</a></td><td>Pass@123</td><td>regular</td></tr><tr><td>Bruce Garza</td><td><a href="mailto:testuser5@example.com" target="_blank" rel="noopener noreferrer" class="">testuser5@example.com</a></td><td>Pass@123</td><td>regular</td></tr><tr><td>Burton Sanders</td><td><a href="mailto:testuser6@example.com" target="_blank" rel="noopener noreferrer" class="">testuser6@example.com</a></td><td>Pass@123</td><td>regular</td></tr><tr><td>Jeramy Garcia</td><td><a href="mailto:testuser7@example.com" target="_blank" rel="noopener noreferrer" class="">testuser7@example.com</a></td><td>Pass@123</td><td>regular</td></tr><tr><td>Deanne Marks</td><td><a href="mailto:testuser8@example.com" target="_blank" rel="noopener noreferrer" class="">testuser8@example.com</a></td><td>Pass@123</td><td>regular</td></tr><tr><td>Romeo Holland</td><td><a href="mailto:testuser9@example.com" target="_blank" rel="noopener noreferrer" class="">testuser9@example.com</a></td><td>Pass@123</td><td>regular</td></tr><tr><td>Carla Nguyen</td><td><a href="mailto:testuser10@example.com" target="_blank" rel="noopener noreferrer" class="">testuser10@example.com</a></td><td>Pass@123</td><td>regular</td></tr><tr><td>Peggy Bowers</td><td><a href="mailto:testuser11@example.com" target="_blank" rel="noopener noreferrer" class="">testuser11@example.com</a></td><td>Pass@123</td><td>regular</td></tr></tbody></table>
+<h2 class="anchor anchorTargetStickyNavbar_vRzG" id="testing-and-validation">Testing and Validation<a href="#testing-and-validation" class="hash-link" aria-label="Direct link to Testing and Validation" title="Direct link to Testing and Validation" translate="no">​</a></h2>
+<p>Please refer to the <a class="" href="/docs/developer-resources/testing-validation">Testing and Validation Page</a> for more details.</p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col noPrint_F0Ct"><a href="https://github.com/PalisadoesFoundation/talawa-api/edit/develop/docs/docs/docs/getting-started/_operation.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Y8Mk" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_xtqt"></div></div></footer></article><nav class="docusaurus-mt-lg pagination-nav" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/docs/installation/environment-variables"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Configuration Variables</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/docs/operation"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Operation</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_xSpt thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#the-env-configuration-file" class="table-of-contents__link toc-highlight">The .env Configuration File</a></li><li><a href="#running-the-setup-script" class="table-of-contents__link toc-highlight">Running the Setup Script</a></li><li><a href="#prerequisities" class="table-of-contents__link toc-highlight">Prerequisities</a></li><li><a href="#production-environment-setup" class="table-of-contents__link toc-highlight">Production Environment Setup</a><ul><li><a href="#prerequisites" class="table-of-contents__link toc-highlight">Prerequisites</a></li><li><a href="#setup---instructional-video" class="table-of-contents__link toc-highlight">Setup - Instructional Video</a></li><li><a href="#setup---all-steps" class="table-of-contents__link toc-highlight">Setup - All Steps</a></li></ul></li><li><a href="#development-environment-setup" class="table-of-contents__link toc-highlight">Development Environment Setup</a><ul><li><a href="#our-recommendations" class="table-of-contents__link toc-highlight">Our Recommendations</a></li><li><a href="#prerequisites-1" class="table-of-contents__link toc-highlight">Prerequisites</a></li><li><a href="#setup-instructional-video" class="table-of-contents__link toc-highlight">Setup: Instructional Video</a></li><li><a href="#setup-using-the-cli" class="table-of-contents__link toc-highlight">Setup: Using the CLI</a></li><li><a href="#setup-using-the-vscode-ide" class="table-of-contents__link toc-highlight">Setup: Using the VScode IDE</a></li></ul></li><li><a href="#sample-data" class="table-of-contents__link toc-highlight">Sample Data</a><ul><li><a href="#importing-sample-data-1" class="table-of-contents__link toc-highlight">Importing Sample Data</a></li><li><a href="#sample-data-users" class="table-of-contents__link toc-highlight">Sample Data Users</a></li></ul></li><li><a href="#testing-and-validation" class="table-of-contents__link toc-highlight">Testing and Validation</a></li></ul></div></div></div></div></main></div></div></div><footer class="theme-layout-footer footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/PalisadoesFoundation" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__slack">Slack</a></li><li class="footer__item"><a href="https://www.palisadoes.org/news/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__news">News</a></li><li class="footer__item"><a href="https://www.palisadoes.org/contact/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__contact">Contact Us</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Social Media</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://twitter.com/palisadoesorg?lang=en" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__twitter"> Twitter</a></li><li class="footer__item"><a href="https://www.facebook.com/palisadoesproject/" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__facebook"> Facebook</a></li><li class="footer__item"><a href="https://www.instagram.com/palisadoes/?hl=en" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__instagram"> Instagram</a></li></ul></div><div class="theme-layout-footer-column col footer__col"><div class="footer__title">Development</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/PalisadoesFoundation" target="_blank" rel="noopener noreferrer" class="footer__link-item footer__icon footer__github"> GitHub</a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2025 The Palisadoes Foundation, LLC. Built with Docusaurus.</div></div></div></footer></div>
+</body>
+</html>
