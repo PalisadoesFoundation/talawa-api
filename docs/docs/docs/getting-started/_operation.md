@@ -1,7 +1,7 @@
 ---
 id: operation-original
 title: Operation
-slug: /operation
+slug: /operation-original
 sidebar_position: 4
 ---
 
