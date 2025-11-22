@@ -2,7 +2,7 @@ import fs from "node:fs";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { minioSetup, setup } from "scripts/setup/setup";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { type MockInstance, afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
 
@@ -90,8 +90,7 @@ describe("Setup -> minioSetup", () => {
 			.mockResolvedValueOnce({ MINIO_API_MAPPED_HOST_IP: "127.0.0.1" })
 			.mockResolvedValueOnce({ MINIO_API_MAPPED_PORT: "9000" })
 			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_HOST_IP: "127.0.0.1" })
-			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_PORT: "9000" }) // Conflict: same as API port
-			// Response for the re-prompt after conflict detection
+			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_PORT: "9000" })
 			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_PORT: "9001" })
 			.mockResolvedValueOnce({ MINIO_ROOT_USER: "talawa" })
 			.mockResolvedValueOnce({ MINIO_ROOT_PASSWORD: "password" });
@@ -101,16 +100,14 @@ describe("Setup -> minioSetup", () => {
 		const answers: Record<string, string> = { CI: "false" };
 		await minioSetup(answers);
 
-		// Verify port conflict was resolved
 		expect(answers.MINIO_API_MAPPED_PORT).toBe("9000");
 		expect(answers.MINIO_CONSOLE_MAPPED_PORT).toBe("9001");
 
-		// Verify warning message was shown
 		expect(consoleWarnSpy).toHaveBeenCalledWith(
 			"⚠️ Port conflict detected: MinIO API and Console ports must be different.",
 		);
 
-		// Verify inquirer was called the correct number of times (including the extra prompt)
+		expect(promptMock).toHaveBeenCalledTimes(8);
 		expect(promptMock).toHaveBeenCalledTimes(8);
 	});
 	it("should handle prompt errors correctly", async () => {
@@ -121,10 +118,11 @@ describe("Setup -> minioSetup", () => {
 			if (path === ".backup") return true;
 			return false;
 		});
-		vi.spyOn(fs, "readdirSync").mockReturnValue([
-			".env.1600000000",
-			".env.1700000000",
-		] as any);
+		(
+			vi.spyOn(fs, "readdirSync") as unknown as MockInstance<
+				(path: fs.PathLike) => string[]
+			>
+		).mockImplementation(() => [".env.1600000000", ".env.1700000000"]);
 		const fsCopyFileSyncSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => undefined);
@@ -132,12 +130,15 @@ describe("Setup -> minioSetup", () => {
 		const mockError = new Error("Prompt failed");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
 
-			const consoleErrorSpy = vi.spyOn(console, "error");
+		const consoleErrorSpy = vi.spyOn(console, "error");
 
 		await minioSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".backup/.env.1700000000", ".env");
+		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
+			".backup/.env.1700000000",
+			".env",
+		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();

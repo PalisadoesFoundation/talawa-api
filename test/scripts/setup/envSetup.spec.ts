@@ -65,8 +65,6 @@ describe("initializeEnvFile", () => {
 		expect(fs.readFileSync).toHaveBeenCalledWith("envFiles/.env.devcontainer");
 	});
 
-
-
 	it("should throw an error if the environment file is missing", async () => {
 		vi.spyOn(fs, "existsSync").mockImplementation(() => false);
 

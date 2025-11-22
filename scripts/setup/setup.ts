@@ -1,11 +1,11 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
+import path from "node:path";
 import process from "node:process";
 import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { envFileBackup } from "./envFileBackup/envFileBackup";
 import { updateEnvVariable } from "./updateEnvVariable";
-import path from "node:path";
 
 interface SetupAnswers {
 	[key: string]: string;
@@ -55,18 +55,18 @@ function restoreLatestBackup(): void {
 	if (fs.existsSync(backupDir)) {
 		try {
 			const files = fs.readdirSync(backupDir);
-			const backupFiles = files.filter(file => file.startsWith(envPrefix));
+			const backupFiles = files.filter((file) => file.startsWith(envPrefix));
 
 			if (backupFiles.length > 0) {
 				const sortedBackups = backupFiles
-					.map(fileName => {
+					.map((fileName) => {
 						const epochStr = fileName.substring(envPrefix.length);
 						return {
 							name: fileName,
-							epoch: parseInt(epochStr, 10)
+							epoch: Number.parseInt(epochStr, 10),
 						};
 					})
-					.filter(file => !isNaN(file.epoch))
+					.filter((file) => !Number.isNaN(file.epoch))
 					.sort((a, b) => b.epoch - a.epoch);
 
 				const latestBackup = sortedBackups[0];
@@ -635,6 +635,7 @@ export async function caddySetup(answers: SetupAnswers): Promise<SetupAnswers> {
 }
 
 export async function setup(): Promise<SetupAnswers> {
+	const initialCI = process.env.CI;
 	let answers: SetupAnswers = {};
 	if (checkEnvFile()) {
 		const envReconfigure = await promptConfirm(
@@ -658,7 +659,7 @@ export async function setup(): Promise<SetupAnswers> {
 
 	if (checkEnvFile()) {
 		const isInteractive =
-			process.env.CI !== "true" && process.stdin && process.stdin.isTTY;
+			initialCI !== "true" && process.stdin && process.stdin.isTTY;
 		let shouldBackup = true;
 
 		if (isInteractive) {

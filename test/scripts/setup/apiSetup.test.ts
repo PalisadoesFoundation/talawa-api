@@ -10,7 +10,15 @@ import {
 	validatePort,
 	validateURL,
 } from "scripts/setup/setup";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+	type MockInstance,
+	afterEach,
+	beforeAll,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vitest";
 
 vi.mock("inquirer");
 
@@ -109,10 +117,11 @@ describe("Setup -> apiSetup", () => {
 			if (path === ".backup") return true;
 			return false;
 		});
-		vi.spyOn(fs, "readdirSync").mockReturnValue([
-			".env.1600000000",
-			".env.1700000000",
-		] as any);
+		(
+			vi.spyOn(fs, "readdirSync") as unknown as MockInstance<
+				(path: fs.PathLike) => string[]
+			>
+		).mockImplementation(() => [".env.1600000000", ".env.1700000000"]);
 		const fsCopyFileSyncSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => undefined);
@@ -125,7 +134,10 @@ describe("Setup -> apiSetup", () => {
 		await apiSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".backup/.env.1700000000", ".env");
+		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(
+			".backup/.env.1700000000",
+			".env",
+		);
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();

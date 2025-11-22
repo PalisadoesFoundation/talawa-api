@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import inquirer from "inquirer";
 import { setup } from "scripts/setup/setup";
 import * as SetupModule from "scripts/setup/setup";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { type MockInstance, afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("inquirer");
 describe("Setup", () => {
@@ -33,7 +33,7 @@ describe("Setup", () => {
 		if (fs.existsSync(".env")) {
 			fs.unlinkSync(".env");
 		}
-		delete process.env.API_LOG_LEVEL;
+		process.env.API_LOG_LEVEL = undefined;
 		await setup();
 
 		const expectedEnv = {
@@ -144,12 +144,14 @@ describe("Setup", () => {
 		});
 
 		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
-		const fsReaddirSyncSpy = vi
-			.spyOn(fs, "readdirSync")
-			.mockReturnValue([
-				".env.1600000000",
-				".env.1700000000",
-			] as any);
+		const fsReaddirSyncSpy = vi.spyOn(
+			fs,
+			"readdirSync",
+		) as unknown as MockInstance<(path: fs.PathLike) => string[]>;
+		fsReaddirSyncSpy.mockImplementation(() => [
+			".env.1600000000",
+			".env.1700000000",
+		]);
 		const fsCopyFileSyncSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => {});
@@ -170,16 +172,20 @@ describe("Setup", () => {
 		const copyFileSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => {});
-		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockImplementation((path) => {
-			if (path === ".backup") return true;
-			return false;
-		});
-		const readdirSyncSpy = vi
-			.spyOn(fs, "readdirSync")
-			.mockReturnValue([
-				".env.1600000000",
-				".env.1700000000",
-			] as any);
+		const existsSyncSpy = vi
+			.spyOn(fs, "existsSync")
+			.mockImplementation((path) => {
+				if (path === ".backup") return true;
+				return false;
+			});
+		const readdirSyncSpy = vi.spyOn(
+			fs,
+			"readdirSync",
+		) as unknown as MockInstance<(path: fs.PathLike) => string[]>;
+		readdirSyncSpy.mockImplementation(() => [
+			".env.1600000000",
+			".env.1700000000",
+		]);
 
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
 			throw new Error("process.exit called");
