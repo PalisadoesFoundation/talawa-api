@@ -52,7 +52,6 @@ const config: Config = {
   presets: [
     [
       "classic",
-      /** @type {import('@docusaurus/preset-classic').Options} */
       {
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
@@ -77,8 +76,11 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Replace with your project's social card
-    image: "img/docusaurus-social-card.jpg",
+    docs: {
+      sidebar: {
+        hideable: false,
+      },
+    },
     navbar: {
       title: "Talawa",
       logo: {
