@@ -1,8 +1,8 @@
 ---
 id: environment-variables
-title: Environment Variables
+title: Configuration Variables
 slug: /installation/environment-variables
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 Talawa api primarily makes use of environment variables to configure the application behavior for different scenarios and use cases. By default most workflows are configured to parse and read environment variables defined in the `.env` file located at the root directory of this project.
@@ -562,7 +562,6 @@ More information could be found at [this](https://github.com/redis/redis) link.
 This environment variable is used to configure the host port to map with the container service port on which redis test listens to at runtime.
 
 - More information can be found at [this](https://docs.docker.com/engine/network/##published-ports) link.
-
 
 ## docker compose
 
