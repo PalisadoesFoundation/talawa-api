@@ -14,24 +14,15 @@ type MockUser = {
 	}>;
 };
 
-const mockTag = {
-  id: "64f1a2b3c9e8d7f6a5b4c3d2",
-  name: "General",
-  description: "General purpose tag",
-  organizationId: "64f1a2b3c9e8d7f6a5b4c3d1",
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-};
-
-function createMockFindFirstWithValidation(returnValue: any, validateWhere = true) {
+function createMockFindFirstWithValidation(returnValue: any, organizationId: string, validateWhere = true) {
 	return async ({ with: withClause }: any) => {
 		if (validateWhere && withClause?.organizationMembershipsWhereMember?.where) {
 			const whereCallback = withClause.organizationMembershipsWhereMember.where;
-			const mockFields = { organizationId: mockTag.organizationId };
+			const mockFields = { organizationId };
 			const eqSpy = vi.fn((a: any, b: any) => a === b);
 			const mockOperators = { eq: eqSpy };
 			whereCallback(mockFields, mockOperators);
-			expect(eqSpy).toHaveBeenCalledWith(mockFields.organizationId, mockTag.organizationId);
+			expect(eqSpy).toHaveBeenCalledWith(mockFields.organizationId, organizationId);
 		}
 		return returnValue;
 	};
@@ -88,7 +79,7 @@ describe("Tag.folder resolver - unit tests", () => {
 			};
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-				createMockFindFirstWithValidation(mockUserData) as any
+				createMockFindFirstWithValidation(mockUserData, mockTag.organizationId) as any
 			);
 
 			await expect(resolveFolder(mockTag, {}, ctx)).rejects.toThrow(
@@ -106,7 +97,7 @@ describe("Tag.folder resolver - unit tests", () => {
 			};
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-				createMockFindFirstWithValidation(mockUserData) as any
+				createMockFindFirstWithValidation(mockUserData, mockTag.organizationId) as any
 			);
 
 			await expect(resolveFolder(mockTag, {}, ctx)).rejects.toThrow(
@@ -122,7 +113,7 @@ describe("Tag.folder resolver - unit tests", () => {
 			};
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-				createMockFindFirstWithValidation(mockUserData) as any
+				createMockFindFirstWithValidation(mockUserData, mockTag.organizationId) as any
 			);
 			mocks.drizzleClient.query.tagFoldersTable.findFirst.mockResolvedValue({  
 		       id: mockTag.folderId as string,  
@@ -144,7 +135,7 @@ describe("Tag.folder resolver - unit tests", () => {
 			};
 
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-				createMockFindFirstWithValidation(mockUserData) as any
+				createMockFindFirstWithValidation(mockUserData, mockTag.organizationId) as any
 			);
 			mocks.drizzleClient.query.tagFoldersTable.findFirst.mockResolvedValue({  
                 id: mockTag.folderId as string,  
@@ -166,7 +157,7 @@ describe("Tag.folder resolver - unit tests", () => {
 				organizationMembershipsWhereMember: [],
 			};
 			mocks.drizzleClient.query.usersTable.findFirst.mockImplementation(
-				createMockFindFirstWithValidation(mockUserData) as any
+				createMockFindFirstWithValidation(mockUserData, mockTag.organizationId) as any
 			);
 
 			const parentWithNullFolder: TagType = { ...mockTag, folderId: null };
