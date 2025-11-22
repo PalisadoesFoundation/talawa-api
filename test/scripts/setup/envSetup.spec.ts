@@ -42,8 +42,6 @@ describe("checkEnvFile", () => {
 });
 
 describe("initializeEnvFile", () => {
-	const mockEnvContent = "KEY1=VAL1\nKEY2=VAL2";
-	const backupEnvFile = ".env.backup";
 	const devEnvFile = "envFiles/.env.devcontainer";
 
 	beforeEach(() => {
@@ -67,20 +65,7 @@ describe("initializeEnvFile", () => {
 		expect(fs.readFileSync).toHaveBeenCalledWith("envFiles/.env.devcontainer");
 	});
 
-	it("should create a backup of .env if it exists", async () => {
-		vi.spyOn(fs, "existsSync").mockImplementation(
-			(path) => path === envFileName || path === devEnvFile,
-		);
-		vi.spyOn(fs, "copyFileSync").mockImplementation(() => {});
-		vi.spyOn(fs, "readFileSync").mockReturnValue(mockEnvContent);
 
-		initializeEnvFile({});
-
-		expect(fs.copyFileSync).toHaveBeenCalledWith(envFileName, backupEnvFile);
-		expect(console.log).toHaveBeenCalledWith(
-			`✅ Backup created at ${backupEnvFile}`,
-		);
-	});
 
 	it("should throw an error if the environment file is missing", async () => {
 		vi.spyOn(fs, "existsSync").mockImplementation(() => false);

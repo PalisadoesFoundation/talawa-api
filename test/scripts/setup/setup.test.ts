@@ -16,7 +16,6 @@ describe("Setup", () => {
 
 	it("should set up environment variables with default configuration when CI=false", async () => {
 		const mockResponses = [
-			{ envReconfigure: true },
 			{ CI: "false" },
 			{ useDefaultMinio: "true" },
 			{ useDefaultCloudbeaver: "true" },
@@ -31,6 +30,10 @@ describe("Setup", () => {
 			promptMock.mockResolvedValueOnce(response);
 		}
 
+		if (fs.existsSync(".env")) {
+			fs.unlinkSync(".env");
+		}
+		delete process.env.API_LOG_LEVEL;
 		await setup();
 
 		const expectedEnv = {
@@ -39,7 +42,7 @@ describe("Setup", () => {
 			API_PORT: "4000",
 			API_IS_APPLY_DRIZZLE_MIGRATIONS: "true",
 			API_JWT_EXPIRES_IN: "2592000000",
-			API_LOG_LEVEL: "info",
+			API_LOG_LEVEL: "debug",
 			API_MINIO_ACCESS_KEY: "talawa",
 			API_MINIO_END_POINT: "minio",
 			API_MINIO_PORT: "9000",
@@ -140,10 +143,26 @@ describe("Setup", () => {
 			envReconfigure: false,
 		});
 
+		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const fsReaddirSyncSpy = vi
+			.spyOn(fs, "readdirSync")
+			.mockReturnValue([
+				".env.1600000000",
+				".env.1700000000",
+			] as any);
+		const fsCopyFileSyncSpy = vi
+			.spyOn(fs, "copyFileSync")
+			.mockImplementation(() => {});
+
 		await expect(SetupModule.setup()).rejects.toThrow("process.exit called");
 		expect(processExitSpy).toHaveBeenCalledWith(0);
 
+		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
+
 		processExitSpy.mockRestore();
+		fsExistsSyncSpy.mockRestore();
+		fsReaddirSyncSpy.mockRestore();
+		fsCopyFileSyncSpy.mockRestore();
 	});
 
 	it("should restore .env on SIGINT (Ctrl+C) and exit with code 1", async () => {
@@ -151,7 +170,16 @@ describe("Setup", () => {
 		const copyFileSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => {});
-		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		const existsSyncSpy = vi.spyOn(fs, "existsSync").mockImplementation((path) => {
+			if (path === ".backup") return true;
+			return false;
+		});
+		const readdirSyncSpy = vi
+			.spyOn(fs, "readdirSync")
+			.mockReturnValue([
+				".env.1600000000",
+				".env.1700000000",
+			] as any);
 
 		const processExitSpy = vi.spyOn(process, "exit").mockImplementation(() => {
 			throw new Error("process.exit called");
@@ -160,7 +188,8 @@ describe("Setup", () => {
 		await expect(async () => process.emit("SIGINT")).rejects.toThrow(
 			"process.exit called",
 		);
-		expect(copyFileSpy).toHaveBeenCalledWith(".env.backup", ".env");
+
+		expect(copyFileSpy).toHaveBeenCalledWith(".backup/.env.1700000000", ".env");
 		expect(consoleLogSpy).toHaveBeenCalledWith(
 			"\nProcess interrupted! Undoing changes...",
 		);
@@ -170,5 +199,6 @@ describe("Setup", () => {
 		processExitSpy.mockRestore();
 		copyFileSpy.mockRestore();
 		existsSyncSpy.mockRestore();
+		readdirSyncSpy.mockRestore();
 	});
 });

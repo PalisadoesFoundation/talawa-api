@@ -117,7 +117,14 @@ describe("Setup -> minioSetup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
+			if (path === ".backup") return true;
+			return false;
+		});
+		vi.spyOn(fs, "readdirSync").mockReturnValue([
+			".env.1600000000",
+			".env.1700000000",
+		] as any);
 		const fsCopyFileSyncSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => undefined);
@@ -125,13 +132,12 @@ describe("Setup -> minioSetup", () => {
 		const mockError = new Error("Prompt failed");
 		vi.spyOn(inquirer, "prompt").mockRejectedValueOnce(mockError);
 
-		const consoleErrorSpy = vi.spyOn(console, "error");
+			const consoleErrorSpy = vi.spyOn(console, "error");
 
 		await minioSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".env.backup", ".env");
+		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".backup/.env.1700000000", ".env");
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();

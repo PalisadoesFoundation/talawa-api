@@ -105,7 +105,14 @@ describe("Setup -> apiSetup", () => {
 		const processExitSpy = vi
 			.spyOn(process, "exit")
 			.mockImplementation(() => undefined as never);
-		const fsExistsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(true);
+		vi.spyOn(fs, "existsSync").mockImplementation((path) => {
+			if (path === ".backup") return true;
+			return false;
+		});
+		vi.spyOn(fs, "readdirSync").mockReturnValue([
+			".env.1600000000",
+			".env.1700000000",
+		] as any);
 		const fsCopyFileSyncSpy = vi
 			.spyOn(fs, "copyFileSync")
 			.mockImplementation(() => undefined);
@@ -118,8 +125,7 @@ describe("Setup -> apiSetup", () => {
 		await apiSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
-		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".env.backup", ".env");
+		expect(fsCopyFileSyncSpy).toHaveBeenCalledWith(".backup/.env.1700000000", ".env");
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
 		vi.clearAllMocks();
@@ -308,7 +314,7 @@ describe("Error handling without backup", () => {
 		await apiSetup({});
 
 		expect(consoleErrorSpy).toHaveBeenCalledWith(mockError);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".backup");
 		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
@@ -331,7 +337,7 @@ describe("Error handling without backup", () => {
 		expect(consoleLogSpy).toHaveBeenCalledWith(
 			"\nProcess interrupted! Undoing changes...",
 		);
-		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".env.backup");
+		expect(fsExistsSyncSpy).toHaveBeenCalledWith(".backup");
 		expect(fsCopyFileSyncSpy).not.toHaveBeenCalled();
 		expect(processExitSpy).toHaveBeenCalledWith(1);
 
