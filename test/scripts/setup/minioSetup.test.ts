@@ -91,7 +91,8 @@ describe("Setup -> minioSetup", () => {
 			.mockResolvedValueOnce({ MINIO_API_MAPPED_HOST_IP: "127.0.0.1" })
 			.mockResolvedValueOnce({ MINIO_API_MAPPED_PORT: "9000" })
 			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_HOST_IP: "127.0.0.1" })
-			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_PORT: "9000" })
+			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_PORT: "9000" }) // Conflict: same as API port
+			// Response for the re-prompt after conflict detection
 			.mockResolvedValueOnce({ MINIO_CONSOLE_MAPPED_PORT: "9001" })
 			.mockResolvedValueOnce({ MINIO_ROOT_USER: "talawa" })
 			.mockResolvedValueOnce({ MINIO_ROOT_PASSWORD: "password" });
@@ -101,13 +102,16 @@ describe("Setup -> minioSetup", () => {
 		const answers: Record<string, string> = { CI: "false" };
 		await minioSetup(answers);
 
+		// Verify port conflict was resolved
 		expect(answers.MINIO_API_MAPPED_PORT).toBe("9000");
 		expect(answers.MINIO_CONSOLE_MAPPED_PORT).toBe("9001");
 
+		// Verify warning message was shown
 		expect(consoleWarnSpy).toHaveBeenCalledWith(
 			"⚠️ Port conflict detected: MinIO API and Console ports must be different.",
 		);
 
+		// Verify inquirer was called the correct number of times (including the extra prompt)
 		expect(promptMock).toHaveBeenCalledTimes(8);
 		expect(promptMock).toHaveBeenCalledTimes(8);
 	});

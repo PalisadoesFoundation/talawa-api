@@ -34,7 +34,7 @@ describe("Setup", () => {
 		if (fs.existsSync(".env")) {
 			fs.unlinkSync(".env");
 		}
-		process.env.API_LOG_LEVEL = undefined;
+		Reflect.deleteProperty(process.env, "API_LOG_LEVEL");
 		await setup();
 
 		const expectedEnv = {
