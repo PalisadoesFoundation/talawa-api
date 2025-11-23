@@ -158,7 +158,7 @@ jobs:
               
               console.log(`Issue #${issueNumber} creator ${issueCreator} has association: ${issueCreatorAssociation}`);
               
-              // Only allow /assign on issues created by OWNER, MEMBER, OLLABORATOR or CONTRIBUTOR
+              // Only allow /assign on issues created by OWNER, MEMBER, COLLABORATOR or CONTRIBUTOR
               const allowedAssociations = ['OWNER', 'MEMBER', 'COLLABORATOR', 'CONTRIBUTOR'];
               
               if (!allowedAssociations.includes(issueCreatorAssociation)) {
