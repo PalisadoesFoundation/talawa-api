@@ -1,9 +1,9 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Variable: mutationCreateVenueBookingInputSchema
 
-> `const` **mutationCreateVenueBookingInputSchema**: `ZodObject`\<`Pick`\<\{\}, `never`\>, `"strip"`, \{\}, \{\}\>
+> `const` **mutationCreateVenueBookingInputSchema**: `ZodObject`\<`Pick`\<\{ `createdAt`: `ZodOptional`\<`ZodDate`\>; `creatorId`: `ZodOptional`\<`ZodNullable`\<`ZodString`\>\>; `eventId`: `ZodString`; `venueId`: `ZodString`; \}, `"eventId"` \| `"venueId"`\>, `"strip"`, `ZodTypeAny`, \{ `eventId`: `string`; `venueId`: `string`; \}, \{ `eventId`: `string`; `venueId`: `string`; \}\>
 
-Defined in: [src/graphql/inputs/MutationCreateVenueBookingInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/graphql/inputs/MutationCreateVenueBookingInput.ts#L5)
+Defined in: [src/graphql/inputs/MutationCreateVenueBookingInput.ts:5](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/graphql/inputs/MutationCreateVenueBookingInput.ts#L5)

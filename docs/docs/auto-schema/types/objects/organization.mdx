@@ -1,0 +1,481 @@
+---
+id: organization
+title: Organization
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+No description
+
+```graphql
+type Organization {
+  actionItemCategories(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationActionItemCategoriesConnection
+  addressLine1: String
+  addressLine2: String
+  adminsCount: Int
+  advertisements(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    where: AdvertisementWhereInput
+  ): OrganizationAdvertisementsConnection
+  avatarMimeType: String
+  avatarURL: String
+  blockedUsers(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationBlockedUsersConnection
+  blockedUsersCount: Int
+  chats(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationChatsConnection
+  city: String
+  countryCode: Iso3166Alpha2CountryCode
+  createdAt: DateTime
+  creator: User
+  description: String
+  events(
+    after: String
+    before: String
+    endDate: DateTime
+    first: Int
+    includeRecurring: Boolean
+    last: Int
+    startDate: DateTime
+    upcomingOnly: Boolean
+  ): OrganizationEventsConnection
+  eventsCount: Int
+  funds(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationFundsConnection
+  id: ID!
+  isMember: Boolean
+  isUserRegistrationRequired: Boolean
+  members(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    where: MembersWhereInput
+  ): OrganizationMembersConnection
+  membersCount: Int
+  membershipRequests(
+    first: Int
+    skip: Int
+    where: MembershipRequestWhereInput
+  ): [MembershipRequest!]
+  membershipRequestsCount: Int
+  name: String
+  pinnedPosts(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationPinnedPostsConnection
+  pinnedPostsCount: Int
+  postalCode: String
+  posts(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationPostsConnection
+  postsCount: Int
+  state: String
+  tagFolders(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationTagFoldersConnection
+  tags(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationTagsConnection
+  updatedAt: DateTime
+  updater: User
+  venues(
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): OrganizationVenuesConnection
+  venuesCount: Int
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>actionItemCategories</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationActionItemCategoriesConnection</b></code>](/auto-schema/types/objects/organization-action-item-categories-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the action item categories belonging to the organization.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.actionItemCategories.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.actionItemCategories.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.actionItemCategories.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.actionItemCategories.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>addressLine1</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Address line 1 of the organization's address.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>addressLine2</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Address line 2 of the organization's address.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>adminsCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Total number of admins in the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>advertisements</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationAdvertisementsConnection</b></code>](/auto-schema/types/objects/organization-advertisements-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the advertisements belonging to the organization.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.advertisements.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.advertisements.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.advertisements.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.advertisements.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.advertisements.<b>where</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>AdvertisementWhereInput</b></code>](/auto-schema/types/inputs/advertisement-where-input.mdx) <Badge class="badge badge--secondary " text="input"/>
+
+Filter criteria for advertisements
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>avatarMimeType</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Mime type of the avatar of the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>avatarURL</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+URL to the avatar of the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>blockedUsers</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationBlockedUsersConnection</b></code>](/auto-schema/types/objects/organization-blocked-users-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to retrieve blocked users of the organization.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.blockedUsers.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.blockedUsers.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.blockedUsers.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.blockedUsers.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>blockedUsersCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Total number of blocked users in the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>chats</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationChatsConnection</b></code>](/auto-schema/types/objects/organization-chats-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the chats belonging to the organization.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.chats.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.chats.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.chats.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.chats.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>city</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Name of the city where the organization exists in.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>countryCode</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Iso3166Alpha2CountryCode</b></code>](/auto-schema/types/enums/iso-3166-alpha-2-country-code.mdx) <Badge class="badge badge--secondary " text="enum"/>
+
+Country code of the country the organization exists in.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>createdAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date time at the time the organization was created.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>creator</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+User who created the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>description</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Custom information about the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>events</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationEventsConnection</b></code>](/auto-schema/types/objects/organization-events-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the events belonging to the organization. Includes both standalone events and materialized instances from recurring events. Uses pure materialized approach - no virtual instances.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.events.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.events.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.events.<b>endDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+End date for filtering events (defaults to 3 months from now)
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.events.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.events.<b>includeRecurring</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Whether to include materialized instances from recurring events (default: true)
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.events.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.events.<b>startDate</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Start date for filtering events (defaults to today)
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.events.<b>upcomingOnly</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Filter to only show upcoming events (events that haven't ended yet). When true, overrides endDate to current date.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>eventsCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Total number of events in the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>funds</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationFundsConnection</b></code>](/auto-schema/types/objects/organization-funds-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the funds belonging to the organization.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.funds.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.funds.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.funds.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.funds.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>id</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>ID!</b></code>](/auto-schema/types/scalars/id.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+Global identifier of the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>isMember</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Indicates whether the current user is a member of this organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>isUserRegistrationRequired</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Flag to indicate if user registration is required to join the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>members</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationMembersConnection</b></code>](/auto-schema/types/objects/organization-members-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the users that are members of the organization.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.members.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.members.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.members.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.members.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.members.<b>where</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>MembersWhereInput</b></code>](/auto-schema/types/inputs/members-where-input.mdx) <Badge class="badge badge--secondary " text="input"/>
+
+Filter criteria for organization members
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>membersCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Total number of members in the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>membershipRequests</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>[MembershipRequest!]</b></code>](/auto-schema/types/objects/membership-request.mdx) <Badge class="badge badge--secondary " text="list"/> <Badge class="badge badge--secondary " text="object"/>
+
+Membership requests for this organization
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.membershipRequests.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Number of items to return
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.membershipRequests.<b>skip</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Number of items to skip
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.membershipRequests.<b>where</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>MembershipRequestWhereInput</b></code>](/auto-schema/types/inputs/membership-request-where-input.mdx) <Badge class="badge badge--secondary " text="input"/>
+
+Filter criteria for membership requests
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>membershipRequestsCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Total number of membership requests in the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>name</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Name of the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>pinnedPosts</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationPinnedPostsConnection</b></code>](/auto-schema/types/objects/organization-pinned-posts-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the pinned posts belonging to the organization.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.pinnedPosts.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.pinnedPosts.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.pinnedPosts.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.pinnedPosts.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>pinnedPostsCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Total number of pinned posts belonging to the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>postalCode</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Postal code of the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>posts</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationPostsConnection</b></code>](/auto-schema/types/objects/organization-posts-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the posts belonging to the organization.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.posts.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.posts.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.posts.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.posts.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>postsCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Total number of posts belonging to the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>state</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Name of the state the organization exists in.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>tagFolders</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationTagFoldersConnection</b></code>](/auto-schema/types/objects/organization-tag-folders-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the tag folders belonging to the organization.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.tagFolders.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.tagFolders.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.tagFolders.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.tagFolders.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>tags</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationTagsConnection</b></code>](/auto-schema/types/objects/organization-tags-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the tags belonging to the organization.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.tags.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.tags.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.tags.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.tags.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>updatedAt</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>DateTime</b></code>](/auto-schema/types/scalars/date-time.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Date time at the time the organization was last updated.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>updater</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>User</b></code>](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+User who last updated the organization.
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>venues</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>OrganizationVenuesConnection</b></code>](/auto-schema/types/objects/organization-venues-connection.mdx) <Badge class="badge badge--secondary " text="object"/>
+
+GraphQL connection to traverse through the venues belonging to the organization.
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.venues.<b>after</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.venues.<b>before</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>String</b></code>](/auto-schema/types/scalars/string.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.venues.<b>first</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+##### [<code style={{ fontWeight: 'normal' }}>Organization.venues.<b>last</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+#### [<code style={{ fontWeight: 'normal' }}>Organization.<b>venuesCount</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Int</b></code>](/auto-schema/types/scalars/int.mdx) <Badge class="badge badge--secondary " text="scalar"/>
+
+Total number of venues in the organization.
+
+### Returned By
+
+[`createOrganization`](/auto-schema/operations/mutations/create-organization.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`createOrganizationMembership`](/auto-schema/operations/mutations/create-organization-membership.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteOrganization`](/auto-schema/operations/mutations/delete-organization.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`deleteOrganizationMembership`](/auto-schema/operations/mutations/delete-organization-membership.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`organization`](/auto-schema/operations/queries/organization.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`organizations`](/auto-schema/operations/queries/organizations.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/><Bullet />[`updateOrganization`](/auto-schema/operations/mutations/update-organization.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/><Bullet />[`updateOrganizationMembership`](/auto-schema/operations/mutations/update-organization-membership.mdx) <Badge class="badge badge--secondary badge--relation" text="mutation"/>
+
+### Member Of
+
+[`ActionItem`](/auto-schema/types/objects/action-item.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`ActionItemCategory`](/auto-schema/types/objects/action-item-category.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Advertisement`](/auto-schema/types/objects/advertisement.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`BlockedUser`](/auto-schema/types/objects/blocked-user.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Chat`](/auto-schema/types/objects/chat.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Event`](/auto-schema/types/objects/event.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Fund`](/auto-schema/types/objects/fund.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Post`](/auto-schema/types/objects/post.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Tag`](/auto-schema/types/objects/tag.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`TagFolder`](/auto-schema/types/objects/tag-folder.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`User`](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`UserOrganizationsWhereMemberConnectionEdge`](/auto-schema/types/objects/user-organizations-where-member-connection-edge.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`Venue`](/auto-schema/types/objects/venue.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

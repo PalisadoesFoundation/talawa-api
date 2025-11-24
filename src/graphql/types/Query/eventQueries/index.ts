@@ -10,11 +10,12 @@ export * from "./recurringEventInstanceQueries";
 export * from "./standaloneEventQueries";
 export * from "./unifiedEventQueries";
 
-export type { GetRecurringEventInstancesInput } from "./recurringEventInstanceQueries";
-
 export type { GetStandaloneEventsInput } from "./standaloneEventQueries";
 
 export type {
 	EventWithAttachments,
 	GetUnifiedEventsInput,
 } from "./unifiedEventQueries";
+
+// Export the new function for getting recurring events by base ID
+export { getRecurringEventInstancesByBaseId } from "./recurringEventInstanceQueries";

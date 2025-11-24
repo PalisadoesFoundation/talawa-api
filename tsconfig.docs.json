@@ -10,10 +10,9 @@
 		"allowJs": true,
 		"checkJs": false
 	},
-	"include": ["src/**/*"],
+	"include": ["src"],
 	"exclude": [
 		"node_modules",
-		"src/vite-env.d.ts",
 		"**/*.spec.ts",
 		"**/*.test.ts",
 		"**/*.spec.tsx",

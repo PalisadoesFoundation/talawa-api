@@ -1,0 +1,82 @@
+---
+id: date
+title: Date
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+
+```graphql
+scalar Date
+```
+
+### Member Of
+
+[`BlockedUser`](/auto-schema/types/objects/blocked-user.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`CheckInStatus`](/auto-schema/types/objects/check-in-status.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`EventAttendee`](/auto-schema/types/objects/event-attendee.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/><Bullet />[`MutationCreateUserInput`](/auto-schema/types/inputs/mutation-create-user-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationSignUpInput`](/auto-schema/types/inputs/mutation-sign-up-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateCurrentUserInput`](/auto-schema/types/inputs/mutation-update-current-user-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`MutationUpdateUserInput`](/auto-schema/types/inputs/mutation-update-user-input.mdx) <Badge class="badge badge--secondary badge--relation" text="input"/><Bullet />[`User`](/auto-schema/types/objects/user.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

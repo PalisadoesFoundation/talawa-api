@@ -91,13 +91,21 @@ builder.mutationField("createPresignedUrl", (t) =>
 				`uploads/${args.input.organizationId}/${Date.now()}-${args.input.fileHash}-${fileName}`;
 
 			try {
-				const presignedUrl: string = await new Promise((resolve, reject) => {
+				let presignedUrl: string = await new Promise((resolve, reject) => {
 					ctx.minio.client
 						.presignedPutObject(bucketName, objectName, 60)
 						.then(resolve)
 						.catch(reject);
 				});
 
+				// If a public base URL is configured, ensure the URL sent to clients uses it
+				if (ctx.minio.config.publicBaseUrl) {
+					const u = new URL(presignedUrl);
+					const pub = new URL(ctx.minio.config.publicBaseUrl);
+					u.protocol = pub.protocol;
+					u.host = pub.host; // keeps port if present
+					presignedUrl = u.toString();
+				}
 				return { presignedUrl, objectName, requiresUpload: true };
 			} catch (error: unknown) {
 				if (error instanceof Error) {

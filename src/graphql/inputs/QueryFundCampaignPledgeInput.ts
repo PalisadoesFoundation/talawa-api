@@ -49,3 +49,28 @@ export const QueryPledgeOrderByInput = builder.enumType(
 			"Sorting criteria, e.g., 'amount_ASC', 'amount_DESC', 'endDate_ASC', 'endDate_DESC'",
 	},
 );
+
+/**
+ * Defines the Zod validation schema for querying FundCampaignPledges by userId.
+ */
+export const queryFundCampaignPledgesByUserInputSchema = z.object({
+	userId: fundCampaignPledgesTableInsertSchema.shape.pledgerId, // Make userId required
+});
+
+/**
+ * GraphQL Input Type for querying FundCampaignPledges by userId.
+ */
+export const QueryFundCampaignPledgesByUserInput = builder
+	.inputRef<z.infer<typeof queryFundCampaignPledgesByUserInputSchema>>(
+		"QueryFundCampaignPledgesByUserInput",
+	)
+	.implement({
+		description:
+			"Input type for querying FundCampaignPledges assigned to a user.",
+		fields: (t) => ({
+			userId: t.string({
+				description: "ID of the user to fetch FundCampaignPledges.",
+				required: true,
+			}),
+		}),
+	});

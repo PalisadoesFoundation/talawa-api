@@ -1,0 +1,99 @@
+---
+id: has-user-voted
+title: HasUserVoted
+---
+
+export const Bullet = () => (
+  <>
+    <span
+      style={{
+        fontWeight: "normal",
+        fontSize: ".5em",
+        color: "var(--ifm-color-secondary-darkest)",
+      }}
+    >
+      &nbsp;●&nbsp;
+    </span>
+  </>
+);
+
+export const SpecifiedBy = (props) => (
+  <>
+    Specification
+    <a
+      className="link"
+      style={{ fontSize: "1.5em", paddingLeft: "4px" }}
+      target="_blank"
+      href={props.url}
+      title={"Specified by " + props.url}
+    >
+      ⎘
+    </a>
+  </>
+);
+
+export const Badge = (props) => (
+  <>
+    <span className={props.class}>{props.text}</span>
+  </>
+);
+
+import { useState } from "react";
+
+export const Details = ({
+  dataOpen,
+  dataClose,
+  children,
+  startOpen = false,
+}) => {
+  const [open, setOpen] = useState(startOpen);
+  return (
+    <details
+      {...(open ? { open: true } : {})}
+      className="details"
+      style={{
+        border: "none",
+        boxShadow: "none",
+        background: "var(--ifm-background-color)",
+      }}
+    >
+      <summary
+        onClick={(e) => {
+          e.preventDefault();
+          setOpen((open) => !open);
+        }}
+        style={{ listStyle: "none" }}
+      >
+        {open ? dataOpen : dataClose}
+      </summary>
+      {open && children}
+    </details>
+  );
+};
+
+No description
+
+```graphql
+type HasUserVoted {
+  hasVoted: Boolean!
+  voteType: PostVoteType
+}
+```
+
+### Fields
+
+#### [<code style={{ fontWeight: 'normal' }}>HasUserVoted.<b>hasVoted</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>Boolean!</b></code>](/auto-schema/types/scalars/boolean.mdx) <Badge class="badge badge--secondary badge--non_null" text="non-null"/> <Badge class="badge badge--secondary " text="scalar"/>
+
+Indicates if the user has voted
+
+#### [<code style={{ fontWeight: 'normal' }}>HasUserVoted.<b>voteType</b></code>](#)<Bullet />[<code style={{ fontWeight: 'normal' }}><b>PostVoteType</b></code>](/auto-schema/types/enums/post-vote-type.mdx) <Badge class="badge badge--secondary " text="enum"/>
+
+Type of the post vote, null if no vote exists
+
+### Returned By
+
+[`hasUserVoted`](/auto-schema/operations/queries/has-user-voted.mdx) <Badge class="badge badge--secondary badge--relation" text="query"/>
+
+### Member Of
+
+[`Post`](/auto-schema/types/objects/post.mdx) <Badge class="badge badge--secondary badge--relation" text="object"/>

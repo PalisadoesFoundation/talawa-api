@@ -1,16 +1,20 @@
-[Admin Docs](/)
+[API Docs](/)
 
 ***
 
 # Function: transformDefaultGraphQLConnectionArguments()
 
-> **transformDefaultGraphQLConnectionArguments**\<`Arg`\>(`arg`, `ctx`): `object` & `Omit`\<`Arg`, `"after"` \| `"before"` \| `"first"` \| `"last"`\>
+> **transformDefaultGraphQLConnectionArguments**\<`Arg`\>(`arg`, `ctx`): `object` & `Omit`\<`Arg`, `"first"` \| `"last"` \| `"before"` \| `"after"`\>
 
-Defined in: [src/utilities/defaultGraphQLConnection.ts:50](https://github.com/PalisadoesFoundation/talawa-api/blob/c34688c69eb12a5eb721ebc8a0cd60b53e5fbf81/src/utilities/defaultGraphQLConnection.ts#L50)
+Defined in: [src/utilities/defaultGraphQLConnection.ts:67](https://github.com/PalisadoesFoundation/talawa-api/tree/mainsrc/utilities/defaultGraphQLConnection.ts#L67)
+
+Transform function for the basic connection arguments.
 
 ## Type Parameters
 
-• **Arg** *extends* `object`
+### Arg
+
+`Arg` *extends* `object`
 
 ## Parameters
 
@@ -23,5 +27,3 @@ Defined in: [src/utilities/defaultGraphQLConnection.ts:50](https://github.com/Pa
 `RefinementCtx`
 
 ## Returns
-
-`object` & `Omit`\<`Arg`, `"after"` \| `"before"` \| `"first"` \| `"last"`\>

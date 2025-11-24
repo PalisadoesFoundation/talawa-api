@@ -24,26 +24,32 @@ export function calculateInstanceOccurrences(
 		config;
 
 	if (!baseEvent.startAt || !baseEvent.endAt) {
-		logger.warn("Base event missing start or end time", {
-			baseEventId: baseEvent.id,
-			startAt: baseEvent.startAt,
-			endAt: baseEvent.endAt,
-		});
+		logger.warn(
+			{
+				baseEventId: baseEvent.id,
+				startAt: baseEvent.startAt,
+				endAt: baseEvent.endAt,
+			},
+			"Base event missing start or end time",
+		);
 		return [];
 	}
 
 	const context = buildRecurrenceContext(recurrenceRule, baseEvent, exceptions);
 	const occurrences: CalculatedOccurrence[] = [];
 
-	logger.debug("Starting occurrence calculation", {
-		baseEventStart: baseEvent.startAt.toISOString(),
-		windowStart: windowStart.toISOString(),
-		windowEnd: windowEnd.toISOString(),
-		frequency: recurrenceRule.frequency,
-		interval: recurrenceRule.interval,
-		isNeverEnding: context.isNeverEnding,
-		totalCount: context.totalCount,
-	});
+	logger.debug(
+		{
+			baseEventStart: baseEvent.startAt.toISOString(),
+			windowStart: windowStart.toISOString(),
+			windowEnd: windowEnd.toISOString(),
+			frequency: recurrenceRule.frequency,
+			interval: recurrenceRule.interval,
+			isNeverEnding: context.isNeverEnding,
+			totalCount: context.totalCount,
+		},
+		"Starting occurrence calculation",
+	);
 
 	let currentDate = new Date(baseEvent.startAt);
 	let iterationCount = 0;
@@ -127,12 +133,15 @@ export function calculateInstanceOccurrences(
 		}
 	}
 
-	logger.debug("Occurrence calculation completed", {
-		iterationCount,
-		occurrencesGenerated: occurrences.length,
-		sequenceNumber: sequenceNumber - 1,
-		totalCount: context.totalCount,
-	});
+	logger.debug(
+		{
+			iterationCount,
+			occurrencesGenerated: occurrences.length,
+			sequenceNumber: sequenceNumber - 1,
+			totalCount: context.totalCount,
+		},
+		"Occurrence calculation completed",
+	);
 
 	return occurrences;
 }
@@ -167,7 +176,15 @@ function buildRecurrenceContext(
 		typeof eventExceptionsTable.$inferSelect
 	>();
 	for (const exception of exceptions) {
-		exceptionsByTime.set(exception.instanceStartTime.toISOString(), exception);
+		// Try to extract the original instance start time from exception data
+		// For time-based exceptions, the key should be the original start time
+		const exceptionData = exception.exceptionData as Record<string, unknown>;
+		if (exceptionData.originalInstanceStartTime) {
+			const startTime = new Date(
+				exceptionData.originalInstanceStartTime as string | number | Date,
+			);
+			exceptionsByTime.set(startTime.toISOString(), exception);
+		}
 	}
 
 	// Safety limit to prevent infinite loops

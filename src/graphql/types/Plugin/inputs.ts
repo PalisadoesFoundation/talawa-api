@@ -40,9 +40,17 @@ export const createPluginInputSchema = z.object({
 			/^[a-zA-Z][a-zA-Z0-9_]*$/,
 			"Plugin ID must start with a letter and contain only letters, numbers, and underscores",
 		),
-	isActivated: z.boolean().optional(),
-	isInstalled: z.boolean().optional(),
-	backup: z.boolean().optional(),
+});
+
+export const installPluginInputSchema = z.object({
+	pluginId: z
+		.string()
+		.min(1, "Plugin ID cannot be empty")
+		.max(100, "Plugin ID is too long")
+		.regex(
+			/^[a-zA-Z][a-zA-Z0-9_]*$/,
+			"Plugin ID must start with a letter and contain only letters, numbers, and underscores",
+		),
 });
 
 export const updatePluginInputSchema = z.object({
@@ -83,9 +91,12 @@ export const QueryPluginsInput = builder.inputType("QueryPluginsInput", {
 export const CreatePluginInput = builder.inputType("CreatePluginInput", {
 	fields: (t) => ({
 		pluginId: t.string({ required: true }),
-		isActivated: t.boolean({ required: false }),
-		isInstalled: t.boolean({ required: false }),
-		backup: t.boolean({ required: false }),
+	}),
+});
+
+export const InstallPluginInput = builder.inputType("InstallPluginInput", {
+	fields: (t) => ({
+		pluginId: t.string({ required: true }),
 	}),
 });
 
@@ -119,6 +130,11 @@ export const getQueryPluginsInput = () => ({
 export const getCreatePluginInput = () => ({
 	schema: createPluginInputSchema,
 	type: CreatePluginInput,
+});
+
+export const getInstallPluginInput = () => ({
+	schema: installPluginInputSchema,
+	type: InstallPluginInput,
 });
 
 export const getUpdatePluginInput = () => ({

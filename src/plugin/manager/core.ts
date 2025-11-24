@@ -33,10 +33,7 @@ class PluginManager extends EventEmitter {
 	private loadedPlugins: Map<string, ILoadedPlugin> = new Map();
 	private extensionRegistry: IExtensionRegistry = {
 		graphql: {
-			queries: {},
-			mutations: {},
-			subscriptions: {},
-			types: {},
+			builderExtensions: [],
 		},
 		database: {
 			tables: {},
@@ -46,6 +43,9 @@ class PluginManager extends EventEmitter {
 		hooks: {
 			pre: {},
 			post: {},
+		},
+		webhooks: {
+			handlers: {},
 		},
 	};
 	private pluginContext: IPluginContext;
@@ -243,6 +243,7 @@ class PluginManager extends EventEmitter {
 				graphqlResolvers: {},
 				databaseTables: {} as Record<string, Record<string, unknown>>,
 				hooks: {},
+				webhooks: {},
 				status: PluginStatus.LOADING,
 			};
 
@@ -308,6 +309,13 @@ class PluginManager extends EventEmitter {
 	}
 
 	/**
+	 * Install a plugin
+	 */
+	public async installPlugin(pluginId: string): Promise<boolean> {
+		return this.lifecycle.installPlugin(pluginId, this);
+	}
+
+	/**
 	 * Activate a plugin
 	 */
 	public async activatePlugin(pluginId: string): Promise<boolean> {
@@ -325,7 +333,14 @@ class PluginManager extends EventEmitter {
 	}
 
 	/**
-	 * Unload a plugin
+	 * Uninstall a plugin
+	 */
+	public async uninstallPlugin(pluginId: string): Promise<boolean> {
+		return this.lifecycle.uninstallPlugin(pluginId, this);
+	}
+
+	/**
+	 * Unload a plugin from memory
 	 */
 	public async unloadPlugin(pluginId: string): Promise<boolean> {
 		return this.lifecycle.unloadPlugin(pluginId, this);
@@ -492,6 +507,70 @@ class PluginManager extends EventEmitter {
 	 */
 	public getPluginContext(): IPluginContext {
 		return this.pluginContext;
+	}
+
+	/**
+	 * Gracefully shutdown plugin system without triggering deactivation or schema updates
+	 * This is used during server shutdown to avoid unnecessary operations
+	 */
+	public async gracefulShutdown(): Promise<void> {
+		try {
+			// Get all loaded plugin IDs
+			const pluginIds = Array.from(this.loadedPlugins.keys());
+
+			// Call onUnload lifecycle hooks for each plugin without deactivation
+			await Promise.allSettled(
+				pluginIds.map(async (pluginId) => {
+					try {
+						const plugin = this.loadedPlugins.get(pluginId);
+						if (!plugin) return;
+
+						// Call plugin lifecycle hook if available
+						const pluginModule = await this.lifecycle.getPluginModule(pluginId);
+						if (pluginModule?.onUnload) {
+							await pluginModule.onUnload(this.pluginContext);
+						}
+
+						// Remove from extension registry
+						this.lifecycle.removeFromExtensionRegistry(pluginId);
+
+						// Remove from loaded plugins
+						this.loadedPlugins.delete(pluginId);
+
+						this.emit("plugin:unloaded", pluginId);
+					} catch (error) {
+						console.error(
+							`Error during graceful shutdown of plugin ${pluginId}:`,
+							error,
+						);
+					}
+				}),
+			);
+
+			// Clear extension registry
+			this.extensionRegistry = {
+				graphql: {
+					builderExtensions: [],
+				},
+				database: {
+					tables: {},
+					enums: {},
+					relations: {},
+				},
+				hooks: {
+					pre: {},
+					post: {},
+				},
+				webhooks: {
+					handlers: {},
+				},
+			};
+
+			// Remove all listeners
+			this.removeAllListeners();
+		} catch (error) {
+			console.error("Error during graceful plugin system shutdown:", error);
+		}
 	}
 }
 

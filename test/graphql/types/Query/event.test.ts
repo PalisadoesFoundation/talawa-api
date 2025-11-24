@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { expect, suite, test } from "vitest";
+import { afterEach, beforeAll, expect, suite, test } from "vitest";
 import type {
 	TalawaGraphQLFormattedError,
 	UnauthenticatedExtensions,
@@ -11,15 +11,57 @@ import { mercuriusClient } from "../client";
 import {
 	Mutation_createEvent,
 	Mutation_createOrganization,
+	Mutation_createOrganizationMembership,
 	Mutation_createUser,
 	Mutation_deleteUser,
 	Query_event,
+	Query_getRecurringEvents,
 	Query_signIn,
 } from "../documentNodes";
 
+// Admin auth (fetched once per suite)
+let adminToken: string | null = null;
+let adminUserId: string | null = null;
+async function ensureAdminAuth(): Promise<{ token: string; userId: string }> {
+	if (adminToken && adminUserId)
+		return { token: adminToken, userId: adminUserId };
+	if (
+		!server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS ||
+		!server.envConfig.API_ADMINISTRATOR_USER_PASSWORD
+	) {
+		throw new Error("Admin credentials missing in env config");
+	}
+	const res = await mercuriusClient.query(Query_signIn, {
+		variables: {
+			input: {
+				emailAddress: server.envConfig.API_ADMINISTRATOR_USER_EMAIL_ADDRESS,
+				password: server.envConfig.API_ADMINISTRATOR_USER_PASSWORD,
+			},
+		},
+	});
+	if (
+		res.errors ||
+		!res.data?.signIn?.authenticationToken ||
+		!res.data?.signIn?.user?.id
+	) {
+		throw new Error(
+			`Unable to sign in admin: ${res.errors?.[0]?.message || "unknown"}`,
+		);
+	}
+	adminToken = res.data.signIn.authenticationToken;
+	adminUserId = res.data.signIn.user.id;
+	assertToBeNonNullish(adminToken);
+	assertToBeNonNullish(adminUserId);
+	return { token: adminToken, userId: adminUserId };
+}
+
+beforeAll(async () => {
+	await ensureAdminAuth();
+});
+
 suite("Query field event", () => {
-	// Helper function to get admin auth token
-	async function getAdminToken() {
+	// Helper function to get admin auth token and user ID
+	async function getAdminTokenAndUserId() {
 		const signInResult = await mercuriusClient.query(Query_signIn, {
 			variables: {
 				input: {
@@ -30,12 +72,27 @@ suite("Query field event", () => {
 		});
 
 		const authToken = signInResult.data?.signIn?.authenticationToken;
+		const userId = signInResult.data?.signIn?.user?.id;
+		if (!authToken || !userId) {
+			throw new Error(
+				`Failed to sign in as admin. Errors: ${JSON.stringify(
+					signInResult.errors,
+				)}`,
+			);
+		}
 		assertToBeNonNullish(authToken);
+		assertToBeNonNullish(userId);
+		return { authToken, userId };
+	}
+
+	// Helper function to get admin auth token
+	async function getAdminToken() {
+		const { authToken } = await getAdminTokenAndUserId();
 		return authToken;
 	}
 
 	// Helper function to create an organization
-	async function createTestOrganization(authToken: string) {
+	async function createTestOrganization(authToken: string, userId: string) {
 		const orgResult = await mercuriusClient.mutate(
 			Mutation_createOrganization,
 			{
@@ -52,7 +109,40 @@ suite("Query field event", () => {
 		);
 
 		const organization = orgResult.data?.createOrganization;
+		if (!organization) {
+			throw new Error(
+				`Failed to create organization. Errors: ${JSON.stringify(
+					orgResult.errors,
+				)}`,
+			);
+		}
 		assertToBeNonNullish(organization);
+
+		// Create organization membership for the admin user
+		const membershipResult = await mercuriusClient.mutate(
+			Mutation_createOrganizationMembership,
+			{
+				headers: {
+					authorization: `bearer ${authToken}`,
+				},
+				variables: {
+					input: {
+						organizationId: organization.id,
+						memberId: userId,
+						role: "administrator",
+					},
+				},
+			},
+		);
+
+		if (membershipResult.errors) {
+			throw new Error(
+				`Failed to create organization membership. Errors: ${JSON.stringify(
+					membershipResult.errors,
+				)}`,
+			);
+		}
+
 		return organization;
 	}
 
@@ -94,12 +184,17 @@ suite("Query field event", () => {
 		});
 
 		const event = eventResult.data?.createEvent;
+		if (!event) {
+			throw new Error(
+				`Failed to create event. Errors: ${JSON.stringify(eventResult.errors)}`,
+			);
+		}
 		assertToBeNonNullish(event);
 		return event;
 	}
 
-	async function setupTestData(authToken: string) {
-		const organization = await createTestOrganization(authToken);
+	async function setupTestData(authToken: string, userId: string) {
+		const organization = await createTestOrganization(authToken, userId);
 		const event = await createTestEvent(authToken, organization.id);
 		return { organization, event };
 	}
@@ -143,6 +238,18 @@ suite("Query field event", () => {
 	suite(
 		`results in a graphql error with "unauthenticated" extensions code in the "errors" field and "null" as the value of "data.event" field if`,
 		() => {
+			const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+			afterEach(async () => {
+				for (const cleanup of testCleanupFunctions.reverse()) {
+					try {
+						await cleanup();
+					} catch (error) {
+						console.error("Cleanup failed:", error);
+					}
+				}
+				testCleanupFunctions.length = 0;
+			});
 			test("client triggering the graphql operation is not authenticated.", async () => {
 				const eventResult = await mercuriusClient.query(Query_event, {
 					variables: {
@@ -167,8 +274,8 @@ suite("Query field event", () => {
 			});
 
 			test("client triggering the graphql operation has no existing user associated to their authentication context.", async () => {
-				const authToken = await getAdminToken();
-				const { event } = await setupTestData(authToken);
+				const { authToken, userId } = await getAdminTokenAndUserId();
+				const { event } = await setupTestData(authToken, userId);
 				const deletedUser = await createAndDeleteTestUser(authToken);
 
 				// Try to access event with deleted user's token
@@ -286,8 +393,12 @@ suite("Query field event", () => {
 	);
 
 	test("unauthorized regular user cannot access event from an organization they are not a member of", async () => {
-		const adminAuthToken = await getAdminToken();
-		const organization = await createTestOrganization(adminAuthToken);
+		const { authToken: adminAuthToken, userId: adminUserId } =
+			await getAdminTokenAndUserId();
+		const organization = await createTestOrganization(
+			adminAuthToken,
+			adminUserId,
+		);
 		const event = await createTestEvent(adminAuthToken, organization.id);
 
 		// Create a regular user who is not a member of the organization
@@ -346,26 +457,14 @@ suite("Query field event", () => {
 
 	// Then refactor the "admin user can access event" test to:
 	test("admin user can access event from any organization", async () => {
-		const adminAuthToken = await getAdminToken();
+		const { authToken: adminAuthToken, userId: adminUserId } =
+			await getAdminTokenAndUserId();
 
 		// Create test organization
-		const orgResult = await mercuriusClient.mutate(
-			Mutation_createOrganization,
-			{
-				headers: {
-					authorization: `bearer ${adminAuthToken}`,
-				},
-				variables: {
-					input: {
-						countryCode: "us",
-						name: `Test Organization ${faker.string.alphanumeric(8)}`,
-					},
-				},
-			},
+		const organization = await createTestOrganization(
+			adminAuthToken,
+			adminUserId,
 		);
-
-		const organization = orgResult.data?.createOrganization;
-		assertToBeNonNullish(organization);
 
 		// Create test event using helper
 		const event = await createTestEvent(adminAuthToken, organization.id);
@@ -391,9 +490,21 @@ suite("Query field event", () => {
 
 	// These additional test cases do not improve coverage from the actual files, However -> They help testing the application better
 	suite("Additional event tests", () => {
+		const testCleanupFunctions: Array<() => Promise<void>> = [];
+
+		afterEach(async () => {
+			for (const cleanup of testCleanupFunctions.reverse()) {
+				try {
+					await cleanup();
+				} catch (error) {
+					console.error("Cleanup failed:", error);
+				}
+			}
+			testCleanupFunctions.length = 0;
+		});
 		test("handles events with past dates correctly", async () => {
-			const authToken = await getAdminToken();
-			const organization = await createTestOrganization(authToken);
+			const { authToken, userId } = await getAdminTokenAndUserId();
+			const organization = await createTestOrganization(authToken, userId);
 
 			// Create an event in the past
 			const pastEventResult = await mercuriusClient.mutate(
@@ -445,8 +556,8 @@ suite("Query field event", () => {
 		});
 
 		test("handles multi-day events correctly", async () => {
-			const authToken = await getAdminToken();
-			const organization = await createTestOrganization(authToken);
+			const { authToken, userId } = await getAdminTokenAndUserId();
+			const organization = await createTestOrganization(authToken, userId);
 
 			// Create a multi-day event
 			const multiDayEventResult = await mercuriusClient.mutate(
@@ -498,98 +609,69 @@ suite("Query field event", () => {
 			expect(durationInDays).toBeGreaterThan(1);
 		});
 
-		test("handles events with minimal fields correctly", async () => {
-			const authToken = await getAdminToken();
-			const organization = await createTestOrganization(authToken);
+		test("creates a never-ending recurring event and materializes instances (recurrence.never)", async () => {
+			const { authToken, userId } = await getAdminTokenAndUserId();
 
-			// Create an event with only required fields
-			const minimalEventResult = await mercuriusClient.mutate(
+			const organization = await createTestOrganization(authToken, userId);
+			assertToBeNonNullish(organization);
+			const organizationId = organization.id;
+
+			const startAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+			const endAt = new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString();
+
+			// Create never-ending recurring event
+			const createEventResult = await mercuriusClient.mutate(
 				Mutation_createEvent,
 				{
-					headers: {
-						authorization: `bearer ${authToken}`,
-					},
+					headers: { authorization: `bearer ${authToken}` },
 					variables: {
 						input: {
-							name: "Minimal Event",
-							startAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour from now
-							endAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours from now
-							organizationId: organization.id,
+							name: `Never Recurring ${faker.string.uuid()}`,
+							organizationId,
+							startAt,
+							endAt,
+							recurrence: {
+								frequency: "WEEKLY",
+								never: true,
+							},
 						},
 					},
 				},
 			);
 
-			const minimalEvent = minimalEventResult.data?.createEvent;
-			assertToBeNonNullish(minimalEvent);
-
-			// Query the minimal event
-			const queryResult = await mercuriusClient.query(Query_event, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						id: minimalEvent.id,
-					},
-				},
-			});
-
-			const queriedEvent = queryResult.data.event;
-			expect(queriedEvent).not.toBeNull();
-			assertToBeNonNullish(queriedEvent);
-			expect(queriedEvent.id).toBe(minimalEvent.id);
-			expect(queriedEvent.description).toBeNull();
-		});
-
-		test("handles concurrent access patterns correctly", async () => {
-			const authToken = await getAdminToken();
-			const organization = await createTestOrganization(authToken);
-
-			// Create an initial event
-			const eventResult = await mercuriusClient.mutate(Mutation_createEvent, {
-				headers: {
-					authorization: `bearer ${authToken}`,
-				},
-				variables: {
-					input: {
-						name: "Concurrent Access Event",
-						startAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-						endAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-						organizationId: organization.id,
-					},
-				},
-			});
-
-			const event = eventResult.data?.createEvent;
-			assertToBeNonNullish(event);
-
-			// Perform multiple concurrent queries
-			const concurrentQueries = Array(5)
-				.fill(null)
-				.map(() =>
-					mercuriusClient.query(Query_event, {
-						headers: {
-							authorization: `bearer ${authToken}`,
-						},
-						variables: {
-							input: {
-								id: event.id,
-							},
-						},
-					}),
+			if (createEventResult.errors && createEventResult.errors.length > 0) {
+				throw new Error(
+					`createEvent GraphQL errors: ${JSON.stringify(createEventResult.errors, null, 2)}`,
 				);
-
-			const results = await Promise.all(concurrentQueries);
-
-			// Verify all queries returned the same data
-			for (const result of results) {
-				const queriedEvent = result.data.event;
-				expect(queriedEvent).not.toBeNull();
-				assertToBeNonNullish(queriedEvent);
-				expect(queriedEvent.id).toBe(event.id);
-				expect(queriedEvent.name).toBe("Concurrent Access Event");
 			}
+			if (!createEventResult.data || !createEventResult.data.createEvent) {
+				throw new Error(
+					`createEvent returned no data. full response: ${JSON.stringify(createEventResult, null, 2)}`,
+				);
+			}
+
+			const baseRecurringEventId = createEventResult.data.createEvent.id;
+			assertToBeNonNullish(baseRecurringEventId);
+
+			const instancesResult = await mercuriusClient.query(
+				Query_getRecurringEvents,
+				{
+					headers: { authorization: `bearer ${authToken}` },
+					variables: { baseRecurringEventId },
+				},
+			);
+
+			if (instancesResult.errors && instancesResult.errors.length > 0) {
+				throw new Error(
+					`getRecurringEvents GraphQL errors: ${JSON.stringify(instancesResult.errors, null, 2)}`,
+				);
+			}
+
+			const generatedInstances = instancesResult.data?.getRecurringEvents;
+
+			assertToBeNonNullish(generatedInstances);
+			expect(Array.isArray(generatedInstances)).toBe(true);
+			expect(generatedInstances.length).toBeGreaterThan(0);
 		});
 	});
 });

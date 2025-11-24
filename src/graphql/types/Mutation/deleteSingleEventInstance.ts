@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { actionItemsTable } from "~/src/drizzle/tables/actionItems";
 import { recurringEventInstancesTable } from "~/src/drizzle/tables/recurringEventInstances";
 import { builder } from "~/src/graphql/builder";
 import {
@@ -156,9 +157,9 @@ builder.mutationField("deleteSingleEventInstance", (t) =>
 				existingInstance.organization.membershipsWhereOrganization[0];
 
 			if (
-				currentUser.role !== "administrator" &&
 				(currentUserOrganizationMembership === undefined ||
-					currentUserOrganizationMembership.role !== "administrator")
+					currentUserOrganizationMembership.role !== "administrator") &&
+				existingInstance.baseRecurringEvent.creatorId !== currentUserId
 			) {
 				throw new TalawaGraphQLError({
 					extensions: {
@@ -173,6 +174,13 @@ builder.mutationField("deleteSingleEventInstance", (t) =>
 			}
 
 			return await ctx.drizzleClient.transaction(async (tx) => {
+				// First, delete action items associated with this specific instance
+				await tx
+					.delete(actionItemsTable)
+					.where(
+						eq(actionItemsTable.recurringEventInstanceId, parsedArgs.input.id),
+					);
+
 				const [updatedInstance] = await tx
 					.update(recurringEventInstancesTable)
 					.set({

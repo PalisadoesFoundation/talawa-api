@@ -19,8 +19,8 @@ import { userEmploymentStatusEnum } from "~/src/drizzle/enums/userEmploymentStat
 import { userMaritalStatusEnum } from "~/src/drizzle/enums/userMaritalStatus";
 import { userNatalSexEnum } from "~/src/drizzle/enums/userNatalSex";
 import { userRoleEnum } from "~/src/drizzle/enums/userRole";
-import { actionCategoriesTable } from "./actionCategories";
-import { actionsTable } from "./actions";
+import { actionItemCategoriesTable } from "./actionItemCategories";
+import { actionItemsTable } from "./actionItems";
 import { advertisementAttachmentsTable } from "./advertisementAttachments";
 import { advertisementsTable } from "./advertisements";
 import { agendaFoldersTable } from "./agendaFolders";
@@ -32,7 +32,6 @@ import { commentVotesTable } from "./commentVotes";
 import { commentsTable } from "./comments";
 import { communitiesTable } from "./communities";
 import { eventAttachmentsTable } from "./eventAttachments";
-import { eventAttendancesTable } from "./eventAttendances";
 import { eventsTable } from "./events";
 import { familiesTable } from "./families";
 import { familyMembershipsTable } from "./familyMemberships";
@@ -50,8 +49,6 @@ import { tagsTable } from "./tags";
 import { venueAttachmentsTable } from "./venueAttachments";
 import { venueBookingsTable } from "./venueBookings";
 import { venuesTable } from "./venues";
-import { volunteerGroupAssignmentsTable } from "./volunteerGroupAssignments";
-import { volunteerGroupsTable } from "./volunteerGroups";
 
 /**
  * Drizzle orm postgres table definition for users.
@@ -217,34 +214,34 @@ export const usersTable = pgTable(
 
 export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	/**
-	 * One to many relationship from `users` table to `actions` table.
+	 * One to many relationship from `users` table to `actionitems` table.
 	 */
-	actionsWhereAssignee: many(actionsTable, {
-		relationName: "actions.assignee_id:users.id",
+	actionItemsWhereAssignee: many(actionItemsTable, {
+		relationName: "actionitems.assignee_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `actions` table.
+	 * One to many relationship from `users` table to `actionitems` table.
 	 */
-	actionsWhereCreator: many(actionsTable, {
-		relationName: "actions.creator_id:users.id",
+	actionItemsWhereCreator: many(actionItemsTable, {
+		relationName: "actionitems.creator_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `actions` table.
+	 * One to many relationship from `users` table to `actionitems` table.
 	 */
-	actionsWhereUpdater: many(actionsTable, {
-		relationName: "actions.updater_id:users.id",
+	actionItemsWhereUpdater: many(actionItemsTable, {
+		relationName: "actionitems.updater_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `action_categories` table.
+	 * One to many relationship from `users` table to `actionitem_categories` table.
 	 */
-	actionCategoriesWhereCreator: many(actionCategoriesTable, {
-		relationName: "action_categories.creator_id:users.id",
+	actionItemCategoriesWhereCreator: many(actionItemCategoriesTable, {
+		relationName: "actionitem_categories.creator_id:users.id",
 	}),
 	/**
-	 * One to many relationship from `users` table to `action_categories` table.
+	 * One to many relationship from `users` table to `actionitem_categories` table.
 	 */
-	actionCategoriesWhereUpdater: many(actionCategoriesTable, {
-		relationName: "action_categories.updater_id:users.id",
+	actionItemCategoriesWhereUpdater: many(actionItemCategoriesTable, {
+		relationName: "actionitem_categories.updater_id:users.id",
 	}),
 	/**
 	 * One to many relationship from `users` table to `advertisement_attachments` table.
@@ -386,24 +383,7 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	eventAttachmentsWhereUpdater: many(eventAttachmentsTable, {
 		relationName: "event_attachments.updater_id:users.id",
 	}),
-	/**
-	 * One to many relationship from `users` table to `event_attendances` table.
-	 */
-	eventAttendancesWhereAttendee: many(eventAttendancesTable, {
-		relationName: "event_attendances.attendee_id:users.id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `event_attendances` table.
-	 */
-	eventAttendancesWhereCreator: many(eventAttendancesTable, {
-		relationName: "event_attendances.creator_id:users.id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `event_attendances` table.
-	 */
-	eventAttendancesWhereUpdater: many(eventAttendancesTable, {
-		relationName: "event_attendances.updater_id:users.id",
-	}),
+
 	/**
 	 * One to many relationship from `users` table to `families` table.
 	 */
@@ -609,42 +589,6 @@ export const usersTableRelations = relations(usersTable, ({ many, one }) => ({
 	 */
 	venueBookingsWhereCreator: many(venueBookingsTable, {
 		relationName: "users.id:venue_bookings.creator_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `volunteer_groups` table.
-	 */
-	volunteerGroupsWhereCreator: many(volunteerGroupsTable, {
-		relationName: "users.id:volunteer_groups.creator_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `volunteer_groups` table.
-	 */
-	volunteerGroupsWhereLeader: many(volunteerGroupsTable, {
-		relationName: "users.id:volunteer_groups.leader_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `volunteer_groups` table.
-	 */
-	volunteerGroupsWhereUpdater: many(volunteerGroupsTable, {
-		relationName: "users.id:volunteer_groups.updater_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `volunteer_group_assignments` table.
-	 */
-	volunteerGroupAssignmentsWhereAssignee: many(volunteerGroupAssignmentsTable, {
-		relationName: "users.id:volunteer_group_assignments.assignee_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `volunteer_group_assignments` table.
-	 */
-	volunteerGroupAssignmentsWhereCreator: many(volunteerGroupAssignmentsTable, {
-		relationName: "users.id:volunteer_group_assignments.creator_id",
-	}),
-	/**
-	 * One to many relationship from `users` table to `volunteer_group_assignments` table.
-	 */
-	volunteerGroupAssignmentsWhereUpdater: many(volunteerGroupAssignmentsTable, {
-		relationName: "users.id:volunteer_group_assignments.updater_id",
 	}),
 }));
 

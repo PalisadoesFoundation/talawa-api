@@ -1,7 +1,7 @@
 import { and, eq, gte, lte } from "drizzle-orm";
 import { eventsTable } from "~/src/drizzle/tables/events";
 import { recurrenceRulesTable } from "~/src/drizzle/tables/recurrenceRules";
-import { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
+import type { eventExceptionsTable } from "~/src/drizzle/tables/recurringEventExceptions";
 import type { CreateRecurringEventInstanceInput } from "~/src/drizzle/tables/recurringEventInstances";
 import {
 	recurringEventInstancesTable,
@@ -45,6 +45,18 @@ export async function generateInstancesForRecurringEvent(
 				),
 			}),
 			drizzleClient.query.recurrenceRulesTable.findFirst({
+				columns: {
+					id: true,
+					originalSeriesId: true,
+					frequency: true,
+					interval: true,
+					recurrenceStartDate: true,
+					recurrenceEndDate: true,
+					count: true,
+					byDay: true,
+					byMonth: true,
+					byMonthDay: true,
+				},
 				where: eq(
 					recurrenceRulesTable.baseRecurringEventId,
 					baseRecurringEventId,
@@ -54,24 +66,34 @@ export async function generateInstancesForRecurringEvent(
 
 		if (!baseTemplate || !recurrenceRule) {
 			logger.error(
-				`Base template or recurrence rule not found for ${baseRecurringEventId}`,
 				{ baseTemplate: !!baseTemplate, recurrenceRule: !!recurrenceRule },
+				`Base template or recurrence rule not found for ${baseRecurringEventId}`,
 			);
 			throw new Error(
 				`Base template or recurrence rule not found: ${baseRecurringEventId}`,
 			);
 		}
 
-		// Get existing exceptions
-		const exceptions = await drizzleClient.query.eventExceptionsTable.findMany({
-			where: eq(
-				eventExceptionsTable.baseRecurringEventId,
-				baseRecurringEventId,
-			),
-		});
+		// For initial generation, we don't need existing exceptions
+		// Exceptions are only created when users modify specific instances
+		const exceptions: (typeof eventExceptionsTable.$inferSelect)[] = [];
+
+		// Create a full recurrence rule object for normalization
+		const fullRecurrenceRule = {
+			...recurrenceRule,
+			baseRecurringEventId,
+			organizationId,
+			createdAt: new Date(),
+			creatorId: "",
+			updatedAt: null,
+			updaterId: null,
+			recurrenceRuleString: "",
+			latestInstanceDate: recurrenceRule.recurrenceStartDate,
+		};
 
 		// Normalize the recurrence rule (convert count to end date for unified processing)
-		const normalizedRecurrenceRule = normalizeRecurrenceRule(recurrenceRule);
+		const normalizedRecurrenceRule =
+			normalizeRecurrenceRule(fullRecurrenceRule);
 
 		// Preserve original count for proper instance generation
 		const preservedOriginalCount = recurrenceRule.count;
@@ -93,7 +115,6 @@ export async function generateInstancesForRecurringEvent(
 		);
 
 		logger.info(
-			`Generated ${occurrences.length} occurrences for ${baseRecurringEventId}`,
 			{
 				frequency: normalizedRecurrenceRule.frequency,
 				originalCount: preservedOriginalCount,
@@ -110,13 +131,26 @@ export async function generateInstancesForRecurringEvent(
 					: "No count limit",
 				actualCount: `Created ${occurrences.length} occurrences`,
 			},
+			`Generated ${occurrences.length} occurrences for ${baseRecurringEventId}`,
 		);
+
+		// Handle case where originalSeriesId is null
+		if (recurrenceRule.originalSeriesId === null) {
+			logger.error(
+				{ recurrenceRuleId: recurrenceRule.id },
+				`Recurrence rule for ${baseRecurringEventId} has null originalSeriesId`,
+			);
+			throw new Error(
+				`Recurrence rule for ${baseRecurringEventId} has null originalSeriesId`,
+			);
+		}
 
 		// Filter out existing instances and create new ones
 		const newInstancesCount = await createNewGeneratedInstances(
 			occurrences,
 			baseRecurringEventId,
 			recurrenceRule.id,
+			recurrenceRule.originalSeriesId,
 			organizationId,
 			windowStartDate,
 			windowEndDate,
@@ -127,8 +161,8 @@ export async function generateInstancesForRecurringEvent(
 		return newInstancesCount;
 	} catch (error) {
 		logger.error(
-			`Failed to generate instances for ${baseRecurringEventId}:`,
 			error,
+			`Failed to generate instances for ${baseRecurringEventId}:`,
 		);
 		throw error;
 	}
@@ -141,6 +175,7 @@ export async function generateInstancesForRecurringEvent(
  * @param occurrences - An array of calculated occurrence data.
  * @param baseRecurringEventId - The ID of the base recurring event.
  * @param recurrenceRuleId - The ID of the associated recurrence rule.
+ * @param originalSeriesId - The original series ID for tracking logical series across template splits.
  * @param organizationId - The ID of the organization.
  * @param windowStartDate - The start of the event generation window.
  * @param windowEndDate - The end of the event generation window.
@@ -159,6 +194,7 @@ async function createNewGeneratedInstances(
 	}>,
 	baseRecurringEventId: string,
 	recurrenceRuleId: string,
+	originalSeriesId: string,
 	organizationId: string,
 	windowStartDate: Date,
 	windowEndDate: Date,
@@ -211,6 +247,7 @@ async function createNewGeneratedInstances(
 		(occurrence) => ({
 			baseRecurringEventId,
 			recurrenceRuleId,
+			originalSeriesId: originalSeriesId,
 			originalInstanceStartTime: occurrence.originalStartTime,
 			actualStartTime: occurrence.actualStartTime,
 			actualEndTime: occurrence.actualEndTime,
@@ -236,9 +273,9 @@ async function createNewGeneratedInstances(
 	return newOccurrences.length;
 }
 
-export {
-	initializeGenerationWindow,
-	cleanupOldGeneratedInstances,
-} from "./windowManager";
-export { calculateInstanceOccurrences } from "./occurrenceCalculator";
 export { resolveInstanceWithInheritance } from "./instanceResolver";
+export { calculateInstanceOccurrences } from "./occurrenceCalculator";
+export {
+	cleanupOldGeneratedInstances,
+	initializeGenerationWindow,
+} from "./windowManager";
